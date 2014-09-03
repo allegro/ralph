@@ -240,32 +240,29 @@ class HistoryCost(db.Model):
     cores = db.IntegerField(default=0)
     device = db.ForeignKey('Device', null=True, blank=True,
                            default=None, on_delete=db.SET_NULL)
-    extra = db.ForeignKey('business.VentureExtraCost', null=True, blank=True,
-                          default=None, on_delete=db.SET_NULL)
     venture = db.ForeignKey('business.Venture', null=True, blank=True,
                             default=None, on_delete=db.SET_NULL)
 
     @classmethod
-    def start_span(cls, device=None, extra=None, start='', end=None):
+    def start_span(cls, device=None, start='', end=None):
         """
-        Start a new time span with new valies for the given device or extra
-        cost. It will automatically truncate the previous span if necessary.
+        Start a new time span with new valies for the given device .
+        It will automatically truncate the previous span if necessary.
         By default, the timespan is infinite towards the future -- possibly to
         be truncated by a later span, but an optional ``end`` parameter can be
         used to specify the end of the timespan.
         """
 
-        item = device or extra
-        if not item:
-            raise ValueError('Either device or extra is required')
+        if not device:
+            raise ValueError('Device is required')
         if start == '':
             start = date.today()
         if device:
             daily_cost = (device.cached_cost or 0) / 30.4
         else:
             daily_cost = extra.cost / 30.4
-        venture = item.venture
-        cls.end_span(device=device, extra=extra, end=start)
+        venture = device.venture
+        cls.end_span(device=device, end=start)
         span = cls(
             start=start,
             end=end or FOREVER,
@@ -278,10 +275,10 @@ class HistoryCost(db.Model):
         span.save()
 
     @classmethod
-    def end_span(cls, device=None, extra=None, end=None):
+    def end_span(cls, device=None, end=None):
         """
-        Truncates any existings timespans for the specified ``device`` or
-        ``extra`` costs, so that a new span can be started at ``end``.
+        Truncates any existings timespans for the specified ``device``
+        so that a new span can be started at ``end``.
         Implicitly called by ``start_span``.
         """
 

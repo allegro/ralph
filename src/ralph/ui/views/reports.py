@@ -24,7 +24,7 @@ from dj.choices import Choices
 import django_rq
 
 from ralph.account.models import Perm, ralph_permission
-from ralph.business.models import Venture, VentureExtraCostType
+from ralph.business.models import Venture
 from ralph.cmdb.models_ci import (
     CI,
     CIRelation,
@@ -576,9 +576,6 @@ class ReportVentures(SidebarReports, AsyncReportMixin, Base):
                 'start': datetime.date.today() - datetime.timedelta(days=30),
                 'end': datetime.date.today(),
             })
-        self.extra_types = list(VentureExtraCostType.objects.annotate(
-            cost_count=db.Count('ventureextracost')
-        ).filter(cost_count__gt=0).order_by('name'))
         if self.form.is_valid():
             self.ventures = profile.perm_ventures(
                 Perm.read_device_info_reports
@@ -596,7 +593,6 @@ class ReportVentures(SidebarReports, AsyncReportMixin, Base):
                     start,
                     end,
                     self.ventures,
-                    self.extra_types,
                 )
                 return HttpResponseRedirect(
                     _get_after_report_invalidation_link(
@@ -608,7 +604,6 @@ class ReportVentures(SidebarReports, AsyncReportMixin, Base):
                 start,
                 end,
                 self.ventures,
-                self.extra_types,
             )
             if self.venture_data is None:
                 self.task_in_progress = True
@@ -624,7 +619,7 @@ class ReportVentures(SidebarReports, AsyncReportMixin, Base):
             self.venture_data is not None
         ):
             return make_csv_response(
-                data=self.export_csv(self.venture_data, self.extra_types),
+                data=self.export_csv(self.venture_data),
                 filename='ReportVentures.csv',
             )
         return super(ReportVentures, self).get(*args, **kwargs)

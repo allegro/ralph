@@ -30,7 +30,6 @@ from ralph.ui.views.ventures import (
     VenturesReports,
     VenturesRoles,
     VenturesSoftware,
-    VenturesVenture,
     VenturesScan,
 )
 from ralph.ui.views.racks import (
@@ -169,8 +168,6 @@ urlpatterns = patterns('',
                            login_required(VenturesReports.as_view()), {}, 'ventures'),
                        url(r'^ventures/(?P<venture>[.\w*-]*)/(?P<details>roles)/(?P<role>[-\w]*)$',
                            login_required(VenturesRoles.as_view()), {}, 'ventures'),
-                       url(r'^ventures/(?P<venture>[.\w*-]*)/(?P<details>venture)/(?P<device>)$',
-                           login_required(VenturesVenture.as_view()), {}, 'ventures'),
                        url(r'^ventures/(?P<venture>[.\w*-]*)/(?P<details>scan)/(?P<address>[\d.]*)/$',
                            login_required(VenturesScan.as_view()), {}, 'ventures'),
 

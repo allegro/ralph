@@ -10,7 +10,7 @@ import re
 
 from django.db import models as db
 
-from ralph.business.models import Venture, VentureExtraCost
+from ralph.business.models import Venture
 from ralph.discovery.models import (
     Device,
     DeviceType,
@@ -155,18 +155,6 @@ def get_shares(venture_symbol=None, include_virtual=True):
             'mount_device_id': mount.device_id,
             'label': mount.share.label,
             'size': mount.get_size(),
-        }
-
-
-def get_extra_cost():
-    for extracost in VentureExtraCost.objects.all():
-        yield {
-            'venture_id': extracost.venture_id,
-            'venture': extracost.venture.name,
-            'type': extracost.type.name,
-            'cost': extracost.cost,
-            'start': extracost.created,
-            'end': extracost.expire,
         }
 
 

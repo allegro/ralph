@@ -514,62 +514,6 @@ class Department(Named):
         ordering = ('name',)
 
 
-class VentureExtraCostType(Named.NonUnique, TimeTrackable):
-
-    class Meta:
-        verbose_name = _("venture extra cost type")
-        verbose_name_plural = _("venture extra cost types")
-        ordering = ('name',)
-
-
-class VentureExtraCost(TimeTrackable):
-
-    class Meta:
-        verbose_name = _("venture extra cost")
-        verbose_name_plural = _("venture extra costs")
-        unique_together = ('type', 'venture')
-        ordering = ('type',)
-
-    venture = db.ForeignKey(Venture, verbose_name=_("venture"))
-    type = db.ForeignKey(VentureExtraCostType, verbose_name=_("type"))
-    cost = db.FloatField(verbose_name=_("monthly cost"), default=0)
-    expire = db.DateField(default=None, null=True, blank=True)
-
-    @property
-    def name(self):
-        return self.type.name
-
-
-@receiver(post_save, sender=VentureExtraCost, dispatch_uid='ralph.costhistory')
-def cost_post_save(sender, instance, raw, using, **kwargs):
-    changed = False
-    if 'venture_id' in instance.dirty_fields:
-        changed = True
-    if 'expire' in instance.dirty_fields:
-        changed = True
-    if 'cost' in instance.dirty_fields:
-        old_cost = instance.dirty_fields['cost'] or 0
-        if not -1 < instance.cost - old_cost < 1:
-            # Ignore changes due to rounding errors
-            changed = True
-    if changed:
-        if instance.expire:
-            start = min(datetime.date.today(), instance.expire)
-        else:
-            start = datetime.datetime.now()
-        HistoryCost.start_span(
-            extra=instance, start=start, end=instance.expire)
-
-
-@receiver(
-    pre_delete,
-    sender=VentureExtraCost,
-    dispatch_uid='ralph.costhistory',
-)
-def cost_pre_delete(sender, instance, using, **kwargs):
-    HistoryCost.end_span(extra=instance)
-
-
 @receiver(pre_save, sender=RolePropertyValue, dispatch_uid='ralph.history')
 def role_property_value_pre_save(sender, instance, raw, using, **kwargs):
     for field, orig, new in _field_changes(instance):
