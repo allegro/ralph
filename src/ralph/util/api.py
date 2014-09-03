@@ -9,11 +9,19 @@ from __future__ import unicode_literals
 from django.contrib.auth.models import User
 
 
-def is_authenticated(request):
-    username = request.GET.get('username')
-    api_key = request.GET.get('api_key')
+def get_user(request):
+    username = request.REQUEST.get('username')
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
         user = None
-    return user and user.api_key.key == api_key
+    return user
+
+
+def is_authenticated(user, request):
+    api_key = request.REQUEST.get('api_key')
+    if user and user.api_key.key == api_key:
+        is_authenticated = True
+    else:
+        is_authenticated = False
+    return is_authenticated

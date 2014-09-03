@@ -46,6 +46,7 @@ class IdracPluginTest(TestCase):
             {
                 'model_name': 'Dell PowerEdge R720xd',
                 'serial_number': 'AMSFG5J',
+                'type': 'rack server'
             },
         )
 

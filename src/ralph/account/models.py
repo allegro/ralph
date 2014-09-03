@@ -9,13 +9,13 @@ from __future__ import unicode_literals
 import functools
 
 
-from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.handlers.wsgi import WSGIRequest
-from django.core.urlresolvers import reverse, NoReverseMatch
+from django.core.urlresolvers import reverse
 from django.db import models as db
-from django.http import HttpResponseForbidden, HttpResponseBadRequest
+from django.http import HttpResponseBadRequest
 from django.utils.translation import ugettext_lazy as _
+
 
 from dj.choices import Choices
 from dj.choices.fields import ChoiceField
@@ -26,6 +26,7 @@ from lck.django.profile.models import (
     ActivationSupport,
     GravatarSupport,
 )
+from pluggableapp import PluggableApp
 
 from ralph.business.models import Venture, VentureRole
 
@@ -235,7 +236,7 @@ def ralph_permission(perms=None):
     If no permissions are specified, 'Perm.has_core_access' will be used.
     """
 
-    if not perms:
+    if perms is None:
         perms = [
             {
                 'perm': Perm.has_core_access,
@@ -245,35 +246,51 @@ def ralph_permission(perms=None):
 
     def decorator(func):
         def inner_decorator(self, *args, **kwargs):
-            if hasattr(self, 'user'):
-                user = self.user
-            elif hasattr(self, 'request'):
-                user = self.request.user
-            elif args and isinstance(args[0], WSGIRequest):
-                user = args[0].user
+            from ralph.account.views import HTTP403
+            from ralph.util import api
+
+            # class-based views
+            if args and isinstance(args[0], WSGIRequest):
+                request = args[0]
+            # function-based views
+            elif self and isinstance(self, WSGIRequest):
+                request = self
+            # check for request in kwargs as well, just in case
+            elif 'request' in kwargs:
+                request = kwargs['request']
             else:
                 return HttpResponseBadRequest()
+            user = request.user
+            # for API views not handled by Tastypie (e.g. puppet_classifier)
             if user.is_anonymous():
-                msg = _("You don't have permissions for this resource.")
-                return HttpResponseForbidden(unicode(msg))
+                user = api.get_user(request)
+                if not api.is_authenticated(user, request):
+                    return HTTP403(request)
             profile = user.get_profile()
             has_perm = profile.has_perm
             for perm in perms:
                 if not has_perm(perm['perm']):
-                    return HttpResponseForbidden(unicode(perm['msg']))
+                    return HTTP403(request, perm['msg'])
             return func(self, *args, **kwargs)
-        func.decorated_with = 'ralph_permission'  # for unit tests etc.
+        # helper property for unit tests
+        func.decorated_with = 'ralph_permission'
         return functools.wraps(func)(inner_decorator)
     return decorator
 
 
 def get_user_home_page_url(user):
     profile = user.get_profile()
-    if profile.home_page == AvailableHomePage.default:
-        try:
-            home_page = reverse(settings.HOME_PAGE_URL_NAME, args=[])
-        except NoReverseMatch:
-            home_page = reverse('search')
+    redirect_hierarchy = [
+        (Perm.has_scrooge_access, 'ralph_pricing'),
+        (Perm.has_assets_access, 'ralph_assets'),
+    ]
+    for perm_to_module, app_name in redirect_hierarchy:
+        if profile.has_perm(perm_to_module):
+            try:
+                page_url = PluggableApp.apps[app_name].home_url
+                break
+            except KeyError:
+                pass
     else:
-        home_page = reverse(profile.home_page.name)
-    return home_page
+        page_url = reverse('search', args=('info', ''))
+    return page_url
