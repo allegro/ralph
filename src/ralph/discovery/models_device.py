@@ -19,7 +19,6 @@ from django.db import models as db
 from django.db import IntegrityError, transaction
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.models import (
-    EditorTrackable,
     MACAddressField,
     Named,
     SavePrioritized,
@@ -276,6 +275,23 @@ class UptimeSupport(db.Model):
         return "%s, %02d:%02d:%02d" % (msg, hours, minutes, seconds)
 
 
+class DeviceEnvironmentManager(db.Manager):
+    def get_query_set(self):
+        return super(DeviceEnvironmentManager, self).get_query_set().filter(
+            type__name=models_ci.CI_TYPES.ENVIRONMENT,
+        )
+
+
+class DeviceEnvironment(models_ci.CI):
+    """
+    Catalog of environment where device is used, like: prod, test, ect.
+    """
+    objects = DeviceEnvironmentManager()
+
+    class Meta:
+        proxy = True
+
+
 class ServiceCatalogManager(db.Manager):
     def get_query_set(self):
         return super(ServiceCatalogManager, self).get_query_set().filter(
@@ -291,19 +307,6 @@ class ServiceCatalog(models_ci.CI):
 
     class Meta:
         proxy = True
-
-
-class DeviceEnvironment(
-    TimeTrackable,
-    EditorTrackable,
-    Named,
-    WithConcurrentGetOrCreate,
-):
-    """
-    Type of env where device is used, like: prodution, testing, etc.
-    """
-    def __unicode__(self):
-        return self.name
 
 
 class Device(
