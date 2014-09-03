@@ -358,13 +358,19 @@ RQ_QUEUES = {
 }
 for queue in RQ_QUEUE_LIST:
     RQ_QUEUES[queue] = dict(RQ_QUEUES['default'])
+
+# If True, objects from Ralph Core will have autocreated CI's in the CMDB
 AUTOCI = True
+
 AUTOCI_SKIP_MSG = 'AUTOCI is disabled'
 HAMSTER_API_URL = ""
 SCALEME_API_URL = ""
 DEFAULT_SOA_RECORD_CONTENT = ''
 DEAD_PING_COUNT = 2
 SCAN_AUTOMERGE_MODE = True
+
+# If True, autocreate misssing host names(CI's) when importing the triggers from ZABBIX into the cmdb
+ZABBIX_IMPORT_HOSTS = False
 # </template>
 
 SCAN_POSTPROCESS_ENABLED_JOBS = []

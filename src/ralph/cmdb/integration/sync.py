@@ -38,12 +38,20 @@ class ZabbixImporter(BaseImporter):
         """
         logger.debug('Zabbix hosts import started.')
         hosts = zabbix.get_all_hosts()
-        for h in hosts:
+        for host in hosts:
             # base method
-            ci = self.get_ci_by_name(h.get('host'))
+            name = host.get('host')
+            ci = self.get_ci_by_name(name)
             if not ci:
-                continue
-            ci.zabbix_id = h.get('hostid')
+                if getattr(settings, 'ZABBIX_IMPORT_HOSTS', False):
+                    ci = db.CI(name=name)
+                    ci.type_id = db.CI_TYPES.DEVICE.id
+                    ci.state = db.CI_STATE_TYPES.ACTIVE.id
+                    ci.save()
+                else:
+                    logger.debug('Skipping hostname: %s' % name)
+                    continue
+            ci.zabbix_id = host.get('hostid')
             ci.save()
         logger.debug('Finshed')
 
