@@ -742,5 +742,10 @@ SCAN_PLUGINS = {
 }
 RQ_TIMEOUT = 3000
 
+
+# points to a view which resolves to the user's home view after logging in
+from django.core.urlresolvers import reverse_lazy
+LOGIN_REDIRECT_URL = reverse_lazy('find_user_home')
+
 # url to page where user requests permission to module (eg. assets)
 # REQUEST_PERM_URL = 'http://tickets.office/request/ralph_module/permission'
