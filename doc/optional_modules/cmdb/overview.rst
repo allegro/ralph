@@ -231,6 +231,12 @@ It simply uses REST services for retrieving:
 Information from Zabbix shows up on the CI preview screen in the 'Monitoring
 events' section.
 
+CMDB database of hosts have to be populated with host name(ci name = hostname) in order to connect the triggers to them.
+
+.. note::
+  If you want, the zabbix plugin can register missing CI's hostnames while importing the data. You have to set the ZABBIX_IMPORT_HOSTS to True in this case. By default, no zabbix hosts are registered in the CMDB database while importing(ZABBIX_IMPORT_HOSTS=False).
+
+
 Setup
 ~~~~~
 Add to settings::
@@ -238,6 +244,7 @@ Add to settings::
     ZABBIX_USER="..."
     ZABBIX_PASSWORD="..."
     ZABBIX_URL="..."
+    ZABBIX_IMPORT_HOSTS=False
 
 and run::
 
