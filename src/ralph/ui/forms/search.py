@@ -10,11 +10,7 @@ from django import forms
 from lck.django.choices import Choices
 
 from ralph.discovery.models import DeviceType, DeprecationKind
-from ralph.ui.widgets import (
-    DateWidget,
-    DeviceGroupWidget,
-    ComponentGroupWidget,
-)
+from ralph.ui.widgets import DateWidget
 
 
 def validate_start_end_date_date(start, end):
@@ -98,10 +94,6 @@ class SearchForm(forms.Form):
                                             choices=DeviceType(
                                                 item=lambda e: (e.id, e.raw)),
                                             )
-    device_group = forms.IntegerField(required=False,
-                                      widget=DeviceGroupWidget, label="")
-    component_group = forms.IntegerField(required=False,
-                                         widget=ComponentGroupWidget, label="")
     purchase_date_start = forms.DateField(required=False,
                                           widget=DateWidget(attrs={
                                               'class': 'span12',

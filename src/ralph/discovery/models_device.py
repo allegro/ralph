@@ -148,27 +148,6 @@ class MarginKind(Named):
         verbose_name_plural = _("margin kinds")
 
 
-class DeviceModelGroup(Named, TimeTrackable, SavingUser):
-    price = db.PositiveIntegerField(
-        verbose_name=_("purchase price"),
-        null=True,
-        blank=True,
-    )
-    type = db.PositiveIntegerField(
-        verbose_name=_("device type"),
-        choices=DeviceType(),
-        default=DeviceType.unknown.id,
-    )
-    slots = db.FloatField(verbose_name=_("number of slots"), default=0)
-
-    class Meta:
-        verbose_name = _("group of device models")
-        verbose_name_plural = _("groups of device models")
-
-    def get_count(self):
-        return Device.objects.filter(model__group=self).count()
-
-
 class DeviceModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
     name = db.CharField(
         verbose_name=_("name"),
@@ -179,14 +158,6 @@ class DeviceModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
         verbose_name=_("device type"),
         choices=DeviceType(),
         default=DeviceType.unknown.id,
-    )
-    group = db.ForeignKey(
-        DeviceModelGroup,
-        verbose_name=_("group"),
-        null=True,
-        blank=True,
-        default=None,
-        on_delete=db.SET_NULL,
     )
     chassis_size = db.PositiveIntegerField(
         verbose_name=_("chassis size"),

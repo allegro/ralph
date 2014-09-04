@@ -14,7 +14,6 @@ from ralph.discovery.models_device import (
     DeprecationKind,
     Device,
     DeviceModel,
-    DeviceModelGroup,
     DeviceType,
     DISK_PRODUCT_BLACKLIST,
     DISK_VENDOR_BLACKLIST,
@@ -39,7 +38,6 @@ from ralph.discovery.models_network import (
 )
 from ralph.discovery.models_component import (
     ComponentModel,
-    ComponentModelGroup,
     ComponentType,
     DiskShare,
     DiskShareMount,
@@ -61,13 +59,7 @@ from ralph.discovery.models_history import (
     HistoryChange,
     HistoryCost,
 )
-from ralph.discovery.models_pricing import (
-    PricingAggregate,
-    PricingGroup,
-    PricingFormula,
-    PricingVariable,
-    PricingValue,
-)
+
 
 __all__ = [
     'DataCenter',
@@ -81,7 +73,6 @@ __all__ = [
     'NetworkTerminator',
 
     'ComponentModel',
-    'ComponentModelGroup',
     'ComponentType',
     'DiskShare',
     'DiskShareMount',
@@ -101,7 +92,6 @@ __all__ = [
     'DeprecationKind',
     'Device',
     'DeviceModel',
-    'DeviceModelGroup',
     'DeviceType',
     'Connection',
     'ConnectionType',
@@ -119,11 +109,6 @@ __all__ = [
     'DiscoveryValue',
     'DiscoveryWarning',
 
-    'PricingAggregate',
-    'PricingGroup',
-    'PricingFormula',
-    'PricingVariable',
-    'PricingValue',
 ]
 
 # Load the plugins code

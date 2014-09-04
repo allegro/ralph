@@ -366,28 +366,6 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                                 'venture__parent__parent__parent__parent__id',
                             ], [str(role_id)])
                     self.query = self.query.filter(q).distinct()
-            if data['device_group']:
-                self.query = self.query.filter(
-                    model__group_id=data['device_group']
-                )
-            if data['component_group']:
-                is_splunk = ComponentModel.objects.filter(
-                    group_id=str(data['component_group']),
-                    family='splunkusage').exists()
-                if is_splunk:
-                    yesterday = datetime.date.today() - datetime.timedelta(
-                        days=1)
-                    q = Q(splunkusage__day=yesterday)
-                else:
-                    q = _search_fields_or([
-                        'genericcomponent__model__group_id',
-                        'fibrechannel__model__group_id',
-                        'storage__model__group_id',
-                        'memory__model__group_id',
-                        'processor__model__group_id',
-                        'disksharemount__share__model__group_id',
-                    ], [str(data['component_group'])])
-                self.query = self.query.filter(q).distinct()
             if data['device_type']:
                 self.query = self.query.filter(
                     model__type__in=data['device_type']

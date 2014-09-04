@@ -12,8 +12,12 @@ from django.conf import settings
 from ralph.discovery.plugins.openstack import (openstack as openstack_runner,
                                                make_tenant, make_components)
 from ralph.discovery.tests.plugins.samples.openstack import simple_tenant_usage_data
-from ralph.discovery.models import (Device, ComponentModel, GenericComponent,
-                                    MarginKind, ComponentModelGroup)
+from ralph.discovery.models import (
+    Device,
+    ComponentModel,
+    GenericComponent,
+    MarginKind,
+)
 from ralph.discovery.models_history import HistoryCost
 
 

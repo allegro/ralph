@@ -18,13 +18,26 @@ from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.cmdb.integration.splunk import log_change_to_splunk
-from ralph.discovery.models_device import (Device, DeprecationKind,
-                                           DeviceModel, DeviceModelGroup)
+from ralph.discovery.models_device import (
+    Device,
+    DeprecationKind,
+    DeviceModel,
+)
 from ralph.discovery.models_device import LoadBalancerMember
 from ralph.discovery.models_device import LoadBalancerVirtualServer
 from ralph.discovery.models_component import (
-    Memory, Processor, Storage, DiskShareMount, DiskShare, Software,
-    GenericComponent, Ethernet, FibreChannel, OperatingSystem, ComponentModel, ComponentModelGroup)
+    ComponentModel,
+    DiskShare,
+    DiskShareMount,
+    Ethernet,
+    FibreChannel,
+    GenericComponent,
+    Memory,
+    OperatingSystem,
+    Processor,
+    Software,
+    Storage,
+)
 from ralph.discovery.models_network import IPAddress
 from ralph.dnsedit.util import update_txt_records
 from ralph.discovery.history import field_changes as _field_changes
@@ -384,13 +397,6 @@ class HistoryModelChange(db.Model):
     component_model = db.ForeignKey('ComponentModel', null=True, blank=True,
                                     verbose_name=_("component model"),
                                     default=None, on_delete=db.SET_NULL)
-    device_model_group = db.ForeignKey(
-        'DeviceModelGroup', verbose_name=_("device model group"), null=True,
-        blank=True, default=None, on_delete=db.SET_NULL)
-    component_model_group = db.ForeignKey(
-        'ComponentModelGroup', null=True, blank=True,
-        verbose_name=_("component model group"), default=None,
-        on_delete=db.SET_NULL)
     user = db.ForeignKey('auth.User', verbose_name=_("user"), null=True,
                          blank=True, default=None, on_delete=db.SET_NULL)
     field_name = db.CharField(max_length=64, default='')
@@ -427,40 +433,6 @@ def component_model_pre_save(sender, instance, raw, using, **kwargs):
         HistoryModelChange(
             component_model=instance,
             component_model_group=instance.group,
-            field_name=field,
-            old_value=unicode(orig),
-            new_value=unicode(new),
-            user=instance.saving_user,
-        ).save()
-
-
-@receiver(pre_save, sender=DeviceModelGroup, dispatch_uid='ralph.history')
-def device_modelgroup_pre_save(sender, instance, raw, using, **kwargs):
-    """
-    A hook for creating ``HistoryModelChange`` entries when a device
-    model group changes.
-    """
-
-    for field, orig, new in _field_changes(instance):
-        HistoryModelChange(
-            device_model_group=instance,
-            field_name=field,
-            old_value=unicode(orig),
-            new_value=unicode(new),
-            user=instance.saving_user,
-        ).save()
-
-
-@receiver(pre_save, sender=ComponentModelGroup, dispatch_uid='ralph.history')
-def component_modelgroup_pre_save(sender, instance, raw, using, **kwargs):
-    """
-    A hook for creating ``HistoryModelChange`` entries when a component
-    model group changes.
-    """
-
-    for field, orig, new in _field_changes(instance):
-        HistoryModelChange(
-            component_model_group=instance,
             field_name=field,
             old_value=unicode(orig),
             new_value=unicode(new),

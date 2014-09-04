@@ -22,7 +22,6 @@ from ralph.discovery.models import (
     ComponentModel,
     DataCenter,
     Device,
-    DeviceModelGroup,
     DeviceType,
     HistoryCost,
     ReadOnlyDevice,

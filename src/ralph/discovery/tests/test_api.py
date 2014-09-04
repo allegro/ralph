@@ -15,7 +15,6 @@ from ralph.account.models import BoundPerm, Profile, Perm
 from ralph.business.models import Venture
 from ralph.discovery.models import (
     ComponentModel,
-    ComponentModelGroup,
     ComponentType,
     DeprecationKind,
     DeviceType,

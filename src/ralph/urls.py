@@ -22,7 +22,6 @@ from ralph.discovery.api import (
     DeviceWithPricingResource,
     DevResource,
     IPAddressResource,
-    ModelGroupResource,
     ModelResource,
     NetworkKindsResource,
     NetworksResource,
@@ -70,11 +69,18 @@ for r in (VentureResource, VentureLightResource, RoleResource,
     v09_api.register(r())
 
 # discovery API
-for r in (IPAddressResource, NetworksResource, ModelGroupResource,
-          ModelResource, PhysicalServerResource, RackServerResource,
-          BladeServerResource, VirtualServerResource, DevResource,
-          WindowsDeviceResource, DeviceWithPricingResource,
-          NetworkKindsResource):
+for r in (
+    IPAddressResource,
+    NetworksResource,
+    ModelResource,
+    PhysicalServerResource,
+    RackServerResource,
+    BladeServerResource,
+    VirtualServerResource,
+    DevResource,
+    WindowsDeviceResource,
+    DeviceWithPricingResource,
+    NetworkKindsResource):
     if DISCOVERY_DISABLED and r == WindowsDeviceResource:
         continue
     v09_api.register(r())
