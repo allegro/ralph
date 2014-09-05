@@ -52,4 +52,6 @@ class ServiceCatalogFactory(CIFactory):
 class DeviceEnvironmentFactory(DjangoModelFactory):
     FACTORY_FOR = models_device.DeviceEnvironment
 
-    name = factory.Sequence(lambda n: 'Device Environment #%s' % n)
+    @factory.lazy_attribute
+    def type(self):
+        return CITypeFactory(name=models_ci.CI_TYPES.ENVIRONMENT)
