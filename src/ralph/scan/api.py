@@ -64,9 +64,15 @@ class ExternalPluginResource(Resource):
             remote_ip,
             bundle.data.get('data'),
         ))
+        data = bundle.data.get('data', {})
+        plugin_name = data.get('plugin')
+        if not plugin_name:
+            msg = "Improper data received (remote IP: %s)" % remote_ip
+            logger.exception(msg)
+            raise ValueError(msg)
         try:
             bundle.obj = store_device_data({
-                'donpedro': bundle.data.get('data'),
+                plugin_name: data,
             })
         except Exception:
             logger.exception('An exception occurred (remote IP: %s): %s' % (

@@ -31,6 +31,12 @@ def get_ventures():
 
     for venture in Venture.objects.select_related('department').all():
         department = venture.get_department()
+        profit_center = None
+        if venture.profit_center:
+            profit_center = "{0} - {1}".format(
+                venture.profit_center.name,
+                venture.profit_center.description,
+            )
         yield {
             'id': venture.id,
             'parent_id': venture.parent_id,
@@ -39,8 +45,7 @@ def get_ventures():
             'symbol': venture.symbol,
             'business_segment': venture.business_segment.name if
             venture.business_segment else "",
-            'profit_center': venture.profit_center.name if
-            venture.profit_center else "",
+            'profit_center': profit_center,
             'show_in_ralph': venture.show_in_ralph,
         }
 

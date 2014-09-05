@@ -128,7 +128,7 @@ def guess_family(headers, document):
     elif family in ('Thomas-Krenn',):
         if 'ERIC_RESPONSE_OK' in document:
             family = 'VTL'
-    elif family in ('Mbedthis-Appweb',):
+    elif family in ('Mbedthis-Appweb', 'Embedthis-Appweb'):
         if '/sclogin.html?console' in document:
             family = 'Dell'
         elif 'Juniper' in document:

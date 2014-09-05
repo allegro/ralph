@@ -335,12 +335,16 @@ def scan_address_job(
                 address=ip_address,
             )
             if not (ip.snmp_name and ip.snmp_community):
-                message = "SNMP name/community is missing. Forcing autoscan."
+                message = ("SNMP name and community is missing. Forcing "
+                           " autoscan.")
                 job.meta['messages'] = [
                     (ip_address, 'ralph.scan', 'info', message)
                 ]
                 job.save()
                 autoscan_address(ip_address)
+                # since autoscan_address can update some fields on IPAddress,
+                # we need to refresh it here
+                ip = IPAddress.objects.get(address=ip_address)
             kwargs = {
                 'snmp_community': ip.snmp_community,
                 'snmp_version': ip.snmp_version,

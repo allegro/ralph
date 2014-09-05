@@ -12,6 +12,7 @@ from django import http
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 from django.template import (
     RequestContext,
     TemplateDoesNotExist,
@@ -19,24 +20,34 @@ from django.template import (
 )
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.csrf import requires_csrf_token
+from django.views.generic import TemplateView
+from django.views.generic.base import RedirectView
 
+from pluggableapp import PluggableApp
 from ralph.account.forms import UserHomePageForm
-from ralph.account.models import Profile
+from ralph.account.models import (
+    Perm,
+    Profile,
+    ralph_permission,
+)
 from ralph.ui.views.common import Base
 
 
 @requires_csrf_token
-def HTTP403(request, template_name='403.html'):
+def HTTP403(request, msg=None, template_name='403.html'):
     """
     A slightly customized version of 'permission_denied' handler taken from
     'django.views.defaults' (added 'REQUEST_PERM_URL' etc.).
     """
+    if not msg:
+        msg = _("You don't have permission to this resource.")
     try:
         template = loader.get_template(template_name)
     except TemplateDoesNotExist:
         return http.HttpResponseForbidden('<h1>403 Forbidden</h1>')
     context = RequestContext(request, {
-        'REQUEST_PERM_URL': getattr(settings, 'REQUEST_PERM_URL', None)
+        'REQUEST_PERM_URL': getattr(settings, 'REQUEST_PERM_URL', None),
+        'msg': msg,
     })
     return http.HttpResponseForbidden(template.render(context))
 
@@ -46,18 +57,26 @@ class BaseUser(Base):
     submodule_name = 'user_preference'
     module_name = 'user_preference'
 
+    @ralph_permission([])
+    def dispatch(self, *args, **kwargs):
+        return super(TemplateView, self).dispatch(*args, **kwargs)
+
     def get_sidebar_items(self):
-        preferences = (
-            (
-                reverse('user_home_page', args=[]),
-                _('Home Page'),
-                'fugue-home'
-            ), (
-                reverse('user_api_key', args=[]),
-                _('API Key'),
-                'fugue-key'
-            ),
-        )
+        has_perm = self.request.user.get_profile().has_perm
+        preferences = [(
+            reverse('user_api_key', args=[]),
+            _('API Key'),
+            'fugue-key'
+        )]
+        if has_perm(Perm.has_core_access):
+            preferences.insert(
+                0,
+                (
+                    reverse('user_home_page', args=[]),
+                    _('Home Page'),
+                    'fugue-home'
+                )
+            )
         sidebar_items = (
             [MenuHeader('Preferences')] +
             [MenuItem(
@@ -91,6 +110,13 @@ class BaseUserPreferenceEdit(BaseUser):
     Form = None
     header = None
 
+    @ralph_permission([{
+        'perm': Perm.has_core_access,
+        'msg': _("You don't have permissions for this resource.")
+    }])
+    def dispatch(self, *args, **kwargs):
+        return super(TemplateView, self).dispatch(*args, **kwargs)
+
     def get(self, *args, **kwargs):
         instance = Profile.objects.get(
             user_id=self.request.user.id,
@@ -122,3 +148,23 @@ class BaseUserPreferenceEdit(BaseUser):
 class UserHomePageEdit(BaseUserPreferenceEdit):
     Form = UserHomePageForm
     header = _('Home Page')
+
+
+class UserHomePage(RedirectView):
+
+    def get(self, request, *args, **kwargs):
+        redirect_hierarchy = [
+            (Perm.has_scrooge_access, 'ralph_pricing'),
+            (Perm.has_assets_access, 'ralph_assets'),
+        ]
+        profile = request.user.get_profile()
+        for perm_to_module, app_name in redirect_hierarchy:
+            if profile.has_perm(perm_to_module):
+                try:
+                    page_url = PluggableApp.apps[app_name].home_url
+                    break
+                except KeyError:
+                    pass
+        else:
+            page_url = reverse('search', args=('info', ''))
+        return HttpResponseRedirect(page_url)

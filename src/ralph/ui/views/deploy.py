@@ -30,6 +30,7 @@ from ralph.deployment.util import (
     get_next_free_hostname,
 )
 from ralph.business.models import Venture, VentureRole
+from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import reset_dns, reset_dhcp
 from ralph.discovery.models import (
     Device,
@@ -423,18 +424,42 @@ class AddVM(View):
     @nested_commit_on_success
     def post(self, request, *args, **kwargs):
         from ralph.urls import LATEST_API
-        actor = User.objects.get(
-            username=ApiKeyAuthentication().get_identifier(request)
-        )
-        if not actor.has_perm('create_devices'):
-            raise HttpResponse(_('You cannot create new devices'), status=401)
+        try:
+            actor = User.objects.get(
+                username=ApiKeyAuthentication().get_identifier(request)
+            )
+        except User.DoesNotExist:
+            actor = None
+        if not (actor and actor.has_perm('create_devices')):
+            return HttpResponse(
+                unicode(_('You cannot create new devices')),
+                status=401
+            )
         data = Serializer().deserialize(
             request.body,
             format=request.META.get('CONTENT_TYPE', 'application/json')
         )
+        missing_keys = {
+            'mac',
+            'network',
+            'management-ip',
+            'venture',
+            'venture-role'
+        } - set(data.keys())
+        if missing_keys:
+            return HttpResponse(
+                _('Missing data: {}').format(', '.join(missing_keys)),
+                status=400,
+            )
         mac = MACAddressField.normalize(data['mac'])
+        existing_mac = DHCPEntry.objects.filter(mac=mac).count()
+        if existing_mac:
+            return HttpResponse(unicode(_('MAC already exists')), status=400)
         parent = self.get_parent_device(data)
-        ip_addr = get_first_free_ip(data['network'])
+        try:
+            ip_addr = get_first_free_ip(data['network'])
+        except Network.DoesNotExist:
+            raise Http404('No network with such name exists')
         hostname = self.get_hostname(parent)
         venture = get_object_or_404(
             Venture,

@@ -1,0 +1,160 @@
+%YAML 1.2
+---
+# Simple setup to test the creation of Virtual Machines via API
+
+-
+    model: business.venture
+    pk: 1
+    fields:
+        name: test.venture
+        symbol: test_venture
+
+
+-
+    model: business.venturerole
+    pk: 1
+    fields:
+        venture: 1
+        name: test_role
+
+-
+    model: powerdns.domain
+    pk: 1
+    fields:
+        name: dc
+
+-
+    model: discovery.datacenter
+    pk: 1
+    fields:
+        name: Test DC
+
+-
+    model: discovery.datacenter
+    pk: 2
+    fields:
+        name: DC without hostname template
+
+-
+    model: discovery.environment
+    pk: 1
+    fields:
+        name: Test environment
+        data_center: 1
+        hosts_naming_template: 'h<10000,19999>.dc'
+
+-
+    model: discovery.environment
+    pk: 2
+    fields:
+        name: Environment without template
+        data_center: 2
+
+-
+    model: discovery.devicemodel
+    pk: 1
+    fields:
+        type: 1
+        name: Test rack model
+
+-
+    model: discovery.device
+    pk: 4
+    fields:
+        name: Rack from wrong environment
+        model: 1
+
+-
+    model: discovery.network
+    pk: 1
+    fields:
+        address: '10.1.1.0/24'
+        name: test_network
+        min_ip: 167837953
+        max_ip: 167838206
+        racks: [1]
+        environment: 1
+
+-
+    model: discovery.network
+    pk: 2
+    fields:
+        address: '10.1.2.0/24'
+        name: wrong_network
+        min_ip: 167838209
+        max_ip: 167838462
+        racks: [4]
+        environment: 2
+
+-
+    model: discovery.devicemodel
+    pk: 2
+    fields:
+        type: 201
+        name: Test server model
+
+-
+    model: discovery.device
+    pk: 1
+    fields:
+        name: Test rack
+        model: 1
+
+-
+    model: discovery.device
+    pk: 2
+    fields:
+        name: Test device
+        parent: 1
+        model: 2
+
+-
+    model: discovery.device
+    pk: 3
+    fields:
+        name: Test rackless device
+        model: 2
+
+-
+    model: discovery.device
+    pk: 5
+    fields:
+        name: Test device with wrong rack
+        model: 2
+        parent: 4
+
+
+-
+    model: discovery.ipaddress
+    pk: 1
+    fields:
+        address: '10.1.1.2'
+        number: 167837954
+        hostname: 'test.local'
+        device: 2
+
+-
+    model: discovery.ipaddress
+    pk: 2
+    fields:
+        address: '10.1.1.3'
+        number: 167837955
+        hostname: 'test-rackless.local'
+        device: 3
+
+-
+    model: discovery.ipaddress
+    pk: 3
+    fields:
+        address: '10.1.2.1'
+        number: 167838209
+        hostname: 'test-wrong-rack.local'
+        device: 5
+
+-
+    model: dnsedit.dhcpentry
+    pk: 1
+    fields:
+        ip: '10.1.1.1'
+        mac: '11:11:11:11:11:11'
+        number: 167837953

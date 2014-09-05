@@ -1,0 +1,39 @@
+{% extends "ui/base.html" %}
+{% load bob %}
+{% load i18n %}
+
+{% block content %}
+
+<ul class="nav nav-tabs">
+    <li {% if scan_type == 'new' %}class="active"{% endif %}>
+        <a href="{% url scan_list scan_type='new'%}">
+            {% trans 'New URLs' %}
+        </a>
+    </li>
+    <li {% if scan_type == 'existing' %}class="active"{% endif %}>
+        <a href="{% url scan_list scan_type='existing'%}">
+            {% trans 'Existing URLs' %}
+        </a>
+    </li>
+</ul>
+
+<table class="table table-bordered table-striped table-properties">
+    <thead>
+        {% table_header columns url_query sort %}
+    </thead>
+    {% for scan in bob_page %}
+    <tr>
+        <td><a href="{%url scan_results scan.job_id%}">
+            {{ scan.ipaddress }}
+        </a></td>
+    <td>{{ scan.created }}</td>
+    <td>{% if scan.device %}
+        <a href="{% url search details='info' device=scan.device.id %}">
+            {{ scan.device }}
+        </a>
+    {% endif %}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

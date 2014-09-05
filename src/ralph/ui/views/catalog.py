@@ -28,14 +28,6 @@ from ralph.discovery.models import (
     DeviceModel,
     DeviceModelGroup,
     DeviceType,
-    DiskShare,
-    FibreChannel,
-    GenericComponent,
-    Memory,
-    OperatingSystem,
-    Processor,
-    Software,
-    Storage,
     PricingGroup,
     PricingValue,
     PricingVariable,
@@ -51,7 +43,6 @@ from ralph.ui.forms.catalog import (
     PricingFormulaFormSet,
 )
 from ralph.ui.views.common import Base
-from ralph.util import pricing
 
 from ralph.util.presentation import COMPONENT_ICONS, DEVICE_ICONS
 
@@ -186,8 +177,8 @@ class CatalogDevice(Catalog):
         self.form = None
 
     def update_cached(self, group):
-        for device in Device.objects.filter(model__group=group):
-            pricing.device_update_cached(device)
+        # a leftover from ralph.util.pricing
+        pass
 
     def post(self, *args, **kwargs):
         if not self.request.user.get_profile().has_perm(
@@ -319,13 +310,8 @@ class CatalogComponent(Catalog):
         self.form = None
 
     def update_cached(self, group):
-        devices = set()
-        for _class in (Storage, Memory, Processor, DiskShare, FibreChannel,
-                       GenericComponent, OperatingSystem, Software):
-            for component in _class.objects.filter(model__group=group):
-                devices.add(component.device)
-        for device in devices:
-            pricing.device_update_cached(device)
+        # a leftover from ralph.util.pricing
+        pass
 
     def post(self, *args, **kwargs):
         if not self.request.user.get_profile().has_perm(

@@ -16,7 +16,6 @@ from django.db.models import Q
 import xlwt
 
 from bob.csvutil import UnicodeWriter
-from ralph.util import pricing
 from ralph.business.models import Venture
 from ralph.discovery.models import DeviceType, ReadOnlyDevice
 
@@ -95,7 +94,7 @@ REPORTS = {
         ('Serial Number', field('sn')),
         ('Venture', subfield('venture', 'name')),
         ('Quoted Price', field('cached_price')),
-        ('Cost', lambda d: '%.2f' % pricing.get_device_cost(d)),
+        ('Cost', lambda d: 0.0),  # a leftover from ralph.util.pricing
         ('Model', field('model')),
         ('Remarks', field('remarks')),
     ]

@@ -8,29 +8,32 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Deleting model 'DeviceEnvironment'
-        db.delete_table('discovery_deviceenvironment')
+        # Adding model 'Connection'
+        db.create_table('discovery_connection', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('outbound', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'inbound_connections', on_delete=models.PROTECT, to=orm['discovery.Device'])),
+            ('inbound', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'outbound_connections', on_delete=models.PROTECT, to=orm['discovery.Device'])),
+            ('connection_type', self.gf('django.db.models.fields.PositiveIntegerField')()),
+        ))
+        db.send_create_signal('discovery', ['Connection'])
 
+        # Adding model 'NetworkConnection'
+        db.create_table('discovery_networkconnection', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('connection', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['discovery.Connection'], unique=True)),
+            ('outbound_port', self.gf('django.db.models.fields.CharField')(max_length=100)),
+            ('inbound_port', self.gf('django.db.models.fields.CharField')(max_length=100)),
+        ))
+        db.send_create_signal('discovery', ['NetworkConnection'])
 
-        # Changing field 'Device.device_environment'
-        db.alter_column('discovery_device', 'device_environment_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['cmdb.CI'], null=True, on_delete=models.PROTECT))
 
     def backwards(self, orm):
-        # Adding model 'DeviceEnvironment'
-        db.create_table('discovery_deviceenvironment', (
-            ('modified_by', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'+', on_delete=models.SET_NULL, default=None, to=orm['account.Profile'], blank=True, null=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=75, unique=True, db_index=True)),
-            ('cache_version', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('created_by', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'+', on_delete=models.SET_NULL, default=None, to=orm['account.Profile'], blank=True, null=True)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
-        ))
-        db.send_create_signal('discovery', ['DeviceEnvironment'])
+        # Deleting model 'Connection'
+        db.delete_table('discovery_connection')
 
+        # Deleting model 'NetworkConnection'
+        db.delete_table('discovery_networkconnection')
 
-        # Changing field 'Device.device_environment'
-        db.alter_column('discovery_device', 'device_environment_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['discovery.DeviceEnvironment'], null=True, on_delete=models.PROTECT))
 
     models = {
         'account.profile': {
@@ -151,80 +154,6 @@ class Migration(SchemaMigration):
             'preboot': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['deployment.Preboot']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'venture': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['business.Venture']"})
         },
-        'cmdb.ci': {
-            'Meta': {'unique_together': "((u'content_type', u'object_id'),)", 'object_name': 'CI'},
-            'added_manually': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'barcode': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '255', 'unique': 'True', 'null': 'True'}),
-            'business_service': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
-            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['contenttypes.ContentType']", 'null': 'True', 'blank': 'True'}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'layers': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['cmdb.CILayer']", 'symmetrical': 'False'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
-            'object_id': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'owners': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['cmdb.CIOwner']", 'through': "orm['cmdb.CIOwnership']", 'symmetrical': 'False'}),
-            'pci_scope': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'relations': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['cmdb.CI']", 'through': "orm['cmdb.CIRelation']", 'symmetrical': 'False'}),
-            'state': ('django.db.models.fields.IntegerField', [], {'default': '2', 'max_length': '11'}),
-            'status': ('django.db.models.fields.IntegerField', [], {'default': '2', 'max_length': '11'}),
-            'technical_service': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['cmdb.CIType']"}),
-            'uid': ('django.db.models.fields.CharField', [], {'max_length': '100', 'unique': 'True', 'null': 'True', 'blank': 'True'}),
-            'zabbix_id': ('django.db.models.fields.CharField', [], {'max_length': '30', 'null': 'True', 'blank': 'True'})
-        },
-        'cmdb.cilayer': {
-            'Meta': {'ordering': "(u'name',)", 'object_name': 'CILayer'},
-            'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
-            'connected_types': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['cmdb.CIType']", 'symmetrical': 'False', 'blank': 'True'}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'icon': (u'dj.choices.fields.ChoiceField', [], {'unique': 'False', 'primary_key': 'False', 'db_column': 'None', 'blank': 'True', u'default': 'None', 'null': 'True', '_in_south': 'True', 'db_index': 'False'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '50', 'db_index': 'True'})
-        },
-        'cmdb.ciowner': {
-            'Meta': {'object_name': 'CIOwner'},
-            'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'unique': 'True', 'null': 'True'}),
-            'first_name': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'last_name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'sAMAccountName': ('django.db.models.fields.CharField', [], {'max_length': '256', 'blank': 'True'})
-        },
-        'cmdb.ciownership': {
-            'Meta': {'object_name': 'CIOwnership'},
-            'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
-            'ci': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['cmdb.CI']"}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['cmdb.CIOwner']"}),
-            'type': ('django.db.models.fields.PositiveIntegerField', [], {'default': '1'})
-        },
-        'cmdb.cirelation': {
-            'Meta': {'unique_together': "((u'parent', u'child', u'type'),)", 'object_name': 'CIRelation'},
-            'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
-            'child': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'child'", 'to': "orm['cmdb.CI']"}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'parent': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'parent'", 'to': "orm['cmdb.CI']"}),
-            'readonly': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'type': ('django.db.models.fields.IntegerField', [], {'max_length': '11'})
-        },
-        'cmdb.citype': {
-            'Meta': {'object_name': 'CIType'},
-            'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'icon_class': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'name': ('django.db.models.fields.SlugField', [], {'max_length': '50'})
-        },
         'contenttypes.contenttype': {
             'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
             'app_label': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
@@ -280,6 +209,13 @@ class Migration(SchemaMigration):
             'size_unit': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '50', 'blank': 'True'}),
             'type': ('django.db.models.fields.PositiveIntegerField', [], {'default': '8'})
         },
+        'discovery.connection': {
+            'Meta': {'object_name': 'Connection'},
+            'connection_type': ('django.db.models.fields.PositiveIntegerField', [], {}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'inbound': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'outbound_connections'", 'on_delete': 'models.PROTECT', 'to': "orm['discovery.Device']"}),
+            'outbound': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'inbound_connections'", 'on_delete': 'models.PROTECT', 'to': "orm['discovery.Device']"})
+        },
         'discovery.datacenter': {
             'Meta': {'ordering': "(u'name',)", 'object_name': 'DataCenter'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -304,12 +240,12 @@ class Migration(SchemaMigration):
             'cached_cost': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
             'cached_price': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
             'chassis_position': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
+            'connections': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.Device']", 'through': "orm['discovery.Connection']", 'symmetrical': 'False'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'dc': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '32', 'null': 'True', 'blank': 'True'}),
             'deleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_index': 'True'}),
             'deprecation_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'deprecation_kind': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['discovery.DeprecationKind']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
-            'device_environment': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['cmdb.CI']", 'null': 'True', 'on_delete': 'models.PROTECT'}),
             'diag_firmware': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'hard_firmware': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -331,7 +267,6 @@ class Migration(SchemaMigration):
             'remarks': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'}),
             'role': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'save_priorities': ('django.db.models.fields.TextField', [], {'default': "u''"}),
-            'service': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['cmdb.CI']", 'null': 'True', 'on_delete': 'models.PROTECT'}),
             'sn': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '255', 'unique': 'True', 'null': 'True', 'blank': 'True'}),
             'support_expiration_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'support_kind': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '255', 'null': 'True', 'blank': 'True'}),
@@ -632,6 +567,13 @@ class Migration(SchemaMigration):
             'reserved_top_margin': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
             'terminators': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.NetworkTerminator']", 'symmetrical': 'False'}),
             'vlan': ('django.db.models.fields.PositiveIntegerField', [], {'default': 'None', 'null': 'True', 'blank': 'True'})
+        },
+        'discovery.networkconnection': {
+            'Meta': {'object_name': 'NetworkConnection'},
+            'connection': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['discovery.Connection']", 'unique': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'inbound_port': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'outbound_port': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
         'discovery.networkkind': {
             'Meta': {'ordering': "(u'name',)", 'object_name': 'NetworkKind'},
