@@ -360,13 +360,19 @@ RQ_QUEUES = {
 }
 for queue in RQ_QUEUE_LIST:
     RQ_QUEUES[queue] = dict(RQ_QUEUES['default'])
+
+# If True, objects from Ralph Core will have autocreated CI's in the CMDB
 AUTOCI = True
+
 AUTOCI_SKIP_MSG = 'AUTOCI is disabled'
 HAMSTER_API_URL = ""
 SCALEME_API_URL = ""
 DEFAULT_SOA_RECORD_CONTENT = ''
 DEAD_PING_COUNT = 2
 SCAN_AUTOMERGE_MODE = True
+
+# If True, autocreate misssing host names(CI's) when importing the triggers from ZABBIX into the cmdb
+ZABBIX_IMPORT_HOSTS = False
 # </template>
 
 SCAN_POSTPROCESS_ENABLED_JOBS = []
@@ -743,6 +749,11 @@ SCAN_PLUGINS = {
     },
 }
 RQ_TIMEOUT = 3000
+
+
+# points to a view which resolves to the user's home view after logging in
+from django.core.urlresolvers import reverse_lazy
+LOGIN_REDIRECT_URL = reverse_lazy('find_user_home')
 
 # url to page where user requests permission to module (eg. assets)
 # REQUEST_PERM_URL = 'http://tickets.office/request/ralph_module/permission'
