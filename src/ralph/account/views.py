@@ -61,10 +61,6 @@ class BaseUser(Base):
     def dispatch(self, *args, **kwargs):
         return super(TemplateView, self).dispatch(*args, **kwargs)
 
-    @ralph_permission([])
-    def dispatch(self, *args, **kwargs):
-        return super(TemplateView, self).dispatch(*args, **kwargs)
-
     def get_sidebar_items(self):
         has_perm = self.request.user.get_profile().has_perm
         preferences = [(
