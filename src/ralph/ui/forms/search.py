@@ -56,6 +56,21 @@ class SearchForm(forms.Form):
                                'title': TooltipContent.empty_field,
                            }),
                            label="Venture or role")
+    # This search field cannot be named 'service', because 'Info' tab already
+    # has ajax field with the same id, and such collision results in unwanted
+    # data bindings between those two.
+    service_catalog = forms.CharField(required=False,
+                                      widget=forms.TextInput(attrs={
+                                          'class': 'span12',
+                                          'title': TooltipContent.empty_field,
+                                      }),
+                                      label="Service catalog")
+    device_environment = forms.CharField(required=False,
+                                         widget=forms.TextInput(attrs={
+                                             'class': 'span12',
+                                             'title': TooltipContent.empty_field,
+                                         }),
+                                         label="Device environment")
     model = forms.CharField(required=False,
                             widget=forms.TextInput(attrs={
                                 'class': 'span12',
