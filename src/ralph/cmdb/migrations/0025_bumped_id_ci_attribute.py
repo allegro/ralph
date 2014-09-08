@@ -7,18 +7,18 @@ from django.db import models
 
 class Migration(SchemaMigration):
 
-    def change_id(self, table_name, old_id, new_id, where_field='citype_id'):
+    def change_id(self, table_name, old_id, new_id, where_field='attribute_id'):
         db.execute('UPDATE {} SET {} = {} WHERE {} = {}'.format(
             table_name, where_field, new_id, where_field, old_id,
         ))
 
-    def change_citype_ids(self):
-        db.execute('UPDATE cmdb_citype SET id = id + 1000 WHERE id > 10')
+    def change_ciattribute_ids(self):
+        db.execute('UPDATE cmdb_ciattribute SET id = id + 1000 WHERE id > 4')
 
     def bumped_auto_increment(self):
         """For sqlite3 bumped is not needed"""
         if engine == 'south.db.mysql':
-            db.execute('ALTER TABLE cmdb_citype AUTO_INCREMENT = 1000')
+            db.execute('ALTER TABLE cmdb_ciattribute AUTO_INCREMENT = 1000')
 
     def set_foreign_key_checks(self, value):
         if engine == 'south.db.mysql':
@@ -28,33 +28,28 @@ class Migration(SchemaMigration):
             db.execute('PRAGMA foreign_keys = {};'.format(value))
 
     def forwards(self, orm):
-        """Migration moves ci_types ids added by the user. Migration reserves
-        ids from 1 to 1000 ci_type for added by fixtures.
+        """Migration moves ci_attributes ids added by the user. Migration reserves
+        ids from 1 to 1000 ci_attribute for added by fixtures.
         """
         db.start_transaction()
         self.set_foreign_key_checks(False)
 
-        for ci_type_id in db.execute(
-            'SELECT id FROM cmdb_citype WHERE id > 10;'
+        for ci_attribute_id in db.execute(
+            'SELECT id FROM cmdb_ciattribute WHERE id > 4;'
         ):
-            old_id = ci_type_id[0]
+            old_id = ci_attribute_id[0]
             new_id = old_id + 1000
-            self.change_id('cmdb_cilayer_connected_types', old_id, new_id)
-            self.change_id('cmdb_ciattribute_ci_types', old_id, new_id)
-            self.change_id('cmdb_ci', old_id, new_id, where_field='type_id')
+            self.change_id('cmdb_ciattributevalue', old_id, new_id)
         self.bumped_auto_increment()
-        self.change_citype_ids()
+        self.change_ciattribute_ids()
 
         self.set_foreign_key_checks(True)
         db.commit_transaction()
 
     def backwards(self, orm):
-        """Remove new ci types"""
+        """Backwards migrations not needed"""
         db.start_transaction()
-        db.execute('DELETE FROM cmdb_cilayer_connected_types WHERE citype_id > 10 and citype_id < 1000;')
-        db.execute('DELETE FROM cmdb_ciattribute_ci_types WHERE citype_id > 10 and citype_id < 1000;')
-        db.execute('DELETE FROM cmdb_ci WHERE type_id > 10 and type_id < 1000;')
-        db.execute('DELETE FROM cmdb_citype WHERE id > 10 and id < 1000;')
+        db.execute('DELETE FROM cmdb_ciattribute WHERE id > 4 and id < 1000;')
         db.commit_transaction()
 
     models = {

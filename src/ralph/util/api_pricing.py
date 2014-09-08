@@ -11,7 +11,7 @@ import re
 from django.db import models as db
 
 from ralph.business.models import Venture, VentureExtraCost
-from ralph.cmdb.models import CI, CIOwner, CIType
+from ralph.cmdb.models import CI, CIAttributeValue, CIOwner, CIType
 from ralph.discovery.models import (
     Device,
     DeviceEnvironment,
@@ -338,6 +338,30 @@ def get_business_lines():
         }
 
 
+def get_profit_centers():
+    """
+    Returns Profit Centers from CMDB (CIs with type Profit Center)
+    """
+    profit_center_type = CIType.objects.get(name='ProfitCenter')
+    business_line_type = CIType.objects.get(name='BusinessLine')
+    for profit_center in CI.objects.filter(type=profit_center_type):
+        try:
+            description = profit_center.ciattributevalue_set.get(
+                attribute__name='description'
+            ).value
+        except CIAttributeValue.DoesNotExist:
+            description = None
+        business_line = profit_center.child.filter(
+            parent__type=business_line_type
+        ).values_list('parent__uid', flat=True)
+        yield {
+            'ci_uid': profit_center.uid,
+            'name': profit_center.name,
+            'description': description,
+            'business_line': business_line[0] if business_line else None,
+        }
+
+
 def get_owners():
     """
     Returns CIOwners from CMDB
@@ -358,17 +382,17 @@ def get_services():
     owners, business line etc.
     """
     service_type = CIType.objects.get(name='Service')
-    business_line_type = CIType.objects.get(name='BusinessLine')
+    profit_center_type = CIType.objects.get(name='ProfitCenter')
     for service in CI.objects.filter(
         type=service_type
     ).select_related('relations'):
-        business_line = service.child.filter(
-            parent__type=business_line_type
+        profit_center = service.child.filter(
+            parent__type=profit_center_type
         ).values_list('parent__uid', flat=True)
         yield {
             'ci_uid': service.uid,
             'name': service.name,
-            'business_line': business_line[0] if business_line else None,
+            'profit_center': profit_center[0] if profit_center else None,
             'business_owners': list(service.business_owners.values_list(
                 'id',
                 flat=True,
