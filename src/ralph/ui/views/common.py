@@ -58,8 +58,6 @@ from ralph.business.models import (
     Venture,
     VentureRole,
 )
-from ralph.cmdb.models import CI
-from ralph.account.models import get_user_home_page_url, Perm
 from ralph.deployment.models import Deployment, DeploymentStatus
 from ralph.deployment.util import get_next_free_hostname, get_first_free_ip
 from ralph.dnsedit.models import DHCPEntry
