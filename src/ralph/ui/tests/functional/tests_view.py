@@ -18,7 +18,7 @@ from ralph.ui.tests.global_utils import (
 
 class LoginRedirectTest(TestCase):
     def setUp(self):
-        self.success_login_url = '/'
+        self.success_login_url = reverse('find_user_home')
         self.request_headers = {'HTTP_HOST': 'localhost:8000'}
 
     def _get_user_by_perm(self, perm):

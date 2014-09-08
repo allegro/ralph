@@ -15,8 +15,8 @@ test-unittests:
 
 test-doc:
 	# ignore warnings about missing subdirs - cloned from another repositories
-	mkdir ./doc/optional_modules/assets/ 2>/dev/null
-	mkdir ./doc/optional_modules/pricing/ 2>/dev/null
+	mkdir  ./doc/optional_modules/assets/ 2>/dev/null; exit 0
+	mkdir  ./doc/optional_modules/pricing/ 2>/dev/null; exit 0
 	mkdir -p www/_build/html/ 2>/dev/null
 	echo "test\n=====" > ./doc/optional_modules/assets/index.rst
 	echo "test\n=====" > ./doc/optional_modules/pricing/index.rst

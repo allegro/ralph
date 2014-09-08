@@ -9,7 +9,12 @@ from __future__ import unicode_literals
 from django.conf.urls.defaults import patterns, url
 from django.contrib.auth.decorators import login_required
 
-from ralph.account.views import UserHomePageEdit, BaseUser, ApiKey
+from ralph.account.views import (
+    ApiKey,
+    BaseUser,
+    UserHomePage,
+    UserHomePageEdit,
+)
 
 urlpatterns = patterns(
     '',
@@ -23,5 +28,10 @@ urlpatterns = patterns(
         r'^preferences/api_key$',
         login_required(ApiKey.as_view()),
         name='user_api_key'
+    ),
+    url(
+        r'^my-home/',
+        login_required(UserHomePage.as_view()),
+        name='find_user_home',
     ),
 )
