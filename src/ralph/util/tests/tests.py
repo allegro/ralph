@@ -214,9 +214,9 @@ class ApiPricingTest(TestCase):
 
     def test_get_services(self):
         service = utils.ServiceFactory()
-        business_line = utils.BusinessLineFactory()
+        profit_center = utils.ProfitCenterFactory()
         utils.ServiceBusinessLineRelationFactory(
-            parent=business_line,
+            parent=profit_center,
             child=service,
         )
         business_ownership = utils.ServiceOwnershipFactory.create_batch(
@@ -233,19 +233,19 @@ class ApiPricingTest(TestCase):
         service_dict = {
             'name': service.name,
             'ci_uid': service.uid,
-            'business_line': business_line.uid,
+            'profit_center': profit_center.uid,
             'business_owners': [bo.owner.id for bo in business_ownership],
             'technical_owners': [to.owner.id for to in technical_ownership],
         }
         self.assertEquals(result, [service_dict])
 
-    def test_get_services_without_business_line(self):
+    def test_get_services_without_profit_center(self):
         service = utils.ServiceFactory()
         result = [a for a in api_pricing.get_services()]
         service_dict = {
             'name': service.name,
             'ci_uid': service.uid,
-            'business_line': None,
+            'profit_center': None,
             'technical_owners': [],
             'business_owners': [],
         }

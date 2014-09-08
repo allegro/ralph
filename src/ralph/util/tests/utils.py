@@ -19,6 +19,12 @@ class BusinessLineFactory(CIFactory):
         return models_ci.CIType.objects.get(name='BusinessLine')
 
 
+class ProfitCenterFactory(CIFactory):
+    @factory.lazy_attribute
+    def type(self):
+        return models_ci.CIType.objects.get(name='ProfitCenter')
+
+
 class ServiceFactory(CIFactory):
     @factory.lazy_attribute
     def type(self):
