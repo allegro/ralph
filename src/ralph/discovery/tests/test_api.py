@@ -73,22 +73,6 @@ class AccessToDiscoveyApiTest(TestCase):
         response = self.get_response(resource)
         self.assertEqual(response.status_code, 200)
 
-    def test_modelgroup_resource(self):
-        resource = 'modelgroup'
-        perms = [Perm.read_dc_structure, ]
-
-        schema = '%s/schema' % resource
-        response = self.get_response(schema)
-        self.assertEqual(response.status_code, 200)
-
-        response = self.get_response(resource)
-        self.assertEqual(response.status_code, 401)
-
-        # Add perms to display resources
-        self.add_perms(perms=perms)
-
-        response = self.get_response(resource)
-        self.assertEqual(response.status_code, 200)
 
     def test_model_resource(self):
         resource = 'model'

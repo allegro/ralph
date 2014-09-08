@@ -15,7 +15,6 @@ from django.db import models as db
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.models import (
     MACAddressField,
-    Named,
     SavePrioritized,
     TimeTrackable,
     WithConcurrentGetOrCreate,
@@ -196,7 +195,7 @@ class ComponentModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
         # sanitize None, 0 and empty strings
         kwargs = {
             name: kwargs[name]
-            for name in ('speed', 'cores', 'size', 'family', 'group', 'name')
+            for name in ('speed', 'cores', 'size', 'family', 'name')
             if name in kwargs and kwargs[name]
         }
         # put sensible empty values
@@ -205,7 +204,6 @@ class ComponentModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
         kwargs.setdefault('size', 0)
         kwargs['type'] = type or ComponentType.unknown
         family = kwargs.setdefault('family', '')
-        group = kwargs.pop('group', None)
         if kwargs['type'] == ComponentType.memory:
             assert 'name' not in kwargs, "Custom `name` forbidden for memory."
             name = ' '.join(['RAM', family])
@@ -224,7 +222,6 @@ class ComponentModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
         else:
             name = kwargs.pop('name', family)
         kwargs.update({
-            'group': group,
             'name': name[:50],
         })
         if kwargs['type'] == ComponentType.processor:
@@ -246,17 +243,6 @@ class ComponentModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
             obj = cls(**kwargs)
             obj.save(priority=priority)
             return obj, True
-
-    def get_price(self, size=None):
-        if not self.group:
-            return 0
-        if self.group.per_size:
-            if not size:
-                size = self.size
-            return (size /
-                    (self.group.size_modifier or 1)) * (self.group.price or 0)
-        else:
-            return self.group.price or 0
 
     def get_count(self):
         return sum([

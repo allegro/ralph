@@ -80,7 +80,8 @@ for r in (
     DevResource,
     WindowsDeviceResource,
     DeviceWithPricingResource,
-    NetworkKindsResource):
+    NetworkKindsResource
+):
     if DISCOVERY_DISABLED and r == WindowsDeviceResource:
         continue
     v09_api.register(r())

@@ -8,7 +8,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from datetime import datetime, date
+from datetime import datetime
 
 from django.conf import settings
 from django.db import models as db
@@ -237,153 +237,6 @@ def deprecationkind_pre_save(sender, instance, raw, using, **kwargs):
             item.save()
 
 
-class HistoryCost(db.Model):
-
-    """
-    A single time span for historical cost and venture ownership of a device
-    or an extra cost. ``start`` and ``end`` determine the time span during
-    which the ``device`` (or ``extra`` cost) was onwed by venture ``venture``
-    and had cost of ``cost``. The time spans for a single device or extra cost
-    should never overlap.
-    """
-
-    start = db.DateField(default=ALWAYS, null=True)
-    end = db.DateField(default=FOREVER)
-    daily_cost = db.FloatField(default=0)
-    cores = db.IntegerField(default=0)
-    device = db.ForeignKey('Device', null=True, blank=True,
-                           default=None, on_delete=db.SET_NULL)
-    venture = db.ForeignKey('business.Venture', null=True, blank=True,
-                            default=None, on_delete=db.SET_NULL)
-
-    @classmethod
-    def start_span(cls, device=None, start='', end=None):
-        """
-        Start a new time span with new valies for the given device .
-        It will automatically truncate the previous span if necessary.
-        By default, the timespan is infinite towards the future -- possibly to
-        be truncated by a later span, but an optional ``end`` parameter can be
-        used to specify the end of the timespan.
-        """
-
-        if not device:
-            raise ValueError('Device is required')
-        if start == '':
-            start = date.today()
-        if device:
-            daily_cost = (device.cached_cost or 0) / 30.4
-        else:
-            daily_cost = extra.cost / 30.4
-        venture = device.venture
-        cls.end_span(device=device, end=start)
-        span = cls(
-            start=start,
-            end=end or FOREVER,
-            daily_cost=daily_cost,
-            device=device,
-            cores=device.get_core_count() if device else 0,
-            extra=extra,
-            venture=venture
-        )
-        span.save()
-
-    @classmethod
-    def end_span(cls, device=None, end=None):
-        """
-        Truncates any existings timespans for the specified ``device``
-        so that a new span can be started at ``end``.
-        Implicitly called by ``start_span``.
-        """
-
-        if end is None:
-            end = date.today()
-        for span in cls.objects.filter(device=device, extra=extra,
-                                       end__gt=end):
-            if span.start == end:
-                span.delete()
-            else:
-                span.end = end
-                span.save()
-
-    @classmethod
-    def filter_span(cls, start, end, query=None):
-        """
-        Filter a queryset so that only timespans that intersect the span
-        between ``start`` and ``end`` with a non-zero overlap are returned.
-        """
-
-        if query is None:
-            query = cls.objects
-
-        query = query.extra(
-            where=[
-                "DATEDIFF(LEAST(end, DATE(%s)),GREATEST(start, DATE(%s))) > 0",
-            ],
-            params=[
-                end, start,
-            ],
-        )
-        return query
-
-
-def update_core_count(device):
-    old_cores = 0
-    for span in device.historycost_set.order_by('-end'):
-        old_cores = span.cores
-        break
-    if device.get_core_count() != old_cores:
-        HistoryCost.start_span(device=device)
-
-
-@receiver(post_save, sender=Processor, dispatch_uid='ralph.cores')
-def cores_post_save(sender, instance, raw, using, **kwargs):
-    """
-    A hook for updating the historical processor core count.
-    """
-    update_core_count(instance.device)
-
-
-@receiver(post_delete, sender=Processor, dispatch_uid='ralph.cores')
-def cores_post_delete(sender, instance, using, **kwargs):
-    """
-    A hook for updating the historical processor core count.
-    """
-    update_core_count(instance.device)
-
-
-@receiver(post_save, sender=Device, dispatch_uid='ralph.costhistory')
-def cost_post_save(sender, instance, raw, using, **kwargs):
-    """
-    A hook that updates the HistoryCost spans whenever a cost or venture
-    changes on a device, or a device is soft-deleted/undeleted.
-    """
-
-    if instance.deleted:
-        HistoryCost.end_span(device=instance)
-        return
-    changed = False
-    if 'deleted' in instance.dirty_fields:
-        changed = True
-    if 'venture_id' in instance.dirty_fields:
-        changed = True
-    if 'cached_cost' in instance.dirty_fields:
-        old_cost = instance.dirty_fields['cached_cost'] or 0
-        if not -1 < instance.cached_cost - old_cost < 1:
-            # Ignore changes due to rounding errors
-            changed = True
-    if changed:
-        HistoryCost.start_span(device=instance)
-
-
-@receiver(pre_delete, sender=Device, dispatch_uid='ralph.costhistory')
-def cost_pre_delete(sender, instance, using, **kwargs):
-    """
-    A hook that updates the HistoryCost when a device is deleted.
-    """
-
-    HistoryCost.end_span(device=instance)
-
-
 class HistoryModelChange(db.Model):
 
     """
@@ -414,7 +267,6 @@ def device_model_pre_save(sender, instance, raw, using, **kwargs):
     for field, orig, new in _field_changes(instance):
         HistoryModelChange(
             device_model=instance,
-            device_model_group=instance.group,
             field_name=field,
             old_value=unicode(orig),
             new_value=unicode(new),

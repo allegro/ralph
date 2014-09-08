@@ -7,7 +7,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
-import datetime
 
 from django.conf import settings
 from django.db import models as db
@@ -16,12 +15,12 @@ from lck.django.common.models import Named, TimeTrackable
 from lck.django.common.models import WithConcurrentGetOrCreate
 from dj.choices import Choices
 from dj.choices.fields import ChoiceField
-from django.db.models.signals import pre_save, post_save, pre_delete
+from django.db.models.signals import pre_save, pre_delete
 from django.dispatch import receiver
 
 from ralph.discovery.history import field_changes as _field_changes
 from ralph.discovery.models import DataCenter
-from ralph.discovery.models_history import HistoryCost, HistoryChange
+from ralph.discovery.models_history import HistoryChange
 from ralph.discovery.models_util import SavingUser
 from ralph.cmdb.models_ci import CI, CIOwner, CIOwnershipType, CIOwnership
 

@@ -37,8 +37,6 @@ class AvailableHomePage(Choices):
     ventures = _("Ventures list")
     racks = _("Racks list")
     networks = _("Network list")
-    reports = _("Reports")
-    catalog = _("Catalog")
     cmdb_timeline = _("CMDB timeline")
 
 

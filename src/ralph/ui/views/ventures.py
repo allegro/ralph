@@ -5,33 +5,18 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
-import datetime
-import calendar
 
 from django.contrib import messages
 from django.db import models as db
-from django.http import HttpResponseRedirect, HttpResponseForbidden
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from django.utils import simplejson as json
 
 from bob.menu import MenuItem
 
 from ralph.account.models import Perm
 from ralph.business.models import Venture, VentureRole
-from ralph.discovery.models import (
-    ComponentModel,
-    DataCenter,
-    Device,
-    DeviceType,
-    HistoryCost,
-    ReadOnlyDevice,
-    SplunkUsage,
-)
-from ralph.ui.forms import (
-    DateRangeForm,
-    RolePropertyForm,
-    VentureFilterForm,
-)
+from ralph.discovery.models import Device, ReadOnlyDevice
+from ralph.ui.forms import RolePropertyForm, VentureFilterForm
 from ralph.ui.views.common import (
     Addresses,
     Asset,
@@ -45,13 +30,6 @@ from ralph.ui.views.common import (
     Scan,
 )
 from ralph.ui.views.devices import BaseDeviceList
-from ralph.ui.views.reports import Reports, ReportDeviceList
-from ralph.ui.reports import (
-    get_total_cost,
-    get_total_count,
-    get_total_cores,
-    get_total_virtual_cores,
-)
 from ralph.util import presentation
 
 
@@ -207,10 +185,6 @@ class VenturesAsset(Ventures, Asset):
     pass
 
 
-class VenturesReports(Ventures, Reports):
-    pass
-
-
 class VenturesScan(Ventures, Scan):
     pass
 
@@ -266,20 +240,6 @@ class VenturesRoles(Ventures, Base):
                                  self.venture and self.venture != '*' else None),
         })
         return ret
-
-
-def _total_dict(name, query, start, end, url=None):
-    cost = get_total_cost(query, start, end)
-    count, count_now, devices = get_total_count(query, start, end)
-    if not count and not count_now:
-        return None
-    return {
-        'name': name,
-        'count': count,
-        'cost': cost,
-        'count_now': count_now,
-        'url': url,
-    }
 
 
 def _get_search_url(venture, dc=None, type=(), model_group=None):
@@ -348,7 +308,3 @@ class VenturesDeviceList(SidebarVentures, BaseMixin, BaseDeviceList):
                                 self.venture and self.venture != '*' else self.venture),
         })
         return ret
-
-
-class ReportVenturesDeviceList(ReportDeviceList, VenturesDeviceList):
-    pass

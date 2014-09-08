@@ -268,11 +268,6 @@ class BaseMixin(ACLGateway):
                         href='/cmdb/ci/view/%s' % ci.id
                     ),
                 ])
-        if has_perm(Perm.read_device_info_reports, venture):
-            tab_items.extend([
-                MenuItem('Reports', fugue_icon='fugue-reports-stack',
-                         href=self.tab_href('reports')),
-            ])
         if details == 'bulkedit':
             tab_items.extend([
                 MenuItem('Bulk edit', fugue_icon='fugue-pencil-field',
@@ -303,10 +298,6 @@ class BaseMixin(ACLGateway):
             mainmenu_items.append(
                 MenuItem('Networks', fugue_icon='fugue-weather-clouds',
                          view_name='networks'))
-        if has_perm(Perm.read_device_info_reports):
-            mainmenu_items.append(
-                MenuItem('Reports', fugue_icon='fugue-report',
-                         view_name='reports'))
         mainmenu_items.append(
             MenuItem('Ralph CLI', fugue_icon='fugue-terminal',
                      href='#beast'))

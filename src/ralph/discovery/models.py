@@ -57,7 +57,6 @@ from ralph.discovery.models_history import (
     DiscoveryValue,
     DiscoveryWarning,
     HistoryChange,
-    HistoryCost,
 )
 
 
@@ -105,7 +104,6 @@ __all__ = [
     'UptimeSupport',
 
     'HistoryChange',
-    'HistoryCost',
     'DiscoveryValue',
     'DiscoveryWarning',
 

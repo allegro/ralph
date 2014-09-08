@@ -66,8 +66,6 @@ class VentureRoleInline(ForeignKeyAutocompleteTabularInline):
     }
 
 
-
-
 class VentureRoleAdminForm(forms.ModelForm):
 
     def clean_name(self):

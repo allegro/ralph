@@ -36,10 +36,6 @@ from ralph.discovery.models import (
     DiskShareMount,
     IPAddress,
     MarginKind,
-    PricingAggregate,
-    PricingGroup,
-    PricingValue,
-    PricingVariable,
 )
 from ralph.util import api_pricing
 

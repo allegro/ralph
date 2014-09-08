@@ -31,7 +31,6 @@ from ralph.ui.views.common import (
     TEMPLATE_MENU_ITEMS,
 )
 from ralph.ui.views.devices import BaseDeviceList
-from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.util import presentation
 
 
@@ -177,10 +176,6 @@ class RacksHistory(Racks, History):
 
 
 class RacksAsset(Racks, Asset):
-    pass
-
-
-class RacksReports(Racks, Reports):
     pass
 
 
@@ -474,7 +469,3 @@ class RacksAddDevice(Racks, DeviceCreateView):
             )
         )
         return ret
-
-
-class ReportRacksDeviceList(ReportDeviceList, RacksDeviceList):
-    pass

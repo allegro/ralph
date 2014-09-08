@@ -20,7 +20,7 @@ from django.utils import timezone
 from powerdns.models import Record
 
 from ralph.account.models import Perm
-from ralph.discovery.models import ReadOnlyDevice, Device, ComponentModel
+from ralph.discovery.models import ReadOnlyDevice, Device
 from ralph.scan.models import ScanSummary
 from ralph.ui.forms.search import SearchForm, SearchFormWithAssets
 from ralph.ui.views.common import (
@@ -35,7 +35,6 @@ from ralph.ui.views.common import (
     Software,
 )
 from ralph.ui.views.devices import BaseDeviceList
-from ralph.ui.views.reports import Reports, ReportDeviceList
 
 
 SOFTWARE_RE = re.compile(
@@ -509,19 +508,11 @@ class SearchHistory(Search, History):
     pass
 
 
-class SearchReports(Search, Reports):
-    pass
-
-
 class SearchSoftware(Search, Software):
     pass
 
 
 class SearchScan(Search, Scan):
-    pass
-
-
-class ReportSearchDeviceList(ReportDeviceList, SearchDeviceList):
     pass
 
 
