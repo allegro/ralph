@@ -28,21 +28,14 @@ from unittest import skip
 from ralph.business.models import Venture
 from ralph.discovery.models import (
     ComponentModel,
-    ComponentModelGroup,
     ComponentType,
     DeprecationKind,
     Device,
-    DeviceModelGroup,
     DeviceType,
     DiskShare,
     DiskShareMount,
     IPAddress,
     MarginKind,
-    PricingAggregate,
-    PricingFormula,
-    PricingGroup,
-    PricingValue,
-    PricingVariable,
 )
 from ralph.util import api_pricing
 

@@ -27,7 +27,7 @@
                 <td class="column-name"><a
                         href="{% url 'catalog' kind model_type_id g.id %}"
                     >{{ g.type|component_model_type_icon }}&nbsp;{{ g.name }}</a></td>
-            <td class="column-count count"><a href="{% url 'search' 'components' '' %}?component_group={{ g.id }}" class="badge badge-info">{{ g.count }}</a></td>
+            <td class="column-count count"><a href="{% url 'search' 'components' '' %}" class="badge badge-info">{{ g.count }}</a></td>
                 <td class="column-price currency">
                     {% spaceless %}
                     {{ g.price|currency }}

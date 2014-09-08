@@ -20,7 +20,7 @@ from django.utils import timezone
 from powerdns.models import Record
 
 from ralph.account.models import Perm
-from ralph.discovery.models import ReadOnlyDevice, Device, ComponentModel
+from ralph.discovery.models import ReadOnlyDevice, Device
 from ralph.scan.models import ScanSummary
 from ralph.ui.forms.search import SearchForm, SearchFormWithAssets
 from ralph.ui.views.common import (
@@ -28,7 +28,6 @@ from ralph.ui.views.common import (
     Asset,
     BaseMixin,
     Components,
-    Costs,
     History,
     Info,
     Prices,
@@ -36,7 +35,6 @@ from ralph.ui.views.common import (
     Software,
 )
 from ralph.ui.views.devices import BaseDeviceList
-from ralph.ui.views.reports import Reports, ReportDeviceList
 
 
 SOFTWARE_RE = re.compile(
@@ -367,28 +365,6 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                                 'venture__parent__parent__parent__parent__id',
                             ], [str(role_id)])
                     self.query = self.query.filter(q).distinct()
-            if data['device_group']:
-                self.query = self.query.filter(
-                    model__group_id=data['device_group']
-                )
-            if data['component_group']:
-                is_splunk = ComponentModel.objects.filter(
-                    group_id=str(data['component_group']),
-                    family='splunkusage').exists()
-                if is_splunk:
-                    yesterday = datetime.date.today() - datetime.timedelta(
-                        days=1)
-                    q = Q(splunkusage__day=yesterday)
-                else:
-                    q = _search_fields_or([
-                        'genericcomponent__model__group_id',
-                        'fibrechannel__model__group_id',
-                        'storage__model__group_id',
-                        'memory__model__group_id',
-                        'processor__model__group_id',
-                        'disksharemount__share__model__group_id',
-                    ], [str(data['component_group'])])
-                self.query = self.query.filter(q).distinct()
             if data['device_type']:
                 self.query = self.query.filter(
                     model__type__in=data['device_type']
@@ -528,15 +504,7 @@ class SearchPrices(Search, Prices):
     pass
 
 
-class SearchCosts(Search, Costs):
-    pass
-
-
 class SearchHistory(Search, History):
-    pass
-
-
-class SearchReports(Search, Reports):
     pass
 
 
@@ -545,10 +513,6 @@ class SearchSoftware(Search, Software):
 
 
 class SearchScan(Search, Scan):
-    pass
-
-
-class ReportSearchDeviceList(ReportDeviceList, SearchDeviceList):
     pass
 
 

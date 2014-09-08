@@ -5,41 +5,24 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
-import datetime
-import calendar
 
 from django.contrib import messages
 from django.db import models as db
-from django.http import HttpResponseRedirect, HttpResponseForbidden
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from django.utils import simplejson as json
 
 from bob.menu import MenuItem
 
 from ralph.account.models import Perm
-from ralph.business.models import Venture, VentureRole, VentureExtraCost
-from ralph.discovery.models import (
-    ComponentModel,
-    DataCenter,
-    Device,
-    DeviceModelGroup,
-    DeviceType,
-    HistoryCost,
-    ReadOnlyDevice,
-    SplunkUsage,
-)
-from ralph.ui.forms import (
-    DateRangeForm,
-    RolePropertyForm,
-    VentureFilterForm,
-)
+from ralph.business.models import Venture, VentureRole
+from ralph.discovery.models import Device, ReadOnlyDevice
+from ralph.ui.forms import RolePropertyForm, VentureFilterForm
 from ralph.ui.views.common import (
     Addresses,
     Asset,
     Base,
     BaseMixin,
     Components,
-    Costs,
     History,
     Info,
     Prices,
@@ -47,13 +30,6 @@ from ralph.ui.views.common import (
     Scan,
 )
 from ralph.ui.views.devices import BaseDeviceList
-from ralph.ui.views.reports import Reports, ReportDeviceList
-from ralph.ui.reports import (
-    get_total_cost,
-    get_total_count,
-    get_total_cores,
-    get_total_virtual_cores,
-)
 from ralph.util import presentation
 
 
@@ -163,11 +139,6 @@ class SidebarVentures(object):
                     self.venture and self.venture != '*' else None):
             tab_items.append(MenuItem('Roles', fugue_icon='fugue-mask',
                                       href='../roles/?%s' % self.request.GET.urlencode()))
-        if has_perm(Perm.list_devices_financial, self.venture if
-                    self.venture and self.venture != '*' else None):
-            tab_items.append(MenuItem('Venture', fugue_icon='fugue-store',
-                                      href='../venture/?%s' %
-                                      self.request.GET.urlencode()))
         ret.update({
             'sidebar_items': sidebar_items,
             'sidebar_selected': (_normalize_venture(self.venture.symbol) if
@@ -206,19 +177,11 @@ class VenturesAddresses(Ventures, Addresses):
     pass
 
 
-class VenturesCosts(Ventures, Costs):
-    pass
-
-
 class VenturesHistory(Ventures, History):
     pass
 
 
 class VenturesAsset(Ventures, Asset):
-    pass
-
-
-class VenturesReports(Ventures, Reports):
     pass
 
 
@@ -279,20 +242,6 @@ class VenturesRoles(Ventures, Base):
         return ret
 
 
-def _total_dict(name, query, start, end, url=None):
-    cost = get_total_cost(query, start, end)
-    count, count_now, devices = get_total_count(query, start, end)
-    if not count and not count_now:
-        return None
-    return {
-        'name': name,
-        'count': count,
-        'cost': cost,
-        'count_now': count_now,
-        'url': url,
-    }
-
-
 def _get_search_url(venture, dc=None, type=(), model_group=None):
     if venture == '':
         venture_id = '-'
@@ -314,294 +263,10 @@ def _get_search_url(venture, dc=None, type=(), model_group=None):
     return '/ui/search/info/?%s' % '&'.join('%s=%s' % p for p in params)
 
 
-def _get_summaries(query, start, end, overlap=True, venture=None):
-    if overlap:
-        yield _total_dict('Servers', query.filter(
-            device__model__type__in=(DeviceType.rack_server.id,
-                                     DeviceType.blade_server.id,
-                                     DeviceType.virtual_server.id)), start, end,
-                          _get_search_url(venture, type=(201, 202, 203)))
-    for dc in DataCenter.objects.all():
-        yield _total_dict('  • Servers in %s' % dc.name, query.filter(
-            device__model__type__in=(DeviceType.rack_server.id,
-                                     DeviceType.blade_server.id,
-                                     DeviceType.virtual_server.id)
-        ).filter(device__dc__iexact=dc.name), start, end,
-            _get_search_url(venture, dc=dc, type=(201, 202, 203))
-        )
-        if overlap:
-            yield _total_dict(
-                '    ∙ Rack servers in %s' % dc.name, query.filter(
-                    device__model__type=DeviceType.rack_server.id,
-                ).filter(device__dc__iexact=dc.name), start, end,
-                _get_search_url(venture, dc=dc, type=(201,))
-            )
-            for mg in DeviceModelGroup.objects.filter(
-                    type=DeviceType.rack_server.id).order_by('name'):
-                yield _total_dict(
-                    '        %s in %s' % (mg, dc.name), query.filter(
-                        device__model__group=mg,
-                    ).filter(device__dc__iexact=dc.name), start, end,
-                    _get_search_url(venture, dc=dc, type=(201,),
-                                    model_group=mg.id)
-                )
-            yield _total_dict(
-                '    ∙ Blade servers in %s' % dc.name, query.filter(
-                    device__model__type=DeviceType.blade_server.id,
-                ).filter(device__dc__iexact=dc.name), start, end,
-                _get_search_url(venture, dc=dc, type=(202,))
-            )
-            for mg in DeviceModelGroup.objects.filter(
-                    type=DeviceType.blade_server.id).order_by('name'):
-                yield _total_dict(
-                    '        %s in %s' % (mg, dc.name), query.filter(
-                        device__model__group=mg,
-                    ).filter(device__dc__iexact=dc.name), start, end,
-                    _get_search_url(venture, dc=dc, type=(202,),
-                                    model_group=mg.id)
-                )
-            yield _total_dict(
-                '    ∙ Virtual servers in %s' % dc.name, query.filter(
-                    device__model__type=DeviceType.virtual_server.id,
-                ).filter(device__dc__iexact=dc.name), start, end,
-                _get_search_url(venture, dc=dc, type=(203,))
-            )
-    if overlap:
-        yield _total_dict('Loadbalancers', query.filter(
-            device__model__type__in=(DeviceType.load_balancer.id,)
-        ), start, end, _get_search_url(venture, type=(103,)))
-    for dc in DataCenter.objects.all():
-        yield _total_dict(' • Loadbalancers in %s' % dc.name, query.filter(
-            device__model__type__in=(DeviceType.load_balancer.id,)
-        ).filter(device__dc__iexact=dc.name), start, end,
-            _get_search_url(venture, dc=dc, type=(103,))
-        )
-    if overlap:
-        yield _total_dict('Storage', query.filter(
-            device__model__type__in=(
-                DeviceType.storage.id,
-                DeviceType.fibre_channel_switch.id,
-            )), start, end,
-            _get_search_url(venture, type=(301,))
-        )
-    for dc in DataCenter.objects.all():
-        yield _total_dict(' • Storage in %s' % dc.name, query.filter(
-            device__model__type__in=(
-                DeviceType.storage.id,
-                DeviceType.fibre_channel_switch.id,
-            )
-        ).filter(device__dc__iexact=dc.name), start, end,
-            _get_search_url(venture, dc=dc, type=(301,))
-        )
-    if overlap:
-        yield _total_dict('Network', query.filter(
-            device__model__type__in=(
-                DeviceType.switch.id,
-                DeviceType.router.id,
-                DeviceType.firewall.id,
-                DeviceType.smtp_gateway.id,
-                DeviceType.appliance.id,
-            )
-        ), start, end,
-            _get_search_url(venture, type=(
-                DeviceType.switch.id,
-                DeviceType.router.id,
-                DeviceType.firewall.id,
-                DeviceType.smtp_gateway.id,
-                DeviceType.appliance.id,
-            ))
-        )
-    for dc in DataCenter.objects.all():
-        yield _total_dict(' • Network in %s' % dc.name, query.filter(
-            device__model__type__in=(
-                DeviceType.switch.id,
-                DeviceType.router.id,
-                DeviceType.firewall.id,
-                DeviceType.smtp_gateway.id,
-                DeviceType.appliance.id,
-            )
-        ).filter(device__dc__iexact=dc.name), start, end,
-            _get_search_url(venture, dc=dc, type=(
-                DeviceType.switch.id,
-                DeviceType.router.id,
-                DeviceType.firewall.id,
-                DeviceType.smtp_gateway.id,
-                DeviceType.appliance.id,
-            ))
-        )
-    yield _total_dict('Cloud', query.filter(
-        device__model__type__in=(DeviceType.cloud_server.id,)
-    ), start, end,
-        _get_search_url(venture, type=(DeviceType.cloud_server.id,))
-    )
-    if overlap:
-        yield _total_dict('Unknown', query.filter(
-            device__model__type__in=(DeviceType.unknown.id,)), start, end,
-            _get_search_url(venture, type=(DeviceType.unknown.id,))
-        )
-    for dc in DataCenter.objects.all():
-        yield _total_dict(' • Unknown in %s' % dc.name, query.filter(
-            device__model__type__in=(DeviceType.unknown.id,)
-        ).filter(device__dc__iexact=dc.name), start, end,
-            _get_search_url(venture, dc=dc, type=(DeviceType.unknown.id,))
-        )
-    (
-        splunk_cost,
-        splunk_count,
-        splunk_count_now,
-        splunk_size,
-    ) = SplunkUsage.get_cost(venture, start, end)
-    if splunk_cost:
-        url = None
-        try:
-            splunk_model = ComponentModel.objects.get(family='splunkvolume')
-        except ComponentModel.DoesNotExist:
-            pass
-        else:
-            if splunk_model.group_id:
-                url = ('/ui/search/components/'
-                       '?component_group=%d' % splunk_model.group_id)
-        yield {
-            'name': 'Splunk usage ({:,.0f} MB)'.format(
-                splunk_size).replace(',', ' '),
-            'cost': splunk_cost,
-            'count': splunk_count,
-            'count_now': splunk_count_now,
-            'url': url,
-        }
-    for extra_id, in query.values_list('extra_id').distinct():
-        if extra_id is None:
-            continue
-        extra = VentureExtraCost.objects.get(id=extra_id)
-        q = query.filter(extra=extra)
-        cost = get_total_cost(q, start, end)
-        count, count_now, devices = get_total_count(q, start, end)
-        if count:
-            yield {
-                'name': extra.name + ' (from %s)' % extra.venture.name,
-                'count': 'expires %s' % extra.expire.strftime(
-                    '%Y-%m-%d') if extra.expire else '',
-                'cost': cost,
-                'count_now': count_now,
-            }
-    if overlap:
-        yield _total_dict(
-            'Total',
-            query,
-            start,
-            end,
-            _get_search_url(venture, type=()),
-        )
-        yield _total_dict(
-            'Total physical',
-            query.exclude(
-                device__model__type__in=(
-                    DeviceType.cloud_server,
-                    DeviceType.virtual_server,
-                    DeviceType.unknown,
-                    DeviceType.data_center,
-                    DeviceType.rack,
-                    DeviceType.management,
-                ),
-            ).exclude(
-                device=None,
-            ),
-            start,
-            end,
-            _get_search_url(venture, type=()),
-        )
-
-
 def _venture_children(venture, children):
     children.append(venture)
     for child in venture.child_set.all():
         _venture_children(child, children)
-
-
-class VenturesVenture(SidebarVentures, Base):
-    template_name = 'ui/ventures-venture.html'
-
-    def get(self, *args, **kwargs):
-        if 'start' in self.request.GET:
-            self.form = DateRangeForm(self.request.GET)
-            if not self.form.is_valid():
-                messages.error(self.request, "Invalid date range")
-        else:
-            initial = {
-                'start': datetime.date.today() - datetime.timedelta(days=30),
-                'end': datetime.date.today(),
-            }
-            self.form = DateRangeForm(initial)
-            self.form.is_valid()
-        self.set_venture()
-        has_perm = self.request.user.get_profile().has_perm
-        if not has_perm(Perm.list_devices_financial, self.venture if
-                        self.venture and self.venture != '*' else None):
-            return HttpResponseForbidden(
-                "You don't have permission to see this.")
-        return super(VenturesVenture, self).get(*args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        ret = super(VenturesVenture, self).get_context_data(**kwargs)
-        start = None
-        end = None
-        if self.venture is None or not self.form.is_valid():
-            items = []
-            cost_data = []
-            count_data = []
-            cores_data = []
-            vcores_data = []
-        else:
-            if self.venture == '':
-                query = HistoryCost.objects.filter(venture=None)
-            elif self.venture == '*':
-                query = HistoryCost.objects.exclude(venture=None)
-            else:
-                ventures = []
-                _venture_children(self.venture, ventures)
-                query = HistoryCost.objects.filter(
-                    venture__in=ventures
-                )
-            start = self.form.cleaned_data['start']
-            end = self.form.cleaned_data['end']
-            query = query.exclude(device__deleted=True)
-            items = _get_summaries(query.all(), start, end, True, self.venture)
-            cost_data = []
-            count_data = []
-            cores_data = []
-            vcores_data = []
-            one_day = datetime.timedelta(days=1)
-            datapoints = set(dp for dp, in
-                             query.values_list('start').distinct())
-            datapoints |= set(dp for dp, in
-                              query.values_list('end').distinct())
-            datapoints |= set([start, end])
-            datapoints = set(min(max(start, date or start), end) for
-                             date in datapoints)
-            for date in sorted(datapoints):
-                timestamp = calendar.timegm(date.timetuple()) * 1000
-                total_cost = get_total_cost(query, date, date + one_day)
-                total_count, now_count, devices = get_total_count(
-                    query, date, date + one_day)
-                total_cores = get_total_cores(query, date, date + one_day)
-                total_vcores = get_total_virtual_cores(
-                    query, date, date + one_day)
-                cost_data.append([timestamp, total_cost])
-                count_data.append([timestamp, total_count])
-                cores_data.append([timestamp, total_cores])
-                vcores_data.append([timestamp, total_vcores])
-        ret.update({
-            'items': items,
-            'venture': self.venture,
-            'cost_data': json.dumps(cost_data),
-            'count_data': json.dumps(count_data),
-            'cores_data': json.dumps(cores_data),
-            'vcores_data': json.dumps(vcores_data),
-            'form': self.form,
-            'start_date': start,
-            'end_date': end,
-        })
-        return ret
 
 
 class VenturesDeviceList(SidebarVentures, BaseMixin, BaseDeviceList):
@@ -643,7 +308,3 @@ class VenturesDeviceList(SidebarVentures, BaseMixin, BaseDeviceList):
                                 self.venture and self.venture != '*' else self.venture),
         })
         return ret
-
-
-class ReportVenturesDeviceList(ReportDeviceList, VenturesDeviceList):
-    pass

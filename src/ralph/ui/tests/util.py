@@ -8,7 +8,6 @@ from __future__ import unicode_literals
 
 from ralph.discovery.models import (
     ComponentModel,
-    ComponentModelGroup,
     ComponentType,
     Device,
     Memory,
@@ -22,15 +21,9 @@ def duplicate_item(item):
 
 
 def create_model(device, mdl, type):
-    group, created = ComponentModelGroup.objects.get_or_create(
-        name='Group %s - %s' % (mdl.get('model_name'), mdl.get('price')),
-        price=mdl.get('price'),
-        type=type,
-    )
     if type == ComponentType.memory:
         model, created = ComponentModel.objects.get_or_create(
             name='Model %s %s' % (mdl.get('family'), mdl.get('size')),
-            group=group,
             family=mdl.get('family'),
             speed=mdl.get('speed'),
             size=mdl.get('size'),
@@ -41,7 +34,6 @@ def create_model(device, mdl, type):
             name='M %s - %s' % (
                 mdl.get('model_name'), mdl.get('price')
             ),
-            group=group,
             family=mdl.get('family'),
             type=type,
             speed=mdl.get('speed'),
@@ -52,7 +44,6 @@ def create_model(device, mdl, type):
                 mdl.get('model_name'),
                 mdl.get('price'),
             ),
-            group=group,
             family=mdl.get('family'),
             type=type,
         )

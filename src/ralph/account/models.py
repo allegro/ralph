@@ -37,8 +37,6 @@ class AvailableHomePage(Choices):
     ventures = _("Ventures list")
     racks = _("Racks list")
     networks = _("Network list")
-    reports = _("Reports")
-    catalog = _("Catalog")
     cmdb_timeline = _("CMDB timeline")
 
 
@@ -75,7 +73,6 @@ class Perm(Choices):
     list_devices_generic = _("list venture devices")
     list_devices_financial = _("list venture devices financial info")
     read_device_info_generic = _("read generic device info")
-    read_device_info_financial = _("read financial device info")
     read_device_info_support = _("read device purchase info")
     read_device_info_history = _("read device history info")
     read_device_info_reports = _("read device reports")

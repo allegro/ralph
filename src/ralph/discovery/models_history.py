@@ -8,7 +8,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from datetime import datetime, date
+from datetime import datetime
 
 from django.conf import settings
 from django.db import models as db
@@ -18,21 +18,32 @@ from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.cmdb.integration.splunk import log_change_to_splunk
-from ralph.discovery.models_device import (Device, DeprecationKind,
-                                           DeviceModel, DeviceModelGroup)
+from ralph.discovery.models_device import (
+    Device,
+    DeprecationKind,
+    DeviceModel,
+)
 from ralph.discovery.models_device import LoadBalancerMember
 from ralph.discovery.models_device import LoadBalancerVirtualServer
 from ralph.discovery.models_component import (
-    Memory, Processor, Storage, DiskShareMount, DiskShare, Software,
-    GenericComponent, Ethernet, FibreChannel, OperatingSystem, ComponentModel, ComponentModelGroup)
+    ComponentModel,
+    DiskShare,
+    DiskShareMount,
+    Ethernet,
+    FibreChannel,
+    GenericComponent,
+    Memory,
+    OperatingSystem,
+    Processor,
+    Software,
+    Storage,
+)
 from ralph.discovery.models_network import IPAddress
 from ralph.dnsedit.util import update_txt_records
 from ralph.discovery.history import field_changes as _field_changes
 
 FOREVER = '2199-1-1'  # not all DB backends will accept '9999-1-1'
 ALWAYS = '0001-1-1'  # not all DB backends will accept '0000-0-0'
-ALWAYS_DATE = date(1, 1, 1)
-FOREVER_DATE = date(2199, 1, 1)
 SPLUNK_HOST = settings.SPLUNK_LOGGER_HOST
 
 
@@ -226,156 +237,6 @@ def deprecationkind_pre_save(sender, instance, raw, using, **kwargs):
             item.save()
 
 
-class HistoryCost(db.Model):
-
-    """
-    A single time span for historical cost and venture ownership of a device
-    or an extra cost. ``start`` and ``end`` determine the time span during
-    which the ``device`` (or ``extra`` cost) was onwed by venture ``venture``
-    and had cost of ``cost``. The time spans for a single device or extra cost
-    should never overlap.
-    """
-
-    start = db.DateField(default=ALWAYS, null=True)
-    end = db.DateField(default=FOREVER)
-    daily_cost = db.FloatField(default=0)
-    cores = db.IntegerField(default=0)
-    device = db.ForeignKey('Device', null=True, blank=True,
-                           default=None, on_delete=db.SET_NULL)
-    extra = db.ForeignKey('business.VentureExtraCost', null=True, blank=True,
-                          default=None, on_delete=db.SET_NULL)
-    venture = db.ForeignKey('business.Venture', null=True, blank=True,
-                            default=None, on_delete=db.SET_NULL)
-
-    @classmethod
-    def start_span(cls, device=None, extra=None, start='', end=None):
-        """
-        Start a new time span with new valies for the given device or extra
-        cost. It will automatically truncate the previous span if necessary.
-        By default, the timespan is infinite towards the future -- possibly to
-        be truncated by a later span, but an optional ``end`` parameter can be
-        used to specify the end of the timespan.
-        """
-
-        item = device or extra
-        if not item:
-            raise ValueError('Either device or extra is required')
-        if start == '':
-            start = date.today()
-        if device:
-            daily_cost = (device.cached_cost or 0) / 30.4
-        else:
-            daily_cost = extra.cost / 30.4
-        venture = item.venture
-        cls.end_span(device=device, extra=extra, end=start)
-        span = cls(
-            start=start,
-            end=end or FOREVER,
-            daily_cost=daily_cost,
-            device=device,
-            cores=device.get_core_count() if device else 0,
-            extra=extra,
-            venture=venture
-        )
-        span.save()
-
-    @classmethod
-    def end_span(cls, device=None, extra=None, end=None):
-        """
-        Truncates any existings timespans for the specified ``device`` or
-        ``extra`` costs, so that a new span can be started at ``end``.
-        Implicitly called by ``start_span``.
-        """
-
-        if end is None:
-            end = date.today()
-        for span in cls.objects.filter(device=device, extra=extra,
-                                       end__gt=end):
-            if span.start == end:
-                span.delete()
-            else:
-                span.end = end
-                span.save()
-
-    @classmethod
-    def filter_span(cls, start, end, query=None):
-        """
-        Filter a queryset so that only timespans that intersect the span
-        between ``start`` and ``end`` with a non-zero overlap are returned.
-        """
-
-        if query is None:
-            query = cls.objects
-
-        query = query.extra(
-            where=[
-                "DATEDIFF(LEAST(end, DATE(%s)),GREATEST(start, DATE(%s))) > 0",
-            ],
-            params=[
-                end, start,
-            ],
-        )
-        return query
-
-
-def update_core_count(device):
-    old_cores = 0
-    for span in device.historycost_set.order_by('-end'):
-        old_cores = span.cores
-        break
-    if device.get_core_count() != old_cores:
-        HistoryCost.start_span(device=device)
-
-
-@receiver(post_save, sender=Processor, dispatch_uid='ralph.cores')
-def cores_post_save(sender, instance, raw, using, **kwargs):
-    """
-    A hook for updating the historical processor core count.
-    """
-    update_core_count(instance.device)
-
-
-@receiver(post_delete, sender=Processor, dispatch_uid='ralph.cores')
-def cores_post_delete(sender, instance, using, **kwargs):
-    """
-    A hook for updating the historical processor core count.
-    """
-    update_core_count(instance.device)
-
-
-@receiver(post_save, sender=Device, dispatch_uid='ralph.costhistory')
-def cost_post_save(sender, instance, raw, using, **kwargs):
-    """
-    A hook that updates the HistoryCost spans whenever a cost or venture
-    changes on a device, or a device is soft-deleted/undeleted.
-    """
-
-    if instance.deleted:
-        HistoryCost.end_span(device=instance)
-        return
-    changed = False
-    if 'deleted' in instance.dirty_fields:
-        changed = True
-    if 'venture_id' in instance.dirty_fields:
-        changed = True
-    if 'cached_cost' in instance.dirty_fields:
-        old_cost = instance.dirty_fields['cached_cost'] or 0
-        if not -1 < instance.cached_cost - old_cost < 1:
-            # Ignore changes due to rounding errors
-            changed = True
-    if changed:
-        HistoryCost.start_span(device=instance)
-
-
-@receiver(pre_delete, sender=Device, dispatch_uid='ralph.costhistory')
-def cost_pre_delete(sender, instance, using, **kwargs):
-    """
-    A hook that updates the HistoryCost when a device is deleted.
-    """
-
-    HistoryCost.end_span(device=instance)
-
-
 class HistoryModelChange(db.Model):
 
     """
@@ -389,13 +250,6 @@ class HistoryModelChange(db.Model):
     component_model = db.ForeignKey('ComponentModel', null=True, blank=True,
                                     verbose_name=_("component model"),
                                     default=None, on_delete=db.SET_NULL)
-    device_model_group = db.ForeignKey(
-        'DeviceModelGroup', verbose_name=_("device model group"), null=True,
-        blank=True, default=None, on_delete=db.SET_NULL)
-    component_model_group = db.ForeignKey(
-        'ComponentModelGroup', null=True, blank=True,
-        verbose_name=_("component model group"), default=None,
-        on_delete=db.SET_NULL)
     user = db.ForeignKey('auth.User', verbose_name=_("user"), null=True,
                          blank=True, default=None, on_delete=db.SET_NULL)
     field_name = db.CharField(max_length=64, default='')
@@ -413,7 +267,6 @@ def device_model_pre_save(sender, instance, raw, using, **kwargs):
     for field, orig, new in _field_changes(instance):
         HistoryModelChange(
             device_model=instance,
-            device_model_group=instance.group,
             field_name=field,
             old_value=unicode(orig),
             new_value=unicode(new),
@@ -432,40 +285,6 @@ def component_model_pre_save(sender, instance, raw, using, **kwargs):
         HistoryModelChange(
             component_model=instance,
             component_model_group=instance.group,
-            field_name=field,
-            old_value=unicode(orig),
-            new_value=unicode(new),
-            user=instance.saving_user,
-        ).save()
-
-
-@receiver(pre_save, sender=DeviceModelGroup, dispatch_uid='ralph.history')
-def device_modelgroup_pre_save(sender, instance, raw, using, **kwargs):
-    """
-    A hook for creating ``HistoryModelChange`` entries when a device
-    model group changes.
-    """
-
-    for field, orig, new in _field_changes(instance):
-        HistoryModelChange(
-            device_model_group=instance,
-            field_name=field,
-            old_value=unicode(orig),
-            new_value=unicode(new),
-            user=instance.saving_user,
-        ).save()
-
-
-@receiver(pre_save, sender=ComponentModelGroup, dispatch_uid='ralph.history')
-def component_modelgroup_pre_save(sender, instance, raw, using, **kwargs):
-    """
-    A hook for creating ``HistoryModelChange`` entries when a component
-    model group changes.
-    """
-
-    for field, orig, new in _field_changes(instance):
-        HistoryModelChange(
-            component_model_group=instance,
             field_name=field,
             old_value=unicode(orig),
             new_value=unicode(new),
