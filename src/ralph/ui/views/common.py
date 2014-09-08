@@ -221,15 +221,11 @@ class MenuMixin(object):
         if 'ralph.cmdb' in settings.INSTALLED_APPS:
             from ralph.cmdb.menu import menu_class as cmdb_menu
             self.menus.append(cmdb_menu(request))
-        profile = request.user.get_profile()
-        has_perm = profile.has_perm
         if request.user.is_staff:
             self.menus.append(AdminMenu(request))
         self.menus.append(UserMenu(request))
         for app in pluggableapp.app_dict.values():
             if not isinstance(app, RalphModule):
-                continue
-            if not has_perm(app.required_permission):
                 continue
             menu_module = importlib.import_module(
                 '.'.join([app.module_name, 'menu'])
