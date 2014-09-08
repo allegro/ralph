@@ -384,12 +384,17 @@ def get_services():
     """
     service_type = CIType.objects.get(name='Service')
     profit_center_type = CIType.objects.get(name='ProfitCenter')
+    environment_type = CIType.objects.get(name='Environment')
     for service in CI.objects.filter(
         type=service_type
     ).select_related('relations'):
         profit_center = service.child.filter(
             parent__type=profit_center_type
         ).values_list('parent__uid', flat=True)
+        # TODO: verify relation
+        environments = service.parent.filter(
+            child__type=environment_type,
+        )
         yield {
             'ci_uid': service.uid,
             'name': service.name,
@@ -402,4 +407,5 @@ def get_services():
                 'id',
                 flat=True,
             )),
+            'environments': [e.child.id for e in environments]
         }

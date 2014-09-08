@@ -31,6 +31,12 @@ class ServiceFactory(CIFactory):
         return models_ci.CIType.objects.get(name='Service')
 
 
+class EnvironmentFactory(CIFactory):
+    @factory.lazy_attribute
+    def type(self):
+        return models_ci.CIType.objects.get(name='Environment')
+
+
 class CIOwnerFactory(DjangoModelFactory):
     FACTORY_FOR = models_ci.CIOwner
     first_name = 'Some'
@@ -45,9 +51,17 @@ class ServiceOwnershipFactory(DjangoModelFactory):
     ci = factory.SubFactory(ServiceFactory)
 
 
-class ServiceBusinessLineRelationFactory(DjangoModelFactory):
+class ServiceEnvironmentRelationFactory(DjangoModelFactory):
     FACTORY_FOR = models_ci.CIRelation
-    parent = factory.SubFactory(BusinessLineFactory)
+    parent = factory.SubFactory(ServiceFactory)
+    child = factory.SubFactory(EnvironmentFactory)
+    type = models_ci.CI_RELATION_TYPES.HASROLE
+    readonly = False
+
+
+class ServiceProfitCenterRelationFactory(DjangoModelFactory):
+    FACTORY_FOR = models_ci.CIRelation
+    parent = factory.SubFactory(ProfitCenterFactory)
     child = factory.SubFactory(ServiceFactory)
     type = models_ci.CI_RELATION_TYPES.CONTAINS
     readonly = False
