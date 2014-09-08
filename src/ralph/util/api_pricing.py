@@ -125,6 +125,7 @@ def get_virtual_usages(parent_venture_name=None):
         yield {
             'name': device.name,
             'device_id': device.id,
+            'venture_id': device.venture_id,
             'service_ci_uid': device.service.uid if device.service else None,
             'environment': device.device_environment,
             'hypervisor_id': device.parent.id,
