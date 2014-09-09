@@ -614,7 +614,10 @@ class Device(
         if sn:
             sn = sn.strip()
         if sn in SERIAL_BLACKLIST:
-            sn = None
+            raise ValueError(
+                "You have provided `sn` which is blacklisted. "
+                "Please use a different one."
+            )
         if not any((sn, ethernets, allow_stub)):
             raise ValueError(
                 "Neither `sn` nor `ethernets` given.  Use `allow_stub` "
