@@ -1643,6 +1643,7 @@ class VhostRedirectView(RedirectView):
 
 class Scan(BaseMixin, TemplateView):
     template_name = 'ui/scan.html'
+    submodule_name = 'search'
 
     def get(self, *args, **kwargs):
         try:
