@@ -1977,8 +1977,8 @@ class ScanStatus(BaseMixin, TemplateView):
                             from ralph_assets.api_ralph import assign_asset
                             if not assign_asset(device.id, asset.id):
                                 msg = ("Asset id={} cannot be assigned to "
-                                        "device id={}."
-                                        .format(asset.id, device.id))
+                                       "device id={}."
+                                       .format(asset.id, device.id))
                                 messages.error(self.request, msg)
                     except ValueError as e:
                         messages.error(self.request, e)
