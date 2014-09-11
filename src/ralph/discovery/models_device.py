@@ -272,7 +272,7 @@ class DeviceEnvironment(models_ci.CI):
 class ServiceCatalogManager(db.Manager):
     def get_query_set(self):
         return super(ServiceCatalogManager, self).get_query_set().filter(
-            type__name=models_ci.CI_TYPES.SERVICE,
+            type=models_ci.CI_TYPES.SERVICE,
         )
 
 

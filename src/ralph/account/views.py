@@ -150,7 +150,7 @@ class UserHomePage(RedirectView):
 
     def get(self, request, *args, **kwargs):
         redirect_hierarchy = [
-            (Perm.has_scrooge_access, 'ralph_pricing'),
+            (Perm.has_scrooge_access, 'ralph_scrooge'),
             (Perm.has_assets_access, 'ralph_assets'),
         ]
         profile = request.user.get_profile()
