@@ -614,12 +614,17 @@ class Device(
         if sn:
             sn = sn.strip()
         if sn in SERIAL_BLACKLIST:
+            # we don't raise an exception here because blacklisted/missing sn
+            # is not enough to fail device's creation
             sn = None
         if not any((sn, ethernets, allow_stub)):
-            raise ValueError(
-                "Neither `sn` nor `ethernets` given.  Use `allow_stub` "
-                "to override."
-            )
+            if sn in SERIAL_BLACKLIST:
+                msg = ("You have provided `sn` which is blacklisted. "
+                       "Please use a different one.")
+            else:
+                msg = ("Neither `sn` nor `ethernets` given.  Use `allow_stub` "
+                       "to override.")
+            raise ValueError(msg)
         if sn:
             try:
                 sndev = Device.admin_objects.get(sn=sn)
