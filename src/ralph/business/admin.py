@@ -22,8 +22,6 @@ from ralph.business.models import (
     RolePropertyTypeValue,
     RolePropertyValue,
     Venture,
-    VentureExtraCost,
-    VentureExtraCostType,
     VentureRole,
 )
 from ralph.cmdb.models_ci import CIOwner, CI, CIOwnershipType
@@ -68,20 +66,6 @@ class VentureRoleInline(ForeignKeyAutocompleteTabularInline):
     }
 
 
-class VentureExtraCostInline(admin.TabularInline):
-    model = VentureExtraCost
-    exclude = ('modified',)
-
-
-class AutocompleteVentureExtraCostInline(ForeignKeyAutocompleteTabularInline):
-    model = VentureExtraCost
-    exclude = ('created', 'modified',)
-    extra = 3
-    related_search_fields = {
-        'venture': ['^name'],
-    }
-
-
 class VentureRoleAdminForm(forms.ModelForm):
 
     def clean_name(self):
@@ -121,12 +105,6 @@ class VentureRoleAdmin(ModelAdmin):
     save_on_top = True
 
 admin.site.register(VentureRole, VentureRoleAdmin)
-
-
-class VentureExtraCostTypeAdmin(ModelAdmin):
-    inlines = [AutocompleteVentureExtraCostInline, ]
-
-admin.site.register(VentureExtraCostType, VentureExtraCostTypeAdmin)
 
 
 class RolePropertyValueInline(admin.TabularInline):
@@ -217,7 +195,6 @@ class VentureAdminVerifiedForm(VentureAdminForm):
 class VentureAdmin(ModelAdmin):
     inlines = [
         SubVentureInline,
-        VentureExtraCostInline,
         VentureRoleInline,
         VenturePropertyInline,
     ]

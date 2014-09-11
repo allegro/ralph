@@ -15,7 +15,6 @@ from ralph.discovery.models_device import (
     Device,
     DeviceEnvironment,
     DeviceModel,
-    DeviceModelGroup,
     DeviceType,
     DISK_PRODUCT_BLACKLIST,
     DISK_VENDOR_BLACKLIST,
@@ -41,7 +40,6 @@ from ralph.discovery.models_network import (
 )
 from ralph.discovery.models_component import (
     ComponentModel,
-    ComponentModelGroup,
     ComponentType,
     DiskShare,
     DiskShareMount,
@@ -61,14 +59,6 @@ from ralph.discovery.models_history import (
     DiscoveryValue,
     DiscoveryWarning,
     HistoryChange,
-    HistoryCost,
-)
-from ralph.discovery.models_pricing import (
-    PricingAggregate,
-    PricingGroup,
-    PricingFormula,
-    PricingVariable,
-    PricingValue,
 )
 
 
@@ -97,7 +87,6 @@ __all__ = [
     'NetworkTerminator',
 
     'ComponentModel',
-    'ComponentModelGroup',
     'ComponentType',
     'DiskShare',
     'DiskShareMount',
@@ -118,7 +107,6 @@ __all__ = [
     'Device',
     'DeviceEnvironment',
     'DeviceModel',
-    'DeviceModelGroup',
     'DeviceType',
     'Connection',
     'ConnectionType',
@@ -133,15 +121,8 @@ __all__ = [
     'UptimeSupport',
 
     'HistoryChange',
-    'HistoryCost',
     'DiscoveryValue',
     'DiscoveryWarning',
-
-    'PricingAggregate',
-    'PricingGroup',
-    'PricingFormula',
-    'PricingVariable',
-    'PricingValue',
 
     'ASSET_NOT_REQUIRED',
 ]

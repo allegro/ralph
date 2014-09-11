@@ -10,11 +10,7 @@ from django import forms
 from lck.django.choices import Choices
 
 from ralph.discovery.models import DeviceType, DeprecationKind
-from ralph.ui.widgets import (
-    DateWidget,
-    DeviceGroupWidget,
-    ComponentGroupWidget,
-)
+from ralph.ui.widgets import DateWidget
 
 
 def validate_start_end_date_date(start, end):
@@ -56,6 +52,21 @@ class SearchForm(forms.Form):
                                'title': TooltipContent.empty_field,
                            }),
                            label="Venture or role")
+    # This search field cannot be named 'service', because 'Info' tab already
+    # has ajax field with the same id, and such collision results in unwanted
+    # data bindings between those two.
+    service_catalog = forms.CharField(required=False,
+                                      widget=forms.TextInput(attrs={
+                                          'class': 'span12',
+                                          'title': TooltipContent.empty_field,
+                                      }),
+                                      label="Service catalog")
+    device_environment = forms.CharField(required=False,
+                                         widget=forms.TextInput(attrs={
+                                             'class': 'span12',
+                                             'title': TooltipContent.empty_field,
+                                         }),
+                                         label="Device environment")
     model = forms.CharField(required=False,
                             widget=forms.TextInput(attrs={
                                 'class': 'span12',
@@ -98,10 +109,6 @@ class SearchForm(forms.Form):
                                             choices=DeviceType(
                                                 item=lambda e: (e.id, e.raw)),
                                             )
-    device_group = forms.IntegerField(required=False,
-                                      widget=DeviceGroupWidget, label="")
-    component_group = forms.IntegerField(required=False,
-                                         widget=ComponentGroupWidget, label="")
     purchase_date_start = forms.DateField(required=False,
                                           widget=DateWidget(attrs={
                                               'class': 'span12',

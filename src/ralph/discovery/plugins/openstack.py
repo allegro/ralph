@@ -15,7 +15,6 @@ from lck.django.common import nested_commit_on_success
 from ralph.util import plugin
 from ralph.discovery.models import (Device, DeviceType, GenericComponent,
                                     ComponentModel, ComponentType)
-from ralph.discovery.models_history import HistoryCost
 from ralph.discovery.openstack import OpenStack
 
 
@@ -102,12 +101,4 @@ def openstack(**kwargs):
         for region, data in regions.iteritems():
             cost = make_components(data, dev, region)
             total_cost += cost * (1 + margin_in_percent / 100)
-        hc = HistoryCost(
-            device=dev,
-            venture=dev.venture,
-            start=start,
-            end=end,
-            daily_cost=total_cost,
-        )
-        hc.save()
     return True, 'loaded from %s to %s.' % (start, end), kwargs

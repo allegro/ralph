@@ -59,8 +59,6 @@ def _get_show_tabs(request, venture, device):
     has_perm = profile.has_perm
     if has_perm(Perm.read_device_info_generic, venture):
         tabs.extend(['info', 'components', 'addresses', 'roles', 'software'])
-    if has_perm(Perm.read_device_info_financial, venture):
-        tabs.extend(['prices', 'costs'])
     if has_perm(Perm.list_devices_financial, venture):
         tabs.extend(['venture'])
     if has_perm(Perm.read_device_info_support, venture):

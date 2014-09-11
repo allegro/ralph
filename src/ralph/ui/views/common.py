@@ -80,10 +80,6 @@ from ralph.discovery.models import (
     IPAddress,
     Network,
 )
-from ralph.discovery.models_history import (
-    FOREVER_DATE,
-    ALWAYS_DATE,
-)
 from ralph.menu import menu_class as ralph_menu
 from ralph.util.plugin import BY_NAME as AVAILABLE_PLUGINS
 from ralph.ui.forms import ChooseAssetForm
@@ -347,11 +343,6 @@ class BaseMixin(MenuMixin, ACLGateway):
                 MenuItem('Prices', fugue_icon='fugue-money-coin',
                          href=self.tab_href('prices')),
             ])
-        if has_perm(Perm.read_device_info_financial, venture):
-            tab_items.extend([
-                MenuItem('Costs', fugue_icon='fugue-wallet',
-                         href=self.tab_href('costs')),
-            ])
         if has_perm(Perm.read_device_info_history, venture):
             tab_items.extend([
                 MenuItem('History', fugue_icon='fugue-hourglass',
@@ -401,11 +392,6 @@ class BaseMixin(MenuMixin, ACLGateway):
                         href='/cmdb/ci/view/%s' % ci.id
                     ),
                 ])
-        if has_perm(Perm.read_device_info_reports, venture):
-            tab_items.extend([
-                MenuItem('Reports', fugue_icon='fugue-reports-stack',
-                         href=self.tab_href('reports')),
-            ])
         if details == 'bulkedit':
             tab_items.extend([
                 MenuItem('Bulk edit', fugue_icon='fugue-pencil-field',
@@ -436,10 +422,6 @@ class BaseMixin(MenuMixin, ACLGateway):
             mainmenu_items.append(
                 MenuItem('Networks', fugue_icon='fugue-weather-clouds',
                          view_name='networks'))
-        if has_perm(Perm.read_device_info_reports):
-            mainmenu_items.append(
-                MenuItem('Reports', fugue_icon='fugue-report',
-                         view_name='reports'))
         mainmenu_items.append(
             MenuItem('Ralph CLI', fugue_icon='fugue-terminal',
                      href='#beast'))
@@ -1136,53 +1118,6 @@ class Addresses(DeviceDetailView):
         return ret
 
 
-class Costs(DeviceDetailView):
-    template_name = 'ui/device_costs.html'
-    read_perm = Perm.list_devices_financial
-
-    def get_context_data(self, **kwargs):
-        query_variable_name = 'cost_page'
-        ret = super(Costs, self).get_context_data(**kwargs)
-        history = self.object.historycost_set.order_by('-end', '-start').all()
-        has_perm = self.request.user.get_profile().has_perm
-        for h in history:
-            if not has_perm(Perm.list_devices_financial, h.venture):
-                h.daily_cost = None
-            if h.end < FOREVER_DATE and h.start:
-                h.span = (h.end - h.start).days
-            elif h.start:
-                h.span = (datetime.date.today() - h.start).days
-        try:
-            page = max(1, int(self.request.GET.get(query_variable_name, 1)))
-        except ValueError:
-            page = 1
-        history_page = Paginator(history, HISTORY_PAGE_SIZE).page(page)
-        ret.update({
-            'history': history,
-            'history_page': history_page,
-            'query_variable_name': query_variable_name,
-            'ALWAYS_DATE': ALWAYS_DATE,
-            'FOREVER_DATE': FOREVER_DATE,
-            'deprecated': self.object.is_deprecated(),
-        })
-        last_month = datetime.date.today() - datetime.timedelta(days=31)
-        splunk = self.object.splunkusage_set.filter(
-            day__gte=last_month
-        ).order_by('-day')
-        if splunk.count():
-            size = splunk.aggregate(db.Sum('size'))['size__sum'] or 0
-            cost = (
-                splunk[0].get_price(size=size) /
-                splunk[0].model.group.size_modifier
-            )
-            ret.update({
-                'splunk_size': size,
-                'splunk_monthly_cost': cost,
-                'splunk_daily_cost': cost / splunk.count(),
-            })
-        return ret
-
-
 class History(DeviceDetailView):
     template_name = 'ui/device_history.html'
     read_perm = Perm.read_device_info_history
@@ -1643,6 +1578,7 @@ class VhostRedirectView(RedirectView):
 
 class Scan(BaseMixin, TemplateView):
     template_name = 'ui/scan.html'
+    submodule_name = 'search'
 
     def get(self, *args, **kwargs):
         try:
@@ -1758,6 +1694,7 @@ class ScanList(BaseMixin, DataTableMixin, TemplateView):
 
 class ScanStatus(BaseMixin, TemplateView):
     template_name = 'ui/scan-status.html'
+    submodule_name = 'search'
 
     def __init__(self, *args, **kwargs):
         super(ScanStatus, self).__init__(*args, **kwargs)
@@ -1971,6 +1908,14 @@ class ScanStatus(BaseMixin, TemplateView):
                                 priority=SAVE_PRIORITY,
                                 user=self.request.user,
                             )
+                        if form.cleaned_data['asset'] != 'database':
+                            asset = form.cleaned_data['asset-custom']
+                            from ralph_assets.api_ralph import assign_asset
+                            if not assign_asset(device.id, asset.id):
+                                msg = ("Asset id={} cannot be assigned to "
+                                       "device id={}."
+                                       .format(asset.id, device.id))
+                                messages.error(self.request, msg)
                     except ValueError as e:
                         messages.error(self.request, e)
                     else:
@@ -1980,10 +1925,7 @@ class ScanStatus(BaseMixin, TemplateView):
                             "Device %s saved." % device,
                         )
                         for warning in warnings:
-                            messages.warning(
-                                self.request,
-                                warning
-                            )
+                            messages.warning(self.request, warning)
                         return HttpResponseRedirect(self.request.path)
                 else:
                     messages.error(self.request, "Errors in the form.")

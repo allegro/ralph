@@ -156,27 +156,6 @@ class MarginKind(Named):
         verbose_name_plural = _("margin kinds")
 
 
-class DeviceModelGroup(Named, TimeTrackable, SavingUser):
-    price = db.PositiveIntegerField(
-        verbose_name=_("purchase price"),
-        null=True,
-        blank=True,
-    )
-    type = db.PositiveIntegerField(
-        verbose_name=_("device type"),
-        choices=DeviceType(),
-        default=DeviceType.unknown.id,
-    )
-    slots = db.FloatField(verbose_name=_("number of slots"), default=0)
-
-    class Meta:
-        verbose_name = _("group of device models")
-        verbose_name_plural = _("groups of device models")
-
-    def get_count(self):
-        return Device.objects.filter(model__group=self).count()
-
-
 class DeviceModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
     name = db.CharField(
         verbose_name=_("name"),
@@ -187,14 +166,6 @@ class DeviceModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
         verbose_name=_("device type"),
         choices=DeviceType(),
         default=DeviceType.unknown.id,
-    )
-    group = db.ForeignKey(
-        DeviceModelGroup,
-        verbose_name=_("group"),
-        null=True,
-        blank=True,
-        default=None,
-        on_delete=db.SET_NULL,
     )
     chassis_size = db.PositiveIntegerField(
         verbose_name=_("chassis size"),
@@ -614,12 +585,17 @@ class Device(
         if sn:
             sn = sn.strip()
         if sn in SERIAL_BLACKLIST:
+            # we don't raise an exception here because blacklisted/missing sn
+            # is not enough to fail device's creation
             sn = None
         if not any((sn, ethernets, allow_stub)):
-            raise ValueError(
-                "Neither `sn` nor `ethernets` given.  Use `allow_stub` "
-                "to override."
-            )
+            if sn in SERIAL_BLACKLIST:
+                msg = ("You have provided `sn` which is blacklisted. "
+                       "Please use a different one.")
+            else:
+                msg = ("Neither `sn` nor `ethernets` given.  Use `allow_stub` "
+                       "to override.")
+            raise ValueError(msg)
         if sn:
             try:
                 sndev = Device.admin_objects.get(sn=sn)

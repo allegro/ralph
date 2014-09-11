@@ -220,7 +220,7 @@ class DeviceModelAdmin(ModelAdmin):
         return models.Device.objects.filter(model=self).count()
 
     list_display = ('name', 'type', count, 'created', 'modified')
-    list_filter = ('type', 'group')
+    list_filter = ('type',)
     search_fields = ('name',)
 
 admin.site.register(models.DeviceModel, DeviceModelAdmin)
@@ -230,17 +230,6 @@ class DeviceModelInline(admin.TabularInline):
     model = models.DeviceModel
     exclude = ('created', 'modified')
     extra = 0
-
-
-class DeviceModelGroupAdmin(ModelAdmin):
-
-    def count(self):
-        return models.Device.objects.filter(model__group=self).count()
-
-    list_display = ('name', count, 'price')
-    inlines = (DeviceModelInline,)
-
-admin.site.register(models.DeviceModelGroup, DeviceModelGroupAdmin)
 
 
 class DeviceForm(forms.ModelForm):
@@ -461,8 +450,8 @@ class ComponentModelAdmin(ModelAdmin):
     def count(self):
         return self.get_count()
 
-    list_filter = ('type', 'group')
-    list_display = ('name', 'type', count, 'family', 'group')
+    list_filter = ('type',)
+    list_display = ('name', 'type', count, 'family',)
     search_fields = ('name', 'type', 'group__name', 'family')
 
 admin.site.register(models.ComponentModel, ComponentModelAdmin)
@@ -477,27 +466,6 @@ class GenericComponentAdmin(ModelAdmin):
     }
 
 admin.site.register(models.GenericComponent, GenericComponentAdmin)
-
-
-class ComponentModelGroupAdmin(ModelAdmin):
-
-    def count(self):
-        return sum([
-            models.Memory.objects.filter(model__group=self).count(),
-            models.Processor.objects.filter(model__group=self).count(),
-            models.Storage.objects.filter(model__group=self).count(),
-            models.FibreChannel.objects.filter(model__group=self).count(),
-            models.DiskShare.objects.filter(model__group=self).count(),
-            models.Software.objects.filter(model__group=self).count(),
-            models.OperatingSystemodels.objects.filter(
-                model__group=self
-            ).count(),
-            models.GenericComponent.objects.filter(model__group=self).count(),
-        ])
-    inlines = [ComponentModelInline]
-    list_display = ('name', count, 'price')
-
-admin.site.register(models.ComponentModelGroup, ComponentModelGroupAdmin)
 
 
 class DiskShareMountInline(ForeignKeyAutocompleteTabularInline):

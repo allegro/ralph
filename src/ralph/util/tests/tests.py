@@ -29,21 +29,14 @@ from ralph.business.models import Venture
 from ralph.cmdb import models_ci
 from ralph.discovery.models import (
     ComponentModel,
-    ComponentModelGroup,
     ComponentType,
     DeprecationKind,
     Device,
-    DeviceModelGroup,
     DeviceType,
     DiskShare,
     DiskShareMount,
     IPAddress,
     MarginKind,
-    PricingAggregate,
-    PricingFormula,
-    PricingGroup,
-    PricingValue,
-    PricingVariable,
 )
 from ralph.util import api_pricing
 from ralph.util.tests import utils

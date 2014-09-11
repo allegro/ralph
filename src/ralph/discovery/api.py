@@ -29,7 +29,6 @@ from ralph.discovery.models import (
     ComponentType,
     Device,
     DeviceModel,
-    DeviceModelGroup,
     DeviceType,
     IPAddress,
     Network,
@@ -115,43 +114,7 @@ class IPAddressResource(MResource):
         return bundle
 
 
-class ModelGroupResource(MResource):
-
-    class Meta:
-        queryset = DeviceModelGroup.objects.all()
-        authentication = ApiKeyAuthentication()
-        authorization = RalphAuthorization(
-            required_perms=[
-                Perm.read_dc_structure,
-            ]
-        )
-        filtering = {
-            'created': ALL,
-            'ip': ALL,
-            'modified': ALL,
-            'name': ALL,
-            'price': ALL,
-            'slots': ALL,
-            'type': ALL,
-        }
-        excludes = (
-            'cache_version',
-        )
-        cache = SimpleCache()
-        throttle = CacheThrottle(
-            throttle_at=THROTTLE_AT,
-            timeframe=TIMEFRAME,
-            expiration=EXPIRATION,
-        )
-
-
 class ModelResource(MResource):
-    group = fields.ForeignKey(
-        ModelGroupResource,
-        'group',
-        null=True,
-        full=True,
-    )
 
     class Meta:
         queryset = DeviceModel.objects.all()
