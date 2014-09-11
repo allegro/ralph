@@ -15,5 +15,7 @@ def role(deployment_id):
     deployment = Deployment.objects.get(id=deployment_id)
     deployment.device.venture = deployment.venture
     deployment.device.venture_role = deployment.venture_role
+    deployment.device.service = deployment.service
+    deployment.device.device_environment = deployment.device_environment
     deployment.device.save(priority=200)
     return True

@@ -18,16 +18,17 @@ from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Device, DeviceType
 from ralph.ui.forms.devices import DeviceCreateForm
 from ralph.ui.views.common import (
-    Info,
-    Prices,
     Addresses,
     Asset,
-    Components,
-    History,
-    BaseMixin,
     Base,
-    Software,
+    BaseMixin,
+    Components,
+    Costs,
+    History,
+    Info,
+    Prices,
     Scan,
+    Software,
     TEMPLATE_MENU_ITEMS,
 )
 from ralph.ui.views.devices import BaseDeviceList
@@ -35,6 +36,7 @@ from ralph.util import presentation
 
 
 class BaseRacksMixin(object):
+    submodule_name = 'racks'
 
     def set_rack(self):
         rack_identifier = self.kwargs.get('rack')

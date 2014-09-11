@@ -99,10 +99,11 @@ class SidebarSearch(object):
 
 
 class Search(SidebarSearch, BaseMixin):
-    pass
+    submodule_name = 'search'
 
 
 class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
+    submodule_name = 'search'
 
     def __init__(self, *args, **kwargs):
         super(SearchDeviceList, self).__init__(*args, **kwargs)
@@ -194,6 +195,24 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                 else:
                     self.query = self.query.filter(
                         remarks__icontains=data['remarks']
+                    )
+            # This field cannot be named 'service' (see comment in SearchForm).
+            if data['service_catalog']:
+                if data['service_catalog'] == empty_field:
+                    self.query = self.query.filter(service='')
+                else:
+                    self.query = self.query.filter(
+                        service__name__icontains=data['service_catalog']
+                    )
+
+            if data['device_environment']:
+                if data['device_environment'] == empty_field:
+                    self.query = self.query.filter(device_environment='')
+                else:
+                    self.query = self.query.filter(
+                        device_environment__name__icontains=data[
+                            'device_environment'
+                        ]
                     )
             if data['model']:
                 if data['model'] == empty_field:

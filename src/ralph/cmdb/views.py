@@ -11,26 +11,25 @@ import re
 from urlparse import urljoin
 
 from bob.data_table import DataTableMixin
-from bob.menu import MenuItem, MenuHeader
 
-from django.db.models import Q
+from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.shortcuts import get_object_or_404
-from django.contrib import messages
-from django.http import HttpResponseRedirect
-from django.http import HttpResponseForbidden
+from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.http import HttpResponse
-from django.utils.translation import ugettext_lazy as _
-from django.utils.safestring import mark_safe
+from django.http import HttpResponseForbidden
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from django.utils import simplejson
 from django.utils.html import escape
-from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.utils.safestring import mark_safe
+from django.utils.translation import ugettext_lazy as _
+from django.views.generic import TemplateView
 
 from lck.cache.memoization import memoize
 from lck.django.common import nested_commit_on_success
-from lck.django.filters import slugify
 
 from ralph.account.models import Perm, ralph_permission
 
@@ -46,12 +45,11 @@ from ralph.cmdb.models_ci import (
     CI_TYPES,
     CI,
     CIRelation,
-    CIType,
     CI_STATE_TYPES,
 )
 import ralph.cmdb.models as db
 from ralph.cmdb.graphs import ImpactCalculator
-from ralph.ui.views.common import Base
+from ralph.ui.views.common import ACLGateway, MenuMixin
 from ralph.cmdb.forms import (
     ReportFilters,
     ReportFiltersDateRange,
@@ -63,9 +61,10 @@ ROWS_PER_PAGE = 20
 SAVE_PRIORITY = 200
 
 
-class BaseCMDBView(Base):
+class BaseCMDBView(MenuMixin, ACLGateway, TemplateView):
     template_name = 'nope.html'
     Form = CIRelationEditForm
+    module_name = 'module_cmdb'
 
     def generate_breadcrumb(self):
         parent = self.request.GET.get('parent', '')
@@ -111,85 +110,10 @@ class BaseCMDBView(Base):
             ) for layer in CILayer.objects.order_by('name')
         ]
 
-    def get_sidebar_items(self):
-        ci = (
-            ('/cmdb/add', 'Add CI', 'fugue-block--plus'),
-            ('/cmdb/changes/dashboard', 'Dashboard', 'fugue-dashboard'),
-            ('/cmdb/graphs', 'Impact report', 'fugue-dashboard'),
-            ('/cmdb/changes/timeline', 'Timeline View', 'fugue-dashboard'),
-            ('/admin/cmdb', 'Admin', 'fugue-toolbox'),
-            ('/cmdb/cleanup', 'Clean up', 'fugue-broom'),
-        )
-        layers = (
-            ('/cmdb/search', 'All Cis (all layers)', 'fugue-magnifier'),
-        )
-        layers += tuple(self._get_sidebar_layers_items())
-        reports = (
-            ('/cmdb/changes/reports?kind=top_changes',
-                'Top CI changes', 'fugue-reports'),
-            ('/cmdb/changes/reports?kind=top_problems',
-                'Top CI problems', 'fugue-reports'),
-            ('/cmdb/changes/reports?kind=top_incidents',
-                'Top CI incidents', 'fugue-reports'),
-            ('/cmdb/changes/reports?kind=usage',
-                'Cis w/o changes', 'fugue-reports'),
-        )
-        events = (
-            ('/cmdb/changes/changes', 'All Events', 'fugue-arrow'),
-            ('/cmdb/changes/changes?type=3', 'Asset attr. changes',
-                'fugue-wooden-box--arrow'),
-            ('/cmdb/changes/changes?type=4', 'Monitoring events',
-                'fugue-thermometer'),
-            ('/cmdb/changes/changes?type=1', 'Repo changes',
-                'fugue-git'),
-            ('/cmdb/changes/changes?type=2', 'Agent events',
-                'fugue-flask'),
-            ('/cmdb/changes/incidents', 'Incidents',
-                'fugue-question'),
-            ('/cmdb/changes/problems', 'Problems',
-                'fugue-bomb'),
-            ('/cmdb/changes/jira_changes', 'Jira Changes',
-                'fugue-arrow-retweet'),
-        )
-        sidebar_items = (
-            [MenuHeader('Configuration Items')] +
-            [MenuItem(
-                label=t[1],
-                fugue_icon=t[2],
-                href=t[0]
-            ) for t in ci] +
-            [MenuHeader('CI by Layers')] +
-            [MenuItem(
-                label=t[1],
-                fugue_icon=t[2],
-                href=t[0]
-            ) for t in layers] +
-            [MenuHeader('Reports')] +
-            [MenuItem(
-                label=t[1],
-                fugue_icon=t[2],
-                href=t[0]
-            ) for t in reports] +
-            [MenuHeader('Events and  Changes')] +
-            [MenuItem(
-                label=t[1],
-                fugue_icon=t[2],
-                href=t[0]
-            ) for t in events] +
-            [MenuHeader('Other')] +
-            [MenuItem(
-                label='Archive',
-                fugue_icon='fugue-vise-drawer',
-                href='/cmdb/archive/assets/',
-            )]
-        )
-        return sidebar_items
-
     def get_context_data(self, *args, **kwargs):
         ret = super(BaseCMDBView, self).get_context_data(**kwargs)
         ret.update(self.get_permissions_dict(self.request.user.id))
         ret.update({
-            'sidebar_items': self.get_sidebar_items(),
             'breadcrumbs': self.generate_breadcrumb(),
             'url_query': self.request.GET,
             'span_number': '6',
@@ -198,7 +122,6 @@ class BaseCMDBView(Base):
             'tabs_left': False,
             'fisheye_url': settings.FISHEYE_URL,
             'fisheye_project': settings.FISHEYE_PROJECT_NAME,
-            'section': 'cmdb',
         })
         return ret
 
@@ -225,6 +148,7 @@ def get_error_title(form):
 class EditRelation(BaseCMDBView):
     template_name = 'cmdb/edit_relation.html'
     Form = CIRelationEditForm
+    submodule_name = 'configuration_items'
 
     form_options = dict(
         label_suffix='',
@@ -281,6 +205,7 @@ class EditRelation(BaseCMDBView):
 
 class AddRelation(BaseCMDBView):
     template_name = 'cmdb/add_relation.html'
+    submodule_name = 'configuration_items'
     Form = CIRelationEditForm
 
     form_options = dict(
@@ -350,6 +275,8 @@ class AddRelation(BaseCMDBView):
 
 class Add(BaseCMDBView):
     template_name = 'cmdb/add_ci.html'
+    submodule_name = 'configuration_items'
+    sidebar_item_name = 'add ci'
     Form = CIEditForm
     form_options = dict(
         label_suffix='',
@@ -361,8 +288,6 @@ class Add(BaseCMDBView):
         ret.update({
             'form': self.form,
             'label': 'Add CI',
-            'subsection': 'Add CI',
-            'sidebar_selected': 'add ci',
         })
         return ret
 
@@ -393,6 +318,8 @@ class Add(BaseCMDBView):
 
 class LastChanges(BaseCMDBView):
     template_name = 'cmdb/search_changes.html'
+    submodule_name = 'configuration_items'
+    sidebar_item_name = 'add ci'
 
     def get_context_data(self, **kwargs):
         ret = super(LastChanges, self).get_context_data(**kwargs)
@@ -424,6 +351,7 @@ class LastChanges(BaseCMDBView):
 
 class BaseCIDetails(BaseCMDBView):
     template_name = 'cmdb/ci_details.html'
+    submodule_name = 'configuration_items'
 
     def check_perm(self):
         if not self.get_permissions_dict(self.request.user.id).get(
@@ -565,7 +493,6 @@ class BaseCIDetails(BaseCMDBView):
             'active_tab': self.active_tab,
             'base_ci_link': self.base_ci_link,
             'label': 'Edit CI: {} (uid: {})'.format(self.ci.name, self.ci.uid),
-            'subsection': 'Edit - %s' % self.ci.name,
             'ci': self.ci,
             'ci_id': self.ci.id,
             'uid': self.ci.uid,
@@ -577,7 +504,6 @@ class BaseCIDetails(BaseCMDBView):
 def _update_labels(items, ci):
     items.update({
         'label': 'View CI: {} (uid: {})'.format(ci.name, ci.uid),
-        'subsection': 'Info - %s' % ci.name,
     })
     return items
 
@@ -779,7 +705,6 @@ class CIGitEdit(BaseCIDetails):
         ret = super(CIGitEdit, self).get_context_data(**kwargs)
         ret.update({
             'label': 'Edit CI: {} (uid: {})'.format(self.ci.name, self.ci.uid),
-            'subsection': 'Edit - %s' % self.ci.name,
             'git_changes': self.git_changes,
         })
         return ret
@@ -1292,24 +1217,21 @@ class CIIncidentsView(CIIncidentsEdit):
 
 class Search(BaseCMDBView):
     template_name = 'cmdb/search_ci.html'
+    submodule_name = 'layers'
     Form = CISearchForm
     cis = []
 
-    def get_context_data(self, **kwargs):
-        subsection = ''
+    @property
+    def active_sidebar_item(self):
         layer = self.request.GET.get('layer')
-        type = self.request.GET.get('type')
-        if layer:
-            subsection += '%s - ' % CILayer.objects.get(id=layer)
-        elif type:
-            type = CIType.objects.get(pk=type)
-            subsection += '%s - ' % type.name
-        subsection += 'Search'
         if layer is None:
-            sidebar_selected = 'all-cis'
+            sidebar_selected = 'all cis (all layers)'
         else:
             select = CILayer.objects.get(id=layer)
-            sidebar_selected = slugify(select.name)
+            sidebar_selected = select.name.lower()
+        return sidebar_selected
+
+    def get_context_data(self, **kwargs):
         ret = super(Search, self).get_context_data(**kwargs)
         ret.update({
             'table_header': self.table_header,
@@ -1319,8 +1241,6 @@ class Search(BaseCMDBView):
             'sort': self.request.GET.get('sort', ''),
             'layer': self.request.GET.get('layer', ''),
             'form': self.form,
-            'sidebar_selected': sidebar_selected,
-            'subsection': subsection,
         })
         return ret
 
@@ -1636,6 +1556,7 @@ class Search(BaseCMDBView):
 
 class Index(BaseCMDBView):
     template_name = 'cmdb/index.html'
+    submodule_name = 'configuration_items'
 
     def get_context_data(self, **kwargs):
         ret = super(Index, self).get_context_data(**kwargs)
@@ -1655,6 +1576,8 @@ class ViewUnknown(BaseCMDBView):
 
 class Graphs(BaseCMDBView):
     template_name = 'cmdb/graphs.html'
+    submodule_name = 'configuration_items'
+    sidebar_item_name = 'impact report'
     rows = []
     graph_data = {}
 
@@ -1724,6 +1647,8 @@ class Cleanup(Search):
     """The view containing various data useful for clean up tasks."""
 
     template_name = 'cmdb/cleanup.html'
+    submodule_name = 'configuration_items'
+    sidebar_item_name = 'clean up'
 
     def get_context_data(self, *args, **kwargs):
         ret = super(Cleanup, self).get_context_data()

@@ -54,10 +54,8 @@ def HTTP403(request, msg=None, template_name='403.html'):
 
 class BaseUser(Base):
     template_name = 'base.html'
-
-    @ralph_permission([])
-    def dispatch(self, *args, **kwargs):
-        return super(TemplateView, self).dispatch(*args, **kwargs)
+    submodule_name = 'user_preference'
+    module_name = 'user_preference'
 
     def get_sidebar_items(self):
         has_perm = self.request.user.get_profile().has_perm

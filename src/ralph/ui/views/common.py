@@ -6,19 +6,19 @@ from __future__ import unicode_literals
 
 import copy
 import datetime
-
 import ipaddr
 
 import django_rq
 import rq
 from django.conf import settings
 from django.contrib import messages
-from django.core.urlresolvers import reverse
+from django.core.exceptions import ImproperlyConfigured
 from django.core.paginator import Paginator
+from django.core.urlresolvers import reverse
 from django.db import models as db
 from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
+from django.utils import importlib, timezone
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import (
     DetailView,
@@ -29,14 +29,17 @@ from django.views.generic import (
 
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
+from bob.menu import MenuItem, Divider
 from bob.data_table import DataTableColumn, DataTableMixin
-from bob.menu import MenuItem
+
 import pluggableapp
 from powerdns.models import Record
 
+from ralph import VERSION
 from ralph.discovery.models_component import Ethernet
 from ralph.account.models import Perm, get_user_home_page_url, ralph_permission
 from ralph.app import RalphModule
+from ralph.menu import Menu
 from ralph.scan.errors import Error as ScanError
 from ralph.scan.manual import queue_scan_address
 from ralph.scan.forms import DiffForm
@@ -77,6 +80,7 @@ from ralph.discovery.models import (
     IPAddress,
     Network,
 )
+from ralph.menu import menu_class as ralph_menu
 from ralph.util.plugin import BY_NAME as AVAILABLE_PLUGINS
 from ralph.ui.forms import ChooseAssetForm
 from ralph.ui.forms.devices import (
@@ -97,7 +101,6 @@ from ralph.ui.forms.deployment import (
     ServerMoveStep2FormSet,
     ServerMoveStep3FormSet,
 )
-from ralph import VERSION
 
 
 SAVE_PRIORITY = 215
@@ -165,8 +168,128 @@ class ACLGateway(object):
         return super(ACLGateway, self).dispatch(*args, **kwargs)
 
 
-class BaseMixin(ACLGateway):
-    section = 'home'
+class AdminMenu(Menu):
+    module = MenuItem(
+        'Admin',
+        name='admin',
+        fugue_icon='fugue-toolbox',
+        href='/admin/',
+        pull_right=True,
+    )
+
+
+class UserMenu(Menu):
+
+    def __init__(self, request, **kwargs):
+        self.module = MenuItem(
+            '{}'.format(request.user),
+            name='user_preference',
+            fugue_icon='fugue-user',
+            view_name='user_preference',
+            pull_right=True,
+            dropdown=True,
+            subitems=[
+                MenuItem(
+                    'Preferences',
+                    name='user_preference',
+                    fugue_icon='fugue-application-task',
+                    view_name='user_preference',
+                ),
+                Divider(),
+                MenuItem(
+                    'Logout',
+                    name='user_preference',
+                    fugue_icon='fugue-door-open-out',
+                    view_name='user_preference',
+                ),
+            ]
+        )
+        super(UserMenu, self).__init__(request, **kwargs)
+
+
+class MenuMixin(object):
+    module_name = None
+    submodule_name = None
+    sidebar_item_name = None
+
+    def dispatch(self, request, *args, **kwargs):
+        self.menus = [ralph_menu(request)]
+        if 'ralph.cmdb' in settings.INSTALLED_APPS:
+            from ralph.cmdb.menu import menu_class as cmdb_menu
+            self.menus.append(cmdb_menu(request))
+        if request.user.is_staff:
+            self.menus.append(AdminMenu(request))
+        self.menus.append(UserMenu(request))
+        for app in pluggableapp.app_dict.values():
+            if not isinstance(app, RalphModule):
+                continue
+            menu_module = importlib.import_module(
+                '.'.join([app.module_name, 'menu'])
+            )
+            if menu_module:
+                menu_class = getattr(
+                    menu_module, 'menu_class', None
+                )
+                if not menu_class:
+                    raise Exception(
+                        'Please provide menu_class.'
+                    )
+                self.menus.append(menu_class(request))
+        return super(MenuMixin, self).dispatch(request, *args, **kwargs)
+
+    @property
+    def current_menu(self):
+        for menu in self.menus:
+            if menu.module.name == self.module_name:
+                return menu
+
+    @property
+    def active_module(self):
+        if not self.module_name:
+            raise ImproperlyConfigured(
+                '{view} required definition of \'module_name\''.format(
+                    view=self.__class__.__name__))
+        return self.module_name
+
+    @property
+    def active_submodule(self):
+        if not self.submodule_name:
+            raise ImproperlyConfigured(
+                '{view} required definition of \'submodule_name\''.format(
+                    view=self.__class__))
+        return self.submodule_name
+
+    @property
+    def active_sidebar_item(self):
+        return self.sidebar_item_name
+
+    def get_modules(self):
+        main_menu = [menu.module for menu in self.menus]
+        return main_menu
+
+    def get_submodules(self):
+        return self.current_menu.get_submodules()
+
+    def get_context_data(self, **kwargs):
+        context = super(MenuMixin, self).get_context_data(**kwargs)
+        current_menu = self.current_menu
+        sidebar = current_menu.get_sidebar_items().get(
+            self.active_submodule, None
+        )
+        context.update({
+            'main_menu': self.get_modules(),
+            'submodules': self.get_submodules(),
+            'sidebar': sidebar,
+            'active_menu': current_menu,
+            'active_module': self.active_module,
+            'active_submodule': self.active_submodule,
+            'active_sidebar_item': self.active_sidebar_item,
+        })
+        return context
+
+
+class BaseMixin(MenuMixin, ACLGateway):
+    module_name = 'module_core'
 
     def __init__(self, *args, **kwargs):
         super(BaseMixin, self).__init__(*args, **kwargs)
@@ -175,20 +298,21 @@ class BaseMixin(ACLGateway):
         self.status = ''
 
     def tab_href(self, name, obj=''):
+        section = self.active_submodule
         if not obj and self.object:
             obj = self.object.id
-        if self.section == 'racks':
+        if section == 'racks':
             args = [self.kwargs.get('rack'), name, obj]
-        elif self.section == 'networks':
+        elif section == 'networks':
             args = [self.kwargs.get('network'), name, obj]
-        elif self.section == 'ventures':
+        elif section == 'ventures':
             args = [self.kwargs.get('venture'), name, obj]
-        elif self.section == 'search':
+        elif section == 'search':
             args = [name, obj]
         else:
             args = []
         return '%s?%s' % (
-            reverse(self.section, args=args),
+            reverse(section, args=args),
             self.request.GET.urlencode(),
         )
 
@@ -385,10 +509,7 @@ class BaseMixin(ACLGateway):
         )
         tab_items = self.get_tab_items()
         ret.update({
-            'section': self.section,
             'details': details,
-            'mainmenu_items': mainmenu_items,
-            'footer_items': footer_items,
             'url_query': self.request.GET,
             'search_url': reverse('search', args=[details, '']),
             'user': self.request.user,
@@ -1413,12 +1534,15 @@ class BulkEdit(BaseMixin, TemplateView):
     def get(self, *args, **kwargs):
         return HttpResponseRedirect(self.request.path + '../info/')
 
+    @property
+    def active_submodule(self):
+        return self.kwargs.get('section')
+
     def get_context_data(self, **kwargs):
         ret = super(BulkEdit, self).get_context_data(**kwargs)
         ret.update({
             'form': self.form,
             'details': 'bulkedit',
-            'section': self.kwargs.get('section'),
             'subsection': 'bulk edit',
             'devices': self.devices,
             'edit_fields': self.edit_fields,
@@ -1454,6 +1578,7 @@ class VhostRedirectView(RedirectView):
 
 class Scan(BaseMixin, TemplateView):
     template_name = 'ui/scan.html'
+    submodule_name = 'search'
 
     def get(self, *args, **kwargs):
         try:
@@ -1569,6 +1694,7 @@ class ScanList(BaseMixin, DataTableMixin, TemplateView):
 
 class ScanStatus(BaseMixin, TemplateView):
     template_name = 'ui/scan-status.html'
+    submodule_name = 'search'
 
     def __init__(self, *args, **kwargs):
         super(ScanStatus, self).__init__(*args, **kwargs)
@@ -1637,6 +1763,8 @@ class ScanStatus(BaseMixin, TemplateView):
         data['type'] = data.get('type', {})
         data['mac_addresses'] = data.get('mac_addresses', {})
         data['serial_number'] = data.get('serial_number', {})
+        if 'ralph_assets' in settings.INSTALLED_APPS:
+            data['asset'] = {}
         if post and device_id == 'new':
             form = DiffForm(data, post, default='custom')
         else:
@@ -1780,6 +1908,14 @@ class ScanStatus(BaseMixin, TemplateView):
                                 priority=SAVE_PRIORITY,
                                 user=self.request.user,
                             )
+                        if form.cleaned_data['asset'] != 'database':
+                            asset = form.cleaned_data['asset-custom']
+                            from ralph_assets.api_ralph import assign_asset
+                            if not assign_asset(device.id, asset.id):
+                                msg = ("Asset id={} cannot be assigned to "
+                                       "device id={}."
+                                       .format(asset.id, device.id))
+                                messages.error(self.request, msg)
                     except ValueError as e:
                         messages.error(self.request, e)
                     else:
@@ -1789,10 +1925,7 @@ class ScanStatus(BaseMixin, TemplateView):
                             "Device %s saved." % device,
                         )
                         for warning in warnings:
-                            messages.warning(
-                                self.request,
-                                warning
-                            )
+                            messages.warning(self.request, warning)
                         return HttpResponseRedirect(self.request.path)
                 else:
                     messages.error(self.request, "Errors in the form.")

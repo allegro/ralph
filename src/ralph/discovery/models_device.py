@@ -14,20 +14,28 @@ import re
 import sys
 import os
 
+from django.conf import settings
 from django.db import models as db
 from django.db import IntegrityError, transaction
 from django.utils.translation import ugettext_lazy as _
-from lck.django.common.models import (Named, WithConcurrentGetOrCreate,
-                                      MACAddressField, SavePrioritized,
-                                      SoftDeletable, TimeTrackable)
+from lck.django.common.models import (
+    MACAddressField,
+    Named,
+    SavePrioritized,
+    SoftDeletable,
+    TimeTrackable,
+    WithConcurrentGetOrCreate,
+)
 from lck.django.choices import Choices
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Taggable
 from django.utils.html import escape
 
+from ralph.cmdb import models_ci
 from ralph.discovery.models_component import is_mac_valid, Ethernet
 from ralph.discovery.models_util import LastSeen, SavingUser
 from ralph.util import Eth
+from ralph.util.models import SyncFieldMixin
 
 
 BLADE_SERVERS = [
@@ -244,6 +252,40 @@ class UptimeSupport(db.Model):
         return "%s, %02d:%02d:%02d" % (msg, hours, minutes, seconds)
 
 
+class DeviceEnvironmentManager(db.Manager):
+    def get_query_set(self):
+        return super(DeviceEnvironmentManager, self).get_query_set().filter(
+            type__name=models_ci.CI_TYPES.ENVIRONMENT,
+        )
+
+
+class DeviceEnvironment(models_ci.CI):
+    """
+    Catalog of environment where device is used, like: prod, test, ect.
+    """
+    objects = DeviceEnvironmentManager()
+
+    class Meta:
+        proxy = True
+
+
+class ServiceCatalogManager(db.Manager):
+    def get_query_set(self):
+        return super(ServiceCatalogManager, self).get_query_set().filter(
+            type__name=models_ci.CI_TYPES.SERVICE,
+        )
+
+
+class ServiceCatalog(models_ci.CI):
+    """
+    Catalog of services where device is used, like: allegro.pl
+    """
+    objects = ServiceCatalogManager()
+
+    class Meta:
+        proxy = True
+
+
 class Device(
     LastSeen,
     Taggable.NoDefaultTags,
@@ -252,6 +294,7 @@ class Device(
     UptimeSupport,
     SoftDeletable,
     SavingUser,
+    SyncFieldMixin,
 ):
     name = db.CharField(
         verbose_name=_("name"),
@@ -457,6 +500,18 @@ class Device(
         default=None,
     )
     verified = db.BooleanField(verbose_name=_("verified"), default=False)
+    service = db.ForeignKey(
+        ServiceCatalog,
+        default=None,
+        null=True,
+        on_delete=db.PROTECT,
+    )
+    device_environment = db.ForeignKey(
+        DeviceEnvironment,
+        default=None,
+        null=True,
+        on_delete=db.PROTECT,
+    )
 
     class Meta:
         verbose_name = _("device")
@@ -530,12 +585,17 @@ class Device(
         if sn:
             sn = sn.strip()
         if sn in SERIAL_BLACKLIST:
+            # we don't raise an exception here because blacklisted/missing sn
+            # is not enough to fail device's creation
             sn = None
         if not any((sn, ethernets, allow_stub)):
-            raise ValueError(
-                "Neither `sn` nor `ethernets` given.  Use `allow_stub` "
-                "to override."
-            )
+            if sn in SERIAL_BLACKLIST:
+                msg = ("You have provided `sn` which is blacklisted. "
+                       "Please use a different one.")
+            else:
+                msg = ("Neither `sn` nor `ethernets` given.  Use `allow_stub` "
+                       "to override.")
+            raise ValueError(msg)
         if sn:
             try:
                 sndev = Device.admin_objects.get(sn=sn)
@@ -735,7 +795,7 @@ class Device(
         details['fibrechannels'] = self.fibrechannel_set.all()
         return details
 
-    def save(self, *args, **kwargs):
+    def save(self, sync_fields=True, *args, **kwargs):
         if self.model and self.model.type == DeviceType.blade_server.id:
             if not self.position:
                 self.position = self.get_position()
@@ -766,7 +826,28 @@ class Device(
             else:
                 name = filename
             self.saving_plugin = name
-        return super(Device, self).save(*args, **kwargs)
+
+        if sync_fields and 'ralph_assets' in settings.INSTALLED_APPS:
+            SyncFieldMixin.save(self, *args, **kwargs)
+        return super(Device, self).save(sync_fields=sync_fields, *args, **kwargs)
+
+    def get_asset(self):
+        asset = None
+        if self.id and 'ralph_assets' in settings.INSTALLED_APPS:
+            from ralph_assets.models import Asset
+            try:
+                asset = Asset.objects.get(
+                    device_info__ralph_device_id=self.id,
+                )
+            except Asset.DoesNotExist:
+                pass
+        return asset
+
+    def get_synced_objs_and_fields(self):
+        # Implementation of the abstract method from SyncFieldMixin.
+        obj = self.get_asset()
+        fields = ['service', 'device_environment']
+        return [(obj, fields)] if obj else []
 
     def get_property_set(self):
         props = {}

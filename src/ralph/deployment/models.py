@@ -19,7 +19,7 @@ from lck.django.common.models import (
     WithConcurrentGetOrCreate, EditorTrackable,
 )
 
-from ralph.discovery.models import Device
+from ralph.discovery.models import Device, DeviceEnvironment, ServiceCatalog
 
 
 class DeploymentStatus(Choices):
@@ -159,6 +159,18 @@ class AbstractDeployment(db.Model):
         'business.VentureRole',
         null=True,
         verbose_name=_("role"),
+        on_delete=db.SET_NULL,
+    )
+    service = db.ForeignKey(
+        ServiceCatalog,
+        default=None,
+        null=True,
+        on_delete=db.SET_NULL,
+    )
+    device_environment = db.ForeignKey(
+        DeviceEnvironment,
+        default=None,
+        null=True,
         on_delete=db.SET_NULL,
     )
     done_plugins = db.TextField(

@@ -32,8 +32,8 @@ from ralph.ui.views.common import (
     Components,
     History,
     Prices,
-    Software,
     Scan,
+    Software,
 )
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.util import presentation
@@ -155,6 +155,7 @@ class SidebarNetworks(object):
 
 
 class NetworksMixin(SidebarNetworks, BaseMixin):
+    submodule_name = 'networks'
 
     def tab_href(self, name, obj=''):
         args = [self.kwargs.get('network_id'), name]

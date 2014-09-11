@@ -13,6 +13,7 @@ from ralph.discovery.models_device import (
     ConnectionType,
     DeprecationKind,
     Device,
+    DeviceEnvironment,
     DeviceModel,
     DeviceType,
     DISK_PRODUCT_BLACKLIST,
@@ -24,6 +25,7 @@ from ralph.discovery.models_device import (
     NetworkConnection,
     ReadOnlyDevice,
     SERIAL_BLACKLIST,
+    ServiceCatalog,
     UptimeSupport,
 )
 from ralph.discovery.models_network import (
@@ -60,6 +62,19 @@ from ralph.discovery.models_history import (
 )
 
 
+ASSET_NOT_REQUIRED = (
+    DeviceType.rack,
+    DeviceType.blade_system,
+    DeviceType.management,
+    DeviceType.power_distribution_unit,
+    DeviceType.data_center,
+    DeviceType.switch_stack,
+    DeviceType.virtual_server,
+    DeviceType.cloud_server,
+    DeviceType.unknown
+)
+
+
 __all__ = [
     'DataCenter',
     'DiscoveryQueue',
@@ -90,6 +105,7 @@ __all__ = [
     'DISK_VENDOR_BLACKLIST',
     'DeprecationKind',
     'Device',
+    'DeviceEnvironment',
     'DeviceModel',
     'DeviceType',
     'Connection',
@@ -101,12 +117,14 @@ __all__ = [
     'NetworkConnection',
     'ReadOnlyDevice',
     'SERIAL_BLACKLIST',
+    'ServiceCatalog',
     'UptimeSupport',
 
     'HistoryChange',
     'DiscoveryValue',
     'DiscoveryWarning',
 
+    'ASSET_NOT_REQUIRED',
 ]
 
 # Load the plugins code

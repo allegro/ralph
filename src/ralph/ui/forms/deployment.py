@@ -9,10 +9,13 @@ import cStringIO
 import re
 
 import ipaddr
+from ajax_select.fields import AutoCompleteSelectField
 from bob.forms import AutocompleteWidget
 from django import forms
+from django.conf import settings
 from django.forms import formsets
 from django.db.models import Q
+from django.utils.translation import ugettext_lazy as _
 from lck.django.common.models import MACAddressField
 from powerdns.models import Record, Domain
 
@@ -51,6 +54,8 @@ class DeploymentForm(forms.ModelForm):
             'device',
             'venture',
             'venture_role',
+            'service',
+            'device_environment',
             'mac',
             'ip',
             'hostname',
@@ -61,6 +66,11 @@ class DeploymentForm(forms.ModelForm):
             'mac': AutocompleteWidget,
             'ip': AutocompleteWidget,
         }
+    service = AutoCompleteSelectField(
+        ('ralph.ui.channels', 'ServiceCatalogLookup'),
+        required=True,
+        label=_('Service catalog'),
+    )
 
     def __init__(self, *args, **kwargs):
         super(DeploymentForm, self).__init__(*args, **kwargs)
@@ -98,11 +108,23 @@ class DeploymentForm(forms.ModelForm):
         return str(ipaddr.IPAddress(ip))
 
 
-def _validate_cols_count(expected_count, cols, row_number):
-    if len(cols) != expected_count:
+def _validate_cols_count(
+    expected_count, cols, row_number, allowed_oversize=0
+):
+    if all((
+        len(cols) != expected_count,
+        len(cols) != (expected_count + allowed_oversize)
+    )):
         raise forms.ValidationError(
-            "Incorrect number of columns (got %d, expected %d) at row %d" %
-            (len(cols), expected_count, row_number),
+            "Incorrect number of columns (got %d, expected %d%s) at row %d" %
+            (
+                len(cols),
+                expected_count,
+                ' or %d' % (
+                    expected_count + allowed_oversize
+                ) if allowed_oversize > 0 else '',
+                row_number
+            ),
         )
 
 
@@ -198,13 +220,44 @@ def _validate_deploy_children(mac, row_number):
             )
 
 
+def _validate_asset_identity(identity, row_number, mac=None):
+    if 'ralph_assets' not in settings.INSTALLED_APPS:
+        return  # nothing to do
+    from ralph_assets.api_ralph import get_asset_by_sn_or_barcode
+    asset = get_asset_by_sn_or_barcode(identity)
+    if not asset:
+        raise forms.ValidationError(
+            "Row %d: Asset with sn or barcode `%s` does not exist." %
+            (row_number, identity)
+        )
+    if not mac or not asset['device_id']:
+        return
+    mac = MACAddressField.normalize(mac)
+    try:
+        device = Device.admin_objects.get(ethernet__mac=mac)
+    except Device.DoesNotExist:
+        return
+    if device.id != asset['device_id']:
+        raise forms.ValidationError(
+            "Row %d: Found asset by sn or barcode and found device by "
+            "MAC address are not the same." % row_number
+        )
+
+
 class PrepareMassDeploymentForm(forms.Form):
+    assets_enabled = 'ralph_assets' in settings.INSTALLED_APPS
     csv = forms.CharField(
         label="CSV",
         widget=forms.widgets.Textarea(attrs={'class': 'span12 csv-input'}),
         required=False,
-        help_text="Template: mac ; management-ip ; network ; venture-symbol ; "
-                  "role ; preboot"
+        help_text=(
+            "Template: mac ; management-ip ; network ; venture-symbol ; "
+            "role ; preboot{}".format(
+                ' ; asset sn or barcode (not required)'
+                if assets_enabled
+                else ''
+            )
+        )
     )
 
     def clean_csv(self):
@@ -212,7 +265,9 @@ class PrepareMassDeploymentForm(forms.Form):
         rows = UnicodeReader(cStringIO.StringIO(csv_string))
         parsed_macs = set()
         for row_number, cols in enumerate(rows, start=1):
-            _validate_cols_count(6, cols, row_number)
+            _validate_cols_count(
+                6, cols, row_number, 1 if self.assets_enabled else 0
+            )
             mac = cols[0].strip()
             _validate_mac(mac, parsed_macs, row_number)
             _validate_deploy_children(mac, row_number)
@@ -230,6 +285,9 @@ class PrepareMassDeploymentForm(forms.Form):
             )
             preboot = cols[5].strip()
             _validate_preboot(preboot, row_number)
+            if self.assets_enabled and len(cols) == 7:
+                asset_identity = cols[6].strip()
+                _validate_asset_identity(asset_identity, row_number, mac)
         return csv_string
 
 
@@ -312,11 +370,18 @@ def _validate_ip_owner(ip, mac, row_number):
 
 
 class MassDeploymentForm(forms.Form):
+    assets_enabled = 'ralph_assets' in settings.INSTALLED_APPS
     csv = forms.CharField(
         label="CSV",
         widget=forms.widgets.Textarea(attrs={'class': 'span12 csv-input'}),
-        help_text="Template: hostname ; ip ; rack-sn ; mac ; management-ip ; "
-                  "network ; venture-symbol ; role ; preboot"
+        help_text=(
+            "Template: hostname ; ip ; rack-sn ; mac ; management-ip ; "
+            "network ; venture-symbol ; role ; preboot{}".format(
+                ' ; asset sn or barcode (not required)'
+                if assets_enabled
+                else ''
+            )
+        )
     )
 
     def clean_csv(self):
@@ -327,7 +392,7 @@ class MassDeploymentForm(forms.Form):
         parsed_ip_addresses = set()
         parsed_macs = set()
         for row_number, cols in enumerate(rows, start=1):
-            _validate_cols_count(9, cols, row_number)
+            _validate_cols_count(9, cols, row_number, 1)
             _validate_cols_not_empty(cols, row_number)
             mac = cols[3].strip()
             _validate_mac(mac, parsed_macs, row_number)
@@ -392,6 +457,10 @@ class MassDeploymentForm(forms.Form):
                         row_number, cols[8].strip()
                     )
                 )
+            asset_identity = None
+            if self.assets_enabled and len(cols) == 10:
+                asset_identity = cols[9].strip()
+                _validate_asset_identity(asset_identity, row_number, mac)
             cleaned_csv.append({
                 'hostname': hostname,
                 'ip': ip,
@@ -401,7 +470,8 @@ class MassDeploymentForm(forms.Form):
                 'venture_role': venture_role,
                 'preboot': preboot,
                 'management_ip': management_ip,
-                'network': network
+                'network': network,
+                'asset_identity': asset_identity
             })
         return cleaned_csv
 
