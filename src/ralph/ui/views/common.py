@@ -1643,6 +1643,7 @@ class VhostRedirectView(RedirectView):
 
 class Scan(BaseMixin, TemplateView):
     template_name = 'ui/scan.html'
+    submodule_name = 'search'
 
     def get(self, *args, **kwargs):
         try:
@@ -1758,6 +1759,7 @@ class ScanList(BaseMixin, DataTableMixin, TemplateView):
 
 class ScanStatus(BaseMixin, TemplateView):
     template_name = 'ui/scan-status.html'
+    submodule_name = 'search'
 
     def __init__(self, *args, **kwargs):
         super(ScanStatus, self).__init__(*args, **kwargs)
@@ -1971,6 +1973,14 @@ class ScanStatus(BaseMixin, TemplateView):
                                 priority=SAVE_PRIORITY,
                                 user=self.request.user,
                             )
+                        if form.cleaned_data['asset'] != 'database':
+                            asset = form.cleaned_data['asset-custom']
+                            from ralph_assets.api_ralph import assign_asset
+                            if not assign_asset(device.id, asset.id):
+                                msg = ("Asset id={} cannot be assigned to "
+                                       "device id={}."
+                                       .format(asset.id, device.id))
+                                messages.error(self.request, msg)
                     except ValueError as e:
                         messages.error(self.request, e)
                     else:
@@ -1980,10 +1990,7 @@ class ScanStatus(BaseMixin, TemplateView):
                             "Device %s saved." % device,
                         )
                         for warning in warnings:
-                            messages.warning(
-                                self.request,
-                                warning
-                            )
+                            messages.warning(self.request, warning)
                         return HttpResponseRedirect(self.request.path)
                 else:
                     messages.error(self.request, "Errors in the form.")
