@@ -116,7 +116,7 @@ that your tables are using UTF-8 as the character set, with compatible collation
 and InnoDB storage engine. Example::
 
   mysql> alter table TABLENAME engine=innodb;
-  mysql> alter table TABLENAME convert to character set utf8 collate utf8_polish_ci;
+  mysql> alter table TABLENAME convert to character set utf8 collate utf8_general_ci;
 
 My worker creates a new database connection on each task.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
