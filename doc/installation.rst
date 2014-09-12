@@ -212,7 +212,7 @@ Once it's up and running let's set some stuff up::
 
   $ mysqladmin -u root -p create ralph
   $ mysql -u root -p
-  mysql> alter database ralph character set utf8 collate utf8_polish_ci;
+  mysql> alter database ralph character set utf8 collate utf8_general_ci;
   mysql> use mysql;
   mysql> update user set password=password("rootpw") where user='root';
   mysql> create user 'ralph'@'localhost' identified by 'ralph';
