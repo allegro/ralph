@@ -74,3 +74,7 @@ class DeviceLookup(LookupChannel):
 
 class ServiceCatalogLookup(RestrictedLookupChannel):
     model = models_device.ServiceCatalog
+
+
+class DeviceEnvrionment(RestrictedLookupChannel):
+    model = models_device.DeviceEnvironment
