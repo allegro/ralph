@@ -17,7 +17,6 @@ from django.db.models.signals import (post_save, pre_save, pre_delete,
 from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.cmdb.integration.splunk import log_change_to_splunk
 from ralph.discovery.models_device import (
     Device,
     DeprecationKind,
@@ -78,12 +77,6 @@ class HistoryChange(db.Model):
             return "'{}'.{} = '{}' -> '{}' by {} on {} ({})".format(
                 self.device, self.field_name, self.old_value, self.new_value,
                 self.user, self.date, self.id)
-
-
-@receiver(post_save, sender=HistoryChange, dispatch_uid='ralph.history')
-def history_change_post_save(sender, instance, raw, using, **kwargs):
-    if SPLUNK_HOST:
-        log_change_to_splunk(instance, 'CHANGE_HISTORY')
 
 
 @receiver(post_save, sender=Device, dispatch_uid='ralph.history')

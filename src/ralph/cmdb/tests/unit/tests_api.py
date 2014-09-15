@@ -153,7 +153,6 @@ class CMDBApiTest(UserTestCase):
         resource_uris = [
             ci_layer['resource_uri'] for ci_layer in json_data['objects']
         ]
-
         response = self.get(resource_uris[0])
         json_string = response.content
         json_data = json.loads(json_string)
@@ -302,6 +301,7 @@ class CMDBApiTest(UserTestCase):
             'technical_owners': [
                 '/api/v0.9/ciowners/{0}/'.format(self.owner2.id)
             ],
+            'related': [],
             'attributes': [
                 {
                     'name': 'SLA value',
@@ -377,6 +377,42 @@ class CMDBApiTest(UserTestCase):
                 'http://www.gutenberg.org/files/27827/27827-h/27827-h.htm',
             },
         )
+
+    def test_patch_relations(self):
+        """A test for adding relations via 0.10 version of API."""
+        ci_data = json.dumps({
+            'related': [
+                {
+                    'dir': 'INCOMING',
+                    'type': 'HASROLE',
+                    'ci': '/api/v0.10/ci/{}/'.format(self.ci2.id),
+                }, {
+                    'dir': 'OUTGOING',
+                    'type': 'CONTAINS',
+                    'ci': '/api/v0.10/ci/{}/'.format(self.ci3.id),
+                }
+            ],
+        })
+        req_data = {
+            'CONTENT_LENGTH': len(ci_data),
+            'CONTENT_TYPE': 'application/json',
+            'PATH_INFO': '/api/v0.10/ci/{0}/'.format(self.ci1.id),
+            'REQUEST_METHOD': 'PATCH',
+            'wsgi.input': FakePayload(ci_data),
+        }
+        req_data.update(self.headers)
+        self.client.request(**req_data)
+        rel1 = CIRelation.objects.get(
+            child_id=self.ci1.id,
+            parent_id=self.ci2.id,
+            type=CI_RELATION_TYPES.HASROLE.id,
+        )
+        rel2 = CIRelation.objects.get(
+            child_id=self.ci3.id,
+            parent_id=self.ci1.id,
+            type=CI_RELATION_TYPES.CONTAINS.id,
+        )
+
 
     def test_get_attribute(self):
         path = "/api/v0.9/ci/{0}/".format(self.ci1.id)

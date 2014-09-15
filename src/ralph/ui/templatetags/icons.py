@@ -30,11 +30,6 @@ def venture_icon(venture):
 
 
 @register.filter
-def owner_icon(owner):
-    return icon_filter(presentation.get_owner_icon(owner))
-
-
-@register.filter
 def address_icon(ip):
     if not ip:
         return ''

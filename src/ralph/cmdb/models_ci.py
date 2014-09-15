@@ -398,12 +398,16 @@ class CI(TimeTrackable):
     def get_technical_owners(self):
         if self.content_object and getattr(
                 self.content_object, 'venture', None):
-            return list([
-                unicode(x) for x in
-                self.content_object.venture.technical_owners()] or ['-'])
+            venture_ci = self.get_by_content_object(
+                self.content_object.venture
+            )
+            return list(
+                [unicode(x) for x in venture_ci.technical_owners.all()] or
+                ['-']
+            )
         elif self.content_object and self.type.id == CI_TYPES.VENTURE.id:
             return list([
-                unicode(x) for x in self.content_object.technical_owners()
+                unicode(x) for x in self.technical_owners.all()
             ] or ['-'])
         else:
             return ['-']

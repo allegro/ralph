@@ -61,7 +61,6 @@ from ralph.business.models import (
     Venture,
     VentureRole,
 )
-from ralph.cmdb.models import CI
 from ralph.deployment.models import Deployment, DeploymentStatus
 from ralph.deployment.util import get_next_free_hostname, get_first_free_ip
 from ralph.dnsedit.models import DHCPEntry
@@ -369,29 +368,6 @@ class BaseMixin(MenuMixin, ACLGateway):
                     href=self.tab_href('scan'),
                 ),
             ])
-        if ('ralph.cmdb' in settings.INSTALLED_APPS and
-                has_perm(Perm.read_configuration_item_info_generic)):
-            ci = ''
-            device_id = self.kwargs.get('device')
-            if device_id:
-                deleted = False
-                if self.request.GET.get('deleted', '').lower() == 'on':
-                    deleted = True
-                try:
-                    if deleted:
-                        device = Device.admin_objects.get(pk=device_id)
-                    else:
-                        device = Device.objects.get(pk=device_id)
-                    ci = CI.get_by_content_object(device)
-                except Device.DoesNotExist:
-                    pass
-            if ci:
-                tab_items.extend([
-                    MenuItem(
-                        'CMDB', fugue_icon='fugue-thermometer',
-                        href='/cmdb/ci/view/%s' % ci.id
-                    ),
-                ])
         if details == 'bulkedit':
             tab_items.extend([
                 MenuItem('Bulk edit', fugue_icon='fugue-pencil-field',
