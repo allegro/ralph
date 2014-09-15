@@ -20,6 +20,7 @@ Resource.method_check = method_check
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db.models import Q
+from django.utils.translation import ugettext_lazy as _
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie import fields
@@ -424,6 +425,22 @@ class CIResourceV010(CIResource):
     """CIResource with related feature."""
 
     related = RelationField()
+
+    def build_filters(self, filters=None):
+        filters = filters or {}
+        orm_filters = super(CIResourceV010, self).build_filters(filters)
+        if 'related_ci' in filters:
+            ci = CI.objects.get(pk=filters['related_ci'])
+            direction = filters.get('related_dir')
+            if direction not in {'INCOMING', 'OUTGOING'}:
+                raise tastypie.exceptions.BadRequest(
+                    _('related_dir must be INCOMING or OUTGOING')
+                )
+            orm_filters[{
+                'OUTGOING': 'parent__child',
+                'INCOMING': 'child__parent',
+            }[direction]] = ci
+        return orm_filters
 
 
 class CILayersResource(MResource):
