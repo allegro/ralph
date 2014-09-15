@@ -13,8 +13,8 @@ from ralph.discovery.models_device import (
     ConnectionType,
     DeprecationKind,
     Device,
+    DeviceEnvironment,
     DeviceModel,
-    DeviceModelGroup,
     DeviceType,
     DISK_PRODUCT_BLACKLIST,
     DISK_VENDOR_BLACKLIST,
@@ -25,6 +25,7 @@ from ralph.discovery.models_device import (
     NetworkConnection,
     ReadOnlyDevice,
     SERIAL_BLACKLIST,
+    ServiceCatalog,
     UptimeSupport,
 )
 from ralph.discovery.models_network import (
@@ -39,7 +40,6 @@ from ralph.discovery.models_network import (
 )
 from ralph.discovery.models_component import (
     ComponentModel,
-    ComponentModelGroup,
     ComponentType,
     DiskShare,
     DiskShareMount,
@@ -59,15 +59,21 @@ from ralph.discovery.models_history import (
     DiscoveryValue,
     DiscoveryWarning,
     HistoryChange,
-    HistoryCost,
 )
-from ralph.discovery.models_pricing import (
-    PricingAggregate,
-    PricingGroup,
-    PricingFormula,
-    PricingVariable,
-    PricingValue,
+
+
+ASSET_NOT_REQUIRED = (
+    DeviceType.rack,
+    DeviceType.blade_system,
+    DeviceType.management,
+    DeviceType.power_distribution_unit,
+    DeviceType.data_center,
+    DeviceType.switch_stack,
+    DeviceType.virtual_server,
+    DeviceType.cloud_server,
+    DeviceType.unknown
 )
+
 
 __all__ = [
     'DataCenter',
@@ -81,7 +87,6 @@ __all__ = [
     'NetworkTerminator',
 
     'ComponentModel',
-    'ComponentModelGroup',
     'ComponentType',
     'DiskShare',
     'DiskShareMount',
@@ -100,8 +105,8 @@ __all__ = [
     'DISK_VENDOR_BLACKLIST',
     'DeprecationKind',
     'Device',
+    'DeviceEnvironment',
     'DeviceModel',
-    'DeviceModelGroup',
     'DeviceType',
     'Connection',
     'ConnectionType',
@@ -112,18 +117,14 @@ __all__ = [
     'NetworkConnection',
     'ReadOnlyDevice',
     'SERIAL_BLACKLIST',
+    'ServiceCatalog',
     'UptimeSupport',
 
     'HistoryChange',
-    'HistoryCost',
     'DiscoveryValue',
     'DiscoveryWarning',
 
-    'PricingAggregate',
-    'PricingGroup',
-    'PricingFormula',
-    'PricingVariable',
-    'PricingValue',
+    'ASSET_NOT_REQUIRED',
 ]
 
 # Load the plugins code

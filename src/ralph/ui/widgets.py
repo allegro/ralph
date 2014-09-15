@@ -11,8 +11,7 @@ from django.template.defaultfilters import slugify
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
-from ralph.discovery.models import (DeviceModel, ComponentModelGroup, Device,
-                                    DeviceModelGroup)
+from ralph.discovery.models import DeviceModel, Device
 from ralph.util import presentation
 
 
@@ -183,48 +182,6 @@ class RackWidget(forms.Widget):
                     escape(dev.name),
                 ),
                 '</div>',
-            ]
-        return mark_safe('\n'.join(output))
-
-
-class ComponentGroupWidget(forms.Widget):
-
-    def render(self, name, value, attrs=None, choices=()):
-        try:
-            mg = ComponentModelGroup.objects.get(id=value)
-        except ComponentModelGroup.DoesNotExist:
-            output = [
-            ]
-        else:
-            output = [
-                '<label class="checkbox">',
-                '<input type="checkbox" checked="checked" '
-                'name="%s" value="%s">' % (name, value),
-                '<a href="../../catalog/component/%s/%s">%s</a>' % (mg.type,
-                                                                    mg.id,
-                                                                    mg.name),
-                '</label>',
-            ]
-        return mark_safe('\n'.join(output))
-
-
-class DeviceGroupWidget(forms.Widget):
-
-    def render(self, name, value, attrs=None, choices=()):
-        try:
-            mg = DeviceModelGroup.objects.get(id=value)
-        except DeviceModelGroup.DoesNotExist:
-            output = [
-            ]
-        else:
-            output = [
-                '<label class="checkbox">',
-                '<input type="checkbox" checked="checked" '
-                'name="%s" value="%s">' % (name, value),
-                '<a href="../../catalog/device/%s/%s">%s</a>' % (mg.type,
-                                                                 mg.id,
-                                                                 mg.name),
-                '</label>',
             ]
         return mark_safe('\n'.join(output))
 

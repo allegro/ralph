@@ -7,7 +7,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
-import datetime
 
 from django.conf import settings
 from django.db import models as db
@@ -16,12 +15,12 @@ from lck.django.common.models import Named, TimeTrackable
 from lck.django.common.models import WithConcurrentGetOrCreate
 from dj.choices import Choices
 from dj.choices.fields import ChoiceField
-from django.db.models.signals import pre_save, post_save, pre_delete
+from django.db.models.signals import pre_save, pre_delete
 from django.dispatch import receiver
 
 from ralph.discovery.history import field_changes as _field_changes
 from ralph.discovery.models import DataCenter
-from ralph.discovery.models_history import HistoryCost, HistoryChange
+from ralph.discovery.models_history import HistoryChange
 from ralph.discovery.models_util import SavingUser
 from ralph.util.di import get_extra_data
 
@@ -491,62 +490,6 @@ class Department(Named):
         verbose_name = _("department")
         verbose_name_plural = _("departments")
         ordering = ('name',)
-
-
-class VentureExtraCostType(Named.NonUnique, TimeTrackable):
-
-    class Meta:
-        verbose_name = _("venture extra cost type")
-        verbose_name_plural = _("venture extra cost types")
-        ordering = ('name',)
-
-
-class VentureExtraCost(TimeTrackable):
-
-    class Meta:
-        verbose_name = _("venture extra cost")
-        verbose_name_plural = _("venture extra costs")
-        unique_together = ('type', 'venture')
-        ordering = ('type',)
-
-    venture = db.ForeignKey(Venture, verbose_name=_("venture"))
-    type = db.ForeignKey(VentureExtraCostType, verbose_name=_("type"))
-    cost = db.FloatField(verbose_name=_("monthly cost"), default=0)
-    expire = db.DateField(default=None, null=True, blank=True)
-
-    @property
-    def name(self):
-        return self.type.name
-
-
-@receiver(post_save, sender=VentureExtraCost, dispatch_uid='ralph.costhistory')
-def cost_post_save(sender, instance, raw, using, **kwargs):
-    changed = False
-    if 'venture_id' in instance.dirty_fields:
-        changed = True
-    if 'expire' in instance.dirty_fields:
-        changed = True
-    if 'cost' in instance.dirty_fields:
-        old_cost = instance.dirty_fields['cost'] or 0
-        if not -1 < instance.cost - old_cost < 1:
-            # Ignore changes due to rounding errors
-            changed = True
-    if changed:
-        if instance.expire:
-            start = min(datetime.date.today(), instance.expire)
-        else:
-            start = datetime.datetime.now()
-        HistoryCost.start_span(
-            extra=instance, start=start, end=instance.expire)
-
-
-@receiver(
-    pre_delete,
-    sender=VentureExtraCost,
-    dispatch_uid='ralph.costhistory',
-)
-def cost_pre_delete(sender, instance, using, **kwargs):
-    HistoryCost.end_span(extra=instance)
 
 
 @receiver(pre_save, sender=RolePropertyValue, dispatch_uid='ralph.history')

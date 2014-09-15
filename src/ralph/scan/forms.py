@@ -13,11 +13,13 @@ import itertools
 
 from ajax_select.fields import AutoCompleteSelectField
 from django import forms
+from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
-from ralph.discovery.models import DeviceType
+from ralph.discovery.models import ASSET_NOT_REQUIRED, DeviceType
+from ralph.scan.data import get_choice_by_name
 
 
 class CSVWidget(forms.Widget):
@@ -28,8 +30,8 @@ class CSVWidget(forms.Widget):
 
     def render(self, name, value, attrs=None):
         output = [
-            '<textarea name="%s" rows="10" style="width:90%%; font-family: monospace">' % escape(
-                name),
+            '<textarea name="%s" rows="10" style="width:90%%; '
+            'font-family: monospace">' % escape(name),
             escape(';'.join(h.rjust(16) for h in self.headers)),
         ]
         for row in value or []:
@@ -81,7 +83,8 @@ class WidgetTable(forms.MultiWidget):
     def format_output(self, rendered_widgets):
         widgets = iter(rendered_widgets)
         output = [
-            '<table class="table table-condensed table-bordered" style="width:auto; display:inline-block;vertical-align: top;">',
+            '<table class="table table-condensed table-bordered" '
+            'style="width:auto; display:inline-block;vertical-align: top;">',
             '<tr>',
             '<th>#</th>',
         ]
@@ -227,7 +230,8 @@ class DictListInfo(ListInfo):
                 keyset |= set(d)
             self.headers = sorted(keyset)
         output = [
-            '<table class="table table-condensed table-bordered" style="width:auto; display:inline-block;vertical-align: top;">',
+            '<table class="table table-condensed table-bordered" '
+            'style="width:auto; display:inline-block;vertical-align: top;">',
             '<tr>',
             '<th>#</th>',
             ''.join(
@@ -255,14 +259,9 @@ class DictListInfo(ListInfo):
 class AssetInfo(DefaultInfo):
     Widget = None
 
-    def clean(self, value):
-        if not value:
-            raise ValueError('You have to select an asset for device.')
-        return value
-
     def Field(self, *args, **kwargs):
-        kwargs.update(help_text="Enter barcode, model or serial number.")
-        lookup = ('ralph_assets.api_ralph', 'AssetLookupFuzzy')
+        kwargs['help_text'] = "Enter barcode, model or serial number."
+        lookup = ('ralph_assets.api_ralph', 'UnassignedDCDeviceLookup')
         return AutoCompleteSelectField(lookup, *args, **kwargs)
 
 
@@ -400,6 +399,27 @@ class DiffForm(forms.Form):
                         self.result['type'].get((value,)) == 'unknown'):
                     msg = "Please specify custom value for this component."
                     self._errors[name] = self.error_class([msg])
+        if 'ralph_assets' in settings.INSTALLED_APPS:
+            try:
+                selected_type = self.get_value('type')
+            except (KeyError, ValueError):
+                pass
+            else:
+                selected_type = get_choice_by_name(
+                    DeviceType,
+                    selected_type
+                )
+                if selected_type not in ASSET_NOT_REQUIRED:
+                    try:
+                        asset = self.get_value('asset')
+                    except (KeyError, ValueError):
+                        asset = None
+                    if asset == 'None':
+                        asset = None
+                    if not asset:
+                        self._errors['asset'] = self.error_class([
+                            "Asset is required for this kind of device."
+                        ])
         return self.cleaned_data
 
     def get_value(self, name):

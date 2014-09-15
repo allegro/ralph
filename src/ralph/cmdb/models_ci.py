@@ -70,6 +70,8 @@ class CI_TYPES(Choices):
     NETWORK = _('Network')
     DATACENTER = _('Data Center')
     NETWORKTERMINATOR = _('Network Terminator')
+    ENVIRONMENT = _('Environment')
+    PROFIT_CENTER = _('Profit Center')
 
 
 contenttype_mappings = {
@@ -313,7 +315,7 @@ class CI(TimeTrackable):
     )
     barcode = models.CharField(
         verbose_name=_("barcode"), max_length=255, unique=True, null=True,
-        default=None,
+        default=None, blank=True,
     )
     content_type = models.ForeignKey(
         ContentType, verbose_name=_("content type"), null=True, blank=True,

@@ -3,16 +3,16 @@ python:
   - "2.7"
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install:
-  - pip install git+https://github.com/allegro/django-bob
+  - pip install git+https://github.com/allegro/django-bob@develop
   - pip install coveralls
   - make install
   - pip install flake8
-  
-  
+
+
 # command to run tests, e.g. python setup.py test
 script: make test-with-coveralls
 before_script:
   make flake
-  
+
 after_success:
   - coveralls

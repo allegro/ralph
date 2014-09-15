@@ -56,7 +56,7 @@ UNIQUE_FIELDS_FOR_MERGER = {
 SAVE_PRIORITY = 215
 
 
-def _get_choice_by_name(choices, name):
+def get_choice_by_name(choices, name):
     """
     Find choices by name (with spaces or without spaces) or by raw_name.
     """
@@ -205,7 +205,7 @@ def _update_component_data(
                 # If model_type is provided, create the model
                 if model_type is None:
                     try:
-                        model_type = _get_choice_by_name(
+                        model_type = get_choice_by_name(
                             ComponentType,
                             data['type']
                         )
@@ -467,7 +467,7 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY, warnings=[]):
             setattr(device, field_name, data[key_name])
     if 'model_name' in data and (data['model_name'] or '').strip():
         try:
-            model_type = _get_choice_by_name(
+            model_type = get_choice_by_name(
                 DeviceType,
                 data.get('type', 'unknown')
             )
@@ -844,7 +844,7 @@ def connection_from_data(device, connection_data):
             "IP addresses are not connected with one device..."
         )
     connected_device = connected_devices[0]
-    connection_type = _get_choice_by_name(
+    connection_type = get_choice_by_name(
         ConnectionType,
         connection_data.get('connection_type', '')
     )
@@ -871,7 +871,7 @@ def device_from_data(
     sn = data.get('serial_number')
     ethernets = [('', mac, None) for mac in data.get('mac_addresses', [])]
     model_name = data.get('model_name')
-    model_type = _get_choice_by_name(
+    model_type = get_choice_by_name(
         DeviceType,
         data.get('type', 'unknown')
     )
@@ -904,6 +904,9 @@ def merge_data(*args, **kwargs):
                 merged.setdefault(key, {})[plugin_name] = value
     # Now, make the values unique.
     unique = {}
+    required_fields = ['model_name', 'type']
+    if 'ralph_assets' in settings.INSTALLED_APPS:
+        required_fields.append('asset')
     for key, values in merged.iteritems():
         repeated = {}
         for source, value in values.iteritems():
@@ -911,7 +914,7 @@ def merge_data(*args, **kwargs):
         if (
             only_multiple and
             len(repeated) <= 1 and
-            key not in ('model_name', 'type')
+            key not in required_fields
         ):
             continue
         for value_str, sources in repeated.iteritems():

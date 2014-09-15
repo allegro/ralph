@@ -1,12 +1,15 @@
 {% extends "ui/base-devices.html" %}
 
 {% load url from future %}
-{% load icons %}
+{% load i18n icons %}
 
 {% block contentarea %}
 <div class="row">
     <div class="span6 offset2">
         <h4>Deploy device - {{ device }}</h4>
+        <div class="alert alert-warning">
+            {% trans "Make sure that the <b>Service</b> and <b>Device environment</b> are set to the correct value!" %}
+        </div>
         {% if next_hostname %}
             <div class="alert alert-info">Next available hostname in this DC: {{ next_hostname }}</div>
         {% endif %}

@@ -26,26 +26,20 @@ from tastypie.models import ApiKey
 from unittest import skip
 
 from ralph.business.models import Venture
+from ralph.cmdb import models_ci
 from ralph.discovery.models import (
     ComponentModel,
-    ComponentModelGroup,
     ComponentType,
     DeprecationKind,
     Device,
-    DeviceModelGroup,
     DeviceType,
     DiskShare,
     DiskShareMount,
     IPAddress,
     MarginKind,
-    PricingAggregate,
-    PricingFormula,
-    PricingGroup,
-    PricingValue,
-    PricingVariable,
 )
 from ralph.util import api_pricing
-
+from ralph.util.tests import utils
 
 EXISTING_DOMAIN = settings.SANITY_CHECK_PING_ADDRESS
 NON_EXISTENT_DOMAIN = 'nxdomain.allegro.pl'
@@ -189,6 +183,72 @@ class ApiPricingTest(TestCase):
     def test_get_ip_info_empty(self):
         result = api_pricing.get_ip_info(ipaddress='3.3.3.3')
         self.assertEquals(result, {})
+
+    def test_get_business_lines(self):
+        business_lines = utils.BusinessLineFactory.create_batch(7)
+        result = [a for a in api_pricing.get_business_lines()]
+        business_lines_dict = [{
+            'name': bl.name,
+            'ci_uid': bl.uid,
+        } for bl in business_lines]
+        self.assertEquals(result, business_lines_dict)
+
+    def test_get_owners(self):
+        owners = utils.CIOwnerFactory.create_batch(10)
+        result = [a for a in api_pricing.get_owners()]
+        owners_dict = [{
+            'first_name': o.first_name,
+            'last_name': o.last_name,
+            'id': o.id,
+            'email': o.email,
+            'sAMAccountName': o.sAMAccountName,
+        } for o in owners]
+        self.assertEquals(result, owners_dict)
+
+    def test_get_services(self):
+        service = utils.ServiceFactory()
+        profit_center = utils.ProfitCenterFactory()
+        utils.ServiceProfitCenterRelationFactory(
+            parent=profit_center,
+            child=service,
+        )
+        business_ownership = utils.ServiceOwnershipFactory.create_batch(
+            2,
+            ci=service,
+            type=models_ci.CIOwnershipType.business,
+        )
+        technical_ownership = utils.ServiceOwnershipFactory.create_batch(
+            3,
+            ci=service,
+            type=models_ci.CIOwnershipType.technical,
+        )
+        environments = utils.ServiceEnvironmentRelationFactory.create_batch(
+            2,
+            parent=service,
+        )
+        result = [a for a in api_pricing.get_services()]
+        service_dict = {
+            'name': service.name,
+            'ci_uid': service.uid,
+            'profit_center': profit_center.uid,
+            'business_owners': [bo.owner.id for bo in business_ownership],
+            'technical_owners': [to.owner.id for to in technical_ownership],
+            'environments': [e.child.id for e in environments],
+        }
+        self.assertEquals(result, [service_dict])
+
+    def test_get_services_without_profit_center(self):
+        service = utils.ServiceFactory()
+        result = [a for a in api_pricing.get_services()]
+        service_dict = {
+            'name': service.name,
+            'ci_uid': service.uid,
+            'profit_center': None,
+            'technical_owners': [],
+            'business_owners': [],
+            'environments': [],
+        }
+        self.assertEquals(result, [service_dict])
 
 
 class UncompressBase64DataTest(TestCase):

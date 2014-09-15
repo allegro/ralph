@@ -15,7 +15,6 @@ from django.db import models as db
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.models import (
     MACAddressField,
-    Named,
     SavePrioritized,
     TimeTrackable,
     WithConcurrentGetOrCreate,
@@ -139,46 +138,6 @@ class ComponentType(Choices):
     os = _('operating system')
 
 
-class ComponentModelGroup(Named, TimeTrackable, SavingUser):
-    price = db.PositiveIntegerField(
-        verbose_name=_("purchase price"),
-        null=True,
-        blank=True,
-    )
-    type = db.PositiveIntegerField(
-        verbose_name=_("component type"),
-        choices=ComponentType(),
-        default=ComponentType.unknown.id,
-    )
-    per_size = db.BooleanField(
-        default=False,
-        verbose_name=_("This price is per unit of size"),
-    )
-    size_unit = db.CharField(
-        verbose_name=_("unit of size"),
-        blank=True,
-        default="",
-        max_length=50,
-    )
-    size_modifier = db.PositiveIntegerField(
-        verbose_name=_("size modifier"),
-        default=1,
-    )
-
-    class Meta:
-        verbose_name = _("group of component models")
-        verbose_name_plural = _("groups of component models")
-
-    def get_count(self):
-        return sum(
-            model.objects.filter(model__group=self).count()
-            for model in (
-                Storage, Memory, Processor, DiskShare, FibreChannel,
-                GenericComponent, Software,
-            )
-        )
-
-
 class ComponentModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
     name = db.CharField(verbose_name=_("name"), max_length=255)
     speed = db.PositiveIntegerField(
@@ -200,14 +159,6 @@ class ComponentModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
         verbose_name=_("component type"),
         choices=ComponentType(),
         default=ComponentType.unknown.id,
-    )
-    group = db.ForeignKey(
-        ComponentModelGroup,
-        verbose_name=_("group"),
-        null=True,
-        blank=True,
-        default=None,
-        on_delete=db.SET_NULL,
     )
     family = db.CharField(blank=True, default='', max_length=128)
 
@@ -244,7 +195,7 @@ class ComponentModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
         # sanitize None, 0 and empty strings
         kwargs = {
             name: kwargs[name]
-            for name in ('speed', 'cores', 'size', 'family', 'group', 'name')
+            for name in ('speed', 'cores', 'size', 'family', 'name')
             if name in kwargs and kwargs[name]
         }
         # put sensible empty values
@@ -253,7 +204,6 @@ class ComponentModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
         kwargs.setdefault('size', 0)
         kwargs['type'] = type or ComponentType.unknown
         family = kwargs.setdefault('family', '')
-        group = kwargs.pop('group', None)
         if kwargs['type'] == ComponentType.memory:
             assert 'name' not in kwargs, "Custom `name` forbidden for memory."
             name = ' '.join(['RAM', family])
@@ -272,7 +222,6 @@ class ComponentModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
         else:
             name = kwargs.pop('name', family)
         kwargs.update({
-            'group': group,
             'name': name[:50],
         })
         if kwargs['type'] == ComponentType.processor:
@@ -294,17 +243,6 @@ class ComponentModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
             obj = cls(**kwargs)
             obj.save(priority=priority)
             return obj, True
-
-    def get_price(self, size=None):
-        if not self.group:
-            return 0
-        if self.group.per_size:
-            if not size:
-                size = self.size
-            return (size /
-                    (self.group.size_modifier or 1)) * (self.group.price or 0)
-        else:
-            return self.group.price or 0
 
     def get_count(self):
         return sum([
@@ -346,32 +284,6 @@ class Component(SavePrioritized, WithConcurrentGetOrCreate):
 
     class Meta:
         abstract = True
-
-    def get_price_formula(self, date=None):
-        """
-        Find a custom formula for this component's price for specified date.
-        """
-        if not (self.model and self.model.group):
-            return None
-        if date is None:
-            date = datetime.date.today()
-        month = datetime.date(date.year, date.month, 1)
-        for formula in self.model.group.pricingformula_set.filter(
-            group__date=month,
-            group__devices=self.device,
-        ):
-            return formula
-        return None
-
-    def get_price(self):
-        if not self.model:
-            return 0
-        return self.model.get_price(self.get_size())
-
-    def get_size(self):
-        if self.model and self.model.size:
-            return self.model.size
-        return getattr(self, 'size', 0) or 0
 
 
 class GenericComponent(Component):
@@ -439,28 +351,6 @@ class DiskShare(Component):
 
     def get_total_size(self):
         return (self.size or 0) + (self.snapshot_size or 0)
-
-    def get_price(self):
-        """
-        Return the price of the disk share. This is calculated as for all
-        other components, unless the share is in a currently active pricing
-        group -- then the formula for that particular component from that
-        pricing group is used. In case the formula is invalid in some way
-        for the specified values (for example, it has division by zero),
-        NaN is returned instead of a price.
-        """
-        if self.device and self.device.is_deprecated():
-            return 0
-        if not (self.model and self.model.group):
-            return 0
-        size = self.get_total_size() / 1024
-        formula = self.get_price_formula()
-        if formula:
-            try:
-                return float(formula.get_value(size=Decimal(size)))
-            except Exception:
-                return float('NaN')
-        return (self.model.group.price or 0) * size
 
 
 class DiskShareMount(TimeTrackable, WithConcurrentGetOrCreate):

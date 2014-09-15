@@ -10,13 +10,14 @@ import re
 
 from django.db import models as db
 
-from ralph.business.models import Venture, VentureExtraCost
+from ralph.business.models import Venture
+from ralph.cmdb.models import CI, CIAttributeValue, CIOwner, CIType
 from ralph.discovery.models import (
     Device,
+    DeviceEnvironment,
     DeviceType,
     DiskShareMount,
     FibreChannel,
-    HistoryCost,
     IPAddress,
 )
 
@@ -121,8 +122,12 @@ def get_virtual_usages(parent_venture_name=None):
             if not memory:
                 memory = system.memory
         yield {
+            'name': device.name,
             'device_id': device.id,
             'venture_id': device.venture_id,
+            'service_ci_uid': device.service.uid if device.service else None,
+            'environment': device.device_environment,
+            'hypervisor_id': device.parent.id,
             'virtual_cores': cores or 0,
             'virtual_memory': memory or 0,
             'virtual_disk': disk or 0,
@@ -155,18 +160,6 @@ def get_shares(venture_symbol=None, include_virtual=True):
             'mount_device_id': mount.device_id,
             'label': mount.share.label,
             'size': mount.get_size(),
-        }
-
-
-def get_extra_cost():
-    for extracost in VentureExtraCost.objects.all():
-        yield {
-            'venture_id': extracost.venture_id,
-            'venture': extracost.venture.name,
-            'type': extracost.type.name,
-            'cost': extracost.cost,
-            'start': extracost.created,
-            'end': extracost.expire,
         }
 
 
@@ -284,26 +277,105 @@ def get_ip_addresses(only_public=False):
     return {ip.address: ip.venture.id if ip.venture else None for ip in ips}
 
 
-def get_cloud_daily_costs(date=None):
-    """
-    Returns cloud daily costs, grouped by venture.
-    """
-    if date is None:
-        date = datetime.date.today()
-    daily_costs = HistoryCost.objects.filter(
-        device__model__type=DeviceType.cloud_server.id,
-        end=date,
-    ).values('venture__id').annotate(value=db.Sum('daily_cost'))
-    for daily_cost in daily_costs:
-        yield {
-            'venture_id': daily_cost['venture__id'],
-            'daily_cost': daily_cost['value']
-        }
-
-
 def get_fc_cards():
-    for fc in FibreChannel.objects.values('id', 'device__id'):
+    for fc in FibreChannel.objects.filter(device__deleted=False).values(
+        'id',
+        'device__id'
+    ):
         yield {
             'id': fc['id'],
             'device_id': fc['device__id'],
+        }
+
+
+def get_environments():
+    for environment in DeviceEnvironment.objects.all():
+        yield {
+            'id': environment.id,
+            'name': environment.name,
+        }
+
+
+# CMDB
+def get_business_lines():
+    """
+    Returns Business Lines from CMDB (CIs with type Business Line)
+    """
+    business_line_type = CIType.objects.get(name='BusinessLine')
+    for business_line in CI.objects.filter(type=business_line_type):
+        yield {
+            'ci_uid': business_line.uid,
+            'name': business_line.name,
+        }
+
+
+def get_profit_centers():
+    """
+    Returns Profit Centers from CMDB (CIs with type Profit Center)
+    """
+    profit_center_type = CIType.objects.get(name='ProfitCenter')
+    business_line_type = CIType.objects.get(name='BusinessLine')
+    for profit_center in CI.objects.filter(type=profit_center_type):
+        try:
+            description = profit_center.ciattributevalue_set.get(
+                attribute__name='description'
+            ).value
+        except CIAttributeValue.DoesNotExist:
+            description = None
+        business_line = profit_center.child.filter(
+            parent__type=business_line_type
+        ).values_list('parent__uid', flat=True)
+        yield {
+            'ci_uid': profit_center.uid,
+            'name': profit_center.name,
+            'description': description,
+            'business_line': business_line[0] if business_line else None,
+        }
+
+
+def get_owners():
+    """
+    Returns CIOwners from CMDB
+    """
+    for owner in CIOwner.objects.all():
+        yield {
+            'id': owner.id,
+            'first_name': owner.first_name,
+            'last_name': owner.last_name,
+            'email': owner.email,
+            'sAMAccountName': owner.sAMAccountName,
+        }
+
+
+def get_services():
+    """
+    Returns Services (CIs with type Service) with additional information like
+    owners, business line etc.
+    """
+    service_type = CIType.objects.get(name='Service')
+    profit_center_type = CIType.objects.get(name='ProfitCenter')
+    environment_type = CIType.objects.get(name='Environment')
+    for service in CI.objects.filter(
+        type=service_type
+    ).select_related('relations'):
+        profit_center = service.child.filter(
+            parent__type=profit_center_type
+        ).values_list('parent__uid', flat=True)
+        # TODO: verify relation
+        environments = service.parent.filter(
+            child__type=environment_type,
+        )
+        yield {
+            'ci_uid': service.uid,
+            'name': service.name,
+            'profit_center': profit_center[0] if profit_center else None,
+            'business_owners': list(service.business_owners.values_list(
+                'id',
+                flat=True,
+            )),
+            'technical_owners': list(service.technical_owners.values_list(
+                'id',
+                flat=True,
+            )),
+            'environments': [e.child.id for e in environments]
         }

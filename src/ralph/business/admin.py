@@ -21,8 +21,6 @@ from ralph.business.models import (
     RolePropertyTypeValue,
     RolePropertyValue,
     Venture,
-    VentureExtraCost,
-    VentureExtraCostType,
     VentureRole,
 )
 from ralph.integration.admin import RoleIntegrationInline
@@ -58,20 +56,6 @@ class VentureRoleInline(ForeignKeyAutocompleteTabularInline):
     extra = 4
     related_search_fields = {
         'parent': ['^name'],
-    }
-
-
-class VentureExtraCostInline(admin.TabularInline):
-    model = VentureExtraCost
-    exclude = ('modified',)
-
-
-class AutocompleteVentureExtraCostInline(ForeignKeyAutocompleteTabularInline):
-    model = VentureExtraCost
-    exclude = ('created', 'modified',)
-    extra = 3
-    related_search_fields = {
-        'venture': ['^name'],
     }
 
 
@@ -114,12 +98,6 @@ class VentureRoleAdmin(ModelAdmin):
     save_on_top = True
 
 admin.site.register(VentureRole, VentureRoleAdmin)
-
-
-class VentureExtraCostTypeAdmin(ModelAdmin):
-    inlines = [AutocompleteVentureExtraCostInline, ]
-
-admin.site.register(VentureExtraCostType, VentureExtraCostTypeAdmin)
 
 
 class RolePropertyValueInline(admin.TabularInline):
@@ -210,7 +188,6 @@ class VentureAdminVerifiedForm(VentureAdminForm):
 class VentureAdmin(ModelAdmin):
     inlines = [
         SubVentureInline,
-        VentureExtraCostInline,
         VentureRoleInline,
         VenturePropertyInline,
     ]
