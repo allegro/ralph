@@ -46,7 +46,7 @@ class ServiceCatalogFactory(CIFactory):
 
     @factory.lazy_attribute
     def type(self):
-        return CITypeFactory(name=models_ci.CI_TYPES.SERVICE)
+        return models_ci.CIType.objects.get(pk=models_ci.CI_TYPES.SERVICE.id)
 
 
 class DeviceEnvironmentFactory(DjangoModelFactory):
@@ -55,4 +55,6 @@ class DeviceEnvironmentFactory(DjangoModelFactory):
 
     @factory.lazy_attribute
     def type(self):
-        return CITypeFactory(name=models_ci.CI_TYPES.ENVIRONMENT)
+        return models_ci.CIType.objects.get(
+            pk=models_ci.CI_TYPES.ENVIRONMENT.id,
+        )
