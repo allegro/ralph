@@ -288,6 +288,7 @@ In API v0.10 you can edit relations and filter by related CIs:
 The CIs are retrieved and edited with ``related`` field in ci:
 
 .. code-block:: json
+
     "related": [
         {
             "ci": "/api/v0.10/ci/1/",
