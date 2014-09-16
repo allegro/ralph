@@ -489,6 +489,15 @@ class CMDBApiTest(UserTestCase):
         self.assertEqual(json_data['type']['name'], self.ci2.type.name)
         self.assertEqual(json_data['uid'], self.ci2.uid)
 
+    def test_filter_related(self):
+        path = "/api/v0.10/ci/"
+        data = {'related_ci': self.ci1.id, 'related_dir': 'INCOMING'}
+        response = self.get(path=path, data=data)
+        json_data = json.loads(response.content)
+        self.assertEqual(len(json_data['objects']), 1)
+        self.assertEqual(json_data['objects'][0]['id'], self.ci2.id)
+
+
 
 class CIApiTest(TestCase):
 
