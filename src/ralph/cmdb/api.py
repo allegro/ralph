@@ -311,7 +311,9 @@ class RelationField(tastypie.fields.ApiField):
             (Q(parent_id=id_), 'OUTGOING', 'child'),
             (Q(child_id=id_), 'INCOMING', 'parent'),
         ):
-            for relation in CIRelation.objects.filter(q):
+            for relation in CIRelation.objects.filter(q).select_related(
+                other, other + '__type'
+            ):
                 other_ci = getattr(relation, other)
                 result.append(
                     {
@@ -319,7 +321,9 @@ class RelationField(tastypie.fields.ApiField):
                         'dir': dir_name,
                         'ci': CIResourceV010(
                             api_name=self.api_name
-                        ).get_resource_uri(other_ci)
+                        ).get_resource_uri(other_ci),
+                        'name': other_ci.name,
+                        'ci_type': other_ci.type,
                     }
                 )
         return result
