@@ -310,15 +310,18 @@ class RelationField(tastypie.fields.ApiField):
             (Q(parent_id=id_), 'OUTGOING', 'child'),
             (Q(child_id=id_), 'INCOMING', 'parent'),
         ):
-            for relation in CIRelation.objects.filter(q):
+            for relation in CIRelation.objects.filter(q).select_related(other):
                 other_ci = getattr(relation, other)
                 result.append(
                     {
                         'type': CI_RELATION_TYPES.name_from_id(relation.type),
                         'dir': dir_name,
-                        'ci': CIResourceV010(
+                        'id': other_ci.id,
+                        'resource_uri': CIResourceV010(
                             api_name=self.api_name
-                        ).get_resource_uri(other_ci)
+                        ).get_resource_uri(other_ci),
+                        'name': other_ci.name,
+                        'ci_type': other_ci.type_id,
                     }
                 )
         return result
@@ -337,10 +340,7 @@ class RelationField(tastypie.fields.ApiField):
                     'No such relation type {}'.format(relation_data['type'])
                 )
             relation.type = type_id
-            other_ci = CIResource().get_via_uri(
-                relation_data['ci'],
-                request=bundle.request,
-            )
+            other_ci = CI.objects.get(id=relation_data['id'])
             if relation_data['dir'] == 'OUTGOING':
                 relation.parent = ci
                 relation.child = other_ci
