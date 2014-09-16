@@ -173,7 +173,6 @@ LOGIN_REDIRECT_URL = '/browse/'
 LOGIN_URL = '/login/'
 LOGOUT_URL = '/logout/'
 HOME_PAGE_URL_NAME = 'search'
-SANITY_CHECK_PING_ADDRESS = 'www.allegro.pl'
 SANITY_CHECK_IP2HOST_IP = '8.8.8.8'
 SANITY_CHECK_IP2HOST_HOSTNAME_REGEX = r'.*google.*'
 

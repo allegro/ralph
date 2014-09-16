@@ -12,22 +12,17 @@ from datetime import datetime, timedelta
 from functools import partial
 import random
 import re
-import textwrap
 import traceback
 
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
 import django_rq
-from ipaddr import IPv4Network, IPv6Network
 
-from ralph.discovery.models import Network, IPAddress
-from ralph.util.network import ping
+from ralph.discovery.models import Network
 from ralph.util import output, plugin
 
 
 DNS_TXT_ATTRIBUTE_REGEX = re.compile(r'(?P<attribute>[^:]+): (?P<value>.*)')
 MAX_RESTARTS = 3
-SANITY_CHECK_PING_ADDRESS = settings.SANITY_CHECK_PING_ADDRESS
 SINGLE_DISCOVERY_TIMEOUT = settings.SINGLE_DISCOVERY_TIMEOUT
 
 
@@ -57,58 +52,6 @@ def set_queue(context):
             if net.environment and net.environment.queue:
                 queue = net.environment.queue.name
         context['queue'] = queue
-
-
-def sanity_check(perform_network_checks=True):
-    """Checks configuration integrity by pinging the SANITY_CHECK_PING_ADDRESS.
-    """
-    if not perform_network_checks:
-        return
-
-    if ping(SANITY_CHECK_PING_ADDRESS) is None:
-        raise ImproperlyConfigured(
-            textwrap.dedent(
-                """
-                fatal: {} is not pingable.
-
-                Things you might want to check:
-                * is this host connected to network
-                * is this domain pingable from your terminal
-                * is your python binary capped with setcap CAP_NET_RAW
-                or
-                * are you running tests from root
-                or
-                * are you using setuid bin/python
-                """
-            ).strip().format(SANITY_CHECK_PING_ADDRESS),
-        )
-
-
-def dummy_task(interactive=False, index=None):
-    stdout = output.get(interactive)
-    if index:
-        if not index % 25:
-            raise LookupError(
-                "You called {} and it failed on purpose.".format(index),
-            )
-        stdout("Ping {}.".format(index))
-    else:
-        stdout("Ping.")
-
-
-def dummy_horde(interactive=False, how_many=1000):
-    if interactive:
-        for i in xrange(how_many):
-            dummy_task(interactive=interactive, index=i + 1)
-    else:
-        queue = django_rq.get_queue()
-        for i in xrange(how_many):
-            queue.enqueue_call(
-                func=dummy_task,
-                kwargs=dict(interactive=interactive, index=i + 1),
-                timeout=60,
-                result_ttl=0,
-            )
 
 
 def run_next_plugin(context, chains, requirements=None, interactive=False,
@@ -288,112 +231,3 @@ def _enqueue(queue, function, *args, **kwargs):
         timeout=SINGLE_DISCOVERY_TIMEOUT,
         result_ttl=0,
     )
-
-
-def discover_address(address, requirements=None, interactive=True, queue=None):
-    if queue is None:
-        try:
-            net = Network.from_ip(address)
-        except IndexError:
-            raise NoQueueError(
-                "Address {0} doesn't belong to any configured "
-                "environment.".format(address),
-            )
-        if not net.environment or not net.environment.queue:
-            raise NoQueueError(
-                "The network environment {0} has no discovery queue.".format(
-                    net,
-                ),
-            )
-        queue = net.environment.queue.name
-    run_next_plugin(
-        {'ip': address, 'queue': queue},
-        ('discovery', 'postprocess'),
-        requirements=requirements,
-        interactive=interactive,
-    )
-
-
-def discover_network(network, plugin_name='ping', requirements=None,
-                     interactive=False, update_existing=False, outputs=None):
-    """Runs discovery for a single `network`. The argument may be
-    an IPv[46]Network instance, a Network instance or a string
-    holding a network address or a network name defined in the database.
-    If `interactive` is False all output is omitted and discovery is done
-    asynchronously by pushing tasks to Rabbit.
-    If `update_existing` is True, only existing IPs from the specified
-    network are updated.
-    """
-    sanity_check()
-    if outputs:
-        stdout, stdout_verbose, stderr = outputs
-    else:
-        stdout = output.get(interactive)
-    dbnet = None
-    if isinstance(network, (IPv4Network, IPv6Network)):
-        net = network
-        try:
-            dbnet = Network.objects.get(address=str(network))
-        except Network.DoesNotExist:
-            pass
-    elif isinstance(network, Network):
-        net = network.network
-        dbnet = network
-    else:
-        try:
-            network = Network.objects.get(address=network)
-        except Network.DoesNotExist:
-            network = Network.objects.get(name=network)
-            # if raises DoesNotExist here then so be it, user passed
-            # a non-existent network.
-        net = network.network
-        dbnet = network
-    if not dbnet or not dbnet.environment or not dbnet.environment.queue:
-        # Only do discover on networks that have a queue defined.
-        stdout(
-            "Skipping network {} -- no queue defined for this network "
-            "environment.".format(net),
-        )
-        return
-    queue_name = dbnet.environment.queue.name
-    stdout("Scanning network {} started.".format(net))
-    if update_existing:
-        ip_address_queryset = IPAddress.objects.filter(
-            number__gt=int(net.ip), number__lt=int(net.broadcast))
-        hosts = (i.address for i in ip_address_queryset)
-    else:
-        hosts = net.iterhosts()
-    for host in hosts:
-        discover_address(host, requirements, interactive, queue_name)
-    if interactive:
-        stdout()
-    else:
-        stdout('Scanning network {} finished.'.format(net))
-
-
-def discover_all(interactive=False, update_existing=False, outputs=None):
-    """Runs discovery on all networks defined in the database."""
-    sanity_check()
-    if outputs:
-        stdout, stdout_verbose, stderr = outputs
-    else:
-        stdout = output.get(interactive)
-    nets = Network.objects.filter(
-        environment__isnull=False,
-        environment__queue__isnull=False,
-    )
-    for net in nets:
-        if interactive:
-            discover_network(
-                net.network,
-                interactive=True,
-                update_existing=True,
-            )
-        else:
-            queue = django_rq.get_queue()
-            queue.enqueue(
-                discover_network,
-                net.network,
-                update_existing=update_existing,
-            )
-    stdout()
