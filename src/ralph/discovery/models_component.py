@@ -285,6 +285,11 @@ class Component(SavePrioritized, WithConcurrentGetOrCreate):
     class Meta:
         abstract = True
 
+    def get_size(self):
+        if self.model and self.model.size:
+            return self.model.size
+        return getattr(self, 'size', 0) or 0
+
 
 class GenericComponent(Component):
     label = db.CharField(

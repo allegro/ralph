@@ -406,55 +406,6 @@ class DeviceInfoVerifiedForm(DeviceInfoForm):
         return self.instance.venture_role
 
 
-class DevicePricesForm(DeviceForm):
-
-    class Meta(DeviceForm.Meta):
-        fields = (
-            'margin_kind',
-            'deprecation_kind',
-            'cached_price',
-            'cached_cost',
-            'price',
-        )
-
-    auto_price = forms.CharField(widget=ReadOnlyPriceWidget, required=False)
-
-    def __init__(self, *args, **kwargs):
-        super(DevicePricesForm, self).__init__(*args, **kwargs)
-        if self.data:
-            self.data = self.data.copy()
-            for field in ('cached_price', 'cached_cost'):
-                self.data[field] = getattr(self.instance, field)
-            self.data['auto_price'] = self.initial['auto_price']
-
-
-class DevicePurchaseForm(DeviceForm):
-
-    class Meta(DeviceForm.Meta):
-        fields = (
-            'model_name',
-            'sn',
-            'barcode',
-            'purchase_date',
-            'deprecation_date',
-            'warranty_expiration_date',
-            'support_expiration_date',
-            'support_kind',
-        )
-
-    def clean_deprecation_date(self):
-        return self.instance.deprecation_date
-
-    def __init__(self, *args, **kwargs):
-        super(DevicePurchaseForm, self).__init__(*args, **kwargs)
-        if self.data:
-            self.data = self.data.copy()
-            self.data['model_name'] = self.initial['model_name']
-
-    model_name = forms.CharField(label="Model", widget=ReadOnlyWidget,
-                                 required=False)
-
-
 class PropertyForm(forms.Form):
     icons = {}
 

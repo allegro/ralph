@@ -31,7 +31,6 @@ from ralph.ui.views.common import (
     BaseMixin,
     Components,
     History,
-    Prices,
     Scan,
     Software,
 )
@@ -230,10 +229,6 @@ class NetworksComponents(NetworksMixin, Components):
 
 
 class NetworksSoftware(NetworksMixin, Software):
-    pass
-
-
-class NetworksPrices(NetworksMixin, Prices):
     pass
 
 

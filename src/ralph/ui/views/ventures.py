@@ -25,7 +25,6 @@ from ralph.ui.views.common import (
     Components,
     History,
     Info,
-    Prices,
     Software,
     Scan,
 )
@@ -166,10 +165,6 @@ class VenturesComponents(Ventures, Components):
 
 
 class VenturesSoftware(Ventures, Software):
-    pass
-
-
-class VenturesPrices(Ventures, Prices):
     pass
 
 
