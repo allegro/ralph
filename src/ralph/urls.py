@@ -46,7 +46,6 @@ from ralph.cmdb.api import (
 )
 from ralph.ui.views.deploy import AddVM
 from ralph.app import mount_api
-from ralph.discovery.api_donpedro import WindowsDeviceResource
 from ralph.scan.api import ExternalPluginResource
 from ralph.ui.views.common import VhostRedirectView
 from ralph.util import clone_class
@@ -55,8 +54,6 @@ from django.conf import settings
 from django.contrib import admin
 from ajax_select import urls as ajax_select_urls
 
-
-DISCOVERY_DISABLED = getattr(settings, 'DISCOVERY_DISABLED', False)
 
 handler403 = 'ralph.account.views.HTTP403'
 
@@ -85,12 +82,9 @@ for r in (
     BladeServerResource,
     VirtualServerResource,
     DevResource,
-    WindowsDeviceResource,
     DeviceWithPricingResource,
     NetworkKindsResource
 ):
-    if DISCOVERY_DISABLED and r == WindowsDeviceResource:
-        continue
     v09_api.register(r())
 
 # CMDB API
