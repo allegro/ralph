@@ -80,13 +80,12 @@ from ralph.discovery.models import (
     Network,
 )
 from ralph.menu import menu_class as ralph_menu
+from ralph.util import details, presentation
 from ralph.util.plugin import BY_NAME as AVAILABLE_PLUGINS
 from ralph.ui.forms import ChooseAssetForm
 from ralph.ui.forms.devices import (
     DeviceInfoForm,
     DeviceInfoVerifiedForm,
-    DevicePricesForm,
-    DevicePurchaseForm,
     PropertyForm,
     DeviceBulkForm,
 )
@@ -154,10 +153,26 @@ def _get_balancers(dev):
         }
 
 
-def _get_details(dev, purchase_only=False, with_price=False,
-                 ignore_deprecation=False, exclude=[]):
-    # a leftover from ralph.util.pricing
-    pass
+def _get_details(dev):
+    for detail in details.details_all(dev):
+        if 'icon' not in detail:
+            if detail['group'] == 'dev':
+                detail['icon'] = presentation.get_device_model_icon(
+                    detail.get('model'),
+                )
+            else:
+                detail['icon'] = presentation.get_component_model_icon(
+                    detail.get('model'),
+                )
+        if (
+            detail['group'] != 'dev' and
+            'size' not in detail and
+            detail.get('model')
+        ):
+            detail['size'] = detail['model'].size
+        if not detail.get('model'):
+            detail['model'] = detail.get('model_name', '')
+        yield detail
 
 
 class ACLGateway(object):
@@ -337,11 +352,6 @@ class BaseMixin(MenuMixin, ACLGateway):
                 MenuItem('Addresses', fugue_icon='fugue-network-ip',
                          href=self.tab_href('addresses')),
             ])
-        if has_perm(Perm.edit_device_info_financial, venture):
-            tab_items.extend([
-                MenuItem('Prices', fugue_icon='fugue-money-coin',
-                         href=self.tab_href('prices')),
-            ])
         if has_perm(Perm.read_device_info_history, venture):
             tab_items.extend([
                 MenuItem('History', fugue_icon='fugue-hourglass',
@@ -353,7 +363,7 @@ class BaseMixin(MenuMixin, ACLGateway):
         )):
             tab_items.extend([
                 MenuItem(
-                    'Asset',
+                    'Linked Asset',
                     fugue_icon='fugue-baggage-cart-box',
                     href=self.tab_href('asset')),
             ])
@@ -770,28 +780,7 @@ class Components(DeviceDetailView):
 
     def get_context_data(self, **kwargs):
         ret = super(Components, self).get_context_data(**kwargs)
-        ret.update({'components': None})  # a leftover from ralph.util.pricing
-        return ret
-
-
-class Prices(DeviceUpdateView):
-    form_class = DevicePricesForm
-    template_name = 'ui/device_prices.html'
-    read_perm = Perm.edit_device_info_financial  # sic
-    edit_perm = Perm.edit_device_info_financial
-
-    def get_initial(self):
-        # a leftover from ralph.util.pricing
-        return {'auto_price': 0}
-
-    def get_context_data(self, **kwargs):
-        ret = super(Prices, self).get_context_data(**kwargs)
-        ret.update({
-            'components': _get_details(self.object,
-                                       purchase_only=False,
-                                       with_price=True),
-            'deprecated': self.object.is_deprecated(),
-        })
+        ret.update({'components': _get_details(self.object)})
         return ret
 
 
@@ -1120,30 +1109,6 @@ class History(DeviceDetailView):
             'show_all': show_all,
             'query_variable_name': query_variable_name,
         })
-        return ret
-
-
-class Purchase(DeviceUpdateView):
-    form_class = DevicePurchaseForm
-    template_name = 'ui/device_purchase.html'
-    read_perm = Perm.read_device_info_support
-    edit_perm = Perm.edit_device_info_support
-
-    def get_initial(self):
-        return {
-            'model_name': self.object.get_model_name()
-        }
-
-    def get_context_data(self, **kwargs):
-        ret = super(Purchase, self).get_context_data(**kwargs)
-        ret.update(
-            {
-                'components': _get_details(
-                    self.object,
-                    purchase_only=False, with_price=True,
-                ),
-            }
-        )
         return ret
 
 
@@ -1533,9 +1498,7 @@ class Software(DeviceDetailView):
 
     def get_context_data(self, **kwargs):
         ret = super(Software, self).get_context_data(**kwargs)
-        ret.update({
-            'components': _get_details(self.object, purchase_only=False),
-        })
+        ret.update({'components': _get_details(self.object)})
         return ret
 
 

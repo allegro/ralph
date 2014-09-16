@@ -30,7 +30,6 @@ from ralph.ui.views.common import (
     Components,
     History,
     Info,
-    Prices,
     Scan,
     Software,
 )
@@ -516,10 +515,6 @@ class SearchAsset(Search, Asset):
 
 
 class SearchComponents(Search, Components):
-    pass
-
-
-class SearchPrices(Search, Prices):
     pass
 
 

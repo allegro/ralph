@@ -25,7 +25,6 @@ from ralph.ui.views.common import (
     Components,
     History,
     Info,
-    Prices,
     Scan,
     Software,
     TEMPLATE_MENU_ITEMS,
@@ -165,10 +164,6 @@ class RacksComponents(Racks, Components):
 
 
 class RacksSoftware(Racks, Software):
-    pass
-
-
-class RacksPrices(Racks, Prices):
     pass
 
 
