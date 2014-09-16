@@ -159,7 +159,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     Q(name__in=names)
                 ).values_list('content'))
                 q = (_search_fields_or([
-                    'name__contains',
+                    'name__icontains',
                     'ipaddress__hostname__icontains',
                 ], name.split()) | Q(
                     ipaddress__address__in=ips,
@@ -222,7 +222,6 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                 else:
                     q = _search_fields_or([
                         'model__name__icontains',
-                        'model__group__name__icontains',
                     ], data['model'].split('|'))
                     self.query = self.query.filter(q).distinct()
             if data['component']:
@@ -242,20 +241,15 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     q = _search_fields_or([
                         'genericcomponent__label__icontains',
                         'genericcomponent__model__name__icontains',
-                        'genericcomponent__model__group__name__icontains',
                         'ethernet__mac__icontains',
                         'fibrechannel__label__icontains',
                         'fibrechannel__model__name__icontains',
-                        'fibrechannel__model__group__name__icontains',
                         'storage__label__icontains',
                         'storage__model__name__icontains',
-                        'storage__model__group__name__icontains',
                         'memory__label__icontains',
                         'memory__model__name__icontains',
-                        'memory__model__group__name__icontains',
                         'processor__label__icontains',
                         'processor__model__name__icontains',
-                        'processor__model__group__name__icontains',
                         'disksharemount__share__label__icontains',
                         'disksharemount__share__wwn__icontains',
                         'disksharemount__share__model__name__icontains',
@@ -286,8 +280,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     if not operator:
                         self.query = self.query.filter(
                             Q(software__label__icontains=name) |
-                            Q(software__model__name__icontains=name) |
-                            Q(software__model__group__name__icontains=name)
+                            Q(software__model__name__icontains=name)
                         ).distinct()
                     elif name and operator and version:
                         operators = {
@@ -304,8 +297,6 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                         self.query = self.query.filter(
                             (Q(software__label__icontains=name) & soft_q) |
                             (Q(software__model__name__icontains=name) &
-                                soft_q) |
-                            (Q(software__model__group__name__icontains=name) &
                                 soft_q)
                         ).distinct()
             if data['serial']:
