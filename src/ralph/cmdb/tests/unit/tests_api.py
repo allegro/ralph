@@ -385,11 +385,11 @@ class CMDBApiTest(UserTestCase):
                 {
                     'dir': 'INCOMING',
                     'type': 'HASROLE',
-                    'ci': '/api/v0.10/ci/{}/'.format(self.ci2.id),
+                    'id': self.ci2.id,
                 }, {
                     'dir': 'OUTGOING',
                     'type': 'CONTAINS',
-                    'ci': '/api/v0.10/ci/{}/'.format(self.ci3.id),
+                    'id': self.ci3.id,
                 }
             ],
         })
