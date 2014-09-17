@@ -35,7 +35,6 @@ from bob.data_table import DataTableColumn, DataTableMixin
 import pluggableapp
 from powerdns.models import Record
 
-from ralph import VERSION
 from ralph.discovery.models_component import Ethernet
 from ralph.account.models import Perm, get_user_home_page_url, ralph_permission
 from ralph.app import RalphModule
@@ -54,7 +53,7 @@ from ralph.scan.data import (
 )
 from ralph.scan.diff import diff_results, sort_results
 from ralph.scan.models import ScanSummary
-from ralph.scan.util import update_scan_summary, get_pending_scans
+from ralph.scan.util import update_scan_summary
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
@@ -228,9 +227,6 @@ class MenuMixin(object):
 
     def dispatch(self, request, *args, **kwargs):
         self.menus = [ralph_menu(request)]
-        if 'ralph.cmdb' in settings.INSTALLED_APPS:
-            from ralph.cmdb.menu import menu_class as cmdb_menu
-            self.menus.append(cmdb_menu(request))
         if request.user.is_staff:
             self.menus.append(AdminMenu(request))
         self.menus.append(UserMenu(request))
@@ -390,109 +386,6 @@ class BaseMixin(MenuMixin, ACLGateway):
         details = self.kwargs.get('details', 'info')
         profile = self.request.user.get_profile()
         has_perm = profile.has_perm
-        footer_items = []
-        mainmenu_items = []
-        if has_perm(Perm.has_core_access):
-            mainmenu_items.append(
-                MenuItem(
-                    'Ventures',
-                    fugue_icon='fugue-store',
-                    view_name='ventures'
-                )
-            )
-        if has_perm(Perm.read_dc_structure):
-            mainmenu_items.append(
-                MenuItem('Racks', fugue_icon='fugue-building',
-                         view_name='racks'))
-        if has_perm(Perm.read_network_structure):
-            mainmenu_items.append(
-                MenuItem('Networks', fugue_icon='fugue-weather-clouds',
-                         view_name='networks'))
-        mainmenu_items.append(
-            MenuItem('Ralph CLI', fugue_icon='fugue-terminal',
-                     href='#beast'))
-        mainmenu_items.append(
-            MenuItem('Quick scan', fugue_icon='fugue-radar',
-                     href='#quickscan'))
-
-        pending_scans = get_pending_scans()
-        if pending_scans:
-            mainmenu_items.append(MenuItem(
-                _('Pending scans {}/{}').format(
-                    pending_scans.new_devices,
-                    pending_scans.changed_devices,
-                ),
-                href=reverse(
-                    'scan_list', kwargs={'scan_type': (
-                        'new' if pending_scans.new_devices else 'existing'
-                    )}
-                ),
-                fugue_icon='fugue-light-bulb--exclamation',
-            ))
-        if ('ralph.cmdb' in settings.INSTALLED_APPS and
-                has_perm(Perm.read_configuration_item_info_generic)):
-            mainmenu_items.append(
-                MenuItem('CMDB', fugue_icon='fugue-thermometer',
-                         href='/cmdb/changes/timeline')
-            )
-
-        for app in pluggableapp.app_dict.values():
-            if isinstance(app, RalphModule):
-                # check app required permissions
-                if (app.required_permission is None or
-                        has_perm(app.required_permission)):
-                    mainmenu_items.append(MenuItem(
-                        app.disp_name,
-                        fugue_icon=app.icon,
-                        href='/{}'.format(app.url_prefix)
-                    ))
-
-        if settings.BUGTRACKER_URL:
-            footer_items.append(
-                MenuItem(
-                    'Report a bug', fugue_icon='fugue-bug', pull_right=True,
-                    href=settings.BUGTRACKER_URL)
-            )
-        footer_items.append(
-            MenuItem(
-                "Version %s" % '.'.join((str(part) for part in VERSION)),
-                fugue_icon='fugue-document-number',
-                href=CHANGELOG_URL,
-            )
-        )
-        if self.request.user.is_staff:
-            footer_items.append(
-                MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
-        footer_items.append(
-            MenuItem(
-                '%s (preference)' % self.request.user,
-                fugue_icon='fugue-user',
-                view_name='preference',
-                view_args=[details or 'info', ''],
-                pull_right=True,
-                href=reverse('user_preference', args=[]),
-            )
-        )
-        footer_items.append(
-            MenuItem(
-                'logout',
-                fugue_icon='fugue-door-open-out',
-                view_name='logout',
-                view_args=[details or 'info', ''],
-                pull_right=True,
-                href=settings.LOGOUT_URL,
-            )
-        )
-        mainmenu_items.append(
-            MenuItem(
-                'Advanced search',
-                name='search',
-                fugue_icon='fugue-magnifier',
-                view_args=[details or 'info', ''],
-                view_name='search',
-                pull_right=True,
-            )
-        )
         tab_items = self.get_tab_items()
         ret.update({
             'details': details,
