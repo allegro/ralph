@@ -37,6 +37,7 @@ from ralph.cmdb.models_ci import (
     CIType,
     CIRelation,
 )
+from ralph.util.tests.utils import CIOwnerFactory
 from django.core.cache import cache
 from ralph.ui.tests.global_utils import create_user, UserTestCase
 
@@ -56,18 +57,8 @@ class CMDBApiTest(UserTestCase):
         super(CMDBApiTest, self).setUp()
 
     def create_owners(self):
-        self.owner1 = CIOwner(
-            first_name='first_name_owner1',
-            last_name='last_name_owner1',
-            email='first_name_owner1.last_name_owner1@ralph.local',
-        )
-        self.owner1.save()
-        self.owner2 = CIOwner(
-            first_name='first_name_owner2',
-            last_name='last_name_owner2',
-            email='first_name_owner2.last_name_owner2@ralph.local',
-        )
-        self.owner2.save()
+        self.owner1 = CIOwnerFactory()
+        self.owner2 = CIOwnerFactory()
 
     def create_cis(self):
         self.ci1 = CI(
