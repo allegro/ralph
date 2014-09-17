@@ -190,18 +190,28 @@ class ApiPricingTest(TestCase):
         business_lines_dict = [{
             'name': bl.name,
             'ci_uid': bl.uid,
+            'ci_id': bl.id,
         } for bl in business_lines]
         self.assertEquals(result, business_lines_dict)
+
+    def test_get_profit_centers(self):
+        profit_centers = utils.ProfitCenterFactory.create_batch(7)
+        result = [a for a in api_pricing.get_profit_centers()]
+        profit_centers_dict = [{
+            'name': pc.name,
+            'ci_uid': pc.uid,
+            'ci_id': pc.id,
+            'description': None,
+            'business_line': None,
+        } for pc in profit_centers]
+        self.assertEquals(result, profit_centers_dict)
 
     def test_get_owners(self):
         owners = utils.CIOwnerFactory.create_batch(10)
         result = [a for a in api_pricing.get_owners()]
         owners_dict = [{
-            'first_name': o.first_name,
-            'last_name': o.last_name,
             'id': o.id,
-            'email': o.email,
-            'sAMAccountName': o.sAMAccountName,
+            'profile_id': o.profile_id,
         } for o in owners]
         self.assertEquals(result, owners_dict)
 
@@ -229,8 +239,9 @@ class ApiPricingTest(TestCase):
         result = [a for a in api_pricing.get_services()]
         service_dict = {
             'name': service.name,
+            'ci_id': service.id,
             'ci_uid': service.uid,
-            'profit_center': profit_center.uid,
+            'profit_center': profit_center.id,
             'business_owners': [bo.owner.id for bo in business_ownership],
             'technical_owners': [to.owner.id for to in technical_ownership],
             'environments': [e.child.id for e in environments],
@@ -242,6 +253,7 @@ class ApiPricingTest(TestCase):
         result = [a for a in api_pricing.get_services()]
         service_dict = {
             'name': service.name,
+            'ci_id': service.id,
             'ci_uid': service.uid,
             'profit_center': None,
             'technical_owners': [],

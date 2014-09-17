@@ -291,7 +291,8 @@ def get_fc_cards():
 def get_environments():
     for environment in DeviceEnvironment.objects.all():
         yield {
-            'id': environment.id,
+            'ci_id': environment.id,
+            'ci_uid': environment.uid,
             'name': environment.name,
         }
 
@@ -304,6 +305,7 @@ def get_business_lines():
     business_line_type = CIType.objects.get(name='BusinessLine')
     for business_line in CI.objects.filter(type=business_line_type):
         yield {
+            'ci_id': business_line.id,
             'ci_uid': business_line.uid,
             'name': business_line.name,
         }
@@ -324,8 +326,9 @@ def get_profit_centers():
             description = None
         business_line = profit_center.child.filter(
             parent__type=business_line_type
-        ).values_list('parent__uid', flat=True)
+        ).values_list('parent__id', flat=True)
         yield {
+            'ci_id': profit_center.id,
             'ci_uid': profit_center.uid,
             'name': profit_center.name,
             'description': description,
@@ -340,10 +343,7 @@ def get_owners():
     for owner in CIOwner.objects.all():
         yield {
             'id': owner.id,
-            'first_name': owner.first_name,
-            'last_name': owner.last_name,
-            'email': owner.email,
-            'sAMAccountName': owner.sAMAccountName,
+            'profile_id': owner.profile_id,
         }
 
 
@@ -360,12 +360,13 @@ def get_services():
     ).select_related('relations'):
         profit_center = service.child.filter(
             parent__type=profit_center_type
-        ).values_list('parent__uid', flat=True)
+        ).values_list('parent__id', flat=True)
         # TODO: verify relation
         environments = service.parent.filter(
             child__type=environment_type,
         )
         yield {
+            'ci_id': service.id,
             'ci_uid': service.uid,
             'name': service.name,
             'profit_center': profit_center[0] if profit_center else None,
