@@ -594,7 +594,7 @@ CI.technical_owners = CIOwnershipDescriptor(CIOwnershipType.technical.id)
 
 
 class CIOwner(TimeTrackable, WithConcurrentGetOrCreate):
-    profile = models.OneToOneField('account.Profile', null=True)
+    profile = models.OneToOneField('account.Profile', null=False)
 
     def __unicode__(self):
         return ' '.join([self.first_name, self.last_name])
