@@ -685,3 +685,13 @@ class CIOwnersResource(MResource):
             timeframe=TIMEFRAME,
             expiration=EXPIRATION,
         )
+
+    def dehydrate(self, bundle):
+        for field in [
+            'first_name',
+            'last_name',
+            'sAMAccountName',
+            'email',
+        ]:
+            bundle.data[field] = getattr(bundle.obj, field)
+        return bundle

@@ -594,10 +594,25 @@ CI.technical_owners = CIOwnershipDescriptor(CIOwnershipType.technical.id)
 
 
 class CIOwner(TimeTrackable, WithConcurrentGetOrCreate):
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True, null=True)
-    sAMAccountName = models.CharField(max_length=256, blank=True)
+    profile = models.OneToOneField('account.Profile', null=True)
 
     def __unicode__(self):
         return ' '.join([self.first_name, self.last_name])
+
+    # Bacwards compatibility properties
+
+    @property
+    def first_name(self):
+        return self.profile.user.first_name
+
+    @property
+    def last_name(self):
+        return self.profile.user.last_name
+
+    @property
+    def email(self):
+        return self.profile.user.email
+
+    @property
+    def sAMAccountName(self):
+        return self.profile.user.username
