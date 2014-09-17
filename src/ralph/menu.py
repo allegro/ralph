@@ -5,9 +5,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.core.exceptions import ImproperlyConfigured
+from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext_lazy as _
 
 from bob.menu import MenuItem
 from ralph.account.models import Perm
+from ralph.scan.util import get_pending_scans
 
 
 class Menu(object):
@@ -67,26 +70,47 @@ class CoreMenu(Menu):
         super(CoreMenu, self).__init__(*args, **kwargs)
 
     def get_submodules(self):
-        submodules = [
-            MenuItem(
-                'Ventures',
-                fugue_icon='fugue-store',
-                view_name='ventures',
+        submodules = []
+        if self.has_perm(Perm.has_core_access):
+            submodules.append(
+                MenuItem(
+                    _('Ventures'),
+                    fugue_icon='fugue-store',
+                    view_name='ventures',
+                )
             )
-        ]
         if self.has_perm(Perm.read_dc_structure):
             submodules.append(
-                MenuItem('Racks', fugue_icon='fugue-building',
+                MenuItem(_('Racks'), fugue_icon='fugue-building',
                          view_name='racks'))
+        if self.has_perm(Perm.read_network_structure):
+            submodules.append(
+                MenuItem(_('Networks'), fugue_icon='fugue-weather-clouds',
+                         view_name='networks'))
         submodules.append(
-            MenuItem('Ralph CLI', fugue_icon='fugue-terminal',
+            MenuItem(_('Ralph CLI'), fugue_icon='fugue-terminal',
                      href='#beast'))
         submodules.append(
-            MenuItem('Quick scan', fugue_icon='fugue-radar',
+            MenuItem(_('Quick scan'), fugue_icon='fugue-radar',
                      href='#quickscan'))
         submodules.append(
-            MenuItem('Search', fugue_icon='fugue-application-search-result',
+            MenuItem(_('Search'), fugue_icon='fugue-application-search-result',
                      view_name='search', name='search'))
+
+        pending_scans = get_pending_scans()
+        if pending_scans:
+            submodules.append(MenuItem(
+                _('Pending scans {}/{}').format(
+                    pending_scans.new_devices,
+                    pending_scans.changed_devices,
+                ),
+                href=reverse(
+                    'scan_list', kwargs={'scan_type': (
+                        'new' if pending_scans.new_devices else 'existing'
+                    )}
+                ),
+                fugue_icon='fugue-light-bulb--exclamation',
+            ))
         return submodules
 
     def get_sidebar_items(self):
