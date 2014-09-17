@@ -88,12 +88,18 @@ class CIEditForm(DependencyForm, forms.ModelForm):
         )
     )
     business_owners = forms.ModelMultipleChoiceField(
-        models.CIOwner.objects.all().order_by('last_name', 'first_name'),
+        models.CIOwner.objects.all().order_by(
+            'profile__user__last_name',
+            'profile__user__first_name'
+        ),
         widget=FilteredSelectMultiple("owners", False, attrs={'rows': '10'},),
         required=False
     )
     technical_owners = forms.ModelMultipleChoiceField(
-        models.CIOwner.objects.all().order_by('last_name', 'first_name'),
+        models.CIOwner.objects.all().order_by(
+            'profile__user__last_name',
+            'profile__user__first_name'
+        ),
         widget=FilteredSelectMultiple("owners", False, attrs={'rows': '10'}),
         required=False
     )
@@ -210,13 +216,19 @@ class CIViewForm(CIEditForm):
             "layers", False, attrs={'rows': '10'})
     )
     technical_owners = forms.ModelMultipleChoiceField(
-        models.CIOwner.objects.all().order_by('last_name', 'first_name'),
+        models.CIOwner.objects.all().order_by(
+            'profile__user__last_name',
+            'profile__user__first_name'
+        ),
         widget=ReadOnlyMultipleChoiceWidget(
             "owners", False, attrs={'rows': '10'}),
         required=False
     )
     business_owners = forms.ModelMultipleChoiceField(
-        models.CIOwner.objects.all().order_by('last_name', 'first_name'),
+        models.CIOwner.objects.all().order_by(
+            'profile__user__last_name',
+            'profile__user__first_name'
+        ),
         widget=ReadOnlyMultipleChoiceWidget(
             "owners", False, attrs={'rows': '10'}),
         required=False
