@@ -302,7 +302,7 @@ The CIs are retrieved and edited with ``related`` field in ci:
     ]
 
 To search for children or parent of a given CI, you need to specify the CI id
-as ``related_ci`` and the direction as ``related_dir``.
+as ``child`` or ``parent`` e.g. ``/api/v0.10/ci/?child=1&child=10``.
 
 .. _businessline:
 
