@@ -41,7 +41,7 @@ from ralph.discovery.models import (
 from ralph.util import api_pricing
 from ralph.util.tests import utils
 
-EXISTING_DOMAIN = settings.SANITY_CHECK_PING_ADDRESS
+EXISTING_DOMAIN = 'www.google.com'
 NON_EXISTENT_DOMAIN = 'nxdomain.allegro.pl'
 NON_EXISTENT_HOST_IP = '11.255.255.254'
 
