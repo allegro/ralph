@@ -38,7 +38,7 @@ from ralph.discovery.models import (
     IPAddress,
     MarginKind,
 )
-from ralph.util import api_pricing
+from ralph.util import api_pricing, api_scrooge
 from ralph.util.tests import utils
 
 EXISTING_DOMAIN = 'www.google.com'
@@ -184,24 +184,37 @@ class ApiPricingTest(TestCase):
         result = api_pricing.get_ip_info(ipaddress='3.3.3.3')
         self.assertEquals(result, {})
 
+
+class ApiScroogeTest(TestCase):
+
     def test_get_business_lines(self):
         business_lines = utils.BusinessLineFactory.create_batch(7)
-        result = [a for a in api_pricing.get_business_lines()]
+        result = [a for a in api_scrooge.get_business_lines()]
         business_lines_dict = [{
             'name': bl.name,
             'ci_uid': bl.uid,
+            'ci_id': bl.id,
         } for bl in business_lines]
         self.assertEquals(result, business_lines_dict)
 
+    def test_get_profit_centers(self):
+        profit_centers = utils.ProfitCenterFactory.create_batch(7)
+        result = [a for a in api_scrooge.get_profit_centers()]
+        profit_centers_dict = [{
+            'name': pc.name,
+            'ci_uid': pc.uid,
+            'ci_id': pc.id,
+            'description': None,
+            'business_line': None,
+        } for pc in profit_centers]
+        self.assertEquals(result, profit_centers_dict)
+
     def test_get_owners(self):
         owners = utils.CIOwnerFactory.create_batch(10)
-        result = [a for a in api_pricing.get_owners()]
+        result = [a for a in api_scrooge.get_owners()]
         owners_dict = [{
-            'first_name': o.first_name,
-            'last_name': o.last_name,
             'id': o.id,
-            'email': o.email,
-            'sAMAccountName': o.sAMAccountName,
+            'profile_id': o.profile_id,
         } for o in owners]
         self.assertEquals(result, owners_dict)
 
@@ -226,11 +239,12 @@ class ApiPricingTest(TestCase):
             2,
             parent=service,
         )
-        result = [a for a in api_pricing.get_services()]
+        result = [a for a in api_scrooge.get_services()]
         service_dict = {
             'name': service.name,
+            'ci_id': service.id,
             'ci_uid': service.uid,
-            'profit_center': profit_center.uid,
+            'profit_center': profit_center.id,
             'business_owners': [bo.owner.id for bo in business_ownership],
             'technical_owners': [to.owner.id for to in technical_ownership],
             'environments': [e.child.id for e in environments],
@@ -239,9 +253,10 @@ class ApiPricingTest(TestCase):
 
     def test_get_services_without_profit_center(self):
         service = utils.ServiceFactory()
-        result = [a for a in api_pricing.get_services()]
+        result = [a for a in api_scrooge.get_services()]
         service_dict = {
             'name': service.name,
+            'ci_id': service.id,
             'ci_uid': service.uid,
             'profit_center': None,
             'technical_owners': [],
