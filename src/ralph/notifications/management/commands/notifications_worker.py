@@ -14,7 +14,7 @@ from redis.exceptions import ConnectionError
 from rq import use_connection
 
 from ralph.notifications.error_handlers import notifications_error_handler
-from ralph.notifications.conf import QUEUE_NAME
+from ralph.notifications.conf import NOTIFICATIONS_QUEUE_NAME
 
 
 logger = logging.getLogger('rq.worker')
@@ -48,7 +48,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         try:
-            worker = get_worker(QUEUE_NAME)
+            worker = get_worker(NOTIFICATIONS_QUEUE_NAME)
             use_connection(worker.connection)
             worker.push_exc_handler(notifications_error_handler)
             worker.work()
