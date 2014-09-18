@@ -110,6 +110,13 @@
     attribute_type: 2
     ci_types: [12]
 
+- model: cmdb.CIAttribute
+  pk: 6
+  fields:
+    name: Symbol
+    attribute_type: 2
+    ci_types: [7]
+
 # Layers
 
 - model: cmdb.CILayer
