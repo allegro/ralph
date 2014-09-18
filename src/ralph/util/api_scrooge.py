@@ -191,10 +191,17 @@ def get_services():
         environments = service.parent.filter(
             child__type=environment_type,
         )
+        try:
+            symbol = service.ciattributevalue_set.get(
+                attribute__name='symbol'
+            ).value
+        except CIAttributeValue.DoesNotExist:
+            symbol = None
         yield {
             'ci_id': service.id,
             'ci_uid': service.uid,
             'name': service.name,
+            'symbol': symbol,
             'profit_center': profit_center[0] if profit_center else None,
             'business_owners': list(service.business_owners.values_list(
                 'id',
