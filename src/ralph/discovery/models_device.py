@@ -15,6 +15,7 @@ import sys
 import os
 
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.db import models as db
 from django.db import IntegrityError, transaction
 from django.utils.translation import ugettext_lazy as _
@@ -182,11 +183,6 @@ class DeviceModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
 
     def get_count(self):
         return self.device_set.count()
-
-    def get_price(self):
-        if self.group:
-            return self.group.price
-        return 0
 
     def get_json(self):
         return {
@@ -728,10 +724,7 @@ class Device(
         return None
 
     def get_model_name(self):
-        try:
-            return self.model.group.name
-        except AttributeError:
-            return self.model.name if self.model else ''
+        return self.model.name if self.model else ''
 
     def get_position(self):
         if self.position:
@@ -829,7 +822,11 @@ class Device(
 
         if sync_fields and 'ralph_assets' in settings.INSTALLED_APPS:
             SyncFieldMixin.save(self, *args, **kwargs)
-        return super(Device, self).save(sync_fields=sync_fields, *args, **kwargs)
+        return super(Device, self).save(
+            sync_fields=sync_fields,
+            *args,
+            **kwargs
+        )
 
     def get_asset(self):
         asset = None
@@ -872,6 +869,10 @@ class Device(
             ]
         ))
         return props
+
+    @property
+    def url(self):
+        return reverse('search', args=('info', self.id))
 
 
 class Connection(db.Model):

@@ -37,7 +37,6 @@ from ralph.discovery.models import (
     Device,
     DeviceType,
     MarginKind,
-    SplunkUsage,
     HistoryCost,
 )
 from ralph.ui.forms import DateRangeForm, MarginsReportForm
@@ -468,12 +467,6 @@ def _report_ventures_data_provider(start, end, ventures_ids, extra_types):
             db.Q(venture__parent__parent__parent__parent=venture)
         ).exclude(device__deleted=True)
         data = _report_ventures_get_totals(start, end, query, extra_types)
-        (
-            splunk_cost,
-            splunk_count,
-            splunk_count_now,
-            splunk_size,
-        ) = SplunkUsage.get_cost(venture, start, end)
         data.update({
             'id': venture.id,
             'name': venture.name,
@@ -486,7 +479,7 @@ def _report_ventures_data_provider(start, end, ventures_ids, extra_types):
             'cloud_use': (
                 (data['cloud_cost'] or 0) / total_cloud_cost
             ) if total_cloud_cost else 0,
-            'splunk_cost': splunk_cost,
+            'splunk_cost': 0,
         })
         result.append(data)
         if venture.parent is not None:
@@ -495,12 +488,6 @@ def _report_ventures_data_provider(start, end, ventures_ids, extra_types):
             continue
         query = HistoryCost.objects.filter(venture=venture)
         data = _report_ventures_get_totals(start, end, query, extra_types)
-        (
-            splunk_cost,
-            splunk_count,
-            splunk_count_now,
-            splunk_size,
-        ) = SplunkUsage.get_cost(venture, start, end, shallow=True)
         data.update({
             'id': venture.id,
             'name': '-',
@@ -513,7 +500,7 @@ def _report_ventures_data_provider(start, end, ventures_ids, extra_types):
             'cloud_use': (
                 (data['cloud_cost'] or 0) / total_cloud_cost
             ) if total_cloud_cost else 0,
-            'splunk_cost': splunk_cost,
+            'splunk_cost': 0,
         })
         result.append(data)
     return result

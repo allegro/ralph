@@ -223,8 +223,6 @@ def get_model(device):
         discovery_models.DeviceType.name_from_id(device.model.type),
         device.model.name
     )
-    if device.model.group:
-        model += ' {%s}' % device.model.group.name
     return model
 
 
