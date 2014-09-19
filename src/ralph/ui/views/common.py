@@ -53,7 +53,7 @@ from ralph.scan.data import (
 )
 from ralph.scan.diff import diff_results, sort_results
 from ralph.scan.models import ScanSummary
-from ralph.scan.util import update_scan_summary
+from ralph.scan.util import get_pending_scans, update_scan_summary
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
@@ -1477,6 +1477,8 @@ class Scan(BaseMixin, TemplateView):
 class ScanList(BaseMixin, DataTableMixin, TemplateView):
     template_name = 'ui/scan-list.html'
     sort_variable_name = 'sort'
+    submodule_name = 'scan_list'
+
     columns = [
         DataTableColumn(
             _('IP'),
@@ -1496,17 +1498,23 @@ class ScanList(BaseMixin, DataTableMixin, TemplateView):
         ),
     ]
 
+    def get_tab_items(self):
+        return []
+
     def get_context_data(self, **kwargs):
         result = super(ScanList, self).get_context_data(**kwargs)
         result.update(
             super(ScanList, self).get_context_data_paginator(**kwargs)
         )
+        scans = get_pending_scans()
         result.update({
+            'changed_count': scans.changed_devices if scans else 0,
+            'columns': self.columns,
+            'new_count': scans.new_devices if scans else 0,
+            'scan_type': kwargs['scan_type'],
+            'sort': self.sort,
             'sort_variable_name': self.sort_variable_name,
             'url_query': self.request.GET,
-            'sort': self.sort,
-            'columns': self.columns,
-            'scan_type': kwargs['scan_type']
         })
         return result
 
