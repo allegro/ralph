@@ -55,8 +55,7 @@ def details_dev(dev):
                 }
     elif dev.model.type == DeviceType.blade_server.id:
         yield {
-            'label': '%s/%s of chassis' % (dev.model.group.slots,
-                                           dev.parent.model.group.slots),
+            'label': escape('Blade server %s' % dev.name),
             'model': dev.parent.model,
             'icon': 'fugue-servers',
             'serial': dev.parent.sn,

@@ -181,7 +181,7 @@ class VenturesAsset(Ventures, Asset):
 
 
 class VenturesScan(Ventures, Scan):
-    pass
+    submodule_name = 'ventures'
 
 
 class VenturesRoles(Ventures, Base):

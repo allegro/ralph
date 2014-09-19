@@ -15,7 +15,6 @@ from __future__ import unicode_literals
 import datetime
 
 from django.conf import settings
-from django.db import models as db
 from tastypie import fields
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.cache import SimpleCache
@@ -496,36 +495,7 @@ class DeviceWithPricingResource(DeviceResource):
                 )
             except ValueError:
                 splunk_start, splunk_end = None, None
-        splunk = self.splunk_cost(bundle.obj, splunk_start, splunk_end)
-        bundle.data['splunk'] = splunk
         return bundle
-
-    def splunk_cost(self, device, start_date=None, end_date=None):
-        splunk_cost = {
-            'splunk_size': 0,
-            'splunk_monthly_cost': 0,
-            'splunk_daily_cost': 0,
-        }
-        if start_date and end_date:
-            splunk = device.splunkusage_set.filter(
-                day__range=(start_date, end_date)
-            ).order_by('-day')
-        else:
-            last_month = datetime.date.today() - datetime.timedelta(days=30)
-            splunk = device.splunkusage_set.filter(
-                day__gte=last_month
-            ).order_by('-day')
-        if splunk.count():
-            splunk_size = splunk.aggregate(db.Sum('size'))['size__sum'] or 0
-            splunk_monthly_cost = (
-                splunk[0].get_price(size=splunk_size) /
-                splunk[0].model.group.size_modifier
-            ) or 0
-            splunk_daily_cost = (splunk_monthly_cost / splunk.count()) or 0
-            splunk_cost['splunk_size'] = splunk_size
-            splunk_cost['splunk_monthly_cost'] = splunk_monthly_cost
-            splunk_cost['splunk_daily_cost'] = splunk_daily_cost
-        return splunk_cost
 
 
 class NetworkKindsResource(MResource):

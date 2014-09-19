@@ -252,6 +252,7 @@ class NetworksAsset(NetworksMixin, Asset):
 
 class NetworksScan(NetworksMixin, Scan):
     template_name = 'ui/scan_networks.html'
+    submodule_name = 'networks'
 
 
 class NetworksAutoscan(NetworksMixin, BaseDeviceList):

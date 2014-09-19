@@ -5,7 +5,7 @@
 {% load bob %}
 
 {% block contentarea %}
-{% if device %}
+{% if device and not address %}
     <div class="alert alert-info">
         <p>Device {{ device.name }} has following addresses:</p>
         <ul class="unstyled">
