@@ -35,6 +35,11 @@ from bob.data_table import DataTableColumn, DataTableMixin
 import pluggableapp
 from powerdns.models import Record
 
+try:
+    from ralph_assets.models_assets import DeviceInfo
+except ImportError:
+    DeviceInfo = None
+
 from ralph.discovery.models_component import Ethernet
 from ralph.account.models import Perm, get_user_home_page_url, ralph_permission
 from ralph.app import RalphModule
@@ -565,6 +570,24 @@ class Info(DeviceUpdateView):
                 official=False,
                 author=self.request.user,
             )
+            if self.object.dirty_fields:
+                deploy_disable_reason = _(
+                    "This device contains dirty fields."
+                )
+            elif not self.object.verified:
+                deploy_disable_reason = _(
+                    "This device is not verified."
+                )
+            elif not (
+                DeviceInfo is None or
+                DeviceInfo.objects.filter(ralph_device_id=self.object.pk) or
+                self.object.model.type == DeviceType.virtual_server
+            ):
+                deploy_disable_reason = _(
+                    "This device is not bound to an asset."
+                )
+            else:
+                deploy_disable_reason = None
         else:
             tags = []
         tags = ['"%s"' % t.name if ',' in t.name else t.name for t in tags]
@@ -597,7 +620,8 @@ class Info(DeviceUpdateView):
             'deployment_status': deployment_status,
             'plugins': plugins,
             'changed_addresses': self.get_changed_addresses(),
-            'network_connections': network_connections
+            'network_connections': network_connections,
+            'deploy_disable_reason': deploy_disable_reason,
         })
         return ret
 
