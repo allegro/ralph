@@ -277,7 +277,6 @@ def component_model_pre_save(sender, instance, raw, using, **kwargs):
     for field, orig, new in _field_changes(instance):
         HistoryModelChange(
             component_model=instance,
-            component_model_group=instance.group,
             field_name=field,
             old_value=unicode(orig),
             new_value=unicode(new),

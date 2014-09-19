@@ -518,7 +518,7 @@ class SearchSoftware(Search, Software):
 
 
 class SearchScan(Search, Scan):
-    pass
+    submodule_name = 'search'
 
 
 class SearchCmdb(Search):

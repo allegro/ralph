@@ -30,16 +30,10 @@
                 <td>{{ item.label }}</td>
             {%  endif %}
             <td>
-                {% if item.model.group %}
-                    {% if item.group == 'dev' %}
-                        <a href="{% url 'search' 'component' '' %}?model={{ item.model.name }}">
-                            {{ item.model.name }}
-                        </a>
-                    {% else %}
-                        <a href="{% url 'search' 'component' '' %}?component={{ item.model }}">
-                            {{ item.model }}
-                        </a>
-                    {% endif %}
+                {% if item.group == 'dev' %}
+                    <a href="{% url 'search' %}?model={{ item.model.name }}">
+                        {{ item.model.name }}
+                    </a>
                 {% else %}
                     {{ item.model }}
                 {% endif %}
