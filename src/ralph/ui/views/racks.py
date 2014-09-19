@@ -176,7 +176,7 @@ class RacksAsset(Racks, Asset):
 
 
 class RacksScan(Racks, Scan):
-    pass
+    submodule_name = 'racks'
 
 
 class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
