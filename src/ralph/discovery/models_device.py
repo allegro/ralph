@@ -15,6 +15,7 @@ import sys
 import os
 
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.db import models as db
 from django.db import IntegrityError, transaction
 from django.utils.translation import ugettext_lazy as _
@@ -872,6 +873,10 @@ class Device(
             ]
         ))
         return props
+
+    @property
+    def url(self):
+        return reverse('search', args=('info', self.id))
 
 
 class Connection(db.Model):
