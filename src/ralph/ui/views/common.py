@@ -363,9 +363,10 @@ class BaseMixin(MenuMixin, ACLGateway):
                     fugue_icon='fugue-baggage-cart-box',
                     href=self.tab_href('asset')),
             ])
-        if ('ralph.scan' in settings.INSTALLED_APPS and
-                has_perm(Perm.edit_device_info_generic) and
-                self.kwargs.get('device')):
+        if all((
+            has_perm(Perm.edit_device_info_generic),
+            self.kwargs.get('device') or self.kwargs.get('address'),
+        )):
             tab_items.extend([
                 MenuItem(
                     'Scan',
@@ -1414,9 +1415,18 @@ class Scan(BaseMixin, TemplateView):
 
     def get(self, *args, **kwargs):
         try:
-            device_id = int(self.kwargs.get('address'))
-        except ValueError:
+            device_id = int(self.kwargs.get('device'))
+        except (TypeError, ValueError):
             self.object = None
+            try:
+                address = IPAddress.objects.get(
+                    address=self.kwargs.get('address')
+                )
+            except IPAddress.DoesNotExist:
+                pass
+            else:
+                if address.device:
+                    self.object = address.device
         else:
             self.object = Device.objects.get(id=device_id)
         return super(Scan, self).get(*args, **kwargs)
@@ -1447,8 +1457,7 @@ class Scan(BaseMixin, TemplateView):
     def get_context_data(self, **kwargs):
         ret = super(Scan, self).get_context_data(**kwargs)
         address = self.kwargs.get('address') or self.request.GET.get('address')
-
-        if address and not self.object:
+        if address:
             try:
                 ipaddress = IPAddress.objects.get(address=address)
             except IPAddress.DoesNotExist:
@@ -1740,7 +1749,10 @@ class ScanStatus(BaseMixin, TemplateView):
                                 priority=SAVE_PRIORITY,
                                 user=self.request.user,
                             )
-                        if form.cleaned_data['asset'] != 'database':
+                        if (
+                            'asset' in form.cleaned_data and
+                            form.cleaned_data['asset'] != 'database'
+                        ):
                             asset = form.cleaned_data['asset-custom']
                             from ralph_assets.api_ralph import assign_asset
                             if not assign_asset(device.id, asset.id):

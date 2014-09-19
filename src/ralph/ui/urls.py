@@ -99,6 +99,8 @@ urlpatterns = patterns('',
                            login_required(SearchAsset.as_view()), {}, 'search'),
                        url(r'^search/(?P<details>\w*)/(?P<device>)$',
                            login_required(SearchDeviceList.as_view()), {}, 'search'),
+                       url(r'^search/(?P<details>scan)/(?P<device>\d+)/$',
+                           login_required(SearchScan.as_view()), {}, 'search'),
                        url(r'^search/(?P<details>scan)/(?P<address>[\d.]*)/$',
                            login_required(SearchScan.as_view()), {}, 'search'),
 
