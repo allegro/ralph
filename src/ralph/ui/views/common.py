@@ -573,7 +573,11 @@ class Info(DeviceUpdateView):
                 deploy_disable_reason = _(
                     "This device is not verified."
                 )
-            elif not DeviceInfo.objects.filter(ralph_device_id=self.object.pk):
+            elif not (
+                DeviceInfo.objects.filter(ralph_device_id=self.object.pk) or
+                self.object.model.type == DeviceType.virtual_server
+            ):
+
                 deploy_disable_reason = _(
                     "This device is not bound to an asset."
                 )
