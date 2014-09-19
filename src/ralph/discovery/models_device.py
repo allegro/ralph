@@ -183,11 +183,6 @@ class DeviceModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
     def get_count(self):
         return self.device_set.count()
 
-    def get_price(self):
-        if self.group:
-            return self.group.price
-        return 0
-
     def get_json(self):
         return {
             'id': 'D%d' % self.id,
@@ -728,10 +723,7 @@ class Device(
         return None
 
     def get_model_name(self):
-        try:
-            return self.model.group.name
-        except AttributeError:
-            return self.model.name if self.model else ''
+        return self.model.name if self.model else ''
 
     def get_position(self):
         if self.position:
@@ -829,7 +821,11 @@ class Device(
 
         if sync_fields and 'ralph_assets' in settings.INSTALLED_APPS:
             SyncFieldMixin.save(self, *args, **kwargs)
-        return super(Device, self).save(sync_fields=sync_fields, *args, **kwargs)
+        return super(Device, self).save(
+            sync_fields=sync_fields,
+            *args,
+            **kwargs
+        )
 
     def get_asset(self):
         asset = None
