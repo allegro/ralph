@@ -284,54 +284,6 @@ def component_model_pre_save(sender, instance, raw, using, **kwargs):
         ).save()
 
 
-class DiscoveryWarning(db.Model):
-
-    """
-    Created by the discovery plugins to signal a possible problem with the
-    particular device or address.
-    """
-    date = db.DateTimeField(default=datetime.now)
-    plugin = db.CharField(max_length=64, default='')
-    message = db.TextField(blank=True, default='')
-    ip = db.IPAddressField(verbose_name=_("IP address"))
-    count = db.IntegerField(default=1)
-    device = db.ForeignKey(
-        'Device',
-        null=True,
-        blank=True,
-        default=None,
-        on_delete=db.SET_NULL,
-    )
-
-    class Meta:
-        verbose_name = _("discovery warning")
-        verbose_name_plural = _("discovery warnings")
-
-    @classmethod
-    def create(cls, message, plugin, ip=None, device=None):
-        """
-        Use this method to create warnings that are going to repeat a lot.
-        """
-        try:
-            warning = cls.objects.get(
-                plugin=plugin,
-                ip=ip,
-                device=device,
-                message=message,
-            )
-        except cls.DoesNotExist:
-            warning = cls(
-                message=message,
-                plugin=plugin,
-                ip=ip,
-                device=device,
-            )
-        else:
-            warning.date = datetime.now()
-            warning.count += 1
-        return warning
-
-
 class DiscoveryValue(db.Model):
     date = db.DateTimeField(default=datetime.now)
     ip = db.IPAddressField(verbose_name=_("IP address"), unique=True)

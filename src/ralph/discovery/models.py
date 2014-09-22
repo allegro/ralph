@@ -57,7 +57,6 @@ from ralph.discovery.models_component import (
 )
 from ralph.discovery.models_history import (
     DiscoveryValue,
-    DiscoveryWarning,
     HistoryChange,
 )
 
@@ -122,7 +121,6 @@ __all__ = [
 
     'HistoryChange',
     'DiscoveryValue',
-    'DiscoveryWarning',
 
     'ASSET_NOT_REQUIRED',
 ]

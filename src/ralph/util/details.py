@@ -56,10 +56,14 @@ def details_dev(dev):
     elif dev.model.type == DeviceType.blade_server.id:
         yield {
             'label': escape('Blade server %s' % dev.name),
-            'model': dev.parent.model,
+            'model': dev.parent.model if dev.parent else None,
             'icon': 'fugue-servers',
-            'serial': dev.parent.sn,
-            'href': '/admin/discovery/device/%d/' % dev.parent.id,
+            'serial': dev.parent.sn if dev.parent else None,
+            'href': (
+                (
+                    '/admin/discovery/device/%d/' % dev.parent.id
+                ) if dev.parent else None
+            ),
             'hrefinfo': reverse_lazy('search', kwargs={
                 'details': 'info',
                 'device': dev.id})
