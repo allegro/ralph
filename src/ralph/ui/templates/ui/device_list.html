@@ -17,9 +17,9 @@
 {% endblock %}
 
 {% block contentarea %}
-<form 
-    method="POST" 
-    class="form form-inline" 
+<form
+    method="POST"
+    class="form form-inline"
     action="../bulkedit/?{{ url_query.urlencode }}"
 >
 <table class="table table-striped table-bordered table-condensed table-list device-list">
@@ -37,6 +37,7 @@
         {% endif %}
         {% include 'ui/column-header.html' with label='Name' name='name' always=1 %}
         {% include 'ui/column-header.html' with label='Venture/Role' name='venture' %}
+        {% include 'ui/column-header.html' with label='Service/Device environment' name='service' %}
         {% include 'ui/column-header.html' with label='Model' name='model' %}
         {% include 'ui/column-header.html' with label='Margin' name='margin' type='quantity' %}
         {% include 'ui/column-header.html' with label='Deprecation' name='deprecation' type='quantity' %}

@@ -5,7 +5,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.core.exceptions import ImproperlyConfigured
-from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from bob.menu import MenuItem
@@ -104,11 +103,11 @@ class CoreMenu(Menu):
                     pending_scans.new_devices,
                     pending_scans.changed_devices,
                 ),
-                href=reverse(
-                    'scan_list', kwargs={'scan_type': (
-                        'new' if pending_scans.new_devices else 'existing'
-                    )}
-                ),
+                view_kwargs={'scan_type': (
+                    'new' if pending_scans.new_devices else 'existing'
+                )},
+                name='scan_list',
+                view_name='scan_list',
                 fugue_icon='fugue-light-bulb--exclamation',
             ))
         return submodules

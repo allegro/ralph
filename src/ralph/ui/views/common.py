@@ -35,6 +35,11 @@ from bob.data_table import DataTableColumn, DataTableMixin
 import pluggableapp
 from powerdns.models import Record
 
+try:
+    from ralph_assets.models_assets import DeviceInfo
+except ImportError:
+    DeviceInfo = None
+
 from ralph.discovery.models_component import Ethernet
 from ralph.account.models import Perm, get_user_home_page_url, ralph_permission
 from ralph.app import RalphModule
@@ -53,7 +58,7 @@ from ralph.scan.data import (
 )
 from ralph.scan.diff import diff_results, sort_results
 from ralph.scan.models import ScanSummary
-from ralph.scan.util import update_scan_summary
+from ralph.scan.util import get_pending_scans, update_scan_summary
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
@@ -565,6 +570,24 @@ class Info(DeviceUpdateView):
                 official=False,
                 author=self.request.user,
             )
+            if self.object.dirty_fields:
+                deploy_disable_reason = _(
+                    "This device contains dirty fields."
+                )
+            elif not self.object.verified:
+                deploy_disable_reason = _(
+                    "This device is not verified."
+                )
+            elif not (
+                DeviceInfo is None or
+                DeviceInfo.objects.filter(ralph_device_id=self.object.pk) or
+                self.object.model.type == DeviceType.virtual_server
+            ):
+                deploy_disable_reason = _(
+                    "This device is not bound to an asset."
+                )
+            else:
+                deploy_disable_reason = None
         else:
             tags = []
         tags = ['"%s"' % t.name if ',' in t.name else t.name for t in tags]
@@ -597,7 +620,8 @@ class Info(DeviceUpdateView):
             'deployment_status': deployment_status,
             'plugins': plugins,
             'changed_addresses': self.get_changed_addresses(),
-            'network_connections': network_connections
+            'network_connections': network_connections,
+            'deploy_disable_reason': deploy_disable_reason,
         })
         return ret
 
@@ -1485,6 +1509,8 @@ class Scan(BaseMixin, TemplateView):
 class ScanList(BaseMixin, DataTableMixin, TemplateView):
     template_name = 'ui/scan-list.html'
     sort_variable_name = 'sort'
+    submodule_name = 'scan_list'
+
     columns = [
         DataTableColumn(
             _('IP'),
@@ -1504,17 +1530,23 @@ class ScanList(BaseMixin, DataTableMixin, TemplateView):
         ),
     ]
 
+    def get_tab_items(self):
+        return []
+
     def get_context_data(self, **kwargs):
         result = super(ScanList, self).get_context_data(**kwargs)
         result.update(
             super(ScanList, self).get_context_data_paginator(**kwargs)
         )
+        scans = get_pending_scans()
         result.update({
+            'changed_count': scans.changed_devices if scans else 0,
+            'columns': self.columns,
+            'new_count': scans.new_devices if scans else 0,
+            'scan_type': kwargs['scan_type'],
+            'sort': self.sort,
             'sort_variable_name': self.sort_variable_name,
             'url_query': self.request.GET,
-            'sort': self.sort,
-            'columns': self.columns,
-            'scan_type': kwargs['scan_type']
         })
         return result
 
