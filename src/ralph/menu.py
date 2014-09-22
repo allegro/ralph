@@ -70,6 +70,9 @@ class CoreMenu(Menu):
 
     def get_submodules(self):
         submodules = []
+        submodules.append(
+            MenuItem(_('Search'), fugue_icon='fugue-application-search-result',
+                     view_name='search', name='search'))
         if self.has_perm(Perm.has_core_access):
             submodules.append(
                 MenuItem(
@@ -92,9 +95,6 @@ class CoreMenu(Menu):
         submodules.append(
             MenuItem(_('Quick scan'), fugue_icon='fugue-radar',
                      href='#quickscan'))
-        submodules.append(
-            MenuItem(_('Search'), fugue_icon='fugue-application-search-result',
-                     view_name='search', name='search'))
 
         pending_scans = get_pending_scans()
         if pending_scans:
