@@ -349,7 +349,7 @@ API_THROTTLING = {
     'timeframe': 3600,
     'expiration': None,
 }
-RQ_QUEUE_LIST = ('reports', 'email', 'cmdb_git', 'cmdb_jira', 'cmdb_jira_int',
+RQ_QUEUE_LIST = ('reports', 'reports_pricing', 'email', 'cmdb_git', 'cmdb_jira', 'cmdb_jira_int',
                  'cmdb_zabbix', 'cmdb_assets')
 RQ_QUEUES = {
     'default': {
