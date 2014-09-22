@@ -501,15 +501,6 @@ class HistoryChangeAdmin(ModelAdmin):
 admin.site.register(models.HistoryChange, HistoryChangeAdmin)
 
 
-class DiscoveryWarningAdmin(ModelAdmin):
-    list_display = ('message', 'count', 'date', 'plugin', 'ip', 'device')
-    list_per_page = 250
-    readonly_fields = ('date', 'plugin', 'message', 'ip', 'count', 'device')
-    search_fields = ('plugin', 'ip', 'message')
-
-admin.site.register(models.DiscoveryWarning, DiscoveryWarningAdmin)
-
-
 class DeviceEnvironmentAdmin(ModelAdmin):
     save_on_top = True
     list_display = ('name',)
