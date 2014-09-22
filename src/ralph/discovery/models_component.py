@@ -8,9 +8,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import datetime
-from decimal import Decimal
-
 from django.db import models as db
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.models import (
@@ -285,6 +282,11 @@ class Component(SavePrioritized, WithConcurrentGetOrCreate):
     class Meta:
         abstract = True
 
+    def get_size(self):
+        if self.model and self.model.size:
+            return self.model.size
+        return getattr(self, 'size', 0) or 0
+
 
 class GenericComponent(Component):
     label = db.CharField(
@@ -389,20 +391,6 @@ class DiskShareMount(TimeTrackable, WithConcurrentGetOrCreate):
 
     def get_size(self):
         return self.size or self.share.get_total_size()
-
-    def get_price(self):
-        if self.share.device and self.share.device.is_deprecated():
-            return 0
-        if self.size and self.share.model and self.share.model.group:
-            size = self.get_size() / 1024
-            formula = self.share.get_price_formula()
-            if formula:
-                try:
-                    return float(formula.get_value(size=Decimal(size)))
-                except Exception:
-                    return float('NaN')
-            return (self.share.model.group.price or 0) * size
-        return self.share.get_price() / (self.get_total_mounts() or 1)
 
 
 class Processor(Component):
@@ -614,44 +602,6 @@ class SplunkUsage(Component):
 
     def __unicode__(self):
         return '#{}: {}'.format(self.day, self.model)
-
-    def get_price(self, size=None):
-        if not self.model:
-            return 0
-        if not size:
-            size = self.size
-        return self.model.get_price(size=size)
-
-    @classmethod
-    def get_cost(cls, venture, start, end, shallow=False):
-        splunk_usage = cls.objects.filter(day__gte=start, day__lte=end)
-        if venture and venture != '*':
-            if shallow:
-                splunk_usage = splunk_usage.filter(device__venture=venture)
-            else:
-                splunk_usage = splunk_usage.filter(
-                    db.Q(device__venture=venture) |
-                    db.Q(device__venture__parent=venture) |
-                    db.Q(device__venture__parent__parent=venture) |
-                    db.Q(device__venture__parent__parent__parent=venture) |
-                    db.Q(
-                        device__venture__parent__parent__parent__parent=venture
-                    )
-                )
-        elif not venture:  # specifically "devices with no venture set"
-            splunk_usage = splunk_usage.filter(device__venture=None)
-        if splunk_usage.count():
-            splunk_size = splunk_usage.aggregate(
-                db.Sum('size')
-            )['size__sum'] or 0
-            splunk_count = splunk_usage.values('device').distinct().count()
-            yesterday = datetime.date.today() - datetime.timedelta(days=1)
-            splunk_count_now = SplunkUsage.objects.filter(
-                day=yesterday,
-            ).values('device').distinct().count()
-            splunk_cost = splunk_usage[0].get_price(size=splunk_size)
-            return splunk_cost, splunk_count, splunk_count_now, splunk_size
-        return None, None, None, None
 
 
 class OperatingSystem(Component):

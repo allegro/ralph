@@ -30,7 +30,6 @@ from ralph.ui.views.common import (
     Components,
     History,
     Info,
-    Prices,
     Scan,
     Software,
 )
@@ -99,10 +98,11 @@ class SidebarSearch(object):
 
 
 class Search(SidebarSearch, BaseMixin):
-    pass
+    submodule_name = 'search'
 
 
 class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
+    submodule_name = 'search'
 
     def __init__(self, *args, **kwargs):
         super(SearchDeviceList, self).__init__(*args, **kwargs)
@@ -158,7 +158,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     Q(name__in=names)
                 ).values_list('content'))
                 q = (_search_fields_or([
-                    'name__contains',
+                    'name__icontains',
                     'ipaddress__hostname__icontains',
                 ], name.split()) | Q(
                     ipaddress__address__in=ips,
@@ -195,6 +195,24 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     self.query = self.query.filter(
                         remarks__icontains=data['remarks']
                     )
+            # This field cannot be named 'service' (see comment in SearchForm).
+            if data['service_catalog']:
+                if data['service_catalog'] == empty_field:
+                    self.query = self.query.filter(service='')
+                else:
+                    self.query = self.query.filter(
+                        service__name__icontains=data['service_catalog']
+                    )
+
+            if data['device_environment']:
+                if data['device_environment'] == empty_field:
+                    self.query = self.query.filter(device_environment='')
+                else:
+                    self.query = self.query.filter(
+                        device_environment__name__icontains=data[
+                            'device_environment'
+                        ]
+                    )
             if data['model']:
                 if data['model'] == empty_field:
                     self.query = self.query.filter(
@@ -203,7 +221,6 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                 else:
                     q = _search_fields_or([
                         'model__name__icontains',
-                        'model__group__name__icontains',
                     ], data['model'].split('|'))
                     self.query = self.query.filter(q).distinct()
             if data['component']:
@@ -223,20 +240,15 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     q = _search_fields_or([
                         'genericcomponent__label__icontains',
                         'genericcomponent__model__name__icontains',
-                        'genericcomponent__model__group__name__icontains',
                         'ethernet__mac__icontains',
                         'fibrechannel__label__icontains',
                         'fibrechannel__model__name__icontains',
-                        'fibrechannel__model__group__name__icontains',
                         'storage__label__icontains',
                         'storage__model__name__icontains',
-                        'storage__model__group__name__icontains',
                         'memory__label__icontains',
                         'memory__model__name__icontains',
-                        'memory__model__group__name__icontains',
                         'processor__label__icontains',
                         'processor__model__name__icontains',
-                        'processor__model__group__name__icontains',
                         'disksharemount__share__label__icontains',
                         'disksharemount__share__wwn__icontains',
                         'disksharemount__share__model__name__icontains',
@@ -267,8 +279,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     if not operator:
                         self.query = self.query.filter(
                             Q(software__label__icontains=name) |
-                            Q(software__model__name__icontains=name) |
-                            Q(software__model__group__name__icontains=name)
+                            Q(software__model__name__icontains=name)
                         ).distinct()
                     elif name and operator and version:
                         operators = {
@@ -285,8 +296,6 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                         self.query = self.query.filter(
                             (Q(software__label__icontains=name) & soft_q) |
                             (Q(software__model__name__icontains=name) &
-                                soft_q) |
-                            (Q(software__model__group__name__icontains=name) &
                                 soft_q)
                         ).distinct()
             if data['serial']:
@@ -500,10 +509,6 @@ class SearchComponents(Search, Components):
     pass
 
 
-class SearchPrices(Search, Prices):
-    pass
-
-
 class SearchHistory(Search, History):
     pass
 
@@ -513,7 +518,7 @@ class SearchSoftware(Search, Software):
 
 
 class SearchScan(Search, Scan):
-    pass
+    submodule_name = 'search'
 
 
 class SearchCmdb(Search):

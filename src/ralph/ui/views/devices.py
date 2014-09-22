@@ -26,6 +26,7 @@ PAGE_SIZE = 25
 DEVICE_SORT_COLUMNS = {
     'name': ('name',),
     'venture': ('venture', 'venture_role'),
+    'service': ('service', 'device_environment'),
     'model': ('model__type', 'model__name'),
     'margin': ('venture__margin_kind__margin', 'margin_kind__margin'),
     'deprecation': ('deprecation_kind__months',),
@@ -75,7 +76,9 @@ class BaseDeviceList(Report, ListView):
     template_name = 'ui/device_list.html'
     paginate_by = PAGE_SIZE
     details_columns = {
-        'info': ['venture', 'model', 'position', 'remarks'],
+        'info': [
+            'venture', 'service', 'model', 'position', 'remarks',
+        ],
         'components': ['model', 'barcode', 'sn'],
         'prices': [
             'venture', 'margin', 'deprecation', 'price', 'cost', 'deprecation',

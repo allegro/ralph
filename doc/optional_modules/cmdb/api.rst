@@ -280,6 +280,30 @@ Request body:
 The above request will change the business owners of a CI, and leave other
 data unchanged. On success it will return HTTP status 202.
 
+Editing relations via CI endpoint
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In API v0.10 you can edit relations and filter by related CIs:
+
+The CIs are retrieved and edited with ``related`` field in ci:
+
+.. code-block:: json
+
+    "related": [
+        {
+            "ci": "/api/v0.10/ci/1/",
+            "dir": "OUTGOING",
+            "type": "CONTAINS"
+        }, {
+            "ci": "/api/v0.10/ci/3/",
+            "dir": "INCOMING",
+            "type": "HASROLE"
+        }
+    ]
+
+To search for children or parent of a given CI, you need to specify the CI id
+as ``child`` or ``parent`` e.g. ``/api/v0.10/ci/?child=1&child=10``.
+
 .. _businessline:
 
 BUSINESSLINE

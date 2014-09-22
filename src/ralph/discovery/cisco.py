@@ -14,7 +14,6 @@ from ralph.discovery.models import (
     GenericComponent,
     SERIAL_BLACKLIST,
 )
-from ralph.discovery.models_history import DiscoveryWarning
 
 
 INVENTORY_RE = re.compile(
@@ -81,17 +80,6 @@ def cisco_component(dev, inv, ip_address=None):
         comp.model = model
         comp.label = inv['name'][:255]
         comp.save()
-    elif ip_address:
-        DiscoveryWarning(
-            message="GenericComponent(id={}) belongs to Device(id={})".format(
-                comp.id,
-                comp.device.id,
-            ),
-            plugin=__name__,
-            device=dev,
-            ip=ip_address,
-        ).save()
-        comp = None
     else:
         comp = None
     return comp

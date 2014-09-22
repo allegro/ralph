@@ -8,10 +8,10 @@ from __future__ import unicode_literals
 
 from django.conf import settings
 
-from ralph.discovery.plugins.ssh_ibm_bladecenter import ssh_ibm_reboot
-from ralph.discovery.plugins.ipmi import ipmi_reboot
 from ralph.discovery.hp_ilo import IloHost
 from ralph.deployment.models import Deployment, DeploymentStatus
+from ralph.deployment.tools.ibm_bladecenter import ssh_ibm_reboot
+from ralph.deployment.tools.ipmi import ipmi_reboot
 
 
 # This plugin is temporarily disabled.

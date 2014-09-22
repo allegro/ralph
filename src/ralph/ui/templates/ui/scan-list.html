@@ -3,16 +3,15 @@
 {% load i18n %}
 
 {% block content %}
-
 <ul class="nav nav-tabs">
     <li {% if scan_type == 'new' %}class="active"{% endif %}>
         <a href="{% url scan_list scan_type='new'%}">
-            {% trans 'New URLs' %}
+             ({{ new_count }}) {% trans 'New devices' %}
         </a>
     </li>
     <li {% if scan_type == 'existing' %}class="active"{% endif %}>
         <a href="{% url scan_list scan_type='existing'%}">
-            {% trans 'Existing URLs' %}
+             ({{ changed_count }}) {% trans 'Changed devices' %}
         </a>
     </li>
 </ul>
@@ -34,6 +33,7 @@
     {% endif %}</td>
     </tr>
     {% endfor %}
-</table>
 
+</table>
+{% pagination bob_page url_query=url_query show_all=0 show_csv=0 fugue_icons=1 export_variable_name=export_variable_name %}
 {% endblock %}

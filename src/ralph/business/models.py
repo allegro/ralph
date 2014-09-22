@@ -22,7 +22,7 @@ from ralph.discovery.history import field_changes as _field_changes
 from ralph.discovery.models import DataCenter
 from ralph.discovery.models_history import HistoryChange
 from ralph.discovery.models_util import SavingUser
-from ralph.cmdb.models_ci import CI, CIOwner, CIOwnershipType, CIOwnership
+from ralph.util.di import get_extra_data
 
 SYNERGY_URL_BASE = settings.SYNERGY_URL_BASE
 
@@ -165,29 +165,8 @@ class Venture(Named, PrebootMixin, HasSymbolBasedPath, TimeTrackable):
     def get_absolute_url(self):
         return ("business-show-venture", (), {'venture_id': self.id})
 
-    def technical_owners(self):
-        ci = CI.get_by_content_object(self)
-        if not ci:
-            return []
-        return CIOwner.objects.filter(
-            ci=ci,
-            ciownership__type=CIOwnershipType.technical.id,
-        )
-
-    def business_owners(self):
-        ci = CI.get_by_content_object(self)
-        if not ci:
-            return []
-        return CIOwner.objects.filter(
-            ci=ci,
-            ciownership__type=CIOwnershipType.business.id
-        )
-
     def all_ownerships(self):
-        ci = CI.get_by_content_object(self)
-        if not ci:
-            return []
-        return CIOwnership.objects.filter(ci=ci)
+        return get_extra_data('ralph_obj_all_ownerships', self) or []
 
     def get_data_center(self):
         if self.data_center:

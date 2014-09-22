@@ -19,6 +19,20 @@
                 >{{ d.venture.name }}</a>{% endif %}{% if d.venture_role %}/{{ d.venture_role.full_name }}{% endif %}
     </td>
     {% endif %}
+    {% if 'service' in columns %}
+        <td>
+            {% if d.service %}
+                <a href="{{ d.service.get_absolute_url }}">{{ d.service }}</a>
+            {% else %}
+                —
+            {% endif %} /
+            {% if d.device_environment %}
+                <a href="{{ d.device_environment.get_absolute_url }}">{{ d.device_environment }}</a>
+            {% else %}
+                —
+            {% endif %}
+        </td>
+    {% endif %}
     {% if 'model' in columns %}
     <td>{{ d.get_model_name }}</td>
     {% endif %}

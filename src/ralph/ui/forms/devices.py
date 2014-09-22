@@ -14,7 +14,12 @@ from lck.django.common.models import MACAddressField
 
 from ralph.deployment.util import get_next_free_hostname
 from ralph.discovery.models_component import is_mac_valid
-from ralph.discovery.models import Device, DeviceType
+from ralph.discovery.models import (
+    ASSET_NOT_REQUIRED,
+    Device,
+    DeviceEnvironment,
+    DeviceType,
+)
 from ralph.util import Eth
 from ralph.ui.widgets import (
     DateWidget,
@@ -205,6 +210,8 @@ class DeviceCreateForm(DeviceForm):
             'name',
             'venture',
             'venture_role',
+            'service',
+            'device_environment',
             'barcode',
             'position',
             'chassis_position',
@@ -222,6 +229,16 @@ class DeviceCreateForm(DeviceForm):
         )
 
     macs = forms.CharField(widget=forms.Textarea, required=False)
+    service = AutoCompleteSelectField(
+        ('ralph.ui.channels', 'ServiceCatalogLookup'),
+        required=True,
+        label=_('Service catalog'),
+    )
+    device_environment = forms.ModelChoiceField(
+        required=True,
+        queryset=DeviceEnvironment.objects.all(),
+        label=_('Device Environment'),
+    )
 
     def __init__(self, *args, **kwargs):
         super(DeviceCreateForm, self).__init__(*args, **kwargs)
@@ -232,7 +249,7 @@ class DeviceCreateForm(DeviceForm):
         if 'ralph_assets' in settings.INSTALLED_APPS:
             self.fields['asset'] = AutoCompleteSelectField(
                 ('ralph_assets.api_ralph', 'UnassignedDCDeviceLookup'),
-                required=True,
+                required=False,
             )
             self.fields['asset'].widget.help_text = (
                 'Enter asset sn, barcode or model'
@@ -261,6 +278,16 @@ class DeviceCreateForm(DeviceForm):
     def clean_model(self):
         model = self.cleaned_data['model']
         return model or None
+
+    def clean_asset(self):
+        model = self.cleaned_data.get('model')
+        asset = self.cleaned_data.get('asset')
+        if model and model.type not in ASSET_NOT_REQUIRED:
+            if not asset:
+                raise forms.ValidationError(
+                    "Asset is required for this kind of device."
+                )
+        return asset
 
 
 class DeviceBulkForm(DeviceForm):
@@ -298,6 +325,8 @@ class DeviceInfoForm(DeviceForm):
             'model',
             'venture',
             'venture_role',
+            'service',
+            'device_environment',
             'verified',
             'barcode',
             'dc',
@@ -338,6 +367,17 @@ class DeviceInfoForm(DeviceForm):
                     self.fields['name'].help_text = help_text
                     break
 
+    service = AutoCompleteSelectField(
+        ('ralph.ui.channels', 'ServiceCatalogLookup'),
+        required=True,
+        label=_('Service catalog'),
+    )
+    device_environment = forms.ModelChoiceField(
+        required=True,
+        queryset=DeviceEnvironment.objects.all(),
+        label=_('Device Environment'),
+    )
+
 
 class DeviceInfoVerifiedForm(DeviceInfoForm):
 
@@ -364,55 +404,6 @@ class DeviceInfoVerifiedForm(DeviceInfoForm):
 
     def clean_venture_role(self):
         return self.instance.venture_role
-
-
-class DevicePricesForm(DeviceForm):
-
-    class Meta(DeviceForm.Meta):
-        fields = (
-            'margin_kind',
-            'deprecation_kind',
-            'cached_price',
-            'cached_cost',
-            'price',
-        )
-
-    auto_price = forms.CharField(widget=ReadOnlyPriceWidget, required=False)
-
-    def __init__(self, *args, **kwargs):
-        super(DevicePricesForm, self).__init__(*args, **kwargs)
-        if self.data:
-            self.data = self.data.copy()
-            for field in ('cached_price', 'cached_cost'):
-                self.data[field] = getattr(self.instance, field)
-            self.data['auto_price'] = self.initial['auto_price']
-
-
-class DevicePurchaseForm(DeviceForm):
-
-    class Meta(DeviceForm.Meta):
-        fields = (
-            'model_name',
-            'sn',
-            'barcode',
-            'purchase_date',
-            'deprecation_date',
-            'warranty_expiration_date',
-            'support_expiration_date',
-            'support_kind',
-        )
-
-    def clean_deprecation_date(self):
-        return self.instance.deprecation_date
-
-    def __init__(self, *args, **kwargs):
-        super(DevicePurchaseForm, self).__init__(*args, **kwargs)
-        if self.data:
-            self.data = self.data.copy()
-            self.data['model_name'] = self.initial['model_name']
-
-    model_name = forms.CharField(label="Model", widget=ReadOnlyWidget,
-                                 required=False)
 
 
 class PropertyForm(forms.Form):

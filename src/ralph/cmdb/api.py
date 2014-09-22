@@ -10,6 +10,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import operator
+
 # Monkeypatch Tastypie
 # fix in https://github.com/toastdriven/django-tastypie/pull/863
 from ralph.cmdb.monkey import method_check
@@ -19,6 +21,7 @@ Resource.method_check = method_check
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie import fields
@@ -38,6 +41,7 @@ from ralph.cmdb.models import (
     CIChangeZabbixTrigger,
     CILayer,
     CIRelation,
+    CI_RELATION_TYPES,
     CIAttribute,
     CIAttributeValue,
 )
@@ -291,6 +295,71 @@ class LinkField(tastypie.fields.ApiField):
             )
 
 
+class RelationField(tastypie.fields.ApiField):
+    """The field that describes all relations of a given CI."""
+
+    is_m2m = True
+    dehydrated_type = 'related'
+
+    def __init__(self, *args, **kwargs):
+        super(RelationField, self).__init__(*args, **kwargs)
+        self.attribute = lambda _: None
+
+    def dehydrate(self, bundle, **kwargs):
+        result = []
+        id_ = bundle.obj.id
+        for q, dir_name, other in (
+            (Q(parent_id=id_), 'OUTGOING', 'child'),
+            (Q(child_id=id_), 'INCOMING', 'parent'),
+        ):
+            for relation in CIRelation.objects.filter(q).select_related(other):
+                other_ci = getattr(relation, other)
+                result.append(
+                    {
+                        'type': CI_RELATION_TYPES.name_from_id(relation.type),
+                        'dir': dir_name,
+                        'id': other_ci.id,
+                        'resource_uri': CIResourceV010(
+                            api_name=self.api_name
+                        ).get_resource_uri(other_ci),
+                        'name': other_ci.name,
+                        'ci_type': other_ci.type_id,
+                    }
+                )
+        return result
+
+    def hydrate_m2m(self, bundle):
+        ci = bundle.obj
+        CIRelation.objects.filter(
+            Q(child_id=ci.id) | Q(parent_id=ci.id)
+        ).delete()
+        for relation_data in bundle.data.get('related'):
+            relation = CIRelation()
+            try:
+                type_id = CI_RELATION_TYPES.id_from_name(relation_data['type'])
+            except ValueError:
+                raise tastypie.exceptions.BadRequest(
+                    'No such relation type {}'.format(relation_data['type'])
+                )
+            relation.type = type_id
+            other_ci = CI.objects.get(id=relation_data['id'])
+            if relation_data['dir'] == 'OUTGOING':
+                relation.parent = ci
+                relation.child = other_ci
+            elif relation_data['dir'] == 'INCOMING':
+                relation.parent = other_ci
+                relation.child = ci
+            else:
+                raise tastypie.exceptions.BadRequest(
+                    'dir should be OUTGOING or INCOMING'
+                )
+            relation.save()
+        return []
+
+    def hydrate(self, bundle):
+        pass
+
+
 class CIResource(MResource):
 
     ci_link = LinkField(view='ci_view_main', as_qs=False)
@@ -351,6 +420,28 @@ class CIResource(MResource):
             timeframe=TIMEFRAME,
             expiration=EXPIRATION,
         )
+
+
+class CIResourceV010(CIResource):
+    """CIResource with related feature."""
+
+    related = RelationField()
+
+    def build_filters(self, filters=None):
+        filters = filters or {}
+        queries = []
+        for qs_key, field in [
+            ('child', 'parent__child__id'),
+            ('parent', 'child__parent__id'),
+        ]:
+            for ci_id in filters.pop(qs_key, []):
+                queries.append(Q(**{field: ci_id}))
+        orm_filters = super(CIResourceV010, self).build_filters(filters)
+        if queries:
+            query = reduce(operator.and_, queries[1:], queries[0])
+            cis = CI.objects.filter(query)
+            orm_filters['pk__in'] = [ci.id for ci in cis]
+        return orm_filters
 
 
 class CILayersResource(MResource):
@@ -595,3 +686,13 @@ class CIOwnersResource(MResource):
             timeframe=TIMEFRAME,
             expiration=EXPIRATION,
         )
+
+    def dehydrate(self, bundle):
+        for field in [
+            'first_name',
+            'last_name',
+            'sAMAccountName',
+            'email',
+        ]:
+            bundle.data[field] = getattr(bundle.obj, field)
+        return bundle

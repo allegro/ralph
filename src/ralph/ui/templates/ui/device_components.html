@@ -7,7 +7,6 @@
     <thead><tr>
         <th width="16"></th>
         <th>Label</th>
-        <th>Model Group</th>
         <th>Model</th>
         <th>Serial Number</th>
         <th>Speed</th>
@@ -31,35 +30,12 @@
                 <td>{{ item.label }}</td>
             {%  endif %}
             <td>
-                {% if item.model.group %}
-                    {% if item.group == 'dev' %}
-                        <a href="{% url 'catalog' 'device' item.model.type item.model.group.id|default:''%}">
-                            {{ item.model.group.name }}
-                        </a>
-                    {% else %}
-                        <a href="{% url 'catalog' 'component' item.model.type  item.model.group.id|default:''%}">
-                            {{ item.model.group.name }}
-                        </a>
-                    {% endif %}
-                {% endif %}
-            </td>
-            <td>
-                {% if item.model.group %}
-                    {% if item.group == 'dev' %}
-                        <a href="{% url 'search' 'component' '' %}?model={{ item.model.name }}">
-                            {{ item.model.name }}
-                        </a>
-                    {% else %}
-                        <a href="{% url 'search' 'component' '' %}?component={{ item.model }}">
-                            {{ item.model }}
-                        </a>
-                    {% endif %}
+                {% if item.group == 'dev' %}
+                    <a href="{% url 'search' %}?model={{ item.model.name }}">
+                        {{ item.model.name }}
+                    </a>
                 {% else %}
-                    {% if item.model.type %}
-                        <a href="{% url 'catalog' 'component' item.model.type %}">{{ item.model }}</a>
-                    {% else %}
-                        {{ item.model }}
-                    {% endif %}
+                    {{ item.model }}
                 {% endif %}
             </td>
             <td>{{ item.serial|default:'' }}</td>

@@ -61,6 +61,18 @@
     name: NetworkTerminator
     icon_class: fugue-globe-network
 
+- model: cmdb.CIType
+  pk: 11
+  fields:
+    name: Environment
+    icon_class: fugue-tree
+
+- model: cmdb.CIType
+  pk: 12
+  fields:
+    name: ProfitCenter
+    icon_class: fugue-money-coin
+
 # Attribute
 
 - model: cmdb.CIAttribute
@@ -84,13 +96,26 @@
     attribute_type: 3
     ci_types: [2]
 
-
 - model: cmdb.CIAttribute
   pk: 4
   fields:
     name: SLA value
     attribute_type: 4
     ci_types: [2,1]
+
+- model: cmdb.CIAttribute
+  pk: 5
+  fields:
+    name: Description
+    attribute_type: 2
+    ci_types: [12]
+
+- model: cmdb.CIAttribute
+  pk: 6
+  fields:
+    name: Symbol
+    attribute_type: 2
+    ci_types: [7]
 
 # Layers
 

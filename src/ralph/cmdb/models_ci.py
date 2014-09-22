@@ -70,6 +70,8 @@ class CI_TYPES(Choices):
     NETWORK = _('Network')
     DATACENTER = _('Data Center')
     NETWORKTERMINATOR = _('Network Terminator')
+    ENVIRONMENT = _('Environment')
+    PROFIT_CENTER = _('Profit Center')
 
 
 contenttype_mappings = {
@@ -313,7 +315,7 @@ class CI(TimeTrackable):
     )
     barcode = models.CharField(
         verbose_name=_("barcode"), max_length=255, unique=True, null=True,
-        default=None,
+        default=None, blank=True,
     )
     content_type = models.ForeignKey(
         ContentType, verbose_name=_("content type"), null=True, blank=True,
@@ -396,12 +398,16 @@ class CI(TimeTrackable):
     def get_technical_owners(self):
         if self.content_object and getattr(
                 self.content_object, 'venture', None):
-            return list([
-                unicode(x) for x in
-                self.content_object.venture.technical_owners()] or ['-'])
+            venture_ci = self.get_by_content_object(
+                self.content_object.venture
+            )
+            return list(
+                [unicode(x) for x in venture_ci.technical_owners.all()] or
+                ['-']
+            )
         elif self.content_object and self.type.id == CI_TYPES.VENTURE.id:
             return list([
-                unicode(x) for x in self.content_object.technical_owners()
+                unicode(x) for x in self.technical_owners.all()
             ] or ['-'])
         else:
             return ['-']
@@ -588,10 +594,25 @@ CI.technical_owners = CIOwnershipDescriptor(CIOwnershipType.technical.id)
 
 
 class CIOwner(TimeTrackable, WithConcurrentGetOrCreate):
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True, null=True)
-    sAMAccountName = models.CharField(max_length=256, blank=True)
+    profile = models.OneToOneField('account.Profile', null=False)
 
     def __unicode__(self):
         return ' '.join([self.first_name, self.last_name])
+
+    # Bacwards compatibility properties
+
+    @property
+    def first_name(self):
+        return self.profile.user.first_name
+
+    @property
+    def last_name(self):
+        return self.profile.user.last_name
+
+    @property
+    def email(self):
+        return self.profile.user.email
+
+    @property
+    def sAMAccountName(self):
+        return self.profile.user.username

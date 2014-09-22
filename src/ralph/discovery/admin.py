@@ -10,6 +10,7 @@ import re
 import logging
 
 from django import forms
+from django.conf import settings
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import (
@@ -20,8 +21,9 @@ from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.template.defaultfilters import slugify
 
-from ralph.discovery import models as m
 from ralph.business.admin import RolePropertyValueInline
+from ralph.discovery import models
+from ralph.discovery import models_device
 from ralph.ui.forms.network import NetworkForm
 
 
@@ -33,7 +35,7 @@ def copy_network(modeladmin, request, queryset):
     for net in queryset:
         name = 'Copy of %s' % net.name
         address = net.address.rsplit('/', 1)[0] + '/1'
-        new_net = m.Network(
+        new_net = models.Network(
             name=name,
             address=address,
             gateway=net.gateway,
@@ -92,34 +94,34 @@ class NetworkAdmin(ModelAdmin):
     form = NetworkForm
     actions = [copy_network]
 
-admin.site.register(m.Network, NetworkAdmin)
+admin.site.register(models.Network, NetworkAdmin)
 
 
 class NetworkKindAdmin(ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
 
-admin.site.register(m.NetworkKind, NetworkKindAdmin)
+admin.site.register(models.NetworkKind, NetworkKindAdmin)
 
 
 class NetworkTerminatorAdmin(ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
 
-admin.site.register(m.NetworkTerminator, NetworkTerminatorAdmin)
+admin.site.register(models.NetworkTerminator, NetworkTerminatorAdmin)
 
 
 class DataCenterAdmin(ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
 
-admin.site.register(m.DataCenter, DataCenterAdmin)
+admin.site.register(models.DataCenter, DataCenterAdmin)
 
 
 class EnvironmentAdminForm(forms.ModelForm):
 
     class Meta:
-        model = m.Environment
+        model = models.Environment
 
     def clean_name(self):
         name = self.cleaned_data['name'].strip()
@@ -159,20 +161,20 @@ class EnvironmentAdmin(ModelAdmin):
     form = EnvironmentAdminForm
     list_filter = ('data_center', 'queue')
 
-admin.site.register(m.Environment, EnvironmentAdmin)
+admin.site.register(models.Environment, EnvironmentAdmin)
 
 
 class DiscoveryQueueAdmin(ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
 
-admin.site.register(m.DiscoveryQueue, DiscoveryQueueAdmin)
+admin.site.register(models.DiscoveryQueue, DiscoveryQueueAdmin)
 
 
 class IPAddressForm(forms.ModelForm):
 
     class Meta:
-        model = m.IPAddress
+        model = models.IPAddress
 
     def clean(self):
         address = self.cleaned_data.get('address')
@@ -183,7 +185,7 @@ class IPAddressForm(forms.ModelForm):
 
 
 class IPAddressInline(ForeignKeyAutocompleteTabularInline):
-    model = m.IPAddress
+    model = models.IPAddress
     readonly_fields = ('snmp_name', 'last_seen')
     exclude = ('created', 'modified', 'dns_info', 'http_family',
                'snmp_community', 'last_puppet')
@@ -196,7 +198,7 @@ class IPAddressInline(ForeignKeyAutocompleteTabularInline):
 
 
 class ChildDeviceInline(ForeignKeyAutocompleteTabularInline):
-    model = m.Device
+    model = models.Device
     edit_separately = True
     readonly_fields = ('name', 'model', 'sn', 'remarks', 'last_seen',)
     exclude = ('name2', 'created', 'modified', 'boot_firmware', 'barcode',
@@ -215,17 +217,17 @@ class ChildDeviceInline(ForeignKeyAutocompleteTabularInline):
 class DeviceModelAdmin(ModelAdmin):
 
     def count(self):
-        return m.Device.objects.filter(model=self).count()
+        return models.Device.objects.filter(model=self).count()
 
     list_display = ('name', 'type', count, 'created', 'modified')
     list_filter = ('type',)
     search_fields = ('name',)
 
-admin.site.register(m.DeviceModel, DeviceModelAdmin)
+admin.site.register(models.DeviceModel, DeviceModelAdmin)
 
 
 class DeviceModelInline(admin.TabularInline):
-    model = m.DeviceModel
+    model = models.DeviceModel
     exclude = ('created', 'modified')
     extra = 0
 
@@ -233,7 +235,7 @@ class DeviceModelInline(admin.TabularInline):
 class DeviceForm(forms.ModelForm):
 
     class Meta:
-        model = m.Device
+        model = models.Device
 
     def clean_sn(self):
         sn = self.cleaned_data['sn']
@@ -251,9 +253,24 @@ class DeviceForm(forms.ModelForm):
         barcode = self.cleaned_data['barcode']
         return barcode or None
 
+    def clean(self):
+        cleaned_data = super(DeviceForm, self).clean()
+        model = self.cleaned_data.get('model')
+        if all((
+            'ralph_assets' in settings.INSTALLED_APPS,
+            not self.instance.id,  # only when we create new device
+            model
+        )):
+            if model and model.type not in models.ASSET_NOT_REQUIRED:
+                raise forms.ValidationError(
+                    "Adding this type of devices is allowed only via "
+                    "Assets module."
+                )
+        return cleaned_data
+
 
 class ProcessorInline(ForeignKeyAutocompleteTabularInline):
-    model = m.Processor
+    model = models.Processor
     # readonly_fields = ('label', 'index', 'speed')
     exclude = ('created', 'modified')
     extra = 0
@@ -263,7 +280,7 @@ class ProcessorInline(ForeignKeyAutocompleteTabularInline):
 
 
 class MemoryInline(ForeignKeyAutocompleteTabularInline):
-    model = m.Memory
+    model = models.Memory
     exclude = ('created', 'modified')
     extra = 0
     related_search_fields = {
@@ -272,7 +289,7 @@ class MemoryInline(ForeignKeyAutocompleteTabularInline):
 
 
 class EthernetInline(ForeignKeyAutocompleteTabularInline):
-    model = m.Ethernet
+    model = models.Ethernet
     exclude = ('created', 'modified')
     extra = 0
     related_search_fields = {
@@ -281,7 +298,7 @@ class EthernetInline(ForeignKeyAutocompleteTabularInline):
 
 
 class StorageInline(ForeignKeyAutocompleteTabularInline):
-    model = m.Storage
+    model = models.Storage
     readonly_fields = (
         'label',
         'size',
@@ -298,7 +315,7 @@ class StorageInline(ForeignKeyAutocompleteTabularInline):
 
 
 class InboundConnectionInline(ForeignKeyAutocompleteTabularInline):
-    model = m.Connection
+    model = models.Connection
     extra = 1
     related_search_fields = {
         'outbound': ['^name']
@@ -309,7 +326,7 @@ class InboundConnectionInline(ForeignKeyAutocompleteTabularInline):
 
 
 class OutboundConnectionInline(ForeignKeyAutocompleteTabularInline):
-    model = m.Connection
+    model = models.Connection
     extra = 1
     related_search_fields = {
         'inbound': ['^name'],
@@ -349,7 +366,7 @@ class DeviceAdmin(ModelAdmin):
     }
 
     def save_model(self, request, obj, form, change):
-        obj.save(user=request.user, priority=SAVE_PRIORITY)
+        obj.save(user=request.user, sync_fields=True, priority=SAVE_PRIORITY)
 
     def save_formset(self, request, form, formset, change):
         if formset.model.__name__ == 'RolePropertyValue':
@@ -358,11 +375,11 @@ class DeviceAdmin(ModelAdmin):
         else:
             formset.save(commit=True)
 
-admin.site.register(m.Device, DeviceAdmin)
+admin.site.register(models.Device, DeviceAdmin)
 
 
 class IPAliasInline(admin.TabularInline):
-    model = m.IPAlias
+    model = models.IPAlias
     exclude = ('created', 'modified')
     extra = 0
 
@@ -390,25 +407,25 @@ class IPAddressAdmin(ModelAdmin):
         'venture': ['^name'],
     }
 
-admin.site.register(m.IPAddress, IPAddressAdmin)
+admin.site.register(models.IPAddress, IPAddressAdmin)
 
 
 class DeprecationKindAdmin(ModelAdmin):
     save_on_top = True
     list_display = ('name', 'months', 'default')
-admin.site.register(m.DeprecationKind, DeprecationKindAdmin)
+admin.site.register(models.DeprecationKind, DeprecationKindAdmin)
 
 
 class MarginKindAdmin(ModelAdmin):
     save_on_top = True
-admin.site.register(m.MarginKind, MarginKindAdmin)
+admin.site.register(models.MarginKind, MarginKindAdmin)
 
 
 class LoadBalancerVirtualServerAdmin(ModelAdmin):
     pass
 
 admin.site.register(
-    m.LoadBalancerVirtualServer,
+    models.LoadBalancerVirtualServer,
     LoadBalancerVirtualServerAdmin,
 )
 
@@ -417,13 +434,13 @@ class LoadBalancerMemberAdmin(ModelAdmin):
     pass
 
 admin.site.register(
-    m.LoadBalancerMember,
+    models.LoadBalancerMember,
     LoadBalancerMemberAdmin,
 )
 
 
 class ComponentModelInline(admin.TabularInline):
-    model = m.ComponentModel
+    model = models.ComponentModel
     exclude = ('created', 'modified')
     extra = 0
 
@@ -437,7 +454,7 @@ class ComponentModelAdmin(ModelAdmin):
     list_display = ('name', 'type', count, 'family',)
     search_fields = ('name', 'type', 'group__name', 'family')
 
-admin.site.register(m.ComponentModel, ComponentModelAdmin)
+admin.site.register(models.ComponentModel, ComponentModelAdmin)
 
 
 class GenericComponentAdmin(ModelAdmin):
@@ -448,11 +465,11 @@ class GenericComponentAdmin(ModelAdmin):
         'model': ['^name']
     }
 
-admin.site.register(m.GenericComponent, GenericComponentAdmin)
+admin.site.register(models.GenericComponent, GenericComponentAdmin)
 
 
 class DiskShareMountInline(ForeignKeyAutocompleteTabularInline):
-    model = m.DiskShareMount
+    model = models.DiskShareMount
     exclude = ('created', 'modified')
     related_search_fields = {
         'device': ['^name'],
@@ -470,7 +487,7 @@ class DiskShareAdmin(ModelAdmin):
         'model': ['^name']
     }
 
-admin.site.register(m.DiskShare, DiskShareAdmin)
+admin.site.register(models.DiskShare, DiskShareAdmin)
 
 
 class HistoryChangeAdmin(ModelAdmin):
@@ -481,13 +498,13 @@ class HistoryChangeAdmin(ModelAdmin):
                        'old_value', 'component')
     search_fields = ('user__username', 'field_name', 'new_value')
 
-admin.site.register(m.HistoryChange, HistoryChangeAdmin)
+admin.site.register(models.HistoryChange, HistoryChangeAdmin)
 
 
-class DiscoveryWarningAdmin(ModelAdmin):
-    list_display = ('message', 'count', 'date', 'plugin', 'ip', 'device')
-    list_per_page = 250
-    readonly_fields = ('date', 'plugin', 'message', 'ip', 'count', 'device')
-    search_fields = ('plugin', 'ip', 'message')
+class DeviceEnvironmentAdmin(ModelAdmin):
+    save_on_top = True
+    list_display = ('name',)
+    search_fields = ('name',)
 
-admin.site.register(m.DiscoveryWarning, DiscoveryWarningAdmin)
+
+admin.site.register(models_device.DeviceEnvironment, DeviceEnvironmentAdmin)

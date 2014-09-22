@@ -26,6 +26,7 @@ from tastypie.models import ApiKey
 from unittest import skip
 
 from ralph.business.models import Venture
+from ralph.cmdb import models_ci
 from ralph.discovery.models import (
     ComponentModel,
     ComponentType,
@@ -37,10 +38,10 @@ from ralph.discovery.models import (
     IPAddress,
     MarginKind,
 )
-from ralph.util import api_pricing
+from ralph.util import api_pricing, api_scrooge
+from ralph.util.tests import utils
 
-
-EXISTING_DOMAIN = settings.SANITY_CHECK_PING_ADDRESS
+EXISTING_DOMAIN = 'www.google.com'
 NON_EXISTENT_DOMAIN = 'nxdomain.allegro.pl'
 NON_EXISTENT_HOST_IP = '11.255.255.254'
 
@@ -182,6 +183,89 @@ class ApiPricingTest(TestCase):
     def test_get_ip_info_empty(self):
         result = api_pricing.get_ip_info(ipaddress='3.3.3.3')
         self.assertEquals(result, {})
+
+
+class ApiScroogeTest(TestCase):
+
+    def test_get_business_lines(self):
+        business_lines = utils.BusinessLineFactory.create_batch(7)
+        result = [a for a in api_scrooge.get_business_lines()]
+        business_lines_dict = [{
+            'name': bl.name,
+            'ci_uid': bl.uid,
+            'ci_id': bl.id,
+        } for bl in business_lines]
+        self.assertEquals(result, business_lines_dict)
+
+    def test_get_profit_centers(self):
+        profit_centers = utils.ProfitCenterFactory.create_batch(7)
+        result = [a for a in api_scrooge.get_profit_centers()]
+        profit_centers_dict = [{
+            'name': pc.name,
+            'ci_uid': pc.uid,
+            'ci_id': pc.id,
+            'description': None,
+            'business_line': None,
+        } for pc in profit_centers]
+        self.assertEquals(result, profit_centers_dict)
+
+    def test_get_owners(self):
+        owners = utils.CIOwnerFactory.create_batch(10)
+        result = [a for a in api_scrooge.get_owners()]
+        owners_dict = [{
+            'id': o.id,
+            'profile_id': o.profile_id,
+        } for o in owners]
+        self.assertEquals(result, owners_dict)
+
+    def test_get_services(self):
+        service = utils.ServiceFactory()
+        profit_center = utils.ProfitCenterFactory()
+        utils.ServiceProfitCenterRelationFactory(
+            parent=profit_center,
+            child=service,
+        )
+        business_ownership = utils.ServiceOwnershipFactory.create_batch(
+            2,
+            ci=service,
+            type=models_ci.CIOwnershipType.business,
+        )
+        technical_ownership = utils.ServiceOwnershipFactory.create_batch(
+            3,
+            ci=service,
+            type=models_ci.CIOwnershipType.technical,
+        )
+        environments = utils.ServiceEnvironmentRelationFactory.create_batch(
+            2,
+            parent=service,
+        )
+        result = [a for a in api_scrooge.get_services()]
+        service_dict = {
+            'name': service.name,
+            'ci_id': service.id,
+            'ci_uid': service.uid,
+            'symbol': None,
+            'profit_center': profit_center.id,
+            'business_owners': [bo.owner.id for bo in business_ownership],
+            'technical_owners': [to.owner.id for to in technical_ownership],
+            'environments': [e.child.id for e in environments],
+        }
+        self.assertEquals(result, [service_dict])
+
+    def test_get_services_without_profit_center(self):
+        service = utils.ServiceFactory()
+        result = [a for a in api_scrooge.get_services()]
+        service_dict = {
+            'name': service.name,
+            'ci_id': service.id,
+            'ci_uid': service.uid,
+            'symbol': None,
+            'profit_center': None,
+            'technical_owners': [],
+            'business_owners': [],
+            'environments': [],
+        }
+        self.assertEquals(result, [service_dict])
 
 
 class UncompressBase64DataTest(TestCase):

@@ -54,10 +54,8 @@ def HTTP403(request, msg=None, template_name='403.html'):
 
 class BaseUser(Base):
     template_name = 'base.html'
-
-    @ralph_permission([])
-    def dispatch(self, *args, **kwargs):
-        return super(TemplateView, self).dispatch(*args, **kwargs)
+    submodule_name = 'user_preference'
+    module_name = 'user_preference'
 
     def get_sidebar_items(self):
         has_perm = self.request.user.get_profile().has_perm
@@ -152,7 +150,7 @@ class UserHomePage(RedirectView):
 
     def get(self, request, *args, **kwargs):
         redirect_hierarchy = [
-            (Perm.has_scrooge_access, 'ralph_pricing'),
+            (Perm.has_scrooge_access, 'ralph_scrooge'),
             (Perm.has_assets_access, 'ralph_assets'),
         ]
         profile = request.user.get_profile()

@@ -17,7 +17,6 @@ from django.db.models.signals import (post_save, pre_save, pre_delete,
 from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.cmdb.integration.splunk import log_change_to_splunk
 from ralph.discovery.models_device import (
     Device,
     DeprecationKind,
@@ -78,12 +77,6 @@ class HistoryChange(db.Model):
             return "'{}'.{} = '{}' -> '{}' by {} on {} ({})".format(
                 self.device, self.field_name, self.old_value, self.new_value,
                 self.user, self.date, self.id)
-
-
-@receiver(post_save, sender=HistoryChange, dispatch_uid='ralph.history')
-def history_change_post_save(sender, instance, raw, using, **kwargs):
-    if SPLUNK_HOST:
-        log_change_to_splunk(instance, 'CHANGE_HISTORY')
 
 
 @receiver(post_save, sender=Device, dispatch_uid='ralph.history')
@@ -284,60 +277,11 @@ def component_model_pre_save(sender, instance, raw, using, **kwargs):
     for field, orig, new in _field_changes(instance):
         HistoryModelChange(
             component_model=instance,
-            component_model_group=instance.group,
             field_name=field,
             old_value=unicode(orig),
             new_value=unicode(new),
             user=instance.saving_user,
         ).save()
-
-
-class DiscoveryWarning(db.Model):
-
-    """
-    Created by the discovery plugins to signal a possible problem with the
-    particular device or address.
-    """
-    date = db.DateTimeField(default=datetime.now)
-    plugin = db.CharField(max_length=64, default='')
-    message = db.TextField(blank=True, default='')
-    ip = db.IPAddressField(verbose_name=_("IP address"))
-    count = db.IntegerField(default=1)
-    device = db.ForeignKey(
-        'Device',
-        null=True,
-        blank=True,
-        default=None,
-        on_delete=db.SET_NULL,
-    )
-
-    class Meta:
-        verbose_name = _("discovery warning")
-        verbose_name_plural = _("discovery warnings")
-
-    @classmethod
-    def create(cls, message, plugin, ip=None, device=None):
-        """
-        Use this method to create warnings that are going to repeat a lot.
-        """
-        try:
-            warning = cls.objects.get(
-                plugin=plugin,
-                ip=ip,
-                device=device,
-                message=message,
-            )
-        except cls.DoesNotExist:
-            warning = cls(
-                message=message,
-                plugin=plugin,
-                ip=ip,
-                device=device,
-            )
-        else:
-            warning.date = datetime.now()
-            warning.count += 1
-        return warning
 
 
 class DiscoveryValue(db.Model):

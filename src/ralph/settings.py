@@ -20,6 +20,8 @@ execfile(namespace_package_support)
 #
 from datetime import timedelta
 
+PLUGGABLE_APPS = ('cmdb',)
+
 SITE_ID = 1
 USE_I18N = True
 USE_L10N = True  # FIXME: breaks contents of l7d date fields on form reload
@@ -74,7 +76,6 @@ INSTALLED_APPS = [
     'tastypie',
     'ralph.account',
     'ralph.business',
-    'ralph.cmdb',
     'ralph.discovery',
     'ralph.deployment',
     'ralph.integration',
@@ -94,6 +95,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.media',
     'django.core.context_processors.static',
     'django.contrib.messages.context_processors.messages',
+    'ralph.context_processors.info',
 )
 # See http://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
@@ -171,7 +173,6 @@ LOGIN_REDIRECT_URL = '/browse/'
 LOGIN_URL = '/login/'
 LOGOUT_URL = '/logout/'
 HOME_PAGE_URL_NAME = 'search'
-SANITY_CHECK_PING_ADDRESS = 'www.allegro.pl'
 SANITY_CHECK_IP2HOST_IP = '8.8.8.8'
 SANITY_CHECK_IP2HOST_HOSTNAME_REGEX = r'.*google.*'
 
@@ -291,6 +292,7 @@ ZABBIX_USER = None
 ZABBIX_PASSWORD = None
 ZABBIX_DEFAULT_GROUP = 'test'
 BUGTRACKER_URL = 'https://github.com/allegro/ralph/issues/new'
+CHANGELOG_URL = 'http://ralph.allegrogroup.com/doc/changes.html'
 SO_URL = None
 OPENSTACK_URL = None
 OPENSTACK_USER = None

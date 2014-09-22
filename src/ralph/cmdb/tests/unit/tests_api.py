@@ -37,6 +37,7 @@ from ralph.cmdb.models_ci import (
     CIType,
     CIRelation,
 )
+from ralph.util.tests.utils import CIOwnerFactory
 from django.core.cache import cache
 from ralph.ui.tests.global_utils import create_user, UserTestCase
 
@@ -56,18 +57,8 @@ class CMDBApiTest(UserTestCase):
         super(CMDBApiTest, self).setUp()
 
     def create_owners(self):
-        self.owner1 = CIOwner(
-            first_name='first_name_owner1',
-            last_name='last_name_owner1',
-            email='first_name_owner1.last_name_owner1@ralph.local',
-        )
-        self.owner1.save()
-        self.owner2 = CIOwner(
-            first_name='first_name_owner2',
-            last_name='last_name_owner2',
-            email='first_name_owner2.last_name_owner2@ralph.local',
-        )
-        self.owner2.save()
+        self.owner1 = CIOwnerFactory()
+        self.owner2 = CIOwnerFactory()
 
     def create_cis(self):
         self.ci1 = CI(
@@ -153,7 +144,6 @@ class CMDBApiTest(UserTestCase):
         resource_uris = [
             ci_layer['resource_uri'] for ci_layer in json_data['objects']
         ]
-
         response = self.get(resource_uris[0])
         json_string = response.content
         json_data = json.loads(json_string)
@@ -302,6 +292,7 @@ class CMDBApiTest(UserTestCase):
             'technical_owners': [
                 '/api/v0.9/ciowners/{0}/'.format(self.owner2.id)
             ],
+            'related': [],
             'attributes': [
                 {
                     'name': 'SLA value',
@@ -378,6 +369,42 @@ class CMDBApiTest(UserTestCase):
             },
         )
 
+    def test_patch_relations(self):
+        """A test for adding relations via 0.10 version of API."""
+        ci_data = json.dumps({
+            'related': [
+                {
+                    'dir': 'INCOMING',
+                    'type': 'HASROLE',
+                    'id': self.ci2.id,
+                }, {
+                    'dir': 'OUTGOING',
+                    'type': 'CONTAINS',
+                    'id': self.ci3.id,
+                }
+            ],
+        })
+        req_data = {
+            'CONTENT_LENGTH': len(ci_data),
+            'CONTENT_TYPE': 'application/json',
+            'PATH_INFO': '/api/v0.10/ci/{0}/'.format(self.ci1.id),
+            'REQUEST_METHOD': 'PATCH',
+            'wsgi.input': FakePayload(ci_data),
+        }
+        req_data.update(self.headers)
+        self.client.request(**req_data)
+        rel1 = CIRelation.objects.get(
+            child_id=self.ci1.id,
+            parent_id=self.ci2.id,
+            type=CI_RELATION_TYPES.HASROLE.id,
+        )
+        rel2 = CIRelation.objects.get(
+            child_id=self.ci3.id,
+            parent_id=self.ci1.id,
+            type=CI_RELATION_TYPES.CONTAINS.id,
+        )
+
+
     def test_get_attribute(self):
         path = "/api/v0.9/ci/{0}/".format(self.ci1.id)
         response = self.get(path)
@@ -452,6 +479,15 @@ class CMDBApiTest(UserTestCase):
         self.assertEqual(json_data['name'], self.ci2.name)
         self.assertEqual(json_data['type']['name'], self.ci2.type.name)
         self.assertEqual(json_data['uid'], self.ci2.uid)
+
+    def test_filter_related(self):
+        path = "/api/v0.10/ci/"
+        data = {'parent': self.ci1.id, 'child': self.ci3.id}
+        response = self.get(path=path, data=data)
+        json_data = json.loads(response.content)
+        self.assertEqual(len(json_data['objects']), 1)
+        self.assertEqual(json_data['objects'][0]['id'], self.ci2.id)
+
 
 
 class CIApiTest(TestCase):
