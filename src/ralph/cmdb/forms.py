@@ -63,6 +63,7 @@ class CIEditForm(DependencyForm, forms.ModelForm):
         CI_ATTRIBUTE_TYPES.DATE.id: forms.DateField,
         CI_ATTRIBUTE_TYPES.FLOAT.id: forms.FloatField,
         CI_ATTRIBUTE_TYPES.CHOICE.id: forms.ChoiceField,
+        CI_ATTRIBUTE_TYPES.BOOLEAN.id: forms.BooleanField,
     }
 
     class Meta:
