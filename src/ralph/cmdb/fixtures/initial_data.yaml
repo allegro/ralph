@@ -117,6 +117,13 @@
     attribute_type: 2
     ci_types: [7]
 
+- model: cmdb.CIAttribute
+  pk: 7
+  fields:
+    name: Calculate in Scrooge
+    attribute_type: 6  # bool
+    ci_types: [7]  # Service
+
 # Layers
 
 - model: cmdb.CILayer

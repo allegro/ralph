@@ -53,6 +53,7 @@ class CI_ATTRIBUTE_TYPES(Choices):
     DATE = _('Date')
     FLOAT = _('Real')
     CHOICE = _('Choice List')
+    BOOLEAN = _('Boolean (Yes/No)')
 
 
 # Constants from  db
@@ -293,6 +294,18 @@ class CIValueChoice(TimeTrackable):
         return "%s" % self.value
 
 
+class CIValueBoolean(TimeTrackable):
+    value = models.NullBooleanField(
+        verbose_name=_("value"),
+        null=True,
+        blank=True,
+        default=False,
+    )
+
+    def __unicode__(self):
+        return "%s" % self.value
+
+
 class CI(TimeTrackable):
     uid = models.CharField(
         max_length=100,
@@ -488,9 +501,11 @@ class CIAttributeValue(TimeTrackable):
     value_float = models.ForeignKey(
         CIValueFloat, null=True, blank=True, verbose_name=_("float value")
     )
-
     value_choice = models.ForeignKey(
         CIValueChoice, null=True, blank=True, verbose_name=_("choice value"),
+    )
+    value_boolean = models.ForeignKey(
+        CIValueBoolean, null=True, blank=True, verbose_name=_("boolean value"),
     )
 
     TYPE_FIELDS_VALTYPES = {
@@ -499,6 +514,7 @@ class CIAttributeValue(TimeTrackable):
         CI_ATTRIBUTE_TYPES.FLOAT.id: ('value_float', CIValueFloat),
         CI_ATTRIBUTE_TYPES.DATE.id: ('value_date', CIValueDate),
         CI_ATTRIBUTE_TYPES.CHOICE.id: ('value_choice', CIValueChoice),
+        CI_ATTRIBUTE_TYPES.BOOLEAN.id: ('value_boolean', CIValueBoolean),
     }
 
     @property
