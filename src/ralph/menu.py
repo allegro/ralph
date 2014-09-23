@@ -85,10 +85,6 @@ class CoreMenu(Menu):
             submodules.append(
                 MenuItem(_('Racks'), fugue_icon='fugue-building',
                          view_name='racks'))
-        if self.has_perm(Perm.read_network_structure):
-            submodules.append(
-                MenuItem(_('Networks'), fugue_icon='fugue-weather-clouds',
-                         view_name='networks'))
         submodules.append(
             MenuItem(_('Ralph CLI'), fugue_icon='fugue-terminal',
                      href='#beast'))
