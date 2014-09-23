@@ -6,96 +6,63 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import datetime
-import collections
+import logging
 
 from django.conf import settings
+from keystoneclient.v2_0 import client
 from lck.django.common import nested_commit_on_success
 
 from ralph.util import plugin
-from ralph.discovery.models import (Device, DeviceType, GenericComponent,
-                                    ComponentModel, ComponentType)
-from ralph.discovery.openstack import OpenStack
+from ralph.discovery.models import Device, DeviceType
+
+
+logger = logging.getLogger(__name__)
 
 
 @nested_commit_on_success
-def make_tenant(tenant):
+def save_tenant(tenant_id, tenant_name, model_name):
+    """
+    Saves single tenant as device with cloud_server model type.
+    """
     dev = Device.create(
-        name='OpenStack',
-        model_name='OpenStack Tenant',
+        model_name=model_name,
         model_type=DeviceType.cloud_server,
-        sn='openstack-%s' % tenant
+        sn='openstack-{}'.format(tenant_id)
     )
+    dev.name = tenant_name
     dev.save()
     return dev
 
 
-def make_components(tenant, dev, region):
-    total_daily_cost = [0]
-
-    def make_component(name, symbol, key, multiplier, unit):
-        if key not in tenant:
-            return
-        model, created = ComponentModel.create(
-            ComponentType.unknown,
-            family=symbol,
-            name=name,
-            priority=0,
-        )
-        res, created = GenericComponent.concurrent_get_or_create(
-            sn='%s-%s-%s' % (symbol, tenant['tenant_id'], region),
-            defaults=dict(
-                model=model,
-                device=dev,
-            ),
-        )
-
-        if created:
-            res.label = unit
-        res.save()
-
-    make_component('OpenStack 10000 Memory GiB Hours', 'openstackmem',
-                   'total_memory_mb_usage', 1024, 'Memory')
-    make_component('OpenStack 10000 CPU Hours', 'openstackcpu',
-                   'total_vcpus_usage', 1, 'CPU')
-    make_component('OpenStack 10000 Disk GiB Hours', 'openstackdisk',
-                   'total_local_gb_usage', 1, 'Disk')
-    make_component('OpenStack 10000 Volume GiB Hours', 'openstackvolume',
-                   'total_volume_gb_usage', 1, 'Volume')
-    make_component('OpenStack 10000 Images GiB Hours', 'openstackimages',
-                   'total_images_gb_usage', 1, 'Images')
-    return total_daily_cost[0]
+def get_tenants_list(site):
+    """
+    Returns list of tenants from OpenStack.
+    """
+    keystone_client = client.Client(
+        username=site['USERNAME'],
+        password=site['PASSWORD'],
+        tenant_name=site['TENANT_NAME'],
+        auth_url=site['AUTH_URL'],
+    )
+    return keystone_client.tenants.list()
 
 
 @plugin.register(chain='openstack')
 def openstack(**kwargs):
-    if settings.OPENSTACK_URL is None:
+    if settings.OPENSTACK_SITES is None:
         return False, 'not configured.', kwargs
-    tenants = collections.defaultdict(lambda: collections.defaultdict(dict))
-    end = kwargs.get('end') or datetime.datetime.today().replace(
-        hour=0, minute=0, second=0, microsecond=0)
-    start = kwargs.get('start') or end - datetime.timedelta(days=1)
-    for region in getattr(settings, 'OPENSTACK_REGIONS', ['']):
-        stack = OpenStack(
-            settings.OPENSTACK_URL,
-            settings.OPENSTACK_USER,
-            settings.OPENSTACK_PASS,
-            region=region,
-        )
-        for data in stack.simple_tenant_usage(start, end):
-            tenants[data['tenant_id']][region].update(data)
-    for url, query in getattr(settings, 'OPENSTACK_EXTRA_QUERIES', []):
-        for data in stack.query(query, url=url,
-                                start=start.strftime('%Y-%m-%dT%H:%M:%S'),
-                                end=end.strftime('%Y-%m-%dT%H:%M:%S'),
-                                ):
-            tenants[data['tenant_id']][url].update(data)
-    for tenant_id, regions in tenants.iteritems():
-        dev = make_tenant(tenant_id)
-        dev.historycost_set.filter(start=start).delete()
-        margin_in_percent = dev.get_margin() or 0
-        total_cost = 0
-        for region, data in regions.iteritems():
-            cost = make_components(data, dev, region)
-            total_cost += cost * (1 + margin_in_percent / 100)
-    return True, 'loaded from %s to %s.' % (start, end), kwargs
+    total_tenants = 0
+    for site in settings.OPENSTACK_SITES:
+        # add suffix to model name if defined
+        model_suffix = site.get('MODEL_SUFFIX', '')
+        model_name = 'OpenStack Tenant'
+        if model_suffix:
+            model_name = ' '.join((model_name, model_suffix.strip()))
+        tenants = get_tenants_list(site)
+        for tenant in tenants:
+            save_tenant(tenant.id, tenant.name, model_name)
+        logger.info('Saved {} tenants from {}'.format(
+            len(tenants), site['DESCRIPTION'],
+        ))
+        total_tenants += len(tenants)
+    return True, '{} OpenStack Tenants saved'.format(total_tenants), kwargs
