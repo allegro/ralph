@@ -18,6 +18,8 @@ from ralph.discovery.models import Device, DeviceType
 
 logger = logging.getLogger(__name__)
 
+LIMIT = 1000000
+
 
 @nested_commit_on_success
 def save_tenant(tenant_id, tenant_name, model_name):
@@ -44,14 +46,14 @@ def get_tenants_list(site):
         tenant_name=site['TENANT_NAME'],
         auth_url=site['AUTH_URL'],
     )
-    return keystone_client.tenants.list()
+    return keystone_client.tenants.list(limit=LIMIT)
 
 
 @plugin.register(chain='openstack')
 def openstack(**kwargs):
     if settings.OPENSTACK_SITES is None:
         return False, 'not configured.', kwargs
-    total_tenants = 0
+    tenants_set = set()
     for site in settings.OPENSTACK_SITES:
         # add suffix to model name if defined
         model_suffix = site.get('MODEL_SUFFIX', '')
@@ -61,8 +63,8 @@ def openstack(**kwargs):
         tenants = get_tenants_list(site)
         for tenant in tenants:
             save_tenant(tenant.id, tenant.name, model_name)
+            tenants_set.add(tenant.id)
         logger.info('Saved {} tenants from {}'.format(
             len(tenants), site['DESCRIPTION'],
         ))
-        total_tenants += len(tenants)
-    return True, '{} OpenStack Tenants saved'.format(total_tenants), kwargs
+    return True, '{} OpenStack Tenants saved'.format(len(tenants_set)), kwargs

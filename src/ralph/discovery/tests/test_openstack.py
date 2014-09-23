@@ -14,9 +14,9 @@ from django.test.utils import override_settings
 from ralph.discovery.models import DeviceType
 from ralph.discovery.plugins.openstack import (
     save_tenant,
-    get_tenants_list,
     openstack
 )
+from ralph.discovery.tests.util import TenantFactory
 
 
 TEST_SETTINGS_SITES = dict(
@@ -42,29 +42,19 @@ TEST_SETTINGS_SITES = dict(
 
 
 class TestOpenstackPlugin(TestCase):
-    def _get_sample_tenant(self):
-        """
-        Sample tenant from keystoneclient
-        """
-        m = mock.Mock(
-            id='12345qwerty',
-            description='qwerty;asdfg;',
-            enabled=True,
-        )
-        m.name = 'sample_tenant'
-        return m
+    counter = 0
 
     @mock.patch('ralph.discovery.plugins.openstack.get_tenants_list')
     @mock.patch('ralph.discovery.plugins.openstack.save_tenant')
     @override_settings(**TEST_SETTINGS_SITES)
     def test_openstack_plugin(self, save_tenant_mock, get_tenants_list_mock):
         save_tenant_mock.return_value = None
-        tenants_list = [self._get_sample_tenant()] * 5
+        tenants_list = TenantFactory.create_batch(5)
         get_tenants_list_mock.return_value = tenants_list
         result = openstack()
         self.assertEquals(
             result,
-            (True, '10 OpenStack Tenants saved', {})
+            (True, '5 OpenStack Tenants saved', {})
         )
         self.assertEquals(get_tenants_list_mock.call_count, 2)
         self.assertEquals(save_tenant_mock.call_count, 10)
@@ -97,7 +87,7 @@ class TestOpenstackPlugin(TestCase):
         get_tenants_list_mock
     ):
         save_tenant_mock.return_value = None
-        tenants_list = [self._get_sample_tenant()] * 5
+        tenants_list = TenantFactory.create_batch(5)
         get_tenants_list_mock.return_value = tenants_list
         result = openstack()
         self.assertEquals(
