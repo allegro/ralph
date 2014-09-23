@@ -29,6 +29,7 @@ from ralph.ui.views.common import (
     Scan,
 )
 from ralph.ui.views.devices import BaseDeviceList
+from ralph.ui.views.reports import ReportDeviceList
 from ralph.util import presentation
 
 
@@ -304,3 +305,7 @@ class VenturesDeviceList(SidebarVentures, BaseMixin, BaseDeviceList):
                                 self.venture and self.venture != '*' else self.venture),
         })
         return ret
+
+
+class ReportVenturesDeviceList(ReportDeviceList, VenturesDeviceList):
+    pass
