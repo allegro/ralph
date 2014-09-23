@@ -130,10 +130,10 @@ class SidebarVentures(object):
                         parent.kwargs['collapsed'] = False
                         parent = getattr(parent, 'parent', None)
                     break
-                    subitems = getattr(item, 'subitems', None)
-                    if subitems is None:
-                        subitems = []
-                    stack.extend(subitems)
+                subitems = getattr(item, 'subitems', None)
+                if subitems is None:
+                    subitems = []
+                stack.extend(subitems)
 
         self.set_venture()
         tab_items = ret['tab_items']
