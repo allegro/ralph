@@ -97,19 +97,18 @@ class CoreMenu(Menu):
                      href='#quickscan'))
 
         pending_scans = get_pending_scans()
-        if pending_scans:
-            submodules.append(MenuItem(
-                _('Pending scans {}/{}').format(
-                    pending_scans.new_devices,
-                    pending_scans.changed_devices,
-                ),
-                view_kwargs={'scan_type': (
-                    'new' if pending_scans.new_devices else 'existing'
-                )},
-                name='scan_list',
-                view_name='scan_list',
-                fugue_icon='fugue-light-bulb--exclamation',
-            ))
+        submodules.append(MenuItem(
+            _('Pending scans {}/{}').format(
+                pending_scans.new_devices,
+                pending_scans.changed_devices,
+            ),
+            view_kwargs={'scan_type': (
+                'new' if pending_scans.new_devices else 'existing'
+            )},
+            name='scan_list',
+            view_name='scan_list',
+            fugue_icon='fugue-light-bulb',
+        ))
         return submodules
 
     def get_sidebar_items(self):
