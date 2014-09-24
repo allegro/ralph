@@ -16,8 +16,10 @@
   <div class="help-block">
     <div class="pull-right" style="text-align:right">
       {{ deploy_disable_reason }}<br>
-      To enable deploy, click <a href="../asset/{{ device.id }}">here</a>
-      to correct this.
+      {% block trans %}
+        To enable deploy, click <a href="../asset/{{ device.id }}">here</a>
+        to correct this.
+      {% endblock %}
     </div>
   </div>
   {% endif %}
