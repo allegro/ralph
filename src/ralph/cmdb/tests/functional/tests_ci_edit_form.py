@@ -338,6 +338,7 @@ class CIFormsTest(TestCase):
             ci_device, custom_attrs={
                 'base-attribute_3': time.strftime('%Y-%m-%d'),
                 'base-attribute_4': 666,
+                'base-type': 2,
             }
         )
         self.assertEqual(response_ci_device_edit.status_code, 302)
@@ -361,6 +362,7 @@ class CIFormsTest(TestCase):
             ci_device, custom_attrs={
                 'base-attribute_1': 'http://doc.local',
                 'base-attribute_2': 'name-test',
+                'base-type': 3,
             }
         )
         self.assertEqual(response_ci_device_edit.status_code, 302)
@@ -374,3 +376,30 @@ class CIFormsTest(TestCase):
         val = [value.value for value in ci_string_value]
         val.sort()
         self.assertListEqual(val, ['http://doc.local', 'name-test'])
+
+        # Create CI using the form, and edit custom boolean field.
+        response_ci_service = self.add_ci(name='CI_service', type=7)
+        self.assertEqual(response_ci_service.status_code, 302)
+        ci_service = db.CI.objects.get(name='CI_service')
+        response_ci_service_edit = self.edit_ci(
+            ci_service, custom_attrs={
+                'base-attribute_6': 'service_symbol',
+                'base-attribute_7': False,
+                'base-type': 7,
+            }
+        )
+        self.assertEqual(response_ci_service_edit.status_code, 302)
+        ci_attrvalue = ci_service.ciattributevalue_set.all()
+        values = {}
+        values['string'] = [value.value_string_id for value in ci_attrvalue
+                            if value.value_string]
+        values['boolean'] = [value.value_boolean_id for value in ci_attrvalue
+                             if value.value_boolean_id is not None]
+        ci_string_value = db.CIValueString.objects.get(
+            pk__in=values['string']
+        )
+        ci_boolean_value = db.CIValueBoolean.objects.get(
+            id__in=values['boolean']
+        )
+        self.assertEqual(ci_string_value.value, 'service_symbol')
+        self.assertEqual(ci_boolean_value.value, False)

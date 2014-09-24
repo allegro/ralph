@@ -20,17 +20,18 @@ from tastypie.resources import Resource
 Resource.method_check = method_check
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie import fields
-from tastypie.fields import ForeignKey as TastyForeignKey
+from tastypie.fields import ForeignKey as TastyForeignKey, ToOneField
 from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
 
 from ralph.account.api_auth import RalphAuthorization
-from ralph.account.models import Perm
+from ralph.account.models import Perm, Profile
 from ralph.cmdb.models import (
     CI,
     CIType,
@@ -657,7 +658,54 @@ class CITypesResource(MResource):
         )
 
 
+class UserResource(MResource):
+    class Meta:
+        queryset = User.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_configuration_item_info_generic,
+            ]
+        )
+        list_allowed_methods = ['get']
+        filtering = {
+            'first_name': ALL,
+            'last_name': ALL,
+            'username': ALL,
+        }
+        resource_name = 'users'
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
+
+
+class ProfileResource(MResource):
+    user = ToOneField(UserResource, 'user', full=True)
+
+    class Meta:
+        queryset = Profile.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_configuration_item_info_generic,
+            ]
+        )
+        list_allowed_methods = ['get']
+        filtering = {
+            'user': ALL_WITH_RELATIONS,
+        }
+        resource_name = 'profiles'
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
+
+
 class CIOwnersResource(MResource):
+    profile = ToOneField(ProfileResource, 'profile', full=True)
 
     class Meta:
         queryset = CIOwner.objects.all()
@@ -671,13 +719,10 @@ class CIOwnersResource(MResource):
         filtering = {
             'cache_version': ALL,
             'created': ALL,
-            'email': ALL,
-            'first_name': ALL,
             'id': ALL,
-            'last_name': ALL,
             'modified': ALL,
             'resource_uri': ALL,
-            'sAMAccountName': ALL,
+            'profile': ALL_WITH_RELATIONS,
         }
         excludes = ('cache_version', )
         resource_name = 'ciowners'
