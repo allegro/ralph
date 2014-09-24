@@ -11,9 +11,7 @@ import datetime
 from bob.menu import MenuItem
 from dj.choices import Choices
 
-from ralph.account.models import Perm
 from ralph.deployment.models import DeploymentStatus
-from ralph.ui.views.common import DeviceDetailView
 from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
 
 
@@ -62,15 +60,6 @@ class ReportType(Choices):
         ),
         columns=['venture', 'remarks', 'position', 'barcode']
     )
-
-
-class Reports(DeviceDetailView):
-    template_name = 'ui/device_reports.html'
-    read_perm = Perm.read_device_info_history
-
-    def get_context_data(self, **kwargs):
-        result = super(Reports, self).get_context_data(**kwargs)
-        return result
 
 
 class ReportDeviceList(object):

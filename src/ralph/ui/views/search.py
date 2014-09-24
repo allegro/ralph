@@ -34,7 +34,7 @@ from ralph.ui.views.common import (
     Software,
 )
 from ralph.ui.views.devices import BaseDeviceList
-from ralph.ui.views.reports import Reports, ReportDeviceList
+from ralph.ui.views.reports import ReportDeviceList
 
 SOFTWARE_RE = re.compile(
     r"^(?P<name>[^<=>^]*)\s*((?P<operator>==|\^=|>=|<=|>|<)\s*"
@@ -510,10 +510,6 @@ class SearchComponents(Search, Components):
 
 
 class SearchHistory(Search, History):
-    pass
-
-
-class SearchReports(Search, Reports):
     pass
 
 

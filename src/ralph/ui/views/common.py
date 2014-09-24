@@ -373,7 +373,10 @@ class BaseMixin(MenuMixin, ACLGateway):
                     href=self.tab_href('scan'),
                 ),
             ])
-        if has_perm(Perm.read_device_info_reports, venture):
+        if all((
+            has_perm(Perm.edit_device_info_generic, venture),
+            not (self.kwargs.get('device') or self.kwargs.get('address')),
+        )):
             tab_items.extend([
                 MenuItem('Reports', fugue_icon='fugue-reports-stack',
                          href=self.tab_href('reports')),
