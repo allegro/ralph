@@ -358,6 +358,7 @@ class BaseMixin(MenuMixin, ACLGateway):
             tab_items.extend([
                 MenuItem(
                     'Linked Asset',
+                    name='asset',
                     fugue_icon='fugue-baggage-cart-box',
                     href=self.tab_href('asset')),
             ])
@@ -577,17 +578,17 @@ class Info(DeviceUpdateView):
                 deploy_disable_reason = _(
                     "This device contains dirty fields."
                 )
-            elif not self.object.verified:
-                deploy_disable_reason = _(
-                    "This device is not verified."
-                )
             elif not (
                 not assets_imported or
                 DeviceInfo.objects.filter(ralph_device_id=self.object.pk) or
                 self.object.model.type == DeviceType.virtual_server
             ):
                 deploy_disable_reason = _(
-                    "This device is not bound to an asset."
+                    "This device is not linked to an asset."
+                )
+            elif not self.object.verified:
+                deploy_disable_reason = _(
+                    "This device is not verified."
                 )
             else:
                 deploy_disable_reason = None
