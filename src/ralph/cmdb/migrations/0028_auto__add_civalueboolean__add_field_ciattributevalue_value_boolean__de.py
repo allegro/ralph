@@ -37,7 +37,7 @@ class Migration(SchemaMigration):
 
 
         # Changing field 'CIOwner.profile'
-        db.alter_column('cmdb_ciowner', 'profile_id', self.gf('django.db.models.fields.related.OneToOneField')(default='', to=orm['account.Profile'], unique=True))
+        db.alter_column('cmdb_ciowner', 'profile_id', self.gf('django.db.models.fields.related.OneToOneField')(default=-1, to=orm['account.Profile'], unique=True))
 
     def backwards(self, orm):
         # Deleting model 'CIValueBoolean'
