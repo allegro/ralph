@@ -294,22 +294,21 @@ class ServicesDeviceList(SerivcesSidebar, BaseMixin, BaseDeviceList):
         return services_ids
 
     def get_queryset(self):
+        queryset = Device.objects.all()
         if self.environment_id:
-            queryset = Device.objects.filter(
+            queryset = queryset.filter(
                 device_environment_id=self.environment_id
             )
-        elif self.service_id:
-            queryset = Device.objects.filter(
+        if self.service_id:
+            queryset = queryset.filter(
                 service_id=self.service_id
             )
-        elif self.businessline_id:
-            queryset = Device.objects.filter(
+        if self.businessline_id:
+            queryset = queryset.filter(
                 service_id__in=self._get_businessline_services_ids(
                     self.businessline_id
                 )
             )
-        else:
-            queryset = Device.objects.all()
         return self.sort_queryset(queryset)
 
 
