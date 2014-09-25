@@ -33,9 +33,8 @@ class SerivcesSidebar(object):
         self.service_id = None
         self.environment_id = None
 
-    def _get_tree(self):
-        # get data
-        business_service = CIRelation.objects.filter(
+    def _get_business_to_service(self):
+        return CIRelation.objects.filter(
             parent__type_id=CI_TYPES.BUSINESSLINE,
             child__type_id=CI_TYPES.SERVICE,
             type=CI_RELATION_TYPES.CONTAINS,
@@ -45,7 +44,9 @@ class SerivcesSidebar(object):
             'child__id',
             'child__name',
         )
-        business_profitcenter = CIRelation.objects.filter(
+
+    def _get_business_to_profitcenter(self):
+        return CIRelation.objects.filter(
             parent__type_id=CI_TYPES.BUSINESSLINE,
             child__type_id=CI_TYPES.PROFIT_CENTER,
             type=CI_RELATION_TYPES.CONTAINS,
@@ -54,17 +55,28 @@ class SerivcesSidebar(object):
             'parent__name',
             'child__id',
         )
-        profitcenter_service = CIRelation.objects.filter(
+
+    def _get_profitcenter_to_service(self):
+        return CIRelation.objects.filter(
             parent__type_id=CI_TYPES.PROFIT_CENTER,
             child__type_id=CI_TYPES.SERVICE,
             type=CI_RELATION_TYPES.CONTAINS,
         ).values_list('parent__id', 'child__id', 'child__name')
-        service_environment = CIRelation.objects.filter(
+
+    def _get_service_to_environment(self):
+        return CIRelation.objects.filter(
             parent__type_id=CI_TYPES.SERVICE,
             child__type_id=CI_TYPES.ENVIRONMENT,
             type=CI_RELATION_TYPES.CONTAINS,
         ).values_list('parent__id', 'child__id', 'child__name')
-        # make tree
+
+    def _merge_data_into_tree(
+        self,
+        business_service,
+        business_profitcenter,
+        profitcenter_service,
+        service_environment,
+    ):
         tree = {}
         pc_bl_map = {}  # profit_center -> business line
         for p_id, p_name, c_id in business_profitcenter:
@@ -125,7 +137,9 @@ class SerivcesSidebar(object):
                     'type': 'environment',
                 }
             )
-        # sorting
+        return tree
+
+    def _sort_tree(self, tree):
         for bl_key, bl_value in tree.iteritems():
             for s_key, s_value in bl_value['childs'].iteritems():
                 s_value['childs'] = OrderedDict(
@@ -146,6 +160,23 @@ class SerivcesSidebar(object):
                 key=lambda k: k[1]['name']
             )
         )
+
+    def _get_tree(self):
+        # get data
+        business_service = self._get_business_to_service()
+        business_profitcenter = self._get_business_to_profitcenter()
+        profitcenter_service = self._get_profitcenter_to_service()
+        service_environment = self._get_service_to_environment()
+        # make tree
+        tree = self._merge_data_into_tree(
+            business_service,
+            business_profitcenter,
+            profitcenter_service,
+            service_environment,
+        )
+
+        # sorting
+        self._sort_tree(tree)
         return tree
 
     def _get_menu(self, tree):
