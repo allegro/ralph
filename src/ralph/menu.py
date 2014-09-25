@@ -76,6 +76,13 @@ class CoreMenu(Menu):
         if self.has_perm(Perm.has_core_access):
             submodules.append(
                 MenuItem(
+                    _('Services'),
+                    fugue_icon='fugue-application-share',
+                    view_name='services',
+                )
+            )
+            submodules.append(
+                MenuItem(
                     _('Ventures'),
                     fugue_icon='fugue-store',
                     view_name='ventures',

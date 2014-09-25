@@ -10,7 +10,7 @@
         <p>Device {{ device.name }} has following addresses:</p>
         <ul class="unstyled">
         {% for ip in device.ipaddress_set.all %}
-            <li><a href="../{{ ip.address }}" class="btn btn-link">
+            <li><a href="{% if section != 'services' %}../{% endif %}{{ ip.address }}" class="btn btn-link">
                 {{ ip|address_icon }}&nbsp;{{ ip.hostname|default:'' }} ({{ ip.address }})
             </a></li>
         {% endfor %}

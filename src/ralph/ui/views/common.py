@@ -317,6 +317,15 @@ class BaseMixin(MenuMixin, ACLGateway):
             args = [self.kwargs.get('venture'), name, obj]
         elif section == 'search':
             args = [name, obj]
+        elif section == 'services':
+            args = []
+            if self.kwargs.get('businessline_id'):
+                args.append(self.kwargs['businessline_id'])
+                if self.kwargs.get('service_id'):
+                    args.append(self.kwargs['service_id'])
+                    if self.kwargs.get('environment_id'):
+                        args.append(self.kwargs['environment_id'])
+            args.extend([name, obj])
         else:
             args = []
         return '%s?%s' % (
