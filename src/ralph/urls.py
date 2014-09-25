@@ -43,6 +43,8 @@ from ralph.cmdb.api import (
     CIResourceV010,
     CITypesResource,
     ServiceResource,
+    ProfileResource,
+    UserResource,
 )
 from ralph.ui.views.deploy import AddVM
 from ralph.app import mount_api
@@ -97,7 +99,8 @@ for r in (BusinessLineResource, ServiceResource, CIResource,
 for r in (BusinessLineResource, ServiceResource, CIResourceV010,
           CIChangeResource, CIChangeGitResource, CIOwnersResource,
           CIChangePuppetResource, CIChangeZabbixTriggerResource,
-          CIChangeCMDBHistoryResource, CITypesResource, CILayersResource):
+          CIChangeCMDBHistoryResource, CITypesResource, CILayersResource,
+          ProfileResource, UserResource):
     v010_api.register(clone_class(r)())
 
 # deployment API
