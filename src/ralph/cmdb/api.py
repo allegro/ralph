@@ -333,7 +333,7 @@ class RelationField(tastypie.fields.ApiField):
         CIRelation.objects.filter(
             Q(child_id=ci.id) | Q(parent_id=ci.id)
         ).delete()
-        for relation_data in bundle.data.get('related'):
+        for relation_data in bundle.data.get('related', []):
             relation = CIRelation()
             try:
                 type_id = CI_RELATION_TYPES.id_from_name(relation_data['type'])
