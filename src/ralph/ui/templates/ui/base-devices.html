@@ -80,8 +80,10 @@
 
 
 {% block tabs %}
-{%   if subsection != None and details %}
-{%     tab_menu tab_items details %}
+{%   if subsection != None or show_tab_menu %}
+{%     if details %}
+{%       tab_menu tab_items details %}
+{%     endif %}
 {%   endif %}
 {% endblock %}
 

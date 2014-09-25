@@ -27,160 +27,159 @@
 {% endif %}
 
 <div class="row-fluid">
-<div class="span6">
-{% include 'ui/device-form.html' with form=form %}
+    <div class="span6">
+        {% include 'ui/device-form.html' with form=form %}
+    </div>
+    <div class="span6">
+        <form class="form well well-small" method="POST">
+            {% csrf_token %}
+            <button class="btn btn-mini pull-right" type="submit" name="save-tags">
+                {% icon 'fugue-tag-small' %} Save tags
+            </button>
+            <label for="tags-text">Tags</label>
+            <textarea id='tags-text' style="width:97%" name="tags">{{ tags }}</textarea>
+        </form>
 
-</div>
-<div class="span6">
-
-<form class="form well well-small" method="POST">
-    {% csrf_token %}
-    <button class="btn btn-mini pull-right" type="submit" name="save-tags">
-        {% icon 'fugue-tag-small' %} Save tags
-    </button>
-    <label for="tags-text">Tags</label>
-    <textarea id='tags-text' style="width:97%" name="tags">{{ tags }}</textarea>
-</form>
-
-{% if property_form %}
-{% include 'ui/device-properties.html' with form=property_form %}
-{% endif %}
-
-<table class="table table-striped table-bordered details-info-owners">
-    <thead><tr>
-        <th width="16"></th>
-        <th>Owner</th>
-    </tr></thead>
-    <tbody>
-        {% for o in device.venture.all_ownerships %}
-            <tr>
-                <td>{{ o|owner_icon }}</td>
-                <td>{{ o.owner }}</td>
-            </tr>
-        {% endfor %}
-        {% if device.venture.department %}
-            <tr>
-                <td>{{ device.venture|venture_icon }}</td>
-                <td>{{ device.venture.department }}</td>
-            </tr>
-        {% endif %}
-    </tbody>
-</table>
-
-<table class="table table-striped table-bordered details-info-virtual">
-    <tbody>
-        {% if device.parent %}
-        <tr>
-            <th>Parent device</th>
-            <td><a href="{{ device.parent.id }}"
-                 >{{ device.parent|device_icon }}
-                  {{ device.parent.name }}</a></td>
-        </tr>
-        {% endif %}
-        {% if device.logical_parent %}
-        <tr>
-            <th>Logical parent device</th>
-            <td><a href="{{ device.logical_parent.id }}"
-                 >{{ device.logical_parent|device_icon }}
-                  {{ device.logical_parent.name }}</a></td>
-        </tr>
-        {% endif %}
-        {% if device.model.type == dt.blade_server.id %}
-        <tr>
-            <th>Blade System</th>
-            <td><a href="{{ device.parent.id }}"
-                 >{{ device.parent|device_icon }}
-                  {{ device.parent.name }}</a></td>
-        </tr>
-        {%  if device.parent.management %}
-        <tr>
-            <th>Blade System Management Address</th>
-            <td><a href="https://{{ device.parent.management.address }}"
-                 >{{ device.parent.management|address_icon }}
-                  {{ device.parent.management }}</a></td>
-        </tr>
-        {%  endif %}
+        {% if property_form %}
+            {% include 'ui/device-properties.html' with form=property_form %}
         {% endif %}
 
-        {% if device.model.type == dt.virtual_server.id %}
-        <tr>
-            <th>Virtual Server Hypervisor</th>
-            <td><a href="{{ device.parent.id }}"
-                 >{{ device.parent|device_icon }}
-                  {{ device.parent.name }}</a></td>
-        </tr>
-        {%  if device.management %}
-        <tr>
-            <th>Head Node Management Address</th>
-            <td><a href="https://{{ device.management.address }}"
-                 >{{ device.management|address_icon }}
-                  {{ device.management }}</a></td>
-        </tr>
-        {%  endif %}
-        {% else %}
-        {%  if device.find_management %}
-        <tr>
-            <th>Server Management Address</th>
-            <td><a href="https://{{ device.find_management.address }}"
-                 >{{ device.find_management|address_icon }}
-                  {{ device.find_management }}</a></td>
-        </tr>
-        {%  endif %}
-        {% endif %}
-
-        {% for child in device.child_set.all %}
-            {% if not child.deleted %}
-                <tr>
-                    <th>Child device</th>
-                    <td><a href="{{ child.id }}">
-                        {{ child|device_icon }}{{ child.name }}</a>
-                    </td>
-                </tr>
-            {% endif %}
-        {% endfor %}
-
-        {% for child in device.logicalchild_set.all %}
-            {% if not child.deleted %}
-                <tr>
-                    <th>Logical child device</th>
-                    <td><a href="{{ child.id }}">
-                        {{ child|device_icon }}{{ child.name }}</a>
-                    </td>
-                </tr>
-            {% endif %}
-        {% endfor %}
-    </tbody>
-</table>
-
-{% if network_connections %}
-    <table class="table table-striped table-bordered details-info-virtual">
-        <thead>
-            <tr>
-                <th>This Device Port</th>
-                <th>Connected Device</th>
-                <th>Connected Device Port</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for connections_type, connections_items in network_connections %}
-                {% if connections_items %}
-                    {% for conn in connections_items %}
-                        <tr>
-                            {% if connections_type == "inbound" %}
-                                <td>{{ conn.networkconnection.inbound_port }}</td>
-                                <td><a href="{{ conn.outbound.id }}">{{ conn.outbound|device_icon }}&nbsp;{{ conn.outbound.name }}</a></td>
-                                <td>{{ conn.networkconnection.outbound_port }}</td>
-                            {% else %}
-                                <td>{{ conn.networkconnection.outbound_port }}</td>
-                                <td><a href="{{ conn.inbound.id }}">{{ conn.inbound|device_icon }}&nbsp;{{ conn.inbound.name }}</a></td>
-                                <td>{{ conn.networkconnection.inbound_port }}</td>
-                            {% endif %}
-                        </tr>
-                    {% endfor %}
+        <table class="table table-striped table-bordered details-info-owners">
+            <thead><tr>
+                <th width="16"></th>
+                <th>Owner</th>
+            </tr></thead>
+            <tbody>
+                {% for o in device.venture.all_ownerships %}
+                    <tr>
+                        <td>{{ o|owner_icon }}</td>
+                        <td>{{ o.owner }}</td>
+                    </tr>
+                {% endfor %}
+                {% if device.venture.department %}
+                    <tr>
+                        <td>{{ device.venture|venture_icon }}</td>
+                        <td>{{ device.venture.department }}</td>
+                    </tr>
                 {% endif %}
-            {% endfor %}
-        </tbody>
-    </table>
-{% endif %}
+            </tbody>
+        </table>
+
+        <table class="table table-striped table-bordered details-info-virtual">
+            <tbody>
+                {% if device.parent %}
+                <tr>
+                    <th>Parent device</th>
+                    <td><a href="{{ device.parent.id }}"
+                         >{{ device.parent|device_icon }}
+                          {{ device.parent.name }}</a></td>
+                </tr>
+                {% endif %}
+                {% if device.logical_parent %}
+                <tr>
+                    <th>Logical parent device</th>
+                    <td><a href="{{ device.logical_parent.id }}"
+                         >{{ device.logical_parent|device_icon }}
+                          {{ device.logical_parent.name }}</a></td>
+                </tr>
+                {% endif %}
+                {% if device.model.type == dt.blade_server.id %}
+                <tr>
+                    <th>Blade System</th>
+                    <td><a href="{{ device.parent.id }}"
+                         >{{ device.parent|device_icon }}
+                          {{ device.parent.name }}</a></td>
+                </tr>
+                {%  if device.parent.management %}
+                <tr>
+                    <th>Blade System Management Address</th>
+                    <td><a href="https://{{ device.parent.management.address }}"
+                         >{{ device.parent.management|address_icon }}
+                          {{ device.parent.management }}</a></td>
+                </tr>
+                {%  endif %}
+                {% endif %}
+
+                {% if device.model.type == dt.virtual_server.id %}
+                <tr>
+                    <th>Virtual Server Hypervisor</th>
+                    <td><a href="{{ device.parent.id }}"
+                         >{{ device.parent|device_icon }}
+                          {{ device.parent.name }}</a></td>
+                </tr>
+                {%  if device.management %}
+                <tr>
+                    <th>Head Node Management Address</th>
+                    <td><a href="https://{{ device.management.address }}"
+                         >{{ device.management|address_icon }}
+                          {{ device.management }}</a></td>
+                </tr>
+                {%  endif %}
+                {% else %}
+                {%  if device.find_management %}
+                <tr>
+                    <th>Server Management Address</th>
+                    <td><a href="https://{{ device.find_management.address }}"
+                         >{{ device.find_management|address_icon }}
+                          {{ device.find_management }}</a></td>
+                </tr>
+                {%  endif %}
+                {% endif %}
+
+                {% for child in device.child_set.all %}
+                    {% if not child.deleted %}
+                        <tr>
+                            <th>Child device</th>
+                            <td><a href="{{ child.id }}">
+                                {{ child|device_icon }}{{ child.name }}</a>
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+
+                {% for child in device.logicalchild_set.all %}
+                    {% if not child.deleted %}
+                        <tr>
+                            <th>Logical child device</th>
+                            <td><a href="{{ child.id }}">
+                                {{ child|device_icon }}{{ child.name }}</a>
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if network_connections %}
+            <table class="table table-striped table-bordered details-info-virtual">
+                <thead>
+                    <tr>
+                        <th>This Device Port</th>
+                        <th>Connected Device</th>
+                        <th>Connected Device Port</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for connections_type, connections_items in network_connections %}
+                        {% if connections_items %}
+                            {% for conn in connections_items %}
+                                <tr>
+                                    {% if connections_type == "inbound" %}
+                                        <td>{{ conn.networkconnection.inbound_port }}</td>
+                                        <td><a href="{{ conn.outbound.id }}">{{ conn.outbound|device_icon }}&nbsp;{{ conn.outbound.name }}</a></td>
+                                        <td>{{ conn.networkconnection.outbound_port }}</td>
+                                    {% else %}
+                                        <td>{{ conn.networkconnection.outbound_port }}</td>
+                                        <td><a href="{{ conn.inbound.id }}">{{ conn.inbound|device_icon }}&nbsp;{{ conn.inbound.name }}</a></td>
+                                        <td>{{ conn.networkconnection.inbound_port }}</td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
 </div>
 {% endblock content %}
