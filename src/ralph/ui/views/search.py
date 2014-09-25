@@ -34,7 +34,7 @@ from ralph.ui.views.common import (
     Software,
 )
 from ralph.ui.views.devices import BaseDeviceList
-
+from ralph.ui.views.reports import ReportDeviceList
 
 SOFTWARE_RE = re.compile(
     r"^(?P<name>[^<=>^]*)\s*((?P<operator>==|\^=|>=|<=|>|<)\s*"
@@ -519,6 +519,10 @@ class SearchSoftware(Search, Software):
 
 class SearchScan(Search, Scan):
     submodule_name = 'search'
+
+
+class ReportSearchDeviceList(ReportDeviceList, SearchDeviceList):
+    pass
 
 
 class SearchCmdb(Search):

@@ -9,6 +9,7 @@ import datetime
 import ipaddr
 
 import django_rq
+import pluggableapp
 import rq
 from django.conf import settings
 from django.contrib import messages
@@ -26,19 +27,11 @@ from django.views.generic import (
     TemplateView,
     UpdateView,
 )
-
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem, Divider
 from bob.data_table import DataTableColumn, DataTableMixin
-
-import pluggableapp
 from powerdns.models import Record
-
-try:
-    from ralph_assets.models_assets import DeviceInfo
-except ImportError:
-    DeviceInfo = None
 
 from ralph.discovery.models_component import Ethernet
 from ralph.account.models import Perm, get_user_home_page_url, ralph_permission
@@ -374,6 +367,7 @@ class BaseMixin(MenuMixin, ACLGateway):
             tab_items.extend([
                 MenuItem(
                     'Linked Asset',
+                    name='asset',
                     fugue_icon='fugue-baggage-cart-box',
                     href=self.tab_href('asset')),
             ])
@@ -388,6 +382,14 @@ class BaseMixin(MenuMixin, ACLGateway):
                     fugue_icon='fugue-flashlight',
                     href=self.tab_href('scan'),
                 ),
+            ])
+        if all((
+            has_perm(Perm.edit_device_info_generic, venture),
+            not (self.kwargs.get('device') or self.kwargs.get('address')),
+        )):
+            tab_items.extend([
+                MenuItem('Reports', fugue_icon='fugue-reports-stack',
+                         href=self.tab_href('reports')),
             ])
         if details == 'bulkedit':
             tab_items.extend([
@@ -575,6 +577,11 @@ class Info(DeviceUpdateView):
     def get_context_data(self, **kwargs):
         ret = super(Info, self).get_context_data(**kwargs)
         if self.object:
+            if 'ralph_assets' in settings.INSTALLED_APPS:
+                from ralph_assets.models_assets import DeviceInfo
+                assets_imported = True
+            else:
+                assets_imported = False
             tags = self.object.get_tags(
                 official=False,
                 author=self.request.user,
@@ -583,17 +590,17 @@ class Info(DeviceUpdateView):
                 deploy_disable_reason = _(
                     "This device contains dirty fields."
                 )
-            elif not self.object.verified:
-                deploy_disable_reason = _(
-                    "This device is not verified."
-                )
             elif not (
-                DeviceInfo is None or
+                not assets_imported or
                 DeviceInfo.objects.filter(ralph_device_id=self.object.pk) or
                 self.object.model.type == DeviceType.virtual_server
             ):
                 deploy_disable_reason = _(
-                    "This device is not bound to an asset."
+                    "This device is not linked to an asset."
+                )
+            elif not self.object.verified:
+                deploy_disable_reason = _(
+                    "This device is not verified."
                 )
             else:
                 deploy_disable_reason = None
@@ -1444,6 +1451,7 @@ class VhostRedirectView(RedirectView):
 
 class Scan(BaseMixin, TemplateView):
     template_name = 'ui/scan.html'
+    submodule_name = 'search'
 
     def get(self, *args, **kwargs):
         try:

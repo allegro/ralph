@@ -29,6 +29,7 @@ from ralph.ui.views.common import (
     Scan,
 )
 from ralph.ui.views.devices import BaseDeviceList
+from ralph.ui.views.reports import ReportDeviceList
 from ralph.util import presentation
 
 
@@ -130,7 +131,10 @@ class SidebarVentures(object):
                         parent.kwargs['collapsed'] = False
                         parent = getattr(parent, 'parent', None)
                     break
-                stack.extend(getattr(item, 'subitems', []))
+                subitems = getattr(item, 'subitems', None)
+                if subitems is None:
+                    subitems = []
+                stack.extend(subitems)
 
         self.set_venture()
         tab_items = ret['tab_items']
@@ -304,3 +308,7 @@ class VenturesDeviceList(SidebarVentures, BaseMixin, BaseDeviceList):
                                 self.venture and self.venture != '*' else self.venture),
         })
         return ret
+
+
+class ReportVenturesDeviceList(ReportDeviceList, VenturesDeviceList):
+    pass

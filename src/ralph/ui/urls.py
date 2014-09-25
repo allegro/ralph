@@ -18,6 +18,7 @@ from ralph.ui.views.common import (
     ServerMove,
 )
 from ralph.ui.views.ventures import (
+    ReportVenturesDeviceList,
     VenturesAddresses,
     VenturesAsset,
     VenturesComponents,
@@ -35,10 +36,12 @@ from ralph.ui.views.racks import (
     RacksHistory,
     RacksInfo,
     RacksRack,
+    ReportRacksDeviceList,
     RacksSoftware,
     RacksScan,
 )
 from ralph.ui.views.search import (
+    ReportSearchDeviceList,
     SearchAddresses,
     SearchAsset,
     SearchComponents,
@@ -49,14 +52,15 @@ from ralph.ui.views.search import (
     SearchScan,
 )
 from ralph.ui.views.services import (
-    ServicesDeviceList,
-    ServicesInfo,
-    ServicesComponents,
-    ServicesSoftware,
+    ReportServicesDeviceList,
     ServicesAddresses,
-    ServicesHistory,
     ServicesAsset,
+    ServicesComponents,
+    ServicesDeviceList,
+    ServicesHistory,
+    ServicesInfo,
     ServicesScan,
+    ServicesSoftware,
 )
 from ralph.ui.views.networks import (
     NetworksAddresses,
@@ -108,6 +112,8 @@ urlpatterns = patterns(
         login_required(SearchHistory.as_view()), {}, 'search'),
     url(r'^search/(?P<details>asset)/(?P<device>\d+)$',
         login_required(SearchAsset.as_view()), {}, 'search'),
+    url(r'^search/(?P<details>reports)/(?P<report>([a-z][\w_-]*)?)$',
+        login_required(ReportSearchDeviceList.as_view()), {'device': ''}, 'search'),
     url(r'^search/(?P<details>\w*)/(?P<device>)$',
         login_required(SearchDeviceList.as_view()), {}, 'search'),
     url(r'^search/(?P<details>scan)/(?P<device>\d+)/$',
@@ -138,6 +144,8 @@ urlpatterns = patterns(
         login_required(ServicesScan.as_view()), {}, 'services'),
     url(r'^services/(?P<businessline_id>bl-\d+)/(?P<service_id>ser-\d+)/(?P<environment_id>env-\d+)/(?P<details>scan)/(?P<address>[\d.]*)$',
         login_required(ServicesScan.as_view()), {}, 'services'),
+    url(r'^services/(?P<businessline_id>bl-\d+)/(?P<service_id>ser-\d+)/(?P<environment_id>env-\d+)/(?P<details>reports)/(?P<report>([a-z][\w_-]*)?)$',
+        login_required(ReportServicesDeviceList.as_view()), {'device': ''}, 'services'),
 
     url(r'^services/(?P<businessline_id>bl-\d+)/(?P<service_id>ser-\d+)/$',
         login_required(ServicesDeviceList.as_view()), {}, 'services'),
@@ -161,6 +169,8 @@ urlpatterns = patterns(
         login_required(ServicesScan.as_view()), {}, 'services'),
     url(r'^services/(?P<businessline_id>bl-\d+)/(?P<service_id>ser-\d+)/(?P<details>scan)/(?P<address>[\d.]*)$',
         login_required(ServicesScan.as_view()), {}, 'services'),
+    url(r'^services/(?P<businessline_id>bl-\d+)/(?P<service_id>ser-\d+)/(?P<details>reports)/(?P<report>([a-z][\w_-]*)?)$',
+        login_required(ReportServicesDeviceList.as_view()), {'device': ''}, 'services'),
 
     url(r'^services/(?P<businessline_id>bl-\d+)/$',
         login_required(ServicesDeviceList.as_view()), {}, 'services'),
@@ -184,6 +194,8 @@ urlpatterns = patterns(
         login_required(ServicesScan.as_view()), {}, 'services'),
     url(r'^services/(?P<businessline_id>bl-\d+)/(?P<details>scan)/(?P<address>[\d.]*)$',
         login_required(ServicesScan.as_view()), {}, 'services'),
+    url(r'^services/(?P<businessline_id>bl-\d+)/(?P<details>reports)/(?P<report>([a-z][\w_-]*)?)$',
+        login_required(ReportServicesDeviceList.as_view()), {'device': ''}, 'services'),
 
     url(r'^services/$',
         login_required(ServicesDeviceList.as_view()), {}, 'services'),
@@ -207,6 +219,8 @@ urlpatterns = patterns(
         login_required(ServicesScan.as_view()), {}, 'services'),
     url(r'^services/(?P<details>scan)/(?P<address>[\d.]*)$',
         login_required(ServicesScan.as_view()), {}, 'services'),
+    url(r'^services/(?P<details>reports)/(?P<report>([a-z][\w_-]*)?)$',
+        login_required(ReportServicesDeviceList.as_view()), {'device': ''}, 'services'),
 
 
     url(r'^ventures/$',
@@ -215,6 +229,10 @@ urlpatterns = patterns(
         login_required(VenturesDeviceList.as_view()), {}, 'ventures'),
     url(r'^ventures/(?P<venture>)(?P<details>info|components|software|addresses|prices|costs|history|asset|discover|cmdb)/(?P<device>)$',
         login_required(VenturesDeviceList.as_view()), {}, 'ventures'),
+    url(r'^ventures/(?P<venture>[.\w*-]*)/(?P<details>reports)/(?P<report>([a-z][\w_-]*)?)$',
+        login_required(ReportVenturesDeviceList.as_view()), {'device': ''}, 'ventures'),
+    url(r'^ventures/(?P<venture>)(?P<details>reports)/(?P<report>([a-z][\w_-]*)?)$',
+        login_required(ReportVenturesDeviceList.as_view()), {'device': ''}, 'ventures'),
     url(r'^ventures/(?P<venture>[.\w*-]*)/(?P<details>info)/(?P<device>\d+)$',
         login_required(VenturesInfo.as_view()), {}, 'ventures'),
     url(r'^ventures/(?P<venture>[.\w*-]*)/(?P<details>components)/(?P<device>\d+)$',
@@ -255,6 +273,8 @@ urlpatterns = patterns(
         login_required(RacksHistory.as_view()), {}, 'racks'),
     url(r'^racks/(?P<rack>[-\w]*)/(?P<details>asset)/(?P<device>\d+)$',
         login_required(RacksAsset.as_view()), {}, 'racks'),
+    url(r'^racks/(?P<rack>[-\w]*)/(?P<details>reports)/(?P<report>([a-z][\w_-]*)?)$',
+        login_required(ReportRacksDeviceList.as_view()), {'device': ''}, 'racks'),
     url(r'^racks/(?P<rack>[-\w]*)/(?P<details>\w+)/(?P<device>)$',
         login_required(RacksDeviceList.as_view()), {}, 'racks'),
     url(r'^racks/(?P<rack>[-\w]*)/(?P<details>scan)/(?P<device>\d+)/$',

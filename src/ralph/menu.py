@@ -70,6 +70,9 @@ class CoreMenu(Menu):
 
     def get_submodules(self):
         submodules = []
+        submodules.append(
+            MenuItem(_('Search'), fugue_icon='fugue-application-search-result',
+                     view_name='search', name='search'))
         if self.has_perm(Perm.has_core_access):
             submodules.append(
                 MenuItem(
@@ -89,34 +92,26 @@ class CoreMenu(Menu):
             submodules.append(
                 MenuItem(_('Racks'), fugue_icon='fugue-building',
                          view_name='racks'))
-        if self.has_perm(Perm.read_network_structure):
-            submodules.append(
-                MenuItem(_('Networks'), fugue_icon='fugue-weather-clouds',
-                         view_name='networks'))
         submodules.append(
             MenuItem(_('Ralph CLI'), fugue_icon='fugue-terminal',
                      href='#beast'))
         submodules.append(
             MenuItem(_('Quick scan'), fugue_icon='fugue-radar',
                      href='#quickscan'))
-        submodules.append(
-            MenuItem(_('Search'), fugue_icon='fugue-application-search-result',
-                     view_name='search', name='search'))
 
         pending_scans = get_pending_scans()
-        if pending_scans:
-            submodules.append(MenuItem(
-                _('Pending scans {}/{}').format(
-                    pending_scans.new_devices,
-                    pending_scans.changed_devices,
-                ),
-                view_kwargs={'scan_type': (
-                    'new' if pending_scans.new_devices else 'existing'
-                )},
-                name='scan_list',
-                view_name='scan_list',
-                fugue_icon='fugue-light-bulb--exclamation',
-            ))
+        submodules.append(MenuItem(
+            _('Pending scans {}/{}').format(
+                pending_scans.new_devices,
+                pending_scans.changed_devices,
+            ),
+            view_kwargs={'scan_type': (
+                'new' if pending_scans.new_devices else 'existing'
+            )},
+            name='scan_list',
+            view_name='scan_list',
+            fugue_icon='fugue-light-bulb',
+        ))
         return submodules
 
     def get_sidebar_items(self):

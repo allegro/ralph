@@ -52,5 +52,4 @@ def get_pending_scans():
         all_scans.filter(ipaddress__device=None).count(),
         all_scans.exclude(ipaddress__device=None).count(),
     )
-    if new + changed:
-        return PendingScans(new, changed)
+    return PendingScans(new, changed)

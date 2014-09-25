@@ -21,6 +21,7 @@ from ralph.ui.views.common import (
     Scan,
 )
 from ralph.ui.views.devices import BaseDeviceList
+from ralph.ui.views.reports import ReportDeviceList
 
 
 class SerivcesSidebar(object):
@@ -311,3 +312,7 @@ class ServicesAsset(Services, Asset):
 
 class ServicesScan(Services, Scan):
     submodule_name = 'services'
+
+
+class ReportServicesDeviceList(ReportDeviceList, ServicesDeviceList):
+    pass

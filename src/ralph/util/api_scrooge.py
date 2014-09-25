@@ -123,6 +123,23 @@ def get_environments():
         }
 
 
+def get_openstack_tenants():
+    for tenant in Device.objects.filter(
+        sn__startswith='openstack',
+        model__type=DeviceType.cloud_server
+    ):
+        yield {
+            'device_id': tenant.id,
+            'tenant_id': tenant.sn[len('openstack-'):],
+            'service_id': tenant.service_id,
+            'environment_id': tenant.device_environment_id,
+            'name': tenant.name,
+            'model_id': tenant.model_id,
+            'model_name': tenant.model.name,
+            'remarks': tenant.remarks,
+        }
+
+
 # CMDB
 def get_business_lines():
     """
