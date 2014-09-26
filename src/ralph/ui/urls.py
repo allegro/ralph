@@ -198,7 +198,7 @@ urlpatterns = patterns('',
                        url(r'^deployment/mass/define/(?P<deployment>[0-9]+)/$',
                            login_required(MassDeployment.as_view())),
 
-                       url(r'^scan/list/(?P<scan_type>new|existing)/$',
+                       url(r'^scan/list/(?P<change_type>new|existing)/$',
                            login_required(
                                ScanList.as_view()), {}, 'scan_list',
                            ),

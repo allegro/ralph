@@ -37,6 +37,7 @@ from ralph.discovery.models_component import Ethernet
 from ralph.account.models import Perm, get_user_home_page_url, ralph_permission
 from ralph.app import RalphModule
 from ralph.menu import Menu
+from ralph.scan.api import SCAN_RESULT_TTL
 from ralph.scan.errors import Error as ScanError
 from ralph.scan.manual import queue_scan_address
 from ralph.scan.forms import DiffForm
@@ -51,7 +52,7 @@ from ralph.scan.data import (
 )
 from ralph.scan.diff import diff_results, sort_results
 from ralph.scan.models import ScanSummary
-from ralph.scan.util import get_pending_scans, update_scan_summary
+from ralph.scan.util import get_pending_changes, update_scan_summary
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
@@ -79,7 +80,7 @@ from ralph.discovery.models import (
 from ralph.menu import menu_class as ralph_menu
 from ralph.util import details, presentation
 from ralph.util.plugin import BY_NAME as AVAILABLE_PLUGINS
-from ralph.ui.forms import ChooseAssetForm
+from ralph.ui.forms import ChooseAssetForm, VentureServiceFilterForm
 from ralph.ui.forms.devices import (
     DeviceInfoForm,
     DeviceInfoVerifiedForm,
@@ -1518,24 +1519,37 @@ class ScanList(BaseMixin, DataTableMixin, TemplateView):
     sort_variable_name = 'sort'
     submodule_name = 'scan_list'
 
-    columns = [
-        DataTableColumn(
-            _('IP'),
-            field='ipaddress',
-            sort_expression='ipaddress',
-            bob_tag=True,
-        ),
-        DataTableColumn(
-            _('Scan time'),
-            field='created',
-            sort_expression='created',
-            bob_tag=True,
-        ),
-        DataTableColumn(
-            _('Device'),
-            bob_tag=True,
-        ),
-    ]
+    def __init__(self, *args, **kwargs):
+        super(ScanList, self).__init__(*args, **kwargs)
+        show_device = (self.column_visible, 'existing')
+        show_venture = (self.column_visible, 'existing')
+        self.columns = [
+            DataTableColumn(
+                _('IP'),
+                field='ipaddress',
+                sort_expression='ipaddress',
+                bob_tag=True,
+            ),
+            DataTableColumn(
+                _('Venture'),
+                bob_tag=True,
+                show_conditions=show_venture,
+            ),
+            DataTableColumn(
+                _('Last scan time'),
+                field='modified',
+                sort_expression='modified',
+                bob_tag=True,
+            ),
+            DataTableColumn(
+                _('Device'),
+                bob_tag=True,
+                show_conditions=show_device,
+            ),
+        ]
+
+    def column_visible(self, change_type):
+        return self.change_type == change_type
 
     def get_tab_items(self):
         return []
@@ -1545,30 +1559,40 @@ class ScanList(BaseMixin, DataTableMixin, TemplateView):
         result.update(
             super(ScanList, self).get_context_data_paginator(**kwargs)
         )
-        scans = get_pending_scans()
+        changes = get_pending_changes()
         result.update({
-            'changed_count': scans.changed_devices if scans else 0,
+            'changed_count': changes.changed_devices if changes else 0,
             'columns': self.columns,
-            'new_count': scans.new_devices if scans else 0,
-            'scan_type': kwargs['scan_type'],
+            'new_count': changes.new_devices if changes else 0,
+            'change_type': kwargs['change_type'],
             'sort': self.sort,
             'sort_variable_name': self.sort_variable_name,
             'url_query': self.request.GET,
+            'venture_service_filter_form': self.form,
         })
         return result
 
     def get(self, *args, **kwargs):
-        scans = self.handle_search_data(*args, **kwargs)
-        self.data_table_query(scans)
+        self.form = VentureServiceFilterForm(self.request.GET)
+        changes = self.handle_search_data(*args, **kwargs)
+        self.data_table_query(changes)
+        self.change_type = kwargs['change_type']
         return super(ScanList, self).get(*args, **kwargs)
 
     def handle_search_data(self, *args, **kwargs):
-        delta = timezone.now() - datetime.timedelta(days=1)
-        all_scans = ScanSummary.objects.filter(modified__gt=delta)
-        if kwargs['scan_type'] == 'new':
-            return all_scans.filter(ipaddress__device=None)
+        delta = timezone.now() - datetime.timedelta(seconds=SCAN_RESULT_TTL)
+        venture_name = self.request.GET.get('venture')
+        service_name = self.request.GET.get('service')
+        all_changes = ScanSummary.objects.filter(modified__gt=delta)
+        if venture_name or service_name:
+            all_changes = all_changes.filter(
+                db.Q(ipaddress__device__venture__name=venture_name) |
+                db.Q(ipaddress__device__service__name=service_name)
+            )
+        if kwargs['change_type'] == 'new':
+            return all_changes.filter(ipaddress__device=None)
         else:
-            return all_scans.exclude(ipaddress__device=None)
+            return all_changes.exclude(ipaddress__device=None)
 
 
 class ScanStatus(BaseMixin, TemplateView):

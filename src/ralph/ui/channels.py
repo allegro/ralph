@@ -10,6 +10,7 @@ from ajax_select import LookupChannel
 from django.db import models as db
 from django.utils.html import escape
 
+from ralph.business.models import Venture
 from ralph.discovery import models_device
 from ralph.discovery.models import Device
 from ralph.util import presentation
@@ -78,3 +79,7 @@ class ServiceCatalogLookup(RestrictedLookupChannel):
 
 class DeviceEnvrionment(RestrictedLookupChannel):
     model = models_device.DeviceEnvironment
+
+
+class VentureLookup(RestrictedLookupChannel):
+    model = Venture
