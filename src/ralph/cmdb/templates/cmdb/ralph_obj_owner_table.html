@@ -1,16 +1,38 @@
-{% load cmdb %}
+{% load cmdb i18n icons %}
+
 <table class="table table-striped table-bordered details-costs-owners">
-    <thead><tr>
-        <th width="16"></th>
-        <th>Owner</th>
-    </tr></thead>
     <tbody>
-         {% for o in ownerships %}
-             <tr>
-                 <td>{{ o|owner_icon }}</td>
-                 <td>{{ o.owner }}</td>
-             </tr>
-        {% endfor %}
+        <tr>
+            <th>{% trans "Department" %}</th>
+            <td colspan="2">
+                {% if venture %}{{ venture|venture_icon }} {{ venture.department }}<br>{% else %}-{%endif %}
+            </td>
+        </tr>
+        <tr>
+            <th rowspan="2">{% trans "Venture" %}</th>
+            <td>{% trans "business owners" %}</td>
+            <td>
+                {% for o in service_business %}{{ o|owner_icon }} {{ o.owner }}<br>{% empty %}-{% endfor %}
+            </td>
+        </tr>
+        <tr>
+            <td>{% trans "technical owners" %}</td>
+            <td>
+                {% for o in service_technical %}{{ o|owner_icon }} {{ o.owner }}<br>{% empty %}-{% endfor %}
+            </td>
+        </tr>
+        <tr>
+            <th rowspan="2">{% trans "Service" %}</th>
+            <td>{% trans "business owners" %}</td>
+            <td>
+                {% for o in venture_business %}{{ o|owner_icon }} {{ o.owner }}<br>{% empty %}-{% endfor %}
+            </td>
+        </tr>
+        <tr>
+            <td>{% trans "technical owners" %}</td>
+            <td>
+                {% for o in venture_technical %}{{ o|owner_icon }} {{ o.owner }}<br>{% empty %}-{% endfor %}
+            </td>
+        </tr>
     </tbody>
 </table>
-
