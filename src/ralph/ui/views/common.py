@@ -1076,12 +1076,17 @@ class Asset(BaseMixin, TemplateView):
             )
             from ralph_assets.api_ralph import get_asset
             self.asset = get_asset(self.object.id)
-            self.form = ChooseAssetForm(
-                initial={
-                    'asset': self.asset['asset_id'] if self.asset else None,
-                },
-                device_id=self.object.id,
-            )
+            if not self.asset:
+                msg = ("This device is not linked to an asset. "
+                       "Please correct this using the input box below.")
+                messages.warning(self.request, msg)
+            if not self.form:
+                self.form = ChooseAssetForm(
+                    initial={
+                        'asset': self.asset['asset_id'] if self.asset else None,
+                    },
+                    device_id=self.object.id,
+                )
         return super(Asset, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
@@ -1101,7 +1106,7 @@ class Asset(BaseMixin, TemplateView):
             if assign_asset(self.object.id, asset.id):
                 messages.success(
                     self.request,
-                    "Asset assigned successfully.",
+                    "Asset linked successfully.",
                 )
                 return HttpResponseRedirect(self.request.get_full_path())
             else:
@@ -1109,7 +1114,7 @@ class Asset(BaseMixin, TemplateView):
                     self.request,
                     "An error occurred. Please try again.",
                 )
-        return super(Asset, self).get(*args, **kwargs)
+        return self.get(*args, **kwargs)
 
 
 class ServerMove(BaseMixin, TemplateView):
