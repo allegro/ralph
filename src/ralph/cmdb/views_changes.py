@@ -46,6 +46,7 @@ class ChangesBase(BaseCMDBView):
 
 
 class Change(ChangesBase):
+    submodule_name = 'ci_others'
     template_name = 'cmdb/view_change.html'
 
     def get_context_data(self, **kwargs):
