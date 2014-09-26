@@ -184,7 +184,7 @@ class SerivcesSidebar(object):
         for bl_id, bl_data in tree.iteritems():
             bl_item = MenuItem(
                 label=bl_data['name'],
-                name='businessline_%s' % bl_id,
+                name='bl_%s' % bl_id,
                 fugue_icon='fugue-tie',
                 view_name='services',
                 view_args=['bl-%s' % bl_id],
@@ -196,7 +196,7 @@ class SerivcesSidebar(object):
             for s_id, s_data in bl_data.get('childs', {}).iteritems():
                 s_item = MenuItem(
                     label=s_data['name'],
-                    name='service_%s' % s_id,
+                    name='bl_%s_s_%s' % (bl_id, s_id),
                     fugue_icon='fugue-disc-share',
                     view_name='services',
                     view_args=['bl-%s' % bl_id, 'ser-%s' % s_id],
@@ -208,7 +208,7 @@ class SerivcesSidebar(object):
                 for e_id, e_data in s_data.get('childs', {}).iteritems():
                     e_item = MenuItem(
                         label=e_data['name'],
-                        name='env_%s' % e_id,
+                        name='bl_%s_s_%s_env_%s' % (bl_id, s_id, e_id),
                         fugue_icon='fugue-tree',
                         view_name='services',
                         view_args=[
@@ -235,19 +235,22 @@ class SerivcesSidebar(object):
                 'env-', ''
             )
 
+    def _get_sidebar_selected(self):
+        sidebar_selected = None
+        if self.businessline_id:
+            sidebar_selected = 'bl_%s' % self.businessline_id
+            if self.service_id:
+                sidebar_selected += '_s_%s' % self.service_id
+                if self.environment_id:
+                    sidebar_selected += '_env_%s' % self.environment_id
+        return sidebar_selected
+
     def get_context_data(self, **kwargs):
         ret = super(SerivcesSidebar, self).get_context_data(**kwargs)
         self._set_request_params()
-        sidebar_selected = None
-        if self.environment_id:
-            sidebar_selected = 'env_%s' % self.environment_id
-        elif self.service_id:
-            sidebar_selected = 'service_%s' % self.service_id
-        elif self.businessline_id:
-            sidebar_selected = 'businessline_%s' % self.businessline_id
         ret.update({
             'sidebar_items': self._get_menu(self._get_tree()),
-            'sidebar_selected': sidebar_selected,
+            'sidebar_selected': self._get_sidebar_selected(),
             'section': 'services',
             'show_tab_menu': True,
         })
