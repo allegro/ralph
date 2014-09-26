@@ -8,7 +8,12 @@ from bob.menu import MenuItem
 from collections import OrderedDict
 
 from ralph.account.models import Perm
-from ralph.cmdb.models import CI_TYPES, CI_RELATION_TYPES, CIRelation
+from ralph.cmdb.models import (
+    CI_RELATION_TYPES,
+    CI_STATE_TYPES,
+    CI_TYPES,
+    CIRelation,
+)
 from ralph.discovery.models import Device
 from ralph.ui.views.common import (
     Addresses,
@@ -35,7 +40,9 @@ class SerivcesSidebar(object):
 
     def _get_business_to_service(self):
         return CIRelation.objects.filter(
+            parent__state=CI_STATE_TYPES.ACTIVE,
             parent__type_id=CI_TYPES.BUSINESSLINE,
+            child__state=CI_STATE_TYPES.ACTIVE,
             child__type_id=CI_TYPES.SERVICE,
             type=CI_RELATION_TYPES.CONTAINS,
         ).values_list(
@@ -47,7 +54,9 @@ class SerivcesSidebar(object):
 
     def _get_business_to_profitcenter(self):
         return CIRelation.objects.filter(
+            parent__state=CI_STATE_TYPES.ACTIVE,
             parent__type_id=CI_TYPES.BUSINESSLINE,
+            child__state=CI_STATE_TYPES.ACTIVE,
             child__type_id=CI_TYPES.PROFIT_CENTER,
             type=CI_RELATION_TYPES.CONTAINS,
         ).values_list(
@@ -58,14 +67,18 @@ class SerivcesSidebar(object):
 
     def _get_profitcenter_to_service(self):
         return CIRelation.objects.filter(
+            parent__state=CI_STATE_TYPES.ACTIVE,
             parent__type_id=CI_TYPES.PROFIT_CENTER,
+            child__state=CI_STATE_TYPES.ACTIVE,
             child__type_id=CI_TYPES.SERVICE,
             type=CI_RELATION_TYPES.CONTAINS,
         ).values_list('parent__id', 'child__id', 'child__name')
 
     def _get_service_to_environment(self):
         return CIRelation.objects.filter(
+            parent__state=CI_STATE_TYPES.ACTIVE,
             parent__type_id=CI_TYPES.SERVICE,
+            child__state=CI_STATE_TYPES.ACTIVE,
             child__type_id=CI_TYPES.ENVIRONMENT,
             type=CI_RELATION_TYPES.CONTAINS,
         ).values_list('parent__id', 'child__id', 'child__name')
@@ -268,7 +281,9 @@ class ServicesDeviceList(SerivcesSidebar, BaseMixin, BaseDeviceList):
         services_ids = set(
             CIRelation.objects.filter(
                 parent_id=businessline_id,
+                parent__state=CI_STATE_TYPES.ACTIVE,
                 parent__type_id=CI_TYPES.BUSINESSLINE,
+                child__state=CI_STATE_TYPES.ACTIVE,
                 child__type_id=CI_TYPES.SERVICE,
                 type=CI_RELATION_TYPES.CONTAINS,
             ).values_list(
@@ -281,14 +296,18 @@ class ServicesDeviceList(SerivcesSidebar, BaseMixin, BaseDeviceList):
                 CIRelation.objects.filter(
                     parent_id__in=CIRelation.objects.filter(
                         parent_id=businessline_id,
+                        parent__state=CI_STATE_TYPES.ACTIVE,
                         parent__type_id=CI_TYPES.BUSINESSLINE,
+                        child__state=CI_STATE_TYPES.ACTIVE,
                         child__type_id=CI_TYPES.PROFIT_CENTER,
                         type=CI_RELATION_TYPES.CONTAINS,
                     ).values_list(
                         'child__id',
                         flat=True
                     ),
+                    parent__state=CI_STATE_TYPES.ACTIVE,
                     parent__type_id=CI_TYPES.PROFIT_CENTER,
+                    child__state=CI_STATE_TYPES.ACTIVE,
                     child__type_id=CI_TYPES.SERVICE,
                     type=CI_RELATION_TYPES.CONTAINS,
                 ).values_list('child__id', flat=True)
