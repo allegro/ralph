@@ -140,6 +140,15 @@ def get_openstack_tenants():
         }
 
 
+def get_blade_servers():
+    for blade_server in Device.objects.filter(
+        model__type=DeviceType.blade_server,
+    ):
+        yield {
+            'device_id': blade_server.id,
+        }
+
+
 # CMDB
 def get_business_lines():
     """
