@@ -25,6 +25,7 @@ from ralph.scan.manual import scan_address_job
 API_THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 API_TIMEFRAME = settings.API_THROTTLING['timeframe']
 API_EXPIRATION = settings.API_THROTTLING['expiration']
+SCAN_RESULT_TTL = 86400
 
 
 logger = logging.getLogger(__name__)
@@ -50,7 +51,7 @@ def store_device_data(data):
             'results': data,
         },
         timeout=300,
-        result_ttl=86400,
+        result_ttl=SCAN_RESULT_TTL,
     )
     return JobObject(job.id)
 

@@ -3,37 +3,65 @@
 {% load i18n %}
 
 {% block content %}
+
+{% if new_count == 0 and changed_count == 0 %}
+  <div class="alert alert-info">{% trans "No changes to show." %}</div>
+{% else %}
 <ul class="nav nav-tabs">
-    <li {% if scan_type == 'new' %}class="active"{% endif %}>
-        <a href="{% url scan_list scan_type='new'%}">
-             ({{ new_count }}) {% trans 'New devices' %}
-        </a>
-    </li>
-    <li {% if scan_type == 'existing' %}class="active"{% endif %}>
-        <a href="{% url scan_list scan_type='existing'%}">
-             ({{ changed_count }}) {% trans 'Changed devices' %}
-        </a>
-    </li>
+  <li {% if change_type == 'new' %}class="active"{% endif %}>
+  <a href="{% url scan_list change_type='new'%}">
+    ({{ new_count }}) {% trans 'New devices' %}
+  </a>
+  </li>
+  <li {% if change_type == 'existing' %}class="active"{% endif %}>
+  <a href="{% url scan_list change_type='existing'%}">
+    ({{ changed_count }}) {% trans 'Changed devices' %}
+  </a>
+  </li>
 </ul>
 
-<table class="table table-bordered table-striped table-properties">
-    <thead>
-        {% table_header columns url_query sort %}
-    </thead>
-    {% for scan in bob_page %}
-    <tr>
-        <td><a href="{%url scan_results scan.job_id%}">
-            {{ scan.ipaddress }}
-        </a></td>
-    <td>{{ scan.created }}</td>
-    <td>{% if scan.device %}
-        <a href="{% url search details='info' device=scan.device.id %}">
-            {{ scan.device }}
-        </a>
-    {% endif %}</td>
-    </tr>
-    {% endfor %}
+{% if change_type == 'existing' %}
+<form class="form form-inline">
+  {% for f in venture_service_filter_form %}
+  <div class="control-group" style="display:inline-block">{{ f }}</div>
+  {% endfor %}
+  <div class="control-group" style="display:inline-block; vertical-align:top">
+    <button class="btn btn-primary" type="submit">
+      <i class="fugue-icon fugue-funnel"></i>
+      Filter
+    </button>
+  </div>
+</form>
+{% endif %}
 
+{% if params.change_type == 'new' and new_count > 0 or params.change_type == 'existing' and changed_count > 0 %}
+<table class="table table-bordered table-striped table-properties">
+  <thead>
+    {% table_header columns url_query sort %}
+  </thead>
+  {% for scan_summary in bob_page %}
+  <tr>
+    <td><a href="{%url scan_results scan_summary.job_id%}">
+        {{ scan_summary.ipaddress }}
+    </a></td>
+    {% if change_type == 'existing' and scan_summary.device %}
+    <td>
+      {{ scan_summary.device.venture.name }}
+    </td>
+    {% endif %}
+    <td>{{ scan_summary.modified }}</td>
+    <td>{% if change_type == 'existing' and scan_summary.device %}
+      <a href="{% url search details='info' device=scan_summary.device.id %}">
+        {{ scan_summary.device }}
+      </a>
+      {% endif %}</td>
+  </tr>
+  {% endfor %}
 </table>
-{% pagination bob_page url_query=url_query show_all=0 show_csv=0 fugue_icons=1 export_variable_name=export_variable_name %}
+{% else %}
+  <div class="alert alert-info">{% trans "No changes to show." %}</div>
+{% endif %}
+
+{% pagination bob_page url_query=url_query show_all=1 show_csv=0 fugue_icons=1 export_variable_name=export_variable_name %}
+{% endif %}
 {% endblock %}

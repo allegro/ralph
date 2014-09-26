@@ -6,13 +6,29 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
-from ajax_select.fields import AutoCompleteSelectField
+from ajax_select.fields import AutoCompleteField, AutoCompleteSelectField
 from django import forms
 from django.conf import settings
+from django.utils.translation import ugettext_lazy as _
 
 from ralph.business.models import RoleProperty
 from ralph.ui.forms.util import all_ventures
 from ralph.ui.widgets import DateWidget
+
+
+class VentureServiceFilterForm(forms.Form):
+    venture = AutoCompleteField(
+        ('ralph.ui.channels', 'VentureLookup'),
+        required=False,
+        label=_('Venture'),
+        help_text='Filter by venture',
+    )
+    service = AutoCompleteField(
+        ('ralph.ui.channels', 'ServiceCatalogLookup'),
+        required=False,
+        label=_('Service catalog'),
+        help_text='Filter by service',
+    )
 
 
 class DateRangeForm(forms.Form):

@@ -9,7 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from bob.menu import MenuItem
 from ralph.account.models import Perm
-from ralph.scan.util import get_pending_scans
+from ralph.scan.util import get_pending_changes
 
 
 class Menu(object):
@@ -99,14 +99,14 @@ class CoreMenu(Menu):
             MenuItem(_('Quick scan'), fugue_icon='fugue-radar',
                      href='#quickscan'))
 
-        pending_scans = get_pending_scans()
+        pending_changes = get_pending_changes()
         submodules.append(MenuItem(
-            _('Pending scans {}/{}').format(
-                pending_scans.new_devices,
-                pending_scans.changed_devices,
+            _('Pending changes {}/{}').format(
+                pending_changes.new_devices,
+                pending_changes.changed_devices,
             ),
-            view_kwargs={'scan_type': (
-                'new' if pending_scans.new_devices else 'existing'
+            view_kwargs={'change_type': (
+                'new' if pending_changes.new_devices else 'existing'
             )},
             name='scan_list',
             view_name='scan_list',
