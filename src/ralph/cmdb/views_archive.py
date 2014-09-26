@@ -7,7 +7,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from bob.data_table import DataTableMixin, DataTableColumn
-from bob.menu import MenuItem, MenuHeader
 
 from ralph.cmdb.models import (
     CI_CHANGE_TYPES,
@@ -23,47 +22,10 @@ from ralph.cmdb.views import BaseCMDBView
 class BaseCMDBArchiveView(BaseCMDBView, DataTableMixin):
     template_name = 'cmdb/archive.html'
     sort_variable_name = 'sort'
+    submodule_name = 'ci_others'
     export_variable_name = None
     rows_per_page = 20
     model = None
-
-    def get_sidebar_items(self):
-        sidebar_items = (
-            [MenuHeader('CMDB Archive')] +
-            [
-                MenuItem(
-                    label='Asset attr. changes',
-                    fugue_icon='fugue-wooden-box--arrow',
-                    href='/cmdb/archive/assets/',
-                ),
-                MenuItem(
-                    label='CI attributes changes',
-                    fugue_icon='fugue-puzzle',
-                    href='/cmdb/archive/cmdb/',
-                ),
-                MenuItem(
-                    label='Monitoring events',
-                    fugue_icon='fugue-thermometer',
-                    href='/cmdb/archive/zabbix/',
-                ),
-                MenuItem(
-                    label='Repo changes',
-                    fugue_icon='fugue-git',
-                    href='/cmdb/archive/git/',
-                ),
-                MenuItem(
-                    label='Agent events',
-                    fugue_icon='fugue-flask',
-                    href='/cmdb/archive/puppet/',
-                ),
-                MenuItem(
-                    label='Back to CMDB',
-                    fugue_icon='fugue-arrow-return-180',
-                    href='/cmdb/changes/timeline',
-                )
-            ]
-        )
-        return sidebar_items
 
     def get_context_data(self, *args, **kwargs):
         ret = super(BaseCMDBArchiveView, self).get_context_data(
@@ -97,6 +59,7 @@ class BaseCMDBArchiveView(BaseCMDBView, DataTableMixin):
 
 class ArchivedAssetsChanges(BaseCMDBArchiveView):
     model = ArchivedCIChange
+    sidebar_item_name = 'asset attr. changes'
     columns = [
         DataTableColumn(
             'CI',
@@ -156,6 +119,7 @@ class ArchivedAssetsChanges(BaseCMDBArchiveView):
 
 class ArchivedZabbixTriggers(BaseCMDBArchiveView):
     model = ArchivedCIChangeZabbixTrigger
+    sidebar_item_name = 'monitoring events'
     columns = [
         DataTableColumn(
             'CI',
@@ -219,6 +183,7 @@ class ArchivedZabbixTriggers(BaseCMDBArchiveView):
 
 class ArchivedGitChanges(BaseCMDBArchiveView):
     model = ArchivedCIChangeGit
+    sidebar_item_name = 'repo changes'
     columns = [
         DataTableColumn(
             'CI',
@@ -274,6 +239,7 @@ class ArchivedGitChanges(BaseCMDBArchiveView):
 
 class ArchivedPuppetChanges(BaseCMDBArchiveView):
     model = ArchivedCIChangePuppet
+    sidebar_item_name = 'agent events'
     columns = [
         DataTableColumn(
             'CI',
@@ -329,6 +295,7 @@ class ArchivedPuppetChanges(BaseCMDBArchiveView):
 
 class ArchivedCIAttributesChanges(BaseCMDBArchiveView):
     model = ArchivedCIChangeCMDBHistory
+    sidebar_item_name = 'ci attributes changes'
     columns = [
         DataTableColumn(
             'CI',
