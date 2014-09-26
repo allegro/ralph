@@ -29,6 +29,12 @@ from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import ReportDeviceList
 
 
+ACTIVE_CIS_CONDITIONS = {
+    'parent__state': CI_STATE_TYPES.ACTIVE,
+    'child__state': CI_STATE_TYPES.ACTIVE,
+}
+
+
 class SerivcesSidebar(object):
     submodule_name = 'services'
 
@@ -40,11 +46,10 @@ class SerivcesSidebar(object):
 
     def _get_business_to_service(self):
         return CIRelation.objects.filter(
-            parent__state=CI_STATE_TYPES.ACTIVE,
             parent__type_id=CI_TYPES.BUSINESSLINE,
-            child__state=CI_STATE_TYPES.ACTIVE,
             child__type_id=CI_TYPES.SERVICE,
             type=CI_RELATION_TYPES.CONTAINS,
+            **ACTIVE_CIS_CONDITIONS
         ).values_list(
             'parent__id',
             'parent__name',
@@ -54,11 +59,10 @@ class SerivcesSidebar(object):
 
     def _get_business_to_profitcenter(self):
         return CIRelation.objects.filter(
-            parent__state=CI_STATE_TYPES.ACTIVE,
             parent__type_id=CI_TYPES.BUSINESSLINE,
-            child__state=CI_STATE_TYPES.ACTIVE,
             child__type_id=CI_TYPES.PROFIT_CENTER,
             type=CI_RELATION_TYPES.CONTAINS,
+            **ACTIVE_CIS_CONDITIONS
         ).values_list(
             'parent__id',
             'parent__name',
@@ -67,20 +71,18 @@ class SerivcesSidebar(object):
 
     def _get_profitcenter_to_service(self):
         return CIRelation.objects.filter(
-            parent__state=CI_STATE_TYPES.ACTIVE,
             parent__type_id=CI_TYPES.PROFIT_CENTER,
-            child__state=CI_STATE_TYPES.ACTIVE,
             child__type_id=CI_TYPES.SERVICE,
             type=CI_RELATION_TYPES.CONTAINS,
+            **ACTIVE_CIS_CONDITIONS
         ).values_list('parent__id', 'child__id', 'child__name')
 
     def _get_service_to_environment(self):
         return CIRelation.objects.filter(
-            parent__state=CI_STATE_TYPES.ACTIVE,
             parent__type_id=CI_TYPES.SERVICE,
-            child__state=CI_STATE_TYPES.ACTIVE,
             child__type_id=CI_TYPES.ENVIRONMENT,
             type=CI_RELATION_TYPES.CONTAINS,
+            **ACTIVE_CIS_CONDITIONS
         ).values_list('parent__id', 'child__id', 'child__name')
 
     def _merge_data_into_tree(
@@ -281,11 +283,10 @@ class ServicesDeviceList(SerivcesSidebar, BaseMixin, BaseDeviceList):
         services_ids = set(
             CIRelation.objects.filter(
                 parent_id=businessline_id,
-                parent__state=CI_STATE_TYPES.ACTIVE,
                 parent__type_id=CI_TYPES.BUSINESSLINE,
-                child__state=CI_STATE_TYPES.ACTIVE,
                 child__type_id=CI_TYPES.SERVICE,
                 type=CI_RELATION_TYPES.CONTAINS,
+                **ACTIVE_CIS_CONDITIONS
             ).values_list(
                 'child__id',
                 flat=True
@@ -296,20 +297,18 @@ class ServicesDeviceList(SerivcesSidebar, BaseMixin, BaseDeviceList):
                 CIRelation.objects.filter(
                     parent_id__in=CIRelation.objects.filter(
                         parent_id=businessline_id,
-                        parent__state=CI_STATE_TYPES.ACTIVE,
                         parent__type_id=CI_TYPES.BUSINESSLINE,
-                        child__state=CI_STATE_TYPES.ACTIVE,
                         child__type_id=CI_TYPES.PROFIT_CENTER,
                         type=CI_RELATION_TYPES.CONTAINS,
+                        **ACTIVE_CIS_CONDITIONS
                     ).values_list(
                         'child__id',
                         flat=True
                     ),
-                    parent__state=CI_STATE_TYPES.ACTIVE,
                     parent__type_id=CI_TYPES.PROFIT_CENTER,
-                    child__state=CI_STATE_TYPES.ACTIVE,
                     child__type_id=CI_TYPES.SERVICE,
                     type=CI_RELATION_TYPES.CONTAINS,
+                    **ACTIVE_CIS_CONDITIONS
                 ).values_list('child__id', flat=True)
             )
         )
