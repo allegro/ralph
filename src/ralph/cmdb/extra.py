@@ -14,7 +14,7 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.cmdb.models_ci import CI, CIOwner, CIOwnership, CIOwnershipType
 
 
-def ralph_obj_owner_table(device):
+def ralph_device_owner_table(device):
     """Renders a table containing owners of a given ralph device object."""
     context = {
         'venture': device.venture,
@@ -40,7 +40,7 @@ def ralph_obj_owner_table(device):
         context['service_technical'] = service_ownerships.filter(
             type=CIOwnershipType.technical,
         )
-    return render_to_string('cmdb/ralph_obj_owner_table.html', context)
+    return render_to_string('cmdb/ralph_device_owner_table.html', context)
 
 
 def ralph_obj_owner_column_factory(type_):
