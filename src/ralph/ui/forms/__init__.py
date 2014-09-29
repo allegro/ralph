@@ -93,8 +93,8 @@ class RolePropertyForm(forms.ModelForm):
 
 class ChooseAssetForm(forms.Form):
     asset = AutoCompleteSelectField(
-        ('ralph_assets.api_ralph', 'UnassignedDCDeviceLookup'),
-        required=True,
+        ('ralph_assets.api_ralph', 'AssetLookup'),
+        required=False,  # handled by clean_asset
     )
 
     def __init__(self, device_id, *args, **kwargs):
@@ -104,6 +104,12 @@ class ChooseAssetForm(forms.Form):
 
     def clean_asset(self):
         asset = self.cleaned_data['asset']
+        if not asset:
+            raise forms.ValidationError(
+                "You cannot save this field without selecting an asset. "
+                "If you want to unlink an asset from this device, "
+                "please use 'Edit this asset' button below."
+            )
         if 'ralph_assets' in settings.INSTALLED_APPS:
             from ralph_assets.api_ralph import is_asset_assigned
             if is_asset_assigned(
@@ -111,6 +117,7 @@ class ChooseAssetForm(forms.Form):
                 exclude_devices=[self.device_id],
             ):
                 raise forms.ValidationError(
-                    'This asset is assigned to other device.',
+                    "This asset is already linked to some other device. "
+                    "To resolve this conflict, please click the link above."
                 )
         return asset
