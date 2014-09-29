@@ -120,4 +120,4 @@ class ChooseAssetForm(forms.Form):
                     "This asset is already linked to some other device. "
                     "To resolve this conflict, please click the link above."
                 )
-        return asset
+            return asset

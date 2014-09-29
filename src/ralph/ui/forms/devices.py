@@ -248,7 +248,7 @@ class DeviceCreateForm(DeviceForm):
         self.fields['model'].required = True
         if 'ralph_assets' in settings.INSTALLED_APPS:
             self.fields['asset'] = AutoCompleteSelectField(
-                ('ralph_assets.api_ralph', 'UnassignedDCDeviceLookup'),
+                ('ralph_assets.api_ralph', 'AssetLookup'),
                 required=False,
             )
             self.fields['asset'].widget.help_text = (
@@ -284,8 +284,14 @@ class DeviceCreateForm(DeviceForm):
         asset = self.cleaned_data.get('asset')
         if model and model.type not in ASSET_NOT_REQUIRED:
             if not asset:
+                msg = "Asset is required for this kind of device."
+                raise forms.ValidationError(msg)
+        if 'ralph_assets' in settings.INSTALLED_APPS:
+            from ralph_assets.api_ralph import is_asset_assigned
+            if is_asset_assigned(asset_id=asset.id):
                 raise forms.ValidationError(
-                    "Asset is required for this kind of device."
+                    "This asset is already linked to some other device. "
+                    "To resolve this conflict, please click the link above."
                 )
         return asset
 

@@ -210,9 +210,9 @@ class UserMenu(Menu):
                 Divider(),
                 MenuItem(
                     'Logout',
-                    name='user_preference',
+                    name='logout',
                     fugue_icon='fugue-door-open-out',
-                    view_name='user_preference',
+                    view_name='logout',
                 ),
             ]
         )
@@ -1830,9 +1830,13 @@ class ScanStatus(BaseMixin, TemplateView):
                             'asset' in form.cleaned_data and
                             form.cleaned_data['asset'] != 'database'
                         ):
-                            asset = form.cleaned_data['asset-custom']
                             from ralph_assets.api_ralph import assign_asset
-                            if not assign_asset(device.id, asset.id):
+                            asset = form.cleaned_data['asset-custom']
+                            if not asset:
+                                msg = ("Cannot save this type of device "
+                                       "without specifying an asset.")
+                                raise ValueError(msg)
+                            elif not assign_asset(device.id, asset.id):
                                 msg = ("Asset id={} cannot be assigned to "
                                        "device id={}."
                                        .format(asset.id, device.id))
