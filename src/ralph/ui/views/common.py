@@ -210,9 +210,9 @@ class UserMenu(Menu):
                 Divider(),
                 MenuItem(
                     'Logout',
-                    name='user_preference',
+                    name='logout',
                     fugue_icon='fugue-door-open-out',
-                    view_name='user_preference',
+                    view_name='logout',
                 ),
             ]
         )
