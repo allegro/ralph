@@ -257,11 +257,13 @@ class DictListInfo(ListInfo):
 
 
 class AssetInfo(DefaultInfo):
+    # this field cannot be marked as 'required'  because of
+    # ralph.discovery.models.ASSET_NOT_REQUIRED
     Widget = None
 
     def Field(self, *args, **kwargs):
         kwargs['help_text'] = "Enter barcode, model or serial number."
-        lookup = ('ralph_assets.api_ralph', 'UnassignedDCDeviceLookup')
+        lookup = ('ralph_assets.api_ralph', 'AssetLookup')
         return AutoCompleteSelectField(lookup, *args, **kwargs)
 
 
@@ -400,26 +402,39 @@ class DiffForm(forms.Form):
                     msg = "Please specify custom value for this component."
                     self._errors[name] = self.error_class([msg])
         if 'ralph_assets' in settings.INSTALLED_APPS:
+            from ralph_assets.api_ralph import is_asset_assigned
+            from ralph_assets.models import Asset
+            try:
+                asset = self.get_value('asset')
+            except (KeyError, ValueError):
+                asset = None
+            else:
+                if asset == 'None':
+                    asset = None
+            if asset is not None:
+                _, asset_sn, asset_barcode = asset.split(' - ')
+                try:
+                    asset_obj = Asset.objects.get(sn=asset_sn,
+                                                  barcode=asset_barcode)
+                except Asset.DoesNotExist:
+                    pass
+                else:
+                    if is_asset_assigned(asset_id=asset_obj.id):
+                        msg = ("This asset is already linked to some other "
+                               "device. To resolve this conflict, please "
+                               "click the link above.")
+                        self._errors['asset'] = self.error_class([msg])
             try:
                 selected_type = self.get_value('type')
             except (KeyError, ValueError):
-                pass
+                if not asset:
+                    msg = "Can't save this device without specifying an asset."
+                    self._errors['asset'] = self.error_class([msg])
             else:
-                selected_type = get_choice_by_name(
-                    DeviceType,
-                    selected_type
-                )
-                if selected_type not in ASSET_NOT_REQUIRED:
-                    try:
-                        asset = self.get_value('asset')
-                    except (KeyError, ValueError):
-                        asset = None
-                    if asset == 'None':
-                        asset = None
-                    if not asset:
-                        self._errors['asset'] = self.error_class([
-                            "Asset is required for this kind of device."
-                        ])
+                selected_type = get_choice_by_name(DeviceType, selected_type)
+                if selected_type not in ASSET_NOT_REQUIRED and not asset:
+                    msg = "Asset is required for this kind of device."
+                    self._errors['asset'] = self.error_class([msg])
         return self.cleaned_data
 
     def get_value(self, name):
