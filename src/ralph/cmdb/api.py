@@ -674,6 +674,7 @@ class UserResource(MResource):
             'username': ALL,
         }
         resource_name = 'users'
+        excludes = ['password', 'last_login', 'is_staff', 'is_superuser']
         throttle = CacheThrottle(
             throttle_at=THROTTLE_AT,
             timeframe=TIMEFRAME,
