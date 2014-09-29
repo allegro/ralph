@@ -411,7 +411,7 @@ class DiffForm(forms.Form):
             else:
                 if asset == 'None':
                     asset = None
-            if asset is not None:
+            if asset:
                 _, asset_sn, asset_barcode = asset.split(' - ')
                 try:
                     asset_obj = Asset.objects.get(sn=asset_sn,
