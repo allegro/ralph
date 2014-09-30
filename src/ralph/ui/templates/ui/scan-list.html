@@ -5,7 +5,7 @@
 {% block content %}
 
 {% if new_count == 0 and changed_count == 0 %}
-  <div class="alert alert-info">{% trans "No changes to show." %}</div>
+<div class="alert alert-info">{% trans "No changes to show." %}</div>
 {% else %}
 <ul class="nav nav-tabs">
   <li {% if change_type == 'new' %}class="active"{% endif %}>
@@ -35,10 +35,8 @@
 {% endif %}
 
 {% if params.change_type == 'new' and new_count > 0 or params.change_type == 'existing' and changed_count > 0 %}
-<table class="table table-bordered table-striped table-properties">
-  <thead>
-    {% table_header columns url_query sort %}
-  </thead>
+<table class="table table-bordered table-striped">
+  {% table_header columns url_query %}
   {% for scan_summary in bob_page %}
   <tr>
     <td><a href="{%url scan_results scan_summary.job_id%}">
@@ -50,16 +48,18 @@
     </td>
     {% endif %}
     <td>{{ scan_summary.modified }}</td>
-    <td>{% if change_type == 'existing' and scan_summary.device %}
+    {% if change_type == 'existing' and scan_summary.device %}
+    <td>
       <a href="{% url search details='info' device=scan_summary.device.id %}">
         {{ scan_summary.device }}
       </a>
-      {% endif %}</td>
+    </td>
+    {% endif %}
   </tr>
   {% endfor %}
 </table>
 {% else %}
-  <div class="alert alert-info">{% trans "No changes to show." %}</div>
+<div class="alert alert-info">{% trans "No changes to show." %}</div>
 {% endif %}
 
 {% pagination bob_page url_query=url_query show_all=1 show_csv=0 fugue_icons=1 export_variable_name=export_variable_name %}
