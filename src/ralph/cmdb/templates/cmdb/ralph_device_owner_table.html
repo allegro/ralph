@@ -9,7 +9,7 @@
             </td>
         </tr>
         <tr>
-            <th rowspan="2">{% trans "Venture" %}</th>
+            <th rowspan="2">{% trans "Service" %}</th>
             <td>{% trans "business owners" %}</td>
             <td>
                 {% for o in service_business %}{{ o|owner_icon }} {{ o.owner }}<br>{% empty %}-{% endfor %}
@@ -22,7 +22,7 @@
             </td>
         </tr>
         <tr>
-            <th rowspan="2">{% trans "Service" %}</th>
+            <th rowspan="2">{% trans "Venture" %}</th>
             <td>{% trans "business owners" %}</td>
             <td>
                 {% for o in venture_business %}{{ o|owner_icon }} {{ o.owner }}<br>{% empty %}-{% endfor %}
