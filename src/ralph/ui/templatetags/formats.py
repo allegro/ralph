@@ -39,7 +39,7 @@ def deep_field_value(f):
     """Similar to *field_value* filter, but shows related object instead of
     foreign key"""
     field_value = f.field.to_python(f.value())
-    if isinstance(f.field, AutoCompleteSelectField):
+    if field_value != '' and isinstance(f.field, AutoCompleteSelectField):
         lookup = get_lookup(f.field.channel)
         found = lookup.get_objects([field_value])
         if found:
