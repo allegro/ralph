@@ -6,6 +6,9 @@ from __future__ import unicode_literals
 from django import template
 from django.conf import settings
 
+from ajax_select import get_lookup
+from ajax_select.fields import AutoCompleteSelectField
+
 
 register = template.Library()
 
@@ -29,6 +32,19 @@ def key(d, key_name):
 @register.filter
 def field_value(f):
     return f.field.to_python(f.value())
+
+
+@register.filter
+def deep_field_value(f):
+    """Similar to *field_value* filter, but shows related object instead of
+    foreign key"""
+    field_value = f.field.to_python(f.value())
+    if isinstance(f.field, AutoCompleteSelectField):
+        lookup = get_lookup(f.field.channel)
+        found = lookup.get_objects([field_value])
+        if found:
+            field_value = found[0]
+    return field_value
 
 
 @register.filter
