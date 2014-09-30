@@ -27,7 +27,7 @@
                         {% if editable %}
                             {{ f }}
                         {% else %}
-                        <div class="input uneditable-input">{{ f|field_value }}</div>
+                        <div class="input uneditable-input">{{ f|deep_field_value }}</div>
                         {% endif %}
                         {% for e in f.errors %}
                             <div class="help-block">{{ e }}</div>
