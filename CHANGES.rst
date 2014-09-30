@@ -1,6 +1,26 @@
 Change Log
 ----------
 
+2.1.0
+~~~~~
+
+Released on ...
+
+...
+
+
+* CORE: Improved handling of assets that should be linked to devices.
+
+* CORE: Improved handling of ventures that shouldn't be shown in Ralph.
+
+* CORE: Improvements for the GUI.
+
+* SCAN: Improved handling of blacklisted serial numbers.
+
+* CORE: Added search fields for 'service catalog' and 'device environment'.
+
+* CORE/SCAN: Removed significant parts of obsolete code.
+
 * After sign in, redirect to home of user-accessible module
 
 * Scan status view
