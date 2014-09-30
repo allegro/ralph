@@ -442,7 +442,9 @@ def get_device_data(device):
         from ralph_assets.api_ralph import get_asset
         asset = get_asset(device.id)
         if asset:
-            data['asset'] = '{}, sn: {}'.format(asset['model'], asset['sn'])
+            data['asset'] = '{} - {} - {}'.format(asset['model'],
+                                                  asset['sn'],
+                                                  asset['barcode'])
         else:
             data['asset'] = None
     return data
