@@ -264,6 +264,9 @@ class DeviceEnvironment(models_ci.CI):
     class Meta:
         proxy = True
 
+    def __unicode__(self):
+        return self.name
+
 
 class ServiceCatalogManager(db.Manager):
     def get_query_set(self):
@@ -280,6 +283,9 @@ class ServiceCatalog(models_ci.CI):
 
     class Meta:
         proxy = True
+
+    def __unicode__(self):
+        return self.name
 
 
 class Device(

@@ -82,8 +82,9 @@ setup(
             'ralph = ralph.__main__:main',
         ],
         'ralph_extra_data': [
-            'ralph_obj_owner_table = ralph.cmdb.extra:ralph_obj_owner_table',
+            'ralph_device_owner_table = ralph.cmdb.extra:ralph_device_owner_table',
             'ralph_obj_owner_column_factory = ralph.cmdb.extra:ralph_obj_owner_column_factory',
+            'ralph_obj_all_ownerships = ralph.cmdb.extra:ralph_obj_all_ownerships',
         ],
         'django.pluggable_app': [
             'cmdb = ralph.cmdb.app:Cmdb',

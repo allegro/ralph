@@ -8,11 +8,64 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        # Adding model 'CIValueBoolean'
+        db.create_table('cmdb_civalueboolean', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('created', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
+            ('modified', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
+            ('cache_version', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
+            ('value', self.gf('django.db.models.fields.NullBooleanField')(default=False, null=True, blank=True)),
+        ))
+        db.send_create_signal('cmdb', ['CIValueBoolean'])
+
+        # Adding field 'CIAttributeValue.value_boolean'
+        db.add_column('cmdb_ciattributevalue', 'value_boolean',
+                      self.gf('django.db.models.fields.related.ForeignKey')(to=orm['cmdb.CIValueBoolean'], null=True, blank=True),
+                      keep_default=False)
+
+        # Deleting field 'CIOwner.last_name'
+        db.delete_column('cmdb_ciowner', 'last_name')
+
+        # Deleting field 'CIOwner.first_name'
+        db.delete_column('cmdb_ciowner', 'first_name')
+
+        # Deleting field 'CIOwner.sAMAccountName'
+        db.delete_column('cmdb_ciowner', 'sAMAccountName')
+
+        # Deleting field 'CIOwner.email'
+        db.delete_column('cmdb_ciowner', 'email')
+
 
         # Changing field 'CIOwner.profile'
         db.alter_column('cmdb_ciowner', 'profile_id', self.gf('django.db.models.fields.related.OneToOneField')(default=-1, to=orm['account.Profile'], unique=True))
 
     def backwards(self, orm):
+        # Deleting model 'CIValueBoolean'
+        db.delete_table('cmdb_civalueboolean')
+
+        # Deleting field 'CIAttributeValue.value_boolean'
+        db.delete_column('cmdb_ciattributevalue', 'value_boolean_id')
+
+        # Adding field 'CIOwner.last_name'
+        db.add_column('cmdb_ciowner', 'last_name',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=100),
+                      keep_default=False)
+
+        # Adding field 'CIOwner.first_name'
+        db.add_column('cmdb_ciowner', 'first_name',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=50),
+                      keep_default=False)
+
+        # Adding field 'CIOwner.sAMAccountName'
+        db.add_column('cmdb_ciowner', 'sAMAccountName',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=256, blank=True),
+                      keep_default=False)
+
+        # Adding field 'CIOwner.email'
+        db.add_column('cmdb_ciowner', 'email',
+                      self.gf('django.db.models.fields.EmailField')(unique=True, max_length=75, null=True),
+                      keep_default=False)
+
 
         # Changing field 'CIOwner.profile'
         db.alter_column('cmdb_ciowner', 'profile_id', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['account.Profile'], unique=True, null=True))
@@ -195,6 +248,7 @@ class Migration(SchemaMigration):
             'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'value_boolean': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['cmdb.CIValueBoolean']", 'null': 'True', 'blank': 'True'}),
             'value_choice': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['cmdb.CIValueChoice']", 'null': 'True', 'blank': 'True'}),
             'value_date': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['cmdb.CIValueDate']", 'null': 'True', 'blank': 'True'}),
             'value_float': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['cmdb.CIValueFloat']", 'null': 'True', 'blank': 'True'}),
@@ -372,6 +426,14 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'name': ('django.db.models.fields.SlugField', [], {'max_length': '50'})
+        },
+        'cmdb.civalueboolean': {
+            'Meta': {'object_name': 'CIValueBoolean'},
+            'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
+            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'value': ('django.db.models.fields.NullBooleanField', [], {'default': 'False', 'null': 'True', 'blank': 'True'})
         },
         'cmdb.civaluechoice': {
             'Meta': {'object_name': 'CIValueChoice'},

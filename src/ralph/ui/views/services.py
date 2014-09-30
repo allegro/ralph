@@ -8,7 +8,12 @@ from bob.menu import MenuItem
 from collections import OrderedDict
 
 from ralph.account.models import Perm
-from ralph.cmdb.models import CI_TYPES, CI_RELATION_TYPES, CIRelation
+from ralph.cmdb.models import (
+    CI_RELATION_TYPES,
+    CI_STATE_TYPES,
+    CI_TYPES,
+    CIRelation,
+)
 from ralph.discovery.models import Device
 from ralph.ui.views.common import (
     Addresses,
@@ -22,6 +27,12 @@ from ralph.ui.views.common import (
 )
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import ReportDeviceList
+
+
+ACTIVE_CIS_CONDITIONS = {
+    'parent__state': CI_STATE_TYPES.ACTIVE,
+    'child__state': CI_STATE_TYPES.ACTIVE,
+}
 
 
 class SerivcesSidebar(object):
@@ -38,6 +49,7 @@ class SerivcesSidebar(object):
             parent__type_id=CI_TYPES.BUSINESSLINE,
             child__type_id=CI_TYPES.SERVICE,
             type=CI_RELATION_TYPES.CONTAINS,
+            **ACTIVE_CIS_CONDITIONS
         ).values_list(
             'parent__id',
             'parent__name',
@@ -50,6 +62,7 @@ class SerivcesSidebar(object):
             parent__type_id=CI_TYPES.BUSINESSLINE,
             child__type_id=CI_TYPES.PROFIT_CENTER,
             type=CI_RELATION_TYPES.CONTAINS,
+            **ACTIVE_CIS_CONDITIONS
         ).values_list(
             'parent__id',
             'parent__name',
@@ -61,6 +74,7 @@ class SerivcesSidebar(object):
             parent__type_id=CI_TYPES.PROFIT_CENTER,
             child__type_id=CI_TYPES.SERVICE,
             type=CI_RELATION_TYPES.CONTAINS,
+            **ACTIVE_CIS_CONDITIONS
         ).values_list('parent__id', 'child__id', 'child__name')
 
     def _get_service_to_environment(self):
@@ -68,6 +82,7 @@ class SerivcesSidebar(object):
             parent__type_id=CI_TYPES.SERVICE,
             child__type_id=CI_TYPES.ENVIRONMENT,
             type=CI_RELATION_TYPES.CONTAINS,
+            **ACTIVE_CIS_CONDITIONS
         ).values_list('parent__id', 'child__id', 'child__name')
 
     def _merge_data_into_tree(
@@ -184,7 +199,7 @@ class SerivcesSidebar(object):
         for bl_id, bl_data in tree.iteritems():
             bl_item = MenuItem(
                 label=bl_data['name'],
-                name='businessline_%s' % bl_id,
+                name='bl_%s' % bl_id,
                 fugue_icon='fugue-tie',
                 view_name='services',
                 view_args=['bl-%s' % bl_id],
@@ -196,7 +211,7 @@ class SerivcesSidebar(object):
             for s_id, s_data in bl_data.get('childs', {}).iteritems():
                 s_item = MenuItem(
                     label=s_data['name'],
-                    name='service_%s' % s_id,
+                    name='bl_%s_s_%s' % (bl_id, s_id),
                     fugue_icon='fugue-disc-share',
                     view_name='services',
                     view_args=['bl-%s' % bl_id, 'ser-%s' % s_id],
@@ -208,7 +223,7 @@ class SerivcesSidebar(object):
                 for e_id, e_data in s_data.get('childs', {}).iteritems():
                     e_item = MenuItem(
                         label=e_data['name'],
-                        name='env_%s' % e_id,
+                        name='bl_%s_s_%s_env_%s' % (bl_id, s_id, e_id),
                         fugue_icon='fugue-tree',
                         view_name='services',
                         view_args=[
@@ -235,19 +250,22 @@ class SerivcesSidebar(object):
                 'env-', ''
             )
 
+    def _get_sidebar_selected(self):
+        sidebar_selected = None
+        if self.businessline_id:
+            sidebar_selected = 'bl_%s' % self.businessline_id
+            if self.service_id:
+                sidebar_selected += '_s_%s' % self.service_id
+                if self.environment_id:
+                    sidebar_selected += '_env_%s' % self.environment_id
+        return sidebar_selected
+
     def get_context_data(self, **kwargs):
         ret = super(SerivcesSidebar, self).get_context_data(**kwargs)
         self._set_request_params()
-        sidebar_selected = None
-        if self.environment_id:
-            sidebar_selected = 'env_%s' % self.environment_id
-        elif self.service_id:
-            sidebar_selected = 'service_%s' % self.service_id
-        elif self.businessline_id:
-            sidebar_selected = 'businessline_%s' % self.businessline_id
         ret.update({
             'sidebar_items': self._get_menu(self._get_tree()),
-            'sidebar_selected': sidebar_selected,
+            'sidebar_selected': self._get_sidebar_selected(),
             'section': 'services',
             'show_tab_menu': True,
         })
@@ -268,6 +286,7 @@ class ServicesDeviceList(SerivcesSidebar, BaseMixin, BaseDeviceList):
                 parent__type_id=CI_TYPES.BUSINESSLINE,
                 child__type_id=CI_TYPES.SERVICE,
                 type=CI_RELATION_TYPES.CONTAINS,
+                **ACTIVE_CIS_CONDITIONS
             ).values_list(
                 'child__id',
                 flat=True
@@ -281,6 +300,7 @@ class ServicesDeviceList(SerivcesSidebar, BaseMixin, BaseDeviceList):
                         parent__type_id=CI_TYPES.BUSINESSLINE,
                         child__type_id=CI_TYPES.PROFIT_CENTER,
                         type=CI_RELATION_TYPES.CONTAINS,
+                        **ACTIVE_CIS_CONDITIONS
                     ).values_list(
                         'child__id',
                         flat=True
@@ -288,28 +308,28 @@ class ServicesDeviceList(SerivcesSidebar, BaseMixin, BaseDeviceList):
                     parent__type_id=CI_TYPES.PROFIT_CENTER,
                     child__type_id=CI_TYPES.SERVICE,
                     type=CI_RELATION_TYPES.CONTAINS,
+                    **ACTIVE_CIS_CONDITIONS
                 ).values_list('child__id', flat=True)
             )
         )
         return services_ids
 
     def get_queryset(self):
+        queryset = Device.objects.all()
         if self.environment_id:
-            queryset = Device.objects.filter(
+            queryset = queryset.filter(
                 device_environment_id=self.environment_id
             )
-        elif self.service_id:
-            queryset = Device.objects.filter(
+        if self.service_id:
+            queryset = queryset.filter(
                 service_id=self.service_id
             )
-        elif self.businessline_id:
-            queryset = Device.objects.filter(
+        if self.businessline_id:
+            queryset = queryset.filter(
                 service_id__in=self._get_businessline_services_ids(
                     self.businessline_id
                 )
             )
-        else:
-            queryset = Device.objects.all()
         return self.sort_queryset(queryset)
 
 

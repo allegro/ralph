@@ -124,7 +124,7 @@ urlpatterns = patterns(
 
     url(r'^services/(?P<businessline_id>bl-\d+)/(?P<service_id>ser-\d+)/(?P<environment_id>env-\d+)/$',
         login_required(ServicesDeviceList.as_view()), {}, 'services'),
-    url(r'^services/(?P<businessline_id>bl-\d+)/(?P<service_id>ser-\d+)/(?P<environment_id>env-\d+)/(?P<details>info|components|software|addresses|history|scan)/(?P<device>)$',
+    url(r'^services/(?P<businessline_id>bl-\d+)/(?P<service_id>ser-\d+)/(?P<environment_id>env-\d+)/(?P<details>info|components|software|addresses|history|scan|asset)/(?P<device>)$',
         login_required(ServicesDeviceList.as_view()), {}, 'services'),
     url(r'^services/(?P<businessline_id>bl-\d+)/(?P<service_id>ser-\d+)/(?P<environment_id>env-\d+)/(?P<device>\d+)$',
         login_required(ServicesInfo.as_view()), {}, 'services'),
@@ -149,7 +149,7 @@ urlpatterns = patterns(
 
     url(r'^services/(?P<businessline_id>bl-\d+)/(?P<service_id>ser-\d+)/$',
         login_required(ServicesDeviceList.as_view()), {}, 'services'),
-    url(r'^services/(?P<businessline_id>bl-\d+)/(?P<service_id>ser-\d+)/(?P<details>info|components|software|addresses|history|scan)/(?P<device>)$',
+    url(r'^services/(?P<businessline_id>bl-\d+)/(?P<service_id>ser-\d+)/(?P<details>info|components|software|addresses|history|scan|asset)/(?P<device>)$',
         login_required(ServicesDeviceList.as_view()), {}, 'services'),
     url(r'^services/(?P<businessline_id>bl-\d+)/(?P<service_id>ser-\d+)/(?P<device>\d+)$',
         login_required(ServicesInfo.as_view()), {}, 'services'),
@@ -174,7 +174,7 @@ urlpatterns = patterns(
 
     url(r'^services/(?P<businessline_id>bl-\d+)/$',
         login_required(ServicesDeviceList.as_view()), {}, 'services'),
-    url(r'^services/(?P<businessline_id>bl-\d+)/(?P<details>info|components|software|addresses|history|scan)/(?P<device>)$',
+    url(r'^services/(?P<businessline_id>bl-\d+)/(?P<details>info|components|software|addresses|history|scan|asset)/(?P<device>)$',
         login_required(ServicesDeviceList.as_view()), {}, 'services'),
     url(r'^services/(?P<businessline_id>bl-\d+)/(?P<device>\d+)$',
         login_required(ServicesInfo.as_view()), {}, 'services'),
@@ -199,7 +199,7 @@ urlpatterns = patterns(
 
     url(r'^services/$',
         login_required(ServicesDeviceList.as_view()), {}, 'services'),
-    url(r'^services/(?P<details>info|components|software|addresses|history|scan)/(?P<device>)$',
+    url(r'^services/(?P<details>info|components|software|addresses|history|scan|asset)/(?P<device>)$',
         login_required(ServicesDeviceList.as_view()), {}, 'services'),
     url(r'^services/(?P<device>\d+)/$',
         login_required(ServicesInfo.as_view()), {}, 'services'),
@@ -312,7 +312,7 @@ urlpatterns = patterns(
     url(r'^deployment/mass/define/(?P<deployment>[0-9]+)/$',
         login_required(MassDeployment.as_view())),
 
-    url(r'^scan/list/(?P<scan_type>new|existing)/$',
+    url(r'^scan/list/(?P<change_type>new|existing)/$',
         login_required(
             ScanList.as_view()), {}, 'scan_list',
         ),
