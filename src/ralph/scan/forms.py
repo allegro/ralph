@@ -414,12 +414,17 @@ class DiffForm(forms.Form):
             if asset:
                 _, asset_sn, asset_barcode = asset.split(' - ')
                 try:
+                    if asset_sn == '':
+                        asset_sn = None
+                    if asset_barcode == '':
+                        asset_barcode = None
                     asset_obj = Asset.objects.get(sn=asset_sn,
                                                   barcode=asset_barcode)
                 except Asset.DoesNotExist:
                     pass
                 else:
-                    if is_asset_assigned(asset_id=asset_obj.id):
+                    if (self.data['asset'] != 'database' and
+                            is_asset_assigned(asset_id=asset_obj.id)):
                         msg = ("This asset is already linked to some other "
                                "device. To resolve this conflict, please "
                                "click the link above.")
