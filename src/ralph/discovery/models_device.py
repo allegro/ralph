@@ -272,6 +272,7 @@ class ServiceCatalogManager(db.Manager):
     def get_query_set(self):
         return super(ServiceCatalogManager, self).get_query_set().filter(
             type=models_ci.CI_TYPES.SERVICE,
+            state=models_ci.CI_STATE_TYPES.ACTIVE,
         )
 
 
