@@ -252,6 +252,7 @@ class DeviceEnvironmentManager(db.Manager):
     def get_query_set(self):
         return super(DeviceEnvironmentManager, self).get_query_set().filter(
             type__name=models_ci.CI_TYPES.ENVIRONMENT,
+            state=models_ci.CI_STATE_TYPES.ACTIVE,
         )
 
 
