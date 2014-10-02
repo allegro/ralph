@@ -281,7 +281,10 @@ class ServiceCatalogManager(db.Manager):
                 value_boolean__value=True,
                 ci__type=models_ci.CI_TYPES.SERVICE,
             ).values('ci')
-            services = super(ServiceCatalogManager, self).get_query_set().filter(
+            services = super(
+                ServiceCatalogManager,
+                self,
+            ).get_query_set().filter(
                 state=models_ci.CI_STATE_TYPES.ACTIVE,
                 id__in=ids,
             )
