@@ -64,6 +64,9 @@ DISK_PRODUCT_BLACKLIST = set([
     '1815      fastt', 'comstar',
 ])
 
+SHOW_ONLY_SERVICES_CALCULATED_IN_SCROOGE = getattr(
+    settings, 'SHOW_ONLY_SERVICES_CALCULATED_IN_SCROOGE', False
+)
 
 class DeviceType(Choices):
     _ = Choices.Choice
@@ -271,10 +274,24 @@ class DeviceEnvironment(models_ci.CI):
 
 class ServiceCatalogManager(db.Manager):
     def get_query_set(self):
-        return super(ServiceCatalogManager, self).get_query_set().filter(
-            type=models_ci.CI_TYPES.SERVICE,
-            state=models_ci.CI_STATE_TYPES.ACTIVE,
-        )
+        if SHOW_ONLY_SERVICES_CALCULATED_IN_SCROOGE:
+            ids = models_ci.CIAttributeValue.objects.filter(
+                attribute__pk=7,
+                value_boolean__value=True,
+                ci__type=models_ci.CI_TYPES.SERVICE,
+            ).values('ci')
+            services = super(ServiceCatalogManager, self).get_query_set().filter(
+                state=models_ci.CI_STATE_TYPES.ACTIVE,
+                id__in=ids,
+            )
+        else:
+            services = super(
+                ServiceCatalogManager, self,
+            ).get_query_set().filter(
+                type=models_ci.CI_TYPES.SERVICE,
+                state=models_ci.CI_STATE_TYPES.ACTIVE,
+            )
+        return services
 
 
 class ServiceCatalog(models_ci.CI):
