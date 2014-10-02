@@ -6,12 +6,14 @@ from __future__ import unicode_literals
 
 from bob.menu import MenuItem
 from collections import OrderedDict
+from django.conf import settings
 
 from ralph.account.models import Perm
 from ralph.cmdb.models import (
     CI_RELATION_TYPES,
     CI_STATE_TYPES,
     CI_TYPES,
+    CIAttributeValue,
     CIRelation,
 )
 from ralph.discovery.models import Device
@@ -29,10 +31,23 @@ from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import ReportDeviceList
 
 
+SHOW_ONLY_SERVICES_CALCULATED_IN_SCROOGE = getattr(
+    settings,
+    'SHOW_ONLY_SERVICES_CALCULATED_IN_SCROOGE',
+    False
+)
 ACTIVE_CIS_CONDITIONS = {
     'parent__state': CI_STATE_TYPES.ACTIVE,
     'child__state': CI_STATE_TYPES.ACTIVE,
 }
+
+
+def _get_calculated_in_scrooge_cis_ids():
+    return CIAttributeValue.objects.filter(
+        attribute__pk=7,
+        value_boolean__value=True,
+        ci__type=CI_TYPES.SERVICE,
+    ).values_list('ci__pk', flat=True)
 
 
 class SerivcesSidebar(object):
@@ -43,14 +58,27 @@ class SerivcesSidebar(object):
         self.businessline_id = None
         self.service_id = None
         self.environment_id = None
+        self.calc_in_scrooge_cis = None
 
-    def _get_business_to_service(self):
-        return CIRelation.objects.filter(
-            parent__type_id=CI_TYPES.BUSINESSLINE,
-            child__type_id=CI_TYPES.SERVICE,
-            type=CI_RELATION_TYPES.CONTAINS,
-            **ACTIVE_CIS_CONDITIONS
-        ).values_list(
+    def _set_calc_in_scrooge_cis(self):
+        if not SHOW_ONLY_SERVICES_CALCULATED_IN_SCROOGE:
+            self.calc_in_scrooge_cis = None
+        if all((
+            not self.calc_in_scrooge_cis,
+            SHOW_ONLY_SERVICES_CALCULATED_IN_SCROOGE,
+        )):
+            self.calc_in_scrooge_cis = _get_calculated_in_scrooge_cis_ids()
+
+    def _get_business_to_service(self, calculated_in_scrooge_cis=None):
+        conditions = {
+            'parent__type_id': CI_TYPES.BUSINESSLINE,
+            'child__type_id': CI_TYPES.SERVICE,
+            'type': CI_RELATION_TYPES.CONTAINS,
+        }
+        if calculated_in_scrooge_cis:
+            conditions['child__id__in'] = calculated_in_scrooge_cis
+        conditions.update(ACTIVE_CIS_CONDITIONS)
+        return CIRelation.objects.filter(**conditions).values_list(
             'parent__id',
             'parent__name',
             'child__id',
@@ -69,21 +97,35 @@ class SerivcesSidebar(object):
             'child__id',
         )
 
-    def _get_profitcenter_to_service(self):
-        return CIRelation.objects.filter(
-            parent__type_id=CI_TYPES.PROFIT_CENTER,
-            child__type_id=CI_TYPES.SERVICE,
-            type=CI_RELATION_TYPES.CONTAINS,
-            **ACTIVE_CIS_CONDITIONS
-        ).values_list('parent__id', 'child__id', 'child__name')
+    def _get_profitcenter_to_service(self, calculated_in_scrooge_cis=None):
+        conditions = {
+            'parent__type_id': CI_TYPES.PROFIT_CENTER,
+            'child__type_id': CI_TYPES.SERVICE,
+            'type': CI_RELATION_TYPES.CONTAINS,
+        }
+        if calculated_in_scrooge_cis:
+            conditions['child__id__in'] = calculated_in_scrooge_cis
+        conditions.update(ACTIVE_CIS_CONDITIONS)
+        return CIRelation.objects.filter(**conditions).values_list(
+            'parent__id',
+            'child__id',
+            'child__name',
+        )
 
-    def _get_service_to_environment(self):
-        return CIRelation.objects.filter(
-            parent__type_id=CI_TYPES.SERVICE,
-            child__type_id=CI_TYPES.ENVIRONMENT,
-            type=CI_RELATION_TYPES.CONTAINS,
-            **ACTIVE_CIS_CONDITIONS
-        ).values_list('parent__id', 'child__id', 'child__name')
+    def _get_service_to_environment(self, calculated_in_scrooge_cis=None):
+        conditions = {
+            'parent__type_id': CI_TYPES.SERVICE,
+            'child__type_id': CI_TYPES.ENVIRONMENT,
+            'type': CI_RELATION_TYPES.CONTAINS,
+        }
+        if calculated_in_scrooge_cis:
+            conditions['parent__id__in'] = calculated_in_scrooge_cis
+        conditions.update(ACTIVE_CIS_CONDITIONS)
+        return CIRelation.objects.filter(**conditions).values_list(
+            'parent__id',
+            'child__id',
+            'child__name',
+        )
 
     def _merge_data_into_tree(
         self,
@@ -178,10 +220,17 @@ class SerivcesSidebar(object):
 
     def _get_tree(self):
         # get data
-        business_service = self._get_business_to_service()
+        self._set_calc_in_scrooge_cis()
+        business_service = self._get_business_to_service(
+            self.calc_in_scrooge_cis,
+        )
         business_profitcenter = self._get_business_to_profitcenter()
-        profitcenter_service = self._get_profitcenter_to_service()
-        service_environment = self._get_service_to_environment()
+        profitcenter_service = self._get_profitcenter_to_service(
+            self.calc_in_scrooge_cis,
+        )
+        service_environment = self._get_service_to_environment(
+            self.calc_in_scrooge_cis,
+        )
         # make tree
         tree = self._merge_data_into_tree(
             business_service,
@@ -189,7 +238,6 @@ class SerivcesSidebar(object):
             profitcenter_service,
             service_environment,
         )
-
         # sorting
         self._sort_tree(tree)
         return tree
@@ -280,38 +328,36 @@ class ServicesDeviceList(SerivcesSidebar, BaseMixin, BaseDeviceList):
         return has_perm(Perm.list_devices_generic)
 
     def _get_businessline_services_ids(self, businessline_id):
-        services_ids = set(
-            CIRelation.objects.filter(
+        self._set_calc_in_scrooge_cis()
+        query = CIRelation.objects.filter(
+            parent_id=businessline_id,
+            parent__type_id=CI_TYPES.BUSINESSLINE,
+            child__type_id=CI_TYPES.SERVICE,
+            type=CI_RELATION_TYPES.CONTAINS,
+            **ACTIVE_CIS_CONDITIONS
+        )
+        if self.calc_in_scrooge_cis:
+            query = query.filter(child__id__in=self.calc_in_scrooge_cis)
+        services_ids = set(query.values_list('child__id', flat=True))
+        query = CIRelation.objects.filter(
+            parent_id__in=CIRelation.objects.filter(
                 parent_id=businessline_id,
                 parent__type_id=CI_TYPES.BUSINESSLINE,
-                child__type_id=CI_TYPES.SERVICE,
+                child__type_id=CI_TYPES.PROFIT_CENTER,
                 type=CI_RELATION_TYPES.CONTAINS,
                 **ACTIVE_CIS_CONDITIONS
             ).values_list(
                 'child__id',
                 flat=True
-            )
+            ),
+            parent__type_id=CI_TYPES.PROFIT_CENTER,
+            child__type_id=CI_TYPES.SERVICE,
+            type=CI_RELATION_TYPES.CONTAINS,
+            **ACTIVE_CIS_CONDITIONS
         )
-        services_ids.update(
-            set(
-                CIRelation.objects.filter(
-                    parent_id__in=CIRelation.objects.filter(
-                        parent_id=businessline_id,
-                        parent__type_id=CI_TYPES.BUSINESSLINE,
-                        child__type_id=CI_TYPES.PROFIT_CENTER,
-                        type=CI_RELATION_TYPES.CONTAINS,
-                        **ACTIVE_CIS_CONDITIONS
-                    ).values_list(
-                        'child__id',
-                        flat=True
-                    ),
-                    parent__type_id=CI_TYPES.PROFIT_CENTER,
-                    child__type_id=CI_TYPES.SERVICE,
-                    type=CI_RELATION_TYPES.CONTAINS,
-                    **ACTIVE_CIS_CONDITIONS
-                ).values_list('child__id', flat=True)
-            )
-        )
+        if self.calc_in_scrooge_cis:
+            query = query.filter(child__id__in=self.calc_in_scrooge_cis)
+        services_ids.update(set(query.values_list('child__id', flat=True)))
         return services_ids
 
     def get_queryset(self):
