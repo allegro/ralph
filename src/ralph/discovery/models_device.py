@@ -68,6 +68,7 @@ SHOW_ONLY_SERVICES_CALCULATED_IN_SCROOGE = getattr(
     settings, 'SHOW_ONLY_SERVICES_CALCULATED_IN_SCROOGE', False
 )
 
+
 class DeviceType(Choices):
     _ = Choices.Choice
 
