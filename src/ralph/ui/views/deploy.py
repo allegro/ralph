@@ -110,6 +110,7 @@ class Deployment(BaseMixin, CreateView):
 
 
 class PrepareMassDeployment(Base):
+    submodule_name = 'racks'
     template_name = 'ui/mass_deploy.html'
 
     def get_context_data(self, *args, **kwargs):
@@ -234,6 +235,7 @@ def _find_hostname(network, reserved_hostnames, device=None, ip=None):
 
 
 class MassDeployment(Base):
+    submodule_name = 'racks'
     template_name = 'ui/mass_deploy.html'
     assets_enabled = 'ralph_assets' in settings.INSTALLED_APPS
 
