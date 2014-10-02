@@ -1119,6 +1119,7 @@ class Asset(BaseMixin, TemplateView):
 
 class ServerMove(BaseMixin, TemplateView):
     template_name = 'ui/bulk-move.html'
+    submodule_name = 'racks'
 
     def __init__(self, *args, **kwargs):
         super(ServerMove, self).__init__(*args, **kwargs)
