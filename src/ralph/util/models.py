@@ -32,7 +32,7 @@ from django.contrib.auth.tests import models as auth_test_models
 del auth_test_models.ProfileTestCase.test_site_profile_not_available
 
 # signal used by SyncFieldMixin for sending notifications on changed fields
-fields_synced_signal = Signal(providing_args=['changes'])
+fields_synced_signal = Signal(providing_args=['changes', 'change_author'])
 
 
 class SyncFieldMixin(object):
@@ -56,6 +56,7 @@ class SyncFieldMixin(object):
         from ralph.ui.views.common import SAVE_PRIORITY
         # by default save with the same priority as in 'edit device' forms etc.
         priority = kwargs.get('priority')
+        change_author = kwargs.get('user')
         if priority is None:
             priority = SAVE_PRIORITY
         changes = []
@@ -75,4 +76,6 @@ class SyncFieldMixin(object):
                     })
                 setattr(obj, f, new_value)
             obj.save(sync_fields=False, priority=priority)
-            fields_synced_signal.send_robust(sender=self, changes=changes)
+            fields_synced_signal.send_robust(
+                sender=self, changes=changes, change_author=change_author
+            )
