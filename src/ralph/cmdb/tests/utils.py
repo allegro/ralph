@@ -43,18 +43,28 @@ class CIFactory(DjangoModelFactory):
 
 class ServiceCatalogFactory(CIFactory):
     FACTORY_FOR = models_device.ServiceCatalog
+    state=models_ci.CI_STATE_TYPES.ACTIVE
 
     @factory.lazy_attribute
     def type(self):
         return models_ci.CIType.objects.get(pk=models_ci.CI_TYPES.SERVICE.id)
 
 
-class DeviceEnvironmentFactory(DjangoModelFactory):
+class DeviceEnvironmentFactory(CIFactory):
     FACTORY_FOR = models_device.DeviceEnvironment
     name = factory.Sequence(lambda n: 'Device Environment #{}'.format(n))
+    state=models_ci.CI_STATE_TYPES.ACTIVE
 
     @factory.lazy_attribute
     def type(self):
         return models_ci.CIType.objects.get(
             pk=models_ci.CI_TYPES.ENVIRONMENT.id,
         )
+
+
+class CIRelationFactory(DjangoModelFactory):
+    FACTORY_FOR = models_ci.CIRelation
+
+    parent = factory.SubFactory(ServiceCatalogFactory)
+    child = factory.SubFactory(DeviceEnvironmentFactory)
+    type = models_ci.CI_RELATION_TYPES.CONTAINS
