@@ -11,11 +11,14 @@ from django.contrib.auth.models import User, Group
 from django.utils.translation import ugettext_lazy as _
 
 from lck.django.activitylog.admin import IPInline, UserAgentInline
-from lck.django.common.admin import ForeignKeyAutocompleteTabularInline
+from lck.django.common.admin import (
+    ForeignKeyAutocompleteTabularInline,
+    ModelAdmin,
+)
 from lck.django.profile.admin import ProfileInlineFormSet
 from tastypie.models import ApiKey
 
-from ralph.account.models import BoundPerm, Profile
+from ralph.account.models import BoundPerm, Profile, Region
 
 
 class ProfileInline(admin.StackedInline):
@@ -138,3 +141,10 @@ class CustomGroupAdmin(GroupAdmin):
 
 admin.site.unregister(Group)
 admin.site.register(Group, CustomGroupAdmin)
+
+
+class RegionAdmin(ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+admin.site.register(Region, RegionAdmin)
