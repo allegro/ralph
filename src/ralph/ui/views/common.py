@@ -248,9 +248,12 @@ class MenuMixin(object):
 
     @property
     def current_menu(self):
-        for menu in self.menus:
-            if menu.module.name == self.module_name:
-                return menu
+        menu = None
+        if hasattr(self, 'menus'):
+            for menu in self.menus:
+                if menu.module.name == self.module_name:
+                    break
+        return menu
 
     @property
     def active_module(self):
@@ -273,18 +276,28 @@ class MenuMixin(object):
         return self.sidebar_item_name
 
     def get_modules(self):
-        main_menu = [menu.module for menu in self.menus]
+        if hasattr(self, 'menus'):
+            main_menu = [menu.module for menu in self.menus]
+        else:
+            main_menu = []
         return main_menu
 
     def get_submodules(self):
-        return self.current_menu.get_submodules()
+        if self.current_menu:
+            submodules = self.current_menu.get_submodules()
+        else:
+            submodules = None
+        return submodules
 
     def get_context_data(self, **kwargs):
         context = super(MenuMixin, self).get_context_data(**kwargs)
         current_menu = self.current_menu
-        sidebar = current_menu.get_sidebar_items().get(
-            self.active_submodule, None
-        )
+        if not current_menu:
+            sidebar = None
+        else:
+            sidebar = current_menu.get_sidebar_items().get(
+                self.active_submodule, None
+            )
         context.update({
             'main_menu': self.get_modules(),
             'submodules': self.get_submodules(),
