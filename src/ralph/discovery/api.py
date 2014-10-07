@@ -24,14 +24,17 @@ from tastypie.throttle import CacheThrottle
 
 from ralph.account.api_auth import RalphAuthorization
 from ralph.account.models import Perm
+from ralph.cmdb.api import CIResource
 from ralph.discovery.models import (
     ComponentType,
     Device,
+    DeviceEnvironment,
     DeviceModel,
     DeviceType,
     IPAddress,
     Network,
     NetworkKind,
+    ServiceCatalog,
 )
 from ralph.ui.views.common import _get_details
 
@@ -143,6 +146,18 @@ class ModelResource(MResource):
         )
 
 
+class ServiceCatalogResource(CIResource):
+    class Meta:
+        queryset = ServiceCatalog.objects.all()
+        resource_name = 'service_catalog'
+
+
+class DeviceEnvironmentResource(CIResource):
+    class Meta:
+        queryset = DeviceEnvironment.objects.all()
+        resource_name = 'device_environment'
+
+
 class DeviceResource(MResource):
     model = fields.ForeignKey(ModelResource, 'model', null=True, full=True)
     management = fields.ForeignKey(
@@ -176,12 +191,12 @@ class DeviceResource(MResource):
         full=True,
     )
     service = fields.ForeignKey(
-        'ralph.cmdb.api.CIResource',
+        'ralph.discovery.api.ServiceCatalogResource',
         'service',
         null=True,
     )
     device_environment = fields.ForeignKey(
-        'ralph.cmdb.api.CIResource',
+        'ralph.discovery.api.DeviceEnvironmentResource',
         'device_environment',
         null=True,
     )
