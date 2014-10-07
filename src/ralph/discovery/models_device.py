@@ -15,6 +15,7 @@ import sys
 import os
 
 from django.conf import settings
+from django.contrib.contenttypes.generic import GenericRelation
 from django.core.urlresolvers import reverse
 from django.db import models as db
 from django.db import IntegrityError, transaction
@@ -530,17 +531,27 @@ class Device(
         default=None,
         null=True,
         on_delete=db.PROTECT,
+        related_name='device',
     )
     device_environment = db.ForeignKey(
         DeviceEnvironment,
         default=None,
         null=True,
         on_delete=db.PROTECT,
+        related_name='device',
     )
 
     class Meta:
         verbose_name = _("device")
         verbose_name_plural = _("devices")
+
+    if 'cmdb' in settings.PLUGGABLE_APPS:
+        from ralph.cmdb.models_ci import CI
+        ci_set = GenericRelation(CI)
+
+        @property
+        def ci(self):
+            return self.ci_set.get()
 
     def clean(self):
         fields_list = [
