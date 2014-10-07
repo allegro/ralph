@@ -457,6 +457,7 @@ class DevResource(DeviceResource):
             timeframe=TIMEFRAME,
             expiration=EXPIRATION,
         )
+    ci = fields.ToOneField('ralph.cmdb.api.CIResource', 'ci')
 
 
 class DeviceWithPricingResource(DeviceResource):
