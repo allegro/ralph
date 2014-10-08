@@ -1,0 +1,6 @@
+# Initial regions
+
+- model: account.Region
+  pk: 1
+  fields:
+    name: Default region

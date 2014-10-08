@@ -11,6 +11,7 @@ import functools
 
 from django.conf import settings
 from django.contrib.auth.models import Group
+from django.core.exceptions import ValidationError
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models as db
@@ -21,7 +22,7 @@ from django.utils.translation import ugettext_lazy as _
 from dj.choices import Choices
 from dj.choices.fields import ChoiceField
 from lck.django.activitylog.models import MonitoredActivity
-from lck.django.common.models import TimeTrackable, EditorTrackable
+from lck.django.common.models import EditorTrackable, Named, TimeTrackable
 from lck.django.profile.models import (
     BasicInfo,
     ActivationSupport,
@@ -80,6 +81,21 @@ class Perm(Choices):
     has_assets_access = _("has_assets_access")
     has_core_access = _("has_core_access")
     has_scrooge_access = _("has_scrooge_access")
+
+
+class Region(Named):
+    """Used for distinguishing the origin of the object by region"""
+
+    profile = db.ManyToManyField('Profile')
+
+    @classmethod
+    def check_default_exist(cls):
+        return cls.objects.filter(default=True).exists()
+
+    def clean(self, *args, **kwargs):
+        if self.default and self.check_default_exist():
+            raise ValidationError(_('default region already exist'))
+        return super(Region, self).clean(*args, **kwargs)
 
 
 class Profile(BasicInfo, ActivationSupport, GravatarSupport,
