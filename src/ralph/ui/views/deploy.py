@@ -467,7 +467,8 @@ class AddVM(View):
             Venture,
             symbol=data['venture']
         )
-        role = get_object_or_404(
+        role_name = data.get('venture-role')
+        role = role_name and get_object_or_404(
             VentureRole,
             venture=venture,
             name=data['venture-role']
@@ -487,6 +488,8 @@ class AddVM(View):
         device.parent = parent
         device.venture = venture
         device.venture_role = role
+        device.rack = parent.rack
+        device.dc = parent.dc
         device.save()
         IPAddress.objects.create(
             address=ip_addr,
