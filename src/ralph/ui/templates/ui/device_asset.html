@@ -5,7 +5,7 @@
 {% block content %}
 {% if not asset_required %}
 <div class="alert alert-info">
-  This type of device does not require an asset.
+  {% trans "This type of device does not require an asset." %}
 </div>
 {% elif asset_required and form %}
 <div class="well well-small">
