@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from south.utils import datetime_utils as datetime
+import datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
@@ -16,13 +16,12 @@ class Migration(SchemaMigration):
         db.send_create_signal('account', ['Region'])
 
         # Adding M2M table for field profile on 'Region'
-        m2m_table_name = db.shorten_name('account_region_profile')
-        db.create_table(m2m_table_name, (
+        db.create_table('account_region_profile', (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
             ('region', models.ForeignKey(orm['account.region'], null=False)),
             ('profile', models.ForeignKey(orm['account.profile'], null=False))
         ))
-        db.create_unique(m2m_table_name, ['region_id', 'profile_id'])
+        db.create_unique('account_region_profile', ['region_id', 'profile_id'])
 
 
     def backwards(self, orm):
@@ -30,7 +29,7 @@ class Migration(SchemaMigration):
         db.delete_table('account_region')
 
         # Removing M2M table for field profile on 'Region'
-        db.delete_table(db.shorten_name('account_region_profile'))
+        db.delete_table('account_region_profile')
 
 
     models = {
