@@ -11,7 +11,6 @@ import functools
 
 from django.conf import settings
 from django.contrib.auth.models import Group
-from django.core.exceptions import ValidationError
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models as db
@@ -89,6 +88,13 @@ class Region(Named):
     @classmethod
     def check_default_exist(cls):
         return cls.objects.filter(default=True).exists()
+
+    @classmethod
+    def get_default_region(cls):
+        return cls.objects.get(pk=1)
+
+    def __unicode__(self):
+        return self.name
 
 
 class Profile(BasicInfo, ActivationSupport, GravatarSupport,
@@ -192,12 +198,16 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
                  venture__parent__parent__parent__boundperm__perm=perm.id)
         ).distinct()
 
+    def is_region_granted(self, region):
+        return self.regions.filter(pk=region.id).exists()
+
     def get_regions(self):
         regions = self.regions.all()
         if not regions:
             default_region = Region.objects.get(pk=1)
-            self.add(default_region)
+            self.regions.add(default_region)
             self.save()
+            regions = self.regions.all()
         return regions
 
 
