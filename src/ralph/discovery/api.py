@@ -24,7 +24,7 @@ from tastypie.throttle import CacheThrottle
 
 from ralph.account.api_auth import RalphAuthorization
 from ralph.account.models import Perm
-from ralph.cmdb.api import CIResource
+from ralph.cmdb.api import CIResourceV010
 from ralph.discovery.models import (
     ComponentType,
     Device,
@@ -146,13 +146,13 @@ class ModelResource(MResource):
         )
 
 
-class ServiceCatalogResource(CIResource):
+class ServiceCatalogResource(CIResourceV010):
     class Meta:
         queryset = ServiceCatalog.objects.all()
         resource_name = 'service_catalog'
 
 
-class DeviceEnvironmentResource(CIResource):
+class DeviceEnvironmentResource(CIResourceV010):
     class Meta:
         queryset = DeviceEnvironment.objects.all()
         resource_name = 'device_environment'
