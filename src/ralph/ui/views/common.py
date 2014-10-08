@@ -71,6 +71,7 @@ from ralph.dnsedit.util import (
 )
 from ralph.dnsedit.util import Error as DNSError
 from ralph.discovery.models import (
+    ASSET_NOT_REQUIRED,
     ConnectionType,
     Device,
     DeviceType,
@@ -78,6 +79,7 @@ from ralph.discovery.models import (
     Network,
 )
 from ralph.menu import menu_class as ralph_menu
+from ralph.scan.data import get_choice_by_name
 from ralph.util import details, presentation
 from ralph.util.plugin import BY_NAME as AVAILABLE_PLUGINS
 from ralph.ui.forms import ChooseAssetForm, VentureServiceFilterForm
@@ -1072,6 +1074,7 @@ class Asset(BaseMixin, TemplateView):
             'device': self.object,
             'form': self.form,
             'asset': self.asset,
+            'asset_required': self.asset_required,
         })
         return ret
 
@@ -1083,13 +1086,18 @@ class Asset(BaseMixin, TemplateView):
         except (TypeError, ValueError):
             self.object = None
         else:
-            self.object = get_object_or_404(
-                Device,
-                id=device_id,
-            )
+            self.object = get_object_or_404(Device, id=device_id)
             from ralph_assets.api_ralph import get_asset
             self.asset = get_asset(self.object.id)
-            if not self.asset:
+            try:
+                device_type = DeviceType.from_id(self.object.model.type)
+            except (ValueError, AttributeError):
+                device_type = None
+            if device_type in ASSET_NOT_REQUIRED:
+                self.asset_required = False
+            else:
+                self.asset_required = True
+            if self.asset_required and not self.asset:
                 msg = ("This device is not linked to an asset. "
                        "Please correct this using the input box below.")
                 messages.warning(self.request, msg)
@@ -1105,10 +1113,7 @@ class Asset(BaseMixin, TemplateView):
     def post(self, *args, **kwargs):
         if 'ralph_assets' not in settings.INSTALLED_APPS:
             raise Http404()
-        self.object = get_object_or_404(
-            Device,
-            id=self.kwargs.get('device'),
-        )
+        self.object = get_object_or_404(Device, id=self.kwargs.get('device'))
         self.form = ChooseAssetForm(
             data=self.request.POST,
             device_id=self.object.id,
@@ -1117,16 +1122,11 @@ class Asset(BaseMixin, TemplateView):
             asset = self.form.cleaned_data['asset']
             from ralph_assets.api_ralph import assign_asset
             if assign_asset(self.object.id, asset.id):
-                messages.success(
-                    self.request,
-                    "Asset linked successfully.",
-                )
+                messages.success(self.request, "Asset linked successfully.")
                 return HttpResponseRedirect(self.request.get_full_path())
             else:
-                messages.error(
-                    self.request,
-                    "An error occurred. Please try again.",
-                )
+                msg = "An error occurred. Please try again."
+                messages.error(self.request, msg)
         return self.get(*args, **kwargs)
 
 
@@ -1829,21 +1829,23 @@ class ScanStatus(BaseMixin, TemplateView):
                     warnings = []
                     try:
                         if device is None:
-                            device = device_from_data(
-                                data=data,
-                                user=self.request.user,
-                                warnings=warnings
-                            )
+                            device = device_from_data(data=data,
+                                                      user=self.request.user,
+                                                      warnings=warnings)
                         else:
                             set_device_data(device, data, warnings=warnings)
-                            device.save(
-                                priority=SAVE_PRIORITY,
-                                user=self.request.user,
-                            )
-                        if (
-                            'asset' in form.cleaned_data and
-                            form.cleaned_data['asset'] != 'database'
-                        ):
+                            device.save(priority=SAVE_PRIORITY,
+                                        user=self.request.user)
+                        try:
+                            selected_type = form.get_value('type')
+                        except (KeyError, ValueError):
+                            msg = "Wrong or missing device type."
+                            raise ValueError(msg)
+                        selected_type = get_choice_by_name(DeviceType,
+                                                           selected_type)
+                        if (selected_type not in ASSET_NOT_REQUIRED and
+                                'asset' in form.cleaned_data and
+                                form.cleaned_data['asset'] != 'database'):
                             from ralph_assets.api_ralph import assign_asset
                             asset = form.cleaned_data['asset-custom']
                             if not asset:

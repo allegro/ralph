@@ -3,7 +3,11 @@
 {% load i18n icons %}
 
 {% block content %}
-{% if form %}
+{% if not asset_required %}
+<div class="alert alert-info">
+  {% trans "This type of device does not require an asset." %}
+</div>
+{% elif asset_required and form %}
 <div class="well well-small">
   {% block trans %}
   <p>Select {% if asset %}a new {% else %}an {% endif %}asset for this device (by serial number, barcode or model):</p>
