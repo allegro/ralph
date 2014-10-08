@@ -471,7 +471,7 @@ class AddVM(View):
         role = role_name and get_object_or_404(
             VentureRole,
             venture=venture,
-            name=data['venture-role']
+            name=role_name,
         )
         ethernets = [Eth(
             'DEPLOYMENT MAC',
