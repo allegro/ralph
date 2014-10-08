@@ -90,11 +90,6 @@ class Region(Named):
     def check_default_exist(cls):
         return cls.objects.filter(default=True).exists()
 
-    def clean(self, *args, **kwargs):
-        if self.default and self.check_default_exist():
-            raise ValidationError(_('default region already exist'))
-        return super(Region, self).clean(*args, **kwargs)
-
 
 class Profile(BasicInfo, ActivationSupport, GravatarSupport,
               MonitoredActivity):
@@ -196,6 +191,14 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
             db.Q(venture__parent__parent__parent__boundperm__group__in=groups,
                  venture__parent__parent__parent__boundperm__perm=perm.id)
         ).distinct()
+
+    def get_regions(self):
+        regions = self.regions.all()
+        if not regions:
+            default_region = Region.objects.get(pk=1)
+            self.add(default_region)
+            self.save()
+        return regions
 
 
 class BoundPerm(TimeTrackable, EditorTrackable):
