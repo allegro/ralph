@@ -146,5 +146,6 @@ admin.site.register(Group, CustomGroupAdmin)
 class RegionAdmin(ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
+    exclude = ['profile']
 
 admin.site.register(Region, RegionAdmin)

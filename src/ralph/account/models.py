@@ -88,15 +88,6 @@ class Region(Named):
 
     profile = db.ManyToManyField('Profile')
 
-    @classmethod
-    def check_default_exist(cls):
-        return cls.objects.filter(default=True).exists()
-
-    def clean(self, *args, **kwargs):
-        if self.default and self.check_default_exist():
-            raise ValidationError(_('default region already exist'))
-        return super(Region, self).clean(*args, **kwargs)
-
 
 class Profile(BasicInfo, ActivationSupport, GravatarSupport,
               MonitoredActivity):
@@ -121,6 +112,15 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
 
     def __unicode__(self):
         return self.nick
+
+    def get_regions(self):
+        regions = self.region_set.all()
+        if not regions:
+            regions = Region.objects.filter(
+                name=settings.DEFAULT_REGION_NAME,
+            )
+        return regions
+
 
     def has_perm(self, perm, obj=None, role=None):
         if not self.is_active:
