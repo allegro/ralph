@@ -10,10 +10,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from django.db.transaction import commit_on_success
 from django.core.urlresolvers import reverse_lazy
 from django.utils.html import escape
 
 from ralph.discovery.models import (
+    Device,
     DeviceType,
     DiskShare,
     EthernetSpeed,
@@ -225,3 +227,55 @@ def details_all(dev):
         for detail in items:
             detail['group'] = component['d_name']
             yield detail
+
+
+@commit_on_success
+def find_descendant(device):
+    stack = [device.id]
+    device_ids = []
+    visited = {device.id}
+    while stack:
+        device_id = stack.pop()
+        device_ids.append(device_id)
+        for d_id, in Device.objects.filter(
+                parent_id=device_id
+        ).values_list('id'):
+            if d_id in visited:
+                # Make sure we don't do the same device twice.
+                continue
+            visited.add(d_id)
+            stack.append(d_id)
+    return device_ids
+
+
+def device_update_name_rack_dc(device):
+    # this function was named 'device_update_cached' in pricing.py
+    dc = device
+    while dc and not (dc.model and dc.model.type == DeviceType.data_center):
+        dc = dc.parent
+    rack = device
+    while rack and not (rack.model and rack.model.type == DeviceType.rack):
+        rack = rack.parent
+    device_ids = find_descendant(device)
+    device_ids.reverse()   # Do the children before their parent.
+    step = 10
+    for index in xrange(0, len(device_ids), step):
+        _update_batch(device_ids[index:index + step], rack, dc)
+
+
+@commit_on_success
+def _update_batch(device_ids, rack, dc):
+    for d in Device.objects.filter(id__in=device_ids):
+        name = d.get_name()
+        if name != 'unknown':
+            d.name = name
+        try:
+            model_type = DeviceType.raw_from_id(rack.model.type)
+        except AttributeError:
+            model_type = None
+        if model_type == 'rack':
+            d.rack = rack.sn
+        else:
+            d.rack = None
+        d.dc = dc.name.upper() if dc else None
+        d.save()

@@ -468,6 +468,7 @@ class DeviceUpdateView(UpdateView):
         model = form.save(commit=False)
         model.save_comment = form.cleaned_data.get('save_comment')
         model.save(priority=SAVE_PRIORITY, user=self.request.user)
+        details.device_update_name_rack_dc(model)
         messages.success(self.request, "Changes saved.")
         return HttpResponseRedirect(self.request.path)
 
@@ -1249,6 +1250,7 @@ class ServerMove(BaseMixin, TemplateView):
         if mac:
             entry = DHCPEntry(ip=new_ip, mac=mac)
             entry.save()
+        details.device_update_name_rack_dc(device)
 
     def post(self, *args, **kwargs):
         if 'move' in self.request.POST:
@@ -1339,6 +1341,7 @@ def bulk_update(devices, fields, data, user):
             setattr(device, name, values[name])
             device.save_comment = data.get('save_comment')
             device.save(priority=SAVE_PRIORITY, user=user)
+            details.device_update_name_rack_dc(device)
 
 
 class BulkEdit(BaseMixin, TemplateView):
