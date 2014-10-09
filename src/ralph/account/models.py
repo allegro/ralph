@@ -85,6 +85,8 @@ class Perm(Choices):
 class Region(Named):
     """Used for distinguishing the origin of the object by region"""
 
+    profile = db.ManyToManyField('Profile')
+
     @classmethod
     def check_default_exist(cls):
         return cls.objects.filter(default=True).exists()
@@ -117,7 +119,6 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
     department = db.CharField(max_length=64, blank=True)
     manager = db.CharField(max_length=1024, blank=True)
     location = db.CharField(max_length=128, blank=True)
-    regions = db.ManyToManyField(Region)
 
     def __unicode__(self):
         return self.nick
