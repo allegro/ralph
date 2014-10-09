@@ -10,7 +10,10 @@ import factory
 from factory.django import DjangoModelFactory
 from django.contrib.auth.models import User
 
-from ralph.account.models import Profile
+from ralph.account.models import (
+    Profile,
+    Region,
+)
 from ralph.cmdb import models_ci
 from ralph.cmdb.tests.utils import CIFactory
 
@@ -78,3 +81,8 @@ class ServiceProfitCenterRelationFactory(DjangoModelFactory):
     child = factory.SubFactory(ServiceFactory)
     type = models_ci.CI_RELATION_TYPES.CONTAINS
     readonly = False
+
+
+class RegionFactory(DjangoModelFactory):
+    FACTORY_FOR = Region
+    name = factory.Sequence(lambda n: 'Region #{}'.format(n))

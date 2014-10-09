@@ -11,7 +11,6 @@ import functools
 
 from django.conf import settings
 from django.contrib.auth.models import Group
-from django.core.exceptions import ValidationError
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models as db
@@ -87,6 +86,13 @@ class Region(Named):
     """Used for distinguishing the origin of the object by region"""
 
     profile = db.ManyToManyField('Profile')
+
+    @classmethod
+    def get_default_region(cls):
+        return cls.objects.get(name=settings.DEFAULT_REGION_NAME)
+
+    def __unicode__(self):
+        return self.name
 
 
 class Profile(BasicInfo, ActivationSupport, GravatarSupport,
@@ -197,6 +203,18 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
             db.Q(venture__parent__parent__parent__boundperm__group__in=groups,
                  venture__parent__parent__parent__boundperm__perm=perm.id)
         ).distinct()
+
+    def is_region_granted(self, region):
+        return self.regions.filter(pk=region.id).exists()
+
+    def get_regions(self):
+        regions = self.region_set.all()
+        if not regions:
+            default_region = Region.objects.get(pk=1)
+            self.region_set.add(default_region)
+            self.save()
+            regions = self.region_set.all()
+        return regions
 
 
 class BoundPerm(TimeTrackable, EditorTrackable):
