@@ -203,12 +203,12 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
         return self.regions.filter(pk=region.id).exists()
 
     def get_regions(self):
-        regions = self.regions.all()
+        regions = self.region_set.all()
         if not regions:
             default_region = Region.objects.get(pk=1)
-            self.regions.add(default_region)
+            self.region_set.add(default_region)
             self.save()
-            regions = self.regions.all()
+            regions = self.region_set.all()
         return regions
 
 
