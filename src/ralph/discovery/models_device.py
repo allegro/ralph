@@ -311,6 +311,14 @@ class ServiceCatalog(models_ci.CI):
     def __unicode__(self):
         return self.name
 
+    def get_environments(self):
+        envs = DeviceEnvironment.objects.filter(
+            id__in=models_ci.CIRelation.objects.filter(
+                parent=self.id,
+            ).values('child__id')
+        )
+        return envs
+
 
 class Device(
     LastSeen,
