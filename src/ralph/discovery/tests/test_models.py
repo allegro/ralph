@@ -10,6 +10,11 @@ import datetime
 from django.test import TestCase
 import mock
 
+from ralph.cmdb.tests.utils import (
+    CIRelationFactory,
+    DeviceEnvironmentFactory,
+    ServiceCatalogFactory,
+)
 from ralph.discovery.models import DeviceType, Device, UptimeSupport
 from ralph.discovery.models_history import HistoryChange
 
@@ -82,3 +87,13 @@ class UptimeSupportTest(TestCase):
         self.assertEqual(m.uptime, None)
         m.uptime = 132
         self.assertEqual(m.uptime, datetime.timedelta(seconds=132))
+
+
+class ServiceEnvironments(TestCase):
+
+    def test_getting_environments(self):
+        service = ServiceCatalogFactory()
+        env = DeviceEnvironmentFactory()
+        self.assertEqual(len(service.get_environments()), 0)
+        CIRelationFactory(parent=service, child=env)
+        self.assertEqual(len(service.get_environments()), 1)

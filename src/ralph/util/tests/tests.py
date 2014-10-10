@@ -267,6 +267,27 @@ class ApiScroogeTest(TestCase):
         }
         self.assertEquals(result, [service_dict])
 
+    def test_get_services_calc_in_scrooge(self):
+        service = utils.ServiceFactory()
+        utils.ServiceFactory()  # service not calculated in scrooge
+        calc_in_scrooge_attr = models_ci.CIAttribute.objects.get(pk=7)
+        service.ciattributevalue_set.create(
+            attribute=calc_in_scrooge_attr,
+            value=True
+        )
+        result = [a for a in api_scrooge.get_services(True)]
+        service_dict = {
+            'name': service.name,
+            'ci_id': service.id,
+            'ci_uid': service.uid,
+            'symbol': None,
+            'profit_center': None,
+            'technical_owners': [],
+            'business_owners': [],
+            'environments': [],
+        }
+        self.assertEquals(result, [service_dict])
+
 
 class UncompressBase64DataTest(TestCase):
 

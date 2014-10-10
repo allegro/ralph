@@ -199,7 +199,7 @@ def get_owners():
         }
 
 
-def get_services():
+def get_services(only_calculated_in_scrooge=False):
     """
     Returns Services (CIs with type Service) with additional information like
     owners, business line etc.
@@ -210,6 +210,15 @@ def get_services():
     for service in CI.objects.filter(
         type=service_type
     ).select_related('relations'):
+        try:
+            calculate_in_scrooge = service.ciattributevalue_set.get(
+                attribute_id=7
+            ).value
+        except CIAttributeValue.DoesNotExist:
+            calculate_in_scrooge = False
+        if only_calculated_in_scrooge and not calculate_in_scrooge:
+            continue
+
         profit_center = service.child.filter(
             parent__type=profit_center_type
         ).values_list('parent__id', flat=True)
