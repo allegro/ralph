@@ -123,6 +123,7 @@ class RegionInline(admin.TabularInline):
         return modelformset_factory(
             self.model,
             extra=0,
+            exclude=['profile', 'name'],
             form=self.form,
             formset=self.formset,
             max_num=1,
@@ -139,10 +140,10 @@ class ProfileAdmin(UserAdmin):
     inlines = [
         ProfileInline,
         ProfileBoundPermInline,
+        RegionInline,
         ApiKeyInline,
         ProfileIPInline,
         ProfileUserAgentInline,
-        RegionInline,
     ]
     list_display = (
         'username',

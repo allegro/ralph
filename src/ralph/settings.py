@@ -755,4 +755,4 @@ LOGIN_REDIRECT_URL = reverse_lazy('find_user_home')
 
 # url to page where user requests permission to module (eg. assets)
 # REQUEST_PERM_URL = 'http://tickets.office/request/ralph_module/permission'
-DEFAULT_REGION_NAME = 'Default Region'
+DEFAULT_REGION_NAME = 'Default region'
