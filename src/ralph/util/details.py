@@ -96,14 +96,13 @@ def details_mem(dev):
 
 def details_disk(dev):
     for disk in dev.storage_set.all():
-        if disk.model:
-            size = '%d MiB' % disk.get_size()
-            yield {
-                'label': disk.label,
-                'model': disk.model,
-                'serial': disk.sn or '',
-                'size': size,
-            }
+        size = '%d MiB' % disk.get_size()
+        yield {
+            'label': disk.label,
+            'model': disk.model,
+            'serial': disk.sn or '',
+            'size': size,
+        }
     for mount in dev.disksharemount_set.all():
         total = mount.get_total_mounts()
         if mount.size:
@@ -170,20 +169,18 @@ def details_software(dev):
 
 def details_other(dev):
     for fc in dev.fibrechannel_set.all():
-        if fc.model:
-            yield {
-                'label': fc.label,
-                'model': fc.model,
-                'serial': fc.physical_id,
-            }
+        yield {
+            'label': fc.label,
+            'model': fc.model,
+            'serial': fc.physical_id,
+        }
     for c in dev.genericcomponent_set.order_by('model', 'label').all():
-        if c.model:
-            yield {
-                'label': c.label,
-                'model': c.model,
-                'serial': c.sn,
-                'href': '/admin/discovery/genericcomponent/%d/' % c.id,
-            }
+        yield {
+            'label': c.label,
+            'model': c.model,
+            'serial': c.sn,
+            'href': '/admin/discovery/genericcomponent/%d/' % c.id,
+        }
     for eth in dev.ethernet_set.order_by('label'):
         yield {
             'label': eth.label,
