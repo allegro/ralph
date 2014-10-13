@@ -18,6 +18,7 @@ from powerdns.models import Record
 
 from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Device, IPAddress
+from ralph.scan.api import SCAN_RESULT_TTL
 from ralph.ui.forms.search import SearchForm, SearchFormWithAssets
 from ralph.ui.views.common import (
     Addresses,
@@ -105,7 +106,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
         self.query = None
 
     def _get_changed_devices_ids(self):
-        delta = timezone.now() - datetime.timedelta(days=1)
+        delta = timezone.now() - datetime.timedelta(seconds=SCAN_RESULT_TTL)
         return set(
             IPAddress.objects.filter(
                 scan_summary__modified__gt=delta,
