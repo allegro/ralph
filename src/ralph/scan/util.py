@@ -32,14 +32,15 @@ def update_scan_summary(job):
     except ScanSummary.DoesNotExist:
         return
     else:
-        scan_summary.previous_checksum = job.meta.get('results_checksum')
+        scan_summary.previous_checksum = scan_summary.current_checksum
+        scan_summary.current_checksum = None
         scan_summary.false_positive_checksum = None
         scan_summary.save()
-        job.meta['changed'] = False
-        job.save()
 
 
-PendingChanges = namedtuple('PendingChanges', ['new_devices', 'changed_devices'])
+PendingChanges = namedtuple(
+    'PendingChanges', ['new_devices', 'changed_devices'],
+)
 
 
 def get_pending_changes():
@@ -49,6 +50,6 @@ def get_pending_changes():
     all_changes = ScanSummary.objects.filter(modified__gt=delta)
     new, changed = (
         all_changes.filter(ipaddress__device=None).count(),
-        all_changes.exclude(ipaddress__device=None).count(),
+        all_changes.filter(changed=True).count(),
     )
     return PendingChanges(new, changed)

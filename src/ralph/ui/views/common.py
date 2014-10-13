@@ -575,21 +575,10 @@ class Info(DeviceUpdateView):
 
     def get_changed_addresses(self):
         delta = timezone.now() - datetime.timedelta(days=1)
-        result = []
-        for ip_address in self.object.ipaddress.filter(
+        return self.object.ipaddress.filter(
             scan_summary__modified__gt=delta,
-        ):
-            try:
-                job = rq.job.Job.fetch(
-                    ip_address.scan_summary.job_id,
-                    django_rq.get_connection(),
-                )
-            except rq.exceptions.NoSuchJobError:
-                continue
-            else:
-                if job.meta.get('changed', False):
-                    result.append(ip_address)
-        return result
+            scan_summary__changed=True,
+        )
 
     def get_context_data(self, **kwargs):
         ret = super(Info, self).get_context_data(**kwargs)
@@ -1624,7 +1613,7 @@ class ScanList(BaseMixin, DataTableMixin, TemplateView):
         if kwargs['change_type'] == 'new':
             return all_changes.filter(ipaddress__device=None)
         else:
-            return all_changes.exclude(ipaddress__device=None)
+            return all_changes.filter(changed=True)
 
 
 class ScanStatus(BaseMixin, TemplateView):
@@ -1757,6 +1746,7 @@ class ScanStatus(BaseMixin, TemplateView):
                     ) for p in plugins
                 ],
                 'task_size': 100 / len(plugins),
+                'scan_summary': self.get_scan_summary(self.job),
                 'job': self.job,
             })
             if self.job.is_finished:
@@ -1790,18 +1780,18 @@ class ScanStatus(BaseMixin, TemplateView):
                     )
         return super(ScanStatus, self).get(*args, **kwargs)
 
-    def mark_scan_as_nochanges(self, job):
+    def get_scan_summary(self, job):
         try:
-            scan_summary = ScanSummary.objects.get(job_id=job.id)
+            return ScanSummary.objects.get(job_id=job.id)
         except ScanSummary.DoesNotExist:
             return
-        else:
-            scan_summary.false_positive_checksum = job.meta.get(
-                'results_checksum',
-            )
+
+    def mark_scan_as_nochanges(self, job):
+        scan_summary = self.get_scan_summary(job)
+        if scan_summary:
+            current_checksum = scan_summary.current_checksum
+            scan_summary.false_positive_checksum = current_checksum
             scan_summary.save()
-            job.meta['changed'] = False
-            job.save()
 
     def post(self, *args, **kwargs):
         self.device_id = self.request.POST.get('save')

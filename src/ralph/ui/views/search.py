@@ -8,9 +8,6 @@ import datetime
 import ipaddr
 import re
 
-import django_rq
-import rq
-
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
@@ -20,8 +17,8 @@ from django.utils import timezone
 from powerdns.models import Record
 
 from ralph.account.models import Perm
-from ralph.discovery.models import ReadOnlyDevice, Device
-from ralph.scan.models import ScanSummary
+from ralph.discovery.models import ReadOnlyDevice, Device, IPAddress
+from ralph.scan.api import SCAN_RESULT_TTL
 from ralph.ui.forms.search import SearchForm, SearchFormWithAssets
 from ralph.ui.views.common import (
     Addresses,
@@ -109,25 +106,14 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
         self.query = None
 
     def _get_changed_devices_ids(self):
-        delta = timezone.now() - datetime.timedelta(days=1)
-        ids = set()
-        for scan_summary in ScanSummary.objects.filter(modified__gt=delta):
-            try:
-                job = rq.job.Job.fetch(
-                    scan_summary.job_id,
-                    django_rq.get_connection(),
-                )
-            except rq.exceptions.NoSuchJobError:
-                continue
-            else:
-                if job.meta.get('changed', False):
-                    for device_id in scan_summary.ipaddress_set.values_list(
-                        'device__id',
-                        flat=True,
-                    ):
-                        if device_id:
-                            ids.add(device_id)
-        return sorted(list(ids))
+        delta = timezone.now() - datetime.timedelta(seconds=SCAN_RESULT_TTL)
+        return set(
+            IPAddress.objects.filter(
+                scan_summary__modified__gt=delta,
+                scan_summary__changed=True,
+                device__isnull=False,
+            ).values_list('device__id', flat=True)
+        )
 
     def user_allowed(self):
         return True
