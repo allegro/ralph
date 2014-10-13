@@ -127,7 +127,6 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
             )
         return regions
 
-
     def has_perm(self, perm, obj=None, role=None):
         if not self.is_active:
             return False
@@ -206,15 +205,6 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
 
     def is_region_granted(self, region):
         return self.regions.filter(pk=region.id).exists()
-
-    def get_regions(self):
-        regions = self.region_set.all()
-        if not regions:
-            default_region = Region.objects.get(pk=1)
-            self.region_set.add(default_region)
-            self.save()
-            regions = self.region_set.all()
-        return regions
 
 
 class BoundPerm(TimeTrackable, EditorTrackable):
