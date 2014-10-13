@@ -304,6 +304,10 @@ class DeviceCreateForm(DeviceForm):
     def clean_asset(self):
         model = self.cleaned_data.get('model')
         asset = self.cleaned_data.get('asset')
+        # model should be required anyway, so there's no sense to validate an
+        # asset when the model is missing
+        if not model:
+            return asset
         if model and model.type not in ASSET_NOT_REQUIRED:
             if not asset:
                 msg = "Asset is required for this kind of device."
