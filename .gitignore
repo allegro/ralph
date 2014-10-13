@@ -27,3 +27,4 @@
 /src/ralph/static
 /src/ralph/logs
 /src/ralph/uploads
+/src/ralph/urls_local.py
