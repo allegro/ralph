@@ -19,13 +19,15 @@ class ScanSummary(db.Model, WithConcurrentGetOrCreate):
     """
 
     job_id = db.CharField(unique=True, max_length=36)
-    previous_checksum = db.CharField(max_length=32)
+    current_checksum = db.CharField(max_length=32, blank=True, null=True)
+    previous_checksum = db.CharField(max_length=32, blank=True, null=True)
     false_positive_checksum = db.CharField(
         blank=True,
         null=True,
         max_length=32,
         verbose_name="Ignored checksum",
     )
+    changed = db.BooleanField(default=False, db_index=True)
     created = db.DateTimeField(auto_now=False, auto_now_add=True)
     modified = db.DateTimeField(auto_now=True, auto_now_add=True)
 
@@ -40,3 +42,11 @@ class ScanSummary(db.Model, WithConcurrentGetOrCreate):
         ipaddress = self.ipaddress
         if ipaddress:
             return self.ipaddress.device
+
+    def save(self, *args, **kwargs):
+        self.changed = all((
+            self.current_checksum,
+            self.current_checksum != self.previous_checksum,
+            self.current_checksum != self.false_positive_checksum,
+        ))
+        return super(ScanSummary, self).save(*args, **kwargs)
