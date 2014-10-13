@@ -165,3 +165,9 @@ urlpatterns = patterns(
 )
 
 urlpatterns += pluggableapp.patterns()
+
+try:
+    from ralph.urls_local import urlpatterns as local_urlpatterns
+    urlpatterns += local_urlpatterns
+except ImportError:
+    pass
