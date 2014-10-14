@@ -8,6 +8,11 @@ Released on ...
 
 ...
 
+* CORE: 'Services' view added.
+
+* CORE/SCAN: Network connections detected via LLDP.
+
+* SCAN: Better changes detection.
 
 * CORE: Improved handling of assets that should be linked to devices.
 
