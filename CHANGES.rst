@@ -25,6 +25,10 @@ Released on ...
 
 * Scan status view
 
+* Improved deployment API
+
+* CMDB API shows more data
+
 2.0.1
 ~~~~~
 
