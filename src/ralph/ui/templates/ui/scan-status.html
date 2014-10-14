@@ -28,7 +28,7 @@
                 <a href="../../{{ address }}/" class="btn btn-small">
                     {% icon 'fugue-arrow-circle-double' %}&nbsp;Rescan
                 </a>
-                {% if job.meta.changed %}
+                {% if scan_summary and scan_summary.changed %}
                     <button type="submit" value="no-changes" class="btn btn-small" name="no-changes">
                         {% icon 'fugue-flashlight--exclamation' %}&nbsp;No changes
                     </button>

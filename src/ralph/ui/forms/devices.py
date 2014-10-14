@@ -32,7 +32,39 @@ from ralph.ui.widgets import (
 from ralph.ui.forms.util import all_ventures, all_roles
 
 
-class DeviceForm(forms.ModelForm):
+class ServiceCatalogMixin(forms.ModelForm):
+    # although it is possible, this mixin shouldn't be instantiated on its own
+    # (that's why it is still called a mixin, while technically it is a
+    # subclass of ModelForm and therefore it *can* be instantiated)
+    # -- just try to think of it as an abstract class, ok? ;)
+
+    service = AutoCompleteSelectField(
+        ('ralph.ui.channels', 'ServiceCatalogLookup'),
+        required=True,
+        label=_('Service catalog'),
+    )
+    device_environment = forms.ModelChoiceField(
+        required=True,
+        queryset=DeviceEnvironment.objects.all(),
+        label=_('Device environment'),
+    )
+
+    def clean_device_environment(self):
+        device_environment = self.cleaned_data['device_environment']
+        service = self.cleaned_data['service']
+        envs_allowed = service.get_environments()
+        if device_environment not in envs_allowed:
+            envs_allowed_str = ', '.join([e.name for e in envs_allowed])
+            if len(envs_allowed) > 0:
+                msg = ("This value is not allowed for the service selected. "
+                       "Use one of these instead: {}.".format(envs_allowed_str))
+            else:
+                msg = "This value is not allowed for the service selected."
+            raise forms.ValidationError(msg)
+        return device_environment
+
+
+class DeviceForm(ServiceCatalogMixin):
 
     class Meta:
         model = Device
@@ -229,16 +261,6 @@ class DeviceCreateForm(DeviceForm):
         )
 
     macs = forms.CharField(widget=forms.Textarea, required=False)
-    service = AutoCompleteSelectField(
-        ('ralph.ui.channels', 'ServiceCatalogLookup'),
-        required=True,
-        label=_('Service catalog'),
-    )
-    device_environment = forms.ModelChoiceField(
-        required=True,
-        queryset=DeviceEnvironment.objects.all(),
-        label=_('Device Environment'),
-    )
 
     def __init__(self, *args, **kwargs):
         super(DeviceCreateForm, self).__init__(*args, **kwargs)
@@ -282,6 +304,10 @@ class DeviceCreateForm(DeviceForm):
     def clean_asset(self):
         model = self.cleaned_data.get('model')
         asset = self.cleaned_data.get('asset')
+        # model should be required anyway, so there's no sense to validate an
+        # asset when the model is missing
+        if not model:
+            return asset
         if model and model.type not in ASSET_NOT_REQUIRED:
             if not asset:
                 msg = "Asset is required for this kind of device."
@@ -372,17 +398,6 @@ class DeviceInfoForm(DeviceForm):
                     )
                     self.fields['name'].help_text = help_text
                     break
-
-    service = AutoCompleteSelectField(
-        ('ralph.ui.channels', 'ServiceCatalogLookup'),
-        required=True,
-        label=_('Service catalog'),
-    )
-    device_environment = forms.ModelChoiceField(
-        required=True,
-        queryset=DeviceEnvironment.objects.all(),
-        label=_('Device Environment'),
-    )
 
 
 class DeviceInfoVerifiedForm(DeviceInfoForm):

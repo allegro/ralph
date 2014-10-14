@@ -183,6 +183,19 @@ def diff_results(data, ignored_fields=set(['device', 'model_name'])):
             'is_equal': False,
             'meta': {'no_value': []},
         }
+        # it would be better to define a global dict to look-up ignored fields
+        # by component, but fot the time being, we want to make an exception
+        # only for 'parts' component and '_compare_dicts' function
+        # - hence 'ignored_fields_for_compare_dicts' below
+        if component == 'parts':
+            ignored_fields_for_compare_dicts = (
+                set(['device', 'index', 'model_name', 'name'])
+            )
+        else:
+            # these should be the same as defaults in '_compare_dicts'
+            ignored_fields_for_compare_dicts = (
+                set(['device', 'index', 'model_name'])
+            )
         if component not in UNIQUE_FIELDS_FOR_MERGER:
             if isinstance(results[db_results_key], list):
                 diff_result.update({
@@ -242,6 +255,7 @@ def diff_results(data, ignored_fields=set(['device', 'model_name'])):
                             status, row_diff, rows_keys = _compare_dicts(
                                 items,
                                 matched_row,
+                                ignored_fields=ignored_fields_for_compare_dicts,
                             )
                             diff_result['diff'].append({
                                 'status': b'?' if not status else b'',

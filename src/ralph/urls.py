@@ -19,6 +19,7 @@ from ralph.business.api import (
 from ralph.deployment.api import DeploymentResource
 from ralph.discovery.api import (
     BladeServerResource,
+    DeviceEnvironmentResource,
     DeviceWithPricingResource,
     DevResource,
     IPAddressResource,
@@ -27,6 +28,7 @@ from ralph.discovery.api import (
     NetworksResource,
     PhysicalServerResource,
     RackServerResource,
+    ServiceCatalogResource,
     VirtualServerResource,
 )
 from ralph.cmdb.api import (
@@ -85,7 +87,9 @@ for r in (
     VirtualServerResource,
     DevResource,
     DeviceWithPricingResource,
-    NetworkKindsResource
+    NetworkKindsResource,
+    DeviceEnvironmentResource,
+    ServiceCatalogResource,
 ):
     v09_api.register(r())
 
@@ -161,3 +165,9 @@ urlpatterns = patterns(
 )
 
 urlpatterns += pluggableapp.patterns()
+
+try:
+    from ralph.urls_local import urlpatterns as local_urlpatterns
+    urlpatterns += local_urlpatterns
+except ImportError:
+    pass
