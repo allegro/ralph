@@ -6,41 +6,41 @@ Change Log
 
 Released on October 14, 2014
 
-This version contains huge code clean-ups (some really old parts were removed), several bugfixes, improved integration with other componenets (Assets, Scrooge) and some new features as well ('Pending Changes' view, detection of network connections between devices via LLDP).
+This version contains huge code clean-ups (some really old parts were removed), several bugfixes, slightly redesigned UI, improved integration with other componenets (i.e. Assets, Scrooge) and some new features as well (concepts of 'Services' and 'Environments', 'Pending Changes' view, detection of network connections between devices via LLDP).
 
 * CORE: Added service/environment validation to device editing/creating forms.
 
-* CORE/SCAN: Fixes for displaying device's components and changes for 'parts' in scan results.
+* CORE: Fixes for displaying device's components and changes for 'parts' in scan results.
 
 * CORE: Fix for propagating changes of parent rack/dc.
 
-* CORE/SCAN: Improved checks for required asset in 'Scan Results' and 'Linked Asset' tab.
+* CORE: Improved checks for required asset.
 
 * CORE: 'Services' view added.
 
 * CORE: Fix for 'Home Page' option in user's preferences view.
 
-* CORE/SCAN: Network connections detected via LLDP.
+* CORE: Network connections detected via LLDP.
 
-* SCAN: Better changes detection.
-
-* CORE/SCAN: Improved handling of assets that should be linked to devices.
+* CORE: Improved handling of assets that should be linked to devices.
 
 * CORE: Improved handling of ventures that shouldn't be shown in Ralph.
 
 * CORE: Improvements for the GUI.
 
-* SCAN: Improved handling of blacklisted serial numbers.
-
 * CORE: Added search fields for 'service catalog' and 'device environment'.
 
-* CORE/SCAN: Removed significant parts of obsolete code.
+* CORE: Removed significant parts of obsolete code.
 
-* CORE: After sign in, redirect to home of user-accessible module
-
-* CORE/SCAN: Scan status view.
+* CORE: After sign in, redirect to home of user-accessible module.
 
 * CORE: Improved deployment API.
+
+* SCAN: Better changes detection.
+
+* SCAN: Improved handling of blacklisted serial numbers.
+
+* SCAN: Scan status view.
 
 * CMDB: API shows more data.
 
