@@ -4,17 +4,27 @@ Change Log
 2.1.0
 ~~~~~
 
-Released on ...
+Released on October 14, 2014
 
-...
+This version contains huge code clean-ups (some really old parts were removed), several bugfixes, improved integration with other componenets (Assets, Scrooge) and some new features as well ('Pending Changes' view, detection of network connections between devices via LLDP).
+
+* CORE: Added service/environment validation to device editing/creating forms.
+
+* CORE/SCAN: Fixes for displaying device's components and changes for 'parts' in scan results.
+
+* CORE: Fix for propagating changes of parent rack/dc.
+
+* CORE/SCAN: Improved checks for required asset in 'Scan Results' and 'Linked Asset' tab.
 
 * CORE: 'Services' view added.
+
+* CORE: Fix for 'Home Page' option in user's preferences view.
 
 * CORE/SCAN: Network connections detected via LLDP.
 
 * SCAN: Better changes detection.
 
-* CORE: Improved handling of assets that should be linked to devices.
+* CORE/SCAN: Improved handling of assets that should be linked to devices.
 
 * CORE: Improved handling of ventures that shouldn't be shown in Ralph.
 
@@ -26,13 +36,13 @@ Released on ...
 
 * CORE/SCAN: Removed significant parts of obsolete code.
 
-* After sign in, redirect to home of user-accessible module
+* CORE: After sign in, redirect to home of user-accessible module
 
-* Scan status view
+* CORE/SCAN: Scan status view.
 
-* Improved deployment API
+* CORE: Improved deployment API.
 
-* CMDB API shows more data
+* CMDB: API shows more data.
 
 2.0.1
 ~~~~~
