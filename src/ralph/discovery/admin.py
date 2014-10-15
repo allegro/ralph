@@ -372,6 +372,21 @@ class DeviceAdmin(ModelAdmin):
         if formset.model.__name__ == 'RolePropertyValue':
             for instance in formset.save(commit=False):
                 instance.save(user=request.user)
+        elif formset.model.__name__ == 'IPAddress':
+            for instance in formset.save(commit=False):
+                if not instance.id:
+                    # Sometimes IP address exists and does not have any
+                    # assigned device. In this case we should reuse it,
+                    # otherwise we can get IntegrityError.
+                    try:
+                        ip_id = models.IPAddress.objects.filter(
+                            address=instance.address,
+                        ).values_list('id', flat=True)[0]
+                    except IndexError:
+                        pass
+                    else:
+                        instance.id = ip_id
+                instance.save()
         else:
             formset.save(commit=True)
 
