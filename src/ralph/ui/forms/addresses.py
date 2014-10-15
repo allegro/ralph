@@ -8,6 +8,7 @@ import ipaddr
 
 from bob.forms import AutocompleteWidget
 from django import forms
+from django.utils.translation import ugettext_lazy as _
 from lck.django.common.models import MACAddressField
 from powerdns.models import Domain, Record
 
@@ -228,6 +229,13 @@ class DHCPEntryForm(forms.ModelForm):
             ip = unicode(ipaddr.IPAddress(ip))
         except ValueError:
             raise forms.ValidationError("Invalid IP address")
+        queryset = DHCPEntry.objects.filter(ip=ip)
+        if self.instance:
+            queryset = queryset.exclude(id=self.instance.id)
+        if queryset.count() > 0:
+            raise forms.ValidationError(
+                _('DHCP entry with this IP address already exists.'),
+            )
         return ip
 
     def clean_mac(self):
