@@ -51,7 +51,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'lck.django.activitylog.middleware.ActivityMiddleware',
     'lck.django.common.middleware.ForceLanguageCodeMiddleware',
-    'ralph_assets.middleware.RequestMiddleware',
+    'ralph.middleware.RequestMiddleware',
 )
 ROOT_URLCONF = 'ralph.urls'
 TEMPLATE_DIRS = (CURRENT_DIR + "templates",)
