@@ -89,7 +89,7 @@ class Region(Named):
 
     @classmethod
     def get_default_region(cls):
-        return cls.objects.get(name=settings.DEFAULT_REGION_NAME)
+        return cls.objects.get_or_create(name=settings.DEFAULT_REGION_NAME)
 
     def __unicode__(self):
         return self.name
