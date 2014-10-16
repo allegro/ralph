@@ -99,6 +99,7 @@
     fields:
         name: Test rack
         model: 1
+        dc: Test DC
 
 -
     model: discovery.device
@@ -107,6 +108,8 @@
         name: Test device
         parent: 1
         model: 2
+        rack: Test rack
+        dc: Test DC
 
 -
     model: discovery.device
@@ -122,6 +125,7 @@
         name: Test device with wrong rack
         model: 2
         parent: 4
+        rack: Wrong rack
 
 
 -

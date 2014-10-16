@@ -45,7 +45,7 @@ setup(
         'feedparser==5.1.2',
         'fugue-icons==3.5.3',
         'gunicorn==0.14.6',
-        'ipaddr==2.1.7',
+        'ipaddr==2.1.11',
         'iscconf==1.0.0dev9',
         'jpath==1.2',
         'lck.django==0.8.10',

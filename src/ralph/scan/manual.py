@@ -214,12 +214,21 @@ def _get_ip_addresses_from_results(results):
     return result
 
 
-def _get_cleaned_results(data):
-    UNNECESSARY_KEYS = set(['status', 'date', 'messages'])
+def _get_cleaned_results(
+    data, remove_device_data=False,
+    unnecessary_keys=['status', 'date', 'messages'],
+):
     data = copy.deepcopy(data)
     for plugin_name, plugin_results in data.iteritems():
-        for key in UNNECESSARY_KEYS:
+        for key in unnecessary_keys:
             plugin_results.pop(key, None)
+        if all((
+            remove_device_data,
+            'device' in plugin_results,
+            'device' not in unnecessary_keys,
+        )):
+            for key in unnecessary_keys:
+                plugin_results['device'].pop(key, None)
     return data
 
 
@@ -293,20 +302,11 @@ def _scan_postprocessing(results, job, ip_address=None):
             job.save()
             results.update(updated_results)
     # calculate new checksum
-    cleaned_results = _get_cleaned_results(results)
-    checksum = _get_results_checksum(cleaned_results)
-    job.meta['results_checksum'] = checksum
-    job.save()
-    # calculate new status
-    if all((
-        checksum != scan_summary.previous_checksum,
-        checksum != scan_summary.false_positive_checksum,
-    )):
-        job.meta['changed'] = True
-    else:
-        job.meta['changed'] = False
-        scan_summary.false_positive_checksum = None
-    job.save()
+    cleaned_results = _get_cleaned_results(
+        data=results, remove_device_data=True,
+        unnecessary_keys=['status', 'date', 'messages', 'installed_software'],
+    )
+    scan_summary.current_checksum = _get_results_checksum(cleaned_results)
     scan_summary.save()
     ip_address.save()
     # cancel old job (if exists)

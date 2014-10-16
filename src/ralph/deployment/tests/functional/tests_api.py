@@ -7,6 +7,8 @@ from __future__ import unicode_literals
 import json
 
 from ralph.account.models import BoundPerm, Profile, Perm
+from ralph.discovery.models_device import Device
+from ralph.business.models import DataCenter
 from django.core.cache import cache
 from django.test import TestCase
 from ralph.ui.tests.global_utils import create_user, UserTestCase
@@ -68,6 +70,7 @@ class TestVMCreation(UserTestCase):
 
     def test_correct(self): 
         """Correctly setup the new VM"""
+        rack = Device.objects.get(pk=1)
         response = self.post(
             '/api/add_vm', json.dumps({
                 'mac':'82:3c:cf:94:9d:f2',
@@ -75,6 +78,24 @@ class TestVMCreation(UserTestCase):
                 'network':'test_network',
                 'venture':'test_venture',
                 'venture-role':'test_role',
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 201)
+        new_vm_data = json.loads(self.get(response['Location']).content)
+        self.assertEqual(new_vm_data['rack'], rack.name)
+        self.assertEqual(new_vm_data['dc'], rack.dc)
+
+
+    def test_correct_null_role(self): 
+        """Correctly setup the new VM, no role provided"""
+        response = self.post(
+            '/api/add_vm', json.dumps({
+                'mac':'82:3c:cf:94:9d:f2',
+                'management-ip':'10.1.1.2',
+                'network':'test_network',
+                'venture':'test_venture',
+                'venture-role': None,
             }),
             content_type='application/json'
         )
