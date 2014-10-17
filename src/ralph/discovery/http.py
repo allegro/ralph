@@ -97,8 +97,10 @@ def guess_family(headers, document):
     if family in ('Apache', 'Unspecified'):
         if '<div id="copyright">Copyright &copy; IBM Corporation' in document:
             family = 'IBM'
+        elif 'pve2' in document:
+            family = 'Proxmox2'
         elif '<title>Proxmox Virtual Environment</title>' in document:
-            family = 'Proxmox'
+            family = 'Proxmox1'
         elif 'Cisco Systems, Inc. All rights' in document:
             family = 'Cisco'
         elif any((
@@ -133,8 +135,8 @@ def guess_family(headers, document):
             family = 'Dell'
         elif 'Juniper' in document:
             family = 'Juniper'
-    elif family in ('pve-api-daemon',):
-        family = 'Proxmox'
+    elif 'pve-api-daemon' in family:
+        family = 'Proxmox3'
     return family
 
 

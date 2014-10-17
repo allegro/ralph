@@ -598,6 +598,23 @@ SCAN_PLUGINS = {
             'subdevices': 50,
         },
     },
+    'ralph.scan.plugins.proxmox_2_3': {
+        'user': SSH_USER or 'root',
+        'password': SSH_PASSWORD,
+        'results_priority': {
+            'processors': 10,
+            'disks': 10,
+            'disk_shares': 10,
+            'model_name': 10,
+            'type': 10,
+            'mac_addresses': 10,
+            'management': 10,
+            'hostname': 10,
+            'installed_software': 60,
+            'system_ip_addresses': 10,
+            'subdevices': 50,
+        },
+    },
     'ralph.scan.plugins.ssh_3par': {
         'user': SSH_3PAR_USER,
         'password': SSH_3PAR_PASSWORD,
