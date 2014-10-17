@@ -20,7 +20,9 @@ from ralph.discovery.models import (
 
 def get_virtual_usages(parent_service_uid=None):
     """Yields dicts reporting the number of virtual cores, memory and disk."""
-    devices = Device.objects.filter(model__type=DeviceType.virtual_server)
+    devices = Device.objects.filter(
+        model__type=DeviceType.virtual_server
+    ).select_related('model')
     if parent_service_uid:
         devices = devices.filter(
             parent__service__uid=parent_service_uid,
@@ -50,6 +52,8 @@ def get_virtual_usages(parent_service_uid=None):
             'virtual_cores': cores or 0,
             'virtual_memory': memory or 0,
             'virtual_disk': disk or 0,
+            'model_id': device.model_id,
+            'model_name': device.model.name,
         }
 
 
@@ -123,11 +127,14 @@ def get_environments():
         }
 
 
-def get_openstack_tenants():
-    for tenant in Device.objects.filter(
+def get_openstack_tenants(model_name=None):
+    tenants = Device.objects.filter(
         sn__startswith='openstack',
         model__type=DeviceType.cloud_server
-    ):
+    )
+    if model_name:
+        tenants = tenants.filter(model__name=model_name)
+    for tenant in tenants:
         yield {
             'device_id': tenant.id,
             'tenant_id': tenant.sn[len('openstack-'):],
