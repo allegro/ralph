@@ -102,6 +102,7 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
     department = db.CharField(max_length=64, blank=True)
     manager = db.CharField(max_length=1024, blank=True)
     location = db.CharField(max_length=128, blank=True)
+    segment = db.CharField(max_length=256, blank=True)
 
     def __unicode__(self):
         return self.nick
