@@ -9,7 +9,7 @@ import logging
 
 from django.conf import settings
 from lck.django.common.models import MACAddressField
-from proxmoxer import ProxmoxAPI
+import requests
 
 # from ralph.discovery.hardware import get_disk_shares
 from ralph.discovery.models import DeviceType
@@ -23,17 +23,26 @@ SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 
 logger = logging.getLogger("SCAN")
 
+def _get_session(base_url, user, password):
+    s = requests.Session()
+    ticket = None
+    data = {'username': user + '@pam', 'password': password}
+    r = requests.post(base_url + '/access/ticket', verify=False, data=data)
+    if r.status_code == 200:
+        ticket = r.json()['data']['ticket']
+    s.headers = {
+        'content-type': 'application/x-www-form-urlencoded',
+        'Connection': 'keep-alive',
+    }
+    s.cookies = requests.cookies.cookiejar_from_dict({'PVEAuthCookie': ticket})
+    s.verify = False
+    return s
+
 
 def _connect_ssh(ip_address, user, password):
     if not network.check_tcp_port(ip_address, 22):
         raise ConnectionError('Port 22 closed on a Proxmox server.')
     return network.connect_ssh(ip_address, user, password)
-
-
-def _connect_api(ip_address, user, password):
-    user = '@'.join((user, 'pam'))
-    px = ProxmoxAPI(ip_address, user=user, password=password, verify_ssl=False)
-    return px
 
 
 def _get_node_name(ssh):
@@ -48,10 +57,11 @@ def _get_node_sn(ssh):
     return node_sn
 
 
-def _get_node_name_by_api(px, ip_address):
+def _get_node_name_by_api(s, base_url, ip_address):
     # an alternative to '_get_node_name' which doesn't require ssh,
-    # but is slower
-    status = px.cluster.status.get()
+    # but is kind of slower and doesn't always work (e.g. with Proxmox3)
+    url = base_url + '/cluster/status'
+    status = s.get(url).json()['data']
     node_name = None
     for i in status:
         if i.get('ip') == ip_address:
@@ -60,8 +70,9 @@ def _get_node_name_by_api(px, ip_address):
     return node_name
 
 
-def _get_proxmox_version(px, node_name):
-    _ = px.version.get()
+def _get_proxmox_version(s, base_url):
+    url = '{}/version'.format(base_url)
+    _ = s.get(url).json()['data']
     version = '-'.join((_.get('version'), _.get('release')))
     return version
 
@@ -74,11 +85,12 @@ def _get_node_mac_address(ssh, iface='eth0'):
     return mac
 
 
-def _get_device_info(px, node_name):
-    processors = []
-    cpuinfo = px.nodes(node_name).status.get()['cpuinfo']
+def _get_device_info(s, base_url, node_name):
+    url = '{}/nodes/{}/status'.format(base_url, node_name)
+    cpuinfo = s.get(url).json()['data']['cpuinfo']
     sockets = cpuinfo['sockets']
     cores = cpuinfo['cpus']
+    processors = []
     for n in range(sockets):
         processors.append({
             'cores': int(cores / sockets),  # yes, differently than in VMs' case
@@ -94,8 +106,9 @@ def _get_device_info(px, node_name):
     return di
 
 
-def _get_virtual_machine_info(px, node_name, vmid, iface='net0'):
-    vm_config = px.nodes(node_name).qemu(vmid).config.get()
+def _get_virtual_machine_info(s, base_url, node_name, vmid, iface='net0'):
+    url = '{}/nodes/{}/qemu/{}/config'.format(base_url, node_name, vmid)
+    vm_config = s.get(url).json()['data']
     # get MACs
     mac_addresses = []
     net_raw = vm_config.get(iface)
@@ -128,13 +141,14 @@ def _get_virtual_machine_info(px, node_name, vmid, iface='net0'):
     disks = []
     for k, v in vm_config.iteritems():
         if k.startswith('virtio'):
-            _ = v.split(',')
-            label = _[0].split(':')[-1]
-            size = int(_[1].split('=')[-1][:-1]) * 1024  # GB -> MB
-            disks.append({
-                'label': label,
-                'size': size,
-            })
+            size, label = None, None
+            for _ in v.split(','):
+                if _.startswith('size'):
+                    size = int(_.split('=')[-1][:-1]) * 1024  # GB -> MB
+                elif _.startswith('vg'):
+                    label = _.split(':')[-1]
+            if label and size:
+                disks.append({'label': label, 'size': size})
     vm_info = {
         'hostname': vm_config.get('name'),
         'mac_addresses': mac_addresses,
@@ -147,40 +161,34 @@ def _get_virtual_machine_info(px, node_name, vmid, iface='net0'):
     return vm_info
 
 
-def _get_virtual_machines(px, node_name):
-    vms = px.nodes(node_name).qemu.get()
+def _get_virtual_machines(s, base_url, node_name):
+    url = '{}/nodes/{}/qemu'.format(base_url, node_name)
+    vms = s.get(url).json()['data']
     virtual_machines = []
     for vm in vms:
-        vm = _get_virtual_machine_info(px, node_name, vm['vmid'])
+        vm = _get_virtual_machine_info(s, base_url, node_name, vm['vmid'])
         virtual_machines.append(vm)
     return virtual_machines
 
 
 def _proxmox_2_3(ip_address, user, password):
-    px = _connect_api(ip_address, user, password)
+    base_url = 'https://{}:{}/api2/json'.format(ip_address, 8006)
+    s = _get_session(base_url, user, password)
+    ssh = _connect_ssh(ip_address, user, password)
     try:
-        ssh = _connect_ssh(ip_address, user, password)
-    except network.AuthError:
-        node_name = None  # XXX we need to get this somehow
-        node_sn = None
-        node_mac_address = None
-        # storages = None
-    else:
-        try:
-            node_name = _get_node_name(ssh)
-            node_sn = _get_node_sn(ssh)
-            node_mac_address = _get_node_mac_address(ssh)
-            # storages = get_disk_shares(ssh)
-        finally:
-            ssh.close()
-    # proxmox_version = _get_proxmox_version(px, node_name)
-    device_info = _get_device_info(px, node_name)
+        node_name = _get_node_name(ssh)
+        node_sn = _get_node_sn(ssh)
+        node_mac_address = _get_node_mac_address(ssh)
+        # storages = get_disk_shares(ssh)
+    finally:
+        ssh.close()
+    device_info = _get_device_info(s, base_url, node_name)
     device_info.update({'system_ip_addresses': [ip_address]})
     if node_sn:
         device_info.update({'serial_number': node_sn})
     if node_mac_address:
         device_info.update({'mac_address': node_mac_address})
-    virtual_machines = _get_virtual_machines(px, node_name)
+    virtual_machines = _get_virtual_machines(s, base_url, node_name)
     if virtual_machines:
         for vm in virtual_machines:
             vm['management'] = ip_address
