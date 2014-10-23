@@ -6,26 +6,14 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.conf import settings
-from tastypie import fields
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.cache import SimpleCache
-from tastypie.constants import ALL, ALL_WITH_RELATIONS
+from tastypie.constants import ALL
 from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
 
 from ralph.account.api_auth import RalphAuthorization
 from ralph.account.models import Perm
-from ralph.business.models import (
-    Venture,
-    VentureRole,
-    Department,
-    RolePropertyType,
-    RolePropertyTypeValue,
-    RoleProperty,
-    RolePropertyValue,
-    BusinessSegment,
-    ProfitCenter,
-)
 
 from powerdns.models import Record
 
