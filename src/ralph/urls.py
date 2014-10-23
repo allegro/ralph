@@ -1,8 +1,11 @@
+import pluggableapp
+
 from django.contrib.auth.decorators import login_required
 from django.conf.urls.defaults import patterns, include, url
 from django.views.generic import RedirectView
-import pluggableapp
+from dnsedit.api import PowerDnsRecordResource
 from tastypie.api import Api
+
 from ralph.business.api import (
     DepartmentResource,
     RoleLightResource,
@@ -109,6 +112,10 @@ for r in (BusinessLineResource, ServiceResource, CIResourceV010,
 
 # deployment API
 for r in (DeploymentResource,):
+    v09_api.register(r())
+
+# powerdns API
+for r in (PowerDnsRecordResource,):
     v09_api.register(r())
 
 # scan API
