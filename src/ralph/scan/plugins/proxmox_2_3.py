@@ -5,15 +5,16 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import json
 import logging
 
 from django.conf import settings
 from lck.django.common.models import MACAddressField
 import requests
 
-# from ralph.discovery.hardware import get_disk_shares
+from ralph.discovery.hardware import get_disk_shares
 from ralph.discovery.models import DeviceType
-from ralph.scan.errors import ConnectionError, NoMatchError
+from ralph.scan.errors import ConnectionError, NoMatchError, AuthError
 from ralph.scan.plugins import get_base_result_template
 from ralph.util import network
 
@@ -23,13 +24,18 @@ SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 
 logger = logging.getLogger("SCAN")
 
+
 def _get_session(base_url, user, password):
     s = requests.Session()
-    ticket = None
     data = {'username': user + '@pam', 'password': password}
-    r = requests.post(base_url + '/access/ticket', verify=False, data=data)
-    if r.status_code == 200:
+    try:
+        r = requests.post(base_url + '/access/ticket', verify=False, data=data)
+    except requests.ConnectionError:
+        raise ConnectionError("Can't connect through API.")
+    try:
         ticket = r.json()['data']['ticket']
+    except KeyError:
+        raise AuthError("Can't get access ticket through API.")
     s.headers = {
         'content-type': 'application/x-www-form-urlencoded',
         'Connection': 'keep-alive',
@@ -85,30 +91,50 @@ def _get_node_mac_address(ssh, iface='eth0'):
     return mac
 
 
-def _get_device_info(s, base_url, node_name):
-    url = '{}/nodes/{}/status'.format(base_url, node_name)
-    cpuinfo = s.get(url).json()['data']['cpuinfo']
-    sockets = cpuinfo['sockets']
-    cores = cpuinfo['cpus']
-    processors = []
-    for n in range(sockets):
-        processors.append({
-            'cores': int(cores / sockets),  # yes, differently than in VMs' case
-            'family': cpuinfo['model'],
-            'speed': int(round(float(cpuinfo['mhz']))),
-            'label': 'CPU ' + str(n + 1),
-        })
-    di = {
-        'model_name': 'Proxmox',
-        'installed_software': [{'model_name': 'Proxmox', 'path': 'proxmox'}],
-        'processors': processors,
-    }
-    return di
+def _get_device_info(node_name, session, ssh, base_url):
+    if session:
+        url = '{}/nodes/{}/status'.format(base_url, node_name)
+        cpuinfo = session.get(url).json()['data']['cpuinfo']
+    elif ssh:
+        stdin, stdout, stderr = ssh.exec_command(
+            "pvesh get /nodes/{}/status".format(node_name)
+        )
+        data = stdout.read()
+        cpuinfo = json.loads(data)['cpuinfo'] if data else None
+    device_info = {}
+    if cpuinfo:
+        sockets = cpuinfo['sockets']
+        cores = cpuinfo['cpus']
+        processors = []
+        for n in range(sockets):
+            processors.append({
+                # yes, differently than in VMs' case (cores divided by sockets)
+                'cores': int(cores / sockets),
+                'family': cpuinfo['model'],
+                'speed': int(round(float(cpuinfo['mhz']))),
+                'label': 'CPU ' + str(n + 1),
+            })
+        device_info = {
+            'model_name': 'Proxmox',
+            'installed_software': [{
+                'model_name': 'Proxmox',
+                'path': 'proxmox',
+            }],
+            'processors': processors,
+        }
+    return device_info
 
 
-def _get_virtual_machine_info(s, base_url, node_name, vmid, iface='net0'):
-    url = '{}/nodes/{}/qemu/{}/config'.format(base_url, node_name, vmid)
-    vm_config = s.get(url).json()['data']
+def _get_vm_info(node_name, vmid, session, ssh, base_url, iface='net0'):
+    if session:
+        url = '{}/nodes/{}/qemu/{}/config'.format(base_url, node_name, vmid)
+        vm_config = session.get(url).json()['data']
+    elif ssh:
+        stdin, stdout, stderr = ssh.exec_command(
+            "pvesh get /nodes/{}/qemu/{}/config".format(node_name, vmid)
+        )
+        data = stdout.read()
+        vm_config = json.loads(data) if data else None
     # get MACs
     mac_addresses = []
     net_raw = vm_config.get(iface)
@@ -148,7 +174,12 @@ def _get_virtual_machine_info(s, base_url, node_name, vmid, iface='net0'):
                 elif _.startswith('vg'):
                     label = _.split(':')[-1]
             if label and size:
-                disks.append({'label': label, 'size': size})
+                disks.append({
+                    'label': label,
+                    'size': size,
+                    'family': 'Proxmox Virtual Disk',
+                    'model_name': 'Proxmox Virtual Disk {}MiB'.format(size),
+                })
     vm_info = {
         'hostname': vm_config.get('name'),
         'mac_addresses': mac_addresses,
@@ -161,38 +192,63 @@ def _get_virtual_machine_info(s, base_url, node_name, vmid, iface='net0'):
     return vm_info
 
 
-def _get_virtual_machines(s, base_url, node_name):
-    url = '{}/nodes/{}/qemu'.format(base_url, node_name)
-    vms = s.get(url).json()['data']
+def _get_virtual_machines(node_name, session, ssh, base_url):
+    if session:
+        url = '{}/nodes/{}/qemu'.format(base_url, node_name)
+        vms = session.get(url).json()['data']
+    elif ssh:
+        stdin, stdout, stderr = ssh.exec_command(
+            "pvesh get /nodes/{}/qemu".format(node_name)
+        )
+        data = stdout.read()
+        vms = json.loads(data) if data else []
     virtual_machines = []
     for vm in vms:
-        vm = _get_virtual_machine_info(s, base_url, node_name, vm['vmid'])
+        vm = _get_vm_info(node_name, vm['vmid'], session, ssh, base_url)
         virtual_machines.append(vm)
     return virtual_machines
 
 
 def _proxmox_2_3(ip_address, user, password):
     base_url = 'https://{}:{}/api2/json'.format(ip_address, 8006)
-    s = _get_session(base_url, user, password)
+    try:
+        session = _get_session(base_url, user, password)
+    except (ConnectionError, AuthError):
+        session = None
     ssh = _connect_ssh(ip_address, user, password)
     try:
         node_name = _get_node_name(ssh)
         node_sn = _get_node_sn(ssh)
         node_mac_address = _get_node_mac_address(ssh)
-        # storages = get_disk_shares(ssh)
+        disk_shares = get_disk_shares(ssh)
+        # in a restricted environment a http session won't be available
+        if not session:
+            device_info = _get_device_info(node_name, session, ssh, base_url)
+            vms = _get_virtual_machines(node_name, session, ssh, base_url)
     finally:
         ssh.close()
-    device_info = _get_device_info(s, base_url, node_name)
+    if session:
+        device_info = _get_device_info(node_name, session, ssh, base_url)
+        vms = _get_virtual_machines(node_name, session, ssh, base_url)
     device_info.update({'system_ip_addresses': [ip_address]})
     if node_sn:
         device_info.update({'serial_number': node_sn})
     if node_mac_address:
         device_info.update({'mac_address': node_mac_address})
-    virtual_machines = _get_virtual_machines(s, base_url, node_name)
-    if virtual_machines:
-        for vm in virtual_machines:
+    if disk_shares:
+        _ = []
+        for lv, (wwn, size) in disk_shares.iteritems():
+            _.append({
+                'serial_number': wwn,
+                'is_virtual': False,
+                'size': size,
+                'volume': lv,
+            })
+        device_info.update({'disk_shares': _})
+    if vms:
+        for vm in vms:
             vm['management'] = ip_address
-        device_info['subdevices'] = virtual_machines
+        device_info['subdevices'] = vms
     return device_info
 
 
@@ -207,10 +263,9 @@ def scan_address(ip_address, **kwargs):
     result = get_base_result_template('proxmox_2_3', messages)
     if not user or not password:
         result['status'] = 'error'
-        messages.append(
-            'Not configured. Set SSH_USER and SSH_PASSWORD in your '
-            'configuration file.',
-        )
+        msg = ('Not configured. Set SSH_USER and SSH_PASSWORD in your '
+               'configuration file.')
+        messages.append(msg)
     else:
         try:
             device_info = _proxmox_2_3(ip_address, user, password)
@@ -218,8 +273,5 @@ def scan_address(ip_address, **kwargs):
             result['status'] = 'error'
             messages.append(unicode(e))
         else:
-            result.update({
-                'status': 'success',
-                'device': device_info,
-            })
+            result.update({'status': 'success', 'device': device_info})
     return result
