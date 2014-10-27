@@ -7,6 +7,7 @@
         <title>Ralph | {% block title %}{% block titlesection %}{{ active_menu.module.label }}{% block titlesubsection %}{% endblock %} - {{ active_submodule|title }}{% endblock %}{% endblock %}</title>
         {% block styles %}
             <link rel="stylesheet" href="{{ STATIC_URL }}bootstrap/css/bootstrap.min.css">
+            <link rel="stylesheet" href="{{ STATIC_URL }}bootstrap/css/bs3fake.css">
             <link rel="stylesheet" href="{{ STATIC_URL }}fugue-icons.css">
             <link rel="stylesheet" href="{{ STATIC_URL }}ui/custom.css">
             <link rel="stylesheet" href="{{ STATIC_URL }}ui/datepicker.css">
@@ -38,8 +39,7 @@
             <div class="row-fluid">
                 <div class="span12">
                     {% block header %}
-                        {% main_menu main_menu active_module position='fixed' white="true" title='Ralph 2' %}
-                    {% endblock %}
+                        {% main_menu_bs3fake main_menu active_module position='fixed' white="true" title='Ralph 2' %} {% endblock %}
                     {{ view }}
                 </div>
                 {% if submodules %}

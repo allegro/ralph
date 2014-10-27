@@ -1,0 +1,100 @@
+@font-face {
+    font-family: 'Lato';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Lato Regular'), local('Lato-Regular'), url(lato.woff) format('woff');
+}
+
+
+.bs3fake {
+    font-size: 14px;
+    line-height: 1.42857;
+    font-family: "Lato",sans-serif;
+    color: #333;
+}
+
+ul.bs3fake {
+    border-bottom: 0 none;
+    display: block;
+    margin-bottom: 0;
+    padding-left: 0;
+    font-size: 14px;
+    line-height: 1.42857;
+    left: 0;
+    position: absolute;
+    width: 100%;
+}
+
+.bs3fake li {
+    margin-bottom: 0;
+    line-height: 1.42857;
+}
+
+.bs3fake li.pull-right {
+    float: right;
+}
+
+.bs3fake .brand a {
+    color: #777;
+    font-size: 20px;
+    line-height: 2em;
+    padding: 13px 20px;
+}
+
+.bs3fake > li > a {
+    border: 1px solid transparent;
+    border-radius: 1px 1px 0 0;
+    line-height: 1.42857;
+    margin-right: 2px;
+    display: block;
+    padding: 10px 15px;
+}
+
+.bs3fake .active a {
+    background-color: #3c8dbc;
+    color: #fff;
+    cursor: pointer;
+}
+
+
+a {
+    cursor: pointer;
+}
+a {
+    color: #428bca;
+    text-decoration: none;
+}
+
+/* .b3fake .navbar {
+    margin-left: -15px;
+    margin-right: -15px;
+    display: block;
+    height: 42px;
+}
+
+
+.bs3fake .brand {
+    color: #777;
+    font-size: 20px;
+    line-height: 2em;
+    padding: 0 0;
+}
+
+.bs3fake .nav > li > a {
+    display: block;
+    padding: 10px 15px;
+    position: relative;
+}
+
+.bs3fake a {
+    cursor: pointer;
+    display: block;
+    padding: 10px 15px;
+    position: relative;
+}
+
+.bs3fake .nav .active a {
+    background-color: #3c8dbc;
+    color: #fff;
+    cursor: pointer;
+} */
