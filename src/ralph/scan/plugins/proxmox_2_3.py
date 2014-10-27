@@ -29,7 +29,7 @@ def _get_session(base_url, user, password):
     s = requests.Session()
     data = {'username': '{}@pam'.format(user), 'password': password}
     try:
-        r = requests.post('/access/ticket'.format(base_url),
+        r = requests.post('{}/access/ticket'.format(base_url),
                           verify=False, data=data)
     except requests.ConnectionError:
         raise ConnectionError("Can't connect through API.")
