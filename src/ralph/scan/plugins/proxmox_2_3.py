@@ -27,9 +27,10 @@ logger = logging.getLogger("SCAN")
 
 def _get_session(base_url, user, password):
     s = requests.Session()
-    data = {'username': user + '@pam', 'password': password}
+    data = {'username': '{}@pam'.format(user), 'password': password}
     try:
-        r = requests.post(base_url + '/access/ticket', verify=False, data=data)
+        r = requests.post('/access/ticket'.format(base_url),
+                          verify=False, data=data)
     except requests.ConnectionError:
         raise ConnectionError("Can't connect through API.")
     try:
@@ -66,7 +67,7 @@ def _get_node_sn(ssh):
 def _get_node_name_by_api(s, base_url, ip_address):
     # an alternative to '_get_node_name' which doesn't require ssh,
     # but is kind of slower and doesn't always work (e.g. with Proxmox3)
-    url = base_url + '/cluster/status'
+    url = '{}/cluster/status'.format(base_url)
     status = s.get(url).json()['data']
     node_name = None
     for i in status:
@@ -84,7 +85,7 @@ def _get_proxmox_version(s, base_url):
 
 
 def _get_node_mac_address(ssh, iface='eth0'):
-    command = "ifconfig " + iface + " | head -n 1"
+    command = "ifconfig {} | head -n 1".format(iface)
     stdin, stdout, stderr = ssh.exec_command(command)
     mac = stdout.readline().split()[-1]
     mac = MACAddressField.normalize(mac)
@@ -112,7 +113,7 @@ def _get_device_info(node_name, session, ssh, base_url):
                 'cores': int(cores / sockets),
                 'family': cpuinfo['model'],
                 'speed': int(round(float(cpuinfo['mhz']))),
-                'label': 'CPU ' + str(n + 1),
+                'label': 'CPU {}'.format(n + 1),
             })
         device_info = {
             'model_name': 'Proxmox',
@@ -154,7 +155,7 @@ def _get_vm_info(node_name, vmid, session, ssh, base_url, iface='net0'):
             'cores': cores,
             'family': 'QEMU Virtual',
             'index': n,
-            'label': 'CPU ' + str(n),
+            'label': 'CPU {}'.format(n),
             'model_name': 'QEMU Virtual CPU',
         })
     # get memory
