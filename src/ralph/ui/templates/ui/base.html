@@ -43,8 +43,8 @@
                     {{ view }}
                 </div>
                 {% if submodules %}
-                    <div class="submenu">
-                        {% tab_menu submodules active_submodule %}
+                    <div>
+                        {% tab_menu_bs3fake submodules active_submodule %}
                     </div>
                 {% endif %}
                 <div class="row-fluid main-body{% if not submodules %} without-submodules{%  else %} with-submodules{% endif %}">
