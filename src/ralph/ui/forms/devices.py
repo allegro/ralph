@@ -50,8 +50,13 @@ class ServiceCatalogMixin(forms.ModelForm):
     )
 
     def clean_device_environment(self):
-        device_environment = self.cleaned_data['device_environment']
-        service = self.cleaned_data['service']
+        device_environment = self.cleaned_data.get('device_environment')
+        service = self.cleaned_data.get('service')
+        # not very nice, but it should be enough until we develop dependant
+        # ('cascading') ajax select fields
+        if not service:
+            msg = "You have to select 'Service catalog' first."
+            raise forms.ValidationError(msg)
         envs_allowed = service.get_environments()
         if device_environment not in envs_allowed:
             envs_allowed_str = ', '.join([e.name for e in envs_allowed])
