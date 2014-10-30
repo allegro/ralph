@@ -866,11 +866,7 @@ class Device(
             else:
                 name = filename
             self.saving_plugin = name
-
-        if sync_fields and 'ralph_assets' in settings.INSTALLED_APPS:
-            SyncFieldMixin.save(self, *args, **kwargs)
         return super(Device, self).save(
-            sync_fields=sync_fields,
             *args,
             **kwargs
         )
