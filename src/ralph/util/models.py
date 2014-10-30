@@ -54,7 +54,7 @@ class SyncFieldMixin(db.Model):
     def get_synced_objs_and_fields(self):
         raise NotImplementedError()
 
-    def save(self, root=True, visited = None, *args, **kwargs):
+    def save(self, root=True, visited=None, *args, **kwargs):
         from ralph.ui.views.common import SAVE_PRIORITY
         # by default save with the same priority as in 'edit device' forms etc.
         visited = visited or set()
