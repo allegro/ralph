@@ -35,7 +35,7 @@ del auth_test_models.ProfileTestCase.test_site_profile_not_available
 fields_synced_signal = Signal(providing_args=['changes', 'change_author'])
 
 
-class SyncFieldMixin(object):
+class SyncFieldMixin(db.Model):
     """
     Mixin responsible for syncing fields between linked objects. In order to
     specify objects and fields that you want to keep in sync, you need to
@@ -48,19 +48,25 @@ class SyncFieldMixin(object):
     After syncing your objects, this mixin sends 'fields_synced_signal' which
     carries a list of changes that have been made.
     """
+    class Meta:
+        abstract = True
 
     def get_synced_objs_and_fields(self):
         raise NotImplementedError()
 
-    def save(self, *args, **kwargs):
+    def save(self, root=True, visited=None, *args, **kwargs):
         from ralph.ui.views.common import SAVE_PRIORITY
         # by default save with the same priority as in 'edit device' forms etc.
+        visited = visited or set()
+        visited.add(self)
         priority = kwargs.get('priority')
         change_author = kwargs.get('user')
         if priority is None:
             priority = SAVE_PRIORITY
         changes = []
         for obj, fields in self.get_synced_objs_and_fields():
+            if obj in visited:
+                continue
             for f in fields:
                 source_old_value = self.dirty_fields.get(f)
                 target_old_value = getattr(obj, f)
@@ -75,7 +81,8 @@ class SyncFieldMixin(object):
                         'new_value': new_value,
                     })
                 setattr(obj, f, new_value)
-            obj.save(sync_fields=False, priority=priority)
+            obj.save(visited=visited, root=False, priority=priority)
             fields_synced_signal.send_robust(
                 sender=self, changes=changes, change_author=change_author
             )
+        return super(SyncFieldMixin, self).save(*args, **kwargs)
