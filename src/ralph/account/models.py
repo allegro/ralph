@@ -205,7 +205,7 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
         ).distinct()
 
     def is_region_granted(self, region):
-        return self.regions.filter(pk=region.id).exists()
+        return self.region_set.filter(pk=region.id).exists()
 
 
 class BoundPerm(TimeTrackable, EditorTrackable):
