@@ -10,10 +10,7 @@ import factory
 from factory.django import DjangoModelFactory
 from django.contrib.auth.models import User
 
-from ralph.account.models import (
-    Profile,
-    Region,
-)
+from ralph.account.models import Region
 from ralph.cmdb import models_ci
 from ralph.cmdb.tests.utils import CIFactory
 
@@ -41,11 +38,13 @@ class EnvironmentFactory(CIFactory):
     def type(self):
         return models_ci.CIType.objects.get(name='Environment')
 
+
 class UserFactory(DjangoModelFactory):
     FACTORY_FOR = User
     username = factory.Sequence(lambda n: 'user_{0}'.format(n))
     first_name = factory.Sequence(lambda n: 'John {0}'.format(n))
     last_name = factory.Sequence(lambda n: 'Snow {0}'.format(n))
+
 
 @factory.sequence
 def get_profile(n):
@@ -60,11 +59,11 @@ class CIOwnerFactory(DjangoModelFactory):
     FACTORY_FOR = models_ci.CIOwner
     profile = get_profile
 
+
 class ServiceOwnershipFactory(DjangoModelFactory):
     FACTORY_FOR = models_ci.CIOwnership
     owner = factory.SubFactory(CIOwnerFactory)
     ci = factory.SubFactory(ServiceFactory)
-
 
 
 class ServiceEnvironmentRelationFactory(DjangoModelFactory):

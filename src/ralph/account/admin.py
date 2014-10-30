@@ -95,7 +95,8 @@ class RegionForm(ModelForm):
         self.user_instance = kwargs.pop('user_instance', None)
         super(RegionForm, self).__init__(*args, **kwargs)
         if self.user_instance:
-            self.fields['assigned'].initial = Region.profile.through.objects.filter(  # noqa
+            objects = Region.profile.through.objects
+            self.fields['assigned'].initial = objects.filter(
                 region=self.instance,
                 profile=self.user_instance.profile
             ).exists()
