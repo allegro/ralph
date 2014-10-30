@@ -314,7 +314,7 @@ class DeviceCreateForm(DeviceForm):
                 raise forms.ValidationError(msg)
         if 'ralph_assets' in settings.INSTALLED_APPS:
             from ralph_assets.api_ralph import is_asset_assigned
-            if is_asset_assigned(asset_id=asset.id):
+            if asset and is_asset_assigned(asset_id=asset.id):
                 raise forms.ValidationError(
                     "This asset is already linked to some other device. "
                     "To resolve this conflict, please click the link above."
