@@ -5,19 +5,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import datetime
-
 from django.test import TestCase
-import mock
-
-from ralph.cmdb.tests.utils import (
-    CIRelationFactory,
-    DeviceEnvironmentFactory,
-    ServiceCatalogFactory,
-)
-from ralph.discovery.models import DeviceType, Device, UptimeSupport
-from ralph.discovery.models_history import HistoryChange
-
 
 from django.conf import settings
 from ralph.account.models import Region
@@ -25,14 +13,6 @@ from ralph.account.tests import utils
 
 
 class ModelsTest(TestCase):
-
-    #def test_device_create_empty(self):
-    #    with self.assertRaises(ValueError):
-    #        Device.create(model_name='xxx', model_type=DeviceType.unknown)
-
-    #def test_device_create_nomodel(self):
-    #    with self.assertRaises(ValueError):
-    #        Device.create(sn='xxx')
 
     def test_getting_default_region(self):
         region = Region.get_default_region()
