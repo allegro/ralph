@@ -1,6 +1,11 @@
 Change Log
 ----------
 
+DEV
+~~~
+
+* Added support for regions
+
 2.1.0
 ~~~~~
 

@@ -51,6 +51,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'lck.django.activitylog.middleware.ActivityMiddleware',
     'lck.django.common.middleware.ForceLanguageCodeMiddleware',
+    'ralph.middleware.RegionMiddleware',
 )
 ROOT_URLCONF = 'ralph.urls'
 TEMPLATE_DIRS = (CURRENT_DIR + "templates",)
@@ -771,3 +772,4 @@ LOGIN_REDIRECT_URL = reverse_lazy('find_user_home')
 
 # url to page where user requests permission to module (eg. assets)
 # REQUEST_PERM_URL = 'http://tickets.office/request/ralph_module/permission'
+DEFAULT_REGION_NAME = 'Default region'

@@ -20,6 +20,8 @@ from django.core.urlresolvers import resolve
 from django.views.generic.base import View
 from django.http import HttpResponse, HttpResponseBadRequest
 
+from ralph.middleware import RegionMiddleware
+
 
 class PicklableRequest(object):
 
@@ -60,6 +62,7 @@ def get_result(request):
     request = copy.deepcopy(request)
     SessionMiddleware().process_request(request)
     AuthenticationMiddleware().process_request(request)
+    RegionMiddleware().process_request(request)
     view.request = request
     return view.get_result(
         request, *url_match.args, **url_match.kwargs

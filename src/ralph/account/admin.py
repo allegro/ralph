@@ -5,17 +5,26 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from django import forms
 from django.contrib import admin
+from django.forms.models import (
+    ModelForm,
+    BaseModelFormSet,
+    modelformset_factory,
+)
 from django.contrib.auth.admin import UserAdmin, GroupAdmin
 from django.contrib.auth.models import User, Group
 from django.utils.translation import ugettext_lazy as _
 
 from lck.django.activitylog.admin import IPInline, UserAgentInline
-from lck.django.common.admin import ForeignKeyAutocompleteTabularInline
+from lck.django.common.admin import (
+    ForeignKeyAutocompleteTabularInline,
+    ModelAdmin,
+)
 from lck.django.profile.admin import ProfileInlineFormSet
 from tastypie.models import ApiKey
 
-from ralph.account.models import BoundPerm, Profile
+from ralph.account.models import BoundPerm, Profile, Region
 
 
 class ProfileInline(admin.StackedInline):
@@ -67,6 +76,61 @@ class ApiKeyInline(admin.StackedInline):
     extra = 0
 
 
+class RegionInlineFormSet(BaseModelFormSet):
+
+    def __init__(self, *args, **kwargs):
+        self.instance = kwargs.pop('instance')
+        super(RegionInlineFormSet, self).__init__(*args, **kwargs)
+
+    def _construct_form(self, *args, **kwargs):
+        return super(RegionInlineFormSet, self)._construct_form(
+            user_instance=self.instance, *args, **kwargs
+        )
+
+
+class RegionForm(ModelForm):
+    assigned = forms.BooleanField(label=_('assigned'), required=False)
+
+    def __init__(self, *args, **kwargs):
+        self.user_instance = kwargs.pop('user_instance', None)
+        super(RegionForm, self).__init__(*args, **kwargs)
+        if self.user_instance:
+            objects = Region.profile.through.objects
+            self.fields['assigned'].initial = objects.filter(
+                region=self.instance,
+                profile=self.user_instance.profile
+            ).exists()
+
+    def save(self, *args, **kwargs):
+        objects = Region.profile.through.objects
+        options = {
+            'profile': self.user_instance.profile,
+            'region': self.cleaned_data['id'],
+        }
+        if self.cleaned_data['assigned']:
+            objects.create(**options)
+        else:
+            objects.filter(**options).delete()
+
+
+class RegionInline(admin.TabularInline):
+    formset = RegionInlineFormSet
+    form = RegionForm
+    model = Region
+    readonly_fields = ('name',)
+    fields = ('name', 'assigned')
+
+    def get_formset(self, *args, **kwargs):
+        return modelformset_factory(
+            self.model,
+            extra=0,
+            exclude=['profile', 'name'],
+            form=self.form,
+            formset=self.formset,
+            max_num=1,
+        )
+
+
 class ProfileAdmin(UserAdmin):
 
     def groups_show(self):
@@ -77,6 +141,7 @@ class ProfileAdmin(UserAdmin):
     inlines = [
         ProfileInline,
         ProfileBoundPermInline,
+        RegionInline,
         ApiKeyInline,
         ProfileIPInline,
         ProfileUserAgentInline,
@@ -138,3 +203,11 @@ class CustomGroupAdmin(GroupAdmin):
 
 admin.site.unregister(Group)
 admin.site.register(Group, CustomGroupAdmin)
+
+
+class RegionAdmin(ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+    exclude = ['profile']
+
+admin.site.register(Region, RegionAdmin)
