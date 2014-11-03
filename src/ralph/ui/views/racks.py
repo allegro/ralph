@@ -410,7 +410,9 @@ class DeviceCreateView(BaseRacksMixin, CreateView):
             'asset' in form.cleaned_data.keys(),
         )):
             from ralph_assets.api_ralph import assign_asset
-            assign_asset(dev.id, form.cleaned_data['asset'].id)
+            asset = form.cleaned_data['asset']
+            if asset:
+                assign_asset(dev.id, asset.id)
         messages.success(self.request, "Device created.")
         return HttpResponseRedirect(self.request.path + '../info/%d' % dev.id)
 
