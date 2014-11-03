@@ -558,7 +558,19 @@ class Device(
 
         @property
         def ci(self):
-            return self.ci_set.get()
+            from ralph.cmdb.models_ci import CI
+            try:
+                return self.ci_set.get()
+            except CI.DoesNotExist:
+                return None
+
+        @ci.setter
+        def ci(self, value):
+            from ralph.cmdb.models_ci import CI
+            if self.ci_set.count():
+                self.ci_set.all().delete()
+            if value and isinstance(value, CI):
+                self.ci_set.add(value)
 
     def clean(self):
         fields_list = [
