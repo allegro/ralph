@@ -34,4 +34,4 @@ class SavingUser(db.Model):
 
     def save(self, user=None, *args, **kwargs):
         self.saving_user = user
-        return super(SavingUser, self).save(*args, **kwargs)
+        return super(SavingUser, self).save(user=user, *args, **kwargs)
