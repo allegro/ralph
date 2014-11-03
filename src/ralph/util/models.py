@@ -8,11 +8,16 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from collections import namedtuple
+
 from django.contrib.auth.models import User
 from django.db import models as db
 from django.db.utils import DatabaseError
 from django.dispatch import Signal
 from tastypie.models import create_api_key
+
+
+ChangeTuple = namedtuple('ChangeTuple', ['field', 'old_value', 'new_value'])
 
 
 def create_api_key_ignore_dberrors(*args, **kwargs):
@@ -54,7 +59,7 @@ class SyncFieldMixin(db.Model):
     def get_synced_objs_and_fields(self):
         raise NotImplementedError()
 
-    def save(self, root=True, visited=None, *args, **kwargs):
+    def save(self, mute=False, visited=None, *args, **kwargs):
         from ralph.ui.views.common import SAVE_PRIORITY
         # by default save with the same priority as in 'edit device' forms etc.
         visited = visited or set()
@@ -68,20 +73,27 @@ class SyncFieldMixin(db.Model):
             if obj in visited:
                 continue
             for f in fields:
-                source_old_value = self.dirty_fields.get(f)
-                target_old_value = getattr(obj, f)
-                new_value = getattr(self, f)
-                if new_value not in (source_old_value, target_old_value):
-                    changes.append({
-                        'field': f,
-                        'source': self,
-                        'target': obj,
-                        'source_old_value': source_old_value,
-                        'target_old_value': target_old_value,
-                        'new_value': new_value,
-                    })
-                setattr(obj, f, new_value)
-            obj.save(visited=visited, root=False, priority=priority)
+                setattr(obj, f, getattr(self, f))
+            obj.save(visited=visited, mute=True, priority=priority)
+        if not mute:
+            changes = []
+            try:
+                old_obj = type(self).objects.get(pk=self.pk)
+            except type(self).DoesNotExist:
+                old_obj = None
+            for field in self._meta.fields:
+                if field.name in {
+                    'save_priorities',
+                    'modified',
+                    'cache_version',
+                }:
+                    continue
+                old_value = getattr(old_obj, field.name) if old_obj else None
+                new_value = getattr(self, field.name)
+                if old_value != new_value:
+                    changes.append(
+                        ChangeTuple(field.name, old_value, new_value)
+                    )
             fields_synced_signal.send_robust(
                 sender=self, changes=changes, change_author=change_author
             )

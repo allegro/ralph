@@ -9,14 +9,19 @@ import datetime
 
 from django.test import TestCase
 import mock
+from mock_django.signals import mock_signal_receiver
 
 from ralph.cmdb.tests.utils import (
     CIRelationFactory,
     DeviceEnvironmentFactory,
     ServiceCatalogFactory,
 )
+from ralph.discovery.tests.util import DeviceFactory
+from ralph.cmdb.tests.utils import ServiceCatalogFactory
 from ralph.discovery.models import DeviceType, Device, UptimeSupport
 from ralph.discovery.models_history import HistoryChange
+from ralph.util.models import fields_synced_signal, ChangeTuple
+from ralph.util.tests.utils import UserFactory
 
 
 class ModelsTest(TestCase):
@@ -68,6 +73,26 @@ class ModelsTest(TestCase):
         dev_db = Device.objects.get(id=dev.id)
         self.assertEqual(dev_db.name, 'dev1')
         self.assertEqual(dev_db.sn, 'xaxaxa')
+
+
+class DeviceSignalTest(TestCase):
+    """Device should send a signal when created."""
+
+    def setUp(self):
+        self.dev = DeviceFactory(service=ServiceCatalogFactory())
+
+    def test_signal_sent(self):
+        with mock_signal_receiver(fields_synced_signal) as rec:
+            old_name = self.dev.name
+            author = UserFactory()
+            self.dev.name = 'New name'
+            self.dev.save(user=author)
+            rec.assert_called_with(
+                signal=mock.ANY, 
+                sender=self.dev,
+                changes=[ChangeTuple('name', old_name, 'New name')],
+                change_author=author,
+            )
 
 
 class MockDateTime(datetime.datetime):

@@ -38,6 +38,7 @@ setup(
         'django-tastypie==0.9.16',
         'django-rq==0.4.5',
         'django==1.4.15',
+        'mock-django==0.6.6',
         'django-pluggable-apps==1.2',
         'django-redis-cache==0.13.0',
         'dnspython==1.11.0',
