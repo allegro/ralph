@@ -232,7 +232,10 @@ class MenuMixin(object):
             self.menus.append(AdminMenu(request))
         self.menus.append(UserMenu(request))
         for app in pluggableapp.app_dict.values():
-            if not isinstance(app, RalphModule):
+            if (
+                not isinstance(app, RalphModule) or
+                app.module_name in settings.HIDE_MENU
+            ):
                 continue
             menu_module = importlib.import_module(
                 '.'.join([app.module_name, 'menu'])

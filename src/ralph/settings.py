@@ -218,7 +218,6 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 TIME_ZONE = 'Europe/Warsaw'
 LANGUAGE_CODE = 'en-us'
 CURRENCY = 'PLN'
-VENTURE_FOR_VIRTUAL_USAGES_API = 'Systemy wirtualne'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -247,6 +246,7 @@ STATIC_ROOT = '~/.ralph/shared/static'
 FILE_UPLOAD_TEMP_DIR = '~/.ralph/shared/uploads-part'
 SYNERGY_URL_BASE = "/"
 DASHBOARD_SITE_DOMAIN = "dashboard.local"
+HIDE_MENU = []
 IPMI_USER = None
 IPMI_PASSWORD = None
 F5_USER = None
