@@ -1,10 +1,16 @@
 Change Log
 ----------
 
-DEV
-~~~
+2.2.0
+~~~~~
 
-* Added support for regions
+Released on November 5, 2014
+
+* New look for menu.
+* CORE: Added new plugin - proxmox.
+* CORE: Added new resource to API - PowerDNSRecord.
+* CORE: Added support for regions (used in Assets Module).
+* Bugfixes.
 
 2.1.0
 ~~~~~
