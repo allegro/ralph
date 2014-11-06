@@ -21,7 +21,7 @@ from ralph.cmdb.tests.utils import ServiceCatalogFactory
 from ralph.discovery.models import DeviceType, Device, UptimeSupport
 from ralph.discovery.models_history import HistoryChange
 from ralph.util.models import fields_synced_signal, ChangeTuple
-from ralph.util.tests.utils import UserFactory
+from ralph.util.tests.utils import UserFactory, ServiceFactory
 
 
 class ModelsTest(TestCase):
@@ -85,12 +85,14 @@ class DeviceSignalTest(TestCase):
         with mock_signal_receiver(fields_synced_signal) as rec:
             old_name = self.dev.name
             author = UserFactory()
-            self.dev.name = 'New name'
+            old_service = self.dev.service
+            service = ServiceCatalogFactory()
+            self.dev.service = service
             self.dev.save(user=author)
             rec.assert_called_with(
-                signal=mock.ANY, 
+                signal=mock.ANY,
                 sender=self.dev,
-                changes=[ChangeTuple('name', old_name, 'New name')],
+                changes=[ChangeTuple('service', old_service, service)],
                 change_author=author,
             )
 
