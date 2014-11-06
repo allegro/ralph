@@ -82,10 +82,9 @@ class SyncFieldMixin(db.Model):
             except type(self).DoesNotExist:
                 old_obj = None
             for field in self._meta.fields:
-                if field.name in {
-                    'save_priorities',
-                    'modified',
-                    'cache_version',
+                if field.name not in {
+                    'service',
+                    'device_environment',
                 }:
                     continue
                 old_value = getattr(old_obj, field.name) if old_obj else None
