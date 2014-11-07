@@ -550,7 +550,12 @@ class NetworksResource(MResource):
             ]
         )
         filtering = {
+            'min_ip': ALL,
+            'max_ip': ALL,
         }
+        ordering = [
+            'min_ip', 'max_ip',
+        ]
         excludes = (
         )
         cache = SimpleCache()
