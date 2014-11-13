@@ -13,6 +13,7 @@ from factory import Sequence, lazy_attribute, Factory
 from factory.django import DjangoModelFactory
 
 from ralph.discovery.models_device import Device
+from ralph.discovery.models_network import Network
 
 
 class DeviceFactory(DjangoModelFactory):
@@ -38,6 +39,10 @@ class TenantFactory(Factory):
     name = Sequence(lambda n: 'sample_tenant{}'.format(n))
     description = 'qwerty;asdfg;'
     enabled = True
+
+
+class NetworkFactory(Factory):
+    FACTORY_FOR = Network
 
 
 class MockSSH(object):
