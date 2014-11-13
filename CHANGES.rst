@@ -5,6 +5,7 @@ DEV
 ~~~
 
 * Added support for regions
+* puppet plugin tries to get data firstly from puppetdb-api
 
 2.1.0
 ~~~~~
