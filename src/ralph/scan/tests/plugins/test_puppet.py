@@ -29,7 +29,9 @@ from ralph.scan.plugins.puppet import (
 
 
 existing_file = __file__  # test requires existing file
-fake_cert_config = {v:existing_file for v in ['ca_cert', 'local_cert', 'local_cert_key']}
+fake_cert_config = {
+    v: existing_file for v in ['ca_cert', 'local_cert', 'local_cert_key']
+}
 
 
 class PuppetPluginTest(TestCase):
@@ -145,14 +147,15 @@ class PuppetPluginTest(TestCase):
             ({'127.0.0.1', '127.0.0.2'}, {'localhost'}),
         )
 
-
     def test_getting_puppet_providers_raise_exception(self):
         self.assertRaises(PuppetConfigurationError, get_puppet_providers)
 
     @override_settings(PUPPET_API_JSON_URL='https://server:port')
     @mock.patch.object(PuppetDBProvider, '__init__')
     @mock.patch.object(PuppetAPIJsonProvider, '__init__')
-    @override_settings(PUPPET_DB_URL='mysql://user:password@server:port/db_name')
+    @override_settings(
+        PUPPET_DB_URL='mysql://user:password@server:port/db_name'
+    )
     def test_api_proivider_is_first(self, db_provider, api_provider):
         db_provider.return_value, api_provider.return_value = None, None
         providers = get_puppet_providers()
@@ -160,13 +163,14 @@ class PuppetPluginTest(TestCase):
         self.assertTrue(isinstance(providers[0], PuppetAPIJsonProvider))
 
     @mock.patch.object(PuppetDBProvider, '__init__')
-    @override_settings(PUPPET_DB_URL='mysql://user:password@server:port/db_name')
+    @override_settings(
+        PUPPET_DB_URL='mysql://user:password@server:port/db_name'
+    )
     def test_db_provider_returned_when_no_api_provider(self, db_provider):
         db_provider.return_value = None
         providers = get_puppet_providers()
         self.assertEqual(len(providers), 1)
         self.assertTrue(isinstance(providers[0], PuppetDBProvider))
-
 
 
 class TestPuppetAPIJsonProvider(TestCase):

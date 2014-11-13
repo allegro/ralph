@@ -13,7 +13,6 @@ import time
 import MySQLdb
 import requests
 import sqlalchemy as sqla
-import yaml
 
 from django.conf import settings
 
@@ -61,8 +60,8 @@ class PuppetAPIJsonProvider(PuppetBaseProvider):
         for attr in ['local_cert', 'local_cert_key', 'ca_cert']:
             value = puppet_api_json_certs[attr]
             if not value:
-                #TODO:: pass helpful info to exc
-                raise PuppetConfigurationError
+                msg = "Settings value is empty: {!r} = {!r}".format(attr, value)
+                raise PuppetConfigurationError(msg)
             assert os.path.exists(value) is True, "No file at path: {}".format(
                 value,
             )
@@ -99,47 +98,9 @@ class PuppetAPIJsonProvider(PuppetBaseProvider):
             return data
 
 
-# TODO:: rm it
-# class PuppetAPIProvider(PuppetBaseProvider):
-#     #TODO:: rm it :P
-#
-#     def __init__(self, api_url):
-#         self.api_url = api_url
-#
-#     def get_facts(self, ip_addresses, hostnames, messages=[]):
-#         return self._get_all_facts_by_hostnames(hostnames)
-#
-#     def _get_all_facts_by_hostnames(self, hostnames):
-#         def construct_ruby_object(loader, suffix, node):
-#             return loader.construct_yaml_map(node)
-#
-#         def construct_ruby_sym(loader, node):
-#             return loader.construct_yaml_str(node)
-#
-#         yaml.add_multi_constructor(u"!ruby/object:", construct_ruby_object)
-#         yaml.add_constructor(u"!ruby/sym", construct_ruby_sym)
-#         for hostname in hostnames:
-#             data = self._get_data_for_hostname(hostname)
-#             if data:
-#                 return yaml.load(data)['values']
-#
-#     def _get_data_for_hostname(self, hostname):
-#         response = requests.get(
-#             "%(base_url)s/%(hostname)s" % dict(
-#                 base_url=self.api_url,
-#                 hostname=hostname,
-#             ),
-#             headers={'Accept': 'yaml'},
-#             verify=False,
-#         )
-#         if response.status_code == requests.codes.ok:
-#             return response.text
-
-
 class PuppetDBProvider(PuppetBaseProvider):
 
     def __init__(self, db_url):
-        import pdb; pdb.set_trace()
         self.db_url = db_url
         self.conn = self._connect_db()
 
@@ -184,7 +145,6 @@ class PuppetDBProvider(PuppetBaseProvider):
     def _get_facts_by_ip_addresses(self, ip_addresses):
         facts = None
         for ip_address in ip_addresses:
-            print('ip_address', ip_address)
             rows = self.conn.execute(
                 """
                     SELECT fn.name, fv.value
@@ -205,7 +165,6 @@ class PuppetDBProvider(PuppetBaseProvider):
                         "More than 1 machine reported by Puppet for "
                         "this IP set: {}".format(', '.join(ip_addresses)),
                     )
-        print('facts', facts)
         return facts
 
     def _get_facts_by_hostnames(self, hostnames):
@@ -312,6 +271,7 @@ def get_puppet_providers():
         raise PuppetConfigurationError
     return providers_chain
 
+
 def _puppet2(ip_address, messages=[]):
     '''
     Similar to ``_puppet`` function, but it gets data from first resolved
@@ -321,15 +281,11 @@ def _puppet2(ip_address, messages=[]):
     ip_addresses_set, hostnames_set = _get_ip_addresses_hostnames_sets(
         ip_address,
     )
-
-
     providers_chain = get_puppet_providers()
     for provider in providers_chain:
         facts = provider.get_facts(ip_addresses_set, hostnames_set, messages)
         if facts:
             break
-
-
     if not facts:
         raise Error('Host config not found.')
     is_virtual = _is_host_virtual(facts)
@@ -368,6 +324,7 @@ def _puppet2(ip_address, messages=[]):
         device_info['installed_software'] = installed_software
     device_info.update(handle_facts_os(facts, is_virtual))
     return device_info
+
 
 def _puppet(provider, ip_address, messages=[]):
     ip_addresses_set, hostnames_set = _get_ip_addresses_hostnames_sets(
@@ -413,21 +370,16 @@ def _puppet(provider, ip_address, messages=[]):
     device_info.update(handle_facts_os(facts, is_virtual))
     return device_info
 
+
 def scan_address(ip_address, **kwargs):
     messages = []
     result = get_base_result_template('puppet', messages)
     try:
-        # TODO:: rm it
-        # device_info = _puppet(puppet_provider, ip_address, messages)
         device_info = _puppet2(ip_address, messages)
-
-
     except PuppetConfigurationError as e:
         messages.append('Not configured.')
         result['status'] = 'error'
         return result
-
-
     except (LshwError, Error) as e:
         messages.append(unicode(e))
         result['status'] = 'error'
