@@ -29,7 +29,7 @@ from django.views.generic import (
 )
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
-from bob.menu import MenuItem, Divider
+from bob.menu import MenuItem
 from bob.data_table import DataTableColumn, DataTableMixin
 from powerdns.models import Record
 
@@ -201,24 +201,18 @@ class UserMenu(Menu):
             fugue_icon='fugue-user',
             view_name='user_preference',
             pull_right=True,
-            dropdown=True,
-            subitems=[
-                MenuItem(
-                    'Preferences',
-                    name='user_preference',
-                    fugue_icon='fugue-application-task',
-                    view_name='user_preference',
-                ),
-                Divider(),
-                MenuItem(
-                    'Logout',
-                    name='logout',
-                    fugue_icon='fugue-door-open-out',
-                    view_name='logout',
-                ),
-            ]
         )
         super(UserMenu, self).__init__(request, **kwargs)
+
+
+class LogoutMenu(Menu):
+    module = MenuItem(
+        'Logout',
+        name='logout',
+        fugue_icon='fugue-toolbox',
+        view_name='logout',
+        pull_right=True,
+    )
 
 
 class MenuMixin(object):
@@ -228,9 +222,10 @@ class MenuMixin(object):
 
     def dispatch(self, request, *args, **kwargs):
         self.menus = [ralph_menu(request)]
+        self.menus.append(LogoutMenu(request))
+        self.menus.append(UserMenu(request))
         if request.user.is_staff:
             self.menus.append(AdminMenu(request))
-        self.menus.append(UserMenu(request))
         for app in pluggableapp.app_dict.values():
             if (
                 not isinstance(app, RalphModule) or
