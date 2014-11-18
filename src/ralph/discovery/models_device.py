@@ -1003,13 +1003,37 @@ class LoadBalancerPool(Named, WithConcurrentGetOrCreate):
 class LoadBalancerVirtualServer(SavePrioritized, WithConcurrentGetOrCreate):
     name = db.CharField(verbose_name=_("name"), max_length=255)
     device = db.ForeignKey(Device, verbose_name=_("load balancer device"))
-    default_pool = db.ForeignKey(LoadBalancerPool)
+    default_pool = db.ForeignKey(LoadBalancerPool, null=True)
     address = db.ForeignKey("IPAddress", verbose_name=_("address"))
     port = db.PositiveIntegerField(verbose_name=_("port"))
+    venture = db.ForeignKey(
+        "business.Venture",
+        verbose_name=_("venture"),
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=db.SET_NULL,
+        related_name='loadbalancervirtualservers',
+    )
+    service = db.ForeignKey(
+        ServiceCatalog,
+        default=None,
+        null=True,
+        on_delete=db.PROTECT,
+        related_name='loadbalancervirtualservers',
+    )
+    device_environment = db.ForeignKey(
+        DeviceEnvironment,
+        default=None,
+        null=True,
+        on_delete=db.PROTECT,
+        related_name='loadbalancervirtualservers',
+    )
 
     class Meta:
         verbose_name = _("load balancer virtual server")
         verbose_name_plural = _("load balancer virtual servers")
+        unique_together = ('address', 'port')
 
     def __unicode__(self):
         return "{} ({})".format(self.name, self.id)
