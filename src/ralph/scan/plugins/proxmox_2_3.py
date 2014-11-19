@@ -59,7 +59,7 @@ def _get_node_name(ssh):
 
 
 def _get_node_sn(ssh):
-    stdin, stdout, stderr = ssh.exec_command("dmidecode -t 1 | grep -i serial")
+    stdin, stdout, stderr = ssh.exec_command("sudo /usr/sbin/dmidecode -t 1 | grep -i serial")
     node_sn = stdout.readline().split()[-1]
     return node_sn
 
@@ -85,7 +85,7 @@ def _get_proxmox_version(s, base_url):
 
 
 def _get_node_mac_address(ssh, iface='eth0'):
-    command = "ifconfig {} | head -n 1".format(iface)
+    command = "/sbin/ifconfig {} | head -n 1".format(iface)
     stdin, stdout, stderr = ssh.exec_command(command)
     mac = stdout.readline().split()[-1]
     mac = MACAddressField.normalize(mac)
@@ -98,7 +98,7 @@ def _get_device_info(node_name, session, ssh, base_url):
         cpuinfo = session.get(url).json()['data']['cpuinfo']
     elif ssh:
         stdin, stdout, stderr = ssh.exec_command(
-            "pvesh get /nodes/{}/status".format(node_name)
+            "sudo /usr/bin/pvesh get /nodes/{}/status".format(node_name)
         )
         data = stdout.read()
         cpuinfo = json.loads(data)['cpuinfo'] if data else None
@@ -132,7 +132,7 @@ def _get_vm_info(node_name, vmid, session, ssh, base_url, iface='net0'):
         vm_config = session.get(url).json()['data']
     elif ssh:
         stdin, stdout, stderr = ssh.exec_command(
-            "pvesh get /nodes/{}/qemu/{}/config".format(node_name, vmid)
+            "sudo /usr/bin/pvesh get /nodes/{}/qemu/{}/config".format(node_name, vmid)
         )
         data = stdout.read()
         vm_config = json.loads(data) if data else None
@@ -199,7 +199,7 @@ def _get_virtual_machines(node_name, session, ssh, base_url):
         vms = session.get(url).json()['data']
     elif ssh:
         stdin, stdout, stderr = ssh.exec_command(
-            "pvesh get /nodes/{}/qemu".format(node_name)
+            "sudo /usr/bin/pvesh get /nodes/{}/qemu".format(node_name)
         )
         data = stdout.read()
         vms = json.loads(data) if data else []
