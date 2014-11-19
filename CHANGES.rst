@@ -1,6 +1,12 @@
 Change Log
 ----------
 
+Dev
+===
+Released on TBA
+
+* puppet plugin tries to get data firstly from puppetdb-api
+
 2.2.0
 ~~~~~
 

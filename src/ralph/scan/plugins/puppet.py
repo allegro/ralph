@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
 import random
 import thread
 import time
@@ -12,12 +13,11 @@ import time
 import MySQLdb
 import requests
 import sqlalchemy as sqla
-import yaml
 
 from django.conf import settings
 
 from ralph.discovery.models import IPAddress, SERIAL_BLACKLIST
-from ralph.scan.errors import Error
+from ralph.scan.errors import Error, NotConfiguredError
 from ralph.scan.facts import (
     handle_facts,
     handle_facts_3ware_disks,
@@ -45,39 +45,56 @@ class PuppetBaseProvider(object):
         raise NotImplementedError()
 
 
-class PuppetAPIProvider(PuppetBaseProvider):
+class PuppetAPIJsonProvider(PuppetBaseProvider):
 
     def __init__(self, api_url):
         self.api_url = api_url
+        self._set_certs_from_config()
+
+    def _set_certs_from_config(self):
+        puppet_api_json_certs = getattr(settings, 'PUPPET_API_JSON_CERTS', None)
+        if not puppet_api_json_certs:
+            msg = "PUPPET_API_JSON_CERTS is not set"
+            raise NotConfiguredError(msg)
+        for attr in ['local_cert', 'local_cert_key', 'ca_cert']:
+            value = puppet_api_json_certs.get(attr, None)
+            if not value:
+                msg = "Settings value is empty: {!r} = {!r}".format(attr, value)
+                raise NotConfiguredError(msg)
+            assert os.path.exists(value) is True, "No file at path: {}".format(
+                value,
+            )
+            setattr(self, attr, value)
+        os.environ['REQUESTS_CA_BUNDLE'] = self.ca_cert
 
     def get_facts(self, ip_addresses, hostnames, messages=[]):
         return self._get_all_facts_by_hostnames(hostnames)
 
     def _get_all_facts_by_hostnames(self, hostnames):
-        def construct_ruby_object(loader, suffix, node):
-            return loader.construct_yaml_map(node)
-
-        def construct_ruby_sym(loader, node):
-            return loader.construct_yaml_str(node)
-
-        yaml.add_multi_constructor(u"!ruby/object:", construct_ruby_object)
-        yaml.add_constructor(u"!ruby/sym", construct_ruby_sym)
+        founds = []
         for hostname in hostnames:
-            data = self._get_data_for_hostname(hostname)
-            if data:
-                return yaml.load(data)['values']
+            found_data = self._get_data_for_hostname(hostname)
+            if found_data:
+                founds.append(found_data)
+        if len(founds) > 1:
+            raise Error(
+                "More than 1 machine found by puppetdb API for "
+                "this hostname set: {}".format(', '.join(hostnames)),
+            )
+        facts = founds[0] if len(founds) == 1 else None
+        return facts
 
     def _get_data_for_hostname(self, hostname):
+        resource_path = '/v3/nodes/{hostname}/facts'.format(hostname=hostname)
+        resource_url = ''.join([self.api_url, resource_path])
         response = requests.get(
-            "%(base_url)s/%(hostname)s" % dict(
-                base_url=self.api_url,
-                hostname=hostname,
-            ),
-            headers={'Accept': 'yaml'},
-            verify=False,
+            resource_url,
+            cert=(self.local_cert, self.local_cert_key),
+            verify=True,
         )
         if response.status_code == requests.codes.ok:
-            return response.text
+            data = {node['name']: node['value'] for node in response.json()}
+            return data
 
 
 class PuppetDBProvider(PuppetBaseProvider):
@@ -240,11 +257,34 @@ def _merge_disks_results(disks, new_disks):
     return result
 
 
-def _puppet(provider, ip_address, messages=[]):
+def get_puppet_providers():
+    providers_chain = []
+    for puppet_url, provider_class in (
+        ('PUPPET_API_JSON_URL', PuppetAPIJsonProvider),
+        ('PUPPET_DB_URL', PuppetDBProvider),
+    ):
+        api_path = getattr(settings, puppet_url, None)
+        if api_path:
+            providers_chain.append(provider_class(api_path))
+    if not providers_chain:
+        raise NotConfiguredError
+    return providers_chain
+
+
+def _puppet(ip_address, messages=[]):
+    '''
+    Similar to ``_puppet`` function, but it gets data from first resolved
+    provider (provider also MUST return data), instead of passed provider
+    (as param) like ``_puppet`` do.
+    '''
     ip_addresses_set, hostnames_set = _get_ip_addresses_hostnames_sets(
         ip_address,
     )
-    facts = provider.get_facts(ip_addresses_set, hostnames_set, messages)
+    providers_chain = get_puppet_providers()
+    for provider in providers_chain:
+        facts = provider.get_facts(ip_addresses_set, hostnames_set, messages)
+        if facts:
+            break
     if not facts:
         raise Error('Host config not found.')
     is_virtual = _is_host_virtual(facts)
@@ -288,18 +328,12 @@ def _puppet(provider, ip_address, messages=[]):
 def scan_address(ip_address, **kwargs):
     messages = []
     result = get_base_result_template('puppet', messages)
-    puppet_api_url = SETTINGS.get('puppet_api_url')
-    puppet_db_url = SETTINGS.get('puppet_db_url')
-    if not puppet_api_url and not puppet_db_url:
+    try:
+        device_info = _puppet(ip_address, messages)
+    except NotConfiguredError as e:
         messages.append('Not configured.')
         result['status'] = 'error'
         return result
-    if puppet_db_url:
-        puppet_provider = PuppetDBProvider(puppet_db_url)
-    else:
-        puppet_provider = PuppetAPIProvider(puppet_api_url)
-    try:
-        device_info = _puppet(puppet_provider, ip_address, messages)
     except (LshwError, Error) as e:
         messages.append(unicode(e))
         result['status'] = 'error'
