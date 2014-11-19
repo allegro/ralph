@@ -19,11 +19,10 @@ from ralph.scan.plugins.puppet import (
 
 
 from django.test.utils import override_settings
-from ralph.scan.errors import Error
+from ralph.scan.errors import Error, NotConfiguredError
 from ralph.scan.plugins.puppet import (
     get_puppet_providers,
     PuppetAPIJsonProvider,
-    PuppetConfigurationError,
     PuppetDBProvider,
 )
 
@@ -148,7 +147,7 @@ class PuppetPluginTest(TestCase):
         )
 
     def test_getting_puppet_providers_raise_exception(self):
-        self.assertRaises(PuppetConfigurationError, get_puppet_providers)
+        self.assertRaises(NotConfiguredError, get_puppet_providers)
 
     @override_settings(PUPPET_API_JSON_URL='https://server:port')
     @mock.patch.object(PuppetDBProvider, '__init__')

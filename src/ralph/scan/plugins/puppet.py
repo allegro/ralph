@@ -17,7 +17,7 @@ import sqlalchemy as sqla
 from django.conf import settings
 
 from ralph.discovery.models import IPAddress, SERIAL_BLACKLIST
-from ralph.scan.errors import Error
+from ralph.scan.errors import Error, NotConfiguredError
 from ralph.scan.facts import (
     handle_facts,
     handle_facts_3ware_disks,
@@ -39,10 +39,6 @@ SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 ENGINES = {}
 
 
-class PuppetConfigurationError(Exception):
-    pass
-
-
 class PuppetBaseProvider(object):
 
     def get_facts(self, ip_addresses, hostnames, messages=[]):
@@ -57,11 +53,14 @@ class PuppetAPIJsonProvider(PuppetBaseProvider):
 
     def _set_certs_from_config(self):
         puppet_api_json_certs = getattr(settings, 'PUPPET_API_JSON_CERTS', None)
+        if not puppet_api_json_certs:
+            msg = "PUPPET_API_JSON_CERTS is not set"
+            raise NotConfiguredError(msg)
         for attr in ['local_cert', 'local_cert_key', 'ca_cert']:
-            value = puppet_api_json_certs[attr]
+            value = puppet_api_json_certs.get(attr, None)
             if not value:
                 msg = "Settings value is empty: {!r} = {!r}".format(attr, value)
-                raise PuppetConfigurationError(msg)
+                raise NotConfiguredError(msg)
             assert os.path.exists(value) is True, "No file at path: {}".format(
                 value,
             )
@@ -268,11 +267,11 @@ def get_puppet_providers():
         if api_path:
             providers_chain.append(provider_class(api_path))
     if not providers_chain:
-        raise PuppetConfigurationError
+        raise NotConfiguredError
     return providers_chain
 
 
-def _puppet2(ip_address, messages=[]):
+def _puppet(ip_address, messages=[]):
     '''
     Similar to ``_puppet`` function, but it gets data from first resolved
     provider (provider also MUST return data), instead of passed provider
@@ -326,57 +325,12 @@ def _puppet2(ip_address, messages=[]):
     return device_info
 
 
-def _puppet(provider, ip_address, messages=[]):
-    ip_addresses_set, hostnames_set = _get_ip_addresses_hostnames_sets(
-        ip_address,
-    )
-    facts = provider.get_facts(ip_addresses_set, hostnames_set, messages)
-    if not facts:
-        raise Error('Host config not found.')
-    is_virtual = _is_host_virtual(facts)
-    if 'lshw' in facts:
-        device_info = _parse_lshw(facts['lshw'], is_virtual)
-    else:
-        device_info = _parse_facts(facts, is_virtual)
-    ip_addresses = handle_facts_ip_addresses(facts)
-    if ip_addresses:
-        device_info['system_ip_addresses'] = ip_addresses
-    else:
-        device_info['system_ip_addresses'] = [ip_address]
-    disk_shares = handle_facts_wwn(facts)
-    if disk_shares:
-        device_info['disk_shares'] = disk_shares
-    disks = device_info.get('disks', [])
-    disks = _merge_disks_results(
-        disks,
-        handle_facts_3ware_disks(facts),
-    )
-    disks = _merge_disks_results(
-        disks,
-        handle_facts_smartctl(facts),
-    )
-    disks = _merge_disks_results(
-        disks,
-        handle_facts_hpacu(facts),
-    )
-    disks = _merge_disks_results(
-        disks,
-        handle_facts_megaraid(facts),
-    )
-    device_info['disks'] = disks
-    installed_software = handle_facts_packages(facts)
-    if installed_software:
-        device_info['installed_software'] = installed_software
-    device_info.update(handle_facts_os(facts, is_virtual))
-    return device_info
-
-
 def scan_address(ip_address, **kwargs):
     messages = []
     result = get_base_result_template('puppet', messages)
     try:
-        device_info = _puppet2(ip_address, messages)
-    except PuppetConfigurationError as e:
+        device_info = _puppet(ip_address, messages)
+    except NotConfiguredError as e:
         messages.append('Not configured.')
         result['status'] = 'error'
         return result
