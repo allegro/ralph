@@ -25,20 +25,20 @@ from ralph.scan.tests.plugins.samples.proxmox_2_3 import (
 class Proxmox23PluginTest(TestCase):
 
     def test_get_node_sn(self):
-        ssh = MockSSH([("dmidecode -t 1 | grep -i serial", NODE_SN)])
+        ssh = MockSSH([("sudo /usr/sbin/dmidecode -t 1 | grep -i serial", NODE_SN)])
         node_sn = _get_node_sn(ssh)
         node_sn_expected = "XYZ1234567890"
         self.assertEqual(node_sn, node_sn_expected)
 
     def test_get_node_mac_address(self):
-        ssh = MockSSH([("ifconfig eth0 | head -n 1", NODE_MAC)])
+        ssh = MockSSH([("/sbin/ifconfig eth0 | head -n 1", NODE_MAC)])
         node_mac = _get_node_mac_address(ssh)
         node_mac_expected = "202020202020"
         self.assertEqual(node_mac, node_mac_expected)
 
     def test_get_device_info(self):
         ssh = MockSSH([
-            ("pvesh get /nodes/node123/status", DEVICE_INFO_SAMPLE)
+            ("sudo /usr/bin/pvesh get /nodes/node123/status", DEVICE_INFO_SAMPLE)
         ])
         node_name, session, base_url = 'node123', None, None
         device_info = _get_device_info(node_name, session, ssh, base_url)
@@ -64,7 +64,7 @@ class Proxmox23PluginTest(TestCase):
 
     def test_vm_info(self):
         ssh = MockSSH([
-            ("pvesh get /nodes/node123/qemu/vm123/config", VM_INFO_SAMPLE)
+            ("sudo /usr/bin/pvesh get /nodes/node123/qemu/vm123/config", VM_INFO_SAMPLE)
         ])
         node_name, vmid, session, base_url = 'node123', 'vm123', None, None
         vm_info = _get_vm_info(node_name, vmid, session, ssh, base_url)
