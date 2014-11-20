@@ -57,7 +57,7 @@ class PuppetAPIJsonProvider(PuppetBaseProvider):
             msg = "PUPPET_API_JSON_CERTS is not set"
             raise NotConfiguredError(msg)
         for attr in ['local_cert', 'local_cert_key', 'ca_cert']:
-            value = puppet_api_json_certs.get(attr, None)
+            value = puppet_api_json_certs.get(attr)
             if not value:
                 msg = "Settings value is empty: {!r} = {!r}".format(attr, value)
                 raise NotConfiguredError(msg)
@@ -267,7 +267,8 @@ def get_puppet_providers():
         if api_path:
             providers_chain.append(provider_class(api_path))
     if not providers_chain:
-        raise NotConfiguredError
+        msg = "None puppet provider configured"
+        raise NotConfiguredError(msg)
     return providers_chain
 
 
