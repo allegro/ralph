@@ -2,45 +2,46 @@
 Install / Upgrade Ralph
 =======================
 
-Test drive - the easy way with docker
+Prebuilt docker image (experimental)
 =====================================
 
-It is the easiest way to try out Ralph for testing - using pre-built docker image with the worker, database, and server all together.
-You can do everything (scan, reporting) you would do with normal Ralph installation, but the data, by default, isn't stored permanently - see details below.
+It is the easiest way to try out Ralph using pre-built docker image with the worker, database, and server all together. Keep in mind, that
+for now we provide only test cutting-edge releases, not stable ones.
 
 1. Install docker using instructions at https://docs.docker.com/installation/
-2. Downloading and running ralph test instance can be as easy as typing::
+2. Create volume data for mysql data and configuration
 
-    docker run -P -t -i vi4m/ralph:stable
+    docker run  -i -t -name mysql_data -v /var/lib/mysql -v /home/ralph/.ralph busybox /bin/sh -c "chown default /home/ralph; chown default /home/ralph/.ralph"
 
-3. Check your instance port by typing ``docker ps -l``, for example 53914, and point your browser to: ``http://YOUR_DOCKER_IP:53914``.
+3. Initialize empty mysql database with default login: ralph, password: ralph  
+
+    docker run  -P -t -i -volumes-from mysql_data vi4m/ralph:latest /bin/bash /home/ralph/init_mysql.sh
+
+4. Collect static files
+
+    docker run  -P -t -i -volumes-from mysql_data vi4m/ralph:latest /home/ralph/bin/ralph collectstatic
+
+Now, run ralph - that's all!
+
+    docker run  -P -t -i -volumes-from mysql_data vi4m/ralph:latest
+
+
+6. Check your instance port by typing ``docker ps -l``, for example 53914, and point your browser to: ``http://YOUR_DOCKER_IP:53914``.
 Log in using username: ``ralph``: password: ``ralph``. Enjoy! For more information read docker manuals.
 
-4. Remember, that by default after stopping instance all your saved data will be erased, because mysql server is running inside the docker. If you don't like this - you can of course configure docker image to store data permanently:
-
-* configure /.ralph/settings ot use mysql server outside of docker container  or
-* as an alternative, you can mount /var/lib/mysql to the host persistent directory (read more: https://docs.docker.com/userguide/dockervolumes/)
-
-For example, for built-in mysql server:
-
-1. Mount local directory /my/local/directory as mysql storage and initialize it with database structure::
-
-    docker run -P -t -i -v /my/local/directory:/var/lib/mysql -t -i vi4m/ralph:stable /root/init_mysql.sh
-
-2. Ready. Now just run ralph on it::
-
-    docker run -P -t -i -v /my/local/directory:/var/lib/mysql -t -i vi4m/ralph:stable
-
-
-.. note::
-   Every hour we build cutting-edge release called vi4m/ralph:latest too.
 
 Upgrading an existing installation
 ==================================
 
 .. note::
 
-    To upgrade docker image, just re-download docker instance, and type `ralph migrate` inside the container.
+    To upgrade docker image, just re-download docker instance and migrate database and static files:
+    
+    docker run  -P -t -i -volumes-from mysql_data vi4m/ralph:latest /home/ralph/bin/ralph migrate
+    docker run  -P -t -i -volumes-from mysql_data vi4m/ralph:latest /home/ralph/bin/ralph collectstatic
+
+
+
 
 
 Before you start the upgrade, you need to stop any Ralph processes that are
