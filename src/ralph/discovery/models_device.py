@@ -13,6 +13,7 @@ import datetime
 import re
 import sys
 import os
+from collections import Iterable
 
 from django.conf import settings
 from django.contrib.contenttypes.generic import GenericRelation
@@ -35,6 +36,7 @@ from django.utils.html import escape
 
 from ralph.cmdb import models_ci
 from ralph.discovery.models_component import is_mac_valid, Ethernet
+from ralph.discovery.models_network import IPAddress
 from ralph.discovery.models_util import LastSeen, SavingUser
 from ralph.util import Eth
 from ralph.util.models import SyncFieldMixin
@@ -781,6 +783,35 @@ class Device(
         if self.management:
             return self.management
         return None
+
+    @property
+    def management_ip(self):
+        """
+        A backwards-compatible property that gets/sets/deletes management
+        IP of a device.
+        """
+        return self.find_management()
+
+    @management_ip.deleter
+    def management_ip(self):
+        self.management = None
+        self.ipaddress_set.filter(is_management=True).delete()
+
+    @management_ip.setter
+    def management_ip(self, value):
+        del self.management_ip
+        if isinstance(value, IPAddress):
+            ipaddr = value
+        elif isinstance(value, basestring):
+            ipaddr, _ = IPAddress.concurrent_get_or_create(
+                address=value
+            )
+        elif isinstance(value, Iterable):
+            hostname, ip = value
+            ipaddr, _ = IPAddress.concurrent_get_or_create(address=ip)
+            ipaddr.hostname = hostname
+        ipaddr.is_management = True
+        self.ipaddress_set.add(ipaddr)
 
     def get_model_name(self):
         return self.model.name if self.model else ''

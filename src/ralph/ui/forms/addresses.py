@@ -8,6 +8,8 @@ import ipaddr
 
 from bob.forms import AutocompleteWidget
 from django import forms
+from django.template import Context
+from django.template.loader import get_template
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.models import MACAddressField
 from powerdns.models import Domain, Record
@@ -336,3 +338,37 @@ IPAddressFormSet = forms.models.modelformset_factory(
     form=IPAddressForm,
     can_delete=True,
 )
+
+
+class IPWithHostWidget(forms.MultiWidget):
+
+    def __init__(self, attrs=None):
+        widgets = (
+            forms.TextInput(),
+            forms.TextInput(),
+        )
+        super(IPWithHostWidget, self).__init__(widgets, attrs)
+
+    def decompress(self, value):
+        return value or ('', '')
+
+    def format_output(self, rendered_widgets):
+        return get_template('ui/ip_with_host_widget.html').render(
+            Context({'widgets': rendered_widgets}),
+        )
+
+
+class IPWithHostField(forms.MultiValueField):
+    """A multifield for a single IPAddress"""
+
+    def __init__(self, *args, **kwargs):
+        fields = (
+            forms.CharField(),
+            forms.IPAddressField(),
+        )
+        super(IPWithHostField, self).__init__(fields, *args, **kwargs)
+
+    widget = IPWithHostWidget()
+
+    def compress(self, value):
+        return value

@@ -16,7 +16,7 @@ from ralph.cmdb.tests.utils import (
     DeviceEnvironmentFactory,
     ServiceCatalogFactory,
 )
-from ralph.discovery.tests.util import DeviceFactory
+from ralph.discovery.tests.util import DeviceFactory, IPAddressFactory
 from ralph.cmdb.tests.utils import ServiceCatalogFactory
 from ralph.discovery.models import DeviceType, Device, UptimeSupport
 from ralph.discovery.models_history import HistoryChange
@@ -95,6 +95,47 @@ class DeviceSignalTest(TestCase):
                 changes=[ChangeTuple('service', old_service, service)],
                 change_author=author,
             )
+
+class ManagementIpTests(TestCase):
+    """Tests for management IP property."""
+
+    def test_legacy(self):
+        """Legacy way of setting management_ip is readable."""
+        dev = DeviceFactory()
+        dev.management = IPAddressFactory(is_management=True)
+        self.assertEqual(dev.management, dev.management_ip)
+
+    def test_preferred(self):
+        """Preferred way of setting management_ip is readable."""
+        dev = DeviceFactory()
+        management = IPAddressFactory(is_management=True)
+        dev.ipaddress_set.add(management)
+        self.assertEqual(management, dev.management_ip)
+
+    def test_migrate(self):
+        """Resetting the management_ip should migrate the data from legacy way
+        to the preferred way"""
+        dev = DeviceFactory()
+        dev.management = IPAddressFactory(is_management=True)
+        dev.management_ip = dev.management_ip
+        self.assertEqual(dev.ipaddress_set.all()[0], dev.management_ip)
+        self.assertIsNone(dev.management)
+
+    def test_set_string(self):
+        """Setting the management_ip by string"""
+        dev = DeviceFactory()
+        dev.management_ip = '10.1.2.3'
+        self.assertEqual(dev.management_ip.address, '10.1.2.3')
+
+    def test_set_tuple(self):
+        """Setting the management_ip by tuple"""
+        dev = DeviceFactory()
+        data = ('hostname.dc1', '10.1.2.3')
+        dev.management_ip = data
+        self.assertEqual(
+            (dev.management_ip.hostname, dev.management_ip.address),
+            data,
+        )
 
 
 class MockDateTime(datetime.datetime):
