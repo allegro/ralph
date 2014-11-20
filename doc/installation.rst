@@ -5,8 +5,7 @@ Install / Upgrade Ralph
 Prebuilt docker image (experimental)
 =====================================
 
-It is the easiest way to try out Ralph using pre-built docker image with the worker, database, and server all together. Keep in mind, that
-for now we provide only test cutting-edge releases, not stable ones.
+It is the easiest way to try out Ralph using pre-built docker image with the worker, database, and server all together. Keep in mind, that for now we provide only test cutting-edge releases, not stable ones.
 
 1. Install docker using instructions at https://docs.docker.com/installation/
 2. Create volume data for mysql data and configuration
