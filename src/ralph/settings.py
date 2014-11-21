@@ -220,10 +220,10 @@ LANGUAGE_CODE = 'en-us'
 CURRENCY = 'PLN'
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': CURRENT_DIR + 'dbralph.sqlite',
-        'USER': '',
-        'PASSWORD': '',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'ralph',
+        'USER': 'ralph',
+        'PASSWORD': 'ralph',
         'HOST': '',
         'PORT': '',
         'OPTIONS': dict(
