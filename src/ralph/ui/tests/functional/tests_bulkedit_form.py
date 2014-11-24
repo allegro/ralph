@@ -6,7 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.test import TestCase
-from factory import fuzzy, Sequence, SubFactory
+from factory import Sequence, SubFactory
 from factory.django import DjangoModelFactory
 
 from ralph.business.models import Venture, VentureRole
@@ -59,13 +59,11 @@ class BulkeditTest(TestCase):
 
     def test_edit_single_device_and_check_history(self):
         url = '/ui/search/bulkedit/?'
-        changed_fields = ['name', 'position', 'chassis_position', 'remarks']
+        changed_fields = ['name', 'remarks']
         post_data = {
             'select': [self.device1.id],
             'edit': changed_fields,
             'name': 'new name',
-            'position': 'VI',
-            'chassis_position': 6,
             'remarks': 'some changed remark',
             'save_comment': 'some changed comment',
             'save': '',  # save form
@@ -75,8 +73,8 @@ class BulkeditTest(TestCase):
         for field in changed_fields:
             self.assertEqual(getattr(device1, field), post_data[field])
         history = HistoryChange.objects.filter(device=self.device1)
-        # 5 changes = 1 for device's creation + 4 for our changes
-        self.assertEqual(history.count(), 5)
+        # 3 changes = 1 for device's creation + 2 for our changes
+        self.assertEqual(history.count(), 3)
         comment = set([h.comment for h in history[1:]])
         # each one of our 4 changes should be recorded with the same comment
         self.assertEqual(len(comment), 1)
@@ -84,13 +82,11 @@ class BulkeditTest(TestCase):
 
     def test_edit_two_devices(self):
         url = '/ui/search/bulkedit/?'
-        changed_fields = ['name', 'position', 'chassis_position', 'remarks']
+        changed_fields = ['name', 'remarks']
         post_data = {
             'select': [self.device1.id, self.device2.id],
             'edit': changed_fields,
             'name': 'new name for both devices',
-            'position': 'VI',
-            'chassis_position': 6,
             'remarks': 'new remark for both devices',
             'save_comment': 'xxx',
             'save': '',  # save form
@@ -133,13 +129,11 @@ class BulkeditTest(TestCase):
 
     def test_two_devices_edit_one_verified(self):
         url = '/ui/search/bulkedit/?'
-        changed_fields = ['name', 'position', 'chassis_position', 'remarks']
+        changed_fields = ['name', 'remarks']
         post_data = {
             'select': [self.device1.id, self.device2.id],
             'edit': changed_fields,
             'name': 'new name for both devices',
-            'position': 'VI',
-            'chassis_position': 6,
             'remarks': 'new remark for both devices',
             'save_comment': 'xxx',
             'save': '',  # save form
@@ -159,13 +153,11 @@ class BulkeditTest(TestCase):
 
     def test_two_devices_edit_both_verified(self):
         url = '/ui/search/bulkedit/?'
-        changed_fields = ['name', 'position', 'chassis_position', 'remarks']
+        changed_fields = ['name', 'remarks']
         post_data = {
             'select': [self.device1.id, self.device2.id],
             'edit': changed_fields,
             'name': 'new name for both devices',
-            'position': 'VI',
-            'chassis_position': 6,
             'remarks': 'new remark for both devices',
             'save_comment': 'xxx',
             'save': '',  # save form

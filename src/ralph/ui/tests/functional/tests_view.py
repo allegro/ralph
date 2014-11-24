@@ -60,10 +60,12 @@ class LoginRedirectTest(TestCase):
 
     def test_hierarchy(self):
         """
-        Because there is no installed scrooge or assets, always show core
+        Because there is no installed scrooge, always show core
         user with scrooge perms -> show core
-        user with asset perms -> show core
         user with core perms -> show core
+
+        For asset perms:
+        user with asset perms -> show core
         """
         test_data = [
             Perm.has_scrooge_access,
@@ -78,7 +80,13 @@ class LoginRedirectTest(TestCase):
                 follow=True,
                 **self.request_headers
             )
-            self.assertEqual(
-                response.request['PATH_INFO'],
-                reverse('search', args=('info', '')),
-            )
+            if perm == Perm.has_assets_access:
+                self.assertEqual(
+                    response.request['PATH_INFO'],
+                    reverse('asset_search', args=('dc',)),
+                )
+            else:
+                self.assertEqual(
+                    response.request['PATH_INFO'],
+                    reverse('search', args=('info', '')),
+                )
