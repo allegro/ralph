@@ -436,8 +436,19 @@ class MarginKindAdmin(ModelAdmin):
 admin.site.register(models.MarginKind, MarginKindAdmin)
 
 
-class LoadBalancerVirtualServerAdmin(ModelAdmin):
+class LoadBalancerTypeAdmin(ModelAdmin):
     pass
+
+admin.site.register(
+    models.LoadBalancerType,
+    LoadBalancerTypeAdmin,
+)
+
+
+class LoadBalancerVirtualServerAdmin(ModelAdmin):
+    related_search_fields = {
+        'device': ['^name'],
+    }
 
 admin.site.register(
     models.LoadBalancerVirtualServer,
@@ -523,3 +534,26 @@ class DeviceEnvironmentAdmin(ModelAdmin):
 
 
 admin.site.register(models_device.DeviceEnvironment, DeviceEnvironmentAdmin)
+
+
+class DatabaseTypeAdmin(ModelAdmin):
+    pass
+
+admin.site.register(
+    models.DatabaseType,
+    DatabaseTypeAdmin,
+)
+
+
+class DatabaseAdmin(ModelAdmin):
+    list_filter = ('database_type__name',)
+    list_display = ('name', 'venture', 'service', 'device_environment', 'database_type')
+    search_fields = ('name', 'venture', 'service')
+    related_search_fields = {
+        'parent_device': ['^name'],
+    }
+
+admin.site.register(
+    models.Database,
+    DatabaseAdmin,
+)
