@@ -8,9 +8,10 @@ from __future__ import unicode_literals
 from django.test import TestCase
 
 from ralph.scan.data import (
-    get_choice_by_name,
+    can_edit_position,
     connection_from_data,
     device_from_data,
+    get_choice_by_name,
     get_device_data,
     merge_data,
     set_device_data,
@@ -37,6 +38,7 @@ from ralph.discovery.models import (
     Software,
     Storage,
 )
+from ralph_assets.tests.utils.assets import DCAssetFactory
 
 
 class GetDeviceDataTest(TestCase):
@@ -371,6 +373,39 @@ class SetDeviceDataTest(TestCase):
         self.assertEqual(device.rack, 'i31')
         self.assertEqual(device.chassis_position, 4)
         self.assertEqual(device.management.address, '10.10.10.2')
+
+    def test_basic_data_with_asset(self):
+        asset = DCAssetFactory()
+        asset.model.category.is_blade = False
+        asset.model.category.save()
+        data = {
+            'serial_number': 'aaa123456789',
+            'hostname': 'mervin',
+            'data_center': 'chicago',
+            'barcode': '00000',
+            'rack': 'i31',
+            'chassis_position': '4',
+            'management': '10.10.10.2',
+            'asset': asset,
+        }
+        warnings = []
+        set_device_data(self.device, data, warnings=warnings)
+        self.device.save()
+        device = Device.objects.get(sn='aaa123456789')
+        self.assertIsNone(device.dc)
+        self.assertIsNone(device.rack)
+        self.assertIsNone(device.chassis_position)
+        self.assertEqual(
+            warnings,
+            [
+                'You can not set data for `chassis_position` here - skipped. '
+                'Use assets module.',
+                'You can not set data for `data_center` here - skipped. '
+                'Use assets module.',
+                'You can not set data for `rack` here - skipped. '
+                'Use assets module.',
+            ]
+        )
 
     def test_model_name(self):
         data = {
@@ -793,6 +828,24 @@ class SetDeviceDataTest(TestCase):
         self.assertEqual(
             connections[1].networkconnection.inbound_port,
             "gr2"
+        )
+
+    def test_can_edit_position(self):
+        # No asset in saved data.
+        self.assertTrue(can_edit_position({'key_1': 'value_1'}))
+        # Asset with is_blade flag.
+        asset = DCAssetFactory()
+        asset.model.category.is_blade = True
+        asset.model.category.save()
+        self.assertTrue(
+            can_edit_position({'key_1': 'value_1', 'asset': asset}),
+        )
+        # Asset without is_blade flag.
+        asset = DCAssetFactory()
+        asset.model.category.is_blade = False
+        asset.model.category.save()
+        self.assertFalse(
+            can_edit_position({'key_1': 'value_1', 'asset': asset}),
         )
 
 

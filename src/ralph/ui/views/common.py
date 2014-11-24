@@ -99,6 +99,7 @@ from ralph.ui.forms.deployment import (
     ServerMoveStep2FormSet,
     ServerMoveStep3FormSet,
 )
+from ralph_assets.models_signals import update_core_localization
 
 
 SAVE_PRIORITY = 215
@@ -1110,6 +1111,9 @@ class Asset(BaseMixin, TemplateView):
             asset = self.form.cleaned_data['asset']
             from ralph_assets.api_ralph import assign_asset
             if assign_asset(self.object.id, asset.id):
+                # Deprecated. In future, localization will be stored only for
+                # Asset.
+                update_core_localization(asset_dev_info=asset.device_info)
                 messages.success(self.request, "Asset linked successfully.")
                 return HttpResponseRedirect(self.request.get_full_path())
             else:

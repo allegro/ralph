@@ -477,12 +477,12 @@ class Device(
         on_delete=db.SET_NULL,
     )
     chassis_position = db.PositiveIntegerField(
-        verbose_name=_("numeric position"),
+        verbose_name=_("position (U level)"),
         null=True,
         blank=True,
     )
     position = db.CharField(
-        verbose_name=_("position"),
+        verbose_name=_("orientation"),
         null=True,
         blank=True,
         max_length=16,

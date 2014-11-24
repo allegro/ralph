@@ -450,6 +450,15 @@ def get_device_data(device):
     return data
 
 
+def can_edit_position(data):
+    asset = data.get('asset')
+    if not asset:
+        return True
+    if asset.model.category.is_blade:
+        return True
+    return False
+
+
 def set_device_data(device, data, save_priority=SAVE_PRIORITY, warnings=[]):
     """
     Go through the submitted data, and update the Device object
@@ -464,8 +473,18 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY, warnings=[]):
         'barcode': 'barcode',
         'chassis_position': 'chassis_position',
     }
+    edit_position = can_edit_position(data)
     for field_name, key_name in keys.iteritems():
         if key_name in data:
+            if all((
+                not edit_position,
+                field_name in ('dc', 'rack', 'chassis_position'),
+            )):
+                warnings.append(
+                    'You can not set data for `{}` here - skipped. Use assets '
+                    'module.'.format(key_name),
+                )
+                continue
             setattr(device, field_name, data[key_name])
     if 'model_name' in data and (data['model_name'] or '').strip():
         try:

@@ -30,6 +30,7 @@ from ralph.ui.widgets import (
     ReadOnlyPriceWidget,
 )
 from ralph.ui.forms.util import all_ventures, all_roles
+from ralph_assets.models import Asset, Orientation
 
 
 class ServiceCatalogMixin(forms.ModelForm):
@@ -61,8 +62,10 @@ class ServiceCatalogMixin(forms.ModelForm):
         if device_environment not in envs_allowed:
             envs_allowed_str = ', '.join([e.name for e in envs_allowed])
             if len(envs_allowed) > 0:
-                msg = ("This value is not allowed for the service selected. "
-                       "Use one of these instead: {}.".format(envs_allowed_str))
+                msg = (
+                    "This value is not allowed for the service selected. "
+                    "Use one of these instead: {}.".format(envs_allowed_str),
+                )
             else:
                 msg = "This value is not allowed for the service selected."
             raise forms.ValidationError(msg)
@@ -125,13 +128,28 @@ class DeviceForm(ServiceCatalogMixin):
 
     def __init__(self, *args, **kwargs):
         super(DeviceForm, self).__init__(*args, **kwargs)
-        if self.instance and 'parent' in self.fields:
-            self.fields['parent'].choices = [
-                ('', '----'),
-            ] + [
-                (p.id, p.name) for p in
-                self.get_possible_parents(self.instance)
-            ]
+        if self.instance:
+            asset = self.instance.get_asset()
+            if 'parent' in self.fields:
+                self.fields['parent'].choices = [
+                    ('', '----'),
+                ] + [
+                    (p.id, p.name) for p in
+                    self.get_possible_parents(self.instance)
+                ]
+                if asset and not asset.model.category.is_blade:
+                    self.fields['parent'].widget = ReadOnlySelectWidget(
+                        choices=self.fields['parent'].choices,
+                    )
+            if asset and not asset.model.category.is_blade:
+                if 'chassis_position' in self.fields:
+                    self.fields[
+                        'chassis_position'
+                    ].widget = ReadOnlyWidget()
+                if 'position' in self.fields:
+                    self.fields[
+                        'position'
+                    ].widget = ReadOnlyWidget()
 
     def get_possible_parents(self, device):
         types = {
@@ -273,15 +291,23 @@ class DeviceCreateForm(DeviceForm):
         self.fields['venture_role'].choices = all_roles()
         self.fields['venture'].required = True
         self.fields['model'].required = True
-        if 'ralph_assets' in settings.INSTALLED_APPS:
-            self.fields['asset'] = AutoCompleteSelectField(
-                ('ralph_assets.api_ralph', 'AssetLookup'),
-                required=False,
-            )
-            self.fields['asset'].widget.help_text = (
-                'Enter asset sn, barcode or model'
-            )
+        self.fields['asset'] = AutoCompleteSelectField(
+            ('ralph_assets.api_ralph', 'AssetLookup'),
+            required=False,
+        )
+        self.fields['asset'].widget.help_text = (
+            'Enter asset sn, barcode or model'
+        )
         del self.fields['save_comment']
+        if 'data' in kwargs and kwargs['data'].get('asset'):
+            try:
+                asset = Asset.objects.get(pk=kwargs['data']['asset'])
+            except Asset.DoesNotExist:
+                pass
+            else:
+                if not asset.model.category.is_blade:
+                    self.fields['chassis_position'].widget = ReadOnlyWidget()
+                    self.fields['position'].widget = ReadOnlyWidget()
 
     def clean_macs(self):
         sn = self.cleaned_data['sn']
@@ -326,6 +352,25 @@ class DeviceCreateForm(DeviceForm):
                 )
         return asset
 
+    def clean(self):
+        cleaned_data = super(DeviceCreateForm, self).clean()
+        asset = cleaned_data.get('asset')
+        if asset and not asset.model.category.is_blade:
+            # get position from asset
+            if all((
+                'chassis_position' in cleaned_data,
+                asset.device_info.position,
+            )):
+                cleaned_data['chassis_position'] = asset.device_info.position
+            if all((
+                'position' in cleaned_data,
+                asset.device_info.orientation,
+            )):
+                cleaned_data['position'] = Orientation.name_from_id(
+                    asset.device_info.orientation,
+                )
+        return cleaned_data
+
 
 class DeviceBulkForm(DeviceForm):
 
@@ -334,9 +379,6 @@ class DeviceBulkForm(DeviceForm):
             'name',
             'venture',
             'venture_role',
-            'position',
-            'chassis_position',
-            'parent',
             'remarks',
             'deleted',
         )
