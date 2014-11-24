@@ -5,7 +5,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from ajax_select.fields import AutoCompleteSelectField
+from ajax_select.fields import (
+    AutoCompleteSelectField,
+    AutoCompleteCascadeSelectField,
+)
 from django import forms
 from django.conf import settings
 from django.contrib import messages
@@ -17,7 +20,6 @@ from ralph.discovery.models_component import is_mac_valid
 from ralph.discovery.models import (
     ASSET_NOT_REQUIRED,
     Device,
-    DeviceEnvironment,
     DeviceType,
 )
 from ralph.util import Eth
@@ -42,31 +44,15 @@ class ServiceCatalogMixin(forms.ModelForm):
         ('ralph.ui.channels', 'ServiceCatalogLookup'),
         required=True,
         label=_('Service catalog'),
+        # setting widget's id here is necessary for dependent field to work
+        attrs={'id': 'id_service'},
     )
-    device_environment = forms.ModelChoiceField(
+    device_environment = AutoCompleteCascadeSelectField(
+        ('ralph.ui.channels', 'DeviceEnvironmentLookup'),
         required=True,
-        queryset=DeviceEnvironment.objects.all(),
         label=_('Device environment'),
+        parent_field=service,
     )
-
-    def clean_device_environment(self):
-        device_environment = self.cleaned_data.get('device_environment')
-        service = self.cleaned_data.get('service')
-        # not very nice, but it should be enough until we develop dependant
-        # ('cascading') ajax select fields
-        if not service:
-            msg = "You have to select 'Service catalog' first."
-            raise forms.ValidationError(msg)
-        envs_allowed = service.get_environments()
-        if device_environment not in envs_allowed:
-            envs_allowed_str = ', '.join([e.name for e in envs_allowed])
-            if len(envs_allowed) > 0:
-                msg = ("This value is not allowed for the service selected. "
-                       "Use one of these instead: {}.".format(envs_allowed_str))
-            else:
-                msg = "This value is not allowed for the service selected."
-            raise forms.ValidationError(msg)
-        return device_environment
 
 
 class DeviceForm(ServiceCatalogMixin):
