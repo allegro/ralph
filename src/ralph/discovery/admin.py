@@ -25,6 +25,10 @@ from ralph.business.admin import RolePropertyValueInline
 from ralph.discovery import models
 from ralph.discovery import models_device
 from ralph.ui.forms.network import NetworkForm
+from ralph.ui.widgets import (
+    ReadOnlySelectWidget,
+    ReadOnlyWidget,
+)
 
 
 SAVE_PRIORITY = 215
@@ -236,6 +240,26 @@ class DeviceForm(forms.ModelForm):
 
     class Meta:
         model = models.Device
+
+    def __init__(self, *args, **kwargs):
+        super(DeviceForm, self).__init__(*args, **kwargs)
+        if self.instance.id is not None:
+            asset = self.instance.get_asset()
+            if asset and not asset.model.category.is_blade:
+                self.fields['dc'].widget = ReadOnlyWidget()
+                self.fields['rack'].widget = ReadOnlyWidget()
+                self.fields['chassis_position'].widget = ReadOnlyWidget()
+                self.fields['position'].widget = ReadOnlyWidget()
+                if self.instance.parent:
+                    choices = (
+                        (self.instance.parent.id, self.instance.parent),
+                    )
+                else:
+                    choices = ()
+                self.fields['parent'].widget = ReadOnlySelectWidget(
+                    choices=choices,
+                )
+                self.fields['parent'].help_text = ""
 
     def clean_sn(self):
         sn = self.cleaned_data['sn']
