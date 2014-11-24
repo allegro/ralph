@@ -12,8 +12,12 @@ from uuid import uuid1
 from factory import Sequence, lazy_attribute, Factory
 from factory.django import DjangoModelFactory
 
-from ralph.discovery.models_device import Device
+from ralph.discovery.models_device import Device, DeviceModel
 from ralph.discovery.models_network import Network
+
+
+class DeviceModelFactory(DjangoModelFactory):
+    FACTORY_FOR = DeviceModel
 
 
 class DeviceFactory(DjangoModelFactory):
