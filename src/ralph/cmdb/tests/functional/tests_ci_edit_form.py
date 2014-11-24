@@ -9,12 +9,17 @@ from unittest import skipIf
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
 from django.db.utils import IntegrityError
 from django.test import TestCase, Client
 
 from ralph.business.models import Venture, VentureRole
-import ralph.cmdb.models as db
+from ralph.cmdb import models as db
+from ralph.cmdb.models import CI, CI_STATE_TYPES, CI_TYPES
+from ralph.cmdb.tests.utils import ServiceCatalogFactory
 from ralph.discovery.models import Device, DeviceType
+from ralph.discovery.tests.util import DeviceFactory
+from ralph.ui.tests.global_utils import UserTestCase
 
 
 CURRENT_DIR = settings.CURRENT_DIR
@@ -403,3 +408,30 @@ class CIFormsTest(TestCase):
         )
         self.assertEqual(ci_string_value.value, 'service_symbol')
         self.assertEqual(ci_boolean_value.value, False)
+
+    def test_change_service_state(self):
+        """Change Service state from active to another state when Service have
+        connected Devices"""
+
+        service = ServiceCatalogFactory(state=CI_STATE_TYPES.ACTIVE.id)
+        device = DeviceFactory(service=service)
+        data = {
+            'base-state': CI_STATE_TYPES.INACTIVE.id,
+            'base-status': service.status,
+            'base-layers': 1,
+            'base-name': service.name,
+            'base-type': CI_TYPES.SERVICE.id,
+        }
+
+        url = reverse('ci_edit', args=(service.id,))
+        response = self.client.post(url, data, follow=True)
+
+        msg = response.context['form'].errors['state'][0]
+        self.assertTrue('You can not change state to INACTIVE' in msg)
+
+        device.service = None
+        device.save()
+
+        url = reverse('ci_edit', args=(service.id,))
+        response = self.client.post(url, data, follow=True)
+        self.assertEqual(response.context['form'].errors, {})
