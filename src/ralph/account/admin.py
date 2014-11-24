@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from dj.choices import Country
 from django import forms
 from django.contrib import admin
 from django.forms.models import (
@@ -138,6 +139,9 @@ class ProfileAdmin(UserAdmin):
     groups_show.allow_tags = True
     groups_show.short_description = _("groups")
 
+    def country(self):
+        return Country.raw_from_id(self.profile.country)
+
     inlines = [
         ProfileInline,
         ProfileBoundPermInline,
@@ -152,8 +156,9 @@ class ProfileAdmin(UserAdmin):
         'first_name',
         'last_name',
         groups_show,
+        country,
         'is_staff',
-        'is_active'
+        'is_active',
     )
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups',)
     save_on_top = True
