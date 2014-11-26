@@ -35,7 +35,7 @@ def _get_session(base_url, user, password):
         raise ConnectionError("Can't connect through API.")
     try:
         ticket = r.json()['data']['ticket']
-    except KeyError:
+    except (KeyError, TypeError):
         raise AuthError("Can't get access ticket through API.")
     s.headers = {
         'content-type': 'application/x-www-form-urlencoded',
