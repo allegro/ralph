@@ -82,7 +82,6 @@ class DeviceEnvironmentLookup(CascadeLookupChannel):
     search_field = 'name'
 
     def get_cascading_query(self, query, request, parent_pk):
-        print(parent_pk)
         try:
             service = models_device.ServiceCatalog.objects.get(id=parent_pk)
         except models_device.ServiceCatalog.DoesNotExist:
