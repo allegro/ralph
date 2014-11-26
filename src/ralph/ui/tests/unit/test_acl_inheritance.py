@@ -11,6 +11,7 @@ from django.test import TestCase
 
 from ralph.ui.views.common import ACLGateway
 
+
 class ACLInheritanceTest(TestCase):
 
     def setUp(self):
@@ -19,6 +20,7 @@ class ACLInheritanceTest(TestCase):
             '^api/',
             '^admin/',
             '^admin/lookups/',
+            '^assets/',
         ]
 
         # A list of callbacks that are excluded from permissions checks via
@@ -88,7 +90,6 @@ class ACLInheritanceTest(TestCase):
             else:
                 self.urlpatterns_to_test.append(urlpattern)
 
-
     def test_class_based_views_inherit_from_acl_gateway_class(self):
         for urlpattern in self.urlpatterns_to_test:
             callback_name = urlpattern.callback.__name__
@@ -99,9 +100,11 @@ class ACLInheritanceTest(TestCase):
             found_callback = getattr(imported_module, callback_name)
             if not inspect.isclass(found_callback):
                 continue
-            msg = "Class '{}' does not inherit from 'ACLGateway' class.".format(found_callback)
+            msg = (
+                "Class '{}' does not inherit from 'ACLGateway' "
+                "class.".format(found_callback)
+            )
             self.assertTrue(issubclass(found_callback, ACLGateway), msg)
-
 
     def test_function_based_views_are_decorated_with_ralph_permission(self):
         for urlpattern in self.urlpatterns_to_test:
@@ -110,12 +113,15 @@ class ACLInheritanceTest(TestCase):
             if (callback_name, module_name) in self.excluded_callbacks:
                 continue
             imported_module = __import__(module_name, fromlist=[callback_name])
-            found_callback = getattr(imported_module, callback_name)
-            if not inspect.isfunction(found_callback):
+            found_callback = getattr(imported_module, callback_name, None)
+            if not found_callback or not inspect.isfunction(found_callback):
                 continue
             decorator_name = getattr(found_callback, 'decorated_with', None)
-            msg = "Function '{}' is not decorated with '@ralph_permission'.".format(
-                '.'.join((module_name, found_callback.func_name))
+            msg = (
+                "Function '{}' is not decorated with "
+                "'@ralph_permission'.".format(
+                    '.'.join((module_name, found_callback.func_name))
+                )
             )
             self.assertEqual(decorator_name, 'ralph_permission', msg)
 

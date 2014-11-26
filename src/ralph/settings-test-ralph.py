@@ -12,3 +12,9 @@ DATABASES = {
         'OPTIONS': {},
     }
 }
+
+PLUGGABLE_APPS = ['cmdb', 'assets']
+
+SOUTH_TESTS_MIGRATE = False
+
+ASSETS_AUTO_ASSIGN_HOSTNAME = True
