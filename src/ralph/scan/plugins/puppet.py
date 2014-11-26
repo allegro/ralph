@@ -61,10 +61,10 @@ class PuppetAPIJsonProvider(PuppetBaseProvider):
             if not value:
                 msg = "Settings value is empty: {!r} = {!r}".format(attr, value)
                 raise NotConfiguredError(msg)
-            assert os.path.exists(value) is True, "No file at path: {}".format(
-                value,
-            )
-            setattr(self, attr, value)
+            full_path = os.path.expanduser(value)
+            msg = "No file at path: {}".format(full_path)
+            assert os.path.exists(full_path) is True, msg
+            setattr(self, attr, full_path)
         os.environ['REQUESTS_CA_BUNDLE'] = self.ca_cert
 
     def get_facts(self, ip_addresses, hostnames, messages=[]):
