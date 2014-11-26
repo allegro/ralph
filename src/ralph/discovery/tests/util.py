@@ -9,11 +9,12 @@ import mock
 import StringIO
 from uuid import uuid1
 
-from factory import Sequence, lazy_attribute, Factory
+import ipaddr
+from factory import sequence, Sequence, lazy_attribute, Factory
 from factory.django import DjangoModelFactory
 
 from ralph.discovery.models_device import Device, DeviceModel
-from ralph.discovery.models_network import Network
+from ralph.discovery.models_network import Network, IPAddress
 
 
 class DeviceModelFactory(DjangoModelFactory):
@@ -47,6 +48,18 @@ class TenantFactory(Factory):
 
 class NetworkFactory(Factory):
     FACTORY_FOR = Network
+
+
+class IPAddressFactory(Factory):
+    FACTORY_FOR = IPAddress
+
+    @sequence
+    def address(n):
+        return ipaddr.IPAddress(int(ipaddr.IPAddress('10.1.1.0')) + n)
+
+    @sequence
+    def hostname(n):
+        return 'host{0}.dc1'.format(n)
 
 
 class MockSSH(object):
