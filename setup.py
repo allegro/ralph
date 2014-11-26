@@ -33,6 +33,7 @@ setup(
     zip_safe=False,  # because templates are loaded from file path
     install_requires=[
         'bob-ajax-selects==1.4.1',
+        'djangorestframework==2.4.3',
         'django-bob==1.10.0',
         'django-powerdns-dnssec==0.9.3',
         'django-tastypie==0.9.16',
