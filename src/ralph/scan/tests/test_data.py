@@ -395,6 +395,7 @@ class SetDeviceDataTest(TestCase):
         self.assertIsNone(device.dc)
         self.assertIsNone(device.rack)
         self.assertIsNone(device.chassis_position)
+        self.assertIsNone(device.management)
         self.assertEqual(
             warnings,
             [
@@ -404,6 +405,8 @@ class SetDeviceDataTest(TestCase):
                 'Use assets module.',
                 'You can not set data for `rack` here - skipped. '
                 'Use assets module.',
+                'Management IP address (10.10.10.2) has been ignored. To '
+                'change them, please use the Assets module.',
             ]
         )
 
@@ -640,6 +643,37 @@ class SetDeviceDataTest(TestCase):
         address = IPAddress.objects.get(address='127.0.0.4')
         self.assertEqual(address.device, None)
 
+    def test_device_with_asset_ip_addresses(self):
+        asset = DCAssetFactory()
+        data = {
+            'system_ip_addresses': [
+                '127.0.0.1',
+                '127.0.0.2',
+            ],
+            'management_ip_addresses': [
+                '127.0.0.3',
+                '127.0.0.4',
+            ],
+            'asset': asset,
+        }
+        warnings = []
+        set_device_data(self.device, data, warnings=warnings)
+        self.device.save()
+        device = Device.objects.get(sn='123456789')
+        self.assertEqual(
+            device.ipaddress_set.filter(is_management=False).count(), 2,
+        )
+        self.assertEqual(
+            device.ipaddress_set.filter(is_management=True).count(), 0,
+        )
+        self.assertEqual(
+            warnings,
+            [
+                'Management IP addresses (127.0.0.3, 127.0.0.4) have been '
+                'ignored. To change them, please use the Assets module.',
+            ],
+        )
+
     def test_fc(self):
         data = {
             'fibrechannel_cards': [
@@ -846,6 +880,12 @@ class SetDeviceDataTest(TestCase):
         asset.model.category.save()
         self.assertFalse(
             check_if_can_edit_position({'key_1': 'value_1', 'asset': asset}),
+        )
+        # Asset string representation - asset does not exist.
+        self.assertTrue(
+            check_if_can_edit_position(
+                {'key_1': 'value_1', 'asset': 'Name - SN - BARCODE'},
+            ),
         )
 
 
