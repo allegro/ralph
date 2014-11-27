@@ -137,11 +137,19 @@ class DeviceForm(ServiceCatalogMixin):
                     (p.id, p.name) for p in
                     self.get_possible_parents(self.instance)
                 ]
-                if asset and not asset.model.category.is_blade:
+                if (
+                    asset and
+                    asset.model.category and
+                    not asset.model.category.is_blade
+                ):
                     self.fields['parent'].widget = ReadOnlySelectWidget(
                         choices=self.fields['parent'].choices,
                     )
-            if asset and not asset.model.category.is_blade:
+            if (
+                asset and
+                asset.model.category and
+                not asset.model.category.is_blade
+            ):
                 if 'chassis_position' in self.fields:
                     self.fields[
                         'chassis_position'

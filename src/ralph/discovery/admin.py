@@ -12,6 +12,8 @@ import logging
 from django import forms
 from django.conf import settings
 from django.contrib import admin
+from django.core.urlresolvers import reverse
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import (
     ForeignKeyAutocompleteTabularInline,
@@ -175,20 +177,32 @@ class DiscoveryQueueAdmin(ModelAdmin):
 admin.site.register(models.DiscoveryQueue, DiscoveryQueueAdmin)
 
 
-class IPAddressForm(forms.ModelForm):
-
-    class Meta:
-        model = models.IPAddress
+class IPAddressInlineFormset(forms.models.BaseInlineFormSet):
 
     def clean(self):
-        address = self.cleaned_data.get('address')
-        hostname = self.cleaned_data.get('hostname')
-        if not address and hostname:
-            raise forms.ValidationError(_("Either address or hostname must "
-                                          "be provided."))
+        if not self.forms:
+            return
+        device = self.forms[0].cleaned_data["device"]
+        asset = device.get_asset()
+        if not asset or asset.model.category.is_blade:
+            return
+        for form in self.forms:
+            if form.cleaned_data.get("is_management", True):
+                msg = """"It's not possible to manage managements IP addresses
+                here. Please use Assets module - click <a href="{}"
+                target="_blank">here</a>.""".format(
+                    reverse(
+                        'device_edit', kwargs={
+                            'mode': 'dc',
+                            'asset_id': asset.id,
+                        },
+                    ),
+                )
+                raise forms.ValidationError(mark_safe(msg))
 
 
 class IPAddressInline(ForeignKeyAutocompleteTabularInline):
+    formset = IPAddressInlineFormset
     model = models.IPAddress
     readonly_fields = ('snmp_name', 'last_seen')
     exclude = ('created', 'modified', 'dns_info', 'http_family',
@@ -250,15 +264,27 @@ class DeviceForm(forms.ModelForm):
                 self.fields['rack'].widget = ReadOnlyWidget()
                 self.fields['chassis_position'].widget = ReadOnlyWidget()
                 self.fields['position'].widget = ReadOnlyWidget()
-                choices = ()
+                parents = ()
                 if self.instance.parent:
-                    choices = (
+                    parents = (
                         (self.instance.parent.id, self.instance.parent),
                     )
                 self.fields['parent'].widget = ReadOnlySelectWidget(
-                    choices=choices,
+                    choices=parents,
                 )
-                self.fields['parent'].help_text = ""
+                self.fields['parent'].help_text = ''
+                managements = ()
+                if self.instance.management:
+                    managements = (
+                        (
+                            self.instance.management.id,
+                            self.instance.management.address,
+                        ),
+                    )
+                self.fields['management'].widget = ReadOnlySelectWidget(
+                    choices=managements,
+                )
+                self.fields['management'].help_text = ''
 
     def clean_sn(self):
         sn = self.cleaned_data['sn']
@@ -422,7 +448,37 @@ class IPAliasInline(admin.TabularInline):
     extra = 0
 
 
+class IPAddressForm(forms.ModelForm):
+
+    class Meta:
+        model = models.IPAddress
+
+    def clean(self):
+        cleaned_data = super(IPAddressForm, self).clean()
+        device = cleaned_data.get('device')
+        if device:
+            asset = device.get_asset()
+            if (
+                asset and
+                asset.model.category and
+                not asset.model.category.is_blade
+            ):
+                msg = """You can not assign management IP address to this
+                device. You should use Assets module - click <a href="{}"
+                target="_blank">here</a>.""".format(
+                    reverse(
+                        'device_edit', kwargs={
+                            'mode': 'dc',
+                            'asset_id': asset.id,
+                        },
+                    ),
+                )
+                raise forms.ValidationError(mark_safe(msg))
+        return cleaned_data
+
+
 class IPAddressAdmin(ModelAdmin):
+    form = IPAddressForm
     inlines = [IPAliasInline]
 
     def ip_address(self):
