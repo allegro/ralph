@@ -986,7 +986,9 @@ class Addresses(DeviceDetailView):
             )
         if self.ip_formset is None:
             self.ip_formset = IPAddressFormSet(
-                queryset=self.object.ipaddress_set.order_by('address'),
+                queryset=self.object.ipaddress_set.filter(
+                    is_management=False
+                ).order_by('address'),
                 prefix='ip'
             )
         profile = self.request.user.get_profile()

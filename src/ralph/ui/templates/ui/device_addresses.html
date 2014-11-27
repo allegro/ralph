@@ -149,6 +149,12 @@
                             {% empty %}
                             {% endfor %}
                         {% endif %}
+                        {% if 'address' in f.name %}
+                        <div class="error-text">
+                            {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+
                     </td>
                     {%   endfor %}
                     </tr>
