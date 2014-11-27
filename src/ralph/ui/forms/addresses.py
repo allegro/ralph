@@ -332,6 +332,23 @@ class IPAddressForm(forms.ModelForm):
             raise forms.ValidationError("Invalid hostname")
         return name
 
+    def clean(self, *args, **kwargs):
+        ipaddr = self.cleaned_data.get('id')
+        if not ipaddr:
+            try:
+                ipaddr = IPAddress.objects.get(
+                    address=self.cleaned_data['address']
+                )
+            except IPAddress.DoesNotExist:
+                pass
+        if ipaddr:
+            if ipaddr.is_management:
+                raise forms.ValidationError(_(
+                    'To assign management IP to this device use the linked '
+                    'asset'
+                ))
+        return self.cleaned_data
+
 
 IPAddressFormSet = forms.models.modelformset_factory(
     IPAddress,

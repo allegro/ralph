@@ -17,6 +17,7 @@ from __future__ import unicode_literals
 from datetime import datetime, timedelta, date
 import re
 import textwrap
+from mock import patch
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -40,6 +41,7 @@ from ralph.discovery.models import (
 )
 from ralph.util import api_pricing, api_scrooge
 from ralph.util.tests import utils
+from ralph.util import api
 
 EXISTING_DOMAIN = 'www.google.com'
 NON_EXISTENT_DOMAIN = 'nxdomain.allegro.pl'
@@ -124,6 +126,82 @@ class ApiTest(TestCase):
         gen_list.append(429)
         self.maxDiff = None
         self.assertListEqual(gen_list, status_list)
+
+    def test_get_api_key_when_there_is_no_API_key(self):
+        self.assertRaises(
+            api.ThereIsNoApiKeyError,
+            api._get_api_key,
+            utils.AttributeDict({
+                'REQUEST': {},
+                'META': {}
+            })
+        )
+
+    def test_get_api_key_from_REQUEST(self):
+        test_api_key = 'test_api_key'
+        results = api._get_api_key(
+            utils.AttributeDict({
+                'REQUEST': {'api_key': test_api_key},
+                'META': {}
+            })
+        )
+        self.assertEquals(test_api_key, results)
+
+    def test_get_api_key_from_META(self):
+        test_api_key = 'Token test_api_key'
+        results = api._get_api_key(
+            utils.AttributeDict({
+                'REQUEST': {},
+                'META': {'HTTP_AUTHORIZATION': test_api_key}
+            })
+        )
+        self.assertEquals(test_api_key.split(' ')[-1], results)
+
+    def test_get_user_by_name(self):
+        user = User.objects.create_superuser('test', 'test@test.test', 'test')
+        results = api.get_user(
+            utils.AttributeDict({
+                'REQUEST': {'username': user.username},
+                'META': {}
+            })
+        )
+        self.assertEquals(user, results)
+
+    @patch.object(api, '_get_api_key', lambda x: 'test')
+    def test_get_user_by_api_key(self):
+        user = User.objects.create_superuser('test', 'test@test.test', 'test')
+        user.api_key.key = 'test'
+        user.api_key.save()
+        results = api.get_user(
+            utils.AttributeDict({
+                'REQUEST': {},
+                'META': {}
+            })
+        )
+        self.assertEquals(user, results)
+
+    @patch.object(api, '_get_api_key', lambda x: 'test')
+    def test_get_user_when_user_does_not_exist(self):
+        user = User.objects.create_superuser('test', 'test@test.test', 'test')
+        self.assertRaises(
+            User.DoesNotExist,
+            api.get_user,
+            utils.AttributeDict({
+                'REQUEST': {},
+                'META': {}
+            }),
+        )
+
+    def test_get_user_when_there_is_wrong_api_key(self):
+        user = User.objects.create_superuser('test', 'test@test.test', 'test')
+        self.assertRaises(
+            api.ThereIsNoApiKeyError,
+            api.get_user,
+            utils.AttributeDict({
+                'REQUEST': {},
+                'META': {}
+            }),
+        )
 
 
 class ApiPricingTest(TestCase):

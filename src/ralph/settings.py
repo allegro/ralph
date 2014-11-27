@@ -22,6 +22,7 @@ from datetime import timedelta
 
 PLUGGABLE_APPS = ('cmdb',)
 
+
 SITE_ID = 1
 USE_I18N = True
 USE_L10N = True  # FIXME: breaks contents of l7d date fields on form reload
@@ -86,6 +87,7 @@ INSTALLED_APPS = [
     'ralph.deployment',
     'ralph.scan',
     'ralph.notifications',
+    'rest_framework',
     'ajax_select',
     'powerdns',
 ]
@@ -240,6 +242,9 @@ CACHES = dict(
         KEY_PREFIX='RALPH_',
     )
 )
+# note: when you want to make ralph makeconf you should get all pluggable apps available.
+# but for unit tests we override this variable later on this file - after template tag is closed.
+PLUGGABLE_APPS = ['scrooge', 'assets', 'cmdb']
 LOGGING['handlers']['file']['filename'] = CURRENT_DIR + 'runtime.log'
 MEDIA_ROOT = '~/.ralph/shared/uploads'
 STATIC_ROOT = '~/.ralph/shared/static'
@@ -373,6 +378,8 @@ SCAN_AUTOMERGE_MODE = True
 ZABBIX_IMPORT_HOSTS = False
 # </template>
 
+# revert to the old cmdb only app
+PLUGGABLE_APPS = ('cmdb',)
 SCAN_POSTPROCESS_ENABLED_JOBS = []
 
 #
