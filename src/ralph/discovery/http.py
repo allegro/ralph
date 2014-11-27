@@ -135,8 +135,10 @@ def guess_family(headers, document):
             family = 'Dell'
         elif 'Juniper' in document:
             family = 'Juniper'
-    elif 'pve-api-daemon' in family:
+    if 'pve-api-daemon' in family:
         family = 'Proxmox3'
+    if '/sclogin.html?console' in document:
+        family = 'Dell'
     return family
 
 
