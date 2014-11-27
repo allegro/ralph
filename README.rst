@@ -12,3 +12,6 @@ Features:
 * integrate with change management process using JIRA integration
 
 It is an Open Source project provided on Apache v2.0 License.
+
+# ralph
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/allegro/ralph?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
