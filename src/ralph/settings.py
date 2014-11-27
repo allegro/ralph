@@ -244,7 +244,7 @@ CACHES = dict(
 )
 # note: when you want to make ralph makeconf you should get all pluggable apps available.
 # but for unit tests we override this variable later on this file - after template tag is closed.
-PLUGGABLE_APPS = ['scrooge', 'assets', 'cmdb', 'pricing']
+PLUGGABLE_APPS = ['scrooge', 'assets', 'cmdb']
 LOGGING['handlers']['file']['filename'] = CURRENT_DIR + 'runtime.log'
 MEDIA_ROOT = '~/.ralph/shared/uploads'
 STATIC_ROOT = '~/.ralph/shared/static'
