@@ -129,7 +129,7 @@ class ApiTest(TestCase):
 
     def test_get_api_key_when_there_is_no_API_key(self):
         self.assertRaises(
-            api.ThereIsNoApiKeyError,
+            api.NoApiKeyError,
             api._get_api_key,
             utils.AttributeDict({
                 'REQUEST': {},
@@ -195,7 +195,7 @@ class ApiTest(TestCase):
     def test_get_user_when_there_is_wrong_api_key(self):
         user = User.objects.create_superuser('test', 'test@test.test', 'test')
         self.assertRaises(
-            api.ThereIsNoApiKeyError,
+            api.NoApiKeyError,
             api.get_user,
             utils.AttributeDict({
                 'REQUEST': {},
