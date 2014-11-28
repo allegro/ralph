@@ -15,6 +15,11 @@ from ralph.cmdb import models_ci
 from ralph.cmdb.tests.utils import CIFactory
 
 
+class AttributeDict(dict):
+    __getattr__ = dict.__getitem__
+    __setattr__ = dict.__setitem__
+
+
 class BusinessLineFactory(CIFactory):
     @factory.lazy_attribute
     def type(self):

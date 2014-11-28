@@ -8,15 +8,13 @@ from __future__ import unicode_literals
 
 import functools
 
-
 from django.conf import settings
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models as db
 from django.http import HttpResponseBadRequest
 from django.utils.translation import ugettext_lazy as _
-
 
 from dj.choices import Choices
 from dj.choices.fields import ChoiceField
@@ -287,8 +285,9 @@ def ralph_permission(perms=None):
             user = request.user
             # for API views not handled by Tastypie (e.g. puppet_classifier)
             if user.is_anonymous():
-                user = api.get_user(request)
-                if not api.is_authenticated(user, request):
+                try:
+                    user = api.get_user(request)
+                except (User.DoesNotExist, api.NoApiKeyError):
                     return HTTP403(request)
             profile = user.get_profile()
             has_perm = profile.has_perm
