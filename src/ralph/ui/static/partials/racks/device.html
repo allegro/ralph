@@ -1,7 +1,15 @@
-<div ng-if="item.empty == true" class="device height-u-1 empty position-u-{{ item.position }}" ng-class="{active: active}" ng-class="$scope.activeItem = item">
+<div
+    ng-if="item.empty"
+    class="device height-u-1 empty position-u-{{ item.position }}"
+    ng-class="{active: active}"
+>
 </div>
 
-<div ng-if="item.empty != true" class="device height-u-{{ item.height }} position-u-{{ item.position }}" ng-class="{active: active}">
+<div
+    ng-if="!item.empty"
+    class="device height-u-{{ item.height }} position-u-{{ item.position }}"
+    ng-class="{active: active}"
+>
     <div class="info">
         <div class="model">{{ item.model }}</div>
         <div class="barcode">{{ item.barcode }}</div>

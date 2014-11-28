@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 From https://gist.github.com/1313862
 """
