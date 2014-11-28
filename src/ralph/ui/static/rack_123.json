@@ -1,0 +1,22 @@
+{
+    "name": "Rack 2",
+    "max_u_height": 48,
+    "sides": [
+        {
+            "type": "front",
+            "items": [
+                {
+                    "id": 45654,
+                    "model": "N7K-M148GS-11",
+                    "barcode": "40749",
+                    "sn": "XXXXXX-YYYYYY",
+                    "position": 1,
+                    "height": 1
+                }
+            ]
+        },
+        {
+            "type": "back"
+        }
+    ]
+}
