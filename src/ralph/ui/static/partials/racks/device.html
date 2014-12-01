@@ -1,0 +1,18 @@
+<div
+    ng-if="item.empty"
+    class="device height-u-1 empty position-u-{{ item.position }}"
+    ng-class="{active: active}"
+>
+</div>
+
+<div
+    ng-if="!item.empty"
+    class="device height-u-{{ item.height }} position-u-{{ item.position }}"
+    ng-class="{active: active}"
+>
+    <a class="info" href="{{ item.url }}" target="_blank">
+        <div class="model">{{ item.model }}</div>
+        <div class="barcode">{{ item.barcode }}</div>
+        <div class="sn">{{ item.sn }}</div>
+    </a>
+</div>

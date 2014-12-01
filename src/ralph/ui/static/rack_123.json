@@ -1,0 +1,124 @@
+{
+    "name": "Rack 2",
+    "max_u_height": 48,
+    "sides": [
+        {
+            "type": "front",
+            "items": [
+                {
+                    "id": 45654,
+                    "model": "AX-BY-CZ",
+                    "barcode": "40749",
+                    "sn": "XXXXXX-YYYYYY",
+                    "position": 1,
+                    "height": 1
+                },
+                {
+                    "id": 45654,
+                    "model": "Blade #1",
+                    "barcode": "407w3",
+                    "sn": "XXXXXX-YYYYYY",
+                    "position": 4,
+                    "height": 10
+                },
+                {
+                    "id": 45654,
+                    "model": "Example device #2",
+                    "barcode": "407w3",
+                    "sn": "XXXXXX-YYYYYY",
+                    "position": 18,
+                    "height": 4
+                },
+                {
+                    "id": 45654,
+                    "model": "Mega blade #1",
+                    "barcode": "407w3",
+                    "sn": "XXXXXX-YYYYYY",
+                    "position": 20,
+                    "height": 29
+                },
+                {
+                    "empty": true,
+                    "position": 2
+                },
+                {
+                    "empty": true,
+                    "position": 3
+                },
+                {
+                    "empty": true,
+                    "position": 14
+                },
+                {
+                    "empty": true,
+                    "position": 15
+                },
+                {
+                    "empty": true,
+                    "position": 16
+                },
+                {
+                    "empty": true,
+                    "position": 17
+                },
+                {
+                    "empty": true,
+                    "position": 18
+                },
+                {
+                    "empty": true,
+                    "position": 19
+                }
+            ]
+        },
+        {
+            "type": "back",
+            "items": [
+                {
+                    "id": 356,
+                    "model": "AX-BY-CZsdf",
+                    "barcode": "40749sdf",
+                    "sn": "XXXXXX-YYYYYYsdf",
+                    "position": 10,
+                    "height": 10
+                },
+                {
+                    "empty": true,
+                    "position": 1
+                },
+                {
+                    "empty": true,
+                    "position": 2
+                },
+                {
+                    "empty": true,
+                    "position": 3
+                },
+                {
+                    "empty": true,
+                    "position": 4
+                },
+                {
+                    "empty": true,
+                    "position": 5
+                },
+                {
+                    "empty": true,
+                    "position": 6
+                },
+                {
+                    "empty": true,
+                    "position": 7
+                },
+                {
+                    "empty": true,
+                    "position": 8
+                },
+                {
+                    "empty": true,
+                    "position": 9
+                }
+            ]
+        }
+    ]
+}

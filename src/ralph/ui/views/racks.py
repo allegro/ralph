@@ -32,6 +32,7 @@ from ralph.ui.views.common import (
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import ReportDeviceList
 from ralph.util import presentation
+from ralph_assets.models_assets import DeprecatedRalphRack
 
 
 class BaseRacksMixin(object):
@@ -270,58 +271,20 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
 
 
 class RacksRack(Racks, Base):
-    template_name = 'ui/racks-rack.html'
+    template_name = 'ui/racks_rack.html'
 
-    def get_slots(self, rack):
-        slots = collections.defaultdict(lambda: [0, []])
-        pos = rack.position
-        if pos:
-            if pos.upper().endswith('U'):
-                pos = pos[:-1]
-            max_slots = int(pos)
-        else:
-            max_slots = 0
-        if max_slots:
-            for dev in rack.child_set.all():
-                slot = dev.chassis_position or 0
-                size = (dev.model.chassis_size if dev.model else 1) or 1
-                pos = dev.position
-                if pos:
-                    if pos.upper().endswith('U'):
-                        pos = pos[:-1]
-                    if '-' in pos:
-                        try:
-                            start, end = [int(p) for p in pos.split('-', 1)]
-                        except ValueError:
-                            pass
-                        else:
-                            slot = start
-                            size = end - start + 1
-                    else:
-                        try:
-                            slot = int(pos)
-                        except ValueError:
-                            pass
-                        else:
-                            size = 1
-                slots[slot + size - 1][0] = size
-                slots[slot + size - 1][1].append(dev)
-                for i in xrange(slot, slot + size - 1):
-                    slots[i][0] = -1
-        else:
-            return [(0, 1, rack.child_set.all())]
-
-        def iter_slots():
-            for slot in reversed(range(0, max_slots + 1)):
-                size, devs = slots[slot]
-                yield slot, size, devs
-        return iter_slots
+    def dispatch(self, request, *args, **kwargs):
+        response = super(RacksRack, self).dispatch(request, *args, **kwargs)
+        old_rack = DeprecatedRalphRack.objects.get(id=self.rack.id)
+        for rack in old_rack.deprecated_asset_rack.all():
+            self.new_rack = rack
+        # NOTE: set_cookie method required value as a str not unicode
+        response.set_cookie(str('rack_id'), self.new_rack.id)
+        return response
 
     def get_context_data(self, **kwargs):
-        ret = super(RacksRack, self).get_context_data(**kwargs)
-        self.set_rack()
-        tab_items = ret['tab_items']
-
+        context = super(RacksRack, self).get_context_data(**kwargs)
+        tab_items = context['tab_items']
         tab_items.append(
             MenuItem(
                 'Rack',
@@ -329,24 +292,7 @@ class RacksRack(Racks, Base):
                 href='../rack/?%s' % self.request.GET.urlencode()
             )
         )
-        tab_items.append(
-            MenuItem(
-                'Add device',
-                fugue_icon='fugue-wooden-box--plus',
-                href='../add_device/?%s' % self.request.GET.urlencode()
-            )
-        )
-        if self.rack.model.type == DeviceType.rack.id:
-            slots_set = [
-                (self.rack, self.get_slots(self.rack))]
-        else:
-            slots_set = [(rack, self.get_slots(rack)) for
-                         rack in self.rack.child_set.filter(
-                         model__type=DeviceType.rack.id)]
-        ret.update({
-            'slots_set': slots_set,
-        })
-        return ret
+        return context
 
 
 class DeviceCreateView(BaseRacksMixin, CreateView):

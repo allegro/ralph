@@ -1,0 +1,45 @@
+{% extends 'ui/base-devices.html' %}
+{% load bob formats angular %}
+
+{% block extra_headers %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}/ui/css/rack.css">
+    <script src="{{ STATIC_URL }}ui/js/vendor/angular.min.js"></script>
+    <script src="{{ STATIC_URL }}ui/js/vendor/angular-resource.min.js"></script>
+    <script src="{{ STATIC_URL }}ui/js/vendor/angular-cookies.min.js"></script>
+    <script src="{{ STATIC_URL }}ui/js/rack.js"></script>
+{% endblock %}
+
+{% block content %}
+    {% verbatim %}
+        <div ng-app="racksApp">
+            <div ng-controller="RackController">
+                <div class="rack-info">
+                    <h3>Info {{ rackId }}</h3>
+                    <ul>
+                        <li>Model: {{ info ? info.model : '-' }}</li>
+                        <li>Barcode: {{ info ? info.barcode : '-' }}</li>
+                        <li>SN: {{ info ? info.sn : '-' }}</li>
+                        <li>Position: {{ info ? info.position : '-' }}</li>
+                        <li>Height: {{ info ? info.height : '-' }}</li>
+                    </ul>
+                </div>
+                <div ng-repeat="side in rack.sides" class="racks" >
+                    <div class="rack rack-u-{{ rack.max_u_height }} {{ side.type }}" ng-controller="SideController">
+                        <div class="name">
+                            {{ rack.name }}
+                        </div>
+                        <div class="wrapper">
+                            <div listing class="listing-u left" u_range="u_count"></div>
+                            <div class="pdu left"></div>
+                            <div class="devices">
+                                <device ng-mouseleave="setActiveItem(null)" ng-mouseover="setActiveItem(item)" ng-repeat="item in side.items"></device>
+                            </div>
+                            <div class="pdu right"></div>
+                            <div listing class="listing-u right" count="u_count"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endverbatim %}
+{% endblock %}
