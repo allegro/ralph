@@ -11,8 +11,10 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 
 from ralph.account.models import Perm, BoundPerm
+from ralph.discovery.tests.util import DeviceFactory
 from ralph.ui.tests.global_utils import (
     login_as_user,
+    login_as_su,
     GroupFactory,
     UserFactory,
 )
@@ -93,3 +95,18 @@ class LoginRedirectTest(TestCase):
                     response.request['PATH_INFO'],
                     reverse('search', args=('info', '')),
                 )
+
+
+class DeviceViewRegressionTest(TestCase):
+
+    def setUp(self):
+        self.client = login_as_su()
+
+    def test_model_is_empty(self):
+        device = DeviceFactory()
+        url = reverse(
+            'search', kwargs={'device': device.id, 'details': 'info'},
+        )
+        self.assertEqual(device.model, None)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
