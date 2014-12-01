@@ -92,15 +92,17 @@ class EditAddressesTest(TestCase):
     def test_regular_shown(self):
         """Regular IP is shown in form."""
         response = self.client.get(self.url)
-        self.assertContains(
-            response, self.regular_ipaddr.address, count=3  # DHCP, DNS and IP
+        self.assertIn(
+            unicode(self.regular_ipaddr.address),
+            response.context['ipformset'].as_table(),
         )
 
     def test_management_not_shown(self):
         """Regular IP is shown in form."""
         response = self.client.get(self.url)
-        self.assertContains(
-            response, self.management_ipaddr.address, count=2  # DHCP, DNS only
+        self.assertNotIn(
+            unicode(self.management_ipaddr.address),
+            response.context['ipformset'].as_table(),
         )
 
     def test_edit_via_form(self):

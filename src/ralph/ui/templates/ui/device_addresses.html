@@ -161,6 +161,18 @@
                     {% endfor %}
                 </tbody>
             </table>
+                {%  if device.find_management %}
+            <table class="table table-striped table-bordered details-info-virtual">
+                <tbody>
+                <tr>
+                    <td>Server Management Address</td>
+                    <td><a href="https://{{ device.find_management.address }}"
+                         >{{ device.find_management|address_icon }}
+                          {{ device.find_management }}</a></td>
+                </tr>
+                </tbody>
+            </table>
+                {%  endif %}
             <div class="action-list">
                 {% if next_hostname %}
                 <div class="alert alert-info">Next available hostname in this DC: {{ next_hostname }}</div>
