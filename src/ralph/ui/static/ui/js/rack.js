@@ -1,13 +1,12 @@
 'use strict';
 
 angular
-    .module('racksApp', ['ngResource'])
+    .module('racksApp', ['ngResource', 'ngCookies'])
     .factory('RackModel', ['$resource', function($resource){
-        // only for deveolpment process
-        return $resource('/static/rack_:rackId.json', {rackId: '@id'})
+        return $resource('/assets/api/rack/:rackId/devices/', {rackId: '@id'})
     }])
-    .controller('RackController', ['$scope', 'RackModel', function ($scope, RackModel) {
-        $scope.rack = RackModel.get({rackId: 123});
+    .controller('RackController', ['$scope', '$cookies', 'RackModel', function ($scope, $cookies, RackModel) {
+        $scope.rack = RackModel.get({rackId: $cookies.rack_id});
         $scope.$on('info', function (event, data) {
             $scope.info = data;
         })

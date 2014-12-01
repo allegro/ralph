@@ -3,9 +3,10 @@
 
 {% block extra_headers %}
     <link rel="stylesheet" href="{{ STATIC_URL }}/ui/css/rack.css">
-    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.17/angular.min.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.17/angular-resource.min.js"></script>
-    <script src="{{ STATIC_URL }}/ui/js/rack.js"></script>
+    <script src="{{ STATIC_URL }}ui/js/vendor/angular.min.js"></script>
+    <script src="{{ STATIC_URL }}ui/js/vendor/angular-resource.min.js"></script>
+    <script src="{{ STATIC_URL }}ui/js/vendor/angular-cookies.min.js"></script>
+    <script src="{{ STATIC_URL }}ui/js/rack.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -13,7 +14,7 @@
         <div ng-app="racksApp">
             <div ng-controller="RackController">
                 <div class="rack-info">
-                    <h3>Info</h3>
+                    <h3>Info {{ rackId }}</h3>
                     <ul>
                         <li>Model: {{ info ? info.model : '-' }}</li>
                         <li>Barcode: {{ info ? info.barcode : '-' }}</li>

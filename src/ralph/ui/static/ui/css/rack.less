@@ -36,7 +36,7 @@
 
 .rack-info {
     float: left;
-    width:350px;
+    width:200px;
     padding: 10px;
     marign:10px;
 }
@@ -44,6 +44,12 @@
 .racks .rack .wrapper .devices .device,
 .racks .rack .wrapper .listing-u .position {
     .generate-position(@max-u);
+}
+
+.racks .rack .wrapper .devices .device.height-u-0 {
+    z-index: 10000;
+    background-color: #f33;
+    height: @u-height;
 }
 
 .racks {
@@ -159,9 +165,11 @@
                         &.active {background: #ddd;}
                     }
                     .generate-u(@max-u);
-                    &.position-u-1 .sn {display: none;}
+                    &.height-u-0 .sn, &.height-u-1 .sn {display: none;}
                     &.position-u-1 .info .barcode, &.position-u-1 .info .model {top:0;}
                     .info {
+                        display: block;
+                        color: #333;
                         line-height: 1em;
                         text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
                         font-size: .825em;

@@ -10,9 +10,9 @@
     class="device height-u-{{ item.height }} position-u-{{ item.position }}"
     ng-class="{active: active}"
 >
-    <div class="info">
+    <a class="info" href="{{ item.url }}" target="_blank">
         <div class="model">{{ item.model }}</div>
         <div class="barcode">{{ item.barcode }}</div>
         <div class="sn">{{ item.sn }}</div>
-    </div>
+    </a>
 </div>

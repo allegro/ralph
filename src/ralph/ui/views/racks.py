@@ -32,6 +32,7 @@ from ralph.ui.views.common import (
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import ReportDeviceList
 from ralph.util import presentation
+from ralph_assets.models_assets import DeprecatedRalphRack
 
 
 class BaseRacksMixin(object):
@@ -272,10 +273,18 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
 class RacksRack(Racks, Base):
     template_name = 'ui/racks_rack.html'
 
+    def dispatch(self, request, *args, **kwargs):
+        response = super(RacksRack, self).dispatch(request, *args, **kwargs)
+        old_rack = DeprecatedRalphRack.objects.get(id=self.rack.id)
+        for rack in old_rack.deprecated_asset_rack.all():
+            self.new_rack = rack
+        # NOTE: set_cookie method required value as a str not unicode
+        response.set_cookie(str('rack_id'), self.new_rack.id)
+        return response
+
     def get_context_data(self, **kwargs):
         context = super(RacksRack, self).get_context_data(**kwargs)
         tab_items = context['tab_items']
-
         tab_items.append(
             MenuItem(
                 'Rack',
