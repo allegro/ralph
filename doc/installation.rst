@@ -11,7 +11,8 @@ It is the easiest way to try out Ralph using pre-built docker image with the wor
 2. Create volume data for mysql data and configuration
 
     docker run  -i -t -name mysql_data -v /var/lib/mysql -v /home/ralph/.ralph busybox /bin/sh -c "chown default /home/ralph; chown default /home/ralph/.ralph"
-
+    docker run -u ralph -P -t -i -volumes-from mysql_data vi4m/ralph:latest /home/ralph/bin/ralph makeconf
+    
 3. Initialize empty mysql database with default login: ralph, password: ralph  
 
     docker run  -P -t -i -volumes-from mysql_data vi4m/ralph:latest /bin/bash /home/ralph/init_mysql.sh
