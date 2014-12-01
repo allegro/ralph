@@ -598,7 +598,10 @@ class Info(DeviceUpdateView):
             elif not (
                 not assets_imported or
                 DeviceInfo.objects.filter(ralph_device_id=self.object.pk) or
-                self.object.model.type == DeviceType.virtual_server
+                (
+                    self.object.model and
+                    self.object.model.type == DeviceType.virtual_server
+                )
             ):
                 deploy_disable_reason = _(
                     "This device is not linked to an asset."
