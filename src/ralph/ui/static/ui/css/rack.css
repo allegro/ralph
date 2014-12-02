@@ -1,0 +1,674 @@
+* {
+  box-sizing: border-box;
+}
+.rack-info {
+  float: left;
+  width: 200px;
+  padding: 10px;
+  marign: 10px;
+}
+.racks .rack .wrapper .devices .device.position-u-1,
+.racks .rack .wrapper .listing-u .position.position-u-1 {
+  bottom: 0px;
+}
+.racks .rack .wrapper .devices .device.position-u-2,
+.racks .rack .wrapper .listing-u .position.position-u-2 {
+  bottom: 15px;
+}
+.racks .rack .wrapper .devices .device.position-u-3,
+.racks .rack .wrapper .listing-u .position.position-u-3 {
+  bottom: 30px;
+}
+.racks .rack .wrapper .devices .device.position-u-4,
+.racks .rack .wrapper .listing-u .position.position-u-4 {
+  bottom: 45px;
+}
+.racks .rack .wrapper .devices .device.position-u-5,
+.racks .rack .wrapper .listing-u .position.position-u-5 {
+  bottom: 60px;
+}
+.racks .rack .wrapper .devices .device.position-u-6,
+.racks .rack .wrapper .listing-u .position.position-u-6 {
+  bottom: 75px;
+}
+.racks .rack .wrapper .devices .device.position-u-7,
+.racks .rack .wrapper .listing-u .position.position-u-7 {
+  bottom: 90px;
+}
+.racks .rack .wrapper .devices .device.position-u-8,
+.racks .rack .wrapper .listing-u .position.position-u-8 {
+  bottom: 105px;
+}
+.racks .rack .wrapper .devices .device.position-u-9,
+.racks .rack .wrapper .listing-u .position.position-u-9 {
+  bottom: 120px;
+}
+.racks .rack .wrapper .devices .device.position-u-10,
+.racks .rack .wrapper .listing-u .position.position-u-10 {
+  bottom: 135px;
+}
+.racks .rack .wrapper .devices .device.position-u-11,
+.racks .rack .wrapper .listing-u .position.position-u-11 {
+  bottom: 150px;
+}
+.racks .rack .wrapper .devices .device.position-u-12,
+.racks .rack .wrapper .listing-u .position.position-u-12 {
+  bottom: 165px;
+}
+.racks .rack .wrapper .devices .device.position-u-13,
+.racks .rack .wrapper .listing-u .position.position-u-13 {
+  bottom: 180px;
+}
+.racks .rack .wrapper .devices .device.position-u-14,
+.racks .rack .wrapper .listing-u .position.position-u-14 {
+  bottom: 195px;
+}
+.racks .rack .wrapper .devices .device.position-u-15,
+.racks .rack .wrapper .listing-u .position.position-u-15 {
+  bottom: 210px;
+}
+.racks .rack .wrapper .devices .device.position-u-16,
+.racks .rack .wrapper .listing-u .position.position-u-16 {
+  bottom: 225px;
+}
+.racks .rack .wrapper .devices .device.position-u-17,
+.racks .rack .wrapper .listing-u .position.position-u-17 {
+  bottom: 240px;
+}
+.racks .rack .wrapper .devices .device.position-u-18,
+.racks .rack .wrapper .listing-u .position.position-u-18 {
+  bottom: 255px;
+}
+.racks .rack .wrapper .devices .device.position-u-19,
+.racks .rack .wrapper .listing-u .position.position-u-19 {
+  bottom: 270px;
+}
+.racks .rack .wrapper .devices .device.position-u-20,
+.racks .rack .wrapper .listing-u .position.position-u-20 {
+  bottom: 285px;
+}
+.racks .rack .wrapper .devices .device.position-u-21,
+.racks .rack .wrapper .listing-u .position.position-u-21 {
+  bottom: 300px;
+}
+.racks .rack .wrapper .devices .device.position-u-22,
+.racks .rack .wrapper .listing-u .position.position-u-22 {
+  bottom: 315px;
+}
+.racks .rack .wrapper .devices .device.position-u-23,
+.racks .rack .wrapper .listing-u .position.position-u-23 {
+  bottom: 330px;
+}
+.racks .rack .wrapper .devices .device.position-u-24,
+.racks .rack .wrapper .listing-u .position.position-u-24 {
+  bottom: 345px;
+}
+.racks .rack .wrapper .devices .device.position-u-25,
+.racks .rack .wrapper .listing-u .position.position-u-25 {
+  bottom: 360px;
+}
+.racks .rack .wrapper .devices .device.position-u-26,
+.racks .rack .wrapper .listing-u .position.position-u-26 {
+  bottom: 375px;
+}
+.racks .rack .wrapper .devices .device.position-u-27,
+.racks .rack .wrapper .listing-u .position.position-u-27 {
+  bottom: 390px;
+}
+.racks .rack .wrapper .devices .device.position-u-28,
+.racks .rack .wrapper .listing-u .position.position-u-28 {
+  bottom: 405px;
+}
+.racks .rack .wrapper .devices .device.position-u-29,
+.racks .rack .wrapper .listing-u .position.position-u-29 {
+  bottom: 420px;
+}
+.racks .rack .wrapper .devices .device.position-u-30,
+.racks .rack .wrapper .listing-u .position.position-u-30 {
+  bottom: 435px;
+}
+.racks .rack .wrapper .devices .device.position-u-31,
+.racks .rack .wrapper .listing-u .position.position-u-31 {
+  bottom: 450px;
+}
+.racks .rack .wrapper .devices .device.position-u-32,
+.racks .rack .wrapper .listing-u .position.position-u-32 {
+  bottom: 465px;
+}
+.racks .rack .wrapper .devices .device.position-u-33,
+.racks .rack .wrapper .listing-u .position.position-u-33 {
+  bottom: 480px;
+}
+.racks .rack .wrapper .devices .device.position-u-34,
+.racks .rack .wrapper .listing-u .position.position-u-34 {
+  bottom: 495px;
+}
+.racks .rack .wrapper .devices .device.position-u-35,
+.racks .rack .wrapper .listing-u .position.position-u-35 {
+  bottom: 510px;
+}
+.racks .rack .wrapper .devices .device.position-u-36,
+.racks .rack .wrapper .listing-u .position.position-u-36 {
+  bottom: 525px;
+}
+.racks .rack .wrapper .devices .device.position-u-37,
+.racks .rack .wrapper .listing-u .position.position-u-37 {
+  bottom: 540px;
+}
+.racks .rack .wrapper .devices .device.position-u-38,
+.racks .rack .wrapper .listing-u .position.position-u-38 {
+  bottom: 555px;
+}
+.racks .rack .wrapper .devices .device.position-u-39,
+.racks .rack .wrapper .listing-u .position.position-u-39 {
+  bottom: 570px;
+}
+.racks .rack .wrapper .devices .device.position-u-40,
+.racks .rack .wrapper .listing-u .position.position-u-40 {
+  bottom: 585px;
+}
+.racks .rack .wrapper .devices .device.position-u-41,
+.racks .rack .wrapper .listing-u .position.position-u-41 {
+  bottom: 600px;
+}
+.racks .rack .wrapper .devices .device.position-u-42,
+.racks .rack .wrapper .listing-u .position.position-u-42 {
+  bottom: 615px;
+}
+.racks .rack .wrapper .devices .device.position-u-43,
+.racks .rack .wrapper .listing-u .position.position-u-43 {
+  bottom: 630px;
+}
+.racks .rack .wrapper .devices .device.position-u-44,
+.racks .rack .wrapper .listing-u .position.position-u-44 {
+  bottom: 645px;
+}
+.racks .rack .wrapper .devices .device.position-u-45,
+.racks .rack .wrapper .listing-u .position.position-u-45 {
+  bottom: 660px;
+}
+.racks .rack .wrapper .devices .device.position-u-46,
+.racks .rack .wrapper .listing-u .position.position-u-46 {
+  bottom: 675px;
+}
+.racks .rack .wrapper .devices .device.position-u-47,
+.racks .rack .wrapper .listing-u .position.position-u-47 {
+  bottom: 690px;
+}
+.racks .rack .wrapper .devices .device.position-u-48,
+.racks .rack .wrapper .listing-u .position.position-u-48 {
+  bottom: 705px;
+}
+.racks .rack .wrapper .devices .device.height-u-0 {
+  z-index: 10000;
+  background-color: #f33;
+  height: 15px;
+}
+.racks {
+  float: left;
+}
+.racks .rack {
+  border-radius: 5px;
+  position: relative;
+  border: 4px solid #444444;
+  background: #666;
+  width: 350px;
+  box-sizing: content-box;
+}
+.racks .rack .name {
+  font-size: 1.25em;
+  color: #eee;
+  font-weight: bold;
+  text-align: center;
+  border-bottom: 1px solid #666;
+  box-shadow: 0 1px 1px #000;
+  text-shadow: 2px 0 1px #000;
+  height: 30px;
+  line-height: 30px;
+  position: relative;
+}
+.racks .rack .name:after {
+  position: absolute;
+  right: 10px;
+  font-size: .825em;
+  display: inline-block;
+}
+.racks .rack.front .wrapper .devices {
+  width: 300px;
+}
+.racks .rack.front .wrapper .devices .device {
+  width: 300px;
+}
+.racks .rack.front .wrapper .listing-u {
+  z-index: 1000;
+}
+.racks .rack.front .wrapper .listing-u.left {
+  box-shadow: 1px 0 1px rgba(0, 0, 0, 0.6);
+}
+.racks .rack.front .wrapper .listing-u.right {
+  box-shadow: -1px 0 1px rgba(0, 0, 0, 0.6);
+}
+.racks .rack.front .wrapper .pdu {
+  display: none;
+}
+.racks .rack.front .name:after {
+  content: "front";
+}
+.racks .rack.back .name:after {
+  content: "back";
+}
+.racks .rack.back {
+  margin-left: 10px;
+}
+.racks .rack.rack-u-1 .wrapper {
+  height: 15px;
+}
+.racks .rack.rack-u-2 .wrapper {
+  height: 30px;
+}
+.racks .rack.rack-u-3 .wrapper {
+  height: 45px;
+}
+.racks .rack.rack-u-4 .wrapper {
+  height: 60px;
+}
+.racks .rack.rack-u-5 .wrapper {
+  height: 75px;
+}
+.racks .rack.rack-u-6 .wrapper {
+  height: 90px;
+}
+.racks .rack.rack-u-7 .wrapper {
+  height: 105px;
+}
+.racks .rack.rack-u-8 .wrapper {
+  height: 120px;
+}
+.racks .rack.rack-u-9 .wrapper {
+  height: 135px;
+}
+.racks .rack.rack-u-10 .wrapper {
+  height: 150px;
+}
+.racks .rack.rack-u-11 .wrapper {
+  height: 165px;
+}
+.racks .rack.rack-u-12 .wrapper {
+  height: 180px;
+}
+.racks .rack.rack-u-13 .wrapper {
+  height: 195px;
+}
+.racks .rack.rack-u-14 .wrapper {
+  height: 210px;
+}
+.racks .rack.rack-u-15 .wrapper {
+  height: 225px;
+}
+.racks .rack.rack-u-16 .wrapper {
+  height: 240px;
+}
+.racks .rack.rack-u-17 .wrapper {
+  height: 255px;
+}
+.racks .rack.rack-u-18 .wrapper {
+  height: 270px;
+}
+.racks .rack.rack-u-19 .wrapper {
+  height: 285px;
+}
+.racks .rack.rack-u-20 .wrapper {
+  height: 300px;
+}
+.racks .rack.rack-u-21 .wrapper {
+  height: 315px;
+}
+.racks .rack.rack-u-22 .wrapper {
+  height: 330px;
+}
+.racks .rack.rack-u-23 .wrapper {
+  height: 345px;
+}
+.racks .rack.rack-u-24 .wrapper {
+  height: 360px;
+}
+.racks .rack.rack-u-25 .wrapper {
+  height: 375px;
+}
+.racks .rack.rack-u-26 .wrapper {
+  height: 390px;
+}
+.racks .rack.rack-u-27 .wrapper {
+  height: 405px;
+}
+.racks .rack.rack-u-28 .wrapper {
+  height: 420px;
+}
+.racks .rack.rack-u-29 .wrapper {
+  height: 435px;
+}
+.racks .rack.rack-u-30 .wrapper {
+  height: 450px;
+}
+.racks .rack.rack-u-31 .wrapper {
+  height: 465px;
+}
+.racks .rack.rack-u-32 .wrapper {
+  height: 480px;
+}
+.racks .rack.rack-u-33 .wrapper {
+  height: 495px;
+}
+.racks .rack.rack-u-34 .wrapper {
+  height: 510px;
+}
+.racks .rack.rack-u-35 .wrapper {
+  height: 525px;
+}
+.racks .rack.rack-u-36 .wrapper {
+  height: 540px;
+}
+.racks .rack.rack-u-37 .wrapper {
+  height: 555px;
+}
+.racks .rack.rack-u-38 .wrapper {
+  height: 570px;
+}
+.racks .rack.rack-u-39 .wrapper {
+  height: 585px;
+}
+.racks .rack.rack-u-40 .wrapper {
+  height: 600px;
+}
+.racks .rack.rack-u-41 .wrapper {
+  height: 615px;
+}
+.racks .rack.rack-u-42 .wrapper {
+  height: 630px;
+}
+.racks .rack.rack-u-43 .wrapper {
+  height: 645px;
+}
+.racks .rack.rack-u-44 .wrapper {
+  height: 660px;
+}
+.racks .rack.rack-u-45 .wrapper {
+  height: 675px;
+}
+.racks .rack.rack-u-46 .wrapper {
+  height: 690px;
+}
+.racks .rack.rack-u-47 .wrapper {
+  height: 705px;
+}
+.racks .rack.rack-u-48 .wrapper {
+  height: 720px;
+}
+.racks .rack .wrapper {
+  margin-top: 2px;
+}
+.racks .rack .wrapper .listing-u {
+  margin: 0;
+  width: 25px;
+  float: left;
+  position: relative;
+  min-height: 100%;
+  height: 100%;
+}
+.racks .rack .wrapper .listing-u .position {
+  font-size: .825em;
+  border-top: 1px solid #888;
+  border-bottom: 1px solid #000;
+  position: absolute;
+  height: 15px;
+  line-height: 15px;
+  color: #fff;
+  text-align: center;
+  width: 25px;
+}
+.racks .rack .wrapper .listing-u .position.active {
+  border-top-color: #ff9933;
+  border-bottom-color: #cc6600;
+  background: #ff8000;
+}
+.racks .rack .wrapper .pdu {
+  position: relative;
+  background: #ccc;
+  min-height: 100%;
+  height: 100%;
+  width: 50px;
+  float: left;
+  z-index: 1000;
+}
+.racks .rack .wrapper .pdu.left {
+  box-shadow: 1px 0 1px rgba(0, 0, 0, 0.6);
+}
+.racks .rack .wrapper .pdu.right {
+  box-shadow: -1px 0 1px rgba(0, 0, 0, 0.6);
+}
+.racks .rack .wrapper .devices {
+  width: 200px;
+  min-height: 100%;
+  height: 100%;
+  float: left;
+  position: relative;
+}
+.racks .rack .wrapper .devices .device {
+  cursor: pointer;
+  width: 200px;
+  position: absolute;
+  height: 15px;
+  border-bottom: 1px solid #78b622;
+  border-top: 1px solid #aae15d;
+  background: #93d932;
+}
+.racks .rack .wrapper .devices .device:hover {
+  background: #aae15d;
+}
+.racks .rack .wrapper .devices .device.active {
+  background: #c0e988;
+  border-color: #5c8b1a;
+}
+.racks .rack .wrapper .devices .device.empty {
+  background: #fff;
+  line-height: 15px;
+  border-bottom-color: #bbb;
+  border-top-color: #ddd;
+}
+.racks .rack .wrapper .devices .device.empty:before,
+.racks .rack .wrapper .devices .device.empty:after {
+  position: absolute;
+  content: ":";
+  line-height: 1em;
+}
+.racks .rack .wrapper .devices .device.empty:before {
+  left: 10px;
+}
+.racks .rack .wrapper .devices .device.empty:after {
+  right: 10px;
+}
+.racks .rack .wrapper .devices .device.empty:hover {
+  background: #eee;
+}
+.racks .rack .wrapper .devices .device.empty.active {
+  background: #ddd;
+}
+.racks .rack .wrapper .devices .device.height-u-1 {
+  height: 15px;
+}
+.racks .rack .wrapper .devices .device.height-u-2 {
+  height: 30px;
+}
+.racks .rack .wrapper .devices .device.height-u-3 {
+  height: 45px;
+}
+.racks .rack .wrapper .devices .device.height-u-4 {
+  height: 60px;
+}
+.racks .rack .wrapper .devices .device.height-u-5 {
+  height: 75px;
+}
+.racks .rack .wrapper .devices .device.height-u-6 {
+  height: 90px;
+}
+.racks .rack .wrapper .devices .device.height-u-7 {
+  height: 105px;
+}
+.racks .rack .wrapper .devices .device.height-u-8 {
+  height: 120px;
+}
+.racks .rack .wrapper .devices .device.height-u-9 {
+  height: 135px;
+}
+.racks .rack .wrapper .devices .device.height-u-10 {
+  height: 150px;
+}
+.racks .rack .wrapper .devices .device.height-u-11 {
+  height: 165px;
+}
+.racks .rack .wrapper .devices .device.height-u-12 {
+  height: 180px;
+}
+.racks .rack .wrapper .devices .device.height-u-13 {
+  height: 195px;
+}
+.racks .rack .wrapper .devices .device.height-u-14 {
+  height: 210px;
+}
+.racks .rack .wrapper .devices .device.height-u-15 {
+  height: 225px;
+}
+.racks .rack .wrapper .devices .device.height-u-16 {
+  height: 240px;
+}
+.racks .rack .wrapper .devices .device.height-u-17 {
+  height: 255px;
+}
+.racks .rack .wrapper .devices .device.height-u-18 {
+  height: 270px;
+}
+.racks .rack .wrapper .devices .device.height-u-19 {
+  height: 285px;
+}
+.racks .rack .wrapper .devices .device.height-u-20 {
+  height: 300px;
+}
+.racks .rack .wrapper .devices .device.height-u-21 {
+  height: 315px;
+}
+.racks .rack .wrapper .devices .device.height-u-22 {
+  height: 330px;
+}
+.racks .rack .wrapper .devices .device.height-u-23 {
+  height: 345px;
+}
+.racks .rack .wrapper .devices .device.height-u-24 {
+  height: 360px;
+}
+.racks .rack .wrapper .devices .device.height-u-25 {
+  height: 375px;
+}
+.racks .rack .wrapper .devices .device.height-u-26 {
+  height: 390px;
+}
+.racks .rack .wrapper .devices .device.height-u-27 {
+  height: 405px;
+}
+.racks .rack .wrapper .devices .device.height-u-28 {
+  height: 420px;
+}
+.racks .rack .wrapper .devices .device.height-u-29 {
+  height: 435px;
+}
+.racks .rack .wrapper .devices .device.height-u-30 {
+  height: 450px;
+}
+.racks .rack .wrapper .devices .device.height-u-31 {
+  height: 465px;
+}
+.racks .rack .wrapper .devices .device.height-u-32 {
+  height: 480px;
+}
+.racks .rack .wrapper .devices .device.height-u-33 {
+  height: 495px;
+}
+.racks .rack .wrapper .devices .device.height-u-34 {
+  height: 510px;
+}
+.racks .rack .wrapper .devices .device.height-u-35 {
+  height: 525px;
+}
+.racks .rack .wrapper .devices .device.height-u-36 {
+  height: 540px;
+}
+.racks .rack .wrapper .devices .device.height-u-37 {
+  height: 555px;
+}
+.racks .rack .wrapper .devices .device.height-u-38 {
+  height: 570px;
+}
+.racks .rack .wrapper .devices .device.height-u-39 {
+  height: 585px;
+}
+.racks .rack .wrapper .devices .device.height-u-40 {
+  height: 600px;
+}
+.racks .rack .wrapper .devices .device.height-u-41 {
+  height: 615px;
+}
+.racks .rack .wrapper .devices .device.height-u-42 {
+  height: 630px;
+}
+.racks .rack .wrapper .devices .device.height-u-43 {
+  height: 645px;
+}
+.racks .rack .wrapper .devices .device.height-u-44 {
+  height: 660px;
+}
+.racks .rack .wrapper .devices .device.height-u-45 {
+  height: 675px;
+}
+.racks .rack .wrapper .devices .device.height-u-46 {
+  height: 690px;
+}
+.racks .rack .wrapper .devices .device.height-u-47 {
+  height: 705px;
+}
+.racks .rack .wrapper .devices .device.height-u-48 {
+  height: 720px;
+}
+.racks .rack .wrapper .devices .device.height-u-0 .sn,
+.racks .rack .wrapper .devices .device.height-u-1 .sn {
+  display: none;
+}
+.racks .rack .wrapper .devices .device.position-u-1 .info .barcode,
+.racks .rack .wrapper .devices .device.position-u-1 .info .model {
+  top: 0;
+}
+.racks .rack .wrapper .devices .device .info {
+  display: block;
+  color: #333;
+  line-height: 1em;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  font-size: .825em;
+  position: relative;
+  min-height: 100%;
+}
+.racks .rack .wrapper .devices .device .info .barcode,
+.racks .rack .wrapper .devices .device .info .model,
+.racks .rack .wrapper .devices .device .info .sn {
+  position: absolute;
+}
+.racks .rack .wrapper .devices .device .info .barcode {
+  right: 3px;
+  bottom: 3px;
+}
+.racks .rack .wrapper .devices .device .info .sn {
+  left: 3px;
+  bottom: 3px;
+}
+.racks .rack .wrapper .devices .device .info .model {
+  font-weight: bold;
+  left: 3px;
+  top: 3px;
+}
