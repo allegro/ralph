@@ -276,10 +276,11 @@ class RacksRack(Racks, Base):
     def dispatch(self, request, *args, **kwargs):
         response = super(RacksRack, self).dispatch(request, *args, **kwargs)
         old_rack = DeprecatedRalphRack.objects.get(id=self.rack.id)
+        self.new_rack = None
         for rack in old_rack.deprecated_asset_rack.all():
             self.new_rack = rack
         # NOTE: set_cookie method required value as a str not unicode
-        response.set_cookie(str('rack_id'), self.new_rack.id)
+        response.set_cookie(str('rack_id'), self.new_rack and self.new_rack.id)
         return response
 
     def get_context_data(self, **kwargs):
