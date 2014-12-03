@@ -106,8 +106,8 @@ not be updated automatically now -- to not overwrite the :index:`manual
 changes`.  You can click on that icon in order to remove it and allow automatic
 changes of the field.
 
-There's one more restriction here - when a device is assigned to an asset
-(without is_blade flag), you can not change its position fields (i.e. parent,
-dc, rack, position, orientation). In order to do that, you should use "Assets"
-module instead. This should be considered as a temporary workaround, because
-in the future, position will be stored only in the "Assets" module.
+There's one more restriction here - when a device is assigned to an asset, you
+can not change its position fields (i.e. parent, dc, rack, position,
+orientation). In order to do that, you should use "Assets" module instead.
+This should be considered as a temporary workaround, because in the future,
+position will be stored only in the "Assets" module.

@@ -460,8 +460,6 @@ def check_if_can_edit_position(data):
         asset = get_asset_by_name(asset)
         if not asset:
             return True
-    if asset.model.category.is_blade:
-        return True
     return False
 
 

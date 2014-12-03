@@ -179,26 +179,11 @@ admin.site.register(models.DiscoveryQueue, DiscoveryQueueAdmin)
 
 class IPAddressInlineFormset(forms.models.BaseInlineFormSet):
 
-    def clean(self):
-        if not self.forms:
-            return
-        device = self.forms[0].cleaned_data["device"]
-        asset = device.get_asset()
-        if not asset or asset.model.category.is_blade:
-            return
-        for form in self.forms:
-            if form.cleaned_data.get("is_management", True):
-                msg = """"It's not possible to manage managements IP addresses
-                here. Please use Assets module - click <a href="{}"
-                target="_blank">here</a>.""".format(
-                    reverse(
-                        'device_edit', kwargs={
-                            'mode': 'dc',
-                            'asset_id': asset.id,
-                        },
-                    ),
-                )
-                raise forms.ValidationError(mark_safe(msg))
+    def get_queryset(self):
+        qs = super(IPAddressInlineFormset, self).get_queryset().filter(
+            is_management=False,
+        )
+        return qs
 
 
 class IPAddressInline(ForeignKeyAutocompleteTabularInline):
@@ -206,7 +191,7 @@ class IPAddressInline(ForeignKeyAutocompleteTabularInline):
     model = models.IPAddress
     readonly_fields = ('snmp_name', 'last_seen')
     exclude = ('created', 'modified', 'dns_info', 'http_family',
-               'snmp_community', 'last_puppet')
+               'snmp_community', 'last_puppet', 'is_management')
     edit_separately = True
     extra = 0
     related_search_fields = {
@@ -259,7 +244,7 @@ class DeviceForm(forms.ModelForm):
         super(DeviceForm, self).__init__(*args, **kwargs)
         if self.instance.id is not None:
             asset = self.instance.get_asset()
-            if asset and not asset.model.category.is_blade:
+            if asset:
                 self.fields['dc'].widget = ReadOnlyWidget()
                 self.fields['rack'].widget = ReadOnlyWidget()
                 self.fields['chassis_position'].widget = ReadOnlyWidget()
@@ -456,24 +441,25 @@ class IPAddressForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super(IPAddressForm, self).clean()
         device = cleaned_data.get('device')
-        if device:
-            asset = device.get_asset()
-            if (
-                asset and
-                asset.model.category and
-                not asset.model.category.is_blade
-            ):
-                msg = """You can not assign management IP address to this
-                device. You should use Assets module - click <a href="{}"
-                target="_blank">here</a>.""".format(
-                    reverse(
-                        'device_edit', kwargs={
-                            'mode': 'dc',
-                            'asset_id': asset.id,
-                        },
-                    ),
-                )
-                raise forms.ValidationError(mark_safe(msg))
+        if device and (
+            'device' in self.changed_data or
+            'is_management' in self.changed_data
+        ):
+            is_management = cleaned_data.get('is_management', False)
+            if is_management:
+                asset = device.get_asset()
+                if asset:
+                    msg = """You can not assign management IP address to this
+                    device. You should use Assets module - click <a href="{}"
+                    target="_blank">here</a>.""".format(
+                        reverse(
+                            'device_edit', kwargs={
+                                'mode': 'dc',
+                                'asset_id': asset.id,
+                            },
+                        ),
+                    )
+                    raise forms.ValidationError(mark_safe(msg))
         return cleaned_data
 
 

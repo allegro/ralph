@@ -35,7 +35,7 @@ class DeviceAdminTest(TestCase):
             'admin:discovery_device_change', args=(self.device.id,),
         )
 
-    def _test_can_edit_case(self):
+    def test_base_fields(self):
         response = self.client.get(self.url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
@@ -60,20 +60,6 @@ class DeviceAdminTest(TestCase):
             ].form.fields['management'].widget,
             ReadOnlySelectWidget,
         ))
-
-    def test_base_fields(self):
-        self._test_can_edit_case()
-
-    def test_base_fields_when_blade_asset_is_assigned(self):
-        """Asset has is_blade flag -> edition is possible."""
-        asset = DCAssetFactory(
-            device_info=DeviceInfoFactory(
-                ralph_device_id=self.device.id,
-            ),
-        )
-        asset.model.category.is_blade = True
-        asset.model.category.save()
-        self._test_can_edit_case()
 
     def test_base_fields_when_asset_is_assigned(self):
         """Asset has not is_blade flag -> edition is not possible"""
@@ -127,25 +113,12 @@ class IPAddressAdminTest(TestCase):
                 '-1-MAX_NUM_FORMS': 0,
                 'address': '127.0.0.1',
                 'device': self.device.id,
+                'is_management': True,
             },
             follow=True,
         )
 
     def test_device_without_asset_validation(self):
-        response = self._make_request()
-        self.assertFalse(response.context_data['adminform'].form.is_valid())
-        self.assertEqual(
-            response.context_data['adminform'].form.non_field_errors(), [],
-        )
-
-    def test_device_with_blade_asset_validation(self):
-        asset = DCAssetFactory(
-            device_info=DeviceInfoFactory(
-                ralph_device_id=self.device.id,
-            ),
-        )
-        asset.model.category.is_blade = True
-        asset.model.category.save()
         response = self._make_request()
         self.assertFalse(response.context_data['adminform'].form.is_valid())
         self.assertEqual(

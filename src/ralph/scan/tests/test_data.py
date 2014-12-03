@@ -867,17 +867,8 @@ class SetDeviceDataTest(TestCase):
     def test_check_if_can_edit_position(self):
         # No asset in saved data.
         self.assertTrue(check_if_can_edit_position({'key_1': 'value_1'}))
-        # Asset with is_blade flag.
+        # Asset is assigned.
         asset = DCAssetFactory()
-        asset.model.category.is_blade = True
-        asset.model.category.save()
-        self.assertTrue(
-            check_if_can_edit_position({'key_1': 'value_1', 'asset': asset}),
-        )
-        # Asset without is_blade flag.
-        asset = DCAssetFactory()
-        asset.model.category.is_blade = False
-        asset.model.category.save()
         self.assertFalse(
             check_if_can_edit_position({'key_1': 'value_1', 'asset': asset}),
         )

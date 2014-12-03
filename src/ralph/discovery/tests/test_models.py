@@ -17,11 +17,12 @@ from ralph.cmdb.tests.utils import (
     ServiceCatalogFactory,
 )
 from ralph.discovery.tests.util import DeviceFactory, IPAddressFactory
-from ralph.cmdb.tests.utils import ServiceCatalogFactory
 from ralph.discovery.models import DeviceType, Device, UptimeSupport
 from ralph.discovery.models_history import HistoryChange
 from ralph.util.models import fields_synced_signal, ChangeTuple
-from ralph.util.tests.utils import UserFactory, ServiceFactory
+from ralph.util.tests.utils import UserFactory
+from ralph_assets.models import Orientation
+from ralph_assets.tests.utils.assets import DCAssetFactory, DeviceInfoFactory
 
 
 class ModelsTest(TestCase):
@@ -96,6 +97,7 @@ class DeviceSignalTest(TestCase):
                 change_author=author,
             )
 
+
 class ManagementIpTests(TestCase):
     """Tests for management IP property."""
 
@@ -165,3 +167,20 @@ class ServiceEnvironments(TestCase):
         self.assertEqual(len(service.get_environments()), 0)
         CIRelationFactory(parent=service, child=env)
         self.assertEqual(len(service.get_environments()), 1)
+
+
+class DeviceModelTest(TestCase):
+
+    def test_orientation_property(self):
+        dev_1 = DeviceFactory(name='h101.dc')
+        dev_2 = DeviceFactory(name='h101.dc')
+        DCAssetFactory(
+            device_info=DeviceInfoFactory(
+                ralph_device_id=dev_2.id,
+                orientation=Orientation.middle.id,
+            ),
+        )
+        self.assertEqual(dev_1.orientation, '')
+        self.assertEqual(dev_2.orientation, 'middle')
+        with self.assertRaises(AttributeError):
+            dev_2.orientation = Orientation.back.id
