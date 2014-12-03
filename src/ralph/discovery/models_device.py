@@ -484,7 +484,7 @@ class Device(
         blank=True,
     )
     position = db.CharField(
-        verbose_name=_("orientation"),
+        verbose_name=_("slot no"),
         null=True,
         blank=True,
         max_length=16,
@@ -868,6 +868,14 @@ class Device(
     @property
     def rolepropertyvalue(self):
         return self.rolepropertyvalue_set
+
+    @property
+    def orientation(self):
+        asset = self.get_asset()
+        if not asset:
+            return ''
+        from ralph_assets.models import Orientation
+        return Orientation.name_from_id(asset.device_info.orientation)
 
     def get_components(self):
         details = {}

@@ -125,19 +125,11 @@ class DeviceForm(ServiceCatalogMixin):
                     (p.id, p.name) for p in
                     self.get_possible_parents(self.instance)
                 ]
-                if (
-                    asset and
-                    asset.model.category and
-                    not asset.model.category.is_blade
-                ):
+                if asset:
                     self.fields['parent'].widget = ReadOnlySelectWidget(
                         choices=self.fields['parent'].choices,
                     )
-            if (
-                asset and
-                asset.model.category and
-                not asset.model.category.is_blade
-            ):
+            if asset:
                 if 'chassis_position' in self.fields:
                     self.fields[
                         'chassis_position'
@@ -264,8 +256,8 @@ class DeviceCreateForm(DeviceForm):
             'service',
             'device_environment',
             'barcode',
-            'position',
             'chassis_position',
+            'position',
             'remarks',
             'margin_kind',
             'deprecation_kind',
@@ -296,14 +288,9 @@ class DeviceCreateForm(DeviceForm):
         )
         del self.fields['save_comment']
         if 'data' in kwargs and kwargs['data'].get('asset'):
-            try:
-                asset = Asset.objects.get(pk=kwargs['data']['asset'])
-            except Asset.DoesNotExist:
-                pass
-            else:
-                if not asset.model.category.is_blade:
-                    self.fields['chassis_position'].widget = ReadOnlyWidget()
-                    self.fields['position'].widget = ReadOnlyWidget()
+            if Asset.objects.filter(pk=kwargs['data']['asset']).exists():
+                self.fields['chassis_position'].widget = ReadOnlyWidget()
+                self.fields['position'].widget = ReadOnlyWidget()
 
     def clean_macs(self):
         sn = self.cleaned_data['sn']
@@ -351,7 +338,7 @@ class DeviceCreateForm(DeviceForm):
     def clean(self):
         cleaned_data = super(DeviceCreateForm, self).clean()
         asset = cleaned_data.get('asset')
-        if asset and not asset.model.category.is_blade:
+        if asset:
             # get position from asset
             if all((
                 'chassis_position' in cleaned_data,
@@ -406,8 +393,8 @@ class DeviceInfoForm(DeviceForm):
             'barcode',
             'dc',
             'rack',
-            'position',
             'chassis_position',
+            'position',
             'parent',
             'remarks',
             'deleted',
