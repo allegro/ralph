@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 
 from ajax_select.fields import (
     AutoCompleteSelectField,
-    AutoCompleteCascadeSelectField,
+    CascadeModelChoiceField,
 )
 from django import forms
 from django.conf import settings
@@ -20,6 +20,7 @@ from ralph.discovery.models_component import is_mac_valid
 from ralph.discovery.models import (
     ASSET_NOT_REQUIRED,
     Device,
+    DeviceEnvironment,
     DeviceType,
 )
 from ralph.util import Eth
@@ -48,15 +49,11 @@ class ServiceCatalogMixin(forms.ModelForm):
         # setting widget's id here is necessary for dependent field to work
         attrs={'id': 'service_catalog_ajax_field'},
     )
-    device_environment = AutoCompleteCascadeSelectField(
+    device_environment = CascadeModelChoiceField(
         ('ralph.ui.channels', 'DeviceEnvironmentLookup'),
-        required=True,
         label=_('Device environment'),
+        queryset=DeviceEnvironment.objects.all(),
         parent_field=service,
-        # on some views where this mixin is used there's already a field
-        # named 'id_device_environment', so it's better to explicitly specify
-        # the name for this one here
-        attrs={'id': 'device_environment_ajax_field'},
     )
 
 

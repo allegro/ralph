@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 
 from django.core.exceptions import PermissionDenied
 
-from ajax_select import LookupChannel, CascadeLookupChannel
+from ajax_select import LookupChannel
 from django.db import models as db
 from django.utils.html import escape
 
@@ -77,24 +77,17 @@ class ServiceCatalogLookup(RestrictedLookupChannel):
     model = models_device.ServiceCatalog
 
 
-class DeviceEnvironmentLookup(CascadeLookupChannel):
+class DeviceEnvironmentLookup(RestrictedLookupChannel):
     model = models_device.DeviceEnvironment
-    search_field = 'name'
 
-    def get_cascading_query(self, query, request, parent_pk):
+    def get_query(self, query, request):
         try:
-            service = models_device.ServiceCatalog.objects.get(id=parent_pk)
+            service = models_device.ServiceCatalog.objects.get(id=query)
         except models_device.ServiceCatalog.DoesNotExist:
-            return models_device.ServiceCatalog.objects.none()
+            envs = models_device.ServiceCatalog.objects.none()
         else:
             envs = service.get_environments()
-            return envs.filter(name__icontains=query)
-
-    # since we don't inherit from RestrictedLookupChannel,
-    # we need to implement 'check_auth' here as well
-    def check_auth(self, request):
-        if not request.user.is_authenticated():
-            raise PermissionDenied
+        return envs
 
 
 class VentureLookup(RestrictedLookupChannel):
