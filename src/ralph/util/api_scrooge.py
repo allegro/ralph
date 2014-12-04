@@ -16,6 +16,7 @@ from ralph.discovery.models import (
     FibreChannel,
     IPAddress,
 )
+from ralph.util.api import Getter
 
 
 def get_virtual_usages(parent_service_uid=None):
@@ -118,13 +119,13 @@ def get_fc_cards():
         }
 
 
-def get_environments():
-    for environment in DeviceEnvironment.objects.all():
-        yield {
-            'ci_id': environment.id,
-            'ci_uid': environment.uid,
-            'name': environment.name,
-        }
+class get_environments(Getter):
+    Model = DeviceEnvironment
+    fields = [
+        ('ci_id', 'id'),
+        ('ci_uid', 'uid'),
+        'name'
+    ]
 
 
 def get_openstack_tenants(model_name=None):
@@ -157,17 +158,21 @@ def get_blade_servers():
 
 
 # CMDB
-def get_business_lines():
+class get_business_lines(Getter):
     """
     Returns Business Lines from CMDB (CIs with type Business Line)
     """
-    business_line_type = CIType.objects.get(name='BusinessLine')
-    for business_line in CI.objects.filter(type=business_line_type):
-        yield {
-            'ci_id': business_line.id,
-            'ci_uid': business_line.uid,
-            'name': business_line.name,
-        }
+    Model = CI
+
+    @property  # When testing the table won't exist during import
+    def filters(self):
+        return {'type': CIType.objects.get(name='BusinessLine')}
+
+    fields = [
+        ('ci_id', 'id'),
+        ('ci_uid', 'uid'),
+        'name',
+    ]
 
 
 def get_profit_centers():
@@ -195,15 +200,12 @@ def get_profit_centers():
         }
 
 
-def get_owners():
+class get_owners(Getter):
     """
     Returns CIOwners from CMDB
     """
-    for owner in CIOwner.objects.all():
-        yield {
-            'id': owner.id,
-            'profile_id': owner.profile_id,
-        }
+    Model = CIOwner
+    fields = ['id', 'profile_id']
 
 
 def get_services(only_calculated_in_scrooge=False):
