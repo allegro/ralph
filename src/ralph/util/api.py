@@ -38,6 +38,17 @@ def get_user(request):
         return User.objects.get(api_key__key=api_key)
 
 
+def getattr_dunder(obj, attr):
+    """Gets attribute of object. Works recursively
+    if attr contains double underscores."""
+
+    first, dunder, rest = attr.partition('__')
+    value = getattr(obj, first)
+    if rest:
+        return getattr_dunder(value, rest)
+    return value
+
+
 class Getter(Iterable):
     """A generic tool for various internal apis, that yields dicts with
     given fields from a collection."""
@@ -53,11 +64,11 @@ class Getter(Iterable):
         ret = {}
         for field in self.fields:
             if isinstance(field, basestring):
-                ret[field] = getattr(item, field)
+                ret[field] = getattr_dunder(item, field)
             else:
                 name, get_function = field
                 if isinstance(get_function, basestring):
-                    ret[name] = getattr(item, get_function)
+                    ret[name] = getattr_dunder(item, get_function)
                 else:
                     ret[name] = get_function(item)
         return ret

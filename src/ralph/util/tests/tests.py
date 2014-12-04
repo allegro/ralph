@@ -366,6 +366,17 @@ class ApiScroogeTest(TestCase):
         }
         self.assertEquals(result, [service_dict])
 
+    def test_getattr_dunder(self):
+        """getattr_dunder works recursively"""
+
+        class A():
+            pass
+
+        a = A()
+        a.b = A()
+        a.b.name = 'spam'
+        self.assertEqual(api.getattr_dunder(a, 'b__name'), 'spam')
+
 
 class UncompressBase64DataTest(TestCase):
 
