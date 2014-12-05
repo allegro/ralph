@@ -286,8 +286,9 @@ def _puppet(ip_address, messages=[]):
         facts = provider.get_facts(ip_addresses_set, hostnames_set, messages)
         if facts:
             break
-    if not facts:
-        raise Error('Host config not found.')
+    else:
+        msg = "Could not find facts for ip address: {}".format(ip_address)
+        raise Error(msg)
     is_virtual = _is_host_virtual(facts)
     if 'lshw' in facts:
         device_info = _parse_lshw(facts['lshw'], is_virtual)
