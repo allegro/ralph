@@ -462,6 +462,38 @@
   border-top: 1px solid #aae15d;
   background: #93d932;
 }
+.racks .rack .wrapper .devices .device.accessory {
+  background: #fff;
+}
+.racks .rack .wrapper .devices .device.accessory .info {
+  position: relative;
+}
+.racks .rack .wrapper .devices .device.accessory .info .model {
+  top: 0;
+  left: 0;
+  position: absolute;
+  padding: 2px;
+  background: #fff;
+}
+.racks .rack .wrapper .devices .device.accessory.brush {
+  background-color: #222222;
+  background-image: -webkit-linear-gradient(left, transparent 50%, #cccccc 50%);
+  background-image: -o-linear-gradient(left, transparent 50%, #cccccc 50%);
+  background-image: linear-gradient(left, transparent 50%, #cccccc 50%);
+  background-size: 2px 2px;
+  border-color: #ccc;
+}
+.racks .rack .wrapper .devices .device.accessory.brush:hover {
+  background-image: -webkit-linear-gradient(left, transparent 50%, #cccccc 50%);
+  background-image: -o-linear-gradient(left, transparent 50%, #cccccc 50%);
+  background-image: linear-gradient(to right, transparent 50%, #cccccc 50%);
+  background-size: 2px 2px;
+  border-color: #444;
+}
+.racks .rack .wrapper .devices .device.accessory.patch-panel {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAK0lEQVQYV2NkIBIwEqmOAVnhfxyawGrQFaLbANI82BRi8w+GG/GGFNHhCAARkQoLdFrYLgAAAABJRU5ErkJggg==) repeat-x;
+  background-color: #fff;
+}
 .racks .rack .wrapper .devices .device:hover {
   background: #aae15d;
 }

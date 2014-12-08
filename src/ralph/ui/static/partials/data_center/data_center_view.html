@@ -1,0 +1,16 @@
+<div class="data_center">
+    <div class="grid">
+        <div class="grid_wrapper">
+            <rack
+                ng-repeat="rack in racks"
+                index="{{$index}}"
+                id="{{ rack.id }}"
+                name="{{ rack.name }}"
+                x="{{ rack.visualization_col }}"
+                y="{{ rack.visualization_row }}"
+                datacenter="racks"
+            >
+            </rack>
+        </div>
+    </div>
+</div>
