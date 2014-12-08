@@ -1,0 +1,169 @@
+.data_center {
+  width: 100%;
+}
+.data_center .grid {
+  float: left;
+  background: #555;
+  width: 800px;
+}
+.data_center .grid .grid_wrapper {
+  position: relative;
+  min-height: 800px;
+  background-color: transparent;
+  background-image: linear-gradient(0deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.5) 1%, transparent 2%, transparent), linear-gradient(90deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.5) 1%, transparent 2%, transparent);
+  background-size: 40px 40px;
+}
+.data_center .grid .grid_wrapper .rack {
+  box-sizing: border-box;
+  position: absolute;
+  background: #93d932;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #444;
+}
+.data_center .grid .grid_wrapper .rack.x-1 {
+  left: 40px;
+}
+.data_center .grid .grid_wrapper .rack.x-2 {
+  left: 80px;
+}
+.data_center .grid .grid_wrapper .rack.x-3 {
+  left: 120px;
+}
+.data_center .grid .grid_wrapper .rack.x-4 {
+  left: 160px;
+}
+.data_center .grid .grid_wrapper .rack.x-5 {
+  left: 200px;
+}
+.data_center .grid .grid_wrapper .rack.x-6 {
+  left: 240px;
+}
+.data_center .grid .grid_wrapper .rack.x-7 {
+  left: 280px;
+}
+.data_center .grid .grid_wrapper .rack.x-8 {
+  left: 320px;
+}
+.data_center .grid .grid_wrapper .rack.x-9 {
+  left: 360px;
+}
+.data_center .grid .grid_wrapper .rack.x-10 {
+  left: 400px;
+}
+.data_center .grid .grid_wrapper .rack.x-11 {
+  left: 440px;
+}
+.data_center .grid .grid_wrapper .rack.x-12 {
+  left: 480px;
+}
+.data_center .grid .grid_wrapper .rack.x-13 {
+  left: 520px;
+}
+.data_center .grid .grid_wrapper .rack.x-14 {
+  left: 560px;
+}
+.data_center .grid .grid_wrapper .rack.x-15 {
+  left: 600px;
+}
+.data_center .grid .grid_wrapper .rack.x-16 {
+  left: 640px;
+}
+.data_center .grid .grid_wrapper .rack.x-17 {
+  left: 680px;
+}
+.data_center .grid .grid_wrapper .rack.x-18 {
+  left: 720px;
+}
+.data_center .grid .grid_wrapper .rack.x-19 {
+  left: 760px;
+}
+.data_center .grid .grid_wrapper .rack.x-20 {
+  left: 800px;
+}
+.data_center .grid .grid_wrapper .rack.y-1 {
+  top: 40px;
+}
+.data_center .grid .grid_wrapper .rack.y-2 {
+  top: 80px;
+}
+.data_center .grid .grid_wrapper .rack.y-3 {
+  top: 120px;
+}
+.data_center .grid .grid_wrapper .rack.y-4 {
+  top: 160px;
+}
+.data_center .grid .grid_wrapper .rack.y-5 {
+  top: 200px;
+}
+.data_center .grid .grid_wrapper .rack.y-6 {
+  top: 240px;
+}
+.data_center .grid .grid_wrapper .rack.y-7 {
+  top: 280px;
+}
+.data_center .grid .grid_wrapper .rack.y-8 {
+  top: 320px;
+}
+.data_center .grid .grid_wrapper .rack.y-9 {
+  top: 360px;
+}
+.data_center .grid .grid_wrapper .rack.y-10 {
+  top: 400px;
+}
+.data_center .grid .grid_wrapper .rack.y-11 {
+  top: 440px;
+}
+.data_center .grid .grid_wrapper .rack.y-12 {
+  top: 480px;
+}
+.data_center .grid .grid_wrapper .rack.y-13 {
+  top: 520px;
+}
+.data_center .grid .grid_wrapper .rack.y-14 {
+  top: 560px;
+}
+.data_center .grid .grid_wrapper .rack.y-15 {
+  top: 600px;
+}
+.data_center .grid .grid_wrapper .rack.y-16 {
+  top: 640px;
+}
+.data_center .grid .grid_wrapper .rack.y-17 {
+  top: 680px;
+}
+.data_center .grid .grid_wrapper .rack.y-18 {
+  top: 720px;
+}
+.data_center .grid .grid_wrapper .rack.y-19 {
+  top: 760px;
+}
+.data_center .grid .grid_wrapper .rack.y-20 {
+  top: 800px;
+}
+.data_center .grid .grid_wrapper .rack .name .wrapper {
+  overflow: hidden;
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.8);
+  text-align: center;
+  padding: 2px;
+  color: #eee;
+  display: block;
+  cursor: move;
+}
+.data_center .grid .grid_wrapper .rack .tools {
+  height: 100%;
+  min-height: 100%;
+  min-width: 100%;
+}
+.data_center .grid .grid_wrapper .rack .tools .used {
+  height: 2px;
+  background: #f33;
+}
+.data_center .grid .grid_wrapper .rack .tools .zoom {
+  display: block;
+  cursor: zoom-in;
+}
+.data_center .grid .grid_wrapper .rack .tools .zoom:hover {
+  text-decoration: none;
+}

@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.db.models import Q
 from django.http import HttpResponseForbidden, HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404
+from django.utils.translation import ugettext_lazy as _
 from django.views.generic import CreateView
 
 from ralph.account.models import Perm
@@ -33,6 +34,7 @@ from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import ReportDeviceList
 from ralph.util import presentation
 from ralph_assets.models_assets import DeprecatedRalphRack
+from ralph_assets.models_dc_assets import DataCenter
 
 
 class BaseRacksMixin(object):
@@ -93,7 +95,7 @@ class SidebarRacks(BaseRacksMixin):
         icon = presentation.get_device_icon
         sidebar_items = [
             MenuItem(
-                "Unknown",
+                _("Unknown"),
                 name='',
                 fugue_icon='fugue-prohibition',
                 view_name='racks',
@@ -108,11 +110,11 @@ class SidebarRacks(BaseRacksMixin):
                     dc.name,
                     name=_get_identifier(dc),
                     fugue_icon=icon(dc),
-                    view_name='racks',
+                    view_name='data_center_view',
                     subitems=subitems,
                     indent=' ',
                     view_args=[
-                        _get_identifier(dc), ret['details'], ''
+                        _slug(dc.name),
                     ],
                     collapsible=True,
                     collapsed=not (
@@ -274,11 +276,15 @@ class RacksRack(Racks, Base):
     template_name = 'ui/racks_rack.html'
 
     def dispatch(self, request, *args, **kwargs):
-        response = super(RacksRack, self).dispatch(request, *args, **kwargs)
-        old_rack = DeprecatedRalphRack.objects.get(id=self.rack.id)
         self.new_rack = None
-        for rack in old_rack.deprecated_asset_rack.all():
-            self.new_rack = rack
+        response = super(RacksRack, self).dispatch(request, *args, **kwargs)
+        try:
+            old_rack = DeprecatedRalphRack.objects.get(id=self.rack.id)
+        except DeprecatedRalphRack.DoesNotExist:
+            pass
+        else:
+            for rack in old_rack.deprecated_asset_rack.all():
+                self.new_rack = rack
         # NOTE: set_cookie method required value as a str not unicode
         response.set_cookie(str('rack_id'), self.new_rack and self.new_rack.id)
         return response
@@ -286,9 +292,14 @@ class RacksRack(Racks, Base):
     def get_context_data(self, **kwargs):
         context = super(RacksRack, self).get_context_data(**kwargs)
         tab_items = context['tab_items']
-        tab_items.append(
+        label = _('Rack view')
+        if self.rack.model.type == DeviceType.data_center:
+            label = _('Data center view')
+        tab_items.insert(
+            0,
             MenuItem(
-                'Rack',
+                label,
+                name='rack',
                 fugue_icon='fugue-media-player-phone',
                 href='../rack/?%s' % self.request.GET.urlencode()
             )
@@ -372,7 +383,8 @@ class DeviceCreateView(BaseRacksMixin, CreateView):
             venture = None
         if not has_perm(Perm.create_device, venture):
             return HttpResponseForbidden(
-                "You don't have permission to create devices here.")
+                _("You don't have permission to create devices here.")
+            )
         return super(DeviceCreateView, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
@@ -384,7 +396,8 @@ class DeviceCreateView(BaseRacksMixin, CreateView):
             venture = None
         if not has_perm(Perm.create_device, venture):
             return HttpResponseForbidden(
-                "You don't have permission to create devices here.")
+                _("You don't have permission to create devices here.")
+            )
         return super(DeviceCreateView, self).post(*args, **kwargs)
 
 
@@ -419,3 +432,26 @@ class RacksAddDevice(Racks, DeviceCreateView):
 
 class ReportRacksDeviceList(ReportDeviceList, RacksDeviceList):
     pass
+
+
+class DataCenterView(SidebarRacks, Base):
+    submodule_name = 'racks'
+    template_name = 'ui/data_center_view.html'
+
+    def dispatch(self, request, data_center, *args, **kwargs):
+        self.data_center = get_object_or_404(
+            Device, name=data_center
+        )
+        response = super(DataCenterView, self).dispatch(
+            request, *args, **kwargs
+        )
+        asset_dc = get_object_or_404(
+            DataCenter, deprecated_ralph_dc_id=self.data_center.id
+        )
+        response.set_cookie(str('data_center_id'), asset_dc.id)
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super(DataCenterView, self).get_context_data(**kwargs)
+        context['data_center'] = self.data_center
+        return context
