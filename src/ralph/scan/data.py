@@ -953,7 +953,8 @@ def merge_data(*args, **kwargs):
         if (
             only_multiple and
             len(repeated) <= 1 and
-            key not in required_fields
+            key not in required_fields and
+            'database' in values
         ):
             continue
         for value_str, sources in repeated.iteritems():
