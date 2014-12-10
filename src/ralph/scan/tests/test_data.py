@@ -909,6 +909,11 @@ class DeviceMergeDataTest(TestCase):
                         'key2': 'value2',
                     },
                 },
+                'database': {
+                    'device': {
+                        'key2': 'value2',
+                    },
+                },
             },
             {
                 'three': {
@@ -926,7 +931,7 @@ class DeviceMergeDataTest(TestCase):
                 ('three',): 'value2',
             },
             'key2': {
-                ('one', 'two'): 'value2',
+                ('database', 'one', 'two'): 'value2',
             },
             'key3': {
                 ('three',): 'value3',
@@ -937,6 +942,9 @@ class DeviceMergeDataTest(TestCase):
             'key1': {
                 ('one', 'two'): 'value1',
                 ('three',): 'value2',
+            },
+            'key3': {
+                ('three',): 'value3',
             },
         })
 
