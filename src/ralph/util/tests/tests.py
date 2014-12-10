@@ -14,9 +14,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from datetime import datetime, timedelta, date
+import ipaddr
 import re
 import textwrap
+from datetime import date, datetime, timedelta
 from mock import patch
 
 from django.conf import settings
@@ -39,6 +40,7 @@ from ralph.discovery.models import (
     IPAddress,
     MarginKind,
 )
+from ralph.discovery.tests import util as discovery_util
 from ralph.util import api_pricing, api_scrooge
 from ralph.util.tests import utils
 from ralph.util import api
@@ -264,6 +266,44 @@ class ApiPricingTest(TestCase):
 
 
 class ApiScroogeTest(TestCase):
+
+    def _init_vips(self):
+        self.vips = discovery_util.LoadBalancerVirtualServerFactory.create_batch(2)
+
+    def _vip2api(self, lbvs):
+        return {
+            'vip_id': lbvs.id,
+            'type_id': lbvs.load_balancer_type_id,
+            'name': lbvs.name,
+            'ip_address': str(lbvs.address.address),
+            'port': lbvs.port,
+            'type': lbvs.load_balancer_type.name,
+            'device_id': lbvs.device_id,
+            'service_id': lbvs.service_id,
+            'environment_id': lbvs.device_environment_id,
+        }
+
+    def test_get_vips(self):
+        self._init_vips()
+        result = [v for v in api_scrooge.get_vips()]
+        vips_dict = map(self._vip2api, self.vips)
+        self.assertEqual(result, vips_dict)
+
+    def test_get_vips_parent_service(self):
+        self._init_vips()
+        result = [v for v in api_scrooge.get_vips(
+            parent_service_uid=self.vips[0].device.service.uid
+        )]
+        vips_dict = map(self._vip2api, self.vips[0:1])
+        self.assertEqual(result, vips_dict)
+
+    def test_get_vips_load_balancer_type(self):
+        self._init_vips()
+        result = [v for v in api_scrooge.get_vips(
+            load_balancer_type=self.vips[0].load_balancer_type.name
+        )]
+        vips_dict = map(self._vip2api, self.vips[0:1])
+        self.assertEqual(result, vips_dict)
 
     def test_get_business_lines(self):
         business_lines = utils.BusinessLineFactory.create_batch(7)

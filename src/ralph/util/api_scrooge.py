@@ -15,6 +15,7 @@ from ralph.discovery.models import (
     DiskShareMount,
     FibreChannel,
     IPAddress,
+    LoadBalancerVirtualServer,
 )
 from ralph.util.api import Getter
 
@@ -155,6 +156,38 @@ def get_blade_servers():
         yield {
             'device_id': blade_server.id,
         }
+
+
+class get_vips(Getter):
+    Model = LoadBalancerVirtualServer
+
+    fields = [
+        ('vip_id', 'id'),
+        'name',
+        ('ip_address', 'address__address'),
+        ('type_id', 'load_balancer_type_id'),
+        ('type', 'load_balancer_type__name'),
+        'service_id',
+        ('environment_id', 'device_environment_id'),
+        'device_id',
+        'port',
+    ]
+
+    def __init__(self, parent_service_uid=None, load_balancer_type=None):
+        self.parent_service_uid = parent_service_uid
+        self.load_balancer_type = load_balancer_type
+
+    def get_queryset(self):
+        result = super(get_vips, self).get_queryset()
+        if self.parent_service_uid:
+            result = result.filter(
+                device__service__uid=self.parent_service_uid
+            )
+        if self.load_balancer_type:
+            result = result.filter(
+                load_balancer_type__name=self.load_balancer_type
+            )
+        return result
 
 
 # CMDB
