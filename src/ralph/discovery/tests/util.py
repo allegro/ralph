@@ -10,10 +10,16 @@ import StringIO
 from uuid import uuid1
 
 import ipaddr
-from factory import sequence, Sequence, lazy_attribute, Factory
+from factory import sequence, Sequence, lazy_attribute, Factory, SubFactory
 from factory.django import DjangoModelFactory
 
-from ralph.discovery.models_device import Device, DeviceModel
+from ralph.discovery.models_device import (
+    Device,
+    DeviceModel,
+    LoadBalancerType,
+    LoadBalancerVirtualServer,
+)
+from ralph.cmdb.tests import utils as cmdb_utils
 from ralph.discovery.models_network import Network, IPAddress
 
 
@@ -25,6 +31,8 @@ class DeviceFactory(DjangoModelFactory):
     FACTORY_FOR = Device
 
     name = Sequence(lambda n: 'Device#{}'.format(n))
+    service = SubFactory(cmdb_utils.ServiceCatalogFactory)
+    device_environment = SubFactory(cmdb_utils.DeviceEnvironmentFactory)
 
     @lazy_attribute
     def barcode(self):
@@ -50,7 +58,7 @@ class NetworkFactory(Factory):
     FACTORY_FOR = Network
 
 
-class IPAddressFactory(Factory):
+class IPAddressFactory(DjangoModelFactory):
     FACTORY_FOR = IPAddress
 
     @sequence
@@ -60,6 +68,23 @@ class IPAddressFactory(Factory):
     @sequence
     def hostname(n):
         return 'host{0}.dc1'.format(n)
+
+
+class LoadBalancerTypeFactory(DjangoModelFactory):
+    FACTORY_FOR = LoadBalancerType
+
+    name = Sequence(lambda n: 'LB Type #{}'.format(n))
+
+
+class LoadBalancerVirtualServerFactory(DjangoModelFactory):
+    FACTORY_FOR = LoadBalancerVirtualServer
+
+    service = SubFactory(cmdb_utils.ServiceCatalogFactory)
+    device_environment = SubFactory(cmdb_utils.DeviceEnvironmentFactory)
+    load_balancer_type = SubFactory(LoadBalancerTypeFactory)
+    device = SubFactory(DeviceFactory)
+    address = SubFactory(IPAddressFactory)
+    port = 80
 
 
 class MockSSH(object):
