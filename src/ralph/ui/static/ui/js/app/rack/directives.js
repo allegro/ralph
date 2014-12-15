@@ -2,35 +2,31 @@
 
 angular
     .module('rack.directives', [])
+    .directive('rack', function () {
+        return {
+            restrict: 'E',
+            scope: {
+                devices: '=',
+                side: '@',
+                info: '='
+            },
+            templateUrl: '/static/partials/rack/rack.html',
+        };
+    })
     .directive('device', function () {
         return {
             restrict: 'E',
             templateUrl: '/static/partials/rack/device.html',
-            link: function ($scope) {
-                $scope.$watch('activeItem', function (newValue){
-                    if (newValue == $scope.item) {
-                        $scope.active = true;
-                    }
-                    else {
-                        $scope.active = false;
-                    }
-                });
+            controller: function($scope) {
+                $scope.setActiveItem = function(item) {
+                    $scope.$emit('info', item);
+                };
             }
         };
     })
     .directive('listing', function () {
         return {
-            restrict: 'A',
+            restrict: 'E',
             templateUrl: '/static/partials/rack/listing.html',
-            link: function ($scope) {
-                $scope.$watch('activeItem', function (){
-                    var item = $scope.activeItem;
-                    $scope.u_range = [];
-                    if (typeof item !== 'undefined' && item !== null)
-                        for (var i = item.position; i <= item.position+item.height-1; i++) {
-                            $scope.u_range.push(i);
-                        }
-                });
-            }
         };
     });

@@ -2,16 +2,12 @@
 
 angular
     .module('data_center.directives', [])
-    .directive('rack', function () {
+    .directive('rackTop', function () {
         return {
             restrict: 'E',
             templateUrl: '/static/partials/data_center/rack.html',
             scope: {
-                id: '@',
-                x: '@',
-                y: '@',
-                name: '@',
-                datacenter: '='
+                rack: '=',
             }
         };
     });

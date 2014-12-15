@@ -13,157 +13,428 @@
   background-image: linear-gradient(0deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.5) 1%, transparent 2%, transparent), linear-gradient(90deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.5) 1%, transparent 2%, transparent);
   background-size: 40px 40px;
 }
+.data_center .grid .grid_wrapper .rack,
+.data_center .grid .grid_wrapper .marker {
+  position: absolute;
+}
+.data_center .grid .grid_wrapper .rack.x-1,
+.data_center .grid .grid_wrapper .marker.x-1 {
+  left: 40px;
+}
+.data_center .grid .grid_wrapper .rack.x-2,
+.data_center .grid .grid_wrapper .marker.x-2 {
+  left: 80px;
+}
+.data_center .grid .grid_wrapper .rack.x-3,
+.data_center .grid .grid_wrapper .marker.x-3 {
+  left: 120px;
+}
+.data_center .grid .grid_wrapper .rack.x-4,
+.data_center .grid .grid_wrapper .marker.x-4 {
+  left: 160px;
+}
+.data_center .grid .grid_wrapper .rack.x-5,
+.data_center .grid .grid_wrapper .marker.x-5 {
+  left: 200px;
+}
+.data_center .grid .grid_wrapper .rack.x-6,
+.data_center .grid .grid_wrapper .marker.x-6 {
+  left: 240px;
+}
+.data_center .grid .grid_wrapper .rack.x-7,
+.data_center .grid .grid_wrapper .marker.x-7 {
+  left: 280px;
+}
+.data_center .grid .grid_wrapper .rack.x-8,
+.data_center .grid .grid_wrapper .marker.x-8 {
+  left: 320px;
+}
+.data_center .grid .grid_wrapper .rack.x-9,
+.data_center .grid .grid_wrapper .marker.x-9 {
+  left: 360px;
+}
+.data_center .grid .grid_wrapper .rack.x-10,
+.data_center .grid .grid_wrapper .marker.x-10 {
+  left: 400px;
+}
+.data_center .grid .grid_wrapper .rack.x-11,
+.data_center .grid .grid_wrapper .marker.x-11 {
+  left: 440px;
+}
+.data_center .grid .grid_wrapper .rack.x-12,
+.data_center .grid .grid_wrapper .marker.x-12 {
+  left: 480px;
+}
+.data_center .grid .grid_wrapper .rack.x-13,
+.data_center .grid .grid_wrapper .marker.x-13 {
+  left: 520px;
+}
+.data_center .grid .grid_wrapper .rack.x-14,
+.data_center .grid .grid_wrapper .marker.x-14 {
+  left: 560px;
+}
+.data_center .grid .grid_wrapper .rack.x-15,
+.data_center .grid .grid_wrapper .marker.x-15 {
+  left: 600px;
+}
+.data_center .grid .grid_wrapper .rack.x-16,
+.data_center .grid .grid_wrapper .marker.x-16 {
+  left: 640px;
+}
+.data_center .grid .grid_wrapper .rack.x-17,
+.data_center .grid .grid_wrapper .marker.x-17 {
+  left: 680px;
+}
+.data_center .grid .grid_wrapper .rack.x-18,
+.data_center .grid .grid_wrapper .marker.x-18 {
+  left: 720px;
+}
+.data_center .grid .grid_wrapper .rack.x-19,
+.data_center .grid .grid_wrapper .marker.x-19 {
+  left: 760px;
+}
+.data_center .grid .grid_wrapper .rack.x-20,
+.data_center .grid .grid_wrapper .marker.x-20 {
+  left: 800px;
+}
+.data_center .grid .grid_wrapper .rack.x-21,
+.data_center .grid .grid_wrapper .marker.x-21 {
+  left: 840px;
+}
+.data_center .grid .grid_wrapper .rack.x-22,
+.data_center .grid .grid_wrapper .marker.x-22 {
+  left: 880px;
+}
+.data_center .grid .grid_wrapper .rack.x-23,
+.data_center .grid .grid_wrapper .marker.x-23 {
+  left: 920px;
+}
+.data_center .grid .grid_wrapper .rack.x-24,
+.data_center .grid .grid_wrapper .marker.x-24 {
+  left: 960px;
+}
+.data_center .grid .grid_wrapper .rack.x-25,
+.data_center .grid .grid_wrapper .marker.x-25 {
+  left: 1000px;
+}
+.data_center .grid .grid_wrapper .rack.x-26,
+.data_center .grid .grid_wrapper .marker.x-26 {
+  left: 1040px;
+}
+.data_center .grid .grid_wrapper .rack.x-27,
+.data_center .grid .grid_wrapper .marker.x-27 {
+  left: 1080px;
+}
+.data_center .grid .grid_wrapper .rack.x-28,
+.data_center .grid .grid_wrapper .marker.x-28 {
+  left: 1120px;
+}
+.data_center .grid .grid_wrapper .rack.x-29,
+.data_center .grid .grid_wrapper .marker.x-29 {
+  left: 1160px;
+}
+.data_center .grid .grid_wrapper .rack.x-30,
+.data_center .grid .grid_wrapper .marker.x-30 {
+  left: 1200px;
+}
+.data_center .grid .grid_wrapper .rack.x-31,
+.data_center .grid .grid_wrapper .marker.x-31 {
+  left: 1240px;
+}
+.data_center .grid .grid_wrapper .rack.x-32,
+.data_center .grid .grid_wrapper .marker.x-32 {
+  left: 1280px;
+}
+.data_center .grid .grid_wrapper .rack.x-33,
+.data_center .grid .grid_wrapper .marker.x-33 {
+  left: 1320px;
+}
+.data_center .grid .grid_wrapper .rack.x-34,
+.data_center .grid .grid_wrapper .marker.x-34 {
+  left: 1360px;
+}
+.data_center .grid .grid_wrapper .rack.x-35,
+.data_center .grid .grid_wrapper .marker.x-35 {
+  left: 1400px;
+}
+.data_center .grid .grid_wrapper .rack.x-36,
+.data_center .grid .grid_wrapper .marker.x-36 {
+  left: 1440px;
+}
+.data_center .grid .grid_wrapper .rack.x-37,
+.data_center .grid .grid_wrapper .marker.x-37 {
+  left: 1480px;
+}
+.data_center .grid .grid_wrapper .rack.x-38,
+.data_center .grid .grid_wrapper .marker.x-38 {
+  left: 1520px;
+}
+.data_center .grid .grid_wrapper .rack.x-39,
+.data_center .grid .grid_wrapper .marker.x-39 {
+  left: 1560px;
+}
+.data_center .grid .grid_wrapper .rack.x-40,
+.data_center .grid .grid_wrapper .marker.x-40 {
+  left: 1600px;
+}
+.data_center .grid .grid_wrapper .rack.y-1,
+.data_center .grid .grid_wrapper .marker.y-1 {
+  top: 40px;
+}
+.data_center .grid .grid_wrapper .rack.y-2,
+.data_center .grid .grid_wrapper .marker.y-2 {
+  top: 80px;
+}
+.data_center .grid .grid_wrapper .rack.y-3,
+.data_center .grid .grid_wrapper .marker.y-3 {
+  top: 120px;
+}
+.data_center .grid .grid_wrapper .rack.y-4,
+.data_center .grid .grid_wrapper .marker.y-4 {
+  top: 160px;
+}
+.data_center .grid .grid_wrapper .rack.y-5,
+.data_center .grid .grid_wrapper .marker.y-5 {
+  top: 200px;
+}
+.data_center .grid .grid_wrapper .rack.y-6,
+.data_center .grid .grid_wrapper .marker.y-6 {
+  top: 240px;
+}
+.data_center .grid .grid_wrapper .rack.y-7,
+.data_center .grid .grid_wrapper .marker.y-7 {
+  top: 280px;
+}
+.data_center .grid .grid_wrapper .rack.y-8,
+.data_center .grid .grid_wrapper .marker.y-8 {
+  top: 320px;
+}
+.data_center .grid .grid_wrapper .rack.y-9,
+.data_center .grid .grid_wrapper .marker.y-9 {
+  top: 360px;
+}
+.data_center .grid .grid_wrapper .rack.y-10,
+.data_center .grid .grid_wrapper .marker.y-10 {
+  top: 400px;
+}
+.data_center .grid .grid_wrapper .rack.y-11,
+.data_center .grid .grid_wrapper .marker.y-11 {
+  top: 440px;
+}
+.data_center .grid .grid_wrapper .rack.y-12,
+.data_center .grid .grid_wrapper .marker.y-12 {
+  top: 480px;
+}
+.data_center .grid .grid_wrapper .rack.y-13,
+.data_center .grid .grid_wrapper .marker.y-13 {
+  top: 520px;
+}
+.data_center .grid .grid_wrapper .rack.y-14,
+.data_center .grid .grid_wrapper .marker.y-14 {
+  top: 560px;
+}
+.data_center .grid .grid_wrapper .rack.y-15,
+.data_center .grid .grid_wrapper .marker.y-15 {
+  top: 600px;
+}
+.data_center .grid .grid_wrapper .rack.y-16,
+.data_center .grid .grid_wrapper .marker.y-16 {
+  top: 640px;
+}
+.data_center .grid .grid_wrapper .rack.y-17,
+.data_center .grid .grid_wrapper .marker.y-17 {
+  top: 680px;
+}
+.data_center .grid .grid_wrapper .rack.y-18,
+.data_center .grid .grid_wrapper .marker.y-18 {
+  top: 720px;
+}
+.data_center .grid .grid_wrapper .rack.y-19,
+.data_center .grid .grid_wrapper .marker.y-19 {
+  top: 760px;
+}
+.data_center .grid .grid_wrapper .rack.y-20,
+.data_center .grid .grid_wrapper .marker.y-20 {
+  top: 800px;
+}
+.data_center .grid .grid_wrapper .rack.y-21,
+.data_center .grid .grid_wrapper .marker.y-21 {
+  top: 840px;
+}
+.data_center .grid .grid_wrapper .rack.y-22,
+.data_center .grid .grid_wrapper .marker.y-22 {
+  top: 880px;
+}
+.data_center .grid .grid_wrapper .rack.y-23,
+.data_center .grid .grid_wrapper .marker.y-23 {
+  top: 920px;
+}
+.data_center .grid .grid_wrapper .rack.y-24,
+.data_center .grid .grid_wrapper .marker.y-24 {
+  top: 960px;
+}
+.data_center .grid .grid_wrapper .rack.y-25,
+.data_center .grid .grid_wrapper .marker.y-25 {
+  top: 1000px;
+}
+.data_center .grid .grid_wrapper .rack.y-26,
+.data_center .grid .grid_wrapper .marker.y-26 {
+  top: 1040px;
+}
+.data_center .grid .grid_wrapper .rack.y-27,
+.data_center .grid .grid_wrapper .marker.y-27 {
+  top: 1080px;
+}
+.data_center .grid .grid_wrapper .rack.y-28,
+.data_center .grid .grid_wrapper .marker.y-28 {
+  top: 1120px;
+}
+.data_center .grid .grid_wrapper .rack.y-29,
+.data_center .grid .grid_wrapper .marker.y-29 {
+  top: 1160px;
+}
+.data_center .grid .grid_wrapper .rack.y-30,
+.data_center .grid .grid_wrapper .marker.y-30 {
+  top: 1200px;
+}
+.data_center .grid .grid_wrapper .rack.y-31,
+.data_center .grid .grid_wrapper .marker.y-31 {
+  top: 1240px;
+}
+.data_center .grid .grid_wrapper .rack.y-32,
+.data_center .grid .grid_wrapper .marker.y-32 {
+  top: 1280px;
+}
+.data_center .grid .grid_wrapper .rack.y-33,
+.data_center .grid .grid_wrapper .marker.y-33 {
+  top: 1320px;
+}
+.data_center .grid .grid_wrapper .rack.y-34,
+.data_center .grid .grid_wrapper .marker.y-34 {
+  top: 1360px;
+}
+.data_center .grid .grid_wrapper .rack.y-35,
+.data_center .grid .grid_wrapper .marker.y-35 {
+  top: 1400px;
+}
+.data_center .grid .grid_wrapper .rack.y-36,
+.data_center .grid .grid_wrapper .marker.y-36 {
+  top: 1440px;
+}
+.data_center .grid .grid_wrapper .rack.y-37,
+.data_center .grid .grid_wrapper .marker.y-37 {
+  top: 1480px;
+}
+.data_center .grid .grid_wrapper .rack.y-38,
+.data_center .grid .grid_wrapper .marker.y-38 {
+  top: 1520px;
+}
+.data_center .grid .grid_wrapper .rack.y-39,
+.data_center .grid .grid_wrapper .marker.y-39 {
+  top: 1560px;
+}
+.data_center .grid .grid_wrapper .rack.y-40,
+.data_center .grid .grid_wrapper .marker.y-40 {
+  top: 1600px;
+}
+.data_center .grid .grid_wrapper .marker {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 2em;
+  line-height: 40px;
+  text-align: center;
+  width: 40px;
+}
 .data_center .grid .grid_wrapper .rack {
   box-sizing: border-box;
   position: absolute;
-  background: #93d932;
+  background: #888888;
   width: 40px;
   height: 40px;
   border: 1px solid #444;
 }
-.data_center .grid .grid_wrapper .rack.x-1 {
-  left: 40px;
+.data_center .grid .grid_wrapper .rack.rotate-left {
+  transform: rotate(-90deg);
 }
-.data_center .grid .grid_wrapper .rack.x-2 {
-  left: 80px;
+.data_center .grid .grid_wrapper .rack.rotate-right {
+  transform: rotate(90deg);
 }
-.data_center .grid .grid_wrapper .rack.x-3 {
-  left: 120px;
+.data_center .grid .grid_wrapper .rack.rotate-right .used,
+.data_center .grid .grid_wrapper .rack.rotate-right .name {
+  transform: rotate(180deg);
 }
-.data_center .grid .grid_wrapper .rack.x-4 {
-  left: 160px;
+.data_center .grid .grid_wrapper .rack.rotate-right .wrapper .progress.red {
+  left: 0;
 }
-.data_center .grid .grid_wrapper .rack.x-5 {
-  left: 200px;
+.data_center .grid .grid_wrapper .rack.rotate-top .wrapper .progress,
+.data_center .grid .grid_wrapper .rack.rotate-left .wrapper .progress {
+  top: 1.4em;
 }
-.data_center .grid .grid_wrapper .rack.x-6 {
-  left: 240px;
+.data_center .grid .grid_wrapper .rack.rotate-bottom .used {
+  top: 0;
 }
-.data_center .grid .grid_wrapper .rack.x-7 {
-  left: 280px;
+.data_center .grid .grid_wrapper .rack.rotate-bottom .name {
+  position: absolute;
+  bottom: 0;
+  min-width: 100%;
 }
-.data_center .grid .grid_wrapper .rack.x-8 {
-  left: 320px;
+.data_center .grid .grid_wrapper .rack.rotate-bottom .wrapper .progress {
+  bottom: 1.4em;
 }
-.data_center .grid .grid_wrapper .rack.x-9 {
-  left: 360px;
+.data_center .grid .grid_wrapper .rack:hover {
+  background: #bbbbbb;
 }
-.data_center .grid .grid_wrapper .rack.x-10 {
-  left: 400px;
+.data_center .grid .grid_wrapper .rack .wrapper {
+  height: 100%;
+  min-height: 100%;
+  position: relative;
+  cursor: zoom-in;
+  display: block;
 }
-.data_center .grid .grid_wrapper .rack.x-11 {
-  left: 440px;
+.data_center .grid .grid_wrapper .rack .wrapper:hover {
+  text-decoration: none;
 }
-.data_center .grid .grid_wrapper .rack.x-12 {
-  left: 480px;
-}
-.data_center .grid .grid_wrapper .rack.x-13 {
-  left: 520px;
-}
-.data_center .grid .grid_wrapper .rack.x-14 {
-  left: 560px;
-}
-.data_center .grid .grid_wrapper .rack.x-15 {
-  left: 600px;
-}
-.data_center .grid .grid_wrapper .rack.x-16 {
-  left: 640px;
-}
-.data_center .grid .grid_wrapper .rack.x-17 {
-  left: 680px;
-}
-.data_center .grid .grid_wrapper .rack.x-18 {
-  left: 720px;
-}
-.data_center .grid .grid_wrapper .rack.x-19 {
-  left: 760px;
-}
-.data_center .grid .grid_wrapper .rack.x-20 {
-  left: 800px;
-}
-.data_center .grid .grid_wrapper .rack.y-1 {
-  top: 40px;
-}
-.data_center .grid .grid_wrapper .rack.y-2 {
-  top: 80px;
-}
-.data_center .grid .grid_wrapper .rack.y-3 {
-  top: 120px;
-}
-.data_center .grid .grid_wrapper .rack.y-4 {
-  top: 160px;
-}
-.data_center .grid .grid_wrapper .rack.y-5 {
-  top: 200px;
-}
-.data_center .grid .grid_wrapper .rack.y-6 {
-  top: 240px;
-}
-.data_center .grid .grid_wrapper .rack.y-7 {
-  top: 280px;
-}
-.data_center .grid .grid_wrapper .rack.y-8 {
-  top: 320px;
-}
-.data_center .grid .grid_wrapper .rack.y-9 {
-  top: 360px;
-}
-.data_center .grid .grid_wrapper .rack.y-10 {
-  top: 400px;
-}
-.data_center .grid .grid_wrapper .rack.y-11 {
-  top: 440px;
-}
-.data_center .grid .grid_wrapper .rack.y-12 {
-  top: 480px;
-}
-.data_center .grid .grid_wrapper .rack.y-13 {
-  top: 520px;
-}
-.data_center .grid .grid_wrapper .rack.y-14 {
-  top: 560px;
-}
-.data_center .grid .grid_wrapper .rack.y-15 {
-  top: 600px;
-}
-.data_center .grid .grid_wrapper .rack.y-16 {
-  top: 640px;
-}
-.data_center .grid .grid_wrapper .rack.y-17 {
-  top: 680px;
-}
-.data_center .grid .grid_wrapper .rack.y-18 {
-  top: 720px;
-}
-.data_center .grid .grid_wrapper .rack.y-19 {
-  top: 760px;
-}
-.data_center .grid .grid_wrapper .rack.y-20 {
-  top: 800px;
-}
-.data_center .grid .grid_wrapper .rack .name .wrapper {
+.data_center .grid .grid_wrapper .rack .wrapper .name {
+  height: 1.4em;
+  line-height: 1.4em;
   overflow: hidden;
   white-space: nowrap;
   background: rgba(0, 0, 0, 0.8);
   text-align: center;
-  padding: 2px;
   color: #eee;
-  display: block;
-  cursor: move;
 }
-.data_center .grid .grid_wrapper .rack .tools {
-  height: 100%;
-  min-height: 100%;
+.data_center .grid .grid_wrapper .rack .wrapper .used {
+  position: absolute;
+  bottom: 0;
+  color: #000;
+  text-align: center;
+  color: #fff;
   min-width: 100%;
+  font-size: .825em;
 }
-.data_center .grid .grid_wrapper .rack .tools .used {
-  height: 2px;
-  background: #f33;
+.data_center .grid .grid_wrapper .rack .wrapper .progress,
+.data_center .grid .grid_wrapper .rack .wrapper .free,
+.data_center .grid .grid_wrapper .rack .wrapper .display {
+  position: absolute;
 }
-.data_center .grid .grid_wrapper .rack .tools .zoom {
-  display: block;
-  cursor: zoom-in;
+.data_center .grid .grid_wrapper .rack .wrapper .progress {
+  margin: 0;
+  border-radius: 0;
+  height: 5px;
 }
-.data_center .grid .grid_wrapper .rack .tools .zoom:hover {
-  text-decoration: none;
+.data_center .grid .grid_wrapper .rack .wrapper .progress.red {
+  background: #a33;
+  z-index: 2;
+  border-left: 1px solid #000;
+  right: 0;
+  box-sizing: border-box;
+}
+.data_center .grid .grid_wrapper .rack .wrapper .progress.green {
+  background: #3f3;
+  width: 100%;
+  z-index: 1;
+}
+.data_center .grid .grid_wrapper .rack .wrapper .free {
+  text-align: center;
+  width: 100%;
+  top: 10px;
 }

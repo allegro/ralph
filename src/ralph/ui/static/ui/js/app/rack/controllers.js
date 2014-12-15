@@ -16,15 +16,8 @@ angular
         else {
             rackId = $cookies.rack_id;
         }
-
         $scope.rack = RackModel.get({rackId: rackId});
         $scope.$on('info', function (event, data) {
             $scope.info = data;
         });
-    }])
-    .controller('SideController', ['$scope', function ($scope) {
-        $scope.setActiveItem = function (item) {
-            $scope.activeItem = item;
-            $scope.$emit('info', item);
-        };
     }]);

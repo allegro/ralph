@@ -1,6 +1,6 @@
 <div
     class="device height-u-{{ item.height }} position-u-{{ item.position }}"
-    ng-class="{active: active}"
+    ng-mouseleave="setActiveItem(null)" ng-mouseover="setActiveItem(item)"
 >
     <a class="info" href="{{ item.url }}" target="_blank">
         <div class="model">{{ item.model }}</div>

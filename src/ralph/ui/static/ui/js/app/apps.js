@@ -15,7 +15,7 @@ angular
                 controller: 'DataCenterController'
             })
             .when('/rack/:rackId', {
-                templateUrl: '/static/partials/rack/rack.html',
+                templateUrl: '/static/partials/rack/rack_view.html',
                 controller: 'RackController'
             })
             .otherwise('/');
@@ -31,7 +31,7 @@ angular
     .config(['$routeProvider', function($routeProvider) {
         $routeProvider
             .when('/', {
-                templateUrl: '/static/partials/rack/rack.html',
+                templateUrl: '/static/partials/rack/rack_view.html',
                 controller: 'RackController'
             })
             .otherwise('/');
