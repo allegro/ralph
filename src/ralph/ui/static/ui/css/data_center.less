@@ -1,5 +1,6 @@
 @grid-color: rgba(255, 255, 255, 0.5);
 @grid-size: 40px;
+@grid-count: 40;
 
 .generate-x-position(@n, @i: 1) when (@i =< @n) {
     &.x-@{i} {
@@ -40,42 +41,100 @@
                     transparent
                 );
             background-size:@grid-size @grid-size;
+            .rack, .marker {
+                position: absolute;
+                .generate-x-position(@grid-count);
+                .generate-y-position(@grid-count);
+            }
+            .marker {
+                color: rgba(255, 255, 255, 0.3);
+                font-size: 2em;
+                line-height: @grid-size;
+                text-align: center;
+                width: @grid-size;
+            }
             .rack {
+                @label-height: 1.4em;
+                &.rotate-left {transform: rotate(-90deg);}
+                &.rotate-right {
+                    transform: rotate(90deg);
+                    .used, .name {
+                        transform: rotate(180deg);
+                    }
+                    .wrapper .progress.red {
+                        left: 0;
+                    }
+                }
+                &.rotate-top, &.rotate-left {
+                    .wrapper .progress {
+                        top: @label-height;
+                    }
+                }
+                &.rotate-bottom{
+                    .used {
+                        top: 0;
+                    }
+                    .name {
+                        position: absolute;
+                        bottom: 0;
+                        min-width: 100%;
+                    }
+                    .wrapper .progress {
+                        bottom: @label-height;
+                    }
+                }
+                @rack-background: #888;
                 box-sizing: border-box;
                 position: absolute;
-                background: rgb(147, 217, 50);
-                // background: #666;
+                background: @rack-background;
                 width: @grid-size;
                 height: @grid-size;
                 border: 1px solid #444;
-                .generate-x-position(20);
-                .generate-y-position(20);
-                .name {
-                    .wrapper {
+                &:hover {
+                    background: lighten(@rack-background, 20%);
+                }
+                .wrapper {
+                    height: 100%;
+                    min-height: 100%;
+                    position: relative;
+                    cursor: zoom-in;
+                    display: block;
+                    &:hover {
+                        text-decoration: none;
+                    }
+                    .name {
+                        height: @label-height;
+                        line-height: @label-height;
                         overflow: hidden;
                         white-space: nowrap;
                         background: rgba(0, 0, 0, 0.8);
                         text-align: center;
-                        padding: 2px;
                         color:#eee;
-                        display: block;
-                        cursor: move;
                     }
-                }
-                .tools {
-                    height: 100%;
-                    min-height: 100%;
-                    min-width: 100%;
                     .used {
-                        height: 2px;
-                        background: #f33;
+                        position: absolute;
+                        bottom: 0;
+                        min-width: 100%;
+                        color: #000;
+                        text-align: center;
+                        color:#fff;
+                        min-width: 100%;
+                        font-size: .825em;
                     }
-                    .zoom {
-                        display: block;
-                        cursor: zoom-in;
-                        &:hover {
-                            text-decoration: none;
-                        }
+                    .progress, .free, .display {
+                        position: absolute;
+                    }
+                    .progress {
+                        margin:0;
+                        border-radius: 0;
+                        height: 5px;
+                        &.red {background: #a33;z-index:2;border-left: 1px solid #000;right:0;box-sizing:border-box;}
+                        &.green {background: #3f3;width:100%;z-index:1;}
+                    }
+                    .free {
+                        text-align: center;
+                        width: 100%;
+                        top:10px;
                     }
                 }
             }

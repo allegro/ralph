@@ -1,0 +1,36 @@
+<div ng-controller="RackController">
+    <div class="rack-info">
+        <h3>Info {{ rack.info.name }}</h3>
+        <div ng-show="rack.info.description" class="description">{{ rack.info.description }}</div>
+        <table class="info">
+            <tr>
+                <td>Model</td>
+                <td>{{ info ? info.model : '-' }}</td>
+            </tr>
+            <tr>
+                <td>Barcode</td>
+                <td>{{ info ? info.barcode : '-' }}</td>
+            </tr>
+            <tr>
+                <td>SN</td>
+                <td>{{ info ? info.sn : '-' }}</td>
+            </tr>
+            <tr>
+                <td>Position</td>
+                <td>{{ info ? info.position : '-' }}</td>
+            </tr>
+            <tr>
+                <td>Height</td>
+                <td>{{ info ? info.height : '-' }}</td>
+            </tr>
+            <tr>
+                <td>Remarks</td>
+                <td>{{ info ? info.remarks : '-' }}</td>
+            </tr>
+        </table>
+    </div>
+    <div class="racks">
+        <rack info="rack.info" devices="rack.front" side="front"></rack>
+        <rack info="rack.info" devices="rack.back" side="back"></rack>
+    </div>
+</div>

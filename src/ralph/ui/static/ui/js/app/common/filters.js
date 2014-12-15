@@ -10,6 +10,14 @@ angular
             return input;
         };
     })
+    .filter('clean', function(){
+        return function(input) {
+            return input
+                .toLowerCase()
+                .replace('rack ','')
+                .replace(/^\s+|\s+$/g, '');
+        };
+    })
     .filter('slugify', function(){
         return function(input) {
             return input

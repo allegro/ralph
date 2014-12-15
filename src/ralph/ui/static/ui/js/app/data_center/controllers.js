@@ -8,5 +8,17 @@ angular
         ]
     )
     .controller('DataCenterController', ['$scope', '$cookies', 'DataCenterModel', function ($scope, $cookies, DataCenterModel) {
+        var gridSize = 40;
         $scope.racks = DataCenterModel.query({dcId: $cookies.data_center_id});
+
+        $scope.setInfo = function(item) {
+            $scope.info = item;
+        };
+
+        $scope.updatePosition = function(event) {
+            var offsetX = event.offsetX || event.pageX - event.target.offsetLeft;
+            var offsetY = event.offsetY || event.pageY - event.target.offsetTop;
+            $scope.actualX = (offsetX - (offsetX % gridSize)) / gridSize;
+            $scope.actualY = (offsetY - (offsetY % gridSize)) / gridSize;
+        };
     }]);

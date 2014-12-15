@@ -36,9 +36,31 @@
 
 .rack-info {
     float: left;
-    width:200px;
-    padding: 10px;
-    marign:10px;
+    width:250px;
+    margin-right: 10px;
+    h3 {
+        padding: 5px;
+        margin: 0;
+    }
+    .description {
+        @description-color: #FBF7AA;
+        padding: 10px;
+        margin-bottom: 10px;
+        font-size: 1.2em;
+        background: @description-color;
+        border: 1px solid darken(@description-color, 20%);
+    }
+    .info {
+        width: 100%;
+        td {
+            padding: 5px;
+            border-bottom: 1px solid #ccc;
+        }
+        td:first-child {
+            width: 20%;
+            font-weight: bold;
+        }
+    }
 }
 
 .racks .rack .wrapper .devices .device,
@@ -51,6 +73,8 @@
     background-color: #f33;
     height: @u-height;
 }
+
+.rack {float: left;}
 
 .racks {
     float: left;
@@ -95,8 +119,10 @@
         .generate-racks(@max-u);
         .wrapper
         {
+            background-color:#666;
             margin-top: 2px;
             .listing-u {
+                background: #666;
                 margin: 0;
                 width: @listing-u-width;
                 float: left;
@@ -146,8 +172,20 @@
                     border-bottom: 1px solid darken(@device-background, 10%);
                     border-top: 1px solid lighten(@device-background, 10%);
                     background: @device-background;
+                    &:hover {
+                        background: lighten(@device-background, 10%);
+                    }
+                    &.active {
+                        background: lighten(@device-background, 20%);
+                        border-color: darken(@device-background, 20%);
+                    }
                     &.accessory {
-                        background: #fff;
+                        background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAK0lEQVQYV2NkIBIwEqmOAVnhfxyawGrQFaLbANI82BRi8w+GG/GGFNHhCAARkQoLdFrYLgAAAABJRU5ErkJggg==) repeat-x;
+                        background-color: #fff;
+                        &:hover {
+                            background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAMElEQVQYV2NkIBIwEqmOAa6wa6/Tf2yaypz3gdWgKIQJwjSANA82hUR5hlAwER2OAO66KAsAcNbaAAAAAElFTkSuQmCC) repeat-x;
+                            background-color: #fff;
+                        }
                         .info {
                             position: relative;
                             .model {
@@ -159,35 +197,23 @@
                             }
                         }
                         &.brush {
-                            @brush-background: #222;
-                            @brush-foreground: #ccc;
-                            background-color: @brush-background;
-                            background-image: -webkit-linear-gradient(left, transparent 50%, @brush-foreground 50%);
-                            background-image: -o-linear-gradient(left, transparent 50%, @brush-foreground 50%);
-                            background-image: linear-gradient(left, transparent 50%, @brush-foreground 50%);
-                            background-size: 2px 2px;
+                            background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAAKCAYAAABxJ+R3AAAAEklEQVQIW2NkgID/QMzIOBAcAH5DCguOmamFAAAAAElFTkSuQmCC);
+                            background-color: #fff;
                             border-color: #ccc;
                             &:hover {
-                                background-image: -webkit-linear-gradient(left, transparent 50%, @brush-foreground 50%);
-                                background-image: -o-linear-gradient(left, transparent 50%, @brush-foreground 50%);
-                                background-image: linear-gradient(to right, transparent 50%, @brush-foreground 50%);
-                                background-size: 2px 2px;
-                                border-color: #444;
+                                background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAAKCAYAAABxJ+R3AAAAF0lEQVQIW2NkAIKuvU7/y5z3MTIOBAcA8RQoCys/1KUAAAAASUVORK5CYII=);
+                                background-color: #fff;
                             }
                         }
-                        &.patch-panel {
-                            background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAK0lEQVQYV2NkIBIwEqmOAVnhfxyawGrQFaLbANI82BRi8w+GG/GGFNHhCAARkQoLdFrYLgAAAABJRU5ErkJggg==) repeat-x;
+                        &.organizer {
+                            background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAGklEQVQIW2NkYGD4D8SMQAwGcAY2AbBKDBUAVuYCBQPd34sAAAAASUVORK5CYII=);
                             background-color: #fff;
+                            border-color: #ccc;
                             &:hover {
+                                background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAG0lEQVQIW2M88LLjv4N4BSMDFMAZGAIwlRgqAF59CAW955lqAAAAAElFTkSuQmCC);
+                                background-color: #fff;
                             }
                         }
-                    }
-                    &:hover {
-                        background: lighten(@device-background, 10%);
-                    }
-                    &.active {
-                        background: lighten(@device-background, 20%);
-                        border-color: darken(@device-background, 20%);
                     }
                     &.empty {
                         background: #fff;

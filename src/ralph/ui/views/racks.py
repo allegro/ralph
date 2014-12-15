@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.db.models import Q
 from django.http import HttpResponseForbidden, HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404
+from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import CreateView
 
@@ -434,7 +435,7 @@ class ReportRacksDeviceList(ReportDeviceList, RacksDeviceList):
     pass
 
 
-class DataCenterView(SidebarRacks, Base):
+class DataCenterView(Racks, Base):
     submodule_name = 'racks'
     template_name = 'ui/data_center_view.html'
 
@@ -454,4 +455,17 @@ class DataCenterView(SidebarRacks, Base):
     def get_context_data(self, **kwargs):
         context = super(DataCenterView, self).get_context_data(**kwargs)
         context['data_center'] = self.data_center
+        context['subsection'] = self.data_center.name
+        context['details'] = 'data_center_view'
+        tab_items = context['tab_items']
+        if context['subsection']:
+            tab_items.insert(0, MenuItem(
+                _('Data center view'),
+                fugue_icon='fugue-media-player-phone',
+                name='data_center_view',
+                view_name='data_center_view',
+                view_args=[
+                    slugify(self.data_center.name)
+                ]
+            ))
         return context

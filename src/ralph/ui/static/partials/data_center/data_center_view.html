@@ -1,16 +1,32 @@
+<div class="rack-info">
+    <h3>Info {{ racks.name }}</h3>
+    <table class="info">
+        <tr>
+            <td>Name</td>
+            <td>{{ info ? info.name : '-' }}</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Description</td>
+            <td>{{ info ? info.description : '-' }}</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Position</td>
+            <td>column: {{ info ? info.visualization_col : actualX }}<br/> row: {{ info ? info.visualization_row : actualY }}</td>
+            <td></td>
+        </tr>
+    </table>
+</div>
 <div class="data_center">
     <div class="grid">
-        <div class="grid_wrapper">
-            <rack
+        <div class="grid_wrapper" ng-mousemove="updatePosition($event)">
+            <rack-top
+                ng-mouseleave="setInfo(null)"
+                ng-mouseover="setInfo(rack)"
                 ng-repeat="rack in racks"
-                index="{{$index}}"
-                id="{{ rack.id }}"
-                name="{{ rack.name }}"
-                x="{{ rack.visualization_col }}"
-                y="{{ rack.visualization_row }}"
-                datacenter="racks"
-            >
-            </rack>
+                rack="rack"
+            ></rack-top>
         </div>
     </div>
 </div>
