@@ -288,7 +288,17 @@ def _get_info_from_pvs(ssh, pvs):
         try:
             wwn = pvs[pv]
         except KeyError:
-            continue
+            # sometimes pv is a link and needs to be dereferenced
+            stdin, stdout, stderr = ssh.exec_command(
+                "readlink -f {}".format(pv)
+            )
+            pv_dereferenced = stdout.read().strip()
+            if pv_dereferenced:
+                try:
+                    wwn = pvs[pv_dereferenced]
+                    pv = pv_dereferenced
+                except KeyError:
+                    continue
         vgs[vg] = {
             'wwn': wwn,
             'mount_size': mount_size,
@@ -307,7 +317,7 @@ def get_disk_shares(ssh, include_logical_volumes=False):
         for vg, mount_data in vgs.iteritems():
             storage[vg] = (mount_data['wwn'], mount_data['mount_size'])
             parsed_wwns.add(mount_data['wwn'])
-        # somoetimes shares are not mounted as a physical devices...
+        # sometimes shares are not mounted as physical devices...
         for share in available_shares:
             if share['wwn'] in parsed_wwns:
                 continue

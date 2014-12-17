@@ -13,6 +13,7 @@ from django.utils import timezone
 
 from ralph.discovery.models import Network
 from ralph.scan.models import ScanSummary
+from ralph_assets.models import Asset
 
 
 def find_network(network_spec):
@@ -53,3 +54,18 @@ def get_pending_changes():
         all_changes.filter(changed=True).count(),
     )
     return PendingChanges(new, changed)
+
+
+def get_asset_by_name(name):
+    try:
+        asset_name, asset_sn, asset_barcode = name.split(' - ')
+    except ValueError:
+        return
+    if asset_sn == '':
+        asset_sn = None
+    if asset_barcode == '':
+        asset_barcode = None
+    try:
+        return Asset.objects.get(sn=asset_sn, barcode=asset_barcode)
+    except Asset.DoesNotExist:
+        return

@@ -1,0 +1,10 @@
+<div
+    class="device height-u-{{ item.height }} position-u-{{ item.position }}"
+    ng-mouseleave="setActiveItem(null)" ng-mouseover="setActiveItem(item)"
+>
+    <a class="info" href="{{ item.url }}" target="_blank">
+        <div class="model">{{ item.model }}</div>
+        <div class="barcode">{{ item.barcode }}</div>
+        <div class="sn">{{ item.sn }}</div>
+    </a>
+</div>

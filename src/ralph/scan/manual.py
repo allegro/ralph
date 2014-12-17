@@ -334,9 +334,8 @@ def scan_address_job(
             ip, created = IPAddress.concurrent_get_or_create(
                 address=ip_address,
             )
-            if not (ip.snmp_name and ip.snmp_community):
-                message = ("SNMP name and community is missing. Forcing "
-                           " autoscan.")
+            if not ip.snmp_name:
+                message = ("SNMP name is missing. Forcing autoscan.")
                 job.meta['messages'] = [
                     (ip_address, 'ralph.scan', 'info', message)
                 ]

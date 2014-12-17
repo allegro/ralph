@@ -404,7 +404,6 @@ class CMDBApiTest(UserTestCase):
             type=CI_RELATION_TYPES.CONTAINS.id,
         )
 
-
     def test_get_attribute(self):
         path = "/api/v0.9/ci/{0}/".format(self.ci1.id)
         response = self.get(path)

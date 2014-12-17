@@ -1,6 +1,24 @@
 Change Log
 ----------
 
+Dev
+===
+Released on TBA
+
+* SCAN: puppet plugin tries to get data firstly from puppetdb-api
+* SCAN: fix for assets saving
+
+2.2.0
+~~~~~
+
+Released on November 5, 2014
+
+* New look for menu.
+* CORE: Added new plugin - proxmox.
+* CORE: Added new resource to API - PowerDNSRecord.
+* CORE: Added support for regions (used in Assets Module).
+* Bugfixes.
+
 2.1.0
 ~~~~~
 

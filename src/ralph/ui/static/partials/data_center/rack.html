@@ -1,0 +1,13 @@
+<div class="rack rotate-{{ rack.orientation }} x-{{ rack.visualization_col }} y-{{ rack.visualization_row }}">
+    <a href="#/rack/{{ rack.id }}" class="wrapper">
+        <div class="name">
+            {{ rack.name | clean }}
+        </div>
+        <div class="used">
+            {{ rack.free_u }} / {{ rack.max_u_height }}
+        </div>
+        <div class="progress red" style="width:{{ 100 - (rack.free_u / rack.max_u_height) * 100 }}%;"></div>
+        <div class="progress green"></div>
+        </div>
+    </a>
+</div>

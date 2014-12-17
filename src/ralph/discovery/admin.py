@@ -12,6 +12,8 @@ import logging
 from django import forms
 from django.conf import settings
 from django.contrib import admin
+from django.core.urlresolvers import reverse
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import (
     ForeignKeyAutocompleteTabularInline,
@@ -25,6 +27,10 @@ from ralph.business.admin import RolePropertyValueInline
 from ralph.discovery import models
 from ralph.discovery import models_device
 from ralph.ui.forms.network import NetworkForm
+from ralph.ui.widgets import (
+    ReadOnlySelectWidget,
+    ReadOnlyWidget,
+)
 
 
 SAVE_PRIORITY = 215
@@ -171,24 +177,21 @@ class DiscoveryQueueAdmin(ModelAdmin):
 admin.site.register(models.DiscoveryQueue, DiscoveryQueueAdmin)
 
 
-class IPAddressForm(forms.ModelForm):
+class IPAddressInlineFormset(forms.models.BaseInlineFormSet):
 
-    class Meta:
-        model = models.IPAddress
-
-    def clean(self):
-        address = self.cleaned_data.get('address')
-        hostname = self.cleaned_data.get('hostname')
-        if not address and hostname:
-            raise forms.ValidationError(_("Either address or hostname must "
-                                          "be provided."))
+    def get_queryset(self):
+        qs = super(IPAddressInlineFormset, self).get_queryset().filter(
+            is_management=False,
+        )
+        return qs
 
 
 class IPAddressInline(ForeignKeyAutocompleteTabularInline):
+    formset = IPAddressInlineFormset
     model = models.IPAddress
     readonly_fields = ('snmp_name', 'last_seen')
     exclude = ('created', 'modified', 'dns_info', 'http_family',
-               'snmp_community', 'last_puppet')
+               'snmp_community', 'last_puppet', 'is_management')
     edit_separately = True
     extra = 0
     related_search_fields = {
@@ -236,6 +239,37 @@ class DeviceForm(forms.ModelForm):
 
     class Meta:
         model = models.Device
+
+    def __init__(self, *args, **kwargs):
+        super(DeviceForm, self).__init__(*args, **kwargs)
+        if self.instance.id is not None:
+            asset = self.instance.get_asset()
+            if asset:
+                self.fields['dc'].widget = ReadOnlyWidget()
+                self.fields['rack'].widget = ReadOnlyWidget()
+                self.fields['chassis_position'].widget = ReadOnlyWidget()
+                self.fields['position'].widget = ReadOnlyWidget()
+                parents = ()
+                if self.instance.parent:
+                    parents = (
+                        (self.instance.parent.id, self.instance.parent),
+                    )
+                self.fields['parent'].widget = ReadOnlySelectWidget(
+                    choices=parents,
+                )
+                self.fields['parent'].help_text = ''
+                managements = ()
+                if self.instance.management:
+                    managements = (
+                        (
+                            self.instance.management.id,
+                            self.instance.management.address,
+                        ),
+                    )
+                self.fields['management'].widget = ReadOnlySelectWidget(
+                    choices=managements,
+                )
+                self.fields['management'].help_text = ''
 
     def clean_sn(self):
         sn = self.cleaned_data['sn']
@@ -372,6 +406,21 @@ class DeviceAdmin(ModelAdmin):
         if formset.model.__name__ == 'RolePropertyValue':
             for instance in formset.save(commit=False):
                 instance.save(user=request.user)
+        elif formset.model.__name__ == 'IPAddress':
+            for instance in formset.save(commit=False):
+                if not instance.id:
+                    # Sometimes IP address exists and does not have any
+                    # assigned device. In this case we should reuse it,
+                    # otherwise we can get IntegrityError.
+                    try:
+                        ip_id = models.IPAddress.objects.filter(
+                            address=instance.address,
+                        ).values_list('id', flat=True)[0]
+                    except IndexError:
+                        pass
+                    else:
+                        instance.id = ip_id
+                instance.save()
         else:
             formset.save(commit=True)
 
@@ -384,7 +433,38 @@ class IPAliasInline(admin.TabularInline):
     extra = 0
 
 
+class IPAddressForm(forms.ModelForm):
+
+    class Meta:
+        model = models.IPAddress
+
+    def clean(self):
+        cleaned_data = super(IPAddressForm, self).clean()
+        device = cleaned_data.get('device')
+        if device and (
+            'device' in self.changed_data or
+            'is_management' in self.changed_data
+        ):
+            is_management = cleaned_data.get('is_management', False)
+            if is_management:
+                asset = device.get_asset()
+                if asset:
+                    msg = """You can not assign management IP address to this
+                    device. You should use Assets module - click <a href="{}"
+                    target="_blank">here</a>.""".format(
+                        reverse(
+                            'device_edit', kwargs={
+                                'mode': 'dc',
+                                'asset_id': asset.id,
+                            },
+                        ),
+                    )
+                    raise forms.ValidationError(mark_safe(msg))
+        return cleaned_data
+
+
 class IPAddressAdmin(ModelAdmin):
+    form = IPAddressForm
     inlines = [IPAliasInline]
 
     def ip_address(self):
@@ -421,8 +501,19 @@ class MarginKindAdmin(ModelAdmin):
 admin.site.register(models.MarginKind, MarginKindAdmin)
 
 
-class LoadBalancerVirtualServerAdmin(ModelAdmin):
+class LoadBalancerTypeAdmin(ModelAdmin):
     pass
+
+admin.site.register(
+    models.LoadBalancerType,
+    LoadBalancerTypeAdmin,
+)
+
+
+class LoadBalancerVirtualServerAdmin(ModelAdmin):
+    related_search_fields = {
+        'device': ['^name'],
+    }
 
 admin.site.register(
     models.LoadBalancerVirtualServer,
@@ -508,3 +599,26 @@ class DeviceEnvironmentAdmin(ModelAdmin):
 
 
 admin.site.register(models_device.DeviceEnvironment, DeviceEnvironmentAdmin)
+
+
+class DatabaseTypeAdmin(ModelAdmin):
+    pass
+
+admin.site.register(
+    models.DatabaseType,
+    DatabaseTypeAdmin,
+)
+
+
+class DatabaseAdmin(ModelAdmin):
+    list_filter = ('database_type__name',)
+    list_display = ('name', 'venture', 'service', 'device_environment', 'database_type')
+    search_fields = ('name', 'venture', 'service')
+    related_search_fields = {
+        'parent_device': ['^name'],
+    }
+
+admin.site.register(
+    models.Database,
+    DatabaseAdmin,
+)

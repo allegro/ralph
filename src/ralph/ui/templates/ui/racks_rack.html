@@ -1,0 +1,11 @@
+{% extends 'ui/base-devices.html' %}
+
+{% block extra_headers %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}/ui/css/rack.css">
+{% endblock %}
+
+{% block content %}
+    <div ng-app="rackVisualizationApp">
+        <div ng-view></div>
+    </div>
+{% endblock %}

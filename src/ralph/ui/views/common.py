@@ -29,7 +29,7 @@ from django.views.generic import (
 )
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
-from bob.menu import MenuItem, Divider
+from bob.menu import MenuItem
 from bob.data_table import DataTableColumn, DataTableMixin
 from powerdns.models import Record
 
@@ -99,6 +99,7 @@ from ralph.ui.forms.deployment import (
     ServerMoveStep2FormSet,
     ServerMoveStep3FormSet,
 )
+from ralph_assets.models_signals import update_core_localization
 
 
 SAVE_PRIORITY = 215
@@ -201,24 +202,18 @@ class UserMenu(Menu):
             fugue_icon='fugue-user',
             view_name='user_preference',
             pull_right=True,
-            dropdown=True,
-            subitems=[
-                MenuItem(
-                    'Preferences',
-                    name='user_preference',
-                    fugue_icon='fugue-application-task',
-                    view_name='user_preference',
-                ),
-                Divider(),
-                MenuItem(
-                    'Logout',
-                    name='logout',
-                    fugue_icon='fugue-door-open-out',
-                    view_name='logout',
-                ),
-            ]
         )
         super(UserMenu, self).__init__(request, **kwargs)
+
+
+class LogoutMenu(Menu):
+    module = MenuItem(
+        'Logout',
+        name='logout',
+        fugue_icon='fugue-toolbox',
+        view_name='logout',
+        pull_right=True,
+    )
 
 
 class MenuMixin(object):
@@ -228,11 +223,15 @@ class MenuMixin(object):
 
     def dispatch(self, request, *args, **kwargs):
         self.menus = [ralph_menu(request)]
+        self.menus.append(LogoutMenu(request))
+        self.menus.append(UserMenu(request))
         if request.user.is_staff:
             self.menus.append(AdminMenu(request))
-        self.menus.append(UserMenu(request))
         for app in pluggableapp.app_dict.values():
-            if not isinstance(app, RalphModule):
+            if (
+                not isinstance(app, RalphModule) or
+                app.module_name in settings.HIDE_MENU
+            ):
                 continue
             menu_module = importlib.import_module(
                 '.'.join([app.module_name, 'menu'])
@@ -599,7 +598,10 @@ class Info(DeviceUpdateView):
             elif not (
                 not assets_imported or
                 DeviceInfo.objects.filter(ralph_device_id=self.object.pk) or
-                self.object.model.type == DeviceType.virtual_server
+                (
+                    self.object.model and
+                    self.object.model.type == DeviceType.virtual_server
+                )
             ):
                 deploy_disable_reason = _(
                     "This device is not linked to an asset."
@@ -987,7 +989,9 @@ class Addresses(DeviceDetailView):
             )
         if self.ip_formset is None:
             self.ip_formset = IPAddressFormSet(
-                queryset=self.object.ipaddress_set.order_by('address'),
+                queryset=self.object.ipaddress_set.filter(
+                    is_management=False
+                ).order_by('address'),
                 prefix='ip'
             )
         profile = self.request.user.get_profile()
@@ -1112,6 +1116,9 @@ class Asset(BaseMixin, TemplateView):
             asset = self.form.cleaned_data['asset']
             from ralph_assets.api_ralph import assign_asset
             if assign_asset(self.object.id, asset.id):
+                # Deprecated. In future, localization will be stored only for
+                # Asset.
+                update_core_localization(asset_dev_info=asset.device_info)
                 messages.success(self.request, "Asset linked successfully.")
                 return HttpResponseRedirect(self.request.get_full_path())
             else:

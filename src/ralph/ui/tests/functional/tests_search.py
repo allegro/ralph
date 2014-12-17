@@ -5,7 +5,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from django.core.urlresolvers import reverse
 from django.test import TestCase
+
 from ralph.business.models import Venture, VentureRole
 from ralph.discovery.models import Device, DeviceType
 from ralph.discovery.models_component import (
@@ -16,6 +18,8 @@ from ralph.discovery.models_history import HistoryChange
 from ralph.discovery.models_network import (
     IPAddress, NetworkTerminator, Network, DataCenter)
 from ralph.ui.tests.global_utils import login_as_su
+from ralph_assets.tests.utils.assets import DCAssetFactory, DeviceInfoFactory
+
 
 DEVICE = {
     'name': 'SimpleDevice',
@@ -321,3 +325,36 @@ class SearchTest(TestCase):
         device_search = self.client.get(url, follow=True)
         context = device_search.context['object']
         self.assertEqual(context.name, u'śćź')
+
+    def test_device_with_asset(self):
+        # Create asset
+        DCAssetFactory(
+            device_info=DeviceInfoFactory(ralph_device_id=self.device.id),
+        )
+        url = reverse(
+            'search', kwargs={'details': 'info', 'device': self.device.id},
+        )
+        response = self.client.get(url, follow=True)
+        from ralph.ui.widgets import ReadOnlyWidget, RackWidget
+        self.assertTrue(
+            isinstance(
+                response.context['form'].fields['dc'].widget, RackWidget,
+            ),
+        )
+        self.assertTrue(
+            isinstance(
+                response.context['form'].fields['rack'].widget, RackWidget,
+            ),
+        )
+        self.assertTrue(
+            isinstance(
+                response.context['form'].fields['chassis_position'].widget,
+                ReadOnlyWidget,
+            ),
+        )
+        self.assertTrue(
+            isinstance(
+                response.context['form'].fields['position'].widget,
+                ReadOnlyWidget,
+            ),
+        )

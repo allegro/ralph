@@ -21,7 +21,7 @@ setup(
     author='Grupa Allegro Sp. z o.o. and Contributors',
     author_email='pylabs@allegro.pl',
     description="Ralph is a full-featured Asset Management, "
-    "DCIM and CMDB system for data center nad backoffice areas.",
+    "DCIM and CMDB system for data center and backoffice areas.",
     long_description=long_description,
     url='http://ralph.allegrogroup.com/',
     keywords='',
@@ -33,11 +33,13 @@ setup(
     zip_safe=False,  # because templates are loaded from file path
     install_requires=[
         'bob-ajax-selects==1.4.1',
-        'django-bob==1.9.1',
+        'djangorestframework==2.4.3',
+        'django-bob==1.10.0',
         'django-powerdns-dnssec==0.9.3',
         'django-tastypie==0.9.16',
         'django-rq==0.4.5',
         'django==1.4.15',
+        'mock-django==0.6.6',
         'django-pluggable-apps==1.2',
         'django-redis-cache==0.13.0',
         'dnspython==1.11.0',

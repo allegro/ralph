@@ -22,6 +22,7 @@ from datetime import timedelta
 
 PLUGGABLE_APPS = ('cmdb',)
 
+
 SITE_ID = 1
 USE_I18N = True
 USE_L10N = True  # FIXME: breaks contents of l7d date fields on form reload
@@ -51,6 +52,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'lck.django.activitylog.middleware.ActivityMiddleware',
     'lck.django.common.middleware.ForceLanguageCodeMiddleware',
+    'ralph.middleware.RegionMiddleware',
 )
 ROOT_URLCONF = 'ralph.urls'
 TEMPLATE_DIRS = (CURRENT_DIR + "templates",)
@@ -85,6 +87,7 @@ INSTALLED_APPS = [
     'ralph.deployment',
     'ralph.scan',
     'ralph.notifications',
+    'rest_framework',
     'ajax_select',
     'powerdns',
 ]
@@ -217,13 +220,12 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 TIME_ZONE = 'Europe/Warsaw'
 LANGUAGE_CODE = 'en-us'
 CURRENCY = 'PLN'
-VENTURE_FOR_VIRTUAL_USAGES_API = 'Systemy wirtualne'
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': CURRENT_DIR + 'dbralph.sqlite',
-        'USER': '',
-        'PASSWORD': '',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'ralph',
+        'USER': 'ralph',
+        'PASSWORD': 'ralph',
         'HOST': '',
         'PORT': '',
         'OPTIONS': dict(
@@ -240,12 +242,16 @@ CACHES = dict(
         KEY_PREFIX='RALPH_',
     )
 )
+# note: when you want to make ralph makeconf you should get all pluggable apps available.
+# but for unit tests we override this variable later on this file - after template tag is closed.
+PLUGGABLE_APPS = ['scrooge', 'assets', 'cmdb']
 LOGGING['handlers']['file']['filename'] = CURRENT_DIR + 'runtime.log'
 MEDIA_ROOT = '~/.ralph/shared/uploads'
 STATIC_ROOT = '~/.ralph/shared/static'
 FILE_UPLOAD_TEMP_DIR = '~/.ralph/shared/uploads-part'
 SYNERGY_URL_BASE = "/"
 DASHBOARD_SITE_DOMAIN = "dashboard.local"
+HIDE_MENU = []
 IPMI_USER = None
 IPMI_PASSWORD = None
 F5_USER = None
@@ -372,6 +378,8 @@ SCAN_AUTOMERGE_MODE = True
 ZABBIX_IMPORT_HOSTS = False
 # </template>
 
+# revert to the old cmdb only app
+PLUGGABLE_APPS = ('cmdb',)
 SCAN_POSTPROCESS_ENABLED_JOBS = []
 
 #
@@ -598,6 +606,23 @@ SCAN_PLUGINS = {
             'subdevices': 50,
         },
     },
+    'ralph.scan.plugins.proxmox_2_3': {
+        'user': SSH_USER or 'root',
+        'password': SSH_PASSWORD,
+        'results_priority': {
+            'processors': 10,
+            'disks': 10,
+            'disk_shares': 10,
+            'model_name': 10,
+            'type': 10,
+            'mac_addresses': 10,
+            'management': 10,
+            'hostname': 10,
+            'installed_software': 60,
+            'system_ip_addresses': 10,
+            'subdevices': 50,
+        },
+    },
     'ralph.scan.plugins.ssh_3par': {
         'user': SSH_3PAR_USER,
         'password': SSH_3PAR_PASSWORD,
@@ -754,3 +779,4 @@ LOGIN_REDIRECT_URL = reverse_lazy('find_user_home')
 
 # url to page where user requests permission to module (eg. assets)
 # REQUEST_PERM_URL = 'http://tickets.office/request/ralph_module/permission'
+DEFAULT_REGION_NAME = 'Default region'

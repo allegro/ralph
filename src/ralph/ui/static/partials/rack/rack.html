@@ -1,0 +1,14 @@
+<div class="rack rack-u-{{ info.max_u_height }} {{ side }}">
+    <div class="name">
+        {{ info.name }}
+    </div>
+    <div class="wrapper">
+        <listing class="listing-u left" active="activeItem"></listing>
+        <div class="pdu left"></div>
+        <div class="devices">
+            <device ng-repeat="item in devices"></device>
+        </div>
+        <div class="pdu right"></div>
+        <listing class="listing-u right" active="activeItem"></listing>
+    </div>
+</div>
