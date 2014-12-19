@@ -1,10 +1,27 @@
 <div
-    class="device height-u-{{ item.height }} position-u-{{ item.position }}"
-    ng-mouseleave="setActiveItem(null)" ng-mouseover="setActiveItem(item)"
+    class="device model-{{ item.model|slugify }} category-{{ item.category|slugify }} height-u-{{ item.height }} position-u-{{ item.position }}"
+    ng-mouseleave="setActiveItem(null)"
+    ng-mouseover="setActiveItem(item)"
+    ng-class="{has_children: item.children.length}"
 >
-    <a class="info" href="{{ item.url }}" target="_blank">
-        <div class="model">{{ item.model }}</div>
+    <div class="info">
+        <a href="{{ item.url }}" target="_blank" class="model">{{ item.model }}</a>
         <div class="barcode">{{ item.barcode }}</div>
         <div class="sn">{{ item.sn }}</div>
-    </a>
+    </div>
+    <div class="children">
+        <div class="children-wrapper">
+            <a
+                class="child slot-{{ child.slot_no }}"
+                target="_blank"
+                href="{{ child.url }}"
+                ng-repeat="child in item.children"
+                ng-mouseleave="setActiveSlot(null)"
+                ng-mouseover="setActiveSlot(child)"
+            >
+                <span class="slot_no">{{ child.slot_no }}</span>
+                <span class="barcode">{{ child.barcode }}</span>
+            </a>
+        </div>
+    </div>
 </div>

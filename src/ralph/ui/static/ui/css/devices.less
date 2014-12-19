@@ -1,0 +1,67 @@
+@import "variables.less";
+@import "functions.less";
+
+.rack .devices .device {
+    &.category-load-balancer {
+        @slots-per-row: 5;
+        @slot-height: @u-height * 2.5;
+        [class*="slot-"] {
+            height: @slot-height;
+        }
+        .children {
+            display: block;
+            [class*="slot-"] {
+                width: (@devices-width-front / @slots-per-row);
+            }
+            .generate-slots(
+                1, @slots-per-row, @slots-per-row, 0, 0
+            );
+            .generate-slots(
+                @slots-per-row + 1, @slots-per-row * 2, @slots-per-row, @slot-height, 0
+            );
+        }
+    }
+    &.category-chassis-blade {
+        @slots-per-row: 8;
+        @slot-height: @u-height * 4;
+        @width: @devices-width-front / @slots-per-row;
+        @width-half: @width / 2;
+        [class*="slot-"] {
+            height: @slot-height;
+            width: @width;
+            .barcode {
+                display: block;
+                line-height: @slot-height;
+            }
+        }
+        [class$="A"],
+        [class$="B"] {
+            width: @width-half;
+            .barcode {
+                transform: rotate(90deg) translateX(@slot-height / 2);
+                line-height: 1em;
+            }
+        }
+        .children {
+            display: block;
+            .generate-slots(
+                1, @slots-per-row, @slots-per-row, 0, 0
+            );
+            .generate-slots(
+                @slots-per-row + 1, @slots-per-row * 2, @slots-per-row, @slot-height, 0, 0
+            );
+            .generate-slots(
+                1, @slots-per-row, @slots-per-row, 0, 0, 0, A
+            );
+            .generate-slots(
+                1, @slots-per-row, @slots-per-row, 0, 0, @width-half, B
+            );
+            .generate-slots(
+                @slots-per-row + 1, @slots-per-row * 2, @slots-per-row, @slot-height, 0, 0, A
+            );
+            .generate-slots(
+                @slots-per-row + 1, @slots-per-row * 2, @slots-per-row, @slot-height, 0, @width-half, B
+            );
+        }
+    }
+}

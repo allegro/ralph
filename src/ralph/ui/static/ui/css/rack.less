@@ -1,13 +1,5 @@
-@max-u: 48;
-@rack-border-width: 4px;
-@rack-width: 350px;
-@pdu-width: 50px;
-@listing-u-width: 25px;
-@devices-width-back: (@rack-width - (@pdu-width * 2) - (@listing-u-width * 2));
-@devices-width-front: (@rack-width - (@listing-u-width * 2));
-@device-background: rgb(147, 217, 50);
-@u-height: 15px;
-@info-padding: 3px;
+@import "variables.less";
+@import "functions.less";
 
 * {
     box-sizing: border-box;
@@ -52,6 +44,11 @@
     }
     .info {
         width: 100%;
+        .slot_info {
+            tr:last-child td {
+                border-bottom: none;
+            }
+        }
         td {
             padding: 5px;
             border-bottom: 1px solid #ccc;
@@ -165,7 +162,6 @@
                 float: left;
                 position: relative;
                 .device {
-                    cursor: pointer;
                     width: @devices-width-back;
                     position: absolute;
                     height: @u-height;
@@ -173,7 +169,7 @@
                     border-top: 1px solid lighten(@device-background, 10%);
                     background: @device-background;
                     &:hover {
-                        background: lighten(@device-background, 10%);
+                        background: lighten(@device-background, 5%);
                     }
                     &.active {
                         background: lighten(@device-background, 20%);
@@ -247,9 +243,52 @@
                             bottom: @info-padding;
                         }
                         .model {
+                            color: #333;
                             font-weight: bold;
                             left: @info-padding;
                             top:@info-padding;
+                        }
+                    }
+                    .children {
+                        position: absolute;
+                        top: @u-height;
+                        bottom: @u-height;
+                        min-width: 100%;
+                        .generate-slots(
+                            1, @default-slots-per-row, @default-slots-per-row, 0, 0
+                        );
+                        .generate-slots(
+                            @default-slots-per-row + 1, @default-slots-per-row * 2, @default-slots-per-row, @default-slot-height, 0
+                        );
+                        .children-wrapper {
+                            position: relative;
+                            [class*="slot-"] {
+                                font-size: .825em;
+                                background: rgba(255,255,255,.3);
+                                border: 1px solid rgba(0,0,0,.2);
+                                position: absolute;
+                                color: #000;
+                                display: block;
+                                text-align: center;
+                                height: @default-slot-height;
+                                width: @default-slot-width;
+                                &:hover {
+                                    background: rgba(255,255,255,.5);
+                                }
+                                .slot_no {
+                                    overflow: hidden;
+                                    position: absolute;
+                                    top: 0;
+                                    left: 0;
+                                    width: 100%;
+                                    color: #222;
+                                    background: rgba(0,0,0,.3);
+                                    padding: 2px;
+                                }
+                                .barcode {
+                                    line-height: @default-slot-height;
+                                }
+                            }
                         }
                     }
                 }
