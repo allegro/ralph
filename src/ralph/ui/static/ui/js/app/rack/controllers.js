@@ -17,7 +17,10 @@ angular
             rackId = $cookies.rack_id;
         }
         $scope.rack = RackModel.get({rackId: rackId});
-        $scope.$on('info', function (event, data) {
-            $scope.info = data;
+        $scope.$on('change_active_item', function (event, item) {
+            $scope.activeItem = item;
+        });
+        $scope.$on('change_active_slot', function (event, slot) {
+            $scope.activeSlot = slot;
         });
     }]);

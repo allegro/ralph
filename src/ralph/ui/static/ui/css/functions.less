@@ -1,0 +1,9 @@
+@import "variables.less";
+
+.generate-slots(@from, @to, @n, @top: 0, @counter: 0, @left-offset: 0, @rest... ) when (@from =< @to) {
+    .slot-@{from}@{rest} {
+        top: @top;
+        left: ((@devices-width-front / @n) * @counter) + @left-offset;
+    }
+    .generate-slots((@from+1), @to, @n, @top, (@counter+1), @left-offset, @rest);
+}

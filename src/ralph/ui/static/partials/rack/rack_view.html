@@ -5,27 +5,46 @@
         <table class="info">
             <tr>
                 <td>Model</td>
-                <td>{{ info ? info.model : '-' }}</td>
+                <td>{{ activeItem ? activeItem.model : '-' }}</td>
             </tr>
             <tr>
                 <td>Barcode</td>
-                <td>{{ info ? info.barcode : '-' }}</td>
+                <td>{{ activeItem ? activeItem.barcode : '-' }}</td>
             </tr>
             <tr>
                 <td>SN</td>
-                <td>{{ info ? info.sn : '-' }}</td>
+                <td>{{ activeItem ? activeItem.sn : '-' }}</td>
             </tr>
             <tr>
                 <td>Position</td>
-                <td>{{ info ? info.position : '-' }}</td>
+                <td>{{ activeItem ? activeItem.position : '-' }}</td>
             </tr>
             <tr>
                 <td>Height</td>
-                <td>{{ info ? info.height : '-' }}</td>
+                <td>{{ activeItem ? activeItem.height : '-' }}</td>
             </tr>
             <tr>
                 <td>Remarks</td>
-                <td>{{ info ? info.remarks : '-' }}</td>
+                <td>{{ activeItem ? activeItem.remarks : '-' }}</td>
+            </tr>
+            <tr ng-show="activeSlot">
+                <td>Slot {{ activeSlot.slot_no }}</td>
+                <td>
+                    <table class="info slot_info">
+                        <tr>
+                            <td>Model</td>
+                            <td>{{ activeSlot ? activeSlot.model : '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td>Barcode</td>
+                            <td>{{ activeSlot ? activeSlot.barcode : '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td>SN</td>
+                            <td>{{ activeSlot ? activeSlot.sn : '-' }}</td>
+                        </tr>
+                    </table>
+                </td>
             </tr>
         </table>
     </div>
