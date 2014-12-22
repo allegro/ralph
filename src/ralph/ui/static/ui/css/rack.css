@@ -794,8 +794,6 @@
   color: #000;
   display: block;
   text-align: center;
-  height: 50px;
-  width: 80px;
 }
 .racks .rack .wrapper .devices .device .children .children-wrapper [class*="slot-"]:hover {
   background: rgba(255, 255, 255, 0.5);

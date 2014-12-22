@@ -8,7 +8,7 @@
         [class*="slot-"] {
             height: @slot-height;
         }
-        .children {
+        .children .children-wrapper {
             display: block;
             [class*="slot-"] {
                 width: (@devices-width-front / @slots-per-row);
@@ -42,7 +42,7 @@
                 line-height: 1em;
             }
         }
-        .children {
+        .children .children-wrapper {
             display: block;
             .generate-slots(
                 1, @slots-per-row, @slots-per-row, 0, 0

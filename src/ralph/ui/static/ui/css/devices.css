@@ -1,49 +1,49 @@
 .rack .devices .device.category-load-balancer [class*="slot-"] {
   height: 62.5px;
 }
-.rack .devices .device.category-load-balancer .children {
+.rack .devices .device.category-load-balancer .children .children-wrapper {
   display: block;
 }
-.rack .devices .device.category-load-balancer .children [class*="slot-"] {
+.rack .devices .device.category-load-balancer .children .children-wrapper [class*="slot-"] {
   width: 80px;
 }
-.rack .devices .device.category-load-balancer .children .slot-1 {
+.rack .devices .device.category-load-balancer .children .children-wrapper .slot-1 {
   top: 0;
   left: 0px;
 }
-.rack .devices .device.category-load-balancer .children .slot-2 {
+.rack .devices .device.category-load-balancer .children .children-wrapper .slot-2 {
   top: 0;
   left: 80px;
 }
-.rack .devices .device.category-load-balancer .children .slot-3 {
+.rack .devices .device.category-load-balancer .children .children-wrapper .slot-3 {
   top: 0;
   left: 160px;
 }
-.rack .devices .device.category-load-balancer .children .slot-4 {
+.rack .devices .device.category-load-balancer .children .children-wrapper .slot-4 {
   top: 0;
   left: 240px;
 }
-.rack .devices .device.category-load-balancer .children .slot-5 {
+.rack .devices .device.category-load-balancer .children .children-wrapper .slot-5 {
   top: 0;
   left: 320px;
 }
-.rack .devices .device.category-load-balancer .children .slot-6 {
+.rack .devices .device.category-load-balancer .children .children-wrapper .slot-6 {
   top: 62.5px;
   left: 0px;
 }
-.rack .devices .device.category-load-balancer .children .slot-7 {
+.rack .devices .device.category-load-balancer .children .children-wrapper .slot-7 {
   top: 62.5px;
   left: 80px;
 }
-.rack .devices .device.category-load-balancer .children .slot-8 {
+.rack .devices .device.category-load-balancer .children .children-wrapper .slot-8 {
   top: 62.5px;
   left: 160px;
 }
-.rack .devices .device.category-load-balancer .children .slot-9 {
+.rack .devices .device.category-load-balancer .children .children-wrapper .slot-9 {
   top: 62.5px;
   left: 240px;
 }
-.rack .devices .device.category-load-balancer .children .slot-10 {
+.rack .devices .device.category-load-balancer .children .children-wrapper .slot-10 {
   top: 62.5px;
   left: 320px;
 }
@@ -64,198 +64,198 @@
   transform: rotate(90deg) translateX(50px);
   line-height: 1em;
 }
-.rack .devices .device.category-chassis-blade .children {
+.rack .devices .device.category-chassis-blade .children .children-wrapper {
   display: block;
 }
-.rack .devices .device.category-chassis-blade .children .slot-1 {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-1 {
   top: 0;
   left: 0px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-2 {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-2 {
   top: 0;
   left: 50px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-3 {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-3 {
   top: 0;
   left: 100px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-4 {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-4 {
   top: 0;
   left: 150px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-5 {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-5 {
   top: 0;
   left: 200px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-6 {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-6 {
   top: 0;
   left: 250px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-7 {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-7 {
   top: 0;
   left: 300px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-8 {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-8 {
   top: 0;
   left: 350px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-9 {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-9 {
   top: 100px;
   left: 0px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-10 {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-10 {
   top: 100px;
   left: 50px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-11 {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-11 {
   top: 100px;
   left: 100px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-12 {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-12 {
   top: 100px;
   left: 150px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-13 {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-13 {
   top: 100px;
   left: 200px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-14 {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-14 {
   top: 100px;
   left: 250px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-15 {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-15 {
   top: 100px;
   left: 300px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-16 {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-16 {
   top: 100px;
   left: 350px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-1A {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-1A {
   top: 0;
   left: 0px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-2A {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-2A {
   top: 0;
   left: 50px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-3A {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-3A {
   top: 0;
   left: 100px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-4A {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-4A {
   top: 0;
   left: 150px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-5A {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-5A {
   top: 0;
   left: 200px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-6A {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-6A {
   top: 0;
   left: 250px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-7A {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-7A {
   top: 0;
   left: 300px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-8A {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-8A {
   top: 0;
   left: 350px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-1B {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-1B {
   top: 0;
   left: 25px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-2B {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-2B {
   top: 0;
   left: 75px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-3B {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-3B {
   top: 0;
   left: 125px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-4B {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-4B {
   top: 0;
   left: 175px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-5B {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-5B {
   top: 0;
   left: 225px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-6B {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-6B {
   top: 0;
   left: 275px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-7B {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-7B {
   top: 0;
   left: 325px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-8B {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-8B {
   top: 0;
   left: 375px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-9A {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-9A {
   top: 100px;
   left: 0px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-10A {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-10A {
   top: 100px;
   left: 50px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-11A {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-11A {
   top: 100px;
   left: 100px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-12A {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-12A {
   top: 100px;
   left: 150px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-13A {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-13A {
   top: 100px;
   left: 200px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-14A {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-14A {
   top: 100px;
   left: 250px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-15A {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-15A {
   top: 100px;
   left: 300px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-16A {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-16A {
   top: 100px;
   left: 350px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-9B {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-9B {
   top: 100px;
   left: 25px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-10B {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-10B {
   top: 100px;
   left: 75px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-11B {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-11B {
   top: 100px;
   left: 125px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-12B {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-12B {
   top: 100px;
   left: 175px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-13B {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-13B {
   top: 100px;
   left: 225px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-14B {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-14B {
   top: 100px;
   left: 275px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-15B {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-15B {
   top: 100px;
   left: 325px;
 }
-.rack .devices .device.category-chassis-blade .children .slot-16B {
+.rack .devices .device.category-chassis-blade .children .children-wrapper .slot-16B {
   top: 100px;
   left: 375px;
 }
