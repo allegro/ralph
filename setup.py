@@ -38,7 +38,7 @@ setup(
         'django-powerdns-dnssec==0.9.3',
         'django-tastypie==0.9.16',
         'django-rq==0.4.5',
-        'django==1.4.15',
+        'django=={}'.format(os.environ.get('DJANGO_VERSION', '1.4.16')),
         'mock-django==0.6.6',
         'django-pluggable-apps==1.2',
         'django-redis-cache==0.13.0',
