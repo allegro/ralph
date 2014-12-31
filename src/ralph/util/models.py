@@ -16,6 +16,7 @@ from django.db.utils import DatabaseError
 from django.dispatch import Signal
 from tastypie.models import create_api_key
 
+from ralph.settings import SYNC_FIELD_MIXIN_NOTIFICATIONS_WHITELIST
 
 ChangeTuple = namedtuple('ChangeTuple', ['field', 'old_value', 'new_value'])
 
@@ -52,6 +53,17 @@ class SyncFieldMixin(db.Model):
 
     After syncing your objects, this mixin sends 'fields_synced_signal' which
     carries a list of changes that have been made.
+
+    For example, let's say that you're changing fields 'foo' and 'bar'  on some
+    device object and you want to propagate them to an asset which is linked to
+    it. In order to do that, your Device class should inherit this mixin and
+    implement 'get_synced_objs_and_fields' method, which should return
+    something like this:
+
+        [(linked_asset_object, ['foo', 'bar'])]
+
+    Remember that 'linked_asset_object' should have 'foo' and 'bar' fields
+    already defined - otherwise it won't make sense.
     """
     class Meta:
         abstract = True
@@ -75,6 +87,9 @@ class SyncFieldMixin(db.Model):
             for f in fields:
                 setattr(obj, f, getattr(self, f))
             obj.save(visited=visited, mute=True, priority=priority)
+        # if 'mute' is False *and* if the given field is not present in
+        # SYNC_FIELD_MIXIN_NOTIFICATIONS_WHITELIST, *then* notification of
+        # change won't be send
         if not mute:
             changes = []
             try:
@@ -82,10 +97,7 @@ class SyncFieldMixin(db.Model):
             except type(self).DoesNotExist:
                 old_obj = None
             for field in self._meta.fields:
-                if field.name not in {
-                    'service',
-                    'device_environment',
-                }:
+                if field.name not in SYNC_FIELD_MIXIN_NOTIFICATIONS_WHITELIST:
                     continue
                 old_value = getattr(old_obj, field.name) if old_obj else None
                 new_value = getattr(self, field.name)
