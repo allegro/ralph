@@ -45,6 +45,16 @@ def _get_hostname(ssh):
                 pass  # unexpected result... maybe next line will be ok...
 
 
+def _get_model(ssh):
+    for line in _ssh_lines(ssh, 'show version'):
+        if line.lower().startswith('model'):
+            line_chunks = line.split(':')
+            try:
+                return line_chunks[1].strip()
+            except IndexError:
+                pass  # unexpected result... maybe next line will be ok...
+
+
 def _get_mac_addresses(ssh):
     mac_addresses = []
     for line in _ssh_lines(ssh, 'show chassis mac-addresses'):
@@ -111,6 +121,7 @@ def _ssh_juniper(ssh, ip_address):
         'management_ip_addresses': [ip_address],
     }
     hostname = _get_hostname(ssh)
+    model = _get_model(ssh)
     mac_addresses = _get_mac_addresses(ssh)
     if hostname:
         device['hostname'] = hostname
@@ -138,7 +149,14 @@ def _ssh_juniper(ssh, ip_address):
                 )
             subdevices.append(subdevice)
         device['subdevices'] = subdevices
+
         device['model_name'] = 'Juniper Virtual Chassis Ethernet Switch'
+        if model:
+            if "ex" in model.lower():
+                device['model_name'] = 'Juniper EX Virtual Chassis Ethernet Switch'
+            if "qfx" in model.lower():
+                device['model_name'] = 'Juniper QFX Virtual Chassis Ethernet Switch'
+
         device['serial_number'] = chassis_id
     elif switches:
         device['model_name'] = switches[0]['model']
