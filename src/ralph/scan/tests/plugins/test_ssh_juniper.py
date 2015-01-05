@@ -118,6 +118,10 @@ class SSHJuniperPluginTest(TestCase):
                 JUNIPER_SHOW_VERSION_SAMPLE,
             ),
             (
+                "show version",
+                JUNIPER_SHOW_VERSION_SAMPLE,
+            ),
+            (
                 "show chassis mac-addresses",
                 JUNIPER_GET_MAC_ADDRESSES_SAMPLE,
             ),
@@ -127,7 +131,7 @@ class SSHJuniperPluginTest(TestCase):
             {
                 'hostname': 'rack01-sw1.dc',
                 'management_ip_addresses': ['10.10.10.10'],
-                'model_name': 'Juniper Virtual Chassis Ethernet Switch',
+                'model_name': 'Juniper EX Virtual Chassis Ethernet Switch',
                 'serial_number': 'aaaa.bbbb.cccc',
                 'subdevices': [
                     {
@@ -154,6 +158,10 @@ class SSHJuniperPluginTest(TestCase):
             (
                 "show virtual-chassis",
                 JUNIPER_NOT_STACKED_SAMPLE,
+            ),
+            (
+                "show version",
+                JUNIPER_SHOW_VERSION_SAMPLE,
             ),
             (
                 "show version",
