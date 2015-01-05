@@ -65,6 +65,12 @@ def _get_mac_addresses(ssh):
                     line.replace('public base address', '').strip()
                 )
             )
+        if line.startswith('base address'):
+            mac_addresses.append(
+                MACAddressField.normalize(
+                    line.replace('base address', '').strip()
+                )
+            )
     return mac_addresses
 
 
