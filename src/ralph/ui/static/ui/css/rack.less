@@ -152,8 +152,34 @@
                 width: @pdu-width;
                 float: left;
                 z-index: 1000;
+                display: -webkit-box;
+                display: -moz-box;
+                display: -ms-flexbox;
+                display: -webkit-flex;
+                display: flex;
+                flex-direction: column;
                 &.left {box-shadow: 1px 0 1px rgba(0, 0, 0, 0.6);}
                 &.right {box-shadow: -1px 0 1px rgba(0, 0, 0, 0.6);}
+                pdu-item {
+                    @background-color: #999;
+                    @margin: 3px;
+                    @padding: 5px;
+                    flex: 1 1 auto;
+                    margin: @margin @margin 0 @margin;
+                    background: @background-color;
+                    border: 1px solid darken(@background-color, 10%);
+                    &:nth-last-of-type(1) {margin-bottom: @margin;}
+                    &:hover {
+                        @hover-color: lighten(@background-color, 5%);
+                        background: @hover-color;
+                        border: 1px solid darken(@hover-color, 10%);
+                    }
+                    .item {
+                        padding: @padding;
+                        font-size: .825em;
+                        a {color: inherit;}
+                    }
+                }
             }
             .devices {
                 width: @devices-width-back;

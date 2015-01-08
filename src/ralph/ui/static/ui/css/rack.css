@@ -468,12 +468,38 @@
   width: 50px;
   float: left;
   z-index: 1000;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  flex-direction: column;
 }
 .racks .rack .wrapper .pdu.left {
   box-shadow: 1px 0 1px rgba(0, 0, 0, 0.6);
 }
 .racks .rack .wrapper .pdu.right {
   box-shadow: -1px 0 1px rgba(0, 0, 0, 0.6);
+}
+.racks .rack .wrapper .pdu pdu-item {
+  flex: 1 1 auto;
+  margin: 3px 3px 0 3px;
+  background: #999999;
+  border: 1px solid #808080;
+}
+.racks .rack .wrapper .pdu pdu-item:nth-last-of-type(1) {
+  margin-bottom: 3px;
+}
+.racks .rack .wrapper .pdu pdu-item:hover {
+  background: #a6a6a6;
+  border: 1px solid #8c8c8c;
+}
+.racks .rack .wrapper .pdu pdu-item .item {
+  padding: 5px;
+  font-size: .825em;
+}
+.racks .rack .wrapper .pdu pdu-item .item a {
+  color: inherit;
 }
 .racks .rack .wrapper .devices {
   width: 300px;

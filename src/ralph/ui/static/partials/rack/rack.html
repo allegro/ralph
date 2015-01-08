@@ -4,11 +4,15 @@
     </div>
     <div class="wrapper">
         <listing class="listing-u left" active="activeItem"></listing>
-        <div class="pdu left"></div>
+        <div class="pdu left">
+            <pdu-item pdu="item" ng-repeat="item in pdus|filter:{orientation:'left'}" style="order: {{ $index }}"></pdu-item>
+        </div>
         <div class="devices">
             <device ng-repeat="item in devices"></device>
         </div>
-        <div class="pdu right"></div>
+        <div class="pdu right">
+            <pdu-item pdu="item" ng-repeat="item in pdus|filter:{orientation:'right'}" style="order: {{ $index }}"></pdu-item>
+        </div>
         <listing class="listing-u right" active="activeItem"></listing>
     </div>
 </div>
