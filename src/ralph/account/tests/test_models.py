@@ -11,6 +11,7 @@ from django.conf import settings
 from ralph.account.models import Region
 from ralph.account.tests import utils
 
+from ralph.discovery.tests.util import RackFactory
 
 class ModelsTest(TestCase):
 
