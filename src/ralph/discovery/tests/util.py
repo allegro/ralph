@@ -16,6 +16,7 @@ from factory.django import DjangoModelFactory
 from ralph.discovery.models_device import (
     Device,
     DeviceModel,
+    DeviceType,
     LoadBalancerType,
     LoadBalancerVirtualServer,
 )
@@ -25,6 +26,11 @@ from ralph.discovery.models_network import Network, IPAddress
 
 class DeviceModelFactory(DjangoModelFactory):
     FACTORY_FOR = DeviceModel
+
+
+class RackModelFactory(DeviceModelFactory):
+    name = Sequence(lambda n: 'Rack model #{}'.format(n))
+    type = DeviceType.rack_server
 
 
 class DeviceFactory(DjangoModelFactory):
@@ -37,6 +43,11 @@ class DeviceFactory(DjangoModelFactory):
     @lazy_attribute
     def barcode(self):
         return str(uuid1())
+
+
+class RackFactory(DeviceFactory):
+    name = Sequence(lambda n: 'Rack#{}'.format(n))
+    model = SubFactory(RackModelFactory)
 
 
 class Tenant(object):
