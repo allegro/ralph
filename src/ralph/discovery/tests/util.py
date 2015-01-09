@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import factory
 import mock
 import StringIO
 from uuid import uuid1
@@ -16,27 +17,77 @@ from factory.django import DjangoModelFactory
 from ralph.discovery.models_device import (
     Device,
     DeviceModel,
+    DeviceType,
     LoadBalancerType,
     LoadBalancerVirtualServer,
 )
 from ralph.cmdb.tests import utils as cmdb_utils
 from ralph.discovery.models_network import Network, IPAddress
+from ralph_assets.models_dc_assets import DeprecatedRalphDC, DeprecatedRalphRack
 
 
 class DeviceModelFactory(DjangoModelFactory):
     FACTORY_FOR = DeviceModel
 
 
+class DataCenterModelFactory(DeviceModelFactory):
+    name = Sequence(lambda n: 'Data-center-model{}'.format(n))
+    type = DeviceType.data_center
+
+
+class RackModelFactory(DeviceModelFactory):
+    name = Sequence(lambda n: 'Rack-model{}'.format(n))
+    type = DeviceType.rack
+
+
 class DeviceFactory(DjangoModelFactory):
     FACTORY_FOR = Device
 
-    name = Sequence(lambda n: 'Device#{}'.format(n))
+    name = Sequence(lambda n: 'Device{}'.format(n))
     service = SubFactory(cmdb_utils.ServiceCatalogFactory)
     device_environment = SubFactory(cmdb_utils.DeviceEnvironmentFactory)
+    chassis_position = 1
+    position = ''
 
     @lazy_attribute
     def barcode(self):
         return str(uuid1())
+
+
+class DeprecatedDataCenterFactory(DjangoModelFactory):
+    FACTORY_FOR = DeprecatedRalphDC
+
+    name = Sequence(lambda n: 'DC{}'.format(n))
+    model = SubFactory(DataCenterModelFactory)
+
+    @factory.post_generation
+    def sn(self, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if extracted:
+            self.sn = extracted
+        else:
+            self.sn = self.name
+
+
+class DeprecatedRackFactory(DjangoModelFactory):
+    FACTORY_FOR = DeprecatedRalphRack
+
+    name = Sequence(lambda n: 'Rack{}'.format(n))
+    model = SubFactory(RackModelFactory)
+
+    @factory.post_generation
+    def sn(self, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if extracted:
+            self.sn = extracted
+        else:
+            self.sn = self.name
 
 
 class Tenant(object):
@@ -73,7 +124,7 @@ class IPAddressFactory(DjangoModelFactory):
 class LoadBalancerTypeFactory(DjangoModelFactory):
     FACTORY_FOR = LoadBalancerType
 
-    name = Sequence(lambda n: 'LB Type #{}'.format(n))
+    name = Sequence(lambda n: 'LB Type{}'.format(n))
 
 
 class LoadBalancerVirtualServerFactory(DjangoModelFactory):
