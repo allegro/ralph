@@ -1,8 +1,9 @@
 Change Log
 ----------
 
-Dev
-===
+dev
+~~~
+
 Released on TBA
 
 * SCAN: puppet plugin tries to get data firstly from puppetdb-api
