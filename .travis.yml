@@ -13,8 +13,8 @@ python:
 install:
   - pip install git+https://github.com/allegro/django-bob@develop
   - pip install git+https://github.com/quamilek/bob-ajax-selects.git@develop
-  - make install
   - pip install git+https://github.com/allegro/ralph_assets.git@develop
+  - make install
   - pip install coveralls
   - pip install flake8
 

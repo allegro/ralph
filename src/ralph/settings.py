@@ -379,7 +379,7 @@ ZABBIX_IMPORT_HOSTS = False
 # </template>
 
 # revert to the old cmdb only app
-PLUGGABLE_APPS = ('cmdb',)
+PLUGGABLE_APPS = ('cmdb', 'assets')
 SCAN_POSTPROCESS_ENABLED_JOBS = []
 
 #
