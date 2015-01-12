@@ -14,6 +14,7 @@
             <link rel="stylesheet" href="{{ STATIC_URL }}jquery.treegrid.css">
             <link rel="stylesheet" href="{{ STATIC_URL }}css/ajax_select.css">
         {% endblock %}
+        {% if TRACKING_CODE %}{{ TRACKING_CODE|safe }}{% endif %}
         {% block scripts %}
             <script src="{{ STATIC_URL }}require.js"></script>
             <!-- Use require.js for mustache! -->
