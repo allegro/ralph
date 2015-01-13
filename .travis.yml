@@ -1,12 +1,11 @@
 language: python
 env:
-    - DJANGO_VERSION=1.4.16
-    - DJANGO_VERSION=1.5.11
-    - DJANGO_VERSION=1.6.8
+  matrix:
+    - DJANGO_VERSION=1.4.16 TEST_DATABASE_ENGINE=mysql
+    - DJANGO_VERSION=1.6.8 TEST_DATABASE_ENGINE=sqlite
 matrix:
   allow_failures:
-    - env: DJANGO_VERSION=1.5.11
-    - env: DJANGO_VERSION=1.6.8
+    - env: DJANGO_VERSION=1.6.8 TEST_DATABASE_ENGINE=sqlite
 python:
   - "2.7"
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
