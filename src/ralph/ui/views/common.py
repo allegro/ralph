@@ -1517,17 +1517,11 @@ class Scan(BaseMixin, TemplateView):
         ret = super(Scan, self).get_context_data(**kwargs)
         address = self.kwargs.get('address') or self.request.GET.get('address')
         if address:
+            ipaddress, created = IPAddress.objects.get_or_create(address=address)
             try:
-                ipaddress = IPAddress.objects.get(address=address)
-            except IPAddress.DoesNotExist:
-                ipaddress = None
-                address = None
+                network = Network.from_ip(address)
+            except (Network.DoesNotExist, IndexError, ValueError):
                 network = None
-            else:
-                try:
-                    network = Network.from_ip(address)
-                except (Network.DoesNotExist, IndexError, ValueError):
-                    network = None
         else:
             ipaddress = None
             network = None
