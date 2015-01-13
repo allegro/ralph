@@ -1617,10 +1617,11 @@ class ScanList(BaseMixin, DataTableMixin, TemplateView):
                 db.Q(ipaddress__device__venture__name=venture_name) |
                 db.Q(ipaddress__device__service__name=service_name)
             )
+        # see also ralph.scan.util.get_pending_changes (similar condition)
         if kwargs['change_type'] == 'new':
             return all_changes.filter(ipaddress__device=None)
         else:
-            return all_changes.filter(changed=True)
+            return all_changes.filter(ipaddress__device__isnull=False)
 
 
 class ScanStatus(BaseMixin, TemplateView):
