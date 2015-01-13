@@ -917,10 +917,13 @@ class Device(
             else:
                 name = filename
             self.saving_plugin = name
-        return super(Device, self).save(
-            *args,
-            **kwargs
-        )
+        # In case you'd notice that some of the changed fields are mysteriously
+        # not saved, check 'save_priorities' property on the device that you're
+        # trying to save - if such field is there, and the value associated
+        # with it is higher than your current save priority (i.e. 'priority' in
+        # kwargs or settings.DEFAULT_SAVE_PRIORITY, in that order), then that's
+        # the reason (for more, see the source code of SavePrioritized).
+        return super(Device, self).save(*args, **kwargs)
 
     def get_asset(self):
         asset = None
