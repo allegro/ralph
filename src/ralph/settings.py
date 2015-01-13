@@ -376,6 +376,9 @@ SCAN_AUTOMERGE_MODE = True
 
 # If True, autocreate misssing host names(CI's) when importing the triggers from ZABBIX into the cmdb
 ZABBIX_IMPORT_HOSTS = False
+#String contains HTML code injected into every page, for user tracking
+#such as Piwik, Google Analytics. Default: none - no tracking at all.
+TRACKING_CODE = None
 # </template>
 
 # revert to the old cmdb only app
