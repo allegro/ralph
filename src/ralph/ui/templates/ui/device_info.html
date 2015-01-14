@@ -17,7 +17,7 @@
         <p><strong>Scan detected changes for the following IP addresses (click to see the change):</strong></p>
         <ul class="unstyled">
             {% for ip in changed_addresses %}
-                <li><a href="/ui/scan/status/{{ ip.address }}/" class="btn btn-link">
+                <li><a href="/ui/scan/status/{{ ip.address }}?initial_device_id={{ device.id }}" class="btn btn-link">
                     {{ ip|address_icon }}&nbsp;{{ ip.address }}</a>
                 </li>
             {% endfor %}

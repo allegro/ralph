@@ -20,6 +20,7 @@ from django.db import models as db
 from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
 from django.shortcuts import get_object_or_404
 from django.utils import importlib, timezone
+from django.utils.http import urlencode
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import (
     DetailView,
@@ -1492,12 +1493,12 @@ class Scan(BaseMixin, TemplateView):
 
     def post(self, *args, **kwargs):
         plugins = self.request.POST.getlist('plugins')
+        initial_device_id = self.request.POST.get('initial_device_id')
         if not plugins:
             messages.error(self.request, "You have to select some plugins.")
             return self.get(*args, **kwargs)
-        ip_address = self.kwargs.get('address') or self.request.GET.get(
-            'address'
-        )
+        ip_address = (self.kwargs.get('address') or
+                      self.request.GET.get('address'))
         if ip_address:
             try:
                 ipaddr.IPAddress(ip_address)
@@ -1511,7 +1512,12 @@ class Scan(BaseMixin, TemplateView):
         except ScanError as e:
             messages.error(self.request, unicode(e))
             return self.get(*args, **kwargs)
-        return HttpResponseRedirect(reverse('scan_results', args=(job.id,)))
+        url = reverse('scan_results', args=(job.id,))
+        if initial_device_id:
+            url = url + '?' + urlencode(
+                {'initial_device_id': initial_device_id}
+            )
+        return HttpResponseRedirect(url)
 
     def get_context_data(self, **kwargs):
         ret = super(Scan, self).get_context_data(**kwargs)
@@ -1531,6 +1537,12 @@ class Scan(BaseMixin, TemplateView):
         else:
             ipaddress = None
             network = None
+        if self.object:
+            initial_device_id = self.object.id
+        elif ipaddress and ipaddress.device_id:
+            initial_device_id = ipaddress.device_id
+        else:
+            initial_device_id = None
         ret.update({
             'details': 'scan',
             'device': self.object,
@@ -1538,6 +1550,7 @@ class Scan(BaseMixin, TemplateView):
             'ipaddress': ipaddress,
             'network': network,
             'plugins': getattr(settings, 'SCAN_PLUGINS', {}),
+            'initial_device_id': initial_device_id,
         })
         return ret
 
@@ -1764,9 +1777,11 @@ class ScanStatus(BaseMixin, TemplateView):
                     device = self.forms[0][0]
                     self.device_id = device.id if device else 'new'
                 ret['device_id'] = self.device_id
+                ret['initial_device_id'] = self.initial_device_id
         return ret
 
     def get(self, *args, **kwargs):
+        self.initial_device_id = self.request.GET.get('initial_device_id')
         self.job = self.get_job()
         if self.job and self.job.is_finished and not self.ip_address:
             try:
@@ -1779,12 +1794,13 @@ class ScanStatus(BaseMixin, TemplateView):
                 except IndexError:
                     pass
                 else:
-                    return HttpResponseRedirect(
-                        reverse(
-                            'scan_results',
-                            args=(self.ip_address.address,),
-                        ),
-                    )
+                    rev_args = (self.ip_address.address,)
+                    url = reverse('scan_results', args=rev_args)
+                    if self.initial_device_id:
+                        url = url + '?' + urlencode(
+                            {'initial_device_id': self.initial_device_id}
+                        )
+                    return HttpResponseRedirect(url)
         return super(ScanStatus, self).get(*args, **kwargs)
 
     def get_scan_summary(self, job):

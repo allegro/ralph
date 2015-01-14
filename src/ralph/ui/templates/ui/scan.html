@@ -38,6 +38,9 @@
                 </div>
             </div>
             {% endfor %}
+            {% if initial_device_id %}
+                <input type="hidden" value="{{ initial_device_id }}" name="initial_device_id">
+            {% endif %}
         </fieldset>
         <div class="form-actions">
             <button type="submit" class="btn btn-primary" value="scan">
@@ -93,4 +96,3 @@
     {{ block.super }}
     <script src="{{ STATIC_URL }}scan.js"></script>
 {% endblock scripts %}
-
