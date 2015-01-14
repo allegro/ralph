@@ -39,7 +39,11 @@
   {% table_header columns url_query %}
   {% for scan_summary in bob_page %}
   <tr>
-    <td><a href="{%url scan_results scan_summary.job_id%}">
+    {% if scan_summary.device %}
+        <td><a href="{%url scan_results scan_summary.job_id%}?initial_device_id={{ scan_summary.device.id }}">
+    {% else %}
+        <td><a href="{%url scan_results scan_summary.job_id%}">
+    {% endif %}
         {{ scan_summary.ipaddress }}
     </a></td> <!-- IP -->
     {% if change_type == 'existing' and scan_summary.device %}
