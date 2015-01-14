@@ -280,40 +280,71 @@
                         top: @u-height;
                         bottom: @u-height;
                         min-width: 100%;
-                        .generate-slots(
-                            1, @default-slots-per-row, @default-slots-per-row, 0, 0
-                        );
-                        .generate-slots(
-                            @default-slots-per-row + 1, @default-slots-per-row * 2, @default-slots-per-row, @default-slot-height, 0
-                        );
-                        .children-wrapper {
-                            position: relative;
-                            [class*="slot-"] {
-                                font-size: .825em;
-                                background: rgba(255,255,255,.3);
-                                border: 1px solid rgba(0,0,0,.2);
-                                position: absolute;
-                                color: #000;
+                        max-width: 100%;
+                        width: 100%;
+                        display: -webkit-box;
+                        display: -moz-box;
+                        display: -ms-flexbox;
+                        display: -webkit-flex;
+                        display: flex;
+                        -webkit-align-items: stretch;
+                           -moz-align-items: stretch;
+                                align-items: stretch;
+                        -webkit-align-content: stretch;
+                            moz-align-content: stretch;
+                                align-content: stretch;
+                        -webkit-flex-flow: row wrap;
+                           -moz-flex-flow: row wrap;
+                                flex-flow: row wrap;
+                        [class*="slot-"] {
+                            box-sizing: border-box;
+                            font-size: .825em;
+                            background: rgba(255,255,255,.3);
+                            border: 1px solid rgba(0,0,0,.2);
+                            color: #000;
+                            display: block;
+                            text-align: center;
+                            &:hover {
+                                background: rgba(255,255,255,.5);
+                            }
+                            .slot_no {
                                 display: block;
-                                text-align: center;
-                                &:hover {
-                                    background: rgba(255,255,255,.5);
-                                }
-                                .slot_no {
-                                    overflow: hidden;
-                                    position: absolute;
-                                    top: 0;
-                                    left: 0;
-                                    width: 100%;
-                                    color: #222;
-                                    background: rgba(0,0,0,.3);
-                                    padding: 2px;
-                                }
-                                .barcode {
-                                    line-height: @default-slot-height;
-                                }
+                                overflow: hidden;
+                                color: #222;
+                                background: rgba(0,0,0,.3);
+                                padding: 2px;
+                            }
+                            .barcode {
+                                line-height: @default-slot-height;
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Layouts
+.rack .devices .device {
+    &.rows-1.cols-2 {
+        @cols: 2;
+        [class*="slot-"] {width: @devices-width-front / @cols;}
+    }
+    &.rows-2.cols-8 {
+        @cols: 8;
+        [class*="slot-"] {width: @devices-width-front / @cols;}
+        &.half-slots {
+            [class$="A"],
+            [class$="B"] {
+                width: @devices-width-front / (@cols * 2);
+                .barcode {
+                    .inner {
+                        display: inline-block;
+                        white-space: nowrap;
+                        -webkit-transform: rotate(90deg);
+                                transform: rotate(90deg);
+                        line-height: 1em;
                     }
                 }
             }
