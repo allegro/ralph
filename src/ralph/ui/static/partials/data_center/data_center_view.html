@@ -18,13 +18,13 @@
         </tr>
     </table>
 </div>
-<div class="data_center">
-    <div class="grid">
+<div class="data-center">
+    <div class="grid rows-{{ data_center.visualization_rows_num }} cols-{{ data_center.visualization_cols_num }}">
         <div class="grid_wrapper" ng-mousemove="updatePosition($event)">
             <rack-top
                 ng-mouseleave="setInfo(null)"
                 ng-mouseover="setInfo(rack)"
-                ng-repeat="rack in racks"
+                ng-repeat="rack in data_center.rack_set"
                 rack="rack"
             ></rack-top>
         </div>

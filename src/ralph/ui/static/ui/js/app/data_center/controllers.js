@@ -9,7 +9,7 @@ angular
     )
     .controller('DataCenterController', ['$scope', '$cookies', 'DataCenterModel', function ($scope, $cookies, DataCenterModel) {
         var gridSize = 40;
-        $scope.racks = DataCenterModel.query({dcId: $cookies.data_center_id});
+        $scope.data_center = DataCenterModel.get({dcId: $cookies.data_center_id});
 
         $scope.setInfo = function(item) {
             $scope.info = item;
