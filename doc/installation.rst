@@ -2,32 +2,34 @@
 Install / Upgrade Ralph
 =======================
 
-Prebuilt docker image (experimental)
-=====================================
+Prebuilt docker image
+=====================
 
-It is the easiest way to try out Ralph using pre-built docker image with the worker, database, and server all together. Keep in mind, that for now we provide only test cutting-edge releases, not the stable ones.
+It is the easiest way to try out Ralph using pre-built docker image
+with the worker, database, and server all together. Keep in mind, that
+for now we provide only test cutting-edge releases, not the stable
+ones.
 
 1. Install docker using instructions at https://docs.docker.com/installation/
-2. Create volume data for mysql data and configuration
+2. Create volume data for mysql data and configuration::
 
-    docker run  -i -t -name mysql_data -v /var/lib/mysql -v /home/ralph/.ralph busybox /bin/sh -c "chown default /home/ralph; chown default /home/ralph/.ralph"
+    docker run -i -t -name mysql_data -v /var/lib/mysql -v /home/ralph/.ralph busybox /bin/sh -c "chown default /home/ralph; chown default /home/ralph/.ralph"
+
+3. Initialize config file and empty mysql database with default login and password::
+
     docker run -u ralph -P -t -i -volumes-from mysql_data vi4m/ralph:latest /home/ralph/bin/ralph makeconf
-    
-3. Initialize empty mysql database with default login: ralph, password: ralph  
+    docker run -P -t -i -volumes-from mysql_data vi4m/ralph:latest /bin/bash /home/ralph/init_mysql.sh
 
-    docker run  -P -t -i -volumes-from mysql_data vi4m/ralph:latest /bin/bash /home/ralph/init_mysql.sh
+4. Collect static files::
 
-4. Collect static files
+    docker run -P -t -i -volumes-from mysql_data vi4m/ralph:latest /home/ralph/bin/ralph collectstatic
 
-    docker run  -P -t -i -volumes-from mysql_data vi4m/ralph:latest /home/ralph/bin/ralph collectstatic
+5. Now, run ralph::
 
-Now, run ralph - that's all!
-
-    docker run  -P -t -i -volumes-from mysql_data vi4m/ralph:latest
-
+    docker run -P -t -i -volumes-from mysql_data vi4m/ralph:latest
 
 6. Check your instance port by typing ``docker ps -l``, for example 53914, and point your browser to: ``http://YOUR_DOCKER_IP:53914``.
-Log in using username: ``ralph``: password: ``ralph``. Enjoy! For more information read docker manuals.
+Log in using username ``ralph`` and password ``ralph``. That's all! For more information read Docker manuals. Enjoy!
 
 
 Upgrading an existing installation
@@ -36,7 +38,7 @@ Upgrading an existing installation
 .. note::
 
     To upgrade docker image, just re-download docker instance and migrate database and static files:
-    
+
     docker run  -P -t -i -volumes-from mysql_data vi4m/ralph:latest /home/ralph/bin/ralph migrate
     docker run  -P -t -i -volumes-from mysql_data vi4m/ralph:latest /home/ralph/bin/ralph collectstatic
 
