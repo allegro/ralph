@@ -337,6 +337,246 @@
   height: 40px;
   border: 1px solid #444;
 }
+.data-center .grid .grid_wrapper .rack.x-1 {
+  left: 40px;
+}
+.data-center .grid .grid_wrapper .rack.x-2 {
+  left: 80px;
+}
+.data-center .grid .grid_wrapper .rack.x-3 {
+  left: 120px;
+}
+.data-center .grid .grid_wrapper .rack.x-4 {
+  left: 160px;
+}
+.data-center .grid .grid_wrapper .rack.x-5 {
+  left: 200px;
+}
+.data-center .grid .grid_wrapper .rack.x-6 {
+  left: 240px;
+}
+.data-center .grid .grid_wrapper .rack.x-7 {
+  left: 280px;
+}
+.data-center .grid .grid_wrapper .rack.x-8 {
+  left: 320px;
+}
+.data-center .grid .grid_wrapper .rack.x-9 {
+  left: 360px;
+}
+.data-center .grid .grid_wrapper .rack.x-10 {
+  left: 400px;
+}
+.data-center .grid .grid_wrapper .rack.x-11 {
+  left: 440px;
+}
+.data-center .grid .grid_wrapper .rack.x-12 {
+  left: 480px;
+}
+.data-center .grid .grid_wrapper .rack.x-13 {
+  left: 520px;
+}
+.data-center .grid .grid_wrapper .rack.x-14 {
+  left: 560px;
+}
+.data-center .grid .grid_wrapper .rack.x-15 {
+  left: 600px;
+}
+.data-center .grid .grid_wrapper .rack.x-16 {
+  left: 640px;
+}
+.data-center .grid .grid_wrapper .rack.x-17 {
+  left: 680px;
+}
+.data-center .grid .grid_wrapper .rack.x-18 {
+  left: 720px;
+}
+.data-center .grid .grid_wrapper .rack.x-19 {
+  left: 760px;
+}
+.data-center .grid .grid_wrapper .rack.x-20 {
+  left: 800px;
+}
+.data-center .grid .grid_wrapper .rack.x-21 {
+  left: 840px;
+}
+.data-center .grid .grid_wrapper .rack.x-22 {
+  left: 880px;
+}
+.data-center .grid .grid_wrapper .rack.x-23 {
+  left: 920px;
+}
+.data-center .grid .grid_wrapper .rack.x-24 {
+  left: 960px;
+}
+.data-center .grid .grid_wrapper .rack.x-25 {
+  left: 1000px;
+}
+.data-center .grid .grid_wrapper .rack.x-26 {
+  left: 1040px;
+}
+.data-center .grid .grid_wrapper .rack.x-27 {
+  left: 1080px;
+}
+.data-center .grid .grid_wrapper .rack.x-28 {
+  left: 1120px;
+}
+.data-center .grid .grid_wrapper .rack.x-29 {
+  left: 1160px;
+}
+.data-center .grid .grid_wrapper .rack.x-30 {
+  left: 1200px;
+}
+.data-center .grid .grid_wrapper .rack.x-31 {
+  left: 1240px;
+}
+.data-center .grid .grid_wrapper .rack.x-32 {
+  left: 1280px;
+}
+.data-center .grid .grid_wrapper .rack.x-33 {
+  left: 1320px;
+}
+.data-center .grid .grid_wrapper .rack.x-34 {
+  left: 1360px;
+}
+.data-center .grid .grid_wrapper .rack.x-35 {
+  left: 1400px;
+}
+.data-center .grid .grid_wrapper .rack.x-36 {
+  left: 1440px;
+}
+.data-center .grid .grid_wrapper .rack.x-37 {
+  left: 1480px;
+}
+.data-center .grid .grid_wrapper .rack.x-38 {
+  left: 1520px;
+}
+.data-center .grid .grid_wrapper .rack.x-39 {
+  left: 1560px;
+}
+.data-center .grid .grid_wrapper .rack.x-40 {
+  left: 1600px;
+}
+.data-center .grid .grid_wrapper .rack.y-1 {
+  top: 40px;
+}
+.data-center .grid .grid_wrapper .rack.y-2 {
+  top: 80px;
+}
+.data-center .grid .grid_wrapper .rack.y-3 {
+  top: 120px;
+}
+.data-center .grid .grid_wrapper .rack.y-4 {
+  top: 160px;
+}
+.data-center .grid .grid_wrapper .rack.y-5 {
+  top: 200px;
+}
+.data-center .grid .grid_wrapper .rack.y-6 {
+  top: 240px;
+}
+.data-center .grid .grid_wrapper .rack.y-7 {
+  top: 280px;
+}
+.data-center .grid .grid_wrapper .rack.y-8 {
+  top: 320px;
+}
+.data-center .grid .grid_wrapper .rack.y-9 {
+  top: 360px;
+}
+.data-center .grid .grid_wrapper .rack.y-10 {
+  top: 400px;
+}
+.data-center .grid .grid_wrapper .rack.y-11 {
+  top: 440px;
+}
+.data-center .grid .grid_wrapper .rack.y-12 {
+  top: 480px;
+}
+.data-center .grid .grid_wrapper .rack.y-13 {
+  top: 520px;
+}
+.data-center .grid .grid_wrapper .rack.y-14 {
+  top: 560px;
+}
+.data-center .grid .grid_wrapper .rack.y-15 {
+  top: 600px;
+}
+.data-center .grid .grid_wrapper .rack.y-16 {
+  top: 640px;
+}
+.data-center .grid .grid_wrapper .rack.y-17 {
+  top: 680px;
+}
+.data-center .grid .grid_wrapper .rack.y-18 {
+  top: 720px;
+}
+.data-center .grid .grid_wrapper .rack.y-19 {
+  top: 760px;
+}
+.data-center .grid .grid_wrapper .rack.y-20 {
+  top: 800px;
+}
+.data-center .grid .grid_wrapper .rack.y-21 {
+  top: 840px;
+}
+.data-center .grid .grid_wrapper .rack.y-22 {
+  top: 880px;
+}
+.data-center .grid .grid_wrapper .rack.y-23 {
+  top: 920px;
+}
+.data-center .grid .grid_wrapper .rack.y-24 {
+  top: 960px;
+}
+.data-center .grid .grid_wrapper .rack.y-25 {
+  top: 1000px;
+}
+.data-center .grid .grid_wrapper .rack.y-26 {
+  top: 1040px;
+}
+.data-center .grid .grid_wrapper .rack.y-27 {
+  top: 1080px;
+}
+.data-center .grid .grid_wrapper .rack.y-28 {
+  top: 1120px;
+}
+.data-center .grid .grid_wrapper .rack.y-29 {
+  top: 1160px;
+}
+.data-center .grid .grid_wrapper .rack.y-30 {
+  top: 1200px;
+}
+.data-center .grid .grid_wrapper .rack.y-31 {
+  top: 1240px;
+}
+.data-center .grid .grid_wrapper .rack.y-32 {
+  top: 1280px;
+}
+.data-center .grid .grid_wrapper .rack.y-33 {
+  top: 1320px;
+}
+.data-center .grid .grid_wrapper .rack.y-34 {
+  top: 1360px;
+}
+.data-center .grid .grid_wrapper .rack.y-35 {
+  top: 1400px;
+}
+.data-center .grid .grid_wrapper .rack.y-36 {
+  top: 1440px;
+}
+.data-center .grid .grid_wrapper .rack.y-37 {
+  top: 1480px;
+}
+.data-center .grid .grid_wrapper .rack.y-38 {
+  top: 1520px;
+}
+.data-center .grid .grid_wrapper .rack.y-39 {
+  top: 1560px;
+}
+.data-center .grid .grid_wrapper .rack.y-40 {
+  top: 1600px;
+}
 .data-center .grid .grid_wrapper .rack.rotate-left {
   transform: rotate(-90deg);
 }
@@ -377,6 +617,12 @@
 }
 .data-center .grid .grid_wrapper .rack .wrapper:hover {
   text-decoration: none;
+}
+.data-center .grid .grid_wrapper .rack .wrapper .barcode,
+.data-center .grid .grid_wrapper .rack .wrapper .sn {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 .data-center .grid .grid_wrapper .rack .wrapper .name {
   height: 1.4em;

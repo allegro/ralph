@@ -25,4 +25,10 @@ angular
                 .replace(/[^\w ]+/g,'')
                 .replace(/ +/g,'-');
         };
+    })
+    .filter('remove_alfa', function(){
+        return function(input) {
+            return input
+                .replace(/[^\d.-]/g, '');
+        };
     });

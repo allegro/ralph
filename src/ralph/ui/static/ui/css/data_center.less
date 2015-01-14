@@ -34,8 +34,8 @@
     .grid {
         float: left;
         background: #555;
-        .generate-rows(40);
-        .generate-cols(40);
+        .generate-rows(@grid-count);
+        .generate-cols(@grid-count);
         .grid_wrapper {
             position: relative;
             min-height: @grid-size * 20;
@@ -58,6 +58,8 @@
             background-size: @grid-size @grid-size;
             .rack {
                 @label-height: 1.4em;
+                .generate-x-position(@grid-count);
+                .generate-y-position(@grid-count);
                 &.rotate-left {transform: rotate(-90deg);}
                 &.rotate-right {
                     transform: rotate(90deg);
@@ -104,6 +106,11 @@
                     display: block;
                     &:hover {
                         text-decoration: none;
+                    }
+                    .barcode, .sn {
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        overflow: hidden;
                     }
                     .name {
                         height: @label-height;

@@ -768,72 +768,60 @@
   top: 25px;
   bottom: 25px;
   min-width: 100%;
+  max-width: 100%;
+  width: 100%;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: stretch;
+  -moz-align-items: stretch;
+  align-items: stretch;
+  -webkit-align-content: stretch;
+  moz-align-content: stretch;
+  align-content: stretch;
+  -webkit-flex-flow: row wrap;
+  -moz-flex-flow: row wrap;
+  flex-flow: row wrap;
 }
-.racks .rack .wrapper .devices .device .children .slot-1 {
-  top: 0;
-  left: 0px;
-}
-.racks .rack .wrapper .devices .device .children .slot-2 {
-  top: 0;
-  left: 80px;
-}
-.racks .rack .wrapper .devices .device .children .slot-3 {
-  top: 0;
-  left: 160px;
-}
-.racks .rack .wrapper .devices .device .children .slot-4 {
-  top: 0;
-  left: 240px;
-}
-.racks .rack .wrapper .devices .device .children .slot-5 {
-  top: 0;
-  left: 320px;
-}
-.racks .rack .wrapper .devices .device .children .slot-6 {
-  top: 50px;
-  left: 0px;
-}
-.racks .rack .wrapper .devices .device .children .slot-7 {
-  top: 50px;
-  left: 80px;
-}
-.racks .rack .wrapper .devices .device .children .slot-8 {
-  top: 50px;
-  left: 160px;
-}
-.racks .rack .wrapper .devices .device .children .slot-9 {
-  top: 50px;
-  left: 240px;
-}
-.racks .rack .wrapper .devices .device .children .slot-10 {
-  top: 50px;
-  left: 320px;
-}
-.racks .rack .wrapper .devices .device .children .children-wrapper {
-  position: relative;
-}
-.racks .rack .wrapper .devices .device .children .children-wrapper [class*="slot-"] {
+.racks .rack .wrapper .devices .device .children [class*="slot-"] {
+  box-sizing: border-box;
   font-size: .825em;
   background: rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(0, 0, 0, 0.2);
-  position: absolute;
   color: #000;
   display: block;
   text-align: center;
 }
-.racks .rack .wrapper .devices .device .children .children-wrapper [class*="slot-"]:hover {
+.racks .rack .wrapper .devices .device .children [class*="slot-"]:hover {
   background: rgba(255, 255, 255, 0.5);
 }
-.racks .rack .wrapper .devices .device .children .children-wrapper [class*="slot-"] .slot_no {
+.racks .rack .wrapper .devices .device .children [class*="slot-"] .slot_no {
+  display: block;
   overflow: hidden;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
   color: #222;
   background: rgba(0, 0, 0, 0.3);
   padding: 2px;
 }
-.racks .rack .wrapper .devices .device .children .children-wrapper [class*="slot-"] .barcode {
+.racks .rack .wrapper .devices .device .children [class*="slot-"] .barcode {
   line-height: 50px;
+}
+.rack .devices .device.rows-1.cols-2 [class*="slot-"] {
+  width: 200px;
+}
+.rack .devices .device.rows-2.cols-8 [class*="slot-"] {
+  width: 50px;
+}
+.rack .devices .device.rows-2.cols-8.half-slots [class$="A"],
+.rack .devices .device.rows-2.cols-8.half-slots [class$="B"] {
+  width: 25px;
+}
+.rack .devices .device.rows-2.cols-8.half-slots [class$="A"] .barcode .inner,
+.rack .devices .device.rows-2.cols-8.half-slots [class$="B"] .barcode .inner {
+  display: inline-block;
+  white-space: nowrap;
+  -webkit-transform: rotate(90deg);
+  transform: rotate(90deg);
+  line-height: 1em;
 }
