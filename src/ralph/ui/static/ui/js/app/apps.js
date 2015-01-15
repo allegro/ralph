@@ -8,7 +8,10 @@ angular
             'rack.controllers',
         ]
     )
-    .config(['$routeProvider', function($routeProvider) {
+    .config(['$routeProvider', '$httpProvider', function($routeProvider, $httpProvider) {
+        $httpProvider.defaults.xsrfCookieName = 'csrftoken';
+        $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
+        $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
         $routeProvider
             .when('/', {
                 templateUrl: '/static/partials/data_center/data_center_view.html',

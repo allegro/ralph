@@ -6,5 +6,14 @@ angular
         ]
     )
     .factory('RackModel', ['$resource', function($resource){
-        return $resource('/assets/api/rack/:rackId/', {rackId: '@id'});
+        return $resource('/assets/api/rack/:rackId/',
+            {
+                rackId: '@id'
+            },
+            {
+                update: {
+                    method: 'PUT',
+                }
+            }
+        );
     }]);

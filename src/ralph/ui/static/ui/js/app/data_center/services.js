@@ -6,5 +6,5 @@ angular
         ]
     )
     .factory('DataCenterModel', ['$resource', function($resource){
-        return $resource('/assets/api/data_center/:dcId/');
+        return $resource('/assets/api/data_center/:dcId/', {dcId: '@id'});
     }]);
