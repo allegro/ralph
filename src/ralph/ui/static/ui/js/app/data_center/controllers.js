@@ -4,10 +4,11 @@ angular
     .module('data_center.controllers', [
             'ngCookies',
             'data_center.services',
-            'data_center.directives'
+            'data_center.directives',
+            'rack.services'
         ]
     )
-    .controller('DataCenterController', ['$scope', '$cookies', 'DataCenterModel', function ($scope, $cookies, DataCenterModel) {
+    .controller('DataCenterController', ['$scope', '$cookies', 'DataCenterModel', 'RackModel', function ($scope, $cookies, DataCenterModel, RackModel) {
         var gridSize = 40;
         $scope.data_center = DataCenterModel.get({dcId: $cookies.data_center_id});
 
@@ -21,4 +22,12 @@ angular
             $scope.actualX = (offsetX - (offsetX % gridSize)) / gridSize;
             $scope.actualY = (offsetY - (offsetY % gridSize)) / gridSize;
         };
+
+        $scope.updateRack = function(rack) {
+            new RackModel(rack).$update();
+        };
+
+        $scope.$on('edit_rack', function (event, rack) {
+            $scope.rack = rack;
+        });
     }]);

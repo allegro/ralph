@@ -36,6 +36,50 @@
         background: #555;
         .generate-rows(@grid-count);
         .generate-cols(@grid-count);
+        &.edit {
+            .grid_wrapper {
+                background-color: rgba(255, 255, 255, 0.1);
+                .progress, .free, .display, .used {
+                    display: none;
+                }
+                .rack {
+                    &.move {
+                        border-style: dashed;
+                        &.not_allowed{background-color: red;}
+                        &.allowed{background-color: #2a3;}
+                        .wrapper .tools {display: none !important;} // always hide if rack in the move
+                    }
+                    .wrapper {
+                        cursor: initial;
+                        &:hover {
+                            .tools {display: block;}
+                        }
+                        &:hover {
+                            .tools {display: block;}
+                        }
+                        .tools {display: none;}
+                        .icon-repeat {
+                            font-size: 1.25em;
+                            cursor: pointer;
+                            font-weight: bold;
+                            bottom: 5px;
+                            padding: 2px;
+                            &:hover {
+                                color: #fff;
+                            }
+                            &.left {left:5%}
+                            &.right {right:5%}
+                        }
+                        .edit {
+                            padding: 2px 0 0 2px;
+                        }
+                        .name {
+                            cursor: move;
+                        }
+                    }
+                }
+            }
+        }
         .grid_wrapper {
             position: relative;
             min-height: @grid-size * 20;
@@ -87,7 +131,12 @@
                     .wrapper .progress {
                         bottom: @label-height;
                     }
+                    .tools {
+                        transform: rotate(180deg);
+                    }
                 }
+                .generate-x-position(@grid-count);
+                .generate-y-position(@grid-count);
                 @rack-background: #888;
                 box-sizing: border-box;
                 position: absolute;
