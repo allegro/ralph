@@ -7,8 +7,8 @@ Frequently Asked Questions
 Integration
 -----------
 
-Can I set up LDAP authentication?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+How can I set up LDAP authentication?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You will need to install ``django-auth-ldap`` and ``python-ldap`` using
 ``pip``. Then add LDAP as an authentication backend in your local settings::
