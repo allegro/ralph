@@ -29,11 +29,21 @@
         <div class="alert alert-info" ng-hide="rack">
             Please click <i class="icon-pencil"></i> to edit basic info about rack, click <i class="icon-repeat"></i> to rotate or just use drag and drop to edit position.
         </div>
-        <div class="form" ng-show="rack">
-            <form ng-submit="updateRack(rack)">
-                <input type="text" ng-model="rack.name">
-                <textarea ng-model="rack.description"></textarea>
-                <input type="submit" value="Save">
+        <div ng-show="rack">
+            <form class="form" ng-submit="updateRack(rack)">
+                <div class="control-group">
+                    <label for="id_name">Name</label>
+                    <div class="controls">
+                        <input type="text" id="id_name" ng-model="rack.name">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="id_name">Description</label>
+                    <div class="controls">
+                        <textarea ng-model="rack.description"></textarea>
+                    </div>
+                </div>
+                    <button type="submit" class="btn btn-primary">Save</button>
             </form>
         </div>
     </div>
