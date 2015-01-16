@@ -1,0 +1,20 @@
+---
+layout: default
+---
+
+<div class="container">
+    <div class="page-header">
+        <h1>What's new?</h1>
+    </div>
+    <div class="row">
+        <div class="span8">
+            <ul>
+              {% for post in site.posts %}
+                <li>
+                  <a href="{{ post.url }}">{{ post.title }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div> <!-- /container -->
