@@ -305,6 +305,42 @@ class ApiScroogeTest(TestCase):
         vips_dict = map(self._vip2api, self.vips[0:1])
         self.assertEqual(result, vips_dict)
 
+    def _init_db(self):
+        self.databases = discovery_util.DatabaseFactory.create_batch(2)
+
+    def _db2api(self, db):
+        return {
+            'database_id': db.id,
+            'type_id': db.database_type_id,
+            'name': db.name,
+            'type': db.database_type.name,
+            'parent_device_id': db.parent_device_id,
+            'service_id': db.service_id,
+            'environment_id': db.device_environment_id,
+        }
+
+    def test_get_databases(self):
+        self._init_db()
+        result = [v for v in api_scrooge.get_databases()]
+        databases_dict = map(self._db2api, self.databases)
+        self.assertEqual(result, databases_dict)
+
+    def test_get_databases_parent_service(self):
+        self._init_db()
+        result = [v for v in api_scrooge.get_databases(
+            parent_service_uid=self.databases[0].parent_device.service.uid
+        )]
+        databases_dict = map(self._db2api, self.databases[:1])
+        self.assertEqual(result, databases_dict)
+
+    def test_get_databases_type(self):
+        self._init_db()
+        result = [v for v in api_scrooge.get_databases(
+            database_type=self.databases[0].database_type.name
+        )]
+        databases_dict = map(self._db2api, self.databases[:1])
+        self.assertEqual(result, databases_dict)
+
     def test_get_business_lines(self):
         business_lines = utils.BusinessLineFactory.create_batch(7)
         result = [a for a in api_scrooge.get_business_lines()]
