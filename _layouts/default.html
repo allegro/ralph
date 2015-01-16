@@ -5,41 +5,30 @@
 
     <title>Home &mdash; Ralph</title>
 
-    <link rel="stylesheet" href="css/bs.css" type="text/css" />
-    <link rel="stylesheet" href="css/pygments.css" type="text/css" />
-
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '&lt;paragraph&gt;Released on July 16, 2012.&lt;/paragraph&gt;',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="js/jquery.js"></script>
-    <script type="text/javascript" src="js/underscore.js"></script>
-    <script type="text/javascript" src="js/doctools.js"></script>
+    <link rel="stylesheet" href="{{ site.baseurl }}/css/bs.css" type="text/css" />
+    <link rel="stylesheet" href="{{ site.baseurl }}/css/pygments.css" type="text/css" />
+    <script type="text/javascript" src="{{ site.baseurl }}/js/jquery.js"></script>
+    <script type="text/javascript" src="{{ site.baseurl }}/js/underscore.js"></script>
+    <script type="text/javascript" src="{{ site.baseurl }}/js/doctools.js"></script>
     <link rel="top" title="Ralph" href="#" />
   </head>
   <body>
 
 <div class="navbar navbar-fixed-top"><div class="navbar-inner"><div class="container">
-    <a class="brand" href="/">
-        <img class="logo" src="img/ralph-logo.png" alt="Logo">Ralph</a>
+    <a class="brand" href="{{ site.baseurl }}">
+        <img class="logo" src="{{ site.baseurl }}/img/ralph-logo.png" alt="Logo">Ralph</a>
     <ul class="nav">
-        <!-- <li><a href="news.html">News</a></li> -->
-        <li><a href="installation.html">How to install?</a></li>
-        <li><a href="documentation.html">Documentation</a></li>
-        <li><a href="help.html">Getting help</a></li>
+        <li><a href="{{ site.baseurl }}/news.html">News</a></li>
+        <li><a href="{{ site.baseurl }}/installation.html">How to install?</a></li>
+        <li><a href="{{ site.baseurl }}/documentation.html">Documentation</a></li>
+        <li><a href="{{ site.baseurl }}/help.html">Getting help</a></li>
     </ul>
 </div></div></div>
 
-        {{ content }}
+{{ content }}
 
-<script src="bootstrap/js/bootstrap.min.js"></script>
-<script src="js/restyle.js"></script>
-
+<script src="{{ site.baseurl }}/bootstrap/js/bootstrap.min.js"></script>
+<script src="{{ site.baseurl }}/js/restyle.js"></script>
   <div id="disqus_thread" style='margin-left: 100px; margin-right: 100px;'></div>
     <script type="text/javascript">
         /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
