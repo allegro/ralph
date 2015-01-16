@@ -15,6 +15,8 @@ from factory import sequence, Sequence, lazy_attribute, Factory, SubFactory
 from factory.django import DjangoModelFactory
 
 from ralph.discovery.models_device import (
+    Database,
+    DatabaseType,
     Device,
     DeviceModel,
     DeviceType,
@@ -136,6 +138,22 @@ class LoadBalancerVirtualServerFactory(DjangoModelFactory):
     device = SubFactory(DeviceFactory)
     address = SubFactory(IPAddressFactory)
     port = 80
+
+
+class DatabaseTypeFactory(DjangoModelFactory):
+    FACTORY_FOR = DatabaseType
+
+    name = Sequence(lambda n: 'DB Type{}'.format(n))
+
+
+class DatabaseFactory(DjangoModelFactory):
+    FACTORY_FOR = Database
+
+    service = SubFactory(cmdb_utils.ServiceCatalogFactory)
+    device_environment = SubFactory(cmdb_utils.DeviceEnvironmentFactory)
+    database_type = SubFactory(DatabaseTypeFactory)
+    parent_device = SubFactory(DeviceFactory)
+    name = Sequence(lambda n: 'DB{}'.format(n))
 
 
 class MockSSH(object):

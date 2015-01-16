@@ -9,6 +9,7 @@ from django.db import models as db
 
 from ralph.cmdb.models import CI, CIAttributeValue, CIOwner, CIType
 from ralph.discovery.models import (
+    Database,
     Device,
     DeviceEnvironment,
     DeviceType,
@@ -186,6 +187,36 @@ class get_vips(Getter):
         if self.load_balancer_type:
             result = result.filter(
                 load_balancer_type__name=self.load_balancer_type
+            )
+        return result
+
+
+class get_databases(Getter):
+    Model = Database
+
+    fields = [
+        ('database_id', 'id'),
+        'name',
+        ('type_id', 'database_type_id'),
+        ('type', 'database_type__name'),
+        'service_id',
+        ('environment_id', 'device_environment_id'),
+        'parent_device_id',
+    ]
+
+    def __init__(self, parent_service_uid=None, database_type=None):
+        self.parent_service_uid = parent_service_uid
+        self.database_type = database_type
+
+    def get_queryset(self):
+        result = super(get_databases, self).get_queryset()
+        if self.parent_service_uid:
+            result = result.filter(
+                parent_device__service__uid=self.parent_service_uid
+            )
+        if self.database_type:
+            result = result.filter(
+                database_type__name=self.database_type
             )
         return result
 
