@@ -19,7 +19,7 @@ from ralph.business.api import (
     BusinessSegmentResource,
     ProfitCenterResource,
 )
-from ralph.deployment.api import DeploymentResource
+from ralph.deployment.api import DeploymentResource, IPAddressChangeResource
 from ralph.discovery.api import (
     BladeServerResource,
     DeviceEnvironmentResource,
@@ -111,7 +111,7 @@ for r in (BusinessLineResource, ServiceResource, CIResourceV010,
     v010_api.register(clone_class(r)())
 
 # deployment API
-for r in (DeploymentResource,):
+for r in (DeploymentResource, IPAddressChangeResource,):
     v09_api.register(r())
 
 # powerdns API
