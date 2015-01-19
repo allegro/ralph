@@ -6,13 +6,21 @@ from __future__ import unicode_literals
 
 import json
 
+from django.core.cache import cache
+from django.core.urlresolvers import reverse
+from django.test import TestCase
+from powerdns.models import Record
+from tastypie.test import ResourceTestCase
+
 from ralph.account.models import BoundPerm, Profile, Perm
 from ralph.discovery.models_device import Device
-from ralph.business.models import DataCenter
-from django.core.cache import cache
-from django.test import TestCase
+from ralph.discovery.models_network import IPAddress
+from ralph.discovery.tests.util import DeviceFactory, IPAddressFactory
+from ralph.dnsedit.models import DHCPEntry
+from ralph.dnsedit.tests.util import (
+    DNSDomainFactory, DNSRecordFactory, DHCPEntryFactory,
+)
 from ralph.ui.tests.global_utils import create_user, UserTestCase
-
 
 
 class AccessToDeploymentApiTest(TestCase):
@@ -68,7 +76,7 @@ class TestVMCreation(UserTestCase):
 
     fixtures=['vm_creation_setup']
 
-    def test_correct(self): 
+    def test_correct(self):
         """Correctly setup the new VM"""
         rack = Device.objects.get(pk=1)
         response = self.post(
@@ -87,7 +95,7 @@ class TestVMCreation(UserTestCase):
         self.assertEqual(new_vm_data['dc'], rack.dc)
 
 
-    def test_correct_null_role(self): 
+    def test_correct_null_role(self):
         """Correctly setup the new VM, no role provided"""
         response = self.post(
             '/api/add_vm', json.dumps({
@@ -128,7 +136,7 @@ class TestVMCreation(UserTestCase):
         )
         self.assertEqual(response.status_code, 404)
 
-    def test_nonexistent_network(self): 
+    def test_nonexistent_network(self):
         """Providing a network that doesn't exist"""
         response = self.post(
             '/api/add_vm', json.dumps({
@@ -142,7 +150,7 @@ class TestVMCreation(UserTestCase):
         )
         self.assertEqual(response.status_code, 404)
 
-    def test_nonexistent_venture(self): 
+    def test_nonexistent_venture(self):
         """Providing a venture that doesn't exist"""
         response = self.post(
             '/api/add_vm', json.dumps({
@@ -156,7 +164,7 @@ class TestVMCreation(UserTestCase):
         )
         self.assertEqual(response.status_code, 404)
 
-    def test_nonexistent_role(self): 
+    def test_nonexistent_role(self):
         """Providing a venturerole that doesn't exist"""
         response = self.post(
             '/api/add_vm', json.dumps({
@@ -198,7 +206,7 @@ class TestVMCreation(UserTestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_rackless_parent(self): 
+    def test_rackless_parent(self):
         """Trying to use a parent without a rack"""
         response = self.post(
             '/api/add_vm', json.dumps({
@@ -213,7 +221,7 @@ class TestVMCreation(UserTestCase):
         self.assertEqual(response.status_code, 404)
 
 
-    def test_wrong_environment(self): 
+    def test_wrong_environment(self):
         """Trying to use an environment without template configuration"""
         response = self.post(
             '/api/add_vm', json.dumps({
@@ -226,3 +234,126 @@ class TestVMCreation(UserTestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 404)
+
+
+class TestChangeIPAddress(ResourceTestCase):
+
+    def setUp(self):
+        super(TestChangeIPAddress, self).setUp()
+        self.user = create_user()
+        self.sample_dev = DeviceFactory()
+        self.sample_ip_1 = IPAddressFactory(
+            address="10.0.1.1", device=self.sample_dev,
+            hostname="d001.dc",
+        )
+        self.sample_dhcp_entry_1 = DHCPEntryFactory(
+            ip="10.0.1.1",
+            mac="aa:cc:bb:11:22:33",
+        )
+        self.sample_dns_domain = DNSDomainFactory(name='dc')
+        self.sample_dns_record = DNSRecordFactory(
+            name='d001.dc',
+            type='A',
+            content='10.0.1.1',
+            domain=self.sample_dns_domain,
+        )
+
+    def get_credentials(self):
+        return self.create_apikey(self.user.username, self.user.api_key.key)
+
+    def test_success(self):
+        response = self.api_client.post(
+            reverse(
+                'api_dispatch_list',
+                kwargs={
+                    'resource_name': 'change-ip-address',
+                    'api_name': 'v0.9',
+                },
+            ),
+            format='json',
+            data={
+                'current_ip_address': '10.0.1.1',
+                'new_ip_address': '10.0.1.2',
+            },
+            authentication=self.get_credentials(),
+        )
+        self.assertHttpCreated(response)
+        ip_address = IPAddress.objects.get(address='10.0.1.2')
+        self.assertEqual(ip_address.device.id, self.sample_dev.id)
+        self.assertEqual(ip_address.hostname, 'd001.dc')
+        dhcp_entry = DHCPEntry.objects.get(ip='10.0.1.2')
+        self.assertEqual(dhcp_entry.mac, 'AACCBB112233')
+        dns_a_record = Record.objects.get(name='d001.dc', type='A')
+        self.assertEqual(dns_a_record.content, '10.0.1.2')
+        dns_ptr_record = Record.objects.get(
+            name='2.1.0.10.in-addr.arpa', type='PTR',
+        )
+        self.assertEqual(dns_ptr_record.content, 'd001.dc')
+
+    def test_unauthorized(self):
+        response = self.api_client.post(
+            reverse(
+                'api_dispatch_list',
+                kwargs={
+                    'resource_name': 'change-ip-address',
+                    'api_name': 'v0.9',
+                },
+            ),
+            format='json',
+            data={},
+        )
+        self.assertHttpUnauthorized(response)
+
+    def test_improper_input_items(self):
+        response = self.api_client.post(
+            reverse(
+                'api_dispatch_list',
+                kwargs={
+                    'resource_name': 'change-ip-address',
+                    'api_name': 'v0.9',
+                },
+            ),
+            format='json',
+            data={
+                'bad_key_1': '10.0.1.1',
+                'bad_key_2': '10.0.1.2',
+            },
+            authentication=self.get_credentials(),
+        )
+        self.assertHttpBadRequest(response)
+
+    def test_the_same_ip_addresses(self):
+        response = self.api_client.post(
+            reverse(
+                'api_dispatch_list',
+                kwargs={
+                    'resource_name': 'change-ip-address',
+                    'api_name': 'v0.9',
+                },
+            ),
+            format='json',
+            data={
+                'current_ip_address': '10.0.1.1',
+                'new_ip_address': '10.0.1.1',
+            },
+            authentication=self.get_credentials(),
+        )
+        self.assertHttpBadRequest(response)
+
+    def test_not_existing_ip_address(self):
+        response = self.api_client.post(
+            reverse(
+                'api_dispatch_list',
+                kwargs={
+                    'resource_name': 'change-ip-address',
+                    'api_name': 'v0.9',
+                },
+            ),
+            format='json',
+            data={
+                'current_ip_address': '10.0.1.3',
+                'new_ip_address': '10.0.1.2',
+            },
+            authentication=self.get_credentials(),
+        )
+        self.assertHttpBadRequest(response)

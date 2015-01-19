@@ -25,6 +25,7 @@ from ralph.discovery.models import (
     Network,
 )
 from ralph.dnsedit.models import DHCPEntry
+from ralph.dnsedit.util import clean_dns_entries, reset_dns
 from ralph.util import Eth
 from django import forms
 
@@ -289,3 +290,96 @@ def clean_hostname(hostname):
     except ValueError:
         return hostname
     raise forms.ValidationError("IP address can't be hostname")
+
+
+class ChangeIPAddressError(Exception):
+    pass
+
+
+def _change_ip_address_validation(current_ip_address, new_ip_address):
+    try:
+        ipaddr.IPAddress(current_ip_address)
+    except ValueError:
+        raise ChangeIPAddressError(
+            "Value `{}` it is not valid IP address.".format(current_ip_address)
+        )
+    try:
+        ipaddr.IPAddress(new_ip_address)
+    except ValueError:
+        raise ChangeIPAddressError(
+            "Value `{}` it is not valid IP address.".format(new_ip_address)
+        )
+    if current_ip_address == new_ip_address:
+        raise ChangeIPAddressError(
+            "New IP address is the same as current IP address."
+        )
+
+
+def _get_changed_ip_address_object(ip_address):
+    try:
+        return IPAddress.objects.get(address=ip_address)
+    except IPAddress.DoesNotExist:
+        raise ChangeIPAddressError(
+            "IP address {} does not exist.".format(ip_address)
+        )
+
+
+def _get_or_create_ip_address(ip_address):
+    ip, created = IPAddress.concurrent_get_or_create(address=ip_address)
+    return ip
+
+
+def _get_connected_device(ip_address):
+    if not ip_address.device:
+        raise ChangeIPAddressError(
+            "IP address {} is not assigned to any device.".format(
+                ip_address.address,
+            )
+        )
+    return ip_address.device
+
+
+def _change_device_ip_address(device, current_ip_obj, new_ip_obj):
+    new_ip_obj.hostname = current_ip_obj.hostname
+    new_ip_obj.device = device
+    new_ip_obj.save()
+    current_ip_obj.hostname = None
+    current_ip_obj.device = None
+    current_ip_obj.save()
+
+
+def _change_ip_address_dhcp_entry(current_ip_obj, new_ip_obj):
+    try:
+        dns_entry = DHCPEntry.objects.get(ip=current_ip_obj.address)
+    except DHCPEntry.DoesNotExist:
+        raise ChangeIPAddressError(
+            "DHCP entry for old IP address {} does not exist.".format(
+                current_ip_obj.address,
+            ),
+        )
+    try:
+        to_remove = DHCPEntry.objects.get(ip=new_ip_obj.address)
+    except DHCPEntry.DoesNotExist:
+        pass
+    else:
+        to_remove.delete()
+    dns_entry.ip = new_ip_obj.address
+    dns_entry.save()
+
+
+def change_ip_address(current_ip_address, new_ip_address):
+    _change_ip_address_validation(current_ip_address, new_ip_address)
+
+    # change device ip address
+    ip_current = _get_changed_ip_address_object(current_ip_address)
+    ip_new = _get_or_create_ip_address(new_ip_address)
+    hostname = ip_current.hostname
+    device = _get_connected_device(ip_current)
+    _change_device_ip_address(device, ip_current, ip_new)
+
+    # change dhcp entries
+    _change_ip_address_dhcp_entry(ip_current, ip_new)
+
+    # change dns
+    clean_dns_entries(ip_current.address)
+    reset_dns(hostname, ip_new.address)
