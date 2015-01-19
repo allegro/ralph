@@ -2,7 +2,11 @@
   box-sizing: border-box;
 }
 .rack-info {
-  float: left;
+  margin-top: 10px;
+  background: #fff;
+  padding: 10px;
+  border: 1px solid #ccc;
+  position: fixed;
   width: 250px;
   margin-right: 10px;
 }
@@ -236,6 +240,7 @@
 }
 .racks {
   float: left;
+  margin-left: 260px;
 }
 .racks .rack {
   border-radius: 5px;
