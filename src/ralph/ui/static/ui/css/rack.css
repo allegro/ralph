@@ -6,6 +6,9 @@
   width: 250px;
   margin-right: 10px;
 }
+.rack-info input[type="text"] {
+  height: inherit;
+}
 .rack-info h3 {
   padding: 5px;
   margin: 0;
@@ -820,12 +823,4 @@
 .rack .devices .device.rows-2.cols-8.half-slots [class$="A"],
 .rack .devices .device.rows-2.cols-8.half-slots [class$="B"] {
   width: 25px;
-}
-.rack .devices .device.rows-2.cols-8.half-slots [class$="A"] .barcode .inner,
-.rack .devices .device.rows-2.cols-8.half-slots [class$="B"] .barcode .inner {
-  display: inline-block;
-  white-space: nowrap;
-  -webkit-transform: rotate(90deg);
-  transform: rotate(90deg);
-  line-height: 1em;
 }

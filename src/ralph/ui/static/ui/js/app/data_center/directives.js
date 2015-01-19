@@ -60,6 +60,7 @@ angular
                         index = 0;
                     }
                     scope.rack.orientation = orientations[index];
+                    new RackModel(scope.rack).$update();
                 };
 
                 scope.edit = function(rack) {

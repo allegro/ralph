@@ -30,6 +30,9 @@
     float: left;
     width:250px;
     margin-right: 10px;
+    input[type="text"] {
+        height: inherit;
+    }
     h3 {
         padding: 5px;
         margin: 0;
@@ -342,15 +345,6 @@
             [class$="A"],
             [class$="B"] {
                 width: @devices-width-front / (@cols * 2);
-                .barcode {
-                    .inner {
-                        display: inline-block;
-                        white-space: nowrap;
-                        -webkit-transform: rotate(90deg);
-                                transform: rotate(90deg);
-                        line-height: 1em;
-                    }
-                }
             }
         }
     }
