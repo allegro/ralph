@@ -68,7 +68,7 @@ class TestVMCreation(UserTestCase):
 
     fixtures=['vm_creation_setup']
 
-    def test_correct(self): 
+    def test_api_should_create_vm_when_provided_correct_data(self):
         """Correctly setup the new VM"""
         rack = Device.objects.get(pk=1)
         response = self.post(
@@ -87,7 +87,7 @@ class TestVMCreation(UserTestCase):
         self.assertEqual(new_vm_data['dc'], rack.dc)
 
 
-    def test_correct_null_role(self): 
+    def test_api_should_create_vm_when_role_is_null(self):
         """Correctly setup the new VM, no role provided"""
         response = self.post(
             '/api/add_vm', json.dumps({
@@ -101,7 +101,7 @@ class TestVMCreation(UserTestCase):
         )
         self.assertEqual(response.status_code, 201)
 
-    def test_missing_data(self):
+    def test_api_should_return_400_when_venturerole_is_missing(self):
         """Missing venture_role."""
         response = self.post(
             '/api/add_vm', json.dumps({
@@ -114,7 +114,7 @@ class TestVMCreation(UserTestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_nonexistent_machine(self):
+    def test_api_should_return_404_when_nonexistent_parent_is_given(self):
         """Providing a parent machine that doesn't exist"""
         response = self.post(
             '/api/add_vm', json.dumps({
@@ -128,7 +128,7 @@ class TestVMCreation(UserTestCase):
         )
         self.assertEqual(response.status_code, 404)
 
-    def test_nonexistent_network(self): 
+    def test_api_should_return_404_when_nonexistent_network_is_given(self):
         """Providing a network that doesn't exist"""
         response = self.post(
             '/api/add_vm', json.dumps({
@@ -142,7 +142,7 @@ class TestVMCreation(UserTestCase):
         )
         self.assertEqual(response.status_code, 404)
 
-    def test_nonexistent_venture(self): 
+    def test_api_should_return_404_when_nonexistent_venture_is_given(self):
         """Providing a venture that doesn't exist"""
         response = self.post(
             '/api/add_vm', json.dumps({
@@ -156,7 +156,7 @@ class TestVMCreation(UserTestCase):
         )
         self.assertEqual(response.status_code, 404)
 
-    def test_nonexistent_role(self): 
+    def test_api_should_return_404_when_nonexistent_role_is_given(self):
         """Providing a venturerole that doesn't exist"""
         response = self.post(
             '/api/add_vm', json.dumps({
@@ -170,7 +170,7 @@ class TestVMCreation(UserTestCase):
         )
         self.assertEqual(response.status_code, 404)
 
-    def test_unauthorized(self):
+    def test_api_should_return_401_when_user_is_not_logged_in(self):
         """Only authorized users."""
         response = self.client.post(  # Using client.post not self.post
             '/api/add_vm', json.dumps({
@@ -184,7 +184,7 @@ class TestVMCreation(UserTestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_existing_mac(self):
+    def test_api_should_return_400_when_mac_is_already_in_use(self):
         """Trying to use existing mac"""
         response = self.post(
             '/api/add_vm', json.dumps({
@@ -198,7 +198,7 @@ class TestVMCreation(UserTestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_rackless_parent(self): 
+    def test_api_should_return_404_when_the_parent_has_no_rack(self):
         """Trying to use a parent without a rack"""
         response = self.post(
             '/api/add_vm', json.dumps({
@@ -213,7 +213,7 @@ class TestVMCreation(UserTestCase):
         self.assertEqual(response.status_code, 404)
 
 
-    def test_wrong_environment(self): 
+    def test_api_should_return_404_when_environment_has_no_template(self):
         """Trying to use an environment without template configuration"""
         response = self.post(
             '/api/add_vm', json.dumps({
