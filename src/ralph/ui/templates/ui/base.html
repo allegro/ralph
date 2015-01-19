@@ -13,26 +13,58 @@
             <link rel="stylesheet" href="{{ STATIC_URL }}fugue-icons.css">
             <link rel="stylesheet" href="{{ STATIC_URL }}ui/custom.css">
             <link rel="stylesheet" href="{{ STATIC_URL }}ui/datepicker.css">
-            <link rel="stylesheet" href="{{ STATIC_URL }}jquery.treegrid.css">
             <link rel="stylesheet" href="{{ STATIC_URL }}css/ajax_select.css">
+            <link rel="stylesheet" href="{{ STATIC_URL }}jquery-ui/jquery-ui.css">
+            <link rel="stylesheet" href="{{ STATIC_URL }}css/ui.jqgrid.css">
         {% endblock %}
         {% if TRACKING_CODE %}{{ TRACKING_CODE|safe }}{% endif %}
         {% block scripts %}
             <script src="{{ STATIC_URL }}require.js"></script>
             <!-- Use require.js for mustache! -->
-            <!-- <script src="{{ STATIC_URL }}mustache.js"></script> -->
-            <script src="{{ STATIC_URL }}jquery-1.7.2.min.js"></script>
-            <script src="{{ STATIC_URL }}bootstrap/js/bob.js"></script>
-            <script src="{{ STATIC_URL }}jquery.treegrid.js"></script>
-            <script src="{{ STATIC_URL }}jquery.treegrid.bootstrap2.js"></script>
             <script src="{{ STATIC_URL }}ui/main.js"></script>
             <script type="text/javascript">
                 requirejs.config({
                     baseUrl: '{{ STATIC_URL }}',
-                    paths: {}
+                    paths: {
+                        'jquery': 'jquery-1.7.2.min',
+                        'bootstrap': 'bootstrap/js/bootstrap',
+                        'bob-ajax-select': 'js/ajax_select',
+                        'jquery-ui': 'jquery-ui/jquery-ui',
+                        'djid': 'js/djid',
+                        'jqGrid': 'js/jquery.jqGrid.min',
+                        'jqGrid-locale': 'js/i18n/grid.locale-en',
+                        'ui.multiselect': 'plugins/ui.multiselect',
+                    },
+                    shim: {
+                        'bootstrap': {
+                            'deps': ['jquery']
+                        },
+                        'bootstrap-datepicker': {
+                            'deps': ['bootstrap']
+                        },
+                        'ui.multiselect.js': {
+                            'deps': [
+                                'jquery',
+                                'jquery-ui',
+                                'jqGrid-locale'
+                            ]
+                        }, 
+                        'jqGrid': {
+                            'deps': [
+                                'jquery',
+                                'jquery-ui',
+                                'ui.multiselect',
+                                'jqGrid-locale'
+                            ]
+                        },
+                        'jqGrid-locale': {
+                            'deps': [
+                                'jquery',
+                                'jquery-ui'
+                            ]
+                        },
+                    }
                 });
-            </script>
-            <script type="text/javascript" src="{{ STATIC_URL }}menu.js">
             </script>
         {% endblock %}
         {% block extra_headers %}{% endblock %}
@@ -101,9 +133,6 @@
                 </footer>
             </div>
         </div>
-        <script src="{{ STATIC_URL }}js/ajax_select.js"></script>
-        <script src="{{ STATIC_URL }}bootstrap/js/bootstrap.min.js"></script>
-        <script src="{{ STATIC_URL }}bootstrap-datepicker.js"></script>
         {% block extra_js %}{% endblock %}
     </body>
 </html>
