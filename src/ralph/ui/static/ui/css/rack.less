@@ -27,8 +27,12 @@
 }
 
 .rack-info {
-    float: left;
-    width:250px;
+    margin-top: 10px;
+    background: #fff;
+    padding: 10px;
+    border: 1px solid #ccc;
+    position: fixed;
+    width: @rack-info-width;
     margin-right: 10px;
     input[type="text"] {
         height: inherit;
@@ -78,6 +82,7 @@
 
 .racks {
     float: left;
+    margin-left: @rack-info-width + 10px;
     .rack {
         border-radius: 5px;
         position: relative;

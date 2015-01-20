@@ -1,6 +1,4 @@
-@grid-color: rgba(255, 255, 255, 0.5);
-@grid-size: 40px;
-@grid-count: 40;
+@import "variables.less";
 
 .generate-x-position(@n, @i: 1) when (@i =< @n) {
     &.x-@{i} {
@@ -31,6 +29,7 @@
 }
 
 .data-center {
+    margin-left: @rack-info-width + 10px;
     .grid {
         float: left;
         background: #555;
@@ -82,7 +81,7 @@
         }
         .grid_wrapper {
             position: relative;
-            min-height: @grid-size * 20;
+            min-height: @grid-size * @grid-count;
             background-color: transparent;
             background-image:
                 linear-gradient(
