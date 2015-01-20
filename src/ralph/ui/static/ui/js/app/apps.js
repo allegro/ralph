@@ -17,7 +17,7 @@ angular
                 templateUrl: '/static/partials/data_center/data_center_view.html',
                 controller: 'DataCenterController'
             })
-            .when('/rack/:rackId', {
+            .when('/rack/:rackId/', {
                 templateUrl: '/static/partials/rack/rack_view.html',
                 controller: 'RackController'
             })
