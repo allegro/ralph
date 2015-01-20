@@ -819,13 +819,16 @@
   background: rgba(0, 0, 0, 0.3);
   padding: 2px;
 }
-.rack .devices .device.rows-1.cols-2 [class*="slot-"] {
+.racks .rack .wrapper .devices .device.height-u-3 .children [class*="slot-"] .slot_no {
+  display: inline-block;
+}
+.racks .rack .wrapper .devices .device.rows-1.cols-2 [class*="slot-"] {
   width: 200px;
 }
-.rack .devices .device.rows-2.cols-8 [class*="slot-"] {
+.racks .rack .wrapper .devices .device.rows-2.cols-8 [class*="slot-"] {
   width: 50px;
 }
-.rack .devices .device.rows-2.cols-8.half-slots [class$="A"],
-.rack .devices .device.rows-2.cols-8.half-slots [class$="B"] {
+.racks .rack .wrapper .devices .device.rows-2.cols-8.half-slots [class$="A"],
+.racks .rack .wrapper .devices .device.rows-2.cols-8.half-slots [class$="B"] {
   width: 25px;
 }

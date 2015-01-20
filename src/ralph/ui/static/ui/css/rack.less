@@ -338,7 +338,12 @@
 }
 
 // Layouts
-.rack .devices .device {
+.racks .rack .wrapper .devices .device {
+    &.height-u-3 .children {
+        [class*="slot-"] {
+            .slot_no {display: inline-block;}
+        }
+    }
     &.rows-1.cols-2 {
         @cols: 2;
         [class*="slot-"] {width: @devices-width-front / @cols;}
