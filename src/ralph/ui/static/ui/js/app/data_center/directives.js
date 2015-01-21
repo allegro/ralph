@@ -15,6 +15,7 @@ angular
                 var gridSize = 40;
                 var startX = 0, startY = 0;
                 var offset;
+                var changedPosition = false;
                 scope.is_move = false;
                 element.on('mousedown', function(event) {
                     event.preventDefault();
@@ -34,19 +35,25 @@ angular
                     var position_x = (x - (x % gridSize)) / gridSize;
                     var position_y = (y - (y % gridSize)) / gridSize;
                     angular.forEach(scope.dc.rack_set, function(value) {
-                        if(value.id !== scope.rack.id && value.visualization_col == position_x && value.visualization_row == position_y)
+                        var isSelectedRack = value.id !== scope.rack.id;
+                        var isOccupiedSpace = value.visualization_col == position_x && value.visualization_row == position_y;
+                        if (isSelectedRack && isOccupiedSpace) {
                             can_drop = false;
+                        }
                     });
                     if(can_drop) {
                         scope.rack.visualization_col = position_x;
                         scope.rack.visualization_row = position_y;
+                        changedPosition = true;
                     }
                     scope.can_drop = can_drop;
                 }
                 function mouseup() {
                     $document.unbind('mousemove', mousemove);
                     $document.unbind('mouseup', mouseup);
-                    new RackModel(scope.rack).$update();
+                    if (changedPosition) {
+                        new RackModel(scope.rack).$update();
+                    }
                     scope.is_move = false;
                 }
 
