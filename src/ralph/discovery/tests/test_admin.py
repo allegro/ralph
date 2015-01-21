@@ -50,16 +50,6 @@ class DeviceAdminTest(TestCase):
             response.context_data['adminform'].form.fields['rack'].widget,
             ReadOnlyWidget,
         ))
-        self.assertFalse(isinstance(
-            response.context_data['adminform'].form.fields['parent'].widget,
-            ReadOnlySelectWidget,
-        ))
-        self.assertFalse(isinstance(
-            response.context_data[
-                'adminform'
-            ].form.fields['management'].widget,
-            ReadOnlySelectWidget,
-        ))
 
     def test_base_fields_when_asset_is_assigned(self):
         """Asset has not is_blade flag -> edition is not possible"""
@@ -72,10 +62,6 @@ class DeviceAdminTest(TestCase):
         asset.model.category.save()
         response = self.client.get(self.url, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.context_data['adminform'].form.fields.keys(),
-            BASE_DEV_FORM_FIELDS,
-        )
         self.assertTrue(isinstance(
             response.context_data['adminform'].form.fields['dc'].widget,
             ReadOnlyWidget,
@@ -84,16 +70,12 @@ class DeviceAdminTest(TestCase):
             response.context_data['adminform'].form.fields['rack'].widget,
             ReadOnlyWidget,
         ))
-        self.assertTrue(isinstance(
-            response.context_data['adminform'].form.fields['parent'].widget,
-            ReadOnlySelectWidget,
-        ))
-        self.assertTrue(isinstance(
-            response.context_data[
-                'adminform'
-            ].form.fields['management'].widget,
-            ReadOnlySelectWidget,
-        ))
+        self.assertFalse(
+            'parent' in response.context_data['adminform'].form.fields
+        )
+        self.assertFalse(
+            'management' in response.context_data['adminform'].form.fields
+        )
 
 
 class IPAddressAdminTest(TestCase):
