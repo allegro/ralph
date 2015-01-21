@@ -102,7 +102,7 @@
         <script src="{{ STATIC_URL }}bootstrap/js/bootstrap.min.js"></script>
         <script src="{{ STATIC_URL }}bootstrap-datepicker.js"></script>
         <script src="{{ STATIC_URL }}js/ajax_select.js"></script>
-        {% include 'ui/angular_scripts.html' %}
+        {% block extra_js %}{% endblock %}
     </body>
 </html>
 <!--STATS-->

@@ -2,7 +2,10 @@
 
 {% block extra_headers %}
     <link rel="stylesheet" href="{{ STATIC_URL }}/ui/css/rack.css">
-    <link rel="stylesheet" href="{{ STATIC_URL }}/ui/css/devices.css">
+{% endblock %}
+
+{% block extra_js %}
+    {% include 'ui/angular_scripts.html' %}
 {% endblock %}
 
 {% block content %}
