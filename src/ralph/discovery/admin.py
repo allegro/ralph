@@ -27,10 +27,7 @@ from ralph.business.admin import RolePropertyValueInline
 from ralph.discovery import models
 from ralph.discovery import models_device
 from ralph.ui.forms.network import NetworkForm
-from ralph.ui.widgets import (
-    ReadOnlySelectWidget,
-    ReadOnlyWidget,
-)
+from ralph.ui.widgets import ReadOnlyWidget
 
 
 SAVE_PRIORITY = 215
@@ -249,27 +246,6 @@ class DeviceForm(forms.ModelForm):
                 self.fields['rack'].widget = ReadOnlyWidget()
                 self.fields['chassis_position'].widget = ReadOnlyWidget()
                 self.fields['position'].widget = ReadOnlyWidget()
-                parents = ()
-                if self.instance.parent:
-                    parents = (
-                        (self.instance.parent.id, self.instance.parent),
-                    )
-                self.fields['parent'].widget = ReadOnlySelectWidget(
-                    choices=parents,
-                )
-                self.fields['parent'].help_text = ''
-                managements = ()
-                if self.instance.management:
-                    managements = (
-                        (
-                            self.instance.management.id,
-                            self.instance.management.address,
-                        ),
-                    )
-                self.fields['management'].widget = ReadOnlySelectWidget(
-                    choices=managements,
-                )
-                self.fields['management'].help_text = ''
 
     def clean_sn(self):
         sn = self.cleaned_data['sn']
@@ -398,6 +374,12 @@ class DeviceAdmin(ModelAdmin):
         'management': ['^address', '^hostname'],
         'model': ['^name', ],
     }
+
+    def get_readonly_fields(self, request, obj=None):
+        ro_fields = super(DeviceAdmin, self).get_readonly_fields(request, obj)
+        if obj and obj.get_asset():
+            ro_fields = ro_fields + ('parent', 'management',)
+        return ro_fields
 
     def save_model(self, request, obj, form, change):
         obj.save(user=request.user, sync_fields=True, priority=SAVE_PRIORITY)
