@@ -9,4 +9,4 @@ Ralph is an umbrella term for three distinct projects forming its functionality.
 
 * [Ralph (core)](http://ralph.readthedocs.org)
 * [Ralph Assets](http://ralph-assets.readthedocs.org)
-* [Ralph Pricing](http://ralph-pricing.readthedocs.org) (a.k.a. "Scrooge")]
+* [Ralph Pricing](http://ralph-pricing.readthedocs.org) (a.k.a. "Scrooge")
