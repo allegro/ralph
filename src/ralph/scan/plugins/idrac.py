@@ -159,16 +159,21 @@ def _get_mac_addresses(idrac_manager):
         XMLNS_WSMAN,
         xmlns_n1,
     )
-    mac_addresses = [
-        record.find(
-            "{}{}".format(xmlns_n1, 'CurrentMACAddress'),
-        ).text.strip() for record in tree.findall(q)
-    ]
-    return [
-        MACAddressField.normalize(mac)
-        for mac in mac_addresses
-        if mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST
-    ]
+    mac_addresses = []
+    for record in tree.findall(q):
+        try:
+            mac = record.find(
+                "{}{}".format(xmlns_n1, 'CurrentMACAddress'),
+            ).text
+        except AttributeError:
+            continue
+        if not mac:
+            continue
+        mac = MACAddressField.normalize(mac)
+        if mac[:6] in MAC_PREFIX_BLACKLIST:
+            continue
+        mac_addresses.append(mac)
+    return mac_addresses
 
 
 def _get_processors(idrac_manager):
