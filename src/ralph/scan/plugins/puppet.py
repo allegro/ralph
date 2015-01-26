@@ -213,7 +213,7 @@ def _get_ip_addresses_hostnames_sets(ip):
 
 def _is_host_virtual(facts):
     is_virtual = facts.get('virtual', 'physical') not in (
-        'physical', 'openvz', 'openvzhn',
+        'physical', 'openvz', 'openvzhn', 'xen0',
     )
     if facts.get('manufacturer') == 'Bochs' and not is_virtual:
         facts['virtual'] = 'virtual'
