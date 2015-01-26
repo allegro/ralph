@@ -6,10 +6,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import paramiko
 import re
-import socket
-import time
 
 from django.conf import settings
 from lck.django.common.models import MACAddressField
@@ -17,9 +14,7 @@ from lck.django.common.models import MACAddressField
 from ralph.discovery.cisco import cisco_inventory
 from ralph.discovery.models import DeviceType, SERIAL_BLACKLIST
 from ralph.scan.errors import (
-    AuthError,
     ConnectionError,
-    ConsoleError,
     NoMatchError,
     NotConfiguredError,
 )
@@ -31,60 +26,10 @@ SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 SSH_USER, SSH_PASSWORD = SETTINGS['ssh_user'], SETTINGS['ssh_pass']
 
 
-class CiscoSSHClient(paramiko.SSHClient):
-
-    """SSHClient modified for Cisco's broken SSH console."""
-
-    def __init__(self, *args, **kwargs):
-        super(CiscoSSHClient, self).__init__(*args, **kwargs)
-        self.set_log_channel('critical_only')
-
-    def _auth(self, username, password, pkey, key_filenames,
-              allow_agent, look_for_keys):
-        self._transport.auth_password(username, password)
-        self._cisco_chan = self._transport.open_session()
-        self._cisco_chan.invoke_shell()
-        self._cisco_chan.sendall('\r\n')
-        self._cisco_chan.settimeout(15.0)
-        time.sleep(4)
-        try:
-            chunk = self._cisco_chan.recv(1024)
-        except socket.timeout:
-            raise AuthError('Authentication failed.')
-        else:
-            if not chunk.endswith(('#', '>')):
-                raise ConsoleError('Expected system prompt, got %r.' % chunk)
-
-    def cisco_command(self, command):
-        # XXX Work around random characters appearing at the beginning of the
-        # command.
-        self._cisco_chan.sendall('\b')
-        time.sleep(0.125)
-        self._cisco_chan.sendall(command)
-        buffer = ''
-        end = command[-32:]
-        while not buffer.strip('\b ').endswith(end):
-            chunk = self._cisco_chan.recv(1024)
-            buffer += chunk
-        self._cisco_chan.sendall('\r\n')
-        buffer = ['']
-        while True:
-            chunk = self._cisco_chan.recv(1024)
-            lines = chunk.split('\n')
-            buffer[-1] += lines[0]
-            buffer.extend(lines[1:])
-            if '% Invalid input' in buffer:
-                raise ConsoleError('Invalid input %r.' % buffer)
-            if buffer[-1].endswith(('#', '>')):
-                return buffer[1:-1]
-
-
 def _connect_ssh(ip, username, password):
     if not network.check_tcp_port(ip, 22):
         raise ConnectionError('Port 22 closed.')
-    return network.connect_ssh(
-        ip, username, password, client=CiscoSSHClient,
-    )
+    return network.connect_cisco_ssh(ip, username, password)
 
 
 def get_subswitches(switch_version, hostname, ip_address):
@@ -165,7 +110,6 @@ def scan_address(ip_address, **kwargs):
     ssh = _connect_ssh(ip_address, SSH_USER, SSH_PASSWORD)
     hostname = network.hostname(ip_address)
     try:
-        ssh.cisco_command('terminal length 500')
         mac = '\n'.join(ssh.cisco_command(
             "show version | include Base ethernet MAC Address",
         ))

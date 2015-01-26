@@ -9,9 +9,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import logging
 import socket
-import sys
 import StringIO
+import sys
+import time
 
 from dns.exception import DNSException
 from lck.cache import memoize
@@ -113,6 +115,62 @@ def connect_ssh(
             ip, username=username, password=password, pkey=pkey,
             timeout=timeout,
         )
+    except (paramiko.AuthenticationException, EOFError) as e:
+        raise AuthError(str(e))
+    return ssh
+
+
+class CiscoSSHHandler(object):
+
+    def __init__(self, ip, username=None, password=None):
+        self.ip = ip
+        self.username = username
+        self.password = password
+
+        # setup logging
+        self.logger = logging.getLogger(__name__)
+        self.logger.info("Using username: {}".format(self.username))
+
+        # setup paramiko
+        self.ssh = paramiko.SSHClient()
+        self.ssh.load_system_host_keys()
+        self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    def connect(self):
+        self.ssh.connect(
+            self.ip, username=self.username, password=self.password,
+            allow_agent=False,
+        )
+        self.channel = self.ssh.invoke_shell()
+
+        # disables output scrolling
+        self.channel.send("terminal length 0\n")
+
+        time.sleep(1)
+        self.output = self.channel.recv(9999)
+        self.channel.send("\n")
+
+    def cisco_command(self, command):
+        self.logger.info("Running command: {}".format(command))
+        self.channel.send(command + "\n")
+        time.sleep(2)
+        buff = ['']
+        while True:
+            lines = self.channel.recv(9999).split("\n")
+            buff[-1] += lines[0]
+            buff.extend(lines[1:])
+            if buff[-1].endswith(('#', '>')):
+                return buff[1:-1]
+
+    def close(self):
+        self.logger.info("Close connection.")
+        self.ssh.close()
+
+
+def connect_cisco_ssh(ip, username, password):
+    ssh = CiscoSSHHandler(ip, username, password)
+    try:
+        ssh.connect()
     except (paramiko.AuthenticationException, EOFError) as e:
         raise AuthError(str(e))
     return ssh
