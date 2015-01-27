@@ -825,6 +825,12 @@
 .racks .rack .wrapper .devices .device.rows-1.cols-2 [class*="slot-"] {
   width: 200px;
 }
+.racks .rack .wrapper .devices .device.rows-2.cols-4 [class*="slot-"] {
+  width: 100px;
+}
+.racks .rack .wrapper .devices .device.rows-2.cols-6 [class*="slot-"] {
+  width: 66.66666667px;
+}
 .racks .rack .wrapper .devices .device.rows-2.cols-8 [class*="slot-"] {
   width: 50px;
 }
