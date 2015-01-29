@@ -199,6 +199,7 @@
                 float: left;
                 position: relative;
                 .device {
+                    cursor: pointer;
                     width: @devices-width-back;
                     position: absolute;
                     height: @u-height;
@@ -307,6 +308,9 @@
                         -webkit-flex-flow: row wrap;
                            -moz-flex-flow: row wrap;
                                 flex-flow: row wrap;
+                        .child {
+                            cursor: pointer;
+                        }
                         [class*="slot-"] {
                             width: @devices-width-front / 8;
                             box-sizing: border-box;

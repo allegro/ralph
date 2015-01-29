@@ -1,28 +1,24 @@
 <div
     class="device height-u-{{ item.height }} position-u-{{ item.position }} {{ item.layout }}"
-    ng-mouseleave="setActiveItem(null)"
-    ng-mouseover="setActiveItem(item)"
+    ng-click="setActiveItem(item)"
     ng-class="{has_children: item.children.length}"
 >
     <div class="info">
-        <a href="{{ item.url }}" target="_blank" class="model">{{ item.model }}</a>
+        <span class="model">{{ item.model }}</span>
         <div class="barcode">{{ item.barcode }}</div>
         <div class="sn">{{ item.sn }}</div>
     </div>
     <div class="children">
-        <a
+        <div
             class="child slot-{{ child.slot_no }}"
-            target="_blank"
-            href="{{ child.url }}"
             ng-repeat="child in item.children"
-            ng-mouseleave="setActiveSlot(null)"
-            ng-mouseover="setActiveSlot(child)"
+            ng-click="setActiveSlot(child)"
             style="order: {{ child.slot_no | remove_alfa }};"
         >
             <span class="slot_no">{{ child.slot_no }}</span>
             <span class="barcode">
                 <span class="inner">{{ child.barcode }}</span>
             </span>
-        </a>
+        </div>
     </div>
 </div>

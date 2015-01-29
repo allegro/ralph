@@ -27,6 +27,16 @@
                 <td>Remarks</td>
                 <td>{{ activeItem ? activeItem.remarks : '-' }}</td>
             </tr>
+            <tr>
+                <td>Links</td>
+                <td>
+                    <span ng-show="activeItem">
+                        <a target="_blank" ng-show="activeItem.url" href="{{ activeItem.url }}">Show in assets</a><br>
+                        <a target="_blank" ng-show="activeItem.core_url" href="{{ activeItem.core_url }}">Show in core</a>
+                    </span>
+                    <span ng-hide="activeItem">-</span>
+                </td>
+            </tr>
             <tr ng-show="activeSlot">
                 <td>Slot {{ activeSlot.slot_no }}</td>
                 <td>
@@ -42,6 +52,16 @@
                         <tr>
                             <td>SN</td>
                             <td>{{ activeSlot ? activeSlot.sn : '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td>Links</td>
+                            <td>
+                                <span ng-show="activeSlot">
+                                    <a target="_blank" ng-show="activeSlot.url" href="{{ activeSlot.url }}">Show in assets</a><br>
+                                    <a target="_blank" ng-show="activeSlot.core_url" href="{{ activeSlot.core_url }}">Show in core</a>
+                                </span>
+                                <span ng-hide="activeSlot">-</span>
+                            </td>
                         </tr>
                     </table>
                 </td>

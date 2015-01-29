@@ -520,6 +520,7 @@
   position: relative;
 }
 .racks .rack .wrapper .devices .device {
+  cursor: pointer;
   width: 300px;
   position: absolute;
   height: 25px;
@@ -795,6 +796,9 @@
   -webkit-flex-flow: row wrap;
   -moz-flex-flow: row wrap;
   flex-flow: row wrap;
+}
+.racks .rack .wrapper .devices .device .children .child {
+  cursor: pointer;
 }
 .racks .rack .wrapper .devices .device .children [class*="slot-"] {
   width: 50px;
