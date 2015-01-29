@@ -76,6 +76,13 @@ class TestVMCreation(UserTestCase):
 
     fixtures=['vm_creation_setup']
 
+    is_staff = False
+    is_superuser = False
+
+    def setUp(self):
+        super(TestVMCreation, self).setUp()
+        self.add_perms([Perm.has_core_access])
+
     def test_api_should_create_vm_when_provided_correct_data(self):
         """Correctly setup the new VM"""
         rack = Device.objects.get(pk=1)
@@ -178,8 +185,22 @@ class TestVMCreation(UserTestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_api_should_return_401_when_user_is_not_logged_in(self):
-        """Only authorized users."""
         response = self.client.post(  # Using client.post not self.post
+            '/api/add_vm', json.dumps({
+                'mac':'82:3c:cf:94:9d:f2',
+                'management-ip':'10.1.1.2',
+                'network':'test_network',
+                'venture':'test_venture',
+                'venture-role':'test_role',
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_api_should_return_401_when_user_has_no_core_access(self):
+        rack = Device.objects.get(pk=1)
+        self.user.profile.boundperm_set.clear()
+        response = self.post(
             '/api/add_vm', json.dumps({
                 'mac':'82:3c:cf:94:9d:f2',
                 'management-ip':'10.1.1.2',

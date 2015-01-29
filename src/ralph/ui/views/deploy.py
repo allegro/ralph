@@ -23,6 +23,7 @@ from lck.django.common.models import MACAddressField
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.serializers import Serializer
 
+from ralph.account.models import Perm
 from ralph.deployment.models import MassDeployment as MassDeploymentModel
 from ralph.deployment.util import (
     create_deployments,
@@ -432,7 +433,7 @@ class AddVM(View):
             )
         except User.DoesNotExist:
             actor = None
-        if not (actor and actor.has_perm('create_devices')):
+        if not (actor and actor.profile.has_perm(Perm.has_core_access)):
             return HttpResponse(
                 unicode(_('You cannot create new devices')),
                 status=401
