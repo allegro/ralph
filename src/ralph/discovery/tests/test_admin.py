@@ -10,7 +10,7 @@ from django.test import TestCase
 
 from ralph.discovery.tests.util import DeviceFactory
 from ralph.ui.tests.global_utils import login_as_su
-from ralph.ui.widgets import ReadOnlyWidget, ReadOnlySelectWidget
+from ralph.ui.widgets import ReadOnlyWidget
 from ralph_assets.tests.utils.assets import DCAssetFactory, DeviceInfoFactory
 
 
@@ -83,39 +83,30 @@ class IPAddressAdminTest(TestCase):
     def setUp(self):
         self.client = login_as_su()
         self.device = DeviceFactory()
-        self.url = '/admin/discovery/ipaddress/add/'
         self.url = reverse('admin:discovery_ipaddress_add')
 
-    def _make_request(self):
+    def _make_request(self, ip):
         return self.client.post(
             self.url,
             {
                 '-1-TOTAL_FORMS': 0,
                 '-1-INITIAL_FORMS': 0,
                 '-1-MAX_NUM_FORMS': 0,
-                'address': '127.0.0.1',
+                'address': ip,
                 'device': self.device.id,
                 'is_management': True,
+                'dead_ping_count': 0,
+                'last_seen_0': '2014-12-24',
+                'last_seen_1': '16:36',
             },
             follow=True,
         )
 
-    def test_device_without_asset_validation(self):
-        response = self._make_request()
-        self.assertFalse(response.context_data['adminform'].form.is_valid())
-        self.assertEqual(
-            response.context_data['adminform'].form.non_field_errors(), [],
-        )
+    def test_add_more_than_one_management_ip(self):
+        self.device.management_ip = '127.0.0.1'
+        response = self._make_request(ip='192.168.1.1')
+        form = response.context_data['adminform'].form
 
-    def test_device_with_asset_validation(self):
-        asset = DCAssetFactory(
-            device_info=DeviceInfoFactory(
-                ralph_device_id=self.device.id,
-            ),
-        )
-        asset.model.category.is_blade = False
-        asset.model.category.save()
-        response = self._make_request()
-        self.assertFalse(response.context_data['adminform'].form.is_valid())
-        msg = response.context_data['adminform'].form.non_field_errors()[0]
-        self.assertTrue('You can not assign management IP address' in msg)
+        self.assertFalse(form.is_valid())
+        self.assertTrue('device' in form.errors)
+        self.assertEqual(self.device.ipaddress_set.all().count(), 1)

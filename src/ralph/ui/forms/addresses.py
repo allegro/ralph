@@ -389,3 +389,9 @@ class IPWithHostField(forms.MultiValueField):
 
     def compress(self, value):
         return value
+
+
+class IPManagementForm(forms.Form):
+    management_ip = IPWithHostField(
+        label=_('Management IP'), required=False
+    )
