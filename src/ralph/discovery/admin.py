@@ -12,8 +12,6 @@ import logging
 from django import forms
 from django.conf import settings
 from django.contrib import admin
-from django.core.urlresolvers import reverse
-from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import (
     ForeignKeyAutocompleteTabularInline,
@@ -428,20 +426,9 @@ class IPAddressForm(forms.ModelForm):
             'is_management' in self.changed_data
         ):
             is_management = cleaned_data.get('is_management', False)
-            if is_management:
-                asset = device.get_asset()
-                if asset:
-                    msg = """You can not assign management IP address to this
-                    device. You should use Assets module - click <a href="{}"
-                    target="_blank">here</a>.""".format(
-                        reverse(
-                            'device_edit', kwargs={
-                                'mode': 'dc',
-                                'asset_id': asset.id,
-                            },
-                        ),
-                    )
-                    raise forms.ValidationError(mark_safe(msg))
+            if is_management and device.management_ip:
+                msg = 'This device already has management IP.'
+                self._errors['device'] = self.error_class([msg])
         return cleaned_data
 
 

@@ -92,8 +92,9 @@ from ralph.ui.forms.devices import (
 )
 from ralph.ui.forms.addresses import (
     DHCPFormSet,
-    IPAddressFormSet,
     DNSFormSet,
+    IPAddressFormSet,
+    IPManagementForm,
 )
 from ralph.ui.forms.deployment import (
     ServerMoveStep1Form,
@@ -738,6 +739,7 @@ class Addresses(DeviceDetailView):
         self.dns_formset = None
         self.dhcp_formset = None
         self.ip_formset = None
+        self.ip_management_form = None
 
     def get_dns(self, limit_types=None):
         ips = set(ip.address for ip in self.object.ipaddress_set.all())
@@ -959,6 +961,14 @@ class Addresses(DeviceDetailView):
                 return HttpResponseRedirect(self.request.path)
             else:
                 messages.error(self.request, "Errors in the addresses form.")
+        elif 'management' in self.request.POST:
+            form = IPManagementForm(self.request.POST)
+            if form.is_valid():
+                self.object.management_ip = form.cleaned_data['management_ip']
+                self.object.save()
+                messages.success(
+                    self.request, "Management IP address updated."
+                )
         return self.get(*args, **kwargs)
 
     def get_dhcp(self):
@@ -995,6 +1005,12 @@ class Addresses(DeviceDetailView):
                 ).order_by('address'),
                 prefix='ip'
             )
+        if not self.ip_management_form:
+            self.ip_management_form = IPManagementForm(
+                initial={
+                    'management_ip': self.object.management_ip.as_tuple()
+                }
+            )
         profile = self.request.user.get_profile()
         can_edit = profile.has_perm(self.edit_perm, self.object.venture)
         next_hostname = None
@@ -1024,6 +1040,7 @@ class Addresses(DeviceDetailView):
             'ipformset': self.ip_formset,
             'next_hostname': next_hostname,
             'first_free_ip_addresses': first_free_ip_addresses,
+            'ip_management_form': self.ip_management_form
         })
         return ret
 
