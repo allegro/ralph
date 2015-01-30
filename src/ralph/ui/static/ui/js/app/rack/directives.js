@@ -32,6 +32,17 @@ angular
         return {
             restrict: 'E',
             templateUrl: '/static/partials/rack/listing.html',
+            link: function ($scope) {
+                $scope.u_range = [];
+                $scope.$on('change_active_item', function(event, item){
+                    $scope.u_range = [];
+                    if (typeof item !== 'undefined' && item !== null) {
+                        for (var i = item.position; i <= item.position+item.height-1; i++) {
+                            $scope.u_range.push(i);
+                        }
+                    }
+                });
+            }
         };
     })
     .directive('pduItem', function () {
