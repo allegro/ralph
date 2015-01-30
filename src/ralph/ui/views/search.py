@@ -439,6 +439,10 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     'ralph_device_id', flat=True
                 )
                 self.query = self.query.exclude(id__in=device_info_ids)
+            if data['department']:
+                self.query = self.query.filter(
+                    venture__department__name__icontains=data['department']
+                )
         profile = self.request.user.get_profile()
         if not profile.has_perm(Perm.read_dc_structure):
             self.query = profile.filter_by_perm(
