@@ -221,7 +221,7 @@ class TestCiscoCatalyst(TestCase):
             "show version | include Base ethernet MAC Address",
         )
         command_mock.assert_any_call("show inventory")
-        self.assertEqual(command_mock.call_count, 4)
+        self.assertEqual(command_mock.call_count, 3)
 
     def test_get_subswitches(self):
         correct_ret = [
