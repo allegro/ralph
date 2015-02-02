@@ -2,8 +2,8 @@
 Install / Upgrade Ralph
 =======================
 
-Prebuilt docker image
-=====================
+Prebuilt docker image - recommeneded option
+===========================================
 
 It is the easiest way to try out Ralph using pre-built docker image
 with the worker, database, and server all together. Keep in mind, that
@@ -82,8 +82,8 @@ properly. In order to enable them in your settings, follow the instructions in
 the :doc:`change log <changes>` for the version you installed.
 
 
-Installing Ralph
-=================
+Installing Ralph - advanced installation
+========================================
 
 .. note::
 
