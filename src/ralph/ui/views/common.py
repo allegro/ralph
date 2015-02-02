@@ -1006,9 +1006,12 @@ class Addresses(DeviceDetailView):
                 prefix='ip'
             )
         if not self.ip_management_form:
+            management_ip = self.object.management_ip
             self.ip_management_form = IPManagementForm(
                 initial={
-                    'management_ip': self.object.management_ip.as_tuple()
+                    'management_ip': (
+                        management_ip and management_ip.as_tuple()
+                    )
                 }
             )
         profile = self.request.user.get_profile()
