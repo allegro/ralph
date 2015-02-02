@@ -46,10 +46,10 @@ class UserTestCase(TestCase):
 
     def setUp(self):
         self.user = UserFactory(
-            is_staff = self.is_staff,
-            is_superuser = self.is_superuser,
+            is_staff=self.is_staff,
+            is_superuser=self.is_superuser,
         )
-            
+
         self.headers = {
             'HTTP_ACCEPT': 'application/json',
             'HTTP_AUTHORIZATION': 'ApiKey {}:{}'.format(

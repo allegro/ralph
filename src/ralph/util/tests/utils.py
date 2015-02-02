@@ -8,11 +8,11 @@ from __future__ import unicode_literals
 
 import factory
 from factory.django import DjangoModelFactory
-from django.contrib.auth.models import User
 
 from ralph.account.models import Region
 from ralph.cmdb import models_ci
 from ralph.cmdb.tests.utils import CIFactory
+from ralph.ui.tests.global_utils import UserFactory
 
 
 class AttributeDict(dict):
@@ -42,13 +42,6 @@ class EnvironmentFactory(CIFactory):
     @factory.lazy_attribute
     def type(self):
         return models_ci.CIType.objects.get(name='Environment')
-
-
-class UserFactory(DjangoModelFactory):
-    FACTORY_FOR = User
-    username = factory.Sequence(lambda n: 'user_{0}'.format(n))
-    first_name = factory.Sequence(lambda n: 'John {0}'.format(n))
-    last_name = factory.Sequence(lambda n: 'Snow {0}'.format(n))
 
 
 @factory.sequence
