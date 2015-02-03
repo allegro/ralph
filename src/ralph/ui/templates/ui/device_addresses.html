@@ -110,6 +110,22 @@
     </div>
 
     <div class="span6">
+        <h3>Management address</h3>
+        <form class="form form-inline" action="" method="POST">
+            {% csrf_token %}
+
+            {{ ip_management_form }}
+
+            {% if canedit %}
+                <div class="buttons pull-right">
+                    {% spaceless %}
+                    <button type="submit" name="management" value="Save" class="btn btn-primary"
+                    >{% icon 'fugue-tick' %}&nbsp;Save</button>
+                    {% endspaceless %}
+                </div>
+            {% endif %}
+        </form>
+
         <h3>Detected addresses</h3>
         <form class="form form-inline" action="" method="POST">
             {% csrf_token %}
@@ -178,24 +194,6 @@
                 </div>
             {% endif %}
         </form>
-
-        {% if device.find_management %}
-            <h3>Management address</h3>
-            <form class="form form-inline" action="" method="POST">
-                {% csrf_token %}
-
-                {{ ip_management_form }}
-
-                {% if canedit %}
-                    <div class="buttons pull-right">
-                        {% spaceless %}
-                        <button type="submit" name="management" value="Save" class="btn btn-primary"
-                        >{% icon 'fugue-tick' %}&nbsp;Save</button>
-                        {% endspaceless %}
-                    </div>
-                {% endif %}
-            </form>
-        {% endif %}
 
         {% if balancers %}
             <h3>Load balancers</h3>
