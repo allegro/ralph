@@ -338,7 +338,7 @@ class DiffForm(forms.Form):
             'diag_firmware',
             'mgmt_firmware',
         ]),
-        'subdevices': CSVInfo(['hostname', 'serial_number', 'id']),
+        'subdevices': CSVInfo(['hostname', 'serial_number', 'id', 'model_name']),
         'connections': CSVInfo([
             'connection_type',
             'connected_device_mac_addresses',

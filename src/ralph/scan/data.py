@@ -847,7 +847,7 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY, warnings=[]):
     if 'asset' in data and 'ralph_assets' in settings.INSTALLED_APPS:
         from ralph_assets.api_ralph import assign_asset
         asset = data['asset']
-        if not isinstance(asset, Asset):
+        if asset and not isinstance(asset, Asset):
             asset = get_asset_by_name(asset)
         if asset:
             assign_asset(device.id, asset.id)
@@ -919,6 +919,7 @@ def device_from_data(
         ethernets=ethernets,
         model_name=model_name,
         model_type=model_type,
+        priority=save_priority,
     )
     set_device_data(
         device, data, save_priority=save_priority, warnings=warnings
