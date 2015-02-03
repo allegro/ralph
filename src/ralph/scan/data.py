@@ -58,6 +58,12 @@ UNIQUE_FIELDS_FOR_MERGER = {
 SAVE_PRIORITY = 215
 
 
+def has_logical_children(device):
+    """Returns True if this device has logical children or False if it has
+    physical ones."""
+    return device.model and device.model.type in (DeviceType.switch_stack,)
+
+
 def get_choice_by_name(choices, name):
     """
     Find choices by name (with spaces or without spaces) or by raw_name.
@@ -388,7 +394,7 @@ def get_device_data(device):
             ).raw if part.model else '',
         } for part in device.genericcomponent_set.order_by('sn')
     ]
-    if device.model and device.model.type in (DeviceType.switch_stack,):
+    if has_logical_children(device):
         data['subdevices'] = [
             get_device_data(dev)
             for dev in device.logicalchild_set.order_by('id')
@@ -806,10 +812,7 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY, warnings=[]):
                 save_priority=save_priority,
                 warnings=warnings
             )
-            if (
-                device.model and
-                device.model.type in (DeviceType.switch_stack,)
-            ):
+            if has_logical_children(device):
                 subdevice.logical_parent = device
                 if subdevice.parent and subdevice.parent.id == device.id:
                     subdevice.parent = None
@@ -817,8 +820,13 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY, warnings=[]):
                 subdevice.parent = device
             subdevice.save(priority=save_priority)
             subdevice_ids.append(subdevice.id)
-        for subdevice in device.child_set.exclude(id__in=subdevice_ids):
-            subdevice.parent = None
+        set_, parent_attr = (
+            (device.logicalchild_set, 'logical_parent')
+            if has_logical_children(device)
+            else (device.child_set, 'parent')
+        )
+        for subdevice in set_.exclude(id__in=subdevice_ids):
+            setattr(subdevice, parent_attr, None)
             subdevice.save(priority=save_priority)
     if 'connections' in data:
         parsed_connections = set()
@@ -847,7 +855,7 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY, warnings=[]):
     if 'asset' in data and 'ralph_assets' in settings.INSTALLED_APPS:
         from ralph_assets.api_ralph import assign_asset
         asset = data['asset']
-        if not isinstance(asset, Asset):
+        if asset and not isinstance(asset, Asset):
             asset = get_asset_by_name(asset)
         if asset:
             assign_asset(device.id, asset.id)
