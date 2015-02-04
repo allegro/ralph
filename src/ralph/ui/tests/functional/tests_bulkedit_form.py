@@ -9,21 +9,10 @@ from django.test import TestCase
 from factory import Sequence, SubFactory
 from factory.django import DjangoModelFactory
 
-from ralph.business.models import Venture, VentureRole
 from ralph.discovery.models_device import Device
 from ralph.discovery.models_history import HistoryChange
 from ralph.ui.tests.global_utils import login_as_su
-
-
-class VentureFactory(DjangoModelFactory):
-    FACTORY_FOR = Venture
-    name = Sequence(lambda n: 'Venture #{}'.format(n))
-
-
-class VentureRoleFactory(DjangoModelFactory):
-    FACTORY_FOR = VentureRole
-    name = Sequence(lambda n: 'Venture role #{}'.format(n))
-    venture = SubFactory(VentureFactory)
+from ralph.util.tests.utils import VentureFactory, VentureRoleFactory
 
 
 class ParentDeviceFactory(DjangoModelFactory):
