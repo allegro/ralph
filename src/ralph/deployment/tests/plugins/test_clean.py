@@ -22,16 +22,19 @@ from ralph.discovery.models import (
 )
 from ralph.deployment.models import Deployment
 from ralph.deployment.plugins.clean import clean
+from ralph.util.tests.utils import VentureRoleFactory
 
 
 class CleanPluginTest(TestCase):
 
     def setUp(self):
+        self.venture_role = VentureRoleFactory()
         device = Device.create(
             ethernets=[('', 'deadbeefcafe', 0)],
             model_name='HAL 9000',
             model_type=DeviceType.unknown,
             remarks="I'm sorry, Dave.",
+            name='discovery.two',
         )
         self.deployment = Deployment(
             hostname='discovery.one',
@@ -39,8 +42,8 @@ class CleanPluginTest(TestCase):
             mac='deadbeefcafe',
             device=device,
             preboot=None,
-            venture=None,
-            venture_role=None,
+            venture=self.venture_role.venture,
+            venture_role=self.venture_role,
         )
         self.deployment.save()
         self.ip = IPAddress(address='127.0.0.1', device=device)
@@ -66,6 +69,9 @@ class CleanPluginTest(TestCase):
         )
         self.assertEquals(device.ipaddress_set.count(), 1)
         self.assertEquals(device.ipaddress_set.all()[0].address, '127.0.0.1')
+        self.assertEquals(device.name, 'discovery.one')
+        self.assertEquals(device.venture, self.venture_role.venture)
+        self.assertEquals(device.venture_role, self.venture_role)
         self.assertFalse(device.diskshare_set.exists())
         self.assertFalse(device.disksharemount_set.exists())
         self.assertFalse(device.software_set.exists())
