@@ -122,6 +122,8 @@ def guess_family(headers, document):
             family = 'ESX'
         elif 'ATEN International Co Ltd.' in document:
             family = 'Thomas-Krenn'
+        elif 'XenServer' in document:
+            family = 'Xen'
     elif family in ('lighttpd',):
         if 'Modular Server Control' in document:
             family = 'Modular'

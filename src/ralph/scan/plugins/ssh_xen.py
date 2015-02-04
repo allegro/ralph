@@ -253,9 +253,10 @@ def _ssh_xen(ssh, ip_address):
 
 def scan_address(ip_address, **kwargs):
     snmp_name = kwargs.get('snmp_name', '') or ''
+    http_family = kwargs.get('http_family', '') or ''
     if 'nx-os' in snmp_name.lower():
         raise NoMatchError("Incompatible Nexus found.")
-    if 'xen' not in snmp_name:
+    if 'xen' not in snmp_name and 'xen' not in http_family.lower():
         raise NoMatchError("XEN not found.")
     auths = SETTINGS.get('xen_auths')
     messages = []
