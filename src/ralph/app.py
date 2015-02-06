@@ -18,9 +18,8 @@ class RalphModule(pluggableapp.PluggableApp):
         of API."""
         return []
 
-    @abc.abstractproperty
-    def url_prefix(self):
-        """The first part of paths for this application."""
+    url_prefix = None
+    has_menu = True
 
     @abc.abstractproperty
     def module_name(self):
@@ -40,6 +39,8 @@ class RalphModule(pluggableapp.PluggableApp):
 
     def __init__(self, *args, **kwargs):
         super(RalphModule, self).__init__(*args, **kwargs)
+        if not self.url_prefix:
+            return
         self.register_pattern(
             '',
             r'^{}/'.format(self.url_prefix),
