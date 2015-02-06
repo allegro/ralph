@@ -232,7 +232,8 @@ class MenuMixin(object):
         for app in pluggableapp.app_dict.values():
             if (
                 not isinstance(app, RalphModule) or
-                app.module_name in settings.HIDE_MENU
+                app.module_name in settings.HIDE_MENU or
+                not app.has_menu
             ):
                 continue
             menu_module = importlib.import_module(
