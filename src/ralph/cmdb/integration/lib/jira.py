@@ -6,9 +6,11 @@ from restkit import Resource, BasicAuth, ResourceNotFound
 from django.utils import simplejson as json
 
 import logging
-logger = logging.getLogger(__name__)
 
 from ralph.cmdb.integration.exceptions import IssueTrackerException
+
+
+logger = logging.getLogger(__name__)
 
 
 class Jira(object):

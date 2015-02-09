@@ -10,7 +10,9 @@ import factory
 from factory.django import DjangoModelFactory
 
 from ralph.account.models import Region
-from ralph.business.models import Venture, VentureRole
+from ralph.business.models import (
+    Venture, VentureRole, RolePropertyType, RoleProperty,
+)
 from ralph.cmdb import models_ci
 from ralph.cmdb.tests.utils import CIFactory
 from ralph.ui.tests.global_utils import UserFactory
@@ -95,3 +97,14 @@ class VentureRoleFactory(DjangoModelFactory):
     FACTORY_FOR = VentureRole
     name = factory.Sequence(lambda n: 'Venture role #{}'.format(n))
     venture = factory.SubFactory(VentureFactory)
+
+
+class RolePropertyTypeFactory(DjangoModelFactory):
+    FACTORY_FOR = RolePropertyType
+    symbol = factory.Sequence(lambda n: 'property_type_{}'.format(n))
+
+
+class RolePropertyFactory(DjangoModelFactory):
+    FACTORY_FOR = RoleProperty
+    symbol = factory.Sequence(lambda n: 'property_{}'.format(n))
+    type = factory.SubFactory(RolePropertyTypeFactory)

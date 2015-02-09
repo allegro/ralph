@@ -55,8 +55,6 @@ from ralph.scan.diff import diff_results, sort_results
 from ralph.scan.models import ScanSummary
 from ralph.scan.util import get_pending_changes, update_scan_summary
 from ralph.business.models import (
-    RoleProperty,
-    RolePropertyValue,
     Venture,
     VentureRole,
 )
@@ -659,27 +657,7 @@ class Info(DeviceUpdateView):
 
     def save_properties(self, device, properties):
         for symbol, value in properties.iteritems():
-            try:
-                p = device.venture_role.roleproperty_set.get(symbol=symbol)
-            except RoleProperty.DoesNotExist:
-                p = device.venture.roleproperty_set.get(symbol=symbol)
-            if value != p.default and not {value, p.default} == {None, ''}:
-                pv, created = RolePropertyValue.concurrent_get_or_create(
-                    property=p,
-                    device=device,
-                )
-                pv.value = value
-                pv.save(user=self.request.user)
-            else:
-                try:
-                    pv = RolePropertyValue.objects.get(
-                        property=p,
-                        device=device,
-                    )
-                except RolePropertyValue.DoesNotExist:
-                    pass
-                else:
-                    pv.delete()
+            device.set_property(symbol, value, self.request.user)
 
     def get_property_form(self, data=None):
         if not self.object.venture_role:

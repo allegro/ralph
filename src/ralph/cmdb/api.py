@@ -17,7 +17,6 @@ import operator
 from ralph.cmdb.monkey import method_check
 import tastypie
 from tastypie.resources import Resource
-Resource.method_check = method_check
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -51,6 +50,7 @@ from ralph.cmdb import models as db
 from ralph.cmdb.models_ci import CIOwner, CIOwnershipType
 from ralph.cmdb.util import breadth_first_search_ci, can_change_ci_state
 
+Resource.method_check = method_check
 
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 TIMEFRAME = settings.API_THROTTLING['timeframe']

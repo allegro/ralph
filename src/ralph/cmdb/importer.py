@@ -42,10 +42,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
-os.environ['DJANGO_SETTINGS_MODULE'] = "ralph.settings"
 
 import logging
-logger = logging.getLogger(__name__)
 
 from django.contrib.contenttypes.models import ContentType
 
@@ -55,6 +53,10 @@ import ralph.business.models as bdb
 import ralph.cmdb.models as cdb
 from django.db import IntegrityError
 from lck.django.common import nested_commit_on_success
+
+
+os.environ['DJANGO_SETTINGS_MODULE'] = "ralph.settings"
+logger = logging.getLogger(__name__)
 
 
 def get_layers_for_ci_type(ci_type_id):

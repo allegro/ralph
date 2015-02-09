@@ -19,8 +19,12 @@ from ralph.cmdb.tests.utils import (
 from ralph.discovery.tests.util import DeviceFactory, IPAddressFactory
 from ralph.discovery.models import DeviceType, Device, UptimeSupport
 from ralph.discovery.models_history import HistoryChange
+from ralph.ui.tests.global_utils import UserFactory
 from ralph.util.models import fields_synced_signal, ChangeTuple
-from ralph.util.tests.utils import UserFactory
+from ralph.util.tests.utils import (
+    UserFactory, RolePropertyTypeFactory, RolePropertyFactory,
+    VentureRoleFactory,
+)
 from ralph_assets.models import Orientation
 from ralph_assets.tests.utils.assets import DCAssetFactory, DeviceInfoFactory
 
@@ -184,3 +188,27 @@ class DeviceModelTest(TestCase):
         self.assertEqual(dev_2.orientation, 'middle')
         with self.assertRaises(AttributeError):
             dev_2.orientation = Orientation.back.id
+
+
+class DevicePropertiesTest(TestCase):
+
+    def setUp(self):
+        sample_role = VentureRoleFactory()
+        RolePropertyFactory(
+            symbol='my_custom_property_1',
+            type=RolePropertyTypeFactory(symbol='STRING'),
+            role=sample_role,
+        )
+        self.sample_device = DeviceFactory(
+            venture=sample_role.venture, venture_role=sample_role)
+        self.sample_user = UserFactory()
+
+    def test_successful_save(self):
+        self.sample_device.set_property(
+            symbol='my_custom_property_1', value='Test 123',
+            user=self.sample_user,
+        )
+        self.assertEqual(
+            self.sample_device.get_property_set(),
+            {'my_custom_property_1': 'Test 123'}
+        )
