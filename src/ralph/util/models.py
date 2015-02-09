@@ -18,6 +18,7 @@ from tastypie.models import create_api_key
 
 from ralph.settings import SYNC_FIELD_MIXIN_NOTIFICATIONS_WHITELIST
 
+from django.contrib.auth.tests import models as auth_test_models
 ChangeTuple = namedtuple('ChangeTuple', ['field', 'old_value', 'new_value'])
 
 
@@ -34,7 +35,6 @@ db.signals.post_save.connect(create_api_key_ignore_dberrors, sender=User)
 
 # workaround for a unit test bug in Django 1.4.x
 
-from django.contrib.auth.tests import models as auth_test_models
 del auth_test_models.ProfileTestCase.test_site_profile_not_available
 
 # signal used by SyncFieldMixin for sending notifications on changed fields

@@ -925,6 +925,30 @@ class Device(
         # the reason (for more, see the source code of SavePrioritized).
         return super(Device, self).save(*args, **kwargs)
 
+    def set_property(self, symbol, value, user):
+        from ralph.business.models import RoleProperty, RolePropertyValue
+        try:
+            p = self.venture_role.roleproperty_set.get(symbol=symbol)
+        except RoleProperty.DoesNotExist:
+            p = self.venture.roleproperty_set.get(symbol=symbol)
+        if value != p.default and not {value, p.default} == {None, ''}:
+            pv, created = RolePropertyValue.concurrent_get_or_create(
+                property=p,
+                device=self,
+            )
+            pv.value = value
+            pv.save(user=user)
+        else:
+            try:
+                pv = RolePropertyValue.objects.get(
+                    property=p,
+                    device=self,
+                )
+            except RolePropertyValue.DoesNotExist:
+                pass
+            else:
+                pv.delete()
+
     def get_asset(self):
         asset = None
         if self.id and 'ralph_assets' in settings.INSTALLED_APPS:
