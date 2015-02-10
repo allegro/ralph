@@ -402,6 +402,13 @@ else:
         "Unsupported settings path mode '%s'" % SETTINGS_PATH_MODE
     )
 
+# change regions' default name
+DEFAULT_REGION_NAME = 'Default region'
+
+# a list of object's fields (e.g. Asset, Device) for which notification of
+# changed value should be send (see ralph.util.models.SyncFieldMixin)
+SYNC_FIELD_MIXIN_NOTIFICATIONS_WHITELIST = ['service', 'device_environment']
+
 for cfg_loc in [local_settings,
                 '{}/settings'.format(ralph_settings_path),
                 '/etc/ralph/settings']:
@@ -409,14 +416,6 @@ for cfg_loc in [local_settings,
     if os.path.exists(cfg_loc):
         execfile(cfg_loc)
         break
-
-# url to page where user requests permission to module (eg. assets)
-# REQUEST_PERM_URL = 'http://tickets.office/request/ralph_module/permission'
-DEFAULT_REGION_NAME = 'Default region'
-
-# a list of object's fields (e.g. Asset, Device) for which notification of
-# changed value should be send (see ralph.util.models.SyncFieldMixin)
-SYNC_FIELD_MIXIN_NOTIFICATIONS_WHITELIST = ['service', 'device_environment']
 
 import pluggableapp
 pluggableapp.initialize(locals())
