@@ -18,11 +18,13 @@ from ralph.business.models import VentureRole
 from ralph.deployment.models import Preboot, Deployment, DeploymentStatus
 from ralph.discovery.models import (
     Device,
+    DeviceEnvironment,
     DeviceType,
     Ethernet,
     EthernetSpeed,
     IPAddress,
     Network,
+    ServiceCatalog,
 )
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import clean_dns_entries, reset_dns
@@ -278,6 +280,10 @@ def create_deployments(data, user, mass_deployment):
             venture=item['venture'],
             venture_role=item['venture_role'],
             mass_deployment=mass_deployment,
+            service=ServiceCatalog.objects.get(name=item['service']),
+            device_environment=DeviceEnvironment.objects.get(
+                name=item['device_environment'],
+            ),
         )
 
 

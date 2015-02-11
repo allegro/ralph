@@ -29,7 +29,14 @@ from ralph.deployment.util import (
     rack_exists,
     venture_and_role_exists,
 )
-from ralph.discovery.models import Device, Network, IPAddress, DeviceType
+from ralph.discovery.models import (
+    Device,
+    DeviceEnvironment,
+    DeviceType,
+    Network,
+    IPAddress,
+    ServiceCatalog,
+)
 from ralph.discovery.models_component import is_mac_valid
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import (
@@ -180,6 +187,30 @@ def _validate_preboot(preboot, row_number):
         )
 
 
+def _validate_service(service_name, row_number):
+    try:
+        ServiceCatalog.objects.get(name=service_name)
+    except ServiceCatalog.DoesNotExist:
+        raise forms.ValidationError(
+            "Row %s: "
+            "Couldn't find service with name %s" % (
+                row_number, service_name
+            )
+        )
+
+
+def _validate_environment(environment_name, row_number):
+    try:
+        DeviceEnvironment.objects.get(name=environment_name)
+    except DeviceEnvironment.DoesNotExist:
+        raise forms.ValidationError(
+            "Row %s: "
+            "Couldn't find environment with name %s" % (
+                row_number, environment_name
+            )
+        )
+
+
 def _validate_deploy_children(mac, row_number):
     mac = MACAddressField.normalize(mac)
     try:
@@ -246,7 +277,7 @@ class PrepareMassDeploymentForm(forms.Form):
         required=False,
         help_text=(
             "Template: mac ; management-ip ; network ; venture-symbol ; "
-            "role ; preboot{}".format(
+            "role ; service ; environment ; preboot{}".format(
                 ' ; asset sn or barcode (not required)'
                 if assets_enabled
                 else ''
@@ -258,9 +289,10 @@ class PrepareMassDeploymentForm(forms.Form):
         csv_string = self.cleaned_data['csv'].strip().lower()
         rows = UnicodeReader(cStringIO.StringIO(csv_string))
         parsed_macs = set()
+
         for row_number, cols in enumerate(rows, start=1):
             _validate_cols_count(
-                6, cols, row_number, 1 if self.assets_enabled else 0
+                8, cols, row_number, 1 if self.assets_enabled else 0
             )
             mac = cols[0].strip()
             _validate_mac(mac, parsed_macs, row_number)
@@ -277,10 +309,14 @@ class PrepareMassDeploymentForm(forms.Form):
             _validate_venture_and_role(
                 venture_symbol, venture_role, row_number,
             )
-            preboot = cols[5].strip()
+            service = cols[5].strip()
+            _validate_service(service, row_number)
+            environment = cols[6].strip()
+            _validate_environment(environment, row_number)
+            preboot = cols[7].strip()
             _validate_preboot(preboot, row_number)
-            if self.assets_enabled and len(cols) == 7:
-                asset_identity = cols[6].strip()
+            if self.assets_enabled and len(cols) == 9:
+                asset_identity = cols[8].strip()
                 _validate_asset_identity(asset_identity, row_number, mac)
         return csv_string
 
@@ -370,7 +406,7 @@ class MassDeploymentForm(forms.Form):
         widget=forms.widgets.Textarea(attrs={'class': 'span12 csv-input'}),
         help_text=(
             "Template: hostname ; ip ; rack-sn ; mac ; management-ip ; "
-            "network ; venture-symbol ; role ; preboot{}".format(
+            "network ; venture-symbol ; role ; service ; environment ; preboot{}".format(
                 ' ; asset sn or barcode (not required)'
                 if assets_enabled
                 else ''
@@ -386,7 +422,7 @@ class MassDeploymentForm(forms.Form):
         parsed_ip_addresses = set()
         parsed_macs = set()
         for row_number, cols in enumerate(rows, start=1):
-            _validate_cols_count(9, cols, row_number, 1)
+            _validate_cols_count(11, cols, row_number, 1)
             _validate_cols_not_empty(cols, row_number)
             mac = cols[3].strip()
             _validate_mac(mac, parsed_macs, row_number)
@@ -444,17 +480,23 @@ class MassDeploymentForm(forms.Form):
                     )
                 )
             try:
-                preboot = Preboot.objects.get(name=cols[8].strip())
+                preboot = Preboot.objects.get(name=cols[10].strip())
             except Preboot.DoesNotExist:
                 raise forms.ValidationError(
                     "Row %s: Couldn't find preboot %s" % (
-                        row_number, cols[8].strip()
+                        row_number, cols[10].strip()
                     )
                 )
             asset_identity = None
-            if self.assets_enabled and len(cols) == 10:
-                asset_identity = cols[9].strip()
+            if self.assets_enabled and len(cols) == 12:
+                asset_identity = cols[11].strip()
                 _validate_asset_identity(asset_identity, row_number, mac)
+
+            service = cols[8].strip()
+            _validate_service(service, row_number)
+            environment = cols[9].strip()
+            _validate_environment(environment, row_number)
+
             cleaned_csv.append({
                 'hostname': hostname,
                 'ip': ip,
@@ -465,7 +507,9 @@ class MassDeploymentForm(forms.Form):
                 'preboot': preboot,
                 'management_ip': management_ip,
                 'network': network,
-                'asset_identity': asset_identity
+                'asset_identity': asset_identity,
+                'service': service,
+                'device_environment': environment,
             })
         return cleaned_csv
 
