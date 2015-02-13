@@ -188,9 +188,7 @@ def _validate_preboot(preboot, row_number):
 
 
 def _validate_service(service_name, row_number):
-    try:
-        ServiceCatalog.objects.get(name=service_name)
-    except ServiceCatalog.DoesNotExist:
+    if not ServiceCatalog.objects.filter(name=service_name).exists():
         raise forms.ValidationError(
             "Row %s: "
             "Couldn't find service with name %s" % (
@@ -200,9 +198,7 @@ def _validate_service(service_name, row_number):
 
 
 def _validate_environment(environment_name, row_number):
-    try:
-        DeviceEnvironment.objects.get(name=environment_name)
-    except DeviceEnvironment.DoesNotExist:
+    if not DeviceEnvironment.objects.filter(name=environment_name).exists():
         raise forms.ValidationError(
             "Row %s: "
             "Couldn't find environment with name %s" % (
@@ -468,7 +464,7 @@ class MassDeploymentForm(forms.Form):
             _validate_management_ip(management_ip, row_number)
             try:
                 venture_role = VentureRole.objects.get(
-                    venture__symbol=cols[6].strip().upper(),
+                    venture__symbol=cols[6].strip(),
                     name=cols[7].strip()
                 )
                 venture = venture_role.venture
