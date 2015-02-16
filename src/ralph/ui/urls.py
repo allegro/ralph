@@ -311,9 +311,11 @@ urlpatterns = patterns(
         login_required(NetworksDeviceList.as_view()), {}, 'networks'),
 
     url(r'^deployment/mass/start/$',
-        login_required(PrepareMassDeployment.as_view())),
+        login_required(PrepareMassDeployment.as_view()),
+        {},
+        'prepare_mass_deploy'),
     url(r'^deployment/mass/define/(?P<deployment>[0-9]+)/$',
-        login_required(MassDeployment.as_view())),
+        login_required(MassDeployment.as_view()), {}, 'mass_deploy'),
 
     url(r'^scan/list/(?P<change_type>new|existing)/$',
         login_required(

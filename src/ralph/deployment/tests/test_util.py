@@ -4,8 +4,17 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from django.contrib.auth.models import User
 from django.test import TestCase
 
+from ralph_assets.tests.utils.assets import AssetFactory, DeviceInfoFactory
+from ralph.cmdb.tests.utils import (
+    DeviceEnvironmentFactory,
+    ServiceCatalogFactory,
+)
+from ralph.deployment import util
+from ralph.deployment.models import Deployment
+from ralph.deployment.tests.utils import MassDeploymentFactory, PrebootFactory
 from ralph.deployment.util import (
     _change_device_ip_address,
     _change_ip_address_dhcp_entry,
@@ -16,10 +25,15 @@ from ralph.deployment.util import (
     ChangeIPAddressError,
 )
 from ralph.discovery.models import IPAddress
-from ralph.discovery.tests.util import DeviceFactory, IPAddressFactory
+from ralph.discovery.tests.util import (
+    DeviceFactory,
+    IPAddressFactory,
+    EthernetFactory,
+)
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.tests.util import DHCPEntryFactory
-
+from ralph.ui.tests.global_utils import UserFactory
+from ralph.util.tests.utils import VentureRoleFactory
 
 class ChangeIPAddressValidationTest(TestCase):
 
@@ -171,3 +185,53 @@ class ChangeDHCPEntiesTest(TestCase):
             self.sample_ip_3,
             self.sample_ip_1,
         )
+
+
+class CreateDeploymentsTest(TestCase):
+
+    def setUp(self):
+        venture_role = VentureRoleFactory()
+        device_environment = DeviceEnvironmentFactory()
+        service = ServiceCatalogFactory()
+        self.mass_deployment = MassDeploymentFactory()
+        self.user = UserFactory()
+        self.data = {
+            "mac": "00:00:00:00:00:00",
+            "ip": "192.168.1.1",
+            "hostname": "testhost.dc2",
+            "preboot": PrebootFactory(),
+            "venture": venture_role.venture,
+            "venture_role": venture_role,
+            "service": service.name,
+            "device_environment": device_environment.name,
+            "asset_identity": None,
+        }
+
+    def test_when_everything_works_fine(self):
+        EthernetFactory(mac="000000000000")
+        util.create_deployments([self.data], self.user, self.mass_deployment)
+
+        self.assertEqual(Deployment.objects.count(), 1)
+
+    def test_when_device_does_not_exist_and_asset_identity_is_given(self):
+        device = DeviceFactory()
+        device_info = DeviceInfoFactory(ralph_device_id=device.id)
+        asset = AssetFactory(
+            barcode="testbarcode",
+            device_info=device_info,
+        )
+        self.data.update({"asset_identity": asset.barcode})
+        util.create_deployments([self.data], self.user, self.mass_deployment)
+
+        deployments = Deployment.objects.all()
+        self.assertEqual(deployments.count(), 1)
+        self.assertEqual(deployments[0].device, device)
+
+    def test_when_device_does_not_exist_and_there_is_no_asset_identity(self):
+        device = DeviceFactory()
+        util._create_device = lambda x: device
+        util.create_deployments([self.data], self.user, self.mass_deployment)
+
+        deployments = Deployment.objects.all()
+        self.assertEqual(deployments.count(), 1)
+        self.assertEqual(deployments[0].device, device)

@@ -14,6 +14,7 @@ import ipaddr
 from factory import sequence, Sequence, lazy_attribute, Factory, SubFactory
 from factory.django import DjangoModelFactory
 
+from ralph.discovery.models import Ethernet
 from ralph.discovery.models_device import (
     Database,
     DatabaseType,
@@ -54,6 +55,13 @@ class DeviceFactory(DjangoModelFactory):
     @lazy_attribute
     def barcode(self):
         return str(uuid1())
+
+
+class EthernetFactory(DjangoModelFactory):
+    FACTORY_FOR = Ethernet
+
+    device = SubFactory(DeviceFactory)
+    mac = "000000000000"
 
 
 class DeprecatedDataCenterFactory(DjangoModelFactory):
