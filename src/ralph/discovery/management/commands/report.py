@@ -27,23 +27,20 @@ def field(field_name):
 def subfield(field_name, subfield_name):
     return lambda dev: unicode(
         (getattr(getattr(dev, field_name), subfield_name)
-         if getattr(dev, field_name) else None)
-        or ''
+         if getattr(dev, field_name) else None) or ''
     )
 
 
 def first_subfield(field_name, subfield_name):
     return lambda dev: unicode(
         (getattr(getattr(dev, field_name).all()[0], subfield_name)
-         if getattr(dev, field_name).count() else None)
-        or ''
+         if getattr(dev, field_name).count() else None) or ''
     )
 
 
 def device_type(dev):
     return DeviceType.DescFromID(
-        (dev.model.type if dev.model else None)
-        or DeviceType.unknown.id
+        (dev.model.type if dev.model else None) or DeviceType.unknown.id
     ).title()
 
 
