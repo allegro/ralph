@@ -424,8 +424,7 @@ class DashboardDetails(ChangesBase):
                             ci.content_object.venture)
                 if venture_id:
                     if (venture) and (
-                            (venture.id == int(venture_id))
-                            or
+                            (venture.id == int(venture_id)) or
                             ((venture is None) and (int(venture_id) == -1))):
                         self.data.append(dict(
                             count=count,

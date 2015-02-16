@@ -216,11 +216,11 @@ def register_event(ci, event):
 
 def can_change_ci_state(ci, changed_state):
     if (
-        changed_state
-        and ci.type.id == CI_TYPES.SERVICE
-        and ci.state == CI_STATE_TYPES.ACTIVE
-        and changed_state in (CI_STATE_TYPES.INACTIVE, CI_STATE_TYPES.WAITING)
-        and Device.objects.filter(service=ci).count() > 0
+        changed_state and
+        ci.type.id == CI_TYPES.SERVICE and
+        ci.state == CI_STATE_TYPES.ACTIVE and
+        changed_state in (CI_STATE_TYPES.INACTIVE, CI_STATE_TYPES.WAITING) and
+        Device.objects.filter(service=ci).count() > 0
     ):
         return False
     return True

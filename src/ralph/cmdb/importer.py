@@ -167,8 +167,8 @@ class CIImporter(object):
         logger.info('Importing devices.')
         asset_content_type = ContentType.objects.get_for_model(asset_class)
         prefix = cdb.CIContentTypePrefix.objects.filter(
-            content_type_name=asset_content_type.app_label + '.'
-            + asset_content_type.model.replace(' ', '')
+            content_type_name=asset_content_type.app_label + '.' +
+            asset_content_type.model.replace(' ', '')
         )
         if not prefix:
             raise TypeError(

@@ -173,8 +173,8 @@ class CIEditForm(DependencyForm, forms.ModelForm):
         state = self.instance.state
         changed_state = self.cleaned_data.get('state')
         if (
-            self.instance.id
-            and not can_change_ci_state(self.instance, changed_state)
+            self.instance.id and
+            not can_change_ci_state(self.instance, changed_state)
         ):
             message = """You can not change state to {}, because this service
             has linked devices. Click <a href="{}" target="_blank">here</a> to
