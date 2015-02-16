@@ -80,8 +80,6 @@ def clean(deployment_id):
         return True
     do_clean(deployment.device, deployment.user)
     deployment.device.name = deployment.hostname
-    deployment.device.venture = deployment.venture
-    deployment.device.venture_role = deployment.venture_role
     deployment.device.save()
     ip, created = IPAddress.concurrent_get_or_create(address=deployment.ip)
     ip.device = deployment.device
