@@ -42,6 +42,7 @@ def _network_connections_in_results(data):
 
 
 def _create_or_update_connection(device, connection_data):
+    connection = None
     if connection_data['connection_type'] != 'network':
         return
     try:
@@ -62,19 +63,20 @@ def _create_or_update_connection(device, connection_data):
             Exception message: {}.
         """.format(sn, mac_addresses, ip_addresses, unicode(e))
         logger.exception(msg)
-    connetion_details = connection_data.get('details', {})
-    if connetion_details:
-        outbound_port = connetion_details.get('outbound_port')
-        inbound_port = connetion_details.get('inbound_port')
-        try:
-            details = NetworkConnection.objects.get(connection=connection)
-        except NetworkConnection.DoesNotExist:
-            details = NetworkConnection(connection=connection)
-        if outbound_port:
-            details.outbound_port = outbound_port
-        if inbound_port:
-            details.inbound_port = inbound_port
-        details.save()
+    else:
+        connection_details = connection_data.get('details', {})
+        if connection_details:
+            outbound_port = connection_details.get('outbound_port')
+            inbound_port = connection_details.get('inbound_port')
+            try:
+                details = NetworkConnection.objects.get(connection=connection)
+            except NetworkConnection.DoesNotExist:
+                details = NetworkConnection(connection=connection)
+            if outbound_port:
+                details.outbound_port = outbound_port
+            if inbound_port:
+                details.inbound_port = inbound_port
+            details.save()
     return connection
 
 
