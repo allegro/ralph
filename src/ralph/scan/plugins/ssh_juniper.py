@@ -16,6 +16,7 @@ from ralph.scan.errors import (
 from ralph.scan.plugins import get_base_result_template
 from ralph.util.network import check_tcp_port, connect_ssh
 
+import re
 
 SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 
@@ -37,24 +38,24 @@ def _ssh_lines(ssh, command):
 
 def _get_hostname(ssh):
     for line in _ssh_lines(ssh, 'show version'):
-        if line.lower().startswith('hostname'):
-            line_chunks = line.split(':')
-            try:
-                return line_chunks[1].strip()
-            except IndexError:
-                pass  # unexpected result... maybe next line will be ok...
+        compar = re.match('.*hostname: (.*)', line.lower())
+        if compar is not None:
+            return compar.groups()[0]
+
+
+def _get_model(ssh):
+    for line in _ssh_lines(ssh, 'show version'):
+        compar = re.match('.*model: (.*)', line.lower())
+        if compar is not None:
+            return compar.groups()[0]
 
 
 def _get_mac_addresses(ssh):
     mac_addresses = []
     for line in _ssh_lines(ssh, 'show chassis mac-addresses'):
-        line = line.lower()
-        if line.startswith('public base address'):
-            mac_addresses.append(
-                MACAddressField.normalize(
-                    line.replace('public base address', '').strip()
-                )
-            )
+        compar = re.match('.*(base|public) address[ ]*(.*)', line.lower())
+        if compar is not None:
+            mac_addresses.append(MACAddressField.normalize(compar.groups()[1]))
     return mac_addresses
 
 
@@ -111,6 +112,7 @@ def _ssh_juniper(ssh, ip_address):
         'management_ip_addresses': [ip_address],
     }
     hostname = _get_hostname(ssh)
+    model = _get_model(ssh)
     mac_addresses = _get_mac_addresses(ssh)
     if hostname:
         device['hostname'] = hostname
@@ -138,7 +140,14 @@ def _ssh_juniper(ssh, ip_address):
                 )
             subdevices.append(subdevice)
         device['subdevices'] = subdevices
+
         device['model_name'] = 'Juniper Virtual Chassis Ethernet Switch'
+        if model:
+            if "ex" in model.lower():
+                device['model_name'] = 'Juniper EX Virtual Chassis Ethernet Switch'
+            if "qfx" in model.lower():
+                device['model_name'] = 'Juniper QFX Virtual Chassis Ethernet Switch'
+
         device['serial_number'] = chassis_id
     elif switches:
         device['model_name'] = switches[0]['model']
