@@ -60,7 +60,7 @@ setup(
         'pysnmp==4.2.2',
         'PyYAML==3.10',
         'python-graph-core==1.8.2',
-        'pytz==2013b',
+        'pytz==2013.6',
         'pyzabbix>=0.1',
         'ralph_assets==2.4.0',
         'requests>=0.14.2',
