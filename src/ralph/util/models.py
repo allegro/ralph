@@ -17,6 +17,7 @@ from django.contrib.contenttypes.generic import GenericForeignKey
 from django.db import models as db
 from django.db.utils import DatabaseError
 from django.dispatch import Signal
+from django import forms
 from django.utils.translation import ugettext_lazy as _
 from tastypie.models import create_api_key
 
@@ -133,6 +134,9 @@ class CustomAttribute(db.Model):
     required = db.BooleanField()
 
     def load_attributes_if_necessary(self, inst):
+        """
+        Reloads the custom attribute values for instance if they are not loaded
+        """
         if self.name not in inst.__dict__:
             inst.load_custom_attributes()
 
@@ -167,13 +171,12 @@ class CustomAttribute(db.Model):
                 attribute=self,
                 value=value,
                 object_id=inst.pk,
-                content_type=ContentType.objects.get_for_model(type(inst)),
+                content_type=type(inst).content_type,
             )
-            value_object.dirty = True
             inst.ca_values[self.type][self.pk] = value_object
         else:
             value_object.value = value
-            value_object.dirty = True
+        value_object.dirty = True
 
     def save(self, *args, **kwargs):
         super(CustomAttribute, self).save(*args, **kwargs)
@@ -237,15 +240,22 @@ class WithCustomAttributesMeta(type(db.Model)):
 
     @property
     def content_type(cls):
-        return ContentType.objects.get_for_model(cls)
+        """The content type of this class"""
+        # Only for 1.4. After 1.7 migration we can change this to get_for_model
+        return ContentType.objects.get(
+            app_label=cls._meta.app_label, 
+            model=cls.__name__.lower()
+        )
 
     @property
     def custom_attributes(cls):
+        """Lazy-loaded list of custom attributes"""
         if cls._custom_attributes is None:
             cls.refresh_custom_attributes()
         return cls._custom_attributes
 
     def refresh_custom_attributes(cls):
+        """Reloads custom attributes for this model"""
         if cls._custom_attributes is not None:
             for ca in cls._custom_attributes:
                 delattr(cls, ca.name)
