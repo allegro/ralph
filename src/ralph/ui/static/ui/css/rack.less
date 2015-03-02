@@ -222,7 +222,7 @@
                         }
                         .info {
                             position: relative;
-                            .model {
+                            .asset-description {
                                 top:0;
                                 left:0;
                                 position: absolute;
@@ -262,7 +262,7 @@
                     }
                     .generate-u(@max-u);
                     &.height-u-0 .sn, &.height-u-1 .sn {display: none;}
-                    &.position-u-1 .info .barcode, &.position-u-1 .info .model {top:0;}
+                    &.position-u-1 .info .barcode, &.position-u-1 .info .asset-description {top:0;}
                     .info {
                         display: block;
                         color: #333;
@@ -271,7 +271,7 @@
                         font-size: .825em;
                         position: relative;
                         min-height: 100%;
-                        .barcode, .model, .sn {position: absolute;}
+                        .barcode, .asset-description, .sn {position: absolute;}
                         .barcode {
                             right: @info-padding;
                             bottom: @info-padding;
@@ -280,7 +280,7 @@
                             left: @info-padding;
                             bottom: @info-padding;
                         }
-                        .model {
+                        .asset-description {
                             color: #333;
                             font-weight: bold;
                             left: @info-padding;

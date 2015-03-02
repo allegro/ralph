@@ -546,7 +546,7 @@
 .racks .rack .wrapper .devices .device.accessory .info {
   position: relative;
 }
-.racks .rack .wrapper .devices .device.accessory .info .model {
+.racks .rack .wrapper .devices .device.accessory .info .asset-description {
   top: 0;
   left: 0;
   position: absolute;
@@ -744,7 +744,7 @@
   display: none;
 }
 .racks .rack .wrapper .devices .device.position-u-1 .info .barcode,
-.racks .rack .wrapper .devices .device.position-u-1 .info .model {
+.racks .rack .wrapper .devices .device.position-u-1 .info .asset-description {
   top: 0;
 }
 .racks .rack .wrapper .devices .device .info {
@@ -757,7 +757,7 @@
   min-height: 100%;
 }
 .racks .rack .wrapper .devices .device .info .barcode,
-.racks .rack .wrapper .devices .device .info .model,
+.racks .rack .wrapper .devices .device .info .asset-description,
 .racks .rack .wrapper .devices .device .info .sn {
   position: absolute;
 }
@@ -769,7 +769,7 @@
   left: 3px;
   bottom: 3px;
 }
-.racks .rack .wrapper .devices .device .info .model {
+.racks .rack .wrapper .devices .device .info .asset-description {
   color: #333;
   font-weight: bold;
   left: 3px;

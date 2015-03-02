@@ -4,6 +4,14 @@
         <div ng-show="rack.info.description" class="description">{{ rack.info.description }}</div>
         <table class="info">
             <tr>
+                <td>Service Catalog</td>
+                <td>{{ activeItem ? activeItem.service : '-' }}</td>
+            </tr>
+            <tr>
+                <td>Hostname</td>
+                <td>{{ activeItem ? activeItem.hostname : '-' }}</td>
+            </tr>
+            <tr>
                 <td>Model</td>
                 <td>{{ activeItem ? activeItem.model : '-' }}</td>
             </tr>
@@ -24,6 +32,15 @@
                 <td>{{ activeItem ? activeItem.height : '-' }}</td>
             </tr>
             <tr>
+                <td>Management</td>
+                <td>
+                    <span ng-show="activeItem">
+                        <a target="_blank" ng-show="activeItem.management_ip" href="https://{{ activeItem.management_ip }}">{{ activeItem.management_ip }}</a>
+                    </span>
+                    <span ng-hide="activeItem">-</span>
+                </td>
+            </tr>
+            <tr>
                 <td>Remarks</td>
                 <td>{{ activeItem ? activeItem.remarks : '-' }}</td>
             </tr>
@@ -41,6 +58,14 @@
                 <td>Slot {{ activeSlot.slot_no }}</td>
                 <td>
                     <table class="info slot_info">
+                        <tr>
+                            <td>Service Catalog</td>
+                            <td>{{ activeSlot ? activeSlot.service : '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td>Hostname</td>
+                            <td>{{ activeSlot ? activeSlot.hostname : '-' }}</td>
+                        </tr>
                         <tr>
                             <td>Model</td>
                             <td>{{ activeSlot ? activeSlot.model : '-' }}</td>
