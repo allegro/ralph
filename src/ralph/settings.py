@@ -20,6 +20,11 @@ execfile(namespace_package_support)
 #
 from datetime import timedelta
 
+import logging
+l = logging.getLogger('django.db.backends')
+l.setLevel(logging.DEBUG)
+l.addHandler(logging.StreamHandler())
+
 PLUGGABLE_APPS = ('cmdb',)
 
 
@@ -158,6 +163,11 @@ LOGGING = {
             'level': 'CRITICAL',
             'propagate': False,
         },
+        'django.db.backends': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+        }
+                                            
     },
 }
 POSSIBLE_EVENTS_TIMEDELTA = timedelta(days=30)
