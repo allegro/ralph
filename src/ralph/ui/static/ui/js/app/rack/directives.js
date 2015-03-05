@@ -37,7 +37,11 @@ angular
                 $scope.$on('change_active_item', function(event, item){
                     $scope.u_range = [];
                     if (typeof item !== 'undefined' && item !== null) {
-                        for (var i = item.position; i <= item.position+item.height-1; i++) {
+                        var itemHeight = 1;     // for accessories...
+                        if (typeof(item.height) !== 'undefined') {
+                            itemHeight = item.height;
+                        }
+                        for (var i = item.position; i <= item.position+itemHeight-1; i++) {
                             $scope.u_range.push(i);
                         }
                     }

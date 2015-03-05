@@ -271,7 +271,7 @@
                         font-size: .825em;
                         position: relative;
                         min-height: 100%;
-                        .barcode, .asset-description, .sn {position: absolute;}
+                        .barcode, .asset-description, .sn, .accessory-remarks {position: absolute;}
                         .barcode {
                             right: @info-padding;
                             bottom: @info-padding;
@@ -285,6 +285,14 @@
                             font-weight: bold;
                             left: @info-padding;
                             top:@info-padding;
+                        }
+                        .accessory-remarks {
+                            right: @info-padding;
+                            bottom: @info-padding;
+                            color: #333;
+                            font-weight: bold;
+                            background-color: #fbf7aa;
+                            padding: 1px 5px;
                         }
                     }
                     .children {

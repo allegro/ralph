@@ -42,7 +42,10 @@
             </tr>
             <tr>
                 <td>Remarks</td>
-                <td>{{ activeItem ? activeItem.remarks : '-' }}</td>
+                <td>
+                    {{ activeItem ? activeItem.remarks : '-' }}
+                    <a ng-if="activeItem._type == 'accessory'" target="_blank" href="{{ rack.info.rack_admin_url }}" >Edit</a>
+                </td>
             </tr>
             <tr>
                 <td>Links</td>
