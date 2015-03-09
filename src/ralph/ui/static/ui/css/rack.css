@@ -758,7 +758,8 @@
 }
 .racks .rack .wrapper .devices .device .info .barcode,
 .racks .rack .wrapper .devices .device .info .asset-description,
-.racks .rack .wrapper .devices .device .info .sn {
+.racks .rack .wrapper .devices .device .info .sn,
+.racks .rack .wrapper .devices .device .info .accessory-remarks {
   position: absolute;
 }
 .racks .rack .wrapper .devices .device .info .barcode {
@@ -774,6 +775,14 @@
   font-weight: bold;
   left: 3px;
   top: 3px;
+}
+.racks .rack .wrapper .devices .device .info .accessory-remarks {
+  right: 3px;
+  bottom: 3px;
+  color: #333;
+  font-weight: bold;
+  background-color: #fbf7aa;
+  padding: 1px 5px;
 }
 .racks .rack .wrapper .devices .device .children {
   position: absolute;

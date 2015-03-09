@@ -1,5 +1,9 @@
 <div
     class="device height-u-1 accessory {{ item.type | slugify }} position-u-{{ item.position }}"
+    ng-click="setActiveItem(item)"
     ng-class="{active: active}"
 >
+    <div class="info">
+        <span class="accessory-remarks" ng-if="item.remarks">{{ item.remarks }}</span>
+    </div>
 </div>

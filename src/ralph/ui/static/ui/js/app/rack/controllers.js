@@ -19,7 +19,10 @@ angular
         $scope.rack = RackModel.get({rackId: rackId});
         $scope.$on('change_active_item', function (event, item) {
             $scope.activeItem = item;
-            if (item.children.indexOf($scope.activeSlot) === -1) {
+            if (
+                typeof(item.children) === 'undefined' ||
+                item.children.indexOf($scope.activeSlot) === -1
+            ) {
                 $scope.activeSlot = null;
             }
         });
