@@ -34,6 +34,7 @@ from bob.menu import MenuItem
 from bob.data_table import DataTableColumn, DataTableMixin
 from powerdns.models import Record
 
+from ralph.discovery.models import ServiceCatalog, DeviceEnvironment
 from ralph.discovery.models_component import Ethernet
 from ralph.account.models import Perm, get_user_home_page_url, ralph_permission
 from ralph.app import RalphModule
@@ -1343,6 +1344,14 @@ def bulk_update(devices, fields, data, user):
         else:
             # for checkboxes un-checking
             values[name] = data.get(name, False)
+    if 'service' in fields:
+            values['service'] = ServiceCatalog.objects.get(
+                id=int(values['service'])
+            )
+    if 'device_environment' in fields:
+        values['device_environment'] = DeviceEnvironment.objects.get(
+            id=int(values['device_environment'])
+        )
     for device in devices:
         if 'venture' in fields:
             device.venture_role = None
