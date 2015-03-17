@@ -970,3 +970,7 @@
   width: 100%;
   top: 10px;
 }
+.data-center .grid .grid_wrapper .rack:hover,
+.data-center .grid .grid_wrapper .rack.active {
+  border: solid 1px white;
+}

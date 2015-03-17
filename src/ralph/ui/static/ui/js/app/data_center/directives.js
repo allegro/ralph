@@ -16,7 +16,7 @@ angular
                 var startX = 0, startY = 0;
                 var offset;
                 var changedPosition = false;
-                scope.is_move = false;
+                scope.rack.active = false;
                 element.on('mousedown', function(event) {
                     event.preventDefault();
                     offset = element.offset();

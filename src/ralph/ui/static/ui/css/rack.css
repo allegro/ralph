@@ -5,7 +5,7 @@
   margin-top: 10px;
   background: #fff;
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid #cccccc;
   position: fixed;
   width: 250px;
   margin-right: 10px;
@@ -32,11 +32,21 @@
 }
 .rack-info .info td {
   padding: 5px;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #cccccc;
 }
 .rack-info .info td:first-child {
   width: 20%;
   font-weight: bold;
+}
+.rack-info .info tr:nth-last-child(2) > td,
+.rack-info .info tr:last-child > td {
+  border-bottom: none;
+}
+.slot_info tr:first-child > td {
+  border-top: 1px solid #cccccc;
+}
+.slot_info tr:nth-last-child(2) > td {
+  border-bottom: 1px solid #cccccc;
 }
 .racks .rack .wrapper .devices .device.position-u-1,
 .racks .rack .wrapper .listing-u .position.position-u-1 {
@@ -464,9 +474,7 @@
   width: 25px;
 }
 .racks .rack .wrapper .listing-u .position.active {
-  border-top-color: #ff9933;
-  border-bottom-color: #cc6600;
-  background: #ff8000;
+  border: 1px solid white;
 }
 .racks .rack .wrapper .pdu {
   position: relative;
@@ -502,8 +510,7 @@
   margin-bottom: 3px;
 }
 .racks .rack .wrapper .pdu pdu-item:hover {
-  background: #a6a6a6;
-  border: 1px solid #8c8c8c;
+  border: 1px solid white;
 }
 .racks .rack .wrapper .pdu pdu-item .item {
   padding: 5px;
@@ -529,19 +536,17 @@
   background: #93d932;
 }
 .racks .rack .wrapper .devices .device:hover {
-  background: #9edd48;
+  border: 1px solid white;
 }
 .racks .rack .wrapper .devices .device.active {
-  background: #c0e988;
-  border-color: #5c8b1a;
+  border: 1px solid white;
 }
 .racks .rack .wrapper .devices .device.accessory {
   background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAK0lEQVQYV2NkIBIwEqmOAVnhfxyawGrQFaLbANI82BRi8w+GG/GGFNHhCAARkQoLdFrYLgAAAABJRU5ErkJggg==) repeat-x;
   background-color: #fff;
 }
 .racks .rack .wrapper .devices .device.accessory:hover {
-  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAMElEQVQYV2NkIBIwEqmOAa6wa6/Tf2yaypz3gdWgKIQJwjSANA82hUR5hlAwER2OAO66KAsAcNbaAAAAAElFTkSuQmCC) repeat-x;
-  background-color: #fff;
+  border: 1px solid white;
 }
 .racks .rack .wrapper .devices .device.accessory .info {
   position: relative;
@@ -558,9 +563,8 @@
   background-color: #fff;
   border-color: #ccc;
 }
-.racks .rack .wrapper .devices .device.accessory.brush:hover {
-  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAAKCAYAAABxJ+R3AAAAF0lEQVQIW2NkAIKuvU7/y5z3MTIOBAcA8RQoCys/1KUAAAAASUVORK5CYII=);
-  background-color: #fff;
+.racks .rack .wrapper .devices .device.accessory.brush:over {
+  border: 1px solid white;
 }
 .racks .rack .wrapper .devices .device.accessory.organizer {
   background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAGklEQVQIW2NkYGD4D8SMQAwGcAY2AbBKDBUAVuYCBQPd34sAAAAASUVORK5CYII=);
@@ -568,8 +572,7 @@
   border-color: #ccc;
 }
 .racks .rack .wrapper .devices .device.accessory.organizer:hover {
-  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAG0lEQVQIW2M88LLjv4N4BSMDFMAZGAIwlRgqAF59CAW955lqAAAAAElFTkSuQmCC);
-  background-color: #fff;
+  border: 1px solid white;
 }
 .racks .rack .wrapper .devices .device.empty {
   background: #fff;
@@ -589,11 +592,9 @@
 .racks .rack .wrapper .devices .device.empty:after {
   right: 10px;
 }
-.racks .rack .wrapper .devices .device.empty:hover {
-  background: #eee;
-}
+.racks .rack .wrapper .devices .device.empty:hover,
 .racks .rack .wrapper .devices .device.empty.active {
-  background: #ddd;
+  border: 1px solid white;
 }
 .racks .rack .wrapper .devices .device.height-u-1 {
   height: 25px;
@@ -823,7 +824,7 @@
   white-space: nowrap;
 }
 .racks .rack .wrapper .devices .device .children [class*="slot-"]:hover {
-  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid white;
 }
 .racks .rack .wrapper .devices .device .children [class*="slot-"] .slot_no {
   display: block;
@@ -850,4 +851,37 @@
 .racks .rack .wrapper .devices .device.rows-2.cols-8.half-slots [class$="A"],
 .racks .rack .wrapper .devices .device.rows-2.cols-8.half-slots [class$="B"] {
   width: 25px;
+}
+@media all and (max-width: 1500px) {
+  .racks .rack {
+    width: 350px;
+  }
+  .racks .rack.front .wrapper .devices {
+    width: 300px;
+  }
+  .racks .rack.front .wrapper .devices .device {
+    width: 300px;
+  }
+  .racks .rack .wrapper .devices {
+    width: 200px;
+  }
+  .racks .rack .wrapper .devices .device {
+    width: 200px;
+  }
+  .racks .rack .wrapper .devices .device.rows-1.cols-2 [class*="slot-"] {
+    width: 150px;
+  }
+  .racks .rack .wrapper .devices .device.rows-2.cols-4 [class*="slot-"] {
+    width: 75px;
+  }
+  .racks .rack .wrapper .devices .device.rows-2.cols-6 [class*="slot-"] {
+    width: 50px;
+  }
+  .racks .rack .wrapper .devices .device.rows-2.cols-8 [class*="slot-"] {
+    width: 37.5px;
+  }
+  .racks .rack .wrapper .devices .device.rows-2.cols-8.half-slots [class$="A"],
+  .racks .rack .wrapper .devices .device.rows-2.cols-8.half-slots [class$="B"] {
+    width: 18.75px;
+  }
 }

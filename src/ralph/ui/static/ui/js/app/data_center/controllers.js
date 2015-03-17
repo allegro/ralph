@@ -28,6 +28,10 @@ angular
         };
 
         $scope.$on('edit_rack', function (event, rack) {
+            angular.forEach($scope.data_center.rack_set, function(rack) {
+                rack.active = false;
+            });
+            rack.active = true;
             $scope.rack = rack;
         });
     }]);
