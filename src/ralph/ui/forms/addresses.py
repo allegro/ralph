@@ -8,6 +8,7 @@ import ipaddr
 
 from bob.forms import AutocompleteWidget
 from django import forms
+from django.core.exceptions import ValidationError
 from django.template import Context
 from django.template.loader import get_template
 from django.utils.translation import ugettext_lazy as _
@@ -388,6 +389,10 @@ class IPWithHostField(forms.MultiValueField):
     widget = IPWithHostWidget()
 
     def compress(self, value):
+        if value:
+            hostname, ip_number = value
+            if not ip_number:
+                raise ValidationError(_('IP Address is required'))
         return value
 
 

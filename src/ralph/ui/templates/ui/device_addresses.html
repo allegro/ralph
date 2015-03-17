@@ -114,7 +114,7 @@
         <form class="form form-inline" action="" method="POST">
             {% csrf_token %}
 
-            {{ ip_management_form }}
+            {% form ip_management_form %}
 
             {% if canedit %}
                 <div class="buttons pull-right">

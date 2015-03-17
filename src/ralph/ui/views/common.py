@@ -941,9 +941,10 @@ class Addresses(DeviceDetailView):
             else:
                 messages.error(self.request, "Errors in the addresses form.")
         elif 'management' in self.request.POST:
-            form = IPManagementForm(self.request.POST)
-            if form.is_valid():
-                self.object.management_ip = form.cleaned_data['management_ip']
+            self.ip_management_form = IPManagementForm(self.request.POST)
+            if self.ip_management_form.is_valid():
+                self.object.management_ip =\
+                    self.ip_management_form.cleaned_data['management_ip']
                 self.object.save()
                 messages.success(
                     self.request, "Management IP address updated."
