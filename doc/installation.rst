@@ -85,6 +85,11 @@ Installing Ralph - advanced installation
 
 .. note::
 
+   Warning: The latest stable version on PyPi is very old (6 months old). Please help us testing new release using Docker Images.
+
+
+.. note::
+
    You can install Ralph on a variety of sensible operating systems. This guide
    assumes Ubuntu Server 12.04/14.04 LTS and presents shell command examples
    accordingly.  MySQL as the relational backend for Django is also assumed but
