@@ -28,7 +28,7 @@ angular
         };
 
         $scope.$on('edit_rack', function (event, rack) {
-            angular.forEach($scope.data_center.rack_set, function(rack) {
+            $scope.data_center.rack_set.forEach(function(rack) {
                 rack.active = false;
             });
             rack.active = true;
