@@ -58,8 +58,8 @@ ROOT_URLCONF = 'ralph.urls'
 TEMPLATE_DIRS = (CURRENT_DIR + "templates",)
 LOCALE_PATHS = (CURRENT_DIR + "locale",)
 INSTALLED_APPS = [
-    'django.contrib.auth',
     'django.contrib.contenttypes',
+    'django.contrib.auth',
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.messages',
