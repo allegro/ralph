@@ -26,5 +26,6 @@ Contents:
    api
    faq
    permissions
+   quickstart
    changes
    license
