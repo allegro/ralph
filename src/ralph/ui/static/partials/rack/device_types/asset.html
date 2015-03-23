@@ -1,7 +1,7 @@
 <div
     class="device height-u-{{ item.height }} position-u-{{ item.position }} {{ item.layout }}"
     ng-click="setActiveItem(item)"
-    ng-class="{has_children: item.children.length}"
+    ng-class="{has_children: item.children.length,  active: item.active}"
 >
     <div class="info">
         <span class="asset-description">{{ item.service }}: {{ item.hostname }}</span>

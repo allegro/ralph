@@ -20,6 +20,7 @@ angular
             templateUrl: '/static/partials/rack/device.html',
             controller: function($scope) {
                 $scope.setActiveItem = function(item) {
+                    item.active = true;
                     $scope.$emit('change_active_item', item);
                 };
                 $scope.setActiveSlot = function(slot) {

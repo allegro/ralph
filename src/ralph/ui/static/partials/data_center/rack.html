@@ -1,4 +1,4 @@
-<div class="rack rotate-{{ rack.orientation }} x-{{ rack.visualization_col }} y-{{ rack.visualization_row }}" ng-class="{'move': is_move, 'allowed': can_drop, 'not_allowed': !can_drop}">
+<div class="rack rotate-{{ rack.orientation }} x-{{ rack.visualization_col }} y-{{ rack.visualization_row }}" ng-class="{'active': rack.active, 'move': is_move, 'allowed': can_drop, 'not_allowed': !can_drop}">
     <a href="#/rack/{{ rack.id }}" class="wrapper" ng-show="mode == 'preview'">
         <div class="name">
             {{ rack.name | clean }}

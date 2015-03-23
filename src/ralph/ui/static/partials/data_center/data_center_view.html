@@ -28,6 +28,7 @@
         <h3>Edit {{ rack.name }}</h3>
         <div class="alert alert-info" ng-hide="rack">
             Please click <i class="icon-pencil"></i> to edit basic info about rack, click <i class="icon-repeat"></i> to rotate or just use drag and drop to edit position.
+            Use <a href="{{ data_center.admin_link }}">Admin</a> to edit DC properties.
         </div>
         <div ng-show="rack">
             <form class="form" ng-submit="updateRack(rack)">
