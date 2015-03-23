@@ -26,5 +26,6 @@ Contents:
    api
    faq
    permissions
+   ralph_quick_start
    changes
    license
