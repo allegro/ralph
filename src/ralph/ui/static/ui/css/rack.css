@@ -563,7 +563,7 @@
   background-color: #fff;
   border-color: #ccc;
 }
-.racks .rack .wrapper .devices .device.accessory.brush:over {
+.racks .rack .wrapper .devices .device.accessory.brush:hover {
   border: 1px solid white;
 }
 .racks .rack .wrapper .devices .device.accessory.organizer {
