@@ -13,21 +13,15 @@ We decided to push new images from time to time when we decide it's stable enoug
 
     docker run -i -t -name mysql_data -v /var/lib/mysql -v /home/ralph/.ralph busybox /bin/sh -c "chown default /home/ralph; chown default /home/ralph/.ralph"
 
-3. Initialize config file and empty mysql database with default login and password::
+3. Initialize config file and empty mysql database with default login and password and collect static files::
 
-    docker run -u ralph -P -t -i -volumes-from mysql_data vi4m/ralph:latest /home/ralph/bin/ralph makeconf
-    docker run -P -t -i -volumes-from mysql_data vi4m/ralph:latest /bin/bash /home/ralph/init_mysql.sh
+    docker run -P -t -i -volumes-from mysql_data allegrogroup/ralph:latest /bin/bash /home/ralph/init.sh
 
-4. Collect static files::
+4. Now, run ralph::
 
-    docker run -P -t -i -volumes-from mysql_data vi4m/ralph:latest /home/ralph/bin/ralph collectstatic
+    docker run -P -p 8000:8000 -t -i -volumes-from mysql_data allegrogroup/ralph:latest
 
-5. Now, run ralph::
-
-    docker run -P -t -i -volumes-from mysql_data vi4m/ralph:latest
-
-6. Check your instance port by typing ``docker ps -l``, for example 53914, and point your browser to: ``http://YOUR_DOCKER_IP:53914``.
-Log in using username ``ralph`` and password ``ralph``. That's all! For more information read Docker manuals. Enjoy!
+5. Open your browser to: ``http://YOUR_DOCKER_IP:8000``. That's all! For more information read Docker manuals. Enjoy!
 
 
 Upgrading an existing installation
