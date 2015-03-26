@@ -972,5 +972,5 @@
 }
 .data-center .grid .grid_wrapper .rack:hover,
 .data-center .grid .grid_wrapper .rack.active {
-  border: solid 1px white;
+  border: 1px solid white;
 }
