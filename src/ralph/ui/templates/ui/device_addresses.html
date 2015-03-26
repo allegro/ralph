@@ -111,20 +111,7 @@
 
     <div class="span6">
         <h3>Management address</h3>
-        <form class="form form-inline" action="" method="POST">
-            {% csrf_token %}
-
-            {% form ip_management_form %}
-
-            {% if canedit %}
-                <div class="buttons pull-right">
-                    {% spaceless %}
-                    <button type="submit" name="management" value="Save" class="btn btn-primary"
-                    >{% icon 'fugue-tick' %}&nbsp;Save</button>
-                    {% endspaceless %}
-                </div>
-            {% endif %}
-        </form>
+        {% form ip_management_form fugue_icons='fugue-tick' submit_name='management' %}
 
         <h3>Detected addresses</h3>
         <form class="form form-inline" action="" method="POST">
