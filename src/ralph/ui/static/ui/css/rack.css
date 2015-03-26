@@ -833,24 +833,49 @@
   background: rgba(0, 0, 0, 0.3);
   padding: 2px;
 }
-.racks .rack .wrapper .devices .device.height-u-3 .children [class*="slot-"] .slot_no {
+.racks .rack.front .wrapper .devices .device.height-u-3 .children [class*="slot-"] .slot_no {
   display: inline-block;
 }
-.racks .rack .wrapper .devices .device.rows-1.cols-2 [class*="slot-"] {
+.racks .rack.front .wrapper .devices .device.rows-1.cols-2 [class*="slot-"] {
   width: 200px;
 }
-.racks .rack .wrapper .devices .device.rows-2.cols-4 [class*="slot-"] {
+.racks .rack.front .wrapper .devices .device.rows-2.cols-4 [class*="slot-"] {
   width: 100px;
 }
-.racks .rack .wrapper .devices .device.rows-2.cols-6 [class*="slot-"] {
+.racks .rack.front .wrapper .devices .device.rows-2.cols-6 [class*="slot-"] {
   width: 66.66666667px;
 }
-.racks .rack .wrapper .devices .device.rows-2.cols-8 [class*="slot-"] {
+.racks .rack.front .wrapper .devices .device.rows-2.cols-8 [class*="slot-"] {
   width: 50px;
 }
-.racks .rack .wrapper .devices .device.rows-2.cols-8.half-slots [class$="A"],
-.racks .rack .wrapper .devices .device.rows-2.cols-8.half-slots [class$="B"] {
+.racks .rack.front .wrapper .devices .device.rows-2.cols-8.half-slots [class$="A"],
+.racks .rack.front .wrapper .devices .device.rows-2.cols-8.half-slots [class$="B"] {
   width: 25px;
+}
+.racks .rack.front .wrapper .devices .device.rows-4.cols-2 [class*="slot-"] {
+  width: 200px;
+}
+.racks .rack.back .wrapper .devices .device.height-u-3 .children [class*="slot-"] .slot_no {
+  display: inline-block;
+}
+.racks .rack.back .wrapper .devices .device.rows-1.cols-2 [class*="slot-"] {
+  width: 150px;
+}
+.racks .rack.back .wrapper .devices .device.rows-2.cols-4 [class*="slot-"] {
+  width: 75px;
+}
+.racks .rack.back .wrapper .devices .device.rows-2.cols-6 [class*="slot-"] {
+  width: 50px;
+}
+.racks .rack.back .wrapper .devices .device.rows-2.cols-8 [class*="slot-"] {
+  width: 37.5px;
+}
+.racks .rack.back .wrapper .devices .device.rows-2.cols-8.half-slots [class$="A"],
+.racks .rack.back .wrapper .devices .device.rows-2.cols-8.half-slots [class$="B"] {
+  width: 18.75px;
+}
+.racks .rack.back .wrapper .devices .device.rows-4.cols-2 [class*="slot-"] {
+  width: 150px;
 }
 @media all and (max-width: 1500px) {
   .racks .rack {
@@ -862,26 +887,54 @@
   .racks .rack.front .wrapper .devices .device {
     width: 300px;
   }
-  .racks .rack .wrapper .devices {
-    width: 200px;
+  .racks .rack.front .wrapper .devices .device.height-u-3 .children [class*="slot-"] .slot_no {
+    display: inline-block;
   }
-  .racks .rack .wrapper .devices .device {
-    width: 200px;
-  }
-  .racks .rack .wrapper .devices .device.rows-1.cols-2 [class*="slot-"] {
+  .racks .rack.front .wrapper .devices .device.rows-1.cols-2 [class*="slot-"] {
     width: 150px;
   }
-  .racks .rack .wrapper .devices .device.rows-2.cols-4 [class*="slot-"] {
+  .racks .rack.front .wrapper .devices .device.rows-2.cols-4 [class*="slot-"] {
     width: 75px;
   }
-  .racks .rack .wrapper .devices .device.rows-2.cols-6 [class*="slot-"] {
+  .racks .rack.front .wrapper .devices .device.rows-2.cols-6 [class*="slot-"] {
     width: 50px;
   }
-  .racks .rack .wrapper .devices .device.rows-2.cols-8 [class*="slot-"] {
+  .racks .rack.front .wrapper .devices .device.rows-2.cols-8 [class*="slot-"] {
     width: 37.5px;
   }
-  .racks .rack .wrapper .devices .device.rows-2.cols-8.half-slots [class$="A"],
-  .racks .rack .wrapper .devices .device.rows-2.cols-8.half-slots [class$="B"] {
+  .racks .rack.front .wrapper .devices .device.rows-2.cols-8.half-slots [class$="A"],
+  .racks .rack.front .wrapper .devices .device.rows-2.cols-8.half-slots [class$="B"] {
     width: 18.75px;
+  }
+  .racks .rack.front .wrapper .devices .device.rows-4.cols-2 [class*="slot-"] {
+    width: 150px;
+  }
+  .racks .rack.back .wrapper .devices {
+    width: 200px;
+  }
+  .racks .rack.back .wrapper .devices .device {
+    width: 200px;
+  }
+  .racks .rack.back .wrapper .devices .device.height-u-3 .children [class*="slot-"] .slot_no {
+    display: inline-block;
+  }
+  .racks .rack.back .wrapper .devices .device.rows-1.cols-2 [class*="slot-"] {
+    width: 100px;
+  }
+  .racks .rack.back .wrapper .devices .device.rows-2.cols-4 [class*="slot-"] {
+    width: 50px;
+  }
+  .racks .rack.back .wrapper .devices .device.rows-2.cols-6 [class*="slot-"] {
+    width: 33.33333333px;
+  }
+  .racks .rack.back .wrapper .devices .device.rows-2.cols-8 [class*="slot-"] {
+    width: 25px;
+  }
+  .racks .rack.back .wrapper .devices .device.rows-2.cols-8.half-slots [class$="A"],
+  .racks .rack.back .wrapper .devices .device.rows-2.cols-8.half-slots [class$="B"] {
+    width: 12.5px;
+  }
+  .racks .rack.back .wrapper .devices .device.rows-4.cols-2 [class*="slot-"] {
+    width: 100px;
   }
 }

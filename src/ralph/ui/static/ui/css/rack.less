@@ -361,7 +361,7 @@
 }
 
 // Layouts
-.racks .rack .wrapper .devices .device {
+.generate-layouts(@device-width) {
     &.height-u-3 .children {
         [class*="slot-"] {
             .slot_no {display: inline-block;}
@@ -369,63 +369,58 @@
     }
     &.rows-1.cols-2 {
         @cols: 2;
-        [class*="slot-"] {width: @devices-width-front / @cols;}
+        [class*="slot-"] {width: @device-width / @cols;}
     }
     &.rows-2.cols-4 {
         @cols: 4;
-        [class*="slot-"] {width: @devices-width-front / @cols;}
+        [class*="slot-"] {width: @device-width / @cols;}
     }
     &.rows-2.cols-6 {
         @cols: 6;
-        [class*="slot-"] {width: @devices-width-front / @cols;}
+        [class*="slot-"] {width: @device-width / @cols;}
     }
     &.rows-2.cols-8 {
         @cols: 8;
-        [class*="slot-"] {width: @devices-width-front / @cols;}
+        [class*="slot-"] {width: @device-width / @cols;}
         &.half-slots {
             [class$="A"],
             [class$="B"] {
-                width: @devices-width-front / (@cols * 2);
+                width: @device-width / (@cols * 2);
             }
         }
     }
+    &.rows-4.cols-2 {
+        @cols: 2;
+        [class*="slot-"] {width: @device-width / @cols;}
+    }
+}
+
+.racks .rack.front .wrapper .devices .device {
+    .generate-layouts(@devices-width-front);
+}
+.racks .rack.back .wrapper .devices .device {
+    .generate-layouts(@devices-width-back);
 }
 
 @media all and (max-width: 1500px) {
     .racks {
         .rack {
-            &.front .wrapper .devices {
-                width: @devices-width-front-small;
-                .device {width: @devices-width-front-small;}
-            }
             width: @rack-width-small;
-            .wrapper {
+            &.front .wrapper {
+                .devices {
+                    width: @devices-width-front-small;
+                    .device {
+                        width: @devices-width-front-small;
+                        .generate-layouts(@devices-width-front-small)
+                    }
+                }
+            }
+            &.back .wrapper {
                 .devices {
                     width: @devices-width-back-small;
                     .device {
                         width: @devices-width-back-small;
-                        &.rows-1.cols-2 {
-                            @cols: 2;
-                            [class*="slot-"] {width: @devices-width-front-small / @cols;}
-                        }
-                        &.rows-2.cols-4 {
-                            @cols: 4;
-                            [class*="slot-"] {width: @devices-width-front-small / @cols;}
-                        }
-                        &.rows-2.cols-6 {
-                            @cols: 6;
-                            [class*="slot-"] {width: @devices-width-front-small / @cols;}
-                        }
-                        &.rows-2.cols-8 {
-                            @cols: 8;
-                            [class*="slot-"] {width: @devices-width-front-small / @cols;}
-                            &.half-slots {
-                                [class$="A"],
-                                [class$="B"] {
-                                    width: @devices-width-front-small / (@cols * 2);
-                                }
-                            }
-                        }
+                        .generate-layouts(@devices-width-back-small)
                     }
                 }
             }
