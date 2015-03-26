@@ -1,6 +1,6 @@
 <div
     class="device height-u-{{ device.height }} position-u-{{ device.position }} {{ getLayout() }}"
-    ng-click="setActiveDevice(device)"
+    ng-click="setActiveItem(device)"
     ng-class="{has_children: device.children.length,  active: device.active}"
     ng-if="device.children.length || side == device.orientation"
 >
