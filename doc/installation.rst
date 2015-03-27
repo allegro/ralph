@@ -15,11 +15,11 @@ We decided to push new images from time to time when we decide it's stable enoug
 
 3. Initialize config file and empty mysql database with default login and password and collect static files::
 
-    docker run -P -t -i -volumes-from mysql_data allegrogroup/ralph:latest /bin/bash /home/ralph/init.sh
+    docker run -P -t -i --volumes-from mysql_data allegrogroup/ralph:latest /bin/bash /home/ralph/init.sh
 
 4. Now, run ralph::
 
-    docker run -P -p 8000:8000 -t -i -volumes-from mysql_data allegrogroup/ralph:latest
+    docker run -P -p 8000:8000 -t -i --mac-address=02:42:ac:11:ff:ff --volumes-from mysql_data allegrogroup/ralph:latest
 
 5. Open your browser to: ``http://YOUR_DOCKER_IP:8000``. That's all! For more information read Docker manuals. Enjoy!
 
