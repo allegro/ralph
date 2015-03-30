@@ -321,7 +321,7 @@ If you have pip 1.3.x or 1.4.x use this command::
 
 In case you have newer pip (1.5.x or newer) use slightly longer command::
 
-  (ralph)$ pip install ralph --use-mirrors --allow-all-external --allow-unverified ipaddr --allow-unverified postmarkup --allow-unverified python-graph-core --allow-unverified pysphere
+  (ralph)$ pip install ralph --use-mirrors --allow-all-external --allow-unverified ipaddr --allow-unverified postmarkup --allow-unverified pysphere
 
 That's it.
 
