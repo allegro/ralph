@@ -5,11 +5,20 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import unittest
+
 from django.test import TestCase
 
 from django.conf import settings
 from ralph.account.models import Region
 from ralph.account.tests import utils
+
+
+try:
+    from ralph.account.management.commands.ldap_sync import _truncate_surname
+    NO_LDAP_MODULE = False
+except ImportError:
+    NO_LDAP_MODULE = True
 
 
 class ModelsTest(TestCase):
@@ -38,3 +47,27 @@ class ModelsTest(TestCase):
         self.assertFalse(user_profile.is_region_granted(nld_region))
         user_profile.region_set.add(nld_region)
         self.assertTrue(user_profile.is_region_granted(nld_region))
+
+
+@unittest.skipIf(NO_LDAP_MODULE, "'ldap' module is not installed")
+class LdapSyncTest(TestCase):
+
+    def test_long_surname_is_truncated(self):
+        too_long_surname = 'this-is-to-long-surname-so-it-should-be-truncated'
+        ldap_dict = {'sn': [too_long_surname]}
+        default_django_surname_length = 30
+        _truncate_surname(ldap_dict)
+        self.assertEqual(
+            ldap_dict['sn'],
+            [too_long_surname[:default_django_surname_length]]
+        )
+
+    def test_short_surname_stays_unmodified(self):
+        short_surname = 'short-surname'
+        ldap_dict = {'sn': [short_surname]}
+        _truncate_surname(ldap_dict)
+        self.assertEqual(ldap_dict['sn'], [short_surname])
+
+    def test_truncate_works_when_no_sn(self):
+        ldap_dict = {}
+        _truncate_surname(ldap_dict)
