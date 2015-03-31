@@ -535,11 +535,10 @@
   border-top: 1px solid #aae15d;
   background: #93d932;
 }
-.racks .rack .wrapper .devices .device:hover {
-  border: 1px solid white;
-}
+.racks .rack .wrapper .devices .device:hover,
 .racks .rack .wrapper .devices .device.active {
-  border: 1px solid white;
+  border-bottom: 1px solid white;
+  border-top: 1px solid white;
 }
 .racks .rack .wrapper .devices .device.accessory {
   background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAK0lEQVQYV2NkIBIwEqmOAVnhfxyawGrQFaLbANI82BRi8w+GG/GGFNHhCAARkQoLdFrYLgAAAABJRU5ErkJggg==) repeat-x;
