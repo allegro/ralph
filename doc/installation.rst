@@ -5,7 +5,7 @@ Install / Upgrade Ralph
 Prebuilt docker image - recommeneded option
 ===========================================
 
-It is the easiest way to try out Ralph using pre-built docker image with the worker, database, and server all together. 
+It is the easiest way to try out Ralph using pre-built docker image with the worker, database, and server all together.
 We decided to push new images from time to time when we decide it's stable enough to use.
 
 1. Install docker using instructions at https://docs.docker.com/installation/
@@ -72,6 +72,24 @@ Update the settings
 Some new features added to Ralph may require additional settings to work
 properly. In order to enable them in your settings, follow the instructions in
 the :doc:`change log <changes>` for the version you installed.
+
+Example data
+------------
+
+Ralph after instalation doesn't have any example data -- for this reason you
+can run special CLI command for generate some example data such as data for
+visualization.
+
+To generate some data run ``ralph make_demo_data`` and select right option
+from menu.
+
+Available params for command:
+  * ``--flush`` - flush the databases,
+  * ``-d fixture_name`` - execute defined fixture,
+
+Example of use:
+  * ``ralph make_demo_data --flush -d envs -d services`` - flush databases and execute defined fixtures,
+  * ``ralph make_demo_data --flush `` - interactive mode.
 
 
 Installing Ralph - advanced installation
