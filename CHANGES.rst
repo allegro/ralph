@@ -1,17 +1,17 @@
 Change Log
 ----------
 
-2.2.0
+2.3.0
 ~~~~~
 
-Released on TBA
+Released on April 13, 2015
 
 New features
 ************
 * Added data center and racks visualization.
 * Ralph requires ralph_assets package.
 * Improved Xen detection.
-* Better ssh communication with cisco switches.
+* Better ssh communication with Cisco switches.
 * Added possibility to store databases in Ralph and better support for storing load balancers virtual servers.
 * Updated docs for Don Pedro agent and Ralph's installation process.
 * We've moved documentation to the rtd: http://ralph.readthedocs.org/en/latest/.
@@ -23,7 +23,6 @@ Minor improvements
 * SCAN:
     - Detaching logical subdevices not found by scan: Previously only physical subdevices not found by scan were detached. Extended this feature on logical children.
     - Detect Dell family in scan, when headers not contains `Server`
-    - Puppet-plugin: added expanduser call on cert paths.
     - Puppet plugin can get data from puppetdb-api.
     - 'Force autoscan' is now triggered only when SNMP name is missing.
 * DEPLOY:
@@ -35,22 +34,24 @@ Minor improvements
     - Scan form - now it's possible to add some new components to the existing device.
 * CMDB:
     - Set CI.state default value to ACTIVE.
+    - Restored pagination on CMDB changes subpage
 * OTHER:
     - The design of top bar is now in line with the Scrooge UI.
     - Scrooge API: Databases and Load balancer virtual servers added.
     - Added department to search form.
     - Functionality to inject custom tracking code.
     - Admin panel: changing management and management ip addresses blocked.
-    - `ralph makeconf` set pluggable apps to the reasonable defaults.
+    - `ralph makeconf` set pluggable_apps to the reasonable defaults.
     - For devices with assigned Asset (only without is_blade flag) it is no longer possible to change position.
     - You can now set user's country using LDAP attribute.
-    - Added Powerdns Record resource to REST API.
+    - Added PowerDNS Record resource to REST API.
+    - Deleted test settings for asset module
 
 Fixes
 *****
 * Fix for MAC detecting in IDRAC plugin.
-* Parent and management fields are now readonly when an asset is assigned. Before this change we could't save form.
-* Updated parse_lshw(..) to work with puppetdb_api. Used better msg when no facts found.
+* Parent and management fields are now read-only when an asset is assigned. Before this change we couldn't save form.
+* Updated parse_lshw(..) to work with puppetDB. Used better msg when no facts found.
 * Fixed docker installation.
 * Scan form now creates IPAddress object when does not exist.
 
