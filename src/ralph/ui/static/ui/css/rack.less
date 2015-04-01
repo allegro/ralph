@@ -220,11 +220,9 @@
                     border-bottom: 1px solid darken(@device-background, 10%);
                     border-top: 1px solid lighten(@device-background, 10%);
                     background: @device-background;
-                    &:hover {
-                        .active-border();
-                    }
-                    &.active {
-                        .active-border();
+                    &:hover, &.active{
+                        border-bottom: 1px solid white;
+                        border-top: 1px solid white;
                     }
                     &.accessory {
                         background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAK0lEQVQYV2NkIBIwEqmOAVnhfxyawGrQFaLbANI82BRi8w+GG/GGFNHhCAARkQoLdFrYLgAAAABJRU5ErkJggg==) repeat-x;
