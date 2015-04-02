@@ -62,7 +62,7 @@ class ACLInheritanceTest(TestCase):
             ('preboot_raw_view', 'ralph.deployment.views'),
             ('preboot_complete_view', 'ralph.deployment.views'),
             # ('puppet_classifier', 'ralph.deployment.views'),
-
+            ('dispatcher', 'bob.djid'),
             ('UserHomePage', 'ralph.account.views'),
         ]
 

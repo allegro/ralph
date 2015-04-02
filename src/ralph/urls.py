@@ -1,5 +1,6 @@
 import pluggableapp
 
+from bob.djid import Djid
 from django.contrib.auth.decorators import login_required
 from django.conf.urls.defaults import patterns, include, url
 from django.views.generic import RedirectView
@@ -168,6 +169,7 @@ urlpatterns = patterns(
     # include the lookup urls
     (r'^admin/lookups/', include(ajax_select_urls)),
     (r'^admin/', include(admin.site.urls)),
+    url(r'^djid/', include(Djid.resolver())),
 
 )
 

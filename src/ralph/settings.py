@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     'gunicorn',
     'fugue_icons',
     'bob',
+    'bob.djid',
     'tastypie',
     'ralph.account',
     'ralph.business',
