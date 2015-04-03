@@ -413,7 +413,7 @@ def get_device_data(device):
         if system.model:
             data['system_family'] = system.model.family
     connections = []
-    for conn in device.outbound_connections.all():
+    for conn in device.outbound_connections.filter(inbound__deleted=False):
         connected_device_sn = ''
         if conn.inbound.sn is not None:
             connected_device_sn = conn.inbound.sn
