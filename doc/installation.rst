@@ -29,13 +29,11 @@ Upgrading an existing installation
 
 .. note::
 
-    To upgrade docker image, just re-download docker instance and migrate database and static files:
+    To upgrade docker image, stop Ralph instance, pull new docker image and run migration script for DB and static files. 
+    
+    docker pull allegrogroup/ralph:latest /home/ralph/upgrade.sh
 
-    docker run  -P -t -i -volumes-from mysql_data vi4m/ralph:latest /home/ralph/bin/ralph migrate
-    docker run  -P -t -i -volumes-from mysql_data vi4m/ralph:latest /home/ralph/bin/ralph collectstatic
-
-
-
+    docker run  -P -t -i -volumes-from mysql_data allegrogroup/ralph:latest /home/ralph/upgrade_ralph.sh
 
 
 Before you start the upgrade, you need to stop any Ralph processes that are
