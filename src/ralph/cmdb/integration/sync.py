@@ -140,7 +140,7 @@ class JiraEventsImporter(BaseImporter):
         logger.debug(issue)
 
         def get_ci(**kwargs):
-            if set(kwargs.values()) == {None}:
+            if kwargs.values() == [None]:
                 return None
             try:
                 return db.CI.objects.get(**kwargs)
@@ -160,7 +160,6 @@ class JiraEventsImporter(BaseImporter):
                 cis = [ci for ci in [
                     get_ci(uid=uid) for uid in issue['cis']
                 ] if ci]
-
         obj = classtype.objects.filter(jira_id=issue.get('key')).all()[:1]
         prob = obj[0] if obj else classtype()
         prob.summary = force_unicode(issue.get('summary'))
