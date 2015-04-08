@@ -92,6 +92,9 @@ setup(
         'django.pluggable_app': [
             'cmdb = ralph.cmdb.app:Cmdb',
         ],
+        'ralph.demo_data_module': [
+            'ralph = ralph.util.demo',
+        ],
     },
     classifiers=[
         'Development Status :: 5 - Production/Stable',
