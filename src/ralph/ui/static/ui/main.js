@@ -2,7 +2,9 @@ require([
     'jquery',
     'bob',
     'menu',
-    'bob-ajax-select'
+    'bob-ajax-select',
+    'assets-bulk-edit',
+    'mobile-app'
 ], function ($, bob, menu, bob_ajax_select) {
     "use strict";
     $(document).ajaxSend(function(event, xhr, settings) {
@@ -21,7 +23,7 @@ require([
             }
             return cookieValue;
         }
-    
+
         function sameOrigin(url) {
             // url could be relative or scheme relative or absolute
             var host = document.location.host; // host + port
@@ -37,13 +39,13 @@ require([
         function safeMethod(method) {
             return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
         }
-    
+
         if (!safeMethod(settings.type) && sameOrigin(settings.url)) {
             xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
         }
     });
-    
-    
+
+
     $(function ($) {
         bob.initialize();
         menu.initialize();
@@ -105,7 +107,7 @@ require([
             $(this).parent('.input-prepend').find('.add-on input').prop('checked', true);
         });
         $('form.bulk-edit-form .warning input').not('.add-on *').attr('placeholder', 'Different values...');
-    
+
         /* Fill-down buttons. */
         $('a[data-fill-down]').click(function () {
             var $this = $(this);
@@ -121,7 +123,7 @@ require([
                 $field.val(value);
             } while ($field.length > 0 && counter < 1000);
         });
-    
+
         $('form#disco-form').submit(function () {
             var $form = $(this);
             var $console = $('#disco-console');
@@ -139,7 +141,7 @@ require([
                     $form.find('button, input').removeClass('disabled').attr('disabled', null);
                     $button.find('i').removeClass('loading');
                     $console.removeClass('loading');
-    
+
                     clearInterval(interval);
                     $console.val(request.responseText).removeClass('loading');
                 }
@@ -149,7 +151,7 @@ require([
             }, 1000);
             return false;
         });
-    
+
         var venture_changed = function () {
             var $venture = $(this);
             var $role = $('select#id_venture_role');
@@ -171,11 +173,11 @@ require([
                 },
                 'json'
             );
-    
+
         };
         $('select#id_venture').change(venture_changed);
         $('select#id_venture').each(venture_changed);
-    
+
         /*
             Custom datepicker - need to use input.datepicker - bootstrap
             automatically add div with datepicker class.
@@ -183,7 +185,7 @@ require([
         $('input.datepicker').datepicker({format: 'yyyy-mm-dd', autoclose: true}).click(function(){
             $("input.datepicker[name!='" + $(this).attr('name') + "']").datepicker('hide');
         });
-    
+
         var parseDate = function (input, format) {
             format = format || 'yyyy-mm-dd';
             var parts = input.match(/(\d+)/g), i = 0, fmt = {};
@@ -235,14 +237,14 @@ require([
                 '{{/months}}' +
                 '</div>' +
                 '</div>';
-    
+
         $('.daterange-form .form-actions').each(function (i, form) {
             var $form = $(form);
             var $start = $form.find('input[name="start"]');
             var $end = $form.find('input[name="end"]');
             require(['mustache'], function (Mustache) {
                 $form.prepend(Mustache.render(calendar_tmpl, calendar));
-    
+
                 $form.find('.years a').click(function (e) {
                     var $this = $(this);
                     var start_date = parseDate($start.val());
@@ -256,12 +258,12 @@ require([
                 });
                 $form.find('.months a').click(function (e) {
                     var $this = $(this);
-    
+
                     var date = parseDate($start.val());
                     date.setUTCMonth($this.data('value') - 1);
                     date.setUTCDate(1);
                     $start.val(formatDate(date));
-    
+
                     if ($end) {
                         date.setUTCMonth($this.data('value'));
                         date.setUTCDate(0);
@@ -282,7 +284,7 @@ require([
                 $(this).parents('.alerts').filter(':first').remove();
             }
         });
-    
+
         /* Make the autocomplete fields show their dropdowns immediatelly. */
         $('input.dropdown').focus(function () {
             var t = $(this).data('typeahead');
