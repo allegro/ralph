@@ -12,6 +12,7 @@ from django.test import TestCase
 from django.conf import settings
 from ralph.account.models import Region
 from ralph.account.tests import utils
+from ralph.account.ldap import manager_country_attribute_populate
 
 
 try:
@@ -71,3 +72,47 @@ class LdapSyncTest(TestCase):
     def test_truncate_works_when_no_sn(self):
         ldap_dict = {}
         _truncate_surname(ldap_dict)
+
+
+@unittest.skipIf(NO_LDAP_MODULE, "'ldap' module is not installed")
+class LdapPopulateTest(TestCase):
+
+    def _get_mocked_ldap_user(self, attrs):
+        class MockedLdapUser(object):
+            @property
+            def attrs(self):
+                return attrs
+        return MockedLdapUser()
+
+    def test_manager_country_attribute_populate_country(self):
+        ldap_attr = 'c'
+        override_settings = {'country': ldap_attr}
+        user = utils.UserFactory()
+        user_profile = user.get_profile()
+        faked_ldap_user = self._get_mocked_ldap_user({
+            ldap_attr: ['XXX']
+        })
+        with self.settings(AUTH_LDAP_PROFILE_ATTR_MAP=override_settings):
+            manager_country_attribute_populate(
+                None, user_profile, faked_ldap_user
+            )
+            self.assertEqual(user_profile.country, None)
+
+    def test_manager_country_attribute_populate_unicode_in_manager(self):
+        ldap_attr = 'manager'
+        override_settings = {'manager': ldap_attr}
+        manager_names = [unicode('Żółcień'), str('John Smith')]
+        user = utils.UserFactory()
+        user_profile = user.get_profile()
+
+        for manager_name in manager_names:
+            faked_ldap_user = self._get_mocked_ldap_user({
+                ldap_attr: ['CN={},OU=XXX,DC=group'.format(manager_name)]
+            })
+
+            with self.settings(AUTH_LDAP_PROFILE_ATTR_MAP=override_settings):
+                manager_country_attribute_populate(
+                    None, user_profile, faked_ldap_user
+                )
+            self.assertEqual(user_profile.manager, manager_name)
+            self.assertTrue(isinstance(user_profile.manager, unicode))

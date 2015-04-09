@@ -50,14 +50,20 @@ else:
             if profile_map['manager'] in ldap_user.attrs:
                 manager_ref = ldap_user.attrs[profile_map['manager']][0]
                 # CN=John Smith,OU=TOR,OU=Corp-Users,DC=mydomain,DC=internal
-                manager_ref = manager_ref.decode('utf-8')
+                # prevent UnicodeEncodeError
+                if not isinstance(manager_ref, unicode):
+                    manager_ref = manager_ref.decode('utf-8')
                 cn = manager_ref.split(',')[0][3:]
                 profile.manager = cn
+        # raw value from LDAP is in profile.country for this reason we assign
+        # some correct value
+        profile.country = None
         if 'country' in profile_map:
             if profile_map['country'] in ldap_user.attrs:
                 country = ldap_user.attrs[profile_map['country']][0]
                 if len(country) == 2:
-                    profile.country = getattr(Country, country.lower())
+                    # assign None if `country` doesn't exist in Country
+                    profile.country = getattr(Country, country.lower(), None)
 
     class MappedGroupOfNamesType(ActiveDirectoryGroupType):
 
