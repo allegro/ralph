@@ -25,8 +25,8 @@ You will need to install ``django-auth-ldap`` and ``python-ldap`` using
 
 You will need to configure the LDAP connection as well as mapping remote users
 and groups to local ones. For details consult `the official django-auth-ldap
-documentation <http://packages.python.org/django-auth-ldap/>`_. For example,
-connecting to an Active Directory service might look like this::
+documentation <http://packages.python.org/django-auth-ldap/>`_. 
+For example, connecting to an Active Directory service might look like this::
 
   import ldap
   from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
@@ -34,6 +34,7 @@ connecting to an Active Directory service might look like this::
   AUTH_LDAP_BIND_DN = "secret"
   AUTH_LDAP_BIND_PASSWORD = "secret"
   AUTH_LDAP_PROTOCOL_VERSION = 3
+  AUTH_LDAP_USER_USERNAME_ATTR = "sAMAccountName"
   AUTH_LDAP_USER_SEARCH_BASE = "DC=allegrogroup,DC=internal"
   AUTH_LDAP_USER_SEARCH_FILTER = '(&(objectClass=*)({0}=%(user)s))'.format(
     AUTH_LDAP_USER_USERNAME_ATTR)
@@ -49,6 +50,16 @@ connecting to an Active Directory service might look like this::
       "location": "officeName",
       "country": "ISO-country-code",
   }
+
+However, when using OpenDJ as a LDAP server, ``AUTH_LDAP_USER_USERNAME_ATTR`` should be equal to ``uid``::
+
+  AUTH_LDAP_USER_USERNAME_ATTR = "uid"
+
+For other implementations objectClass may have the following values:
+
+ * Active Directory: objectClass=user,
+ * Novell eDirectory: objectClass=inetOrgPerson,
+ * Open LDAP: objectClass=posixAccount
 
 Manager is special field and is treated as reference to another user,
 for example "CN=John Smith,OU=TOR,OU=Corp-Users,DC=mydomain,DC=internal"
@@ -80,6 +91,14 @@ do are:
   AUTH_LDAP_GROUP_SEARCH = LDAPSearch("DC=organization,DC=internal",
       ldap.SCOPE_SUBTREE, '(objectClass=group)')
 
+Note: For OpenDJ implementation ``AUTH_LDAP_GROUP_MAPPING`` is not obligatory. ``AUTH_LDAP_GROUP_TYPE`` and ``AUTH_LDAP_GROUP_SEARCH`` should be set as follows::
+
+  from django_auth_ldap.config import GroupOfUniqueNamesType
+  AUTH_LDAP_GROUP_TYPE = GroupOfUniqueNamesType()
+  AUTH_LDAP_GROUP_SEARCH = LDAPSearch("DC=organization,DC=internal",
+    ldap.SCOPE_SUBTREE, '(structuralObjectClass=groupOfUniqueNames)')
+
+
 If you want to define ldap groups with names identical to ralph roles, you
 shouldn't declare mapping ``AUTH_LDAP_GROUP_MAPPING``. If there are any one
 mapping defined another groups will be filtered. Some groups have
@@ -93,8 +112,9 @@ You can define users filter, if you don't want to import all users to ralph::
         'DC=mygroup,DC=domain)(memberOf=CN=_gr_ralph_group2,OU=something else,'\
         'DC=mygroups,DC=domain))'
 
+In case of OpenDJ please use ``isMemberOf`` instead of ``memberOf``.
 
-
+    
 Gunicorn
 --------
 
