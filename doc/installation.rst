@@ -8,7 +8,7 @@ Prebuilt docker image - recommeneded option
 It is the easiest way to try out Ralph using pre-built docker image with the worker, database, and server all together. 
 We decided to push new images from time to time when we decide it's stable enough to use.
 
-1. Install docker using instructions at https://docs.docker.com/installation/
+1. Install docker using instructions at https://docs.docker.com/installation/. Use Docker version > 1.5
 2. Create volume data for mysql data and configuration::
 
     docker run -i -t -name mysql_data -v /var/lib/mysql -v /home/ralph/.ralph busybox /bin/sh -c "chown default /home/ralph; chown default /home/ralph/.ralph"
