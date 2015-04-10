@@ -50,7 +50,6 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'lck.django.activitylog.middleware.ActivityMiddleware',
     'lck.django.common.middleware.ForceLanguageCodeMiddleware',
     'ralph.middleware.RegionMiddleware',
 )
@@ -68,7 +67,6 @@ INSTALLED_APPS = [
     'django_rq',
     'south',
     'lck.django.common',
-    'lck.django.activitylog',
     'lck.django.profile',
     'lck.django.score',
     'lck.django.tags',
@@ -187,7 +185,6 @@ MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 # activity middleware settings
 CURRENTLY_ONLINE_INTERVAL = 300
 RECENTLY_ONLINE_INTERVAL = 900
-ACTIVITYLOG_PROFILE_MODEL = AUTH_PROFILE_MODULE
 # lck.django.common models
 EDITOR_TRACKABLE_MODEL = AUTH_PROFILE_MODULE
 # lck.django.score models
