@@ -25,7 +25,12 @@ from ralph.discovery.models_device import (
     LoadBalancerVirtualServer,
 )
 from ralph.cmdb.tests import utils as cmdb_utils
-from ralph.discovery.models_network import Network, IPAddress
+from ralph.discovery.models_network import (
+    DiscoveryQueue,
+    Environment,
+    IPAddress,
+    Network,
+)
 from ralph_assets.models_dc_assets import DeprecatedRalphDC, DeprecatedRalphRack
 
 
@@ -162,6 +167,18 @@ class DatabaseFactory(DjangoModelFactory):
     database_type = SubFactory(DatabaseTypeFactory)
     parent_device = SubFactory(DeviceFactory)
     name = Sequence(lambda n: 'DB{}'.format(n))
+
+
+class DiscoveryQueueFactory(DjangoModelFactory):
+    FACTORY_FOR = DiscoveryQueue
+
+    name = Sequence(lambda n: 'Queue {}'.format(n))
+
+
+class EnvironmentFactory(DjangoModelFactory):
+    FACTORY_FOR = Environment
+
+    name = Sequence(lambda n: 'Environment {}'.format(n))
 
 
 class MockSSH(object):
