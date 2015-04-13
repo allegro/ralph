@@ -34,18 +34,17 @@ Minor improvements
     - Scan form - now it's possible to add some new components to the existing device.
 * CMDB:
     - Set CI.state default value to ACTIVE.
-    - Restored pagination on CMDB changes subpage
 * OTHER:
     - The design of top bar is now in line with the Scrooge UI.
     - Scrooge API: Databases and Load balancer virtual servers added.
     - Added department to search form.
     - Functionality to inject custom tracking code.
     - Admin panel: changing management and management ip addresses blocked.
-    - `ralph makeconf` set pluggable_apps to the reasonable defaults.
+    - `ralph makeconf` set pluggable apps to the reasonable defaults.
     - For devices with assigned Asset (only without is_blade flag) it is no longer possible to change position.
     - You can now set user's country using LDAP attribute.
     - Added PowerDNS Record resource to REST API.
-    - Deleted test settings for asset module
+    - Deleted test settings for asset module.
 
 Fixes
 *****
