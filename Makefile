@@ -24,3 +24,5 @@ test-doc:
 
 
 test-with-coveralls: test-doc test-unittests
+check-templates: 
+	django-template-i18n-lint .

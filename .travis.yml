@@ -17,13 +17,15 @@ install:
   - pip install coveralls
   - pip install flake8
   - pip install django-auth-ldap==1.1.3
+  - pip install git+https://github.com/rory/django-template-i18n-lint
 
 
 # command to run tests, e.g. python setup.py test
 script: make test-with-coveralls
 before_script:
-  make flake
-
+  - make flake
+  - make check-templates
+ 
 after_success:
   - coveralls
 
