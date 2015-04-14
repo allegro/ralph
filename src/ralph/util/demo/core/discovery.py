@@ -5,13 +5,17 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from ralph.discovery.models import Device, DeviceModel, DeviceType, Network
+
 from ralph.discovery.tests.util import (
     DeprecatedDataCenterFactory,
     DeprecatedRackFactory,
     DeviceFactory,
     DiscoveryQueueFactory,
+    EnvironmentFactory,
 )
 from ralph.util.demo import DemoData, register
+from ralph.discovery.models import DataCenter as DiscoveryDataCenter
 
 
 @register
@@ -23,6 +27,20 @@ class DemoDiscoveryQueue(DemoData):
         return {
             'a': DiscoveryQueueFactory.create(name='Queue A'),
             'b': DiscoveryQueueFactory.create(name='Queue B')
+        }
+
+
+@register
+class DemoDiscoveryDataCenter(DemoData):
+    name = 'discovery_dc'
+    title = 'Discovery DC'
+
+    def generate_data(self, data):
+        a = DiscoveryDataCenter.objects.create(name='DC A')
+        b = DiscoveryDataCenter.objects.create(name='DC B')
+        return {
+            'a': a,
+            'b': b
         }
 
 
@@ -78,13 +96,14 @@ class DemoDevices(DemoData):
 
     def generate_data(self, data):
         return {
-            'device_1': DeviceFactory(
+            'device_1': Device.get_or_create_by_mac(
+                '02:42:ac:11:ff:ff',
                 parent=data['deprecated_dc']['a'],
                 dc=data['deprecated_dc']['a'].name,
                 rack=data['deprecated_racks']['a'].name,
                 service=data['services']['infrastructure'],
                 device_environment=data['envs']['prod'],
-            ),
+            )[0],
             'device_2': DeviceFactory(
                 parent=data['deprecated_dc']['b'],
                 dc=data['deprecated_dc']['b'].name,
@@ -92,4 +111,83 @@ class DemoDevices(DemoData):
                 service=data['services']['infrastructure'],
                 device_environment=data['envs']['prod'],
             ),
+        }
+
+
+@register
+class DemoNetworkEnvs(DemoData):
+    name = 'network_envs'
+    title = 'Network envs'
+    required = ['discovery_queue', 'discovery_dc']
+
+    def generate_data(self, data):
+        return {
+            'a': EnvironmentFactory.create(
+                name='Environment A',
+                data_center=data['discovery_dc']['a'],
+                queue=data['discovery_queue']['a'],
+                hosts_naming_template='h<100,199>.dc',
+            ),
+            'b': EnvironmentFactory.create(
+                name='Environment B',
+                data_center=data['discovery_dc']['b'],
+                queue=data['discovery_queue']['b'],
+                hosts_naming_template='h<200,299>.dc',
+            )
+        }
+
+
+@register
+class DemoDeviceRack(DemoData):
+    name = 'device_racks'
+    title = 'Device Racks'
+
+    def generate_data(self, data):
+        model = DeviceModel(name='Generic rack', type=DeviceType.rack)
+        return {
+            'a': DeviceFactory.create(
+                model=model,
+                sn='S4A2FD39I',
+            ),
+            'b': DeviceFactory.create(
+                model=model,
+                sn='D8K9OKD7K',
+            ),
+            'c': DeviceFactory.create(
+                model=model,
+                sn='FI8LJ0DA4',
+            ),
+            'd': DeviceFactory.create(
+                model=model,
+                sn='U798DA32D',
+            ),
+        }
+
+
+@register
+class DemoNetworks(DemoData):
+    name = 'networks'
+    title = 'Networks'
+    required = ['device_racks', 'network_envs']
+
+    def generate_data(self, data):
+        network_a = Network.objects.create(
+            name='Network A',
+            address='0.0.0.0/0',
+            environment=data['network_envs']['a'],
+        )
+        network_a.racks.add(data['device_racks']['a'])
+        network_a.racks.add(data['device_racks']['c'])
+
+        network_b = Network.objects.create(
+            name='Network B',
+            address='10.0.0.0/0',
+            environment=data['network_envs']['a'],
+        )
+        network_a.racks.add(data['device_racks']['b'])
+        network_a.racks.add(data['device_racks']['d'])
+
+        return {
+            'a': network_a,
+            'b': network_b,
         }
