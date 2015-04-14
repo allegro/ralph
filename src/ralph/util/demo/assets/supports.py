@@ -23,7 +23,7 @@ class DemoSupports(DemoData):
     def generate_data(self, data):
         dc_support = DCSupportFactory()
         dc_support.assets.add(data['assets_dc_assets']['rack_server'])
-        dc_support.assets.add(data['assets_dc_assets']['blade_servers'])
+        dc_support.assets.add(*data['assets_dc_assets']['blade_servers'])
         return {
             'dc_support': dc_support
         }
