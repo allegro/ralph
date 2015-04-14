@@ -35,12 +35,12 @@ class DemoDeprecatedDataCenter(DemoData):
     def generate_data(self, data):
         return {
             'a': DeprecatedDataCenterFactory(
-                name=data['discovery_queue']['a'].name,
+                name='DC A',
                 service=data['services']['infrastructure'],
                 device_environment=data['envs']['prod'],
             ),
             'b': DeprecatedDataCenterFactory(
-                name=data['discovery_queue']['b'].name,
+                name='DC B',
                 service=data['services']['infrastructure'],
                 device_environment=data['envs']['prod'],
             ),
