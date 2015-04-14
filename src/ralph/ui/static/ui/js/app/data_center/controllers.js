@@ -2,29 +2,64 @@
 
 angular
     .module('data_center.controllers', [
-            'ngCookies',
             'data_center.services',
             'data_center.directives',
             'rack.services'
         ]
     )
-    .controller('DataCenterController', ['$scope', '$cookies', 'DataCenterModel', 'RackModel', function ($scope, $cookies, DataCenterModel, RackModel) {
+    .controller('DataCenterController', ['$scope', '$stateParams', 'data_center', 'RackModel', function ($scope, $stateParams, data_center, RackModel) {
         var gridSize = 40;
-        $scope.data_center = DataCenterModel.get({dcId: $cookies.data_center_id});
+
+        $scope.forms = {};
+        $scope.data_center = data_center;
 
         $scope.setInfo = function(item) {
             $scope.info = item;
         };
 
+        $scope.newRack = function(data_center, x, y) {
+            var rack = new RackModel();
+            rack.visualization_col = x;
+            rack.visualization_row = y;
+            rack.orientation = 'top';
+            rack.name = 'New rack';
+            rack.data_center = data_center.id;
+            rack.new = true;
+            data_center.rack_set.push(rack);
+            $scope.$emit('edit_rack', rack);
+        };
+
         $scope.updatePosition = function(event) {
+            if (event.currentTarget != event.target)
+            {
+                return;
+            }
             var offsetX = event.offsetX || event.pageX - event.target.offsetLeft;
             var offsetY = event.offsetY || event.pageY - event.target.offsetTop;
             $scope.actualX = (offsetX - (offsetX % gridSize)) / gridSize;
             $scope.actualY = (offsetY - (offsetY % gridSize)) / gridSize;
         };
 
-        $scope.updateRack = function(rack) {
-            new RackModel(rack).$update();
+        $scope.addOrEdit = function(rack) {
+            var rack_model = new RackModel(rack);
+            var rack_promise = null;
+            if (rack.id !== undefined) {
+                rack_promise = rack_model.$update();
+            }
+            else {
+                rack_promise = rack_model.$save();
+            }
+            rack_promise.then(function(data) {
+                if (data.__all__) {
+                    $scope.forms.edit_form.$error.all = data.__all__;
+                }
+                else {
+                    rack.new = false;
+                    rack.saved = true;
+                    $scope.forms.edit_form.$error.all = null;
+                    $scope.forms.edit_form.$success = ['The rack has benn successfully successfully to data center.'];
+                }
+            });
         };
 
         $scope.$on('edit_rack', function (event, rack) {
@@ -33,5 +68,8 @@ angular
             });
             rack.active = true;
             $scope.rack = rack;
+            $scope.forms.edit_form.action = 'edit';
+            $scope.forms.edit_form.$error = {};
+            $scope.forms.edit_form.$success = [];
         });
     }]);

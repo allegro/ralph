@@ -19,6 +19,7 @@
         {% endblock %}
         {% if TRACKING_CODE %}{{ TRACKING_CODE|safe }}{% endif %}
         {% block scripts %}
+            <script src="{{ STATIC_URL }}jquery-1.7.2.min.js"></script>
             <script src="{{ STATIC_URL }}require.js"></script>
             <!-- Use require.js for mustache! -->
             <script src="{{ STATIC_URL }}ui/main.js"></script>

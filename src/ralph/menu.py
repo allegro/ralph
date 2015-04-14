@@ -89,9 +89,10 @@ class CoreMenu(Menu):
                 )
             )
         if self.has_perm(Perm.read_dc_structure):
-            submodules.append(
-                MenuItem(_('Racks'), fugue_icon='fugue-building',
-                         view_name='racks'))
+            submodules.append(MenuItem(_('Racks'), view_name='racks'))
+            submodules.append(MenuItem(
+                _('DC View'), name='dc_view', view_name='dc_view')
+            )
         submodules.append(
             MenuItem(_('Ralph CLI'), fugue_icon='fugue-terminal',
                      href='#beast'))
