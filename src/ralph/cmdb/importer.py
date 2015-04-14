@@ -42,10 +42,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
-os.environ['DJANGO_SETTINGS_MODULE'] = "ralph.settings"
 
 import logging
-logger = logging.getLogger(__name__)
 
 from django.contrib.contenttypes.models import ContentType
 
@@ -55,6 +53,10 @@ import ralph.business.models as bdb
 import ralph.cmdb.models as cdb
 from django.db import IntegrityError
 from lck.django.common import nested_commit_on_success
+
+
+os.environ['DJANGO_SETTINGS_MODULE'] = "ralph.settings"
+logger = logging.getLogger(__name__)
 
 
 def get_layers_for_ci_type(ci_type_id):
@@ -165,8 +167,8 @@ class CIImporter(object):
         logger.info('Importing devices.')
         asset_content_type = ContentType.objects.get_for_model(asset_class)
         prefix = cdb.CIContentTypePrefix.objects.filter(
-            content_type_name=asset_content_type.app_label + '.'
-            + asset_content_type.model.replace(' ', '')
+            content_type_name=asset_content_type.app_label + '.' +
+            asset_content_type.model.replace(' ', '')
         )
         if not prefix:
             raise TypeError(

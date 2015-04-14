@@ -17,7 +17,6 @@ import operator
 from ralph.cmdb.monkey import method_check
 import tastypie
 from tastypie.resources import Resource
-Resource.method_check = method_check
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -29,12 +28,15 @@ from tastypie import fields
 from tastypie.fields import ForeignKey as TastyForeignKey, ToOneField
 from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
+from tastypie.validation import Validation
 
 from ralph.account.api_auth import RalphAuthorization
 from ralph.account.models import Perm, Profile
 from ralph.cmdb.models import (
     CI,
-    CIType,
+    CI_RELATION_TYPES,
+    CIAttribute,
+    CIAttributeValue,
     CIChange,
     CIChangeCMDBHistory,
     CIChangeGit,
@@ -42,14 +44,13 @@ from ralph.cmdb.models import (
     CIChangeZabbixTrigger,
     CILayer,
     CIRelation,
-    CI_RELATION_TYPES,
-    CIAttribute,
-    CIAttributeValue,
+    CIType,
 )
 from ralph.cmdb import models as db
 from ralph.cmdb.models_ci import CIOwner, CIOwnershipType
-from ralph.cmdb.util import breadth_first_search_ci
+from ralph.cmdb.util import breadth_first_search_ci, can_change_ci_state
 
+Resource.method_check = method_check
 
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 TIMEFRAME = settings.API_THROTTLING['timeframe']
@@ -361,6 +362,24 @@ class RelationField(tastypie.fields.ApiField):
         pass
 
 
+class CIResourceValidation(Validation):
+
+    def is_valid(self, bundle, request=None):
+        errors = {}
+        if not bundle.obj.pk:
+            return errors
+        try:
+            ci = CI.objects.get(pk=bundle.obj.pk)
+        except CI.DoesNotExist:
+            return {'__all__': 'This object does not exist.'}
+        changed_state = bundle.data.get('state')
+        if not can_change_ci_state(ci, changed_state):
+            message = """You can not change state because this service has
+            linked devices."""
+            errors['state'] = ' '.join(message.split())
+        return errors
+
+
 class CIResource(MResource):
 
     ci_link = LinkField(view='ci_view_main', as_qs=False)
@@ -421,6 +440,7 @@ class CIResource(MResource):
             timeframe=TIMEFRAME,
             expiration=EXPIRATION,
         )
+        validation = CIResourceValidation()
 
 
 class CIResourceV010(CIResource):

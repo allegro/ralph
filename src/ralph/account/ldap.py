@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 
 import logging
 
+from dj.choices import Country
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ else:
         user.is_active = 'active' in ldap_user.group_names
 
     @receiver(populate_user_profile)
-    def manager_attribute_populate(sender, profile, ldap_user, **kwargs):
+    def manager_country_attribute_populate(sender, profile, ldap_user, **kwargs):
         try:
             profile_map = settings.AUTH_LDAP_PROFILE_ATTR_MAP
         except AttributeError:
@@ -52,6 +53,11 @@ else:
                 manager_ref = manager_ref.decode('utf-8')
                 cn = manager_ref.split(',')[0][3:]
                 profile.manager = cn
+        if 'country' in profile_map:
+            if profile_map['country'] in ldap_user.attrs:
+                country = ldap_user.attrs[profile_map['country']][0]
+                if len(country) == 2:
+                    profile.country = getattr(Country, country.lower())
 
     class MappedGroupOfNamesType(ActiveDirectoryGroupType):
 

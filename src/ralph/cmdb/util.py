@@ -9,7 +9,8 @@ from __future__ import unicode_literals
 from bob.data_table import DataTableColumn
 from django.db.models import Q
 
-from ralph.cmdb.models import CI
+from ralph.cmdb.models import CI, CI_STATE_TYPES, CI_TYPES
+from ralph.discovery.models import Device
 
 
 def report_filters(cls, order, filters=None):
@@ -211,3 +212,15 @@ def register_event(ci, event):
     def set_event(current_ci):
         event.cis.add(current_ci)
     walk(ci, set_event, up=False)
+
+
+def can_change_ci_state(ci, changed_state):
+    if (
+        changed_state and
+        ci.type.id == CI_TYPES.SERVICE and
+        ci.state == CI_STATE_TYPES.ACTIVE and
+        changed_state in (CI_STATE_TYPES.INACTIVE, CI_STATE_TYPES.WAITING) and
+        Device.objects.filter(service=ci).count() > 0
+    ):
+        return False
+    return True

@@ -16,7 +16,7 @@ from factory import (
 )
 from factory.django import DjangoModelFactory
 
-from ralph.account.models import BoundPerm
+from ralph.account.models import BoundPerm, Profile, Perm
 
 
 def create_user(username='ralph', password='ralph', email='ralph@ralph.local',
@@ -41,8 +41,15 @@ def login_as_su(username='ralph', password='ralph', email='ralph@ralph.local',
 class UserTestCase(TestCase):
     """A test case that creates a user and allows to test API with it."""
 
+    is_staff = True
+    is_superuser = True
+
     def setUp(self):
-        self.user = create_user('api_user', 'test@mail.local', 'password')
+        self.user = UserFactory(
+            is_staff=self.is_staff,
+            is_superuser=self.is_superuser,
+        )
+
         self.headers = {
             'HTTP_ACCEPT': 'application/json',
             'HTTP_AUTHORIZATION': 'ApiKey {}:{}'.format(
@@ -51,6 +58,13 @@ class UserTestCase(TestCase):
         }
         cache.delete("api_user_accesses")
         super(UserTestCase, self).setUp()
+
+
+    def add_perms(self, perms):
+        """Adds a given permission to the test user"""
+        user_profile = Profile.objects.get(user=self.user)
+        for perm in perms:
+            BoundPerm(profile=user_profile, perm=perm).save()
 
     def generic_method(method, default_data):
         def result(self, path, data=default_data, **kwargs):

@@ -5,11 +5,29 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from django import forms
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import ModelAdmin
 
 from ralph.dnsedit.models import DHCPEntry, DNSHistory, DHCPServer, DNSServer
+
+
+class DHCPEntryAdminForm(forms.ModelForm):
+
+    class Meta:
+        model = DHCPEntry
+
+    def clean_ip(self):
+        ip = self.cleaned_data['ip']
+        queryset = DHCPEntry.objects.filter(ip=ip)
+        if self.instance:
+            queryset = queryset.exclude(id=self.instance.id)
+        if queryset.count() > 0:
+            raise forms.ValidationError(
+                _('DHCP entry with this IP address already exists.'),
+            )
+        return ip
 
 
 class DHCPEntryAdmin(ModelAdmin):
@@ -22,6 +40,7 @@ class DHCPEntryAdmin(ModelAdmin):
     list_display = (ip_address, 'mac')
     search_fields = ('ip', 'mac')
     save_on_top = True
+    form = DHCPEntryAdminForm
 
 admin.site.register(DHCPEntry, DHCPEntryAdmin)
 

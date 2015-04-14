@@ -9,18 +9,23 @@ from django.db import models as db
 
 from ralph.cmdb.models import CI, CIAttributeValue, CIOwner, CIType
 from ralph.discovery.models import (
+    Database,
     Device,
     DeviceEnvironment,
     DeviceType,
     DiskShareMount,
     FibreChannel,
     IPAddress,
+    LoadBalancerVirtualServer,
 )
+from ralph.util.api import Getter
 
 
 def get_virtual_usages(parent_service_uid=None):
     """Yields dicts reporting the number of virtual cores, memory and disk."""
-    devices = Device.objects.filter(model__type=DeviceType.virtual_server)
+    devices = Device.objects.filter(
+        model__type=DeviceType.virtual_server
+    ).select_related('model')
     if parent_service_uid:
         devices = devices.filter(
             parent__service__uid=parent_service_uid,
@@ -50,6 +55,8 @@ def get_virtual_usages(parent_service_uid=None):
             'virtual_cores': cores or 0,
             'virtual_memory': memory or 0,
             'virtual_disk': disk or 0,
+            'model_id': device.model_id,
+            'model_name': device.model.name,
         }
 
 
@@ -114,20 +121,23 @@ def get_fc_cards():
         }
 
 
-def get_environments():
-    for environment in DeviceEnvironment.objects.all():
-        yield {
-            'ci_id': environment.id,
-            'ci_uid': environment.uid,
-            'name': environment.name,
-        }
+class get_environments(Getter):
+    Model = DeviceEnvironment
+    fields = [
+        ('ci_id', 'id'),
+        ('ci_uid', 'uid'),
+        'name'
+    ]
 
 
-def get_openstack_tenants():
-    for tenant in Device.objects.filter(
+def get_openstack_tenants(model_name=None):
+    tenants = Device.objects.filter(
         sn__startswith='openstack',
         model__type=DeviceType.cloud_server
-    ):
+    )
+    if model_name:
+        tenants = tenants.filter(model__name=model_name)
+    for tenant in tenants:
         yield {
             'device_id': tenant.id,
             'tenant_id': tenant.sn[len('openstack-'):],
@@ -149,18 +159,84 @@ def get_blade_servers():
         }
 
 
+class get_vips(Getter):
+    Model = LoadBalancerVirtualServer
+
+    fields = [
+        ('vip_id', 'id'),
+        'name',
+        ('ip_address', 'address__address'),
+        ('type_id', 'load_balancer_type_id'),
+        ('type', 'load_balancer_type__name'),
+        'service_id',
+        ('environment_id', 'device_environment_id'),
+        'device_id',
+        'port',
+    ]
+
+    def __init__(self, parent_service_uid=None, load_balancer_type=None):
+        self.parent_service_uid = parent_service_uid
+        self.load_balancer_type = load_balancer_type
+
+    def get_queryset(self):
+        result = super(get_vips, self).get_queryset()
+        if self.parent_service_uid:
+            result = result.filter(
+                device__service__uid=self.parent_service_uid
+            )
+        if self.load_balancer_type:
+            result = result.filter(
+                load_balancer_type__name=self.load_balancer_type
+            )
+        return result
+
+
+class get_databases(Getter):
+    Model = Database
+
+    fields = [
+        ('database_id', 'id'),
+        'name',
+        ('type_id', 'database_type_id'),
+        ('type', 'database_type__name'),
+        'service_id',
+        ('environment_id', 'device_environment_id'),
+        'parent_device_id',
+    ]
+
+    def __init__(self, parent_service_uid=None, database_type=None):
+        self.parent_service_uid = parent_service_uid
+        self.database_type = database_type
+
+    def get_queryset(self):
+        result = super(get_databases, self).get_queryset()
+        if self.parent_service_uid:
+            result = result.filter(
+                parent_device__service__uid=self.parent_service_uid
+            )
+        if self.database_type:
+            result = result.filter(
+                database_type__name=self.database_type
+            )
+        return result
+
+
 # CMDB
-def get_business_lines():
+class get_business_lines(Getter):
     """
     Returns Business Lines from CMDB (CIs with type Business Line)
     """
-    business_line_type = CIType.objects.get(name='BusinessLine')
-    for business_line in CI.objects.filter(type=business_line_type):
-        yield {
-            'ci_id': business_line.id,
-            'ci_uid': business_line.uid,
-            'name': business_line.name,
-        }
+    Model = CI
+
+    @property  # When testing the table won't exist during import
+    def filters(self):
+        return {'type': CIType.objects.get(name='BusinessLine')}
+
+    fields = [
+        ('ci_id', 'id'),
+        ('ci_uid', 'uid'),
+        'name',
+    ]
 
 
 def get_profit_centers():
@@ -188,15 +264,12 @@ def get_profit_centers():
         }
 
 
-def get_owners():
+class get_owners(Getter):
     """
     Returns CIOwners from CMDB
     """
-    for owner in CIOwner.objects.all():
-        yield {
-            'id': owner.id,
-            'profile_id': owner.profile_id,
-        }
+    Model = CIOwner
+    fields = ['id', 'profile_id']
 
 
 def get_services(only_calculated_in_scrooge=False):

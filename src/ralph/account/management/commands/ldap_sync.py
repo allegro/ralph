@@ -4,6 +4,7 @@ import sys
 import logging
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from ldap.controls import SimplePagedResultsControl
 
@@ -20,6 +21,16 @@ try:
 except ImportError:
     logger.debug("Install python-ldap and django_auth_ldap packages")
     ldap_module_exists = False
+
+
+def _truncate_surname(ldap_dict):
+    """
+    Truncate user's surname when it's longer then default django value, which is
+    30 chars.
+    """
+    if 'sn' in ldap_dict:
+        max_length = User._meta.get_field('last_name').max_length
+        ldap_dict['sn'] = [surname[:max_length] for surname in ldap_dict['sn']]
 
 
 class Command(BaseCommand):
@@ -128,6 +139,7 @@ class Command(BaseCommand):
         """Load users from ldap and populate them. Returns number of users."""
         synced = 0
         for user_dn, ldap_dict in self._get_users():
+            _truncate_surname(ldap_dict)
             self._create_or_update_user(user_dn, ldap_dict)
             synced += 1
         return synced

@@ -8,20 +8,18 @@ from __future__ import unicode_literals
 
 import functools
 
-
 from django.conf import settings
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models as db
 from django.http import HttpResponseBadRequest
 from django.utils.translation import ugettext_lazy as _
 
-
 from dj.choices import Choices
 from dj.choices.fields import ChoiceField
 from lck.django.activitylog.models import MonitoredActivity
-from lck.django.common.models import TimeTrackable, EditorTrackable
+from lck.django.common.models import EditorTrackable, Named, TimeTrackable
 from lck.django.profile.models import (
     BasicInfo,
     ActivationSupport,
@@ -82,6 +80,20 @@ class Perm(Choices):
     has_scrooge_access = _("has_scrooge_access")
 
 
+class Region(Named):
+    """Used for distinguishing the origin of the object by region"""
+
+    profile = db.ManyToManyField('Profile')
+
+    @classmethod
+    def get_default_region(cls):
+        obj, created = cls.objects.get_or_create(name=settings.DEFAULT_REGION_NAME)
+        return obj
+
+    def __unicode__(self):
+        return self.name
+
+
 class Profile(BasicInfo, ActivationSupport, GravatarSupport,
               MonitoredActivity):
 
@@ -102,9 +114,18 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
     department = db.CharField(max_length=64, blank=True)
     manager = db.CharField(max_length=1024, blank=True)
     location = db.CharField(max_length=128, blank=True)
+    segment = db.CharField(max_length=256, blank=True)
 
     def __unicode__(self):
         return self.nick
+
+    def get_regions(self):
+        regions = self.region_set.all()
+        if not regions:
+            regions = Region.objects.filter(
+                name=settings.DEFAULT_REGION_NAME,
+            )
+        return regions
 
     def has_perm(self, perm, obj=None, role=None):
         if not self.is_active:
@@ -181,6 +202,9 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
             db.Q(venture__parent__parent__parent__boundperm__group__in=groups,
                  venture__parent__parent__parent__boundperm__perm=perm.id)
         ).distinct()
+
+    def is_region_granted(self, region):
+        return self.region_set.filter(pk=region.id).exists()
 
 
 class BoundPerm(TimeTrackable, EditorTrackable):
@@ -261,8 +285,9 @@ def ralph_permission(perms=None):
             user = request.user
             # for API views not handled by Tastypie (e.g. puppet_classifier)
             if user.is_anonymous():
-                user = api.get_user(request)
-                if not api.is_authenticated(user, request):
+                try:
+                    user = api.get_user(request)
+                except (User.DoesNotExist, api.NoApiKeyError):
                     return HTTP403(request)
             profile = user.get_profile()
             has_perm = profile.has_perm

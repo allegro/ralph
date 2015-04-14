@@ -63,7 +63,7 @@ class TestCI(TestCase):
         """Test the walk utility."""
 
         def activate(ci):
-            if ci.state == CI_STATE_TYPES.ACTIVE.id:
+            if ci.state == CI_STATE_TYPES.INACTIVE.id:
                 raise AssertionError(
                     'The function applied twice on the same CI during the walk'
                 )
@@ -86,7 +86,7 @@ class TestCI(TestCase):
             self.server_c,
         ]:
             ci = CI.objects.get(pk=ci.id)
-            self.assertEqual(ci.state, CI_STATE_TYPES.INACTIVE.id)
+            self.assertEqual(ci.state, CI_STATE_TYPES.ACTIVE.id)
 
     def test_collect(self):
         """Test the 'collect' utility"""

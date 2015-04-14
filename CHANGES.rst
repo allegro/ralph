@@ -1,6 +1,59 @@
 Change Log
 ----------
 
+2.3.0
+~~~~~
+
+Released on April 13, 2015
+
+New features
+************
+* Added data center and racks visualization.
+* Ralph requires ralph_assets package.
+* Improved Xen detection.
+* Better ssh communication with cisco switches.
+* Added possibility to store databases in Ralph and better support for storing load balancers virtual servers.
+* Updated docs for Don Pedro agent and Ralph's installation process.
+* We've moved documentation to the rtd: http://ralph.readthedocs.org/en/latest/.
+* Docker is the official way to easy install Ralph.
+
+
+Minor improvements
+******************
+* SCAN:
+    - Detaching logical subdevices not found by scan: Previously only physical subdevices not found by scan were detached. Extended this feature on logical children.
+    - Detect Dell family in scan, when headers not contains `Server`
+    - Puppet-plugin: added expanduser call on cert paths.
+    - Puppet plugin can get data from puppetdb-api.
+    - 'Force autoscan' is now triggered only when SNMP name is missing.
+* DEPLOY:
+    - Added two missing features to deploy/clean plugin: The hostname is now copied from deployment and copying venture/role from deployment.
+    - Changed the required permission for VM creation - You need core access to create a VM via API.
+    - Added new entry point to API to provide possibility to change IP address after deployment.
+* GUI:
+    - Added management IP in 'Addresses' tab (device view).
+    - Scan form - now it's possible to add some new components to the existing device.
+* CMDB:
+    - Set CI.state default value to ACTIVE.
+* OTHER:
+    - The design of top bar is now in line with the Scrooge UI.
+    - Scrooge API: Databases and Load balancer virtual servers added.
+    - Added department to search form.
+    - Functionality to inject custom tracking code.
+    - Admin panel: changing management and management ip addresses blocked.
+    - `ralph makeconf` set pluggable apps to the reasonable defaults.
+    - For devices with assigned Asset (only without is_blade flag) it is no longer possible to change position.
+    - You can now set user's country using LDAP attribute.
+    - Added Powerdns Record resource to REST API.
+
+Fixes
+*****
+* Fix for MAC detecting in IDRAC plugin.
+* Parent and management fields are now readonly when an asset is assigned. Before this change we could't save form.
+* Updated parse_lshw(..) to work with puppetdb_api. Used better msg when no facts found.
+* Fixed docker installation.
+* Scan form now creates IPAddress object when does not exist.
+
 2.1.0
 ~~~~~
 

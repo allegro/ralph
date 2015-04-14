@@ -21,7 +21,7 @@ tells to which worker queue the discovery requests should be sent. When
 starting a worker you can provide queue names as parameters to specify on
 which queues the workers should listen on.
 
-It is advised to have the scan command called from a cron job on
+It is advised to have the scan command called from a Cron job on
 the server at least once a day, so that the information in the database is up
 to date.
 
@@ -37,8 +37,8 @@ The best way to use scan is using GUI.
 .. image:: _static/scan_choose_ip_for_scan.png
     :width: 600px
 
-3. Choose appriopriate plugins you want to use, or select 'all'. There is some
-information on the right side from pre-scan plugin which try to detect snmp
+3. Choose appropriate plugins you want to use, or select 'all'. There is some
+information on the right side from pre-scan plugin which try to detect SNMP
 version used, and http service available.
 
 .. image:: _static/scan_choose_plugins.png
@@ -48,7 +48,7 @@ version used, and http service available.
 
 .. image:: _static/scan_summary.png
     :width: 600px
-    
+
 Scanning new devices
 --------------------
 
@@ -57,7 +57,7 @@ Scanning new devices
 3. Chose 'Autoscan' tab.
 4. If network was not scanned before you should click 'Scan now'. IP Addresses
    will be shown to you.
-5. Click on given ip address to view scan results, or if 'Full scan' column is
+5. Click on given IP address to view scan results, or if 'Full scan' column is
    filled in, you could immediately view scan results.
 
 .. image:: _static/scan_net_auto.png
@@ -71,7 +71,7 @@ Scanning new devices
 Plugins configuration
 ---------------------
 
-Most plugins will require some configuration before they can be succesfully
+Most plugins will require some configuration before they can be successfully
 used by Ralph. This is usually the login and password that they need to use
 to log into whatever service they use. All that configuration should go to the
 ``~/.ralph/settings`` file.
@@ -176,8 +176,20 @@ server. It will add the information about those virtual servers to the Ralph's
 database.
 
 
-SSH XEN Plugin
+Proxmox 2/3 Plugin
 ~~~~~~~~~~~~~~~~~~
+
+This plugin is a slightly improved version of ``SSH Proxmox Plugin``. The main
+difference here is that apart from using SSH, it uses Proxmox API for data
+retrieving, which is available for Proxmox 2.x and 3.x. Therefore, it allows
+for more detailed queries and convenient separation of plugins for further
+development (i.e. ``SSH Proxmox Plugin`` for 1.x and ``Proxmox 2/3 Plugin`` for
+2.x and 3.x). Apart from those differences, this plugin is configured exactly
+the same as the previous one.
+
+
+SSH XEN Plugin
+~~~~~~~~~~~~~~
 
 This plugin will attempt to connect to the specified IP address using SSH, log
 into it configured ``XEN_USER`` and ``XEN_PASSWORD`` and retrieve information
@@ -192,12 +204,12 @@ allow login and executing of the following commands::
     sudo xe vm-list params=uuid,name-label,power-state,VCPUs-number,memory-actual
 
 
-SSH Ganeti Plugin
-~~~~~~~~~~~~~~~~~
+SSH Ganetti Plugin
+~~~~~~~~~~~~~~~~~~
 
 This plugin will attempt to connect to the specified IP address using SSH, log
 into it configured ``SSH_USER`` and ``SSH_PASSWORD`` and retrieve information
-about the virtual servers running in a Ganeti cluster on this server. It will
+about the virtual servers running in a Ganetti cluster on this server. It will
 add the information about those virtual servers to the Ralph's database.
 
 
@@ -216,7 +228,7 @@ then you can use the command::
 
     (ralph)$ ralph openstack
 
-to pull in the billing information for OpenStack tennants for the previous day.
+to pull in the billing information for OpenStack tenants for the previous day.
 New "openstack" components will be then created in the catalog, where you can
 set the prices for them.  That information is then displayed in the "Venture"
 tab summary.
@@ -233,7 +245,7 @@ the addition of ``ZABBIX_DEFAULT_GROUP``, then you can use the command::
     (ralph)$ ralph zabbixregister
 
 to automatically create Zabbix hosts and host templates for all the devices
-that have a zabbix integration "template" variable set in their roles.
+that have a Zabbix integration "template" variable set in their roles.
 
 You can add an optional ``--remote`` parameter to make the command run on any
 RQ worker that listens on the ``zabbix`` queue.

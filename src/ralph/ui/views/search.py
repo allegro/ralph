@@ -430,8 +430,8 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
             if data['with_changes']:
                 changed_devices_ids = self._get_changed_devices_ids()
                 self.query = self.query.filter(id__in=changed_devices_ids)
-            if (data.get('without_asset', False)
-               and 'ralph_assets' in settings.INSTALLED_APPS):
+            if (data.get('without_asset', False) and
+               'ralph_assets' in settings.INSTALLED_APPS):
                 from ralph_assets.models_assets import DeviceInfo
                 device_info_ids = DeviceInfo.objects.exclude(
                     ralph_device_id=None
@@ -439,6 +439,10 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     'ralph_device_id', flat=True
                 )
                 self.query = self.query.exclude(id__in=device_info_ids)
+            if data['department']:
+                self.query = self.query.filter(
+                    venture__department__name__icontains=data['department']
+                )
         profile = self.request.user.get_profile()
         if not profile.has_perm(Perm.read_dc_structure):
             self.query = profile.filter_by_perm(

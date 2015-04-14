@@ -29,6 +29,7 @@ from ralph.ui.views.ventures import (
     VenturesScan,
 )
 from ralph.ui.views.racks import (
+    DataCenterView,
     RacksAddDevice,
     RacksAddresses,
     RacksAsset,
@@ -257,6 +258,8 @@ urlpatterns = patterns(
         login_required(RacksDeviceList.as_view()), {}, 'racks'),
     url(r'^racks/-/rack/$', redirect_to,
         {'url': '/ui/racks/-/info/'}),
+    url(r'^racks/view/(?P<data_center>[-\w]*)/$',
+        login_required(DataCenterView.as_view()), {}, 'data_center_view'),
     url(r'^racks/(?P<rack>[-\w]*)/(?P<details>add_device)/(?P<device>)$',
         login_required(RacksAddDevice.as_view()), {}, 'racks'),
     url(r'^racks/(?P<rack>[-\w]*)/(?P<details>rack)/(?P<device>)$',
@@ -308,9 +311,11 @@ urlpatterns = patterns(
         login_required(NetworksDeviceList.as_view()), {}, 'networks'),
 
     url(r'^deployment/mass/start/$',
-        login_required(PrepareMassDeployment.as_view())),
+        login_required(PrepareMassDeployment.as_view()),
+        {},
+        'prepare_mass_deploy'),
     url(r'^deployment/mass/define/(?P<deployment>[0-9]+)/$',
-        login_required(MassDeployment.as_view())),
+        login_required(MassDeployment.as_view()), {}, 'mass_deploy'),
 
     url(r'^scan/list/(?P<change_type>new|existing)/$',
         login_required(

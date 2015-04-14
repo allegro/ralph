@@ -20,6 +20,7 @@ from django.utils.safestring import mark_safe
 
 from ralph.discovery.models import ASSET_NOT_REQUIRED, DeviceType
 from ralph.scan.data import get_choice_by_name
+from ralph.scan.util import get_asset_by_name
 
 
 class CSVWidget(forms.Widget):
@@ -337,7 +338,7 @@ class DiffForm(forms.Form):
             'diag_firmware',
             'mgmt_firmware',
         ]),
-        'subdevices': CSVInfo(['hostname', 'serial_number', 'id']),
+        'subdevices': CSVInfo(['hostname', 'serial_number', 'id', 'model_name']),
         'connections': CSVInfo([
             'connection_type',
             'connected_device_mac_addresses',
@@ -403,7 +404,6 @@ class DiffForm(forms.Form):
                     self._errors[name] = self.error_class([msg])
         if 'ralph_assets' in settings.INSTALLED_APPS:
             from ralph_assets.api_ralph import is_asset_assigned
-            from ralph_assets.models import Asset
             try:
                 asset = self.get_value('asset')
             except (KeyError, ValueError):
@@ -412,17 +412,8 @@ class DiffForm(forms.Form):
                 if asset == 'None':
                     asset = None
             if asset:
-                _, asset_sn, asset_barcode = asset.split(' - ')
-                try:
-                    if asset_sn == '':
-                        asset_sn = None
-                    if asset_barcode == '':
-                        asset_barcode = None
-                    asset_obj = Asset.objects.get(sn=asset_sn,
-                                                  barcode=asset_barcode)
-                except Asset.DoesNotExist:
-                    pass
-                else:
+                asset_obj = get_asset_by_name(asset)
+                if asset_obj:
                     if (self.data['asset'] != 'database' and
                             is_asset_assigned(asset_id=asset_obj.id)):
                         msg = ("This asset is already linked to some other "

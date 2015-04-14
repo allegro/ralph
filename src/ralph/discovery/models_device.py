@@ -13,6 +13,7 @@ import datetime
 import re
 import sys
 import os
+from collections import Iterable
 
 from django.conf import settings
 from django.contrib.contenttypes.generic import GenericRelation
@@ -35,6 +36,7 @@ from django.utils.html import escape
 
 from ralph.cmdb import models_ci
 from ralph.discovery.models_component import is_mac_valid, Ethernet
+from ralph.discovery.models_network import IPAddress
 from ralph.discovery.models_util import LastSeen, SavingUser
 from ralph.util import Eth
 from ralph.util.models import SyncFieldMixin
@@ -477,12 +479,12 @@ class Device(
         on_delete=db.SET_NULL,
     )
     chassis_position = db.PositiveIntegerField(
-        verbose_name=_("numeric position"),
+        verbose_name=_("position (U level)"),
         null=True,
         blank=True,
     )
     position = db.CharField(
-        verbose_name=_("position"),
+        verbose_name=_("slot no"),
         null=True,
         blank=True,
         max_length=16,
@@ -558,7 +560,19 @@ class Device(
 
         @property
         def ci(self):
-            return self.ci_set.get()
+            from ralph.cmdb.models_ci import CI
+            try:
+                return self.ci_set.get()
+            except CI.DoesNotExist:
+                return None
+
+        @ci.setter
+        def ci(self, value):
+            from ralph.cmdb.models_ci import CI
+            if self.ci_set.count():
+                self.ci_set.all().delete()
+            if value and isinstance(value, CI):
+                self.ci_set.add(value)
 
     def clean(self):
         fields_list = [
@@ -770,6 +784,35 @@ class Device(
             return self.management
         return None
 
+    @property
+    def management_ip(self):
+        """
+        A backwards-compatible property that gets/sets/deletes management
+        IP of a device.
+        """
+        return self.find_management()
+
+    @management_ip.deleter
+    def management_ip(self):
+        self.management = None
+        self.ipaddress_set.filter(is_management=True).delete()
+
+    @management_ip.setter
+    def management_ip(self, value):
+        del self.management_ip
+        if isinstance(value, IPAddress):
+            ipaddr = value
+        elif isinstance(value, basestring):
+            ipaddr, _ = IPAddress.concurrent_get_or_create(
+                address=value
+            )
+        elif isinstance(value, Iterable):
+            hostname, ip = value
+            ipaddr, _ = IPAddress.concurrent_get_or_create(address=ip)
+            ipaddr.hostname = hostname
+        ipaddr.is_management = True
+        self.ipaddress_set.add(ipaddr)
+
     def get_model_name(self):
         return self.model.name if self.model else ''
 
@@ -826,6 +869,14 @@ class Device(
     def rolepropertyvalue(self):
         return self.rolepropertyvalue_set
 
+    @property
+    def orientation(self):
+        asset = self.get_asset()
+        if not asset:
+            return ''
+        from ralph_assets.models import Orientation
+        return Orientation.name_from_id(asset.device_info.orientation)
+
     def get_components(self):
         details = {}
         details['processors'] = self.processor_set.all()
@@ -866,14 +917,37 @@ class Device(
             else:
                 name = filename
             self.saving_plugin = name
+        # In case you'd notice that some of the changed fields are mysteriously
+        # not saved, check 'save_priorities' property on the device that you're
+        # trying to save - if such field is there, and the value associated
+        # with it is higher than your current save priority (i.e. 'priority' in
+        # kwargs or settings.DEFAULT_SAVE_PRIORITY, in that order), then that's
+        # the reason (for more, see the source code of SavePrioritized).
+        return super(Device, self).save(*args, **kwargs)
 
-        if sync_fields and 'ralph_assets' in settings.INSTALLED_APPS:
-            SyncFieldMixin.save(self, *args, **kwargs)
-        return super(Device, self).save(
-            sync_fields=sync_fields,
-            *args,
-            **kwargs
-        )
+    def set_property(self, symbol, value, user):
+        from ralph.business.models import RoleProperty, RolePropertyValue
+        try:
+            p = self.venture_role.roleproperty_set.get(symbol=symbol)
+        except RoleProperty.DoesNotExist:
+            p = self.venture.roleproperty_set.get(symbol=symbol)
+        if value != p.default and not {value, p.default} == {None, ''}:
+            pv, created = RolePropertyValue.concurrent_get_or_create(
+                property=p,
+                device=self,
+            )
+            pv.value = value
+            pv.save(user=user)
+        else:
+            try:
+                pv = RolePropertyValue.objects.get(
+                    property=p,
+                    device=self,
+                )
+            except RolePropertyValue.DoesNotExist:
+                pass
+            else:
+                pv.delete()
 
     def get_asset(self):
         asset = None
@@ -985,6 +1059,34 @@ class ReadOnlyDevice(Device):
         return {}
 
 
+class BaseItem(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
+    name = db.CharField(verbose_name=_("name"), max_length=255)
+    venture = db.ForeignKey(
+        "business.Venture",
+        verbose_name=_("venture"),
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=db.SET_NULL,
+    )
+    service = db.ForeignKey(
+        ServiceCatalog,
+        default=None,
+        null=True,
+        on_delete=db.PROTECT,
+    )
+    device_environment = db.ForeignKey(
+        DeviceEnvironment,
+        default=None,
+        null=True,
+        on_delete=db.PROTECT,
+    )
+
+    class Meta:
+        abstract = True
+        ordering = ('name',)
+
+
 class LoadBalancerPool(Named, WithConcurrentGetOrCreate):
 
     class Meta:
@@ -992,16 +1094,36 @@ class LoadBalancerPool(Named, WithConcurrentGetOrCreate):
         verbose_name_plural = _("load balancer pools")
 
 
-class LoadBalancerVirtualServer(SavePrioritized, WithConcurrentGetOrCreate):
-    name = db.CharField(verbose_name=_("name"), max_length=255)
+class LoadBalancerType(SavingUser):
+    name = db.CharField(
+        verbose_name=_("name"),
+        max_length=255,
+        unique=True,
+    )
+
+    class Meta:
+        verbose_name = _("load balancer type")
+        verbose_name_plural = _("load balancer types")
+        ordering = ('name',)
+
+    def __unicode__(self):
+        return self.name
+
+    def get_count(self):
+        return self.loadbalancervirtualserver_set.count()
+
+
+class LoadBalancerVirtualServer(BaseItem):
+    load_balancer_type = db.ForeignKey(LoadBalancerType, verbose_name=_('load balancer type'))
     device = db.ForeignKey(Device, verbose_name=_("load balancer device"))
-    default_pool = db.ForeignKey(LoadBalancerPool)
+    default_pool = db.ForeignKey(LoadBalancerPool, null=True)
     address = db.ForeignKey("IPAddress", verbose_name=_("address"))
     port = db.PositiveIntegerField(verbose_name=_("port"))
 
     class Meta:
         verbose_name = _("load balancer virtual server")
         verbose_name_plural = _("load balancer virtual servers")
+        unique_together = ('address', 'port')
 
     def __unicode__(self):
         return "{} ({})".format(self.name, self.id)
@@ -1022,3 +1144,41 @@ class LoadBalancerMember(SavePrioritized, WithConcurrentGetOrCreate):
     def __unicode__(self):
         return "{}:{}@{}({})".format(
             self.address.address, self.port, self.pool.name, self.id)
+
+
+class DatabaseType(SavingUser):
+    name = db.CharField(
+        verbose_name=_("name"),
+        max_length=255,
+        unique=True,
+    )
+
+    class Meta:
+        verbose_name = _("database type")
+        verbose_name_plural = _("database types")
+        ordering = ('name',)
+
+    def __unicode__(self):
+        return self.name
+
+    def get_count(self):
+        return self.database_set.count()
+
+
+class Database(BaseItem):
+    parent_device = db.ForeignKey(
+        Device,
+        verbose_name=_("database server"),
+    )
+    database_type = db.ForeignKey(
+        DatabaseType,
+        verbose_name=_("database type"),
+        related_name='databases',
+    )
+
+    class Meta:
+        verbose_name = _("database")
+        verbose_name_plural = _("databases")
+
+    def __unicode__(self):
+        return "{} ({})".format(self.name, self.id)

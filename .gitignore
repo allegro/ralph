@@ -28,3 +28,7 @@
 /src/ralph/logs
 /src/ralph/uploads
 /src/ralph/urls_local.py
+*.egg-info/
+*.egg
+*.py[cod]
+.coverage

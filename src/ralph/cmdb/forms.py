@@ -13,14 +13,20 @@ from bob.forms.dependency import Dependency, DependencyForm, SHOW
 from bob.forms.dependency_conditions import MemberOf as MemberOfCondition
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
+from django.core.urlresolvers import reverse
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.cmdb import models
 from ralph.cmdb import models as db
 from ralph.cmdb.models import CIType
 from ralph.cmdb.models_ci import (
-    CIAttribute, CI_ATTRIBUTE_TYPES, CIAttributeValue,
+    CI_ATTRIBUTE_TYPES,
+    CI_STATE_TYPES,
+    CIAttribute,
+    CIAttributeValue,
 )
+from ralph.cmdb.util import can_change_ci_state
 from ralph.ui.widgets import (
     ReadOnlyWidget,
     ReadOnlyMultipleChoiceWidget,
@@ -162,6 +168,22 @@ class CIEditForm(DependencyForm, forms.ModelForm):
                         attribute,
                     )
                     self[field_name].field.initial = attribute_value.value
+
+    def clean_state(self, *args, **kwargs):
+        state = self.instance.state
+        changed_state = self.cleaned_data.get('state')
+        if (
+            self.instance.id and
+            not can_change_ci_state(self.instance, changed_state)
+        ):
+            message = """You can not change state to {}, because this service
+            has linked devices. Click <a href="{}" target="_blank">here</a> to
+            see it.""".format(
+                CI_STATE_TYPES.NameFromID(changed_state),
+                reverse('search') + '?service_catalog=' + self.instance.name,
+            )
+            raise forms.ValidationError(mark_safe(message))
+        return state
 
     def save(self, *args, **kwargs):
         instance = super(CIEditForm, self).save(*args, **kwargs)

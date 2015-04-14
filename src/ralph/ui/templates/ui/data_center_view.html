@@ -1,0 +1,16 @@
+{% extends 'ui/base-devices.html' %}
+
+{% block extra_headers %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}/ui/css/data_center.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}/ui/css/rack.css">
+{% endblock %}
+
+{% block extra_js %}
+    {% include 'ui/angular_scripts.html' %}
+{% endblock %}
+
+{% block content %}
+    <div ng-app="dataCenterVisualizationApp">
+        <div ng-view></div>
+    </div>
+{% endblock %}

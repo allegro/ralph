@@ -130,6 +130,13 @@
                     </div>
                     {% endif %}
                 {% endfor %}
+                {% if initial_device_id %}
+                    <div class="controls">
+                        <a href="{% url 'search' details initial_device_id %}">
+                            Go to device from which you've initiated your scan
+                        </a>
+                    </div>
+                {% endif %}
                 <div class="form-actions">
                     <button
                         type="submit"
@@ -143,6 +150,12 @@
                             {% icon 'fugue-wand-hat' %}&nbsp;Create
                         {% endif %}
                     </button>
+                    {% if initial_device_id %}
+                        {% url 'search' details='scan' device=initial_device_id as initial_url %}
+                    {% else %}
+                        {% url 'search' as initial_url %}
+                    {% endif %}
+                        <a class="btn" href="{{ initial_url }}">Cancel</a>
                 </div>
                 </form>
             </div>
@@ -164,4 +177,3 @@
     {{ block.super }}
     <script src="{{ STATIC_URL }}scan.js"></script>
 {% endblock scripts %}
-
