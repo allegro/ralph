@@ -6,6 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import pkgutil
+import pkg_resources
 import textwrap
 from optparse import make_option
 
@@ -36,28 +37,42 @@ class Command(BaseCommand):
             type='str',
             default=[],
             help='Fixtures to apply',
-        )
+        ),
+        make_option(
+            '-i',
+            dest='interactive',
+            action='store_true',
+            default=False,
+            help='Select fixtures interactively',
+        ),
     )
 
     def handle(self, *args, **options):
         flush = options.get('flush')
         fixtures = options.get('fixtures')
-        modules = pkgutil.iter_modules(
-            path=demo_package.__path__, prefix=demo_package.__name__ + '.'
-        )
+        interactive = options.get('interactive')
+        modules = []
+        for package in pkg_resources.iter_entry_points(
+            group='ralph.demo_data_module'
+        ):
+            modules += pkgutil.iter_modules(
+                path=demo_package.__path__, prefix=demo_package.__name__ + '.'
+            )
         demo = None
 
         for loader, mod_name, ispkg in modules:
             __import__(mod_name)
         if flush:
             self.flush()
-        if not fixtures:
+        if interactive:
             selected = self.select_demos()
             if not selected:
                 return
             demo = DemoRunner(selected)
-        else:
+        elif fixtures:
             demo = DemoRunner(fixtures)
+        else:
+            demo = DemoRunner(registry.keys())
         if demo:
             demo.run()
 
