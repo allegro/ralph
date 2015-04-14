@@ -1,5 +1,5 @@
 .data-center {
-  margin-left: 260px;
+  margin-left: 280px;
 }
 .data-center .grid {
   float: left;
@@ -334,6 +334,14 @@
 .data-center .grid.edit .grid_wrapper .used {
   display: none;
 }
+.data-center .grid.edit .grid_wrapper .rack.new {
+  border-color: #ff3;
+  background-color: #997;
+}
+.data-center .grid.edit .grid_wrapper .rack.saved {
+  border-color: #444;
+  background-color: #888888;
+}
 .data-center .grid.edit .grid_wrapper .rack.move {
   border-style: dashed;
 }
@@ -394,6 +402,19 @@
   width: 40px;
   height: 40px;
   border: 1px solid #444;
+}
+.data-center .grid .grid_wrapper .rack.add {
+  text-align: center;
+  font-size: 40px;
+  line-height: 40px;
+  border: 0;
+  color: #3f3;
+  background: transparent;
+  cursor: pointer;
+}
+.data-center .grid .grid_wrapper .rack.add:hover {
+  border: 0;
+  background: rgba(255, 255, 255, 0.2);
 }
 .data-center .grid .grid_wrapper .rack.x-1 {
   left: 40px;

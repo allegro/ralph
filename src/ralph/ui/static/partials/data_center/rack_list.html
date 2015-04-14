@@ -1,0 +1,10 @@
+<ul class="nav nav-list" ng-show="data_center.name">
+    <li class="nav-header">
+    Racks in {{ data_center.name }}
+    <input class="span12" type="text" placeholder="Filter rack by name" ng-model="rack_filter" style="margin-bottom:0">
+    </li>
+    <li ui-sref-active="active" ng-repeat="rack in data_center.rack_set|filter:rack_filter|orderBy:'name'">
+    <a ui-sref="data_center.detail.rack({dcId:data_center.id, rackId:rack.id})">{{ rack.name }}
+        </a>
+    </li>
+</ul>

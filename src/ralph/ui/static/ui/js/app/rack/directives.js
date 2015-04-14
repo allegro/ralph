@@ -31,8 +31,8 @@ angular
                     scope.$emit('change_active_slot', slot);
                 };
                 scope.getLayout = function() {
-                    return scope.device[scope.side + '_layout']
-                }
+                    return scope.device[scope.side + '_layout'];
+                };
             }
         };
     })

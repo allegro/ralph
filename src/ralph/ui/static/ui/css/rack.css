@@ -1,14 +1,14 @@
 * {
   box-sizing: border-box;
 }
+.visualization [class*="span"] {
+  margin-left: 10px;
+}
 .rack-info {
-  margin-top: 10px;
   background: #fff;
-  padding: 10px;
-  border: 1px solid #cccccc;
+  color: #444;
   position: fixed;
-  width: 250px;
-  margin-right: 10px;
+  width: 270px;
 }
 .rack-info input[type="text"] {
   height: inherit;
@@ -250,7 +250,7 @@
 }
 .racks {
   float: left;
-  margin-left: 260px;
+  margin-left: 280px;
 }
 .racks .rack {
   border-radius: 5px;

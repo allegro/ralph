@@ -2,21 +2,14 @@
 
 angular
     .module('rack.controllers', [
-            'ngCookies',
-            'ngRoute',
             'rack.services',
             'rack.directives',
         ]
     )
-    .controller('RackController', ['$scope', '$cookies', '$routeParams', 'RackModel', function ($scope, $cookies, $routeParams, RackModel) {
-        var rackId;
-        if($routeParams.rackId) {
-            rackId = $routeParams.rackId;
-        }
-        else {
-            rackId = $cookies.rack_id;
-        }
-        $scope.rack = RackModel.get({rackId: rackId});
+    .controller('RackController', ['$scope', 'rack', 'data_center', function ($scope, rack, data_center) {
+        $scope.rack = rack;
+        $scope.data_center = data_center;
+
         $scope.$on('change_active_item', function (event, item) {
             $scope.activeItem = item;
             if (

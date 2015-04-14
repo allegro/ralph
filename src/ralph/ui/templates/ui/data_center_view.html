@@ -1,4 +1,4 @@
-{% extends 'ui/base-devices.html' %}
+{% extends 'ui/base.html' %}
 
 {% block extra_headers %}
     <link rel="stylesheet" href="{{ STATIC_URL }}/ui/css/data_center.css">
@@ -9,8 +9,26 @@
     {% include 'ui/angular_scripts.html' %}
 {% endblock %}
 
+{% block base_sidebar %}{% endblock %}
+
+{% block content_span %}span12{% endblock %}
+
 {% block content %}
-    <div ng-app="dataCenterVisualizationApp">
-        <div ng-view></div>
+    <div class="span12" ng-app="dataCenterVisualizationApp">
+        <div class="row-fluid">
+            <div class="span12" ncy-breadcrumb></div>
+        </div>
+        <div class="row-fluid visualization">
+            <div class="span2">
+                <ul class="nav nav-list">
+                    <li class="nav-header">Data centers</li>
+                    {% for data_center in data_centers %}
+                        <li ui-sref-active="active"><a ui-sref="data_center.detail({dcId:{{ data_center.id }}})">{{ data_center }}</a></li>
+                    {% endfor %}
+                </ul>
+                <div ui-view="rack-list"></div>
+            </div>
+            <div ui-view class="span10"></div>
+        </div>
     </div>
 {% endblock %}
