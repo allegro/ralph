@@ -11,7 +11,7 @@ from ralph_assets.models_dc_assets import Orientation
 from ralph_assets.tests.utils.assets import (
     AssetModelFactory, DCAssetFactory, AssetManufacturerFactory
 )
-from ralph_assets.models_assets import AssetCategory
+from ralph_assets.models_assets import AssetCategory, Service, Warehouse
 
 
 SAMPLES = {
@@ -111,6 +111,8 @@ class DemoDCVisualization(DemoData):
 
     def generate_data(self, data):
         blade_location = 3
+        service_name = Service.objects.create(name='Office infrastructure')
+        warehouse = Warehouse.objects.create(name='Warsaw')
         return {
             'rack_server': DCAssetFactory(
                 model=data['assets_models']['rack_server'],
@@ -123,6 +125,8 @@ class DemoDCVisualization(DemoData):
                 device_info__slot_no='',
                 service=data['services']['infrastructure'],
                 device_environment=data['envs']['prod'],
+                service_name=service_name,
+                warehouse=warehouse,
             ),
             'blade_chassis': DCAssetFactory(
                 model=data['assets_models']['blade_chassis'],
@@ -133,6 +137,8 @@ class DemoDCVisualization(DemoData):
                 device_info__slot_no='',
                 service=data['services']['infrastructure'],
                 device_environment=data['envs']['prod'],
+                service_name=service_name,
+                warehouse=warehouse,
             ),
             'blade_servers': [
                 DCAssetFactory(
@@ -144,6 +150,8 @@ class DemoDCVisualization(DemoData):
                     device_info__slot_no=slot_no,
                     service=data['services']['infrastructure'],
                     device_environment=data['envs']['prod'],
+                    service_name=service_name,
+                    warehouse=warehouse,
                 ) for slot_no in xrange(1, 17)
             ]
         }
