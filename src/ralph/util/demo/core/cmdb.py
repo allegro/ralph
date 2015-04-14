@@ -42,15 +42,15 @@ class DemoServices(DemoData):
         return {
             'infrastructure': ServiceCatalogFactory.create(
                 type=ci_type,
-                name='Infrastructure',
+                name='Backup systems',
             ),
             'python_developers': ServiceCatalogFactory.create(
                 type=ci_type,
-                name='Python developers',
+                name='Load balancing',
             ),
             'java_developers': ServiceCatalogFactory.create(
                 type=ci_type,
-                name='Java developers',
+                name='Databases',
             ),
         }
 
@@ -67,5 +67,5 @@ class DemoRelations(DemoData):
                 CIRelationFactory.create(
                     parent=service,
                     child=env,
-                    type=CI_RELATION_TYPES.HASROLE,
+                    type=CI_RELATION_TYPES.CONTAINS,
                 )
