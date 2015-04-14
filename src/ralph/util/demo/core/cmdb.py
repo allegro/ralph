@@ -13,6 +13,10 @@ from ralph.cmdb.tests.utils import (
     DeviceEnvironmentFactory,
     ServiceCatalogFactory,
 )
+from ralph.util.tests.utils import (
+    BusinessLineFactory,
+    ProfitCenterFactory,
+)
 from ralph.cmdb.models import CI_RELATION_TYPES
 
 
@@ -69,3 +73,25 @@ class DemoRelations(DemoData):
                     child=env,
                     type=CI_RELATION_TYPES.CONTAINS,
                 )
+
+
+@register
+class DemoBusinessLine(DemoData):
+    name = 'business_line'
+    title = 'Business Line'
+    required = ['services']
+
+    def generate_data(self, data):
+        business = BusinessLineFactory(name='IT')
+        profit_center = ProfitCenterFactory(name='Default profit center')
+        CIRelationFactory.create(
+            parent=business,
+            child=profit_center,
+            type=CI_RELATION_TYPES.CONTAINS,
+        )
+        for service in data['services'].values():
+            CIRelationFactory.create(
+                parent=profit_center,
+                child=service,
+                type=CI_RELATION_TYPES.CONTAINS,
+            )
