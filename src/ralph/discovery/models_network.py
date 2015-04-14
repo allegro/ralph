@@ -598,6 +598,10 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
         elif existing.venture:
             return {'address': [_('This address is a public one')]}
 
+    def as_tuple(self):
+        """Returns a tuple usable to initialize the field"""
+        return self.hostname, self.address
+
 
 class IPAlias(SavePrioritized, WithConcurrentGetOrCreate):
     address = db.ForeignKey("IPAddress", related_name="+")

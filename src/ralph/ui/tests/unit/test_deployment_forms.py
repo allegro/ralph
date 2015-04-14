@@ -9,7 +9,6 @@ from django.forms import ValidationError
 from django.test import TestCase
 
 from ralph.ui.forms.deployment import (
-    _validate_asset_identity,
     _validate_cols_count
 )
 
@@ -48,8 +47,3 @@ class ValidateColsCountTest(TestCase):
             cm.exception.messages[0],
             "Incorrect number of columns (got 4, expected 5 or 7) at row 102"
         )
-
-
-class ValidateAssetIdentityTest(TestCase):
-    def test_asset_module_disabled(self):
-        self.assertEqual(_validate_asset_identity('abc123', 101), None)

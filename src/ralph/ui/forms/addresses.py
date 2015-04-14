@@ -8,6 +8,10 @@ import ipaddr
 
 from bob.forms import AutocompleteWidget
 from django import forms
+from django.core.exceptions import ValidationError
+from django.template import Context
+from django.template.loader import get_template
+from django.utils.translation import ugettext_lazy as _
 from lck.django.common.models import MACAddressField
 from powerdns.models import Domain, Record
 
@@ -228,6 +232,13 @@ class DHCPEntryForm(forms.ModelForm):
             ip = unicode(ipaddr.IPAddress(ip))
         except ValueError:
             raise forms.ValidationError("Invalid IP address")
+        queryset = DHCPEntry.objects.filter(ip=ip)
+        if self.instance:
+            queryset = queryset.exclude(id=self.instance.id)
+        if queryset.count() > 0:
+            raise forms.ValidationError(
+                _('DHCP entry with this IP address already exists.'),
+            )
         return ip
 
     def clean_mac(self):
@@ -322,9 +333,70 @@ class IPAddressForm(forms.ModelForm):
             raise forms.ValidationError("Invalid hostname")
         return name
 
+    def clean(self, *args, **kwargs):
+        ipaddr = self.cleaned_data.get('id')
+        if not ipaddr:
+            try:
+                ipaddr = IPAddress.objects.get(
+                    address=self.cleaned_data['address']
+                )
+            except IPAddress.DoesNotExist:
+                pass
+        if ipaddr:
+            if ipaddr.is_management:
+                raise forms.ValidationError(_(
+                    'To assign management IP to this device use the linked '
+                    'asset'
+                ))
+        return self.cleaned_data
+
 
 IPAddressFormSet = forms.models.modelformset_factory(
     IPAddress,
     form=IPAddressForm,
     can_delete=True,
 )
+
+
+class IPWithHostWidget(forms.MultiWidget):
+
+    def __init__(self, attrs=None):
+        widgets = (
+            forms.TextInput(),
+            forms.TextInput(),
+        )
+        super(IPWithHostWidget, self).__init__(widgets, attrs)
+
+    def decompress(self, value):
+        return value or ('', '')
+
+    def format_output(self, rendered_widgets):
+        return get_template('ui/ip_with_host_widget.html').render(
+            Context({'widgets': rendered_widgets}),
+        )
+
+
+class IPWithHostField(forms.MultiValueField):
+    """A multifield for a single IPAddress"""
+
+    def __init__(self, *args, **kwargs):
+        fields = (
+            forms.CharField(),
+            forms.IPAddressField(),
+        )
+        super(IPWithHostField, self).__init__(fields, *args, **kwargs)
+
+    widget = IPWithHostWidget()
+
+    def compress(self, value):
+        if value:
+            hostname, ip_number = value
+            if not ip_number:
+                raise ValidationError(_('IP Address is required'))
+        return value
+
+
+class IPManagementForm(forms.Form):
+    management_ip = IPWithHostField(
+        label=_('Management IP'), required=False
+    )

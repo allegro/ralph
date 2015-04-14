@@ -20,6 +20,7 @@ from django.db import models as db
 from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
 from django.shortcuts import get_object_or_404
 from django.utils import importlib, timezone
+from django.utils.http import urlencode
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import (
     DetailView,
@@ -29,10 +30,11 @@ from django.views.generic import (
 )
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
-from bob.menu import MenuItem, Divider
+from bob.menu import MenuItem
 from bob.data_table import DataTableColumn, DataTableMixin
 from powerdns.models import Record
 
+from ralph.discovery.models import ServiceCatalog, DeviceEnvironment
 from ralph.discovery.models_component import Ethernet
 from ralph.account.models import Perm, get_user_home_page_url, ralph_permission
 from ralph.app import RalphModule
@@ -54,8 +56,6 @@ from ralph.scan.diff import diff_results, sort_results
 from ralph.scan.models import ScanSummary
 from ralph.scan.util import get_pending_changes, update_scan_summary
 from ralph.business.models import (
-    RoleProperty,
-    RolePropertyValue,
     Venture,
     VentureRole,
 )
@@ -91,14 +91,16 @@ from ralph.ui.forms.devices import (
 )
 from ralph.ui.forms.addresses import (
     DHCPFormSet,
-    IPAddressFormSet,
     DNSFormSet,
+    IPAddressFormSet,
+    IPManagementForm,
 )
 from ralph.ui.forms.deployment import (
     ServerMoveStep1Form,
     ServerMoveStep2FormSet,
     ServerMoveStep3FormSet,
 )
+from ralph_assets.models_signals import update_core_localization
 
 
 SAVE_PRIORITY = 215
@@ -201,24 +203,18 @@ class UserMenu(Menu):
             fugue_icon='fugue-user',
             view_name='user_preference',
             pull_right=True,
-            dropdown=True,
-            subitems=[
-                MenuItem(
-                    'Preferences',
-                    name='user_preference',
-                    fugue_icon='fugue-application-task',
-                    view_name='user_preference',
-                ),
-                Divider(),
-                MenuItem(
-                    'Logout',
-                    name='logout',
-                    fugue_icon='fugue-door-open-out',
-                    view_name='logout',
-                ),
-            ]
         )
         super(UserMenu, self).__init__(request, **kwargs)
+
+
+class LogoutMenu(Menu):
+    module = MenuItem(
+        'Logout',
+        name='logout',
+        fugue_icon='fugue-toolbox',
+        view_name='logout',
+        pull_right=True,
+    )
 
 
 class MenuMixin(object):
@@ -228,11 +224,16 @@ class MenuMixin(object):
 
     def dispatch(self, request, *args, **kwargs):
         self.menus = [ralph_menu(request)]
+        self.menus.append(LogoutMenu(request))
+        self.menus.append(UserMenu(request))
         if request.user.is_staff:
             self.menus.append(AdminMenu(request))
-        self.menus.append(UserMenu(request))
         for app in pluggableapp.app_dict.values():
-            if not isinstance(app, RalphModule):
+            if (
+                not isinstance(app, RalphModule) or
+                app.module_name in settings.HIDE_MENU or
+                not app.has_menu
+            ):
                 continue
             menu_module = importlib.import_module(
                 '.'.join([app.module_name, 'menu'])
@@ -599,7 +600,10 @@ class Info(DeviceUpdateView):
             elif not (
                 not assets_imported or
                 DeviceInfo.objects.filter(ralph_device_id=self.object.pk) or
-                self.object.model.type == DeviceType.virtual_server
+                (
+                    self.object.model and
+                    self.object.model.type == DeviceType.virtual_server
+                )
             ):
                 deploy_disable_reason = _(
                     "This device is not linked to an asset."
@@ -654,27 +658,7 @@ class Info(DeviceUpdateView):
 
     def save_properties(self, device, properties):
         for symbol, value in properties.iteritems():
-            try:
-                p = device.venture_role.roleproperty_set.get(symbol=symbol)
-            except RoleProperty.DoesNotExist:
-                p = device.venture.roleproperty_set.get(symbol=symbol)
-            if value != p.default and not {value, p.default} == {None, ''}:
-                pv, created = RolePropertyValue.concurrent_get_or_create(
-                    property=p,
-                    device=device,
-                )
-                pv.value = value
-                pv.save(user=self.request.user)
-            else:
-                try:
-                    pv = RolePropertyValue.objects.get(
-                        property=p,
-                        device=device,
-                    )
-                except RolePropertyValue.DoesNotExist:
-                    pass
-                else:
-                    pv.delete()
+            device.set_property(symbol, value, self.request.user)
 
     def get_property_form(self, data=None):
         if not self.object.venture_role:
@@ -735,6 +719,7 @@ class Addresses(DeviceDetailView):
         self.dns_formset = None
         self.dhcp_formset = None
         self.ip_formset = None
+        self.ip_management_form = None
 
     def get_dns(self, limit_types=None):
         ips = set(ip.address for ip in self.object.ipaddress_set.all())
@@ -956,6 +941,15 @@ class Addresses(DeviceDetailView):
                 return HttpResponseRedirect(self.request.path)
             else:
                 messages.error(self.request, "Errors in the addresses form.")
+        elif 'management' in self.request.POST:
+            self.ip_management_form = IPManagementForm(self.request.POST)
+            if self.ip_management_form.is_valid():
+                self.object.management_ip =\
+                    self.ip_management_form.cleaned_data['management_ip']
+                self.object.save()
+                messages.success(
+                    self.request, "Management IP address updated."
+                )
         return self.get(*args, **kwargs)
 
     def get_dhcp(self):
@@ -987,8 +981,19 @@ class Addresses(DeviceDetailView):
             )
         if self.ip_formset is None:
             self.ip_formset = IPAddressFormSet(
-                queryset=self.object.ipaddress_set.order_by('address'),
+                queryset=self.object.ipaddress_set.filter(
+                    is_management=False
+                ).order_by('address'),
                 prefix='ip'
+            )
+        if not self.ip_management_form:
+            management_ip = self.object.management_ip
+            self.ip_management_form = IPManagementForm(
+                initial={
+                    'management_ip': (
+                        management_ip and management_ip.as_tuple()
+                    )
+                }
             )
         profile = self.request.user.get_profile()
         can_edit = profile.has_perm(self.edit_perm, self.object.venture)
@@ -1019,6 +1024,7 @@ class Addresses(DeviceDetailView):
             'ipformset': self.ip_formset,
             'next_hostname': next_hostname,
             'first_free_ip_addresses': first_free_ip_addresses,
+            'ip_management_form': self.ip_management_form
         })
         return ret
 
@@ -1112,6 +1118,9 @@ class Asset(BaseMixin, TemplateView):
             asset = self.form.cleaned_data['asset']
             from ralph_assets.api_ralph import assign_asset
             if assign_asset(self.object.id, asset.id):
+                # Deprecated. In future, localization will be stored only for
+                # Asset.
+                update_core_localization(asset_dev_info=asset.device_info)
                 messages.success(self.request, "Asset linked successfully.")
                 return HttpResponseRedirect(self.request.get_full_path())
             else:
@@ -1336,6 +1345,14 @@ def bulk_update(devices, fields, data, user):
         else:
             # for checkboxes un-checking
             values[name] = data.get(name, False)
+    if 'service' in fields:
+            values['service'] = ServiceCatalog.objects.get(
+                id=int(values['service'])
+            )
+    if 'device_environment' in fields:
+        values['device_environment'] = DeviceEnvironment.objects.get(
+            id=int(values['device_environment'])
+        )
     for device in devices:
         if 'venture' in fields:
             device.venture_role = None
@@ -1485,12 +1502,12 @@ class Scan(BaseMixin, TemplateView):
 
     def post(self, *args, **kwargs):
         plugins = self.request.POST.getlist('plugins')
+        initial_device_id = self.request.POST.get('initial_device_id')
         if not plugins:
             messages.error(self.request, "You have to select some plugins.")
             return self.get(*args, **kwargs)
-        ip_address = self.kwargs.get('address') or self.request.GET.get(
-            'address'
-        )
+        ip_address = (self.kwargs.get('address') or
+                      self.request.GET.get('address'))
         if ip_address:
             try:
                 ipaddr.IPAddress(ip_address)
@@ -1504,26 +1521,31 @@ class Scan(BaseMixin, TemplateView):
         except ScanError as e:
             messages.error(self.request, unicode(e))
             return self.get(*args, **kwargs)
-        return HttpResponseRedirect(reverse('scan_results', args=(job.id,)))
+        url = reverse('scan_results', args=(job.id,))
+        if initial_device_id:
+            url = url + '?' + urlencode(
+                {'initial_device_id': initial_device_id}
+            )
+        return HttpResponseRedirect(url)
 
     def get_context_data(self, **kwargs):
         ret = super(Scan, self).get_context_data(**kwargs)
         address = self.kwargs.get('address') or self.request.GET.get('address')
         if address:
+            ipaddress, created = IPAddress.objects.get_or_create(address=address)
             try:
-                ipaddress = IPAddress.objects.get(address=address)
-            except IPAddress.DoesNotExist:
-                ipaddress = None
-                address = None
+                network = Network.from_ip(address)
+            except (Network.DoesNotExist, IndexError, ValueError):
                 network = None
-            else:
-                try:
-                    network = Network.from_ip(address)
-                except (Network.DoesNotExist, IndexError, ValueError):
-                    network = None
         else:
             ipaddress = None
             network = None
+        if self.object:
+            initial_device_id = self.object.id
+        elif ipaddress and ipaddress.device_id:
+            initial_device_id = ipaddress.device_id
+        else:
+            initial_device_id = None
         ret.update({
             'details': 'scan',
             'device': self.object,
@@ -1531,6 +1553,7 @@ class Scan(BaseMixin, TemplateView):
             'ipaddress': ipaddress,
             'network': network,
             'plugins': getattr(settings, 'SCAN_PLUGINS', {}),
+            'initial_device_id': initial_device_id,
         })
         return ret
 
@@ -1610,10 +1633,11 @@ class ScanList(BaseMixin, DataTableMixin, TemplateView):
                 db.Q(ipaddress__device__venture__name=venture_name) |
                 db.Q(ipaddress__device__service__name=service_name)
             )
+        # see also ralph.scan.util.get_pending_changes (similar condition)
         if kwargs['change_type'] == 'new':
             return all_changes.filter(ipaddress__device=None)
         else:
-            return all_changes.filter(changed=True)
+            return all_changes.filter(ipaddress__device__isnull=False)
 
 
 class ScanStatus(BaseMixin, TemplateView):
@@ -1757,9 +1781,11 @@ class ScanStatus(BaseMixin, TemplateView):
                     device = self.forms[0][0]
                     self.device_id = device.id if device else 'new'
                 ret['device_id'] = self.device_id
+                ret['initial_device_id'] = self.initial_device_id
         return ret
 
     def get(self, *args, **kwargs):
+        self.initial_device_id = self.request.GET.get('initial_device_id')
         self.job = self.get_job()
         if self.job and self.job.is_finished and not self.ip_address:
             try:
@@ -1772,12 +1798,13 @@ class ScanStatus(BaseMixin, TemplateView):
                 except IndexError:
                     pass
                 else:
-                    return HttpResponseRedirect(
-                        reverse(
-                            'scan_results',
-                            args=(self.ip_address.address,),
-                        ),
-                    )
+                    rev_args = (self.ip_address.address,)
+                    url = reverse('scan_results', args=rev_args)
+                    if self.initial_device_id:
+                        url = url + '?' + urlencode(
+                            {'initial_device_id': self.initial_device_id}
+                        )
+                    return HttpResponseRedirect(url)
         return super(ScanStatus, self).get(*args, **kwargs)
 
     def get_scan_summary(self, job):

@@ -14,9 +14,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from datetime import datetime, timedelta, date
+import ipaddr
 import re
 import textwrap
+from datetime import date, datetime, timedelta
+from mock import patch
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -38,8 +40,10 @@ from ralph.discovery.models import (
     IPAddress,
     MarginKind,
 )
+from ralph.discovery.tests import util as discovery_util
 from ralph.util import api_pricing, api_scrooge
 from ralph.util.tests import utils
+from ralph.util import api
 
 EXISTING_DOMAIN = 'www.google.com'
 NON_EXISTENT_DOMAIN = 'nxdomain.allegro.pl'
@@ -125,6 +129,82 @@ class ApiTest(TestCase):
         self.maxDiff = None
         self.assertListEqual(gen_list, status_list)
 
+    def test_get_api_key_when_there_is_no_API_key(self):
+        self.assertRaises(
+            api.NoApiKeyError,
+            api._get_api_key,
+            utils.AttributeDict({
+                'REQUEST': {},
+                'META': {}
+            })
+        )
+
+    def test_get_api_key_from_REQUEST(self):
+        test_api_key = 'test_api_key'
+        results = api._get_api_key(
+            utils.AttributeDict({
+                'REQUEST': {'api_key': test_api_key},
+                'META': {}
+            })
+        )
+        self.assertEquals(test_api_key, results)
+
+    def test_get_api_key_from_META(self):
+        test_api_key = 'Token test_api_key'
+        results = api._get_api_key(
+            utils.AttributeDict({
+                'REQUEST': {},
+                'META': {'HTTP_AUTHORIZATION': test_api_key}
+            })
+        )
+        self.assertEquals(test_api_key.split(' ')[-1], results)
+
+    def test_get_user_by_name(self):
+        user = User.objects.create_superuser('test', 'test@test.test', 'test')
+        results = api.get_user(
+            utils.AttributeDict({
+                'REQUEST': {'username': user.username},
+                'META': {}
+            })
+        )
+        self.assertEquals(user, results)
+
+    @patch.object(api, '_get_api_key', lambda x: 'test')
+    def test_get_user_by_api_key(self):
+        user = User.objects.create_superuser('test', 'test@test.test', 'test')
+        user.api_key.key = 'test'
+        user.api_key.save()
+        results = api.get_user(
+            utils.AttributeDict({
+                'REQUEST': {},
+                'META': {}
+            })
+        )
+        self.assertEquals(user, results)
+
+    @patch.object(api, '_get_api_key', lambda x: 'test')
+    def test_get_user_when_user_does_not_exist(self):
+        user = User.objects.create_superuser('test', 'test@test.test', 'test')
+        self.assertRaises(
+            User.DoesNotExist,
+            api.get_user,
+            utils.AttributeDict({
+                'REQUEST': {},
+                'META': {}
+            }),
+        )
+
+    def test_get_user_when_there_is_wrong_api_key(self):
+        user = User.objects.create_superuser('test', 'test@test.test', 'test')
+        self.assertRaises(
+            api.NoApiKeyError,
+            api.get_user,
+            utils.AttributeDict({
+                'REQUEST': {},
+                'META': {}
+            }),
+        )
+
 
 class ApiPricingTest(TestCase):
 
@@ -186,6 +266,80 @@ class ApiPricingTest(TestCase):
 
 
 class ApiScroogeTest(TestCase):
+
+    def _init_vips(self):
+        self.vips = discovery_util.LoadBalancerVirtualServerFactory.create_batch(2)
+
+    def _vip2api(self, lbvs):
+        return {
+            'vip_id': lbvs.id,
+            'type_id': lbvs.load_balancer_type_id,
+            'name': lbvs.name,
+            'ip_address': str(lbvs.address.address),
+            'port': lbvs.port,
+            'type': lbvs.load_balancer_type.name,
+            'device_id': lbvs.device_id,
+            'service_id': lbvs.service_id,
+            'environment_id': lbvs.device_environment_id,
+        }
+
+    def test_get_vips(self):
+        self._init_vips()
+        result = [v for v in api_scrooge.get_vips()]
+        vips_dict = map(self._vip2api, self.vips)
+        self.assertEqual(result, vips_dict)
+
+    def test_get_vips_parent_service(self):
+        self._init_vips()
+        result = [v for v in api_scrooge.get_vips(
+            parent_service_uid=self.vips[0].device.service.uid
+        )]
+        vips_dict = map(self._vip2api, self.vips[0:1])
+        self.assertEqual(result, vips_dict)
+
+    def test_get_vips_load_balancer_type(self):
+        self._init_vips()
+        result = [v for v in api_scrooge.get_vips(
+            load_balancer_type=self.vips[0].load_balancer_type.name
+        )]
+        vips_dict = map(self._vip2api, self.vips[0:1])
+        self.assertEqual(result, vips_dict)
+
+    def _init_db(self):
+        self.databases = discovery_util.DatabaseFactory.create_batch(2)
+
+    def _db2api(self, db):
+        return {
+            'database_id': db.id,
+            'type_id': db.database_type_id,
+            'name': db.name,
+            'type': db.database_type.name,
+            'parent_device_id': db.parent_device_id,
+            'service_id': db.service_id,
+            'environment_id': db.device_environment_id,
+        }
+
+    def test_get_databases(self):
+        self._init_db()
+        result = [v for v in api_scrooge.get_databases()]
+        databases_dict = map(self._db2api, self.databases)
+        self.assertEqual(result, databases_dict)
+
+    def test_get_databases_parent_service(self):
+        self._init_db()
+        result = [v for v in api_scrooge.get_databases(
+            parent_service_uid=self.databases[0].parent_device.service.uid
+        )]
+        databases_dict = map(self._db2api, self.databases[:1])
+        self.assertEqual(result, databases_dict)
+
+    def test_get_databases_type(self):
+        self._init_db()
+        result = [v for v in api_scrooge.get_databases(
+            database_type=self.databases[0].database_type.name
+        )]
+        databases_dict = map(self._db2api, self.databases[:1])
+        self.assertEqual(result, databases_dict)
 
     def test_get_business_lines(self):
         business_lines = utils.BusinessLineFactory.create_batch(7)
@@ -287,6 +441,17 @@ class ApiScroogeTest(TestCase):
             'environments': [],
         }
         self.assertEquals(result, [service_dict])
+
+    def test_getattr_dunder(self):
+        """getattr_dunder works recursively"""
+
+        class A():
+            pass
+
+        a = A()
+        a.b = A()
+        a.b.name = 'spam'
+        self.assertEqual(api.getattr_dunder(a, 'b__name'), 'spam')
 
 
 class UncompressBase64DataTest(TestCase):

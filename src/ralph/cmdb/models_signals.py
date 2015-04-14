@@ -184,8 +184,8 @@ def can_register_change(instance):
             'Settings not configured for OP tickets registration. Skipping.')
         return False
     return (
-        instance.registration_type == chdb.CI_CHANGE_REGISTRATION_TYPES.WAITING
-        and not instance.external_key and instance.time.date() >= OP_START_DATE
+        instance.registration_type == chdb.CI_CHANGE_REGISTRATION_TYPES.WAITING and  # noqa
+        not instance.external_key and instance.time.date() >= OP_START_DATE
     )
 
 

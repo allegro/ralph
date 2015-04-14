@@ -25,15 +25,17 @@ class ReadOnlySelectWidget(forms.Select):
         display = unicode(labels.get(value, ''))
         attr_class = self.attrs.get('class', '')
         return mark_safe(
-            '<div class="input uneditable-input %s">'
-            '<input type="hidden" name="%s" value="%s">'
-            '%s'
-            '</div>' % (
-                escape(attr_class),
-                escape(name),
-                escape(value),
-                escape(display),
-            ),
+            """
+                <div class="input uneditable-input {classes}">
+                    <input type="hidden" name="{name}" value="{value}">
+                    {display}
+                </div>
+            """.format(
+                classes=escape(attr_class),
+                name=escape(name),
+                value=escape(value) if value is not None else '',
+                display=escape(display),
+            )
         )
 
 
@@ -78,10 +80,19 @@ class ReadOnlyWidget(forms.Widget):
 
     def render(self, name, value, attrs=None, choices=()):
         attr_class = escape(self.attrs.get('class', ''))
-        return mark_safe('''
-        <input type="hidden" name="%s" value="%s">
-        <div class="input uneditable-input %s">%s</div></input>''' % (
-            escape(name), escape(value), attr_class, escape(value)))
+        return mark_safe(
+            """
+                <input type="hidden" name="{name}" value="{value}">
+                    <div class="input uneditable-input {attributes}">
+                        {value}
+                    </div>
+                </input>
+            """.format(
+                name=escape(name),
+                value=escape(value) if value is not None else "",
+                attributes=attr_class,
+            )
+        )
 
 
 class ReadOnlyPreWidget(forms.Widget):

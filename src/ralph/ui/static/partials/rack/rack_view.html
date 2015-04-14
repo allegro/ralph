@@ -1,0 +1,103 @@
+<div ng-controller="RackController">
+    <div class="rack-info">
+        <h3>Info {{ rack.info.name }}</h3>
+        <div ng-show="rack.info.description" class="description">{{ rack.info.description }}</div>
+        <table class="info">
+            <tr>
+                <td>Service Catalog</td>
+                <td>{{ activeItem ? activeItem.service : '-' }}</td>
+            </tr>
+            <tr>
+                <td>Hostname</td>
+                <td>{{ activeItem ? activeItem.hostname : '-' }}</td>
+            </tr>
+            <tr>
+                <td>Model</td>
+                <td>{{ activeItem ? activeItem.model : '-' }}</td>
+            </tr>
+            <tr>
+                <td>Barcode</td>
+                <td>{{ activeItem ? activeItem.barcode : '-' }}</td>
+            </tr>
+            <tr>
+                <td>SN</td>
+                <td>{{ activeItem ? activeItem.sn : '-' }}</td>
+            </tr>
+            <tr>
+                <td>Position</td>
+                <td>{{ activeItem ? activeItem.position : '-' }}</td>
+            </tr>
+            <tr>
+                <td>Height</td>
+                <td>{{ activeItem ? activeItem.height : '-' }}</td>
+            </tr>
+            <tr>
+                <td>Management</td>
+                <td>
+                    <span ng-show="activeItem">
+                        <a target="_blank" ng-show="activeItem.management_ip" href="https://{{ activeItem.management_ip }}">{{ activeItem.management_ip }}</a>
+                    </span>
+                    <span ng-hide="activeItem">-</span>
+                </td>
+            </tr>
+            <tr>
+                <td>Remarks</td>
+                <td>
+                    {{ activeItem ? activeItem.remarks : '-' }}
+                    <a ng-if="activeItem._type == 'accessory'" target="_blank" href="{{ rack.info.rack_admin_url }}" >Edit</a>
+                </td>
+            </tr>
+            <tr>
+                <td>Links</td>
+                <td>
+                    <span ng-show="activeItem">
+                        <a target="_blank" ng-show="activeItem.url" href="{{ activeItem.url }}">Asset information</a><br>
+                        <a target="_blank" ng-show="activeItem.core_url" href="{{ activeItem.core_url }}">Configuration information</a>
+                    </span>
+                    <span ng-hide="activeItem">-</span>
+                </td>
+            </tr>
+            <tr ng-show="activeSlot">
+                <td>Slot {{ activeSlot.slot_no }}</td>
+                <td>
+                    <table class="info slot_info">
+                        <tr>
+                            <td>Service Catalog</td>
+                            <td>{{ activeSlot ? activeSlot.service : '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td>Hostname</td>
+                            <td>{{ activeSlot ? activeSlot.hostname : '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td>Model</td>
+                            <td>{{ activeSlot ? activeSlot.model : '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td>Barcode</td>
+                            <td>{{ activeSlot ? activeSlot.barcode : '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td>SN</td>
+                            <td>{{ activeSlot ? activeSlot.sn : '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td>Links</td>
+                            <td>
+                                <span ng-show="activeSlot">
+                                    <a target="_blank" ng-show="activeSlot.url" href="{{ activeSlot.url }}">Asset information</a><br>
+                                    <a target="_blank" ng-show="activeSlot.core_url" href="{{ activeSlot.core_url }}">Configuration information</a>
+                                </span>
+                                <span ng-hide="activeSlot">-</span>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="racks">
+        <rack info="rack.info" devices="rack.devices" side="front"></rack>
+        <rack info="rack.info" devices="rack.devices" pdus="rack.pdus" side="back"></rack>
+    </div>
+</div>

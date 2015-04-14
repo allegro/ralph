@@ -8,9 +8,10 @@ from __future__ import unicode_literals
 from django.test import TestCase
 
 from ralph.scan.data import (
-    get_choice_by_name,
+    check_if_can_edit_position,
     connection_from_data,
     device_from_data,
+    get_choice_by_name,
     get_device_data,
     merge_data,
     set_device_data,
@@ -37,6 +38,7 @@ from ralph.discovery.models import (
     Software,
     Storage,
 )
+from ralph_assets.tests.utils.assets import DCAssetFactory
 
 
 class GetDeviceDataTest(TestCase):
@@ -372,6 +374,42 @@ class SetDeviceDataTest(TestCase):
         self.assertEqual(device.chassis_position, 4)
         self.assertEqual(device.management.address, '10.10.10.2')
 
+    def test_basic_data_with_asset(self):
+        asset = DCAssetFactory()
+        asset.model.category.is_blade = False
+        asset.model.category.save()
+        data = {
+            'serial_number': 'aaa123456789',
+            'hostname': 'mervin',
+            'data_center': 'chicago',
+            'barcode': '00000',
+            'rack': 'i31',
+            'chassis_position': '4',
+            'management': '10.10.10.2',
+            'asset': asset,
+        }
+        warnings = []
+        set_device_data(self.device, data, warnings=warnings)
+        self.device.save()
+        device = Device.objects.get(sn='aaa123456789')
+        self.assertIsNone(device.dc)
+        self.assertIsNone(device.rack)
+        self.assertIsNone(device.chassis_position)
+        self.assertIsNone(device.management)
+        self.assertEqual(
+            warnings,
+            [
+                'You can not set data for `chassis_position` here - skipped. '
+                'Use assets module.',
+                'You can not set data for `data_center` here - skipped. '
+                'Use assets module.',
+                'You can not set data for `rack` here - skipped. '
+                'Use assets module.',
+                'Management IP address (10.10.10.2) has been ignored. To '
+                'change them, please use the Assets module.',
+            ]
+        )
+
     def test_model_name(self):
         data = {
             'type': 'blade_server',
@@ -605,6 +643,37 @@ class SetDeviceDataTest(TestCase):
         address = IPAddress.objects.get(address='127.0.0.4')
         self.assertEqual(address.device, None)
 
+    def test_device_with_asset_ip_addresses(self):
+        asset = DCAssetFactory()
+        data = {
+            'system_ip_addresses': [
+                '127.0.0.1',
+                '127.0.0.2',
+            ],
+            'management_ip_addresses': [
+                '127.0.0.3',
+                '127.0.0.4',
+            ],
+            'asset': asset,
+        }
+        warnings = []
+        set_device_data(self.device, data, warnings=warnings)
+        self.device.save()
+        device = Device.objects.get(sn='123456789')
+        self.assertEqual(
+            device.ipaddress_set.filter(is_management=False).count(), 2,
+        )
+        self.assertEqual(
+            device.ipaddress_set.filter(is_management=True).count(), 0,
+        )
+        self.assertEqual(
+            warnings,
+            [
+                'Management IP addresses (127.0.0.3, 127.0.0.4) have been '
+                'ignored. To change them, please use the Assets module.',
+            ],
+        )
+
     def test_fc(self):
         data = {
             'fibrechannel_cards': [
@@ -795,6 +864,21 @@ class SetDeviceDataTest(TestCase):
             "gr2"
         )
 
+    def test_check_if_can_edit_position(self):
+        # No asset in saved data.
+        self.assertTrue(check_if_can_edit_position({'key_1': 'value_1'}))
+        # Asset is assigned.
+        asset = DCAssetFactory()
+        self.assertFalse(
+            check_if_can_edit_position({'key_1': 'value_1', 'asset': asset}),
+        )
+        # Asset string representation - asset does not exist.
+        self.assertTrue(
+            check_if_can_edit_position(
+                {'key_1': 'value_1', 'asset': 'Name - SN - BARCODE'},
+            ),
+        )
+
 
 class DeviceFromDataTest(TestCase):
 
@@ -825,6 +909,11 @@ class DeviceMergeDataTest(TestCase):
                         'key2': 'value2',
                     },
                 },
+                'database': {
+                    'device': {
+                        'key2': 'value2',
+                    },
+                },
             },
             {
                 'three': {
@@ -842,7 +931,7 @@ class DeviceMergeDataTest(TestCase):
                 ('three',): 'value2',
             },
             'key2': {
-                ('one', 'two'): 'value2',
+                ('database', 'one', 'two'): 'value2',
             },
             'key3': {
                 ('three',): 'value3',
@@ -853,6 +942,9 @@ class DeviceMergeDataTest(TestCase):
             'key1': {
                 ('one', 'two'): 'value1',
                 ('three',): 'value2',
+            },
+            'key3': {
+                ('three',): 'value3',
             },
         })
 

@@ -341,7 +341,7 @@ class CI(TimeTrackable):
     content_object = generic.GenericForeignKey('content_type', 'object_id')
     state = models.IntegerField(
         max_length=11, choices=CI_STATE_TYPES(),
-        default=CI_STATE_TYPES.INACTIVE.id, verbose_name=_("state"),
+        default=CI_STATE_TYPES.ACTIVE.id, verbose_name=_("state"),
     )
     status = models.IntegerField(
         max_length=11, choices=CI_STATUS_TYPES(),

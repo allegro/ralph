@@ -5,24 +5,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import datetime
+import json
 
-from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.test import TestCase
 
 from ralph.account.models import BoundPerm, Profile, Perm
-from ralph.business.models import Venture
-from ralph.discovery.models import (
-    ComponentModel,
-    ComponentType,
-    DeprecationKind,
-    DeviceType,
-    SplunkUsage,
-)
-from ralph.ui.tests.util import create_device
-from ralph.ui.tests.global_utils import create_user
-from tastypie.test import ResourceTestCase
+from ralph.discovery.tests.util import NetworkFactory
+from ralph.ui.tests.global_utils import create_user, UserFactory
 
 
 class AccessToDiscoveyApiTest(TestCase):
@@ -72,7 +62,6 @@ class AccessToDiscoveyApiTest(TestCase):
 
         response = self.get_response(resource)
         self.assertEqual(response.status_code, 200)
-
 
     def test_model_resource(self):
         resource = 'model'
@@ -175,3 +164,86 @@ class AccessToDiscoveyApiTest(TestCase):
 
         response = self.get_response(resource)
         self.assertEqual(response.status_code, 200)
+
+
+class TestNetworksResource(TestCase):
+
+    def setUp(self):
+        self.user = UserFactory(
+            username='api_user', email='api_user@ralph.local', is_staff=True,
+            is_superuser=True,
+        )
+        self.user.set_password('QWEasd')
+        self.user.save()
+        self.net_1 = NetworkFactory(
+            name='test-net-1.dc',
+            address="192.168.1.0/24",
+        )
+        self.net_1.save()
+        self.net_2 = NetworkFactory(
+            name='test-net-2.dc',
+            address="192.168.56.0/24",
+        )
+        self.net_2.save()
+
+    def _get_networks_names(self, result):
+        return [
+            network['name'] for network in result['objects']
+        ]
+
+    def test_resource(self):
+        path = "/api/v0.9/networks/"
+        # sort by min_ip
+        response = self.client.get(
+            path=path,
+            data={
+                'format': 'json',
+                'username': self.user.username,
+                'api_key': self.user.api_key.key,
+                'order_by': 'min_ip',
+            },
+            format='json',
+        )
+        self.assertEqual(response.status_code, 200)
+        result = json.loads(response.content)
+        self.assertEqual(result['meta']['total_count'], 2)
+        self.assertEqual(
+            self._get_networks_names(result),
+            ['test-net-1.dc', 'test-net-2.dc'],
+        )
+        # sort by max_ip
+        response = self.client.get(
+            path=path,
+            data={
+                'format': 'json',
+                'username': self.user.username,
+                'api_key': self.user.api_key.key,
+                'order_by': '-max_ip',
+            },
+            format='json',
+        )
+        self.assertEqual(response.status_code, 200)
+        result = json.loads(response.content)
+        self.assertEqual(result['meta']['total_count'], 2)
+        self.assertEqual(
+            self._get_networks_names(result),
+            ['test-net-2.dc', 'test-net-1.dc'],
+        )
+        # filter by min_ip
+        response = self.client.get(
+            path=path,
+            data={
+                'format': 'json',
+                'username': self.user.username,
+                'api_key': self.user.api_key.key,
+                'min_ip__lte': '3232235777',
+            },
+            format='json',
+        )
+        self.assertEqual(response.status_code, 200)
+        result = json.loads(response.content)
+        self.assertEqual(result['meta']['total_count'], 1)
+        self.assertEqual(
+            self._get_networks_names(result),
+            ['test-net-1.dc'],
+        )

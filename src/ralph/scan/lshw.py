@@ -57,7 +57,11 @@ def _get_logical_name(arg):
 def parse_lshw(raw_data):
     parser = ET.ETCompatXMLParser(recover=True)
     response = ET.fromstring(raw_data, parser=parser)
-    if response.tag is None or response.tag.upper() != 'NODE':
+    if response.tag and response.tag.upper() == 'LIST':
+        response = response[0]
+    elif response.tag and response.tag.upper() == 'NODE':
+        pass
+    else:
         raise Error('Lshw parse error.')
     for element in response.findall('.//'):
         for k in element.attrib.keys():

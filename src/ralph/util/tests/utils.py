@@ -8,11 +8,19 @@ from __future__ import unicode_literals
 
 import factory
 from factory.django import DjangoModelFactory
-from django.contrib.auth.models import User
 
-from ralph.account.models import Profile
+from ralph.account.models import Region
+from ralph.business.models import (
+    Venture, VentureRole, RolePropertyType, RoleProperty,
+)
 from ralph.cmdb import models_ci
 from ralph.cmdb.tests.utils import CIFactory
+from ralph.ui.tests.global_utils import UserFactory
+
+
+class AttributeDict(dict):
+    __getattr__ = dict.__getitem__
+    __setattr__ = dict.__setitem__
 
 
 class BusinessLineFactory(CIFactory):
@@ -38,11 +46,6 @@ class EnvironmentFactory(CIFactory):
     def type(self):
         return models_ci.CIType.objects.get(name='Environment')
 
-class UserFactory(DjangoModelFactory):
-    FACTORY_FOR = User
-    username = factory.Sequence(lambda n: 'user_{0}'.format(n))
-    first_name = factory.Sequence(lambda n: 'John {0}'.format(n))
-    last_name = factory.Sequence(lambda n: 'Snow {0}'.format(n))
 
 @factory.sequence
 def get_profile(n):
@@ -57,11 +60,11 @@ class CIOwnerFactory(DjangoModelFactory):
     FACTORY_FOR = models_ci.CIOwner
     profile = get_profile
 
+
 class ServiceOwnershipFactory(DjangoModelFactory):
     FACTORY_FOR = models_ci.CIOwnership
     owner = factory.SubFactory(CIOwnerFactory)
     ci = factory.SubFactory(ServiceFactory)
-
 
 
 class ServiceEnvironmentRelationFactory(DjangoModelFactory):
@@ -78,3 +81,30 @@ class ServiceProfitCenterRelationFactory(DjangoModelFactory):
     child = factory.SubFactory(ServiceFactory)
     type = models_ci.CI_RELATION_TYPES.CONTAINS
     readonly = False
+
+
+class RegionFactory(DjangoModelFactory):
+    FACTORY_FOR = Region
+    name = factory.Sequence(lambda n: 'Region #{}'.format(n))
+
+
+class VentureFactory(DjangoModelFactory):
+    FACTORY_FOR = Venture
+    name = factory.Sequence(lambda n: 'Venture #{}'.format(n))
+
+
+class VentureRoleFactory(DjangoModelFactory):
+    FACTORY_FOR = VentureRole
+    name = factory.Sequence(lambda n: 'Venture role #{}'.format(n))
+    venture = factory.SubFactory(VentureFactory)
+
+
+class RolePropertyTypeFactory(DjangoModelFactory):
+    FACTORY_FOR = RolePropertyType
+    symbol = factory.Sequence(lambda n: 'property_type_{}'.format(n))
+
+
+class RolePropertyFactory(DjangoModelFactory):
+    FACTORY_FOR = RoleProperty
+    symbol = factory.Sequence(lambda n: 'property_{}'.format(n))
+    type = factory.SubFactory(RolePropertyTypeFactory)

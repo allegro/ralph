@@ -1,0 +1,10 @@
+<div
+    class="device height-u-1 accessory {{ device.type | slugify }} position-u-{{ device.position }}"
+    ng-click="setActiveItem(device)"
+    ng-class="{active: active}"
+    ng-if="device.orientation === side"
+>
+    <div class="info">
+        <span class="accessory-remarks" ng-if="device.remarks">{{ device.remarks }}</span>
+    </div>
+</div>

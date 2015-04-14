@@ -11,6 +11,8 @@ from __future__ import unicode_literals
 from ralph.discovery.models_device import (
     Connection,
     ConnectionType,
+    Database,
+    DatabaseType,
     DeprecationKind,
     Device,
     DeviceEnvironment,
@@ -20,6 +22,7 @@ from ralph.discovery.models_device import (
     DISK_VENDOR_BLACKLIST,
     LoadBalancerMember,
     LoadBalancerPool,
+    LoadBalancerType,
     LoadBalancerVirtualServer,
     MarginKind,
     NetworkConnection,
@@ -102,6 +105,8 @@ __all__ = [
 
     'DISK_PRODUCT_BLACKLIST',
     'DISK_VENDOR_BLACKLIST',
+    'Database',
+    'DatabaseType',
     'DeprecationKind',
     'Device',
     'DeviceEnvironment',
@@ -111,6 +116,7 @@ __all__ = [
     'ConnectionType',
     'LoadBalancerMember',
     'LoadBalancerPool',
+    'LoadBalancerType',
     'LoadBalancerVirtualServer',
     'MarginKind',
     'NetworkConnection',

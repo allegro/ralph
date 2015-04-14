@@ -14,4 +14,5 @@ def info(request):
         'VERSION': '.'.join(VERSION),
         'BUGTRACKER_URL': settings.BUGTRACKER_URL,
         'CHANGELOG_URL': settings.CHANGELOG_URL,
+        'TRACKING_CODE': settings.TRACKING_CODE,
     }

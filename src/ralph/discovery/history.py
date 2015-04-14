@@ -6,6 +6,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from collections import namedtuple
+
+
+ChangeTuple = namedtuple('ChangeTuple', ['field', 'original', 'new'])
+
 
 def field_changes(instance, ignore=('last_seen',)):
     """

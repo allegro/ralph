@@ -7,10 +7,10 @@ Frequently Asked Questions
 Integration
 -----------
 
-Can I set up LDAP authentication?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+How can I set up LDAP authentication?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Yes. You will need to install ``django-auth-ldap`` and ``python-ldap`` using
+You will need to install ``django-auth-ldap`` and ``python-ldap`` using
 ``pip``. Then add LDAP as an authentication backend in your local settings::
 
   AUTHENTICATION_BACKENDS = (
@@ -47,11 +47,15 @@ connecting to an Active Directory service might look like this::
       "department": "department",
       "employee_id": "employeeID",
       "location": "officeName",
+      "country": "ISO-country-code",
   }
 
 Manager is special field and is treated as reference to another user,
 for example "CN=John Smith,OU=TOR,OU=Corp-Users,DC=mydomain,DC=internal"
 is mapped to "John Smith" text.
+
+Country is special field, the value of this field must be a country code in the
+`ISO 3166-1 alfa-2 <https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2>`_ format.
 
 Ralph provides ldap groups to django groups mapping. All what you need to
 do are:

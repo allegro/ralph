@@ -77,8 +77,17 @@ class ServiceCatalogLookup(RestrictedLookupChannel):
     model = models_device.ServiceCatalog
 
 
-class DeviceEnvrionment(RestrictedLookupChannel):
+class DeviceEnvironmentLookup(RestrictedLookupChannel):
     model = models_device.DeviceEnvironment
+
+    def get_query(self, query, request):
+        try:
+            service = models_device.ServiceCatalog.objects.get(id=query)
+        except models_device.ServiceCatalog.DoesNotExist:
+            envs = models_device.ServiceCatalog.objects.none()
+        else:
+            envs = service.get_environments()
+        return envs
 
 
 class VentureLookup(RestrictedLookupChannel):

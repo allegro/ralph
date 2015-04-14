@@ -5,12 +5,16 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import unittest
+
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
 from ralph.account.models import Perm, BoundPerm
+from ralph.discovery.tests.util import DeviceFactory
 from ralph.ui.tests.global_utils import (
     login_as_user,
+    login_as_su,
     GroupFactory,
     UserFactory,
 )
@@ -60,10 +64,12 @@ class LoginRedirectTest(TestCase):
 
     def test_hierarchy(self):
         """
-        Because there is no installed scrooge or assets, always show core
+        Because there is no installed scrooge, always show core
         user with scrooge perms -> show core
-        user with asset perms -> show core
         user with core perms -> show core
+
+        For asset perms:
+        user with asset perms -> show core
         """
         test_data = [
             Perm.has_scrooge_access,
@@ -78,7 +84,28 @@ class LoginRedirectTest(TestCase):
                 follow=True,
                 **self.request_headers
             )
-            self.assertEqual(
-                response.request['PATH_INFO'],
-                reverse('search', args=('info', '')),
-            )
+            if perm == Perm.has_assets_access:
+                self.assertEqual(
+                    response.request['PATH_INFO'],
+                    reverse('asset_search', args=('dc',)),
+                )
+            else:
+                self.assertEqual(
+                    response.request['PATH_INFO'],
+                    reverse('search', args=('info', '')),
+                )
+
+
+class DeviceViewRegressionTest(TestCase):
+
+    def setUp(self):
+        self.client = login_as_su()
+
+    def test_model_is_empty(self):
+        device = DeviceFactory()
+        url = reverse(
+            'search', kwargs={'device': device.id, 'details': 'info'},
+        )
+        self.assertEqual(device.model, None)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)

@@ -70,7 +70,6 @@ def do_clean(dev, user):
             datetime.date.today().strftime('%Y-%m-%d'),
         )
         dev.remarks = remark + dev.remarks
-    dev.save()
 
 
 @plugin.register(chain='deployment', requires=[], priority=1000)
@@ -80,6 +79,8 @@ def clean(deployment_id):
     if deployment.status != DeploymentStatus.open:
         return True
     do_clean(deployment.device, deployment.user)
+    deployment.device.name = deployment.hostname
+    deployment.device.save()
     ip, created = IPAddress.concurrent_get_or_create(address=deployment.ip)
     ip.device = deployment.device
     ip.hostname = deployment.hostname

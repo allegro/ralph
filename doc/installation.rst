@@ -2,45 +2,40 @@
 Install / Upgrade Ralph
 =======================
 
-Test drive - the easy way with docker
-=====================================
+Prebuilt docker image - recommeneded option
+===========================================
 
-It is the easiest way to try out Ralph for testing - using pre-built docker image with the worker, database, and server all together.
-You can do everything (scan, reporting) you would do with normal Ralph installation, but the data, by default, isn't stored permanently - see details below.
+It is the easiest way to try out Ralph using pre-built docker image with the worker, database, and server all together. 
+We decided to push new images from time to time when we decide it's stable enough to use.
 
 1. Install docker using instructions at https://docs.docker.com/installation/
-2. Downloading and running ralph test instance can be as easy as typing::
+2. Create volume data for mysql data and configuration::
 
-    docker run -P -t -i vi4m/ralph:stable
+    docker run -i -t -name mysql_data -v /var/lib/mysql -v /home/ralph/.ralph busybox /bin/sh -c "chown default /home/ralph; chown default /home/ralph/.ralph"
 
-3. Check your instance port by typing ``docker ps -l``, for example 53914, and point your browser to: ``http://YOUR_DOCKER_IP:53914``.
-Log in using username: ``ralph``: password: ``ralph``. Enjoy! For more information read docker manuals.
+3. Initialize config file and empty mysql database with default login and password and collect static files::
 
-4. Remember, that by default after stopping instance all your saved data will be erased, because mysql server is running inside the docker. If you don't like this - you can of course configure docker image to store data permanently:
+    docker run -P -t -i --volumes-from mysql_data allegrogroup/ralph:latest /bin/bash /home/ralph/init.sh
 
-* configure /.ralph/settings ot use mysql server outside of docker container  or
-* as an alternative, you can mount /var/lib/mysql to the host persistent directory (read more: https://docs.docker.com/userguide/dockervolumes/)
+4. Now, run ralph::
 
-For example, for built-in mysql server:
+    docker run -P -p 8000:8000 -t -i --mac-address=02:42:ac:11:ff:ff --volumes-from mysql_data allegrogroup/ralph:latest
 
-1. Mount local directory /my/local/directory as mysql storage and initialize it with database structure::
+5. Open your browser to: ``http://YOUR_DOCKER_IP:8000``. That's all! For more information read Docker manuals. Enjoy!
 
-    docker run -P -t -i -v /my/local/directory:/var/lib/mysql -t -i vi4m/ralph:stable /root/init_mysql.sh
-
-2. Ready. Now just run ralph on it::
-
-    docker run -P -t -i -v /my/local/directory:/var/lib/mysql -t -i vi4m/ralph:stable
-
-
-.. note::
-   Every hour we build cutting-edge release called vi4m/ralph:latest too.
 
 Upgrading an existing installation
 ==================================
 
 .. note::
 
-    To upgrade docker image, just re-download docker instance, and type `ralph migrate` inside the container.
+    To upgrade docker image, just re-download docker instance and migrate database and static files:
+
+    docker run  -P -t -i -volumes-from mysql_data vi4m/ralph:latest /home/ralph/bin/ralph migrate
+    docker run  -P -t -i -volumes-from mysql_data vi4m/ralph:latest /home/ralph/bin/ralph collectstatic
+
+
+
 
 
 Before you start the upgrade, you need to stop any Ralph processes that are
@@ -79,8 +74,13 @@ properly. In order to enable them in your settings, follow the instructions in
 the :doc:`change log <changes>` for the version you installed.
 
 
-Installing Ralph
-=================
+Installing Ralph - advanced installation
+========================================
+
+.. note::
+
+   Warning: The latest stable version on PyPi is very old (6 months old). Please help us testing new release using Docker Images.
+
 
 .. note::
 
@@ -321,7 +321,7 @@ If you have pip 1.3.x or 1.4.x use this command::
 
 In case you have newer pip (1.5.x or newer) use slightly longer command::
 
-  (ralph)$ pip install ralph --use-mirrors --allow-all-external --allow-unverified ipaddr --allow-unverified postmarkup --allow-unverified python-graph-core --allow-unverified pysphere
+  (ralph)$ pip install ralph --use-mirrors --allow-all-external --allow-unverified ipaddr --allow-unverified postmarkup --allow-unverified pysphere
 
 That's it.
 

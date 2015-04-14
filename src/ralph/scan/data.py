@@ -40,6 +40,8 @@ from ralph.discovery.models_device import (
     NetworkConnection,
 )
 from ralph.scan.merger import merge as merge_component
+from ralph.scan.util import get_asset_by_name
+from ralph_assets.models import Asset
 
 
 # For every fields here merger tries join data using this pairs of keys.
@@ -54,6 +56,12 @@ UNIQUE_FIELDS_FOR_MERGER = {
     'installed_software': [('device', 'path')],
 }
 SAVE_PRIORITY = 215
+
+
+def has_logical_children(device):
+    """Returns True if this device has logical children or False if it has
+    physical ones."""
+    return device.model and device.model.type in (DeviceType.switch_stack,)
 
 
 def get_choice_by_name(choices, name):
@@ -386,7 +394,7 @@ def get_device_data(device):
             ).raw if part.model else '',
         } for part in device.genericcomponent_set.order_by('sn')
     ]
-    if device.model and device.model.type in (DeviceType.switch_stack,):
+    if has_logical_children(device):
         data['subdevices'] = [
             get_device_data(dev)
             for dev in device.logicalchild_set.order_by('id')
@@ -450,6 +458,17 @@ def get_device_data(device):
     return data
 
 
+def check_if_can_edit_position(data):
+    asset = data.get('asset')
+    if not asset:
+        return True
+    if not isinstance(asset, Asset):
+        asset = get_asset_by_name(asset)
+        if not asset:
+            return True
+    return False
+
+
 def set_device_data(device, data, save_priority=SAVE_PRIORITY, warnings=[]):
     """
     Go through the submitted data, and update the Device object
@@ -464,8 +483,18 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY, warnings=[]):
         'barcode': 'barcode',
         'chassis_position': 'chassis_position',
     }
+    can_edit_position = check_if_can_edit_position(data)
     for field_name, key_name in keys.iteritems():
         if key_name in data:
+            if all((
+                not can_edit_position,
+                field_name in ('dc', 'rack', 'chassis_position'),
+            )):
+                warnings.append(
+                    'You can not set data for `{}` here - skipped. Use assets '
+                    'module.'.format(key_name),
+                )
+                continue
             setattr(device, field_name, data[key_name])
     if 'model_name' in data and (data['model_name'] or '').strip():
         try:
@@ -593,13 +622,29 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY, warnings=[]):
             save_priority=save_priority,
         )
     if 'management_ip_addresses' in data:
-        _update_addresses(device, data['management_ip_addresses'], True)
+        if not data.get('asset'):
+            _update_addresses(device, data['management_ip_addresses'], True)
+        else:
+            warnings.append(
+                'Management IP addresses ({}) have been ignored. To change '
+                'them, please use the Assets module.'.format(
+                    ', '.join(data['management_ip_addresses']),
+                ),
+            )
     if 'system_ip_addresses' in data:
         _update_addresses(device, data['system_ip_addresses'], False)
     if 'management' in data:
-        device.management, created = IPAddress.concurrent_get_or_create(
-            address=data['management']
-        )
+        if not data.get('asset'):
+            device.management, created = IPAddress.concurrent_get_or_create(
+                address=data['management'], defaults={'is_management': True},
+            )
+        else:
+            warnings.append(
+                'Management IP address ({}) has been ignored. To change '
+                'them, please use the Assets module.'.format(
+                    data['management'],
+                ),
+            )
     if 'fibrechannel_cards' in data:
         _update_component_data(
             device,
@@ -767,10 +812,7 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY, warnings=[]):
                 save_priority=save_priority,
                 warnings=warnings
             )
-            if (
-                device.model and
-                device.model.type in (DeviceType.switch_stack,)
-            ):
+            if has_logical_children(device):
                 subdevice.logical_parent = device
                 if subdevice.parent and subdevice.parent.id == device.id:
                     subdevice.parent = None
@@ -778,8 +820,13 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY, warnings=[]):
                 subdevice.parent = device
             subdevice.save(priority=save_priority)
             subdevice_ids.append(subdevice.id)
-        for subdevice in device.child_set.exclude(id__in=subdevice_ids):
-            subdevice.parent = None
+        set_, parent_attr = (
+            (device.logicalchild_set, 'logical_parent')
+            if has_logical_children(device)
+            else (device.child_set, 'parent')
+        )
+        for subdevice in set_.exclude(id__in=subdevice_ids):
+            setattr(subdevice, parent_attr, None)
             subdevice.save(priority=save_priority)
     if 'connections' in data:
         parsed_connections = set()
@@ -807,13 +854,11 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY, warnings=[]):
         ).delete()
     if 'asset' in data and 'ralph_assets' in settings.INSTALLED_APPS:
         from ralph_assets.api_ralph import assign_asset
-        if data['asset']:
-            try:
-                asset_id = data['asset'].id
-            except AttributeError:
-                pass
-            else:
-                assign_asset(device.id, asset_id)
+        asset = data['asset']
+        if asset and not isinstance(asset, Asset):
+            asset = get_asset_by_name(asset)
+        if asset:
+            assign_asset(device.id, asset.id)
 
 
 def connection_from_data(device, connection_data):
@@ -882,6 +927,7 @@ def device_from_data(
         ethernets=ethernets,
         model_name=model_name,
         model_type=model_type,
+        priority=save_priority,
     )
     set_device_data(
         device, data, save_priority=save_priority, warnings=warnings
@@ -916,7 +962,8 @@ def merge_data(*args, **kwargs):
         if (
             only_multiple and
             len(repeated) <= 1 and
-            key not in required_fields
+            key not in required_fields and
+            'database' in values
         ):
             continue
         for value_str, sources in repeated.iteritems():
