@@ -25,8 +25,7 @@ class DemoDiscoveryQueue(DemoData):
 
     def generate_data(self, data):
         return {
-            'a': DiscoveryQueueFactory.create(name='Queue A'),
-            'b': DiscoveryQueueFactory.create(name='Queue B')
+            'default': DiscoveryQueueFactory.create(name='default'),
         }
 
 
@@ -125,13 +124,13 @@ class DemoNetworkEnvs(DemoData):
             'a': EnvironmentFactory.create(
                 name='Environment A',
                 data_center=data['discovery_dc']['a'],
-                queue=data['discovery_queue']['a'],
+                queue=data['discovery_queue']['default'],
                 hosts_naming_template='h<100,199>.dc',
             ),
             'b': EnvironmentFactory.create(
                 name='Environment B',
                 data_center=data['discovery_dc']['b'],
-                queue=data['discovery_queue']['b'],
+                queue=data['discovery_queue']['default'],
                 hosts_naming_template='h<200,299>.dc',
             )
         }
