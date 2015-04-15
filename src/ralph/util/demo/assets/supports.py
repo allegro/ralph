@@ -36,6 +36,7 @@ class DemoLicences(DemoData):
     required = ['assets_dc_assets']
 
     def generate_data(self, data):
+        [LicenceFactory() for _ in range(10)]
         licence = LicenceFactory()
         LicenceAssetFactory(
             licence=licence,
