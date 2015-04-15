@@ -13,6 +13,7 @@ from ralph.discovery.tests.util import (
     DeviceFactory,
     DiscoveryQueueFactory,
     EnvironmentFactory,
+    RackServerModelFactory,
 )
 from ralph.util.demo import DemoData, register
 from ralph.discovery.models import DataCenter as DiscoveryDataCenter
@@ -94,6 +95,7 @@ class DemoDevices(DemoData):
     required = ['deprecated_dc', 'deprecated_racks', 'services', 'envs']
 
     def generate_data(self, data):
+        model = RackServerModelFactory()
         return {
             'device_1': Device.get_or_create_by_mac(
                 '02:42:ac:11:ff:ff',
@@ -102,6 +104,7 @@ class DemoDevices(DemoData):
                 rack=data['deprecated_racks']['a'].name,
                 service=data['services']['infrastructure'],
                 device_environment=data['envs']['prod'],
+                model=model,
             )[0],
             'device_2': DeviceFactory(
                 parent=data['deprecated_dc']['b'],
@@ -109,6 +112,7 @@ class DemoDevices(DemoData):
                 rack=data['deprecated_racks']['b'].name,
                 service=data['services']['infrastructure'],
                 device_environment=data['envs']['prod'],
+                model=model,
             ),
         }
 
