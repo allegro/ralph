@@ -11,7 +11,7 @@ We decided to push new images from time to time when we decide it's stable enoug
 1. Install docker using instructions at https://docs.docker.com/installation/. Use Docker version > 1.5
 2. Create volume data for mysql data and configuration::
 
-    docker run -i -t -name mysql_data -v /var/lib/mysql -v /home/ralph/.ralph busybox /bin/sh -c "chown default /home/ralph; chown default /home/ralph/.ralph"
+    docker run -i -t --name mysql_data -v /var/lib/mysql -v /home/ralph/.ralph busybox /bin/sh -c "chown default /home/ralph; chown default /home/ralph/.ralph"
 
 3. Initialize config file and empty mysql database with default login and password and collect static files::
 
