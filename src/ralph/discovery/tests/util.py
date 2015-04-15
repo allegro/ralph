@@ -48,6 +48,11 @@ class RackModelFactory(DeviceModelFactory):
     type = DeviceType.rack
 
 
+class RackServerModelFactory(DeviceModelFactory):
+    name = Sequence(lambda n: 'Rack-server-model{}'.format(n))
+    type = DeviceType.rack_server
+
+
 class DeviceFactory(DjangoModelFactory):
     FACTORY_FOR = Device
 
