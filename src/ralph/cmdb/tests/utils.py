@@ -7,12 +7,21 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from uuid import uuid1
+import itertools
 
 import factory
 from factory.django import DjangoModelFactory
 
 from ralph.cmdb import models_ci
 from ralph.discovery import models_device
+
+
+service_name_generator = itertools.cycle([
+    'Backup systems', 'Load balancing', 'Databases'
+])
+env_name_generator = itertools.cycle([
+    'prod', 'test', 'dev'
+])
 
 
 class CITypeFactory(DjangoModelFactory):
@@ -43,7 +52,12 @@ class CIFactory(DjangoModelFactory):
 
 class ServiceCatalogFactory(CIFactory):
     FACTORY_FOR = models_device.ServiceCatalog
-    state=models_ci.CI_STATE_TYPES.ACTIVE
+    FACTORY_DJANGO_GET_OR_CREATE = ('name', )
+    state = models_ci.CI_STATE_TYPES.ACTIVE
+
+    @factory.lazy_attribute
+    def name(self):
+        return service_name_generator.next()
 
     @factory.lazy_attribute
     def type(self):
@@ -52,8 +66,11 @@ class ServiceCatalogFactory(CIFactory):
 
 class DeviceEnvironmentFactory(CIFactory):
     FACTORY_FOR = models_device.DeviceEnvironment
-    name = factory.Sequence(lambda n: 'Device Environment #{}'.format(n))
-    state=models_ci.CI_STATE_TYPES.ACTIVE
+    state = models_ci.CI_STATE_TYPES.ACTIVE
+
+    @factory.lazy_attribute
+    def name(self):
+        return env_name_generator.next()
 
     @factory.lazy_attribute
     def type(self):
