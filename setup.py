@@ -32,9 +32,9 @@ setup(
     package_dir={'': 'src'},
     zip_safe=False,  # because templates are loaded from file path
     install_requires=[
-        'bob-ajax-selects==1.4.1',
+        'bob-ajax-selects==1.6.0',
         'djangorestframework==2.4.3',
-        'django-bob==1.10.0',
+        'django-bob==1.11.0',
         'django-powerdns-dnssec==0.9.3',
         'django-tastypie==0.9.16',
         'django-rq==0.4.5',
@@ -62,7 +62,7 @@ setup(
         'python-graph-core==1.8.2',
         'pytz==2013.6',
         'pyzabbix>=0.1',
-        'ralph_assets==2.4.0',
+        'ralph_assets==2.5.0',
         'requests>=0.14.2',
         'RestKit==4.2.0',
         'rq>=0.3.7',

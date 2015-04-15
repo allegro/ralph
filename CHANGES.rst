@@ -1,10 +1,10 @@
 Change Log
 ----------
 
-2.2.0
+2.3.0
 ~~~~~
 
-Released on TBA
+Released on April 13, 2015
 
 New features
 ************
