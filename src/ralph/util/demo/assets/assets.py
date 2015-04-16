@@ -5,6 +5,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import datetime
+
 from ralph.util.demo import DemoData, register
 from ralph_assets.models_assets import ModelVisualizationLayout
 from ralph_assets.models_dc_assets import Orientation
@@ -72,6 +74,7 @@ class DemoAssetModel(DemoData):
                 name=SAMPLES['models']['rack-server'][0],
                 manufacturer=data['assets_manufacturers']['hp'],
                 category=data['assets_categories']['rack_server'],
+                power_consumption=500,
             ),
             'blade_chassis': AssetModelFactory(
                 name=SAMPLES['models']['blade-chassis'][0],
@@ -79,6 +82,7 @@ class DemoAssetModel(DemoData):
                 category=data['assets_categories']['blade_chassis'],
                 height_of_device=10,
                 visualization_layout_front=ModelVisualizationLayout.layout_2x8,
+                power_consumption=10,
             ),
             'blade_chassis_ab': AssetModelFactory(
                 name=SAMPLES['models']['blade-chassis'][0],
@@ -86,11 +90,13 @@ class DemoAssetModel(DemoData):
                 category=data['assets_categories']['blade_chassis'],
                 height_of_device=10,
                 visualization_layout_front=ModelVisualizationLayout.layout_2x8AB,  # noqa
+                power_consumption=150,
             ),
             'blade_server': AssetModelFactory(
                 name=SAMPLES['models']['blade-servers'][0],
                 manufacturer=data['assets_manufacturers']['hp'],
                 category=data['assets_categories']['blade_server'],
+                power_consumption=380,
             ),
             'pdu_model': AssetModelFactory(
                 name=SAMPLES['models']['pdu'][0],
@@ -113,6 +119,7 @@ class DemoDCVisualization(DemoData):
         blade_location = 3
         service_name = Service.objects.create(name='Office infrastructure')
         warehouse = Warehouse.objects.create(name='Warsaw')
+        last_month = datetime.date.today() - datetime.timedelta(days=30)
         return {
             'rack_server': DCAssetFactory(
                 model=data['assets_models']['rack_server'],
@@ -127,6 +134,7 @@ class DemoDCVisualization(DemoData):
                 device_environment=data['envs']['prod'],
                 service_name=service_name,
                 warehouse=warehouse,
+                invoice_date=last_month,
             ),
             'blade_chassis': DCAssetFactory(
                 model=data['assets_models']['blade_chassis'],
@@ -139,6 +147,7 @@ class DemoDCVisualization(DemoData):
                 device_environment=data['envs']['prod'],
                 service_name=service_name,
                 warehouse=warehouse,
+                invoice_date=last_month + datetime.timedelta(days=5),
             ),
             'blade_servers': [
                 DCAssetFactory(
@@ -152,6 +161,7 @@ class DemoDCVisualization(DemoData):
                     device_environment=data['envs']['prod'],
                     service_name=service_name,
                     warehouse=warehouse,
+                    invoice_date=last_month + datetime.timedelta(days=7),
                 ) for slot_no in xrange(1, 17)
             ]
         }
