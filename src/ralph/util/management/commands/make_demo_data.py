@@ -5,7 +5,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import pkgutil
 import pkg_resources
 import textwrap
 from optparse import make_option
@@ -13,7 +12,6 @@ from optparse import make_option
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
-from ralph.util import demo as demo_package
 from ralph.util.demo import registry, DemoRunner
 
 
@@ -51,17 +49,11 @@ class Command(BaseCommand):
         flush = options.get('flush')
         fixtures = options.get('fixtures')
         interactive = options.get('interactive')
-        modules = []
         for package in pkg_resources.iter_entry_points(
             group='ralph.demo_data_module'
         ):
-            modules += pkgutil.iter_modules(
-                path=demo_package.__path__, prefix=demo_package.__name__ + '.'
-            )
+            package.load()
         demo = None
-
-        for loader, mod_name, ispkg in modules:
-            __import__(mod_name)
         if flush:
             self.flush()
         if interactive:

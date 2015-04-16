@@ -93,7 +93,8 @@ setup(
             'cmdb = ralph.cmdb.app:Cmdb',
         ],
         'ralph.demo_data_module': [
-            'ralph = ralph.util.demo',
+            'core = ralph.util.demo.core',
+            'assets = ralph.util.demo.assets',
         ],
     },
     classifiers=[
