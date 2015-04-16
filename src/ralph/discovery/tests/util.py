@@ -150,6 +150,7 @@ class LoadBalancerTypeFactory(DjangoModelFactory):
 class LoadBalancerVirtualServerFactory(DjangoModelFactory):
     FACTORY_FOR = LoadBalancerVirtualServer
 
+    name = Sequence(lambda n: 'vip-{}'.format(n))
     service = SubFactory(cmdb_utils.ServiceCatalogFactory)
     device_environment = SubFactory(cmdb_utils.DeviceEnvironmentFactory)
     load_balancer_type = SubFactory(LoadBalancerTypeFactory)

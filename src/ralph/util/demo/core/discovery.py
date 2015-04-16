@@ -5,18 +5,27 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from ralph.discovery.models import Device, DeviceModel, DeviceType, Network
-
+from ralph.discovery.models import (
+    DataCenter as DiscoveryDataCenter,
+    Device,
+    DeviceModel,
+    DeviceType,
+    Network,
+)
 from ralph.discovery.tests.util import (
+    DatabaseFactory,
+    DatabaseTypeFactory,
     DeprecatedDataCenterFactory,
     DeprecatedRackFactory,
     DeviceFactory,
+    DeviceModelFactory,
     DiscoveryQueueFactory,
     EnvironmentFactory,
+    LoadBalancerTypeFactory,
+    LoadBalancerVirtualServerFactory,
     RackServerModelFactory,
 )
 from ralph.util.demo import DemoData, register
-from ralph.discovery.models import DataCenter as DiscoveryDataCenter
 
 
 @register
@@ -54,12 +63,12 @@ class DemoDeprecatedDataCenter(DemoData):
         return {
             'a': DeprecatedDataCenterFactory(
                 name='DC A',
-                service=data['services']['infrastructure'],
+                service=data['services']['backup_systems'],
                 device_environment=data['envs']['prod'],
             ),
             'b': DeprecatedDataCenterFactory(
                 name='DC B',
-                service=data['services']['infrastructure'],
+                service=data['services']['backup_systems'],
                 device_environment=data['envs']['prod'],
             ),
         }
@@ -76,13 +85,13 @@ class DemoDeprecatedRack(DemoData):
             'a': DeprecatedRackFactory(
                 parent=data['deprecated_dc']['a'],
                 dc=data['deprecated_dc']['a'].name,
-                service=data['services']['infrastructure'],
+                service=data['services']['backup_systems'],
                 device_environment=data['envs']['prod'],
             ),
             'b': DeprecatedRackFactory(
                 parent=data['deprecated_dc']['b'],
                 dc=data['deprecated_dc']['b'].name,
-                service=data['services']['infrastructure'],
+                service=data['services']['backup_systems'],
                 device_environment=data['envs']['prod'],
             ),
         }
@@ -102,7 +111,7 @@ class DemoDevices(DemoData):
                 parent=data['deprecated_dc']['a'],
                 dc=data['deprecated_dc']['a'].name,
                 rack=data['deprecated_racks']['a'].name,
-                service=data['services']['infrastructure'],
+                service=data['services']['backup_systems'],
                 device_environment=data['envs']['prod'],
                 model=model,
             )[0],
@@ -110,9 +119,20 @@ class DemoDevices(DemoData):
                 parent=data['deprecated_dc']['b'],
                 dc=data['deprecated_dc']['b'].name,
                 rack=data['deprecated_racks']['b'].name,
-                service=data['services']['infrastructure'],
+                service=data['services']['databases'],
                 device_environment=data['envs']['prod'],
                 model=model,
+            ),
+            'device_3': DeviceFactory(
+                parent=data['deprecated_dc']['b'],
+                dc=data['deprecated_dc']['b'].name,
+                rack=data['deprecated_racks']['b'].name,
+                service=data['services']['load_balancing'],
+                device_environment=data['envs']['prod'],
+                model=DeviceModelFactory(
+                    name='F5',
+                    type=DeviceType.load_balancer
+                ),
             ),
         }
 
@@ -146,7 +166,10 @@ class DemoDeviceRack(DemoData):
     title = 'Device Racks'
 
     def generate_data(self, data):
-        model = DeviceModel(name='Generic rack', type=DeviceType.rack)
+        model = DeviceModel.objects.create(
+            name='Generic rack',
+            type=DeviceType.rack
+        )
         return {
             'a': DeviceFactory.create(
                 model=model,
@@ -194,3 +217,97 @@ class DemoNetworks(DemoData):
             'a': network_a,
             'b': network_b,
         }
+
+
+@register
+class DemoVirtuals(DemoData):
+    name = 'virtual'
+    title = 'Virtual servers'
+    required = ['devices', 'services', 'envs']
+
+    def generate_data(self, data):
+        from itertools import cycle
+        services = cycle([data['services']['backup_systems'], data['services']['databases']])
+        envs = cycle(list(data['envs'].values()))
+        model = DeviceModel.objects.create(name='XEN', type=DeviceType.virtual_server)
+        result = {}
+        for i in range(5):
+            result['virtual_{}'.format(i)] = DeviceFactory(
+                model=model,
+                service=services.next(),
+                device_environment=envs.next(),
+                parent=data['devices']['device_1'],
+                name='XEN-{}'.format(i),
+            )
+        return result
+
+
+@register
+class DemoTenants(DemoData):
+    name = 'tenants'
+    title = 'OpenStack Tenants'
+    required = ['services', 'envs']
+
+    def generate_data(self, data):
+        from uuid import uuid1
+        from itertools import cycle
+        services = cycle([data['services']['backup_systems'], data['services']['databases']])
+        envs = cycle(list(data['envs'].values()))
+        model = DeviceModel.objects.create(
+            name='OpenStack Juno Tenant',
+            type=DeviceType.cloud_server
+        )
+        result = {}
+        for i in range(5):
+            result['tenant_{}'.format(i)] = DeviceFactory(
+                model=model,
+                service=services.next(),
+                device_environment=envs.next(),
+                sn='openstack-{}'.format(uuid1()),
+                name='Tenant-{}'.format(i),
+            )
+        return result
+
+
+@register
+class DemoVIPs(DemoData):
+    name = 'vips'
+    title = 'VIPs'
+    required = ['services', 'envs', 'devices']
+
+    def generate_data(self, data):
+        from itertools import cycle
+        services = cycle([data['services']['backup_systems'], data['services']['databases']])
+        envs = cycle(list(data['envs'].values()))
+        lb_type = LoadBalancerTypeFactory(name='F5')
+        result = {}
+        for i in range(5):
+            result['vip_{}'.format(i)] = LoadBalancerVirtualServerFactory(
+                load_balancer_type=lb_type,
+                service=services.next(),
+                device_environment=envs.next(),
+                device=data['devices']['device_3'],
+            )
+        return result
+
+
+@register
+class DemoDatabases(DemoData):
+    name = 'databases'
+    title = 'Databases'
+    required = ['services', 'envs', 'devices']
+
+    def generate_data(self, data):
+        from itertools import cycle
+        services = cycle([data['services']['backup_systems'], data['services']['load_balancing']])
+        envs = cycle(list(data['envs'].values()))
+        db_type = DatabaseTypeFactory(name='Oracle')
+        result = {}
+        for i in range(5):
+            result['database_{}'.format(i)] = DatabaseFactory(
+                database_type=db_type,
+                service=services.next(),
+                device_environment=envs.next(),
+                parent_device=data['devices']['device_2'],
+            )
+        return result
