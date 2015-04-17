@@ -7,6 +7,9 @@ flake:
 runserver:
 	ralph runserver
 
+collectstatic:
+	ralph collectstatic --noinput
+
 install:
 	pip install -e . --use-mirrors --allow-all-external --allow-unverified ipaddr --allow-unverified postmarkup --allow-unverified pysphere
 

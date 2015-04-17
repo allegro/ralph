@@ -13,7 +13,7 @@
 
 .selector h2
 {
-    font-size: 10px; 
+    font-size: 10px;
 }
 
 p.id_layer_filter label
@@ -187,7 +187,6 @@ a.active.selector-clearall {
     height: 22px;
     width: 50px;
     margin: 0 0 3px 40%;
-    background: url(img/chooser_stacked-bg.gif) top center no-repeat;
 }
 
 .stacked .selector-chooser li {
@@ -377,7 +376,7 @@ span.clearable-file-input label {
     position: absolute;
     font-weight: bold;
     font-size: 12px;
-    background: #C9DBED url(img/default-bg.gif) bottom left repeat-x;
+    background: #C9DBED;
     padding: 1px 4px 2px 4px;
     color: white;
 }
@@ -405,7 +404,7 @@ span.clearable-file-input label {
 }
 
 .calendar-cancel:hover {
-    background: #e1e1e1 url(img/nav-bg-reverse.gif) 0 50% repeat-x;
+    background: #e1e1e1;
 }
 
 .calendar-cancel a {
@@ -441,7 +440,7 @@ ul.orderer li {
     border-width: 0 1px 1px 0;
     white-space: nowrap;
     overflow: hidden;
-    background: #e2e2e2 url(img/nav-bg-grabber.gif) repeat-y;
+    background: #e2e2e2;
 }
 
 ul.orderer li:hover {
@@ -473,7 +472,7 @@ ul.orderer li.selected {
 }
 
 ul.orderer li.deleted {
-    background: #bbb url(img/deleted-overlay.gif);
+    background: #bbb;
 }
 
 ul.orderer li.deleted a:link, ul.orderer li.deleted a:visited {
@@ -481,7 +480,6 @@ ul.orderer li.deleted a:link, ul.orderer li.deleted a:visited {
 }
 
 ul.orderer li.deleted .inline-deletelink {
-    background-image: url(img/inline-restore.png);
 }
 
 ul.orderer li.deleted:hover, ul.orderer li.deleted a.selector:hover {
@@ -493,7 +491,6 @@ ul.orderer li.deleted:hover, ul.orderer li.deleted a.selector:hover {
 .inline-deletelink {
     float: right;
     text-indent: -9999px;
-    background: transparent url(img/inline-delete.png) no-repeat;
     width: 15px;
     height: 15px;
     border: 0px none;
@@ -531,14 +528,6 @@ ul.orderer li.deleted:hover, ul.orderer li.deleted a.selector:hover {
     border-left: none;
 }
 
-.editinline tr.deleted {
-    background: #ddd url(img/deleted-overlay.gif);
-}
-
-.editinline tr.deleted .inline-deletelink {
-    background-image: url(img/inline-restore.png);
-}
-
 .editinline tr.deleted td:hover {
     cursor: default;
 }
@@ -567,7 +556,7 @@ ul.orderer li.deleted:hover, ul.orderer li.deleted a.selector:hover {
 .editinline-stacked .inline-splitter {
     float: left;
     width: 9px;
-    background: #f8f8f8 url(img/inline-splitter-bg.gif) 50% 50% no-repeat;
+    background: #f8f8f8;
     border-right: 1px solid #ccc;
 }
 

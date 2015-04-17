@@ -1,9 +1,7 @@
 {% extends "ui/base-devices.html" %}
 
 {% load url from future %}
-{% load icons %}
-{% load formats %}
-{% load di %}
+{% load icons formats di staticfiles %}
 
 {% block contentarea %}
 
@@ -96,7 +94,7 @@
 
 {% block scripts %}
 {{ block.super }}
-<script src="{{ STATIC_URL }}jquery.flot.js"></script>
+<script src="{% static 'jquery.flot.js' %}"></script>
 <script>
 $(function () {
     $.plot($('#plot-placeholder'), [
