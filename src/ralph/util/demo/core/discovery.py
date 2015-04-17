@@ -199,7 +199,7 @@ class DemoNetworks(DemoData):
     def generate_data(self, data):
         network_a = Network.objects.create(
             name='Network A',
-            address='0.0.0.0/0',
+            address='127.0.0.0/24',
             environment=data['network_envs']['a'],
         )
         network_a.racks.add(data['device_racks']['a'])
@@ -207,15 +207,22 @@ class DemoNetworks(DemoData):
 
         network_b = Network.objects.create(
             name='Network B',
-            address='10.0.0.0/0',
+            address='10.0.0.0/8',
             environment=data['network_envs']['a'],
         )
-        network_a.racks.add(data['device_racks']['b'])
-        network_a.racks.add(data['device_racks']['d'])
+        network_b.racks.add(data['device_racks']['b'])
+
+        network_c = Network.objects.create(
+            name='Network B.1',
+            address='10.128.0.0/9',
+            environment=data['network_envs']['a']
+        )
+        network_c.racks.add(data['device_racks']['d'])
 
         return {
             'a': network_a,
             'b': network_b,
+            'c': network_c,
         }
 
 
