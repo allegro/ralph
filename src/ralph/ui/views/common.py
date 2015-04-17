@@ -16,7 +16,7 @@ from django.contrib import messages
 from django.core.exceptions import ImproperlyConfigured
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
-from django.db import models as db
+from django.db import models as db, transaction
 from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
 from django.shortcuts import get_object_or_404
 from django.utils import importlib, timezone
@@ -1820,6 +1820,7 @@ class ScanStatus(BaseMixin, TemplateView):
             scan_summary.false_positive_checksum = current_checksum
             scan_summary.save()
 
+    @transaction.commit_on_success
     def post(self, *args, **kwargs):
         self.device_id = self.request.POST.get('save')
         if self.device_id:
