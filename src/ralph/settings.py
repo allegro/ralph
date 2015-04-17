@@ -28,6 +28,7 @@ USE_I18N = True
 USE_L10N = True  # FIXME: breaks contents of l7d date fields on form reload
 MEDIA_URL = '/u/'
 STATIC_URL = '/static/'
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
 STATICFILES_DIRS = (
     CURRENT_DIR + 'media',
 )
@@ -238,6 +239,10 @@ CACHES = dict(
         OPTIONS=dict(
         ),
         KEY_PREFIX='RALPH_',
+    ),
+    staticfiles=dict(
+        BACKEND='django.core.cache.backends.locmem.LocMemCache',
+       LOCATION='cached_static_files'
     )
 )
 # note: when you want to make ralph makeconf you should get all pluggable apps available.
