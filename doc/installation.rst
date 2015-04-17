@@ -21,7 +21,7 @@ We decided to push new images from time to time when we decide it's stable enoug
 
     docker run -P -p 8000:8000 -t -i --name ralph --mac-address=02:42:ac:11:ff:ff --volumes-from mysql_data allegrogroup/ralph:latest
 
-5. Open your browser to: ``http://YOUR_DOCKER_IP:8000``. That's all! For more information read Docker manuals. Enjoy!
+5. Point your browser to: ``http://YOUR_DOCKER_IP:8000``. Use `ralph`: `ralph` as login credentials. Now follow our quick tutorial: :doc:`quickstart <quickstart>`
 
 
 Upgrading an existing installation
