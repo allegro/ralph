@@ -17,12 +17,13 @@ from ralph_assets.models_assets import AssetCategory, Service, Warehouse
 
 
 SAMPLES = {
-    'manufacturers': ['HP', 'IBM', 'DELL'],
+    'manufacturers': ['HP', 'IBM', 'DELL', 'F5'],
     'models': {
         'rack-server': ['PowerEdge Rxxx'],
         'blade-chassis': ['Super Chassis'],
         'blade-servers': ['DL360', 'DL380p', 'DL380', 'ML10', 'ML10 v21'],
         'pdu': ['Remote Monitored Power Distribution Unit'],
+        'load_balancer': ['F5'],
     }
 }
 
@@ -59,6 +60,9 @@ class DemoAssetCategory(DemoData):
             'pdu': AssetCategory.objects.get(
                 slug='2-2-2-data-center-device-pdu',
             ),
+            'load_balancer': AssetCategory.objects.get(
+                slug='2-2-2-data-center-device-load-balancer',
+            )
         }
 
 
@@ -103,6 +107,11 @@ class DemoAssetModel(DemoData):
                 manufacturer=data['assets_manufacturers']['hp'],
                 category=data['assets_categories']['pdu'],
             ),
+            'load_balancer': AssetModelFactory(
+                name=SAMPLES['models']['load_balancer'][0],
+                manufacturer=data['assets_manufacturers']['f5'],
+                category=data['assets_categories']['load_balancer'],
+            )
         }
 
 
@@ -130,7 +139,21 @@ class DemoDCVisualization(DemoData):
                 device_info__rack=data['racks']['a'],
                 device_info__server_room=data['server_rooms']['a'],
                 device_info__slot_no='',
-                service=data['services']['infrastructure'],
+                service=data['services']['backup_systems'],
+                device_environment=data['envs']['prod'],
+                service_name=service_name,
+                warehouse=warehouse,
+            ),
+            'rack_server': DCAssetFactory(
+                model=data['assets_models']['rack_server'],
+                device_info__ralph_device_id=data['devices']['device_2'].id,
+                device_info__data_center=data['dc']['a'],
+                device_info__orientation=Orientation.front,
+                device_info__position=2,
+                device_info__rack=data['racks']['a'],
+                device_info__server_room=data['server_rooms']['a'],
+                device_info__slot_no='',
+                service=data['services']['databases'],
                 device_environment=data['envs']['prod'],
                 service_name=service_name,
                 warehouse=warehouse,
@@ -143,7 +166,7 @@ class DemoDCVisualization(DemoData):
                 device_info__rack=data['racks']['a'],
                 device_info__server_room=data['server_rooms']['a'],
                 device_info__slot_no='',
-                service=data['services']['infrastructure'],
+                service=data['services']['backup_systems'],
                 device_environment=data['envs']['prod'],
                 service_name=service_name,
                 warehouse=warehouse,
@@ -157,11 +180,25 @@ class DemoDCVisualization(DemoData):
                     device_info__rack=data['racks']['a'],
                     device_info__server_room=data['server_rooms']['a'],
                     device_info__slot_no=slot_no,
-                    service=data['services']['infrastructure'],
+                    service=data['services']['backup_systems'],
                     device_environment=data['envs']['prod'],
                     service_name=service_name,
                     warehouse=warehouse,
                     invoice_date=last_month + datetime.timedelta(days=7),
                 ) for slot_no in xrange(1, 17)
-            ]
+            ],
+            'load_balancer': DCAssetFactory(
+                model=data['assets_models']['rack_server'],
+                device_info__ralph_device_id=data['devices']['device_3'].id,
+                device_info__data_center=data['dc']['a'],
+                device_info__orientation=Orientation.front,
+                device_info__position=20,
+                device_info__rack=data['racks']['a'],
+                device_info__server_room=data['server_rooms']['a'],
+                device_info__slot_no='',
+                service=data['services']['load_balancing'],
+                device_environment=data['envs']['prod'],
+                service_name=service_name,
+                warehouse=warehouse,
+            )
         }

@@ -44,18 +44,26 @@ class DemoServices(DemoData):
         # CITypes loaded from fixtures
         ci_type = CIType.objects.get(id=7)
         return {
-            'infrastructure': ServiceCatalogFactory.create(
+            'backup_systems': ServiceCatalogFactory.create(
                 type=ci_type,
                 name='Backup systems',
+                uid=10001,
             ),
-            'python_developers': ServiceCatalogFactory.create(
+            'load_balancing': ServiceCatalogFactory.create(
                 type=ci_type,
                 name='Load balancing',
+                uid=10002,
             ),
-            'java_developers': ServiceCatalogFactory.create(
+            'databases': ServiceCatalogFactory.create(
                 type=ci_type,
                 name='Databases',
+                uid=10003,
             ),
+            'other': ServiceCatalogFactory.create(
+                type=ci_type,
+                uid=10004,
+                name='Other',
+            )
         }
 
 
