@@ -147,7 +147,7 @@ def _get_balancers(dev):
     ).all():
         yield {
             'balancer': dev.name,
-            'pool': vserv.default_pool.name,
+            'pool': vserv.default_pool.name if vserv.default_pool else None,
             'enabled': None,
             'address': vserv.address.address,
             'server': vserv.name,
