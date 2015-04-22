@@ -99,6 +99,8 @@ def get_subswitches(switch_version, hostname, ip_address):
 
 
 def scan_address(ip_address, **kwargs):
+    if 'juniper' in (kwargs.get('snmp_name') or '').lower():
+        raise NoMatchError('Incompatible Juniper found.')
     if 'nx-os' in (kwargs.get('snmp_name', '') or '').lower():
         raise NoMatchError('Incompatible Nexus found.')
     if kwargs.get('http_family') not in ('Unspecified', 'Cisco'):
