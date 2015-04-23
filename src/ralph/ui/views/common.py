@@ -445,6 +445,7 @@ class Base(BaseMixin, TemplateView):
 
 class Home(Base):
     template_name = 'ui/home.html'
+    submodule_name = 'home'
 
     def get_context_data(self, **kwargs):
         ret = super(Home, self).get_context_data(**kwargs)
