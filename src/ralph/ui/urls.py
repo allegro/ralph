@@ -28,15 +28,14 @@ from ralph.ui.views.ventures import (
     VenturesSoftware,
     VenturesScan,
 )
+from ralph.ui.views.data_centers import DataCenterView
 from ralph.ui.views.racks import (
-    DataCenterView,
     RacksAddDevice,
     RacksAddresses,
     RacksAsset,
     RacksComponents,
     RacksHistory,
     RacksInfo,
-    RacksRack,
     ReportRacksDeviceList,
     RacksSoftware,
     RacksScan,
@@ -258,12 +257,8 @@ urlpatterns = patterns(
         login_required(RacksDeviceList.as_view()), {}, 'racks'),
     url(r'^racks/-/rack/$', redirect_to,
         {'url': '/ui/racks/-/info/'}),
-    url(r'^racks/view/(?P<data_center>[-\w]*)/$',
-        login_required(DataCenterView.as_view()), {}, 'data_center_view'),
     url(r'^racks/(?P<rack>[-\w]*)/(?P<details>add_device)/(?P<device>)$',
         login_required(RacksAddDevice.as_view()), {}, 'racks'),
-    url(r'^racks/(?P<rack>[-\w]*)/(?P<details>rack)/(?P<device>)$',
-        login_required(RacksRack.as_view()), {}, 'racks'),
     url(r'^racks/(?P<rack>[-\w]*)/(?P<details>info)/(?P<device>\d+)$',
         login_required(RacksInfo.as_view()), {}, 'racks'),
     url(r'^racks/(?P<rack>[-\w]*)/(?P<details>components)/(?P<device>\d+)$',
@@ -284,6 +279,12 @@ urlpatterns = patterns(
         login_required(RacksScan.as_view()), {}, 'racks'),
     url(r'^racks/(?P<rack>[-\w]*)/(?P<details>scan)/(?P<address>[\d.]*)/$',
         login_required(RacksScan.as_view()), {}, 'racks'),
+
+    url(
+        r'^dc/$',
+        DataCenterView.as_view(), {},
+        'dc_view'
+    ),
 
     url(r'^networks/$',
         login_required(NetworksDeviceList.as_view()), {}, 'networks'),

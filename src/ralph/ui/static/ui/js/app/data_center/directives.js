@@ -20,6 +20,7 @@ angular
                 element.on('mousedown', function(event) {
                     event.preventDefault();
                     offset = element.offset();
+                    // offset = {left: 0, top: 0};
                     startX = event.pageX - offset.left;
                     startY = event.pageY - offset.top;
                     if (scope.mode == 'edit') {

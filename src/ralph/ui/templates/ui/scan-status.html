@@ -1,9 +1,7 @@
 {% extends "ui/base.html" %}
 
 {% load url from future %}
-{% load icons %}
-{% load formats %}
-{% load bob %}
+{% load icons formats bob staticfiles %}
 
 {% block extra_headers %}
 {{ block.super }}
@@ -175,5 +173,5 @@
 
 {% block scripts %}
     {{ block.super }}
-    <script src="{{ STATIC_URL }}scan.js"></script>
+    <script src="{% static 'scan.js' %}"></script>
 {% endblock scripts %}

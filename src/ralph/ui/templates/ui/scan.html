@@ -1,8 +1,7 @@
 {% extends "ui/base-devices.html" %}
 
 {% load url from future %}
-{% load icons %}
-{% load bob %}
+{% load icons bob staticfiles %}
 
 {% block contentarea %}
 {% if device and not address %}
@@ -91,5 +90,5 @@
 
 {% block scripts %}
     {{ block.super }}
-    <script src="{{ STATIC_URL }}scan.js"></script>
+    <script src="{% static 'scan.js' %}"></script>
 {% endblock scripts %}

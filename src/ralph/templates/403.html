@@ -1,11 +1,11 @@
 {% extends 'ui/base.html' %}
-{% load i18n %}
+{% load i18n staticfiles %}
 
 {% block content %}
 <div class="row-fluid">
     <div class="span9">
         <div class="dashboard-form">
-            <img src='{{ STATIC_URL }}images/big_icon_padlock.png'>
+            <img src="{% static 'images/big_icon_padlock.png' %}">
             <p class='permission-msg'>
               <h1>{% trans msg %}</h1>
             </p>

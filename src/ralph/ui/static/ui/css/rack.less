@@ -5,6 +5,10 @@
     box-sizing: border-box;
 }
 
+.visualization [class*="span"] {
+    margin-left: 10px;
+}
+
 .generate-racks(@n, @i: 1) when (@i =< @n) {
     &.rack-u-@{i} .wrapper {
         height: @u-height * @i;
@@ -27,13 +31,10 @@
 }
 
 .rack-info {
-    margin-top: 10px;
     background: #fff;
-    padding: 10px;
-    border: @border-info;
+    color: #444;
     position: fixed;
     width: @rack-info-width;
-    margin-right: 10px;
     input[type="text"] {
         height: inherit;
     }

@@ -18,7 +18,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from dj.choices import Choices
 from dj.choices.fields import ChoiceField
-from lck.django.activitylog.models import MonitoredActivity
 from lck.django.common.models import EditorTrackable, Named, TimeTrackable
 from lck.django.profile.models import (
     BasicInfo,
@@ -94,8 +93,7 @@ class Region(Named):
         return self.name
 
 
-class Profile(BasicInfo, ActivationSupport, GravatarSupport,
-              MonitoredActivity):
+class Profile(BasicInfo, ActivationSupport, GravatarSupport):
 
     class Meta:
         verbose_name = _("profile")

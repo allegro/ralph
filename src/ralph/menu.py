@@ -4,6 +4,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import ugettext_lazy as _
 
@@ -89,9 +90,21 @@ class CoreMenu(Menu):
                 )
             )
         if self.has_perm(Perm.read_dc_structure):
+            submodules.append(MenuItem(_('Racks'), view_name='racks'))
+            submodules.append(MenuItem(
+                _('DC View'), name='dc_view', view_name='dc_view')
+            )
+        if all((
+            self.has_perm(Perm.read_network_structure),
+            'Networks' not in settings.HIDE_MENU,
+        )):
             submodules.append(
-                MenuItem(_('Racks'), fugue_icon='fugue-building',
-                         view_name='racks'))
+                MenuItem(
+                    _('Networks'),
+                    fugue_icon='fugue-weather-clouds',
+                    view_name='networks'
+                )
+            )
         submodules.append(
             MenuItem(_('Ralph CLI'), fugue_icon='fugue-terminal',
                      href='#beast'))

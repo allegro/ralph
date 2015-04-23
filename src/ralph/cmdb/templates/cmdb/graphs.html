@@ -1,7 +1,7 @@
-{%extends 'cmdb/base.html'%}
+{% extends 'cmdb/base.html' %}
 
-{% load bob %}
-{% load icons %}
+{% load bob icons staticfiles %}
+
 {% block extra_headers %}
     <style type='text/css'>
         #graphDiv
@@ -34,12 +34,12 @@
 
 {% block scripts %}
     {{ block.super }}
-    <script type="text/javascript" src="{{STATIC_URL}}cmdb/VivaGraphJS/vivagraph.js"></script>
+    <script type="text/javascript" src="{% static 'cmdb/VivaGraphJS/vivagraph.js' %}"></script>
     <script type="text/javascript">
         /* Data container for cmdb/graphs.js */
         CMDB = {'graph_data': JSON.parse("{{graph_data|escapejs}}") }
     </script>
-    <script type="text/javascript" src="{{STATIC_URL}}cmdb/graphs.js"></script>
+    <script type="text/javascript" src="{% static 'cmdb/graphs.js' %}"></script>
 {% endblock %}
 
 {% block contentarea %}

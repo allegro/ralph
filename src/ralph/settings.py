@@ -28,6 +28,7 @@ USE_I18N = True
 USE_L10N = True  # FIXME: breaks contents of l7d date fields on form reload
 MEDIA_URL = '/u/'
 STATIC_URL = '/static/'
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
 STATICFILES_DIRS = (
     CURRENT_DIR + 'media',
 )
@@ -50,7 +51,6 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'lck.django.activitylog.middleware.ActivityMiddleware',
     'lck.django.common.middleware.ForceLanguageCodeMiddleware',
     'ralph.middleware.RegionMiddleware',
 )
@@ -68,13 +68,13 @@ INSTALLED_APPS = [
     'django_rq',
     'south',
     'lck.django.common',
-    'lck.django.activitylog',
     'lck.django.profile',
     'lck.django.score',
     'lck.django.tags',
     'gunicorn',
     'fugue_icons',
     'bob',
+    'bob.djid',
     'tastypie',
     'ralph.account',
     'ralph.business',
@@ -186,7 +186,6 @@ MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 # activity middleware settings
 CURRENTLY_ONLINE_INTERVAL = 300
 RECENTLY_ONLINE_INTERVAL = 900
-ACTIVITYLOG_PROFILE_MODEL = AUTH_PROFILE_MODULE
 # lck.django.common models
 EDITOR_TRACKABLE_MODEL = AUTH_PROFILE_MODULE
 # lck.django.score models
@@ -240,6 +239,10 @@ CACHES = dict(
         OPTIONS=dict(
         ),
         KEY_PREFIX='RALPH_',
+    ),
+    staticfiles=dict(
+        BACKEND='django.core.cache.backends.locmem.LocMemCache',
+       LOCATION='cached_static_files'
     )
 )
 # note: when you want to make ralph makeconf you should get all pluggable apps available.

@@ -17,7 +17,6 @@ from django.contrib.auth.admin import UserAdmin, GroupAdmin
 from django.contrib.auth.models import User, Group
 from django.utils.translation import ugettext_lazy as _
 
-from lck.django.activitylog.admin import IPInline, UserAgentInline
 from lck.django.common.admin import (
     ForeignKeyAutocompleteTabularInline,
     ModelAdmin,
@@ -30,7 +29,6 @@ from ralph.account.models import BoundPerm, Profile, Region
 
 class ProfileInline(admin.StackedInline):
     model = Profile
-    readonly_fields = ('last_active',)
     max_num = 1
     can_delete = False
 
@@ -53,22 +51,6 @@ class ProfileBoundPermInline(ForeignKeyAutocompleteTabularInline):
     def __init__(self, parent_model, admin_site):
         self.fk_name = 'profile'
         super(ProfileBoundPermInline, self).__init__(Profile, admin_site)
-
-
-class ProfileIPInline(IPInline):
-    formset = ProfileInlineFormSet
-
-    def __init__(self, parent_model, admin_site):
-        self.fk_name = 'profile'
-        super(ProfileIPInline, self).__init__(Profile, admin_site)
-
-
-class ProfileUserAgentInline(UserAgentInline):
-    formset = ProfileInlineFormSet
-
-    def __init__(self, parent_model, admin_site):
-        self.fk_name = 'profile'
-        super(ProfileUserAgentInline, self).__init__(Profile, admin_site)
 
 
 class ApiKeyInline(admin.StackedInline):
@@ -147,8 +129,6 @@ class ProfileAdmin(UserAdmin):
         ProfileBoundPermInline,
         RegionInline,
         ApiKeyInline,
-        ProfileIPInline,
-        ProfileUserAgentInline,
     ]
     list_display = (
         'username',

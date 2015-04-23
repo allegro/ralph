@@ -12,7 +12,6 @@ from django.contrib import messages
 from django.db.models import Q
 from django.http import HttpResponseForbidden, HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404
-from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import CreateView
 
@@ -22,7 +21,6 @@ from ralph.ui.forms.devices import DeviceCreateForm
 from ralph.ui.views.common import (
     Addresses,
     Asset,
-    Base,
     BaseMixin,
     Components,
     History,
@@ -34,8 +32,6 @@ from ralph.ui.views.common import (
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import ReportDeviceList
 from ralph.util import presentation
-from ralph_assets.models_assets import DeprecatedRalphRack
-from ralph_assets.models_dc_assets import DataCenter
 
 
 class BaseRacksMixin(object):
@@ -111,11 +107,11 @@ class SidebarRacks(BaseRacksMixin):
                     dc.name,
                     name=_get_identifier(dc),
                     fugue_icon=icon(dc),
-                    view_name='data_center_view',
+                    view_name='racks',
                     subitems=subitems,
                     indent=' ',
                     view_args=[
-                        _slug(dc.name),
+                        _get_identifier(dc), ret['details'], ''
                     ],
                     collapsible=True,
                     collapsed=not (
@@ -201,15 +197,11 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
             depth, item = top.pop()
             c = children[item]
             if sort in ('-position', 'position'):
-                def key(x):
-                    return (x.get_position() or '').rjust(100)
+                key = lambda x: (x.get_position() or '').rjust(100)
                 c.sort(key=key, reverse=not sort.startswith('-'))
             elif sort == '':
-                def key(x):
-                    return (
-                        x.model.type if x.model else None,
-                        (x.get_position() or '').rjust(100)
-                    )
+                key = lambda x: (x.model.type if x.model else None,
+                                 (x.get_position() or '').rjust(100))
                 c.sort(key=key, reverse=True)
             top.extend((depth + 1, i) for i in c)
             item.depth = depth
@@ -252,14 +244,6 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
         profile = self.request.user.get_profile()
         has_perm = profile.has_perm
         tab_items = ret['tab_items']
-        if ret['subsection']:
-            tab_items.append(
-                MenuItem(
-                    'Rack',
-                    fugue_icon='fugue-media-player-phone',
-                    href='../rack/?%s' % self.request.GET.urlencode()
-                )
-            )
         if has_perm(Perm.create_device, self.rack.venture if
                     self.rack else None):
             tab_items.append(
@@ -275,41 +259,6 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
             'subsection_slug': _get_identifier(self.rack),
         })
         return ret
-
-
-class RacksRack(Racks, Base):
-    template_name = 'ui/racks_rack.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        self.new_rack = None
-        response = super(RacksRack, self).dispatch(request, *args, **kwargs)
-        try:
-            old_rack = DeprecatedRalphRack.objects.get(id=self.rack.id)
-        except DeprecatedRalphRack.DoesNotExist:
-            pass
-        else:
-            for rack in old_rack.deprecated_asset_rack.all():
-                self.new_rack = rack
-        # NOTE: set_cookie method required value as a str not unicode
-        response.set_cookie(str('rack_id'), self.new_rack and self.new_rack.id)
-        return response
-
-    def get_context_data(self, **kwargs):
-        context = super(RacksRack, self).get_context_data(**kwargs)
-        tab_items = context['tab_items']
-        label = _('Rack view')
-        if self.rack.model.type == DeviceType.data_center:
-            label = _('Data center view')
-        tab_items.insert(
-            0,
-            MenuItem(
-                label,
-                name='rack',
-                fugue_icon='fugue-media-player-phone',
-                href='../rack/?%s' % self.request.GET.urlencode()
-            )
-        )
-        return context
 
 
 class DeviceCreateView(BaseRacksMixin, CreateView):
@@ -376,7 +325,7 @@ class DeviceCreateView(BaseRacksMixin, CreateView):
             asset = form.cleaned_data['asset']
             if asset:
                 assign_asset(dev.id, asset.id)
-        messages.success(self.request, "Device created.")
+        messages.success(self.request, _('Device created.'))
         return HttpResponseRedirect(self.request.path + '../info/%d' % dev.id)
 
     def get(self, *args, **kwargs):
@@ -415,18 +364,9 @@ class RacksAddDevice(Racks, DeviceCreateView):
         tab_items = ret['tab_items']
         ret['template_menu_items'] = TEMPLATE_MENU_ITEMS
         ret['template_selected'] = 'device'
-        if ret['subsection']:
-            tab_items.append(
-                MenuItem(
-                    'Rack',
-                    fugue_icon='fugue-media-player-phone',
-                    href='../rack/?%s' % self.request.GET.urlencode()
-                )
-            )
-
         tab_items.append(
             MenuItem(
-                'Deploy',
+                _('Deploy'),
                 name='add_device',
                 fugue_icon='fugue-wand-hat',
                 href='../add_device/?%s' % (self.request.GET.urlencode())
@@ -437,39 +377,3 @@ class RacksAddDevice(Racks, DeviceCreateView):
 
 class ReportRacksDeviceList(ReportDeviceList, RacksDeviceList):
     pass
-
-
-class DataCenterView(Racks, Base):
-    submodule_name = 'racks'
-    template_name = 'ui/data_center_view.html'
-
-    def dispatch(self, request, data_center, *args, **kwargs):
-        self.data_center = get_object_or_404(
-            Device, name=data_center
-        )
-        response = super(DataCenterView, self).dispatch(
-            request, *args, **kwargs
-        )
-        asset_dc = get_object_or_404(
-            DataCenter, deprecated_ralph_dc_id=self.data_center.id
-        )
-        response.set_cookie(str('data_center_id'), asset_dc.id)
-        return response
-
-    def get_context_data(self, **kwargs):
-        context = super(DataCenterView, self).get_context_data(**kwargs)
-        context['data_center'] = self.data_center
-        context['subsection'] = self.data_center.name
-        context['details'] = 'data_center_view'
-        tab_items = context['tab_items']
-        if context['subsection']:
-            tab_items.insert(0, MenuItem(
-                _('Data center view'),
-                fugue_icon='fugue-media-player-phone',
-                name='data_center_view',
-                view_name='data_center_view',
-                view_args=[
-                    slugify(self.data_center.name)
-                ]
-            ))
-        return context

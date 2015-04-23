@@ -1,7 +1,9 @@
 {% extends 'ui/base-devices.html' %}
 
+{% load staticfiles %}
+
 {% block extra_headers %}
-    <link rel="stylesheet" href="{{ STATIC_URL }}/ui/css/rack.css">
+    <link rel="stylesheet" href="{% static 'ui/css/rack.css' %}">
 {% endblock %}
 
 {% block extra_js %}

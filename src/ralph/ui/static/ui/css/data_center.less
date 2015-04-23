@@ -42,6 +42,14 @@
                     display: none;
                 }
                 .rack {
+                    &.new {
+                        border-color: #ff3;
+                        background-color: #997;
+                    }
+                    &.saved {
+                        border-color: #444;
+                        background-color: @rack-background;
+                    }
                     &.move {
                         border-style: dashed;
                         &.not_allowed{background-color: red;}
@@ -100,6 +108,19 @@
                 );
             background-size: @grid-size @grid-size;
             .rack {
+                &.add {
+                    text-align: center;
+                    font-size: 40px;
+                    line-height: 40px;
+                    border: 0;
+                    color: #3f3;
+                    background: transparent;
+                    cursor: pointer;
+                    &:hover {
+                        border: 0;
+                        background: rgba(255, 255, 255, .2);
+                    }
+                }
                 @label-height: 1.4em;
                 .generate-x-position(@grid-count);
                 .generate-y-position(@grid-count);
@@ -136,7 +157,6 @@
                 }
                 .generate-x-position(@grid-count);
                 .generate-y-position(@grid-count);
-                @rack-background: #888;
                 box-sizing: border-box;
                 position: absolute;
                 background: @rack-background;

@@ -25,7 +25,12 @@ from ralph.discovery.models_device import (
     LoadBalancerVirtualServer,
 )
 from ralph.cmdb.tests import utils as cmdb_utils
-from ralph.discovery.models_network import Network, IPAddress
+from ralph.discovery.models_network import (
+    DiscoveryQueue,
+    Environment,
+    IPAddress,
+    Network,
+)
 from ralph_assets.models_dc_assets import DeprecatedRalphDC, DeprecatedRalphRack
 
 
@@ -41,6 +46,11 @@ class DataCenterModelFactory(DeviceModelFactory):
 class RackModelFactory(DeviceModelFactory):
     name = Sequence(lambda n: 'Rack-model{}'.format(n))
     type = DeviceType.rack
+
+
+class RackServerModelFactory(DeviceModelFactory):
+    name = Sequence(lambda n: 'Rack-server-model{}'.format(n))
+    type = DeviceType.rack_server
 
 
 class DeviceFactory(DjangoModelFactory):
@@ -140,6 +150,7 @@ class LoadBalancerTypeFactory(DjangoModelFactory):
 class LoadBalancerVirtualServerFactory(DjangoModelFactory):
     FACTORY_FOR = LoadBalancerVirtualServer
 
+    name = Sequence(lambda n: 'vip-{}'.format(n))
     service = SubFactory(cmdb_utils.ServiceCatalogFactory)
     device_environment = SubFactory(cmdb_utils.DeviceEnvironmentFactory)
     load_balancer_type = SubFactory(LoadBalancerTypeFactory)
@@ -162,6 +173,18 @@ class DatabaseFactory(DjangoModelFactory):
     database_type = SubFactory(DatabaseTypeFactory)
     parent_device = SubFactory(DeviceFactory)
     name = Sequence(lambda n: 'DB{}'.format(n))
+
+
+class DiscoveryQueueFactory(DjangoModelFactory):
+    FACTORY_FOR = DiscoveryQueue
+
+    name = Sequence(lambda n: 'Queue {}'.format(n))
+
+
+class EnvironmentFactory(DjangoModelFactory):
+    FACTORY_FOR = Environment
+
+    name = Sequence(lambda n: 'Environment {}'.format(n))
 
 
 class MockSSH(object):

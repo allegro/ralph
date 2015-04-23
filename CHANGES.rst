@@ -1,6 +1,28 @@
 Change Log
 ----------
 
+=======
+2.3.1
+~~~~~
+
+Released on April 23, 2015
+
+New features
+************
+* Changed default STATICFILES_STORAGE to cached.
+* Moved visualization to new section (DC view).
+* Added networks to top menu with option to hide it (HIDE_MENU setting).
+* Added mechanism generating demo data as CLI command.
+
+
+Fixes
+*****
+* Fixed getting name of default pool for load balancers.
+* Transactional save on scan form.
+* Removed lck.activitylog from Ralph.
+* Fixed unicode error and empty country by default in LDAP login.
+
+
 2.3.0
 ~~~~~
 

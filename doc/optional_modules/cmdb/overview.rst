@@ -248,7 +248,7 @@ Add to settings::
 
 and run::
 
-    $ jira cmdb_integration --zabbix_hosts --zabbix_triggers
+    $ ralph cmdb_integration --zabbix_hosts --zabbix_triggers
 
 to create Zabbix relations and download trigger data.
 

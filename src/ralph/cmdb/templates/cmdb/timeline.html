@@ -1,6 +1,5 @@
-{%extends 'cmdb/base.html'%}
-{% load icons %}
-{% load query %}
+{% extends 'cmdb/base.html' %}
+{% load icons static query %}
 {% block content %}
 
 <style>
@@ -10,7 +9,7 @@
     }
     .pointer
     {
-        font-size: 13px; 
+        font-size: 13px;
         cursor: pointer;
     }
     .row_error
@@ -64,9 +63,9 @@
 {% block scripts %}
 {{ block.super }}
 
-<script src="{{ STATIC_URL }}mustache.js"></script>
-<script src="{{ STATIC_URL }}jquery.flot.selection.js"></script>
-<script src="{{ STATIC_URL }}cmdb/timeline.js"></script>
+<script src="{% static 'mustache.js' %}"></script>
+<script src="{% static 'jquery.flot.selection.js' %}"></script>
+<script src="{% static 'cmdb/timeline.js' %}"></script>
 
 <script type="text/javascript">
     $(function(){

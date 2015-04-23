@@ -5,13 +5,13 @@ Install / Upgrade Ralph
 Prebuilt docker image - recommeneded option
 ===========================================
 
-It is the easiest way to try out Ralph using pre-built docker image with the worker, database, and server all together. 
+It is the easiest way to try out Ralph using pre-built docker image with the worker, database, and server all together.
 We decided to push new images from time to time when we decide it's stable enough to use.
 
-1. Install docker using instructions at https://docs.docker.com/installation/
+1. Install docker using instructions at https://docs.docker.com/installation/. Use Docker version > 1.5
 2. Create volume data for mysql data and configuration::
 
-    docker run -i -t -name mysql_data -v /var/lib/mysql -v /home/ralph/.ralph busybox /bin/sh -c "chown default /home/ralph; chown default /home/ralph/.ralph"
+    docker run -i -t --name mysql_data -v /var/lib/mysql -v /home/ralph/.ralph busybox /bin/sh -c "chown default /home/ralph; chown default /home/ralph/.ralph"
 
 3. Initialize config file and empty mysql database with default login and password and collect static files::
 
@@ -19,9 +19,9 @@ We decided to push new images from time to time when we decide it's stable enoug
 
 4. Now, run ralph::
 
-    docker run -P -p 8000:8000 -t -i --mac-address=02:42:ac:11:ff:ff --volumes-from mysql_data allegrogroup/ralph:latest
+    docker run -P -p 8000:8000 -t -i --name ralph --mac-address=02:42:ac:11:ff:ff --volumes-from mysql_data allegrogroup/ralph:latest
 
-5. Open your browser to: ``http://YOUR_DOCKER_IP:8000``. That's all! For more information read Docker manuals. Enjoy!
+5. Point your browser to: ``http://YOUR_DOCKER_IP:8000``. Use `ralph`: `ralph` as login credentials. Now follow our quick tutorial: :doc:`quickstart <quickstart>`
 
 
 Upgrading an existing installation
@@ -29,13 +29,11 @@ Upgrading an existing installation
 
 .. note::
 
-    To upgrade docker image, just re-download docker instance and migrate database and static files:
+    To upgrade docker image, stop Ralph instance, pull new docker image and run migration script for DB and static files. 
+    
+    docker pull allegrogroup/ralph:latest
 
-    docker run  -P -t -i -volumes-from mysql_data vi4m/ralph:latest /home/ralph/bin/ralph migrate
-    docker run  -P -t -i -volumes-from mysql_data vi4m/ralph:latest /home/ralph/bin/ralph collectstatic
-
-
-
+    docker run  -P -t -i -volumes-from mysql_data allegrogroup/ralph:latest /home/ralph/upgrade_ralph.sh
 
 
 Before you start the upgrade, you need to stop any Ralph processes that are
@@ -72,6 +70,24 @@ Update the settings
 Some new features added to Ralph may require additional settings to work
 properly. In order to enable them in your settings, follow the instructions in
 the :doc:`change log <changes>` for the version you installed.
+
+Example data
+------------
+
+Ralph after instalation doesn't have any example data -- for this reason you
+can run special CLI command for generate some example data such as data for
+visualization.
+
+To generate some data run ``ralph make_demo_data`` and select right option
+from menu.
+
+Available params for command:
+  * ``--flush`` - flush the databases,
+  * ``-d fixture_name`` - execute defined fixture,
+
+Example of use:
+  * ``ralph make_demo_data --flush -d envs -d services`` - flush databases and execute defined fixtures,
+  * ``ralph make_demo_data --flush `` - interactive mode.
 
 
 Installing Ralph - advanced installation

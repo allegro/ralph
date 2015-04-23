@@ -16,6 +16,7 @@ install:
   - make install
   - pip install coveralls
   - pip install flake8
+  - pip install django-auth-ldap==1.1.3
 
 
 # command to run tests, e.g. python setup.py test
