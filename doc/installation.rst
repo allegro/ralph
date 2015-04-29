@@ -74,7 +74,7 @@ the :doc:`change log <changes>` for the version you've installed.
 Example data
 ------------
 
-Docker image has example data installated. But in other installation methods you might also want to have it. 
+Docker image already has example data installed. But in other installation methods you might also want to have it. 
 By using examples you will quickly understand how Ralph works. You will get some networks, racks, assets, devices to start.
 We strongly recommend to do this.
 
