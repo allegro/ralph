@@ -3,7 +3,7 @@ Install / Upgrade Ralph
 =======================
 
 Prebuilt docker image - recommended option
-===========================================
+==========================================
 
 It is the easiest way to try out Ralph using pre-built docker image with the worker, database, and server all together.
 We decided to push new images from time to time when we decide it's stable enough to use.
