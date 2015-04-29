@@ -57,7 +57,7 @@ angular
                     rack.new = false;
                     rack.saved = true;
                     $scope.forms.edit_form.$error.all = null;
-                    $scope.forms.edit_form.$success = ['The rack has benn successfully successfully to data center.'];
+                    $scope.forms.edit_form.$success = ['The rack has been successfully added to data center.'];
                 }
             });
         };
