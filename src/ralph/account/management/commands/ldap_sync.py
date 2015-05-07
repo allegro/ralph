@@ -25,8 +25,8 @@ except ImportError:
 
 def _truncate_surname(ldap_dict):
     """
-    Truncate user's surname when it's longer then default django value, which is
-    30 chars.
+    Truncate user's surname when it's longer then default django value, which
+    is 30 chars.
     """
     if 'sn' in ldap_dict:
         max_length = User._meta.get_field('last_name').max_length
@@ -88,12 +88,13 @@ class Command(BaseCommand):
         self._disconnect()
 
     def _get_users(self):
+        objcls = settings.LDAP_SERVER_OBJECT_USER_CLASS
         try:
             user_filter = settings.AUTH_LDAP_USER_FILTER
         except AttributeError:
-            query = '(objectClass=user)'
+            query = '(objectClass=%s)' % (objcls,)
         else:
-            query = '(&(objectClass=user)%s)' % (user_filter,)
+            query = '(&(objectClass=%s)%s)' % (objcls, user_filter,)
         ldap_users = self._run_ldap_query(query)
         return ldap_users
 
