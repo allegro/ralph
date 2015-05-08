@@ -954,6 +954,7 @@
   background: rgba(0, 0, 0, 0.8);
   text-align: center;
   color: #eee;
+  width: 100%;
 }
 .data-center .grid .grid_wrapper .rack .wrapper .used {
   position: absolute;
