@@ -219,6 +219,7 @@ def can_change_ci_state(ci, changed_state):
         changed_state and
         ci.type.id == CI_TYPES.SERVICE and
         ci.state == CI_STATE_TYPES.ACTIVE and
+        ci.state != changed_state and
         changed_state in (CI_STATE_TYPES.INACTIVE, CI_STATE_TYPES.WAITING) and
         Device.objects.filter(service=ci).count() > 0
     ):
