@@ -20,6 +20,7 @@ from django.contrib.contenttypes.generic import GenericRelation
 from django.core.urlresolvers import reverse
 from django.db import models as db
 from django.db import IntegrityError, transaction
+from django.db.models import Sum
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.models import (
     MACAddressField,
@@ -876,6 +877,26 @@ class Device(
             return ''
         from ralph_assets.models import Orientation
         return Orientation.name_from_id(asset.device_info.orientation)
+
+    @property
+    def processors_repr(self):
+        processors_count = self.processor_set.all().count() or 0
+        processors = {dd.model.name for dd in self.processor_set.all()}
+        if len(processors) > 1:
+            raise ValueError("Device has different processors models")
+        elif len(processors) == 0:
+            processors_repr = '-'
+        else:
+            processors_repr = "{processors_count}x {processors_name}".format(
+                processors_count=processors_count,
+                processors_name=list(processors)[0],
+            )
+        return processors_repr
+
+    @property
+    def memory_repr(self):
+        result = self.memory_set.all().aggregate(Sum('size'))
+        return unicode(result['size__sum'] or 0)
 
     def get_components(self):
         details = {}

@@ -15,6 +15,7 @@ from factory import sequence, Sequence, lazy_attribute, Factory, SubFactory
 from factory.django import DjangoModelFactory
 
 from ralph.discovery.models import Ethernet
+from ralph.discovery.models_component import Memory, Processor, ComponentModel
 from ralph.discovery.models_device import (
     Database,
     DatabaseType,
@@ -65,6 +66,30 @@ class DeviceFactory(DjangoModelFactory):
     @lazy_attribute
     def barcode(self):
         return str(uuid1())
+
+
+class ComponentModelFactory(DjangoModelFactory):
+    FACTORY_FOR = ComponentModel
+    name = Sequence(lambda n: 'Componenent model {}'.format(n))
+    family = Sequence(lambda n: 'Family {}'.format(n))
+
+class ComponentFactory(DjangoModelFactory):
+    FACTORY_FOR = ComponentModel
+    device = SubFactory(DeviceFactory)
+    model = SubFactory(ComponentModelFactory)
+
+
+class MemoryFactory(ComponentFactory):
+    FACTORY_FOR = Memory
+    label = Sequence(lambda n: 'RAM {}'.format(n))
+    size = 2048
+
+
+class ProcessorFactory(ComponentFactory):
+    FACTORY_FOR = Processor
+    label = Sequence(lambda n: 'CPU {}'.format(n))
+    speed = 1333
+    cores = 1
 
 
 class EthernetFactory(DjangoModelFactory):

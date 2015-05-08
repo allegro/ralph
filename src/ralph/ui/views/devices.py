@@ -79,7 +79,8 @@ class BaseDeviceList(Report, ListView):
         'info': [
             'venture', 'service', 'model', 'position', 'remarks',
         ],
-        'components': ['model', 'barcode', 'sn'],
+        'components': ['model', 'barcode', 'serial_number', 'processors',
+                       'memory'],
         'prices': [
             'venture', 'margin', 'deprecation', 'price', 'cost', 'deprecation',
         ],
@@ -110,7 +111,7 @@ class BaseDeviceList(Report, ListView):
         query = self.get_queryset()
         rows = [
             ['Id', 'Name', 'Venture', 'Role', 'Model', 'Data Center', 'Rack',
-             'Position', 'Barcode', 'SN', 'Margin', 'Deprecation', 'Price',
+             'Position', 'Barcode', 'SN', 'processors', 'memory', 'Margin', 'Deprecation', 'Price',
              'Monthly Cost', 'Addresses', 'Management', 'Created',
              'Last Seen', 'Purchased', 'Warranty Expiration',
              'Support Expiration', 'Support Kind', 'Remarks'],
@@ -135,6 +136,8 @@ class BaseDeviceList(Report, ListView):
                 dev.get_position() if 'info' in show_tabs else '',
                 dev.barcode or '' if 'info' in show_tabs else '',
                 dev.sn or '' if 'info' in show_tabs else '',
+                dev.processors_repr.replace(',', ':') if 'info' in show_tabs else '',  # noqa
+                dev.memory_repr if 'info' in show_tabs else '',
                 str(dev.get_margin()) + '%' if 'prices' in show_tabs else '',
                 (dev.deprecation_kind.name if dev.deprecation_kind and
                     'prices' in show_tabs else ''),
