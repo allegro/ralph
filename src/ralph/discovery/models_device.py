@@ -882,7 +882,9 @@ class Device(
     def processors_repr(self):
         processors_count = self.processor_set.all().count() or 0
         processors = {dd.model.name for dd in self.processor_set.all()}
-        if len(processors) > 1:
+        if getattr(self.model, 'type', None) == DeviceType.virtual_server:
+            processors_repr = _('Not hardware')
+        elif len(processors) > 1:
             raise ValueError("Device has different processors models")
         elif len(processors) == 0:
             processors_repr = '-'
