@@ -881,15 +881,15 @@ class Device(
     @property
     def processors_repr(self):
         processors_count = self.processor_set.all().count() or 0
-        processors = {dd.model.name for dd in self.processor_set.all()}
-        if len(processors) > 1:
-            raise ValueError("Device has different processors models")
-        elif len(processors) == 0:
+        processors = [
+            proc.model.name for proc in self.processor_set.all() if proc.model
+        ]
+        if len(processors) == 0:
             processors_repr = '-'
         else:
             processors_repr = "{processors_count}x {processors_name}".format(
                 processors_count=processors_count,
-                processors_name=list(processors)[0],
+                processors_name=processors[0],
             )
         return processors_repr
 
