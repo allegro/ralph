@@ -16,9 +16,11 @@ from ralph.cmdb.tests.utils import (
     DeviceEnvironmentFactory,
     ServiceCatalogFactory,
 )
+from ralph.discovery.models_device import DeviceType
 from ralph.discovery.tests.util import (
     ComponentFactory,
     ComponentModelFactory,
+    DeviceModelFactory,
     DeviceFactory,
     IPAddressFactory,
     MemoryFactory,
@@ -230,6 +232,12 @@ class DevicePropertiesTest(TestCase):
     def test_processors_repr_returns_dash_when_no_processors(self):
         device = DeviceFactory()
         self.assertEqual(device.processors_repr, '-')
+
+    def test_processors_repr_returns_msg_when_virtual_server(self):
+        device = DeviceFactory(
+            model=DeviceModelFactory(type=DeviceType.virtual_server)
+        )
+        self.assertEqual(device.processors_repr, 'Not hardware')
 
     def test_processors_repr_raise_error_when_many_models(self):
         device = DeviceFactory()
