@@ -16,7 +16,14 @@ from ralph.cmdb.tests.utils import (
     DeviceEnvironmentFactory,
     ServiceCatalogFactory,
 )
-from ralph.discovery.tests.util import DeviceFactory, IPAddressFactory
+from ralph.discovery.tests.util import (
+    ComponentFactory,
+    ComponentModelFactory,
+    DeviceFactory,
+    IPAddressFactory,
+    MemoryFactory,
+    ProcessorFactory,
+)
 from ralph.discovery.models import DeviceType, Device, UptimeSupport
 from ralph.discovery.models_history import HistoryChange
 from ralph.ui.tests.global_utils import UserFactory
@@ -212,3 +219,31 @@ class DevicePropertiesTest(TestCase):
             self.sample_device.get_property_set(),
             {'my_custom_property_1': 'Test 123'}
         )
+
+    def test_processors_repr_returns_processors_correctly(self):
+        processor = ProcessorFactory()
+        self.assertEqual(
+            processor.device.processors_repr,
+            '1x {}'.format(processor.model.name),
+        )
+
+    def test_processors_repr_returns_dash_when_no_processors(self):
+        device = DeviceFactory()
+        self.assertEqual(device.processors_repr, '-')
+
+    def test_processors_repr_raise_error_when_many_models(self):
+        device = DeviceFactory()
+        ProcessorFactory(device=device)
+        ProcessorFactory(device=device)
+        with self.assertRaises(ValueError):
+            device.processors_repr
+
+    def test_memory_repr_returns_memory_sum_correctly(self):
+        device = DeviceFactory()
+        MemoryFactory(device=device)
+        MemoryFactory(device=device)
+        self.assertEqual(device.memory_repr, '4096')
+
+    def test_memory_repr_returns_0_when_no_memory(self):
+        device = DeviceFactory()
+        self.assertEqual(device.memory_repr, '0')
