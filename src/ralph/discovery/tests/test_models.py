@@ -231,12 +231,14 @@ class DevicePropertiesTest(TestCase):
         device = DeviceFactory()
         self.assertEqual(device.processors_repr, '-')
 
-    def test_processors_repr_raise_error_when_many_models(self):
+    def test_processors_repr_returns_correct_when_many_models(self):
         device = DeviceFactory()
-        ProcessorFactory(device=device)
-        ProcessorFactory(device=device)
-        with self.assertRaises(ValueError):
-            device.processors_repr
+        processors = []
+        for idx in range(2):
+            processors.append(ProcessorFactory(device=device))
+        self.assertEqual(
+            device.processors_repr, '2x {}'.format(processors[0].model.name),
+        )
 
     def test_memory_repr_returns_memory_sum_correctly(self):
         device = DeviceFactory()
