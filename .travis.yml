@@ -1,0 +1,17 @@
+sudo: false
+language: python
+cache:
+  directories:
+  - $HOME/virtualenv/
+python:
+  - "2.7"
+  - "3.4"
+  - "pypi"
+install:
+    - pip install . --use-mirrors
+    - pip install -r requirements/test.txt
+before_install:
+    - pip install flake8 --use-mirrors
+    - make flake
+script:
+    - make test

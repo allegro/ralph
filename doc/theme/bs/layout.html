@@ -1,0 +1,126 @@
+{% extends "basic/layout.html" %}
+
+{%- macro bsrelbar() %}
+    <ul class="pager">
+        {%- for rellink in rellinks %}
+        <li
+            class="{{ rellink[3] }}"
+        ><a
+            href="{{ pathto(rellink[0]) }}"
+            {{ accesskey(rellink[2]) }}
+        >{{ rellink[1] }}</a></li>
+        {%- endfor %}
+    </ul>
+{%- endmacro %}
+
+{%- macro footer() %}
+<footer class="footer">
+    {%- if show_copyright %}
+      {%- if hasdoc('copyright') %}
+        {% trans path=pathto('copyright'), copyright=copyright|e %}&copy; <a href="{{ path }}">Copyright</a> {{ copyright }}.{% endtrans %}
+      {%- else %}
+        {% trans copyright=copyright|e %}&copy; Copyright {{ copyright }}.{% endtrans %}
+      {%- endif %}
+    {%- endif %}
+    {%- if last_updated %}
+      {% trans last_updated=last_updated|e %}Last updated on {{ last_updated }}.{% endtrans %}
+    {%- endif %}
+    {%- if show_sphinx %}
+      {% trans sphinx_version=sphinx_version|e %}Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> {{ sphinx_version }}.{% endtrans %}
+    {%- endif %}
+</footer>
+{%- endmacro %}
+
+{%- block doctype -%}<!DOCTYPE html>{%- endblock %}
+
+{%- block header %}
+<div class="navbar navbar-fixed-top"><div class="navbar-inner"><div class="container">
+    {%- block rootrellink %}
+    <a
+        class="brand"
+        {% if theme_main_menu and theme_main_menu != '[]' %}
+        href="{{ pathto(theme_main_menu[0][1]) }}"
+        {% else %}
+        href="{{ pathto(master_doc) }}"
+        {% endif %}
+        >
+        {%- if logo %}
+        <img class="logo" src="{{ pathto('_static/' + logo, 1) }}" alt="Logo"
+        >{%- endif %}{{ shorttitle|title }}</a>
+    {%- endblock %}
+    {% if theme_main_menu and theme_main_menu != '[]' %}
+    <ul class="nav">
+        {%- for label, href in theme_main_menu %}
+        <li
+            {%- if pagename == href or label == theme_selected %}
+            class="active"
+            {%- endif %}
+            ><a href="{{ pathto(href) }}">{{ label }}</a></li>
+        {% endfor %}
+        {%- block relbaritems %} {% endblock %}
+        {%- for parent in parents %}
+            <li><a href="{{ parent.link|e }}"
+                {% if loop.last %}{{ accesskey("U") }}{% endif %}
+            >{{ parent.title }}</a></li>
+        {%- endfor %}
+    </ul>
+    {% endif %}
+    {%- block sidebarsearch %}
+    <form id="searchbox" class="navbar-search pull-right"
+          action="{{ pathto('search') }}" method="get" style="display:none">
+        <input type="text" name="q" class="search-query"
+            placeholder="{{ _('Search...') }}">
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+    <script type="text/javascript">$('#searchbox').show(0);</script>
+    {%- endblock %}
+</div></div></div>
+{% endblock %}
+
+{%- block relbar1 %}
+{%- endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+
+        <div {% if nosidebar %}class="span12"{% else %}class="span9"{% endif %}>
+            {%- block bsrelbar1 %}{{ bsrelbar() }}{% endblock %}
+            {%- block document %}
+                <div class="document">
+                    {% block body %}{% endblock %}
+                </div>
+            {%- endblock %}
+            {%- block bsrelbar2 %}{{ bsrelbar() }}{% endblock %}
+        </div>
+
+        {% if not nosidebar %}
+        <div class="span3 sidebar">
+            {%- block sidebar1 %}
+                <div class="well toctree sidebar-nav">
+                    {{ toctree(maxdepth=1) }} 
+                </div>
+                {%- if toc %}
+                <div class="well localtoc">
+                    {{ toc }}
+                </div>
+                {%- endif %}
+            {% endblock %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="row">
+        {{ footer() }}
+    </div>
+</div>
+{% endblock %}
+
+{%- block relbar2 %}{% endblock %}
+
+{%- block footer %}
+<script src="{{ pathto('_static/bootstrap/js/bootstrap.min.js', 1) }}"></script>
+<script src="{{ pathto('_static/restyle.js', 1) }}"></script>
+{%- endblock %}
+

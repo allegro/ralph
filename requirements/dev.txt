@@ -1,0 +1,4 @@
+django-debug-toolbar
+django-extensions
+Werkzeug
+pyinotify
