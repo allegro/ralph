@@ -17,7 +17,7 @@ setup(
     author='Grupa Allegro Sp. z o.o. and Contributors',
     author_email='pylabs@allegro.pl',
     description="Assets management module for Ralph",
-    long_description='\n'.join([read('README.rst'), read('CHANGES.rst')]),
+    long_description='\n'.join([read('README'), read('CHANGES')]),
     url='http://ralph.allegrogroup.com/',
     keywords='',
     platforms=['any'],
