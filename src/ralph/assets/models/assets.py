@@ -15,18 +15,6 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 from django.template import Context, Template
 
-
-try:
-    from django.utils.timezone import now as datetime_now
-except ImportError:
-    import datetime
-    datetime_now = datetime.datetime.now
-
-ASSET_HOSTNAME_TEMPLATE = getattr(settings, 'ASSET_HOSTNAME_TEMPLATE', None)
-if not ASSET_HOSTNAME_TEMPLATE:
-    raise ImproperlyConfigured('"ASSET_HOSTNAME_TEMPLATE" must be specified.')
-
-
 from ralph.assets.models.choices import (
     AssetStatus,
     AssetSource,
@@ -39,6 +27,16 @@ from ralph.assets.models.mixins import (
 )
 from ralph.assets.models.base import BaseObject
 from ralph.assets.overrides import Country
+
+try:
+    from django.utils.timezone import now as datetime_now
+except ImportError:
+    import datetime
+    datetime_now = datetime.datetime.now
+
+ASSET_HOSTNAME_TEMPLATE = getattr(settings, 'ASSET_HOSTNAME_TEMPLATE', None)
+if not ASSET_HOSTNAME_TEMPLATE:
+    raise ImproperlyConfigured('"ASSET_HOSTNAME_TEMPLATE" must be specified.')
 
 
 def _replace_empty_with_none(obj, fields):

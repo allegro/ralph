@@ -18,9 +18,9 @@ from django.utils.encoding import python_2_unicode_compatible
 
 from ralph.assets.models.assets import (
     Asset,
-    Service,
+    # Service,
     Manufacturer
-) 
+)
 from ralph.assets.models.mixins import (
     NamedMixin,
     TimeStampMixin
@@ -229,10 +229,8 @@ class Licence(TimeStampMixin, models.Model):
             name.lower(): obj,
             'licence': self,
         }
-        old_value = '-'
         try:
             assigned_licence = Model.objects.get(**kwargs)
-            old_value = assigned_licence.quantity
             assigned_licence.delete()
         except Model.DoesNotExist:
             return

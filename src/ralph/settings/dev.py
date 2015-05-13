@@ -1,4 +1,4 @@
-from ralph.settings import *
+from ralph.settings import *  # noqa
 
 
 def only_true(request):
