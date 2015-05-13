@@ -23,6 +23,8 @@ INSTALLED_APPS = (
 
     'reversion',
     'ralph.assets',
+    'ralph.backoffice',
+    'ralph.datacenter'
 )
 
 MIDDLEWARE_CLASSES = (
