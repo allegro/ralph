@@ -3,13 +3,6 @@
 from dj.choices import Choices
 
 
-class LicenseType(Choices):
-    _ = Choices.Choice
-    not_applicable = _('not applicable')
-    oem = _('oem')
-    box = _('box')
-
-
 class AssetPurpose(Choices):
     _ = Choices.Choice
 

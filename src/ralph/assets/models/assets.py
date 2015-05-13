@@ -37,6 +37,7 @@ from ralph.assets.models.mixins import (
     NamedMixin,
     TimeStampMixin
 )
+from ralph.assets.models.base import BaseObject
 from ralph.assets.overrides import Country
 
 
@@ -192,22 +193,14 @@ class AssetLastHostname(models.Model):
         return self.formatted_hostname()
 
 
-class Asset(TimeStampMixin, models.Model):
-    remarks = models.TextField()
-    parent = models.ForeignKey('self')
-    service_env = models.ForeignKey(ServiceEnvironment)
+class Asset(BaseObject):
     model = models.ForeignKey(AssetModel)
-    # or hostname
-    name = models.CharField(
+    hostname = models.CharField(
         blank=True,
         default=None,
         max_length=16,
-        null=True,
-        unique=True,
+        null=True
     )
-
-
-class BasePhysicalAsset(models.Model):
     niw = models.CharField(
         max_length=200, null=True, blank=True, default=None,
         verbose_name=_('Inventory number'),
@@ -260,15 +253,12 @@ class BasePhysicalAsset(models.Model):
     deprecation_end_date = models.DateField(null=True, blank=True)
     production_year = models.PositiveSmallIntegerField(null=True, blank=True)
     task_url = models.URLField(
-        max_length=2048, null=True, blank=True, unique=False,
+        max_length=2048, null=True, blank=True,
         help_text=('External workflow system URL'),
     )
     loan_end_date = models.DateField(
         null=True, blank=True, default=None, verbose_name=_('Loan end date'),
     )
-
-    class Meta:
-        abstract = True
 
     def get_deprecation_months(self):
         return int(

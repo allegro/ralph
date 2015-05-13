@@ -24,7 +24,8 @@ INSTALLED_APPS = (
     'reversion',
     'ralph.assets',
     'ralph.back_office',
-    'ralph.data_center'
+    'ralph.data_center',
+    'ralph.licences'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -63,9 +64,9 @@ WSGI_APPLICATION = 'ralph.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'ralph_ng',
-        'USER': 'ralph_ng',
-        'PASSWORD': 'ralph_ng',
+        'NAME': 'ralph',
+        'USER': 'ralph',
+        'PASSWORD': 'ralph',
         'HOST': '127.0.0.1',
     }
 }

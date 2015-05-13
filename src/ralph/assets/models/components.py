@@ -4,6 +4,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.assets import Asset
+from ralph.assets.models.base import BaseObject
 from ralph.assets.models.mixins import NamedMixin
 from ralph.assets.models.choices import ComponentType
 
@@ -42,7 +43,7 @@ class ComponentModel(NamedMixin, models.Model):
 
 
 class Component(models.Model):
-    asset = models.ForeignKey(Asset, related_name='%(class)s')
+    asset = models.ForeignKey(BaseObject, related_name='%(class)s')
     model = models.ForeignKey(
         ComponentModel,
         verbose_name=_('model'),

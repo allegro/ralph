@@ -4,10 +4,7 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.assets.models.assets import (
-    Asset,
-    BasePhysicalAsset
-)
+from ralph.assets.models.assets import Asset
 from ralph.assets.models.mixins import (
     NamedMixin,
     TimeStampMixin
@@ -18,7 +15,7 @@ class Warehouse(NamedMixin, TimeStampMixin, models.Model):
     pass
 
 
-class BackOfficeAsset(Asset, BasePhysicalAsset):
+class BackOfficeAsset(Asset):
     warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True,

@@ -6,7 +6,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.assets import (
     Asset,
-    BasePhysicalAsset,
     NamedMixin
 )
 from ralph.data_center.models.choices import (
@@ -102,7 +101,7 @@ class Rack(NamedMixin.NonUnique, models.Model):
     accessories = models.ManyToManyField(Accessory, through='RackAccessory')
 
 
-class DataCenterAsset(BasePhysicalAsset, Asset):
+class DataCenterAsset(Asset):
 
     rack = models.ForeignKey(Rack)
 
