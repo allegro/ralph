@@ -15,7 +15,6 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 from django.template import Context, Template
 
-from dj.choices import Choices
 
 try:
     from django.utils.timezone import now as datetime_now
@@ -28,6 +27,16 @@ if not ASSET_HOSTNAME_TEMPLATE:
     raise ImproperlyConfigured('"ASSET_HOSTNAME_TEMPLATE" must be specified.')
 
 
+from ralph.assets.models.choices import (
+    AssetStatus,
+    AssetSource,
+    ObjectModelType,
+    ModelVisualizationLayout
+)
+from ralph.assets.models.mixins import (
+    NamedMixin,
+    TimeStampMixin
+)
 from ralph.assets.overrides import Country
 
 
@@ -47,46 +56,6 @@ def get_user_iso3_country_name(user):
     country_name = Country.name_from_id(user.get_profile().country)
     iso3_country_name = Country.iso2_to_iso3(country_name)
     return iso3_country_name
-
-
-# old: Named
-@python_2_unicode_compatible
-class NamedMixin(models.Model):
-    """Describes an abstract model with a unique ``name`` field."""
-    name = models.CharField(_('name'), max_length=50, unique=True)
-
-    class Meta:
-        abstract = True
-
-    def __str__(self):
-        return self.name
-
-    @python_2_unicode_compatible
-    class NonUnique(models.Model):
-        """Describes an abstract model with a non-unique ``name`` field."""
-        name = models.CharField(verbose_name=_("name"), max_length=75)
-
-        class Meta:
-            abstract = True
-
-        def __str__(self):
-            return self.name
-
-
-# old: TimeTrackable
-class TimeStampMixin(models.Model):
-    created = models.DateTimeField(
-        verbose_name=_('date created'),
-        auto_now=True,
-    )
-    modified = models.DateTimeField(
-        verbose_name=_('last modified'),
-        auto_now_add=True,
-    )
-
-    class Meta:
-        abstract = True
-        ordering = ('-modified', '-created',)
 
 
 class Environment(NamedMixin, TimeStampMixin, models.Model):
@@ -112,67 +81,6 @@ class Service(NamedMixin, TimeStampMixin, models.Model):
 class ServiceEnvironment(models.Model):
     service = models.ForeignKey(Service)
     environment = models.ForeignKey(Environment)
-
-
-class LicenseType(Choices):
-    _ = Choices.Choice
-    not_applicable = _('not applicable')
-    oem = _('oem')
-    box = _('box')
-
-
-class AssetPurpose(Choices):
-    _ = Choices.Choice
-
-    for_contractor = _("for contractor")
-    sectional = _("sectional")
-    for_dashboards = _("for dashboards")
-    for_events = _("for events")
-    for_tests = _("for tests")
-    others = _("others")
-
-
-class AssetStatus(Choices):
-    _ = Choices.Choice
-
-    HARDWARE = Choices.Group(0)
-    new = _('new')
-    in_progress = _('in progress')
-    waiting_for_release = _('waiting for release')
-    used = _('in use')
-    loan = _('loan')
-    damaged = _('damaged')
-    liquidated = _('liquidated')
-    in_service = _('in service')
-    in_repair = _('in repair')
-    ok = _('ok')
-    to_deploy = _('to deploy')
-
-
-class AssetSource(Choices):
-    _ = Choices.Choice
-
-    shipment = _('shipment')
-    salvaged = _('salvaged')
-
-
-class ObjectModelType(Choices):
-    _ = Choices.Choice
-
-    back_office = _('back office')
-    data_center = _('data center')
-    part = _('part')
-    all = _('all')
-
-
-class ModelVisualizationLayout(Choices):
-    _ = Choices.Choice
-
-    na = _('N/A')
-    layout_1x2 = _('1x2').extra(css_class='rows-1 cols-2')
-    layout_2x8 = _('2x8').extra(css_class='rows-2 cols-8')
-    layout_2x8AB = _('2x16 (A/B)').extra(css_class='rows-2 cols-8 half-slots')
-    layout_4x2 = _('4x2').extra(css_class='rows-4 cols-2')
 
 
 class Manufacturer(NamedMixin, TimeStampMixin, models.Model):
@@ -421,88 +329,3 @@ class BasePhysicalAsset(models.Model):
             field_name='status',
         ).order_by('-date')[:1]
         return liquidated_history and liquidated_history[0].date.date() <= date
-
-
-# COMPONENTS
-class ComponentType(Choices):
-    _ = Choices.Choice
-
-    processor = _('processor')
-    memory = _('memory')
-    disk = _('disk drive')
-    ethernet = _('ethernet card')
-    expansion = _('expansion card')
-    fibre = _('fibre channel card')
-    share = _('disk share')
-    unknown = _('unknown')
-    management = _('management')
-    power = _('power module')
-    cooling = _('cooling device')
-    media = _('media tray')
-    chassis = _('chassis')
-    backup = _('backup')
-    software = _('software')
-    os = _('operating system')
-
-
-@python_2_unicode_compatible
-class ComponentModel(NamedMixin, models.Model):
-    speed = models.PositiveIntegerField(
-        verbose_name=_('speed (MHz)'),
-        default=0,
-        blank=True,
-    )
-    cores = models.PositiveIntegerField(
-        verbose_name=_('number of cores'),
-        default=0,
-        blank=True,
-    )
-    size = models.PositiveIntegerField(
-        verbose_name=_('size (MiB)'),
-        default=0,
-        blank=True,
-    )
-    type = models.PositiveIntegerField(
-        verbose_name=_('component type'),
-        choices=ComponentType(),
-        default=ComponentType.unknown.id,
-    )
-    family = models.CharField(blank=True, default='', max_length=128)
-
-    class Meta:
-        unique_together = ('speed', 'cores', 'size', 'type', 'family')
-        verbose_name = _('component model')
-        verbose_name_plural = _('component models')
-
-    def __str__(self):
-        return self.name
-
-
-class Component(models.Model):
-    asset = models.ForeignKey(Asset, related_name='%(class)s')
-    model = models.ForeignKey(
-        ComponentModel,
-        verbose_name=_('model'),
-        null=True,
-        blank=True,
-        default=None,
-        on_delete=models.SET_NULL,
-    )
-
-    class Meta:
-        abstract = True
-
-
-class GenericComponent(Component):
-    label = models.CharField(
-        verbose_name=_('label'), max_length=255, blank=True,
-        null=True, default=None,
-    )
-    sn = models.CharField(
-        verbose_name=_('vendor SN'), max_length=255, unique=True, null=True,
-        blank=True, default=None,
-    )
-
-    class Meta:
-        verbose_name = _('generic component')
-        verbose_name_plural = _('generic components')

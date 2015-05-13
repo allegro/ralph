@@ -4,9 +4,11 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.assets.models import (
+from ralph.assets.models.assets import (
     Asset,
-    BasePhysicalAsset,
+    BasePhysicalAsset
+)
+from ralph.assets.models.mixins import (
     NamedMixin,
     TimeStampMixin
 )
@@ -29,7 +31,7 @@ class BackOfficeAsset(Asset, BasePhysicalAsset):
     location = models.CharField(max_length=128, null=True, blank=True)
 
     class Meta:
-        verbose_name = _('BO Asset')
+        verbose_name = _('Back Office Asset')
         verbose_name_plural = _('BO Assets')
 
     @property

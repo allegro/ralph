@@ -3,7 +3,7 @@ import reversion
 
 from django.contrib import admin
 
-from ralph.backoffice.models import (
+from ralph.back_office.models import (
     BackOfficeAsset,
     Warehouse
 )

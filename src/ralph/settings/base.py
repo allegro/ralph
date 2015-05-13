@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
 
+from django.contrib.messages import constants as messages
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = 'qbyqnpi58brjo=!l+)jza*z@r-!ba6w2yhmj=)9%qr5ymtcy_9'
@@ -9,13 +11,11 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
-
 # Application definition
 
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
-    'polymorphic',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -23,8 +23,8 @@ INSTALLED_APPS = (
 
     'reversion',
     'ralph.assets',
-    'ralph.backoffice',
-    'ralph.datacenter'
+    'ralph.back_office',
+    'ralph.data_center'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -82,53 +82,12 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
-)
 
-from django.contrib.messages import constants as messages
 # adapt message's tags to bootstrap
 MESSAGE_TAGS = {
     messages.DEBUG: 'info',
     messages.ERROR: 'danger',
 }
-
-# SUIT_CONFIG = {
-#     'ADMIN_NAME': 'Ralph NG',
-#     'MENU': (
-#         {
-#             'label': 'Configuration',
-#             'icon': 'icon-book',
-#             'models': (
-#                 'assets.assetmodel',
-#                 'assets.category',
-#                 'assets.service',
-#                 'assets.environment',
-#             )
-#         },
-#         {
-#             'label': 'Data center',
-#             'icon': 'icon-tasks',
-#             'models': (
-#                 'assets.dcasset',
-#                 'assets.cloudproject',
-#                 'assets.database',
-#                 'assets.vip',
-#                 'assets.virtualserver',
-#             )
-#         },
-#         {
-#             'label': 'Back office',
-#             'icon': 'icon-print',
-#             'models': (
-#                 'assets.boasset',
-#                 'assets.warehouse',
-#             )
-#         },
-#         '-',
-#         {'app': 'auth', 'icon': 'icon-user'},
-#     )
-# }
 
 
 DEFAULT_DEPRECATION_RATE = 25

@@ -3,12 +3,16 @@ import reversion
 
 from django.contrib import admin
 
-from ralph.assets.models import (
+from ralph.assets.models.assets import (
     AssetModel,
     Category,
     Environment,
     Manufacturer,
     Service
+)
+from ralph.assets.models.components import (
+    ComponentModel,
+    GenericComponent
 )
 
 
@@ -34,4 +38,14 @@ class AssetModelAdmin(reversion.VersionAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(reversion.VersionAdmin):
+    pass
+
+
+@admin.register(ComponentModel)
+class ComponentModelAdmin(reversion.VersionAdmin):
+    pass
+
+
+@admin.register(GenericComponent)
+class GenericComponentAdmin(reversion.VersionAdmin):
     pass

@@ -3,19 +3,23 @@ import reversion
 
 from django.contrib import admin
 
-from ralph.datacenter.models import (
+from ralph.data_center.models.virtual import (
     CloudProject,
-    Connection,
     Database,
-    DataCenter,
-    DataCenterAsset,
-    DiskShare,
-    DiskShareMount,
-    ServerRoom,
-    Rack,
-    RackAccessory,
     VIP,
     VirtualServer
+)
+from ralph.data_center.models.components import (
+    DiskShare,
+    DiskShareMount
+)
+from ralph.data_center.models.physical import (
+    Connection,
+    DataCenter,
+    DataCenterAsset,
+    ServerRoom,
+    RackAccessory,
+    Rack
 )
 
 
