@@ -34,6 +34,8 @@ setup(
     entry_points={
         'console_scripts': [
             'ralph = ralph.__main__:main',
+            'dev_ralph = ralph.__main__:dev',
+            'test_ralph = ralph.__main__:test',
         ],
     },
     classifiers=[
