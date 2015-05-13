@@ -11,6 +11,10 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
+USE_TZ = True
+
+TIME_ZONE = 'Europe/Warsaw'
+
 # Application definition
 
 INSTALLED_APPS = (
