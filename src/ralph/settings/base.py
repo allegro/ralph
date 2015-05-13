@@ -25,7 +25,8 @@ INSTALLED_APPS = (
     'ralph.assets',
     'ralph.back_office',
     'ralph.data_center',
-    'ralph.licences'
+    'ralph.licences',
+    'ralph.supports',
 )
 
 MIDDLEWARE_CLASSES = (
