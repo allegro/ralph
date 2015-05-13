@@ -64,9 +64,9 @@ WSGI_APPLICATION = 'ralph.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'ralph',
-        'USER': 'ralph',
-        'PASSWORD': 'ralph',
+        'NAME': 'ralph_ng',
+        'USER': 'ralph_ng',
+        'PASSWORD': 'ralph_ng',
         'HOST': '127.0.0.1',
     }
 }
