@@ -5,4 +5,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from ralph.lib.permissions.models import PermByFieldMixin
+from ralph.lib.permissions.models import PermByFieldMixin  # noqa
+from ralph.lib.permissions.widgets import ReadOnlyField  # noqa
+from ralph.lib.permissions.forms import PermByFieldFormMixin  # noqa

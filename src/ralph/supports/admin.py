@@ -1,19 +1,26 @@
 # -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import reversion
 
 from django.contrib import admin
-from django.db import models
 
 from ralph.supports.models import *  # noqa
+from ralph.lib.permissions import PermByFieldFormMixin
 
-# ugly automagical register base admin for each model
-for model in locals().values():
-    try:
-        mro = model.__mro__
-    except AttributeError:
-        pass
-    else:
-        if models.Model in mro and not model._meta.abstract:
-            @admin.register(model)
-            class ModelAdmin(reversion.VersionAdmin):
-                pass
+from django.forms import ModelForm
+
+
+class SupportForm(PermByFieldFormMixin, ModelForm):
+    class Meta:
+        model = Support
+        fields = ['contract_id', 'date_from', 'date_to']
+
+
+@admin.register(Support)
+class SupportAdmin(reversion.VersionAdmin):
+    form = SupportForm
