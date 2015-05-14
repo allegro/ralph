@@ -6,3 +6,5 @@ pdbpp
 pudb
 ipython
 ipdb
+sphinx
+flake

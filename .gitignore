@@ -48,7 +48,7 @@ coverage.xml
 *.log
 
 # Sphinx documentation
-docs/_build/
+doc/_build/
 
 *.sqlite3
 
