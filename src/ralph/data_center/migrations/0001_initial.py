@@ -29,7 +29,6 @@ class Migration(migrations.Migration):
                 ('baseobject_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='assets.BaseObject')),
             ],
             options={
-                'ordering': ('-modified', '-created'),
                 'abstract': False,
             },
             bases=('assets.baseobject',),
