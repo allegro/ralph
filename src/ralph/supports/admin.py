@@ -18,9 +18,16 @@ from django.forms import ModelForm
 class SupportForm(PermByFieldFormMixin, ModelForm):
     class Meta:
         model = Support
-        fields = ['contract_id', 'date_from', 'date_to']
+        fields = [
+            'contract_id', 'date_from', 'date_to', 'producer', 'support_type'
+        ]
 
 
 @admin.register(Support)
 class SupportAdmin(reversion.VersionAdmin):
     form = SupportForm
+
+
+@admin.register(SupportType)
+class SupportTypeAdmin(reversion.VersionAdmin):
+    pass
