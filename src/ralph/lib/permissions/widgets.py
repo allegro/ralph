@@ -13,6 +13,7 @@ class ReadOnlyWidget(Widget):
         super(ReadOnlyWidget, self).__init__(*args, **kwargs)
 
     def render(self, name, value, attrs=None):
+        # TODO: repr for foreign key
         return """<div class="empty">{}</div>
         <p class="help">You don\'t have permission for edit this field.</p>
         """.format(value or '-')

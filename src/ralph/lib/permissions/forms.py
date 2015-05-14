@@ -14,8 +14,8 @@ class PermByFieldFormMixin(object):
         self.read_only_fields = [
             'contract_id',
             'support_type',
-            'date_to',
-            'date_from',
+            # 'date_to',
+            # 'date_from',
         ]
         for field in self.read_only_fields:
             old_field = self.base_fields.get(field)
@@ -30,9 +30,9 @@ class PermByFieldFormMixin(object):
         super(PermByFieldFormMixin, self).__init__(*args, **kwargs)
 
     def clean(self):
+        """Remove fields without permission from cleaned_data."""
         cleaned_data = super(PermByFieldFormMixin, self).clean()
-        # remove read only fields from dict
         for field in self.read_only_fields:
-            if hasattr(cleaned_data, field):
+            if field in cleaned_data:
                 del cleaned_data[field]
         return cleaned_data
