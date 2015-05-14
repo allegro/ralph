@@ -1,0 +1,2 @@
+# Add automatic activation to user .profile file
+source /home/vagrant/bin/activate
