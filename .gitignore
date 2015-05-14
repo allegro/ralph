@@ -55,3 +55,4 @@ docs/_build/
 src/ralph_assets
 src/ralph/settings/*_local.py
 src/ralph/urls/*_local.py
+!/src/ralph/lib

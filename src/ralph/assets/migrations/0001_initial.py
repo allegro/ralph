@@ -48,7 +48,6 @@ class Migration(migrations.Migration):
                 ('remarks', models.TextField(blank=True)),
             ],
             options={
-                'ordering': ('-modified', '-created'),
                 'abstract': False,
             },
         ),
@@ -170,7 +169,6 @@ class Migration(migrations.Migration):
                 ('loan_end_date', models.DateField(default=None, null=True, verbose_name='Loan end date', blank=True)),
             ],
             options={
-                'ordering': ('-modified', '-created'),
                 'abstract': False,
             },
             bases=('assets.baseobject',),

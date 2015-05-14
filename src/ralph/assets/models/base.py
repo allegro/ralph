@@ -8,9 +8,10 @@ from __future__ import unicode_literals
 from django.db import models
 
 from ralph.assets.models.mixins import TimeStampMixin
+from ralph.lib.permissions import PermByFieldMixin
 
 
-class BaseObject(TimeStampMixin, models.Model):
+class BaseObject(PermByFieldMixin, TimeStampMixin, models.Model):
 
     """Base object mixin."""
 
