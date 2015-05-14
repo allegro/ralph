@@ -1,5 +1,16 @@
 .PHONY: test flake clean coverage doc coveralls
 
+install:
+	pip install -r requirements/base.txt
+
+install-dev:
+	pip install -r requirements/dev.txt
+	pip install -e .
+
+install-test:
+	pip install -r requirements/test.txt
+	pip install -e .
+
 test: clean
 	ralph test --settings=ralph.settings.test
 
