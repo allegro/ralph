@@ -27,6 +27,7 @@ from ralph.assets.models.mixins import (
 )
 from ralph.assets.models.base import BaseObject
 from ralph.assets.overrides import Country
+from ralph.lib.permissions import PermByFieldMixin
 
 try:
     from django.utils.timezone import now as datetime_now
@@ -87,7 +88,7 @@ class Manufacturer(NamedMixin, TimeStampMixin, models.Model):
 
 
 @python_2_unicode_compatible
-class AssetModel(NamedMixin.NonUnique, TimeStampMixin, models.Model):
+class AssetModel(PermByFieldMixin, NamedMixin.NonUnique, TimeStampMixin, models.Model):
     type = models.PositiveIntegerField(
         verbose_name=_('type'), choices=ObjectModelType(),
     )

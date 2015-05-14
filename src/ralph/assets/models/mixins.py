@@ -40,3 +40,6 @@ class TimeStampMixin(models.Model):
     class Meta:
         abstract = True
         ordering = ('-modified', '-created',)
+
+    class Permissions:
+        blacklist = set(['created', 'modified'])
