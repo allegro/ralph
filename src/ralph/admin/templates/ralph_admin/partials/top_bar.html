@@ -1,0 +1,108 @@
+{% load cache %}
+
+<section class="top-bar-section">
+    <ul class="left">
+        <li class="divider"></li>
+        {% for app in app_list %}
+            <li class="{% if app_label == app.app_label %}active {% endif %}has-dropdown not-click">
+                <a href="#">{{ app.name }}</a>
+                <ul class="dropdown">
+                    {% for model in app.models %}
+                        <li class="has-dropdown not-click">
+                            <a href="{{ model.admin_url }}">{{ model.name }}</a>
+                            <ul class="dropdown">
+                                {% if model.add_url or model.admin_url %}
+                                    <li><label>Actions</label></li>
+                                {% endif %}
+                                {% if model.add_url %}
+                                    <li>
+                                        <a href="{{ model.add_url }} ">Add</a>
+                                    </li>
+                                {% endif %}
+                                {% if model.admin_url %}
+                                    <li>
+                                        <a href="{{ model.admin_url }} ">Change</a>
+                                    </li>
+                                {% endif %}
+                                {% if model.extra_views %}
+                                    <li><label>Views</label></li>
+                                    {% for view in model.extra_views %}
+                                        <li>
+                                            <a href="{{ view.url }}">{{ view.label }}</a>
+                                        </li>
+                                    {% endfor %}
+                                {% endif %}
+                            </ul>
+                        </li>
+                    {% endfor %}
+                </ul>
+
+            </li>
+        {% endfor %}
+    </ul>
+    <ul class="right">
+        <li class="divider"></li>
+            <li class="has-dropdown not-click">
+                <a href="#">Main Item 4</a>
+                <ul class="dropdown">
+                    <li class="title back js-generated">
+                        <h5><a href="javascript:void(0)">Back</a></h5>
+                    </li>
+                <li class="parent-link show-for-small"><a class="parent-link js-generated" href="#">Main Item 4</a></li>
+            <li><label>Section Name</label></li>
+            <li class="has-dropdown not-click">
+            <a href="#" class="">Has Dropdown, Level 1</a>
+            <ul class="dropdown">
+                <li class="title back js-generated">
+                <h5><a href="javascript:void(0)">Back</a></h5>
+                </li>
+                <li class="parent-link show-for-small"><a class="parent-link js-generated" href="#">Has Dropdown, Level 1</a></li>
+                <li><a href="#">Dropdown Options</a></li>
+                <li><a href="#">Dropdown Options</a></li>
+                <li class="has-dropdown not-click">
+                <a href="#">Has Dropdown, Level 2</a>
+                <ul class="dropdown test">
+                    <li class="title back js-generated">
+                    <h5><a href="javascript:void(0)">Back</a></h5>
+                    </li>
+                    <li class="parent-link show-for-small"><a class="parent-link js-generated" href="#">Has Dropdown, Level 2</a></li>
+                    <li><a href="#">Subdropdown Option</a></li>
+                    <li><a href="#">Subdropdown Option</a></li>
+                    <li><a href="#">Subdropdown Option</a></li>
+                </ul>
+                </li>
+                <li><a href="#">Subdropdown Option</a></li>
+                <li><a href="#">Subdropdown Option</a></li>
+                <li><a href="#">Subdropdown Option</a></li>
+            </ul>
+            </li>
+            <li><a href="#">Dropdown Option</a></li>
+            <li><a href="#">Dropdown Option</a></li>
+            <li class="divider"></li>
+            <li><label>Section Name</label></li>
+            <li><a href="#">Dropdown Option</a></li>
+            <li><a href="#">Dropdown Option</a></li>
+            <li><a href="#">Dropdown Option</a></li>
+            <li class="divider"></li>
+            <li><a href="#">See all →</a></li>
+        </ul>
+        </li>
+        <li class="divider"></li>
+        <li><a href="#">Main Item 5</a></li>
+        <li class="divider"></li>
+        <li class="has-dropdown not-click">
+        <a href="#">Main Item 6</a>
+        <ul class="dropdown">
+            <li class="title back js-generated">
+            <h5><a href="javascript:void(0)">Back</a></h5>
+            </li>
+            <li class="parent-link show-for-small"><a class="parent-link js-generated" href="#">Main Item 6</a></li>
+            <li><a href="#">Dropdown Option</a></li>
+            <li><a href="#">Dropdown Option</a></li>
+            <li><a href="#">Dropdown Option</a></li>
+            <li class="divider"></li>
+            <li><a href="#">See all →</a></li>
+        </ul>
+        </li>
+    </ul>
+</section>

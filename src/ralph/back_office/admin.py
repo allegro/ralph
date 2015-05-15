@@ -15,7 +15,7 @@ class ByServiceView(View):
 
 
 class DupaView(View):
-    label = 'Dupa 2'
+    label = 'Test'
     url_name = 'by_service2'
 
 

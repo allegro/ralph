@@ -29,4 +29,4 @@ class RalphAdminMixin(object):
 
 
 class RalphAdmin(RalphAdminMixin, reversion.VersionAdmin):
-    pass
+    extra_views = []
