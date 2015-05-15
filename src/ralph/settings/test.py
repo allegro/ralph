@@ -8,3 +8,8 @@ DATABASES = {
         'NAME': ':memory:',
     }
 }
+
+
+INSTALLED_APPS += (
+    'ralph.lib',
+)
