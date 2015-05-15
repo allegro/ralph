@@ -4,7 +4,7 @@ language: python
 python:
   - "2.7"
   - "3.4"
-  - "pypi"
+  - "pypy"
 
 before_install:
     - pip install flake8 --use-mirrors
