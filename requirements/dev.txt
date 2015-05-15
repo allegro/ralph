@@ -1,3 +1,4 @@
+-r test.txt
 django-debug-toolbar
 django-extensions
 Werkzeug
@@ -6,5 +7,3 @@ pdbpp
 pudb
 ipython
 ipdb
-sphinx
-flake

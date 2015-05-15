@@ -1,30 +1,27 @@
-.PHONY: test flake clean coverage doc coveralls
+.PHONY: test flake clean coverage docs coveralls
 
 install:
-	pip install -r requirements/base.txt
-
-install-dev:
-	pip install -r requirements/dev.txt
 	pip install -e .
 
 install-test:
 	pip install -r requirements/test.txt
-	pip install -e .
+
+install-dev:
+	pip install -r requirements/dev.txt
 
 test: clean
-	ralph test --settings=ralph.settings.test
+	test_ralph test ralph
 
 flake: clean
-	flake8 --exclude=migrations,tests,doc,www,settings.py --ignore=E501 src/ralph
+	flake8 src/ralph
 
 clean:
-	find . -name '*.pyc' -exec rm -rf {} \;
+	find . -name '*.py[cod]' -exec rm -rf {} \;
 
 coverage: clean
-	coverage run --source=ralph --omit='*migrations*,*tests*,*__init__*,*wsgi.py,*__main__*,*settings*,*manage.py' '$(VIRTUAL_ENV)/bin/ralph' test ralph --settings=ralph.settings.test
+	coverage run '$(VIRTUAL_ENV)/bin/test_ralph' test ralph
 
-doc:
-	mkdir -p www/_build/html/ 2>/dev/null
-	cd ./doc && make html
+docs:
+	cd ./docs && make html
 
-coveralls: doc test
+coveralls: docs coverage

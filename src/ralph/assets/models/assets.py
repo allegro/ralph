@@ -88,7 +88,12 @@ class Manufacturer(NamedMixin, TimeStampMixin, models.Model):
 
 
 @python_2_unicode_compatible
-class AssetModel(PermByFieldMixin, NamedMixin.NonUnique, TimeStampMixin, models.Model):
+class AssetModel(
+    PermByFieldMixin,
+    NamedMixin.NonUnique,
+    TimeStampMixin,
+    models.Model
+):
     type = models.PositiveIntegerField(
         verbose_name=_('type'), choices=ObjectModelType(),
     )

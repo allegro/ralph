@@ -106,7 +106,8 @@ class PermByFieldMixin(with_metaclass(PermissionByFieldBase, models.Model)):
 
     def allowed_fields(self, user, action='change'):
         """
-        Returns a list with the names of the fields to which the user has permission
+        Returns a list with the names of the fields to which the user has
+        permission.
 
         :Example:
 
@@ -136,4 +137,3 @@ class PermByFieldMixin(with_metaclass(PermissionByFieldBase, models.Model)):
 
     class Meta:
         abstract = True
-

@@ -5,7 +5,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.test import TestCase
@@ -24,7 +23,7 @@ class PermissionsByFieldTestCase(TestCase):
 
         TODO:
             Dont use ralph models here - it should be "abstract"
-            http://stackoverflow.com/questions/502916/django-how-to-create-a-model-dynamically-just-for-testing
+            http://stackoverflow.com/questions/502916/django-how-to-create-a-model-dynamically-just-for-testing  # noqa
         """
         self.asset_model = AssetModel.objects.create(
             type=ObjectModelType.back_office
@@ -88,7 +87,10 @@ class PermissionsByFieldTestCase(TestCase):
             'height_of_device', 'cores_count', 'visualization_layout_front',
             'visualization_layout_back'
         ]
-        fields_list = self.asset_model.allowed_fields(self.super_user, action='change')
+        fields_list = self.asset_model.allowed_fields(
+            self.super_user,
+            action='change'
+        )
         self.assertListEqual(
             allowed_fields,
             fields_list
@@ -96,7 +98,10 @@ class PermissionsByFieldTestCase(TestCase):
 
     def test_user_allowed_fields(self):
         """Test allowed fields in permissions model."""
-        fields_list = self.asset_model.allowed_fields(self.user, action='change')
+        fields_list = self.asset_model.allowed_fields(
+            self.user,
+            action='change'
+        )
         self.assertListEqual(
             ['height_of_device'],
             fields_list
@@ -104,7 +109,10 @@ class PermissionsByFieldTestCase(TestCase):
 
     def test_user_not_allowed_fields(self):
         """Test not allowed field in permission model."""
-        fields_list = self.asset_model.allowed_fields(self.user, action='change')
+        fields_list = self.asset_model.allowed_fields(
+            self.user,
+            action='change'
+        )
         self.assertNotIn(
             'manufacturer',
             fields_list

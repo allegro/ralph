@@ -1,0 +1,6 @@
+[run]
+source = ralph
+branch = 1
+
+[report]
+omit = *migrations*,*tests*,*__init__*,*wsgi.py,*__main__*,*settings*,*manage.py
