@@ -8,12 +8,18 @@ from ralph.assets.models.assets import (
     Category,
     Environment,
     Manufacturer,
-    Service
+    Service,
+    ServiceEnvironment,
 )
 from ralph.assets.models.components import (
     ComponentModel,
     GenericComponent
 )
+
+
+@admin.register(ServiceEnvironment)
+class ServiceEnvironmentAdmin(reversion.VersionAdmin):
+    pass
 
 
 @admin.register(Service)

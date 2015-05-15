@@ -30,7 +30,16 @@ class DataCenterAdmin(reversion.VersionAdmin):
 
 @admin.register(DataCenterAsset)
 class DataCenterAssetAdmin(reversion.VersionAdmin):
-    pass
+    list_display = ['formatted_hostname', 'slots', 'rack', 'configuration_path']
+    list_editable = ['slots', 'rack', 'configuration_path']
+    raw_id_fields = 'rack',
+
+    def get_list_display(self, obj):
+        return ['slots']
+
+    def formatted_hostname(self, obj):
+        return '<strong style="color:red">{}</strong>'.format(obj.hostname or 'puste')
+    formatted_hostname.allow_tags = True
 
 
 @admin.register(ServerRoom)
