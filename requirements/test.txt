@@ -1,2 +1,4 @@
 factory-boy
 coverage
+sphinx
+flake

@@ -1,29 +1,19 @@
-Welcome to Ralph Assets's documentation!
-========================================
+.. complexity documentation master file, created by
+   sphinx-quickstart on Tue Jul  9 22:26:36 2013.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
 
-Ralph Assets module brings offline stock management functionality to Ralph.
-It maintains placing orders, purchasing and releasing of devices to the users.
-It is not limited to the data center. You can maintain inventory of your back
-office assets with it as well.
-In this module, you can also manage licenses and supports.
-
-
-Ralph is an asset management system for your data center. It lets you see what
-hardware and software is installed. It also lets you keep track of who is using
-every device, for what, and how much it costs.
+Welcome to Ralph's documentation!
+=================================================================
 
 Contents:
 
 .. toctree::
    :maxdepth: 2
 
-   quickstart
+   readme
    installation
-   configuration
-   transitions
+   usage
+   contributing
+   authors
    history
-   regions
-   signals
-   changes
-   license
-
