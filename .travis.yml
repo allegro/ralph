@@ -3,16 +3,16 @@ language: python
 
 python:
   - "2.7"
+  - "3.3"
   - "3.4"
-  - "pypi"
+  - "pypy"
 
 before_install:
     - pip install flake8 --use-mirrors
     - make flake
 
 install:
-    - pip install . --use-mirrors
-    - pip install -r requirements/test.txt
+    - make install-test
     - pip install coveralls
 
 script:
