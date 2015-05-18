@@ -14,7 +14,6 @@ from ralph.data_center.models.components import (
     DiskShareMount
 )
 from ralph.data_center.models.physical import (
-    Connection,
     DataCenter,
     DataCenterAsset,
     ServerRoom,
@@ -65,11 +64,6 @@ class VirtualServerAdmin(reversion.VersionAdmin):
 
 @admin.register(CloudProject)
 class CloudProjectAdmin(reversion.VersionAdmin):
-    pass
-
-
-@admin.register(Connection)
-class ConnectionAdmin(reversion.VersionAdmin):
     pass
 
 

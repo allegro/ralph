@@ -14,6 +14,14 @@ from ralph.assets.models.components import (
     ComponentModel,
     GenericComponent
 )
+from ralph.assets.models.networks import (
+    Network,
+    NetworkEnvironment,
+    NetworkKind,
+    NetworkTerminator,
+    DiscoveryQueue,
+    IPAddress,
+)
 
 
 @admin.register(Service)
@@ -48,4 +56,34 @@ class ComponentModelAdmin(reversion.VersionAdmin):
 
 @admin.register(GenericComponent)
 class GenericComponentAdmin(reversion.VersionAdmin):
+    pass
+
+
+@admin.register(Network)
+class NetworkAdmin(reversion.VersionAdmin):
+    pass
+
+
+@admin.register(NetworkEnvironment)
+class NetworkEnvironmentAdmin(reversion.VersionAdmin):
+    pass
+
+
+@admin.register(NetworkKind)
+class NetworkKindAdmin(reversion.VersionAdmin):
+    pass
+
+
+@admin.register(NetworkTerminator)
+class NetworkTerminatorAdmin(reversion.VersionAdmin):
+    pass
+
+
+@admin.register(DiscoveryQueue)
+class DiscoveryQueueAdmin(reversion.VersionAdmin):
+    pass
+
+
+@admin.register(IPAddress)
+class IPAddressAdmin(reversion.VersionAdmin):
     pass

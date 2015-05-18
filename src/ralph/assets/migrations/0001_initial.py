@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 import django.db.models.deletion
+import datetime
 
 
 class Migration(migrations.Migration):
@@ -83,6 +84,18 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
+            name='DiscoveryQueue',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(unique=True, max_length=50, verbose_name='name')),
+            ],
+            options={
+                'ordering': ('name',),
+                'verbose_name': 'discovery queue',
+                'verbose_name_plural': 'discovery queues',
+            },
+        ),
+        migrations.CreateModel(
             name='Environment',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
@@ -107,6 +120,31 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
+            name='IPAddress',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('created', models.DateTimeField(auto_now=True, verbose_name='date created')),
+                ('modified', models.DateTimeField(auto_now_add=True, verbose_name='last modified')),
+                ('last_seen', models.DateTimeField(default=datetime.datetime.now, verbose_name='last seen')),
+                ('address', models.IPAddressField(null=True, default=None, blank=True, help_text='Presented as string.', unique=True, verbose_name='IP address')),
+                ('number', models.BigIntegerField(help_text='Presented as int.', verbose_name='IP address', unique=True, editable=False)),
+                ('snmp_name', models.TextField(default=None, null=True, verbose_name='name from SNMP', blank=True)),
+                ('snmp_community', models.CharField(default=None, max_length=64, null=True, verbose_name='SNMP community', blank=True)),
+                ('snmp_version', models.CharField(default=None, max_length=5, null=True, verbose_name='SNMP version', blank=True)),
+                ('http_family', models.TextField(default=None, max_length=64, null=True, verbose_name='family from HTTP', blank=True)),
+                ('is_management', models.BooleanField(default=False, verbose_name='This is a management address')),
+                ('dns_info', models.TextField(default=None, null=True, verbose_name='information from DNS TXT fields', blank=True)),
+                ('last_plugins', models.TextField(verbose_name='last plugins', blank=True)),
+                ('dead_ping_count', models.IntegerField(default=0, verbose_name='dead ping count')),
+                ('is_buried', models.BooleanField(default=False, verbose_name='Buried from autoscan')),
+                ('is_public', models.BooleanField(default=False, verbose_name='This is a public address', editable=False)),
+            ],
+            options={
+                'verbose_name': 'IP address',
+                'verbose_name_plural': 'IP addresses',
+            },
+        ),
+        migrations.CreateModel(
             name='Manufacturer',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
@@ -116,6 +154,73 @@ class Migration(migrations.Migration):
             ],
             options={
                 'abstract': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='Network',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(unique=True, max_length=50, verbose_name='name')),
+                ('created', models.DateTimeField(auto_now=True, verbose_name='date created')),
+                ('modified', models.DateTimeField(auto_now_add=True, verbose_name='last modified')),
+                ('address', models.CharField(help_text='Presented as string (e.g. 192.168.0.0/24)', unique=True, max_length=18, verbose_name='network address')),
+                ('gateway', models.IPAddressField(default=None, blank=True, help_text='Presented as string.', null=True, verbose_name='gateway address')),
+                ('gateway_as_int', models.PositiveIntegerField(default=None, verbose_name='gateway as int', null=True, editable=False, blank=True)),
+                ('reserved', models.PositiveIntegerField(default=10, help_text='Number of addresses to be omitted in the automatic determination process, counted from the first in range.', verbose_name='reserved')),
+                ('reserved_top_margin', models.PositiveIntegerField(default=0, help_text='Number of addresses to be omitted in the automatic determination process, counted from the last in range.', verbose_name='reserved (top margin)')),
+                ('remarks', models.TextField(default='', help_text='Additional information.', verbose_name='remarks', blank=True)),
+                ('vlan', models.PositiveIntegerField(default=None, null=True, verbose_name='VLAN number', blank=True)),
+                ('min_ip', models.PositiveIntegerField(default=None, verbose_name='smallest IP number', null=True, editable=False, blank=True)),
+                ('max_ip', models.PositiveIntegerField(default=None, verbose_name='largest IP number', null=True, editable=False, blank=True)),
+                ('ignore_addresses', models.BooleanField(default=False, help_text='Addresses from this network should never be assigned to any device, because they are not unique.', verbose_name='Ignore addresses from this network')),
+                ('dhcp_broadcast', models.BooleanField(default=False, db_index=True, verbose_name='Broadcast in DHCP configuration')),
+                ('dhcp_config', models.TextField(default='', verbose_name='DHCP additional configuration', blank=True)),
+                ('last_scan', models.DateTimeField(default=None, verbose_name='last scan', null=True, editable=False, blank=True)),
+                ('environment', models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, verbose_name='environment', blank=True, to='assets.Environment', null=True)),
+            ],
+            options={
+                'ordering': ('vlan',),
+                'verbose_name': 'network',
+                'verbose_name_plural': 'networks',
+            },
+        ),
+        migrations.CreateModel(
+            name='NetworkEnvironment',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(unique=True, max_length=50, verbose_name='name')),
+                ('hosts_naming_template', models.CharField(help_text='E.g. h<200,299>.dc|h<400,499>.dc will produce: h200.dc h201.dc ... h299.dc h400.dc h401.dc', max_length=30)),
+                ('next_server', models.CharField(default='', help_text='The address for a TFTP server for DHCP.', max_length=32, blank=True)),
+                ('domain', models.CharField(max_length=255, null=True, verbose_name='domain', blank=True)),
+                ('remarks', models.TextField(help_text='Additional information.', null=True, verbose_name='remarks', blank=True)),
+                ('queue', models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, verbose_name='discovery queue', blank=True, to='assets.DiscoveryQueue', null=True)),
+            ],
+            options={
+                'ordering': ('name',),
+            },
+        ),
+        migrations.CreateModel(
+            name='NetworkKind',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(unique=True, max_length=50, verbose_name='name')),
+            ],
+            options={
+                'ordering': ('name',),
+                'verbose_name': 'network kind',
+                'verbose_name_plural': 'network kinds',
+            },
+        ),
+        migrations.CreateModel(
+            name='NetworkTerminator',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(unique=True, max_length=50, verbose_name='name')),
+            ],
+            options={
+                'ordering': ('name',),
+                'verbose_name': 'network terminator',
+                'verbose_name_plural': 'network terminators',
             },
         ),
         migrations.CreateModel(
@@ -179,6 +284,21 @@ class Migration(migrations.Migration):
             field=models.ManyToManyField(to='assets.Environment', through='assets.ServiceEnvironment'),
         ),
         migrations.AddField(
+            model_name='network',
+            name='kind',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, default=None, blank=True, to='assets.NetworkKind', null=True, verbose_name='network kind'),
+        ),
+        migrations.AddField(
+            model_name='network',
+            name='terminators',
+            field=models.ManyToManyField(to='assets.NetworkTerminator', verbose_name='network terminators'),
+        ),
+        migrations.AddField(
+            model_name='ipaddress',
+            name='network',
+            field=models.ForeignKey(default=None, blank=True, to='assets.Network', null=True, verbose_name='network'),
+        ),
+        migrations.AddField(
             model_name='genericcomponent',
             name='asset',
             field=models.ForeignKey(related_name='genericcomponent', to='assets.BaseObject'),
@@ -215,6 +335,11 @@ class Migration(migrations.Migration):
         migrations.AlterUniqueTogether(
             name='assetlasthostname',
             unique_together=set([('prefix', 'postfix')]),
+        ),
+        migrations.AddField(
+            model_name='ipaddress',
+            name='asset',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, default=None, blank=True, to='assets.Asset', null=True, verbose_name='asset'),
         ),
         migrations.AddField(
             model_name='asset',

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
+
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
@@ -43,3 +45,18 @@ class TimeStampMixin(models.Model):
 
     class Permissions:
         blacklist = set(['created', 'modified'])
+
+
+class LastSeenMixin(models.Model):
+    last_seen = models.DateTimeField(
+        verbose_name=_('last seen'),
+        default=datetime.now
+    )
+
+    class Meta:
+        abstract = True
+
+    def save(self, update_last_seen=False, *args, **kwargs):
+        if update_last_seen:
+            self.last_seen = datetime.now()
+        super(LastSeenMixin, self).save(*args, **kwargs)
