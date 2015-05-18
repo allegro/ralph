@@ -28,7 +28,9 @@ class DataCenterAdmin(RalphAdmin):
 
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(RalphAdmin):
-    list_display = ['formatted_hostname', 'slots', 'rack', 'configuration_path']
+    list_display = [
+        'formatted_hostname', 'slots', 'rack', 'configuration_path'
+    ]
     list_editable = ['slots', 'rack', 'configuration_path']
     raw_id_fields = 'rack',
 
@@ -36,7 +38,9 @@ class DataCenterAssetAdmin(RalphAdmin):
         return ['slots']
 
     def formatted_hostname(self, obj):
-        return '<strong style="color:red">{}</strong>'.format(obj.hostname or 'puste')
+        return '<strong style="color:red">{}</strong>'.format(
+            obj.hostname or 'empty'
+        )
     formatted_hostname.allow_tags = True
 
 

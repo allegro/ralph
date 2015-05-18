@@ -6,7 +6,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.conf.urls import include, url
-# from django.contrib import admin
 
 from ralph.admin import ralph_site as admin
 

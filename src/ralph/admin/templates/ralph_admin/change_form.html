@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load i18n admin_urls admin_static admin_modify %}
+{% load i18n admin_urls admin_static admin_modify foundation_form foundation_alert %}
 
 {% block extrahead %}{{ block.super }}
   <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
@@ -36,21 +36,26 @@
   {% endblock %}
 {% endif %}
 
-{# TODO #}
 {% block content %}
   <div id="content-main">
     {% block object-tools %}
-      {% if change %}{% if not is_popup %}
-        <ul class="object-tools button-group radius">
-          {% block object-tools-items %}
-          <li>
-              {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
-              <a href="{% add_preserved_filters history_url %}" class="historylink small button success">{% trans "History" %}</a>
-          </li>
-          {% if has_absolute_url %}<li><a href="{{ absolute_url }}" class="viewsitelink">{% trans "View on site" %}</a></li>{% endif %}
-          {% endblock %}
-        </ul>
-      {% endif %}{% endif %}
+      {% if change %}
+        {% if not is_popup %}
+          <div class="row">
+            <div class="small-1 columns end small-offset-11">
+              <ul class="object-tools button-group radius">
+                {% block object-tools-items %}
+                <li>
+                    {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
+                    <a href="{% add_preserved_filters history_url %}" class="historylink small button tiny right">{% trans "History" %}</a>
+                </li>
+                {% if has_absolute_url %}<li><a href="{{ absolute_url }}" class="viewsitelink">{% trans "View on site" %}</a></li>{% endif %}
+                {% endblock %}
+              </ul>
+            </div>
+          </div>
+        {% endif %}
+      {% endif %}
     {% endblock %}
     <form {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.model_name }}_form" novalidate>{% csrf_token %}{% block form_top %}{% endblock %}
     <div>
@@ -58,10 +63,13 @@
       {% if to_field %}<input type="hidden" name="{{ to_field_var }}" value="{{ to_field }}" />{% endif %}
       {% if save_on_top %}{% block submit_buttons_top %}{% submit_row %}{% endblock %}{% endif %}
       {% if errors %}
-          <p class="errornote">
-          {% if errors|length == 1 %}{% trans "Please correct the error below." %}{% else %}{% trans "Please correct the errors below." %}{% endif %}
-          </p>
-          {{ adminform.form.non_field_errors }}
+        {% if errors|length == 1 %}
+          {% alert _("Please correct the error below.") 'alert' %}
+        {% else %}
+          {% alert _("Please correct the errors below.") 'alert' %}
+        {% endif %}
+
+        {% errors adminform.form %}
       {% endif %}
 
       {% block field_sets %}

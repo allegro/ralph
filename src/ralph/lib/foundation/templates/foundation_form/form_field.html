@@ -1,0 +1,31 @@
+{% load foundation_form %}
+<div class="row">
+  <div class="small-12 columns">
+    <div class="row">
+      {% if field.is_checkbox %}
+        <div class="small-12 columns">
+          {{ field.field }}
+          {% label field %}
+        </div>
+      {% else %}
+        <div class="small-2 columns">
+          {% if show_label %}
+            {% label field %}
+          {% endif %}
+        </div>
+        <div class="small-10 columns {% if field.errors %} error{% endif %}">
+          {% if field.is_readonly %}
+            {{ field.contents }}
+          {% else %}
+            {{ field.field }}
+          {% endif %}
+          {% if field.field.errors %}
+            {% for error in field.field.errors %}
+              <small class="error">{{ error }}</small>
+            {% endfor %}
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>

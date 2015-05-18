@@ -15,7 +15,30 @@ from django.template.response import TemplateResponse
 from django.utils.text import capfirst
 
 
-class RalphAdminMixin(object):
+def get_urls_chunks(model, view):
+    """
+    Returns a tuple to generate a URL for an additional view
+
+    :Example:
+
+        >>> "{}_{}_{}".format(*get_urls_chunks(model, view))
+        app_label_model_name_url_name
+
+    :param model: Django admin model
+    :type model: models.Model
+    :param view: Django generic view object
+    :type view: GenericView
+
+    :return: tuple of names
+    :rtype: tuple
+    """
+
+    return (
+        model._meta.app_label, model._meta.model_name, view.url_name
+    )
+
+
+class RalphAdminSiteMixin(object):
     site_header = 'Ralph 3'
     index_template = 'admin/index.html'
     app_index_template = 'ralph_admin/app_index.html'
@@ -31,7 +54,7 @@ class RalphAdminMixin(object):
         )
 
     def each_context(self, request):
-        context = super(RalphAdminMixin, self).each_context(request)
+        context = super(RalphAdminSiteMixin, self).each_context(request)
         app_dict = {}
         for model, model_admin in self._registry.items():
             app_label = model._meta.app_label
@@ -51,24 +74,36 @@ class RalphAdminMixin(object):
                         model_dict['extra_views'].append(
                             {
                                 'label': view.label,
-                                'url': view.url_name,  # TODO
+                                'url': reverse(
+                                    'admin:{}_{}_{}'.format(
+                                        *get_urls_chunks(model, view)
+                                    )
+                                )
                             }
                         )
                     if perms.get('change', False):
                         try:
-                            model_dict['admin_url'] = reverse('admin:%s_%s_changelist' % info, current_app=self.name)
+                            model_dict['admin_url'] = reverse(
+                                'admin:%s_%s_changelist' % info,
+                                current_app=self.name
+                            )
                         except NoReverseMatch:
                             pass
                     if perms.get('add', False):
                         try:
-                            model_dict['add_url'] = reverse('admin:%s_%s_add' % info, current_app=self.name)
+                            model_dict['add_url'] = reverse(
+                                'admin:%s_%s_add' % info,
+                                current_app=self.name
+                            )
                         except NoReverseMatch:
                             pass
                     if app_label in app_dict:
                         app_dict[app_label]['models'].append(model_dict)
                     else:
                         app_dict[app_label] = {
-                            'name': apps.get_app_config(app_label).verbose_name,
+                            'name': apps.get_app_config(
+                                app_label
+                            ).verbose_name,
                             'app_label': app_label,
                             'app_url': reverse(
                                 'admin:app_list',
@@ -90,24 +125,22 @@ class RalphAdminMixin(object):
         return context
 
     def get_urls(self, *args, **kwargs):
-        def get_chunks(model, view):
-            return (
-                model._meta.app_label, model._meta.model_name, view.url_name
-            )
-        urlpatterns = super(RalphAdminMixin, self).get_urls(*args, **kwargs)
+        urlpatterns = super(RalphAdminSiteMixin, self).get_urls(
+            *args, **kwargs
+        )
         for model, model_admin in self._registry.items():
             for view in model_admin.extra_views:
                 # insert at the begin
                 urlpatterns.insert(0, url(
-                    '^{}/{}/{}/'.format(*get_chunks(model, view)),
+                    '^{}/{}/{}/$'.format(*get_urls_chunks(model, view)),
                     view.as_view(),
-                    name='{}_{}_{}'.format(*get_chunks(model, view))
+                    name='{}_{}_{}'.format(*get_urls_chunks(model, view))
                 ))
         return urlpatterns
 
 
-class RalphAdminSite(RalphAdminMixin, AdminSite):
+class RalphAdminSite(RalphAdminSiteMixin, AdminSite):
     pass
 
 
-ralph_site = RalphAdminSite(name='myadmin')
+ralph_site = RalphAdminSite(name='ralph_site')

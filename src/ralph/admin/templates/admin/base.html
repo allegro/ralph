@@ -1,9 +1,17 @@
-{% load i18n admin_static %}<!DOCTYPE html>
+{% load i18n admin_static %}
+<!DOCTYPE html>
 {% get_current_language as LANGUAGE_CODE %}
 {% get_current_language_bidi as LANGUAGE_BIDI %}
 <html lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
   <head>
+    {% block extrastyle %}{% endblock %}
     <link rel="stylesheet" type="text/css" href="{% static "css/foundation.min.css" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static "css/ralph_style.css" %}" />
+    <script type="text/javascript">window.__admin_utc_offset__ = "{% filter escapejs %}{% now "Z" %}{% endfilter %}";</script>
+    {% block extrahead %}{% endblock %}
+    <script type="text/javascript" src="{% static "js/vendor/jquery.js" %}"> </script>
+    <script type="text/javascript" src="{% static "js/foundation.min.js" %}"> </script>
+    <title>{% block title %}{% endblock %}</title>
   </head>
   <body>
     <nav class="top-bar" data-topbar="">
@@ -20,10 +28,12 @@
             {% if has_permission %}
               {% block welcome-msg %}
                 <li class="has-dropdown not-click">
-                  <a href="">{% firstof user.get_short_name user.get_username %}</a>
+                  <a href="">
+                    {% firstof user.get_short_name user.get_username %}
+                  </a>
                   <ul class="dropdown">
                     {% block userlinks %}
-                        {% include 'ralph_admin/partials/userlinks.html' %}
+                      {% include 'ralph_admin/partials/userlinks.html' %}
                     {% endblock %}
                   </ul>
                 </li>
@@ -35,10 +45,25 @@
       </section>
     </nav>
     {% block breadcrumbs %}{% endblock %}
+    {% if messages %}
+      <div class="row">
+        <div class="small-12 columns">
+          {% for message in messages %}
+            <div data-alert class="alert-box radius {{ message.tags }}">
+              {{ message }}
+              <a href="#" class="close">&times;</a>
+            </div>
+         {% endfor %}
+        </div>
+      </div>
+    {% endif %}
     <div class="row">
       <div class="large-12 columns">
         {% block content %}{% endblock %}
       </div>
     </div>
+    <script>
+      $(document).foundation();
+    </script>
   </body>
 </html>

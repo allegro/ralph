@@ -17,6 +17,7 @@ class RalphAdminMixin(object):
     def changelist_view(self, request, extra_context=None):
         if extra_context is None:
             extra_context = {}
+        extra_context['app_label'] = self.model._meta.app_label
         extra_views = []
         for view in self.extra_views:
             extra_views.append({

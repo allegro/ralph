@@ -27,7 +27,9 @@
                 <li><label>{% trans "Others" %}</label></li>
                 {% for view in model.extra_views %}
                   <li>
-                    <a href="{{ view.url }}">{{ view.label }}</a>
+                    <a href="{{ view.url }}">
+                    {{ view.label }}
+                    </a>
                   </li>
                 {% endfor %}
               {% endif %}

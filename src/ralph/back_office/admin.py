@@ -6,16 +6,12 @@ from ralph.back_office.models import Warehouse
 from django.views.generic import View
 
 
-class ByServiceView(View):
-    label = 'Extra'
-    url_name = 'by_service'
-
-
 class ExtraView(View):
-    label = 'Test'
-    url_name = 'by_service2'
+    label = 'Extra view'
+    url_name = 'extra_view'
 
 
 @register(Warehouse)
 class WarehousAdmin(RalphAdmin):
-    extra_views = [ByServiceView, ExtraView]
+
+    extra_views = [ExtraView]
