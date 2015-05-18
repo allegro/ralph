@@ -1,19 +1,21 @@
 # -*- coding: utf-8 -*-
-import reversion
+from ralph.admin import RalphAdmin, register
 
-from django.contrib import admin
+from ralph.back_office.models import Warehouse
 
-from ralph.back_office.models import (
-    BackOfficeAsset,
-    Warehouse
-)
+from django.views.generic import View
 
 
-@admin.register(BackOfficeAsset)
-class BackOfficeAssetAdmin(reversion.VersionAdmin):
-    pass
+class ByServiceView(View):
+    label = 'Extra'
+    url_name = 'by_service'
 
 
-@admin.register(Warehouse)
-class WarehousAdmin(reversion.VersionAdmin):
-    pass
+class ExtraView(View):
+    label = 'Test'
+    url_name = 'by_service2'
+
+
+@register(Warehouse)
+class WarehousAdmin(RalphAdmin):
+    extra_views = [ByServiceView, ExtraView]

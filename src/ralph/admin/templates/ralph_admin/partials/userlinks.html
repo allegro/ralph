@@ -1,0 +1,15 @@
+{% load i18n %}
+
+{% if site_url %}
+  <li>
+    <a href="{{ site_url }}">{% trans 'View site' %}</a>
+  </li>
+{% endif %}
+{% if user.has_usable_password %}
+  <li>
+    <a href="{% url 'admin:password_change' %}">{% trans 'Change password' %}</a>
+  </li>
+{% endif %}
+<li>
+  <a href="{% url 'admin:logout' %}">{% trans 'Log out' %}</a>
+</li>

@@ -18,6 +18,7 @@ TIME_ZONE = 'Europe/Warsaw'
 # Application definition
 
 INSTALLED_APPS = (
+    'ralph.admin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -25,12 +26,13 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'reversion',
     'ralph.assets',
     'ralph.back_office',
     'ralph.data_center',
     'ralph.licences',
     'ralph.supports',
+
+    'reversion',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -49,9 +51,9 @@ ROOT_URLCONF = 'ralph.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            os.path.join(BASE_DIR, 'templates'),
-        ],
+        # 'DIRS': [
+        #     os.path.join(BASE_DIR, 'templates'),
+        # ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
