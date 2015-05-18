@@ -12,6 +12,7 @@ import reversion
 
 class RalphAdminMixin(object):
     change_list_template = 'ralph_admin/change_list.html'
+    change_form_template = 'ralph_admin/change_form.html'
 
     def changelist_view(self, request, extra_context=None):
         if extra_context is None:

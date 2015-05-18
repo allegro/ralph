@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 from ralph.admin import RalphAdmin, register
 
-from ralph.back_office.models import (
-    Warehouse
-)
+from ralph.back_office.models import Warehouse
 
 from django.views.generic import View
 

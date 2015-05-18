@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import reversion
-
 from ralph.admin import RalphAdmin, register
 
 from ralph.data_center.models.virtual import (

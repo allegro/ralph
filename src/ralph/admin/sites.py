@@ -5,7 +5,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from collections import defaultdict
 import six
 
 from django.apps import apps
@@ -19,6 +18,8 @@ from django.utils.text import capfirst
 class RalphAdminMixin(object):
     site_header = 'Ralph 3'
     index_template = 'admin/index.html'
+    app_index_template = 'ralph_admin/app_index.html'
+    object_history_template = 'ralph_admin/object_history.html'
 
     def index(self, request, extra_context=None):
         context = dict(
