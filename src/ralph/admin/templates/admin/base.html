@@ -1,0 +1,44 @@
+{% load i18n admin_static %}<!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+<html lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
+  <head>
+    <link rel="stylesheet" type="text/css" href="{% static "css/foundation.min.css" %}" />
+  </head>
+  <body>
+    <nav class="top-bar" data-topbar="">
+      <section class="top-bar-section">
+        <ul class="title-area">
+          <li class="name">
+            {% block branding %}{% endblock %}
+          </li>
+          <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+        </ul>
+        {% include 'ralph_admin/partials/top_bar.html' %}
+        <ul class="right">
+          {% block usertools %}
+            {% if has_permission %}
+              {% block welcome-msg %}
+                <li class="has-dropdown not-click">
+                  <a href="">{% firstof user.get_short_name user.get_username %}</a>
+                  <ul class="dropdown">
+                    {% block userlinks %}
+                        {% include 'ralph_admin/partials/userlinks.html' %}
+                    {% endblock %}
+                  </ul>
+                </li>
+              {% endblock %}
+            {% endif %}
+          {% endblock %}
+          {% block nav-global %}{% endblock %}
+        </ul>
+      </section>
+    </nav>
+    {% block breadcrumbs %}{% endblock %}
+    <div class="row">
+      <div class="large-12 columns">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </body>
+</html>
