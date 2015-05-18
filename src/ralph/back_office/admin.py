@@ -10,15 +10,15 @@ from django.views.generic import View
 
 
 class ByServiceView(View):
-    label = 'Dupa'
+    label = 'Extra'
     url_name = 'by_service'
 
 
-class DupaView(View):
+class ExtraView(View):
     label = 'Test'
     url_name = 'by_service2'
 
 
 @register(Warehouse)
 class WarehousAdmin(RalphAdmin):
-    extra_views = [ByServiceView, DupaView]
+    extra_views = [ByServiceView, ExtraView]
