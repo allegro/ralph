@@ -2,7 +2,6 @@
 from ralph.admin import RalphAdmin, register
 
 from ralph.back_office.models import (
-    BackOfficeAsset,
     Warehouse
 )
 
