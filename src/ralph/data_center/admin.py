@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-import reversion
 
-from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.admin import RalphAdmin, register
 from ralph.data_center.models.virtual import (
     CloudProject,
     Database,
@@ -24,13 +23,13 @@ from ralph.data_center.models.physical import (
 )
 
 
-@admin.register(DataCenter)
-class DataCenterAdmin(reversion.VersionAdmin):
+@register(DataCenter)
+class DataCenterAdmin(RalphAdmin):
     pass
 
 
-@admin.register(DataCenterAsset)
-class DataCenterAssetAdmin(reversion.VersionAdmin):
+@register(DataCenterAsset)
+class DataCenterAssetAdmin(RalphAdmin):
     """Data Center Asset admin class."""
 
     list_display = [
@@ -69,51 +68,51 @@ class DataCenterAssetAdmin(reversion.VersionAdmin):
     )
 
 
-@admin.register(ServerRoom)
-class ServerRoomAdmin(reversion.VersionAdmin):
+@register(ServerRoom)
+class ServerRoomAdmin(RalphAdmin):
     pass
 
 
-@admin.register(Rack)
-class RackAdmin(reversion.VersionAdmin):
+@register(Rack)
+class RackAdmin(RalphAdmin):
     pass
 
 
-@admin.register(RackAccessory)
-class RackAccessoryAdmin(reversion.VersionAdmin):
+@register(RackAccessory)
+class RackAccessoryAdmin(RalphAdmin):
     pass
 
 
-@admin.register(Database)
-class DatabaseAdmin(reversion.VersionAdmin):
+@register(Database)
+class DatabaseAdmin(RalphAdmin):
     pass
 
 
-@admin.register(VIP)
-class VIPAdmin(reversion.VersionAdmin):
+@register(VIP)
+class VIPAdmin(RalphAdmin):
     pass
 
 
-@admin.register(VirtualServer)
-class VirtualServerAdmin(reversion.VersionAdmin):
+@register(VirtualServer)
+class VirtualServerAdmin(RalphAdmin):
     pass
 
 
-@admin.register(CloudProject)
-class CloudProjectAdmin(reversion.VersionAdmin):
+@register(CloudProject)
+class CloudProjectAdmin(RalphAdmin):
     pass
 
 
-@admin.register(Connection)
-class ConnectionAdmin(reversion.VersionAdmin):
+@register(Connection)
+class ConnectionAdmin(RalphAdmin):
     pass
 
 
-@admin.register(DiskShare)
-class DiskShareAdmin(reversion.VersionAdmin):
+@register(DiskShare)
+class DiskShareAdmin(RalphAdmin):
     pass
 
 
-@admin.register(DiskShareMount)
-class DiskShareMountAdmin(reversion.VersionAdmin):
+@register(DiskShareMount)
+class DiskShareMountAdmin(RalphAdmin):
     pass

@@ -1,17 +1,13 @@
 # -*- coding: utf-8 -*-
-import reversion
-
-from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
+from django.views.generic import View
 
-from ralph.back_office.models import (
-    BackOfficeAsset,
-    Warehouse
-)
+from ralph.admin import RalphAdmin, register
+from ralph.back_office.models import BackOfficeAsset, Warehouse
 
 
-@admin.register(BackOfficeAsset)
-class BackOfficeAssetAdmin(reversion.VersionAdmin):
+@register(BackOfficeAsset)
+class BackOfficeAssetAdmin(RalphAdmin):
 
     """Back Office Asset admin class."""
 
@@ -50,6 +46,12 @@ class BackOfficeAssetAdmin(reversion.VersionAdmin):
     )
 
 
-@admin.register(Warehouse)
-class WarehousAdmin(reversion.VersionAdmin):
-    pass
+class ExtraView(View):
+    label = 'Extra view'
+    url_name = 'extra_view'
+
+
+@register(Warehouse)
+class WarehousAdmin(RalphAdmin):
+
+    extra_views = [ExtraView]
