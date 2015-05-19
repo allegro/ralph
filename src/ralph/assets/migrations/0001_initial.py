@@ -2,8 +2,9 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import django.db.models.deletion
 import datetime
+import django.db.models.deletion
+import ralph.assets.models.networks
 
 
 class Migration(migrations.Migration):
@@ -126,8 +127,9 @@ class Migration(migrations.Migration):
                 ('created', models.DateTimeField(auto_now=True, verbose_name='date created')),
                 ('modified', models.DateTimeField(auto_now_add=True, verbose_name='last modified')),
                 ('last_seen', models.DateTimeField(default=datetime.datetime.now, verbose_name='last seen')),
-                ('address', models.IPAddressField(null=True, default=None, blank=True, help_text='Presented as string.', unique=True, verbose_name='IP address')),
+                ('address', models.GenericIPAddressField(null=True, default=None, blank=True, help_text='Presented as string.', unique=True, verbose_name='IP address')),
                 ('number', models.BigIntegerField(help_text='Presented as int.', verbose_name='IP address', unique=True, editable=False)),
+                ('hostname', models.CharField(default=None, max_length=255, null=True, verbose_name='hostname', blank=True)),
                 ('snmp_name', models.TextField(default=None, null=True, verbose_name='name from SNMP', blank=True)),
                 ('snmp_community', models.CharField(default=None, max_length=64, null=True, verbose_name='SNMP community', blank=True)),
                 ('snmp_version', models.CharField(default=None, max_length=5, null=True, verbose_name='SNMP version', blank=True)),
@@ -163,8 +165,8 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(unique=True, max_length=50, verbose_name='name')),
                 ('created', models.DateTimeField(auto_now=True, verbose_name='date created')),
                 ('modified', models.DateTimeField(auto_now_add=True, verbose_name='last modified')),
-                ('address', models.CharField(help_text='Presented as string (e.g. 192.168.0.0/24)', unique=True, max_length=18, verbose_name='network address')),
-                ('gateway', models.IPAddressField(default=None, blank=True, help_text='Presented as string.', null=True, verbose_name='gateway address')),
+                ('address', models.CharField(help_text='Presented as string (e.g. 192.168.0.0/24)', unique=True, max_length=18, verbose_name='network address', validators=[ralph.assets.models.networks.network_validator])),
+                ('gateway', models.GenericIPAddressField(default=None, blank=True, help_text='Presented as string.', null=True, verbose_name='gateway address')),
                 ('gateway_as_int', models.PositiveIntegerField(default=None, verbose_name='gateway as int', null=True, editable=False, blank=True)),
                 ('reserved', models.PositiveIntegerField(default=10, help_text='Number of addresses to be omitted in the automatic determination process, counted from the first in range.', verbose_name='reserved')),
                 ('reserved_top_margin', models.PositiveIntegerField(default=0, help_text='Number of addresses to be omitted in the automatic determination process, counted from the last in range.', verbose_name='reserved (top margin)')),
@@ -176,7 +178,6 @@ class Migration(migrations.Migration):
                 ('dhcp_broadcast', models.BooleanField(default=False, db_index=True, verbose_name='Broadcast in DHCP configuration')),
                 ('dhcp_config', models.TextField(default='', verbose_name='DHCP additional configuration', blank=True)),
                 ('last_scan', models.DateTimeField(default=None, verbose_name='last scan', null=True, editable=False, blank=True)),
-                ('environment', models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, verbose_name='environment', blank=True, to='assets.Environment', null=True)),
             ],
             options={
                 'ordering': ('vlan',),
@@ -287,6 +288,11 @@ class Migration(migrations.Migration):
             model_name='network',
             name='kind',
             field=models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, default=None, blank=True, to='assets.NetworkKind', null=True, verbose_name='network kind'),
+        ),
+        migrations.AddField(
+            model_name='network',
+            name='network_environment',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, verbose_name='environment', blank=True, to='assets.NetworkEnvironment', null=True),
         ),
         migrations.AddField(
             model_name='network',
