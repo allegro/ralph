@@ -5,10 +5,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.conf.urls import include, url
 
-from ralph.admin import ralph_site as admin
+from django.apps import AppConfig
 
-urlpatterns = [
-    url(r'^admin/', include(admin.urls)),
-]
+
+class BackOfficeConfig(AppConfig):
+    name = 'ralph.back_office'
+    verbose_name = 'Back Office'

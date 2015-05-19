@@ -1,0 +1,14 @@
+{% load foundation_form %}
+<fieldset class="{{ fieldset.classes }}">
+  {% if fieldset.name %}
+    <legend>{{ fieldset.name }}</legend>
+  {% endif %}
+  {% if fieldset.description %}
+    <div class="panel">{{ fieldset.description|safe }}</div>
+  {% endif %}
+  {% for line in fieldset %}
+      {% for field in line %}
+        {% field field %}
+      {% endfor %}
+  {% endfor %}
+</fieldset>

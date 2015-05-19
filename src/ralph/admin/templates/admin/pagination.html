@@ -1,0 +1,26 @@
+{% load admin_change_list i18n %}
+<div class="panel admin_bottom">
+  <div class="row">
+    <div class="small-4 columns">
+      <ul class="pagination">
+      {% if pagination_required %}
+          {% for i in page_range %}
+           {% admin_paginator_number cl i %}
+          {% endfor %}
+        {% endif %}
+      </ul>
+    </div>
+    <div class="small-4 columns text-center">
+      {{ cl.result_count }}
+      {% ifequal cl.result_count 1 %}{{ cl.opts.verbose_name }}{% else %}{{ cl.opts.verbose_name_plural }}{% endifequal %}
+      {% if show_all_url %}
+          &nbsp;&nbsp;<a href="{{ show_all_url }}" class="showall">{% trans 'Show all' %}</a>
+      {% endif %}
+    </div>
+    <div class="small-4 columns right_section">
+      {% if cl.formset and cl.result_count %}
+          <input type="submit" name="_save" class="default button success tiny right radius" value="{% trans 'Save' %}"/>
+      {% endif %}
+   </div>
+  </div>
+</div>

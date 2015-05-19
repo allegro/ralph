@@ -1,0 +1,44 @@
+.row {
+  width: 100%;
+  max-width: 100%;
+}
+.text_right {
+    text-align:right;
+}
+.full_width {
+    width: 100%;
+}
+.stripped thead {
+     background: #E6E6E6;
+}
+.stripped tr:nth-child(even) {
+    background: #E6E6E6;
+}
+.action_bar {
+    font-size:12px;
+}
+.admin_bottom {
+    width: 100%%;
+    position:fixed;
+    bottom:0;
+    left:0;
+    margin:0;
+    padding:0;
+}
+.admin_bottom .columns {
+    padding: 10px;
+    line-height: 3em;
+}
+.admin_bottom .columns .pagination {
+    margin-left:10px;
+}
+.admin_bottom .columns .left_margin {
+    margin-left:10px;
+}
+.admin_bottom .button {
+    margin-bottom: 0;
+    padding:15px 25px;
+}
+.admin_bottom .right_section {
+    padding-right: 20px;
+}
