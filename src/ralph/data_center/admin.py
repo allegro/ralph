@@ -2,6 +2,7 @@
 import reversion
 
 from django.contrib import admin
+from import_export.admin import ImportExportModelAdmin
 
 from ralph.data_center.models.virtual import (
     CloudProject,
@@ -29,7 +30,7 @@ class DataCenterAdmin(reversion.VersionAdmin):
 
 
 @admin.register(DataCenterAsset)
-class DataCenterAssetAdmin(reversion.VersionAdmin):
+class DataCenterAssetAdmin(ImportExportModelAdmin, reversion.VersionAdmin):
     pass
 
 
