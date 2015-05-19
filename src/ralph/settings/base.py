@@ -25,6 +25,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'import_export',
     'reversion',
     'ralph.assets',
     'ralph.back_office',
