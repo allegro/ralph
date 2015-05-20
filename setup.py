@@ -26,7 +26,8 @@ setup(
     include_package_data=True,
     package_dir={'': 'src'},
     zip_safe=False,  # because templates are loaded from file path
-    install_requires=read('requirements/base.txt').split('\n'),
+    # disabled until tablib is packaged with fix for: https://github.com/kennethreitz/tablib/issues/177
+    #install_requires=read('requirements/base.txt').split('\n'),
     entry_points={
         'console_scripts': [
             'ralph = ralph.__main__:main',
