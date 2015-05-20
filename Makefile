@@ -1,12 +1,15 @@
 .PHONY: test flake clean coverage docs coveralls
 
 install:
+	pip install 'git+https://github.com/kennethreitz/tablib.git@develop'
 	pip install -e .
 
 install-test:
+	pip install 'git+https://github.com/kennethreitz/tablib.git@develop'
 	pip install -r requirements/test.txt
 
 install-dev:
+	pip install 'git+https://github.com/kennethreitz/tablib.git@develop'
 	pip install -r requirements/dev.txt
 
 test: clean
