@@ -12,5 +12,5 @@ class GroupAdmin(RalphAdmin):
 
 
 @register(User)
-class RalpgUserAdmin(UserAdmin, RalphAdmin):
+class RalphUserAdmin(UserAdmin, RalphAdmin):
     pass

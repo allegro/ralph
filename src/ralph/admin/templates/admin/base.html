@@ -11,6 +11,7 @@
     {% block extrahead %}{% endblock %}
     <script type="text/javascript" src="{% static "js/vendor/jquery.js" %}"> </script>
     <script type="text/javascript" src="{% static "js/foundation.min.js" %}"> </script>
+    <script type="text/javascript">window.__admin_media_prefix__ = "{% static '' %}";</script>
     <title>{% block title %}{% endblock %}</title>
   </head>
   <body>

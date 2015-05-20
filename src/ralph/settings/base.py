@@ -83,13 +83,11 @@ USE_TZ = False
 
 STATIC_URL = '/static/'
 
-
 # adapt message's tags to bootstrap
 MESSAGE_TAGS = {
     messages.DEBUG: 'info',
     messages.ERROR: 'danger',
 }
-
 
 DEFAULT_DEPRECATION_RATE = 25
 ASSET_HOSTNAME_TEMPLATE = 'test'

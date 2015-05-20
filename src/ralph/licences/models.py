@@ -26,9 +26,10 @@ from ralph.assets.models.mixins import (
     TimeStampMixin
 )
 from ralph.licences.exceptions import WrongModelError
+from ralph.lib.permissions import PermByFieldMixin
 
 
-class LicenceType(NamedMixin, models.Model):
+class LicenceType(PermByFieldMixin, NamedMixin, models.Model):
 
     """The type of a licence"""
 
@@ -37,7 +38,7 @@ class LicenceType(NamedMixin, models.Model):
         return cls(name=string_name)
 
 
-class SoftwareCategory(NamedMixin, models.Model):
+class SoftwareCategory(PermByFieldMixin, NamedMixin, models.Model):
 
     """The category of the licensed software"""
 
@@ -57,7 +58,7 @@ class SoftwareCategory(NamedMixin, models.Model):
 
 
 @python_2_unicode_compatible
-class Licence(TimeStampMixin, models.Model):
+class Licence(PermByFieldMixin, TimeStampMixin, models.Model):
 
     """A set of licences for a single software with a single expiration date"""
 
@@ -203,10 +204,10 @@ class Licence(TimeStampMixin, models.Model):
         allowed_models = ('Asset', settings.AUTH_USER_MODEL)
         if name not in allowed_models:
             raise WrongModelError('{} model is not allowed.'.format(name))
-        Model = get_model(
+        model = get_model(
             model_name='Licence{}'.format(name)
         )
-        return Model, name
+        return model, name
 
     def assign(self, obj, quantity=1):
         if quantity <= 0:
