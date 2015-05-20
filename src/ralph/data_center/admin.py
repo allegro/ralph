@@ -24,6 +24,12 @@ from ralph.data_center.models.physical import (
 )
 
 
+from import_export import resources
+class DataCenterAssetResource(resources.ModelResource):
+    class Meta:
+        model = DataCenterAsset
+
+
 @admin.register(DataCenter)
 class DataCenterAdmin(reversion.VersionAdmin):
     pass
@@ -31,7 +37,8 @@ class DataCenterAdmin(reversion.VersionAdmin):
 
 @admin.register(DataCenterAsset)
 class DataCenterAssetAdmin(ImportExportModelAdmin, reversion.VersionAdmin):
-    pass
+    resource_class = DataCenterAssetResource
+    #pass
 
 
 @admin.register(ServerRoom)
