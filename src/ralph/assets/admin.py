@@ -2,6 +2,7 @@
 import reversion
 
 from django.contrib import admin
+from import_export.admin import ImportExportModelAdmin
 
 from ralph.assets.models.assets import (
     AssetModel,
@@ -22,7 +23,7 @@ class ServiceAdmin(reversion.VersionAdmin):
 
 
 @admin.register(Manufacturer)
-class ManufacturerAdmin(reversion.VersionAdmin):
+class ManufacturerAdmin(ImportExportModelAdmin, reversion.VersionAdmin):
     pass
 
 
