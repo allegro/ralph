@@ -15,6 +15,6 @@ class BaseObject(PermByFieldMixin, TimeStampMixin, models.Model):
 
     """Base object mixin."""
 
-    parent = models.ForeignKey('self')
+    parent = models.ForeignKey('self', null=True, blank=True)
     remarks = models.TextField(blank=True)
     service_env = models.ForeignKey('ServiceEnvironment')
