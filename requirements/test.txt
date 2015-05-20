@@ -1,5 +1,5 @@
+-r base.txt
 factory-boy
 coverage
 sphinx
 flake8
--e .

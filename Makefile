@@ -1,7 +1,7 @@
 .PHONY: test flake clean coverage docs coveralls
 
 install:
-	pip install -e .
+	pip install -r requirements/base.txt
 
 install-test:
 	pip install -r requirements/test.txt
