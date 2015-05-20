@@ -82,19 +82,16 @@ class PermissionsByFieldTestCase(TestCase):
 
     def test_superuser_allowed_fields(self):
         """Test allowed fields in permissions model."""
-        allowed_fields = [
+        allowed_fields = set([
             'name', 'type', 'manufacturer', 'category', 'power_consumption',
             'height_of_device', 'cores_count', 'visualization_layout_front',
             'visualization_layout_back'
-        ]
+        ])
         fields_list = self.asset_model.allowed_fields(
             self.super_user,
             action='change'
         )
-        self.assertListEqual(
-            allowed_fields,
-            fields_list
-        )
+        self.assertEqual(allowed_fields, fields_list)
 
     def test_user_allowed_fields(self):
         """Test allowed fields in permissions model."""
@@ -102,10 +99,7 @@ class PermissionsByFieldTestCase(TestCase):
             self.user,
             action='change'
         )
-        self.assertListEqual(
-            ['height_of_device'],
-            fields_list
-        )
+        self.assertEqual(set(['height_of_device']), fields_list)
 
     def test_user_not_allowed_fields(self):
         """Test not allowed field in permission model."""

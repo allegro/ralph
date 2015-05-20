@@ -75,7 +75,8 @@ class PermByFieldMixin(with_metaclass(PermissionByFieldBase, models.Model)):
 
     """Django Abstract model class for permission by fields."""
 
-    def has_access_to_field(self, field_name, user, action='change'):
+    @classmethod
+    def has_access_to_field(cls, field_name, user, action='change'):
         """
         Checks the user has the permission to the field
 
@@ -97,14 +98,15 @@ class PermByFieldMixin(with_metaclass(PermissionByFieldBase, models.Model)):
         """
         perm_key = get_perm_key(
             action,
-            self._meta.model_name,
+            cls._meta.model_name,
             field_name
         )
         return user.has_perm(
-            '{}.{}'.format(self._meta.app_label, perm_key)
+            '{}.{}'.format(cls._meta.app_label, perm_key)
         )
 
-    def allowed_fields(self, user, action='change'):
+    @classmethod
+    def allowed_fields(cls, user, action='change'):
         """
         Returns a list with the names of the fields to which the user has
         permission.
@@ -124,16 +126,16 @@ class PermByFieldMixin(with_metaclass(PermissionByFieldBase, models.Model)):
         :rtype: list
         """
         result = []
-        blacklist = self.Permissions.blacklist
-        for field in self._meta.fields:
+        blacklist = cls.Permissions.blacklist
+        for field in cls._meta.fields:
             if (
                 not field.primary_key and
                 field.name not in blacklist and
-                self.has_access_to_field(field.name, user, action)
+                cls.has_access_to_field(field.name, user, action)
             ):
                 result.append(field.name)
 
-        return result
+        return set(result)
 
     class Meta:
         abstract = True
