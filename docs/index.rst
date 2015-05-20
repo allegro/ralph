@@ -13,6 +13,7 @@ Contents:
 
    readme
    installation
+   docker
    usage
    contributing
    authors
