@@ -14,6 +14,7 @@ from django.utils.translation import ugettext_lazy as _
 from dj.choices import Choices
 
 from ralph.assets.models.mixins import NamedMixin, TimeStampMixin
+from ralph.lib.permissions import PermByFieldMixin
 
 
 class SupportType(NamedMixin, models.Model):
@@ -27,7 +28,9 @@ class SupportStatus(Choices):
     new = _("new")
 
 
-class Support(NamedMixin.NonUnique, TimeStampMixin, models.Model):
+class Support(
+    PermByFieldMixin, NamedMixin.NonUnique, TimeStampMixin, models.Model
+):
     contract_id = models.CharField(max_length=50, blank=False)
     description = models.CharField(max_length=100, blank=True)
     # TODO: new attachment mechanism
