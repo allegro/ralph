@@ -1,0 +1,6 @@
+{% for error in form.non_field_errors %}
+<div data-alert class="alert-box alert text-justify">
+    {{ error }}
+    <a href="" class="close">&times;</a>
+</div>
+{% endfor %}

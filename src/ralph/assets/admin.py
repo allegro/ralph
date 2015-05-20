@@ -17,6 +17,11 @@ from ralph.assets.models.components import (
 )
 
 
+@admin.register(ServiceEnvironment)
+class ServiceEnvironmentAdmin(reversion.VersionAdmin):
+    pass
+
+
 @admin.register(Service)
 class ServiceAdmin(reversion.VersionAdmin):
     pass
@@ -49,9 +54,4 @@ class ComponentModelAdmin(reversion.VersionAdmin):
 
 @admin.register(GenericComponent)
 class GenericComponentAdmin(reversion.VersionAdmin):
-    pass
-
-
-@admin.register(ServiceEnvironment)
-class ServiceEnvironmentAdmin(reversion.VersionAdmin):
     pass

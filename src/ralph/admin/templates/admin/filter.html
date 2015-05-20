@@ -1,0 +1,17 @@
+{% load i18n %}
+<div class="panel">
+  <h6>
+    {% blocktrans with filter_title=title %}
+      By {{ filter_title }}
+    {% endblocktrans %}
+  </h6>
+  <ul class="side-nav">
+  {% for choice in choices %}
+    <li{% if choice.selected %} class="active"{% endif %}>
+      <a href="{{ choice.query_string|iriencode }}">
+        {{ choice.display }}
+      </a>
+    </li>
+  {% endfor %}
+  </ul>
+</div>

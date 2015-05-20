@@ -1,0 +1,129 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls admin_static admin_list foundation_alert %}
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static "admin/css/changelists.css" %}" />
+  {% if cl.formset %}
+    <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
+  {% endif %}
+  {% if cl.formset or action_form %}
+    <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+  {% endif %}
+  {{ media.css }}
+  {% if not actions_on_top and not actions_on_bottom %}
+    <style>
+      #changelist table thead th:first-child {width: inherit}
+    </style>
+  {% endif %}
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+{{ media.js }}
+{% if action_form %}{% if actions_on_top or actions_on_bottom %}
+<script type="text/javascript">
+(function($) {
+    $(document).ready(function($) {
+        $("tr input.action-select").actions();
+    });
+})(django.jQuery);
+</script>
+{% endif %}{% endif %}
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-list{% endblock %}
+
+{% if not is_popup %}
+  {% block breadcrumbs %}
+    <ul class="breadcrumbs">
+      <li><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+      <li><a href="{% url 'admin:app_list' app_label=cl.opts.app_label %}">{{ cl.opts.app_config.verbose_name }}</a></li>
+      <li class="current">{{ cl.opts.verbose_name_plural }}</li>
+    </ul>
+  {% endblock %}
+{% endif %}
+
+{% block coltype %}flex{% endblock %}
+
+{% block content %}
+  <div id="content-main">
+    {% block search %}
+     {% search_form cl %}
+    {% endblock %}
+    <form id="changelist-form" action="" method="post"{% if cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>{% csrf_token %}
+    <div class="row">
+      <div class="small-8 columns">
+        {% if action_form and actions_on_top and cl.show_admin_actions %}
+          {% admin_actions %}
+        {% endif %}
+      </div>
+      <div class="small-4 columns text-right">
+        {% block object-tools %}
+            {% if has_add_permission %}
+              {% url cl.opts|admin_urlname:'add' as add_url %}
+                <a href="{% add_preserved_filters add_url is_popup to_field %}" class="button success tiny radius addLink">
+                  {% blocktrans with cl.opts.verbose_name as name %}
+                    Add {{ name }}
+                  {% endblocktrans %}
+              </a>
+            {% endif %}
+              <a href="#" class="button split tiny radius">
+            {% trans "Action" %} <span data-dropdown="drop"></span>
+          </a>
+          <br />
+          <ul id="drop" class="f-dropdown" data-dropdown-content>
+            {% block object-tools-items %}
+              {% for view in extra_views %}
+                  <li><a  href="{{ view.url }}">{{ view.label }}</a></li>
+              {% endfor %}
+            {% if not is_popup %}
+                <li><a href="{{recoverlist_url}}" class="recoverlink">{% blocktrans with cl.opts.verbose_name_plural|escape as name %}Recover deleted {{name}}{% endblocktrans %}</a></li>
+            {% endif %}
+
+            {% endblock %}
+          </ul>
+        {% endblock %}
+      </div>
+    </div>
+    {% if cl.formset.errors %}
+        <p class="errornote">
+          {% if cl.formset.total_error_count == 1 %}
+            {% alert _("Please correct the error below.") 'alert' %}
+          {% else %}
+            {% alert _("Please correct the errors below.") 'alert' %}
+          {% endif %}
+        </p>
+        {{ cl.formset.non_form_errors }}
+    {% endif %}
+
+    {% block date_hierarchy %}
+      {% date_hierarchy cl %}
+    {% endblock %}
+    <div class="row">
+      <div class="small-{% if cl.has_filters %}10{% else %}12{% endif %} columns">
+        {% block result_list %}
+          {% if cl.formset %}
+            {{ cl.formset.management_form }}
+          {% endif %}
+          {% result_list cl %}
+          {% if action_form and actions_on_bottom and cl.show_admin_actions %}
+            {% admin_actions %}
+          {% endif %}
+        {% endblock %}
+      </div>
+      {% block filters %}
+        {% if cl.has_filters %}
+          <div class="small-2 columns">
+            {% for spec in cl.filter_specs %}
+                {% admin_list_filter cl spec %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endblock %}
+    </div>
+    {% block pagination %}
+      {% pagination cl %}
+    {% endblock %}
+    </form>
+  </div>
+{% endblock %}

@@ -5,17 +5,15 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import reversion
-
-from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.admin import RalphAdmin, register
 from ralph.lib.permissions.admin import PermissionAdminMixin
 from ralph.supports.models import Support, SupportType
 
 
-@admin.register(Support)
-class SupportAdmin(PermissionAdminMixin, reversion.VersionAdmin):
+@register(Support)
+class SupportAdmin(PermissionAdminMixin, RalphAdmin):
     fieldsets = (
         (None, {
             'fields': (
@@ -31,6 +29,6 @@ class SupportAdmin(PermissionAdminMixin, reversion.VersionAdmin):
     )
 
 
-@admin.register(SupportType)
-class SupportTypeAdmin(reversion.VersionAdmin):
+@register(SupportType)
+class SupportTypeAdmin(RalphAdmin):
     pass
