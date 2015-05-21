@@ -15,6 +15,7 @@ web:
   ports:
     - "8000:8000"
   volumes:
+    # temporary - fix when ralph will handle local settings in a better way
     - docker/settings_local.py:/opt/ralph/src/ralph/settings/settings_local.py
   links:
     - db:db
