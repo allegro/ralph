@@ -24,8 +24,11 @@ except NameError:
 
 
 def get_resource(model_name):
-    model_class = APP_MODELS[model_name.lower()]
-    return resources.modelresource_factory(model=model_class)()
+    resource = None
+    if resource:
+        model_class = APP_MODELS[model_name.lower()]
+        resource = resources.modelresource_factory(model=model_class)()
+    return resource
 
 
 class Command(BaseCommand):

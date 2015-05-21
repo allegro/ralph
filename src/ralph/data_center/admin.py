@@ -4,6 +4,7 @@ import reversion
 from django.contrib import admin
 from import_export.admin import ImportExportModelAdmin
 
+from ralph.data_importer import resources
 from ralph.data_center.models.virtual import (
     CloudProject,
     Database,
@@ -24,12 +25,6 @@ from ralph.data_center.models.physical import (
 )
 
 
-from import_export import resources
-class DataCenterAssetResource(resources.ModelResource):
-    class Meta:
-        model = DataCenterAsset
-
-
 @admin.register(DataCenter)
 class DataCenterAdmin(reversion.VersionAdmin):
     pass
@@ -37,8 +32,7 @@ class DataCenterAdmin(reversion.VersionAdmin):
 
 @admin.register(DataCenterAsset)
 class DataCenterAssetAdmin(ImportExportModelAdmin, reversion.VersionAdmin):
-    resource_class = DataCenterAssetResource
-    #pass
+    resource_class = resources.DataCenterAssetResource
 
 
 @admin.register(ServerRoom)

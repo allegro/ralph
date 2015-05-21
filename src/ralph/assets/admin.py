@@ -15,6 +15,7 @@ from ralph.assets.models.components import (
     ComponentModel,
     GenericComponent
 )
+from ralph.data_importer import resources
 
 
 @admin.register(Service)
@@ -33,8 +34,8 @@ class EnvironmentAdmin(reversion.VersionAdmin):
 
 
 @admin.register(AssetModel)
-class AssetModelAdmin(reversion.VersionAdmin):
-    pass
+class AssetModelAdmin(ImportExportModelAdmin, reversion.VersionAdmin):
+    resource_class = resources.AssetModelResource
 
 
 @admin.register(Category)
