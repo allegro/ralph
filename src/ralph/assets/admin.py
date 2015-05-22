@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-import reversion
-
-from django.contrib import admin
-
+from ralph.admin import RalphAdmin, register
 from ralph.assets.models.assets import (
     AssetModel,
     Category,
@@ -17,41 +14,41 @@ from ralph.assets.models.components import (
 )
 
 
-@admin.register(ServiceEnvironment)
-class ServiceEnvironmentAdmin(reversion.VersionAdmin):
+@register(ServiceEnvironment)
+class ServiceEnvironmentAdmin(RalphAdmin):
     pass
 
 
-@admin.register(Service)
-class ServiceAdmin(reversion.VersionAdmin):
+@register(Service)
+class ServiceAdmin(RalphAdmin):
     pass
 
 
-@admin.register(Manufacturer)
-class ManufacturerAdmin(reversion.VersionAdmin):
+@register(Manufacturer)
+class ManufacturerAdmin(RalphAdmin):
     pass
 
 
-@admin.register(Environment)
-class EnvironmentAdmin(reversion.VersionAdmin):
+@register(Environment)
+class EnvironmentAdmin(RalphAdmin):
     pass
 
 
-@admin.register(AssetModel)
-class AssetModelAdmin(reversion.VersionAdmin):
+@register(AssetModel)
+class AssetModelAdmin(RalphAdmin):
     pass
 
 
-@admin.register(Category)
-class CategoryAdmin(reversion.VersionAdmin):
+@register(Category)
+class CategoryAdmin(RalphAdmin):
     pass
 
 
-@admin.register(ComponentModel)
-class ComponentModelAdmin(reversion.VersionAdmin):
+@register(ComponentModel)
+class ComponentModelAdmin(RalphAdmin):
     pass
 
 
-@admin.register(GenericComponent)
-class GenericComponentAdmin(reversion.VersionAdmin):
+@register(GenericComponent)
+class GenericComponentAdmin(RalphAdmin):
     pass

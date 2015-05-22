@@ -55,10 +55,33 @@ class PermissionByFieldBase(ModelBase):
             cls, name, bases, attrs
         )
         class_name = new_class._meta.model_name
-        for field in new_class._meta.fields:
-            blacklist = new_class.Permissions.blacklist
+        model_fields = new_class._meta.fields
+
+        permissions = attrs.pop('Permissions', None)
+        if not permissions:
+            permissions = getattr(
+                new_class,
+                'Permissions',
+                type(str('Permissions'), (object,), dict())
+            )
+
+        blacklist = getattr(permissions, 'blacklist', set())
+        for base in bases:
+            try:
+                blacklist |= base.Permissions.blacklist
+            except AttributeError:
+                pass
+
+        permissions.blacklist = blacklist
+
+        new_class.add_to_class('_permissions', permissions)
+
+        for field in model_fields:
             name = field.name
-            if not field.primary_key and name not in blacklist:
+            if (
+                not field.primary_key and
+                name not in new_class._permissions.blacklist
+            ):
                 new_class._meta.permissions.append((
                     get_perm_key('change', class_name, name),
                     _('Can change {} field').format(field.verbose_name)
@@ -126,7 +149,8 @@ class PermByFieldMixin(with_metaclass(PermissionByFieldBase, models.Model)):
         :rtype: list
         """
         result = []
-        blacklist = cls.Permissions.blacklist
+        blacklist = cls._permissions.blacklist
+
         for field in cls._meta.fields:
             if (
                 not field.primary_key and
