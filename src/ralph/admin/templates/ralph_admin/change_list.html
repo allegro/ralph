@@ -61,13 +61,13 @@
         {% block object-tools %}
             {% if has_add_permission %}
               {% url cl.opts|admin_urlname:'add' as add_url %}
-                <a href="{% add_preserved_filters add_url is_popup to_field %}" class="button success tiny radius addLink">
+                <a href="{% add_preserved_filters add_url is_popup to_field %}" class="button success small radius addLink">
                   {% blocktrans with cl.opts.verbose_name as name %}
                     Add {{ name }}
                   {% endblocktrans %}
               </a>
             {% endif %}
-              <a href="#" class="button split tiny radius">
+              <a href="#" class="button split small radius">
             {% trans "Action" %} <span data-dropdown="drop"></span>
           </a>
           <br />

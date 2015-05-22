@@ -1,5 +1,5 @@
 {% load foundation_form %}
-<div class="row">
+{# <div class="row"> #}
   <div class="small-12 columns">
     <div class="row">
       {% if field.is_checkbox %}
@@ -13,7 +13,7 @@
             {% label field %}
           {% endif %}
         </div>
-        <div class="small-10 columns {% if field.errors %} error{% endif %}">
+        <div class="small-6 end columns {% if field.errors %} error{% endif %}">
           {% if field.is_readonly %}
             {{ field.contents }}
           {% else %}
@@ -28,4 +28,4 @@
       {% endif %}
     </div>
   </div>
-</div>
+{# </div> #}

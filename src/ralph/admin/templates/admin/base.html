@@ -5,8 +5,10 @@
 <html lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
   <head>
     {% block extrastyle %}{% endblock %}
-    <link rel="stylesheet" type="text/css" href="{% static "css/foundation.min.css" %}" />
-    <link rel="stylesheet" type="text/css" href="{% static "css/ralph_style.css" %}" />
+    {# <link rel="stylesheet" type="text/css" href="{% static "css/foundation.min.css" %}" /> #}
+{#     <link rel="stylesheet" type="text/css" href="{% static "css/ralph_style.css" %}" /> #}
+    <link rel="stylesheet" type="text/css" href="{% static "css/normalize.css" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static "css/ralph.css" %}" />
     <script type="text/javascript">window.__admin_utc_offset__ = "{% filter escapejs %}{% now "Z" %}{% endfilter %}";</script>
     {% block extrahead %}{% endblock %}
     <script type="text/javascript" src="{% static "js/vendor/jquery.js" %}"> </script>
