@@ -13,6 +13,7 @@ from django.db.models.loading import get_models
 from import_export import resources
 
 from ralph.lib import unicode_csv
+from ralph.data_importer import resources as ralph_resources
 
 APP_MODELS = {model._meta.model_name: model for model in get_models()}
 
@@ -24,8 +25,9 @@ except NameError:
 
 
 def get_resource(model_name):
-    resource = None
-    if resource:
+    resource_name = model_name + 'Resource'
+    resource = getattr(ralph_resources, resource_name, None)
+    if not resource:
         model_class = APP_MODELS[model_name.lower()]
         resource = resources.modelresource_factory(model=model_class)()
     return resource
