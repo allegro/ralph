@@ -5,46 +5,50 @@
 <html lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
   <head>
     {% block extrastyle %}{% endblock %}
-    <link rel="stylesheet" type="text/css" href="{% static "css/foundation.min.css" %}" />
-    <link rel="stylesheet" type="text/css" href="{% static "css/ralph_style.css" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static "css/normalize.css" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static "css/ralph.css" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static "css/foundation-datepicker.css" %}">
     <script type="text/javascript">window.__admin_utc_offset__ = "{% filter escapejs %}{% now "Z" %}{% endfilter %}";</script>
+    <script type="text/javascript" src="{% static "js/vendor/jquery.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/foundation.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/foundation-datepicker.js" %}"></script>
     {% block extrahead %}{% endblock %}
-    <script type="text/javascript" src="{% static "js/vendor/jquery.js" %}"> </script>
-    <script type="text/javascript" src="{% static "js/foundation.min.js" %}"> </script>
     <script type="text/javascript">window.__admin_media_prefix__ = "{% static '' %}";</script>
     <title>{% block title %}{% endblock %}</title>
   </head>
   <body>
-    <nav class="top-bar" data-topbar="">
-      <section class="top-bar-section">
-        <ul class="title-area">
-          <li class="name">
-            {% block branding %}{% endblock %}
-          </li>
-          <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
-        </ul>
-        {% include 'ralph_admin/partials/top_bar.html' %}
-        <ul class="right">
-          {% block usertools %}
-            {% if has_permission %}
-              {% block welcome-msg %}
-                <li class="has-dropdown not-click">
-                  <a href="">
-                    {% firstof user.get_short_name user.get_username %}
-                  </a>
-                  <ul class="dropdown">
-                    {% block userlinks %}
-                      {% include 'ralph_admin/partials/userlinks.html' %}
-                    {% endblock %}
-                  </ul>
-                </li>
-              {% endblock %}
-            {% endif %}
-          {% endblock %}
-          {% block nav-global %}{% endblock %}
-        </ul>
-      </section>
-    </nav>
+    {% if not is_popup %}
+      <nav class="top-bar" data-topbar="">
+        <section class="top-bar-section">
+          <ul class="title-area">
+            <li class="name">
+              {% block branding %}{% endblock %}
+            </li>
+            <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+          </ul>
+          {% include 'ralph_admin/partials/top_bar.html' %}
+          <ul class="right">
+            {% block usertools %}
+              {% if has_permission %}
+                {% block welcome-msg %}
+                  <li class="has-dropdown not-click">
+                    <a href="">
+                      {% firstof user.get_short_name user.get_username %}
+                    </a>
+                    <ul class="dropdown">
+                      {% block userlinks %}
+                        {% include 'ralph_admin/partials/userlinks.html' %}
+                      {% endblock %}
+                    </ul>
+                  </li>
+                {% endblock %}
+              {% endif %}
+            {% endblock %}
+            {% block nav-global %}{% endblock %}
+          </ul>
+        </section>
+      </nav>
+    {% endif %}
     {% block breadcrumbs %}{% endblock %}
     {% if messages %}
       <div class="row">
@@ -60,11 +64,15 @@
     {% endif %}
     <div class="row">
       <div class="large-12 columns">
+      <div id="magicsuggest"></div>
         {% block content %}{% endblock %}
       </div>
     </div>
     <script>
-      $(document).foundation();
+      $(document).ready(function(){
+        $(document).foundation();
+        $('.datepicker').fdatepicker();
+      });
     </script>
   </body>
 </html>

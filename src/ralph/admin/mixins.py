@@ -7,11 +7,21 @@ from __future__ import unicode_literals
 
 import reversion
 
+from django.db import models
+
+from ralph.admin import widgets
+
+
+FORMFIELD_FOR_DBFIELD_DEFAULTS = {
+    models.DateField: {'widget': widgets.AdminDateWidget},
+}
+
 
 class RalphAdminMixin(object):
 
     """Ralph admin mixin."""
 
+    extra_views = []
     change_list_template = 'ralph_admin/change_list.html'
     change_form_template = 'ralph_admin/change_form.html'
 
@@ -33,4 +43,6 @@ class RalphAdminMixin(object):
 
 
 class RalphAdmin(RalphAdminMixin, reversion.VersionAdmin):
-    extra_views = []
+    def __init__(self, *args, **kwargs):
+        super(RalphAdminMixin, self).__init__(*args, **kwargs)
+        self.formfield_overrides.update(FORMFIELD_FOR_DBFIELD_DEFAULTS)
