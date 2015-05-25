@@ -1,0 +1,3 @@
+id,sn,model,force_deprecation,warehouse,service_env
+1,bo_asset_sn,asset_model_1,1,warehouse_1,service_1|environment_1
+2,bo_asset_sn2,asset_model_1,1,warehouse_1,service_1|environment_1
