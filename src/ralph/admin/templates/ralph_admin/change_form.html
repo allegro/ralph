@@ -47,7 +47,7 @@
                 {% block object-tools-items %}
                 <li>
                     {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
-                    <a href="{% add_preserved_filters history_url %}" class="historylink small button tiny right">{% trans "History" %}</a>
+                    <a href="{% add_preserved_filters history_url %}" class="historylink small button small right">{% trans "History" %}</a>
                 </li>
                 {% if has_absolute_url %}<li><a href="{{ absolute_url }}" class="viewsitelink">{% trans "View on site" %}</a></li>{% endif %}
                 {% endblock %}
@@ -58,62 +58,66 @@
       {% endif %}
     {% endblock %}
     <form {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.model_name }}_form" novalidate>{% csrf_token %}{% block form_top %}{% endblock %}
-    <div>
-      {% if is_popup %}<input type="hidden" name="{{ is_popup_var }}" value="1" />{% endif %}
-      {% if to_field %}<input type="hidden" name="{{ to_field_var }}" value="{{ to_field }}" />{% endif %}
-      {% if save_on_top %}{% block submit_buttons_top %}{% submit_row %}{% endblock %}{% endif %}
-      {% if errors %}
-        {% if errors|length == 1 %}
-          {% alert _("Please correct the error below.") 'alert' %}
-        {% else %}
-          {% alert _("Please correct the errors below.") 'alert' %}
+      <div>
+        {% if is_popup %}<input type="hidden" name="{{ is_popup_var }}" value="1" />{% endif %}
+        {% if to_field %}<input type="hidden" name="{{ to_field_var }}" value="{{ to_field }}" />{% endif %}
+        {% if save_on_top %}{% block submit_buttons_top %}{% submit_row %}{% endblock %}{% endif %}
+        {% if errors %}
+          {% if errors|length == 1 %}
+            {% alert _("Please correct the error below.") 'alert' %}
+          {% else %}
+            {% alert _("Please correct the errors below.") 'alert' %}
+          {% endif %}
+
+          {% errors adminform.form %}
         {% endif %}
 
-        {% errors adminform.form %}
-      {% endif %}
+        <div class="row">
+          {% block field_sets %}
+            {% for fieldset in adminform %}
+                <div class="large-6 columns" >
+                  {% include "admin/includes/fieldset.html" %}
+                </div>
+            {% endfor %}
+          {% endblock %}
+        </div>
 
-      {% block field_sets %}
-      {% for fieldset in adminform %}
-        {% include "admin/includes/fieldset.html" %}
-      {% endfor %}
-      {% endblock %}
+        {% block after_field_sets %}{% endblock %}
 
-      {% block after_field_sets %}{% endblock %}
+        {% block inline_field_sets %}
+        {% for inline_admin_formset in inline_admin_formsets %}
+            {% include inline_admin_formset.opts.template %}
+        {% endfor %}
+        {% endblock %}
 
-      {% block inline_field_sets %}
-      {% for inline_admin_formset in inline_admin_formsets %}
-          {% include inline_admin_formset.opts.template %}
-      {% endfor %}
-      {% endblock %}
+        {% block after_related_objects %}{% endblock %}
 
-      {% block after_related_objects %}{% endblock %}
 
+        {% block admin_change_form_document_ready %}
+            <script type="text/javascript">
+                (function($) {
+                    $(document).ready(function() {
+                        $('.add-another').click(function(e) {
+                            e.preventDefault();
+                            showAddAnotherPopup(this);
+                        });
+                        $('.related-lookup').click(function(e) {
+                            e.preventDefault();
+                            showRelatedObjectLookupPopup(this);
+                        });
+                    {% if adminform and add %}
+                        $('form#{{ opts.model_name }}_form :input:visible:enabled:first').focus()
+                    {% endif %}
+                    });
+                })(django.jQuery);
+            </script>
+        {% endblock %}
+
+        {# JavaScript for prepopulated fields #}
+        {% prepopulated_fields_js %}
+
+      </div>
       {% block submit_buttons_bottom %}{% submit_row %}{% endblock %}
-
-      {% block admin_change_form_document_ready %}
-          <script type="text/javascript">
-              (function($) {
-                  $(document).ready(function() {
-                      $('.add-another').click(function(e) {
-                          e.preventDefault();
-                          showAddAnotherPopup(this);
-                      });
-                      $('.related-lookup').click(function(e) {
-                          e.preventDefault();
-                          showRelatedObjectLookupPopup(this);
-                      });
-                  {% if adminform and add %}
-                      $('form#{{ opts.model_name }}_form :input:visible:enabled:first').focus()
-                  {% endif %}
-                  });
-              })(django.jQuery);
-          </script>
-      {% endblock %}
-
-      {# JavaScript for prepopulated fields #}
-      {% prepopulated_fields_js %}
-
-    </div>
     </form>
   </div>
 {% endblock %}

@@ -1,6 +1,6 @@
 {% load foundation_form %}
-<div class="row">
-  <div class="small-12 columns">
+{# <div class="row"> #}
+  <div class="field-row small-12 columns{% if field.field.errors %} error{% endif %}">
     <div class="row">
       {% if field.is_checkbox %}
         <div class="small-12 columns">
@@ -8,12 +8,12 @@
           {% label field %}
         </div>
       {% else %}
-        <div class="small-2 columns">
+        <div class="small-3 columns">
           {% if show_label %}
             {% label field %}
           {% endif %}
         </div>
-        <div class="small-10 columns {% if field.errors %} error{% endif %}">
+        <div class="small-6 end columns {% if field.errors %} error{% endif %}">
           {% if field.is_readonly %}
             {{ field.contents }}
           {% else %}
@@ -28,4 +28,4 @@
       {% endif %}
     </div>
   </div>
-</div>
+{# </div> #}

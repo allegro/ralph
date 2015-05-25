@@ -1,35 +1,35 @@
 {% load i18n admin_urls %}
-<div class="panel admin_bottom">
+<div class="admin_bottom panel">
   <div class="row">
-    <div class="small-1 columns">
-      {% if show_delete_link %}
+    {% if show_delete_link %}
+      <div class="small-1 columns">
         {% url opts|admin_urlname:'delete' original.pk|admin_urlquote as delete_url %}
-        <a href="{% add_preserved_filters delete_url %}" class="deletelink button tiny alert radius left_margin">{% trans "Delete" %}</a>
-      {% endif %}
-    </div>
-    <div class="small-11 columns text_right right_section">
-    <ul class="button-group radius">
-      {% if show_save %}
-      <li>
-        <input type="submit" value="{% trans 'Save' %}" class="default button tiny success" name="_save" />
+        <a href="{% add_preserved_filters delete_url %}" class="deletelink button small alert radius left_margin">{% trans "Delete" %}</a>
+      </div>
+    {% endif %}
+    <div class="small-{% if show_delete_link %}11{% else %}12{% endif %} columns text_right right_section">
+      <ul class="button-group radius right">
+        {% if show_save %}
+        <li>
+          <input type="submit" value="{% trans 'Save' %}" class="default button small success" name="_save" />
+          {% endif %}
+        </li>
+        {% if show_save_as_new %}
+          <li>
+            <input type="submit" value="{% trans 'Save as new' %}" name="_saveasnew" class="button small success" />
+          </li>
         {% endif %}
-      </li>
-
-      {% if show_save_as_new %}
-      <li>
-        <input type="submit" value="{% trans 'Save as new' %}" name="_saveasnew" class="button tiny success" />{% endif %}
-      </li>
-      {% if show_save_and_add_another %}
-      <li>
-        <input type="submit" value="{% trans 'Save and add another' %}" name="_addanother" class="button tiny success" />
+        {% if show_save_and_add_another %}
+          <li>
+            <input type="submit" value="{% trans 'Save and add another' %}" name="_addanother" class="button small success" />
+          </li>
         {% endif %}
-      </li>
-      {% if show_save_and_continue %}
-      <li>
-        <input type="submit" value="{% trans 'Save and continue editing' %}" name="_continue" class="button tiny success" />
-      </li>
-      {% endif %}
-    </ul>
+        {% if show_save_and_continue %}
+          <li>
+            <input type="submit" value="{% trans 'Save and continue editing' %}" name="_continue" class="button small success" />
+          </li>
+        {% endif %}
+      </ul>
     </div>
   </div>
 </div>
