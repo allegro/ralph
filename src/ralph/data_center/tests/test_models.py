@@ -21,29 +21,29 @@ class NetworkTest(RalphTestCase):
         self.net1 = Network.objects.create(
             name="test1",
             # data_center=self.dc,
-            address="192.168.0.1/16",
+            address="192.168.0.0/16",
         )
         self.net2 = Network.objects.create(
             name="test2",
             # data_center=self.dc,
-            address="192.168.0.1/17",
+            address="192.168.0.0/17",
         )
         self.net3 = Network.objects.create(
             name="test3",
             # data_center=self.dc,
-            address="192.168.128.1/17",
+            address="192.168.128.0/17",
             reserved=5,
             reserved_top_margin=5,
         )
         self.net4 = Network.objects.create(
             name="test4",
             # data_center=self.dc,
-            address="192.168.133.1/24",
+            address="192.168.133.0/24",
         )
         self.net5 = Network.objects.create(
             name="test5",
             # data_center=self.dc,
-            address="192.169.133.1/24",
+            address="192.169.133.0/24",
         )
 
         self.ip1 = IPAddress(address="192.168.128.10")

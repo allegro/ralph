@@ -5,7 +5,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import ipaddr
 
 from django.db import models
 from django.core.exceptions import ValidationError
@@ -13,6 +12,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.lib import network
+from ralph.lib.network import compat as ipaddr
 from ralph.assets.models.assets import Asset
 from ralph.assets.models.mixins import (
     LastSeenMixin,
@@ -248,7 +248,7 @@ class Network(NamedMixin, TimeStampMixin, models.Model):
             >>> network.min_ip, network.max_ip, network.gateway
             (3232235776, 3232236031, None)
         """
-        net = ipaddr.IPNetwork(self.address)
+        net = ipaddr.IPNetwork(self.address.split('/')[0])
         self.min_ip = int(net.network)
         self.max_ip = int(net.broadcast)
         if self.gateway:
