@@ -7,7 +7,11 @@ from __future__ import unicode_literals
 
 from ralph.tests import RalphTestCase
 
-from ralph.assets.models.networks import IPAddress, Network, get_network_tree
+from ralph.data_center.models.networks import (
+    get_network_tree,
+    IPAddress,
+    Network,
+)
 
 
 class NetworkTest(RalphTestCase):
