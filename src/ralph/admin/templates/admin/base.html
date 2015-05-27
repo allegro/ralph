@@ -1,4 +1,4 @@
-{% load i18n admin_static %}
+{% load i18n admin_static sitetree %}
 <!DOCTYPE html>
 {% get_current_language as LANGUAGE_CODE %}
 {% get_current_language_bidi as LANGUAGE_BIDI %}
@@ -26,7 +26,7 @@
             </li>
             <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
           </ul>
-          {% include 'ralph_admin/partials/top_bar.html' %}
+           {% sitetree_menu from "ralph_admin" include "trunk" template "ralph_admin/menu_admin.html" %}
           <ul class="right">
             {% block usertools %}
               {% if has_permission %}
@@ -49,7 +49,7 @@
         </section>
       </nav>
     {% endif %}
-    {% block breadcrumbs %}{% endblock %}
+     {% sitetree_breadcrumbs from "ralph_admin" template "sitetree/breadcrumbs_foundation.html" %}
     {% if messages %}
       <div class="row">
         <div class="small-12 columns">
