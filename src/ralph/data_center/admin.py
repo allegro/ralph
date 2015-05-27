@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, register
+from import_export.admin import ImportExportModelAdmin
+
+from ralph.data_importer import resources
 from ralph.data_center.models.virtual import (
     CloudProject,
     Database,
@@ -37,9 +39,10 @@ class DataCenterAdmin(RalphAdmin):
 
 
 @register(DataCenterAsset)
-class DataCenterAssetAdmin(RalphAdmin):
+class DataCenterAssetAdmin(ImportExportModelAdmin, RalphAdmin):
     """Data Center Asset admin class."""
 
+    resource_class = resources.DataCenterAssetResource
     list_display = [
         'status', 'barcode', 'purchase_order', 'model',
         'sn', 'hostname', 'invoice_date', 'invoice_no'

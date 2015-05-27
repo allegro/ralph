@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from import_export.admin import ImportExportModelAdmin
+
 from ralph.admin import RalphAdmin, register
 from ralph.assets.models.assets import (
     AssetModel,
@@ -12,6 +14,7 @@ from ralph.assets.models.components import (
     ComponentModel,
     GenericComponent
 )
+from ralph.data_importer import resources
 
 
 @register(ServiceEnvironment)
@@ -25,7 +28,7 @@ class ServiceAdmin(RalphAdmin):
 
 
 @register(Manufacturer)
-class ManufacturerAdmin(RalphAdmin):
+class ManufacturerAdmin(ImportExportModelAdmin, RalphAdmin):
     pass
 
 
@@ -35,8 +38,8 @@ class EnvironmentAdmin(RalphAdmin):
 
 
 @register(AssetModel)
-class AssetModelAdmin(RalphAdmin):
-    pass
+class AssetModelAdmin(ImportExportModelAdmin, RalphAdmin):
+    resource_class = resources.AssetModelResource
 
 
 @register(Category)

@@ -2,13 +2,17 @@ TEST?=ralph
 
 .PHONY: test flake clean coverage docs coveralls
 
-install:
+fix_tablib:
+	# https://github.com/kennethreitz/tablib/issues/177
+	pip install 'git+https://github.com/kennethreitz/tablib.git@develop'
+
+install: fix_tablib
 	pip install -e .
 
-install-test:
+install-test: fix_tablib
 	pip install -r requirements/test.txt
 
-install-dev:
+install-dev: fix_tablib
 	pip install -r requirements/dev.txt
 
 test: clean

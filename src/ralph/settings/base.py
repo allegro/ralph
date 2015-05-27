@@ -21,14 +21,15 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    'import_export',
+    'reversion',
     'ralph.assets',
     'ralph.back_office',
     'ralph.data_center',
     'ralph.licences',
     'ralph.supports',
     'ralph.lib.foundation',
-    'reversion',
+    'ralph.data_importer',
 )
 
 MIDDLEWARE_CLASSES = (
