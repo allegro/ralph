@@ -227,13 +227,6 @@ class Network(NamedMixin, TimeStampMixin, models.Model):
         blank=True,
         default='',
     )
-    last_scan = models.DateTimeField(
-        _('last scan'),
-        null=True,
-        blank=True,
-        default=None,
-        editable=False,
-    )
 
     class Meta:
         verbose_name = _('network')
