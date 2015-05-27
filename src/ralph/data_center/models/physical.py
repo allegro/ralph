@@ -6,12 +6,12 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.assets import (
     Asset,
-    NamedMixin
+    NamedMixin,
 )
 from ralph.data_center.models.choices import (
+    ConnectionType,
     Orientation,
     RackOrientation,
-    ConnectionType
 )
 
 
@@ -129,17 +129,17 @@ class DataCenterAsset(Asset):
         default=Orientation.front.id,
     )
 
-    @property
-    def cores_count(self):
-        """Returns cores count assigned to device in Ralph"""
-        asset_cores_count = self.model.cores_count if self.model else 0
-        return asset_cores_count
-
     connections = models.ManyToManyField(
         'self',
         through='Connection',
         symmetrical=False,
     )
+
+    @property
+    def cores_count(self):
+        """Returns cores count assigned to device in Ralph"""
+        asset_cores_count = self.model.cores_count if self.model else 0
+        return asset_cores_count
 
     class Meta:
         verbose_name = _('data center asset')
@@ -148,27 +148,26 @@ class DataCenterAsset(Asset):
 
 @python_2_unicode_compatible
 class Connection(models.Model):
-
     outbound = models.ForeignKey(
         'DataCenterAsset',
-        verbose_name=_("connected to device"),
+        verbose_name=_('connected to device'),
         on_delete=models.PROTECT,
         related_name='outbound_connections',
     )
     inbound = models.ForeignKey(
         'DataCenterAsset',
-        verbose_name=_("connected device"),
+        verbose_name=_('connected device'),
         on_delete=models.PROTECT,
         related_name='inbound_connections',
     )
     # TODO: discuss
     connection_type = models.PositiveIntegerField(
-        verbose_name=_("connection type"),
+        verbose_name=_('connection type'),
         choices=ConnectionType()
     )
 
     def __str__(self):
-        return "%s -> %s (%s)" % (
+        return '%s -> %s (%s)' % (
             self.outbound,
             self.inbound,
             self.connection_type
