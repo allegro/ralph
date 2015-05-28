@@ -15,15 +15,16 @@ It is an Open Source project provided on Apache v2.0 License.
 
 [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/allegro/ralph?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+## Scrum Board
+
 [![Stories in Ready](https://badge.waffle.io/allegro/ralph.png?label=ready&title=Ready)](http://waffle.io/allegro/ralph)
 
 [![Throughput Graph](https://graphs.waffle.io/allegro/ralph/throughput.svg)](https://waffle.io/allegro/ralph/metrics)
 
-Installation
-============
+## Installation
 
-Vagrant environment
--------------------
+
+## Vagrant environment
 
 It's recommended to use Vagrant for development. Install Vagrant first (https://www.vagrantup.com/). To set-up Ralph environment run:
 
@@ -35,16 +36,16 @@ Then ssh to virtual system:
     vagrant ssh
 
 
-Regular environmnent
---------------------
+## Regular environmnent
+
 
 To install development version of ralph run:
 
     pip install -r requirements/dev.txt
 
 
-Running
-=======
+## Running
+
 
 Virtualenv is automatically activated. To start (development) server run:
 
