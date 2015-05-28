@@ -60,8 +60,13 @@ import os
 from import_export import resources
 from ralph.export_to_ng import resources as ralph_resources
 from django.db.models import get_models
-#APP_MODELS = {model._meta.model_name: model for model in get_models()}
+import ralph_assets
 APP_MODELS = {model._meta.object_name: model for model in get_models()}
+APP_MODELS.update({
+    # exceptions for ambigious models like Warehouse, which is in Scrooge and in
+    # Assets, we need only asset's one so code below:
+    'Warehouse': ralph_assets.models.Warehouse
+})
 def get_resource(model_name):
     """Return resource for import model."""
     resource_name = model_name + 'Resource'
