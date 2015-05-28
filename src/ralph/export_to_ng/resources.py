@@ -13,21 +13,26 @@ from import_export import widgets
 
 class DataCenterAssetResource(resources.ModelResource):
     service_env = fields.Field()
+    def dehydrate_id(self, asset):
+        return ""
     def dehydrate_service_env(self, asset):
         return "{}|{}".format(asset.service.name, asset.device_environment.name)
 
     class Meta:
         ng_field2ralph_field = {
             ## to be skipped
-            #    'id': '',
+                'id': '',
             #    'asset_ptr': '',
             #    'baseobject_ptr': '',
             ## to be dehydrated
             'service_env': '',
+            #TODO::
             #    'configuration_path': '',
             # complicated:
+            #TODO::
             #    'parent': '',
             'barcode': '',
+            #TODO:: m2m
             'connections': '',
             'created': '',
             'delivery_date': '',
