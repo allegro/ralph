@@ -103,8 +103,9 @@ class Command(BaseCommand):
         #self.stdout.write('Successfully closed poll "%s"\n' % poll_id)
         #raise CommandError('Poll "%s" does not exist' % poll_id)
         #import ipdb; ipdb.set_trace()
-        from ralph_assets.models_assets import AssetManufacturer
         model_resource = get_resource(options['model_name'])
+        #queryset = model_resource._meta.model.objects.all()[:1]
+        #dataset = model_resource.export(queryset=queryset)
         dataset = model_resource.export()
         with open(options['data_file'], 'wb') as output:
             output.write(dataset.csv)
