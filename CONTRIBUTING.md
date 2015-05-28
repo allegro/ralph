@@ -5,9 +5,11 @@ Ralph is an Open Source system which allows managing data centres in an easy and
 # Becoming contributor
 
 ## Hello !
+
 Introduce yourself at our Gitter Chat, where current Ralph-related issues and concerns are aired, shared and solved.
 
 ## Development environment
+
 Make your software compatible with Ralph development requirements.
 First, install `git` and `Vagrant` applications.
 Then, `git clone https://github.com/allegro/ralph`.
@@ -18,9 +20,11 @@ Run ralph instance with `source ~/bin/activate && ralph runserver 0.0.0.0:8000`
 Then, you are all set ! For more information go to `https://github.com/allegro/ralph/tree/ng/vagrant`
 
 ## Bug tracker.
+
 Github issues tracker handles our development. We use `milestones` for our development sprints(week, or 2 weeks per milestone) with some estimated release date.
 
 ## Blueprints
+
 We discuss every design decision on Github using so called "Blueprints". It's just an Github issue with some design drafts, diagrams and general discussion. You can recognise the blueprint by using 'blueprint' label.
 
 
