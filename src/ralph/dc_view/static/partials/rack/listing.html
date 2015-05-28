@@ -1,0 +1,5 @@
+<div
+    class="position position-u-{{n+1}}"
+    ng-class="{active: u_range.indexOf(n+1) !== -1}"
+    ng-repeat="n in [] | range:info.max_u_height"
+>{{ n+1 }}</div>

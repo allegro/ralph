@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import re
+from collections import namedtuple
+from itertools import chain
 
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
@@ -15,6 +18,52 @@ from ralph.data_center.models.choices import (
 )
 
 
+class Gap(object):
+    """A placeholder that represents a gap in a blade chassis"""
+
+    id = 0
+    barcode = '-'
+    sn = '-'
+    service = namedtuple('Service', ['name'])('-')
+    model = namedtuple('Model', ['name'])('-')
+    linked_device = None
+
+    def __init__(self, slot_no, orientation):
+        self.slot_no = slot_no
+        self.orientation = orientation
+
+    def get_absolute_url(self):
+        return ''
+
+    @classmethod
+    def generate_gaps(cls, items):
+        def get_number(slot_no):
+            """Returns the integer part of slot number"""
+            m = re.match('(\d+)', slot_no)
+            return (m and int(m.group(0))) or 0
+        if not items:
+            return []
+        max_slot_no = max([
+            get_number(asset.slot_no)
+            for asset in items
+        ])
+        first_asset_slot_no = items[0].slot_no
+        ab = first_asset_slot_no and first_asset_slot_no[-1] in {'A', 'B'}
+        slot_nos = {asset.slot_no for asset in items}
+
+        def handle_missing(slot_no):
+            if slot_no not in slot_nos:
+                items.append(Gap(slot_no, items[0].get_orientation_desc()))
+
+        for slot_no in range(1, max_slot_no + 1):
+            if ab:
+                for letter in ['A', 'B']:
+                    handle_missing(str(slot_no) + letter)
+            else:
+                handle_missing(str(slot_no))
+        return items
+
+
 @python_2_unicode_compatible
 class DataCenter(NamedMixin, models.Model):
 
@@ -26,6 +75,16 @@ class DataCenter(NamedMixin, models.Model):
         verbose_name=_('visualization grid rows number'),
         default=20,
     )
+
+    @property
+    def rack_set(self):
+        return Rack.objects.select_related(
+            'server_room'
+        ).filter(server_room__data_center=self)
+
+    @property
+    def server_rooms(self):
+        return ServerRoom.objects.filter(data_center=self)
 
     def __str__(self):
         return self.name
@@ -73,8 +132,6 @@ class RackAccessory(models.Model):
 
 
 class Rack(NamedMixin.NonUnique, models.Model):
-    class Meta:
-        unique_together = ('name', 'server_room')
 
     server_room = models.ForeignKey(
         ServerRoom, verbose_name=_('server room'),
@@ -99,6 +156,39 @@ class Rack(NamedMixin.NonUnique, models.Model):
         default=0,
     )
     accessories = models.ManyToManyField(Accessory, through='RackAccessory')
+
+    class Meta:
+        unique_together = ('name', 'server_room')
+
+    def get_orientation_desc(self):
+        return RackOrientation.name_from_id(self.orientation)
+
+    def get_root_assets(self, side=None):
+        filter_kwargs = {
+            'rack': self,
+            'slot_no': '',
+        }
+        if side:
+            filter_kwargs['orientation'] = side
+        return DataCenterAsset.objects.select_related(
+            'model', 'model__category'
+        ).filter(**filter_kwargs).exclude(model__category__is_blade=True)
+
+    def get_free_u(self):
+        dc_assets = self.get_root_assets()
+        dc_assets_height = dc_assets.aggregate(
+            sum=models.Sum('model__height_of_device'))['sum'] or 0
+        # accesory always has 1U of height
+        accessories = RackAccessory.objects.values_list(
+            'position', flat=True).filter(rack=self)
+        return self.max_u_height - dc_assets_height - len(set(accessories))
+
+    def get_pdus(self):
+        return DataCenterAsset.objects.select_related('model').filter(
+            rack=self,
+            orientation__in=(Orientation.left, Orientation.right),
+            position=0,
+        )
 
 
 class DataCenterAsset(Asset):
@@ -129,17 +219,37 @@ class DataCenterAsset(Asset):
         default=Orientation.front.id,
     )
 
+    connections = models.ManyToManyField(
+        'self',
+        through='Connection',
+        symmetrical=False,
+    )
+
+    def get_orientation_desc(self):
+        return Orientation.name_from_id(self.orientation)
+
     @property
     def cores_count(self):
         """Returns cores count assigned to device in Ralph"""
         asset_cores_count = self.model.cores_count if self.model else 0
         return asset_cores_count
 
-    connections = models.ManyToManyField(
-        'self',
-        through='Connection',
-        symmetrical=False,
-    )
+    def get_related_assets(self):
+        """Returns the children of a blade chassis"""
+        orientations = [Orientation.front, Orientation.back]
+        assets_by_orientation = []
+        for orientation in orientations:
+            assets_by_orientation.append(list(
+                DataCenterAsset.objects.select_related('model').filter(
+                    parent=self,
+                    orientation=orientation,
+                    model__category__is_blade=True,
+                ).exclude(id=self.id)
+            ))
+        assets = [
+            Gap.generate_gaps(assets) for assets in assets_by_orientation
+        ]
+        return chain(*assets)
 
     class Meta:
         verbose_name = _('data center asset')

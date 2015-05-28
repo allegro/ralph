@@ -1,0 +1,21 @@
+<div class="rack rotate-{{ rack.orientation }} x-{{ rack.visualization_col }} y-{{ rack.visualization_row }}" ng-class="{'active': rack.active, 'move': is_move, 'allowed': can_drop, 'not_allowed': !can_drop, 'new': rack.new, 'saved': rack.saved}">
+    <a ui-sref="data_center.detail.rack({rackId: rack.id, dcId: dc.id})" class="wrapper" ng-show="mode == 'preview'">
+        <div class="name">
+            {{ rack.name | clean }}
+        </div>
+        <div class="used">
+            {{ rack.free_u }} / {{ rack.max_u_height }}
+        </div>
+        <div class="progress red" style="width:{{ 100 - (rack.free_u / rack.max_u_height) * 100 }}%;"></div>
+        <div class="progress green"></div>
+    </a>
+    <div class="wrapper" ng-show="mode == 'edit'">
+        <div class="name">
+            {{ rack.name | clean }}
+        </div>
+        <div class="tools">
+            <a class="edit" ng-click="edit(rack)"><i class="icon-pencil"></i></a>
+            <i class="icon-repeat" ng-click="rotate(1)"></i>
+        </div>
+    </div>
+</div>

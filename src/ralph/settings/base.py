@@ -31,6 +31,8 @@ INSTALLED_APPS = (
     'ralph.supports',
     'ralph.lib.foundation',
     'ralph.data_importer',
+    'ralph.dc_view',
+    'rest_framework',
 )
 
 MIDDLEWARE_CLASSES = (

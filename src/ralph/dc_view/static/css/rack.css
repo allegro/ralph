@@ -1,0 +1,939 @@
+* {
+  box-sizing: border-box;
+}
+.visualization [class*="span"] {
+  margin-left: 10px;
+}
+.rack-info {
+  background: #fff;
+  color: #444;
+  position: fixed;
+  width: 270px;
+}
+.rack-info input[type="text"] {
+  height: inherit;
+}
+.rack-info h3 {
+  padding: 5px;
+  margin: 0;
+}
+.rack-info .description {
+  padding: 10px;
+  margin-bottom: 10px;
+  font-size: 1.2em;
+  background: #fbf7aa;
+  border: 1px solid #f6ee49;
+}
+.rack-info .info {
+  width: 100%;
+}
+.rack-info .info .slot_info tr:last-child td {
+  border-bottom: none;
+}
+.rack-info .info td {
+  padding: 5px;
+  border-bottom: 1px solid #cccccc;
+}
+.rack-info .info td:first-child {
+  width: 20%;
+  font-weight: bold;
+}
+.rack-info .info tr:nth-last-child(2) > td,
+.rack-info .info tr:last-child > td {
+  border-bottom: none;
+}
+.slot_info tr:first-child > td {
+  border-top: 1px solid #cccccc;
+}
+.slot_info tr:nth-last-child(2) > td {
+  border-bottom: 1px solid #cccccc;
+}
+.racks .rack .wrapper .devices .device.position-u-1,
+.racks .rack .wrapper .listing-u .position.position-u-1 {
+  bottom: 0px;
+}
+.racks .rack .wrapper .devices .device.position-u-2,
+.racks .rack .wrapper .listing-u .position.position-u-2 {
+  bottom: 25px;
+}
+.racks .rack .wrapper .devices .device.position-u-3,
+.racks .rack .wrapper .listing-u .position.position-u-3 {
+  bottom: 50px;
+}
+.racks .rack .wrapper .devices .device.position-u-4,
+.racks .rack .wrapper .listing-u .position.position-u-4 {
+  bottom: 75px;
+}
+.racks .rack .wrapper .devices .device.position-u-5,
+.racks .rack .wrapper .listing-u .position.position-u-5 {
+  bottom: 100px;
+}
+.racks .rack .wrapper .devices .device.position-u-6,
+.racks .rack .wrapper .listing-u .position.position-u-6 {
+  bottom: 125px;
+}
+.racks .rack .wrapper .devices .device.position-u-7,
+.racks .rack .wrapper .listing-u .position.position-u-7 {
+  bottom: 150px;
+}
+.racks .rack .wrapper .devices .device.position-u-8,
+.racks .rack .wrapper .listing-u .position.position-u-8 {
+  bottom: 175px;
+}
+.racks .rack .wrapper .devices .device.position-u-9,
+.racks .rack .wrapper .listing-u .position.position-u-9 {
+  bottom: 200px;
+}
+.racks .rack .wrapper .devices .device.position-u-10,
+.racks .rack .wrapper .listing-u .position.position-u-10 {
+  bottom: 225px;
+}
+.racks .rack .wrapper .devices .device.position-u-11,
+.racks .rack .wrapper .listing-u .position.position-u-11 {
+  bottom: 250px;
+}
+.racks .rack .wrapper .devices .device.position-u-12,
+.racks .rack .wrapper .listing-u .position.position-u-12 {
+  bottom: 275px;
+}
+.racks .rack .wrapper .devices .device.position-u-13,
+.racks .rack .wrapper .listing-u .position.position-u-13 {
+  bottom: 300px;
+}
+.racks .rack .wrapper .devices .device.position-u-14,
+.racks .rack .wrapper .listing-u .position.position-u-14 {
+  bottom: 325px;
+}
+.racks .rack .wrapper .devices .device.position-u-15,
+.racks .rack .wrapper .listing-u .position.position-u-15 {
+  bottom: 350px;
+}
+.racks .rack .wrapper .devices .device.position-u-16,
+.racks .rack .wrapper .listing-u .position.position-u-16 {
+  bottom: 375px;
+}
+.racks .rack .wrapper .devices .device.position-u-17,
+.racks .rack .wrapper .listing-u .position.position-u-17 {
+  bottom: 400px;
+}
+.racks .rack .wrapper .devices .device.position-u-18,
+.racks .rack .wrapper .listing-u .position.position-u-18 {
+  bottom: 425px;
+}
+.racks .rack .wrapper .devices .device.position-u-19,
+.racks .rack .wrapper .listing-u .position.position-u-19 {
+  bottom: 450px;
+}
+.racks .rack .wrapper .devices .device.position-u-20,
+.racks .rack .wrapper .listing-u .position.position-u-20 {
+  bottom: 475px;
+}
+.racks .rack .wrapper .devices .device.position-u-21,
+.racks .rack .wrapper .listing-u .position.position-u-21 {
+  bottom: 500px;
+}
+.racks .rack .wrapper .devices .device.position-u-22,
+.racks .rack .wrapper .listing-u .position.position-u-22 {
+  bottom: 525px;
+}
+.racks .rack .wrapper .devices .device.position-u-23,
+.racks .rack .wrapper .listing-u .position.position-u-23 {
+  bottom: 550px;
+}
+.racks .rack .wrapper .devices .device.position-u-24,
+.racks .rack .wrapper .listing-u .position.position-u-24 {
+  bottom: 575px;
+}
+.racks .rack .wrapper .devices .device.position-u-25,
+.racks .rack .wrapper .listing-u .position.position-u-25 {
+  bottom: 600px;
+}
+.racks .rack .wrapper .devices .device.position-u-26,
+.racks .rack .wrapper .listing-u .position.position-u-26 {
+  bottom: 625px;
+}
+.racks .rack .wrapper .devices .device.position-u-27,
+.racks .rack .wrapper .listing-u .position.position-u-27 {
+  bottom: 650px;
+}
+.racks .rack .wrapper .devices .device.position-u-28,
+.racks .rack .wrapper .listing-u .position.position-u-28 {
+  bottom: 675px;
+}
+.racks .rack .wrapper .devices .device.position-u-29,
+.racks .rack .wrapper .listing-u .position.position-u-29 {
+  bottom: 700px;
+}
+.racks .rack .wrapper .devices .device.position-u-30,
+.racks .rack .wrapper .listing-u .position.position-u-30 {
+  bottom: 725px;
+}
+.racks .rack .wrapper .devices .device.position-u-31,
+.racks .rack .wrapper .listing-u .position.position-u-31 {
+  bottom: 750px;
+}
+.racks .rack .wrapper .devices .device.position-u-32,
+.racks .rack .wrapper .listing-u .position.position-u-32 {
+  bottom: 775px;
+}
+.racks .rack .wrapper .devices .device.position-u-33,
+.racks .rack .wrapper .listing-u .position.position-u-33 {
+  bottom: 800px;
+}
+.racks .rack .wrapper .devices .device.position-u-34,
+.racks .rack .wrapper .listing-u .position.position-u-34 {
+  bottom: 825px;
+}
+.racks .rack .wrapper .devices .device.position-u-35,
+.racks .rack .wrapper .listing-u .position.position-u-35 {
+  bottom: 850px;
+}
+.racks .rack .wrapper .devices .device.position-u-36,
+.racks .rack .wrapper .listing-u .position.position-u-36 {
+  bottom: 875px;
+}
+.racks .rack .wrapper .devices .device.position-u-37,
+.racks .rack .wrapper .listing-u .position.position-u-37 {
+  bottom: 900px;
+}
+.racks .rack .wrapper .devices .device.position-u-38,
+.racks .rack .wrapper .listing-u .position.position-u-38 {
+  bottom: 925px;
+}
+.racks .rack .wrapper .devices .device.position-u-39,
+.racks .rack .wrapper .listing-u .position.position-u-39 {
+  bottom: 950px;
+}
+.racks .rack .wrapper .devices .device.position-u-40,
+.racks .rack .wrapper .listing-u .position.position-u-40 {
+  bottom: 975px;
+}
+.racks .rack .wrapper .devices .device.position-u-41,
+.racks .rack .wrapper .listing-u .position.position-u-41 {
+  bottom: 1000px;
+}
+.racks .rack .wrapper .devices .device.position-u-42,
+.racks .rack .wrapper .listing-u .position.position-u-42 {
+  bottom: 1025px;
+}
+.racks .rack .wrapper .devices .device.position-u-43,
+.racks .rack .wrapper .listing-u .position.position-u-43 {
+  bottom: 1050px;
+}
+.racks .rack .wrapper .devices .device.position-u-44,
+.racks .rack .wrapper .listing-u .position.position-u-44 {
+  bottom: 1075px;
+}
+.racks .rack .wrapper .devices .device.position-u-45,
+.racks .rack .wrapper .listing-u .position.position-u-45 {
+  bottom: 1100px;
+}
+.racks .rack .wrapper .devices .device.position-u-46,
+.racks .rack .wrapper .listing-u .position.position-u-46 {
+  bottom: 1125px;
+}
+.racks .rack .wrapper .devices .device.position-u-47,
+.racks .rack .wrapper .listing-u .position.position-u-47 {
+  bottom: 1150px;
+}
+.racks .rack .wrapper .devices .device.position-u-48,
+.racks .rack .wrapper .listing-u .position.position-u-48 {
+  bottom: 1175px;
+}
+.racks .rack .wrapper .devices .device.height-u-0 {
+  z-index: 10000;
+  background-color: #f33;
+  height: 25px;
+}
+.rack {
+  float: left;
+}
+.racks {
+  float: left;
+  margin-left: 280px;
+}
+.racks .rack {
+  border-radius: 5px;
+  position: relative;
+  border: 4px solid #444444;
+  background: #666;
+  width: 450px;
+  box-sizing: content-box;
+}
+.racks .rack .name {
+  font-size: 1.25em;
+  color: #eee;
+  font-weight: bold;
+  text-align: center;
+  border-bottom: 1px solid #666;
+  box-shadow: 0 1px 1px #000;
+  text-shadow: 2px 0 1px #000;
+  height: 30px;
+  line-height: 30px;
+  position: relative;
+}
+.racks .rack .name:after {
+  position: absolute;
+  right: 10px;
+  font-size: .825em;
+  display: inline-block;
+}
+.racks .rack.front .wrapper .devices {
+  width: 400px;
+}
+.racks .rack.front .wrapper .devices .device {
+  width: 400px;
+}
+.racks .rack.front .wrapper .listing-u {
+  z-index: 1000;
+}
+.racks .rack.front .wrapper .listing-u.left {
+  box-shadow: 1px 0 1px rgba(0, 0, 0, 0.6);
+}
+.racks .rack.front .wrapper .listing-u.right {
+  box-shadow: -1px 0 1px rgba(0, 0, 0, 0.6);
+}
+.racks .rack.front .wrapper .pdu {
+  display: none;
+}
+.racks .rack.front .name:after {
+  content: "front";
+}
+.racks .rack.back .name:after {
+  content: "back";
+}
+.racks .rack.back {
+  margin-left: 10px;
+}
+.racks .rack.rack-u-1 .wrapper {
+  height: 25px;
+}
+.racks .rack.rack-u-2 .wrapper {
+  height: 50px;
+}
+.racks .rack.rack-u-3 .wrapper {
+  height: 75px;
+}
+.racks .rack.rack-u-4 .wrapper {
+  height: 100px;
+}
+.racks .rack.rack-u-5 .wrapper {
+  height: 125px;
+}
+.racks .rack.rack-u-6 .wrapper {
+  height: 150px;
+}
+.racks .rack.rack-u-7 .wrapper {
+  height: 175px;
+}
+.racks .rack.rack-u-8 .wrapper {
+  height: 200px;
+}
+.racks .rack.rack-u-9 .wrapper {
+  height: 225px;
+}
+.racks .rack.rack-u-10 .wrapper {
+  height: 250px;
+}
+.racks .rack.rack-u-11 .wrapper {
+  height: 275px;
+}
+.racks .rack.rack-u-12 .wrapper {
+  height: 300px;
+}
+.racks .rack.rack-u-13 .wrapper {
+  height: 325px;
+}
+.racks .rack.rack-u-14 .wrapper {
+  height: 350px;
+}
+.racks .rack.rack-u-15 .wrapper {
+  height: 375px;
+}
+.racks .rack.rack-u-16 .wrapper {
+  height: 400px;
+}
+.racks .rack.rack-u-17 .wrapper {
+  height: 425px;
+}
+.racks .rack.rack-u-18 .wrapper {
+  height: 450px;
+}
+.racks .rack.rack-u-19 .wrapper {
+  height: 475px;
+}
+.racks .rack.rack-u-20 .wrapper {
+  height: 500px;
+}
+.racks .rack.rack-u-21 .wrapper {
+  height: 525px;
+}
+.racks .rack.rack-u-22 .wrapper {
+  height: 550px;
+}
+.racks .rack.rack-u-23 .wrapper {
+  height: 575px;
+}
+.racks .rack.rack-u-24 .wrapper {
+  height: 600px;
+}
+.racks .rack.rack-u-25 .wrapper {
+  height: 625px;
+}
+.racks .rack.rack-u-26 .wrapper {
+  height: 650px;
+}
+.racks .rack.rack-u-27 .wrapper {
+  height: 675px;
+}
+.racks .rack.rack-u-28 .wrapper {
+  height: 700px;
+}
+.racks .rack.rack-u-29 .wrapper {
+  height: 725px;
+}
+.racks .rack.rack-u-30 .wrapper {
+  height: 750px;
+}
+.racks .rack.rack-u-31 .wrapper {
+  height: 775px;
+}
+.racks .rack.rack-u-32 .wrapper {
+  height: 800px;
+}
+.racks .rack.rack-u-33 .wrapper {
+  height: 825px;
+}
+.racks .rack.rack-u-34 .wrapper {
+  height: 850px;
+}
+.racks .rack.rack-u-35 .wrapper {
+  height: 875px;
+}
+.racks .rack.rack-u-36 .wrapper {
+  height: 900px;
+}
+.racks .rack.rack-u-37 .wrapper {
+  height: 925px;
+}
+.racks .rack.rack-u-38 .wrapper {
+  height: 950px;
+}
+.racks .rack.rack-u-39 .wrapper {
+  height: 975px;
+}
+.racks .rack.rack-u-40 .wrapper {
+  height: 1000px;
+}
+.racks .rack.rack-u-41 .wrapper {
+  height: 1025px;
+}
+.racks .rack.rack-u-42 .wrapper {
+  height: 1050px;
+}
+.racks .rack.rack-u-43 .wrapper {
+  height: 1075px;
+}
+.racks .rack.rack-u-44 .wrapper {
+  height: 1100px;
+}
+.racks .rack.rack-u-45 .wrapper {
+  height: 1125px;
+}
+.racks .rack.rack-u-46 .wrapper {
+  height: 1150px;
+}
+.racks .rack.rack-u-47 .wrapper {
+  height: 1175px;
+}
+.racks .rack.rack-u-48 .wrapper {
+  height: 1200px;
+}
+.racks .rack .wrapper {
+  background-color: #666;
+  margin-top: 2px;
+}
+.racks .rack .wrapper .listing-u {
+  background: #666;
+  margin: 0;
+  width: 25px;
+  float: left;
+  position: relative;
+  min-height: 100%;
+  height: 100%;
+}
+.racks .rack .wrapper .listing-u .position {
+  font-size: .825em;
+  border-top: 1px solid #888;
+  border-bottom: 1px solid #000;
+  position: absolute;
+  height: 25px;
+  line-height: 25px;
+  color: #fff;
+  text-align: center;
+  width: 25px;
+}
+.racks .rack .wrapper .listing-u .position.active {
+  border: 1px solid white;
+}
+.racks .rack .wrapper .pdu {
+  position: relative;
+  background: #ccc;
+  min-height: 100%;
+  height: 100%;
+  width: 50px;
+  float: left;
+  z-index: 1000;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  flex-direction: column;
+}
+.racks .rack .wrapper .pdu.left {
+  box-shadow: 1px 0 1px rgba(0, 0, 0, 0.6);
+}
+.racks .rack .wrapper .pdu.right {
+  box-shadow: -1px 0 1px rgba(0, 0, 0, 0.6);
+}
+.racks .rack .wrapper .pdu pdu-item {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1 1 auto;
+  margin: 3px 3px 0 3px;
+  background: #999999;
+  border: 1px solid #808080;
+}
+.racks .rack .wrapper .pdu pdu-item:nth-last-of-type(1) {
+  margin-bottom: 3px;
+}
+.racks .rack .wrapper .pdu pdu-item:hover {
+  border: 1px solid white;
+}
+.racks .rack .wrapper .pdu pdu-item .item {
+  padding: 5px;
+  font-size: .825em;
+}
+.racks .rack .wrapper .pdu pdu-item .item a {
+  color: inherit;
+}
+.racks .rack .wrapper .devices {
+  width: 300px;
+  min-height: 100%;
+  height: 100%;
+  float: left;
+  position: relative;
+}
+.racks .rack .wrapper .devices .device {
+  cursor: pointer;
+  width: 300px;
+  position: absolute;
+  height: 25px;
+  border-bottom: 1px solid #78b622;
+  border-top: 1px solid #aae15d;
+  background: #93d932;
+}
+.racks .rack .wrapper .devices .device:hover,
+.racks .rack .wrapper .devices .device.active {
+  border-bottom: 1px solid white;
+  border-top: 1px solid white;
+}
+.racks .rack .wrapper .devices .device.accessory {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAK0lEQVQYV2NkIBIwEqmOAVnhfxyawGrQFaLbANI82BRi8w+GG/GGFNHhCAARkQoLdFrYLgAAAABJRU5ErkJggg==) repeat-x;
+  background-color: #fff;
+}
+.racks .rack .wrapper .devices .device.accessory:hover {
+  border: 1px solid white;
+}
+.racks .rack .wrapper .devices .device.accessory .info {
+  position: relative;
+}
+.racks .rack .wrapper .devices .device.accessory .info .asset-description {
+  top: 0;
+  left: 0;
+  position: absolute;
+  padding: 2px;
+  background: #fff;
+}
+.racks .rack .wrapper .devices .device.accessory.brush {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAAKCAYAAABxJ+R3AAAAEklEQVQIW2NkgID/QMzIOBAcAH5DCguOmamFAAAAAElFTkSuQmCC);
+  background-color: #fff;
+  border-color: #ccc;
+}
+.racks .rack .wrapper .devices .device.accessory.brush:hover {
+  border: 1px solid white;
+}
+.racks .rack .wrapper .devices .device.accessory.organizer {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAGklEQVQIW2NkYGD4D8SMQAwGcAY2AbBKDBUAVuYCBQPd34sAAAAASUVORK5CYII=);
+  background-color: #fff;
+  border-color: #ccc;
+}
+.racks .rack .wrapper .devices .device.accessory.organizer:hover {
+  border: 1px solid white;
+}
+.racks .rack .wrapper .devices .device.empty {
+  background: #fff;
+  line-height: 25px;
+  border-bottom-color: #bbb;
+  border-top-color: #ddd;
+}
+.racks .rack .wrapper .devices .device.empty:before,
+.racks .rack .wrapper .devices .device.empty:after {
+  position: absolute;
+  content: ":";
+  line-height: 1em;
+}
+.racks .rack .wrapper .devices .device.empty:before {
+  left: 10px;
+}
+.racks .rack .wrapper .devices .device.empty:after {
+  right: 10px;
+}
+.racks .rack .wrapper .devices .device.empty:hover,
+.racks .rack .wrapper .devices .device.empty.active {
+  border: 1px solid white;
+}
+.racks .rack .wrapper .devices .device.height-u-1 {
+  height: 25px;
+}
+.racks .rack .wrapper .devices .device.height-u-2 {
+  height: 50px;
+}
+.racks .rack .wrapper .devices .device.height-u-3 {
+  height: 75px;
+}
+.racks .rack .wrapper .devices .device.height-u-4 {
+  height: 100px;
+}
+.racks .rack .wrapper .devices .device.height-u-5 {
+  height: 125px;
+}
+.racks .rack .wrapper .devices .device.height-u-6 {
+  height: 150px;
+}
+.racks .rack .wrapper .devices .device.height-u-7 {
+  height: 175px;
+}
+.racks .rack .wrapper .devices .device.height-u-8 {
+  height: 200px;
+}
+.racks .rack .wrapper .devices .device.height-u-9 {
+  height: 225px;
+}
+.racks .rack .wrapper .devices .device.height-u-10 {
+  height: 250px;
+}
+.racks .rack .wrapper .devices .device.height-u-11 {
+  height: 275px;
+}
+.racks .rack .wrapper .devices .device.height-u-12 {
+  height: 300px;
+}
+.racks .rack .wrapper .devices .device.height-u-13 {
+  height: 325px;
+}
+.racks .rack .wrapper .devices .device.height-u-14 {
+  height: 350px;
+}
+.racks .rack .wrapper .devices .device.height-u-15 {
+  height: 375px;
+}
+.racks .rack .wrapper .devices .device.height-u-16 {
+  height: 400px;
+}
+.racks .rack .wrapper .devices .device.height-u-17 {
+  height: 425px;
+}
+.racks .rack .wrapper .devices .device.height-u-18 {
+  height: 450px;
+}
+.racks .rack .wrapper .devices .device.height-u-19 {
+  height: 475px;
+}
+.racks .rack .wrapper .devices .device.height-u-20 {
+  height: 500px;
+}
+.racks .rack .wrapper .devices .device.height-u-21 {
+  height: 525px;
+}
+.racks .rack .wrapper .devices .device.height-u-22 {
+  height: 550px;
+}
+.racks .rack .wrapper .devices .device.height-u-23 {
+  height: 575px;
+}
+.racks .rack .wrapper .devices .device.height-u-24 {
+  height: 600px;
+}
+.racks .rack .wrapper .devices .device.height-u-25 {
+  height: 625px;
+}
+.racks .rack .wrapper .devices .device.height-u-26 {
+  height: 650px;
+}
+.racks .rack .wrapper .devices .device.height-u-27 {
+  height: 675px;
+}
+.racks .rack .wrapper .devices .device.height-u-28 {
+  height: 700px;
+}
+.racks .rack .wrapper .devices .device.height-u-29 {
+  height: 725px;
+}
+.racks .rack .wrapper .devices .device.height-u-30 {
+  height: 750px;
+}
+.racks .rack .wrapper .devices .device.height-u-31 {
+  height: 775px;
+}
+.racks .rack .wrapper .devices .device.height-u-32 {
+  height: 800px;
+}
+.racks .rack .wrapper .devices .device.height-u-33 {
+  height: 825px;
+}
+.racks .rack .wrapper .devices .device.height-u-34 {
+  height: 850px;
+}
+.racks .rack .wrapper .devices .device.height-u-35 {
+  height: 875px;
+}
+.racks .rack .wrapper .devices .device.height-u-36 {
+  height: 900px;
+}
+.racks .rack .wrapper .devices .device.height-u-37 {
+  height: 925px;
+}
+.racks .rack .wrapper .devices .device.height-u-38 {
+  height: 950px;
+}
+.racks .rack .wrapper .devices .device.height-u-39 {
+  height: 975px;
+}
+.racks .rack .wrapper .devices .device.height-u-40 {
+  height: 1000px;
+}
+.racks .rack .wrapper .devices .device.height-u-41 {
+  height: 1025px;
+}
+.racks .rack .wrapper .devices .device.height-u-42 {
+  height: 1050px;
+}
+.racks .rack .wrapper .devices .device.height-u-43 {
+  height: 1075px;
+}
+.racks .rack .wrapper .devices .device.height-u-44 {
+  height: 1100px;
+}
+.racks .rack .wrapper .devices .device.height-u-45 {
+  height: 1125px;
+}
+.racks .rack .wrapper .devices .device.height-u-46 {
+  height: 1150px;
+}
+.racks .rack .wrapper .devices .device.height-u-47 {
+  height: 1175px;
+}
+.racks .rack .wrapper .devices .device.height-u-48 {
+  height: 1200px;
+}
+.racks .rack .wrapper .devices .device.height-u-0 .sn,
+.racks .rack .wrapper .devices .device.height-u-1 .sn {
+  display: none;
+}
+.racks .rack .wrapper .devices .device.position-u-1 .info .barcode,
+.racks .rack .wrapper .devices .device.position-u-1 .info .asset-description {
+  top: 0;
+}
+.racks .rack .wrapper .devices .device .info {
+  display: block;
+  color: #333;
+  line-height: 1em;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  font-size: .825em;
+  position: relative;
+  min-height: 100%;
+}
+.racks .rack .wrapper .devices .device .info .barcode,
+.racks .rack .wrapper .devices .device .info .asset-description,
+.racks .rack .wrapper .devices .device .info .sn,
+.racks .rack .wrapper .devices .device .info .accessory-remarks {
+  position: absolute;
+}
+.racks .rack .wrapper .devices .device .info .barcode {
+  right: 3px;
+  bottom: 3px;
+}
+.racks .rack .wrapper .devices .device .info .sn {
+  left: 3px;
+  bottom: 3px;
+}
+.racks .rack .wrapper .devices .device .info .asset-description {
+  color: #333;
+  font-weight: bold;
+  left: 3px;
+  top: 3px;
+}
+.racks .rack .wrapper .devices .device .info .accessory-remarks {
+  right: 3px;
+  bottom: 3px;
+  color: #333;
+  font-weight: bold;
+  background-color: #fbf7aa;
+  padding: 1px 5px;
+}
+.racks .rack .wrapper .devices .device .children {
+  position: absolute;
+  top: 25px;
+  bottom: 25px;
+  min-width: 100%;
+  max-width: 100%;
+  width: 100%;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: stretch;
+  -moz-align-items: stretch;
+  align-items: stretch;
+  -webkit-align-content: stretch;
+  moz-align-content: stretch;
+  align-content: stretch;
+  -webkit-flex-flow: row wrap;
+  -moz-flex-flow: row wrap;
+  flex-flow: row wrap;
+}
+.racks .rack .wrapper .devices .device .children .child {
+  cursor: pointer;
+}
+.racks .rack .wrapper .devices .device .children [class*="slot-"] {
+  width: 50px;
+  box-sizing: border-box;
+  font-size: .825em;
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  color: #000;
+  display: block;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.racks .rack .wrapper .devices .device .children [class*="slot-"]:hover {
+  border: 1px solid white;
+}
+.racks .rack .wrapper .devices .device .children [class*="slot-"] .slot_no {
+  display: block;
+  overflow: hidden;
+  color: #222;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px;
+}
+.racks .rack.front .wrapper .devices .device.height-u-3 .children [class*="slot-"] .slot_no {
+  display: inline-block;
+}
+.racks .rack.front .wrapper .devices .device.rows-1.cols-2 [class*="slot-"] {
+  width: 200px;
+}
+.racks .rack.front .wrapper .devices .device.rows-2.cols-4 [class*="slot-"] {
+  width: 100px;
+}
+.racks .rack.front .wrapper .devices .device.rows-2.cols-6 [class*="slot-"] {
+  width: 66.66666667px;
+}
+.racks .rack.front .wrapper .devices .device.rows-2.cols-8 [class*="slot-"] {
+  width: 50px;
+}
+.racks .rack.front .wrapper .devices .device.rows-2.cols-8.half-slots [class$="A"],
+.racks .rack.front .wrapper .devices .device.rows-2.cols-8.half-slots [class$="B"] {
+  width: 25px;
+}
+.racks .rack.front .wrapper .devices .device.rows-4.cols-2 [class*="slot-"] {
+  width: 200px;
+}
+.racks .rack.back .wrapper .devices .device.height-u-3 .children [class*="slot-"] .slot_no {
+  display: inline-block;
+}
+.racks .rack.back .wrapper .devices .device.rows-1.cols-2 [class*="slot-"] {
+  width: 150px;
+}
+.racks .rack.back .wrapper .devices .device.rows-2.cols-4 [class*="slot-"] {
+  width: 75px;
+}
+.racks .rack.back .wrapper .devices .device.rows-2.cols-6 [class*="slot-"] {
+  width: 50px;
+}
+.racks .rack.back .wrapper .devices .device.rows-2.cols-8 [class*="slot-"] {
+  width: 37.5px;
+}
+.racks .rack.back .wrapper .devices .device.rows-2.cols-8.half-slots [class$="A"],
+.racks .rack.back .wrapper .devices .device.rows-2.cols-8.half-slots [class$="B"] {
+  width: 18.75px;
+}
+.racks .rack.back .wrapper .devices .device.rows-4.cols-2 [class*="slot-"] {
+  width: 150px;
+}
+@media all and (max-width: 1500px) {
+  .racks .rack {
+    width: 350px;
+  }
+  .racks .rack.front .wrapper .devices {
+    width: 300px;
+  }
+  .racks .rack.front .wrapper .devices .device {
+    width: 300px;
+  }
+  .racks .rack.front .wrapper .devices .device.height-u-3 .children [class*="slot-"] .slot_no {
+    display: inline-block;
+  }
+  .racks .rack.front .wrapper .devices .device.rows-1.cols-2 [class*="slot-"] {
+    width: 150px;
+  }
+  .racks .rack.front .wrapper .devices .device.rows-2.cols-4 [class*="slot-"] {
+    width: 75px;
+  }
+  .racks .rack.front .wrapper .devices .device.rows-2.cols-6 [class*="slot-"] {
+    width: 50px;
+  }
+  .racks .rack.front .wrapper .devices .device.rows-2.cols-8 [class*="slot-"] {
+    width: 37.5px;
+  }
+  .racks .rack.front .wrapper .devices .device.rows-2.cols-8.half-slots [class$="A"],
+  .racks .rack.front .wrapper .devices .device.rows-2.cols-8.half-slots [class$="B"] {
+    width: 18.75px;
+  }
+  .racks .rack.front .wrapper .devices .device.rows-4.cols-2 [class*="slot-"] {
+    width: 150px;
+  }
+  .racks .rack.back .wrapper .devices {
+    width: 200px;
+  }
+  .racks .rack.back .wrapper .devices .device {
+    width: 200px;
+  }
+  .racks .rack.back .wrapper .devices .device.height-u-3 .children [class*="slot-"] .slot_no {
+    display: inline-block;
+  }
+  .racks .rack.back .wrapper .devices .device.rows-1.cols-2 [class*="slot-"] {
+    width: 100px;
+  }
+  .racks .rack.back .wrapper .devices .device.rows-2.cols-4 [class*="slot-"] {
+    width: 50px;
+  }
+  .racks .rack.back .wrapper .devices .device.rows-2.cols-6 [class*="slot-"] {
+    width: 33.33333333px;
+  }
+  .racks .rack.back .wrapper .devices .device.rows-2.cols-8 [class*="slot-"] {
+    width: 25px;
+  }
+  .racks .rack.back .wrapper .devices .device.rows-2.cols-8.half-slots [class$="A"],
+  .racks .rack.back .wrapper .devices .device.rows-2.cols-8.half-slots [class$="B"] {
+    width: 12.5px;
+  }
+  .racks .rack.back .wrapper .devices .device.rows-4.cols-2 [class*="slot-"] {
+    width: 100px;
+  }
+}

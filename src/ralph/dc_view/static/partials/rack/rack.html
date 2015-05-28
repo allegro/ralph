@@ -1,0 +1,18 @@
+<div class="rack rack-u-{{ info.max_u_height }} {{ side }}">
+    <div class="name">
+        {{ info.name }}
+    </div>
+    <div class="wrapper">
+        <listing class="listing-u left"></listing>
+        <div class="pdu left">
+            <pdu-item pdu="item" ng-repeat="item in pdus|filter:{orientation:'left'}" style="order: {{ $index }}"></pdu-item>
+        </div>
+        <div class="devices">
+            <device-item device="item" side="side" ng-repeat="item in devices"></device-item>
+        </div>
+        <div class="pdu right">
+            <pdu-item pdu="item" ng-repeat="item in pdus|filter:{orientation:'right'}" style="order: {{ $index }}"></pdu-item>
+        </div>
+        <listing class="listing-u right"></listing>
+    </div>
+</div>

@@ -89,8 +89,7 @@ sitetrees = (
         ),
         item(
             _('DC Visualization'),
-            url='#',
-            url_as_pattern=False,
+            url='dc_view',
             access_by_perms=''
         ),
         item(
