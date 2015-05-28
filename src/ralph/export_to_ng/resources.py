@@ -4,17 +4,33 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from ralph.discovery import models_device
-from ralph_assets import models_assets
-
+from django.utils.encoding import force_text
 from import_export import fields
 from import_export import resources
 from import_export import widgets
+from ralph.discovery import models_device
 
-class DataCenterAssetResource(resources.ModelResource):
+from ralph_assets import models_assets
+
+
+class RalphResourceMixin(resources.ModelResource):
+    def get_export_headers(self):
+        ralph_field2ng_field = {
+            v or k: k for k, v in self.__class__.Meta.ng_field2ralph_field.items()
+        }
+        headers = [
+            ralph_field2ng_field[force_text(field.column_name)]
+            for field in self.get_fields()
+        ]
+        return headers
+
+
+class DataCenterAssetResource(RalphResourceMixin, resources.ModelResource):
     service_env = fields.Field()
+
     def dehydrate_id(self, asset):
         return ""
+
     def dehydrate_service_env(self, asset):
         return "{}|{}".format(asset.service.name, asset.device_environment.name)
 
@@ -71,16 +87,31 @@ class DataCenterAssetResource(resources.ModelResource):
 
     def get_queryset(self):
         #return self._meta.model.objects.all()
-        return models_assets.Asset.objects.filter(type=models_assets.AssetType.data_center)[:1]
+        return self.Meta.model.objects.filter(
+            type=models_assets.AssetType.data_center
+        #TODO:: remove it
+        )[:1]
 
-    def get_export_headers(self):
-        #TODO:: make it generic
-        from django.utils.encoding import force_text
-        ralph_field2ng_field = {
-            v or k: k for k, v in DataCenterAssetResource.Meta.ng_field2ralph_field.items()
+
+class AssetModelResource(RalphResourceMixin, resources.ModelResource):
+    class Meta:
+        ng_field2ralph_field = {
+            'category': 'category__name',
+            'cores_count': '',
+            'height_of_device': '',
+            'manufacturer': 'manufacturer__name',
+            'power_consumption': '',
+            'visualization_layout_back': '',
+            'visualization_layout_front': '',
+            ## verify, these missing in old ralph
+            #'created': '',
+            #'id': '',
+            #'modified': '',
+            #'name': '',
+            #'type': '',
         }
-        headers = [
-            ralph_field2ng_field[force_text(field.column_name)]
-            for field in self.get_fields()
-        ]
-        return headers
+        fields = [v or k for k, v in ng_field2ralph_field.items()]
+        model = models_assets.AssetModel
+
+    def get_queryset(self):
+        return self.Meta.model.objects.filter()[:1]
