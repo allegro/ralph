@@ -17,6 +17,7 @@ It is an Open Source project provided on Apache v2.0 License.
 
 [![Stories in Ready](https://badge.waffle.io/allegro/ralph.png?label=ready&title=Ready)](http://waffle.io/allegro/ralph)
 
+[![Throughput Graph](https://graphs.waffle.io/allegro/ralph/throughput.svg)](https://waffle.io/allegro/ralph/metrics)
 
 Installation
 ============
