@@ -32,17 +32,6 @@
 {% endblock %}
 
 {% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-list{% endblock %}
-
-{% if not is_popup %}
-  {% block breadcrumbs %}
-    <ul class="breadcrumbs">
-      <li><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
-      <li><a href="{% url 'admin:app_list' app_label=cl.opts.app_label %}">{{ cl.opts.app_config.verbose_name }}</a></li>
-      <li class="current">{{ cl.opts.verbose_name_plural }}</li>
-    </ul>
-  {% endblock %}
-{% endif %}
-
 {% block coltype %}flex{% endblock %}
 
 {% block content %}

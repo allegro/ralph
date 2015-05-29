@@ -23,6 +23,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'import_export',
     'reversion',
+    'sitetree',
     'ralph.assets',
     'ralph.back_office',
     'ralph.data_center',
