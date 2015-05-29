@@ -185,20 +185,26 @@ class IPAddressInline(ForeignKeyAutocompleteTabularInline):
     formset = IPAddressInlineFormset
     model = models.IPAddress
     readonly_fields = ('snmp_name', 'last_seen')
-    exclude = ('created', 'modified', 'dns_info', 'http_family',
-               'snmp_community', 'last_puppet', 'is_management')
+    exclude = (
+        'created', 'modified', 'dns_info', 'http_family', 'snmp_community',
+        'last_puppet', 'is_management', 'scan_summary',
+    )
     edit_separately = True
     extra = 0
     related_search_fields = {
         'device': ['^name'],
         'network': ['^name'],
+        'venture': ['^name'],
     }
 
 
 class ChildDeviceInline(ForeignKeyAutocompleteTabularInline):
     model = models.Device
     edit_separately = True
-    readonly_fields = ('name', 'model', 'sn', 'remarks', 'last_seen',)
+    readonly_fields = (
+        'venture', 'venture_role', 'name', 'model', 'sn', 'remarks',
+        'last_seen',
+    )
     exclude = ('name2', 'created', 'modified', 'boot_firmware', 'barcode',
                'hard_firmware', 'diag_firmware', 'mgmt_firmware', 'price',
                'purchase_date', 'warranty_expiration_date', 'role',
@@ -208,6 +214,8 @@ class ChildDeviceInline(ForeignKeyAutocompleteTabularInline):
     extra = 0
     related_search_fields = {
         'model': ['^name'],
+        'venture': ['^name'],
+        'venture_role': ['^name'],
     }
     fk_name = 'parent'
 
@@ -371,6 +379,7 @@ class DeviceAdmin(ModelAdmin):
         'venture_role': ['^name'],
         'management': ['^address', '^hostname'],
         'model': ['^name', ],
+        'service': ['^name', ],
     }
 
     def get_readonly_fields(self, request, obj=None):
