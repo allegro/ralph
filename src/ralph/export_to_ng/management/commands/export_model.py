@@ -11,25 +11,25 @@ from django.core.management.base import BaseCommand, CommandError
 #TODO:: make it from models
 POSSIBLE_MODELS = """
 Models independent:
-ralph importer AssetLastHostname file
-ralph importer Environment file
-ralph importer Service file
-ralph importer Manufacturer file
-ralph importer Category file
-ralph importer ComponentModel file
-ralph importer Warehouse file
-ralph importer DataCenter file
-ralph importer Accessory file
-ralph importer Database file
-ralph importer VIP file
-ralph importer VirtualServer file
-ralph importer CloudProject file
-ralph importer LicenceType file
-ralph importer SoftwareCategory ile
-ralph importer SupportType file
+AssetLastHostname
+Environment
+Service
+Manufacture
++Category
+ComponentModel
+Warehouse
+DataCenter
+Accessory
+Database
+VIP
+VirtualServer
+CloudProject
+LicenceType
+SoftwareCategory ile
+SupportType
 
 Custom resoruces models:
-ralph.assets.models.assets.AssetModel
++ralph.assets.models.assets.AssetModel
 ralph.assets.models.components.GenericComponent
 ralph.back_office.models.BackOfficeAsset
 ralph.data_center.models.physical.ServerRoom

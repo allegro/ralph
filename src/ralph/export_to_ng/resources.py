@@ -4,6 +4,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import re
+
 from django.utils.encoding import force_text
 from import_export import fields
 from import_export import resources
@@ -23,6 +25,11 @@ class RalphResourceMixin(resources.ModelResource):
             for field in self.get_fields()
         ]
         return headers
+
+    def get_queryset(self):
+        #TODO:: rm it
+        return self.Meta.model.objects.filter()[:1]
+
 
 
 class DataCenterAssetResource(RalphResourceMixin, resources.ModelResource):
@@ -96,7 +103,7 @@ class DataCenterAssetResource(RalphResourceMixin, resources.ModelResource):
 class AssetModelResource(RalphResourceMixin, resources.ModelResource):
     class Meta:
         ng_field2ralph_field = {
-            'category': 'category__name',
+            'category': 'category__slug',
             'cores_count': '',
             'height_of_device': '',
             'manufacturer': 'manufacturer__name',
@@ -105,13 +112,39 @@ class AssetModelResource(RalphResourceMixin, resources.ModelResource):
             'visualization_layout_front': '',
             ## verify, these missing in old ralph
             #'created': '',
-            #'id': '',
             #'modified': '',
+            #'id': '',
             #'name': '',
+            #TODO:: map it
             #'type': '',
         }
         fields = [v or k for k, v in ng_field2ralph_field.items()]
         model = models_assets.AssetModel
 
-    def get_queryset(self):
-        return self.Meta.model.objects.filter()[:1]
+
+class AssetCategoryResource(RalphResourceMixin, resources.ModelResource):
+    slug = fields.Field()
+    def dehydrate_slug(self, asset_category):
+        return re.split(r'\d-', asset_category.slug)[-1]
+
+    class Meta:
+        ng_field2ralph_field = {
+            'created datetime': '',
+            'created_by_id': '',
+            'modified': '',
+            'modified_by_id': '',
+            'slug': '',
+            'name': '',
+            'code': '',
+            'is_blade': '',
+            'parent_id': 'parent__name',
+            ## skip it
+            # cache_version
+            # level
+            # lft
+            # rght
+            # tree_id
+            # type
+        }
+        fields = [v or k for k, v in ng_field2ralph_field.items()]
+        model = models_assets.AssetCategory
