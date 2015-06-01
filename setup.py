@@ -77,7 +77,7 @@ setup(
         'django-discover-runner>=0.4',
         'Pillow==2.4.0',
         'pysphere==0.1.8',
-        'python-keystoneclient>=1.0.0',
+        'python-keystoneclient==0.9',
     ],
     entry_points={
         'console_scripts': [
