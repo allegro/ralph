@@ -12,10 +12,16 @@ from import_export import resources
 from import_export import widgets
 from ralph.discovery import models_device
 
+from ralph.cmdb import models_ci
 from ralph_assets import models_assets
 
 
 class RalphResourceMixin(resources.ModelResource):
+    # no id in old ralph, should be added here, or changed resource in import
+    id = fields.Field(column_name='id')
+    def dehydrate_id(self, asset):
+        return ""
+
     def get_export_headers(self):
         ralph_field2ng_field = {
             v or k: k for k, v in self.__class__.Meta.ng_field2ralph_field.items()
@@ -123,9 +129,6 @@ class AssetModelResource(RalphResourceMixin, resources.ModelResource):
 
 
 class AssetCategoryResource(RalphResourceMixin, resources.ModelResource):
-    # no id in old ralph, should be added here, or changed resource in import
-    id = fields.Field(column_name='id')
-
     slug = fields.Field()
     def dehydrate_slug(self, asset_category):
         return re.split(r'\d-', asset_category.slug)[-1]
@@ -168,7 +171,7 @@ class ServiceEnvironmentResource(RalphResourceMixin, resources.ModelResource):
             type=models_ci.CI_RELATION_TYPES.CONTAINS,
             parent__type=models_ci.CIType.objects.get(id=7),
             child__type=models_ci.CIType.objects.get(id=11),
-        )
+        )[:1]
 
     class Meta:
         ng_field2ralph_field = {
