@@ -16,12 +16,13 @@ from ralph.cmdb import models_ci
 from ralph_assets import models_assets
 
 
-class RalphResourceMixin(resources.ModelResource):
+class EmptyIdMixin(object):
     # no id in old ralph, should be added here, or changed resource in import
     id = fields.Field(column_name='id')
     def dehydrate_id(self, asset):
         return ""
 
+class RalphResourceMixin(EmptyIdMixin, object):
     def get_export_headers(self):
         ralph_field2ng_field = {
             v or k: k for k, v in self.__class__.Meta.ng_field2ralph_field.items()
@@ -203,3 +204,9 @@ class ServiceResource(RalphResourceMixin, resources.ModelResource):
         }
         fields = [v or k for k, v in ng_field2ralph_field.items()]
         model = models_ci.CIRelation
+
+
+class EnvironmentResource(EmptyIdMixin, resources.ModelResource):
+    class Meta:
+        fields = ('id', 'name', 'created', 'modified',)
+        model = models_device.DeviceEnvironment
