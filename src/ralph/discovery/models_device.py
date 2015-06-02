@@ -1134,17 +1134,28 @@ class LoadBalancerType(SavingUser):
         return self.loadbalancervirtualserver_set.count()
 
 
+class Protocol(Choices):
+    _ = Choices.Choice
+    TCP = _('TCP')
+    UDP = _('UDP')
+
+
 class LoadBalancerVirtualServer(BaseItem):
     load_balancer_type = db.ForeignKey(LoadBalancerType, verbose_name=_('load balancer type'))
     device = db.ForeignKey(Device, verbose_name=_("load balancer device"))
     default_pool = db.ForeignKey(LoadBalancerPool, null=True)
     address = db.ForeignKey("IPAddress", verbose_name=_("address"))
     port = db.PositiveIntegerField(verbose_name=_("port"))
+    protocol = db.PositiveIntegerField(
+        verbose_name=_("protocol"),
+        choices=Protocol(),
+        default=Protocol.TCP.id,
+    )
 
     class Meta:
         verbose_name = _("load balancer virtual server")
         verbose_name_plural = _("load balancer virtual servers")
-        unique_together = ('address', 'port')
+        unique_together = ('address', 'port', 'protocol')
 
     def __unicode__(self):
         return "{} ({})".format(self.name, self.id)
