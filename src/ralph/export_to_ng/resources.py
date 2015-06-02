@@ -169,8 +169,8 @@ class ServiceEnvironmentResource(RalphResourceMixin, resources.ModelResource):
     def get_queryset(self):
         return models_ci.CIRelation.objects.filter(
             type=models_ci.CI_RELATION_TYPES.CONTAINS,
-            parent__type=models_ci.CIType.objects.get(id=7),
-            child__type=models_ci.CIType.objects.get(id=11),
+            parent__type=models_ci.CIType.objects.get(name='Service'),
+            child__type=models_ci.CIType.objects.get(name='Environment'),
         )[:1]
 
     class Meta:
@@ -178,6 +178,28 @@ class ServiceEnvironmentResource(RalphResourceMixin, resources.ModelResource):
             'id': '',
             'service': '',
             'environment': '',
+        }
+        fields = [v or k for k, v in ng_field2ralph_field.items()]
+        model = models_ci.CIRelation
+
+
+class ServiceResource(RalphResourceMixin, resources.ModelResource):
+    def get_queryset(self):
+        return models_ci.CIRelation.objects.filter(
+            type=models_ci.CI_RELATION_TYPES.CONTAINS,
+            parent__type=models_ci.CIType.objects.get(name='ProfitCenter'),
+            child__type=models_ci.CIType.objects.get(name='Service'),
+        )[:1]
+
+    class Meta:
+        ng_field2ralph_field = {
+            'id': '',
+            'name': 'child__name',
+            'created': '',
+            'modified': '',
+            'profit_center': 'parent__name',
+            #TODO:: no table in NG for now
+            #'cost_center': '',
         }
         fields = [v or k for k, v in ng_field2ralph_field.items()]
         model = models_ci.CIRelation
