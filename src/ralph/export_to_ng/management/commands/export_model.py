@@ -34,7 +34,7 @@ ralph.assets.models.components.GenericComponent
 ralph.back_office.models.BackOfficeAsset
 ralph.data_center.models.physical.ServerRoom
 ralph.data_center.models.physical.Rack
-ralph.data_center.models.physical.DataCenterAsset
++ralph.data_center.models.physical.DataCenterAsset
 ralph.data_center.models.physical.Connection
 ralph.data_center.models.components.DiskShare
 ralph.data_center.models.components.DiskShareMount
@@ -42,7 +42,7 @@ ralph.licences.models.Licence
 ralph.supports.models.Support
 
 ManyToMany Models:
-ralph.assets.models.assets.ServiceEnvironment
++ralph.assets.models.assets.ServiceEnvironment
     - service,
     - environment
 ralph.licences.models.LicenceAsset

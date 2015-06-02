@@ -123,12 +123,16 @@ class AssetModelResource(RalphResourceMixin, resources.ModelResource):
 
 
 class AssetCategoryResource(RalphResourceMixin, resources.ModelResource):
+    # no id in old ralph, should be added here, or changed resource in import
+    id = fields.Field(column_name='id')
+
     slug = fields.Field()
     def dehydrate_slug(self, asset_category):
         return re.split(r'\d-', asset_category.slug)[-1]
 
     class Meta:
         ng_field2ralph_field = {
+            'id': '',
             'created datetime': '',
             'created_by_id': '',
             'modified': '',
@@ -148,3 +152,29 @@ class AssetCategoryResource(RalphResourceMixin, resources.ModelResource):
         }
         fields = [v or k for k, v in ng_field2ralph_field.items()]
         model = models_assets.AssetCategory
+
+
+class ServiceEnvironmentResource(RalphResourceMixin, resources.ModelResource):
+    service = fields.Field()
+    environment = fields.Field()
+    def dehydrate_service(self, ci_relation):
+        return ci_relation.parent.name
+
+    def dehydrate_environment(self, ci_relation):
+        return ci_relation.child.name
+
+    def get_queryset(self):
+        return models_ci.CIRelation.objects.filter(
+            type=models_ci.CI_RELATION_TYPES.CONTAINS,
+            parent__type=models_ci.CIType.objects.get(id=7),
+            child__type=models_ci.CIType.objects.get(id=11),
+        )
+
+    class Meta:
+        ng_field2ralph_field = {
+            'id': '',
+            'service': '',
+            'environment': '',
+        }
+        fields = [v or k for k, v in ng_field2ralph_field.items()]
+        model = models_ci.CIRelation
