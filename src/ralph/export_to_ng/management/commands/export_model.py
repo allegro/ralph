@@ -12,8 +12,8 @@ from django.core.management.base import BaseCommand, CommandError
 POSSIBLE_MODELS = """
 Models independent:
 AssetLastHostname
-Environment
-Service
++Environment
++Service
 Manufacture
 +Category
 ComponentModel

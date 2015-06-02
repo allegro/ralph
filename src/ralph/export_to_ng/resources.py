@@ -34,14 +34,51 @@ class RalphResourceMixin(EmptyIdMixin, object):
         return headers
 
     def get_queryset(self):
-        #TODO:: rm it
-        return self.Meta.model.objects.filter()[:1]
+        return self.Meta.model.objects.filter()
+
+
+
+class BackOfficeAssetResource(RalphResourceMixin, resources.ModelResource):
+    class Meta:
+        ng_field2ralph_field = {
+            'id': '',
+            'barcode': '',
+            'delivery_date': '',
+            'deprecation_end_date': '',
+            'deprecation_rate': '',
+            'force_deprecation': '',
+            'hostname': '',
+            'invoice_date': '',
+            'invoice_no': '',
+            'loan_end_date': '',
+            'model_id': 'model__name',
+            'niw': '',
+            'order_no': '',
+            'price': '',
+            'production_use_date': '',
+            'production_year': '',
+            'provider': '',
+            'provider_order_date': '',
+            'purchase_order': '',
+            'request_date': '',
+            'required_support': '',
+            'sn': '',
+            'source': '',
+            'status': '',
+            'task_url': '',
+        }
+        fields = [v or k for k, v in ng_field2ralph_field.items()]
+        model = models_assets.Asset
+
+    def get_queryset(self):
+        return self.Meta.model.objects.filter(
+            type=models_assets.AssetType.back_office,
+        )
 
 
 
 class DataCenterAssetResource(RalphResourceMixin, resources.ModelResource):
     service_env = fields.Field()
-
     def dehydrate_id(self, asset):
         return ""
 
@@ -100,16 +137,15 @@ class DataCenterAssetResource(RalphResourceMixin, resources.ModelResource):
         model = models_assets.Asset
 
     def get_queryset(self):
-        #return self._meta.model.objects.all()
         return self.Meta.model.objects.filter(
             type=models_assets.AssetType.data_center
-        #TODO:: remove it
-        )[:1]
+        )
 
 
 class AssetModelResource(RalphResourceMixin, resources.ModelResource):
     class Meta:
         ng_field2ralph_field = {
+            'id': '',
             'category': 'category__slug',
             'cores_count': '',
             'height_of_device': '',
@@ -120,7 +156,6 @@ class AssetModelResource(RalphResourceMixin, resources.ModelResource):
             ## verify, these missing in old ralph
             #'created': '',
             #'modified': '',
-            #'id': '',
             #'name': '',
             #TODO:: map it
             #'type': '',
@@ -130,6 +165,7 @@ class AssetModelResource(RalphResourceMixin, resources.ModelResource):
 
 
 class AssetCategoryResource(RalphResourceMixin, resources.ModelResource):
+    id = fields.Field()
     slug = fields.Field()
     def dehydrate_slug(self, asset_category):
         return re.split(r'\d-', asset_category.slug)[-1]
@@ -172,7 +208,7 @@ class ServiceEnvironmentResource(RalphResourceMixin, resources.ModelResource):
             type=models_ci.CI_RELATION_TYPES.CONTAINS,
             parent__type=models_ci.CIType.objects.get(name='Service'),
             child__type=models_ci.CIType.objects.get(name='Environment'),
-        )[:1]
+        )
 
     class Meta:
         ng_field2ralph_field = {
@@ -190,7 +226,7 @@ class ServiceResource(RalphResourceMixin, resources.ModelResource):
             type=models_ci.CI_RELATION_TYPES.CONTAINS,
             parent__type=models_ci.CIType.objects.get(name='ProfitCenter'),
             child__type=models_ci.CIType.objects.get(name='Service'),
-        )[:1]
+        )
 
     class Meta:
         ng_field2ralph_field = {
