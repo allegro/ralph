@@ -34,7 +34,6 @@ class Migration(migrations.Migration):
                 ('license_details', models.CharField(default='', max_length=1024, verbose_name='License details', blank=True)),
             ],
             options={
-                'ordering': ('-modified', '-created'),
                 'abstract': False,
             },
         ),

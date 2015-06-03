@@ -1,6 +1,7 @@
 Django==1.8.2
 dj.choices==0.10.0
 django-import-export==0.2.7
+django-mptt==0.7.4
 django-reversion==1.8.6
 django-sitetree==1.4.0
 djangorestframework==3.1.2
