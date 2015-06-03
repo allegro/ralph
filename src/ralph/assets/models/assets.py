@@ -6,6 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from dateutil.relativedelta import relativedelta
+from mptt.models import MPTTModel, TreeForeignKey
 
 from django.db import models
 from django.core.exceptions import ImproperlyConfigured
@@ -100,7 +101,7 @@ class AssetModel(
     manufacturer = models.ForeignKey(
         Manufacturer, on_delete=models.PROTECT, blank=True, null=True
     )
-    category = models.ForeignKey(
+    category = TreeForeignKey(
         'Category', null=True, related_name='models'
     )
     power_consumption = models.IntegerField(
@@ -130,6 +131,8 @@ class AssetModel(
         default=ModelVisualizationLayout().na.id,
         blank=True,
     )
+    # Used in the visualization Data Center as is_blade
+    has_parent = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = _('model')
@@ -150,13 +153,22 @@ class AssetModel(
 
 
 @python_2_unicode_compatible
-class Category(NamedMixin.NonUnique, TimeStampMixin, models.Model):
+class Category(MPTTModel, NamedMixin.NonUnique, TimeStampMixin, models.Model):
     code = models.CharField(max_length=4, blank=True, default='')
-    is_blade = models.BooleanField()
+    parent = TreeForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        related_name='children',
+        db_index=True
+    )
 
     class Meta:
         verbose_name = _('category')
         verbose_name_plural = _('categories')
+
+    class MPTTMeta:
+        order_insertion_by = ['name']
 
     def __str__(self):
         return self.name

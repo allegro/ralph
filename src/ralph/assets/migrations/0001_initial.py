@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 import django.db.models.deletion
+import mptt.fields
 
 
 class Migration(migrations.Migration):
@@ -33,6 +34,7 @@ class Migration(migrations.Migration):
                 ('cores_count', models.IntegerField(default=0, verbose_name='Cores count', blank=True)),
                 ('visualization_layout_front', models.PositiveIntegerField(default=1, blank=True, verbose_name='visualization layout of front side', choices=[(1, 'N/A'), (2, '1x2'), (3, '2x8'), (4, '2x16 (A/B)'), (5, '4x2')])),
                 ('visualization_layout_back', models.PositiveIntegerField(default=1, blank=True, verbose_name='visualization layout of back side', choices=[(1, 'N/A'), (2, '1x2'), (3, '2x8'), (4, '2x16 (A/B)'), (5, '4x2')])),
+                ('has_parent', models.BooleanField(default=False)),
             ],
             options={
                 'verbose_name': 'model',
@@ -59,7 +61,11 @@ class Migration(migrations.Migration):
                 ('created', models.DateTimeField(auto_now=True, verbose_name='date created')),
                 ('modified', models.DateTimeField(auto_now_add=True, verbose_name='last modified')),
                 ('code', models.CharField(default='', max_length=4, blank=True)),
-                ('is_blade', models.BooleanField()),
+                ('lft', models.PositiveIntegerField(editable=False, db_index=True)),
+                ('rght', models.PositiveIntegerField(editable=False, db_index=True)),
+                ('tree_id', models.PositiveIntegerField(editable=False, db_index=True)),
+                ('level', models.PositiveIntegerField(editable=False, db_index=True)),
+                ('parent', mptt.fields.TreeForeignKey(related_name='children', blank=True, to='assets.Category', null=True)),
             ],
             options={
                 'verbose_name': 'category',
@@ -195,7 +201,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='baseobject',
             name='parent',
-            field=models.ForeignKey(to='assets.BaseObject'),
+            field=models.ForeignKey(blank=True, to='assets.BaseObject', null=True),
         ),
         migrations.AddField(
             model_name='baseobject',
@@ -205,7 +211,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='assetmodel',
             name='category',
-            field=models.ForeignKey(related_name='models', to='assets.Category', null=True),
+            field=mptt.fields.TreeForeignKey(related_name='models', to='assets.Category', null=True),
         ),
         migrations.AddField(
             model_name='assetmodel',

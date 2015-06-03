@@ -172,7 +172,7 @@ class Rack(NamedMixin.NonUnique, models.Model):
             filter_kwargs['orientation'] = side
         return DataCenterAsset.objects.select_related(
             'model', 'model__category'
-        ).filter(**filter_kwargs).exclude(model__category__is_blade=True)
+        ).filter(**filter_kwargs).exclude(model__has_parent=True)
 
     def get_free_u(self):
         dc_assets = self.get_root_assets()
@@ -243,7 +243,7 @@ class DataCenterAsset(Asset):
                 DataCenterAsset.objects.select_related('model').filter(
                     parent=self,
                     orientation=orientation,
-                    model__category__is_blade=True,
+                    model__has_parent=True,
                 ).exclude(id=self.id)
             ))
         assets = [
