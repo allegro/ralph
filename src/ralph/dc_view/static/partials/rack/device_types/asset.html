@@ -1,0 +1,25 @@
+<div
+    class="device height-u-{{ device.height }} position-u-{{ device.position }} {{ getLayout() }}"
+    ng-click="setActiveItem(device)"
+    ng-class="{has_children: device.children.length,  active: device.active}"
+    ng-if="device.children.length || side == device.orientation"
+>
+    <div class="info">
+        <span class="asset-description">{{ device.service }}: {{ device.hostname }}</span>
+        <div class="barcode">{{ device.barcode }}</div>
+        <div class="sn">{{ device.sn }}</div>
+    </div>
+    <div class="children">
+        <div
+            class="child slot-{{ child.slot_no }}"
+            ng-repeat="child in device.children|filter:{orientation:side}"
+            ng-click="setActiveSlot(child)"
+            style="order: {{ child.slot_no | remove_alfa }};"
+        >
+            <span class="slot_no">{{ child.slot_no }}</span>
+            <span class="barcode">
+                <span class="inner">{{ child.barcode }}</span>
+            </span>
+        </div>
+    </div>
+</div>

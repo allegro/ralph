@@ -160,6 +160,10 @@ class VIP(Asset):
         verbose_name_plural = _('VIPs')
 
 
+# TODO
+# Move models to models catalogs
+# Changes will be introduced in
+# https://github.com/allegro/ralph/pull/1428
 class VirtualServer(Asset):
     class Meta:
         verbose_name = _('Virtual server (VM)')
