@@ -4,6 +4,7 @@ set -e
 apt-get update
 
 apt-get install -y \
+    git \
     libmysqlclient-dev \
     mysql-client \
     python-dev \
