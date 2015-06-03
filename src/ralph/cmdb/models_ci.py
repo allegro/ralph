@@ -609,8 +609,18 @@ CI.business_owners = CIOwnershipDescriptor(CIOwnershipType.business.id)
 CI.technical_owners = CIOwnershipDescriptor(CIOwnershipType.technical.id)
 
 
+class CIOwnerManager(models.Manager):
+    def get_query_set(self):
+        return super(CIOwnerManager, self).get_query_set().select_related(
+            'profile', 'profile__user'
+        )
+
+
 class CIOwner(TimeTrackable, WithConcurrentGetOrCreate):
     profile = models.OneToOneField('account.Profile', null=False)
+
+    objects = CIOwnerManager()
+    objects_raw = models.Manager()
 
     def __unicode__(self):
         return ' '.join([self.first_name, self.last_name])
