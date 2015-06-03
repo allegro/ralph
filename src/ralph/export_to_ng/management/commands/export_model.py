@@ -1,14 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.core.management.base import BaseCommand, CommandError
-
-#TODO:: make it from models
 POSSIBLE_MODELS = """
 Models independent:
 AssetLastHostname
@@ -57,18 +53,27 @@ ralph.data_center.models.physical.RackAccessory
 """
 
 import os
+from optparse import make_option
 from import_export import resources
-from ralph.export_to_ng import resources as ralph_resources
+
+from django.core.management.base import BaseCommand
 from django.db.models import get_models
-from ralph.discovery import models_device
+
 import ralph_assets
+from ralph.export_to_ng import resources as ralph_resources
+from ralph.discovery import models_device
+
+
 APP_MODELS = {model._meta.object_name: model for model in get_models()}
 APP_MODELS.update({
-    # exceptions for ambigious models like Warehouse, which is in Scrooge and in
+    # exceptions for ambigious models like Warehouse,
+    # which is in Scrooge and in
     # Assets, we need only asset's one so code below:
     'Warehouse': ralph_assets.models.Warehouse,
     'Service': models_device.ServiceCatalog,
 })
+
+
 def get_resource(model_name):
     """Return resource for import model."""
     resource_name = model_name + 'Resource'
@@ -76,13 +81,13 @@ def get_resource(model_name):
     if not resource:
         model_class = APP_MODELS[model_name]
         resource = resources.modelresource_factory(model=model_class)
-    print(resource)
     return resource()
 
 
-
-from optparse import make_option
 class Command(BaseCommand):
+
+    EXPORT_LIMIT = 10000
+
     help = os.linesep.join([
         'Export data in Ralph-NG format.',
         os.linesep,
@@ -93,27 +98,28 @@ class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option(
             '--model_name',
-            #action='store_true',
-            #dest='delete',
-            #default=False,
-            help='The model name up to export (type "ralph export_to_ng -h" for possible models)',
+            help=(
+                'The model name up to export '
+                '(type "ralph export_to_ng -h" for possible models)'
+            ),
         ),
         make_option(
             '--data_file',
-            #action='store_true',
-            #dest='delete',
-            #default=False,
             help='CSV file name'
         ),
     )
 
     def handle(self, *args, **options):
-        #self.stdout.write('Successfully closed poll "%s"\n' % poll_id)
-        #raise CommandError('Poll "%s" does not exist' % poll_id)
-        #import ipdb; ipdb.set_trace()
         model_resource = get_resource(options['model_name'])
-        #queryset = model_resource._meta.model.objects.all()[:1]
-        #dataset = model_resource.export(queryset=queryset)
-        dataset = model_resource.export()
-        with open(options['data_file'], 'wb') as output:
-            output.write(dataset.csv)
+        query_set = model_resource.get_queryset()
+        count = query_set.count()
+        pages = range(0, count, self.EXPORT_LIMIT)
+        for index, start in enumerate(pages, 1):
+            self.stdout.write('Page {} of {} for model: {}'.format(
+                index, len(pages), options['model_name']
+            ))
+            stop = start + self.EXPORT_LIMIT
+            dataset = model_resource.export(queryset=query_set[start:stop])
+            file_name = "{}_{}".format(index, options['data_file'])
+            with open(file_name, 'wb') as output:
+                output.write(dataset.csv)
