@@ -9,6 +9,7 @@ import os
 
 from django.core import management
 from django.test import TestCase
+from django.contrib.contenttypes.models import ContentType
 
 from ralph.assets.models.assets import (
     AssetModel,
@@ -21,8 +22,17 @@ from ralph.back_office.models import (
     BackOfficeAsset,
     Warehouse
 )
+from ralph.data_center.models.physical import (
+    DataCenter,
+    Rack,
+    ServerRoom
+)
+from ralph.data_center.tests.factories import (
+    DataCenterFactory
+)
 from ralph.data_importer.management.commands import importer
 from ralph.data_importer.resources import AssetModelResource
+from ralph.data_importer.models import ImportedObjects
 
 
 class DataImporterTestCase(TestCase):
@@ -38,10 +48,23 @@ class DataImporterTestCase(TestCase):
         asset_model.name = "asset_model_1"
         asset_model.type = ObjectModelType.back_office
         asset_model.save()
+        asset_content_type = ContentType.objects.get_for_model(AssetModel)
+        ImportedObjects.objects.create(
+            content_type=asset_content_type,
+            object_pk=asset_model.pk,
+            old_object_pk=1
+        )
 
         warehouse = Warehouse()
         warehouse.name = "warehouse_1"
         warehouse.save()
+
+        warehouse_content_type = ContentType.objects.get_for_model(Warehouse)
+        ImportedObjects.objects.create(
+            content_type=warehouse_content_type,
+            object_pk=warehouse.pk,
+            old_object_pk=1
+        )
 
         environment = Environment()
         environment.name = "environment_1"
@@ -125,6 +148,33 @@ class DataImporterTestCase(TestCase):
             name="Barcelona").exists()
         )
 
+    def test_importer_command_with_skipid(self):
+        """Test importer management command with Warehouse model and
+        tab separation file
+        """
+        warehouse_csv = os.path.join(
+            self.base_dir,
+            'tests/samples/warehouses_skipid.csv'
+        )
+        management.call_command(
+            'importer',
+            'Warehouse',
+            warehouse_csv,
+            '--noinput',
+            '--skipid',
+            delimiter=',',
+        )
+        warehouse = Warehouse.objects.filter(name="Cupertino").first()
+        self.assertNotEqual(warehouse.pk, 200)
+
+        warehouse_content_type = ContentType.objects.get_for_model(Warehouse)
+        warehouse_exists = ImportedObjects.objects.filter(
+            content_type=warehouse_content_type,
+            old_object_pk=200
+        ).exists()
+        self.assertTrue(warehouse_exists)
+
+
     def test_importer_command_with_semicolon(self):
         """Test importer management command with Warehouse model and
         semicolon separation file
@@ -142,4 +192,49 @@ class DataImporterTestCase(TestCase):
         )
         self.assertTrue(Warehouse.objects.filter(
             name="Berlin").exists()
+        )
+
+    def test_imported_object(self):
+        """Test importer management command with ImportedObjects model."""
+        data_center = DataCenterFactory(name='CSV_test')
+        data_center_content_type = ContentType.objects.get_for_model(
+            DataCenter
+        )
+        ImportedObjects.objects.create(
+            content_type=data_center_content_type,
+            object_pk=data_center.pk,
+            old_object_pk=1
+        )
+        server_room_csv = os.path.join(
+            self.base_dir,
+            'tests/samples/server_room.csv'
+        )
+        rack_csv = os.path.join(
+            self.base_dir,
+            'tests/samples/rack.csv'
+        )
+        management.call_command(
+            'importer',
+            'ServerRoom',
+            server_room_csv,
+            '--noinput',
+            delimiter=',',
+        )
+
+        content_type = ContentType.objects.get_for_model(ServerRoom)
+        imported_object_exists = ImportedObjects.objects.filter(
+            content_type=content_type,
+            old_object_pk=1
+        ).exists()
+        self.assertTrue(imported_object_exists)
+
+        management.call_command(
+            'importer',
+            'Rack',
+            rack_csv,
+            '--noinput',
+            delimiter=',',
+        )
+        self.assertTrue(Rack.objects.filter(
+            name="Rack_csv_test").exists()
         )
