@@ -8,13 +8,17 @@ from __future__ import unicode_literals
 import csv
 import os
 import six
+import tablib
+
 
 from django.apps import apps
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from import_export import resources
 from ralph.data_importer import resources as ralph_resources
+from ralph.data_importer.resources import DefaultResource
 from six.moves import input
-import tablib
+
 
 if six.PY2:
     from ralph.lib.unicode_csv import UnicodeReader as csv_reader
@@ -31,7 +35,10 @@ def get_resource(model_name):
     resource = getattr(ralph_resources, resource_name, None)
     if not resource:
         model_class = APP_MODELS[model_name.lower()]
-        resource = resources.modelresource_factory(model=model_class)
+        resource = resources.modelresource_factory(
+            model=model_class,
+            resource_class=DefaultResource
+        )
     return resource()
 
 
@@ -55,6 +62,12 @@ class Command(BaseCommand):
             default=False
         )
         parser.add_argument(
+            '--skipid',
+            action='store_true',
+            default=False,
+            help="Remove ID value from rows",
+        )
+        parser.add_argument(
             '-d', '--delimiter',
             dest='delimiter',
             default=',',
@@ -72,6 +85,7 @@ class Command(BaseCommand):
             "RalphImporter",
             delimiter=str(options['delimiter'])
         )
+        settings.REMOVE_ID_FROM_IMPORT = options.get('skipid')
 
         with open(options.get('data_file')) as csv_file:
             reader_kwargs = {}
