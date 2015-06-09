@@ -14,6 +14,7 @@ Features:
 It is an Open Source project provided on Apache v2.0 License.
 
 [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/allegro/ralph?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Code Health](https://landscape.io/github/allegro/ralph/ng/landscape.svg?style=flat)](https://landscape.io/github/allegro/ralph/ng)
 
 ## Scrum Board
 
