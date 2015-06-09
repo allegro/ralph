@@ -13,6 +13,9 @@ install-test: fix_tablib
 install-dev: fix_tablib
 	pip install -r requirements/dev.txt
 
+install-docs:
+	pip install -r requirements/docs.txt
+
 test: clean
 	test_ralph test ralph
 
@@ -26,6 +29,6 @@ coverage: clean
 	coverage run '$(VIRTUAL_ENV)/bin/test_ralph' test ralph
 
 docs:
-	cd ./docs && make html
+	mkdocs build
 
-coveralls: docs coverage
+coveralls: install-docs docs coverage

@@ -1,13 +1,11 @@
-======
-Docker
-======
+# Docker
 
-------------------------------------------------------------------
 Run Ralph using docker-compose (NOT FOR PRODUCTION USE RIGHT NOW!)
-------------------------------------------------------------------
 
-Install docker-compose first: http://docs.docker.com/compose/install/
+## Install
+Install [docker-compose](http://docs.docker.com/compose/install/) first.
 
+## Build
 Then build ralph::
 
     docker-compose build
@@ -19,6 +17,7 @@ To initialize database run::
 
 Notice that this command should be executed only once, at the very beginning.
 
+## Run
 Run ralph at the end::
 
     docker-compose up

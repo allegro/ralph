@@ -1,5 +1,6 @@
 -e .
 -r base.txt
+-r docs.txt
 factory-boy
 coverage
 sphinx
