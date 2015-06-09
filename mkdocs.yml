@@ -1,0 +1,7 @@
+site_name: Ralph 3
+repo_url: https://github.com/allegro/ralph/
+pages:
+  - index.md
+  - installation.md
+  - docker.md
+theme: readthedocs

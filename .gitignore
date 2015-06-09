@@ -60,3 +60,6 @@ src/ralph/urls/*_local.py
 
 # Vagrant
 vagrant/.vagrant
+
+# mkdocs
+site/
