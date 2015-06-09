@@ -1,0 +1,13 @@
+doc-warnings: yes
+test-warnings: no
+strictness: veryhigh
+max-line-length: 80
+uses:
+    - django
+autodetect: yes
+requirements:
+    - requirements/dev.txt
+ignore-paths:
+    - docs
+ignore-patterns:
+    - (^|/)docs(/|$)
