@@ -5,7 +5,7 @@ from django.contrib.messages import constants as messages
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = 'qbyqnpi58brjo=!l+)jza*z@r-!ba6w2yhmj=)9%qr5ymtcy_9'
+SECRET_KEY = 'CHANGE_ME'
 
 DEBUG = False
 

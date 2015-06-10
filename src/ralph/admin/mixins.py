@@ -44,5 +44,5 @@ class RalphAdminMixin(object):
 
 class RalphAdmin(RalphAdminMixin, reversion.VersionAdmin):
     def __init__(self, *args, **kwargs):
-        super(RalphAdminMixin, self).__init__(*args, **kwargs)
+        super(RalphAdmin, self).__init__(*args, **kwargs)
         self.formfield_overrides.update(FORMFIELD_FOR_DBFIELD_DEFAULTS)
