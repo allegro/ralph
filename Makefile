@@ -1,3 +1,5 @@
+TEST?=ralph
+
 .PHONY: test flake clean coverage docs coveralls
 
 fix_tablib:
@@ -17,7 +19,7 @@ install-docs:
 	pip install -r requirements/docs.txt
 
 test: clean
-	test_ralph test ralph
+	test_ralph test $(TEST)
 
 flake: clean
 	flake8 src/ralph
@@ -27,6 +29,7 @@ clean:
 
 coverage: clean
 	coverage run '$(VIRTUAL_ENV)/bin/test_ralph' test ralph
+	coverage report
 
 docs:
 	mkdocs build

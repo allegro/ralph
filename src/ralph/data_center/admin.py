@@ -19,9 +19,17 @@ from ralph.data_center.models.physical import (
     Connection,
     DataCenter,
     DataCenterAsset,
-    ServerRoom,
+    Rack,
     RackAccessory,
-    Rack
+    ServerRoom,
+)
+from ralph.data_center.models.networks import (
+    DiscoveryQueue,
+    IPAddress,
+    Network,
+    NetworkEnvironment,
+    NetworkKind,
+    NetworkTerminator,
 )
 
 
@@ -118,4 +126,34 @@ class DiskShareAdmin(RalphAdmin):
 
 @register(DiskShareMount)
 class DiskShareMountAdmin(RalphAdmin):
+    pass
+
+
+@register(Network)
+class NetworkAdmin(RalphAdmin):
+    pass
+
+
+@register(NetworkEnvironment)
+class NetworkEnvironmentAdmin(RalphAdmin):
+    pass
+
+
+@register(NetworkKind)
+class NetworkKindAdmin(RalphAdmin):
+    pass
+
+
+@register(NetworkTerminator)
+class NetworkTerminatorAdmin(RalphAdmin):
+    pass
+
+
+@register(DiscoveryQueue)
+class DiscoveryQueueAdmin(RalphAdmin):
+    pass
+
+
+@register(IPAddress)
+class IPAddressAdmin(RalphAdmin):
     pass
