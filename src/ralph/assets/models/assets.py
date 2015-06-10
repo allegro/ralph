@@ -304,10 +304,10 @@ class Asset(BaseObject):
         # BACKWARD_COMPATIBILITY
         return self.is_depreciated()
 
-    def generate_hostname(self, commit=True, template_vars={}):
+    def generate_hostname(self, commit=True, template_vars=None):
         def render_template(template):
             template = Template(template)
-            context = Context(template_vars)
+            context = Context(template_vars or {})
             return template.render(context)
         prefix = render_template(
             ASSET_HOSTNAME_TEMPLATE.get('prefix', ''),

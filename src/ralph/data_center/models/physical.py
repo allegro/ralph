@@ -39,7 +39,7 @@ class Gap(object):
     def generate_gaps(cls, items):
         def get_number(slot_no):
             """Returns the integer part of slot number"""
-            m = re.match('(\d+)', slot_no)
+            m = re.match(r'(\d+)', slot_no)
             return (m and int(m.group(0))) or 0
         if not items:
             return []
