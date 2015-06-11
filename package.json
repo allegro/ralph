@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "gulp": "~3.9.0",
+    "gulp-bower": "0.0.10",
+    "gulp-rename": "~1.2.2",
+    "gulp-watch": "~4.2.4",
+    "gulp-less": "~3.0.3",
+    "run-sequence": "~1.1.0"
+  }
+}

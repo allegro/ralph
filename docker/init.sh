@@ -10,3 +10,11 @@ $RALPH_EXEC createsuperuser --noinput --username ralph --email ralph@allegrogrou
 python $RALPH_DIR/docker/createsuperuser.py
 $RALPH_EXEC sitetreeload
 $RALPH_EXEC sitetree_resync_apps
+
+# js
+cd $RALPH_DIR
+npm install
+ln -s /usr/bin/nodejs /usr/bin/node  # fix node.js on ubuntu
+PATH=$PATH:$RALPH_DIR/node_modules/.bin; export PATH
+gulp
+cd -

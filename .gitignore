@@ -63,3 +63,10 @@ vagrant/.vagrant
 
 # mkdocs
 site/
+
+# Javascript
+bower_components/
+node_modules/
+src/ralph/admin/static/css/normalize.css
+src/ralph/admin/static/js/vendor/
+src/ralph/dc_view/static/js/vendor/

@@ -10,4 +10,7 @@ apt-get install -y \
     python-dev \
     python-virtualenv \
     python3.4 \
-    python3.4-dev
+    python3.4-dev \
+    nodejs \
+    npm
+npm install -g bower

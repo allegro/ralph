@@ -1,0 +1,26 @@
+{
+  "name": "ralph",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "fontawesome": "~4.3.0",
+    "normalize.css": "~3.0.3",
+    "fastclick": "~1.0.6",
+    "jquery.cookie": "~1.4.1",
+    "jquery": "~2.1.4",
+    "jquery-placeholder": "~2.1.1",
+    "modernizr": "~2.8.3",
+    "angular-cookies": "~1.4.0",
+    "angular-latest": "~1.4.0",
+    "angular-resource": "~1.4.0",
+    "angular-route": "~1.4.0",
+    "angular-ui-router": "~0.2.15",
+    "angular-breadcrumb": "~0.4.0"
+  }
+}
