@@ -21,4 +21,5 @@ make install-dev
 ./vagrant/provisioning_scripts/init_mysql.sh
 
 # final setups
+./vagrant/provisioning_scripts/setup_js_env.sh
 cat /home/vagrant/src/ralph/vagrant/provisioning_scripts/profile_extensions >> /home/vagrant/.profile

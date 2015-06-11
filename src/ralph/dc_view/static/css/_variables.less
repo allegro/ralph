@@ -1,0 +1,29 @@
+@max-u: 48;
+@rack-border-width: 4px;
+@rack-width: 450px;
+@rack-width-small: 350px;
+@pdu-width: 50px;
+@listing-u-width: 25px;
+@devices-width-back: (@rack-width - (@pdu-width * 2) - (@listing-u-width * 2));
+@devices-width-front: (@rack-width - (@listing-u-width * 2));
+@devices-width-back-small: (@rack-width-small - (@pdu-width * 2) - (@listing-u-width * 2));
+@devices-width-front-small: (@rack-width-small - (@listing-u-width * 2));
+@device-background: rgb(147, 217, 50);
+@u-height: 25px;
+@info-padding: 3px;
+@rack-info-width: 270px;
+
+@default-slots-per-row: 5;
+@default-slot-height: 50px;
+@default-slot-width: @devices-width-front / @default-slots-per-row;
+
+@grid-color: rgba(255, 255, 255, 0.5);
+@grid-size: 40px;
+@grid-count: 40;
+
+.active-border() {
+    border: 1px solid white;
+}
+
+@border-info: 1px solid #ccc;
+@rack-background: #888;
