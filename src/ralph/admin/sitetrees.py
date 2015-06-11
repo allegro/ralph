@@ -24,7 +24,7 @@ activate(settings.LANGUAGE_CODE)
 sitetrees = (
     tree('ralph_admin', items=[
         item(
-            _('DC Assets'),
+            _('Data Center'),
             url='#',
             url_as_pattern=False,
             access_by_perms=[
@@ -41,7 +41,7 @@ sitetrees = (
             perms_mode_all=False,
             children=[
                 item(
-                    title=_('All'),
+                    title=_('Hardware'),
                     url='admin:data_center_datacenterasset_changelist',
                     access_by_perms='data_center.change_datacenterasset'
                 ),
@@ -90,7 +90,7 @@ sitetrees = (
         item(
             _('DC Visualization'),
             url='dc_view',
-            access_by_perms=''
+            access_by_perms=''  # TODO add permissions
         ),
         item(
             _('Racks'),
@@ -98,7 +98,7 @@ sitetrees = (
             access_by_perms='data_center.change_rack'
         ),
         item(
-            _('BO Assets'),
+            _('Back Office'),
             url='#',
             url_as_pattern=False,
             access_by_perms=[
@@ -108,7 +108,7 @@ sitetrees = (
             perms_mode_all=False,
             children=[
                 item(
-                    title=_('All'),
+                    title=_('Hardware'),
                     url='admin:back_office_backofficeasset_changelist',
                     access_by_perms='back_office.change_backofficeasset'
                 ),
@@ -179,6 +179,31 @@ sitetrees = (
             ],
             perms_mode_all=False,
             children=[
+                item(
+                    title=_('Asset model'),
+                    url='admin:assets_assetmodel_changelist',
+                    access_by_perms='assets.change_assetmodel',
+                ),
+                item(
+                    title=_('Manufacturer'),
+                    url='admin:assets_manufacturer_changelist',
+                    access_by_perms='assets.change_manufacturer',
+                ),
+                item(
+                    title=_('Service'),
+                    url='admin:assets_service_changelist',
+                    access_by_perms='assets.change_service',
+                ),
+                item(
+                    title=_('Environment'),
+                    url='admin:assets_environment_changelist',
+                    access_by_perms='assets.change_environment',
+                ),
+                item(
+                    title=_('Service Environment'),
+                    url='admin:assets_serviceenvironment_changelist',
+                    access_by_perms='assets.change_serviceenvironment',
+                ),
                 item(
                     title=_('Users list'),
                     url='admin:auth_user_changelist',

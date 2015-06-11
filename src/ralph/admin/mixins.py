@@ -7,7 +7,9 @@ from __future__ import unicode_literals
 
 import reversion
 
+from django.conf import settings
 from django.db import models
+from django.views.generic import TemplateView
 
 from ralph.admin import widgets
 
@@ -46,3 +48,13 @@ class RalphAdmin(RalphAdminMixin, reversion.VersionAdmin):
     def __init__(self, *args, **kwargs):
         super(RalphAdmin, self).__init__(*args, **kwargs)
         self.formfield_overrides.update(FORMFIELD_FOR_DBFIELD_DEFAULTS)
+
+
+class RalphTemplateView(TemplateView):
+
+    def get_context_data(self, **kwargs):
+        context = super(RalphTemplateView, self).get_context_data(
+            **kwargs
+        )
+        context['site_header'] = settings.ADMIN_SITE_HEADER
+        return context

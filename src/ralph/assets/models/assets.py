@@ -79,9 +79,13 @@ class Service(NamedMixin, TimeStampMixin, models.Model):
         return reverse('assets:service_detail', args=(self.pk,))
 
 
+@python_2_unicode_compatible
 class ServiceEnvironment(models.Model):
     service = models.ForeignKey(Service)
     environment = models.ForeignKey(Environment)
+
+    def __str__(self):
+        return "{} - {}".format(self.service.name, self.environment.name)
 
 
 class Manufacturer(NamedMixin, TimeStampMixin, models.Model):
