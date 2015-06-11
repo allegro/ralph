@@ -5,6 +5,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import six
+
 from django.core.urlresolvers import reverse
 from rest_framework import serializers
 
@@ -76,6 +78,10 @@ class DataCenterAssetSerializer(DataCenterAssetSerializerBase):
     _type = serializers.SerializerMethodField('get_type')
     management_ip = serializers.SerializerMethodField('get_management')
     orientation = serializers.SerializerMethodField('get_orientation_desc')
+    service = serializers.SerializerMethodField('get_service_env')
+
+    def get_service_env(self, obj):
+        return six.text_type(obj.service_env)
 
     def get_orientation_desc(self, obj):
         return obj.get_orientation_desc()
@@ -84,9 +90,7 @@ class DataCenterAssetSerializer(DataCenterAssetSerializerBase):
         return TYPE_ASSET
 
     def get_management(self, obj):
-        # TODO come the pull request
-        # https://github.com/allegro/ralph/pull/1428
-        return ""
+        return obj.management_ip
 
     class Meta:
         model = DataCenterAsset
@@ -94,7 +98,7 @@ class DataCenterAssetSerializer(DataCenterAssetSerializerBase):
             'id', 'model', 'category', 'height', 'front_layout',
             'back_layout', 'barcode', 'sn', 'position',
             'children', '_type', 'hostname', 'management_ip',
-            'orientation'
+            'orientation', 'service', 'remarks'
         )
 
 
@@ -129,13 +133,14 @@ class PDUSerializer(serializers.ModelSerializer):
 class RackSerializer(AdminLinkMixin, serializers.ModelSerializer):
     free_u = serializers.IntegerField(source='get_free_u', read_only=True)
     orientation = serializers.CharField(source='get_orientation_desc')
+    rack_admin_url = serializers.SerializerMethodField('admin_link')
 
     class Meta:
         model = Rack
         fields = (
             'id', 'name', 'server_room', 'max_u_height',
             'visualization_col', 'visualization_row', 'free_u', 'description',
-            'orientation',
+            'orientation', 'rack_admin_url'
         )
 
     def update(self):
