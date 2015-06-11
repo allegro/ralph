@@ -85,7 +85,7 @@ class ServiceEnvironment(models.Model):
     environment = models.ForeignKey(Environment)
 
     def __str__(self):
-        return "{} - {}".format(self.service.name, self.environment.name)
+        return '{} - {}'.format(self.service.name, self.environment.name)
 
 
 class Manufacturer(NamedMixin, TimeStampMixin, models.Model):

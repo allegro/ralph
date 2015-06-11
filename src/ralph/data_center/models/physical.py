@@ -225,6 +225,10 @@ class DataCenterAsset(Asset):
         symmetrical=False,
     )
 
+    class Meta:
+        verbose_name = _('data center asset')
+        verbose_name_plural = _('data center assets')
+
     def get_orientation_desc(self):
         return Orientation.name_from_id(self.orientation)
 
@@ -251,9 +255,13 @@ class DataCenterAsset(Asset):
         ]
         return chain(*assets)
 
-    class Meta:
-        verbose_name = _('data center asset')
-        verbose_name_plural = _('data center assets')
+    @property
+    def management_ip(self):
+        """A property that gets management IP of a asset."""
+        management_ip = self.ipaddress_set.filter(is_management=True).order_by(
+            '-address'
+        ).first()
+        return management_ip.address if management_ip else ''
 
 
 @python_2_unicode_compatible

@@ -7,7 +7,7 @@ pip install -r requirements/dev.txt
 	echo "USE ralph_ng; GRANT ALL PRIVILEGES ON ralph_ng TO 'ralph_ng'@'%' WITH GRANT OPTION;"
 	echo "FLUSH PRIVILEGES;"
 ) | mysql -uroot
-rm src/ralph/{assets,back_office,data_center,licences,supports}/migrations -Rf
+rm -Rf src/ralph/{assets,back_office,data_center,licences,supports}/migrations
 ralph makemigrations {assets,back_office,data_center,licences,supports}
 ralph migrate
 # add user root

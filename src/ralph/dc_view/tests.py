@@ -106,6 +106,7 @@ class TestRestAssetInfoPerRack(TestCase):
                 'free_u': self.rack_1.get_free_u(),
                 'description': '{}'.format(self.rack_1.description),
                 'orientation': '{}'.format(self.rack_1.get_orientation_desc()),
+                'rack_admin_url': '/data_center/rack/1/'
             },
             'devices':
             [
@@ -124,6 +125,8 @@ class TestRestAssetInfoPerRack(TestCase):
                     'back_layout': u'',
                     'management_ip': "",
                     'orientation': 'front',
+                    'remarks': u'',
+                    'service': u'Backup systems - prod',
                 },
                 {
                     '_type': TYPE_ACCESSORY,

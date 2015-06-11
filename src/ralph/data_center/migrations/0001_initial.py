@@ -161,7 +161,6 @@ class Migration(migrations.Migration):
                 ('ignore_addresses', models.BooleanField(default=False, help_text='Addresses from this network should never be assigned to any device, because they are not unique.', verbose_name='Ignore addresses from this network')),
                 ('dhcp_broadcast', models.BooleanField(default=False, db_index=True, verbose_name='Broadcast in DHCP configuration')),
                 ('dhcp_config', models.TextField(default='', verbose_name='DHCP additional configuration', blank=True)),
-                ('last_scan', models.DateTimeField(default=None, verbose_name='last scan', null=True, editable=False, blank=True)),
                 ('data_center', models.ForeignKey(verbose_name='data center', blank=True, to='data_center.DataCenter', null=True)),
             ],
             options={
@@ -175,8 +174,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(unique=True, max_length=50, verbose_name='name')),
-                ('hosts_naming_template', models.CharField(help_text='E.g. h<200,299>.dc|h<400,499>.dc will produce: h200.dc h201.dc ... h299.dc h400.dc h401.dc', max_length=30)),
-                ('next_server', models.CharField(default='', help_text='The address for a TFTP server for DHCP.', max_length=32, blank=True)),
+                ('hosts_naming_template', models.CharField(help_text='E.g. h<200,299>.dc|h<400,499>.dc will produce: h200.dc h201.dc ... h299.dc h400.dc h401.dc', max_length=30, verbose_name='hosts naming template')),
+                ('next_server', models.CharField(default='', help_text='The address for a TFTP server for DHCP.', max_length=32, verbose_name='next server', blank=True)),
                 ('domain', models.CharField(max_length=255, null=True, verbose_name='domain', blank=True)),
                 ('remarks', models.TextField(help_text='Additional information.', null=True, verbose_name='remarks', blank=True)),
                 ('data_center', models.ForeignKey(verbose_name='data center', to='data_center.DataCenter')),
