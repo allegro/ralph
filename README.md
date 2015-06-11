@@ -1,6 +1,6 @@
 # Ralph-NG
 
-**This is redesigned and rewrite from scratch Ralph version under heavy development. NOT FOR PRODUCTION USE RIGHT NOW**
+**This is redesigned and rewritten from scratch Ralph version under heavy development. NOT FOR PRODUCTION USE RIGHT NOW**
 
 Ralph is full-featured Asset Management, DCIM and CMDB system for data center and back office.
 
@@ -39,18 +39,27 @@ Then ssh to virtual system:
 
 ## Regular environmnent
 
+If you want to install it in production, after cloning ralph repository just make:
 
-To install development version of ralph run:
+    make install
+    
+Or if you want to run in debug mode for detailed error messages and debug toolbar:
 
-    pip install -r requirements/dev.txt
+    make install-dev
 
+will install it for you as well.
 
 ## Running
 
 
-Virtualenv is automatically activated. To start (development) server run:
+Make sure virtualenv is activated. To start server in debug mode:
 
-    dev_ralph runserver_plus 0.0.0.0:8000
+    make run
+    
+or if you don't want the debug output
+
+    ralph runserver_plus 0.0.0.0:8000
+    
 
 Ralph is available at `127.0.0.1:8000`.
 
