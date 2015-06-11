@@ -36,10 +36,12 @@ Then ssh to virtual system:
 
     vagrant ssh
 
+Virtualenv is activated for you automatically.
 
 ## Regular environmnent
 
-If you want to install it in production, after cloning ralph repository just make:
+Make sure you created virtualenv in which you will install ralph.
+If you want to install it in production, after cloning ralph repository, and activating virtualenv just make:
 
     make install
     
