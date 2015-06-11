@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from django.conf import settings
 from django.conf.urls import url
 from django.contrib.admin.sites import AdminSite
 
@@ -36,7 +37,7 @@ class RalphAdminSiteMixin(object):
 
     """Ralph admin site mixin."""
 
-    site_header = 'Ralph 3'
+    site_header = settings.ADMIN_SITE_HEADER
     index_template = 'admin/index.html'
     app_index_template = 'ralph_admin/app_index.html'
     object_history_template = 'ralph_admin/object_history.html'
