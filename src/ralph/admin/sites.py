@@ -48,11 +48,22 @@ class RalphAdminSiteMixin(object):
             *args, **kwargs
         )
         for model, model_admin in self._registry.items():
-            for view in model_admin.extra_views:
+            for view in model_admin.list_views or []:
                 # insert at the begin
                 urlpatterns.insert(0, url(
                     '^{}/{}/{}/$'.format(*get_urls_chunks(model, view)),
                     view.as_view(),
+                    {'model': model},
+                    name='{}_{}_{}'.format(*get_urls_chunks(model, view))
+                ))
+            for view in model_admin.change_views or []:
+                # insert at the begin
+                urlpatterns.insert(0, url(
+                    '^{}/{}/(?P<pk>[0-9]+)/{}/$'.format(
+                        *get_urls_chunks(model, view)
+                    ),
+                    view.as_view(),
+                    {'model': model},
                     name='{}_{}_{}'.format(*get_urls_chunks(model, view))
                 ))
         return urlpatterns

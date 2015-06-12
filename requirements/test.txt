@@ -5,3 +5,4 @@ factory-boy
 coverage
 sphinx
 flake8
+django-plainpasswordhasher

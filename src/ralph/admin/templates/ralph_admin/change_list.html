@@ -35,6 +35,10 @@
 {% block coltype %}flex{% endblock %}
 
 {% block content %}
+  {# TODO: convert to tabs #}
+  {% for view in list_views %}
+    <a href="{{ view.url }}">{{ view.label }}</a>
+  {% endfor %}
   <div id="content-main">
     {% block search %}
      {% search_form cl %}
@@ -62,13 +66,9 @@
           <br />
           <ul id="drop" class="f-dropdown" data-dropdown-content>
             {% block object-tools-items %}
-              {% for view in extra_views %}
-                  <li><a  href="{{ view.url }}">{{ view.label }}</a></li>
-              {% endfor %}
-            {% if not is_popup %}
-                <li><a href="{{recoverlist_url}}" class="recoverlink">{% blocktrans with cl.opts.verbose_name_plural|escape as name %}Recover deleted {{name}}{% endblocktrans %}</a></li>
-            {% endif %}
-
+              {% if not is_popup %}
+                  <li><a href="{{recoverlist_url}}" class="recoverlink">{% blocktrans with cl.opts.verbose_name_plural|escape as name %}Recover deleted {{name}}{% endblocktrans %}</a></li>
+              {% endif %}
             {% endblock %}
           </ul>
         {% endblock %}

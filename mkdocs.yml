@@ -4,4 +4,5 @@ pages:
   - index.md
   - installation.md
   - docker.md
+  - development.md
 theme: readthedocs
