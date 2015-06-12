@@ -127,6 +127,7 @@ class TestRestAssetInfoPerRack(TestCase):
                     'orientation': 'front',
                     'remarks': u'',
                     'service': u'Backup systems - prod',
+                    'url': self.asset_1.get_absolute_url()
                 },
                 {
                     '_type': TYPE_ACCESSORY,
@@ -140,7 +141,8 @@ class TestRestAssetInfoPerRack(TestCase):
                 {
                     'model': self.pdu_1.model.name,
                     'orientation': 'left',
-                    'sn': self.pdu_1.sn
+                    'sn': self.pdu_1.sn,
+                    'url': self.pdu_1.get_absolute_url()
                 },
             ]
         }

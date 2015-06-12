@@ -9,7 +9,10 @@ from dateutil.relativedelta import relativedelta
 from mptt.models import MPTTModel, TreeForeignKey
 
 from django.db import models
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import (
+    ImproperlyConfigured,
+    ValidationError
+)
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.utils.encoding import python_2_unicode_compatible
@@ -339,3 +342,13 @@ class Asset(BaseObject):
             field_name='status',
         ).order_by('-date')[:1]
         return liquidated_history and liquidated_history[0].date.date() <= date
+
+    def clean(self):
+        if not self.sn and not self.barcode:
+            error_message = [_('SN or BARCODE field is required')]
+            raise ValidationError(
+                {
+                    'sn': error_message,
+                    'barcode': error_message
+                }
+            )

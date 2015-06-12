@@ -198,7 +198,6 @@ class Network(NamedMixin, TimeStampMixin, models.Model):
     racks = models.ManyToManyField(
         Rack,
         verbose_name=_('racks'),
-        null=True,
         blank=True,
     )
     network_environment = models.ForeignKey(
