@@ -489,8 +489,13 @@ admin.site.register(
 
 
 class LoadBalancerVirtualServerAdmin(ModelAdmin):
+    search_fields = ('name', 'service__name', 'device__name',)
+    list_display = ('name', 'service', 'device_environment', 'venture', 'load_balancer_type', 'device', 'address', 'port',)
+    list_filter = ('load_balancer_type',)
     related_search_fields = {
         'device': ['^name'],
+        'address': ['^address'],
+        'default_pool': ['^name'],
     }
 
 admin.site.register(
