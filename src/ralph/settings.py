@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     'ralph.business',
     'ralph.discovery',
     'ralph.deployment',
+    'ralph.export_to_ng',
     'ralph.integration',
     'ralph.ui',
     'ralph.dnsedit',
