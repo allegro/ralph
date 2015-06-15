@@ -76,7 +76,7 @@ class Migration(migrations.Migration):
             name='ComponentModel',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('name', models.CharField(unique=True, max_length=50, verbose_name='name')),
+                ('name', models.CharField(unique=True, max_length=255, verbose_name='name')),
                 ('speed', models.PositiveIntegerField(default=0, verbose_name='speed (MHz)', blank=True)),
                 ('cores', models.PositiveIntegerField(default=0, verbose_name='number of cores', blank=True)),
                 ('size', models.PositiveIntegerField(default=0, verbose_name='size (MiB)', blank=True)),
@@ -92,7 +92,7 @@ class Migration(migrations.Migration):
             name='Environment',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('name', models.CharField(unique=True, max_length=50, verbose_name='name')),
+                ('name', models.CharField(unique=True, max_length=255, verbose_name='name')),
                 ('created', models.DateTimeField(auto_now=True, verbose_name='date created')),
                 ('modified', models.DateTimeField(auto_now_add=True, verbose_name='last modified')),
             ],
@@ -116,7 +116,7 @@ class Migration(migrations.Migration):
             name='Manufacturer',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('name', models.CharField(unique=True, max_length=50, verbose_name='name')),
+                ('name', models.CharField(unique=True, max_length=255, verbose_name='name')),
                 ('created', models.DateTimeField(auto_now=True, verbose_name='date created')),
                 ('modified', models.DateTimeField(auto_now_add=True, verbose_name='last modified')),
             ],
@@ -128,7 +128,7 @@ class Migration(migrations.Migration):
             name='Service',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('name', models.CharField(unique=True, max_length=50, verbose_name='name')),
+                ('name', models.CharField(unique=True, max_length=255, verbose_name='name')),
                 ('created', models.DateTimeField(auto_now=True, verbose_name='date created')),
                 ('modified', models.DateTimeField(auto_now_add=True, verbose_name='last modified')),
                 ('profit_center', models.CharField(max_length=100, blank=True)),
