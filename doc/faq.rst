@@ -114,6 +114,11 @@ You can define users filter, if you don't want to import all users to ralph::
 
 In case of OpenDJ please use ``isMemberOf`` instead of ``memberOf``.
 
+To synchronize user list you must run command::
+
+    ralph ldap_sync
+
+During the process, script will report progress on every 100-th item loaded.
     
 Gunicorn
 --------
