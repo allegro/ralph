@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             name='Accessory',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('name', models.CharField(unique=True, max_length=50, verbose_name='name')),
+                ('name', models.CharField(unique=True, max_length=255, verbose_name='name')),
             ],
             options={
                 'verbose_name': 'accessory',
@@ -56,7 +56,7 @@ class Migration(migrations.Migration):
             name='DataCenter',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('name', models.CharField(unique=True, max_length=50, verbose_name='name')),
+                ('name', models.CharField(unique=True, max_length=255, verbose_name='name')),
                 ('visualization_cols_num', models.PositiveIntegerField(default=20, verbose_name='visualization grid columns number')),
                 ('visualization_rows_num', models.PositiveIntegerField(default=20, verbose_name='visualization grid rows number')),
             ],
@@ -85,7 +85,7 @@ class Migration(migrations.Migration):
             name='DiscoveryQueue',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('name', models.CharField(unique=True, max_length=50, verbose_name='name')),
+                ('name', models.CharField(unique=True, max_length=255, verbose_name='name')),
             ],
             options={
                 'ordering': ('name',),
@@ -146,7 +146,7 @@ class Migration(migrations.Migration):
             name='Network',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('name', models.CharField(unique=True, max_length=50, verbose_name='name')),
+                ('name', models.CharField(unique=True, max_length=255, verbose_name='name')),
                 ('created', models.DateTimeField(auto_now=True, verbose_name='date created')),
                 ('modified', models.DateTimeField(auto_now_add=True, verbose_name='last modified')),
                 ('address', models.CharField(help_text='Presented as string (e.g. 192.168.0.0/24)', unique=True, max_length=18, verbose_name='network address', validators=[ralph.data_center.models.networks.network_validator])),
@@ -173,7 +173,7 @@ class Migration(migrations.Migration):
             name='NetworkEnvironment',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('name', models.CharField(unique=True, max_length=50, verbose_name='name')),
+                ('name', models.CharField(unique=True, max_length=255, verbose_name='name')),
                 ('hosts_naming_template', models.CharField(help_text='E.g. h<200,299>.dc|h<400,499>.dc will produce: h200.dc h201.dc ... h299.dc h400.dc h401.dc', max_length=30, verbose_name='hosts naming template')),
                 ('next_server', models.CharField(default='', help_text='The address for a TFTP server for DHCP.', max_length=32, verbose_name='next server', blank=True)),
                 ('domain', models.CharField(max_length=255, null=True, verbose_name='domain', blank=True)),
@@ -189,7 +189,7 @@ class Migration(migrations.Migration):
             name='NetworkKind',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('name', models.CharField(unique=True, max_length=50, verbose_name='name')),
+                ('name', models.CharField(unique=True, max_length=255, verbose_name='name')),
             ],
             options={
                 'ordering': ('name',),
@@ -201,7 +201,7 @@ class Migration(migrations.Migration):
             name='NetworkTerminator',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('name', models.CharField(unique=True, max_length=50, verbose_name='name')),
+                ('name', models.CharField(unique=True, max_length=255, verbose_name='name')),
             ],
             options={
                 'ordering': ('name',),
@@ -288,7 +288,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='network',
             name='racks',
-            field=models.ManyToManyField(to='data_center.Rack', null=True, verbose_name='racks', blank=True),
+            field=models.ManyToManyField(to='data_center.Rack', verbose_name='racks', blank=True),
         ),
         migrations.AddField(
             model_name='network',
