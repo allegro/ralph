@@ -5,8 +5,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import six
+from collections import OrderedDict
 
+import six
 from django.core.urlresolvers import reverse
 from rest_framework import serializers
 
@@ -32,6 +33,8 @@ class AdminLinkMixin(serializers.ModelSerializer):
     """
 
     def admin_link(self, obj):
+        if isinstance(obj, OrderedDict):
+            return ""
         return reverse('admin:{app_label}_{model_name}_change'.format(
             app_label=obj._meta.app_label,
             model_name=obj._meta.model_name,
@@ -79,6 +82,7 @@ class DataCenterAssetSerializer(DataCenterAssetSerializerBase):
     management_ip = serializers.SerializerMethodField('get_management')
     orientation = serializers.SerializerMethodField('get_orientation_desc')
     service = serializers.SerializerMethodField('get_service_env')
+    url = serializers.CharField(source='get_absolute_url')
 
     def get_service_env(self, obj):
         return six.text_type(obj.service_env)
@@ -98,7 +102,7 @@ class DataCenterAssetSerializer(DataCenterAssetSerializerBase):
             'id', 'model', 'category', 'height', 'front_layout',
             'back_layout', 'barcode', 'sn', 'position',
             'children', '_type', 'hostname', 'management_ip',
-            'orientation', 'service', 'remarks'
+            'orientation', 'service', 'remarks', 'url'
         )
 
 
@@ -121,32 +125,34 @@ class RackAccessorySerializer(serializers.ModelSerializer):
 class PDUSerializer(serializers.ModelSerializer):
     model = serializers.CharField(source='model.name')
     orientation = serializers.CharField(source='get_orientation_desc')
+    url = serializers.CharField(source='get_absolute_url')
 
     def get_type(self, obj):
         return TYPE_PDU
 
     class Meta:
         model = DataCenterAsset
-        fields = ('model', 'sn', 'orientation')
+        fields = ('model', 'sn', 'orientation', 'url')
 
 
-class RackSerializer(AdminLinkMixin, serializers.ModelSerializer):
+class RackBaseSerializer(serializers.ModelSerializer):
     free_u = serializers.IntegerField(source='get_free_u', read_only=True)
     orientation = serializers.CharField(source='get_orientation_desc')
-    rack_admin_url = serializers.SerializerMethodField('admin_link')
 
     class Meta:
         model = Rack
         fields = (
             'id', 'name', 'server_room', 'max_u_height',
             'visualization_col', 'visualization_row', 'free_u', 'description',
-            'orientation', 'rack_admin_url'
+            'orientation'
         )
 
-    def update(self):
-        orientation = self.data['orientation']
-        self.object.orientation = RackOrientation.id_from_name(orientation)
-        return super(RackSerializer, self).update(self.object, self.data)
+    def update(self, data):
+        data['server_room'] = ServerRoom.objects.get(
+            pk=data['server_room']
+        )
+        data['orientation'] = RackOrientation.id_from_name(data['orientation'])
+        return super(RackBaseSerializer, self).update(self.instance, data)
 
     def create(self, data):
         data['orientation'] = RackOrientation.id_from_name(data['orientation'])
@@ -154,6 +160,13 @@ class RackSerializer(AdminLinkMixin, serializers.ModelSerializer):
             pk=int(data['server_room'])
         )
         return Rack.objects.create(**data)
+
+
+class RackSerializer(AdminLinkMixin, RackBaseSerializer):
+    rack_admin_url = serializers.SerializerMethodField('admin_link')
+
+    class Meta(RackBaseSerializer.Meta):
+        fields = RackBaseSerializer.Meta.fields + ('rack_admin_url',)
 
 
 class DCSerializer(AdminLinkMixin, serializers.ModelSerializer):

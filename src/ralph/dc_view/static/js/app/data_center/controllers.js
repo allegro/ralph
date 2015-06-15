@@ -50,10 +50,11 @@ angular
                 rack_promise = rack_model.$save();
             }
             rack_promise.then(function(data) {
-                if (data.__all__) {
-                    $scope.forms.edit_form.$error.all = data.__all__;
+                if (data.non_field_errors) {
+                    $scope.forms.edit_form.$error.all = data.non_field_errors;
                 }
                 else {
+                    rack.id = data.id
                     rack.new = false;
                     rack.saved = true;
                     $scope.forms.edit_form.$error.all = null;

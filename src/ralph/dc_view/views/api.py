@@ -19,6 +19,7 @@ from ralph.dc_view.serializers.models_serializer import (
     DataCenterAssetSerializer,
     DCSerializer,
     RackAccessorySerializer,
+    RackBaseSerializer,
     RackSerializer,
     PDUSerializer,
 )
@@ -38,6 +39,9 @@ class DCAssetsView(APIView):
             many=True
         ).data
 
+    def _get_rack_data(self, rack):
+        return RackSerializer(rack).data
+
     def _get_accessories(self, rack):
         accessories = RackAccessory.objects.select_related('accessory').filter(
             rack=rack
@@ -54,22 +58,22 @@ class DCAssetsView(APIView):
             self._get_assets(rack) + self._get_accessories(rack)
         )
         devices['pdus'] = self._get_pdus(rack)
-        devices['info'] = RackSerializer(rack).data
+        devices['info'] = self._get_rack_data(rack)
         return Response(devices)
 
     def put(self, request, rack_id, format=None):
         serializer = RackSerializer(
             self.get_object(rack_id), data=request.DATA)
         if serializer.is_valid():
-            serializer.update()
-            return Response(serializer.data)
+            rack = serializer.update(data=request.DATA)
+            return Response(self._get_rack_data(rack))
         return Response(serializer.errors)
 
     def post(self, request, format=None):
-        serializer = RackSerializer(data=request.DATA)
+        serializer = RackBaseSerializer(data=request.DATA)
         if serializer.is_valid():
-            serializer.create(serializer.data)
-            return Response(serializer.data)
+            rack = serializer.create(serializer.data)
+            return Response(self._get_rack_data(rack))
         return Response(serializer.errors)
 
 
