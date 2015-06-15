@@ -110,6 +110,11 @@ class AssetModelResource(ImportForeignKeyMixin, resources.ModelResource):
 
 
 class CategoryResource(ImportForeignKeyMixin, resources.ModelResource):
+    parent = fields.Field(
+        column_name='parent',
+        attribute='parent',
+        widget=ImportedForeignKeyWidget(assets.Category)
+    )
 
     class Meta:
         model = assets.Category
