@@ -6,27 +6,33 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import csv
+import glob
+import logging
 import os
+import tempfile
 import six
 import tablib
+import zipfile
 
 
 from django.apps import apps
 from django.conf import settings
-from django.core.management.base import BaseCommand
+from django.core.management.base import (
+    BaseCommand,
+    CommandError
+)
 from import_export import resources
 from ralph.data_importer import resources as ralph_resources
 from ralph.data_importer.resources import DefaultResource
-from six.moves import input
-
 
 if six.PY2:
-    from ralph.lib.unicode_csv import UnicodeReader as csv_reader
+    from ralph.lib.unicode_csv import UnicodeReader as csv_reader   # noqa
 else:
     from csv import reader as csv_reader
 
 
 APP_MODELS = {model._meta.model_name: model for model in apps.get_models()}
+logger = logging.getLogger(__name__)
 
 
 def get_resource(model_name):
@@ -48,24 +54,24 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            'model_name',
+            '--model_name',
             help='The model name to which the import data',
         )
         parser.add_argument(
-            'data_file',
-            help='CSV file name',
-        )
-        parser.add_argument(
-            '--noinput',
-            help='Tells Django to NOT prompt the user for input of any kind',
-            action='store_true',
-            default=False
+            'source',
+            help='file, zip or dir source location',
         )
         parser.add_argument(
             '--skipid',
             action='store_true',
             default=False,
             help="Remove ID value from rows",
+        )
+        parser.add_argument(
+            '-t', '--type',
+            choices=['file', 'dir', 'zip'],
+            default='file',
+            dest='type'
         )
         parser.add_argument(
             '-d', '--delimiter',
@@ -80,14 +86,44 @@ class Command(BaseCommand):
             help="Output encoding",
         )
 
-    def handle(self, *args, **options):
+    def from_zip(self, options):
+        with open(options.get('source'), 'rb') as f:
+            out_path = tempfile.mkdtemp()
+            z = zipfile.ZipFile(f)
+            for name in z.namelist():
+                z.extract(name, out_path)
+            options['source'] = out_path
+            self.from_dir(options)
+
+    def from_dir(self, options):
+        file_list = []
+        for path in glob.glob(os.path.join(options.get('source'), '*.csv')):
+            base_name = os.path.basename(path)
+            file_name = os.path.splitext(base_name)[0].split('_')
+            file_list.append({
+                'model': file_name[1],
+                'path': path,
+                'sort': int(file_name[0])
+            })
+        file_list = sorted(file_list, key=lambda x: x['sort'])
+
+        for item in file_list:
+            logger.info('Import to model: {}'.format(item['model']))
+            options['model_name'] = item['model']
+            options['source'] = item['path']
+            self.from_file(options)
+
+    def from_file(self, options):
+        if not options.get('model_name'):
+            raise CommandError('You must select a model')
+
         csv.register_dialect(
             "RalphImporter",
             delimiter=str(options['delimiter'])
         )
         settings.REMOVE_ID_FROM_IMPORT = options.get('skipid')
 
-        with open(options.get('data_file')) as csv_file:
+        with open(options.get('source')) as csv_file:
             reader_kwargs = {}
             if six.PY2:
                 reader_kwargs['encoding'] = options['encoding']
@@ -100,7 +136,7 @@ class Command(BaseCommand):
             headers, csv_body = csv_data[0], csv_data[1:]
             model_resource = get_resource(options.get('model_name'))
             dataset = tablib.Dataset(*csv_body, headers=headers)
-            result = model_resource.import_data(dataset, dry_run=True)
+            result = model_resource.import_data(dataset, dry_run=False)
             if result.has_errors():
                 for idx, row in enumerate(result.rows):
                     for error in row.errors:
@@ -110,22 +146,13 @@ class Command(BaseCommand):
                             'row data: {}'.format(zip(headers, dataset[idx])),
                             '',
                         ])
-                        self.stdout.write(error_msg)
-            else:
-                if options.get('noinput'):
-                    result = model_resource.import_data(dataset, dry_run=False)
-                else:
-                    for idx, row in enumerate(result.rows):
-                        if not row.new_record:
-                            info_msg = 'Update: {} {}'.format(
-                                idx + 1,
-                                row.diff
-                            )
-                            self.stdout.write(info_msg)
-                    answer = input("type 'yes' to save data" + os.linesep)
-                    if answer == 'yes':
-                        result = model_resource.import_data(
-                            dataset,
-                            dry_run=False
-                        )
-                    self.stdout.write("Done")
+                        logger.error(error_msg)
+            logger.info('Done')
+
+    def handle(self, *args, **options):
+        if options.get('type') == 'dir':
+            self.from_dir(options)
+        elif options.get('type') == 'zip':
+            self.from_zip(options)
+        else:
+            self.from_file(options)
