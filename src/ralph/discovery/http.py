@@ -5,13 +5,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import httplib
-import socket
-import threading
-import urllib2
+import logging
 
-from rq.timeouts import JobTimeoutException
-from ssl import SSLError
+import requests
 
 
 FAMILIES = {
@@ -24,69 +20,30 @@ FAMILIES = {
     'IBM_HTTP_Server': 'IBM',
     '': 'Unspecified',
 }
+REQUEST_TIMEOUT = 5
 
-
-class HTTPRedirectHandler(urllib2.HTTPRedirectHandler):
-
-    def http_error_302(self, req, fp, code, msg, headers):
-        return urllib2.HTTPRedirectHandler.http_error_302(self, req, fp,
-                                                          code, msg, headers)
-    http_error_301 = http_error_303 = http_error_307 = http_error_302
+logger = logging.getLogger(__name__)
 
 
 def get_http_info(ip):
-    opener = urllib2.build_opener()
-    request = urllib2.Request("http://{}".format(ip))
+    headers, content = {}, ''
+    url = "http://{}".format(ip)
     try:
-        response = opener.open(request, timeout=5)
-    except urllib2.HTTPError as e:
-        response = e
-    except (
-        urllib2.URLError, httplib.BadStatusLine, httplib.InvalidURL,
-        socket.timeout, SSLError, socket.error,
-    ):
-        request = urllib2.Request("https://{}".format(ip))
+        response = requests.get(url, timeout=REQUEST_TIMEOUT, verify=False)
+        response.raise_for_status()
+        headers, content = response.headers, response.content
+    except requests.exceptions.HTTPError as e:
+        logger.error("HTTPERROR: {} for url: {}".format(e, url))
+    except requests.exceptions.RequestException as e:
+        logger.error("Exception: {} for url: {}".format(e, url))
+        url = "https://{}".format(':'.join((ip, '8006')))  # for Proxmox
         try:
-            response = opener.open(request, timeout=5)
-        except urllib2.HTTPError as e:
-            response = e
-        except (
-            urllib2.URLError, httplib.BadStatusLine, httplib.InvalidURL,
-            socket.timeout, SSLError, socket.error,
-        ):
-            request = urllib2.Request(
-                "https://{}".format(':'.join((ip, '8006')))  # for Proxmox
-            )
-            try:
-                response = opener.open(request, timeout=5)
-            except urllib2.HTTPError as e:
-                response = e
-            except (
-                urllib2.URLError, httplib.BadStatusLine, httplib.InvalidURL,
-                socket.timeout, SSLError, socket.error,
-            ):
-                return {}, ''
-
-    def closer():
-        try:
-            response.close()
-        except JobTimeoutException as e:
-            raise e
-        except:
-            pass
-
-    threading.Timer(5, closer).start()
-    try:
-        document = response.read().decode('utf-8', 'ignore')
-    finally:
-        try:
-            response.close()
-        except JobTimeoutException as e:
-            raise e
-        except:
-            pass
-    headers = response.headers
-    return headers, document
+            response = requests.get(url, timeout=REQUEST_TIMEOUT, verify=False)
+            response.raise_for_status()
+            headers, content = response.headers, response.content
+        except requests.exceptions.RequestException as e:
+            logger.error("Exception: {} for url: {}".format(e, url))
+    return headers, content
 
 
 def guess_family(headers, document):
