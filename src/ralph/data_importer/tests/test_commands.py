@@ -39,7 +39,7 @@ class DataImporterTestCase(TestCase):
 
     """TestCase data importer command."""
 
-    def setUp(self):
+    def setUp(self):  # noqa
         self.base_dir = os.path.dirname(
             os.path.dirname(os.path.abspath(__file__))
         )
@@ -92,13 +92,13 @@ class DataImporterTestCase(TestCase):
         )
         management.call_command(
             'importer',
-            'Warehouse',
             warehouse_csv,
-            '--noinput'
+            type='file',
+            model_name='Warehouse',
         )
         self.assertTrue(Warehouse.objects.filter(
-            name="Poznań").exists()
-        )
+            name="Poznań"
+        ).exists())
 
     def test_importer_command_back_office_asset(self):
         """Test importer management command with BackOfficeAsset model."""
@@ -108,13 +108,13 @@ class DataImporterTestCase(TestCase):
         )
         management.call_command(
             'importer',
-            'BackOfficeAsset',
             back_office_csv,
-            '--noinput'
+            type='file',
+            model_name='BackOfficeAsset',
         )
         self.assertTrue(BackOfficeAsset.objects.filter(
-            sn="bo_asset_sn").exists()
-        )
+            sn="bo_asset_sn"
+        ).exists())
         back_office_asset = BackOfficeAsset.objects.get(sn="bo_asset_sn")
         self.assertEqual(
             back_office_asset.warehouse.name,
@@ -139,14 +139,14 @@ class DataImporterTestCase(TestCase):
         )
         management.call_command(
             'importer',
-            'Warehouse',
             warehouse_csv,
-            '--noinput',
+            type='file',
+            model_name='Warehouse',
             delimiter='\t',
         )
         self.assertTrue(Warehouse.objects.filter(
-            name="Barcelona").exists()
-        )
+            name="Barcelona"
+        ).exists())
 
     def test_importer_command_with_skipid(self):
         """Test importer management command with Warehouse model and
@@ -158,10 +158,10 @@ class DataImporterTestCase(TestCase):
         )
         management.call_command(
             'importer',
-            'Warehouse',
             warehouse_csv,
-            '--noinput',
             '--skipid',
+            type='file',
+            model_name='Warehouse',
             delimiter=',',
         )
         warehouse = Warehouse.objects.filter(name="Cupertino").first()
@@ -185,14 +185,14 @@ class DataImporterTestCase(TestCase):
         )
         management.call_command(
             'importer',
-            'Warehouse',
             warehouse_csv,
-            '--noinput',
+            type='file',
+            model_name='Warehouse',
             delimiter=';',
         )
         self.assertTrue(Warehouse.objects.filter(
-            name="Berlin").exists()
-        )
+            name="Berlin"
+        ).exists())
 
     def test_imported_object(self):
         """Test importer management command with ImportedObjects model."""
@@ -215,9 +215,9 @@ class DataImporterTestCase(TestCase):
         )
         management.call_command(
             'importer',
-            'ServerRoom',
             server_room_csv,
-            '--noinput',
+            type='file',
+            model_name='ServerRoom',
             delimiter=',',
         )
 
@@ -230,11 +230,48 @@ class DataImporterTestCase(TestCase):
 
         management.call_command(
             'importer',
-            'Rack',
             rack_csv,
-            '--noinput',
+            type='file',
+            model_name='Rack',
             delimiter=',',
         )
         self.assertTrue(Rack.objects.filter(
-            name="Rack_csv_test").exists()
+            name="Rack_csv_test"
+        ).exists())
+
+    def test_from_dir_command(self):
+        warehouse_dir = os.path.join(
+            self.base_dir,
+            'tests/samples/warehouses'
         )
+        management.call_command(
+            'importer',
+            warehouse_dir,
+            type='dir',
+        )
+
+        self.assertTrue(Warehouse.objects.filter(
+            name="From dir Warszawa"
+        ).exists())
+        self.assertTrue(Warehouse.objects.filter(
+            name="From dir London"
+        ).exists())
+
+    def test_from_zipfile_command(self):
+        warehouse_zip = os.path.join(
+            self.base_dir,
+            'tests/samples/warehouses.zip'
+        )
+        management.call_command(
+            'importer',
+            warehouse_zip,
+            type='zip',
+        )
+
+        self.assertTrue(Warehouse.objects.filter(
+            name="From zip Warszawa"
+        ).exists())
+
+        self.assertTrue(Warehouse.objects.filter(
+            name="From zip London"
+        ).exists())
