@@ -7,7 +7,7 @@ fix_tablib:
 	pip install 'git+https://github.com/kennethreitz/tablib.git@develop'
 
 install: fix_tablib
-	pip install -e .
+	pip install -r requirements/prod.txt
 
 install-test: fix_tablib
 	pip install -r requirements/test.txt

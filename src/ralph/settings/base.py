@@ -24,6 +24,7 @@ INSTALLED_APPS = (
     'import_export',
     'reversion',
     'sitetree',
+    'ralph.accounts',
     'ralph.assets',
     'ralph.back_office',
     'ralph.data_center',
@@ -85,6 +86,8 @@ DATABASES = {
         }
     }
 }
+
+AUTH_USER_MODEL = 'accounts.RalphUser'
 
 LANGUAGE_CODE = 'en-us'
 

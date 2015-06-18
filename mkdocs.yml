@@ -5,4 +5,5 @@ pages:
   - installation.md
   - docker.md
   - development.md
+  - ldap.md
 theme: readthedocs

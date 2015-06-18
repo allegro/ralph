@@ -3,8 +3,8 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cd $DIR/..
 pip install -r requirements/dev.txt
 ./scripts/reset_db.sh
-rm -Rf src/ralph/{assets,back_office,data_center,licences,supports}/migrations
-ralph makemigrations {assets,back_office,data_center,licences,supports}
+rm -Rf src/ralph/{accounts,assets,back_office,data_center,licences,supports}/migrations
+ralph makemigrations {accounts,assets,back_office,data_center,licences,supports}
 ralph migrate
 # add user root
 ralph loaddata $DIR/users.json

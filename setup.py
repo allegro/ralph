@@ -4,15 +4,11 @@ import os
 import sys
 from setuptools import setup, find_packages
 
-assert sys.version_info >= (2, 7), 'Python 2.7+ required.'
+assert sys.version_info >= (3, 3), 'Python 3.3+ required.'
 
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
-requirements = read('requirements/base.txt').split('\n')
-if sys.version_info.major == 2:
-    requirements.extend(read('requirements/py2.txt').split('\n'))
 
 setup(
     name='ralph',
@@ -29,7 +25,6 @@ setup(
     include_package_data=True,
     package_dir={'': 'src'},
     zip_safe=False,  # because templates are loaded from file path
-    install_requires=requirements,
     entry_points={
         'console_scripts': [
             'ralph = ralph.__main__:main',
@@ -48,8 +43,6 @@ setup(
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: Microsoft :: Windows :: Windows NT/2000',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
         'Topic :: Internet :: WWW/HTTP',
