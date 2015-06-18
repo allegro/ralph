@@ -1,0 +1,120 @@
+/* all app scss styles here */
+body {
+    background-color: #fff;
+    .popup {
+        .content {
+            margin-top: 15px;
+        }
+    }
+}
+#content-main {
+    padding-bottom: 60px;
+    .content {
+        border: 1px solid $tabs-border-color;
+        padding-top: rem-calc(20);
+        background-color: $tabs-content-bg-color;
+    }
+}
+
+.action-counter {
+    margin-left: 5px;
+}
+
+.row {
+    width: 100%;
+    max-width: 100%;
+}
+
+.row .admin_bottom .row {
+    max-width: 100%;
+    margin: 0;
+}
+
+.row .row {
+    margin: 0;
+    width: 100%;
+}
+
+.admin_bottom {
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    margin: 0;
+    padding: 10px 0;
+}
+
+.breadcrumbs {
+    border-bottom: 1px solid darken($crumb-bg, 10%);
+    margin-bottom: 10px;
+}
+
+#site-name > a {
+    color: #fff;
+    text-shadow: 0 0 5px rgba(255, 255, 255, .6);
+    &:hover {
+        text-shadow: 0 0 7px rgb(255, 255, 255);
+        background: $topbar-bg;
+    }
+}
+
+select {
+    background-color: #fff;
+}
+
+label, label.inline, select, #{text-inputs(all, 'input')} {
+    padding: 0.4rem;
+    height: auto;
+}
+
+button.button.search {
+    background-color: #5B5B5B;
+    &:hover {
+        background-color: darken($primary-color, 5%);
+    }
+}
+
+.field-row.error {
+    background-color: $alert-color;
+    margin-bottom: 5px;
+    .error small.error, label.error {
+        margin-bottom: 0;
+        color: $oil;
+    }
+}
+h1 {
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 1.8rem;
+    margin-bottom: rem-calc(4);
+    padding-bottom: 0;
+}
+.header-wrapper {
+    margin-bottom: 5px;
+    .header {
+        .header-toolbar {
+            float: right;
+        }
+    }
+}
+
+
+input.datepicker {
+    width: 100px;
+}
+
+.add-related .fa {
+    color: $success-color;
+}
+
+.change-related .fa {
+    color: $warning-color;
+}
+
+.delete-related .fa {
+    color: $alert-color;
+}
+
+.with-icons {
+    line-height: 3rem;
+}

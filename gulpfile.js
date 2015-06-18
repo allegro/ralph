@@ -1,13 +1,23 @@
 var gulp = require('gulp');
-    less = require('gulp-less'),
     watch = require('gulp-watch'),
     runSequence = require('run-sequence'),
     rename = require('gulp-rename'),
-    bower = require('gulp-bower');
+    bower = require('gulp-bower'),
+    prefixer = require('gulp-autoprefixer'),
+    sass = require('gulp-sass');
 
 var config = {
-     bowerDir: './bower_components',
-     dstRoot: 'src/ralph/admin/static/'
+     bowerDir: './bower_components/',
+    srcRoot: 'src/ralph/static/src/',
+    staticRoot: 'src/ralph/static/',
+     vendorRoot: 'src/ralph/static/vendor/'
+}
+
+var sass_config = {
+    includePaths: [
+        config.bowerDir + 'foundation/scss',
+        config.bowerDir + 'fontawesome/scss',
+    ]
 }
 
 gulp.task('bower', function() { 
@@ -15,28 +25,41 @@ gulp.task('bower', function() { 
          .pipe(gulp.dest(config.bowerDir)) 
 });
 
+gulp.task('scss', function() {
+    gulp.src(config.srcRoot + 'scss/*.scss')
+        .pipe(sass(sass_config).on('error', sass.logError))
+        .pipe(prefixer())
+        .pipe(gulp.dest(config.staticRoot + 'css/'))
+});
+
 gulp.task('css', function() { 
-    return gulp.src('bower_components/normalize.css/normalize.css') 
-        .pipe(gulp.dest(config.dstRoot + '/css')); 
+    var vendorFiles = [
+        'bower_components/normalize.css/normalize.css',
+        'bower_components/foundation-datepicker/stylesheets/foundation-datepicker.css'
+    ];
+    return gulp.src(vendorFiles) 
+        .pipe(gulp.dest(config.vendorRoot + 'css/')); 
 });
 
 gulp.task('fonts', function() { 
     return gulp.src('bower_components/fontawesome/fonts/*.*') 
-        .pipe(gulp.dest(config.dstRoot + '/fonts')); 
+        .pipe(gulp.dest(config.vendorRoot + 'fonts/')); 
 });
 
-gulp.task('vendors', function(){
+gulp.task('js', function(){
     var vendorFiles = [
         './bower_components/fastclick/lib/fastclick.js',
         './bower_components/jquery.cookie/jquery.cookie.js',
         './bower_components/jquery/dist/jquery.js',
         './bower_components/modernizr/modernizr.js',
+        './bower_components/foundation/js/foundation.min.js',
+        './bower_components/foundation-datepicker/js/foundation-datepicker.js',
     ];
     gulp.src(vendorFiles)
-        .pipe(gulp.dest(config.dstRoot + 'js/vendor'));
+        .pipe(gulp.dest(config.vendorRoot + 'js/'));
     gulp.src('./bower_components/jquery-placeholder/jquery.placeholder.js')
         .pipe(rename('placeholder.js'))
-        .pipe(gulp.dest(config.dstRoot + 'js/vendor'));
+        .pipe(gulp.dest(config.vendorRoot + 'js'));
 
     var angularFiles = [
         './bower_components/angular-breadcrumb/dist/angular-breadcrumb.min.js',
@@ -47,24 +70,15 @@ gulp.task('vendors', function(){
         './bower_components/angular-ui-router/release/angular-ui-router.min.js',
     ]
     gulp.src(angularFiles)
-        .pipe(gulp.dest('src/ralph/dc_view/static/js/vendor'));
-});
-
-var lessDir = './src/ralph/dc_view/static/css/'
-gulp.task('less', function() {
-    var lessFilesButNoUnderscoreAtBeginning = '[!_]*.less';
-    return gulp.src(lessDir + lessFilesButNoUnderscoreAtBeginning)
-        .pipe(less())
-        .on('error', console.error.bind(console))
-        .pipe(gulp.dest(lessDir));
+        .pipe(gulp.dest(config.vendorRoot + 'js'));
 });
 
 gulp.task('watch', function() {
-    gulp.watch(lessDir + '*.less', ['less']);
+    gulp.watch(config.srcRoot + 'scss/**/*.scss', ['scss']);
 });
 
 gulp.task('dev', function(callback) {
-	runSequence('bower', 'css', 'fonts', 'vendors', 'less', callback);
+    runSequence('bower', 'css', 'fonts', 'js', 'scss', callback);
 });
 
 gulp.task('default', ['dev']);

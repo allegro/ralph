@@ -1,0 +1,62 @@
+@import 'foundation/functions';
+@import 'colors';
+// @import 'foundation/settings';
+
+$fa-font-path: '../vendor/fonts';
+
+$base-font-size: 12px;
+$rem-base: $base-font-size;
+
+$body-bg: #fff;
+$global-radius: 0;
+
+// $primary-color: #EF6C00;
+$primary-color: $mdc-blue-600;
+
+$success-color: #43A047;
+
+$panel-bg: $mdc-blue-grey-50;
+$crumb-bg: $mdc-blue-grey-50;
+
+$crumb-padding: rem-calc(10 12 10);
+$crumb-side-padding: rem-calc(6);
+$crumb-border-size: 0;
+$crumb-border-style: none;
+$crumb-border-color: transparent;
+$crumb-font-color: $primary-color;
+$crumb-font-transform: normal;
+
+$button-tny: rem-calc(7);
+$button-sml: rem-calc(8);
+$button-med: rem-calc(10);
+$button-lrg: rem-calc(12);
+$button-font-tny: rem-calc(11);
+$button-font-sml: rem-calc(12);
+$button-font-med: rem-calc(13);
+$button-font-lrg: rem-calc(14);
+$button-margin-bottom: 0;
+$button-radius: 0;
+
+$form-label-font-size: rem-calc(12);
+$fieldset-border-style: solid;
+$fieldset-border-width: 1px;
+$fieldset-border-color: #ccc;
+$fieldset-padding: rem-calc(30);
+
+
+$topbar-height: rem-calc(40);
+$topbar-margin-bottom: 0;
+$topbar-link-color-hover: #fff;
+$topbar-link-bg-hover: $primary-color;
+$topbar-dropdown-link-color: #fff;
+$topbar-dropdown-link-bg-hover: $primary-color;
+$topbar-dropdown-label-color: #fff;
+
+$f-dropdown-max-width: 280px;
+
+$datepicker-active-color: $primary-color;
+
+
+$tabs-border-color: #ccc;
+$tabs-content-bg-color: #fafafa;
+$fieldset-bg-color: $tabs-content-bg-color;

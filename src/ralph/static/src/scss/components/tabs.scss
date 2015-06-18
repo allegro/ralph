@@ -1,0 +1,35 @@
+.tabs {
+    display: inline-block;
+    vertical-align: middle;
+    ul, li {
+        padding: 0;
+        margin: 0;
+    }
+    ul {
+        line-height: 3rem;
+        li {
+            list-style-type: none;
+            float: left;
+            margin-right: 5px;
+            a {
+                // background-color: $mdc-orange-800;
+                background-color: $tabs-content-bg-color;
+                border-bottom: 0;
+                border: 1px solid $tabs-border-color;
+                font-size: $button-font-med;
+                padding: rem-calc(10 20);
+                padding-bottom: rem-calc(11);
+                transition: all .1s ease-in-out;
+            }
+            &:last-child a {
+            }
+            &.active a, a:hover {
+                border-top: 4px solid $mdc-orange-500;
+                background-color: $tabs-content-bg-color;
+            }
+            &.active a {
+                border-bottom: 1px solid $tabs-content-bg-color;
+            }
+        }
+    }
+}

@@ -64,9 +64,9 @@ vagrant/.vagrant
 # mkdocs
 site/
 
-# Javascript
+# Static files
 bower_components/
 node_modules/
-src/ralph/admin/static/css/normalize.css
-src/ralph/admin/static/js/vendor/
-src/ralph/dc_view/static/js/vendor/
+src/ralph/static/css/
+src/ralph/static/vendor/
+src/ralph/var/

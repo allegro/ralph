@@ -1,0 +1,21 @@
+@import 'variables';
+
+.vLargeTextField, .vXMLLargeTextField {
+    width: 100%;
+}
+
+select {
+    width: auto;
+    padding-right: 20px;
+    margin-right: 10px;
+}
+
+.datepicker {
+    td, th {
+        &.active {
+            &.day {background: $datepicker-active-color;}
+            &.year {background: $datepicker-active-color;}
+        }
+        span.active {background: $datepicker-active-color;}
+    }
+}

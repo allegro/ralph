@@ -1,0 +1,5 @@
+Please add some static files (e.g.: css, js, fonts) here, except 3rd party!
+
+The ``vendor`` directory contains 3rd party libs. If you want add some external library (e.g.: jquery, bootstrap) please edit ``gulp.js`` and ``bower.json``.
+
+The ``css`` directory contains compiled SCSS files.
