@@ -1,6 +1,6 @@
 # Ralph-NG
 
-**This is redesigned and rewritten from scratch Ralph version under heavy development. NOT FOR PRODUCTION USE RIGHT NOW**
+**This is new version under active development(BETA) **
 
 Ralph is full-featured Asset Management, DCIM and CMDB system for data center and back office.
 
@@ -44,12 +44,16 @@ Make sure you created virtualenv in which you will install ralph.
 If you want to install it in production, after cloning ralph repository, and activating virtualenv just make:
 
     make install
+    ralph migrate
     
 Or if you want to run in debug mode for detailed error messages and debug toolbar:
 
     make install-dev
+    dev_ralph migrate
 
 will install it for you as well.
+
+    
 
 ## Running
 
