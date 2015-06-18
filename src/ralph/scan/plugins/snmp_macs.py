@@ -68,7 +68,7 @@ def _get_model_info(snmp_name):
             model_name, trash = model_name.split(',', 1)
         model_type = DeviceType.switch
         is_management = True
-    elif '.f5app' in snmp_name:
+    elif '.f5' in snmp_name:
         model_name = snmp_name
         model_type = str(DeviceType.load_balancer)
     elif 'StorageWorks' in snmp_name:
