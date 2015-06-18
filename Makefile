@@ -28,7 +28,7 @@ clean:
 	find . -name '*.py[cod]' -exec rm -rf {} \;
 
 coverage: clean
-	coverage run '$(VIRTUAL_ENV)/bin/test_ralph' test ralph
+	coverage run '$(VIRTUAL_ENV)/bin/test_ralph' test ralph --settings="ralph.settings.test"
 	coverage report
 
 docs:

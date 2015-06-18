@@ -1,0 +1,14 @@
+.date-hierarchy {
+    padding: 5px 0;
+    overflow: hidden;
+    ul {
+        margin: 0;
+        li {
+            list-style-type: none;
+            float: left;
+            &.date-back {
+                margin-right: 10px;
+            }
+        }
+    }
+}

@@ -1,0 +1,71 @@
+@import 'colors';
+
+@mixin cell-border() {
+    border: 1px solid #D8D8D8;
+}
+
+$thead-bg-color: $mdc-blue-grey-50;
+$row-even-bg-color: $mdc-grey-100;
+$row-odd-bg-color: #fff;
+
+table {
+    &.full {
+        width: 100%;
+    }
+    td, th {
+        input[type="checkbox"] {
+            margin: 0;
+        }
+    }
+    thead {
+        tr {
+            line-height: 2.5rem;
+            th {
+                @include cell-border();
+                background: $thead-bg-color;
+                padding: 0;
+                .text {
+                    .sort-icon {
+                        color: $mdc-black-dark;
+                    }
+                    .sortoptions {
+                        display: inline;
+                        .sortremove {
+                            color: $mdc-red-500;
+                        }
+                    }
+                    .sort-icon, .sortoptions {
+                        opacity: .5;
+                    }
+                    &:hover {
+                        .sort-icon, .sortoptions {
+                            opacity: 1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    tbody {
+        tr {
+            line-height: 2rem;
+            &:nth-child(even) {
+                background-color: $row-even-bg-color;
+            }
+            &:nth-child(odd) {
+                background-color: $row-odd-bg-color;
+            }
+            &:nth-child(even):hover {
+                background-color: darken($row-even-bg-color, 1%);
+            }
+            &:nth-child(odd):hover {
+                background-color: darken($row-odd-bg-color, 1%);
+            }
+            td, th {
+                text-align: center;
+                @include cell-border();
+                padding: 0;
+            }
+        }
+    }
+}

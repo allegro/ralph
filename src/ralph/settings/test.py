@@ -16,4 +16,10 @@ INSTALLED_APPS += (
     'ralph.tests',
 )
 
+PASSWORD_HASHERS = (
+    'django.contrib.auth.hashers.MD5PasswordHasher',
+)
+
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+
 ROOT_URLCONF = 'ralph.urls.base'

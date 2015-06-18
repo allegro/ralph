@@ -1,0 +1,61 @@
+@import 'variables';
+@mixin active-border() {
+    border: 1px solid white;
+}
+
+@mixin generate-x-position($n) {
+    @for $i from 0 through $n {
+        &.x-#{$i} {
+            left: $grid-size * $i;
+        }
+    }
+}
+
+@mixin generate-y-position($n) {
+    @for $i from 0 through $n {
+        &.y-#{$i} {
+            top: $grid-size * $i;
+        }
+    }
+}
+@mixin generate-rows($n) {
+    @for $i from 1 through $n {
+        &.rows-#{$i} {
+            min-height: $grid-size * $i;
+            max-height: $grid-size * $i;
+            height: $grid-size * $i;
+        }
+    }
+}
+@mixin generate-cols($n) {
+    @for $i from 1 through $n {
+        &.cols-#{$i} {
+            width: $grid-size * $i;
+        }
+    }
+}
+
+
+@mixin generate-racks($n) {
+    @for $i from 1 through $n {
+        &.rack-u-#{$i} .wrapper {
+            height: $u-height * $i;
+        }
+    }
+}
+
+@mixin generate-u($n) {
+    @for $i from 1 through $n {
+        &.height-u-#{$i} {
+            height: $u-height * $i;
+        }
+    }
+}
+
+@mixin generate-position($n) {
+    @for $i from 0 through $n {
+        &.position-u-#{$i} {
+            bottom: $u-height * ($i - 1);
+        }
+    }
+}
