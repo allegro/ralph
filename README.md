@@ -1,6 +1,6 @@
 # Ralph-NG
 
-**This is new version under active development(BETA) **
+**This is new version under active development(BETA)**
 
 Ralph is full-featured Asset Management, DCIM and CMDB system for data center and back office.
 
