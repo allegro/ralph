@@ -50,7 +50,7 @@ def guessmodel(http_family='', snmp_name='', guessmodel=('', ''), *args, **kwarg
         return '', 'Switch'
     if snmp_name.startswith('ProCurve'):
         return 'HP', 'ProCurve'
-    elif '.f5app' in snmp_name:
+    elif '.f5.' in snmp_name:
         return 'F5', ''
     elif 'StorageWorks' in snmp_name:
         return 'HP', 'StorageWorks'
