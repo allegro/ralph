@@ -1,0 +1,16 @@
+{% extends "admin/import_export/change_list.html" %}
+{% load i18n %}
+
+{% block object-tools-items %}
+  <li>
+    <a href="import/" class="import_link">
+      <i class="fa fa-upload"></i> {% trans "Import" %}
+    </a>
+  </li>
+  <li>
+    <a href="export/{{ cl.get_query_string }}" class="export_link">
+      <i class="fa fa-download"></i> {% trans "Export" %}
+    </a>
+  </li>
+  {{ block.super }}
+{% endblock %}

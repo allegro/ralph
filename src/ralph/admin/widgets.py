@@ -14,7 +14,7 @@ class AdminDateWidget(forms.DateInput):
     @property
     def media(self):
         js = ['foundation-datepicker.js']
-        return forms.Media(js=[static('js/%s' % path) for path in js])
+        return forms.Media(js=[static('vendor/js/%s' % path) for path in js])
 
     def render(self, name, value, attrs=None):
         attrs['class'] = 'datepicker'
