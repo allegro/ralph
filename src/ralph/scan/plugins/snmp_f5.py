@@ -20,7 +20,7 @@ class Error(Exception):
 
 
 def _snmp_f5(ip_address, snmp_name, snmp_community):
-    if '.f5app' not in snmp_name:
+    if '.f5.' not in snmp_name:
         raise Error('The SNMP name `%s` is not supported by this plugin.' % (
             snmp_name,
         ))

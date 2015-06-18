@@ -26,7 +26,7 @@ class SnmpF5PluginTest(TestCase):
             self.assertEqual(
                 _snmp_f5(
                     '127.0.0.1',
-                    'Linux f5-2a.dc2 2.6.18-164.11.1.el5.1.0.f5app',
+                    'Linux f5-2a.dc2 2.6.32-279.19.1.el6.f5.x86_64 #1 SMP Sun Feb 8 23:46:09 PST 2015 x86_64',
                     'public',
                 ),
                 {
@@ -53,7 +53,7 @@ class SnmpF5PluginTest(TestCase):
             with self.assertRaises(Error) as context:
                 _snmp_f5(
                     '127.0.0.1',
-                    'Linux f5-2a.dc2 2.6.18-164.11.1.el5.1.0.f5app',
+                    'Linux f5-2a.dc2 2.6.32-279.19.1.el6.f5.x86_64 #1 SMP Sun Feb 8 23:46:09 PST 2015 x86_64',
                     'public',
                 )
             self.assertEqual(context.exception.message, 'No answer.')
@@ -65,7 +65,7 @@ class SnmpF5PluginTest(TestCase):
             with self.assertRaises(Error) as context:
                 _snmp_f5(
                     '127.0.0.1',
-                    'Linux f5-2a.dc2 2.6.18-164.11.1.el5.1.0.f5app',
+                    'Linux f5-2a.dc2 2.6.32-279.19.1.el6.f5.x86_64 #1 SMP Sun Feb 8 23:46:09 PST 2015 x86_64',
                     'public',
                 )
             self.assertEqual(context.exception.message, 'Incorrect answer.')
