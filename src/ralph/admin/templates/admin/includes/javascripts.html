@@ -1,0 +1,16 @@
+{% load static %}
+
+<script type="text/javascript">window.__admin_utc_offset__ = "{% filter escapejs %}{% now "Z" %}{% endfilter %}";</script>
+<script type="text/javascript" src="{% static "vendor/js/jquery.js" %}"></script>
+<script type="text/javascript" src="{% static "vendor/js/foundation.min.js" %}"></script>
+{% block extrahead %}{% endblock %}
+<script type="text/javascript">window.__admin_media_prefix__ = "{% static '' %}";</script>
+<script>
+  $(document).ready(function(){
+    $('select.filter').on('change', function(data) {
+        window.location.href = $('option:selected', this).val();
+    });
+    $(document).foundation();
+    $('.datepicker').fdatepicker();
+  });
+</script>
