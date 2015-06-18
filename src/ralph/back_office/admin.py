@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.utils.translation import ugettext_lazy as _
-from django.views.generic import View
+
 
 from ralph.admin import RalphAdmin, register
 from ralph.back_office.models import BackOfficeAsset, Warehouse
@@ -46,12 +46,6 @@ class BackOfficeAssetAdmin(RalphAdmin):
     )
 
 
-class ExtraView(View):
-    label = 'Extra view'
-    url_name = 'extra_view'
-
-
 @register(Warehouse)
-class WarehousAdmin(RalphAdmin):
-
-    extra_views = [ExtraView]
+class WarehouseAdmin(RalphAdmin):
+    pass

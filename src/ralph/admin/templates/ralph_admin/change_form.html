@@ -16,6 +16,16 @@
 {% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-form{% endblock %}
 
 {% block content %}
+
+  {# TODO: convert to tabs #}
+  {% if object_id %}
+    <ul>
+      {% for view in change_views %}
+        <li><a href="{{ view.url }}">{{ view.label }}</a></li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
   <div id="content-main">
     {% block object-tools %}
       {% if change %}

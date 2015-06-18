@@ -9,10 +9,11 @@ DATABASES = {
     }
 }
 
+PASSWORD_HASHERS = ('django_plainpasswordhasher.PlainPasswordHasher', )
+
 INSTALLED_APPS += (
     'ralph.lib',
+    'ralph.tests',
 )
 
-PASSWORD_HASHERS = (
-    'django.contrib.auth.hashers.MD5PasswordHasher',
-)
+ROOT_URLCONF = 'ralph.urls.base'

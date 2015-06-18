@@ -6,12 +6,15 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import reversion
+from copy import copy
 
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.views.generic import TemplateView
 
 from ralph.admin import widgets
+from ralph.admin.signals import admin_get_list_views, admin_get_change_views
 
 
 FORMFIELD_FOR_DBFIELD_DEFAULTS = {
@@ -23,24 +26,60 @@ class RalphAdminMixin(object):
 
     """Ralph admin mixin."""
 
-    extra_views = []
+    list_views = None
+    change_views = None
     change_list_template = 'ralph_admin/change_list.html'
     change_form_template = 'ralph_admin/change_form.html'
 
+    def _get_views(self, views, signal):
+        views = copy(views) or []
+        signal.send(sender=self, model=self.model, views=views)
+        return views
+
+    def get_list_views(self):
+        return self._get_views(self.list_views, admin_get_list_views)
+
+    def get_change_views(self):
+        return self._get_views(self.change_views, admin_get_change_views)
+
     def changelist_view(self, request, extra_context=None):
         """Override change list from django."""
+        info = self.model._meta.app_label, self.model._meta.model_name
         if extra_context is None:
             extra_context = {}
         extra_context['app_label'] = self.model._meta.app_label
-        extra_views = []
-        for view in self.extra_views:
-            extra_views.append({
+        views = []
+        for view in self.get_list_views():
+            views.append({
                 'label': view.label,
-                'url': '{}/'.format(view.url_name),
+                'url': '{}/{}/'.format(
+                    reverse('admin:{}_{}_changelist'.format(*info)),
+                    view.url_name
+                ),
             })
-        extra_context['extra_views'] = extra_views
+        extra_context['list_views'] = views
         return super(RalphAdminMixin, self).changelist_view(
             request, extra_context
+        )
+
+    def changeform_view(
+        self, request, object_id=None, form_url='', extra_context=None
+    ):
+        info = self.model._meta.app_label, self.model._meta.model_name
+        if extra_context is None:
+            extra_context = {}
+        views = []
+        for view in self.get_change_views():
+            views.append({
+                'label': view.label,
+                'url': '{}/'.format(
+                    reverse('admin:{}_{}_changelist'.format(*info)),
+                    view.url_name
+                ),
+            })
+        extra_context['change_views'] = views
+        return super(RalphAdminMixin, self).changeform_view(
+            request, object_id, form_url, extra_context
         )
 
 

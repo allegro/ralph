@@ -1,0 +1,38 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+from six.moves import reload_module
+import sys
+
+from django.conf import settings
+from django.core.urlresolvers import clear_url_caches
+from django.utils.importlib import import_module
+
+from ralph.tests.factories import UserFactory
+
+
+class ClientMixin(object):
+
+    def login_as_user(self, user=None, password='ralph', *args, **kwargs):
+        if not user:
+            user = UserFactory(*args, **kwargs)
+            user.is_superuser = True
+            user.is_staff = True
+            user.save()
+        self.user = user
+        return self.client.login(username=user.username, password=password)
+
+
+class ReloadUrlsMixin(object):
+    """
+    Use this mixin if you register dynamically models to admin.
+    """
+    def reload_urls(self):
+        if settings.ROOT_URLCONF in sys.modules:
+            reload_module(sys.modules[settings.ROOT_URLCONF])
+            clear_url_caches()
+        return import_module(settings.ROOT_URLCONF)
