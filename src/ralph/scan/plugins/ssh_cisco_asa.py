@@ -55,7 +55,7 @@ class CiscoSSHClient(paramiko.SSHClient):
         self._asa_chan.settimeout(15.0)
         time.sleep(0.125)
         try:
-            chunk = self._asa_chan.recv(1024)
+            chunk = self._asa_chan.recv(10240)
         except socket.timeout:
             raise AuthError('Authentication failed.')
         else:
