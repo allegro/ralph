@@ -54,8 +54,8 @@ docs/_build/
 *.sqlite3
 
 src/ralph_assets
-src/ralph/settings/*_local.py
-src/ralph/urls/*_local.py
+src/ralph/settings/*local.py
+src/ralph/urls/*local.py
 !/src/ralph/lib
 
 # Vagrant

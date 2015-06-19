@@ -23,3 +23,9 @@ make install-dev
 # final setups
 ./vagrant/provisioning_scripts/setup_js_env.sh
 cat /home/vagrant/src/ralph/vagrant/provisioning_scripts/profile_extensions >> /home/vagrant/.profile
+
+# create local settings file
+SETTINGS_LOCAL_PATH=/home/vagrant/src/ralph/src/ralph/settings/local.py
+if [ ! -f $SETTINGS_LOCAL_PATH ]; then
+    echo "from ralph.settings.dev import *  # noqa" > $SETTINGS_LOCAL_PATH
+fi

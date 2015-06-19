@@ -12,3 +12,6 @@ DATABASES = {
         'HOST': os.environ.get('DB_HOST', 'db'),
     }
 }
+
+
+STATIC_ROOT = '/opt/static'
