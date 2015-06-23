@@ -68,10 +68,10 @@ WSGI_APPLICATION = 'ralph.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'ralph_ng',
-        'USER': 'ralph_ng',
-        'PASSWORD': 'ralph_ng',
-        'HOST': '127.0.0.1',
+        'NAME': os.environ.get('DB_ENV_MYSQL_DATABASE', 'ralph_ng'),
+        'USER': os.environ.get('DB_ENV_MYSQL_USER', 'ralph_ng'),
+        'PASSWORD': os.environ.get('DB_ENV_MYSQL_PASSWORD', 'ralph_ng'),
+        'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
     }
 }
 
@@ -87,13 +87,9 @@ USE_TZ = False
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'var', 'static')
-
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
-
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'  # noqa
 
 # adapt message's tags to bootstrap
 MESSAGE_TAGS = {

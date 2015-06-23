@@ -5,6 +5,11 @@ Run Ralph using docker-compose (NOT FOR PRODUCTION USE RIGHT NOW!)
 ## Install
 Install [docker-compose](http://docs.docker.com/compose/install/) first.
 
+
+## Create compose configuration
+Copy ``docker-compose.yml.tmpl`` outside ralph sources to docker-compose.yml
+and tweak it.
+
 ## Build
 Then build ralph::
 

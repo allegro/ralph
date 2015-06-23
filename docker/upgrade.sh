@@ -1,7 +1,11 @@
 #!/bin/bash
 set -e
-RALPH_EXEC=/usr/local/bin/ralph
 cd $RALPH_DIR
+
 make docs
+gulp
+
 $RALPH_EXEC migrate --noinput
 $RALPH_EXEC collectstatic -l --noinput
+$RALPH_EXEC sitetreeload
+$RALPH_EXEC sitetree_resync_apps
