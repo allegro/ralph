@@ -1,11 +1,6 @@
 {% extends "admin/base_site.html" %}
 {% load i18n admin_static %}
 
-{% block extrastyle %}
-  <link rel="stylesheet" href="{% static 'css/data_center.css' %}">
-  <link rel="stylesheet" href="{% static 'css/rack.css' %}">
-  {{ block.super }}
-{% endblock %}
 {% block title %}
   {% trans "Dc View" %}
 {% endblock %}
