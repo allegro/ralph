@@ -20,29 +20,45 @@ FAMILIES = {
     'IBM_HTTP_Server': 'IBM',
     '': 'Unspecified',
 }
-REQUEST_TIMEOUT = 5
+REQUEST_KWARGS = {
+    'timeout': 5,
+    'verify': False,
+    'allow_redirects': False,
+}
 
 logger = logging.getLogger(__name__)
+
+
+def http_get_method(session, url):
+    """
+    Handle redirects by manual way without fetching content
+    (forced by stream=True) to avoid hanged request when content length is 0.
+    """
+    response = session.get(url, stream=True, **REQUEST_KWARGS)
+    if response.status_code in (301, 302) and response.headers.get('location'):
+        return http_get_method(session, response.headers['location'])
+    return response
 
 
 def get_http_info(ip):
     headers, content = {}, ''
     url = "http://{}".format(ip)
-    try:
-        response = requests.get(url, timeout=REQUEST_TIMEOUT, verify=False)
-        response.raise_for_status()
-        headers, content = response.headers, response.content
-    except requests.exceptions.HTTPError as e:
-        logger.error("HTTPERROR: {} for url: {}".format(e, url))
-    except requests.exceptions.RequestException as e:
-        logger.error("Exception: {} for url: {}".format(e, url))
-        url = "https://{}".format(':'.join((ip, '8006')))  # for Proxmox
+    with requests.Session() as session:
         try:
-            response = requests.get(url, timeout=REQUEST_TIMEOUT, verify=False)
+            response = http_get_method(session, url)
             response.raise_for_status()
             headers, content = response.headers, response.content
+        except requests.exceptions.HTTPError as e:
+            logger.error("HTTPERROR: {} for url: {}".format(e, url))
         except requests.exceptions.RequestException as e:
             logger.error("Exception: {} for url: {}".format(e, url))
+            url = "https://{}".format(':'.join((ip, '8006')))  # for Proxmox
+            try:
+                response = http_get_method(session, url)
+                response.raise_for_status()
+                headers, content = response.headers, response.content
+            except requests.exceptions.RequestException as e:
+                logger.error("Exception: {} for url: {}".format(e, url))
     return headers, content
 
 
