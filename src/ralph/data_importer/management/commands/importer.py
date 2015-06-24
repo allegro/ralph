@@ -135,6 +135,7 @@ class Command(BaseCommand):
             csv_data = list(reader)
             headers, csv_body = csv_data[0], csv_data[1:]
             model_resource = get_resource(options.get('model_name'))
+            current_count = model_resource._meta.model.objects.count()
             dataset = tablib.Dataset(*csv_body, headers=headers)
             result = model_resource.import_data(dataset, dry_run=False)
             if result.has_errors():
@@ -147,6 +148,11 @@ class Command(BaseCommand):
                             '',
                         ])
                         logger.error(error_msg)
+                    if row.errors:
+                        break
+            after_import_count = model_resource._meta.model.objects.count()
+            if len(csv_body) != after_import_count - current_count:
+                logger.error('Some of records was not imported')
             logger.info('Done')
 
     def handle(self, *args, **options):

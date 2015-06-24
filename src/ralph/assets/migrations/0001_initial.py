@@ -206,7 +206,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='baseobject',
             name='service_env',
-            field=models.ForeignKey(to='assets.ServiceEnvironment'),
+            field=models.ForeignKey(to='assets.ServiceEnvironment', null=True),
         ),
         migrations.AddField(
             model_name='assetmodel',

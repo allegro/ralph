@@ -72,6 +72,17 @@ DATABASES = {
         'USER': os.environ.get('DB_ENV_MYSQL_USER', 'ralph_ng'),
         'PASSWORD': os.environ.get('DB_ENV_MYSQL_PASSWORD', 'ralph_ng'),
         'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
+        'OPTIONS': {
+            "init_command": ','.join([
+                "SET storage_engine=INNODB",
+                "character_set_connection=utf8",
+                ";".join([
+                    "collation_connection=utf8_unicode_ci",
+                    "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED",
+                    "",
+                ])
+            ])
+        }
     }
 }
 
@@ -101,3 +112,21 @@ DEFAULT_DEPRECATION_RATE = 25
 ASSET_HOSTNAME_TEMPLATE = 'test'
 
 ADMIN_SITE_HEADER = 'Ralph 3'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'ralph.data_importer.management.commands.importer': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}

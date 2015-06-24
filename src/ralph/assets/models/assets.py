@@ -352,3 +352,15 @@ class Asset(BaseObject):
                     'barcode': error_message
                 }
             )
+
+    def save(self, *args, **kwargs):
+        # if you save barcode as empty string (instead of None) you could have
+        # only one asset with empty barcode (because of `unique` constraint)
+        # if you save barcode as None you could have many assets with empty
+        # barcode (becasue `unique` constrainst is skipped)
+        for unique_field in ['barcode', 'sn']:
+            value = getattr(self, unique_field, None)
+            if value == '':
+                value = None
+            setattr(self, unique_field, value)
+        return super(Asset, self).save(*args, **kwargs)
