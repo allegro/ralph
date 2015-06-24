@@ -1,0 +1,16 @@
+{% if views %}
+  <div class="tabs">
+    <ul>
+      {% for view in views %}
+        <li{% if name == view.name %} class="active"{% endif %}>
+          <a  href="{{ view.url }}">
+            {% if view.icon %}
+              <i class="fa fa-{{ view.icon }}"></i>
+            {% endif %}
+            {{ view.label }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}

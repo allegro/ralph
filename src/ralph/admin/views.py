@@ -6,16 +6,23 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.shortcuts import get_object_or_404
-from django.views.generic import TemplateView
 
+from ralph.admin.mixins import RalphTemplateView
 from ralph.admin import ralph_site
 
 
 class RalphExtraViewMixin(object):
-    # TODO: permissions, breadcrumbs
-    # TODO: highlighting active tab
-    name = None
+    # TODO: permissions
     extra_view_base_template = None
+    icon = None
+    name = None
+
+    def dispatch(self, request, model, views, *args, **kwargs):
+        self.model = model
+        self.views = views
+        return super(RalphExtraViewMixin, self).dispatch(
+            request, *args, **kwargs
+        )
 
     def get_name(self):
         if not self.name:
@@ -36,6 +43,7 @@ class RalphExtraViewMixin(object):
         context.update(ralph_site.each_context(self.request))
         context['BASE_TEMPLATE'] = self.get_extra_view_base_template()
         context['label'] = self.label
+        context['view_name'] = self.name
         return context
 
     def get_template_names(self):
@@ -51,23 +59,27 @@ class RalphExtraViewMixin(object):
         return templates
 
 
-class RalphListView(RalphExtraViewMixin, TemplateView):
+class RalphListView(RalphExtraViewMixin, RalphTemplateView):
     extra_view_base_template = 'ralph_admin/extra_views/base_list.html'
 
-    def dispatch(self, request, model, *args, **kwargs):
-        self.model = model
-        return super(RalphListView, self).dispatch(request, *args, **kwargs)
+    def get_context_data(self, **kwargs):
+        context = super(RalphListView, self).get_context_data(**kwargs)
+        context['change_views'] = self.views
+        return context
 
 
-class RalphDetailView(RalphExtraViewMixin, TemplateView):
+class RalphDetailView(RalphExtraViewMixin, RalphTemplateView):
     extra_view_base_template = 'ralph_admin/extra_views/base_change.html'
 
     def dispatch(self, request, model, pk, *args, **kwargs):
-        self.model = model
-        self.object = get_object_or_404(model.objects, pk=pk)
-        return super(RalphDetailView, self).dispatch(request, *args, **kwargs)
+        self.object = get_object_or_404(model, pk=pk)
+        return super(RalphDetailView, self).dispatch(
+            request, model, *args, **kwargs
+        )
 
     def get_context_data(self, **kwargs):
         context = super(RalphDetailView, self).get_context_data(**kwargs)
         context['object'] = self.object
+        context['original'] = self.object
+        context['change_views'] = self.views
         return context

@@ -230,6 +230,9 @@ class DataCenterAsset(Asset):
         verbose_name = _('data center asset')
         verbose_name_plural = _('data center assets')
 
+    def __str__(self):
+        return '{} <id: {}>'.format(self.hostname, self.id)
+
     def get_absolute_url(self):
         return reverse(
             'admin:data_center_datacenterasset_change',

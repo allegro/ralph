@@ -5,6 +5,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from collections import defaultdict
+
 from django.conf import settings
 from django.conf.urls import url
 from django.contrib.admin.sites import AdminSite
@@ -53,7 +55,7 @@ class RalphAdminSiteMixin(object):
                 urlpatterns.insert(0, url(
                     '^{}/{}/{}/$'.format(*get_urls_chunks(model, view)),
                     view.as_view(),
-                    {'model': model},
+                    {'model': model, 'views': model_admin.list_views},
                     name='{}_{}_{}'.format(*get_urls_chunks(model, view))
                 ))
             for view in model_admin.change_views or []:
@@ -63,10 +65,31 @@ class RalphAdminSiteMixin(object):
                         *get_urls_chunks(model, view)
                     ),
                     view.as_view(),
-                    {'model': model},
+                    {'model': model, 'views': model_admin.change_views},
                     name='{}_{}_{}'.format(*get_urls_chunks(model, view))
                 ))
         return urlpatterns
+
+    def get_extra_view_menu_items(self):
+        """Method returns list of items for sitetree mechanism."""
+        items = defaultdict(list)
+
+        def get_item(model, view, change_view=False):
+            url = 'admin:{}_{}_{}'.format(
+                *get_urls_chunks(model, view)
+            )
+            if change_view:
+                url += ' object.id'
+            return {'title': view.label, 'url': url}
+        for model, model_admin in self._registry.items():
+            name = '{}_{}'.format(
+                model._meta.app_label, model._meta.model_name
+            )
+            for view in model_admin.list_views or []:
+                items[name].append(get_item(model, view))
+            for view in model_admin.change_views or []:
+                items[name].append(get_item(model, view, True))
+        return items
 
 
 class RalphAdminSite(RalphAdminSiteMixin, AdminSite):

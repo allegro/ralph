@@ -81,7 +81,7 @@ class ExtraView(RalphDetailView):
 
 @register(Warehouse)
 class WarehouseAdmin(RalphAdmin):
-    detail_views = [ExtraView]
+    change_views = [ExtraView]
 ```
 
 ### Register view via decorator

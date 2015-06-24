@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load i18n admin_urls admin_static admin_list foundation_alert sitetree %}
+{% load i18n admin_urls ralph_tags admin_static admin_list foundation_alert sitetree %}
 {% block extrastyle %}
   {{ block.super }}
   <link rel="stylesheet" type="text/css" href="{% static "admin/css/changelists.css" %}" />
@@ -21,65 +21,45 @@
 {% block coltype %}flex{% endblock %}
 
 {% block content %}
-  {# TODO: convert to tabs #}
-  {% for view in list_views %}
-    <a href="{{ view.url }}">{{ view.label }}</a>
-  {% endfor %}
   <div id="content-main">
     <form id="changelist-form" action="" method="post"{% if cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>{% csrf_token %}
-      <div class="row header-wrapper">
-        <div class="header with-tabs small-12 columns">
-          <div class="row">
-            <div class="large-2 columns">
-              <h1>{% sitetree_page_title from 'ralph_admin' %}</h1>
-            </div>
-            <div class="large-7 columns">
-              {% if extra_views %}
-                <div class="tabs">
-                  <ul>
-                    {% for view in extra_views %}
-                      <li><a  href="{{ view.url }}">{{ view.label }}</a></li>
-                    {% endfor %}
-                    <li class="active"><a href="#">List</a></li>
-                    <li><a href="#"><i class="fa fa-database"></i> Network</a></li>
-                    <li><a href="#"><i class="fa fa-globe"></i> VIP</a></li>
-                    <li><a href="#"><i class="fa fa-hdd-o"></i> Virtual</a></li>
-                  </ul>
-                </div>
-              {% endif %}
-            </div>
-            <div class="large-3 columns">
-              <div class="header-toolbar">
-                {% if has_add_permission %}
-                  {% url cl.opts|admin_urlname:'add' as add_url %}
-                  <a class="button success small addLink" href="{% add_preserved_filters add_url is_popup to_field %}">
-                    {% blocktrans with cl.opts.verbose_name as name %}
-                      <i class="fa fa-plus"></i> Add {{ name }}
-                    {% endblocktrans %}
-                  </a>
-                {% endif %}
-                <a href="#" data-options="align:left" class="button dropdown small" data-dropdown="drop1">
-                  {% trans "Action" %}
-                </a>
-                {% block object-tools %}
-                  <ul id="drop1" class="f-dropdown" data-dropdown-content>
-                    {% block object-tools-items %}
-                      {% if not is_popup %}
-                        <li>
-                          <a href="{{recoverlist_url}}" class="recoverlink">
-                            <i class="fa fa-retweet"></i>
-                            {% blocktrans with cl.opts.verbose_name_plural|escape as name %}
-                              Recover deleted {{name}}
-                            {% endblocktrans %}
-                          </a>
-                        </li>
-                      {% endif %}
-                      {{ block.super }}
-                    {% endblock %}
-                  </ul>
+      <div class="row header">
+        <div class="large-2 columns">
+          <h1>{% sitetree_page_title from 'ralph_admin' %}</h1>
+        </div>
+        <div class="large-7 columns">
+          {% views_tabs list_views %}
+        </div>
+        <div class="large-3 columns">
+          <div class="header-toolbar">
+            {% if has_add_permission %}
+              {% url cl.opts|admin_urlname:'add' as add_url %}
+              <a class="button success small addLink" href="{% add_preserved_filters add_url is_popup to_field %}">
+                {% blocktrans with cl.opts.verbose_name as name %}
+                  <i class="fa fa-plus"></i> Add {{ name }}
+                {% endblocktrans %}
+              </a>
+            {% endif %}
+            <a href="#" data-options="align:left" class="button dropdown small" data-dropdown="drop1">
+              {% trans "Action" %}
+            </a>
+            {% block object-tools %}
+              <ul id="drop1" class="f-dropdown" data-dropdown-content>
+                {% block object-tools-items %}
+                  {% if not is_popup %}
+                    <li>
+                      <a href="{{recoverlist_url}}" class="recoverlink">
+                        <i class="fa fa-retweet"></i>
+                        {% blocktrans with cl.opts.verbose_name_plural|escape as name %}
+                          Recover deleted {{name}}
+                        {% endblocktrans %}
+                      </a>
+                    </li>
+                  {% endif %}
+                  {{ block.super }}
                 {% endblock %}
-              </div>
-            </div>
+              </ul>
+            {% endblock %}
           </div>
         </div>
       </div>

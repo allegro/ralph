@@ -65,7 +65,7 @@ class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            response.context['list_views'][0]['label'], ExtraListView.label
+            response.context['list_views'][0].label, ExtraListView.label
         )
 
     def test_extra_change_view_via_class_attr(self):
@@ -83,7 +83,7 @@ class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            response.context['change_views'][0]['label'], ExtraDetailView.label
+            response.context['change_views'][0].label, ExtraDetailView.label
         )
 
     def test_visit_extra_list_view(self):
@@ -130,7 +130,7 @@ class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            response.context['list_views'][0]['label'], TestView.label
+            response.context['list_views'][0].label, TestView.label
         )
 
     def test_extra_change_view_via_decorator(self):
@@ -150,7 +150,7 @@ class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            response.context['change_views'][0]['label'], TestView.label
+            response.context['change_views'][0].label, TestView.label
         )
 
     def test_register_decorator_raise_value_error_model_and_view(self):

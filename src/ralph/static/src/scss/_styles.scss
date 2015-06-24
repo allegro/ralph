@@ -11,8 +11,11 @@ body {
     padding-bottom: 60px;
     .content {
         border: 1px solid $tabs-border-color;
-        padding-top: rem-calc(20);
+        padding: rem-calc(16) 0;
         background-color: $tabs-content-bg-color;
+        h2 {
+            font-size: rem-calc(16);
+        }
     }
 }
 
@@ -89,15 +92,12 @@ h1 {
     margin-bottom: rem-calc(4);
     padding-bottom: 0;
 }
-.header-wrapper {
-    margin-bottom: 5px;
-    .header {
-        .header-toolbar {
-            float: right;
-        }
+
+.header {
+    .header-toolbar {
+        float: right;
     }
 }
-
 
 input.datepicker {
     width: 100px;
