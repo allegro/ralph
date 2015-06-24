@@ -3,7 +3,6 @@ django-debug-toolbar
 django-extensions
 Werkzeug
 pyinotify
-pdbpp
 pudb
 ipython
 ipdb

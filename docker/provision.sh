@@ -13,4 +13,3 @@ apt-get install -y \
     python3.4-dev \
     nodejs \
     npm
-npm install -g bower
