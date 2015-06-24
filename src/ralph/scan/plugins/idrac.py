@@ -263,17 +263,19 @@ def _get_disks(idrac_manager):
                 "{}{}".format(xmlns_n1, 'Model')
             ).text.strip(),
         )
+        size_in_bytes = record.find(
+            '{}{}'.format(xmlns_n1, 'SizeInBytes'),
+        ).text
+        serial_number = record.find(
+            '{}{}'.format(xmlns_n1, 'SerialNumber'),
+        ).text
         results.append({
             'size': int(
                 int(
-                    record.find(
-                        "{}{}".format(xmlns_n1, 'SizeInBytes'),
-                    ).text.strip(),
+                    size_in_bytes and size_in_bytes.strip() or 0
                 ) / 1024 / 1024 / 1024
             ),
-            'serial_number': record.find(
-                "{}{}".format(xmlns_n1, 'SerialNumber'),
-            ).text.strip(),
+            'serial_number': serial_number and serial_number.strip() or '',
             'label': model_name,
             'model_name': model_name,
             'family': manufacturer,
