@@ -313,7 +313,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='datacenterasset',
             name='rack',
-            field=models.ForeignKey(to='data_center.Rack'),
+            field=models.ForeignKey(to='data_center.Rack', null=True),
         ),
         migrations.AddField(
             model_name='connection',

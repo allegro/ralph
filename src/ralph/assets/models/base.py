@@ -17,4 +17,4 @@ class BaseObject(PermByFieldMixin, TimeStampMixin, models.Model):
 
     parent = models.ForeignKey('self', null=True, blank=True)
     remarks = models.TextField(blank=True)
-    service_env = models.ForeignKey('ServiceEnvironment')
+    service_env = models.ForeignKey('ServiceEnvironment', null=True)

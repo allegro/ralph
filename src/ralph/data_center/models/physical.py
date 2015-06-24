@@ -194,7 +194,7 @@ class Rack(NamedMixin.NonUnique, models.Model):
 
 class DataCenterAsset(Asset):
 
-    rack = models.ForeignKey(Rack)
+    rack = models.ForeignKey(Rack, null=True)
 
     # TODO: maybe move to objectModel?
     slots = models.FloatField(

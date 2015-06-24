@@ -53,6 +53,8 @@ class AssetServiceEnvWidget(widgets.ForeignKeyWidget):
     """
 
     def clean(self, value):
+        if not value:
+            return None
         try:
             value = value.split("|")  # service, enviroment
             value = ServiceEnvironment.objects.get(
