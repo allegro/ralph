@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 from django.utils.translation import ugettext_lazy as _
 
-
 from ralph.admin import RalphAdmin, register
 from ralph.back_office.models import BackOfficeAsset, Warehouse
+from ralph.back_office.views import (
+    BackOfficeAssetComponents,
+    BackOfficeAssetSoftware,
+)
 
 
 @register(BackOfficeAsset)
@@ -11,6 +14,10 @@ class BackOfficeAssetAdmin(RalphAdmin):
 
     """Back Office Asset admin class."""
 
+    change_views = [
+        BackOfficeAssetComponents,
+        BackOfficeAssetSoftware,
+    ]
     list_display = [
         'status', 'barcode', 'purchase_order', 'model', 'user', 'warehouse',
         'sn', 'hostname', 'invoice_date', 'invoice_no'
