@@ -27,7 +27,7 @@ SIMPLE_MODELS = [
     'Service',
     'Manufacturer',
     'Category',
-    'ComponentModel',
+    # mainly trash data: 'ComponentModel',
     'Warehouse',
     'DataCenter',
     'Accessory',
@@ -41,21 +41,21 @@ SIMPLE_MODELS = [
 ]
 DEPENDENT_MODELS = [
     'AssetModel',
-    'GenericComponent',
-    'BackOfficeAsset',
+    # new scan handles that: 'GenericComponent',
+    # 'BackOfficeAsset',
     'ServerRoom',
     'Rack',
     'DataCenterAsset',
-    'Connection',
-    'DiskShare',
-    'DiskShareMount',
-    'Licence',
-    'Support',
+    # new scan handles that: 'Connection',
+    # new scan handles that: 'DiskShare',
+    # new scan handles that: 'DiskShareMount',
+    # 'Licence',
+    # 'Support',
 ]
 MANY_TO_MANY = [
     'ServiceEnvironment',
-    'LicenceAsset',
-    'LicenceUser',
+    # 'LicenceAsset',
+    # 'LicenceUser',
     'RackAccessory',
 ]
 

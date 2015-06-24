@@ -150,7 +150,7 @@ LOGGING = {
             'propagate': True,
         },
         'ralph': {
-            'handlers': ['file'],
+            'handlers': ['file', 'console'],
             'propagate': True,
             'level': 'DEBUG',
         },
@@ -790,4 +790,3 @@ RQ_TIMEOUT = 3000
 # points to a view which resolves to the user's home view after logging in
 from django.core.urlresolvers import reverse_lazy
 LOGIN_REDIRECT_URL = reverse_lazy('find_user_home')
-

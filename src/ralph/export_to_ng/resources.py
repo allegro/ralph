@@ -6,11 +6,12 @@ from __future__ import unicode_literals
 
 from import_export import fields
 from import_export import resources
-from ralph.discovery import models_device
-
 from ralph.cmdb import models_ci
+from ralph.discovery import models_device
 from ralph.discovery import models_component
+from ralph_assets import models_dc_assets
 from ralph_assets import models_assets
+from ralph_assets.licences.models import Licence
 
 
 class BackOfficeAssetResource(resources.ModelResource):
@@ -52,6 +53,46 @@ class BackOfficeAssetResource(resources.ModelResource):
 
 class DataCenterAssetResource(resources.ModelResource):
     service_env = fields.Field()
+    rack = fields.Field('rack', column_name='rack')
+
+    rack = fields.Field('rack', column_name='rack')
+    orientation = fields.Field('orientation', column_name='orientation')
+    position = fields.Field('position', column_name='position')
+    slot_no = fields.Field('slot_no', column_name='slot_no')
+
+    def dehydrate_rack(self, asset):
+        try:
+            rack = asset.device_info.rack.id or ''
+        except AttributeError:
+            rack = ''
+        return rack
+
+    def dehydrate_orientation(self, asset):
+        try:
+            orientation = asset.device_info.orientation or ''
+        except AttributeError:
+            orientation = ''
+        return orientation
+
+    def dehydrate_position(self, asset):
+        try:
+            position = asset.device_info.position or ''
+        except AttributeError:
+            position = ''
+        return position
+
+    def dehydrate_slot_no(self, asset):
+        try:
+            slot_no = asset.device_info.slot_no
+        except AttributeError:
+            slot_no = ''
+        return slot_no
+
+    def dehydrate_barcode(self, asset):
+        return asset.barcode or ''
+
+    def dehydrate_sn(self, asset):
+        return asset.sn or ''
 
     def dehydrate_hostname(self, asset):
         try:
@@ -60,19 +101,13 @@ class DataCenterAssetResource(resources.ModelResource):
             hostname = None
         return hostname
 
-    def dehydrate_rack(self, asset):
-        try:
-            rack = asset.device_info.rack.id
-        except AttributeError:
-            rack = None
-        return rack
-
     def dehydrate_service_env(self, asset):
-        device_environment = (
-            asset.device_environment.name if asset.device_environment else ''
-        )
-        service = asset.service.name if asset.service else ''
-        return "{}|{}".format(service, device_environment)
+        service_env = ""
+        service = getattr(asset.service, 'name', '')
+        device_environment = getattr(asset.device_environment, 'name', '')
+        if service and device_environment:
+            service_env = "{}|{}".format(service, device_environment)
+        return service_env
 
     class Meta:
         fields = (
@@ -126,7 +161,8 @@ class DataCenterAssetResource(resources.ModelResource):
 
     def get_queryset(self):
         return self.Meta.model.objects.filter(
-            type=models_assets.AssetType.data_center
+            type=models_assets.AssetType.data_center,
+            part_info=None,
         )
 
 
@@ -141,12 +177,10 @@ class AssetModelResource(resources.ModelResource):
             'power_consumption',
             'visualization_layout_back',
             'visualization_layout_front',
-            # verify, these missing in old ralph
-            # 'created': '',
-            # 'modified': '',
-            # 'name': '',
-            # TODO: map it
-            # 'type': '',
+            'type',
+            'created',
+            'modified',
+            'name',
         )
         model = models_assets.AssetModel
 
@@ -189,15 +223,15 @@ class ServiceEnvironmentResource(resources.ModelResource):
     environment = fields.Field()
 
     def dehydrate_service(self, ci_relation):
-        return ci_relation.parent.name
+        return ci_relation.parent.id
 
     def dehydrate_environment(self, ci_relation):
-        return ci_relation.child.name
+        return ci_relation.child.id
 
     def get_queryset(self):
         return models_ci.CIRelation.objects.filter(
             type=models_ci.CI_RELATION_TYPES.CONTAINS,
-            parent__type=models_ci.CIType.objects.get(name='Service'),
+            parent__in=models_device.ServiceCatalog.objects.all(),
             child__type=models_ci.CIType.objects.get(name='Environment'),
         )
 
@@ -211,18 +245,25 @@ class ServiceEnvironmentResource(resources.ModelResource):
 
 
 class ServiceResource(resources.ModelResource):
-    def dehydrate_environment(self, service):
-        return service.child.name
+    name = fields.Field(column_name='name')
+    profit_center = fields.Field(column_name='profit_center')
+
+    def dehydrate_name(self, service):
+        return service.name
 
     def dehydrate_profit_center(self, service):
-        return service.parent.name
+        profit_center = service.child.filter(
+            parent__type=models_ci.CI_TYPES.PROFIT_CENTER,
+        )
+        assert len(profit_center) < 2, 'found many profit centers'
+        if profit_center:
+            profit_center_name = profit_center[0].parent.name
+        else:
+            profit_center_name = None
+        return profit_center_name
 
     def get_queryset(self):
-        return models_ci.CIRelation.objects.filter(
-            type=models_ci.CI_RELATION_TYPES.CONTAINS,
-            parent__type=models_ci.CIType.objects.get(name='ProfitCenter'),
-            child__type=models_ci.CIType.objects.get(name='Service'),
-        )
+        return models_device.ServiceCatalog.objects.all()
 
     class Meta:
         fields = (
@@ -235,6 +276,12 @@ class ServiceResource(resources.ModelResource):
             # 'cost_center': '',
         )
         model = models_ci.CIRelation
+
+
+class RackResource(resources.ModelResource):
+    class Meta:
+        exclude = ('data_center', 'accessories', 'deprecated_ralph_rack',)
+        model = models_dc_assets.Rack
 
 
 class EnvironmentResource(resources.ModelResource):
@@ -264,39 +311,22 @@ class GenericComponentResource(resources.ModelResource):
         model = models_component.GenericComponent
 
 
-class DiskShareResource(resources.ModelResource):
-    def dehydrate_device(self, disk_share):
-        try:
-            value = disk_share.device.sn
-        except AttributeError:
-            value = ''
-        return value
-
-    def dehydrate_model(self, disk_share):
-        try:
-            value = disk_share.model.name
-        except AttributeError:
-            value = ''
-        return value
-
+class LicenceResource(resources.ModelResource):
     class Meta:
-        model = models_component.DiskShare
+        model = Licence
+        fields = [
+            'id', 'created', 'modified', 'manufacturer_id', 'licence_type_id',
+            'software_category_id', 'number_bought', 'sn', 'niw', 'valid_thru',
+            'order_no', 'price', 'accounting_id', 'invoice_date', 'provider',
+            'invoice_no', 'remarks', 'license_details', 'licence_type',
+            'software_category'
+        ]
 
+    def dehydrate_manufacturer(self, licence):
+        return licence.manufacturer.name
 
-class DiskShareMountResource(resources.ModelResource):
-    def dehydrate_device(self, disk_share_mount):
-        try:
-            value = disk_share_mount.device.sn
-        except AttributeError:
-            value = ''
-        return value
+    def dehydrate_licence_type(self, licence):
+        return licence.licence_type.name
 
-    def dehydrate_share(self, disk_share_mount):
-        try:
-            value = disk_share_mount.share.wwn
-        except AttributeError:
-            value = ''
-        return value
-
-    class Meta:
-        model = models_component.DiskShareMount
+    def dehydrate_software_category(self, licence):
+        return licence.software_category.name
