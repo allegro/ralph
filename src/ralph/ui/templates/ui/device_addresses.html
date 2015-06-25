@@ -85,7 +85,7 @@
                             {{ f.value|default:'' }}
                             {% endif %}
                             {% for e in f.errors %}
-                                <div class="help-block">{{ e }}</div>
+                                <div class="help-block">{{ e|safe }}</div>
                             {% empty %}
                             {%  if f.help_text %}
                                 <div class="help-block">{{ f.help_text }}</div>
