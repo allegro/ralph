@@ -9,13 +9,13 @@
     <link rel="stylesheet" type="text/css" href="{% static "css/ralph.css" %}" />
     <title>{% block title %}{% endblock %}</title>
   </head>
-  <body {% if is_popup %} class="popup {% block bodyclass %}{% endblock %}"{% endif %}>
+  <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}">
     {% if not is_popup %}
       <nav class="top-bar" data-topbar="">
         <section class="top-bar-section">
           <ul class="title-area">
             <li class="name">
-              {% block branding %}{% endblock %}
+              {% block branding %}{{ site_header }}{% endblock %}
             </li>
             <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
           </ul>
@@ -66,7 +66,7 @@
         {% block content %}{% endblock %}
       </div>
     </div>
-    {% block extrahead %}{% endblock %}
     {% include 'admin/includes/javascripts.html' %}
+    {% block extrahead %}{% endblock %}
   </body>
 </html>

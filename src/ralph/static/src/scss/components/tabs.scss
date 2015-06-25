@@ -12,10 +12,9 @@
             float: left;
             margin-right: 5px;
             a {
-                // background-color: $mdc-orange-800;
                 background-color: $tabs-content-bg-color;
-                border-bottom: 0;
                 border: 1px solid $tabs-border-color;
+                border-bottom: 0;
                 font-size: $button-font-med;
                 padding: rem-calc(10 20);
                 padding-bottom: rem-calc(11);

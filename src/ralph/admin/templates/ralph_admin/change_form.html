@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load i18n admin_urls admin_static admin_modify foundation_form foundation_alert sitetree %}
+{% load i18n admin_urls ralph_tags admin_static admin_modify foundation_form foundation_alert sitetree %}
 
 {% block extrahead %}{{ block.super }}
   <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
@@ -11,49 +11,39 @@
   <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
 {% endblock %}
 
-{% block coltype %}colM{% endblock %}
-
 {% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-form{% endblock %}
 
 {% block content %}
-
-  {# TODO: convert to tabs #}
-  {% if object_id %}
-    <ul>
-      {% for view in change_views %}
-        <li><a href="{{ view.url }}">{{ view.label }}</a></li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-
   <div id="content-main">
-    <div class="row">
-      <div class="large-2 columns">
-        <h1>Change</h1>
+    <div class="row header">
+      <div class="large-4 columns">
+        <h1>{% sitetree_page_title from 'ralph_admin' %}</h1>
       </div>
-      <div class="large-10 columns">
-        {% block object-tools %}
-          {% if change %}
-            {% if not is_popup %}
-              <div class="row">
-                <div class="small-1 columns end small-offset-11">
-                  <ul class="object-tools button-group radius">
-                    {% block object-tools-items %}
+      <div class="large-5 columns">
+        {% views_tabs change_views %}
+      </div>
+      <div class="large-3 columns">
+        <div class="header-toolbar">
+          {% block object-tools %}
+            {% if change %}
+              {% if not is_popup %}
+                <ul class="object-tools button-group radius">
+                  {% block object-tools-items %}
                     <li>
-                        {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
-                        <a href="{% add_preserved_filters history_url %}" class="historylink small button small right">{% trans "History" %}</a>
+                      {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
+                        <a href="{% add_preserved_filters history_url %}" class="historylink small button small right">
+                          {% trans "History" %}
+                        </a>
                     </li>
-                    {% if has_absolute_url %}<li><a href="{{ absolute_url }}" class="viewsitelink">{% trans "View on site" %}</a></li>{% endif %}
-                    {% endblock %}
-                  </ul>
-                </div>
-              </div>
+                  {% endblock %}
+                </ul>
+              {% endif %}
             {% endif %}
-          {% endif %}
-        {% endblock %}
+          {% endblock %}
+        </div>
       </div>
     </div>
-    <form  class="row" {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.model_name }}_form" novalidate>{% csrf_token %}{% block form_top %}{% endblock %}
+    <form  class="row content" {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.model_name }}_form" novalidate>{% csrf_token %}{% block form_top %}{% endblock %}
       <div>
         {% if is_popup %}<input type="hidden" name="{{ is_popup_var }}" value="1" />{% endif %}
         {% if to_field %}<input type="hidden" name="{{ to_field_var }}" value="{{ to_field }}" />{% endif %}

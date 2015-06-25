@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, register
 from import_export.admin import ImportExportModelAdmin
 
+from ralph.admin import RalphAdmin, register
+from ralph.admin.views import RalphDetailView
 from ralph.data_importer import resources
 from ralph.data_center.models.virtual import (
     CloudProject,
@@ -38,10 +39,23 @@ class DataCenterAdmin(RalphAdmin):
     pass
 
 
+class NetworkView(RalphDetailView):
+    name = 'network'
+    label = 'Network'
+    url_name = 'network'
+    icon = 'chain'
+
+    def get_context_data(self, **kwargs):
+        context = super(NetworkView, self).get_context_data(**kwargs)
+        context['adresses'] = IPAddress.objects.filter(asset=self)
+        return context
+
+
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(ImportExportModelAdmin, RalphAdmin):
     """Data Center Asset admin class."""
 
+    change_views = [NetworkView]
     resource_class = resources.DataCenterAssetResource
     list_display = [
         'status', 'barcode', 'purchase_order', 'model',

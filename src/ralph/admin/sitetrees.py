@@ -1,10 +1,4 @@
 # -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import activate
@@ -15,6 +9,7 @@ from sitetree.utils import (
     item
 )
 
+from ralph.admin.sites import ralph_site
 # To generate and display the menu, use the command:
 # ralph sitetreeload
 # ralph sitetree_resync_apps
@@ -27,7 +22,42 @@ def ralph_item(*args, **kwargs):
     return item(*args, **kwargs)
 
 
-sitetrees = (
+extra_views = ralph_site.get_extra_view_menu_items()
+
+
+def get_menu_items_for_admin(name):
+    return [
+        ralph_item(
+            access_by_perms='data_center.change_datacenterasset', **view)
+        for view in extra_views[name]
+    ]
+
+
+def section(section_name, app, model):
+    app, model = map(str.lower, [app, model])
+    return ralph_item(
+        title=section_name,
+        url='admin:{}_{}_changelist'.format(app, model),
+        access_by_perms='{}.change_{}'.format(app, model),
+        children=[
+            ralph_item(
+                title=_('Add'),
+                url='admin:{}_{}_add'.format(app, model),
+                access_by_perms='{}.add_{}'.format(app, model),
+            ),
+            ralph_item(
+                title='{{ original }}',
+                url='admin:{}_{}_change original.id'.format(app, model),
+                access_by_perms='{}.change_{}'.format(app, model),
+                children=get_menu_items_for_admin(
+                    '{}_{}'.format(app, model)
+                ),
+            ),
+        ]
+    )
+
+
+sitetrees = [
     tree('ralph_admin', items=[
         ralph_item(
             title=_('Data Center'),
@@ -46,52 +76,18 @@ sitetrees = (
             ],
             perms_mode_all=False,
             children=[
-                ralph_item(
-                    title=_('Hardware'),
-                    url='admin:data_center_datacenterasset_changelist',
-                    access_by_perms='data_center.change_datacenterasset'
-                ),
-                ralph_item(
-                    title=_('Cloud projects'),
-                    url='admin:data_center_cloudproject_changelist',
-                    access_by_perms='data_center.change_cloudproject'
-                ),
-                ralph_item(
-                    title=_('Data Centers'),
-                    url='admin:data_center_datacenter_changelist',
-                    access_by_perms='data_center.change_datacenter'
-                ),
-                ralph_item(
-                    title=_('Databases'),
-                    url='admin:data_center_database_changelist',
-                    access_by_perms='data_center.change_database'
-                ),
-                ralph_item(
-                    title=_('DiskShares'),
-                    url='admin:data_center_diskshare_changelist',
-                    access_by_perms='data_center.change_diskshare'
-                ),
-                ralph_item(
-                    title=_('Rack Accessories'),
-                    url='admin:data_center_rackaccessory_changelist',
-                    access_by_perms='data_center.change_rackaccessory'
-                ),
-                ralph_item(
-                    title=_('Server Rooms'),
-                    url='admin:data_center_serverroom_changelist',
-                    access_by_perms='data_center.change_serverroom'
-                ),
-                ralph_item(
-                    title=_('VIPs'),
-                    url='admin:data_center_vip_changelist',
-                    access_by_perms='data_center.change_vip'
-                ),
-                ralph_item(
-                    title=_('Virtual Servers'),
-                    url='admin:data_center_virtualserver_changelist',
-                    access_by_perms='data_center.change_virtualserver'
-                ),
-            ]
+                section(_('Hardware'), 'data_center', 'DataCenterAsset'),
+                section(_('Cloud projects'), 'data_center', 'CloudProject'),
+                section(_('Data Centers'), 'data_center', 'DataCenter'),
+                section(_('Databases'), 'data_center', 'Database'),
+                section(_('Disk Shares'), 'data_center', 'DiskShare'),
+                section(_('Data Centers'), 'data_center', 'DataCenter'),
+                section(_('Rack Accessories'), 'data_center', 'RackAccessory'),
+                section(_('Server Rooms'), 'data_center', 'ServerRoom'),
+                section(_('VIPs'), 'data_center', 'VIP'),
+                section(_('Data Centers'), 'data_center', 'DataCenter'),
+                section(_('Virtual Servers'), 'data_center', 'VirtualServer'),
+            ],
         ),
         ralph_item(
             title=_('DC Visualization'),
@@ -113,16 +109,8 @@ sitetrees = (
             ],
             perms_mode_all=False,
             children=[
-                ralph_item(
-                    title=_('Hardware'),
-                    url='admin:back_office_backofficeasset_changelist',
-                    access_by_perms='back_office.change_backofficeasset'
-                ),
-                ralph_item(
-                    title=_('Warehouses'),
-                    url='admin:back_office_warehouse_changelist',
-                    access_by_perms='back_office.change_warehouse'
-                ),
+                section(_('Hardware'), 'back_office', 'backofficeasset'),
+                section(_('Warehouses'), 'back_office', 'warehouse'),
             ]
         ),
         ralph_item(
@@ -136,21 +124,9 @@ sitetrees = (
             ],
             perms_mode_all=False,
             children=[
-                ralph_item(
-                    title=_('All'),
-                    url='admin:licences_licence_changelist',
-                    access_by_perms='licences.change_licence'
-                ),
-                ralph_item(
-                    title=_('Types'),
-                    url='admin:licences_licencetype_changelist',
-                    access_by_perms='licences.change_licencetype'
-                ),
-                ralph_item(
-                    title=_('Categories'),
-                    url='admin:licences_softwarecategory_changelist',
-                    access_by_perms='licences.change_softwarecategory'
-                ),
+                section(_('Licences'), 'licences', 'Licence'),
+                section(_('Types'), 'licences', 'LicenceType'),
+                section(_('Categories'), 'licences', 'SoftwareCategory'),
             ]
         ),
         ralph_item(
@@ -163,16 +139,8 @@ sitetrees = (
             ],
             perms_mode_all=False,
             children=[
-                ralph_item(
-                    title=_('All'),
-                    url='admin:supports_support_changelist',
-                    access_by_perms='supports.change_support'
-                ),
-                ralph_item(
-                    title=_('Types'),
-                    url='admin:supports_supporttype_changelist',
-                    access_by_perms='supports.change_supporttype'
-                ),
+                section(_('Supports'), 'supports', 'Support'),
+                section(_('Types'), 'supports', 'SupportType'),
             ]
         ),
         ralph_item(
@@ -185,54 +153,18 @@ sitetrees = (
             ],
             perms_mode_all=False,
             children=[
-                ralph_item(
-                    title=_('Asset model'),
-                    url='admin:assets_assetmodel_changelist',
-                    access_by_perms='assets.change_assetmodel'
+                section(_('Asset model'), 'assets', 'AssetModel'),
+                section(_('Manufacturer'), 'assets', 'Manufacturer'),
+                section(_('Service'), 'assets', 'Service'),
+                section(_('Environment'), 'assets', 'Environment'),
+                section(
+                    _('Service Environment'), 'assets', 'ServiceEnvironment'
                 ),
-                ralph_item(
-                    title=_('Manufacturer'),
-                    url='admin:assets_manufacturer_changelist',
-                    access_by_perms='assets.change_manufacturer'
-                ),
-                ralph_item(
-                    title=_('Service'),
-                    url='admin:assets_service_changelist',
-                    access_by_perms='assets.change_service'
-                ),
-                ralph_item(
-                    title=_('Environment'),
-                    url='admin:assets_environment_changelist',
-                    access_by_perms='assets.change_environment'
-                ),
-                ralph_item(
-                    title=_('Service Environment'),
-                    url='admin:assets_serviceenvironment_changelist',
-                    access_by_perms='assets.change_serviceenvironment'
-                ),
-                ralph_item(
-                    title=_('Users list'),
-                    url='admin:auth_user_changelist',
-                    access_by_perms='auth.change_user'
-                ),
-                ralph_item(
-                    title=_('Add user'),
-                    url='admin:auth_user_add',
-                    access_by_perms='auth.add_user'
-                ),
-                ralph_item(
-                    title=_('Groups list'),
-                    url='admin:auth_group_changelist',
-                    access_by_perms='auth.change_group'
-                ),
-                ralph_item(
-                    title=_('Add group'),
-                    url='admin:auth_group_add',
-                    access_by_perms='auth.add_group'
-                ),
+                section(_('Users list'), 'auth', 'User'),
+                section(_('Groups list'), 'auth', 'Group'),
             ]
-        ),
-    ]),
-)
+        )
+    ])
+]
 
 register_i18n_trees(['ralph_admin'])
