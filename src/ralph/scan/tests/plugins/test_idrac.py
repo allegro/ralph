@@ -147,8 +147,8 @@ class IdracPluginTest(TestCase):
                     'family': 'WD',
                     'label': 'WD WD3001BKHG',
                     'model_name': 'WD WD3001BKHG',
-                    'serial_number': 'ABC1E32KSCNJ',
-                    'size': 278,
+                    'serial_number': '',
+                    'size': 0,
                 },
                 {
                     'family': 'WD',

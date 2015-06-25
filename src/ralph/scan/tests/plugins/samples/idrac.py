@@ -1202,8 +1202,8 @@ physical_disk_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:RollupStatus>1</n1:RollupStatus>
           <n1:SASAddress>50014EE7AAAC1616</n1:SASAddress>
           <n1:SecurityState>0</n1:SecurityState>
-          <n1:SerialNumber>ABC1E32KSCNJ        </n1:SerialNumber>
-          <n1:SizeInBytes>299439751168</n1:SizeInBytes>
+          <n1:SerialNumber></n1:SerialNumber>
+          <n1:SizeInBytes></n1:SizeInBytes>
           <n1:Slot>0</n1:Slot>
           <n1:SupportedEncryptionTypes>None</n1:SupportedEncryptionTypes>
           <n1:UsedSizeInBytes>299439751168</n1:UsedSizeInBytes>
