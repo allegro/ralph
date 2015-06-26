@@ -148,7 +148,7 @@ sitetrees = [
             url='#',
             url_as_pattern=False,
             access_by_perms=[
-                'auth.change_user', 'auth.add_user',
+                'accounts.change_ralphuser', 'accounts.add_ralphuser',
                 'auth.change_group', 'auth.add_group'
             ],
             perms_mode_all=False,
@@ -160,7 +160,7 @@ sitetrees = [
                 section(
                     _('Service Environment'), 'assets', 'ServiceEnvironment'
                 ),
-                section(_('Users list'), 'auth', 'User'),
+                section(_('Users list'), 'accounts', 'RalphUser'),
                 section(_('Groups list'), 'auth', 'Group'),
             ]
         )

@@ -1,16 +1,9 @@
 # -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import csv
 import glob
 import logging
 import os
 import tempfile
-import six
 import tablib
 import zipfile
 
@@ -24,11 +17,6 @@ from django.core.management.base import (
 from import_export import resources
 from ralph.data_importer import resources as ralph_resources
 from ralph.data_importer.resources import DefaultResource
-
-if six.PY2:
-    from ralph.lib.unicode_csv import UnicodeReader as csv_reader   # noqa
-else:
-    from csv import reader as csv_reader
 
 
 APP_MODELS = {model._meta.model_name: model for model in apps.get_models()}
@@ -125,9 +113,7 @@ class Command(BaseCommand):
 
         with open(options.get('source')) as csv_file:
             reader_kwargs = {}
-            if six.PY2:
-                reader_kwargs['encoding'] = options['encoding']
-            reader = csv_reader(
+            reader = csv.reader(
                 csv_file,
                 dialect='RalphImporter',
                 **reader_kwargs

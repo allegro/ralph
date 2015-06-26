@@ -1,5 +1,5 @@
 -e .
--r base.txt
+-r prod_ldap.txt
 -r docs.txt
 factory-boy
 coverage
