@@ -10,4 +10,4 @@ cd $DIR
 ./upgrade.sh
 
 $RALPH_EXEC createsuperuser --noinput --username ralph --email ralph@allegrogroup.com
-python $RALPH_DIR/docker/createsuperuser.py
+python3 $RALPH_DIR/docker/createsuperuser.py
