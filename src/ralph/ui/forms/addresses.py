@@ -285,12 +285,100 @@ class DHCPFormSetBase(forms.models.BaseModelFormSet):
                 )
 
 
-DHCPFormSet = forms.models.modelformset_factory(
+DHCPBaseFormSet = forms.models.modelformset_factory(
     DHCPEntry,
     form=DHCPEntryForm,
     formset=DHCPFormSetBase,
     can_delete=True,
 )
+
+
+class DHCPFormSet(DHCPBaseFormSet):
+    def __init__(self, *args, **kwargs):
+        self.device = args[3]
+        return super(DHCPFormSet, self).__init__(*args, **kwargs)
+
+    def check_ip_is_from_detected(self, form, form_idx, valid_addresses):
+        valid = True
+        if form['ip'].value() not in valid_addresses:
+            ip_errors = self.errors[form_idx].setdefault('ip', [])
+            error_msg = _(
+                'Ip address should be from detected addresses: '
+            )
+            error_msg += ', '.join(valid_addresses)
+            ip_errors.append(error_msg)
+            valid = False
+        return valid
+
+    def check_mac_from_device_components(self, form, form_idx, valid_macs):
+        valid = True
+        if form['mac'].value() not in valid_macs:
+            mac_errors = self.errors[form_idx].setdefault('mac', [])
+            error_msg = _(
+                'MAC address should be from detected ethernets: '
+            )
+            error_msg += ', '.join(valid_macs)
+            mac_errors.append(error_msg)
+            valid = False
+        return valid
+
+    def is_valid(self):
+        """
+        Returns True if form.errors is empty for every form in self.forms.
+        """
+        is_valid = super(DHCPFormSet, self).is_valid()
+        forms_valid = True
+        forms_macs = []
+        forms_count = self.total_form_count() - 1
+        detected_addresses = self.device.ipaddress_set.values_list(
+            'address', flat=True,
+        )
+        valid_macs = self.device.ethernet_set.values_list('mac', flat=True)
+        for i in range(0, forms_count):
+            form = self.forms[i]
+            if self.can_delete:
+                if self._should_delete_form(form):
+                    # This form is going to be deleted so any of its errors
+                    # should not cause the entire formset to be invalid.
+                    continue
+            forms_macs.append(form['mac'].value())
+            valid = self.check_ip_is_from_detected(form, i, detected_addresses)
+            if not valid:
+                forms_valid = False
+
+            valid = self.check_mac_from_device_components(form, i, valid_macs)
+            if not valid:
+                forms_valid = False
+
+        # check if picked MAC from dhcp-entries it's not assigned to other
+        # device
+        used_macs = DHCPEntry.objects.filter(
+            mac__in=forms_macs,
+        ).values_list('mac', flat=True).all()
+        invalid_mac2id = {
+            k: v for k, v in
+            Ethernet.objects.exclude(device=self.device).filter(
+                mac__in=used_macs,
+            ).values_list('mac', 'device__sn')
+        }
+        for i in range(0, forms_count):
+            form = self.forms[i]
+            if self.can_delete:
+                if self._should_delete_form(form):
+                    # This form is going to be deleted so any of its errors
+                    # should not cause the entire formset to be invalid.
+                    continue
+            if form['mac'] in invalid_mac2id.keys():
+                mac_errors = self.errors[i].setdefault('mac', [])
+                anchor = "<a href='{}'>{}</a>".format(
+                    self.device.url, invalid_mac2id[form['mac'].value()],
+                )
+                error_msg = _(
+                    'This MAC is used by other device: {}'.format(anchor)
+                )
+                mac_errors.append(error_msg)
+                forms_valid = False
+        return is_valid and forms_valid
 
 
 class IPAddressForm(forms.ModelForm):
