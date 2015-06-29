@@ -110,7 +110,7 @@ def scan_address(ip_address, **kwargs):
         ssh.close()
     pairs = parse.pairs(lines=[line.strip() for line in lines])
     sn = pairs.get('Serial Number', None)
-    model, ram, cpu = pairs['Hardware'].split(',')
+    model, ram, cpu = pairs['Hardware'].split(',')[:3]
     boot_firmware = pairs['Boot microcode']
     macs = []
     for i in xrange(99):
