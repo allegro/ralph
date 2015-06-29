@@ -19,7 +19,8 @@ from ralph.data_importer import resources
 
 @register(ServiceEnvironment)
 class ServiceEnvironmentAdmin(RalphAdmin):
-    pass
+
+    list_select_related = ['service', 'environment']
 
 
 @register(Service)
@@ -39,7 +40,11 @@ class EnvironmentAdmin(RalphAdmin):
 
 @register(AssetModel)
 class AssetModelAdmin(ImportExportModelAdmin, RalphAdmin):
+
     resource_class = resources.AssetModelResource
+
+    list_select_related = ['manufacturer']
+    raw_id_fields = ['manufacturer']
 
 
 @register(Category)

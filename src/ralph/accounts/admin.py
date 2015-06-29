@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.admin import (
+    GroupAdmin,
+    UserAdmin,
+)
+from django.contrib.auth.models import Group
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import RalphUser
@@ -37,3 +41,8 @@ class RalphUserAdmin(UserAdmin, RalphAdmin):
             )
         })
     )
+
+
+@register(Group)
+class RalphGroupAdmin(GroupAdmin, RalphAdmin):
+    pass

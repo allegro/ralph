@@ -64,7 +64,8 @@ class DataCenterAssetAdmin(ImportExportModelAdmin, RalphAdmin):
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
     list_filter = ['status']
     date_hierarchy = 'created'
-    list_select_related = ['model']
+    list_select_related = ['model', 'model__manufacturer']
+    raw_id_fields = ['model', 'rack', 'service_env']
 
     fieldsets = (
         (_('Basic info'), {
@@ -95,17 +96,27 @@ class DataCenterAssetAdmin(ImportExportModelAdmin, RalphAdmin):
 
 @register(ServerRoom)
 class ServerRoomAdmin(RalphAdmin):
-    pass
+
+    list_select_related = ['data_center']
 
 
 @register(Rack)
 class RackAdmin(RalphAdmin):
-    pass
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "server_room":
+            kwargs["queryset"] = ServerRoom.objects.select_related(
+                'data_center',
+            )
+        return super(RackAdmin, self).formfield_for_foreignkey(
+            db_field, request, **kwargs
+        )
 
 
 @register(RackAccessory)
 class RackAccessoryAdmin(RalphAdmin):
-    pass
+
+    list_select_related = ['rack', 'accessory']
 
 
 @register(Database)

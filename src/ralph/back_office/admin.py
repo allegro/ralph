@@ -19,6 +19,7 @@ class BackOfficeAssetAdmin(RalphAdmin):
     list_filter = ['status']
     date_hierarchy = 'created'
     list_select_related = ['model', 'user', 'warehouse', 'model__manufacturer']
+    raw_id_fields = ['model', 'user', 'owner', 'service_env']
 
     fieldsets = (
         (_('Basic info'), {
