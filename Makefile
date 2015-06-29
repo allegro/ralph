@@ -4,19 +4,19 @@ TEST?=ralph
 
 fix_tablib:
 	# https://github.com/kennethreitz/tablib/issues/177
-	pip install 'git+https://github.com/kennethreitz/tablib.git@develop'
+	pip3 install 'git+https://github.com/kennethreitz/tablib.git@develop'
 
 install: fix_tablib
-	pip install -r requirements/prod.txt
+	pip3 install -r requirements/prod.txt
 
 install-test: fix_tablib
-	pip install -r requirements/test.txt
+	pip3 install -r requirements/test.txt
 
 install-dev: fix_tablib
-	pip install -r requirements/dev.txt
+	pip3 install -r requirements/dev.txt
 
 install-docs:
-	pip install -r requirements/docs.txt
+	pip3 install -r requirements/docs.txt
 
 test: clean
 	test_ralph test $(TEST)

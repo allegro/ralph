@@ -5,11 +5,12 @@ apt-get update
 
 apt-get install -y \
     git \
+    libldap2-dev \
     libmysqlclient-dev \
+    libsasl2-dev \
     mysql-client \
-    python-dev \
-    python-virtualenv \
     python3.4 \
     python3.4-dev \
+    python3-pip \
     nodejs \
     npm

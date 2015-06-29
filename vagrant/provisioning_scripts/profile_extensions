@@ -1,3 +1,5 @@
 # Add automatic activation to user .profile file
 source /home/vagrant/bin/activate
 source /home/vagrant/src/ralph/scripts/ralph_bash_completion.sh
+
+export PATH=$PATH:/home/vagrant/src/ralph/node_modules/.bin
