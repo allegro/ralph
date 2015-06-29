@@ -59,33 +59,34 @@ from django.contrib.auth import get_user_model
 from ralph.assets.models import (
     assets,
     base,
-    components
+    components,
 )
 from ralph.data_center.models import physical
 from ralph.data_center.models.components import (
     DiskShare,
-    DiskShareMount
+    DiskShareMount,
 )
 from ralph.data_importer.widgets import (
     AssetServiceEnvWidget,
     BaseObjectWidget,
-    ImportedForeignKeyWidget
+    ImportedForeignKeyWidget,
+    UserWidget,
 )
 from ralph.data_importer.mixins import ImportForeignKeyMixin
 from ralph.back_office.models import (
     BackOfficeAsset,
-    Warehouse
+    Warehouse,
 )
 from ralph.licences.models import (
     Licence,
     LicenceAsset,
     LicenceUser,
     LicenceType,
-    SoftwareCategory
+    SoftwareCategory,
 )
 from ralph.supports.models import (
     Support,
-    SupportType
+    SupportType,
 )
 
 
@@ -113,7 +114,7 @@ class CategoryResource(ImportForeignKeyMixin, resources.ModelResource):
     parent = fields.Field(
         column_name='parent',
         attribute='parent',
-        widget=ImportedForeignKeyWidget(assets.Category)
+        widget=ImportedForeignKeyWidget(assets.Category),
     )
 
     class Meta:
@@ -124,12 +125,12 @@ class GenericComponentResource(ImportForeignKeyMixin, resources.ModelResource):
     asset = fields.Field(
         column_name='asset',
         attribute='asset',
-        widget=BaseObjectWidget(base.BaseObject, 'sn')
+        widget=BaseObjectWidget(base.BaseObject, 'sn'),
     )
     model = fields.Field(
         column_name='model',
         attribute='model',
-        widget=ImportedForeignKeyWidget(components.ComponentModel)
+        widget=ImportedForeignKeyWidget(components.ComponentModel),
     )
 
     class Meta:
@@ -140,32 +141,32 @@ class BackOfficeAssetResource(ImportForeignKeyMixin, resources.ModelResource):
     parent = fields.Field(
         column_name='parent',
         attribute='parent',
-        widget=ImportedForeignKeyWidget(assets.Asset)
+        widget=ImportedForeignKeyWidget(assets.Asset),
     )
     service_env = fields.Field(
         column_name='service_env',
         attribute='service_env',
-        widget=AssetServiceEnvWidget(assets.ServiceEnvironment, 'name')
+        widget=AssetServiceEnvWidget(assets.ServiceEnvironment, 'name'),
     )
     model = fields.Field(
         column_name='model',
         attribute='model',
-        widget=ImportedForeignKeyWidget(assets.AssetModel)
+        widget=ImportedForeignKeyWidget(assets.AssetModel),
     )
     user = fields.Field(
         column_name='user',
         attribute='user',
-        widget=ImportedForeignKeyWidget(get_user_model())
+        widget=UserWidget(get_user_model()),
     )
     owner = fields.Field(
         column_name='owner',
         attribute='owner',
-        widget=ImportedForeignKeyWidget(get_user_model())
+        widget=UserWidget(get_user_model()),
     )
     warehouse = fields.Field(
         column_name='warehouse',
         attribute='warehouse',
-        widget=ImportedForeignKeyWidget(Warehouse)
+        widget=ImportedForeignKeyWidget(Warehouse),
     )
 
     class Meta:
@@ -176,7 +177,7 @@ class ServerRoomResource(ImportForeignKeyMixin, resources.ModelResource):
     data_center = fields.Field(
         column_name='data_center',
         attribute='data_center',
-        widget=ImportedForeignKeyWidget(physical.DataCenter)
+        widget=ImportedForeignKeyWidget(physical.DataCenter),
     )
 
     class Meta:
@@ -187,7 +188,7 @@ class RackResource(ImportForeignKeyMixin, resources.ModelResource):
     server_room = fields.Field(
         column_name='server_room',
         attribute='server_room',
-        widget=ImportedForeignKeyWidget(physical.ServerRoom)
+        widget=ImportedForeignKeyWidget(physical.ServerRoom),
     )
 
     class Meta:
@@ -203,17 +204,17 @@ class DataCenterAssetResource(ImportForeignKeyMixin, resources.ModelResource):
     service_env = fields.Field(
         column_name='service_env',
         attribute='service_env',
-        widget=AssetServiceEnvWidget(assets.ServiceEnvironment, 'name')
+        widget=AssetServiceEnvWidget(assets.ServiceEnvironment, 'name'),
     )
     model = fields.Field(
         column_name='model',
         attribute='model',
-        widget=ImportedForeignKeyWidget(assets.AssetModel)
+        widget=ImportedForeignKeyWidget(assets.AssetModel),
     )
     rack = fields.Field(
         column_name='rack',
         attribute='rack',
-        widget=ImportedForeignKeyWidget(physical.Rack)
+        widget=ImportedForeignKeyWidget(physical.Rack),
     )
 
     class Meta:
@@ -224,12 +225,12 @@ class ConnectionResource(ImportForeignKeyMixin, resources.ModelResource):
     outbound = fields.Field(
         column_name='outbound',
         attribute='outbound',
-        widget=ImportedForeignKeyWidget(physical.DataCenterAsset)
+        widget=ImportedForeignKeyWidget(physical.DataCenterAsset),
     )
     inbound = fields.Field(
         column_name='outbound',
         attribute='outbound',
-        widget=ImportedForeignKeyWidget(physical.DataCenterAsset)
+        widget=ImportedForeignKeyWidget(physical.DataCenterAsset),
     )
 
     class Meta:
@@ -240,12 +241,12 @@ class DiskShareResource(ImportForeignKeyMixin, resources.ModelResource):
     asset = fields.Field(
         column_name='asset',
         attribute='asset',
-        widget=BaseObjectWidget(base.BaseObject, 'sn')
+        widget=BaseObjectWidget(base.BaseObject, 'sn'),
     )
     model = fields.Field(
         column_name='model',
         attribute='model',
-        widget=ImportedForeignKeyWidget(components.ComponentModel)
+        widget=ImportedForeignKeyWidget(components.ComponentModel),
     )
 
     class Meta:
@@ -256,12 +257,12 @@ class DiskShareMountResource(ImportForeignKeyMixin, resources.ModelResource):
     share = fields.Field(
         column_name='share',
         attribute='share',
-        widget=ImportedForeignKeyWidget(DiskShare)
+        widget=ImportedForeignKeyWidget(DiskShare),
     )
     asset = fields.Field(
         column_name='share',
         attribute='share',
-        widget=ImportedForeignKeyWidget(assets.Asset)
+        widget=ImportedForeignKeyWidget(assets.Asset),
     )
 
     class Meta:
@@ -272,17 +273,17 @@ class LicenceResource(ImportForeignKeyMixin, resources.ModelResource):
     manufacturer = fields.Field(
         column_name='manufacturer',
         attribute='manufacturer',
-        widget=ImportedForeignKeyWidget(assets.Manufacturer)
+        widget=ImportedForeignKeyWidget(assets.Manufacturer),
     )
     licence_type = fields.Field(
         column_name='licence_type',
         attribute='licence_type',
-        widget=ImportedForeignKeyWidget(LicenceType)
+        widget=ImportedForeignKeyWidget(LicenceType),
     )
     software_category = fields.Field(
         column_name='software_category',
         attribute='software_category',
-        widget=ImportedForeignKeyWidget(SoftwareCategory)
+        widget=ImportedForeignKeyWidget(SoftwareCategory),
     )
 
     class Meta:
@@ -293,7 +294,7 @@ class SupportResource(ImportForeignKeyMixin, resources.ModelResource):
     support_type = fields.Field(
         column_name='support_type',
         attribute='support_type',
-        widget=ImportedForeignKeyWidget(SupportType)
+        widget=ImportedForeignKeyWidget(SupportType),
     )
 
     class Meta:
@@ -306,12 +307,12 @@ class ServiceEnvironmentResource(
     service = fields.Field(
         column_name='service',
         attribute='service',
-        widget=ImportedForeignKeyWidget(assets.Service)
+        widget=ImportedForeignKeyWidget(assets.Service),
     )
     environment = fields.Field(
         column_name='environment',
         attribute='environment',
-        widget=ImportedForeignKeyWidget(assets.Environment)
+        widget=ImportedForeignKeyWidget(assets.Environment),
     )
 
     class Meta:
@@ -322,12 +323,12 @@ class LicenceAssetResource(ImportForeignKeyMixin, resources.ModelResource):
     licence = fields.Field(
         column_name='licence',
         attribute='licence',
-        widget=ImportedForeignKeyWidget(Licence)
+        widget=ImportedForeignKeyWidget(Licence),
     )
     asset = fields.Field(
         column_name='asset',
         attribute='asset',
-        widget=ImportedForeignKeyWidget(assets.Asset)
+        widget=ImportedForeignKeyWidget(assets.Asset),
     )
 
     class Meta:
@@ -338,12 +339,12 @@ class LicenceUserResource(ImportForeignKeyMixin, resources.ModelResource):
     licence = fields.Field(
         column_name='licence',
         attribute='licence',
-        widget=ImportedForeignKeyWidget(Licence)
+        widget=ImportedForeignKeyWidget(Licence),
     )
     user = fields.Field(
         column_name='user',
         attribute='user',
-        widget=ImportedForeignKeyWidget(get_user_model())
+        widget=UserWidget(get_user_model()),
     )
 
     class Meta:
