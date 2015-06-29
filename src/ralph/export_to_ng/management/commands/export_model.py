@@ -42,7 +42,7 @@ SIMPLE_MODELS = [
 DEPENDENT_MODELS = [
     'AssetModel',
     # new scan handles that: 'GenericComponent',
-    # 'BackOfficeAsset',
+    'BackOfficeAsset',
     'ServerRoom',
     'Rack',
     'DataCenterAsset',
@@ -78,7 +78,8 @@ ManyToMany Models:
 
 APP_MODELS = {model._meta.object_name: model for model in get_models()}
 APP_MODELS.update({
-    # exceptions for ambigious models like Warehouse, which is in Scrooge and in
+    # exceptions for ambigious models like Warehouse,
+    # which is in Scrooge and in
     # Assets, we need only asset's one so code below:
     'DataCenter': ralph_assets.models_dc_assets.DataCenter,
     'Warehouse': ralph_assets.models.Warehouse,
@@ -112,7 +113,6 @@ class Command(BaseCommand):
         models = args
         if not models:
             models = SIMPLE_MODELS + DEPENDENT_MODELS + MANY_TO_MANY
-
         filename = options['zipfile']
         if not filename.endswith(ZIP_EXT):
             filename += ZIP_EXT

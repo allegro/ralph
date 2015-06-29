@@ -15,6 +15,9 @@ from ralph_assets.licences.models import Licence
 
 
 class BackOfficeAssetResource(resources.ModelResource):
+
+    imei = fields.Field('imei', column_name='imei')
+
     class Meta:
         fields = [
             'id',
@@ -27,7 +30,7 @@ class BackOfficeAssetResource(resources.ModelResource):
             'invoice_date',
             'invoice_no',
             'loan_end_date',
-            'model_id',
+            'model',
             'niw',
             'order_no',
             'price',
@@ -42,19 +45,66 @@ class BackOfficeAssetResource(resources.ModelResource):
             'source',
             'status',
             'task_url',
+            'imei',
+            'warehouse',
+            'owner',
+            'user',
+            'remarks',
+            'service_env',
         ]
         model = models_assets.Asset
 
     def get_queryset(self):
         return self.Meta.model.objects.filter(
             type=models_assets.AssetType.back_office,
-        )
+            part_info=None,
+        ).select_related('office_info')
+
+    def dehydrate_imei(self, asset):
+        try:
+            imei = asset.office_info.imei or ''
+        except AttributeError:
+            imei = ''
+        return imei
+
+    def dehydrate_barcode(self, asset):
+        return asset.barcode or ''
+
+    def dehydrate_sn(self, asset):
+        return asset.sn or ''
+
+    def dehydrate_user(self, asset):
+        try:
+            username = asset.user.username or ''
+        except AttributeError:
+            username = ''
+        return username
+
+    def dehydrate_owner(self, asset):
+        try:
+            username = asset.owner.username or ''
+        except AttributeError:
+            username = ''
+        return username
+
+    def dehydrate_hostname(self, asset):
+        try:
+            hostname = asset.device_info.ralph_device.name or ''
+        except AttributeError:
+            hostname = ''
+        return hostname
+
+    def dehydrate_service_env(self, asset):
+        service_env = ""
+        service = getattr(asset.service, 'name', '')
+        device_environment = getattr(asset.device_environment, 'name', '')
+        if service and device_environment:
+            service_env = "{}|{}".format(service, device_environment)
+        return service_env
 
 
 class DataCenterAssetResource(resources.ModelResource):
     service_env = fields.Field()
-    rack = fields.Field('rack', column_name='rack')
-
     rack = fields.Field('rack', column_name='rack')
     orientation = fields.Field('orientation', column_name='orientation')
     position = fields.Field('position', column_name='position')
@@ -96,9 +146,9 @@ class DataCenterAssetResource(resources.ModelResource):
 
     def dehydrate_hostname(self, asset):
         try:
-            hostname = asset.device_info.ralph_device.name
+            hostname = asset.device_info.ralph_device.name or ''
         except AttributeError:
-            hostname = None
+            hostname = ''
         return hostname
 
     def dehydrate_service_env(self, asset):
