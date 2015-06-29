@@ -25,6 +25,7 @@ class LicenceAdmin(PermissionAdminMixin, RalphAdmin):
         'invoice_date', 'invoice_no', 'valid_thru', 'created'
     ]
     list_select_related = ['licence_type', 'software_category']
+    raw_id_fields = ['software_category', 'manufacturer']
 
     fieldsets = (
         (_('Basic info'), {

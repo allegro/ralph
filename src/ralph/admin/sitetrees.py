@@ -77,15 +77,14 @@ sitetrees = [
             perms_mode_all=False,
             children=[
                 section(_('Hardware'), 'data_center', 'DataCenterAsset'),
+                section(_('Racks'), 'data_center', 'Rack'),
                 section(_('Cloud projects'), 'data_center', 'CloudProject'),
                 section(_('Data Centers'), 'data_center', 'DataCenter'),
                 section(_('Databases'), 'data_center', 'Database'),
                 section(_('Disk Shares'), 'data_center', 'DiskShare'),
-                section(_('Data Centers'), 'data_center', 'DataCenter'),
                 section(_('Rack Accessories'), 'data_center', 'RackAccessory'),
                 section(_('Server Rooms'), 'data_center', 'ServerRoom'),
                 section(_('VIPs'), 'data_center', 'VIP'),
-                section(_('Data Centers'), 'data_center', 'DataCenter'),
                 section(_('Virtual Servers'), 'data_center', 'VirtualServer'),
             ],
         ),
@@ -93,11 +92,6 @@ sitetrees = [
             title=_('DC Visualization'),
             url='dc_view',
             access_by_perms=''  # TODO add permissions
-        ),
-        ralph_item(
-            title=_('Racks'),
-            url='admin:data_center_rack_changelist',
-            access_by_perms='data_center.change_rack'
         ),
         ralph_item(
             title=_('Back Office'),
