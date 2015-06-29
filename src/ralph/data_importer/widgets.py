@@ -6,6 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
+from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from import_export import widgets
 import six
@@ -17,6 +18,23 @@ from ralph.data_importer.models import ImportedObjects
 
 
 logger = logging.getLogger(__name__)
+
+
+class UserWidget(widgets.ForeignKeyWidget):
+
+    """Widget for Ralph User Foreign Key field."""
+
+    def clean(self, value):
+        result = None
+        if value:
+            result, created = get_user_model().objects.get_or_create(
+                username=value,
+            )
+            if created:
+                logger.warning(
+                    'User not found: {} create a new.'.format(value),
+                )
+        return result
 
 
 class ImportedForeignKeyWidget(widgets.ForeignKeyWidget):

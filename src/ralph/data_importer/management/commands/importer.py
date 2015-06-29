@@ -94,7 +94,6 @@ class Command(BaseCommand):
                 'sort': int(file_name[0])
             })
         file_list = sorted(file_list, key=lambda x: x['sort'])
-
         for item in file_list:
             logger.info('Import to model: {}'.format(item['model']))
             options['model_name'] = item['model']
@@ -104,7 +103,6 @@ class Command(BaseCommand):
     def from_file(self, options):
         if not options.get('model_name'):
             raise CommandError('You must select a model')
-
         csv.register_dialect(
             "RalphImporter",
             delimiter=str(options['delimiter'])
@@ -130,7 +128,9 @@ class Command(BaseCommand):
                         error_msg = '\n'.join([
                             'line_number: {}'.format(idx + 1),
                             'error message: {}'.format(error.error),
-                            'row data: {}'.format(zip(headers, dataset[idx])),
+                            'row data: {}'.format(
+                                list(zip(headers, dataset[idx]))
+                            ),
                             '',
                         ])
                         logger.error(error_msg)
