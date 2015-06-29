@@ -1,18 +1,16 @@
 # -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 from functools import partial
 
 from django.contrib.admin.decorators import register as django_register
 from django.db.models import Model
 
-from ralph.admin.signals import admin_get_list_views, admin_get_change_views
 from ralph.admin.sites import ralph_site
-from ralph.admin.views import RalphDetailView, RalphListView
+from ralph.admin.views import (
+    RalphExtraViewMixin,
+    CHANGE,
+    LIST,
+    VIEW_TYPES,
+)
 
 
 register = partial(django_register, site=ralph_site)
@@ -23,36 +21,27 @@ class WrongViewClassError(Exception):
 
 
 class register_extra_view(object):  # noqa
-    VIEWS = CHANGE, LIST = ('change', 'list')
-
-    def __init__(self, target_model, target_view):
+    def __init__(self, target_model):
         if Model not in target_model.__mro__:
-            raise ValueError('Model must be a inherited from models.Model.')
-        if target_view not in self.VIEWS:
-            raise ValueError(
-                'The target_view must be a one of '
-                'defined choices ({}).'.format(', '.join(self.VIEWS))
-            )
+            raise TypeError('Model must be a inherited from models.Model.')
         self.target_model = target_model
-        self.target_view = target_view
 
     def __call__(self, view):
-        error_msg = '{} must be inherited from {{}}.'.format(view)
-        if self.target_view == self.LIST:
-            if RalphListView not in view.__mro__:
-                raise WrongViewClassError(error_msg.format('RalphListView'))
-            signal = admin_get_list_views
-        if self.target_view == self.CHANGE:
-            if RalphDetailView not in view.__mro__:
-                raise WrongViewClassError(error_msg.format('RalphDetailView'))
-            signal = admin_get_change_views
-        receiver = partial(
-            self._add_view, view=view, target_model=self.target_model
-        )
-        signal.connect(receiver, weak=False)
+        admin_model = ralph_site._registry[self.target_model]
+        if not issubclass(view, RalphExtraViewMixin):
+            raise ValueError(
+                'The view must be inherit from RalphDetailView or RalphListView'
+            )
+        if view._type not in VIEW_TYPES:
+            raise ValueError(
+                'The view._type must be a one of '
+                'defined choices ({}).'.format(', '.join(VIEW_TYPES))
+            )
+        if view._type == LIST:
+            admin_model.list_views = admin_model.list_views or []
+            admin_model.list_views.append(view)
+        if view._type == CHANGE:
+            admin_model.change_views = admin_model.change_views or []
+            admin_model.change_views.append(view)
+        view.post_register(ralph_site.name, self.target_model)
         return view
-
-    @classmethod
-    def _add_view(cls, target_model, model, view, views, **kwargs):
-        if target_model == model:
-            views.append(view)

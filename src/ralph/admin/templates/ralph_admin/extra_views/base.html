@@ -1,15 +1,15 @@
 {% extends "admin/base_site.html" %}
 
-{% load ralph_tags sitetree %}
+{% load sitetree %}
 
 {% block content %}
   <div id="content-main">
     <div class="row header">
       <div class="large-4 columns">
-        <h1>{% sitetree_page_title from 'ralph_admin' %}</h1>
+        <h1>{{ object }}</h1>
       </div>
       <div class="large-5 columns">
-        {% views_tabs change_views view_name %}
+        {% block tabs %}{% endblock %}
       </div>
       <div class="large-3 columns">
       </div>

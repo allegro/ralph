@@ -5,6 +5,9 @@ from ralph.admin.mixins import RalphTemplateView
 from ralph.admin import ralph_site
 
 
+VIEW_TYPES = CHANGE, LIST = ('change', 'list')
+
+
 class RalphExtraViewMixin(object):
     # TODO: permissions
     extra_view_base_template = None
@@ -17,6 +20,16 @@ class RalphExtraViewMixin(object):
         return super(RalphExtraViewMixin, self).dispatch(
             request, *args, **kwargs
         )
+
+    @classmethod
+    def post_register(cls, namespace, model):
+        cls.namespace = namespace
+        cls.url_to_reverse = '{}_{}_{}'.format(
+            model._meta.app_label, model._meta.model_name, cls.url_name
+        )
+        cls.url_with_namespace = ':'.join([
+            cls.namespace, cls.url_to_reverse
+        ])
 
     def get_name(self):
         if not self.name:
@@ -54,6 +67,7 @@ class RalphExtraViewMixin(object):
 
 
 class RalphListView(RalphExtraViewMixin, RalphTemplateView):
+    _type = LIST
     extra_view_base_template = 'ralph_admin/extra_views/base_list.html'
 
     def get_context_data(self, **kwargs):
@@ -61,8 +75,15 @@ class RalphListView(RalphExtraViewMixin, RalphTemplateView):
         context['change_views'] = self.views
         return context
 
+    @classmethod
+    def get_url_pattern(cls, model):
+        return r'^{}/{}/{}/$'.format(
+            model._meta.app_label, model._meta.model_name, cls.url_name
+        )
+
 
 class RalphDetailView(RalphExtraViewMixin, RalphTemplateView):
+    _type = CHANGE
     extra_view_base_template = 'ralph_admin/extra_views/base_change.html'
 
     def dispatch(self, request, model, pk, *args, **kwargs):
@@ -77,3 +98,9 @@ class RalphDetailView(RalphExtraViewMixin, RalphTemplateView):
         context['original'] = self.object
         context['change_views'] = self.views
         return context
+
+    @classmethod
+    def get_url_pattern(cls, model):
+        return r'^{}/{}/(?P<pk>[0-9]+)/{}/$'.format(
+            model._meta.app_label, model._meta.model_name, cls.url_name
+        )
