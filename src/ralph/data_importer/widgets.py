@@ -54,10 +54,15 @@ class ImportedForeignKeyWidget(widgets.ForeignKeyWidget):
                     pk=int(imported_obj.object_pk)
                 ).first()
             else:
+                msg = (
+                    "Record with pk {pk} not found for model {model} "
+                    "of '{content_type}'"
+                )
                 logger.warning(
-                    "Record with pk {pk} not found for model {model}".format(
-                        pk=imported_obj.object_pk,
-                        model=self.model._meta.model_name
+                    msg.format(
+                        pk=six.text_type(value),
+                        model=self.model._meta.model_name,
+                        content_type=content_type,
                     )
                 )
         return result

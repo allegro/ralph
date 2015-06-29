@@ -139,7 +139,9 @@ class Command(BaseCommand):
             after_import_count = model_resource._meta.model.objects.count()
             if len(csv_body) != after_import_count - current_count:
                 logger.error('Some of records was not imported')
-            logger.info('Done')
+            else:
+                logger.info('{} rows were imported'.format(len(csv_body)))
+            logger.info('Done\n')
 
     def handle(self, *args, **options):
         if options.get('type') == 'dir':
