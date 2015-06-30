@@ -6,7 +6,7 @@ from django.utils.translation import activate
 from sitetree.sitetreeapp import register_i18n_trees
 from sitetree.utils import (
     tree,
-    item
+    item,
 )
 
 from ralph.admin.sites import ralph_site
@@ -149,6 +149,7 @@ sitetrees = [
             perms_mode_all=False,
             children=[
                 section(_('Asset model'), 'assets', 'AssetModel'),
+                section(_('Asset category'), 'assets', 'Category'),
                 section(_('Manufacturer'), 'assets', 'Manufacturer'),
                 section(_('Service'), 'assets', 'Service'),
                 section(_('Environment'), 'assets', 'Environment'),

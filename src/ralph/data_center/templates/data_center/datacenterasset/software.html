@@ -1,0 +1,22 @@
+{% extends BASE_TEMPLATE %}
+{% load i18n %}
+{% block view_content %}
+<div class="large-12 columns">
+  <table class="full">
+   <thead>
+      <tr>
+        <th>{% trans "Label" %}</th>
+        <th>{% trans "Version" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in software_list %}
+        <tr>
+          <td>{{ item.label }}</td>
+          <td>{{ item.version }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

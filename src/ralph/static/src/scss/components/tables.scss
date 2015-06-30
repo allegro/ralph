@@ -23,7 +23,7 @@ table {
             th {
                 @include cell-border();
                 background: $thead-bg-color;
-                padding: 0;
+                padding: 0 5px;
                 .text {
                     .sort-icon {
                         color: $mdc-black-dark;
@@ -64,7 +64,7 @@ table {
             td, th {
                 text-align: center;
                 @include cell-border();
-                padding: 0;
+                padding: 0 5px;
             }
         }
     }

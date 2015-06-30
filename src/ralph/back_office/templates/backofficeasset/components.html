@@ -1,0 +1,32 @@
+{% extends BASE_TEMPLATE %}
+{% load i18n %}
+{% block view_content %}
+<div class="large-12 columns">
+  <table class="full">
+   <thead>
+      <tr>
+        <th>{% trans "Label" %}</th>
+        <th>{% trans "Model" %}</th>
+        <th>{% trans "Serial number" %}</th>
+        <th>{% trans "Speed" %}</th>
+        <th>{% trans "Size" %}</th>
+        <th>{% trans "Count" %}</th>
+        <th>{% trans "Action" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in components %}
+        <tr>
+          <td>{{ item.label }}</td>
+          <td>{{ item.model }}</td>
+          <td>{{ item.serial_number }}</td>
+          <td>{{ item.speed }}</td>
+          <td>{{ item.size }}</td>
+          <td>{{ item.count }}</td>
+          <td>{{ item.action }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
