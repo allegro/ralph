@@ -126,9 +126,9 @@ LOGGING = {
         },
     },
     'loggers': {
-        'ralph.data_importer.management.commands.importer': {
+        'ralph.data_importer': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': True,
         },
     },

@@ -61,6 +61,7 @@ from ralph.assets.models import (
     base,
     components,
 )
+from ralph.data_center.models import networks
 from ralph.data_center.models import physical
 from ralph.data_center.models.components import (
     DiskShare,
@@ -193,6 +194,48 @@ class RackResource(ImportForeignKeyMixin, resources.ModelResource):
 
     class Meta:
         model = physical.Rack
+
+
+class NetworkResource(ImportForeignKeyMixin, resources.ModelResource):
+
+    data_center = fields.Field(
+        column_name='data_center',
+        attribute='data_center',
+        widget=ImportedForeignKeyWidget(physical.DataCenter),
+    )
+
+    network_environment = fields.Field(
+        column_name='network_environment',
+        attribute='network_environment',
+        widget=ImportedForeignKeyWidget(networks.NetworkEnvironment),
+    )
+
+    kind = fields.Field(
+        column_name='kind',
+        attribute='kind',
+        widget=ImportedForeignKeyWidget(networks.NetworkKind),
+    )
+
+    class Meta:
+        model = networks.Network
+
+
+class IPAddressResource(ImportForeignKeyMixin, resources.ModelResource):
+
+    asset = fields.Field(
+        column_name='asset',
+        attribute='asset',
+        widget=ImportedForeignKeyWidget(physical.DataCenterAsset),
+    )
+
+    network = fields.Field(
+        column_name='network',
+        attribute='network',
+        widget=ImportedForeignKeyWidget(networks.Network),
+    )
+
+    class Meta:
+        model = networks.IPAddress
 
 
 class DataCenterAssetResource(ImportForeignKeyMixin, resources.ModelResource):
