@@ -221,7 +221,7 @@ class Asset(BaseObject):
     hostname = models.CharField(
         blank=True,
         default=None,
-        max_length=16,
+        max_length=255,
         null=True
     )
     niw = models.CharField(
