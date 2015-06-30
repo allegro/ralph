@@ -1,1 +1,7 @@
 {% extends "ralph_admin/extra_views/base.html" %}
+
+{% load ralph_tags %}
+
+{% block tabs %}
+  {% views_tabs change_views view_name %}
+{% endblock %}

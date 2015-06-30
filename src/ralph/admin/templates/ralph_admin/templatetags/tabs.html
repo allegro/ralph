@@ -3,7 +3,11 @@
     <ul>
       {% for view in views %}
         <li{% if name == view.name %} class="active"{% endif %}>
-          <a  href="{{ view.url }}">
+          {% if object.id %}
+            <a href="{% url view.url_with_namespace object.id %}">
+          {% else %}
+            <a href="{% url view.url_with_namespace %}">
+          {% endif %}
             {% if view.icon %}
               <i class="fa fa-{{ view.icon }}"></i>
             {% endif %}

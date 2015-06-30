@@ -1,10 +1,4 @@
 # -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.views.generic import View
@@ -29,6 +23,17 @@ class ExtraDetailView(RalphDetailView, View):
     url_name = 'extra_detail_view'
 
 
+def new_test_view(klass, view_name=None):
+    view_name = view_name or 'test_view_{}'.format(new_test_view.counter)
+    class TestView(klass):
+        label = 'Test view {}'.format(new_test_view.counter)
+        name = url_name = view_name
+        template_name = 'tests/foo/detail.html'
+    new_test_view.counter += 1
+    return TestView
+new_test_view.counter = 0
+
+
 class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
 
     def setUp(self):  # noqa
@@ -39,7 +44,7 @@ class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
         self.login_as_user()
 
     def _register_model_in_admin(self, model, admin_model=RalphAdmin):
-        ralph_site.register(model, admin_model)
+        ralph_site.register([model], admin_class=admin_model)
         self.reload_urls()
 
     def test_dynamic_register_model_to_admin_panel(self):
@@ -48,7 +53,7 @@ class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
         """
         self._register_model_in_admin(Foo)
         response = self.client.get(
-            reverse('ralph_site:tests_foo_changelist'), follow=True
+            reverse('admin:tests_foo_changelist'), follow=True
         )
         self.assertEqual(response.status_code, 200)
 
@@ -61,7 +66,7 @@ class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
         self._register_model_in_admin(Foo, FooListAdmin)
 
         response = self.client.get(
-            reverse('ralph_site:tests_foo_changelist'), follow=True
+            reverse('admin:tests_foo_changelist'), follow=True
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
@@ -79,7 +84,7 @@ class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
         self._register_model_in_admin(Foo, FooChangeAdmin)
 
         response = self.client.get(
-            reverse('ralph_site:tests_foo_change', args=(obj.pk,)), follow=True
+            reverse('admin:tests_foo_change', args=(obj.pk,)), follow=True
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
@@ -95,7 +100,7 @@ class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
         self._register_model_in_admin(Foo, FooListAdmin)
 
         response = self.client.get(
-            reverse('ralph_site:tests_foo_extra_list_view'), follow=True
+            reverse('admin:tests_foo_extra_list_view'), follow=True
         )
         self.assertEqual(response.status_code, 200)
 
@@ -110,7 +115,7 @@ class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
         self._register_model_in_admin(Foo, FooListAdmin)
 
         response = self.client.get(
-            reverse('ralph_site:tests_foo_extra_detail_view', args=(obj.pk,)),
+            reverse('admin:tests_foo_extra_detail_view', args=(obj.pk,)),
             follow=True
         )
         self.assertEqual(response.status_code, 200)
@@ -119,14 +124,15 @@ class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
         """
         Register extra view by decorator.
         """
-        @register_extra_view(Foo, register_extra_view.LIST)
-        class TestView(RalphListView, View):
-            label = 'Test view'
-            url_name = 'extra_list_view'
         self._register_model_in_admin(Foo)
 
+        @register_extra_view(Foo)
+        class TestView(new_test_view(RalphListView)):
+            pass
+
+        self.reload_urls()
         response = self.client.get(
-            reverse('ralph_site:tests_foo_changelist'), follow=True
+            reverse('admin:tests_foo_changelist'), follow=True
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
@@ -138,58 +144,62 @@ class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
         Register extra view by decorator.
         """
         obj = Foo.objects.create(bar='test')
+        self._register_model_in_admin(Foo)
 
-        @register_extra_view(Foo, register_extra_view.CHANGE)
+        @register_extra_view(Foo)
         class TestView(RalphDetailView, View):
             label = 'Test view'
             url_name = 'extra_detail_view'
-        self._register_model_in_admin(Foo)
 
+        self.reload_urls()
         response = self.client.get(
-            reverse('ralph_site:tests_foo_change', args=(obj.pk,)), follow=True
+            reverse('admin:tests_foo_change', args=(obj.pk,)), follow=True
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response.context['change_views'][0].label, TestView.label
         )
 
-    def test_register_decorator_raise_value_error_model_and_view(self):
-        """
-        Register decorator raise ValueError with empty model and taget view.
-        """
-        with self.assertRaises(TypeError):
-            @register_extra_view
-            class TestView(View):
-                pass
-
-    def test_register_decorator_raise_value_error_incorrect_model(self):
+    def test_register_decorator_raise_value_error_incorrect_view_type(self):
         """
         Register decorator raise ValueError when model is incorrect.
         """
+        self._register_model_in_admin(Foo)
         with self.assertRaises(ValueError):
-            @register_extra_view(ExtraDetailView, register_extra_view.LIST)
-            class TestView(View):
-                pass
+            @register_extra_view(Foo)
+            class TestView(RalphListView):
+                _type = 'incorrect_type'
 
     def test_register_decorator_raise_value_error_incorrect_target_view(self):
         """
         Register decorator raise ValueError when target view is incorrect.
         """
+        self._register_model_in_admin(Foo)
         with self.assertRaises(ValueError):
-            @register_extra_view(Foo, 'incorrect value')
+            @register_extra_view(Foo)
             class TestView(View):
                 pass
 
-    def test_register_to_wrong_view(self):
+    def test_many_tabs_link(self):
         """
-        Register detail view to list and list view to change.
+        Test links in tabs.
         """
-        with self.assertRaises(WrongViewClassError):
-            @register_extra_view(Foo, register_extra_view.LIST)
-            class TestView(RalphDetailView):
-                pass
+        obj = Foo.objects.create(bar='test')
+        endpoints = [
+            (RalphDetailView, 'test_url_1'), (RalphDetailView, 'test_url_2')
+        ]
+        views = [new_test_view(klass, name) for klass, name in  endpoints]
 
-        with self.assertRaises(WrongViewClassError):
-            @register_extra_view(Foo, register_extra_view.CHANGE)
-            class Test2View(RalphListView):
-                pass
+        class FooAdmin(RalphAdmin):
+            change_views = views
+        self._register_model_in_admin(Foo, FooAdmin)
+
+        response = self.client.get(
+            reverse('admin:tests_foo_change', args=(obj.pk,)), follow=True
+        )
+        tabs = response.context['change_views']
+        for tab in tabs:
+            resp = self.client.get(
+                reverse(tab.url_with_namespace, args=[obj.pk,])
+            )
+            self.assertEqual(resp.status_code, 200)
