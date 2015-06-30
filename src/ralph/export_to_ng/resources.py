@@ -7,8 +7,9 @@ from __future__ import unicode_literals
 from import_export import fields
 from import_export import resources
 from ralph.cmdb import models_ci
-from ralph.discovery import models_device
 from ralph.discovery import models_component
+from ralph.discovery import models_device
+from ralph.discovery import models_network
 from ralph_assets import models_dc_assets
 from ralph_assets import models_assets
 from ralph_assets.licences.models import Licence
@@ -214,6 +215,69 @@ class DataCenterAssetResource(resources.ModelResource):
             type=models_assets.AssetType.data_center,
             part_info=None,
         )
+
+
+class NetworkResource(resources.ModelResource):
+    kind = fields.Field('kind', column_name='kind')
+
+    def dehydrate_kind(self, network):
+        return network.kind_id or ''
+
+    def dehydrate_network_environment(self, network):
+        return network.environment_id or ''
+
+    class Meta:
+        fields = (
+            'id',
+            'name',
+            'created',
+            'modified',
+            'address',
+            'gateway',
+            'gateway_as_int',
+            'reserved',
+            'reserved_top_margin',
+            'remarks',
+            'vlan',
+            'min_ip',
+            'max_ip',
+            'ignore_addresses',
+            'dhcp_broadcast',
+            'dhcp_config',
+            'kind',
+        )
+        model = models_network.Network
+
+
+class IPAddressResource(resources.ModelResource):
+    asset = fields.Field('asset', column_name='asset')
+    network = fields.Field('network', column_name='network')
+
+    def dehydrate_asset(self, ip_address):
+        try:
+            asset_id = ip_address.device.get_asset().id
+        except AttributeError:
+            asset_id = ''
+        return asset_id
+
+    def dehydrate_network(self, ip_address):
+        return ip_address.network_id or ''
+
+    class Meta:
+        fields = (
+            'id',
+            'created',
+            'modified',
+            'last_seen',
+            'address',
+            'number',
+            'hostname',
+            'is_management',
+            'is_public',
+            'asset',
+            'network',
+        )
+        model = models_network.IPAddress
 
 
 class AssetModelResource(resources.ModelResource):

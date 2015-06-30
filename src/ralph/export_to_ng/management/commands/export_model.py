@@ -38,6 +38,7 @@ SIMPLE_MODELS = [
     # TODO: Database
     # TODO: VIP
     # TODO: VirtualServer
+    'NetworkKind',
 ]
 DEPENDENT_MODELS = [
     'AssetModel',
@@ -51,6 +52,8 @@ DEPENDENT_MODELS = [
     # new scan handles that: 'DiskShareMount',
     # 'Licence',
     # 'Support',
+    'Network',
+    'IPAddress',
 ]
 MANY_TO_MANY = [
     'ServiceEnvironment',
