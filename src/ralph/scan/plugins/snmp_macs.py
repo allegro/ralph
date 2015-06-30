@@ -104,10 +104,11 @@ def _snmp_vmware_macs(ip_address, snmp_community):
     return results
 
 
-def _snmp_modular_macs(ip_address, ip_address_is_management, snmp_community):
+def _snmp_modular_macs(ip_address, ip_address_is_management, snmp_community,
+                       snmp_version):
     oid = (1, 3, 6, 1, 4, 1, 343, 2, 19, 1, 2, 10, 12, 0)  # Max blades
     message = snmp_command(
-        ip_address, snmp_community, oid, attempts=1, timeout=0.5,
+        ip_address, snmp_community, oid, snmp_version, attempts=1, timeout=3,
     )
     max_blades = int(message[0][1])
     blades_macs = {}
@@ -115,7 +116,12 @@ def _snmp_modular_macs(ip_address, ip_address_is_management, snmp_community):
         oid = (1, 3, 6, 1, 4, 1, 343, 2, 19, 1, 2, 10, 202, 3, 1, 1, blade_no)
         blades_macs[blade_no] = set(
             snmp_macs(
-                ip_address, snmp_community, oid, attempts=1, timeout=0.5,
+                hostname=ip_address,
+                community=snmp_community,
+                oid=oid,
+                snmp_version=snmp_version,
+                timeout=3,
+                attempts=2,
             ),
         )
     results = []
@@ -182,6 +188,9 @@ def _snmp_mac(ip_address, snmp_name, snmp_community, snmp_version,
         m = re.search(r'\sSN:\s*(\S+)', snmp_name)
         if m:
             sn = m.group(1)
+    elif model_name.startswith('Intel Modular') and snmp_version in ('3', 3):
+        # the only user in modular for snmp v3 is snmpv3user
+        snmp_community = ('snmpv3user',) + snmp_community[1:]
     mac_addresses = set()
     ipv6if_mac_addresses = _snmp_mac_from_ipv6IfPhysicalAddress(
         ip_address=ip_address,
@@ -190,12 +199,12 @@ def _snmp_mac(ip_address, snmp_name, snmp_community, snmp_version,
         snmp_version=snmp_version,
     )
     for mac in snmp_macs(
-        ip_address,
-        snmp_community,
-        oid,
-        attempts=2,
-        timeout=3,
+        hostname=ip_address,
+        community=snmp_community,
+        oid=oid,
         snmp_version=snmp_version,
+        timeout=3,
+        attempts=2,
     ):
         # cloud hypervisor can return all VMs mac addresses...
         if ipv6if_mac_addresses and mac not in ipv6if_mac_addresses:
@@ -244,7 +253,8 @@ def _snmp_mac(ip_address, snmp_name, snmp_community, snmp_version,
         subdevices.extend(_snmp_vmware_macs(ip_address, snmp_community))
     if model_name == 'Intel Modular Blade System':
         subdevices.extend(
-            _snmp_modular_macs(ip_address, is_management, snmp_community),
+            _snmp_modular_macs(ip_address, is_management, snmp_community,
+                               snmp_version),
         )
     if subdevices:
         result['subdevices'] = subdevices

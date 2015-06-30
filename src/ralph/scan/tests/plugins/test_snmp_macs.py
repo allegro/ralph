@@ -168,7 +168,7 @@ class SnmpMacsPluginTest(TestCase):
             )
 
     def test_snmp_modular_macs(self):
-        def macs_side(ip, community, oid, *args, **kwargs):
+        def macs_side(oid, *args, **kwargs):
             return {
                 1: set([
                     u'001E670C5960', u'001E67123169', u'001E67123168',
@@ -209,6 +209,7 @@ class SnmpMacsPluginTest(TestCase):
                     ip_address='127.0.0.1',
                     ip_address_is_management=True,
                     snmp_community='public',
+                    snmp_version='2c',
                 ),
                 [
                     {
