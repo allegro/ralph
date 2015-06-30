@@ -8,6 +8,7 @@
     <link rel="stylesheet" type="text/css" href="{% static "vendor/css/foundation-datepicker.css" %}">
     <link rel="stylesheet" type="text/css" href="{% static "css/ralph.css" %}" />
     <title>{% block title %}{% endblock %}</title>
+    {% block extrahead %}{% endblock %}
   </head>
   <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}">
     {% if not is_popup %}
@@ -67,6 +68,5 @@
       </div>
     </div>
     {% include 'admin/includes/javascripts.html' %}
-    {% block extrahead %}{% endblock %}
   </body>
 </html>
