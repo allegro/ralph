@@ -15,12 +15,8 @@ from django.db.models.loading import get_model
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import python_2_unicode_compatible
-
-from ralph.assets.models.assets import (
-    Asset,
-    # Service,
-    Manufacturer
-)
+from ralph.assets.models.assets import Manufacturer
+from ralph.assets.models.base import BaseObject
 from ralph.assets.models.mixins import (
     NamedMixin,
     TimeStampMixin
@@ -122,10 +118,10 @@ class Licence(PermByFieldMixin, TimeStampMixin, models.Model):
             'identify this licence'
         ),
     )
-    assets = models.ManyToManyField(
-        Asset,
-        verbose_name=_('Assigned Assets'),
-        through='LicenceAsset',
+    base_objects = models.ManyToManyField(
+        BaseObject,
+        verbose_name=_('Assigned base objects'),
+        through='BaseObjectLicence',
         related_name='+',
     )
     users = models.ManyToManyField(
@@ -238,17 +234,17 @@ class Licence(PermByFieldMixin, TimeStampMixin, models.Model):
 
 
 @python_2_unicode_compatible
-class LicenceAsset(models.Model):
+class BaseObjectLicence(models.Model):
     licence = models.ForeignKey(Licence)
-    asset = models.ForeignKey(Asset, related_name='licences')
+    base_object = models.ForeignKey(BaseObject, related_name='licences')
     quantity = models.PositiveIntegerField(default=1)
 
     class Meta:
-        unique_together = ('licence', 'asset')
+        unique_together = ('licence', 'base_object')
 
     def __str__(self):
         return '{} of {} assigned to {}'.format(
-            self.quantity, self.licence, self.asset
+            self.quantity, self.licence, self.base_object
         )
 
 

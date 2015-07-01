@@ -1,6 +1,22 @@
 # -*- coding: utf-8 -*-
 from ralph.admin.views import RalphDetailView
 from ralph.data_center.models.networks import IPAddress
+from ralph.licences.models import Licence
+
+
+class DataCenterAssetLicence(RalphDetailView):
+
+    icon = 'bookmark'
+    name = 'dc_asset_licence'
+    label = 'Licence'
+    url_name = 'data_center_asset_licence'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['licences'] = Licence.objects.filter(
+            base_objects=self.object.baseobject_ptr
+        )
+        return context
 
 
 class DataCenterAssetComponents(RalphDetailView):

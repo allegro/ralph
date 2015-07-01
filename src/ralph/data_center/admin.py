@@ -33,9 +33,10 @@ from ralph.data_center.models.networks import (
 )
 from ralph.data_center.views import (
     DataCenterAssetComponents,
+    DataCenterAssetLicence,
     DataCenterAssetSecurityInfo,
     DataCenterAssetSoftware,
-    NetworkView
+    NetworkView,
 )
 
 
@@ -53,6 +54,7 @@ class DataCenterAssetAdmin(ImportExportModelAdmin, RalphAdmin):
         DataCenterAssetSoftware,
         NetworkView,
         DataCenterAssetSecurityInfo,
+        DataCenterAssetLicence,
     ]
     resource_class = resources.DataCenterAssetResource
     list_display = [
