@@ -1,52 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Models independent:
-
-ralph importer AssetLastHostname file
-ralph importer Environment file
-ralph importer Service file
-ralph importer Manufacturer file
-ralph importer Category file
-ralph importer ComponentModel file
-ralph importer Warehouse file
-ralph importer DataCenter file
-ralph importer Accessory file
-ralph importer Database file
-ralph importer VIP file
-ralph importer VirtualServer file
-ralph importer CloudProject file
-ralph importer LicenceType file
-ralph importer SoftwareCategory ile
-ralph importer SupportType file
-
-Custom resoruces models
-ralph.assets.models.assets.AssetModel
-ralph.assets.models.components.GenericComponent
-ralph.back_office.models.BackOfficeAsset
-ralph.data_center.models.physical.ServerRoom
-ralph.data_center.models.physical.Rack
-ralph.data_center.models.physical.DataCenterAsset
-ralph.data_center.models.physical.Connection
-ralph.data_center.models.components.DiskShare
-ralph.data_center.models.components.DiskShareMount
-ralph.licences.models.Licence
-ralph.supports.models.Support
-
-ManyToMany Models.
-
-ralph.assets.models.assets.ServiceEnvironment
-    - service,
-    - environment
-ralph.licences.models.LicenceAsset
-    - licence
-    - asset
-ralph.licences.models.LicenceUser
-    - licence
-    - user
-ralph.data_center.models.physical.RackAccessory
-    - accessory
-    - rack
-"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -59,14 +11,9 @@ from django.contrib.auth import get_user_model
 from ralph.assets.models import (
     assets,
     base,
-    components,
 )
 from ralph.data_center.models import networks
 from ralph.data_center.models import physical
-from ralph.data_center.models.components import (
-    DiskShare,
-    DiskShareMount,
-)
 from ralph.data_importer.widgets import (
     AssetServiceEnvWidget,
     BaseObjectWidget,
@@ -79,8 +26,8 @@ from ralph.back_office.models import (
     Warehouse,
 )
 from ralph.licences.models import (
+    BaseObjectLicence,
     Licence,
-    LicenceAsset,
     LicenceUser,
     LicenceType,
     SoftwareCategory,
@@ -120,22 +67,6 @@ class CategoryResource(ImportForeignKeyMixin, resources.ModelResource):
 
     class Meta:
         model = assets.Category
-
-
-class GenericComponentResource(ImportForeignKeyMixin, resources.ModelResource):
-    asset = fields.Field(
-        column_name='asset',
-        attribute='asset',
-        widget=BaseObjectWidget(base.BaseObject, 'sn'),
-    )
-    model = fields.Field(
-        column_name='model',
-        attribute='model',
-        widget=ImportedForeignKeyWidget(components.ComponentModel),
-    )
-
-    class Meta:
-        model = components.GenericComponent
 
 
 class BackOfficeAssetResource(ImportForeignKeyMixin, resources.ModelResource):
@@ -280,38 +211,6 @@ class ConnectionResource(ImportForeignKeyMixin, resources.ModelResource):
         model = physical.Connection
 
 
-class DiskShareResource(ImportForeignKeyMixin, resources.ModelResource):
-    asset = fields.Field(
-        column_name='asset',
-        attribute='asset',
-        widget=BaseObjectWidget(base.BaseObject, 'sn'),
-    )
-    model = fields.Field(
-        column_name='model',
-        attribute='model',
-        widget=ImportedForeignKeyWidget(components.ComponentModel),
-    )
-
-    class Meta:
-        model = DiskShare
-
-
-class DiskShareMountResource(ImportForeignKeyMixin, resources.ModelResource):
-    share = fields.Field(
-        column_name='share',
-        attribute='share',
-        widget=ImportedForeignKeyWidget(DiskShare),
-    )
-    asset = fields.Field(
-        column_name='share',
-        attribute='share',
-        widget=ImportedForeignKeyWidget(assets.Asset),
-    )
-
-    class Meta:
-        model = DiskShareMount
-
-
 class LicenceResource(ImportForeignKeyMixin, resources.ModelResource):
     manufacturer = fields.Field(
         column_name='manufacturer',
@@ -362,20 +261,23 @@ class ServiceEnvironmentResource(
         model = assets.ServiceEnvironment
 
 
-class LicenceAssetResource(ImportForeignKeyMixin, resources.ModelResource):
+class BaseObjectLicenceResource(
+    ImportForeignKeyMixin,
+    resources.ModelResource,
+):
     licence = fields.Field(
         column_name='licence',
         attribute='licence',
         widget=ImportedForeignKeyWidget(Licence),
     )
-    asset = fields.Field(
-        column_name='asset',
-        attribute='asset',
-        widget=ImportedForeignKeyWidget(assets.Asset),
+    base_object = fields.Field(
+        column_name='base_object',
+        attribute='base_object',
+        widget=BaseObjectWidget(base.BaseObject),
     )
 
     class Meta:
-        model = LicenceAsset
+        model = BaseObjectLicence
 
 
 class LicenceUserResource(ImportForeignKeyMixin, resources.ModelResource):
