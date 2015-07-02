@@ -14,7 +14,11 @@ from ralph.discovery.http import guess_family
 class DiscoveryHttpTest(TestCase):
 
     def test_guess_family_dell_when_data_from_dell_server(self):
-        headers = {}
+        headers = {'accept-ranges': 'bytes',
+                   'connection': 'Keep-Alive',
+                   'content-length': '38457',
+                   'content-type': 'text/html',
+                   'server': 'Embedthis-http', }
         family = guess_family(headers, DATA)
         self.assertEqual(family, 'Dell')
 
@@ -30,6 +34,5 @@ class DiscoveryHttpTest(TestCase):
                   <p/><a href="XenCenter.iso">XenCenter CD image</a>
                   <p/><a href="XenCenterSetup.exe">XenCenter installer</a>
                 </body>
-            </html>"""
-        )
+            </html>""")
         self.assertEqual(family, 'Xen')

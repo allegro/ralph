@@ -59,11 +59,18 @@ def get_http_info(ip):
                 headers, content = response.headers, response.content
             except requests.exceptions.RequestException as e:
                 logger.error("Exception: {} for url: {}".format(e, url))
+                url = "https://{}/login.html".format(ip)
+                try:
+                    response = http_get_method(session, url)
+                    response.raise_for_status()
+                    headers, content = response.headers, response.content
+                except requests.exceptions.RequestException as e:
+                    logger.error("Exception: {} for url: {}".format(e, url))
     return headers, content
 
 
 def guess_family(headers, document):
-    server = headers.get('Server', '')
+    server = headers.get('server', '')
     if '/' in server:
         server = server.split('/', 1)[0]
     family = FAMILIES.get(server, server)
@@ -105,15 +112,14 @@ def guess_family(headers, document):
     elif family in ('Thomas-Krenn',):
         if 'ERIC_RESPONSE_OK' in document:
             family = 'VTL'
-    elif family in ('Mbedthis-Appweb', 'Embedthis-Appweb'):
-        if '/sclogin.html?console' in document:
+    elif family in ('Mbedthis-Appweb', 'Embedthis-Appweb', 'Embedthis-http'):
+        document = document.decode("utf8")
+        if 'sclogin.html' in document:
             family = 'Dell'
         elif 'Juniper' in document:
             family = 'Juniper'
     if 'pve-api-daemon' in family:
         family = 'Proxmox3'
-    if '/sclogin.html?console' in document:
-        family = 'Dell'
     return family
 
 
