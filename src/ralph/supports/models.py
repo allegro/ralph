@@ -13,6 +13,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from dj.choices import Choices
 
+from ralph.assets.models.base import BaseObject
 from ralph.assets.models.mixins import NamedMixin, TimeStampMixin
 from ralph.lib.permissions import PermByFieldMixin
 
@@ -77,7 +78,7 @@ class Support(
         default=None,
         null=True,
     )
-    # assets = models.ManyToManyField(Asset, related_name='supports')
+    base_objects = models.ManyToManyField(BaseObject, related_name='supports')
 
     def __init__(self, *args, **kwargs):
         self.saving_user = None

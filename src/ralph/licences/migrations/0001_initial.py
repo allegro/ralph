@@ -17,30 +17,30 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='BaseObjectLicence',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, primary_key=True, auto_created=True)),
+                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
                 ('quantity', models.PositiveIntegerField(default=1)),
-                ('base_object', models.ForeignKey(related_name='licences', to='assets.BaseObject')),
+                ('base_object', models.ForeignKey(to='assets.BaseObject', related_name='licences')),
             ],
         ),
         migrations.CreateModel(
             name='Licence',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, primary_key=True, auto_created=True)),
+                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
                 ('created', models.DateTimeField(verbose_name='date created', auto_now=True)),
                 ('modified', models.DateTimeField(verbose_name='last modified', auto_now_add=True)),
                 ('number_bought', models.IntegerField(verbose_name='Number of purchased items')),
                 ('sn', models.TextField(verbose_name='SN / Key', blank=True, null=True)),
-                ('niw', models.CharField(verbose_name='Inventory number', default='N/A', unique=True, max_length=200)),
+                ('niw', models.CharField(verbose_name='Inventory number', max_length=200, unique=True, default='N/A')),
                 ('invoice_date', models.DateField(verbose_name='Invoice date', blank=True, null=True)),
                 ('valid_thru', models.DateField(blank=True, help_text='Leave blank if this licence is perpetual', null=True)),
-                ('order_no', models.CharField(null=True, blank=True, max_length=50)),
-                ('price', models.DecimalField(default=0, max_digits=10, decimal_places=2, blank=True, null=True)),
-                ('accounting_id', models.CharField(null=True, blank=True, help_text='Any value to help your accounting department identify this licence', max_length=200)),
-                ('provider', models.CharField(null=True, blank=True, max_length=100)),
-                ('invoice_no', models.CharField(null=True, db_index=True, blank=True, max_length=128)),
-                ('remarks', models.CharField(verbose_name='Additional remarks', default=None, null=True, blank=True, max_length=1024)),
-                ('license_details', models.CharField(verbose_name='License details', default='', blank=True, max_length=1024)),
-                ('base_objects', models.ManyToManyField(verbose_name='Assigned base objects', related_name='+', through='licences.BaseObjectLicence', to='assets.BaseObject')),
+                ('order_no', models.CharField(max_length=50, blank=True, null=True)),
+                ('price', models.DecimalField(decimal_places=2, max_digits=10, blank=True, null=True, default=0)),
+                ('accounting_id', models.CharField(max_length=200, help_text='Any value to help your accounting department identify this licence', null=True, blank=True)),
+                ('provider', models.CharField(max_length=100, blank=True, null=True)),
+                ('invoice_no', models.CharField(max_length=128, db_index=True, null=True, blank=True)),
+                ('remarks', models.CharField(verbose_name='Additional remarks', max_length=1024, blank=True, null=True, default=None)),
+                ('license_details', models.CharField(verbose_name='License details', max_length=1024, blank=True, default='')),
+                ('base_objects', models.ManyToManyField(to='assets.BaseObject', verbose_name='Assigned base objects', related_name='+', through='licences.BaseObjectLicence')),
             ],
             options={
                 'abstract': False,
@@ -49,8 +49,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='LicenceType',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, primary_key=True, auto_created=True)),
-                ('name', models.CharField(verbose_name='name', unique=True, max_length=255)),
+                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
+                ('name', models.CharField(verbose_name='name', max_length=255, unique=True)),
             ],
             options={
                 'abstract': False,
@@ -59,17 +59,17 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='LicenceUser',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, primary_key=True, auto_created=True)),
+                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
                 ('quantity', models.PositiveIntegerField(default=1)),
                 ('licence', models.ForeignKey(to='licences.Licence')),
-                ('user', models.ForeignKey(related_name='licences', to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='licences')),
             ],
         ),
         migrations.CreateModel(
             name='SoftwareCategory',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, primary_key=True, auto_created=True)),
-                ('name', models.CharField(verbose_name='name', unique=True, max_length=255)),
+                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
+                ('name', models.CharField(verbose_name='name', max_length=255, unique=True)),
             ],
             options={
                 'abstract': False,
@@ -78,22 +78,22 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='licence',
             name='licence_type',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, help_text="Should be like 'per processor' or 'per machine' and so on. ", to='licences.LicenceType'),
+            field=models.ForeignKey(to='licences.LicenceType', on_delete=django.db.models.deletion.PROTECT, help_text="Should be like 'per processor' or 'per machine' and so on. "),
         ),
         migrations.AddField(
             model_name='licence',
             name='manufacturer',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, blank=True, to='assets.Manufacturer', null=True),
+            field=models.ForeignKey(to='assets.Manufacturer', on_delete=django.db.models.deletion.PROTECT, null=True, blank=True),
         ),
         migrations.AddField(
             model_name='licence',
             name='software_category',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='licences.SoftwareCategory'),
+            field=models.ForeignKey(to='licences.SoftwareCategory', on_delete=django.db.models.deletion.PROTECT),
         ),
         migrations.AddField(
             model_name='licence',
             name='users',
-            field=models.ManyToManyField(related_name='+', through='licences.LicenceUser', to=settings.AUTH_USER_MODEL),
+            field=models.ManyToManyField(to=settings.AUTH_USER_MODEL, related_name='+', through='licences.LicenceUser'),
         ),
         migrations.AddField(
             model_name='baseobjectlicence',

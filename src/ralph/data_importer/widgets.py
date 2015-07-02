@@ -66,9 +66,41 @@ class UserWidget(widgets.ForeignKeyWidget):
         return result
 
 
+class BaseObjectManyToManyWidget(widgets.ManyToManyWidget):
+
+    """Widget for BO/DC base objects."""
+
+    def clean(self, value):
+        if not value:
+            return self.model.objects.none()
+        ids = value.split(self.separator)
+        content_types = ContentType.objects.get_for_models(
+            BackOfficeAsset,
+            DataCenterAsset,
+        )
+        imported_obj_ids = ImportedObjects.objects.filter(
+            content_type__in=content_types.values(),
+            old_object_pk__in=ids
+        ).values_list('object_pk', 'content_type')
+        base_object_ids = []
+        for model, content_type in content_types.items():
+            model_ids = [
+                i[0] for i in imported_obj_ids if i[1] == content_type.pk
+            ]
+            base_object_ids.extend(
+                model.objects.filter(
+                    pk__in=model_ids,
+                ).values_list(
+                    'baseobject_ptr',
+                    flat=True,
+                )
+            )
+        return self.model.objects.filter(pk__in=base_object_ids)
+
+
 class BaseObjectWidget(widgets.ForeignKeyWidget):
 
-    """Widget for BO/DC base object."""
+    """Widget for BO/DC base objects."""
 
     def clean(self, value):
         if not value:

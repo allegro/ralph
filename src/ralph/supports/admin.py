@@ -20,7 +20,7 @@ class SupportAdmin(PermissionAdminMixin, RalphAdmin):
     ]
     list_filter = ['support_type']
     date_hierarchy = 'created'
-    flist_display = [
+    list_display = [
         'support_type', 'contract_id', 'name', 'serial_no', 'date_from',
         'date_to', 'created', 'additional_notes', 'description'
     ]
