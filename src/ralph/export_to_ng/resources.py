@@ -10,8 +10,9 @@ from ralph.cmdb import models_ci
 from ralph.discovery import models_component
 from ralph.discovery import models_device
 from ralph.discovery import models_network
-from ralph_assets import models_dc_assets
 from ralph_assets import models_assets
+from ralph_assets import models_dc_assets
+from ralph_assets import models_support
 from ralph_assets.licences.models import (
     Licence,
     LicenceAsset,
@@ -399,6 +400,34 @@ class RackResource(resources.ModelResource):
     class Meta:
         exclude = ('data_center', 'accessories', 'deprecated_ralph_rack',)
         model = models_dc_assets.Rack
+
+
+class SupportTypeResource(resources.ModelResource):
+
+    class Meta:
+        fields = ['id', 'name']
+        model = models_support.SupportType
+
+
+class SupportResource(resources.ModelResource):
+
+    base_objects = fields.Field()
+
+    class Meta:
+        fields = [
+            'contract_id', 'description', 'price', 'date_from', 'date_to',
+            'escalation_path', 'contract_terms', 'additional_notes',
+            'sla_type', 'asset_type', 'status', 'producer', 'supplier',
+            'serial_no', 'invoice_no', 'invoice_date', 'period_in_months',
+            'support_type', 'base_objects', 'name'
+        ]
+        model = models_support.Support
+
+    def dehydrate_base_objects(self, support):
+        return ",".join(map(
+            unicode,
+            support.assets.all().values_list('id', flat=True)
+        ))
 
 
 class EnvironmentResource(resources.ModelResource):
