@@ -12,7 +12,10 @@ from ralph.discovery import models_device
 from ralph.discovery import models_network
 from ralph_assets import models_dc_assets
 from ralph_assets import models_assets
-from ralph_assets.licences.models import Licence
+from ralph_assets.licences.models import (
+    Licence,
+    LicenceAsset,
+)
 
 
 class BackOfficeAssetResource(resources.ModelResource):
@@ -429,18 +432,33 @@ class LicenceResource(resources.ModelResource):
     class Meta:
         model = Licence
         fields = [
-            'id', 'created', 'modified', 'manufacturer_id', 'licence_type_id',
-            'software_category_id', 'number_bought', 'sn', 'niw', 'valid_thru',
+            'id', 'created', 'modified', 'manufacturer',
+            'number_bought', 'sn', 'niw', 'valid_thru',
             'order_no', 'price', 'accounting_id', 'invoice_date', 'provider',
             'invoice_no', 'remarks', 'license_details', 'licence_type',
             'software_category'
         ]
 
-    def dehydrate_manufacturer(self, licence):
-        return licence.manufacturer.name
 
-    def dehydrate_licence_type(self, licence):
-        return licence.licence_type.name
+class BaseObjectLicenceResource(resources.ModelResource):
 
-    def dehydrate_software_category(self, licence):
-        return licence.software_category.name
+    base_object = fields.Field()
+
+    class Meta:
+        model = LicenceAsset
+        fields = ['licence', 'base_object', 'quantity']
+
+    def get_queryset(self):
+        return LicenceAsset.objects.filter(
+            asset__in=models_assets.Asset.objects.all(),
+            licence__in=Licence.objects.all(),
+        )
+
+    def dehydrate_base_object(self, licence_asset):
+        asset_type = models_assets.AssetType.from_id(
+            licence_asset.asset.type
+        ).group.name
+        return "{}|{}".format(
+            asset_type,
+            licence_asset.asset.pk
+        )

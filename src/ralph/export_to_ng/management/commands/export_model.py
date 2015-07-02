@@ -50,14 +50,14 @@ DEPENDENT_MODELS = [
     # new scan handles that: 'Connection',
     # new scan handles that: 'DiskShare',
     # new scan handles that: 'DiskShareMount',
-    # 'Licence',
+    'Licence',
     # 'Support',
     'Network',
     'IPAddress',
 ]
 MANY_TO_MANY = [
     'ServiceEnvironment',
-    # 'LicenceAsset',
+    'BaseObjectLicence',
     # 'LicenceUser',
     'RackAccessory',
 ]
