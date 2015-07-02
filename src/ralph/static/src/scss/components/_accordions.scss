@@ -1,0 +1,35 @@
+$accordion-border-color: $mdc-black-light;
+
+#content-main .accordion {
+    margin-top: rem-calc(5);
+    margin-bottom: rem-calc(20);
+    margin-left: 0;
+    .accordion-navigation {
+        border: 1px solid $accordion-border-color;
+        border-bottom: 0;
+        &:last-child {
+            border-bottom: 1px solid $accordion-border-color;
+        }
+        &.active {
+            a {
+                color: $oil;
+            }
+        }
+        a {
+            color: $primary-color;
+        }
+        & > .content.active {
+            border: 0;
+            border-top: 1px solid $accordion-border-color;
+            padding-top: rem-calc(10);
+            padding-bottom: rem-calc(10);
+            input {
+                margin: 0 0 rem-calc(10) rem-calc(10);
+            }
+            label {
+                padding: 0;
+                vertical-align: text-bottom;
+            }
+        }
+    }
+}
