@@ -790,3 +790,9 @@ RQ_TIMEOUT = 3000
 # points to a view which resolves to the user's home view after logging in
 from django.core.urlresolvers import reverse_lazy
 LOGIN_REDIRECT_URL = reverse_lazy('find_user_home')
+
+NG_EXPORTER = {
+    # if you have racks (probabbly you don't) where assets can't have parent
+    # (e.g.: chassis) put theirs ids here
+    'rack_ids_where_parents_are_disallowed': [],
+}

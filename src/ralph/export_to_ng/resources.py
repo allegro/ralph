@@ -4,6 +4,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import logging
+import os
+from itertools import chain
+
+from django.conf import settings
+from django.db.models import Q
 from import_export import fields
 from import_export import resources
 from ralph.cmdb import models_ci
@@ -16,6 +22,9 @@ from ralph_assets.licences.models import (
     Licence,
     LicenceAsset,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 class BackOfficeAssetResource(resources.ModelResource):
@@ -109,10 +118,51 @@ class BackOfficeAssetResource(resources.ModelResource):
 
 class DataCenterAssetResource(resources.ModelResource):
     service_env = fields.Field()
+    parent = fields.Field('parent', column_name='parent')
     rack = fields.Field('rack', column_name='rack')
     orientation = fields.Field('orientation', column_name='orientation')
     position = fields.Field('position', column_name='position')
     slot_no = fields.Field('slot_no', column_name='slot_no')
+
+    def dehydrate_parent(self, asset):
+        if (
+            not asset.model.category.is_blade or
+            not asset.device_info.position or
+            not asset.device_info.rack
+        ):
+            return ''
+        parents = models_assets.Asset.objects.select_related(
+            'device_info',
+        ).filter(
+            Q(device_info__slot_no__isnull=True) | Q(device_info__slot_no=''),
+            type=models_assets.AssetType.data_center,
+            model__category__is_blade=False,
+            part_info=None,
+            device_info__rack=asset.device_info.rack,
+            device_info__position=asset.device_info.position,
+            model__category__slug__in=[
+                '2-2-2-data-center-device-chassis-blade',
+            ]
+        ).exclude(
+            device_info__rack__in=settings.NG_EXPORTER['rack_ids_where_parents_are_disallowed'],  # noqa
+        )
+        parents_ids = parents.values_list('id', flat=True)
+        if len(parents_ids) == 0:
+            parent = ''
+        elif len(parents_ids) == 1:
+            parent = parents_ids[0] or ''
+        else:
+            parents_msges = [
+                "id, model, rack = {}, {}, {}".format(
+                    p.model.name, p.id, p.device_info.rack,
+                ) for p in parents
+            ]
+            msg = 'Found more then 1 parent:\n{}'.format(
+                os.linesep.join(parents_msges)
+            )
+            logger.warning(msg)
+            parent = ''
+        return parent
 
     def dehydrate_rack(self, asset):
         try:
@@ -137,7 +187,7 @@ class DataCenterAssetResource(resources.ModelResource):
 
     def dehydrate_slot_no(self, asset):
         try:
-            slot_no = asset.device_info.slot_no
+            slot_no = asset.device_info.slot_no or ''
         except AttributeError:
             slot_no = ''
         return slot_no
@@ -166,18 +216,12 @@ class DataCenterAssetResource(resources.ModelResource):
     class Meta:
         fields = (
             # to be skipped
+            'parent',
             'id',
-            #    'asset_ptr': '',
-            #    'baseobject_ptr': '',
-            # to be dehydrated
             'service_env',
             # TODO:
             #    'configuration_path': '',
-            # complicated:
-            # TODO:
-            #    'parent': '',
             'barcode',
-            # TODO: m2m
             'connections',
             'created',
             'delivery_date',
@@ -214,10 +258,18 @@ class DataCenterAssetResource(resources.ModelResource):
         model = models_assets.Asset
 
     def get_queryset(self):
-        return self.Meta.model.objects.filter(
+        parents = self.Meta.model.objects.filter(
+            Q(device_info__slot_no__isnull=True) | Q(device_info__slot_no=''),
             type=models_assets.AssetType.data_center,
+            model__category__is_blade=False,
             part_info=None,
         )
+        children = self.Meta.model.objects.filter(
+            type=models_assets.AssetType.data_center,
+            model__category__is_blade=True,
+            part_info=None,
+        )
+        return list(chain(parents, children))
 
 
 class NetworkResource(resources.ModelResource):
@@ -258,7 +310,7 @@ class IPAddressResource(resources.ModelResource):
 
     def dehydrate_asset(self, ip_address):
         try:
-            asset_id = ip_address.device.get_asset().id
+            asset_id = ip_address.device.get_asset().id or ''
         except AttributeError:
             asset_id = ''
         return asset_id
@@ -284,6 +336,15 @@ class IPAddressResource(resources.ModelResource):
 
 
 class AssetModelResource(resources.ModelResource):
+    has_parent = fields.Field('has_parent', column_name='has_parent')
+
+    def dehydrate_has_parent(self, asset_model):
+        try:
+            has_parent = asset_model.category.is_blade
+        except AttributeError:
+            has_parent = False
+        return int(has_parent)
+
     class Meta:
         fields = (
             'id',
@@ -376,7 +437,7 @@ class ServiceResource(resources.ModelResource):
         if profit_center:
             profit_center_name = profit_center[0].parent.name
         else:
-            profit_center_name = None
+            profit_center_name = ''
         return profit_center_name
 
     def get_queryset(self):
@@ -412,14 +473,14 @@ class GenericComponentResource(resources.ModelResource):
 
     def dehydrate_model(self, component):
         try:
-            model_name = component.model.name
+            model_name = component.model.name or ''
         except AttributeError:
             model_name = ''
         return model_name
 
     def dehydrate_asset(self, component):
         try:
-            sn = component.device.get_asset().sn
+            sn = component.device.get_asset().sn or ''
         except AttributeError:
             sn = ''
         return sn
