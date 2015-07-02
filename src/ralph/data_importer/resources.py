@@ -173,7 +173,7 @@ class DataCenterAssetResource(ImportForeignKeyMixin, resources.ModelResource):
     parent = fields.Field(
         column_name='parent',
         attribute='parent',
-        widget=ImportedForeignKeyWidget(assets.Asset),
+        widget=ImportedForeignKeyWidget(physical.DataCenterAsset),
     )
     service_env = fields.Field(
         column_name='service_env',
