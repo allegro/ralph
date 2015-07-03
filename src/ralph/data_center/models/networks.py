@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 
 import ipaddress
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
@@ -532,12 +533,14 @@ class IPAddress(LastSeenMixin, TimeStampMixin, models.Model):
         return '{} ({})'.format(self.hostname, self.address)
 
     def save(self, allow_device_change=True, *args, **kwargs):
-        if not allow_device_change:
-            self.assert_same_device()
-        if not self.address:
-            self.address = network.hostname(self.hostname, reverse=True)
-        if not self.hostname:
-            self.hostname = network.hostname(self.address)
+        # TODO: copy from 2.0
+        # if not allow_device_change:
+        #     self.assert_same_device()
+        if settings.CHECK_IP_HOSTNAME_ON_SAVE:
+            if not self.address:
+                self.address = network.hostname(self.hostname, reverse=True)
+            if not self.hostname:
+                self.hostname = network.hostname(self.address)
         self.number = int(ipaddress.ip_address(self.address))
         try:
             self.network = Network.from_ip(self.address)
