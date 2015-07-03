@@ -55,6 +55,11 @@ class RalphAdminMixin(object):
             request, object_id, form_url, extra_context
         )
 
+    def formfield_for_manytomany(self, db_field, request=None, **kwargs):
+        if db_field.name in ('user_permissions', 'permissions'):
+            kwargs['widget'] = widgets.PermissionsSelectWidget()
+        return db_field.formfield(**kwargs)
+
 
 class RalphAdmin(RalphAdminMixin, VersionAdmin):
     def __init__(self, *args, **kwargs):
