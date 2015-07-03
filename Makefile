@@ -2,17 +2,25 @@ TEST?=ralph
 
 .PHONY: test flake clean coverage docs coveralls
 
-fix_tablib:
-	# https://github.com/kennethreitz/tablib/issues/177
-	pip3 install 'git+https://github.com/kennethreitz/tablib.git@develop'
+package: build-package upload-package
+	
+build-package: 
+	rm -rf ./build 2>/dev/null 1>/dev/null
+	./packaging/build-package.sh
 
-install: fix_tablib
+upload-package: 
+	./packaging/upload-package.sh
+
+install-js:
+	npm install gulp-watch gulp-autoprefixer gulp-bower gulp-less gulp-rename gulp-sass run-sequence
+
+install: 
 	pip3 install -r requirements/prod.txt
 
-install-test: fix_tablib
+install-test: 
 	pip3 install -r requirements/test.txt
 
-install-dev: fix_tablib
+install-dev: 
 	pip3 install -r requirements/dev.txt
 
 install-docs:

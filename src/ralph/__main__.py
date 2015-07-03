@@ -19,5 +19,9 @@ def test():
     main('ralph.settings.test')
 
 
+def prod():
+    main('ralph.settings.prod')
+
+
 if __name__ == '__main__':
-    main()
+    main('ralph.settings.prod')

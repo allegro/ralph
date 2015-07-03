@@ -1,9 +1,18 @@
 site_name: Ralph 3
 repo_url: https://github.com/allegro/ralph/
 pages:
-  - index.md
-  - installation.md
-  - docker.md
-  - development.md
-  - ldap.md
+  - User guide:
+      - Welcome: index.md
+      - Installation: installation.md
+      - Migration from Ralph 2.x: data_migration.md
+  - Developer guide: 
+      - Before you start: CONTRIBUTING.md
+      - Architecture: development/overview.md
+      - Addons : development/addons.md
+      - Packaging: development/packaging.md
 theme: readthedocs
+strict: true
+dev_addr: 0.0.0.0:8000
+markdown_extensions:
+    - toc:
+        permalink: True
