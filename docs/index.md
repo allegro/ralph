@@ -1,17 +1,11 @@
-# Welcome to MkDocs
+# Ralph NG
 
-For full documentation visit [mkdocs.org](http://mkdocs.org).
+Ralph NG is a simple yet powerful Asset Management, DCIM and CMDB system for data center and back office.
 
-## Commands
+Features:
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs help` - Print this help message.
+* keep track of assets purchases and their life cycle
+* auto-discover existing hardware
+* generate flexible and accurate cost reports
 
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+Disclaimer: Ralph NG is streamlined and simplified version of Ralph 2.x currently in development. This documentation doesn't cover [old version which is accessible here](http://ralph.readthedocs.org).

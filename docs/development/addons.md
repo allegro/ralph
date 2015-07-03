@@ -1,24 +1,13 @@
-# Development and contributing to Ralph
+# Extending Ralph
 
-Like every open-source project Ralph is always looking for motivated individuals to contribute to source code.
+Ralph NG is easy to extend, for example providing custom tabs into the Asset review context. 
 
-Please read [this document](https://github.com/allegro/ralph/blob/ng/CONTRIBUTING.md) for more information.
-
-
-## In a nutshell
-
-This is how you fix a bug or add a feature in few quick steps:
-
-1. fork us on [GitHub](https://github.com/allegro/ralph/),
-2. checkout your fork,
-3. write a code (with [PEP8](https://www.python.org/dev/peps/pep-0008/) rules), test, commit,
-4. push changes to your fork,
-5. open a pull request.
+Note: We encourage the developers to contribute new functions and integrations! Please read [this document](../CONTRIBUTING.md) for more information.
 
 
-## Add extra view to admin
+## Extending the Detail View
 
-A extra view is the most convenient way to integrate content from another Django app into a Ralph admin page. All registred views will be represented by tab on admin site.
+Providing custom sub-page for asset detail view is the most convenient way to integrate content from another Django app into a Ralph admin page. All registred views will be represented by tab on ralph site.
 
 You must write your own class view and template. There are two possibilities to add extra view: by decorator and by class' attribute.
 

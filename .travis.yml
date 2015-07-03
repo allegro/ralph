@@ -2,8 +2,7 @@ sudo: false
 language: python
 
 python:
-  - "3.3"
-  - "3.4"
+    - "3.4"
 
 before_install:
     - pip install flake8 --use-mirrors
@@ -17,7 +16,7 @@ script:
     - make coveralls
 
 after_success:
-  - coveralls
+    - coveralls
 
 notifications:
   webhooks:

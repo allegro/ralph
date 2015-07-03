@@ -12,7 +12,7 @@ def read(fname):
 
 setup(
     name='ralph',
-    version='3.0.0',  # TODO: import from ralph
+    version=read('./VERSION').strip(),
     author='Grupa Allegro Sp. z o.o. and Contributors',
     author_email='pylabs@allegro.pl',
     description="Advanced Asset Management and DCIM system for data center and back office.",
@@ -21,13 +21,13 @@ setup(
     keywords='',
     platforms=['any'],
     license='Apache Software License v2.0',
-    packages=find_packages('src'),  # TODO: remove src intermediate directory
+    packages=find_packages('src'),
     include_package_data=True,
     package_dir={'': 'src'},
     zip_safe=False,  # because templates are loaded from file path
     entry_points={
         'console_scripts': [
-            'ralph = ralph.__main__:main',
+            'ralph = ralph.__main__:prod',
             'dev_ralph = ralph.__main__:dev',
             'test_ralph = ralph.__main__:test',
         ],

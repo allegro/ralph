@@ -1,8 +1,9 @@
 include AUTHORS README.rst CHANGES.rst LICENSE
 recursive-include doc *.py *.rst *.txt *.html *.css *.js *.png *.git *.jpg *.conf *.bat *.pdf *.docx Makefile
-recursive-include src/ralph/templates *
-recursive-include src/ralph/tests *
-recursive-include src/ralph/fixtures *
-recursive-include src/ralph/static/css *
-recursive-include src/ralph/static/js *
+recursive-include src/ralph *
+recursive-include requirements/ *
+
+global-exclude *.pyc
+global-exclude __pycache__
+
 prune doc/_build

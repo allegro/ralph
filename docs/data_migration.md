@@ -1,7 +1,7 @@
 # Data imports
 
 It is possible to import data from various formats (e.g.: csv, xml, etc.).
-This can be achieved by graphical interface (GUI) and command line (CLI).
+It can be achieved by graphical interface (GUI) and command line (CLI).
 
 ## CLI import
 
@@ -13,6 +13,10 @@ or
 
     $ ralph importer --skipid --type zip ./path/to/exported-files.zip
 
-To see rest of importer options type::
+To see all available importer options use:
 
     $ ralph importer --help
+
+## GUI import
+
+(TODO)
