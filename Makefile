@@ -3,24 +3,24 @@ TEST?=ralph
 .PHONY: test flake clean coverage docs coveralls
 
 package: build-package upload-package
-	
-build-package: 
+
+build-package:
 	rm -rf ./build 2>/dev/null 1>/dev/null
 	./packaging/build-package.sh
 
-upload-package: 
+upload-package:
 	./packaging/upload-package.sh
 
 install-js:
 	npm install gulp-watch gulp-autoprefixer gulp-bower gulp-less gulp-rename gulp-sass run-sequence
 
-install: 
+install:
 	pip3 install -r requirements/prod.txt
 
-install-test: 
+install-test:
 	pip3 install -r requirements/test.txt
 
-install-dev: 
+install-dev:
 	pip3 install -r requirements/dev.txt
 
 install-docs:
