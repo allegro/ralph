@@ -42,8 +42,9 @@ class PermissionsSelectWidget(forms.Widget):
         return list(map(int, values.split(',')))
 
     def render(self, name, value, attrs=None, choices=()):
+        attr_value = ','.join(map(str, value or []))
         final_attrs = self.build_attrs(
-            attrs, type='hidden', name=name, value=','.join(map(str, value)),
+            attrs, type='hidden', name=name, value=attr_value,
         )
         return mark_safe(
             '<a class="expand action-expand">Expand all</a>'
@@ -80,7 +81,7 @@ class PermissionsSelectWidget(forms.Widget):
         for group_key, group_choices in grouped:
             items = list(group_choices)
             local_values = [item[0] for item in items]
-            local_selected = set(local_values) & set(selected_choices)
+            local_selected = set(local_values) & set(selected_choices or [])
             slug = slugify(group_key)
             label = title(group_key)
             rendered_options += mark_safe(
