@@ -126,7 +126,7 @@ class TestRestAssetInfoPerRack(TestCase):
                     'management_ip': "",
                     'orientation': 'front',
                     'remarks': u'',
-                    'service': u'Backup systems - prod',
+                    'service': u'Backup systems',
                     'url': self.asset_1.get_absolute_url()
                 },
                 {
