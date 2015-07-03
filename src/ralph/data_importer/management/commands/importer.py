@@ -144,6 +144,7 @@ class Command(BaseCommand):
             logger.info('Done\n')
 
     def handle(self, *args, **options):
+        settings.CHECK_IP_HOSTNAME_ON_SAVE = False
         if options.get('type') == 'dir':
             self.from_dir(options)
         elif options.get('type') == 'zip':
