@@ -243,6 +243,24 @@ def _get_memory(idrac_manager):
     ]
 
 
+def _get_enclosures(idrac_manager):
+    tree = idrac_manager.run_command('DCIM_EnclosureView')
+    xmlns_n1 = XMLNS_N1_BASE % "DCIM_EnclosureView"
+    q = "{}Body/{}EnumerateResponse/{}Items/{}DCIM_EnclosureView".format(
+        XMLNS_S,
+        XMLNS_WSEN,
+        XMLNS_WSMAN,
+        xmlns_n1,
+    )
+    results = []
+    for record in tree.findall(q):
+        slotnumber = record.find(
+            "{}{}".format(xmlns_n1, 'SlotCount'),
+        ).text.strip()
+        results.append(slotnumber)
+    return results
+
+
 def _get_disks(idrac_manager):
     tree = idrac_manager.run_command('DCIM_PhysicalDiskView')
     xmlns_n1 = XMLNS_N1_BASE % "DCIM_PhysicalDiskView"
@@ -335,6 +353,11 @@ def idrac_device_info(idrac_manager):
     fibrechannel_cards = _get_fibrechannel_cards(idrac_manager)
     if fibrechannel_cards:
         device_info['fibrechannel_cards'] = fibrechannel_cards
+    slotnumber = _get_enclosures(idrac_manager)
+    if slotnumber:
+        if (slotnumber[0] == '10'
+                and device_info['model_name'] == 'Dell PowerEdge R630'):
+            device_info.update({'model_name': 'Dell r630 - 10 disks slot'})
     return device_info
 
 
