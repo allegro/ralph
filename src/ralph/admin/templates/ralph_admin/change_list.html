@@ -21,6 +21,9 @@
 {% block coltype %}flex{% endblock %}
 
 {% block content %}
+  {% if is_popup and cl %}
+    {% search_form cl %}
+  {% endif %}
   <div id="content-main">
     <form id="changelist-form" action="" method="post"{% if cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>{% csrf_token %}
       <div class="row header">

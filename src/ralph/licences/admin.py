@@ -46,9 +46,11 @@ class LicenceAdmin(PermissionAdminMixin, RalphAdmin):
 
 @register(LicenceType)
 class LicenceTypeAdmin(PermissionAdminMixin, RalphAdmin):
-    pass
+
+    search_fields = ['name']
 
 
 @register(SoftwareCategory)
 class SoftwareCategoryAdmin(PermissionAdminMixin, RalphAdmin):
-    pass
+
+    search_fields = ['name']

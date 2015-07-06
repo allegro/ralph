@@ -43,7 +43,8 @@ from ralph.lib.permissions.admin import PermissionAdminMixin
 
 @register(DataCenter)
 class DataCenterAdmin(RalphAdmin):
-    pass
+
+    search_fields = ['name']
 
 
 @register(DataCenterAsset)
@@ -107,6 +108,8 @@ class ServerRoomAdmin(RalphAdmin):
 
 @register(Rack)
 class RackAdmin(RalphAdmin):
+
+    search_fields = ['name']
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "server_room":

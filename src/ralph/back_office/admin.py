@@ -59,4 +59,5 @@ class BackOfficeAssetAdmin(PermissionAdminMixin, RalphAdmin):
 
 @register(Warehouse)
 class WarehouseAdmin(RalphAdmin):
-    pass
+
+    search_fields = ['name']
