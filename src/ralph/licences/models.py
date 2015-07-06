@@ -184,12 +184,14 @@ class Licence(PermByFieldMixin, TimeStampMixin, models.Model):
 
     @cached_property
     def used(self):
-        assets_qs = self.assets.through.objects.filter(licence=self)
+        base_objects_qs = self.base_objects.through.objects.filter(
+            licence=self
+        )
         users_qs = self.users.through.objects.filter(licence=self)
 
         def get_sum(qs):
             return qs.aggregate(sum=Sum('quantity'))['sum'] or 0
-        return sum(map(get_sum, [assets_qs, users_qs]))
+        return sum(map(get_sum, [base_objects_qs, users_qs]))
 
     @cached_property
     def free(self):
