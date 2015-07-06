@@ -13,9 +13,12 @@ from django.utils.translation import ugettext as _
 class AdminDateWidget(forms.DateInput):
     @property
     def media(self):
-        js = ['foundation-datepicker.js']
+        js = map(lambda x: os.path.join(*x), [
+            ('vendor', 'js', 'foundation-datepicker.js'),
+            ('src', 'js', 'foundation-datepicker-init.js'),
+        ])
         return forms.Media(js=[
-            static(os.path.join('vendor', 'js', path)) for path in js
+            static(path) for path in js
         ])
 
     def render(self, name, value, attrs=None):
