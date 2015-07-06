@@ -10,7 +10,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libmysqlclient-dev \
     libmysqld-dev \
     libsasl2-dev \
-    mysql-server \
+    mysql-server-5.6 \
     python3.4 \
     python3.4-dev \
     redis-server

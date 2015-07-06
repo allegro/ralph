@@ -66,6 +66,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ralph.wsgi.application'
 
+MYSQL_OPTIONS = {
+    'sql_mode': 'TRADITIONAL',
+    'charset': 'utf8',
+    'init_command': """
+    SET storage_engine=INNODB;
+    SET character_set_connection=utf8,collation_connection=utf8_unicode_ci;
+    SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
+    """
+}
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -73,17 +82,7 @@ DATABASES = {
         'USER': os.environ.get('DB_ENV_MYSQL_USER', 'ralph_ng'),
         'PASSWORD': os.environ.get('DB_ENV_MYSQL_PASSWORD', 'ralph_ng'),
         'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
-        'OPTIONS': {
-            "init_command": ','.join([
-                "SET storage_engine=INNODB",
-                "character_set_connection=utf8",
-                ";".join([
-                    "collation_connection=utf8_unicode_ci",
-                    "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED",
-                    "",
-                ])
-            ])
-        }
+        'OPTIONS': MYSQL_OPTIONS
     }
 }
 
@@ -114,6 +113,8 @@ MESSAGE_TAGS = {
 DEFAULT_DEPRECATION_RATE = 25
 CHECK_IP_HOSTNAME_ON_SAVE = True
 ASSET_HOSTNAME_TEMPLATE = 'test'
+
+LDAP_SERVER_OBJECT_USER_CLASS = 'user'  # possible values: user, person
 
 ADMIN_SITE_HEADER = 'Ralph 3'
 

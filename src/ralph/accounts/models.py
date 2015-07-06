@@ -69,3 +69,12 @@ class RalphUser(AbstractUser):
 
     class Meta(AbstractUser.Meta):
         swappable = 'AUTH_USER_MODEL'
+
+    def save(self, *args, **kwargs):
+        # set default values if None provided
+        for field in ('gender', 'country'):
+            val = getattr(self, field)
+            if val is None:
+                val = self._meta.get_field_by_name(field)[0].default
+                setattr(self, field, val)
+        return super().save(*args, **kwargs)

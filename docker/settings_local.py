@@ -10,6 +10,7 @@ DATABASES = {
         'USER': os.environ.get('DB_ENV_MYSQL_USER', 'ralph_ng'),
         'PASSWORD': os.environ.get('DB_ENV_MYSQL_PASSWORD', 'ralph_ng'),
         'HOST': os.environ.get('DB_HOST', 'db'),
+        'OPTIONS': MYSQL_OPTIONS,
     }
 }
 
