@@ -38,6 +38,7 @@ from ralph.data_center.views import (
     DataCenterAssetSoftware,
     NetworkView,
 )
+from ralph.lib.permissions.admin import PermissionAdminMixin
 
 
 @register(DataCenter)
@@ -46,7 +47,11 @@ class DataCenterAdmin(RalphAdmin):
 
 
 @register(DataCenterAsset)
-class DataCenterAssetAdmin(ImportExportModelAdmin, RalphAdmin):
+class DataCenterAssetAdmin(
+    PermissionAdminMixin,
+    ImportExportModelAdmin,
+    RalphAdmin,
+):
     """Data Center Asset admin class."""
 
     change_views = [
