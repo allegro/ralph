@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 
 from collections import OrderedDict
 
-import six
 from django.core.urlresolvers import reverse
 from rest_framework import serializers
 
@@ -43,8 +42,19 @@ class AdminLinkMixin(serializers.ModelSerializer):
 
 class DataCenterAssetSerializerBase(serializers.ModelSerializer):
     model = serializers.CharField(source='model.name')
-    service = serializers.CharField(source='service.name')
-    orientation = serializers.CharField(source='model.get_orientation_desc')
+    service = serializers.SerializerMethodField('get_service_env')
+    orientation = serializers.CharField(source='get_orientation_desc')
+    url = serializers.CharField(source='get_absolute_url')
+
+    def get_service_env(self, obj):
+        try:
+            service_name = obj.service_env.service.name
+        except AttributeError:
+            service_name = ''
+        return str(service_name)
+
+    def get_orientation_desc(self, obj):
+        return obj.get_orientation_desc()
 
 
 class ServerRoomtSerializer(serializers.ModelSerializer):
@@ -57,13 +67,12 @@ class ServerRoomtSerializer(serializers.ModelSerializer):
 
 
 class RelatedAssetSerializer(DataCenterAssetSerializerBase):
-    slot_no = serializers.CharField(source='model.slot_no')
 
     class Meta:
         model = DataCenterAsset
         fields = (
-            'id', 'model', 'barcode', 'sn', 'slot_no',
-            'hostname', 'service', 'orientation'
+            'id', 'model', 'barcode', 'sn', 'slot_no', 'hostname', 'service',
+            'orientation', 'url',
         )
 
 
@@ -81,14 +90,7 @@ class DataCenterAssetSerializer(DataCenterAssetSerializerBase):
     _type = serializers.SerializerMethodField('get_type')
     management_ip = serializers.SerializerMethodField('get_management')
     orientation = serializers.SerializerMethodField('get_orientation_desc')
-    service = serializers.SerializerMethodField('get_service_env')
     url = serializers.CharField(source='get_absolute_url')
-
-    def get_service_env(self, obj):
-        return six.text_type(obj.service_env)
-
-    def get_orientation_desc(self, obj):
-        return obj.get_orientation_desc()
 
     def get_type(self, obj):
         return TYPE_ASSET
@@ -102,7 +104,7 @@ class DataCenterAssetSerializer(DataCenterAssetSerializerBase):
             'id', 'model', 'category', 'height', 'front_layout',
             'back_layout', 'barcode', 'sn', 'position',
             'children', '_type', 'hostname', 'management_ip',
-            'orientation', 'service', 'remarks', 'url'
+            'orientation', 'service', 'remarks', 'url',
         )
 
 
