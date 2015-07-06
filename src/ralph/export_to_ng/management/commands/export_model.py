@@ -34,7 +34,6 @@ SIMPLE_MODELS = [
     # TODO: 'CloudProject',
     'LicenceType',
     'SoftwareCategory',
-    'SupportType',
     # TODO: Database
     # TODO: VIP
     # TODO: VirtualServer
@@ -42,6 +41,7 @@ SIMPLE_MODELS = [
     'SupportType',
 ]
 DEPENDENT_MODELS = [
+    'ServiceEnvironment',
     'AssetModel',
     # new scan handles that: 'GenericComponent',
     'BackOfficeAsset',
@@ -57,7 +57,6 @@ DEPENDENT_MODELS = [
     'IPAddress',
 ]
 MANY_TO_MANY = [
-    'ServiceEnvironment',
     'BaseObjectLicence',
     # 'LicenceUser',
     'RackAccessory',
