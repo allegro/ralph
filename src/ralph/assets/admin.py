@@ -21,22 +21,26 @@ from ralph.lib.permissions.admin import PermissionAdminMixin
 @register(ServiceEnvironment)
 class ServiceEnvironmentAdmin(RalphAdmin):
 
+    search_fields = ['service__name', 'environment__name']
     list_select_related = ['service', 'environment']
 
 
 @register(Service)
 class ServiceAdmin(RalphAdmin):
-    pass
+
+    search_fields = ['name']
 
 
 @register(Manufacturer)
 class ManufacturerAdmin(ImportExportModelAdmin, RalphAdmin):
-    pass
+
+    search_fields = ['name']
 
 
 @register(Environment)
 class EnvironmentAdmin(RalphAdmin):
-    pass
+
+    search_fields = ['name']
 
 
 @register(AssetModel)
@@ -47,14 +51,15 @@ class AssetModelAdmin(
 ):
 
     resource_class = resources.AssetModelResource
-
     list_select_related = ['manufacturer']
     raw_id_fields = ['manufacturer']
+    search_fields = ['name', 'manufacturer__name']
 
 
 @register(Category)
 class CategoryAdmin(RalphAdmin):
-    pass
+
+    search_fields = ['name']
 
 
 @register(ComponentModel)
