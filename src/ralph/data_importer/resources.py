@@ -16,6 +16,7 @@ from ralph.data_center.models import networks
 from ralph.data_center.models import physical
 from ralph.data_importer.widgets import (
     AssetServiceEnvWidget,
+    BaseObjectManyToManyWidget,
     BaseObjectWidget,
     ImportedForeignKeyWidget,
     UserWidget,
@@ -232,11 +233,22 @@ class LicenceResource(ImportForeignKeyMixin, resources.ModelResource):
         model = Licence
 
 
+class SupportTypeResource(ImportForeignKeyMixin, resources.ModelResource):
+
+    class Meta:
+        model = SupportType
+
+
 class SupportResource(ImportForeignKeyMixin, resources.ModelResource):
     support_type = fields.Field(
         column_name='support_type',
         attribute='support_type',
         widget=ImportedForeignKeyWidget(SupportType),
+    )
+    base_objects = fields.Field(
+        column_name='base_objects',
+        attribute='base_objects',
+        widget=BaseObjectManyToManyWidget(base.BaseObject),
     )
 
     class Meta:
