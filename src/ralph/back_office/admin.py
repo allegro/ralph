@@ -8,10 +8,11 @@ from ralph.back_office.views import (
     BackOfficeAssetLicence,
     BackOfficeAssetSoftware,
 )
+from ralph.lib.permissions.admin import PermissionAdminMixin
 
 
 @register(BackOfficeAsset)
-class BackOfficeAssetAdmin(RalphAdmin):
+class BackOfficeAssetAdmin(PermissionAdminMixin, RalphAdmin):
 
     """Back Office Asset admin class."""
 

@@ -15,6 +15,7 @@ from ralph.assets.models.components import (
     GenericComponent
 )
 from ralph.data_importer import resources
+from ralph.lib.permissions.admin import PermissionAdminMixin
 
 
 @register(ServiceEnvironment)
@@ -39,7 +40,11 @@ class EnvironmentAdmin(RalphAdmin):
 
 
 @register(AssetModel)
-class AssetModelAdmin(ImportExportModelAdmin, RalphAdmin):
+class AssetModelAdmin(
+    PermissionAdminMixin,
+    ImportExportModelAdmin,
+    RalphAdmin
+):
 
     resource_class = resources.AssetModelResource
 
