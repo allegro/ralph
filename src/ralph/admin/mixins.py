@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
+import os
+
 from copy import copy
 
+from django import forms
 from django.conf import settings
+from django.contrib.admin.templatetags.admin_static import static
 from django.db import models
 from django.views.generic import TemplateView
 from reversion import VersionAdmin
@@ -12,6 +16,20 @@ from ralph.admin import widgets
 FORMFIELD_FOR_DBFIELD_DEFAULTS = {
     models.DateField: {'widget': widgets.AdminDateWidget},
 }
+
+
+def get_common_media():
+    """
+    Shared by across extra views and admin class
+    """
+    js = map(lambda x: os.path.join(*x), [
+        ('vendor', 'js', 'jquery.js'),
+        ('vendor', 'js', 'foundation.min.js'),
+        ('vendor', 'js', 'modernizr.js'),
+    ])
+    return forms.Media(
+        js=[static('%s' % url) for url in js],
+    )
 
 
 class RalphAdminMixin(object):
@@ -66,6 +84,10 @@ class RalphAdmin(RalphAdminMixin, VersionAdmin):
         super(RalphAdmin, self).__init__(*args, **kwargs)
         self.formfield_overrides.update(FORMFIELD_FOR_DBFIELD_DEFAULTS)
 
+    @property
+    def media(self):
+        return super().media + get_common_media()
+
 
 class RalphTemplateView(TemplateView):
 
@@ -74,4 +96,5 @@ class RalphTemplateView(TemplateView):
             **kwargs
         )
         context['site_header'] = settings.ADMIN_SITE_HEADER
+        context['media'] = get_common_media()
         return context
