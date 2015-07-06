@@ -36,7 +36,9 @@ def manager_country_attribute_populate(
         if profile_map['manager'] in ldap_user.attrs:
             manager_ref = ldap_user.attrs[profile_map['manager']][0]
             # CN=John Smith,OU=TOR,OU=Corp-Users,DC=mydomain,DC=internal
-            cn = str(manager_ref).split(',')[0][3:]
+            if isinstance(manager_ref, bytes):
+                manager_ref = str(manager_ref, 'utf-8')
+            cn = manager_ref.split(',')[0][3:]
             user.manager = cn
     # raw value from LDAP is in profile.country for this reason we assign
     # some correct value
@@ -44,6 +46,8 @@ def manager_country_attribute_populate(
     if 'country' in profile_map:
         if profile_map['country'] in ldap_user.attrs:
             country = ldap_user.attrs[profile_map['country']][0]
+            if isinstance(country, bytes):
+                country = str(country, 'utf-8')
             # assign None if `country` doesn't exist in Country
             try:
                 user.country = Country.id_from_name(country.lower())
