@@ -19,3 +19,19 @@ select {
         span.active {background: $datepicker-active-color;}
     }
 }
+
+.field-row.error {
+    background-color: $body-bg;
+}
+
+/* Validation */
+.field-row.error input, .field-row.error select {
+    background-color: $validation-error-bg-color;
+    color: $validation-error-font-color;
+    box-shadow: inset 0 0 0px 1px $validation-error-border-color;
+}
+
+.field-row.error .error small.error {
+    background-color: $body-bg;
+    color: $validation-error-font-color;
+}
