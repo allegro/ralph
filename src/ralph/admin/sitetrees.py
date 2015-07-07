@@ -19,23 +19,40 @@ activate(settings.LANGUAGE_CODE)
 
 def ralph_item(*args, **kwargs):
     kwargs.setdefault('access_loggedin', True)
+
+    # create access_by_perms entries by iterating through all children
+    # and extracting app and model name from it
+    # permission is created in '<app>.{add|change}_<model>' format
+    access_by_perms = kwargs.get('access_by_perms', [])
+    if isinstance(access_by_perms, (str, int)):
+        access_by_perms = [access_by_perms]
+    for child in kwargs.get('children', []):
+        if hasattr(child, '_model') and hasattr(child, '_app'):
+            model = child._model.lower()
+            app = child._app.lower()
+            access_by_perms.extend([
+                '{}.add_{}'.format(app, model),
+                '{}.change_{}'.format(app, model),
+            ])
+    if access_by_perms:
+        kwargs['access_by_perms'] = list(set(access_by_perms))
     return item(*args, **kwargs)
 
 
 extra_views = ralph_site.get_extra_view_menu_items()
 
 
-def get_menu_items_for_admin(name):
+def get_menu_items_for_admin(name, perm):
+    # TODO: detailed permissions for extra views
     return [
-        ralph_item(
-            access_by_perms='data_center.change_datacenterasset', **view)
-        for view in extra_views[name]
+        ralph_item(access_by_perms=perm, **view) for view in extra_views[name]
     ]
 
 
 def section(section_name, app, model):
     app, model = map(str.lower, [app, model])
-    return ralph_item(
+    change_perm = '{}.change_{}'.format(app, model)
+    item = ralph_item(
         title=section_name,
         url='admin:{}_{}_changelist'.format(app, model),
         access_by_perms='{}.change_{}'.format(app, model),
@@ -48,14 +65,18 @@ def section(section_name, app, model):
             ralph_item(
                 title='{{ original }}',
                 url='admin:{}_{}_change original.id'.format(app, model),
-                access_by_perms='{}.change_{}'.format(app, model),
+                access_by_perms=change_perm,
                 children=get_menu_items_for_admin(
-                    '{}_{}'.format(app, model)
+                    '{}_{}'.format(app, model),
+                    change_perm
                 ),
             ),
         ]
     )
-
+    # save app and model info to create permissions entries later
+    item._app = app
+    item._model = model
+    return item
 
 sitetrees = [
     tree('ralph_admin', items=[
@@ -63,17 +84,6 @@ sitetrees = [
             title=_('Data Center'),
             url='#',
             url_as_pattern=False,
-            access_by_perms=[
-                'data_center.change_datacenterasset',
-                'data_center.change_cloudproject',
-                'data_center.change_datacenter',
-                'data_center.change_database',
-                'data_center.change_diskshare',
-                'data_center.change_rackaccessory',
-                'data_center.change_serverroom',
-                'data_center.change_vip',
-                'data_center.change_virtualserver'
-            ],
             perms_mode_all=False,
             children=[
                 section(_('Hardware'), 'data_center', 'DataCenterAsset'),
@@ -92,16 +102,12 @@ sitetrees = [
         ralph_item(
             title=_('DC Visualization'),
             url='dc_view',
-            access_by_perms=''  # TODO add permissions
+            # TODO add permissions
         ),
         ralph_item(
             title=_('Back Office'),
             url='#',
             url_as_pattern=False,
-            access_by_perms=[
-                'back_office.change_backofficeasset',
-                'back_office.change_warehouse',
-            ],
             perms_mode_all=False,
             children=[
                 section(_('Hardware'), 'back_office', 'backofficeasset'),
@@ -112,11 +118,6 @@ sitetrees = [
             title=_('Licenses'),
             url='#',
             url_as_pattern=False,
-            access_by_perms=[
-                'licences.change_licence',
-                'licences.change_licencetype',
-                'licences.change_softwarecategory'
-            ],
             perms_mode_all=False,
             children=[
                 section(_('Licences'), 'licences', 'Licence'),
@@ -128,10 +129,6 @@ sitetrees = [
             title=_('Supports'),
             url='#',
             url_as_pattern=False,
-            access_by_perms=[
-                'supports.change_support',
-                'supports.change_supporttype'
-            ],
             perms_mode_all=False,
             children=[
                 section(_('Supports'), 'supports', 'Support'),
@@ -142,10 +139,6 @@ sitetrees = [
             title=_('Settings'),
             url='#',
             url_as_pattern=False,
-            access_by_perms=[
-                'accounts.change_ralphuser', 'accounts.add_ralphuser',
-                'auth.change_group', 'auth.add_group'
-            ],
             perms_mode_all=False,
             children=[
                 section(_('Asset model'), 'assets', 'AssetModel'),
