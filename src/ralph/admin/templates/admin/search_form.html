@@ -5,6 +5,9 @@
     <div class="row collapse">
       <div class="small-9 columns">
         <input type="text" size="40" name="{{ search_var }}" value="{{ cl.query }}" id="searchbar" placeholder="{% trans "Search by" %} {{ cl.search_fields|join:", " }}" />
+        {% if cl.is_popup %}
+            <input type="hidden" size="40" name="_popup" value="1" />
+        {% endif %}
       </div>
       <div class="small-3 columns">
         <button type="submit" class="button expand search">
