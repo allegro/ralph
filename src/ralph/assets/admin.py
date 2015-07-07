@@ -3,6 +3,7 @@ from import_export.admin import ImportExportModelAdmin
 
 from ralph.admin import RalphAdmin, register
 from ralph.assets.models.assets import (
+    Asset,
     AssetModel,
     Category,
     Environment,
@@ -69,4 +70,9 @@ class ComponentModelAdmin(RalphAdmin):
 
 @register(GenericComponent)
 class GenericComponentAdmin(RalphAdmin):
+    pass
+
+
+@register(Asset)
+class AssetAdmin(RalphAdmin):
     pass

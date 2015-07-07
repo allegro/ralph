@@ -21,3 +21,7 @@ DEBUG_TOOLBAR_CONFIG = {
 }
 
 ROOT_URLCONF = 'ralph.urls.dev'
+
+# Disable exception for the missing element in SiteTree
+# https://github.com/idlesign/django-sitetree/pull/157/files
+RAISE_ITEMS_ERRORS_ON_DEBUG = False
