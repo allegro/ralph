@@ -33,6 +33,9 @@ class Gap(object):
         self.slot_no = slot_no
         self.orientation = orientation
 
+    def get_orientation_desc(self):
+        return self.orientation
+
     def get_absolute_url(self):
         return ''
 
