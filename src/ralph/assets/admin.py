@@ -28,6 +28,7 @@ class ServiceEnvironmentAdmin(RalphAdmin):
 @register(Service)
 class ServiceAdmin(RalphAdmin):
 
+    fields = ('name', 'profit_center', 'cost_center')
     search_fields = ['name']
 
 
