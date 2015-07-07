@@ -104,6 +104,7 @@ class DataCenterAssetAdmin(
 class ServerRoomAdmin(RalphAdmin):
 
     list_select_related = ['data_center']
+    search_fields = ['name', 'data_center__name']
 
 
 @register(Rack)
@@ -125,6 +126,7 @@ class RackAdmin(RalphAdmin):
 class RackAccessoryAdmin(RalphAdmin):
 
     list_select_related = ['rack', 'accessory']
+    search_fields = ['accessory__name', 'rack__name']
 
 
 @register(Database)
@@ -189,4 +191,6 @@ class DiscoveryQueueAdmin(RalphAdmin):
 
 @register(IPAddress)
 class IPAddressAdmin(RalphAdmin):
-    pass
+
+    search_fields = ['address', 'hostname']
+    list_filter = ['is_public', 'is_management']
