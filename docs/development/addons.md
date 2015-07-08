@@ -1,6 +1,6 @@
 # Extending Ralph
 
-Ralph NG is easy to extend, for example providing custom tabs into the Asset review context. 
+Ralph NG is easy to extend, for example providing custom tabs into the Asset review context.
 
 Note: We encourage the developers to contribute new functions and integrations! Please read [this document](../CONTRIBUTING.md) for more information.
 
@@ -27,6 +27,28 @@ This class is dedicated for details view. Instance of class provides additional 
 - ``object`` - concrete object, fetched from ``model`` and ``id``.
 
 You have access from template to ``object``.
+
+#### RalphDetailViewAdmin
+
+If you want display standard admin model as tab, please use this class. Class accept two basic attributes from ``django.contrib.admin.ModelAdmin``:
+
+- ``inlines``,
+- ``fieldsets``.
+
+Example:
+```django
+class NetworkInline(TabularInline):
+    model = IPAddress
+
+
+class NetworkView(RalphDetailViewAdmin):
+    icon = 'chain'
+    name = 'network'
+    label = 'Network'
+    url_name = 'network'
+
+    inlines = [NetworkInline]
+```
 
 ### Template
 

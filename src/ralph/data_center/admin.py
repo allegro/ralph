@@ -4,7 +4,11 @@ from django.utils.translation import ugettext_lazy as _
 
 from import_export.admin import ImportExportModelAdmin
 
-from ralph.admin import RalphAdmin, register
+from ralph.admin import (
+    RalphAdmin,
+    register,
+)
+from ralph.admin.views import RalphDetailViewAdmin
 from ralph.data_importer import resources
 from ralph.data_center.models.virtual import (
     CloudProject,
@@ -37,7 +41,6 @@ from ralph.data_center.views.ui import (
     DataCenterAssetLicence,
     DataCenterAssetSecurityInfo,
     DataCenterAssetSoftware,
-    NetworkView,
 )
 from ralph.lib.permissions.admin import PermissionAdminMixin
 
@@ -46,6 +49,19 @@ from ralph.lib.permissions.admin import PermissionAdminMixin
 class DataCenterAdmin(RalphAdmin):
 
     search_fields = ['name']
+
+
+class NetworkInline(TabularInline):
+    model = IPAddress
+
+
+class NetworkView(RalphDetailViewAdmin):
+    icon = 'chain'
+    name = 'network'
+    label = 'Network'
+    url_name = 'network'
+
+    inlines = [NetworkInline]
 
 
 @register(DataCenterAsset)
@@ -59,10 +75,11 @@ class DataCenterAssetAdmin(
     change_views = [
         DataCenterAssetComponents,
         DataCenterAssetSoftware,
-        NetworkView,
         DataCenterAssetSecurityInfo,
         DataCenterAssetLicence,
+        NetworkView,
     ]
+
     resource_class = resources.DataCenterAssetResource
     list_display = [
         'status', 'barcode', 'purchase_order', 'model',

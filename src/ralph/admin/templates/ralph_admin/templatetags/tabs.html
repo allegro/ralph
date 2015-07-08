@@ -1,6 +1,13 @@
+{% load admin_urls %}
+
 {% if views %}
   <div class="tabs">
     <ul>
+      <li{% if name == '' %} class="active"{% endif %}>
+        <a href="{{ object.get_absolute_url }}">
+          <i class="fa fa-info"></i> Object info
+        </a>
+      </li>
       {% for view in views %}
         <li{% if name == view.name %} class="active"{% endif %}>
           {% if object.id %}

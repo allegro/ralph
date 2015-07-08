@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from ralph.admin.views import RalphDetailView
-from ralph.data_center.models.networks import IPAddress
 from ralph.licences.models import Licence
 
 
@@ -129,17 +128,4 @@ class DataCenterAssetSecurityInfo(RalphDetailView):
             },
 
         ]
-        return context
-
-
-class NetworkView(RalphDetailView):
-
-    icon = 'chain'
-    name = 'network'
-    label = 'Network'
-    url_name = 'network'
-
-    def get_context_data(self, **kwargs):
-        context = super(NetworkView, self).get_context_data(**kwargs)
-        context['adresses'] = IPAddress.objects.filter(asset=self)
         return context

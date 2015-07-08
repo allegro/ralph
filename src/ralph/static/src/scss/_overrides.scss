@@ -20,6 +20,24 @@ select {
     }
 }
 
+.inline-group {
+    margin: 0 rem-calc(5);
+    .tabular tr {
+        &.has_original td {
+            padding-top: 0;
+        }
+        td {
+            padding: 0 rem-calc(5);
+            &.original p {
+                display: none;
+            }
+            #{text-inputs(all, 'input')}, select{
+                margin: rem-calc(5) 0;
+            }
+        }
+    }
+}
+
 .field-row.error {
     background-color: $body-bg;
 }

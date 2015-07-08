@@ -490,7 +490,7 @@ class IPAddress(LastSeenMixin, TimeStampMixin, models.Model):
         verbose_name=_('IP address'),
         help_text=_('Presented as string.'),
         unique=True,
-        blank=True,
+        blank=False,
         null=True,
         default=None,
     )
