@@ -5,7 +5,7 @@
 }
 
 select {
-    width: auto;
+    width: 100%;
     padding-right: 20px;
     margin-right: 10px;
 }
@@ -59,4 +59,26 @@ select {
 }
 .row label {
     text-align: right;
+}
+
+.field-row .end.columns {
+    /* Raw-id fields customization */
+    position:relative;
+    input.vForeignKeyRawIdAdminField {
+        float: left;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+    a.related-lookup {
+        position:absolute;
+        right: 15px;
+        height: 28px;
+        background-position: 0 50%;
+        background-repeat: no-repeat;
+    }
+    strong {
+        display: inline-block;
+        position: relative;
+        top: -20px;
+    }
 }
