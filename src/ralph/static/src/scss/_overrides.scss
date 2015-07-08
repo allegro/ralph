@@ -61,6 +61,15 @@ select {
     text-align: right;
 }
 
+#loading-bar .bar {
+    position: absolute;
+    top: 72px;
+    height: 3px;
+    background: $primary-color;
+}
+
+#loading-bar-spinner {display: none;}
+
 .field-row .end.columns {
     /* Raw-id fields customization */
     position:relative;

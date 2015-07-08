@@ -35,7 +35,8 @@ gulp.task('scss', function() {
 gulp.task('css', function() { 
     var vendorFiles = [
         'bower_components/normalize.css/normalize.css',
-        'bower_components/foundation-datepicker/stylesheets/foundation-datepicker.css'
+        'bower_components/foundation-datepicker/stylesheets/foundation-datepicker.css',
+        'bower_components/angular-loading-bar/build/loading-bar.min.css',
     ];
     return gulp.src(vendorFiles) 
         .pipe(gulp.dest(config.vendorRoot + 'css/')); 
@@ -54,6 +55,7 @@ gulp.task('js', function(){
         './bower_components/modernizr/modernizr.js',
         './bower_components/foundation/js/foundation.min.js',
         './bower_components/foundation-datepicker/js/foundation-datepicker.js',
+        './bower_components/angular-loading-bar/build/loading-bar.min.js',
     ];
     gulp.src(vendorFiles)
         .pipe(gulp.dest(config.vendorRoot + 'js/'));
