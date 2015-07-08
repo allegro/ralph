@@ -1,0 +1,16 @@
+.visualization {
+    [class*="span"] {
+       margin-left: 10px;
+    }
+    @import 'data_center';
+    @import 'rack';
+    .side-nav {
+        padding: 0;
+        li {
+            margin: 0;
+            a:not(.button) {
+                padding: rem-calc(5) 0;
+            }
+        }
+    }
+}
