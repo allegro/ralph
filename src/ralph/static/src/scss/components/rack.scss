@@ -1,10 +1,6 @@
 @import 'variables';
 @import 'functions';
 
-.visualization [class*="span"] {
-    margin-left: 10px;
-}
-
 .rack-info {
     background: #fff;
     color: #444;
@@ -39,12 +35,6 @@
         td:first-child {
             width: 20%;
             font-weight: bold;
-        }
-
-        tr:nth-last-child(2), tr:last-child {
-            & > td {
-                border-bottom: none;
-            }
         }
     }
 }

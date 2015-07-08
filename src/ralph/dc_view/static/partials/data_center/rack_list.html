@@ -1,17 +1,9 @@
-<div class="row">
-  <div class="large-12 columns">
-    <h5>Racks in {{ data_center.name }}</h5>
-  </div>
-  <div class="large-12 columns">
-    <input class="small-12" type="text" placeholder="Filter rack by name" ng-model="rack_filter" style="margin-bottom:0">
-  </div>
-  <div class="large-12 columns">
-    <ul class="side-nav" ng-show="data_center.name">
-      <li ui-sref-active="active" ng-repeat="rack in data_center.rack_set|filter:rack_filter|orderBy:'name'">
-        <a ui-sref="data_center.detail.rack({dcId:data_center.id, rackId:rack.id})">
-          {{ rack.name }}
-        </a>
-      </li>
-    </ul>
-  </div>
-</div>
+<h5>Racks in {{ data_center.name }}</h5>
+<input class="small-12" type="text" placeholder="Filter rack by name" ng-model="rack_filter" style="margin-bottom:0">
+<ul class="side-nav" ng-show="data_center.name">
+  <li ui-sref-active="active" ng-repeat="rack in data_center.rack_set|filter:rack_filter|orderBy:'name'">
+    <a ui-sref="data_center.detail.rack({dcId:data_center.id, rackId:rack.id})">
+      {{ rack.name }}
+    </a>
+  </li>
+</ul>
