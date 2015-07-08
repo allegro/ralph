@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+from copy import copy
+
 from django.shortcuts import get_object_or_404
 
 from ralph.admin.mixins import RalphTemplateView
-from ralph.admin import ralph_site
+from ralph.admin import ralph_site, RalphAdmin
 
 
 VIEW_TYPES = CHANGE, LIST = ('change', 'list')
@@ -13,6 +15,7 @@ class RalphExtraViewMixin(object):
     extra_view_base_template = None
     icon = None
     name = None
+    template_name = None
 
     def dispatch(self, request, model, views, *args, **kwargs):
         self.model = model
@@ -104,3 +107,30 @@ class RalphDetailView(RalphExtraViewMixin, RalphTemplateView):
         return r'^{}/{}/(?P<pk>[0-9]+)/{}/$'.format(
             model._meta.app_label, model._meta.model_name, cls.url_name
         )
+
+
+class AdminViewBase(type):
+    def __new__(cls, name, bases, attrs):
+        base_template = 'ralph_admin/extra_views/base_admin_change.html'
+        empty_fieldset = (('__empty__', {'fields': []}),)
+        admin_whitelist = ['inlines', 'fieldsets']
+        admin_attrs = {
+            key: attrs.pop(key, None) for key in admin_whitelist
+        }
+        admin_attrs['change_form_template'] = base_template
+        admin_attrs['fieldsets'] = admin_attrs['fieldsets'] or empty_fieldset
+        new_class = type.__new__(cls, name, bases, attrs)
+        new_class.admin_class = type('AdminView', (RalphAdmin,), admin_attrs)
+        return new_class
+
+
+class RalphDetailViewAdmin(RalphDetailView, metaclass=AdminViewBase):
+    """This class helps to display standard model admin in tab."""
+    def dispatch(self, request, model, pk, *args, **kwargs):
+        self.object = get_object_or_404(model, pk=pk)
+        self.views = kwargs['views']
+        extra_context = copy(super().get_context_data())
+        extra_context['object'] = self.object
+        return self.admin_class(
+            model, ralph_site, change_views=self.views
+        ).change_view(request, pk, extra_context=extra_context)

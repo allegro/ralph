@@ -149,7 +149,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(verbose_name='name', max_length=255, unique=True)),
                 ('created', models.DateTimeField(verbose_name='date created', auto_now=True)),
                 ('modified', models.DateTimeField(verbose_name='last modified', auto_now_add=True)),
-                ('address', models.CharField(verbose_name='network address', max_length=18, validators=[ralph.data_center.models.networks.network_validator], unique=True, help_text='Presented as string (e.g. 192.168.0.0/24)')),
+                ('address', models.CharField(verbose_name='network address', max_length=18, blank=False, validators=[ralph.data_center.models.networks.network_validator], unique=True, help_text='Presented as string (e.g. 192.168.0.0/24)')),
                 ('gateway', models.GenericIPAddressField(help_text='Presented as string.', verbose_name='gateway address', blank=True, null=True, default=None)),
                 ('gateway_as_int', models.PositiveIntegerField(verbose_name='gateway as int', blank=True, editable=False, null=True, default=None)),
                 ('reserved', models.PositiveIntegerField(verbose_name='reserved', help_text='Number of addresses to be omitted in the automatic determination process, counted from the first in range.', default=10)),

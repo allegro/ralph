@@ -42,9 +42,12 @@ class RalphAdminMixin(object):
     change_form_template = 'ralph_admin/change_form.html'
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
         self.list_views = copy(self.list_views) or []
-        self.change_views = copy(self.change_views) or []
+        if kwargs.get('change_views'):
+            self.change_views = copy(kwargs.pop('change_views', []))
+        else:
+            self.change_views = copy(self.change_views) or []
+        super().__init__(*args, **kwargs)
 
     def changelist_view(self, request, extra_context=None):
         """Override change list from django."""
