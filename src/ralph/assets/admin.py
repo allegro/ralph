@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.contrib.admin import TabularInline
 from import_export.admin import ImportExportModelAdmin
 
 from ralph.admin import RalphAdmin, register
@@ -26,9 +27,14 @@ class ServiceEnvironmentAdmin(RalphAdmin):
     list_select_related = ['service', 'environment']
 
 
+class ServiceEnvironmentInline(TabularInline):
+    model = ServiceEnvironment
+
+
 @register(Service)
 class ServiceAdmin(RalphAdmin):
-
+    exclude = ['environments']
+    inlines = [ServiceEnvironmentInline]
     search_fields = ['name']
 
 

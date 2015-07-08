@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.contrib.admin import TabularInline
 from django.utils.translation import ugettext_lazy as _
 
 from import_export.admin import ImportExportModelAdmin
@@ -107,10 +108,16 @@ class ServerRoomAdmin(RalphAdmin):
     search_fields = ['name', 'data_center__name']
 
 
+class RackAccessoryInline(TabularInline):
+    model = RackAccessory
+
+
 @register(Rack)
 class RackAdmin(RalphAdmin):
 
+    exclude = ['accessories']
     search_fields = ['name']
+    inlines = [RackAccessoryInline]
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "server_room":
