@@ -144,3 +144,16 @@ class PermissionsByFieldTestCase(TestCase):
             ['barcode', 'sn'],
             permission_admin.get_list_display(request),
         )
+
+    def test_get_empty_list_display(self):
+        request = self.request_factory.get('/')
+        request.user = self.user
+        permission_admin = PermissionAdminMixin()
+
+        # TODO Change to test models separated from ralph
+        permission_admin.model = DataCenterAsset()
+        permission_admin.list_display = []
+        self.assertListEqual(
+            ['__str__'],
+            permission_admin.get_list_display(request),
+        )
