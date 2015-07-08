@@ -35,3 +35,10 @@ select {
     background-color: $body-bg;
     color: $validation-error-font-color;
 }
+
+.error .row label.required {
+    color: $alert-color !important;
+}
+.row label {
+    text-align: right;
+}
