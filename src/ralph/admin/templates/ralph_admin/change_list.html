@@ -43,26 +43,28 @@
                 {% endblocktrans %}
               </a>
             {% endif %}
-            <a href="#" data-options="align:left" class="button dropdown small" data-dropdown="drop1">
-              {% trans "Action" %}
-            </a>
-            {% block object-tools %}
-              <ul id="drop1" class="f-dropdown" data-dropdown-content>
-                {% block object-tools-items %}
-                  {% if not is_popup %}
-                    <li>
-                      <a href="{{recoverlist_url}}" class="recoverlink">
-                        <i class="fa fa-retweet"></i>
-                        {% blocktrans with cl.opts.verbose_name_plural|escape as name %}
-                          Recover deleted {{name}}
-                        {% endblocktrans %}
-                      </a>
-                    </li>
-                  {% endif %}
-                  {{ block.super }}
-                {% endblock %}
-              </ul>
-            {% endblock %}
+            {% if not is_popup %}
+              <a href="#" data-options="align:left" class="button dropdown small" data-dropdown="drop1">
+                {% trans "Action" %}
+              </a>
+              {% block object-tools %}
+                <ul id="drop1" class="f-dropdown" data-dropdown-content>
+                  {% block object-tools-items %}
+                    {% if not is_popup %}
+                      <li>
+                        <a href="{{recoverlist_url}}" class="recoverlink">
+                          <i class="fa fa-retweet"></i>
+                          {% blocktrans with cl.opts.verbose_name_plural|escape as name %}
+                            Recover deleted {{name}}
+                          {% endblocktrans %}
+                        </a>
+                      </li>
+                    {% endif %}
+                    {{ block.super }}
+                  {% endblock %}
+                </ul>
+              {% endblock %}
+            {% endif %}
           </div>
         </div>
       </div>

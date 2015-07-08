@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from django.contrib.admin import TabularInline
-from import_export.admin import ImportExportModelAdmin
 
 from ralph.admin import RalphAdmin, register
 from ralph.assets.models.assets import (
@@ -25,6 +24,7 @@ class ServiceEnvironmentAdmin(RalphAdmin):
 
     search_fields = ['service__name', 'environment__name']
     list_select_related = ['service', 'environment']
+    resource_class = resources.ServiceEnvironmentResource
 
 
 class ServiceEnvironmentInline(TabularInline):
@@ -39,7 +39,7 @@ class ServiceAdmin(RalphAdmin):
 
 
 @register(Manufacturer)
-class ManufacturerAdmin(ImportExportModelAdmin, RalphAdmin):
+class ManufacturerAdmin(RalphAdmin):
 
     search_fields = ['name']
 
@@ -51,11 +51,7 @@ class EnvironmentAdmin(RalphAdmin):
 
 
 @register(AssetModel)
-class AssetModelAdmin(
-    PermissionAdminMixin,
-    ImportExportModelAdmin,
-    RalphAdmin
-):
+class AssetModelAdmin(PermissionAdminMixin, RalphAdmin):
 
     resource_class = resources.AssetModelResource
     list_select_related = ['manufacturer']
@@ -67,6 +63,7 @@ class AssetModelAdmin(
 class CategoryAdmin(RalphAdmin):
 
     search_fields = ['name']
+    resource_class = resources.CategoryResource
 
 
 @register(ComponentModel)

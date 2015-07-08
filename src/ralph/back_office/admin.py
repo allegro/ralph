@@ -8,11 +8,15 @@ from ralph.back_office.views import (
     BackOfficeAssetLicence,
     BackOfficeAssetSoftware,
 )
+from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
 
 
 @register(BackOfficeAsset)
-class BackOfficeAssetAdmin(PermissionAdminMixin, RalphAdmin):
+class BackOfficeAssetAdmin(
+    PermissionAdminMixin,
+    RalphAdmin
+):
 
     """Back Office Asset admin class."""
 
@@ -30,6 +34,7 @@ class BackOfficeAssetAdmin(PermissionAdminMixin, RalphAdmin):
     date_hierarchy = 'created'
     list_select_related = ['model', 'user', 'warehouse', 'model__manufacturer']
     raw_id_fields = ['model', 'user', 'owner', 'service_env']
+    resource_class = resources.BackOfficeAssetResource
 
     fieldsets = (
         (_('Basic info'), {

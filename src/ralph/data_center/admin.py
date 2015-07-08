@@ -2,8 +2,6 @@
 from django.contrib.admin import TabularInline
 from django.utils.translation import ugettext_lazy as _
 
-from import_export.admin import ImportExportModelAdmin
-
 from ralph.admin import (
     RalphAdmin,
     register,
@@ -65,11 +63,7 @@ class NetworkView(RalphDetailViewAdmin):
 
 
 @register(DataCenterAsset)
-class DataCenterAssetAdmin(
-    PermissionAdminMixin,
-    ImportExportModelAdmin,
-    RalphAdmin,
-):
+class DataCenterAssetAdmin(PermissionAdminMixin, RalphAdmin):
     """Data Center Asset admin class."""
 
     change_views = [
@@ -123,6 +117,7 @@ class ServerRoomAdmin(RalphAdmin):
 
     list_select_related = ['data_center']
     search_fields = ['name', 'data_center__name']
+    resource_class = resources.ServerRoomResource
 
 
 class RackAccessoryInline(TabularInline):
@@ -138,6 +133,7 @@ class RackAdmin(RalphAdmin):
     list_select_related = ['server_room', 'server_room__data_center']
     search_fields = ['name']
     inlines = [RackAccessoryInline]
+    resource_class = resources.RackResource
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "server_room":
@@ -155,6 +151,7 @@ class RackAccessoryAdmin(RalphAdmin):
     list_select_related = ['rack', 'accessory']
     search_fields = ['accessory__name', 'rack__name']
     raw_id_fields = ['rack']
+    resource_class = resources.RackAccessoryResource
 
 
 @register(Database)
@@ -179,7 +176,8 @@ class CloudProjectAdmin(RalphAdmin):
 
 @register(Connection)
 class ConnectionAdmin(RalphAdmin):
-    pass
+
+    resource_class = resources.ConnectionResource
 
 
 @register(DiskShare)
@@ -194,7 +192,8 @@ class DiskShareMountAdmin(RalphAdmin):
 
 @register(Network)
 class NetworkAdmin(RalphAdmin):
-    pass
+
+    resource_class = resources.NetworkResource
 
 
 @register(NetworkEnvironment)
@@ -225,3 +224,4 @@ class IPAddressAdmin(RalphAdmin):
     list_display = ['address', 'hostname', 'asset', 'is_public']
     list_select_related = ['asset']
     raw_id_fields = ['asset', 'network']
+    resource_class = resources.IPAddressResource
