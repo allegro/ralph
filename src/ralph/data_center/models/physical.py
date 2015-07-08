@@ -164,6 +164,13 @@ class Rack(NamedMixin.NonUnique, models.Model):
     class Meta:
         unique_together = ('name', 'server_room')
 
+    def __str__(self):
+        return "{} ({}/{})".format(
+            self.name,
+            self.server_room.data_center,
+            self.server_room.name,
+        )
+
     def get_orientation_desc(self):
         return RackOrientation.name_from_id(self.orientation)
 

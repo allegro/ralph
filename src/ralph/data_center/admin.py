@@ -116,6 +116,9 @@ class RackAccessoryInline(TabularInline):
 class RackAdmin(RalphAdmin):
 
     exclude = ['accessories']
+    list_display = ['name', 'server_room']
+    list_filter = ['server_room__data_center']
+    list_select_related = ['server_room', 'server_room__data_center']
     search_fields = ['name']
     inlines = [RackAccessoryInline]
 
