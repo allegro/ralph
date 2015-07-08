@@ -7,42 +7,58 @@ from __future__ import unicode_literals
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
-from django.test import TestCase
+from django.test import (
+    TestCase,
+    RequestFactory,
+)
 
 from ralph.assets.models.choices import ObjectModelType
 from ralph.assets.models.assets import AssetModel
+from ralph.data_center.models.physical import DataCenterAsset
 from ralph.lib.permissions.models import get_perm_key
+from ralph.lib.permissions.admin import PermissionAdminMixin
 
 
 class PermissionsByFieldTestCase(TestCase):
 
     """TestCase PermissionsByField mixin."""
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Setup test models permissions.
 
         TODO:
             Dont use ralph models here - it should be "abstract"
             http://stackoverflow.com/questions/502916/django-how-to-create-a-model-dynamically-just-for-testing  # noqa
         """
-        self.asset_model = AssetModel.objects.create(
+        super().setUpClass()
+        cls.asset_model = AssetModel.objects.create(
             type=ObjectModelType.back_office
         )
 
         permission = Permission.objects.get(
-            codename='change_assetmodel_height_of_device_field'
+            codename='change_assetmodel_height_of_device_field',
+        )
+        permission_dc_sn = Permission.objects.get(
+            codename='view_datacenterasset_sn_field',
+        )
+        permission_dc_barcode = Permission.objects.get(
+            codename='view_datacenterasset_barcode_field',
         )
 
         # TODO Change to UserFactory
-        self.super_user = get_user_model().objects.create(
+        cls.super_user = get_user_model().objects.create(
             username='superuser',
             is_superuser=True
         )
 
-        self.user = get_user_model().objects.create(
+        cls.user = get_user_model().objects.create(
             username='user'
         )
-        self.user.user_permissions.add(permission)
+        cls.user.user_permissions.add(permission)
+        cls.user.user_permissions.add(permission_dc_sn)
+        cls.user.user_permissions.add(permission_dc_barcode)
+        cls.request_factory = RequestFactory()
 
     def test_get_perm_key(self):
         """Test get_perm_key function."""
@@ -110,4 +126,21 @@ class PermissionsByFieldTestCase(TestCase):
         self.assertNotIn(
             'manufacturer',
             fields_list
+        )
+
+    def test_get_list_display(self):
+        """Test get list display from PermissionAdminMixin."""
+        request = self.request_factory.get('/')
+        request.user = self.user
+        permission_admin = PermissionAdminMixin()
+        permission_admin.list_display = [
+            'status', 'barcode', 'purchase_order', 'model',
+            'sn', 'hostname', 'invoice_date', 'invoice_no',
+        ]
+        # TODO Change to test models separated from ralph
+        permission_admin.model = DataCenterAsset()
+
+        self.assertListEqual(
+            ['barcode', 'sn'],
+            permission_admin.get_list_display(request),
         )
