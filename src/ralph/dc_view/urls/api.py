@@ -8,7 +8,7 @@ from django.conf.urls import url
 
 from ralph.dc_view.views.api import (
     DCAssetsView,
-    DCRacksAPIView
+    DCRacksAPIView,
 )
 
 

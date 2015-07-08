@@ -31,7 +31,7 @@ from ralph.data_center.models.networks import (
     NetworkKind,
     NetworkTerminator,
 )
-from ralph.data_center.views import (
+from ralph.data_center.views.ui import (
     DataCenterAssetComponents,
     DataCenterAssetLicence,
     DataCenterAssetSecurityInfo,
