@@ -127,6 +127,7 @@ class RackAccessoryAdmin(RalphAdmin):
 
     list_select_related = ['rack', 'accessory']
     search_fields = ['accessory__name', 'rack__name']
+    raw_id_fields = ['rack']
 
 
 @register(Database)
@@ -194,3 +195,6 @@ class IPAddressAdmin(RalphAdmin):
 
     search_fields = ['address', 'hostname']
     list_filter = ['is_public', 'is_management']
+    list_display = ['address', 'hostname', 'asset', 'is_public']
+    list_select_related = ['asset']
+    raw_id_fields = ['asset', 'network']
