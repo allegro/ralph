@@ -43,3 +43,9 @@ class ConnectionType(Choices):
     _ = Choices.Choice
 
     network = _("network connection")
+
+
+class Protocol(Choices):
+    _ = Choices.Choice
+    TCP = _('TCP')
+    UDP = _('UDP')
