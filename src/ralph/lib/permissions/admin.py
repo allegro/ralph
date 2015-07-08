@@ -52,4 +52,4 @@ class PermissionAdminMixin(object):
             )
         ]
 
-        return list_display
+        return list_display or ['__str__']
