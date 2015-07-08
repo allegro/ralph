@@ -42,3 +42,14 @@ class PermissionAdminMixin(object):
         return super(PermissionAdminMixin, self).get_form(
             request, obj, **kwargs
         )
+
+    def get_list_display(self, request):
+        """Return fields with respect to user permissions."""
+        list_display = [
+            field for field in self.list_display
+            if self.model.has_access_to_field(
+                field, request.user, action='view'
+            )
+        ]
+
+        return list_display
