@@ -137,7 +137,7 @@ class CloudProjectType(NamedMixin):
         return self.cloud_projects.count()
 
 
-class CloudProject(BaseObject):
+class CloudProject(NamedMixin, BaseObject):
     key = models.CharField(
         verbose_name=_('key'),
         max_length=200,
