@@ -2,6 +2,7 @@
 import os
 
 from copy import copy
+from import_export.admin import ImportExportModelAdmin
 
 from django import forms
 from django.conf import settings
@@ -9,7 +10,6 @@ from django.contrib.admin.templatetags.admin_static import static
 from django.db import models
 from django.views.generic import TemplateView
 from reversion import VersionAdmin
-
 from ralph.admin import widgets
 
 
@@ -82,7 +82,7 @@ class RalphAdminMixin(object):
         return db_field.formfield(**kwargs)
 
 
-class RalphAdmin(RalphAdminMixin, VersionAdmin):
+class RalphAdmin(ImportExportModelAdmin, RalphAdminMixin, VersionAdmin):
     def __init__(self, *args, **kwargs):
         super(RalphAdmin, self).__init__(*args, **kwargs)
         self.formfield_overrides.update(FORMFIELD_FOR_DBFIELD_DEFAULTS)

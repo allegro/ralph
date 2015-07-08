@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, register
+from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
 from ralph.licences.models import Licence, LicenceType, SoftwareCategory
 
@@ -26,6 +21,7 @@ class LicenceAdmin(PermissionAdminMixin, RalphAdmin):
     ]
     list_select_related = ['licence_type', 'software_category']
     raw_id_fields = ['software_category', 'manufacturer']
+    resource_class = resources.LicenceResource
 
     fieldsets = (
         (_('Basic info'), {
@@ -45,12 +41,18 @@ class LicenceAdmin(PermissionAdminMixin, RalphAdmin):
 
 
 @register(LicenceType)
-class LicenceTypeAdmin(PermissionAdminMixin, RalphAdmin):
+class LicenceTypeAdmin(
+    PermissionAdminMixin,
+    RalphAdmin
+):
 
     search_fields = ['name']
 
 
 @register(SoftwareCategory)
-class SoftwareCategoryAdmin(PermissionAdminMixin, RalphAdmin):
+class SoftwareCategoryAdmin(
+    PermissionAdminMixin,
+    RalphAdmin
+):
 
     search_fields = ['name']

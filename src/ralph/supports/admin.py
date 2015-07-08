@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 from ralph.admin import RalphAdmin, register
+from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
 from ralph.supports.models import Support, SupportType
 
@@ -25,8 +20,10 @@ class SupportAdmin(PermissionAdminMixin, RalphAdmin):
         'date_to', 'created', 'additional_notes', 'description'
     ]
     list_select_related = ['support_type']
+    resource_class = resources.SupportResource
 
 
 @register(SupportType)
 class SupportTypeAdmin(RalphAdmin):
-    pass
+
+    resource_class = resources.SupportTypeResource
