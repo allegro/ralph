@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from copy import deepcopy
 
 
 class PermissionAdminMixin(object):
@@ -22,7 +19,7 @@ class PermissionAdminMixin(object):
                 field, request.user, 'change'
             )
             return can_view or can_change
-        for fieldset in fieldsets:
+        for fieldset in deepcopy(fieldsets):
             fields = [
                 field for field in fieldset[1]['fields']
                 if condition(field)
@@ -41,7 +38,6 @@ class PermissionAdminMixin(object):
 
     def get_form(self, request, obj=None, **kwargs):
         """Return form with fields which user have access."""
-
         kwargs['fields'] = self.model.allowed_fields(request.user)
         return super(PermissionAdminMixin, self).get_form(
             request, obj, **kwargs
