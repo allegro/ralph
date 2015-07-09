@@ -82,6 +82,9 @@ class ServiceEnvironment(models.Model):
     def __str__(self):
         return '{} - {}'.format(self.service.name, self.environment.name)
 
+    class Meta:
+        unique_together = ('service', 'environment')
+
 
 class Manufacturer(NamedMixin, TimeStampMixin, models.Model):
     pass
