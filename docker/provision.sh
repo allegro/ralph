@@ -3,7 +3,7 @@ set -e
 
 apt-get update
 
-apt-get install -y \
+apt-get install -y --force-yes \
     git \
     libldap2-dev \
     libmysqlclient-dev \
