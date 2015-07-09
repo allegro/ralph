@@ -2,39 +2,39 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import django.db.models.deletion
 from django.conf import settings
+import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assets', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('assets', '0001_initial'),
     ]
 
     operations = [
         migrations.CreateModel(
             name='BackOfficeAsset',
             fields=[
-                ('asset_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='assets.Asset')),
-                ('location', models.CharField(max_length=128, blank=True, null=True)),
-                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL, null=True, related_name='assets_as_owner', blank=True)),
-                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, null=True, related_name='assets_as_user', blank=True)),
+                ('asset_ptr', models.OneToOneField(serialize=False, to='assets.Asset', primary_key=True, parent_link=True, auto_created=True)),
+                ('location', models.CharField(blank=True, max_length=128, null=True)),
+                ('owner', models.ForeignKey(null=True, to=settings.AUTH_USER_MODEL, related_name='assets_as_owner', blank=True)),
+                ('user', models.ForeignKey(null=True, to=settings.AUTH_USER_MODEL, related_name='assets_as_user', blank=True)),
             ],
             options={
-                'verbose_name': 'Back Office Asset',
                 'verbose_name_plural': 'BO Assets',
+                'verbose_name': 'Back Office Asset',
             },
             bases=('assets.asset',),
         ),
         migrations.CreateModel(
             name='Warehouse',
             fields=[
-                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
-                ('name', models.CharField(verbose_name='name', max_length=255, unique=True)),
-                ('created', models.DateTimeField(verbose_name='date created', auto_now=True)),
-                ('modified', models.DateTimeField(verbose_name='last modified', auto_now_add=True)),
+                ('id', models.AutoField(serialize=False, primary_key=True, auto_created=True, verbose_name='ID')),
+                ('name', models.CharField(unique=True, max_length=255, verbose_name='name')),
+                ('created', models.DateTimeField(auto_now=True, verbose_name='date created')),
+                ('modified', models.DateTimeField(auto_now_add=True, verbose_name='last modified')),
             ],
             options={
                 'abstract': False,
