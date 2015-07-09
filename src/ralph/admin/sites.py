@@ -51,7 +51,7 @@ class RalphAdminSiteMixin(object):
         items = defaultdict(list)
 
         def get_item(model, view, change_view=False):
-            url = view.url_to_reverse
+            url = view.url_with_namespace
             if change_view:
                 url += ' object.id'
             return {'title': view.label, 'url': url}

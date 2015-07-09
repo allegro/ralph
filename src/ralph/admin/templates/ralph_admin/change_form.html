@@ -16,7 +16,7 @@
   <div id="content-main">
     <div class="row header">
       <div class="large-4 columns">
-        <h1>{% sitetree_page_title from 'ralph_admin' %}</h1>
+        <h1>{% block title_head %}{% sitetree_page_title from 'ralph_admin' %}{% endblock %}</h1>
       </div>
       <div class="large-6 columns">
         {% block tabs %}
