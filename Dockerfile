@@ -24,12 +24,26 @@ RUN $SCRIPTS_PATH/provision.sh
 ADD package.json $RALPH_DIR/package.json
 RUN $SCRIPTS_PATH/provision_js.sh
 
-# install ralph
-ADD . $RALPH_DIR
+# cleanup
+RUN apt-get clean
+
+# install basic requirements
 WORKDIR $RALPH_DIR
+ADD requirements $RALPH_DIR/requirements
+ADD Makefile $RALPH_DIR/Makefile
+# don't install ralph now - only requirements
+RUN sed -i '/\-e ./d' $RALPH_DIR/requirements/test.txt
 # temporary - change to `make install-prod` finally
 RUN make install-dev
+
+# install JS dependencies
+ADD src/ralph/static $RALPH_DIR/src/ralph/static
+ADD gulpfile.js bower.json package.json $RALPH_DIR/
 RUN $SCRIPTS_PATH/init_js.sh
+
+# install ralph
+ADD . $RALPH_DIR
+RUN pip3 install -e .
 RUN make docs
 
 VOLUME $RALPH_DOCS
