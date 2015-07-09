@@ -3,7 +3,6 @@ import re
 from collections import namedtuple
 from itertools import chain
 
-from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
@@ -242,12 +241,6 @@ class DataCenterAsset(Asset):
 
     def __str__(self):
         return '{} <id: {}>'.format(self.hostname, self.id)
-
-    def get_absolute_url(self):
-        return reverse(
-            'admin:data_center_datacenterasset_change',
-            args=(self.pk,)
-        )
 
     def get_orientation_desc(self):
         return Orientation.name_from_id(self.orientation)

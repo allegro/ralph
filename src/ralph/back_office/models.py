@@ -5,7 +5,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.assets import Asset
-from ralph.assets.models.mixins import (
+from ralph.lib.mixins.models import (
     NamedMixin,
     TimeStampMixin
 )

@@ -1,26 +1,19 @@
 # -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import ipaddress
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.assets import Asset
-from ralph.assets.models.mixins import (
+from ralph.data_center.models.physical import DataCenter, Rack
+from ralph.lib import network
+from ralph.lib.mixins.models import (
     LastSeenMixin,
     NamedMixin,
     TimeStampMixin,
 )
-from ralph.data_center.models.physical import DataCenter, Rack
-from ralph.lib import network
 
 
 def network_validator(value):
@@ -78,7 +71,6 @@ def get_network_tree(qs=None):
     return tree
 
 
-@python_2_unicode_compatible
 class NetworkKind(NamedMixin, models.Model):
     class Meta:
         verbose_name = _('network kind')
@@ -89,7 +81,6 @@ class NetworkKind(NamedMixin, models.Model):
         return self.name
 
 
-@python_2_unicode_compatible
 class NetworkEnvironment(NamedMixin):
     data_center = models.ForeignKey(
         DataCenter,
@@ -137,7 +128,6 @@ class NetworkEnvironment(NamedMixin):
         ordering = ('name',)
 
 
-@python_2_unicode_compatible
 class Network(NamedMixin, TimeStampMixin, models.Model):
     """
     Class for networks.

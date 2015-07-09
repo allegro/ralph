@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
-# from ralph.assets.models.assets import Asset
 from ralph.assets.models.base import BaseObject
-from ralph.assets.models.mixins import NamedMixin
 from ralph.assets.models.choices import ComponentType
+from ralph.lib.mixins.models import NamedMixin
 
 
-@python_2_unicode_compatible
 class ComponentModel(NamedMixin, models.Model):
     speed = models.PositiveIntegerField(
         verbose_name=_('speed (MHz)'),

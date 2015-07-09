@@ -12,7 +12,7 @@ DATABASES = {
 PASSWORD_HASHERS = ('django_plainpasswordhasher.PlainPasswordHasher', )
 
 INSTALLED_APPS += (
-    'ralph.lib',
+    'ralph.lib.mixins',
     'ralph.tests',
 )
 
