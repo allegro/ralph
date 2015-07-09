@@ -1,7 +1,7 @@
 language: python
 env:
   matrix:
-    - DJANGO_VERSION=1.4.18 TEST_DATABASE_ENGINE=mysql
+    - DJANGO_VERSION=1.4.21 TEST_DATABASE_ENGINE=mysql
     - DJANGO_VERSION=1.6.10 TEST_DATABASE_ENGINE=sqlite
 matrix:
   allow_failures:
@@ -25,7 +25,7 @@ script: make test-with-coveralls
 before_script:
   - make flake
   - make check-templates
- 
+
 after_success:
   - coveralls
 
