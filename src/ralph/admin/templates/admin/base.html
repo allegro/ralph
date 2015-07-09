@@ -5,11 +5,11 @@
 <html lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %} class="no-js">
   <head>
     {% block extrastyle %}{% endblock %}
-    <link rel="stylesheet" type="text/css" href="{% static "vendor/css/foundation-datepicker.css" %}">
-    <link rel="stylesheet" type="text/css" href="{% static "css/ralph.css" %}" />
     <title>{% block title %}{% endblock %}</title>
     {% block extrahead %}{% endblock %}
     {{ media.css }}
+    <link rel="stylesheet" type="text/css" href="{% static "vendor/css/foundation-datepicker.css" %}">
+    <link rel="stylesheet" type="text/css" href="{% static "css/ralph.css" %}" />
   </head>
   <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}">
     {% if not is_popup %}

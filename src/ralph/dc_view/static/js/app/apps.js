@@ -7,6 +7,7 @@ angular
             'ncy-angular-breadcrumb',
             'data_center.controllers',
             'rack.controllers',
+            'angular-loading-bar',
         ]
     )
     .config(['$httpProvider', '$stateProvider', '$urlRouterProvider', '$breadcrumbProvider', function($httpProvider, $stateProvider, $urlRouterProvider, $breadcrumbProvider) {
