@@ -6,6 +6,7 @@
   {% views_tabs change_views view_name object %}
 {% endblock %}
 
+{% block title_head %}{{ original }}{% endblock %}
 
 {% block field_sets %}
   {% for fieldset in adminform %}
