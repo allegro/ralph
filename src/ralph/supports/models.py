@@ -1,10 +1,4 @@
 # -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 from datetime import datetime
 
 from django.contrib.humanize.templatetags.humanize import naturaltime
@@ -14,7 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from dj.choices import Choices
 
 from ralph.assets.models.base import BaseObject
-from ralph.assets.models.mixins import NamedMixin, TimeStampMixin
+from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
 from ralph.lib.permissions import PermByFieldMixin
 
 

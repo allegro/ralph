@@ -7,6 +7,8 @@ from __future__ import unicode_literals
 
 from django.db import models
 
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 
-class Foo(models.Model):
+
+class Foo(AdminAbsoluteUrlMixin, models.Model):
     bar = models.CharField('bar', max_length=50)

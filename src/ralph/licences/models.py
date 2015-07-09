@@ -1,12 +1,5 @@
 # -*- coding: utf-8 -*-
 """SAM module models."""
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -14,14 +7,13 @@ from django.db.models import Sum
 from django.db.models.loading import get_model
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
-from django.utils.encoding import python_2_unicode_compatible
 from ralph.assets.models.assets import Manufacturer
 from ralph.assets.models.base import BaseObject
-from ralph.assets.models.mixins import (
+from ralph.licences.exceptions import WrongModelError
+from ralph.lib.mixins.models import (
     NamedMixin,
     TimeStampMixin
 )
-from ralph.licences.exceptions import WrongModelError
 from ralph.lib.permissions import PermByFieldMixin
 
 
@@ -53,7 +45,6 @@ class SoftwareCategory(PermByFieldMixin, NamedMixin, models.Model):
             yield licence
 
 
-@python_2_unicode_compatible
 class Licence(PermByFieldMixin, TimeStampMixin, models.Model):
 
     """A set of licences for a single software with a single expiration date"""
@@ -235,7 +226,6 @@ class Licence(PermByFieldMixin, TimeStampMixin, models.Model):
             return
 
 
-@python_2_unicode_compatible
 class BaseObjectLicence(models.Model):
     licence = models.ForeignKey(Licence)
     base_object = models.ForeignKey(BaseObject, related_name='licences')
@@ -250,7 +240,6 @@ class BaseObjectLicence(models.Model):
         )
 
 
-@python_2_unicode_compatible
 class LicenceUser(models.Model):
     licence = models.ForeignKey(Licence)
     user = models.ForeignKey(

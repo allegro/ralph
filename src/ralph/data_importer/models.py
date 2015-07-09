@@ -7,12 +7,10 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
-from django.utils.encoding import python_2_unicode_compatible
 
-from ralph.assets.models.mixins import TimeStampMixin
+from ralph.lib.mixins.models import TimeStampMixin
 
 
-@python_2_unicode_compatible
 class ImportedObjects(TimeStampMixin, models.Model):
 
     """Django models for imported objects."""

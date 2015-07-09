@@ -1,16 +1,10 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
 
-@python_2_unicode_compatible
 class NamedMixin(models.Model):
     """Describes an abstract model with a unique ``name`` field."""
     name = models.CharField(_('name'), max_length=255, unique=True)
@@ -21,7 +15,6 @@ class NamedMixin(models.Model):
     def __str__(self):
         return self.name
 
-    @python_2_unicode_compatible
     class NonUnique(models.Model):
         """Describes an abstract model with a non-unique ``name`` field."""
         name = models.CharField(verbose_name=_("name"), max_length=75)
@@ -64,3 +57,12 @@ class LastSeenMixin(models.Model):
         if update_last_seen:
             self.last_seen = timezone.now()
         super(LastSeenMixin, self).save(*args, **kwargs)
+
+
+class AdminAbsoluteUrlMixin(object):
+    def get_absolute_url(self):
+        return reverse(
+            'admin:{}_{}_change'.format(
+                self._meta.app_label, self._meta.model_name
+            ), args=(self.pk,)
+        )

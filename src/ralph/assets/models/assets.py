@@ -1,10 +1,4 @@
 # -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 from dateutil.relativedelta import relativedelta
 from mptt.models import MPTTModel, TreeForeignKey
 
@@ -15,7 +9,6 @@ from django.core.exceptions import (
 )
 from django.core.urlresolvers import reverse
 from django.conf import settings
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 from django.template import Context, Template
 
@@ -25,12 +18,13 @@ from ralph.assets.models.choices import (
     ObjectModelType,
     ModelVisualizationLayout
 )
-from ralph.assets.models.mixins import (
-    NamedMixin,
-    TimeStampMixin
-)
 from ralph.assets.models.base import BaseObject
 from ralph.assets.overrides import Country
+from ralph.lib.mixins.models import (
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    TimeStampMixin,
+)
 from ralph.lib.permissions import PermByFieldMixin
 
 try:
@@ -66,7 +60,6 @@ class Environment(NamedMixin, TimeStampMixin, models.Model):
     pass
 
 
-@python_2_unicode_compatible
 class Service(NamedMixin, TimeStampMixin, models.Model):
     # Fixme: let's do service catalog replacement from that
     profit_center = models.CharField(max_length=100, blank=True)
@@ -82,7 +75,6 @@ class Service(NamedMixin, TimeStampMixin, models.Model):
         return reverse('assets:service_detail', args=(self.pk,))
 
 
-@python_2_unicode_compatible
 class ServiceEnvironment(models.Model):
     service = models.ForeignKey(Service)
     environment = models.ForeignKey(Environment)
@@ -95,7 +87,6 @@ class Manufacturer(NamedMixin, TimeStampMixin, models.Model):
     pass
 
 
-@python_2_unicode_compatible
 class AssetModel(
     PermByFieldMixin,
     NamedMixin.NonUnique,
@@ -159,7 +150,6 @@ class AssetModel(
         return self._get_layout_class(self.visualization_layout_back)
 
 
-@python_2_unicode_compatible
 class Category(MPTTModel, NamedMixin.NonUnique, TimeStampMixin, models.Model):
     code = models.CharField(max_length=4, blank=True, default='')
     parent = TreeForeignKey(
@@ -181,7 +171,6 @@ class Category(MPTTModel, NamedMixin.NonUnique, TimeStampMixin, models.Model):
         return self.name
 
 
-@python_2_unicode_compatible
 class AssetLastHostname(models.Model):
     prefix = models.CharField(max_length=8, db_index=True)
     counter = models.PositiveIntegerField(default=1)
@@ -216,7 +205,7 @@ class AssetLastHostname(models.Model):
         return self.formatted_hostname()
 
 
-class Asset(BaseObject):
+class Asset(AdminAbsoluteUrlMixin, BaseObject):
     model = models.ForeignKey(AssetModel)
     hostname = models.CharField(
         blank=True,
