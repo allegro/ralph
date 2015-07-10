@@ -26,8 +26,8 @@ class BackOfficeAssetAdmin(
         BackOfficeAssetLicence,
     ]
     list_display = [
-        'status', 'barcode', 'purchase_order', 'model', 'user', 'warehouse',
-        'sn', 'hostname', 'invoice_date', 'invoice_no'
+        'status', 'barcode', 'purchase_order', 'model__name', 'user',
+        'warehouse', 'sn', 'hostname', 'invoice_date', 'invoice_no'
     ]
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
     list_filter = ['status']
@@ -60,6 +60,10 @@ class BackOfficeAssetAdmin(
             )
         }),
     )
+
+    def model__name(self, obj):
+        return obj.model.name
+    model__name.admin_order_field = 'model__name'
 
 
 @register(Warehouse)

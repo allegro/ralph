@@ -76,7 +76,7 @@ class DataCenterAssetAdmin(PermissionAdminMixin, RalphAdmin):
 
     resource_class = resources.DataCenterAssetResource
     list_display = [
-        'status', 'barcode', 'purchase_order', 'model',
+        'status', 'barcode', 'purchase_order', 'model__name',
         'sn', 'hostname', 'invoice_date', 'invoice_no'
     ]
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
@@ -110,6 +110,10 @@ class DataCenterAssetAdmin(PermissionAdminMixin, RalphAdmin):
             )
         }),
     )
+
+    def model__name(self, obj):
+        return obj.model.name
+    model__name.admin_order_field = 'model__name'
 
 
 @register(ServerRoom)
