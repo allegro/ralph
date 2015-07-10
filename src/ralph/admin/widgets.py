@@ -10,6 +10,9 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
 
+ReadOnlyWidget = forms.TextInput(attrs={'readonly': 'readonly'})
+
+
 class AdminDateWidget(forms.DateInput):
     @property
     def media(self):

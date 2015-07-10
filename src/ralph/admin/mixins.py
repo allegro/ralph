@@ -1,20 +1,22 @@
 # -*- coding: utf-8 -*-
 import os
-
 from copy import copy
-from import_export.admin import ImportExportModelAdmin
 
 from django import forms
 from django.conf import settings
 from django.contrib.admin.templatetags.admin_static import static
 from django.db import models
 from django.views.generic import TemplateView
+
+from import_export.admin import ImportExportModelAdmin
 from reversion import VersionAdmin
+
 from ralph.admin import widgets
 
 
 FORMFIELD_FOR_DBFIELD_DEFAULTS = {
     models.DateField: {'widget': widgets.AdminDateWidget},
+    models.DateTimeField: {'widget': widgets.ReadOnlyWidget},
 }
 
 
