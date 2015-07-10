@@ -57,6 +57,7 @@ class AssetModelAdmin(PermissionAdminMixin, RalphAdmin):
     list_select_related = ['manufacturer']
     raw_id_fields = ['manufacturer']
     search_fields = ['name', 'manufacturer__name']
+    ordering = ['name']
 
 
 @register(Category)

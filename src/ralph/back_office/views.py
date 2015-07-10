@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from ralph.admin.views import RalphDetailView
+from ralph.admin.views.extra import RalphDetailView
 from ralph.licences.models import Licence
 
 

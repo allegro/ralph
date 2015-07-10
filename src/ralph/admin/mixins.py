@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 import os
-
 from copy import copy
-from import_export.admin import ImportExportModelAdmin
 
 from django import forms
 from django.conf import settings
 from django.contrib.admin.templatetags.admin_static import static
 from django.db import models
 from django.views.generic import TemplateView
+
+from import_export.admin import ImportExportModelAdmin
 from reversion import VersionAdmin
+
 from ralph.admin import widgets
 
 
@@ -48,6 +49,10 @@ class RalphAdminMixin(object):
         else:
             self.change_views = copy(self.change_views) or []
         super().__init__(*args, **kwargs)
+
+    def get_changelist(self, request, **kwargs):
+        from ralph.admin.views.main import RalphChangeList
+        return RalphChangeList
 
     def changelist_view(self, request, extra_context=None):
         """Override change list from django."""

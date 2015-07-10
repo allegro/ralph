@@ -6,7 +6,7 @@ from ralph.admin import (
     RalphAdmin,
     register,
 )
-from ralph.admin.views import RalphDetailViewAdmin
+from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.data_importer import resources
 from ralph.data_center.models.virtual import (
     CloudProject,

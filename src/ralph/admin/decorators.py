@@ -5,7 +5,7 @@ from django.contrib.admin.decorators import register as django_register
 from django.db.models import Model
 
 from ralph.admin.sites import ralph_site
-from ralph.admin.views import (
+from ralph.admin.views.extra import (
     RalphExtraViewMixin,
     CHANGE,
     LIST,
