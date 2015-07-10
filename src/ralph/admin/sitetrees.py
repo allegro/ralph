@@ -9,6 +9,7 @@ from sitetree.utils import (
     item,
 )
 
+from ralph.admin.helpers import APP_MODELS
 from ralph.admin.sites import ralph_site
 # To generate and display the menu, use the command:
 # ralph sitetreeload
@@ -52,13 +53,16 @@ def get_menu_items_for_admin(name, perm):
 def section(section_name, app, model):
     app, model = map(str.lower, [app, model])
     change_perm = '{}.change_{}'.format(app, model)
+    model_class = APP_MODELS[model]
     item = ralph_item(
-        title=section_name,
+        title=str(model_class._meta.verbose_name_plural).title(),
         url='admin:{}_{}_changelist'.format(app, model),
         access_by_perms='{}.change_{}'.format(app, model),
         children=[
             ralph_item(
-                title=_('Add'),
+                title=_(
+                    'Add {}'.format(str(model_class._meta.verbose_name).title())
+                ),
                 url='admin:{}_{}_add'.format(app, model),
                 access_by_perms='{}.add_{}'.format(app, model),
             ),
@@ -97,6 +101,9 @@ sitetrees = [
                 section(_('VIPs'), 'data_center', 'VIP'),
                 section(_('Virtual Servers'), 'data_center', 'VirtualServer'),
                 section(_('IP Addresses'), 'data_center', 'ipaddress'),
+                section(
+                    _('Network Terminator'), 'data_center', 'networkterminator',
+                ),
             ],
         ),
         ralph_item(
