@@ -8,18 +8,17 @@ import tablib
 import zipfile
 
 
-from django.apps import apps
 from django.conf import settings
 from django.core.management.base import (
     BaseCommand,
     CommandError
 )
 from import_export import resources
+from ralph.admin.helpers import APP_MODELS
 from ralph.data_importer import resources as ralph_resources
 from ralph.data_importer.resources import DefaultResource
 
 
-APP_MODELS = {model._meta.model_name: model for model in apps.get_models()}
 logger = logging.getLogger(__name__)
 
 
