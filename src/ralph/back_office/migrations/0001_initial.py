@@ -17,24 +17,24 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='BackOfficeAsset',
             fields=[
-                ('asset_ptr', models.OneToOneField(serialize=False, to='assets.Asset', primary_key=True, parent_link=True, auto_created=True)),
-                ('location', models.CharField(blank=True, max_length=128, null=True)),
-                ('owner', models.ForeignKey(null=True, to=settings.AUTH_USER_MODEL, related_name='assets_as_owner', blank=True)),
-                ('user', models.ForeignKey(null=True, to=settings.AUTH_USER_MODEL, related_name='assets_as_user', blank=True)),
+                ('asset_ptr', models.OneToOneField(primary_key=True, parent_link=True, to='assets.Asset', serialize=False, auto_created=True)),
+                ('location', models.CharField(max_length=128, null=True, blank=True)),
+                ('owner', models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, null=True, related_name='assets_as_owner')),
+                ('user', models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, null=True, related_name='assets_as_user')),
             ],
             options={
-                'verbose_name_plural': 'BO Assets',
                 'verbose_name': 'Back Office Asset',
+                'verbose_name_plural': 'BO Assets',
             },
             bases=('assets.asset',),
         ),
         migrations.CreateModel(
             name='Warehouse',
             fields=[
-                ('id', models.AutoField(serialize=False, primary_key=True, auto_created=True, verbose_name='ID')),
-                ('name', models.CharField(unique=True, max_length=255, verbose_name='name')),
-                ('created', models.DateTimeField(auto_now=True, verbose_name='date created')),
-                ('modified', models.DateTimeField(auto_now_add=True, verbose_name='last modified')),
+                ('id', models.AutoField(primary_key=True, serialize=False, verbose_name='ID', auto_created=True)),
+                ('name', models.CharField(max_length=255, verbose_name='name', unique=True)),
+                ('created', models.DateTimeField(verbose_name='date created', auto_now=True)),
+                ('modified', models.DateTimeField(verbose_name='last modified', auto_now_add=True)),
             ],
             options={
                 'abstract': False,
@@ -43,6 +43,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='backofficeasset',
             name='warehouse',
-            field=models.ForeignKey(to='back_office.Warehouse', on_delete=django.db.models.deletion.PROTECT),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='back_office.Warehouse'),
         ),
     ]
