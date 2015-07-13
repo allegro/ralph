@@ -38,10 +38,19 @@ $button-margin-bottom: 0;
 $button-radius: 0;
 
 $form-label-font-size: rem-calc(12);
+
 $fieldset-border-style: solid;
-$fieldset-border-width: 1px;
-$fieldset-border-color: #ccc;
-$fieldset-padding: rem-calc(30);
+$fieldset-border-width: 3px;
+$fieldset-border-color: #eee;
+$fieldset-bg-color: rgb(246, 246, 246);
+$fieldset-margin: rem-calc(20 0);
+
+
+$topbar-bg-color: #1775c8;
+$topbar-bg: $topbar-bg-color;
+$topbar-dropdown-bg: $topbar-bg-color;
+$topbar-dropdown-bg: $topbar-bg-color;
+$topbar-dropdown-link-bg: $topbar-bg-color;
 
 
 $topbar-height: rem-calc(40);
@@ -56,10 +65,8 @@ $f-dropdown-max-width: 280px;
 
 $datepicker-active-color: $primary-color;
 
-
 $tabs-border-color: #ccc;
 $tabs-content-bg-color: #fafafa;
-$fieldset-bg-color: #fff;
 
 $accordion-navigation-padding: rem-calc(5);
 $accordion-navigation-font-size: rem-calc(12);
@@ -67,3 +74,5 @@ $accordion-navigation-font-size: rem-calc(12);
 $validation-error-bg-color: rgb(255, 245, 195);
 $validation-error-border-color: rgb(255, 56, 125);
 $validation-error-font-color: red;
+
+$input-box-shadow: none;
