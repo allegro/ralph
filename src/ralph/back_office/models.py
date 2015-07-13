@@ -29,7 +29,7 @@ class BackOfficeAsset(Asset):
 
     class Meta:
         verbose_name = _('Back Office Asset')
-        verbose_name_plural = _('BO Assets')
+        verbose_name_plural = _('Back Office Assets')
 
     @property
     def country_code(self):
