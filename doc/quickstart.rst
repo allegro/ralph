@@ -276,9 +276,45 @@ After generating a report, you can close it by clicking "Accept costs"
     :scale: 75%
 
 
-Racks
-^^^^^
-The Racks browser lets you see the physical organisation of your datacenter, indicating where every device is located.
+Data center view (DC View)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There are two perspectives:
+
+- data center view: lets you see the physical organisation of your data center,
+  indicating where every rack is located
+
+.. image:: _static/visualization_dc_view.png
+    :scale: 30%
+
+
+- rack view: lets you see the physical organisation of your rack, indicating
+  where every device is located
+
+.. image:: _static/visualization_rack_view.png
+    :scale: 30%
+
+
+Adding rack
+-----------
+
+You can also add rack on this view (this is the recommended way of racks
+adding). To achieve that, execute these
+steps:
+
+    * from the main menu (top of Ralph's page) click `DC View`
+    * then pick data center on the left side (e.g.: 'DC A')
+    * click `Edit` tab
+    * put a rack on `data center` map by left click, then you should have image similar to
+    .. image:: _static/visualization_adding_rack.png
+        :scale: 30%
+    * then fill fields `name` and `description` for newly creating rack
+    .. image:: _static/visualization_describing_rack.png
+        :scale: 30%
+    * the last step is to click 'send' button and compare the effect to this picture
+    .. image:: _static/visualization_rack_created.png
+        :scale: 30%
+
 
 Admin
 ^^^^^
