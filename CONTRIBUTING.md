@@ -1,6 +1,6 @@
 # We are open :-)
 
-Ralph is an Open Source system which allows managing data centres in an easy and straightforward manner. 
+Ralph is an Open Source system which allows managing data centres in an easy and straightforward manner.
 We dont just provide the sources, all our development process, including planning, blueprinting, and even scrum sprints are done in public! [Flexible](/development/overview) and [adaptable](/development/addons) architecture behind the project encourages developers to experiment with their needs and expectations. How to become part of the development process ?
 
 ## In a nutshell
@@ -57,4 +57,33 @@ Feel free to explore beauty of Python programming. Make contributions that matte
 
 The answer to the question "When is it ready?" is "When it is ready" :-)
 
+## Django's template standard
 
+There are few simple rules:
+
+1. Blank line between ``load`` and the rest of a template.
+2. Blank line between block sections.
+3. If you open some HTML tag or Django template tag you must indent line, excluding simple code, self-closing tags (looking for inline block and ``{% url ... %}`` in example).
+4. And the last one (the most important): when you write template, let you use common sense.
+
+All of this is for human readability not for the browsers.
+
+Example:
+```django
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans 'Users' %}{% endblock %}
+
+{% block sidebar %}
+  {% if users %}
+    <ul>
+      {% for user in users %}
+        <li>
+            <a href="{% url admin:users user.pk %}">{{ user }}</a>
+        </li>
+      {% endif %}
+    </ul>
+  {% endif %}
+{% endblock %}
+```
