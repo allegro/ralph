@@ -56,6 +56,7 @@ class RalphAdminMixin(object):
         if extra_context is None:
             extra_context = {}
         extra_context['app_label'] = self.model._meta.app_label
+        extra_context['header_obj_name'] = self.model._meta.verbose_name_plural
         views = []
         for view in self.list_views:
             views.append(view)
@@ -74,6 +75,7 @@ class RalphAdminMixin(object):
             for view in self.change_views:
                 views.append(view)
             extra_context['change_views'] = views
+        extra_context['header_obj_name'] = self.model._meta.verbose_name
         return super(RalphAdminMixin, self).changeform_view(
             request, object_id, form_url, extra_context
         )
