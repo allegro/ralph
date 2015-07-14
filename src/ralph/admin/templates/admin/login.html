@@ -19,7 +19,7 @@
 {% block content %}
   {% if form.errors and not form.non_field_errors %}
     <p class="errornote">
-    {% if form.errors.items|length == 1 %}{% trans "Please correct the error below." %}{% else %}{% trans "Please correct the errors below." %}{% endif %}
+      {% if form.errors.items|length == 1 %}{% trans "Please correct the error below." %}{% else %}{% trans "Please correct the errors below." %}{% endif %}
     </p>
   {% endif %}
 
@@ -31,30 +31,40 @@
     {% endfor %}
   {% endif %}
 
-<div id="content-main">
-  <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
-    <fieldset>
-      <legend>Please login</legend>
-      {{ form.username.errors }}
-      <label>{{ form.username.label }}
-        {{ form.username }}
-      </label>
-      {{ form.password.errors }}
-      <label>{{ form.password.label }}
-        {{ form.password }}
-      </label>
-      <button>{% trans 'Log in' %}</button>
-    </fieldset>
-    <input type="hidden" name="next" value="{{ next }}" />
-    <div class="password-reset-link">
-    {% url 'admin_password_reset' as password_reset_url %}
-    {% if password_reset_url %}
-      <a href="{{ password_reset_url }}">{% trans 'Forgotten your password or username?' %}</a>
-    {% endif %}
+  <div id="content-main">
+    <div class="row">
+      <div class="large-3 medium-3 small-5 small-centered columns">
+        <div class="row">
+          <div class="small-centered columns login-header">
+            <h1>Ralph</h1>
+            <p>DCIM&amp;Asset Management System</p>
+          </div>
+        </div>
+        <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
+          <fieldset>
+            <legend>Please login</legend>
+              {{ form.username.errors }}
+            <label>{{ form.username.label }}
+              {{ form.username }}
+            </label>
+            {{ form.password.errors }}
+            <label>{{ form.password.label }}
+              {{ form.password }}
+            </label>
+            <button>{% trans 'Log in' %}</button>
+          </fieldset>
+          <input type="hidden" name="next" value="{{ next }}" />
+          <div class="password-reset-link">
+            {% url 'admin_password_reset' as password_reset_url %}
+            {% if password_reset_url %}
+              <a href="{{ password_reset_url }}">{% trans 'Forgotten your password or username?' %}</a>
+            {% endif %}
+          </div>
+        </form>
+      </div>
     </div>
-  </form>
-  <script type="text/javascript">
-    document.getElementById('id_username').focus()
-  </script>
-</div>
+    <script type="text/javascript">
+      document.getElementById('id_username').focus()
+    </script>
+  </div>
 {% endblock %}

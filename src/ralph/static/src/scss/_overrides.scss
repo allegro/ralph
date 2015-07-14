@@ -39,7 +39,7 @@ select {
 }
 
 .field-row.error {
-    background-color: $body-bg;
+    background-color: $fieldset-bg-color;
 }
 
 /* Validation */
@@ -50,7 +50,7 @@ select {
 }
 
 .field-row.error .error small.error {
-    background-color: $body-bg;
+    background-color: $fieldset-bg-color;
     color: $validation-error-font-color;
 }
 
