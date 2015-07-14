@@ -223,5 +223,5 @@ class IPAddressAdmin(RalphAdmin):
     list_filter = ['is_public', 'is_management']
     list_display = ['address', 'hostname', 'asset', 'is_public']
     list_select_related = ['asset']
-    raw_id_fields = ['asset', 'network']
+    raw_id_fields = ['asset']
     resource_class = resources.IPAddressResource

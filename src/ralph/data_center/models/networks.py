@@ -502,13 +502,6 @@ class IPAddress(LastSeenMixin, TimeStampMixin, models.Model):
         verbose_name=_('This is a management address'),
         default=False,
     )
-    network = models.ForeignKey(
-        Network,
-        verbose_name=_('network'),
-        null=True,
-        blank=True,
-        default=None,
-    )
     is_public = models.BooleanField(
         verbose_name=_('This is a public address'),
         default=False,
@@ -532,12 +525,6 @@ class IPAddress(LastSeenMixin, TimeStampMixin, models.Model):
             if not self.hostname:
                 self.hostname = network.hostname(self.address)
         self.number = int(ipaddress.ip_address(self.address))
-        try:
-            self.network = Network.from_ip(self.address)
-        except IndexError:
-            self.network = None
-        if self.network and self.network.ignore_addresses:
-            self.device = None
         ip = ipaddress.ip_address(self.address)
         self.is_public = not ip.is_private
         super(IPAddress, self).save(*args, **kwargs)
