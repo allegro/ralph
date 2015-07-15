@@ -62,6 +62,11 @@ def add_filter(request, **kwargs):
             planned_end_date__lte=request.get('start_planned_end'),
             planned_end_date__gte=request.get('end_planned_end'),
         )
+    if request.get('start_created') and request.get('end_created'):
+        filters &= Q(
+            created_date__lte=request.get('end_created'),
+            created_date__gte=request.get('start_created'),
+        )
     return filters
 
 

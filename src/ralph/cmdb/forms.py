@@ -427,3 +427,13 @@ class ReportFiltersDateRange(forms.Form):
         widget=DateWidget(dict(date_attrs, placeholder='To')),
         label="",
     )
+    start_created = forms.DateField(
+        required=False,
+        widget=DateWidget(dict(date_attrs, placeholder='From')),
+        label="Created",
+    )
+    end_created = forms.DateField(
+        required=False,
+        widget=DateWidget(dict(date_attrs, placeholder='To')),
+        label="",
+    )
