@@ -35,6 +35,7 @@ setup(
         'bob-ajax-selects==1.6.1',
         'djangorestframework==2.4.3',
         'django-bob==1.12.0',
+        'django-import-export==0.2.7',
         'django-powerdns-dnssec==0.9.3',
         'django-tastypie==0.9.16',
         'django-rq==0.4.5',
