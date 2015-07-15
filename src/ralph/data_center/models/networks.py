@@ -325,11 +325,6 @@ class Network(NamedMixin, TimeStampMixin, models.Model):
         return new_subnets
 
     @classmethod
-    def from_ip(cls, ip):
-        """Find the smallest network containing that IP."""
-        return cls.all_from_ip(ip)[0]
-
-    @classmethod
     def all_from_ip(cls, ip):
         """Find all networks for this IP."""
         ip_int = int(ipaddress.ip_address(ip))
@@ -490,24 +485,9 @@ class IPAddress(LastSeenMixin, TimeStampMixin, models.Model):
         editable=False,
         unique=True,
     )
-    hostname = models.CharField(
-        verbose_name=_('hostname'),
-        max_length=255,
-        null=True,
-        blank=True,
-        default=None,
-    )
-    # hostname.max_length vide /usr/include/bits/posix1_lim.h
     is_management = models.BooleanField(
         verbose_name=_('This is a management address'),
         default=False,
-    )
-    network = models.ForeignKey(
-        Network,
-        verbose_name=_('network'),
-        null=True,
-        blank=True,
-        default=None,
     )
     is_public = models.BooleanField(
         verbose_name=_('This is a public address'),
@@ -520,7 +500,7 @@ class IPAddress(LastSeenMixin, TimeStampMixin, models.Model):
         verbose_name_plural = _('IP addresses')
 
     def __str__(self):
-        return '{} ({})'.format(self.hostname, self.address)
+        return self.address
 
     def save(self, allow_device_change=True, *args, **kwargs):
         # TODO: copy from 2.0
@@ -529,15 +509,7 @@ class IPAddress(LastSeenMixin, TimeStampMixin, models.Model):
         if settings.CHECK_IP_HOSTNAME_ON_SAVE:
             if not self.address:
                 self.address = network.hostname(self.hostname, reverse=True)
-            if not self.hostname:
-                self.hostname = network.hostname(self.address)
         self.number = int(ipaddress.ip_address(self.address))
-        try:
-            self.network = Network.from_ip(self.address)
-        except IndexError:
-            self.network = None
-        if self.network and self.network.ignore_addresses:
-            self.device = None
         ip = ipaddress.ip_address(self.address)
         self.is_public = not ip.is_private
         super(IPAddress, self).save(*args, **kwargs)

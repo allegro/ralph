@@ -8,6 +8,7 @@ from ralph.admin import (
 )
 from ralph.admin.views import RalphDetailViewAdmin
 from ralph.data_importer import resources
+from ralph.data_center.forms.network import NetworkInlineFormset
 from ralph.data_center.models.virtual import (
     CloudProject,
     Database,
@@ -50,6 +51,7 @@ class DataCenterAdmin(RalphAdmin):
 
 
 class NetworkInline(TabularInline):
+    formset = NetworkInlineFormset
     model = IPAddress
 
 
@@ -73,7 +75,6 @@ class DataCenterAssetAdmin(PermissionAdminMixin, RalphAdmin):
         DataCenterAssetLicence,
         NetworkView,
     ]
-
     resource_class = resources.DataCenterAssetResource
     list_display = [
         'status', 'barcode', 'purchase_order', 'model',
@@ -219,9 +220,9 @@ class DiscoveryQueueAdmin(RalphAdmin):
 @register(IPAddress)
 class IPAddressAdmin(RalphAdmin):
 
-    search_fields = ['address', 'hostname']
+    search_fields = ['address']
     list_filter = ['is_public', 'is_management']
-    list_display = ['address', 'hostname', 'asset', 'is_public']
+    list_display = ['address', 'asset', 'is_public']
     list_select_related = ['asset']
-    raw_id_fields = ['asset', 'network']
+    raw_id_fields = ['asset']
     resource_class = resources.IPAddressResource
