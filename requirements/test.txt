@@ -6,3 +6,4 @@ coverage
 sphinx
 flake8
 django-plainpasswordhasher
+ddt

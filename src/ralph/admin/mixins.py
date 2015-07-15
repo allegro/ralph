@@ -51,6 +51,10 @@ class RalphAdminMixin(object):
             self.change_views = copy(self.change_views) or []
         super().__init__(*args, **kwargs)
 
+    def get_changelist(self, request, **kwargs):
+        from ralph.admin.views.main import RalphChangeList
+        return RalphChangeList
+
     def changelist_view(self, request, extra_context=None):
         """Override change list from django."""
         if extra_context is None:

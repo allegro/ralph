@@ -1,0 +1,38 @@
+# -*- coding: utf-8 -*-
+from django.contrib.admin.views.main import ChangeList
+
+
+class RalphChangeList(ChangeList):
+    def get_ordering_from_related_model_admin(self, prefix, field_name):
+        """
+        Get ordering from related model admin.
+        """
+        admin_site = self.model_admin.admin_site
+        field = getattr(self.model, field_name, None)
+        fields = [prefix + field_name]
+        if not field:
+            return fields
+        try:
+            model_admin = admin_site._registry[field.field.rel.to]
+        except AttributeError:
+            pass
+        else:
+            if all([model_admin, model_admin.ordering]):
+                fields = [
+                    '{}{}__{}'.format(prefix, field_name, order.lstrip('-'))
+                    for order in model_admin.ordering
+                ]
+        return fields
+
+    def get_ordering(self, request, queryset):
+        """
+        Extends ordering list by list fetching from related model admin.
+        """
+        old_ordering = super().get_ordering(request, queryset)
+        ordering = []
+        for field_order in old_ordering:
+            _, prefix, field = field_order.rpartition('-')
+            ordering.extend(
+                self.get_ordering_from_related_model_admin(prefix, field)
+            )
+        return ordering
