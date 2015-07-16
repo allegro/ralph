@@ -8,7 +8,7 @@
       </a>
       {% if item.has_children %}
         <ul class="dropdown">
-          {% sitetree_children of item for menu template "ralph_admin/menu_admin_children.html" %}
+          {% sitetree_children of item for menu template "admin/menu_admin_children.html" %}
         </ul>
       {% endif %}
     </li>

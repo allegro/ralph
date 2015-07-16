@@ -71,7 +71,7 @@ class RalphExtraViewMixin(object):
 
 class RalphListView(RalphExtraViewMixin, RalphTemplateView):
     _type = LIST
-    extra_view_base_template = 'ralph_admin/extra_views/base_list.html'
+    extra_view_base_template = 'admin/extra_views/base_list.html'
 
     def get_context_data(self, **kwargs):
         context = super(RalphListView, self).get_context_data(**kwargs)
@@ -87,7 +87,7 @@ class RalphListView(RalphExtraViewMixin, RalphTemplateView):
 
 class RalphDetailView(RalphExtraViewMixin, RalphTemplateView):
     _type = CHANGE
-    extra_view_base_template = 'ralph_admin/extra_views/base_change.html'
+    extra_view_base_template = 'admin/extra_views/base_change.html'
 
     def dispatch(self, request, model, pk, *args, **kwargs):
         self.object = get_object_or_404(model, pk=pk)
@@ -111,7 +111,7 @@ class RalphDetailView(RalphExtraViewMixin, RalphTemplateView):
 
 class AdminViewBase(type):
     def __new__(cls, name, bases, attrs):
-        base_template = 'ralph_admin/extra_views/base_admin_change.html'
+        base_template = 'admin/extra_views/base_admin_change.html'
         empty_fieldset = (('__empty__', {'fields': []}),)
         admin_whitelist = ['inlines', 'fieldsets']
         admin_attrs = {

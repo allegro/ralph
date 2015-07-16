@@ -5,7 +5,7 @@ from django.template import Library
 register = Library()
 
 
-@register.inclusion_tag('ralph_admin/templatetags/tabs.html')
+@register.inclusion_tag('admin/templatetags/tabs.html')
 def views_tabs(views, name=None, obj=None):
     """
     Render extra views as tabs.
