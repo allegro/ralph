@@ -135,6 +135,7 @@ class TestRestAssetInfoPerRack(TestCase):
                     'position': self.rack1_accessory.position,
                     'remarks': self.rack1_accessory.remarks,
                     'type': self.rack1_accessory.accessory.name,
+                    'url': self.rack1_accessory.get_absolute_url(),
                 },
             ],
             'pdus': [

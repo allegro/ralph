@@ -4,10 +4,10 @@ from collections import namedtuple
 from itertools import chain
 
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.assets import (
+    AdminAbsoluteUrlMixin,
     Asset,
     NamedMixin,
 )
@@ -67,7 +67,6 @@ class Gap(object):
         return items
 
 
-@python_2_unicode_compatible
 class DataCenter(NamedMixin, models.Model):
 
     visualization_cols_num = models.PositiveIntegerField(
@@ -93,7 +92,6 @@ class DataCenter(NamedMixin, models.Model):
         return self.name
 
 
-@python_2_unicode_compatible
 class ServerRoom(NamedMixin.NonUnique, models.Model):
     data_center = models.ForeignKey(DataCenter, verbose_name=_("data center"))
 
@@ -108,8 +106,7 @@ class Accessory(NamedMixin):
         verbose_name_plural = _('accessories')
 
 
-@python_2_unicode_compatible
-class RackAccessory(models.Model):
+class RackAccessory(AdminAbsoluteUrlMixin, models.Model):
     accessory = models.ForeignKey(Accessory)
     rack = models.ForeignKey('Rack')
     orientation = models.PositiveIntegerField(
@@ -277,7 +274,6 @@ class DataCenterAsset(Asset):
         return management_ip.address if management_ip else ''
 
 
-@python_2_unicode_compatible
 class Connection(models.Model):
     outbound = models.ForeignKey(
         'DataCenterAsset',

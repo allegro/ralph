@@ -35,24 +35,17 @@
                         &:hover {
                             .tools {display: block;}
                         }
-                        &:hover {
-                            .tools {display: block;}
-                        }
-                        .tools {display: none;}
-                        .icon-repeat {
-                            font-size: 1.25em;
-                            cursor: pointer;
-                            font-weight: bold;
-                            bottom: 5px;
-                            padding: 2px;
-                            &:hover {
-                                color: #fff;
+                        .tools{
+                            display: none;
+                            text-align: center;
+                            line-height: 2rem;
+                            i {
+                                font-size: 1.20rem;
+                                cursor: pointer;
+                                &:hover {
+                                    color: $primary-color;
+                                }
                             }
-                            &.left {left:5%}
-                            &.right {right:5%}
-                        }
-                        .edit {
-                            padding: 2px 0 0 2px;
                         }
                         .name {
                             cursor: move;
