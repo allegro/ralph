@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
 """SAM module models."""
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Sum
-from django.db.models.loading import get_model
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from ralph.assets.models.assets import Manufacturer
 from ralph.assets.models.base import BaseObject
-from ralph.licences.exceptions import WrongModelError
 from ralph.lib.mixins.models import (
+    AdminAbsoluteUrlMixin,
     NamedMixin,
     TimeStampMixin
 )
@@ -45,7 +43,12 @@ class SoftwareCategory(PermByFieldMixin, NamedMixin, models.Model):
             yield licence
 
 
-class Licence(PermByFieldMixin, TimeStampMixin, models.Model):
+class Licence(
+    AdminAbsoluteUrlMixin,
+    PermByFieldMixin,
+    TimeStampMixin,
+    models.Model,
+):
 
     """A set of licences for a single software with a single expiration date"""
 
@@ -168,11 +171,6 @@ class Licence(PermByFieldMixin, TimeStampMixin, models.Model):
             self.invoice_date,
         )
 
-    def get_absolute_url(self):
-        return reverse('edit_licence', kwargs={
-            'licence_id': self.id,
-        })
-
     @cached_property
     def used(self):
         base_objects_qs = self.base_objects.through.objects.filter(
@@ -187,43 +185,6 @@ class Licence(PermByFieldMixin, TimeStampMixin, models.Model):
     @cached_property
     def free(self):
         return self.number_bought - self.used
-
-    def get_model_from_obj(self, obj):
-        name = obj._meta.object_name
-        allowed_models = ('Asset', settings.AUTH_USER_MODEL)
-        if name not in allowed_models:
-            raise WrongModelError('{} model is not allowed.'.format(name))
-        model = get_model(
-            model_name='Licence{}'.format(name)
-        )
-        return model, name
-
-    def assign(self, obj, quantity=1):
-        if quantity <= 0:
-            raise ValueError('Variable quantity must be greater than zero.')
-        Model, name = self.get_model_from_obj(obj)
-        kwargs = {
-            name.lower(): obj,
-            'licence': self,
-        }
-        assigned_licence, created = Model.objects.get_or_create(**kwargs)
-        old_quantity = assigned_licence.quantity
-        assigned_licence.quantity = quantity
-        assigned_licence.save(update_fields=['quantity'])
-        if not created and old_quantity == quantity:
-            return
-
-    def detach(self, obj):
-        Model, name = self.get_model_from_obj(obj)
-        kwargs = {
-            name.lower(): obj,
-            'licence': self,
-        }
-        try:
-            assigned_licence = Model.objects.get(**kwargs)
-            assigned_licence.delete()
-        except Model.DoesNotExist:
-            return
 
 
 class BaseObjectLicence(models.Model):

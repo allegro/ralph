@@ -1,17 +1,56 @@
 # -*- coding: utf-8 -*-
+from django.contrib.admin import TabularInline
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, register
+from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
-from ralph.licences.models import Licence, LicenceType, SoftwareCategory
+from ralph.licences.models import (
+    BaseObjectLicence,
+    Licence,
+    LicenceType,
+    LicenceUser,
+    SoftwareCategory,
+)
+
+
+class BaseObjectLicenceView(RalphDetailViewAdmin):
+    icon = 'laptop'
+    name = 'base-object'
+    label = 'Assigned to objects'
+    url_name = 'assigned-to-objects'
+
+    class BaseObjectLicenceInline(TabularInline):
+        model = BaseObjectLicence
+        raw_id_fields = ('base_object',)
+        extra = 1
+
+    inlines = [BaseObjectLicenceInline]
+
+
+class LicenceUserView(RalphDetailViewAdmin):
+    icon = 'user'
+    name = 'users'
+    label = 'Assigned to users'
+    url_name = 'assigned-to-users'
+
+    class LicenceUserInline(TabularInline):
+        model = LicenceUser
+        raw_id_fields = ('user',)
+        extra = 1
+
+    inlines = [LicenceUserInline]
 
 
 @register(Licence)
 class LicenceAdmin(PermissionAdminMixin, RalphAdmin):
 
     """Licence admin class."""
-
+    change_views = [
+        BaseObjectLicenceView,
+        LicenceUserView,
+    ]
     search_fields = ['niw', 'sn', 'license_details', 'remarks']
     list_filter = ['licence_type']
     date_hierarchy = 'created'

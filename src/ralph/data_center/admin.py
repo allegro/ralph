@@ -2,10 +2,7 @@
 from django.contrib.admin import TabularInline
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import (
-    RalphAdmin,
-    register,
-)
+from ralph.admin import RalphAdmin, register
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.data_importer import resources
 from ralph.data_center.forms.network import NetworkInlineFormset
