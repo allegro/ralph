@@ -11,8 +11,8 @@ class RalphAdminSiteMixin(object):
     """Ralph admin site mixin."""
     site_header = settings.ADMIN_SITE_HEADER
     index_template = 'admin/index.html'
-    app_index_template = 'ralph_admin/app_index.html'
-    object_history_template = 'ralph_admin/object_history.html'
+    app_index_template = 'admin/app_index.html'
+    object_history_template = 'admin/object_history.html'
 
     def _get_views(self, admin):
         return (admin.change_views or []) + (admin.list_views or [])

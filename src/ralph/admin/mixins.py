@@ -40,8 +40,8 @@ class RalphAdminMixin(object):
 
     list_views = None
     change_views = None
-    change_list_template = 'ralph_admin/change_list.html'
-    change_form_template = 'ralph_admin/change_form.html'
+    change_list_template = 'admin/change_list.html'
+    change_form_template = 'admin/change_form.html'
 
     def __init__(self, *args, **kwargs):
         self.list_views = copy(self.list_views) or []

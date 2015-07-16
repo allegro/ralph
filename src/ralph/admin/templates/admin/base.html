@@ -21,7 +21,7 @@
             </li>
             <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
           </ul>
-           {% sitetree_menu from "ralph_admin" include "trunk" template "ralph_admin/menu_admin.html" %}
+           {% sitetree_menu from "ralph_admin" include "trunk" template "admin/menu_admin.html" %}
           <ul class="right">
             <li class="has-form">
               {% if cl %}
@@ -37,7 +37,7 @@
                     </a>
                     <ul class="dropdown">
                       {% block userlinks %}
-                        {% include 'ralph_admin/partials/userlinks.html' %}
+                        {% include 'admin/partials/userlinks.html' %}
                       {% endblock %}
                     </ul>
                   </li>
@@ -49,7 +49,7 @@
         </section>
       </nav>
     {% endif %}
-      {% sitetree_breadcrumbs from "ralph_admin" template "ralph_admin/breadcrumbs_foundation.html" %}
+      {% sitetree_breadcrumbs from "ralph_admin" template "admin/breadcrumbs_foundation.html" %}
     {% if messages %}
       <div class="row">
         <div class="small-12 columns">
