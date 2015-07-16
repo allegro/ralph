@@ -3,8 +3,8 @@ from copy import copy
 
 from django.shortcuts import get_object_or_404
 
-from ralph.admin.mixins import RalphTemplateView
-from ralph.admin import ralph_site, RalphAdmin
+from ralph.admin.mixins import RalphAdmin, RalphTemplateView
+from ralph.admin.sites import ralph_site
 
 
 VIEW_TYPES = CHANGE, LIST = ('change', 'list')
