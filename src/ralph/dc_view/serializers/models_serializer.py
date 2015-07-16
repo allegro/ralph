@@ -112,6 +112,7 @@ class RackAccessorySerializer(serializers.ModelSerializer):
     type = serializers.CharField(source='accessory.name')
     _type = serializers.SerializerMethodField('get_type')
     orientation = serializers.SerializerMethodField('get_orientation_desc')
+    url = serializers.CharField(source='get_absolute_url')
 
     def get_type(self, obj):
         return TYPE_ACCESSORY
@@ -121,7 +122,7 @@ class RackAccessorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RackAccessory
-        fields = ('position', 'orientation', 'remarks', 'type', '_type')
+        fields = ('position', 'orientation', 'remarks', 'type', '_type', 'url')
 
 
 class PDUSerializer(serializers.ModelSerializer):

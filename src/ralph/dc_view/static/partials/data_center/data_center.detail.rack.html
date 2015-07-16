@@ -42,14 +42,12 @@
             <td>Remarks</td>
             <td>
                 {{ activeItem ? activeItem.remarks : '-' }}
-                <a ng-if="activeItem._type == 'accessory'" target="_blank" href="{{ rack.info.rack_admin_url }}" >Edit</a>
             </td>
         </tr>
         <tr>
             <td colspan="2">
                 <span ng-show="activeItem">
-                    <a target="_blank" ng-show="activeItem.url" href="{{ activeItem.url }}">Asset information</a><br>
-                    <a target="_blank" ng-show="activeItem.core_url" href="{{ activeItem.core_url }}">Configuration information</a>
+                    <a target="_blank" ng-show="activeItem.url" href="{{ activeItem.url }}">Edit</a><br>
                 </span>
                 <span ng-hide="activeItem">-</span>
             </td>
@@ -81,8 +79,7 @@
                     <tr>
                         <td colspan="2">
                             <span ng-show="activeSlot">
-                                <a target="_blank" ng-show="activeSlot.url" href="{{ activeSlot.url }}">Asset information</a><br>
-                                <a target="_blank" ng-show="activeSlot.core_url" href="{{ activeSlot.core_url }}">Configuration information</a>
+                                <a target="_blank" ng-show="activeSlot.url" href="{{ activeSlot.url }}">Edit</a><br>
                             </span>
                             <span ng-hide="activeSlot">-</span>
                         </td>
