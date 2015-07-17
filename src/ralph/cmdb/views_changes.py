@@ -24,6 +24,7 @@ from ralph.cmdb.views import BaseCMDBView
 from ralph.cmdb.forms import (
     CIChangeSearchForm,
     CIReportsParamsForm,
+    JiraChangesFilter,
     ReportFilters,
     ReportFiltersDateRange,
 )
@@ -362,7 +363,7 @@ class JiraChanges(ChangesBase, DataTableMixin):
             'jira_url': JIRA_URL,
             'title': section,
             'form': {
-                'filters': ReportFilters(self.request.GET),
+                'filters': JiraChangesFilter(self.request.GET),
                 'date_range': ReportFiltersDateRange(self.request.GET),
             },
         })
