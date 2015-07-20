@@ -44,23 +44,23 @@ def add_filter(request, **kwargs):
             filters &= Q(**{key: request.get(key)})
     if request.get('start_update') and request.get('end_update'):
         filters &= Q(
-            update_date__lte=request.get('start_update'),
-            update_date__gte=request.get('end_update'),
+            update_date__lte=request.get('end_update'),
+            update_date__gte=request.get('start_update'),
         )
     if request.get('start_resolved') and request.get('end_resolved'):
         filters &= Q(
-            resolvet_date__lte=request.get('start_update'),
-            resolvet_date__gte=request.get('end_update'),
+            resolvet_date__lte=request.get('end_resolved'),
+            resolvet_date__gte=request.get('start_resolved'),
         )
     if request.get('start_planned_start') and request.get('end_planned_start'):
         filters &= Q(
-            planned_start_date__lte=request.get('start_planned_start'),
-            planned_start_date__gte=request.get('end_planned_start'),
+            planned_start_date__lte=request.get('end_planned_start'),
+            planned_start_date__gte=request.get('start_planned_start'),
         )
     if request.get('start_planned_end') and request.get('end_planned_end'):
         filters &= Q(
-            planned_end_date__lte=request.get('start_planned_end'),
-            planned_end_date__gte=request.get('end_planned_end'),
+            planned_end_date__lte=request.get('end_planned_end'),
+            planned_end_date__gte=request.get('start_planned_end'),
         )
     if request.get('start_created') and request.get('end_created'):
         filters &= Q(
