@@ -311,3 +311,20 @@ img.waiting
     line-height:2.5rem;
 }
 
+
+#report-filters .controls-row {
+    width: 50%;
+    float:left;
+}
+
+#report-filters .controls-row div {
+    margin: 2px 0;
+}
+
+#report-filters .submit-wrapper {
+    clear: left;
+}
+
+#report-filters.form-inline.well label {
+    width: 100px;
+}

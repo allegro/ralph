@@ -1,9 +1,49 @@
-<form class="form-inline well">
+<form id='report-filters' class="form-inline well">
     <div class="controls controls-row">
-        {{ form.filters }}
+        {% for field in form.filters %}
+            <div>
+                <label for="{{field.name}}" >
+                    {{ field.label }}
+                </label>
+                {{ field }}
+                {% if field.help_text %}
+                <span class="icon-question-sign help-tooltip"
+                    title="{{ field.help_text|escape }}" />
+                {% endif %}
+            </div>
+        {% endfor %}
     </div>
+
+
     <div class="controls controls-row">
-        {{ form.date_range }}
+        <div>
+            {{ form.date_range.start_update.label_tag }}
+            {{ form.date_range.start_update }}
+            {{ form.date_range.end_update }}
+        </div>
+        <div>
+            {{ form.date_range.start_resolved.label_tag }}
+            {{ form.date_range.start_resolved }}
+            {{ form.date_range.end_resolved }}
+        </div>
+        <div>
+            {{ form.date_range.start_planned_start.label_tag }}
+            {{ form.date_range.start_planned_start }}
+            {{ form.date_range.end_planned_start }}
+        </div>
+        <div>
+            {{ form.date_range.start_planned_end.label_tag }}
+            {{ form.date_range.start_planned_end }}
+            {{ form.date_range.end_planned_end }}
+        </div>
+        <div>
+            {{ form.date_range.start_created.label_tag }}
+            {{ form.date_range.start_created }}
+            {{ form.date_range.end_created }}
+        </div>
     </div>
-    <div><button type="submit" class="btn btn-primary">Filter</button></div>
+
+    <div class='submit-wrapper'>
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </div>
 </form>

@@ -311,20 +311,19 @@ class ReportFilters(forms.Form):
 
     ci = forms.CharField(
         required=False,
-        widget=forms.TextInput(
-            attrs=dict(input_attrs, placeholder='ralph'),
-        )
+        help_text=_('"name" or "uid"'),
+        widget=forms.TextInput(attrs=dict(input_attrs)),
     )
     assignee = forms.CharField(
         required=False,
         widget=forms.TextInput(
-            attrs=dict(input_attrs, placeholder='John.'),
+            attrs=dict(input_attrs, placeholder=_('name')),
         )
     )
     jira_id = forms.CharField(
         required=False,
         widget=forms.TextInput(
-            attrs=dict(input_attrs, placeholder='TICKET-NUMBER'),
+            attrs=dict(input_attrs, placeholder=_('ticket number')),
         )
     )
     issue_type = forms.ChoiceField(
@@ -380,17 +379,14 @@ class ReportFiltersDateRange(forms.Form):
     }
     start_update = forms.DateField(
         required=False,
-        widget=DateWidget(dict(
-            date_attrs,
-            placeholder='From',
-        )),
-        label="Update"
+        widget=DateWidget(dict(date_attrs, placeholder=_('From'))),
+        label=_("Update"),
     )
     end_update = forms.DateField(
         required=False,
         widget=DateWidget(
             attrs={
-                'placeholder': 'End',
+                'placeholder': _('To'),
                 'data-collapsed': True,
                 'class': 'input-small',
             }
@@ -399,41 +395,56 @@ class ReportFiltersDateRange(forms.Form):
     )
     start_resolved = forms.DateField(
         required=False,
-        widget=DateWidget(dict(date_attrs, placeholder='From')),
-        label="Resolved",
+        widget=DateWidget(dict(date_attrs, placeholder=_('From'))),
+        label=_("Resolved"),
     )
     end_resolved = forms.DateField(
         required=False,
-        widget=DateWidget(dict(date_attrs, placeholder='To')),
+        widget=DateWidget(dict(date_attrs, placeholder=_('To'))),
         label="",
     )
     start_planned_start = forms.DateField(
         required=False,
-        widget=DateWidget(dict(date_attrs, placeholder='From')),
-        label="Planed start",
+        widget=DateWidget(dict(date_attrs, placeholder=_('From'))),
+        label=_("Planned start"),
     )
     end_planned_start = forms.DateField(
         required=False,
-        widget=DateWidget(dict(date_attrs, placeholder='To')),
+        widget=DateWidget(dict(date_attrs, placeholder=_('To'))),
         label="",
     )
     start_planned_end = forms.DateField(
         required=False,
-        widget=DateWidget(dict(date_attrs, placeholder='From')),
-        label="Planed end",
+        widget=DateWidget(dict(date_attrs, placeholder=_('From'))),
+        label=_("Planned end"),
     )
     end_planned_end = forms.DateField(
         required=False,
-        widget=DateWidget(dict(date_attrs, placeholder='To')),
+        widget=DateWidget(dict(date_attrs, placeholder=_('To'))),
         label="",
     )
     start_created = forms.DateField(
         required=False,
-        widget=DateWidget(dict(date_attrs, placeholder='From')),
-        label="Created",
+        widget=DateWidget(dict(date_attrs, placeholder=_('From'))),
+        label=_("Created"),
     )
     end_created = forms.DateField(
         required=False,
-        widget=DateWidget(dict(date_attrs, placeholder='To')),
+        widget=DateWidget(dict(date_attrs, placeholder=_('To'))),
         label="",
+    )
+
+
+class JiraChangesFilter(ReportFilters):
+    input_attrs = {'class': 'input-small'}
+    issue_type = forms.ChoiceField(
+        required=False,
+        choices=[
+            ('', '----'),
+            ('Change-EM', 'Change-EM'),
+            ('Change-OP', 'Change-OP'),
+            ('Change-PL', 'Change-PL'),
+        ],
+        label=_('Issue type'),
+        widget=forms.Select(attrs=input_attrs)
     )

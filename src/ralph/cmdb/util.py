@@ -124,13 +124,13 @@ def table_colums():
             bob_tag=True,
         ),
         _(
-            'Planed start',
+            'Planned start',
             field='planned_start_date',
             sort_expression='planned_start_date',
             bob_tag=True,
         ),
         _(
-            'Planed end',
+            'Planned end',
             field='planned_end_date',
             sort_expression='planned_end_date',
             bob_tag=True,
