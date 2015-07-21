@@ -39,6 +39,7 @@ body {
 }
 
 .admin_bottom {
+    z-index: 1000;
     width: 100%;
     position: fixed;
     bottom: 0;
@@ -66,7 +67,7 @@ select {
 }
 
 label, label.inline, select, #{text-inputs(all, 'input')} {
-    padding: 0.4rem;
+    padding: $input-padding;
     height: auto;
 }
 
@@ -101,6 +102,7 @@ h1 {
 
 input.datepicker {
     width: 100px;
+    position: inherit;
 }
 
 .add-related .fa {

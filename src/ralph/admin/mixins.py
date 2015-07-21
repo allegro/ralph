@@ -12,6 +12,7 @@ from import_export.admin import ImportExportModelAdmin
 from reversion import VersionAdmin
 
 from ralph.admin import widgets
+from ralph.admin.autocomplete import AjaxAutocompleteMixin
 
 
 FORMFIELD_FOR_DBFIELD_DEFAULTS = {
@@ -84,13 +85,27 @@ class RalphAdminMixin(object):
             request, object_id, form_url, extra_context
         )
 
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        if db_field.name in self.raw_id_fields:
+            kwargs['widget'] = widgets.AutocompleteWidget(
+                db_field.rel, self.admin_site, using=kwargs.get('using')
+            )
+            return db_field.formfield(**kwargs)
+        else:
+            return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
     def formfield_for_manytomany(self, db_field, request=None, **kwargs):
         if db_field.name in ('user_permissions', 'permissions'):
             kwargs['widget'] = widgets.PermissionsSelectWidget()
         return db_field.formfield(**kwargs)
 
 
-class RalphAdmin(ImportExportModelAdmin, RalphAdminMixin, VersionAdmin):
+class RalphAdmin(
+    ImportExportModelAdmin,
+    AjaxAutocompleteMixin,
+    RalphAdminMixin,
+    VersionAdmin
+):
     def __init__(self, *args, **kwargs):
         super(RalphAdmin, self).__init__(*args, **kwargs)
         self.formfield_overrides.update(FORMFIELD_FOR_DBFIELD_DEFAULTS)

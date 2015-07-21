@@ -9,10 +9,13 @@ before_install:
     - make flake
 
 install:
+    - npm install
+    - gulp
     - make install-test
     - pip install coveralls
 
 script:
+    - gulp test
     - make coveralls
 
 after_success:
