@@ -328,3 +328,9 @@ img.waiting
 #report-filters.form-inline.well label {
     width: 100px;
 }
+
+.report-changes-cis {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
