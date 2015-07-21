@@ -78,6 +78,10 @@ setup(
         'django-discover-runner>=0.4',
         'Pillow==2.4.0',
         'pysphere==0.1.8',
+        'oslo.config==1.13.0',
+        'Babel==1.3',
+        'stevedore==1.5.0',
+        'pbr==0.11.0',
         'python-keystoneclient==0.11.0',
     ],
     entry_points={
