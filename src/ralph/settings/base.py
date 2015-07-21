@@ -33,6 +33,7 @@ INSTALLED_APPS = (
     'ralph.lib.foundation',
     'ralph.data_importer',
     'ralph.dc_view',
+    'ralph.reports',
     'rest_framework',
 )
 
@@ -110,7 +111,7 @@ MESSAGE_TAGS = {
     messages.ERROR: 'danger',
 }
 
-DEFAULT_DEPRECATION_RATE = 25
+DEFAULT_DEPRECIATION_RATE = 25
 CHECK_IP_HOSTNAME_ON_SAVE = True
 ASSET_HOSTNAME_TEMPLATE = 'test'
 

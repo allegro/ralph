@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import factory
 from factory.django import DjangoModelFactory
 
 from ralph.assets.models.assets import (
     AssetModel,
+    Category,
     Environment,
     Service,
     ServiceEnvironment
 )
+
+
+class CategoryFactory(DjangoModelFactory):
+
+    class Meta:
+        model = Category
 
 
 class BackOfficeAssetModelFactory(DjangoModelFactory):

@@ -136,6 +136,28 @@ sitetrees = [
             ]
         ),
         ralph_item(
+            title=_('Reports'),
+            url='#',
+            children=[
+                ralph_item(
+                    title=_('Category model'),
+                    url='category_model_report',
+                ),
+                ralph_item(
+                    title=_('Category model status'),
+                    url='category_model__status_report',
+                ),
+                ralph_item(
+                    title=_('Manufacturer category model'),
+                    url='manufactured_category_model_report',
+                ),
+                ralph_item(
+                    title=_('Status model'),
+                    url='status_model_report',
+                ),
+            ]
+        ),
+        ralph_item(
             title=_('Settings'),
             url='#',
             url_as_pattern=False,

@@ -209,7 +209,7 @@ class AssetLastHostname(models.Model):
 
 
 class Asset(AdminAbsoluteUrlMixin, BaseObject):
-    model = models.ForeignKey(AssetModel)
+    model = models.ForeignKey(AssetModel, related_name='assets')
     hostname = models.CharField(
         blank=True,
         default=None,
@@ -251,21 +251,21 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
     delivery_date = models.DateField(null=True, blank=True)
     production_use_date = models.DateField(null=True, blank=True)
     provider_order_date = models.DateField(null=True, blank=True)
-    deprecation_rate = models.DecimalField(
+    depreciation_rate = models.DecimalField(
         decimal_places=2,
         max_digits=5,
         blank=True,
-        default=settings.DEFAULT_DEPRECATION_RATE,
+        default=settings.DEFAULT_DEPRECIATION_RATE,
         help_text=_(
             'This value is in percentage.'
             ' For example value: "100" means it depreciates during a year.'
             ' Value: "25" means it depreciates during 4 years, and so on... .'
         ),
     )
-    force_deprecation = models.BooleanField(help_text=(
+    force_depreciation = models.BooleanField(help_text=(
         'Check if you no longer want to bill for this asset'
     ))
-    deprecation_end_date = models.DateField(null=True, blank=True)
+    depreciation_end_date = models.DateField(null=True, blank=True)
     production_year = models.PositiveSmallIntegerField(null=True, blank=True)
     task_url = models.URLField(
         max_length=2048, null=True, blank=True,
@@ -277,15 +277,15 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
 
     def get_deprecation_months(self):
         return int(
-            (1 / (self.deprecation_rate / 100) * 12)
+            (1 / (self.depreciation_rate / 100) * 12)
             if self.deprecation_rate else 0
         )
 
     def is_depreciated(self, date=None):
         date = date or datetime.date.today()
-        if self.force_deprecation or not self.invoice_date:
+        if self.force_depreciation or not self.invoice_date:
             return True
-        if self.deprecation_end_date:
+        if self.depreciation_end_date:
             deprecation_date = self.deprecation_end_date
         else:
             deprecation_date = self.invoice_date + relativedelta(

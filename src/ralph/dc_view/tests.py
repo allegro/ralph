@@ -66,7 +66,7 @@ class TestRestAssetInfoPerRack(TestCase):
             service_env=service_env,
             position=1,
             slot_no='',
-            force_deprecation=False,
+            force_depreciation=False,
             model=asset_model,
             rack=self.rack_1
         )
@@ -75,7 +75,7 @@ class TestRestAssetInfoPerRack(TestCase):
             service_env=service_env,
             rack=self.rack_1,
             orientation=Orientation.left,
-            force_deprecation=False,
+            force_depreciation=False,
             model=asset_model,
             position=0,
         )

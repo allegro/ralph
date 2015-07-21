@@ -1,0 +1,22 @@
+<li class="accordion-navigation">
+  <a href="#{{ node.uid }}">
+    {{ node.name }} <span class="right">{{ node.count }}</span>
+  </a>
+  <div id="{{ node.uid }}" class="content">
+    <div class="row">
+      <div class="small-12 columns">
+        {{ node.name }}
+        <span class="right">
+          {{ node.count }}
+        </span>
+      </div>
+      {% if node.children %}
+        {% for ch in node.children %}
+          {% with node=ch template_name="reports/report_tree.html" %}
+            {% include template_name %}
+          {% endwith %}
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</li>
