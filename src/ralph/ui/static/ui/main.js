@@ -4,7 +4,8 @@ require([
     'menu',
     'bob-ajax-select',
     'assets-bulk-edit',
-    'mobile-app'
+    'mobile-app',
+    'bootstrap'
 ], function ($, bob, menu, bob_ajax_select) {
     "use strict";
     $(document).ajaxSend(function(event, xhr, settings) {
