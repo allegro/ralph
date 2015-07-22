@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 {% load url from future %}
-{% load icons bob i18n staticfiles %}
+{% load ralph icons bob i18n staticfiles %}
 <html>
     <head>
         <meta charset="utf-8">
@@ -27,16 +27,21 @@
                 requirejs.config({
                     baseUrl: '{{ STATIC_URL }}',
                     paths: {
-                        'jquery': 'jquery-1.7.2.min',
-                        'bootstrap': 'bootstrap/js/bootstrap',
-                        'bob-ajax-select': 'js/ajax_select',
-                        'jquery-ui': 'jquery-ui/jquery-ui',
-                        'djid': 'js/djid',
-                        'jqGrid': 'js/jquery.jqGrid.min',
-                        'jqGrid-locale': 'js/i18n/grid.locale-en',
-                        'ui.multiselect': 'plugins/ui.multiselect',
-                        'assets-bulk-edit': 'assets/js/fill-fields',
-                        'mobile-app': 'assets/js/mobile',
+                        'jquery': '{% extless_static 'jquery-1.7.2.min.js' %}',
+                        'bootstrap': '{% extless_static 'bootstrap/js/bootstrap.js' %}',
+                        'bootstrap-datepicker': '{% extless_static 'bootstrap/js/bootstrap-datepicker.js' %}',
+                        'bob': '{% extless_static 'bob.js' %}',
+                        'menu': '{% extless_static 'menu.js' %}',
+                        'mustache': '{% extless_static 'mustache.js' %}',
+                        'bob-ajax-select': '{% extless_static 'js/ajax_select.js' %}',
+                        'jquery-ui': '{% extless_static 'jquery-ui/jquery-ui.js' %}',
+                        'djid': '{% extless_static 'js/djid.js' %}',
+                        'jqGrid': '{% extless_static 'js/jquery.jqGrid.min.js' %}',
+                        'jqGrid-locale': '{% extless_static 'js/i18n/grid.locale-en.js' %}',
+                        'ui.multiselect': '{% extless_static 'plugins/ui.multiselect.js' %}',
+                        'assets-bulk-edit': '{% extless_static 'assets/js/fill-fields.js' %}',
+                        'mobile-app': '{% extless_static 'assets/js/mobile.js' %}',
+                        'split': '{% extless_static 'assets/js/split.js' %}',
                     },
                     shim: {
                         'bootstrap': {
@@ -45,7 +50,7 @@
                         'bootstrap-datepicker': {
                             'deps': ['bootstrap']
                         },
-                        'ui.multiselect.js': {
+                        'ui.multiselect': {
                             'deps': [
                                 'jquery',
                                 'jquery-ui',
