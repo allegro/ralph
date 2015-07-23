@@ -435,7 +435,34 @@ class ReportFiltersDateRange(forms.Form):
     )
 
 
-class JiraChangesFilter(ReportFilters):
+class IncidentsFilters(ReportFilters):
+    input_attrs = {'class': 'input-small'}
+    issue_type = forms.ChoiceField(
+        required=False,
+        choices=[
+            ('', '----'),
+            ('Incident', 'Incident'),
+            ('Incident-Security', 'Incident-Security'),
+        ],
+        label=_('Issue type'),
+        widget=forms.Select(attrs=input_attrs)
+    )
+
+
+class ProblemsFilters(ReportFilters):
+    input_attrs = {'class': 'input-small'}
+    issue_type = forms.ChoiceField(
+        required=False,
+        choices=[
+            ('', '----'),
+            ('Problem', 'Problem'),
+        ],
+        label=_('Issue type'),
+        widget=forms.Select(attrs=input_attrs)
+    )
+
+
+class JiraChangesFilters(ReportFilters):
     input_attrs = {'class': 'input-small'}
     issue_type = forms.ChoiceField(
         required=False,
