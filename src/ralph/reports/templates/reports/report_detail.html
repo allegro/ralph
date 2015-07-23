@@ -1,0 +1,54 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_static cache %}
+
+{% block title %}
+  {% trans "Reports" %}
+{% endblock %}
+
+{% block content %}
+{% cache 3600 report cache_key %}
+  <br />
+  <div id="content-main" class="row">
+    <h1>{{ report.name }} <small>{% trans 'Last update:' %} {% now "SHORT_DATETIME_FORMAT" %}</small></h1>
+    <br />
+    {% if report.with_modes %}
+      <dl class="sub-nav">
+        <dt>{% trans "Filter" %}:</dt>
+        {% for report_mode in modes %}
+          <dd{% if mode == report_mode.name %} class="active"{% endif %}>
+            <a href="?asset_type={{ report_mode.name }}">
+              {{ report_mode.verbose_name }}
+            </a>
+          </dd>
+        {% endfor %}
+      </dl>
+    {% endif %}
+
+    {% if report.with_datacenters and mode == 'dc' %}
+      <dl class="sub-nav">
+        {% for report_datacenter in datacenters %}
+          <dd{% if dc == report_datacenter.id %} class="active"{% endif %}>
+            <a href="?asset_type=dc&dc={{ report_datacenter.id }}">
+              {{ report_datacenter.verbose_name }}
+            </a>
+          </dd>
+        {% endfor %}
+      </dl>
+    {% endif %}
+
+    <ul class="accordion" data-accordion>
+     {% for node in result %}
+        {% include "reports/report_tree.html" %}
+      {% endfor %}
+    </ul>
+  </div>
+{% endcache %}
+{% endblock %}
+{% block extra_scripts %}
+  {{ block.super }}
+  <script type="text/javascript">
+  $(document).ready(function() {
+    $(document).foundation('accordion', { multi_expand: true });
+  });
+  </script>
+{% endblock %}

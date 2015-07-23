@@ -14,4 +14,5 @@ urlpatterns = [
     url(r'^api/', include('ralph.dc_view.urls.api')),
     url(r'^api/', include('ralph.data_center.urls.api')),
     url(r'^', include('ralph.dc_view.urls.ui')),
+    url(r'^', include('ralph.reports.urls')),
 ]

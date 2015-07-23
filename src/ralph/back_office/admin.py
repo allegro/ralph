@@ -49,8 +49,8 @@ class BackOfficeAssetAdmin(
         (_('Financial Info'), {
             'fields': (
                 'order_no', 'invoice_date', 'invoice_no', 'price',
-                'deprecation_rate', 'source', 'request_date', 'provider',
-                'provider_order_date', 'delivery_date', 'deprecation_end_date',
+                'depreciation_rate', 'source', 'request_date', 'provider',
+                'provider_order_date', 'delivery_date', 'depreciation_end_date',
                 'force_deprecation'
             )
         }),
