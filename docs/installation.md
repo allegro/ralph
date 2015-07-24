@@ -12,8 +12,8 @@ Make sure, your installation is clean Ubuntu 14.04, without any other packages i
   
 First, add our official ralph repository:
 
-    sudo apt-key adv --keyserver  hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61`
-    sudo echo "deb https://dl.bintray.com/vi4m/ralph wheezy main" >  /etc/apt/sources.list.d/vi4m_ralph.list`
+    sudo apt-key adv --keyserver  hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
+    sudo echo "deb https://dl.bintray.com/vi4m/ralph wheezy main" >  /etc/apt/sources.list.d/vi4m_ralph.list
 
 Then, just install ralph the traditional way:
 
@@ -44,6 +44,7 @@ just paste somewhere in your ~/.profile following environment variables customiz
 
 ### Initialization
 Type `ralph migrate` to create tables in your database. 
+Type `ralph sitetree_resync_apps` to reload menu.
 
 Run your ralph instance with `ralph runserver 0.0.0.0:8000`
 
