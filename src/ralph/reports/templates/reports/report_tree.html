@@ -9,14 +9,16 @@
         <span class="right">
           {{ node.count }}
         </span>
+        {% if node.children %}
+          {% for ch in node.children %}
+            {% with node=ch template_name="reports/report_tree.html" %}
+              <ul class="accordion" data-accordion>
+                {% include template_name %}
+              </ul>
+            {% endwith %}
+          {% endfor %}
+        {% endif %}
       </div>
-      {% if node.children %}
-        {% for ch in node.children %}
-          {% with node=ch template_name="reports/report_tree.html" %}
-            {% include template_name %}
-          {% endwith %}
-        {% endfor %}
-      {% endif %}
     </div>
   </div>
 </li>
