@@ -1,7 +1,11 @@
+from six import with_metaclass
 from django_fsm import transition, FSMIntegerField
 from django.utils.functional import curry
 from functools import partial
 from collections import namedtuple
+
+from django.db import models
+from django.db.models.base import ModelBase
 
 TransitionConfigItem = namedtuple(
     'TransitionConfigItem', 'source target actions name'
@@ -19,12 +23,13 @@ configs = [
 ]
 
 
-class WorkflowBase(type):
+class WorkflowBase(ModelBase):
     def __new__(cls, name, bases, attrs):
-        new_class = super().__new__(cls, name, bases, attr)
+        new_class = super().__new__(cls, name, bases, attrs)
+        return new_class
 
 
-class StandardWorkflowMixin(object):
+class StandardWorkflowMixin(with_metaclass(WorkflowBase, models.Model)):
 
     def preparation(self):
         print('dupa')  # DETELE THIS
