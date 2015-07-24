@@ -33,8 +33,10 @@ Create the database.
 
 ### Settings
 
-We are working on some sane configuration management files, currently, 
-just paste somewhere in your ~/.profile following environment variables customizing it to your needs.
+We are working on some sane configuration management files.
+Currently, we just read some environment variables, so just paste somewhere in your ~/.profile following environment variables customizing it to your needs.
+
+cat ~/.profile
 
     export DB_ENV_MYSQL_DATABASE=ralph
     export DB_ENV_MYSQL_USER=someuser
@@ -43,8 +45,9 @@ just paste somewhere in your ~/.profile following environment variables customiz
     export PATH=/opt/ralph/ralph-core/bin/:$PATH
 
 ### Initialization
-Type `ralph migrate` to create tables in your database. 
-Type `ralph sitetree_resync_apps` to reload menu.
+1. Type `ralph migrate` to create tables in your database. 
+2. Type `ralph sitetree_resync_apps` to reload menu.
+3. Type `ralph createsuperuser` to add new user.
 
 Run your ralph instance with `ralph runserver 0.0.0.0:8000`
 
