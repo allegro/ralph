@@ -13,7 +13,10 @@ from ralph.reports.base import ReportContainer
 
 
 def get_desc(choices_class, key, default='------'):
-    return choices_class.from_id(key) if key else default
+    try:
+        return choices_class.from_id(key) if key else default
+    except ValueError:
+        return 'Does not exist for key {}'.format(key)
 
 
 class BaseReport(object):
