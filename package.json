@@ -8,9 +8,11 @@
     "gulp-rename": "~1.2.2",
     "run-sequence": "~1.1.0",
     "gulp-sass": "~2.0.1",
-    "gulp-autoprefixer": "~2.3.1"
+    "gulp-autoprefixer": "~2.3.1",
+    "bower": "~1.4.1"
   },
   "devDependencies": {
-    "gulp-watch": "~4.2.4"
+    "gulp-watch": "~4.2.4",
+    "node-qunit-phantomjs": "~1.2.1"
   }
 }

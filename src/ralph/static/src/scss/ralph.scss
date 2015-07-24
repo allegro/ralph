@@ -44,12 +44,13 @@
 @import 'foundation/components/visibility';
 
 @import 'components/accordions';
+@import 'components/date_hierarchy';
+@import 'components/autocomplete_field';
 @import 'components/fieldsets';
+@import 'components/login';
 @import 'components/tables';
 @import 'components/tabs';
-@import 'components/date_hierarchy';
 @import 'components/visualization';
-@import 'components/login';
 
 @import 'styles';
 @import 'overrides';

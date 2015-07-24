@@ -75,19 +75,5 @@ select {
     position:relative;
     input.vForeignKeyRawIdAdminField {
         float: left;
-        width: 100%;
-        margin-bottom: 20px;
-    }
-    a.related-lookup {
-        position:absolute;
-        right: 15px;
-        height: 28px;
-        background-position: 0 50%;
-        background-repeat: no-repeat;
-    }
-    strong {
-        display: inline-block;
-        position: relative;
-        top: -20px;
     }
 }
