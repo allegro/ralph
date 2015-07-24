@@ -6,13 +6,15 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from uuid import uuid1
+import datetime
 import itertools
+from uuid import uuid1
 
 import factory
+from factory import fuzzy
 from factory.django import DjangoModelFactory
 
-from ralph.cmdb import models_ci
+from ralph.cmdb import models_changes, models_ci
 from ralph.discovery import models_device
 
 
@@ -85,3 +87,21 @@ class CIRelationFactory(DjangoModelFactory):
     parent = factory.SubFactory(ServiceCatalogFactory)
     child = factory.SubFactory(DeviceEnvironmentFactory)
     type = models_ci.CI_RELATION_TYPES.CONTAINS
+
+
+class CIIncidentFactory(DjangoModelFactory):
+    FACTORY_FOR = models_changes.CIIncident
+    summary = factory.Sequence(lambda n: 'Summary: {}'.format(n))
+    description = factory.Sequence(lambda n: 'Description: {}'.format(n))
+    jira_id = factory.Sequence(lambda n: 'Jira ID: {}'.format(n))
+    status = factory.Sequence(lambda n: 'Status: {}'.format(n))
+    assignee = factory.Sequence(lambda n: 'Assignee: {}'.format(n))
+    analysis = factory.Sequence(lambda n: 'Analysis: {}'.format(n))
+    problems = factory.Sequence(lambda n: 'Problems: {}'.format(n))
+    priority = factory.Sequence(lambda n: 'Priority: {}'.format(n))
+    issue_type = None
+    created_date = fuzzy.FuzzyDate(datetime.date(2008, 1, 1))
+    update_date = fuzzy.FuzzyDate(datetime.date(2008, 1, 1))
+    resolvet_date = fuzzy.FuzzyDate(datetime.date(2008, 1, 1))
+    planned_start_date = fuzzy.FuzzyDate(datetime.date(2008, 1, 1))
+    planned_end_date = fuzzy.FuzzyDate(datetime.date(2008, 1, 1))

@@ -24,8 +24,9 @@ from ralph.cmdb.views import BaseCMDBView
 from ralph.cmdb.forms import (
     CIChangeSearchForm,
     CIReportsParamsForm,
-    JiraChangesFilter,
-    ReportFilters,
+    IncidentsFilters,
+    JiraChangesFilters,
+    ProblemsFilters,
     ReportFiltersDateRange,
 )
 from ralph.cmdb.util import report_filters, add_filter, table_colums
@@ -265,7 +266,7 @@ class Problems(ChangesBase, DataTableMixin):
             'jira_url': JIRA_URL,
             'title': section,
             'form': {
-                'filters': ReportFilters(self.request.GET),
+                'filters': ProblemsFilters(self.request.GET),
                 'date_range': ReportFiltersDateRange(self.request.GET),
             },
         })
@@ -314,7 +315,7 @@ class Incidents(ChangesBase, DataTableMixin):
             'jira_url': JIRA_URL,
             'title': section,
             'form': {
-                'filters': ReportFilters(self.request.GET),
+                'filters': IncidentsFilters(self.request.GET),
                 'date_range': ReportFiltersDateRange(self.request.GET),
             },
         })
@@ -363,7 +364,7 @@ class JiraChanges(ChangesBase, DataTableMixin):
             'jira_url': JIRA_URL,
             'title': section,
             'form': {
-                'filters': JiraChangesFilter(self.request.GET),
+                'filters': JiraChangesFilters(self.request.GET),
                 'date_range': ReportFiltersDateRange(self.request.GET),
             },
         })
