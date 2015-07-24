@@ -34,6 +34,7 @@ INSTALLED_APPS = (
     'ralph.data_importer',
     'ralph.dc_view',
     'rest_framework',
+    'django_fsm',
 )
 
 MIDDLEWARE_CLASSES = (

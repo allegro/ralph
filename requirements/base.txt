@@ -10,3 +10,4 @@ pytz==2015.4
 six>=1.9.0
 git+https://github.com/kennethreitz/tablib.git@develop#egg=tablib
 git+git://github.com/idlesign/django-sitetree.git@a626559c39ff1e865cde3441c44f42864c648dfb
+django_fsm==2.2.1

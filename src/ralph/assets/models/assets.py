@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from dateutil.relativedelta import relativedelta
+
 from mptt.models import MPTTModel, TreeForeignKey
+from django_fsm import FSMIntegerField
 
 from django.db import models
 from django.core.exceptions import (
@@ -208,7 +210,10 @@ class AssetLastHostname(models.Model):
         return self.formatted_hostname()
 
 
-class Asset(AdminAbsoluteUrlMixin, BaseObject):
+from ralph.lib.transitions import StandardWorkflowMixin
+
+
+class Asset(StandardWorkflowMixin, AdminAbsoluteUrlMixin, BaseObject):
     model = models.ForeignKey(AssetModel)
     hostname = models.CharField(
         blank=True,
@@ -240,13 +245,14 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         verbose_name=_("source"), choices=AssetSource(), db_index=True,
         null=True, blank=True,
     )
-    status = models.PositiveSmallIntegerField(
-        default=AssetStatus.new.id,
-        verbose_name=_("status"),
-        choices=AssetStatus(),
-        null=True,
-        blank=True,
-    )
+    # status = models.PositiveSmallIntegerField(
+    #     default=AssetStatus.new.id,
+    #     verbose_name=_("status"),
+    #     choices=AssetStatus(),
+    #     null=True,
+    #     blank=True,
+    # )
+    status = FSMIntegerField(default=AssetStatus.new.id)
     request_date = models.DateField(null=True, blank=True)
     delivery_date = models.DateField(null=True, blank=True)
     production_use_date = models.DateField(null=True, blank=True)
