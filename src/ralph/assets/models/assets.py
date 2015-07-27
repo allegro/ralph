@@ -210,10 +210,7 @@ class AssetLastHostname(models.Model):
         return self.formatted_hostname()
 
 
-from ralph.lib.transitions import StandardWorkflowMixin
-
-
-class Asset(StandardWorkflowMixin, AdminAbsoluteUrlMixin, BaseObject):
+class Asset(AdminAbsoluteUrlMixin, BaseObject):
     model = models.ForeignKey(AssetModel)
     hostname = models.CharField(
         blank=True,

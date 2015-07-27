@@ -1,10 +1,4 @@
 # -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 from django.db import models
 
 from django_fsm import FSMIntegerField, transition
@@ -32,6 +26,10 @@ class Order(StandardWorkflowMixin, models.Model):
     name = models.CharField(max_length=50)
     status = FSMIntegerField(default=1)
 
-    @transition(status, source=2, target=3)
+    @transition(status, source=1, target=2)
     def send(self):
+        pass
+
+    @transition(status, source=1, target=2)
+    def receiv(self):
         pass

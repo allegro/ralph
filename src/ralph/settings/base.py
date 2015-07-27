@@ -35,6 +35,7 @@ INSTALLED_APPS = (
     'ralph.dc_view',
     'rest_framework',
     'django_fsm',
+    'ralph.lib.transitions',
 )
 
 MIDDLEWARE_CLASSES = (
