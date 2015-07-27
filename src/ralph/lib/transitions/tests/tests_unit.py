@@ -17,7 +17,7 @@ class TransitionsTest(RalphTestCase):
         )
         TransitionConfigModel.objects.create(
             content_type=ContentType.objects.get_for_model(Order),
-            name='dupa2',
+            name='dupa_123',
             field_name='status',
             target=3,
             source=4,
@@ -28,9 +28,12 @@ class TransitionsTest(RalphTestCase):
             [x.name for x in order._meta.get_field('status').get_all_transitions(Order)]
         )
         self.assertEqual(
-            3,
+            4,
             len(list(order._meta.get_field('status').get_all_transitions(Order)))
         )
 
-        print(order.dupa())  # DETELE THIS
+        order.dupa()  # DETELE THIS
+        self.assertEqual(order.status, 2)
+        order.dupa_123()  # DETELE THIS
+        self.assertEqual(order.status, 3)
 

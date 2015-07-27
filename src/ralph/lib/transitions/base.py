@@ -16,12 +16,20 @@ TransitionConfigItem = namedtuple(
 
 from ralph.assets.models.choices import AssetStatus
 
+
 configs = [
     TransitionConfigItem(
         source=1,
-        target=AssetStatus.in_progress.id,
+        target=2,
         actions=['preparation', 'assign_user'],
         name='dupa',
+        field_name='status',
+    ),
+    TransitionConfigItem(
+        source=2,
+        target=3,
+        actions=['preparation', 'assign_user'],
+        name='dupa_123',
         field_name='status',
     ),
 ]
@@ -31,10 +39,12 @@ from ralph.lib.transitions.models import TransitionConfigModel
 
 
 def modify_class(klass):
-    print('!!!', TransitionConfigModel.objects.all())
+    from ralph.data_center.models.physical import DataCenter
     if getattr(klass, '_transitions_configured', False):
         return
     if not klass._meta.abstract:
+        print(DataCenter.objects.all())
+        configs = TransitionConfigModel.objects.all()
         for config in configs:
             model_field = klass._meta.get_field(config.field_name)
             new_transition = transition(
@@ -53,25 +63,10 @@ def modify_class(klass):
 
 
 class WorkflowBase(ModelBase):
-    # def __new__(cls, *args, **kwargs):
-    #     new_class = super().__new__(cls, *args, **kwargs)
-    #     # print('!!!', TransitionConfigModel.objects.all())
-    #     if not new_class._meta.abstract:
-    #         for config in configs:
-    #             model_field = new_class._meta.get_field(config.field_name)
-    #             new_transition = transition(
-    #                 field=model_field,
-    #                 source=config.source,
-    #                 target=config.target,
-    #             )
-    #             trans_func = curry(
-    #                 new_class.actions_dispatcher, actions=config.actions
-    #             )
-    #             trans_func.__name__ = config.name
-    #             trans_func = new_transition(trans_func)
-    #             setattr(new_class, config.name, trans_func)
-    #         model_field._collect_transitions(sender=new_class)
-    #     return new_class
+    def __new__(cls, *args, **kwargs):
+        new_class = super().__new__(cls, *args, **kwargs)
+        modify_class(new_class)
+        return new_class
 
     def actions_dispatcher(self, *args, **kwargs):
         actions = kwargs.pop('actions')
@@ -86,7 +81,6 @@ class StandardWorkflowMixin(models.Model, metaclass=WorkflowBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        modify_class(self.__class__)
 
     def preparation(self, *args, **kwargs):
         print('preparation')  # DETELE THIS
