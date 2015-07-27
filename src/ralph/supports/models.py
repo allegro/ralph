@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 
+from dj.choices import Choices
 from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-
-from dj.choices import Choices
 
 from ralph.assets.models.base import BaseObject
 from ralph.lib.mixins.models import NamedMixin, TimeStampMixin

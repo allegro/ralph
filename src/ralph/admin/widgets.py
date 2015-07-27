@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-from itertools import groupby, chain
+from itertools import chain, groupby
 from urllib import parse
 
 from django import forms
@@ -11,12 +11,11 @@ from django.core.urlresolvers import reverse
 from django.forms.utils import flatatt
 from django.template import loader
 from django.template.context import RenderContext
-from django.template.defaultfilters import title, slugify
+from django.template.defaultfilters import slugify, title
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
-from ralph.admin.autocomplete import QUERY_PARAM, DETAIL_PARAM
-
+from ralph.admin.autocomplete import DETAIL_PARAM, QUERY_PARAM
 
 ReadOnlyWidget = forms.TextInput(attrs={'readonly': 'readonly'})
 

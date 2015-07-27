@@ -1,16 +1,9 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-from six.moves import reload_module
 import sys
 
 from django.conf import settings
 from django.core.urlresolvers import clear_url_caches
 from django.utils.importlib import import_module
+from six.moves import reload_module
 
 from ralph.tests.factories import UserFactory
 

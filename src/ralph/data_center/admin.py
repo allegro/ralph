@@ -4,17 +4,15 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, register
 from ralph.admin.views.extra import RalphDetailViewAdmin
-from ralph.data_importer import resources
 from ralph.data_center.forms.network import NetworkInlineFormset
-from ralph.data_center.models.virtual import (
-    CloudProject,
-    Database,
-    VIP,
-    VirtualServer
-)
-from ralph.data_center.models.components import (
-    DiskShare,
-    DiskShareMount
+from ralph.data_center.models.components import DiskShare, DiskShareMount
+from ralph.data_center.models.networks import (
+    DiscoveryQueue,
+    IPAddress,
+    Network,
+    NetworkEnvironment,
+    NetworkKind,
+    NetworkTerminator
 )
 from ralph.data_center.models.physical import (
     Connection,
@@ -22,22 +20,21 @@ from ralph.data_center.models.physical import (
     DataCenterAsset,
     Rack,
     RackAccessory,
-    ServerRoom,
+    ServerRoom
 )
-from ralph.data_center.models.networks import (
-    DiscoveryQueue,
-    IPAddress,
-    Network,
-    NetworkEnvironment,
-    NetworkKind,
-    NetworkTerminator,
+from ralph.data_center.models.virtual import (
+    VIP,
+    CloudProject,
+    Database,
+    VirtualServer
 )
 from ralph.data_center.views.ui import (
     DataCenterAssetComponents,
     DataCenterAssetLicence,
     DataCenterAssetSecurityInfo,
-    DataCenterAssetSoftware,
+    DataCenterAssetSoftware
 )
+from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
 
 

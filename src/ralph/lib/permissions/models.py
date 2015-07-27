@@ -1,15 +1,7 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-from six import with_metaclass
-
 from django.db import models
 from django.db.models.base import ModelBase
 from django.utils.translation import ugettext_lazy as _
+from six import with_metaclass
 
 
 def get_perm_key(action, class_name, field_name):

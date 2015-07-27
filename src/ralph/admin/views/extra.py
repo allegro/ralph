@@ -6,7 +6,6 @@ from django.shortcuts import get_object_or_404
 from ralph.admin.mixins import RalphAdmin, RalphTemplateView
 from ralph.admin.sites import ralph_site
 
-
 VIEW_TYPES = CHANGE, LIST = ('change', 'list')
 
 

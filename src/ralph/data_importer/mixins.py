@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+
 from ralph.data_importer.models import ImportedObjects
 
 

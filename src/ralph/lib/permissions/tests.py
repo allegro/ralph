@@ -1,22 +1,12 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
-from django.test import (
-    TestCase,
-    RequestFactory,
-)
+from django.test import RequestFactory, TestCase
 
-from ralph.assets.models.choices import ObjectModelType
 from ralph.assets.models.assets import AssetModel
+from ralph.assets.models.choices import ObjectModelType
 from ralph.data_center.models.physical import DataCenterAsset
-from ralph.lib.permissions.models import get_perm_key
 from ralph.lib.permissions.admin import PermissionAdminMixin
+from ralph.lib.permissions.models import get_perm_key
 
 
 class PermissionsByFieldTestCase(TestCase):

@@ -26,10 +26,13 @@ install-dev:
 install-docs:
 	pip3 install -r requirements/docs.txt
 
+isort:
+	isort --recursive --check-only src
+
 test: clean
 	test_ralph test $(TEST)
 
-flake: clean
+flake: clean isort
 	flake8 src/ralph
 
 clean:

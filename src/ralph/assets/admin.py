@@ -11,10 +11,7 @@ from ralph.assets.models.assets import (
     Service,
     ServiceEnvironment
 )
-from ralph.assets.models.components import (
-    ComponentModel,
-    GenericComponent
-)
+from ralph.assets.models.components import ComponentModel, GenericComponent
 from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
 

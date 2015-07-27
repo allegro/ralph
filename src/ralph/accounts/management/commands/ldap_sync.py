@@ -8,7 +8,6 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from ldap.controls import SimplePagedResultsControl
 
-
 logger = logging.getLogger(__name__)
 LDAP_RESULTS_PAGE_SIZE = 100
 

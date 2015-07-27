@@ -6,12 +6,11 @@ from django.db.models import Model
 
 from ralph.admin.sites import ralph_site
 from ralph.admin.views.extra import (
-    RalphExtraViewMixin,
     CHANGE,
     LIST,
     VIEW_TYPES,
+    RalphExtraViewMixin
 )
-
 
 register = partial(django_register, site=ralph_site)
 

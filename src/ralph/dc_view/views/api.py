@@ -1,27 +1,15 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 from django.http import Http404
-
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ralph.data_center.models.physical import (
-    DataCenter,
-    Rack,
-    RackAccessory
-)
+from ralph.data_center.models.physical import DataCenter, Rack, RackAccessory
 from ralph.dc_view.serializers.models_serializer import (
     DataCenterAssetSerializer,
     DCSerializer,
+    PDUSerializer,
     RackAccessorySerializer,
     RackBaseSerializer,
-    RackSerializer,
-    PDUSerializer,
+    RackSerializer
 )
 
 
