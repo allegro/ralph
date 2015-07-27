@@ -15,7 +15,14 @@ class TransitionsTest(RalphTestCase):
             target=1,
             source=2,
         )
-        # [Order.objects.create() for _ in range(10)]
+        TransitionConfigModel.objects.create(
+            content_type=ContentType.objects.get_for_model(Order),
+            name='dupa2',
+            field_name='status',
+            target=3,
+            source=4,
+        )
+        [Order.objects.create() for _ in range(10)]
         order = Order.objects.create()
         print(
             [x.name for x in order._meta.get_field('status').get_all_transitions(Order)]
