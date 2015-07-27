@@ -24,16 +24,18 @@ class TransitionsTest(RalphTestCase):
         )
         [Order.objects.create() for _ in range(10)]
         order = Order.objects.create()
-        print(
-            [x.name for x in order._meta.get_field('status').get_all_transitions(Order)]
-        )
+        # print(
+        #     [x.name for x in order._meta.get_field('status').get_all_transitions(Order)]
+        # )
         self.assertEqual(
             4,
             len(list(order._meta.get_field('status').get_all_transitions(Order)))
         )
+        print(order.status)
+        print([x.name for x in list(order.get_available_status_transitions())])
 
-        order.dupa()  # DETELE THIS
-        self.assertEqual(order.status, 2)
-        order.dupa_123()  # DETELE THIS
-        self.assertEqual(order.status, 3)
+
+        order.release()  # DETELE THIS
+        print(order.status)
+        print([x.name for x in list(order.get_available_status_transitions())])
 

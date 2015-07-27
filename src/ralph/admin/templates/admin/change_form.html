@@ -24,6 +24,9 @@
         {% endblock %}
       </div>
       <div class="large-2 columns">
+      {% for transition in available_transitions %}
+        <button>{{ transition.name|title }}</button>
+      {% endfor %}
         <div class="header-toolbar">
           {% block object-tools %}
             {% if change %}

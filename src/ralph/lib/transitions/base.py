@@ -19,17 +19,24 @@ from ralph.assets.models.choices import AssetStatus
 
 configs = [
     TransitionConfigItem(
-        source=1,
-        target=2,
-        actions=['preparation', 'assign_user'],
-        name='dupa',
+        source=AssetStatus.new.id,
+        target=AssetStatus.used.id,
+        actions=[],
+        name='release',
         field_name='status',
     ),
     TransitionConfigItem(
-        source=2,
-        target=3,
-        actions=['preparation', 'assign_user'],
-        name='dupa_123',
+        source=AssetStatus.used.id,
+        target=AssetStatus.damaged.id,
+        actions=[],
+        name='recyckling',
+        field_name='status',
+    ),
+    TransitionConfigItem(
+        source='*',
+        target=AssetStatus.damaged.id,
+        actions=[],
+        name='recyckling',
         field_name='status',
     ),
 ]
@@ -39,12 +46,11 @@ from ralph.lib.transitions.models import TransitionConfigModel
 
 
 def modify_class(klass):
-    from ralph.data_center.models.physical import DataCenter
-    if getattr(klass, '_transitions_configured', False):
-        return
+    # if not getattr(klass, '_transitions_configured', False):
+    #     return
     if not klass._meta.abstract:
-        print(DataCenter.objects.all())
-        configs = TransitionConfigModel.objects.all()
+        # print(DataCenter.objects.all())
+        # configs = TransitionConfigModel.objects.all()
         for config in configs:
             model_field = klass._meta.get_field(config.field_name)
             new_transition = transition(
@@ -65,9 +71,13 @@ def modify_class(klass):
 class WorkflowBase(ModelBase):
     def __new__(cls, *args, **kwargs):
         new_class = super().__new__(cls, *args, **kwargs)
-        modify_class(new_class)
+        # modify_class(new_class)
         return new_class
 
+
+
+# class StandardWorkflowMixin(models.Model, metaclass=WorkflowBase):
+class StandardWorkflowMixin(models.Model):
     def actions_dispatcher(self, *args, **kwargs):
         actions = kwargs.pop('actions')
         for action in actions:
@@ -76,10 +86,8 @@ class WorkflowBase(ModelBase):
                 continue
             func(*args, **kwargs)
 
-
-class StandardWorkflowMixin(models.Model, metaclass=WorkflowBase):
-
     def __init__(self, *args, **kwargs):
+        modify_class(self.__class__)
         super().__init__(*args, **kwargs)
 
     def preparation(self, *args, **kwargs):

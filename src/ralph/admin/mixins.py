@@ -79,6 +79,8 @@ class RalphAdminMixin(object):
             for view in self.change_views:
                 views.append(view)
             extra_context['change_views'] = views
+            # print([a.name for a in self.model.objects.get(pk=object_id).get_available_status_transitions()])
+            extra_context['available_transitions'] = self.model.objects.get(pk=object_id).get_available_status_transitions()
         extra_context['header_obj_name'] = self.model._meta.verbose_name
         return super(RalphAdminMixin, self).changeform_view(
             request, object_id, form_url, extra_context

@@ -197,8 +197,10 @@ class Rack(NamedMixin.NonUnique, models.Model):
             position=0,
         )
 
+# from ralph.lib.transitions.models import StandardWorkflowMixin
+from ralph.lib.transitions.base import StandardWorkflowMixin
 
-class DataCenterAsset(Asset):
+class DataCenterAsset(StandardWorkflowMixin, Asset):
 
     rack = models.ForeignKey(Rack, null=True)
 
