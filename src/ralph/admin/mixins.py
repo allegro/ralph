@@ -5,6 +5,7 @@ from copy import copy
 from django import forms
 from django.conf import settings
 from django.contrib.admin.templatetags.admin_static import static
+from django.core import urlresolvers
 from django.db import models
 from django.views.generic import TemplateView
 from import_export.admin import ImportExportModelAdmin
@@ -54,6 +55,18 @@ class RalphAdminMixin(object):
         from ralph.admin.views.main import RalphChangeList
         return RalphChangeList
 
+    def _initialize_search_form(self, extra_context):
+        search_fields = []
+        for field in self.search_fields:
+            search_fields.append(self.model._meta.get_field(field).verbose_name)
+        extra_context['search_fields'] = search_fields
+        extra_context['search_url'] = urlresolvers.reverse(
+            'admin:{app_label}_{model_name}_changelist'.format(
+                app_label=self.model._meta.app_label,
+                model_name=self.model._meta.model_name,
+            )
+        )
+
     def changelist_view(self, request, extra_context=None):
         """Override change list from django."""
         if extra_context is None:
@@ -64,6 +77,7 @@ class RalphAdminMixin(object):
         for view in self.list_views:
             views.append(view)
         extra_context['list_views'] = views
+        self._initialize_search_form(extra_context)
         return super(RalphAdminMixin, self).changelist_view(
             request, extra_context
         )
@@ -79,6 +93,7 @@ class RalphAdminMixin(object):
                 views.append(view)
             extra_context['change_views'] = views
         extra_context['header_obj_name'] = self.model._meta.verbose_name
+        self._initialize_search_form(extra_context)
         return super(RalphAdminMixin, self).changeform_view(
             request, object_id, form_url, extra_context
         )

@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from django.contrib.admin.views.main import ChangeList
 
+SEARCH_SCOPE_VAR = 'search-scope'
+IGNORED_FIELDS = (SEARCH_SCOPE_VAR,)
+
 
 class RalphChangeList(ChangeList):
     def get_ordering_from_related_model_admin(self, prefix, field_name):
@@ -36,3 +39,10 @@ class RalphChangeList(ChangeList):
                 self.get_ordering_from_related_model_admin(prefix, field)
             )
         return ordering
+
+    def get_filters_params(self, params=None):
+        result = super().get_filters_params(params)
+        for field in IGNORED_FIELDS:
+            if field in result:
+                del result[field]
+        return result
