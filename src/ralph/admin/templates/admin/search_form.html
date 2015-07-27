@@ -1,10 +1,10 @@
-{% load i18n admin_static %}
+{% load ralph_tags i18n admin_static %}
 
-{% if cl.search_fields %}
-  <form id="changelist-search" action="" method="get">
+{% if search_fields %}
+  <form id="changelist-search" action="{{ search_url }}" method="get">
     <div class="row collapse">
       <div class="small-9 columns">
-        <input type="text" size="40" name="{{ search_var }}" value="{{ cl.query }}" id="searchbar" placeholder="{% trans "Search by" %} {{ cl.search_fields|join:", " }}" />
+        <input type="text" size="40" name="{{ search_var }}" value="{{ cl.query }}" id="searchbar" placeholder="{% trans "Search by" %} {{ search_fields|join:", " }}" />
         {% if cl.is_popup %}
             <input type="hidden" size="40" name="_popup" value="1" />
         {% endif %}
@@ -16,29 +16,9 @@
       </div>
     </div>
   </form>
-{#   <div id="toolbar"> #}
-{#   {% if show_result_count %} #}
-{#     <div class="panel"> #}
-{#     <span class="small quiet"> #}
-{#       {% blocktrans count counter=cl.result_count %} #}
-{#         {{ counter }} result{% plural %}{{ counter }} results #}
-{#         {% endblocktrans %} #}
-{#         (<a href="?{% if cl.is_popup %}_popup=1{% endif %}"> #}
-{#           {% if cl.show_full_result_count %} #}
-{#             {% blocktrans with full_result_count=cl.full_result_count %} #}
-{#               {{ full_result_count }} total #}
-{#             {% endblocktrans %} #}
-{#           {% else %} #}
-{#             {% trans "Show all" %} #}
-{#           {% endif %} #}
-{#         </a>) #}
-{#     </span> #}
-{#     </div> #}
-{#   {% endif %} #}
   {% for pair in cl.params.items %}
     {% ifnotequal pair.0 search_var %}<input type="hidden" name="{{ pair.0 }}" value="{{ pair.1 }}"/>{% endifnotequal %}
   {% endfor %}
-  {# </div> #}
 
 <script type="text/javascript">document.getElementById("searchbar").focus();</script>
 {% endif %}
