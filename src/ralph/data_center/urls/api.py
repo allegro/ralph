@@ -2,10 +2,7 @@
 from django.conf.urls import include, url
 from rest_framework import routers
 
-from ralph.data_center.views.api import (
-    DataCenterAssetViewSet,
-)
-
+from ralph.data_center.views.api import DataCenterAssetViewSet
 
 router = routers.DefaultRouter()
 router.register(r'data-center-assets', DataCenterAssetViewSet)

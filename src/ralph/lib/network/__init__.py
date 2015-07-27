@@ -1,12 +1,6 @@
-# -*- coding: utf-8 -*-
-
 """Low-level network utilities, silently returning empty answers in place of
 domain-related exceptions."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import socket
 

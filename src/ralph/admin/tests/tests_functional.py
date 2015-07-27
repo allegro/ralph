@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-from ddt import ddt, data, unpack
-
-from django.test import TestCase, RequestFactory
+from ddt import data, ddt, unpack
 from django.core.urlresolvers import reverse
+from django.test import RequestFactory, TestCase
 from django.views.generic import View
 
 from ralph.admin import RalphAdmin
@@ -12,7 +11,7 @@ from ralph.admin.views.extra import RalphDetailView, RalphListView
 from ralph.admin.views.main import RalphChangeList
 from ralph.tests.admin import CarAdmin
 from ralph.tests.mixins import ClientMixin, ReloadUrlsMixin
-from ralph.tests.models import Foo, Car
+from ralph.tests.models import Car, Foo
 
 
 class ExtraListView(RalphListView, View):

@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from dj.choices import (
-    Country,
-    Gender,
-)
+from dj.choices import Country, Gender
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import ugettext_lazy as _

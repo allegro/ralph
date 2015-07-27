@@ -9,11 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.assets.models.assets import Asset
 from ralph.data_center.models.physical import DataCenter, Rack
 from ralph.lib import network
-from ralph.lib.mixins.models import (
-    LastSeenMixin,
-    NamedMixin,
-    TimeStampMixin,
-)
+from ralph.lib.mixins.models import LastSeenMixin, NamedMixin, TimeStampMixin
 
 
 def network_validator(value):

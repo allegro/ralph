@@ -2,14 +2,11 @@
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import activate
-
 from sitetree.sitetreeapp import register_i18n_trees
-from sitetree.utils import (
-    tree,
-    item,
-)
+from sitetree.utils import item, tree
 
 from ralph.admin.sites import ralph_site
+
 # To generate and display the menu, use the command:
 # ralph sitetreeload
 # ralph sitetree_resync_apps

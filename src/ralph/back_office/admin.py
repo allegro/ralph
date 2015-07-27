@@ -6,7 +6,7 @@ from ralph.back_office.models import BackOfficeAsset, Warehouse
 from ralph.back_office.views import (
     BackOfficeAssetComponents,
     BackOfficeAssetLicence,
-    BackOfficeAssetSoftware,
+    BackOfficeAssetSoftware
 )
 from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin

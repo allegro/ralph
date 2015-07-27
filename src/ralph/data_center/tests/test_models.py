@@ -1,17 +1,9 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-from ralph.tests import RalphTestCase
-
 from ralph.data_center.models.networks import (
-    get_network_tree,
     IPAddress,
     Network,
+    get_network_tree
 )
+from ralph.tests import RalphTestCase
 
 
 class NetworkTest(RalphTestCase):

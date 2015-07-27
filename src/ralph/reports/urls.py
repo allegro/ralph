@@ -3,7 +3,6 @@ from django.conf.urls import url
 
 from ralph.reports import views
 
-
 urlpatterns = [
     url(
         r'^category_model_report/?$',

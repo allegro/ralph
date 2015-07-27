@@ -11,7 +11,7 @@ from ralph.licences.models import (
     Licence,
     LicenceType,
     LicenceUser,
-    SoftwareCategory,
+    SoftwareCategory
 )
 
 

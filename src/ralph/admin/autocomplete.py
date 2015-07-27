@@ -3,7 +3,7 @@ from functools import reduce
 
 from django.conf.urls import url
 from django.db.models import Q
-from django.http import JsonResponse, HttpResponseBadRequest, Http404
+from django.http import Http404, HttpResponseBadRequest, JsonResponse
 from django.views.generic import View
 
 QUERY_PARAM = 'q'

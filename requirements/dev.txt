@@ -6,3 +6,4 @@ pyinotify
 pudb
 ipython
 ipdb
+isort==4.0.0
