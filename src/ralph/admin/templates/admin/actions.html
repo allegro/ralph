@@ -1,9 +1,11 @@
 {% load i18n %}
-<div class="row">
-  <div class="small-12 columns action_bar">
+
+<div class="panel">
+  <h4>{% trans "Actions" %}</h4>
     {% for field in action_form %}
       {{ field }}
     {% endfor %}
+
     <button type="submit" class="button small" title="{% trans "Run the selected action" %}" name="index" value="{{ action_index|default:0 }}">
       {% trans "Go" %}
     </button>
@@ -22,5 +24,4 @@
         </span>
       {% endif %}
     {% endif %}
-  </div>
 </div>

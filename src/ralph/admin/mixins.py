@@ -1,18 +1,23 @@
 # -*- coding: utf-8 -*-
 import os
+import urllib
 from copy import copy
 
 from django import forms
 from django.conf import settings
+from django.contrib import admin
 from django.contrib.admin.templatetags.admin_static import static
 from django.core import urlresolvers
+from django.core.urlresolvers import reverse
 from django.db import models
+from django.http import HttpResponseRedirect
 from django.views.generic import TemplateView
 from import_export.admin import ImportExportModelAdmin
 from reversion import VersionAdmin
 
 from ralph.admin import widgets
 from ralph.admin.autocomplete import AjaxAutocompleteMixin
+from ralph.admin.views.main import BULK_EDIT_VAR, BULK_EDIT_VAR_IDS
 
 FORMFIELD_FOR_DBFIELD_DEFAULTS = {
     models.DateField: {'widget': widgets.AdminDateWidget},
@@ -137,3 +142,47 @@ class RalphTemplateView(TemplateView):
         context['site_header'] = settings.ADMIN_SITE_HEADER
         context['media'] = get_common_media()
         return context
+
+
+class BulkEditChangeListMixin(object):
+
+    def get_queryset(self, request):
+        """Override django admin get queryset method."""
+        qs = super().get_queryset(request)
+        id_list = request.GET.getlist(BULK_EDIT_VAR_IDS, [])
+        if id_list:
+            qs = qs.filter(pk__in=id_list)
+        return qs
+
+    def get_list_display(self, request):
+        """
+        Override django admin get list display method.
+        Set new values for fields list_editable and list_display.
+        """
+        if request.GET.get(BULK_EDIT_VAR):
+            bulk_list = self.bulk_edit_list
+            list_display = bulk_list.copy()
+            if 'id' not in list_display:
+                list_display.insert(0, 'id')
+            self.list_editable = bulk_list
+            self.list_display = list_display
+        else:
+            self.list_editable = []
+        return self.list_display
+
+    def bulk_edit_action(self, request, queryset):
+        """
+        Custom bulk edit action.
+        """
+        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+        url = reverse('admin:{}'.format(request.resolver_match.url_name))
+        id_list = [(BULK_EDIT_VAR_IDS, i) for i in selected]
+        return HttpResponseRedirect(
+            '{}?{}=1&{}'.format(
+                url,
+                BULK_EDIT_VAR,
+                urllib.parse.urlencode(id_list),
+            )
+        )
+
+    bulk_edit_action.short_description = 'Bulk edit'
