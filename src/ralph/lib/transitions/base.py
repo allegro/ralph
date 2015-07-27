@@ -16,16 +16,15 @@ TransitionConfigItem = namedtuple(
 
 from ralph.assets.models.choices import AssetStatus
 
-configs = {
-    'status': [
-        TransitionConfigItem(
-            source=1,
-            target=AssetStatus.in_progress.id,
-            actions=['preparation', 'assign_user'],
-            name='dupa',
-        ),
-    ]
-}
+configs = [
+    TransitionConfigItem(
+        source=1,
+        target=AssetStatus.in_progress.id,
+        actions=['preparation', 'assign_user'],
+        name='dupa',
+        field_name='status',
+    ),
+]
 
 
 # from ralph.lib.transitions.models import TransitionConfigModel
@@ -36,21 +35,20 @@ class WorkflowBase(ModelBase):
         new_class = super().__new__(cls, *args, **kwargs)
 
         if not new_class._meta.abstract:
-            for field_name, trans_configs in configs.items():
-                for config in trans_configs:
-                    model_field = new_class._meta.get_field(field_name)
-                    new_transition = transition(
-                        field=model_field,
-                        source=config.source,
-                        target=config.target,
-                    )
-                    trans_func = curry(
-                        new_class.actions_dispatcher, actions=config.actions
-                    )
-                    trans_func.__name__ = config.name
-                    trans_func = new_transition(trans_func)
-                    setattr(new_class, config.name, trans_func)
-                model_field._collect_transitions(sender=new_class)
+            for config in configs:
+                model_field = new_class._meta.get_field(config.field_name)
+                new_transition = transition(
+                    field=model_field,
+                    source=config.source,
+                    target=config.target,
+                )
+                trans_func = curry(
+                    new_class.actions_dispatcher, actions=config.actions
+                )
+                trans_func.__name__ = config.name
+                trans_func = new_transition(trans_func)
+                setattr(new_class, config.name, trans_func)
+            model_field._collect_transitions(sender=new_class)
         return new_class
 
     def actions_dispatcher(self, *args, **kwargs):
