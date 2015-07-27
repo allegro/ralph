@@ -35,12 +35,15 @@
         {% endfor %}
       </dl>
     {% endif %}
-
-    <ul class="accordion" data-accordion>
-     {% for node in result %}
-        {% include "reports/report_tree.html" %}
-      {% endfor %}
-    </ul>
+    <div class="row">
+      <div class="small-12 large-6 columns end">
+        <ul class="accordion" data-accordion>
+         {% for node in result %}
+            {% include "reports/report_tree.html" %}
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
   </div>
 {% endcache %}
 {% endblock %}
