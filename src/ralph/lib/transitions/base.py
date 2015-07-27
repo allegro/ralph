@@ -11,7 +11,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 TransitionConfigItem = namedtuple(
-    'TransitionConfigItem', 'source target actions name'
+    'TransitionConfigItem', 'source target actions name field_name'
 )
 
 from ralph.assets.models.choices import AssetStatus
