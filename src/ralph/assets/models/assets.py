@@ -274,7 +274,7 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
     def get_deprecation_months(self):
         return int(
             (1 / (self.depreciation_rate / 100) * 12)
-            if self.deprecation_rate else 0
+            if self.depreciation_rate else 0
         )
 
     def is_depreciated(self, date=None):

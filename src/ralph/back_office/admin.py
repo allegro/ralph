@@ -51,7 +51,7 @@ class BackOfficeAssetAdmin(
                 'order_no', 'invoice_date', 'invoice_no', 'price',
                 'depreciation_rate', 'source', 'request_date', 'provider',
                 'provider_order_date', 'delivery_date', 'depreciation_end_date',
-                'force_deprecation'
+                'force_depreciation'
             )
         }),
         (_('User Info'), {
