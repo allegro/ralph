@@ -242,14 +242,14 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         verbose_name=_("source"), choices=AssetSource(), db_index=True,
         null=True, blank=True,
     )
-    # status = models.PositiveSmallIntegerField(
-    #     default=AssetStatus.new.id,
-    #     verbose_name=_("status"),
-    #     choices=AssetStatus(),
-    #     null=True,
-    #     blank=True,
-    # )
-    status = FSMIntegerField(default=AssetStatus.new.id)
+    status = models.PositiveSmallIntegerField(
+        default=AssetStatus.new.id,
+        verbose_name=_("status"),
+        choices=AssetStatus(),
+        null=True,
+        blank=True,
+    )
+    # status = FSMIntegerField(default=AssetStatus.new.id)
     request_date = models.DateField(null=True, blank=True)
     delivery_date = models.DateField(null=True, blank=True)
     production_use_date = models.DateField(null=True, blank=True)

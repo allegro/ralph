@@ -14,11 +14,11 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='TransitionConfigModel',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, primary_key=True, auto_created=True)),
                 ('name', models.CharField(verbose_name='name', max_length=50)),
                 ('field_name', models.CharField(verbose_name='field name', max_length=50)),
-                ('source', models.CharField(verbose_name='source', default='*', max_length=50)),
-                ('target', models.CharField(verbose_name='target', max_length=50)),
+                ('source', models.PositiveIntegerField(verbose_name='source')),
+                ('target', models.PositiveIntegerField(verbose_name='target')),
                 ('actions', models.CharField(verbose_name='actions', max_length=150)),
                 ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
             ],

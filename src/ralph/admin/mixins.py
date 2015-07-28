@@ -4,6 +4,7 @@ from copy import copy
 
 from django import forms
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.admin.templatetags.admin_static import static
 from django.db import models
 from django.views.generic import TemplateView
@@ -79,8 +80,17 @@ class RalphAdminMixin(object):
             for view in self.change_views:
                 views.append(view)
             extra_context['change_views'] = views
-            # print([a.name for a in self.model.objects.get(pk=object_id).get_available_status_transitions()])
-            extra_context['available_transitions'] = self.model.objects.get(pk=object_id).get_available_status_transitions()
+            # TODO: get field name
+            try:
+                url_name = 'admin:{}_{}_run_trans'.format(
+                    self.model._meta.app_label, self.model._meta.model_name
+                )
+                obj = self.model.objects.get(pk=object_id)
+                print([x.name for x in obj.get_available_status_transitions()])
+                extra_context['available_transitions'] = obj.get_available_status_transitions()
+                extra_context['transitions_url'] = url_name
+            except:
+                pass
         extra_context['header_obj_name'] = self.model._meta.verbose_name
         return super(RalphAdminMixin, self).changeform_view(
             request, object_id, form_url, extra_context
@@ -90,6 +100,31 @@ class RalphAdminMixin(object):
         if db_field.name in ('user_permissions', 'permissions'):
             kwargs['widget'] = widgets.PermissionsSelectWidget()
         return db_field.formfield(**kwargs)
+
+    def get_urls(self):
+        from django.conf.urls import url
+        urls = super().get_urls()
+        my_urls = [
+            url(
+                r'^run_transition/(?P<pk>\d+)/(?P<transition>[-\w]+)/$',
+                self.admin_site.admin_view(self.run_transition),
+                name='{}_{}_run_trans'.format(
+                    self.model._meta.app_label, self.model._meta.model_name
+                )
+            ),
+        ]
+        return my_urls + urls
+
+    def run_transition(self, request, pk, transition):
+        from django.http import HttpResponseRedirect
+        obj = self.model.objects.get(pk=pk)
+        getattr(obj, transition)()
+        obj.save()
+        msg = 'Transition was performed.'
+        self.message_user(request, msg, messages.SUCCESS)
+        print([x.name for x in obj.get_available_status_transitions()])
+
+        return HttpResponseRedirect(obj.get_absolute_url())
 
 
 class RalphAdmin(ImportExportModelAdmin, RalphAdminMixin, VersionAdmin):

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from django.db import models
 
-from django_fsm import FSMIntegerField, transition
+from django_fsm import FSMIntegerField
 
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
-from ralph.lib.transitions.base import StandardWorkflowMixin
+from ralph.lib.transitions.base import WorkflowMixin
 
 
 class Foo(AdminAbsoluteUrlMixin, models.Model):
@@ -22,14 +22,6 @@ class Car(models.Model):
     manufacturer = models.ForeignKey(Manufacturer)
 
 
-class Order(StandardWorkflowMixin, models.Model):
+class Order(WorkflowMixin, models.Model):
     name = models.CharField(max_length=50)
     status = FSMIntegerField(default=1)
-
-    @transition(status, source=1, target=2)
-    def send(self):
-        pass
-
-    @transition(status, source=1, target=2)
-    def receiv(self):
-        pass

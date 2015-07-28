@@ -7,6 +7,6 @@ class TransitionConfigModel(models.Model):
     name = models.CharField('name', max_length=50)
     content_type = models.ForeignKey(ContentType)
     field_name = models.CharField('field name', max_length=50)
-    source = models.CharField('source', max_length=50, default='*')
-    target = models.CharField('target', max_length=50)
+    source = models.PositiveIntegerField('source', blank=True, null=True)
+    target = models.PositiveIntegerField('target')
     actions = models.CharField('actions', max_length=150)

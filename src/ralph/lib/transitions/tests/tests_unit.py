@@ -7,28 +7,22 @@ from ralph.lib.transitions.models import TransitionConfigModel
 
 
 class TransitionsTest(RalphTestCase):
+    def _create_order_transition(self, name, target, source):
+        TransitionConfigModel.objects.create(
+            content_type=ContentType.objects.get_for_model(Order),
+            name=name,
+            field_name='status',
+            target=target,
+            source=source,
+        )
+
     def test_setup(self):
-        TransitionConfigModel.objects.create(
-            content_type=ContentType.objects.get_for_model(Order),
-            name='dupa',
-            field_name='status',
-            target=1,
-            source=2,
-        )
-        TransitionConfigModel.objects.create(
-            content_type=ContentType.objects.get_for_model(Order),
-            name='dupa_123',
-            field_name='status',
-            target=3,
-            source=4,
-        )
-        [Order.objects.create() for _ in range(10)]
-        order = Order.objects.create()
-        # print(
-        #     [x.name for x in order._meta.get_field('status').get_all_transitions(Order)]
-        # )
+        self._create_order_transition('release', 1, 2)
+        self._create_order_transition('send', 3, 4)
+
+        order = Order.objects.create(status=1)
         self.assertEqual(
-            4,
+            2,
             len(list(order._meta.get_field('status').get_all_transitions(Order)))
         )
         print(order.status)

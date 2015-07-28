@@ -25,7 +25,7 @@
       </div>
       <div class="large-2 columns">
       {% for transition in available_transitions %}
-        <button>{{ transition.name|title }}</button>
+        <a class="button" href="{% url transitions_url pk=original.pk transition=transition.name|slugify %}">{{ transition.name|title }}</a>
       {% endfor %}
         <div class="header-toolbar">
           {% block object-tools %}

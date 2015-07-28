@@ -16,6 +16,7 @@ from ralph.data_center.models.choices import (
     Orientation,
     RackOrientation,
 )
+from ralph.lib.transitions.base import WorkflowMixin
 
 
 class Gap(object):
@@ -197,10 +198,8 @@ class Rack(NamedMixin.NonUnique, models.Model):
             position=0,
         )
 
-# from ralph.lib.transitions.models import StandardWorkflowMixin
-from ralph.lib.transitions.base import StandardWorkflowMixin
 
-class DataCenterAsset(StandardWorkflowMixin, Asset):
+class DataCenterAsset(WorkflowMixin, Asset):
 
     rack = models.ForeignKey(Rack, null=True)
 
