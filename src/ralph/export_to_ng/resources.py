@@ -28,7 +28,19 @@ from ralph_assets.licences.models import (
 logger = logging.getLogger(__name__)
 
 
-class BackOfficeAssetResource(resources.ModelResource):
+class AssetResource(resources.ModelResource):
+    deprecation_end_date = fields.Field(
+        'deprecation_end_date', column_name='depreciation_end_date'
+    )
+    deprecation_rate = fields.Field(
+        'deprecation_rate', column_name='depreciation_rate'
+    )
+    force_deprecation = fields.Field(
+        'force_deprecation', column_name='force_depreciation'
+    )
+
+
+class BackOfficeAssetResource(AssetResource):
 
     imei = fields.Field('imei', column_name='imei')
 
@@ -117,7 +129,7 @@ class BackOfficeAssetResource(resources.ModelResource):
         return service_env
 
 
-class DataCenterAssetResource(resources.ModelResource):
+class DataCenterAssetResource(AssetResource):
     service_env = fields.Field()
     parent = fields.Field('parent', column_name='parent')
     rack = fields.Field('rack', column_name='rack')
