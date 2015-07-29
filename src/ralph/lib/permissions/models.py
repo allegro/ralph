@@ -1,7 +1,6 @@
 from django.db import models
 from django.db.models.base import ModelBase
 from django.utils.translation import ugettext_lazy as _
-from six import with_metaclass
 
 
 def get_perm_key(action, class_name, field_name):
@@ -86,7 +85,7 @@ class PermissionByFieldBase(ModelBase):
         return new_class
 
 
-class PermByFieldMixin(with_metaclass(PermissionByFieldBase, models.Model)):
+class PermByFieldMixin(models.Model, metaclass=PermissionByFieldBase):
 
     """Django Abstract model class for permission by fields."""
 
@@ -116,9 +115,21 @@ class PermByFieldMixin(with_metaclass(PermissionByFieldBase, models.Model)):
             cls._meta.model_name,
             field_name
         )
-        return user.has_perm(
+        perm = user.has_perm(
             '{}.{}'.format(cls._meta.app_label, perm_key)
         )
+        # If the user does not have rights to view,
+        # but has the right to change he can view the field
+        if action == 'view' and not perm:
+            perm_key = get_perm_key(
+                'change',
+                cls._meta.model_name,
+                field_name
+            )
+            perm = user.has_perm(
+                '{}.{}'.format(cls._meta.app_label, perm_key)
+            )
+        return perm
 
     @classmethod
     def allowed_fields(cls, user, action='change'):

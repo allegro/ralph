@@ -34,7 +34,7 @@ def get_common_media():
         ('vendor', 'js', 'jquery.js'),
         ('vendor', 'js', 'foundation.min.js'),
         ('vendor', 'js', 'modernizr.js'),
-        ('admin', 'js', 'inlines.js'),
+        ('src', 'js', 'fill-fields.js'),
     ])
     return forms.Media(
         js=[static('%s' % url) for url in js],
@@ -85,10 +85,23 @@ class RalphAdminMixin(object):
         for view in self.list_views:
             views.append(view)
         extra_context['list_views'] = views
+        if self.get_actions(request) or self.list_filter:
+            extra_context['has_filters'] = True
+
+        extra_context['bulk_edit'] = request.GET.get(BULK_EDIT_VAR, False)
+        if extra_context['bulk_edit']:
+            extra_context['has_filters'] = False
         self._initialize_search_form(extra_context)
         return super(RalphAdminMixin, self).changelist_view(
             request, extra_context
         )
+
+    def get_actions(self, request):
+        """Override get actions method."""
+        if request.GET.get(BULK_EDIT_VAR, False):
+            # Hide checkbox on bulk edit page
+            return []
+        return super().get_actions(request)
 
     def changeform_view(
         self, request, object_id=None, form_url='', extra_context=None
@@ -164,12 +177,17 @@ class BulkEditChangeListMixin(object):
         Set new values for fields list_editable and list_display.
         """
         if request.GET.get(BULK_EDIT_VAR):
-            bulk_list = self.bulk_edit_list
+            bulk_list = [
+                field for field in self.bulk_edit_list
+                if self.model.has_access_to_field(
+                    field, request.user, action='change'
+                )
+            ]
             list_display = bulk_list.copy()
             if 'id' not in list_display:
                 list_display.insert(0, 'id')
             self.list_editable = bulk_list
-            self.list_display = list_display
+            return list_display
         else:
             self.list_editable = []
         return self.list_display
