@@ -16,6 +16,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
 from ralph.admin.autocomplete import DETAIL_PARAM, QUERY_PARAM
+from ralph.admin.helpers import get_field_by_relation_path
 
 ReadOnlyWidget = forms.TextInput(attrs={'readonly': 'readonly'})
 
@@ -124,7 +125,8 @@ class PermissionsSelectWidget(forms.Widget):
 
 
 class AutocompleteWidget(forms.TextInput):
-    def __init__(self, rel, admin_site, attrs=None, using=None):
+    def __init__(self, rel, admin_site, attrs=None, using=None, **kwargs):
+        self.request = kwargs.get('request', None)
         self.rel = rel
         self.admin_site = admin_site
         self.db = using
@@ -141,6 +143,13 @@ class AutocompleteWidget(forms.TextInput):
             TO_FIELD_VAR: self.rel.get_related_field().name,
         }
         return '?' + parse.urlencode(params)
+
+    def get_related_url(self, info, action, *args):
+        return reverse(
+            "admin:%s_%s_%s" % (info + (action,)),
+            current_app=self.admin_site.name,
+            args=args
+        )
 
     def render(self, name, value, attrs=None):
         rel_to = self.rel.to
@@ -174,9 +183,8 @@ class AutocompleteWidget(forms.TextInput):
             searched_fields = []
             for field_name in admin_model.search_fields:
                 try:
-                    searched_fields.append(
-                        str(rel_to._meta.get_field(field_name).verbose_name)
-                    )
+                    field = get_field_by_relation_path(rel_to, field_name)
+                    searched_fields.append(str(field.verbose_name))
                 except FieldDoesNotExist:
                     pass
 
@@ -190,5 +198,18 @@ class AutocompleteWidget(forms.TextInput):
             'input_field': input_field,
             'searched_fields': ', '.join(searched_fields),
         })
+        info = (self.rel.to._meta.app_label, self.rel.to._meta.model_name)
+        can_edit = self.admin_site._registry[rel_to].has_change_permission(
+            self.request
+        )
+        if value and can_edit:
+            context['change_related_template_url'] = self.get_related_url(
+                info, 'change', value,
+            )
+        can_add = self.admin_site._registry[rel_to].has_add_permission(
+            self.request
+        )
+        if can_add:
+            context['add_related_url'] = self.get_related_url(info, 'add')
         template = loader.get_template('admin/widgets/autocomplete.html')
         return template.render(context)

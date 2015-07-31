@@ -3,7 +3,7 @@ $widget-padding: $input-padding - $item-padding;
 $lookup-icon-width: 20px;
 
 @mixin right-lookup() {
-    width: calc(100%  - #{$lookup-icon-width});
+    width: calc(100%  - #{($lookup-icon-width * 2)});
     float: left;
 }
 
@@ -36,6 +36,12 @@ $lookup-icon-width: 20px;
                     color: $alert-color;
                 }
             }
+            .change-related .fa-pencil {
+                padding: 0 10px;
+            }
+        }
+        .widget-icons .fa {
+            font-size: rem-calc(18);
         }
         .input {
             @include right-lookup;
