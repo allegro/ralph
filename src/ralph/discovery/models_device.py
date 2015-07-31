@@ -1143,7 +1143,7 @@ class Protocol(Choices):
 class LoadBalancerVirtualServer(BaseItem):
     load_balancer_type = db.ForeignKey(LoadBalancerType, verbose_name=_('load balancer type'))
     device = db.ForeignKey(Device, verbose_name=_("load balancer device"))
-    default_pool = db.ForeignKey(LoadBalancerPool, null=True)
+    default_pool = db.ForeignKey(LoadBalancerPool, null=True, blank=True)
     address = db.ForeignKey("IPAddress", verbose_name=_("address"))
     port = db.PositiveIntegerField(verbose_name=_("port"))
     protocol = db.PositiveIntegerField(
