@@ -43,6 +43,9 @@ class SoftwareCategory(PermByFieldMixin, NamedMixin, models.Model):
         for licence in self.licences.all():
             yield licence
 
+    class Meta:
+        verbose_name_plural = _('software categories')
+
 
 class Licence(
     AdminAbsoluteUrlMixin,

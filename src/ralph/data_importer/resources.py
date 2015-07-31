@@ -88,6 +88,12 @@ class BackOfficeAssetResource(ImportForeignKeyMixin, resources.ModelResource):
     class Meta:
         model = BackOfficeAsset
 
+    def dehydrate_price(self, bo_asset):
+        return str(bo_asset.price)
+
+    def dehydrate_depreciation_rate(self, bo_asset):
+        return str(bo_asset.depreciation_rate)
+
 
 class ServerRoomResource(ImportForeignKeyMixin, resources.ModelResource):
     data_center = fields.Field(
@@ -178,6 +184,12 @@ class DataCenterAssetResource(ImportForeignKeyMixin, resources.ModelResource):
     class Meta:
         model = physical.DataCenterAsset
 
+    def dehydrate_price(self, dc_asset):
+        return str(dc_asset.price)
+
+    def dehydrate_depreciation_rate(self, dc_asset):
+        return str(dc_asset.depreciation_rate)
+
 
 class ConnectionResource(ImportForeignKeyMixin, resources.ModelResource):
     outbound = fields.Field(
@@ -215,6 +227,9 @@ class LicenceResource(ImportForeignKeyMixin, resources.ModelResource):
     class Meta:
         model = Licence
 
+    def dehydrate_price(self, licence):
+        return str(licence.price)
+
 
 class SupportTypeResource(ImportForeignKeyMixin, resources.ModelResource):
 
@@ -236,6 +251,9 @@ class SupportResource(ImportForeignKeyMixin, resources.ModelResource):
 
     class Meta:
         model = Support
+
+    def dehydrate_price(self, support):
+        return str(support.price)
 
 
 class ServiceEnvironmentResource(

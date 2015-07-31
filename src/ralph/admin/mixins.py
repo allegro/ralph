@@ -34,6 +34,7 @@ def get_common_media():
         ('vendor', 'js', 'jquery.js'),
         ('vendor', 'js', 'foundation.min.js'),
         ('vendor', 'js', 'modernizr.js'),
+        ('admin', 'js', 'inlines.js'),
     ])
     return forms.Media(
         js=[static('%s' % url) for url in js],

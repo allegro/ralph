@@ -18,8 +18,8 @@ from ralph.licences.models import (
 class BaseObjectLicenceView(RalphDetailViewAdmin):
     icon = 'laptop'
     name = 'base-object'
-    label = 'Assigned to objects'
-    url_name = 'assigned-to-objects'
+    label = 'Assignments'
+    url_name = 'assignments'
 
     class BaseObjectLicenceInline(TabularInline):
         model = BaseObjectLicence
