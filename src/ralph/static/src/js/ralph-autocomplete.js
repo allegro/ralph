@@ -32,9 +32,10 @@
     };
     AutocompleteWidget.prototype.keyPress = function(event) {
         var that = this;
+        var code = event.keyCode || event.which;
         var startChar = 20; // [space] in ASCII
         var endChar = 126; // ~ in ASCII
-        if (event.keyCode < startChar || event.keyCode > endChar) {
+        if (code < startChar || code > endChar) {
            return;
         }
         if(that.timer) {
@@ -87,7 +88,11 @@
         return htmlItem;
     };
     AutocompleteWidget.prototype.updateEditUrl = function(editUrl) {
-        this.$widget.find('.change-related').attr('href', editUrl);
+        var pencil = this.$widget.find('.change-related');
+        pencil.attr('href', editUrl);
+        if(editUrl) {
+            pencil.show();
+        }
     }
     AutocompleteWidget.prototype.itemClick = function(event) {
         event.preventDefault();
@@ -106,7 +111,7 @@
     AutocompleteWidget.prototype.suggest = function() {
         var that = this;
         var query = that.getQuery();
-        if (query.length <= that.options.sentenceLength) {
+        if (query.length < that.options.sentenceLength) {
             return false;
         }
         that.clearSuggestList();

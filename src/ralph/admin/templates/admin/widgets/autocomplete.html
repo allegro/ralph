@@ -5,14 +5,12 @@
         <div class="item-wrapper">
             <div class="item">
                 <span class="title">{{ current_object }}</span>
-                {% if change_related_template_url %}
-                  <a class="related-widget-wrapper-link change-related" id="change_id_{{ name }}"
-                      href="{{ change_related_template_url }}?_popup=1"
-                      title="{% blocktrans %}Change selected {{ model }}{% endblocktrans %}">
-                      <i class="fa fa-pencil"></i>
-                  </a>
-                  <i class="fa fa-times delete"></i>
-                {% endif %}
+                <a class="related-widget-wrapper-link change-related{% if not change_related_template_url %} hide{% endif %}" id="change_id_{{ name }}"
+                    href="{{ change_related_template_url }}?_popup=1"
+                    title="{% blocktrans %}Change selected {{ model }}{% endblocktrans %}">
+                    <i class="fa fa-pencil"></i>
+                </a>
+                <i class="fa fa-times delete"></i>
             </div>
         </div>
         <input class="input" type="text" placeholder="{% trans 'Search by' %} {{ searched_fields }}"/>
