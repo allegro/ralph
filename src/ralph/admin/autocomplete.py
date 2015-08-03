@@ -7,6 +7,7 @@ from django.http import Http404, HttpResponseBadRequest, JsonResponse
 from django.views.generic import View
 
 from ralph.admin.helpers import get_admin_url
+from ralph.admin.sites import ralph_site
 
 QUERY_PARAM = 'q'
 DETAIL_PARAM = 'pk'
@@ -33,11 +34,14 @@ class SuggestView(JsonViewMixin, View):
         """
         Returns serialized dict as JSON object.
         """
+        can_edit = ralph_site._registry[self.model].has_change_permission(
+            self.request
+        )
         results = [
             {
                 'pk': obj.pk,
                 '__str__': str(obj),
-                'edit_url': get_admin_url(obj, 'change'),
+                'edit_url': get_admin_url(obj, 'change') if can_edit else None,
             } for obj in self.get_queryset()
         ]
         return self.render_to_json_response({'results': results})
@@ -57,6 +61,7 @@ class AjaxAutocompleteMixin(object):
             limit = 10
 
             def dispatch(self, request, *args, **kwargs):
+                self.model = model
                 self.query = request.GET.get(QUERY_PARAM, None)
                 if not self.query:
                     return HttpResponseBadRequest()
