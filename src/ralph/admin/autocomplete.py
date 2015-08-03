@@ -6,6 +6,8 @@ from django.db.models import Q
 from django.http import Http404, HttpResponseBadRequest, JsonResponse
 from django.views.generic import View
 
+from ralph.admin.helpers import get_admin_url
+
 QUERY_PARAM = 'q'
 DETAIL_PARAM = 'pk'
 
@@ -31,12 +33,14 @@ class SuggestView(JsonViewMixin, View):
         """
         Returns serialized dict as JSON object.
         """
-        return self.render_to_json_response({
-            'results': [
-                {'pk': obj.pk, '__str__': str(obj)}
-                for obj in self.get_queryset()
-            ]
-        })
+        results = [
+            {
+                'pk': obj.pk,
+                '__str__': str(obj),
+                'edit_url': get_admin_url(obj, 'change'),
+            } for obj in self.get_queryset()
+        ]
+        return self.render_to_json_response({'results': results})
 
 
 class AjaxAutocompleteMixin(object):

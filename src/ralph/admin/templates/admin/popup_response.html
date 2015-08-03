@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+  <head><title></title></head>
+  <body>
+    <script type="text/javascript">
+      {% if action == 'change' %}
+        opener.dismissChangeRelatedObjectPopup(window, "{{ value }}", "{{ obj }}", "{{ new_value }}");
+        opener.updateAfterClose(window.name, "{{ new_value }}");
+      {% elif action == 'delete' %}
+        opener.dismissDeleteRelatedObjectPopup(window, "{{ value }}");
+      {% else %}
+        opener.dismissAddRelatedObjectPopup(window, "{{ value }}", "{{ obj }}");
+      {% endif %}
+    </script>
+  </body>
+</html>

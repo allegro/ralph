@@ -5,23 +5,38 @@
         <div class="item-wrapper">
             <div class="item">
                 <span class="title">{{ current_object }}</span>
-                <i class="fa fa-times delete"></i>
+                {% if change_related_template_url %}
+                  <a class="related-widget-wrapper-link change-related" id="change_id_{{ name }}"
+                      href="{{ change_related_template_url }}?_popup=1"
+                      title="{% blocktrans %}Change selected {{ model }}{% endblocktrans %}">
+                      <i class="fa fa-pencil"></i>
+                  </a>
+                  <i class="fa fa-times delete"></i>
+                {% endif %}
             </div>
         </div>
         <input class="input" type="text" placeholder="{% trans 'Search by' %} {{ searched_fields }}"/>
-        <a href="{{ related_url }}" class="related-lookup" id="lookup_id_{{ name }}">
-            <i class="fa fa-search"></i>
-        </a>
+        <div class='widget-icons'>
+          <a href="{{ related_url }}" class="related-lookup" id="lookup_id_{{ name }}">
+              <i class="fa fa-search"></i>
+          </a>
+          {% if add_related_url %}
+            <a class="related-widget-wrapper-link add-related" id="add_id_{{ name }}"
+                href="{{ add_related_url }}?_popup=1"
+                title="{% blocktrans %}Add another {{ model }}{% endblocktrans %}"
+            >
+                <i class="fa fa-plus-circle"></i>
+            </a>
+          {% endif %}
+        </div>
         <div class="status">
             <i class="loader fa fa-refresh fa-spin"></i>
             <i data-tooltip class="has-tip fail fa fa-exclamation" title="{% trans 'Something goes wrong...' %}"></i>
         </div>
     </div>
     <ul class="suggest-list">
-        <li class="template item"><a class="link" href="#"></a></li>
+        <li class="template item" data-edit-url=""><a class="link" href="#"></a></li>
         <li class="template no-results">{% trans 'No results' %}</li>
     </ul>
     {{ input_field }}
 </div>
-
-

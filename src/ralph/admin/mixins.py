@@ -17,6 +17,7 @@ from reversion import VersionAdmin
 
 from ralph.admin import widgets
 from ralph.admin.autocomplete import AjaxAutocompleteMixin
+from ralph.admin.helpers import get_field_by_relation_path
 from ralph.admin.views.main import BULK_EDIT_VAR, BULK_EDIT_VAR_IDS
 
 FORMFIELD_FOR_DBFIELD_DEFAULTS = {
@@ -62,8 +63,9 @@ class RalphAdminMixin(object):
 
     def _initialize_search_form(self, extra_context):
         search_fields = []
-        for field in self.search_fields:
-            search_fields.append(self.model._meta.get_field(field).verbose_name)
+        for field_name in self.search_fields:
+            field = get_field_by_relation_path(self.model, field_name)
+            search_fields.append(field.verbose_name)
         extra_context['search_fields'] = search_fields
         extra_context['search_url'] = urlresolvers.reverse(
             'admin:{app_label}_{model_name}_changelist'.format(
@@ -106,7 +108,8 @@ class RalphAdminMixin(object):
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name in self.raw_id_fields:
             kwargs['widget'] = widgets.AutocompleteWidget(
-                db_field.rel, self.admin_site, using=kwargs.get('using')
+                db_field.rel, self.admin_site, using=kwargs.get('using'),
+                request=request,
             )
             return db_field.formfield(**kwargs)
         else:

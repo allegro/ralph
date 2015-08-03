@@ -86,6 +86,9 @@
         htmlItem.on('click', function(event){that.itemClick(event);});
         return htmlItem;
     };
+    AutocompleteWidget.prototype.updateEditUrl = function(editUrl) {
+        this.$widget.find('.change-related').attr('href', editUrl);
+    }
     AutocompleteWidget.prototype.itemClick = function(event) {
         event.preventDefault();
         var $clickedItem = $(event.target);
@@ -94,6 +97,7 @@
         this.notFromPopup = true;
         this.$target.val(item.pk);
         this.editMode(false);
+        this.updateEditUrl(item.edit_url);
     };
     AutocompleteWidget.prototype.clearSuggestList = function() {
         this.$noResults.hide();
@@ -152,5 +156,9 @@
         });
     };
 })(jQuery, Foundation);
+
+function updateAfterClose(id, newValue) {
+    var $parent = $('#' + id).val(newValue);
+}
 
 $('.autocomplete-widget').autocomplete();
