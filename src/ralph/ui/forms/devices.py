@@ -34,6 +34,7 @@ from ralph.ui.widgets import (
 )
 from ralph.ui.forms.util import all_ventures, all_roles
 from ralph_assets.models import Asset, Orientation
+from ralph_assets.models_assets import AssetStatus
 
 
 class ServiceCatalogMixin(forms.ModelForm):
@@ -378,9 +379,14 @@ class DeviceBulkForm(DeviceForm):
 
 class DeviceInfoForm(DeviceForm):
 
+    asset_status = forms.CharField(
+        widget=ReadOnlyWidget(), label=_('asset status'),
+    )
+
     class Meta(DeviceForm.Meta):
         fields = (
             'name',
+            'asset_status',
             'model',
             'venture',
             'venture_role',
@@ -397,6 +403,17 @@ class DeviceInfoForm(DeviceForm):
             'deleted',
         )
 
+    def set_asset_status(self):
+        try:
+            asset_status_id = self.instance.get_asset().status
+        except AttributeError:
+            asset_status_id = None
+        if asset_status_id:
+            asset_status = AssetStatus.name_from_id(asset_status_id)
+        else:
+            asset_status = ''
+        self.fields['asset_status'].initial = asset_status
+
     def __init__(self, *args, **kwargs):
         super(DeviceInfoForm, self).__init__(*args, **kwargs)
         if self.data:
@@ -406,6 +423,7 @@ class DeviceInfoForm(DeviceForm):
             self.data['dc_name'] = self.initial['dc_name']
         self.fields['venture'].choices = all_ventures()
         self.fields['venture_role'].choices = all_roles()
+        self.set_asset_status()
         if not self.instance:
             return
         rack = self.instance.find_rack()
