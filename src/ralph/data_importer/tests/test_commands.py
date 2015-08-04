@@ -1,15 +1,8 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import os
 
+from django.contrib.contenttypes.models import ContentType
 from django.core import management
 from django.test import TestCase
-from django.contrib.contenttypes.models import ContentType
 
 from ralph.assets.models.assets import (
     AssetModel,
@@ -18,21 +11,12 @@ from ralph.assets.models.assets import (
     ServiceEnvironment
 )
 from ralph.assets.models.choices import ObjectModelType
-from ralph.back_office.models import (
-    BackOfficeAsset,
-    Warehouse
-)
-from ralph.data_center.models.physical import (
-    DataCenter,
-    Rack,
-    ServerRoom
-)
-from ralph.data_center.tests.factories import (
-    DataCenterFactory
-)
+from ralph.back_office.models import BackOfficeAsset, Warehouse
+from ralph.data_center.models.physical import DataCenter, Rack, ServerRoom
+from ralph.data_center.tests.factories import DataCenterFactory
 from ralph.data_importer.management.commands import importer
-from ralph.data_importer.resources import AssetModelResource
 from ralph.data_importer.models import ImportedObjects
+from ralph.data_importer.resources import AssetModelResource
 
 
 class DataImporterTestCase(TestCase):

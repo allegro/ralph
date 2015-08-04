@@ -1,8 +1,21 @@
 # -*- coding: utf-8 -*-
 from django.contrib.admin.views.main import ChangeList
 
+SEARCH_SCOPE_VAR = 'search-scope'
+BULK_EDIT_VAR = 'bulk_edit'
+BULK_EDIT_VAR_IDS = 'id'
+IGNORED_FIELDS = (BULK_EDIT_VAR, BULK_EDIT_VAR_IDS, SEARCH_SCOPE_VAR)
+
 
 class RalphChangeList(ChangeList):
+
+    def get_filters_params(self, params=None):
+        result = super().get_filters_params(params)
+        for field in IGNORED_FIELDS:
+            if field in result:
+                del result[field]
+        return result
+
     def get_ordering_from_related_model_admin(self, prefix, field_name):
         """
         Get ordering from related model admin.

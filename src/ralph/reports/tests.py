@@ -1,16 +1,13 @@
 # -*- coding: utf-8 -*-
 
+from ralph.assets.models.choices import ObjectModelType
 from ralph.assets.tests.factories import (
     CategoryFactory,
-    DataCenterAssetModelFactory,
+    DataCenterAssetModelFactory
 )
-from ralph.assets.models.choices import ObjectModelType
 from ralph.data_center.models.physical import DataCenterAsset
 from ralph.data_center.tests.factories import DataCenterAssetFactory
-from ralph.reports.views import (
-    CategoryModelReport,
-    CategoryModelStatusReport,
-)
+from ralph.reports.views import CategoryModelReport, CategoryModelStatusReport
 from ralph.tests import RalphTestCase
 from ralph.tests.mixins import ClientMixin
 

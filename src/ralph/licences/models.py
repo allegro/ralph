@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import Sum
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
+
 from ralph.assets.models.assets import Manufacturer
 from ralph.assets.models.base import BaseObject
 from ralph.lib.mixins.models import (

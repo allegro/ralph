@@ -2,11 +2,8 @@
 from dj.choices import Country
 from django.conf import settings
 from django.dispatch import receiver
-from django_auth_ldap.backend import (
-    LDAPSettings,
-    populate_user,
-)
 from django.utils.encoding import force_text
+from django_auth_ldap.backend import LDAPSettings, populate_user
 from django_auth_ldap.config import ActiveDirectoryGroupType
 
 # Add default value to LDAPSetting dict. It will be replaced by

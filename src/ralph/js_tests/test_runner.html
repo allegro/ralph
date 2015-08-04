@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>QUnit Example</title>
+  <link rel="stylesheet" href="../../../bower_components/qunit/qunit/qunit.css">
+</head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+
+  <script type="text/html" id="suggest-widget">
+    <div class="suggest-field-widget" data-target-selector="#id_lookup">
+      <div class="widget-wrapper">
+        <div class="item-wrapper">
+          <div class="item">
+            <span class="title"></span>
+            <i class="fa fa-times delete"></i>
+          </div>
+        </div>
+        <input class="input" type="text">
+        <div class="status">
+          <i class="loader fa fa-refresh fa-spin"></i>
+        </div>
+      </div>
+      <ul class="suggest-list">
+        <li class="template item"><a class="link" href="#"></a></li>
+        <li class="template no-results">No results</li>
+      </ul>
+      <input id="id_lookup" name="lookup" type="hidden">
+    </div>
+  </script>
+
+  <script src="../../../bower_components/qunit/qunit/qunit.js"></script>
+
+  <script src="../static/vendor/js/jquery.js"></script>
+  <script src="../static/vendor/js/foundation.min.js"></script>
+
+  <script src="../static/src/js/ralph-autocomplete.js"></script>
+  <script src="./widgets/ralph-autocomplete.test.js"></script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+$item-padding: 0.2rem;
+$widget-padding: $input-padding - $item-padding;
+$lookup-icon-width: 20px;
+
+@mixin right-lookup() {
+    width: calc(100%  - #{($lookup-icon-width * 2)});
+    float: left;
+}
+
+.autocomplete-widget {
+    position: relative;
+    margin: 0 0 $form-spacing 0;
+    .widget-wrapper {
+        background: $input-bg-color;
+        border: {
+            style: $input-border-style;
+            width: $input-border-width;
+            color: $input-border-color;
+          }
+        box-shadow: $input-box-shadow;
+        padding: $widget-padding;
+        .item-wrapper {
+            @include right-lookup;
+            .item {
+                display:inline;
+                background: #ededed;
+                padding: $item-padding 0;
+                border: 1px solid #cacaca;
+                .title {
+                    margin-left: $item-padding;
+                }
+                .delete {
+                    padding: $item-padding 0;
+                    margin: 0 $item-padding;
+                    cursor: pointer;
+                    color: $alert-color;
+                }
+            }
+            .change-related .fa-pencil {
+                padding: 0 10px;
+            }
+        }
+        .widget-icons .fa {
+            font-size: rem-calc(18);
+        }
+        .input {
+            @include right-lookup;
+            padding: $item-padding;
+            margin: 0;
+            display: none;
+            float: left;
+            border: 0;
+        }
+        .delete, .title, .related-lookup {
+            font-size: $input-font-size;
+        }
+        .related-lookup {
+            margin: 0;
+            text-align: center;
+            width: $lookup-icon-width;
+            background: none;
+        }
+        .status{
+            position: absolute;
+            top: 6px;
+            right: 25px;
+            .fa {
+                display: none;
+                font-size: 1.25rem;
+                &.fa-spin {
+                    -webkit-animation-duration: 1s;
+                    animation-duration: 1s;
+                }
+            }
+            .loader {color: #444;}
+            .fail {color: $alert-color;}
+            .success {color: $success-color;}
+        }
+    }
+    &.in-progress .suggest-list {
+        border: none;
+    }
+    .suggest-list {
+        display: none;
+        background: $input-bg-color;
+        border: {
+            style: $input-border-style;
+            width: $input-border-width;
+            color: $input-border-color;
+        }
+        border-top: 0;
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        z-index: 10;
+        position: absolute;
+        width: 100%;
+        li {
+            list-style-type: none;
+            margin:0;
+            padding: 0;
+            &.no-results {
+                padding: 5px;
+                font-style: italic;
+            }
+            a {
+                display: block;
+                padding: 5px;
+                &:hover {
+                    background-color: #fafafa;
+                }
+            }
+        }
+    }
+    &.edit {
+        .input {
+            display: inline-block;
+        }
+        .item-wrapper {
+            display: none;
+        }
+        .suggest-list {
+            display: block;
+        }
+    }
+    .template {
+        display: none;
+    }
+}
+
+.error .suggest-field-widget .widget-wrapper {
+    border-color: $alert-color;
+    .input {
+        border: none;
+        box-shadow: none;
+        background-color: transparent;
+    }
+}

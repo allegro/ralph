@@ -1,42 +1,25 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-from import_export import fields
-from import_export import resources
 from django.contrib.auth import get_user_model
+from import_export import fields, resources
 
-from ralph.assets.models import (
-    assets,
-    base,
-)
-from ralph.data_center.models import networks
-from ralph.data_center.models import physical
+from ralph.assets.models import assets, base
+from ralph.back_office.models import BackOfficeAsset, Warehouse
+from ralph.data_center.models import networks, physical
+from ralph.data_importer.mixins import ImportForeignKeyMixin
 from ralph.data_importer.widgets import (
     AssetServiceEnvWidget,
     BaseObjectManyToManyWidget,
     BaseObjectWidget,
     ImportedForeignKeyWidget,
-    UserWidget,
-)
-from ralph.data_importer.mixins import ImportForeignKeyMixin
-from ralph.back_office.models import (
-    BackOfficeAsset,
-    Warehouse,
+    UserWidget
 )
 from ralph.licences.models import (
     BaseObjectLicence,
     Licence,
-    LicenceUser,
     LicenceType,
-    SoftwareCategory,
+    LicenceUser,
+    SoftwareCategory
 )
-from ralph.supports.models import (
-    Support,
-    SupportType,
-)
+from ralph.supports.models import Support, SupportType
 
 
 class DefaultResource(ImportForeignKeyMixin, resources.ModelResource):

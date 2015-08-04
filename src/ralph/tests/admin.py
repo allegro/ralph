@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from ralph.admin import RalphAdmin, register
-
 from ralph.tests.models import Car, Manufacturer
 
 

@@ -1,29 +1,25 @@
 # -*- coding: utf-8 -*-
 from dateutil.relativedelta import relativedelta
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured, ValidationError
+from django.core.urlresolvers import reverse
+from django.db import models
+from django.template import Context, Template
+from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
-from django.db import models
-from django.core.exceptions import (
-    ImproperlyConfigured,
-    ValidationError
-)
-from django.core.urlresolvers import reverse
-from django.conf import settings
-from django.utils.translation import ugettext_lazy as _
-from django.template import Context, Template
-
-from ralph.assets.models.choices import (
-    AssetStatus,
-    AssetSource,
-    ObjectModelType,
-    ModelVisualizationLayout
-)
 from ralph.assets.models.base import BaseObject
+from ralph.assets.models.choices import (
+    AssetSource,
+    AssetStatus,
+    ModelVisualizationLayout,
+    ObjectModelType
+)
 from ralph.assets.overrides import Country
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     NamedMixin,
-    TimeStampMixin,
+    TimeStampMixin
 )
 from ralph.lib.permissions import PermByFieldMixin
 
@@ -278,7 +274,7 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
     def get_deprecation_months(self):
         return int(
             (1 / (self.depreciation_rate / 100) * 12)
-            if self.deprecation_rate else 0
+            if self.depreciation_rate else 0
         )
 
     def is_depreciated(self, date=None):

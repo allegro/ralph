@@ -1,37 +1,28 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import json
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework.test import APIClient
 
-
 from ralph.assets.models.choices import ObjectModelType
 from ralph.assets.tests.factories import (
     DataCenterAssetModelFactory,
     EnvironmentFactory,
-    ServiceFactory,
-    ServiceEnvironment
+    ServiceEnvironment,
+    ServiceFactory
 )
+from ralph.data_center.models.choices import Orientation
 from ralph.data_center.tests.factories import (
     AccessoryFactory,
     DataCenterAssetFactory,
-    RackFactory,
     RackAccessoryFactory,
+    RackFactory,
     ServerRoomFactory
 )
-
 from ralph.dc_view.serializers.models_serializer import (
     TYPE_ACCESSORY,
-    TYPE_ASSET,
+    TYPE_ASSET
 )
-from ralph.data_center.models.choices import Orientation
 
 
 class TestRestAssetInfoPerRack(TestCase):

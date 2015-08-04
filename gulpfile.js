@@ -4,7 +4,8 @@ var gulp = require('gulp');
     rename = require('gulp-rename'),
     bower = require('gulp-bower'),
     prefixer = require('gulp-autoprefixer'),
-    sass = require('gulp-sass');
+    sass = require('gulp-sass'),
+    qunit = require('node-qunit-phantomjs');
 
 var config = {
      bowerDir: './bower_components/',
@@ -73,6 +74,10 @@ gulp.task('js', function(){
     ]
     gulp.src(angularFiles)
         .pipe(gulp.dest(config.vendorRoot + 'js'));
+});
+
+gulp.task('test', function() {
+    qunit('./src/ralph/js_tests/test_runner.html');
 });
 
 gulp.task('watch', function() {

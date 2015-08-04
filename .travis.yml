@@ -5,14 +5,17 @@ python:
     - "3.4"
 
 before_install:
-    - pip install flake8 --use-mirrors
+    - pip install flake8 isort --use-mirrors
     - make flake
 
 install:
+    - npm install
+    - gulp
     - make install-test
     - pip install coveralls
 
 script:
+    - gulp test
     - make coveralls
 
 after_success:

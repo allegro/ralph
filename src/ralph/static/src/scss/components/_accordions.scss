@@ -1,4 +1,5 @@
 $accordion-border-color: $mdc-black-light;
+$accordion-background-color: $white;
 
 #content-main .accordion {
     margin-top: rem-calc(5);
@@ -7,6 +8,9 @@ $accordion-border-color: $mdc-black-light;
     .accordion-navigation {
         border: 1px solid $accordion-border-color;
         border-bottom: 0;
+        &:nth-of-type(odd) > a {
+            background-color: $accordion-background-color;
+        }
         &:last-child {
             border-bottom: 1px solid $accordion-border-color;
         }

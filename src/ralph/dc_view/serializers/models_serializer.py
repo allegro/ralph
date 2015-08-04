@@ -1,15 +1,9 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 from collections import OrderedDict
 
 from django.core.urlresolvers import reverse
 from rest_framework import serializers
 
+from ralph.data_center.models.choices import RackOrientation
 from ralph.data_center.models.physical import (
     DataCenter,
     DataCenterAsset,
@@ -17,8 +11,6 @@ from ralph.data_center.models.physical import (
     RackAccessory,
     ServerRoom
 )
-from ralph.data_center.models.choices import RackOrientation
-
 
 TYPE_EMPTY = 'empty'
 TYPE_ACCESSORY = 'accessory'

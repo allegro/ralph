@@ -45,7 +45,7 @@
             {% endif %}
             {% if not is_popup %}
               <a href="#" data-options="align:left" class="button dropdown small" data-dropdown="drop1">
-                {% trans "Action" %}
+                {% trans "Options" %}
               </a>
               {% block object-tools %}
                 <ul id="drop1" class="f-dropdown" data-dropdown-content>
@@ -94,12 +94,14 @@
         {% block filters %}
           {% if cl.has_filters %}
             <div class="small-2 columns">
+              {% admin_actions %}
               <div class="panel">
                 <h4>Filters</h4>
                 {% for spec in cl.filter_specs %}
                   {% admin_list_filter cl spec %}
                 {% endfor %}
               </div>
+
             </div>
           {% endif %}
         {% endblock %}

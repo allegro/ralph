@@ -12,8 +12,8 @@ Make sure, your installation is clean Ubuntu 14.04, without any other packages i
   
 First, add our official ralph repository:
 
-    sudo apt-key adv --keyserver  hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61`
-    sudo echo "deb https://dl.bintray.com/vi4m/ralph wheezy main" >  /etc/apt/sources.list.d/vi4m_ralph.list`
+    sudo apt-key adv --keyserver  hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
+    sudo echo "deb https://dl.bintray.com/vi4m/ralph wheezy main" >  /etc/apt/sources.list.d/vi4m_ralph.list
 
 Then, just install ralph the traditional way:
 
@@ -33,8 +33,10 @@ Create the database.
 
 ### Settings
 
-We are working on some sane configuration management files, currently, 
-just paste somewhere in your ~/.profile following environment variables customizing it to your needs.
+We are working on some sane configuration management files.
+Currently, we just read some environment variables, so just paste somewhere in your ~/.profile following environment variables customizing it to your needs.
+
+cat ~/.profile
 
     export DB_ENV_MYSQL_DATABASE=ralph
     export DB_ENV_MYSQL_USER=someuser
@@ -43,7 +45,9 @@ just paste somewhere in your ~/.profile following environment variables customiz
     export PATH=/opt/ralph/ralph-core/bin/:$PATH
 
 ### Initialization
-Type `ralph migrate` to create tables in your database. 
+1. Type `ralph migrate` to create tables in your database. 
+2. Type `ralph sitetree_resync_apps` to reload menu.
+3. Type `ralph createsuperuser` to add new user.
 
 Run your ralph instance with `ralph runserver 0.0.0.0:8000`
 

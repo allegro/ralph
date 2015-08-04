@@ -6,7 +6,7 @@ from ralph.back_office.models import BackOfficeAsset, Warehouse
 from ralph.back_office.views import (
     BackOfficeAssetComponents,
     BackOfficeAssetLicence,
-    BackOfficeAssetSoftware,
+    BackOfficeAssetSoftware
 )
 from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
@@ -51,7 +51,7 @@ class BackOfficeAssetAdmin(
                 'order_no', 'invoice_date', 'invoice_no', 'price',
                 'depreciation_rate', 'source', 'request_date', 'provider',
                 'provider_order_date', 'delivery_date', 'depreciation_end_date',
-                'force_deprecation'
+                'force_depreciation'
             )
         }),
         (_('User Info'), {

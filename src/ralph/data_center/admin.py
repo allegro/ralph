@@ -3,18 +3,17 @@ from django.contrib.admin import TabularInline
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, register
+from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
-from ralph.data_importer import resources
 from ralph.data_center.forms.network import NetworkInlineFormset
-from ralph.data_center.models.virtual import (
-    CloudProject,
-    Database,
-    VIP,
-    VirtualServer
-)
-from ralph.data_center.models.components import (
-    DiskShare,
-    DiskShareMount
+from ralph.data_center.models.components import DiskShare, DiskShareMount
+from ralph.data_center.models.networks import (
+    DiscoveryQueue,
+    IPAddress,
+    Network,
+    NetworkEnvironment,
+    NetworkKind,
+    NetworkTerminator
 )
 from ralph.data_center.models.physical import (
     Connection,
@@ -22,22 +21,21 @@ from ralph.data_center.models.physical import (
     DataCenterAsset,
     Rack,
     RackAccessory,
-    ServerRoom,
+    ServerRoom
 )
-from ralph.data_center.models.networks import (
-    DiscoveryQueue,
-    IPAddress,
-    Network,
-    NetworkEnvironment,
-    NetworkKind,
-    NetworkTerminator,
+from ralph.data_center.models.virtual import (
+    VIP,
+    CloudProject,
+    Database,
+    VirtualServer
 )
 from ralph.data_center.views.ui import (
     DataCenterAssetComponents,
     DataCenterAssetLicence,
     DataCenterAssetSecurityInfo,
-    DataCenterAssetSoftware,
+    DataCenterAssetSoftware
 )
+from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
 
 
@@ -62,9 +60,13 @@ class NetworkView(RalphDetailViewAdmin):
 
 
 @register(DataCenterAsset)
-class DataCenterAssetAdmin(PermissionAdminMixin, RalphAdmin):
+class DataCenterAssetAdmin(
+    BulkEditChangeListMixin,
+    PermissionAdminMixin,
+    RalphAdmin,
+):
     """Data Center Asset admin class."""
-
+    actions = ['bulk_edit_action']
     change_views = [
         DataCenterAssetComponents,
         DataCenterAssetSoftware,
@@ -75,8 +77,9 @@ class DataCenterAssetAdmin(PermissionAdminMixin, RalphAdmin):
     resource_class = resources.DataCenterAssetResource
     list_display = [
         'status', 'barcode', 'purchase_order', 'model',
-        'sn', 'hostname', 'invoice_date', 'invoice_no'
+        'sn', 'hostname', 'invoice_date', 'invoice_no',
     ]
+    bulk_edit_list = list_display
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
     list_filter = ['status']
     date_hierarchy = 'created'

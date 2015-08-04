@@ -28,14 +28,14 @@ make install-dev
 cat /home/vagrant/src/ralph/vagrant/provisioning_scripts/profile_extensions >> /home/vagrant/.profile
 source /home/vagrant/.profile
 
-# CREATE db
-./vagrant/provisioning_scripts/init_mysql.sh
-
-# final setups
-./vagrant/provisioning_scripts/setup_js_env.sh
-
 # create local settings file
 SETTINGS_LOCAL_PATH=/home/vagrant/src/ralph/src/ralph/settings/local.py
 if [ ! -f $SETTINGS_LOCAL_PATH ]; then
     echo "from ralph.settings.dev import *  # noqa" > $SETTINGS_LOCAL_PATH
 fi
+
+# CREATE db
+./vagrant/provisioning_scripts/init_mysql.sh
+
+# final setups
+./vagrant/provisioning_scripts/setup_js_env.sh

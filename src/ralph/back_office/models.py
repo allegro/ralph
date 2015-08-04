@@ -5,10 +5,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.assets import Asset
-from ralph.lib.mixins.models import (
-    NamedMixin,
-    TimeStampMixin
-)
+from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
 
 
 class Warehouse(NamedMixin, TimeStampMixin, models.Model):

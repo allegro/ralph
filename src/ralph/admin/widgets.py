@@ -1,14 +1,22 @@
 # -*- coding: utf-8 -*-
 import os
-from itertools import groupby, chain
+from itertools import chain, groupby
+from urllib import parse
 
 from django import forms
 from django.contrib.admin.templatetags.admin_static import static
+from django.contrib.admin.views.main import TO_FIELD_VAR
+from django.core.exceptions import FieldDoesNotExist
+from django.core.urlresolvers import reverse
 from django.forms.utils import flatatt
-from django.template.defaultfilters import title, slugify
+from django.template import loader
+from django.template.context import RenderContext
+from django.template.defaultfilters import slugify, title
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
+from ralph.admin.autocomplete import DETAIL_PARAM, QUERY_PARAM
+from ralph.admin.helpers import get_field_by_relation_path
 
 ReadOnlyWidget = forms.TextInput(attrs={'readonly': 'readonly'})
 
@@ -114,3 +122,94 @@ class PermissionsSelectWidget(forms.Widget):
                 )
             )
         return rendered_options
+
+
+class AutocompleteWidget(forms.TextInput):
+    def __init__(self, rel, admin_site, attrs=None, using=None, **kwargs):
+        self.request = kwargs.get('request', None)
+        self.rel = rel
+        self.admin_site = admin_site
+        self.db = using
+        super().__init__(attrs)
+
+    @property
+    def media(self):
+        return forms.Media(js=[
+            os.path.join('src', 'js', 'ralph-autocomplete.js')
+        ])
+
+    def get_url_parameters(self):
+        params = {
+            TO_FIELD_VAR: self.rel.get_related_field().name,
+        }
+        return '?' + parse.urlencode(params)
+
+    def get_related_url(self, info, action, *args):
+        return reverse(
+            "admin:%s_%s_%s" % (info + (action,)),
+            current_app=self.admin_site.name,
+            args=args
+        )
+
+    def render(self, name, value, attrs=None):
+        rel_to = self.rel.to
+        admin_model = self.admin_site._registry[rel_to]
+        model_options = rel_to._meta.app_label, rel_to._meta.model_name
+        widget_options = {
+            'data-suggest-url': reverse(
+                'admin:{}_{}_autocomplete_suggest'.format(*model_options)
+            ),
+            'data-details-url': reverse(
+                'admin:{}_{}_autocomplete_details'.format(*model_options)
+            ),
+            'data-query-var': QUERY_PARAM,
+            'data-detail-var': DETAIL_PARAM,
+        }
+
+        if attrs is None:
+            attrs = {}
+        attrs.update({'type': 'hidden'})
+        widget_options['data-target-selector'] = '#' + attrs.get('id')
+        input_field = super().render(name, value, attrs)
+
+        if rel_to in self.admin_site._registry:
+            related_url = reverse(
+                'admin:%s_%s_changelist' % (
+                    rel_to._meta.app_label,
+                    rel_to._meta.model_name,
+                ),
+                current_app=self.admin_site.name,
+            ) + self.get_url_parameters()
+            searched_fields = []
+            for field_name in admin_model.search_fields:
+                try:
+                    field = get_field_by_relation_path(rel_to, field_name)
+                    searched_fields.append(str(field.verbose_name))
+                except FieldDoesNotExist:
+                    pass
+
+        context = RenderContext({
+            'current_object': rel_to.objects.filter(
+                pk=value or None
+            ).first() or None,
+            'attrs': flatatt(widget_options),
+            'related_url': related_url,
+            'name': name,
+            'input_field': input_field,
+            'searched_fields': ', '.join(searched_fields),
+        })
+        info = (self.rel.to._meta.app_label, self.rel.to._meta.model_name)
+        can_edit = self.admin_site._registry[rel_to].has_change_permission(
+            self.request
+        )
+        if value and can_edit:
+            context['change_related_template_url'] = self.get_related_url(
+                info, 'change', value,
+            )
+        can_add = self.admin_site._registry[rel_to].has_add_permission(
+            self.request
+        )
+        if can_add:
+            context['add_related_url'] = self.get_related_url(info, 'add')
+        template = loader.get_template('admin/widgets/autocomplete.html')
+        return template.render(context)

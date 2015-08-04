@@ -1,12 +1,4 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 from dj.choices import Country as ChoiceCountry
-
 
 ISO_3166 = (
     ('AF', 'AFG'), ('AX', 'ALA'), ('AL', 'ALB'), ('DZ', 'DZA'), ('AS', 'ASM'),

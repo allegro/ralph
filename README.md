@@ -1,6 +1,6 @@
 # Ralph-NG
 
-**This is new version under active development(BETA)**
+**This is new version under active development(BETA). Ralph 2.x version is accessible under `develop` branch**
 
 Ralph is full-featured Asset Management, DCIM and CMDB system for data center and back office.
 
@@ -38,7 +38,7 @@ Then ssh to virtual system:
 
 Virtualenv is activated for you automatically.
 
-## Regular environmnent
+## Regular environment
 
 Make sure you created virtualenv in which you will install ralph.
 If you want to install it in production, after cloning ralph repository, and activating virtualenv just make:
