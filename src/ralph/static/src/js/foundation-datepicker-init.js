@@ -1,3 +1,4 @@
-'use strict';
-
-$('.datepicker').fdatepicker({format: 'yyyy-mm-dd'});
+(function () {
+    'use strict';
+    $('.datepicker').fdatepicker({format: 'yyyy-mm-dd'});
+}());

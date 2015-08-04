@@ -5,14 +5,14 @@ var mockedEvent = {
 };
 
 var getListItems = function($field) {
-        return $('.suggest-list li:not(.template)', $field)
-    }
+    return $('.suggest-list li:not(.template)', $field);
+};
 
 var beforeEach = function(that) {
     $('#qunit-fixture').append(mockedField);
     that.$field = $('.suggest-field-widget');
     that.widget = that.$field.autocomplete().data('autocomplete');
-}
+};
 
 module('widgets', {
     beforeEach: function(assert) {
