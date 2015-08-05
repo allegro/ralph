@@ -10,12 +10,12 @@ from mptt.models import MPTTModel, TreeForeignKey
 
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import (
-    AssetSource,
     AssetStatus,
     ModelVisualizationLayout,
     ObjectModelType
 )
 from ralph.assets.overrides import Country
+from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     NamedMixin,
@@ -58,6 +58,7 @@ class Environment(NamedMixin, TimeStampMixin, models.Model):
 
 class Service(NamedMixin, TimeStampMixin, models.Model):
     # Fixme: let's do service catalog replacement from that
+    uid = NullableCharField(max_length=40, unique=True, blank=True, null=True)
     profit_center = models.CharField(max_length=100, blank=True)
     cost_center = models.CharField(max_length=100, blank=True)
     environments = models.ManyToManyField(
@@ -92,6 +93,7 @@ class AssetModel(
     TimeStampMixin,
     models.Model
 ):
+    # TODO: should type be determined based on category?
     type = models.PositiveIntegerField(
         verbose_name=_('type'), choices=ObjectModelType(),
     )
@@ -210,65 +212,87 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         blank=True,
         default=None,
         max_length=255,
-        null=True
+        null=True,
+        verbose_name=_('hostname'),
     )
-    niw = models.CharField(
-        max_length=200, null=True, blank=True, default=None,
+    sn = NullableCharField(
+        blank=True,
+        max_length=200,
+        null=True,
+        verbose_name=_('SN'),
+        unique=True,
+    )
+    barcode = NullableCharField(
+        blank=True,
+        default=None,
+        max_length=200,
+        null=True,
+        unique=True,
+        verbose_name=_('barcode')
+    )
+    niw = NullableCharField(
+        blank=True,
+        default=None,
+        max_length=200,
+        null=True,
         verbose_name=_('Inventory number'),
     )
-    invoice_no = models.CharField(
-        max_length=128, db_index=True, null=True, blank=True,
+    status = models.PositiveSmallIntegerField(
+        blank=True,
+        choices=AssetStatus(),
+        default=AssetStatus.new.id,
+        null=True,
+        verbose_name=_("status"),
     )
     required_support = models.BooleanField(default=False)
-    order_no = models.CharField(max_length=50, null=True, blank=True)
-    purchase_order = models.CharField(max_length=50, null=True, blank=True)
-    invoice_date = models.DateField(null=True, blank=True)
-    sn = models.CharField(max_length=200, null=True, blank=True, unique=True)
-    barcode = models.CharField(
-        max_length=200, null=True, blank=True, unique=True, default=None,
+
+    order_no = models.CharField(
+        blank=True,
+        max_length=50,
+        null=True,
     )
+    invoice_no = models.CharField(
+        blank=True,
+        db_index=True,
+        max_length=128,
+        null=True,
+    )
+    invoice_date = models.DateField(blank=True, null=True)
     price = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0, blank=True, null=True,
+        blank=True,
+        decimal_places=2,
+        default=0,
+        max_digits=10,
+        null=True,
     )
     # to discuss: foreign key?
-    provider = models.CharField(max_length=100, null=True, blank=True)
-    source = models.PositiveIntegerField(
-        verbose_name=_("source"), choices=AssetSource(), db_index=True,
-        null=True, blank=True,
-    )
-    status = models.PositiveSmallIntegerField(
-        default=AssetStatus.new.id,
-        verbose_name=_("status"),
-        choices=AssetStatus(),
+    provider = models.CharField(
+        blank=True,
+        max_length=100,
         null=True,
-        blank=True,
     )
-    request_date = models.DateField(null=True, blank=True)
-    delivery_date = models.DateField(null=True, blank=True)
-    production_use_date = models.DateField(null=True, blank=True)
-    provider_order_date = models.DateField(null=True, blank=True)
     depreciation_rate = models.DecimalField(
-        decimal_places=2,
-        max_digits=5,
         blank=True,
+        decimal_places=2,
         default=settings.DEFAULT_DEPRECIATION_RATE,
         help_text=_(
             'This value is in percentage.'
             ' For example value: "100" means it depreciates during a year.'
             ' Value: "25" means it depreciates during 4 years, and so on... .'
         ),
+        max_digits=5,
     )
-    force_depreciation = models.BooleanField(help_text=(
-        'Check if you no longer want to bill for this asset'
-    ))
-    depreciation_end_date = models.DateField(null=True, blank=True)
-    production_year = models.PositiveSmallIntegerField(null=True, blank=True)
+    force_depreciation = models.BooleanField(
+        help_text=(
+            'Check if you no longer want to bill for this asset'
+        ),
+    )
+    depreciation_end_date = models.DateField(blank=True, null=True)
     task_url = models.URLField(
-        max_length=2048, null=True, blank=True,
+        blank=True,
         help_text=('External workflow system URL'),
-    )
-    loan_end_date = models.DateField(
-        null=True, blank=True, default=None, verbose_name=_('Loan end date'),
+        max_length=2048,
+        null=True,
     )
 
     def get_deprecation_months(self):

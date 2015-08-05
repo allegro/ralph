@@ -39,24 +39,22 @@ class BackOfficeAssetAdmin(
     fieldsets = (
         (_('Basic info'), {
             'fields': (
-                'model', 'purchase_order', 'niw', 'barcode', 'sn',
-                'warehouse', 'location', 'status', 'task_url',
-                'loan_end_date', 'hostname', 'service_env',
-                'production_year', 'production_use_date',
-                'required_support', 'remarks'
-            )
-        }),
-        (_('Financial Info'), {
-            'fields': (
-                'order_no', 'invoice_date', 'invoice_no', 'price',
-                'depreciation_rate', 'source', 'request_date', 'provider',
-                'provider_order_date', 'delivery_date', 'depreciation_end_date',
-                'force_depreciation'
+                'hostname', 'model', 'barcode', 'sn', 'niw', 'status',
+                'warehouse', 'location', 'loan_end_date', 'service_env',
+                'remarks'
             )
         }),
         (_('User Info'), {
             'fields': (
                 'user', 'owner'
+            )
+        }),
+        (_('Financial Info'), {
+            'fields': (
+                'order_no', 'purchase_order', 'invoice_date', 'invoice_no',
+                'task_url', 'price', 'depreciation_rate',
+                'depreciation_end_date', 'force_depreciation', 'provider',
+
             )
         }),
     )

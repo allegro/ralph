@@ -5,6 +5,7 @@ from ralph.admin import RalphAdmin, register
 from ralph.assets.models.assets import (
     Asset,
     AssetModel,
+    BaseObject,
     Category,
     Environment,
     Manufacturer,
@@ -55,6 +56,11 @@ class AssetModelAdmin(PermissionAdminMixin, RalphAdmin):
     raw_id_fields = ['manufacturer']
     search_fields = ['name', 'manufacturer__name']
     ordering = ['name']
+    fields = (
+        'name', 'manufacturer', 'category', 'type', 'has_parent',
+        'cores_count', 'height_of_device', 'power_consumption',
+        'visualization_layout_front', 'visualization_layout_back'
+    )
 
 
 @register(Category)
@@ -76,4 +82,9 @@ class GenericComponentAdmin(RalphAdmin):
 
 @register(Asset)
 class AssetAdmin(RalphAdmin):
-    pass
+    raw_id_fields = ['parent', 'service_env', 'model']
+
+
+@register(BaseObject)
+class BaseObjectAdmin(RalphAdmin):
+    raw_id_fields = ['parent', 'service_env']

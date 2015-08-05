@@ -23,6 +23,10 @@ class BackOfficeAsset(Asset):
         related_name='assets_as_user',
     )
     location = models.CharField(max_length=128, null=True, blank=True)
+    purchase_order = models.CharField(max_length=50, null=True, blank=True)
+    loan_end_date = models.DateField(
+        null=True, blank=True, default=None, verbose_name=_('Loan end date'),
+    )
 
     class Meta:
         verbose_name = _('Back Office Asset')

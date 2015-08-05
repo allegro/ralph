@@ -18,6 +18,17 @@
           <small class="error">{{ error }}</small>
         {% endfor %}
       {% endif %}
+      {% if field.field.help_text %}
+        <span class="help-text">
+          <i
+            class="fa fa-lg fa-info-circle has-tip tip-top"
+            data-tooltip
+            aria-haspopup="true"
+            title="{{ field.field.help_text | escape }}"
+          >
+          </i>
+        </span>
+      {% endif %}
     </div>
   </div>
 </div>
