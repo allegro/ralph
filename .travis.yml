@@ -10,6 +10,7 @@ before_install:
 
 install:
     - npm install
+    - make js-hint
     - gulp
     - make install-test
     - pip install coveralls

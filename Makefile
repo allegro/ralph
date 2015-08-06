@@ -12,7 +12,10 @@ upload-package:
 	./packaging/upload-package.sh
 
 install-js:
-	npm install gulp-watch gulp-autoprefixer gulp-bower gulp-less gulp-rename gulp-sass run-sequence
+	npm install gulp-watch gulp-autoprefixer gulp-bower gulp-less gulp-rename gulp-sass run-sequence jshint
+
+js-hint:
+	find src/ralph|grep "\.js$$"|grep -v vendor|xargs ./node_modules/.bin/jshint;
 
 install:
 	pip3 install -r requirements/prod.txt
