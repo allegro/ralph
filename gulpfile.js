@@ -77,7 +77,9 @@ gulp.task('js', function(){
 });
 
 gulp.task('test', function() {
-    qunit('./src/ralph/js_tests/test_runner.html');
+    qunit('./src/ralph/js_tests/test_runner.html', {}, function(code) {
+        process.exit(code);
+    });
 });
 
 gulp.task('watch', function() {
