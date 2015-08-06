@@ -53,22 +53,22 @@ class AjaxAutocompleteMixin(object):
     """
     def get_urls(self):
         urls = super().get_urls()
-        model = self.model
+        outer_model = self.model
         search_fields = self.search_fields
         ordering = self.ordering or ()
 
         class List(SuggestView):
             limit = 10
+            model = outer_model
 
             def dispatch(self, request, *args, **kwargs):
-                self.model = model
                 self.query = request.GET.get(QUERY_PARAM, None)
                 if not self.query:
                     return HttpResponseBadRequest()
                 return super().dispatch(request, *args, **kwargs)
 
             def get_queryset(self):
-                queryset = model._default_manager.all()
+                queryset = self.model._default_manager.all()
                 if self.query:
                     qs = [
                         Q(**{'{}__icontains'.format(field): self.query})
@@ -78,6 +78,7 @@ class AjaxAutocompleteMixin(object):
                 return queryset.order_by(*ordering)[:self.limit]
 
         class Detail(SuggestView):
+            model = outer_model
 
             def dispatch(self, request, *args, **kwargs):
                 self.pk = request.GET.get(DETAIL_PARAM, None)
@@ -86,12 +87,12 @@ class AjaxAutocompleteMixin(object):
                 return super().dispatch(request, *args, **kwargs)
 
             def get_queryset(self):
-                queryset = model.objects.filter(pk=int(self.pk))
+                queryset = self.model.objects.filter(pk=int(self.pk))
                 if not queryset.exists():
                     raise Http404
                 return queryset
 
-        params = model._meta.app_label, model._meta.model_name
+        params = outer_model._meta.app_label, outer_model._meta.model_name
 
         my_urls = [
             url(
