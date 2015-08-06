@@ -28,7 +28,7 @@
     <form id="changelist-form" action="" method="post"{% if cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>{% csrf_token %}
       <div class="row header">
         <div class="large-2 columns">
-            <h1>{{ header_obj_name }}</h1>
+            <h1>{{ header_obj_name|capfirst }}</h1>
         </div>
         <div class="large-7 columns">
           {% views_tabs list_views %}
