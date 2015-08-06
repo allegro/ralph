@@ -3,7 +3,7 @@ from copy import copy
 
 from django.shortcuts import get_object_or_404
 
-from ralph.admin.mixins import RalphAdmin, RalphTemplateView
+from ralph.admin.mixins import RalphAdmin, RalphTemplateView, get_inline_media
 from ralph.admin.sites import ralph_site
 
 VIEW_TYPES = CHANGE, LIST = ('change', 'list')
@@ -130,6 +130,13 @@ class RalphDetailViewAdmin(RalphDetailView, metaclass=AdminViewBase):
         self.views = kwargs['views']
         extra_context = copy(super().get_context_data())
         extra_context['object'] = self.object
-        return self.admin_class(
+        self.admin_class_instance = self.admin_class(
             model, ralph_site, change_views=self.views
-        ).change_view(request, pk, extra_context=extra_context)
+        )
+        extra_context['media'] = self.admin_class_instance.media + \
+            get_inline_media()
+        return self.admin_class_instance.change_view(
+            request,
+            pk,
+            extra_context=extra_context
+        )
