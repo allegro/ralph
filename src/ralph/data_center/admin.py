@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+from django import forms
 from django.contrib.admin import TabularInline
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, register
+from ralph.admin.fields import MultilineField, MultivalueFormMixin
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.data_center.forms.network import NetworkInlineFormset
@@ -59,6 +61,17 @@ class NetworkView(RalphDetailViewAdmin):
     inlines = [NetworkInline]
 
 
+class DataCenterAssetForm(MultivalueFormMixin, forms.ModelForm):
+    multivalue_fields = ['sn', 'barcode']
+    one_of_mulitvalue_required = ['sn', 'barcode']
+    sn = MultilineField('sn')
+    barcode = MultilineField('barcode')
+
+    class Meta:
+        model = DataCenterAsset
+        fields = '__all__'
+
+
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(
     BulkEditChangeListMixin,
@@ -85,6 +98,7 @@ class DataCenterAssetAdmin(
     date_hierarchy = 'created'
     list_select_related = ['model', 'model__manufacturer']
     raw_id_fields = ['model', 'rack', 'service_env']
+    form = DataCenterAssetForm
 
     fieldsets = (
         (_('Basic info'), {
