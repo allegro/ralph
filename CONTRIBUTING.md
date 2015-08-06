@@ -43,7 +43,7 @@ We discuss every design decision on Github using so called "Blueprints". It's ju
 
 ## Technical documentation
 
-Ready for coding? Now read more technical details about the Architecture in `docs/development`.
+Ready for coding? Please RTFM [our technical/architecture documentation](http://ralph-ng.readthedocs.org)
 
 # Do's and don't's
 
