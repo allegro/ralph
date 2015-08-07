@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.test import SimpleTestCase
 
 from ralph.admin.fields import MultilineField, MultivalueFormMixin
+from ralph.tests.models import TestAsset
 
 
 class SimpleTestForm(MultivalueFormMixin, forms.Form):
@@ -17,6 +18,17 @@ class OneRequiredTestForm(MultivalueFormMixin, forms.Form):
     multivalue_fields = ['sn', 'barcode']
     sn = MultilineField()
     barcode = MultilineField()
+
+
+class TestAssetForm(MultivalueFormMixin, forms.ModelForm):
+    multivalue_fields = ['sn', 'barcode']
+    one_of_mulitvalue_required = ['sn', 'barcode']
+    sn = MultilineField('sn')
+    barcode = MultilineField('barcode')
+
+    class Meta:
+        model = TestAsset
+        fields = ['hostname', 'sn', 'barcode']
 
 
 class MultiValueFormTest(SimpleTestCase):
@@ -55,6 +67,20 @@ class MultiValueFormTest(SimpleTestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('sn', form.errors)
         self.assertIn('barcode', form.errors)
+
+    def test_saves_many_objects(self):
+        sns = ['sn1', 'sn2', 'sn3']
+        data = {
+            'hostname': 'hostname1',
+            'sn': ', '.join(sns),
+            'barcode': 'bc1, bc2, bc3',
+        }
+        form = TestAssetForm(data=data)
+        query = TestAsset.objects.filter(sn__in=sns)
+        form.is_valid()
+        self.assertEqual(0, query.count())
+        form.save()
+        self.assertEqual(len(sns), query.count())
 
 
 class MultilineFieldTest(SimpleTestCase):

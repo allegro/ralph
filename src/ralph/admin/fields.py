@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+import copy
 import re
 
+from django.contrib import messages
+from django.forms.models import save_instance
 from django import forms
 from django.db import transaction
 from django.forms.util import ErrorList
@@ -58,33 +61,27 @@ class MultivalueFormMixin(object):
 
     @transaction.atomic
     def save(self, commit=True):
-        import copy
         objs = []
-        for row_as_dict in self.multivalues_rows_as_dict():
+        fail_message = _('Unable to add assets')
+        for row_as_dict in self.multivalue_rows_as_dict():
             obj_data = copy.deepcopy(self.cleaned_data)
-            #import ipdb;ipdb.set_trace()
             obj_data.update(row_as_dict)
             obj = self._meta.model(**obj_data)
-            #import ipdb;ipdb.set_trace()
             obj.save()
+            save_instance(
+                self, obj, self._meta.fields, fail_message, commit,
+                self._meta.exclude, construct=False
+            )
             objs.append(obj)
         if len(objs) > 1:
             obj_name = self._meta.model._meta.verbose_name_plural
         else:
             obj_name = self._meta.model._meta.verbose_name
         msg = _(
-            'Successfully added {} {}'.format(
-                len(objs), str(obj_name)
-            ),
+            'Successfully added {} {}'.format(len(objs), str(obj_name)),
         )
-        #self.message_user(request, msg)
-
-        #obj = self.model(**form.cleaned_data)
-        #for idx, form_values in enumerate(self.multivalues_rows()):
-        #    for value, field_name in zip(form_values, self.multivalue_fields):
-        #        setattr(obj, field_name, value)
-        #msg = _('Successfully added {} assets'.format(idx + 1))
-        #self.message_user(request, msg)
+        messages.info(self._request, msg)
+        return objs[0]
 
     def equal_count_validator(self, cleaned_data):
         """Adds a validation error if if form's multivalues fields have
@@ -101,12 +98,10 @@ class MultivalueFormMixin(object):
                     )
                     self.errors.setdefault(field, []).append(msg)
 
-    def multivalues_rows_as_dict(self):
-        #TODO:: change name
+    def multivalue_rows_as_dict(self):
         i = 0
         while True:
             row = {}
-            print(i)
             for key in self.multivalue_fields:
                 if key in self.cleaned_data:
                     try:
@@ -116,26 +111,18 @@ class MultivalueFormMixin(object):
             yield row
             i += 1
 
-        multivalues_rows = [
-            self.cleaned_data[field_name]
-            for field_name in self.multivalue_fields
-            if field_name in self.cleaned_data
-        ]
-        for multivalues_row in zip(*multivalues_rows):
-            yield multivalues_row
-
-    def multivalues_rows(self):
-        multivalues_rows = [
-            self.cleaned_data[field_name] for field_name in
-            self.one_of_mulitvalue_required if field_name in self.cleaned_data
-        ]
-        for multivalues_row in zip(*multivalues_rows):
-            yield multivalues_row
-
     def any_in_multivalues_validator(self, data):
+        def rows_of_required():
+            rows_of_required = [
+                self.cleaned_data[field_name] for field_name in
+                self.one_of_mulitvalue_required if field_name in self.cleaned_data
+            ]
+            for multivalues_row in zip(*rows_of_required):
+                yield multivalues_row
+
         if self.one_of_mulitvalue_required:
-            for multivalues_row in self.multivalues_rows():
-                if not any(multivalues_row):
+            for row_of_required in rows_of_required():
+                if not any(row_of_required):
                     for field_name in self.one_of_mulitvalue_required:
                         errors = self._errors.setdefault(
                             field_name, ErrorList()

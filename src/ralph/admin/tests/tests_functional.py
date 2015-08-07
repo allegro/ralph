@@ -307,37 +307,3 @@ class ChangeListTest(TestCase):
             Car, CarAdmin, ordering_params, list_display,
         )
         self.assertEqual(expected_ordering, ordering)
-
-
-
-
-
-
-
-from django import forms
-from ralph.admin.fields import MultilineField, MultivalueFormMixin
-from ralph.tests.models import TestAsset
-class TestAssetForm(MultivalueFormMixin, forms.ModelForm):
-    multivalue_fields = ['sn', 'barcode']
-    one_of_mulitvalue_required = ['sn', 'barcode']
-    sn = MultilineField('sn')
-    barcode = MultilineField('barcode')
-
-    class Meta:
-        model = TestAsset
-        fields = ['hostname', 'sn', 'barcode']
-from django.test import Client
-class BulkAddTest(TestCase):
-    def test_xxx(self):
-        sns = ['sn1', 'sn2', 'sn3']
-        data = {
-            'hostname': 'hostname1',
-            'sn': ', '.join(sns),
-            'barcode': 'bc1, bc2, bc3',
-        }
-        form = TestAssetForm(data=data)
-        query = TestAsset.objects.filter(sn__in=sns)
-        form.is_valid()
-        self.assertEqual(0, query.count())
-        form.save()
-        self.assertEqual(len(sns), query.count())
