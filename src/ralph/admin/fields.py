@@ -80,7 +80,8 @@ class MultivalueFormMixin(object):
         msg = _(
             'Successfully added {} {}'.format(len(objs), str(obj_name)),
         )
-        messages.info(self._request, msg)
+        if hasattr(self, '_request'):
+            messages.info(self._request, msg)
         return objs[0]
 
     def equal_count_validator(self, cleaned_data):
