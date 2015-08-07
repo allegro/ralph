@@ -57,14 +57,34 @@ class MultivalueFormMixin(object):
     one_of_mulitvalue_required = []
 
     @transaction.atomic
-    def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
-        obj = self.model(**form.cleaned_data)
-        for idx, form_values in enumerate(self.multivalues_rows()):
-            for value, field_name in zip(form_values, self.multivalue_fields):
-                setattr(obj, field_name, value)
-        msg = _('Successfully added {} assets'.format(idx + 1))
-        self.message_user(request, msg)
+    def save(self, commit=True):
+        import copy
+        objs = []
+        for row_as_dict in self.multivalues_rows_as_dict():
+            obj_data = copy.deepcopy(self.cleaned_data)
+            #import ipdb;ipdb.set_trace()
+            obj_data.update(row_as_dict)
+            obj = self._meta.model(**obj_data)
+            #import ipdb;ipdb.set_trace()
+            obj.save()
+            objs.append(obj)
+        if len(objs) > 1:
+            obj_name = self._meta.model._meta.verbose_name_plural
+        else:
+            obj_name = self._meta.model._meta.verbose_name
+        msg = _(
+            'Successfully added {} {}'.format(
+                len(objs), str(obj_name)
+            ),
+        )
+        #self.message_user(request, msg)
+
+        #obj = self.model(**form.cleaned_data)
+        #for idx, form_values in enumerate(self.multivalues_rows()):
+        #    for value, field_name in zip(form_values, self.multivalue_fields):
+        #        setattr(obj, field_name, value)
+        #msg = _('Successfully added {} assets'.format(idx + 1))
+        #self.message_user(request, msg)
 
     def equal_count_validator(self, cleaned_data):
         """Adds a validation error if if form's multivalues fields have
@@ -80,6 +100,29 @@ class MultivalueFormMixin(object):
                         ', '.join(self.multivalue_fields)
                     )
                     self.errors.setdefault(field, []).append(msg)
+
+    def multivalues_rows_as_dict(self):
+        #TODO:: change name
+        i = 0
+        while True:
+            row = {}
+            print(i)
+            for key in self.multivalue_fields:
+                if key in self.cleaned_data:
+                    try:
+                        row[key] = self.cleaned_data[key][i]
+                    except IndexError:
+                        raise StopIteration
+            yield row
+            i += 1
+
+        multivalues_rows = [
+            self.cleaned_data[field_name]
+            for field_name in self.multivalue_fields
+            if field_name in self.cleaned_data
+        ]
+        for multivalues_row in zip(*multivalues_rows):
+            yield multivalues_row
 
     def multivalues_rows(self):
         multivalues_rows = [
