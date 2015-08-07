@@ -9,4 +9,9 @@
     });
     $(document).foundation();
   });
+  (function($) {
+    $(document).ready(function($) {
+        $("tr input.action-select").actions();
+    });
+})(django.jQuery);
 </script>
