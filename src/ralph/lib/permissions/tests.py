@@ -78,7 +78,7 @@ class PermissionsByFieldTestCase(TestCase):
 
     def test_view_has_access_to_field(self):
         """Test has access to field."""
-        self.assertFalse(
+        self.assertTrue(
             self.asset_model.has_access_to_field(
                 'height_of_device',
                 self.user,

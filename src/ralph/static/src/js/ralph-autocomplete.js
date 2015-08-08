@@ -51,7 +51,7 @@
             that.notFromPopup = undefined;
             return;
         }
-        var data = {}
+        var data = {};
         data[that.options.detailVar] = val;
         that.fetch(that.options.detailsUrl, data, function(data) {
             that.editMode(false);
@@ -93,7 +93,7 @@
         if(editUrl) {
             pencil.show();
         }
-    }
+    };
     AutocompleteWidget.prototype.itemClick = function(event) {
         event.preventDefault();
         var $clickedItem = $(event.target);
@@ -116,7 +116,7 @@
         }
         that.clearSuggestList();
         that.fetchItems(query, function(data) {
-            if (data.results.length != 0) {
+            if (data.results.length !== 0) {
                 $.each(data.results, function() {
                     that.addItemToList(this);
                 });

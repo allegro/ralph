@@ -5,47 +5,53 @@
     {% for item in result_hidden_fields %}{{ item }}{% endfor %}
   </div>
 {% endif %}
-
 {% if results %}
-  <table id="result_list" class="full stripped">
-    <thead>
-      <tr>
-      {% for header in result_headers %}
-        <th scope="col" {{ header.class_attrib }}>
-          <div class="text">
-            {% if header.sortable %}
-              <a href="{{ header.url_primary }}">
-                {{ header.text|capfirst }}
+  <div class="result-list bulk-edit">
+    <div id="float_toolbar" class="bulk-edit-fill">
+      <a id="fill_all_rows" href="#" title="Fill all rows">
+        <i class="fa fa-arrows-v fa-lg" aria-hidden="true"></i>
+      </a>
+    </div>
+    <table id="result_list" class="full stripped">
+      <thead>
+        <tr>
+        {% for header in result_headers %}
+          <th scope="col" {{ header.class_attrib }}>
+            <div class="text">
+              {% if header.sortable %}
+                <a href="{{ header.url_primary }}">
+                  {{ header.text|capfirst }}
+                  {% if header.sort_priority > 0 %}
+                    <i class="sort-icon fa fa-sort-{% if header.ascending %}asc{% else %}desc{% endif %}"></i>
+                  {% endif %}
+                </a>
                 {% if header.sort_priority > 0 %}
-                  <i class="sort-icon fa fa-sort-{% if header.ascending %}asc{% else %}desc{% endif %}"></i>
+                  <div class="sortoptions">
+                    <a class="sortremove" href="{{ header.url_remove }}" title="{% trans "Remove from sorting" %}">
+                      <i class="fa fa-times"></i>
+                    </a>
+                  </div>
                 {% endif %}
-              </a>
-              {% if header.sort_priority > 0 %}
-                <div class="sortoptions">
-                  <a class="sortremove" href="{{ header.url_remove }}" title="{% trans "Remove from sorting" %}">
-                    <i class="fa fa-times"></i>
-                  </a>
-                </div>
+              {% else %}
+                <span>
+                  {{ header.text|capfirst }}
+                </span>
               {% endif %}
-            {% else %}
-              <span>
-                {{ header.text|capfirst }}
-              </span>
-            {% endif %}
-          </div>
-        </th>
-      {% endfor %}
-      </tr>
-    </thead>
-    <tbody>
-      {% for result in results %}
-        {% if result.form.non_field_errors %}
-            <tr>
-              <td olspan="{{ result|length }}">{{ result.form.non_field_errors }}</td>
-            </tr>
-        {% endif %}
-        <tr>{% for item in result %}{{ item }}{% endfor %}</tr>
-      {% endfor %}
-    </tbody>
-  </table>
+            </div>
+          </th>
+        {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for result in results %}
+          {% if result.form.non_field_errors %}
+              <tr>
+                <td olspan="{{ result|length }}">{{ result.form.non_field_errors }}</td>
+              </tr>
+          {% endif %}
+          <tr>{% for item in result %}{{ item }}{% endfor %}</tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 {% endif %}

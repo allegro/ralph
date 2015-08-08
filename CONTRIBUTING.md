@@ -33,6 +33,10 @@ Make your software compatible with Ralph development requirements.
 
 Then, you are all set ! In case of problems with setting everything up, refer to the `https://github.com/allegro/ralph/tree/ng/vagrant`
 
+If you want to extend Ralph by your own Django app, place your config inside
+`vagrant/Vagrantfile.local` (ex. synced folders). You could also attach custom
+provisioning script in `vagrant/provision.local.sh`.
+
 ## Bug tracker & sprints
 
 Github issues tracker handles our development. We use `milestones` for our development sprints(week, or 2 weeks per milestone) with some estimated release date. Point your browser to: https://waffle.io/allegro/ralph?label=ng for Scrum board(use milestone field for filtering) for more details.
@@ -43,7 +47,7 @@ We discuss every design decision on Github using so called "Blueprints". It's ju
 
 ## Technical documentation
 
-Ready for coding? Now read more technical details about the Architecture in `docs/development`.
+Ready for coding? Please RTFM [our technical/architecture documentation](http://ralph-ng.readthedocs.org)
 
 # Do's and don't's
 

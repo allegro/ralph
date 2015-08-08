@@ -116,6 +116,9 @@ class RackAccessory(AdminAbsoluteUrlMixin, models.Model):
         blank=True,
     )
 
+    class Meta:
+        verbose_name_plural = _('rack accessories')
+
     def get_orientation_desc(self):
         return Orientation.name_from_id(self.orientation)
 

@@ -28,13 +28,18 @@
     <form id="changelist-form" action="" method="post"{% if cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>{% csrf_token %}
       <div class="row header">
         <div class="large-2 columns">
-            <h1>{{ header_obj_name }}</h1>
+            <h1>{{ header_obj_name|capfirst }}</h1>
         </div>
-        <div class="large-7 columns">
+        <div class="large-6 columns">
           {% views_tabs list_views %}
         </div>
-        <div class="large-3 columns">
+        <div class="large-4 columns">
           <div class="header-toolbar">
+            {% if bulk_edit %}
+              <a href="{{ request.path_info }}" class="button secondary small">
+                {% trans "Back to list" %}
+              </a>
+            {% endif %}
             {% if has_add_permission %}
               {% url cl.opts|admin_urlname:'add' as add_url %}
               <a class="button success small addLink" href="{% add_preserved_filters add_url is_popup to_field %}">
@@ -78,35 +83,24 @@
           </p>
           {{ cl.formset.non_form_errors }}
       {% endif %}
-      {# <div class="row"> #}
-{#                   {% if cl.date_hierarchy %} #}
-{#             <div class="row"> #}
-{#               <div class="large-12 columns"> #}
-{#                 {% block date_hierarchy %} #}
-{#                   {% date_hierarchy cl %} #}
-{#                 {% endblock %} #}
-{#               </div> #}
-{#             </div> #}
-{#           {% endif %} #}
-{#       </div> #}
-
       <div class="row content with-tabs">
-        {% block filters %}
-          {% if cl.has_filters %}
-            <div class="small-2 columns">
-              {% admin_actions %}
-              <div class="panel">
-                <h4>Filters</h4>
-                {% for spec in cl.filter_specs %}
-                  {% admin_list_filter cl spec %}
-                {% endfor %}
+        {% if not bulk_edit %}
+          {% block filters %}
+            {% if cl.has_filters %}
+              <div class="small-2 columns">
+                {% admin_actions %}
+                <div class="panel">
+                  <h4>Filters</h4>
+                  {% for spec in cl.filter_specs %}
+                    {% admin_list_filter cl spec %}
+                  {% endfor %}
+                </div>
+
               </div>
-
-            </div>
-          {% endif %}
-        {% endblock %}
-
-        <div class="small-{% if cl.has_filters %}10{% else %}12{% endif %} columns">
+            {% endif %}
+          {% endblock %}
+        {% endif %}
+        <div class="small-{% if has_filters %}10{% else %}12{% endif %} columns">
           {% block result_list %}
             {% if cl.formset %}
               {{ cl.formset.management_form }}

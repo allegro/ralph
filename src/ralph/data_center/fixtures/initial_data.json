@@ -1,0 +1,35 @@
+[{
+    "pk": 1,
+    "model": "data_center.accessory",
+    "fields": {
+        "name": "brush"
+    }
+},
+{
+    "pk": 2,
+    "model": "data_center.accessory",
+    "fields": {
+        "name": "patch_panel_fc"
+    }
+},
+{
+    "pk": 3,
+    "model": "data_center.accessory",
+    "fields": {
+        "name": "patch_panel_utp"
+    }
+},
+{
+    "pk": 4,
+    "model": "data_center.accessory",
+    "fields": {
+        "name": "organizer"
+    }
+},
+{
+    "pk": 5,
+    "model": "data_center.accessory",
+    "fields": {
+        "name": "power_socket"
+    }
+}]

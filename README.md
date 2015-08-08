@@ -1,12 +1,11 @@
 # Ralph-NG
 
-**This is new version under active development(BETA). Ralph 2.x version is accessible under `develop` branch**
+**This is new version under active development(BETA). Ralph 2.x version is still accessible under `develop` branch**
 
 Ralph is full-featured Asset Management, DCIM and CMDB system for data center and back office.
 
 Features:
 
-* auto-discover existing hardware
 * keep track of assets purchases and their life cycle
 * generate flexible and accurate cost reports
 * integrate with change management process using JIRA integration
@@ -16,6 +15,9 @@ It is an Open Source project provided on Apache v2.0 License.
 [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/allegro/ralph?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Code Health](https://landscape.io/github/allegro/ralph/ng/landscape.svg?style=flat)](https://landscape.io/github/allegro/ralph/ng)
 
+## Documentation
+Visit our documentation on [readthedocs.org](http://ralph-ng.readthedocs.org)
+
 ## Scrum Board
 
 [![Stories in Ready](https://badge.waffle.io/allegro/ralph.png?label=ready&title=Ready)](http://waffle.io/allegro/ralph)
@@ -24,8 +26,10 @@ It is an Open Source project provided on Apache v2.0 License.
 
 ## Installation
 
+## Debian package(recommended)
+Visit our documentation on [readthedocs.org](http://ralph-ng.readthedocs.org) for more details.
 
-## Vagrant environment
+## Developer installation
 
 It's recommended to use Vagrant for development. Install Vagrant first (https://www.vagrantup.com/). To set-up Ralph environment run:
 
@@ -38,18 +42,21 @@ Then ssh to virtual system:
 
 Virtualenv is activated for you automatically.
 
-## Regular environment
+
+## Manual installation
 
 Make sure you created virtualenv in which you will install ralph.
 If you want to install it in production, after cloning ralph repository, and activating virtualenv just make:
 
     make install
     ralph migrate
+    make menu
     
 Or if you want to run in debug mode for detailed error messages and debug toolbar:
 
     make install-dev
     dev_ralph migrate
+    make menu
 
 will install it for you as well.
 

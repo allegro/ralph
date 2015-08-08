@@ -1,0 +1,11 @@
+.bulk-edit {
+    .bulk-edit-fill {
+        position: absolute;
+        z-index: 10000;
+        display: none;
+        padding: 5px;
+    }
+    .fill-changed {
+        background: #DEFADB;
+    }
+}
