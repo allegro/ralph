@@ -8,6 +8,7 @@
       </div>
     {% endif %}
     <div class="small-{% if show_delete_link %}11{% else %}12{% endif %} columns text_right right_section">
+      {% block additional_buttons %}{% endblock %}
       <ul class="button-group radius right">
         {% if show_save %}
         <li>
