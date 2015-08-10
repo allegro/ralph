@@ -192,7 +192,7 @@ class AutocompleteWidget(forms.TextInput):
         current_object = None
         if value:
             current_object = self.rel_to.objects.select_related(
-                *admin_model.list_select_related
+                *(admin_model.list_select_related or [])
             ).filter(
                 pk=value
             ).first()
