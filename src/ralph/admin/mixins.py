@@ -162,6 +162,11 @@ class RalphAdmin(
     def media(self):
         return super().media + get_common_media()
 
+    def get_form(self, request, obj=None, **kwargs):
+        Form = super().get_form(request, obj, **kwargs)  # noqa
+        Form._request = request
+        return Form
+
 
 class RalphTemplateView(TemplateView):
 
