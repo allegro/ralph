@@ -8,6 +8,20 @@
         window.location.href = $('option:selected', this).val();
     });
     $(document).foundation();
+
+    $('.inline-related').each(function() {
+      var group_id = $(this).data('group-id'),
+          prefix = $(this).data('prefix'),
+          add_text = $(this).data('add-text'),
+          delete_text = $(this).data('delete-text');
+      (function($) {
+        $("#" + group_id + "-group .tabular.inline-related tbody tr").tabularFormset({
+          prefix: prefix,
+          addText: add_text,
+          deleteText: delete_text
+        });
+      })(django.jQuery);
+    });
   });
   (function($) {
     $(document).ready(function($) {
