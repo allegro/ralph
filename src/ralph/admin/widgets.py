@@ -192,7 +192,11 @@ class AutocompleteWidget(forms.TextInput):
         current_object = None
         if value:
             current_object = self.rel_to.objects.select_related(
-                *(admin_model.list_select_related or [])
+                # https://docs.djangoproject.com/en/1.8/ref/models/querysets/#select-related
+                # we cannot pass empty list - this would select all related
+                # model - instead we pass None, which means that none of
+                # related models will be selected
+                *(admin_model.list_select_related or [None])
             ).filter(
                 pk=value
             ).first()

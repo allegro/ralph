@@ -3,22 +3,37 @@
 {% if views %}
   <div class="tabs">
     <ul>
-      <li{% if name == '' %} class="active"{% endif %}>
-        <a href="{{ object.get_absolute_url }}">
-          <i class="fa fa-info"></i> {% trans "Basic info" %}
+      <li
+        class="has-tip tip-bottom {% if name == '' %} active {% endif %}"
+        title="{{ view.label }}"
+        data-tooltip
+        aria-haspopup="true"
+        data-options="show_on:small"
+      >
+        <a href="{{ object.get_absolute_url }}" title="{% trans "Basic info" %}">
+          <i class="fa fa-info"></i> <span class="tab-label">{% trans "Basic info" %}</span>
         </a>
       </li>
       {% for view in views %}
-        <li{% if name == view.name %} class="active"{% endif %}>
-          {% if object.id %}
-            <a href="{% url view.url_with_namespace object.id %}">
-          {% else %}
-            <a href="{% url view.url_with_namespace %}">
-          {% endif %}
+        <li
+          class="has-tip tip-bottom {% if name == view.name %} active {% endif %}"
+          title="{{ view.label }}"
+          data-tooltip
+          aria-haspopup="true"
+          data-options="show_on:small"
+        >
+          <a href="
+            {% if object.id %}
+              {% url view.url_with_namespace object.id %}
+            {% else %}
+              {% url view.url_with_namespace %}
+            {% endif %}
+            " title="{{ view.label }}"
+          />
             {% if view.icon %}
               <i class="fa fa-{{ view.icon }}"></i>
             {% endif %}
-            {{ view.label }}
+            <span class="tab-label">{{ view.label }}</span>
           </a>
         </li>
       {% endfor %}
