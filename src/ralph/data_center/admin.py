@@ -76,7 +76,7 @@ class DataCenterAssetAdmin(
     ]
     resource_class = resources.DataCenterAssetResource
     list_display = [
-        'status', 'barcode', 'purchase_order', 'model',
+        'status', 'barcode', 'model',
         'sn', 'hostname', 'invoice_date', 'invoice_no',
     ]
     bulk_edit_list = list_display
@@ -84,30 +84,33 @@ class DataCenterAssetAdmin(
     list_filter = ['status']
     date_hierarchy = 'created'
     list_select_related = ['model', 'model__manufacturer']
-    raw_id_fields = ['model', 'rack', 'service_env']
+    raw_id_fields = ['model', 'rack', 'service_env', 'parent']
+    raw_id_override_parent = {'parent': DataCenterAsset}
 
     fieldsets = (
         (_('Basic info'), {
             'fields': (
-                'model', 'purchase_order', 'niw', 'barcode', 'sn',
-                'status', 'task_url',
-                'loan_end_date', 'hostname', 'service_env',
-                'production_year', 'production_use_date',
-                'required_support', 'remarks'
+                'hostname', 'model', 'status', 'barcode', 'sn', 'niw',
+                'required_support', 'remarks', 'parent',
             )
         }),
-        (_('Financial Info'), {
+        (_('Location Info'), {
             'fields': (
-                'order_no', 'invoice_date', 'invoice_no', 'price',
-                'depreciation_rate', 'source', 'request_date', 'provider',
-                'provider_order_date', 'delivery_date', 'depreciation_end_date',
-                'force_depreciation'
+                'rack', 'position', 'orientation', 'slot_no',
             )
         }),
-        (_('Additional Info'), {
+        (_('Usage info'), {
             'fields': (
-                'rack', 'slots', 'slot_no', 'configuration_path',
-                'position', 'orientation'
+                'service_env', 'configuration_path', 'production_year',
+                'production_use_date',
+            )
+        }),
+        (_('Financial & Order Info'), {
+            'fields': (
+                'order_no', 'invoice_date', 'invoice_no', 'task_url', 'price',
+                'depreciation_rate', 'depreciation_end_date',
+                'force_depreciation', 'source', 'provider', 'delivery_date',
+
             )
         }),
     )

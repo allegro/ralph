@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 import sys
+from imp import reload
 
 from django.conf import settings
 from django.core.urlresolvers import clear_url_caches
 from django.utils.importlib import import_module
-from six.moves import reload_module
 
 from ralph.tests.factories import UserFactory
 
@@ -26,6 +27,6 @@ class ReloadUrlsMixin(object):
     """
     def reload_urls(self):
         if settings.ROOT_URLCONF in sys.modules:
-            reload_module(sys.modules[settings.ROOT_URLCONF])
+            reload(sys.modules[settings.ROOT_URLCONF])
             clear_url_caches()
         return import_module(settings.ROOT_URLCONF)

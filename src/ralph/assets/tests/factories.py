@@ -9,6 +9,7 @@ from ralph.assets.models.assets import (
     Service,
     ServiceEnvironment
 )
+from ralph.assets.models.choices import ObjectModelType
 
 
 class CategoryFactory(DjangoModelFactory):
@@ -29,6 +30,7 @@ class BackOfficeAssetModelFactory(DjangoModelFactory):
 class DataCenterAssetModelFactory(DjangoModelFactory):
 
     name = factory.Iterator(['DL360', 'DL380p', 'DL380', 'ML10', 'ML10 v21'])
+    type = ObjectModelType.data_center
 
     class Meta:
         model = AssetModel

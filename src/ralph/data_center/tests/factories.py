@@ -1,6 +1,7 @@
 import factory
 from factory.django import DjangoModelFactory
 
+from ralph.assets.tests.factories import DataCenterAssetModelFactory
 from ralph.data_center.models.physical import (
     Accessory,
     DataCenter,
@@ -56,6 +57,8 @@ class RackFactory(DjangoModelFactory):
 
 
 class DataCenterAssetFactory(DjangoModelFactory):
+    force_depreciation = False
+    model = factory.SubFactory(DataCenterAssetModelFactory)
 
     class Meta:
         model = DataCenterAsset

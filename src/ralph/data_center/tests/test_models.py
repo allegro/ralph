@@ -1,7 +1,16 @@
+# -*- coding: utf-8 -*-
+from ddt import data, ddt, unpack
+from django.core.exceptions import ValidationError
+
+from ralph.data_center.models.choices import Orientation
 from ralph.data_center.models.networks import (
     IPAddress,
     Network,
     get_network_tree
+)
+from ralph.data_center.tests.factories import (
+    DataCenterAssetFactory,
+    RackFactory
 )
 from ralph.tests import RalphTestCase
 
@@ -137,3 +146,112 @@ class NetworkTest(RalphTestCase):
             new_ip_address = IPAddress(address=ip)
             new_ip_address.save()
             self.assertEquals(new_ip_address.is_public, is_public)
+
+
+@ddt
+class DataCenterAssetTest(RalphTestCase):
+    def setUp(self):
+        self.dc_asset = DataCenterAssetFactory()
+
+    @unpack
+    @data(
+        ('1A',),
+        ('1B',),
+        ('9A',),
+        ('9B',),
+        ('10A',),
+        ('10B',),
+        ('16A',),
+        ('16B',),
+        ('1',),
+        ('9',),
+        ('10',),
+        ('16',),
+    )
+    def test_should_pass_when_slot_no_is_correct(self, slot_no):
+        slot_no_field = self.dc_asset._meta.get_field_by_name('slot_no')[0]
+        slot_no_field.clean(slot_no, self.dc_asset)
+
+    @unpack
+    @data(
+        ('1C',),
+        ('0A',),
+        ('0',),
+        ('B',),
+        ('17A',),
+        ('17B',),
+        ('20A',),
+        ('1a',),
+        ('1b',),
+        ('111',),
+    )
+    def test_should_raise_validation_error_when_slot_no_is_incorrect(
+        self, slot_no
+    ):
+        slot_no_field = self.dc_asset._meta.get_field_by_name('slot_no')[0]
+        with self.assertRaises(ValidationError):
+            slot_no_field.clean(slot_no, self.dc_asset)
+
+    @unpack
+    @data(
+        (None, Orientation.front),
+        (None, Orientation.left),
+        (0, Orientation.left),
+        (0, Orientation.right),
+        (1, Orientation.front),
+        (10, Orientation.back),
+        (100, Orientation.middle),
+    )
+    def test_should_pass_when_orientation_is_correct(
+        self, position, orientation
+    ):
+        self.dc_asset.position = position
+        self.dc_asset.orientation = orientation
+        self.dc_asset._validate_orientation()
+
+    @unpack
+    @data(
+        (0, Orientation.front),
+        (0, Orientation.back),
+        (0, Orientation.middle),
+        (1, Orientation.left),
+        (10, Orientation.right),
+    )
+    def test_should_raise_validation_error_when_orientation_is_correct(
+        self, position, orientation
+    ):
+        self.dc_asset.position = position
+        self.dc_asset.orientation = orientation
+        with self.assertRaises(ValidationError):
+            self.dc_asset._validate_orientation()
+
+    @unpack
+    @data(
+        (None, 100),
+        (10, 10),
+        (10, 100),
+    )
+    def test_should_pass_when_position_in_rack_is_correct(
+        self, position, rack_max_height
+    ):
+        self.dc_asset.position = position
+        self.dc_asset.rack = RackFactory(max_u_height=rack_max_height)
+        self.dc_asset._validate_position_in_rack()
+
+    def test_should_pass_when_position_in_rack_is_null(self):
+        self.dc_asset.position = 10
+        self.dc_asset.rack = None
+        self.dc_asset._validate_position_in_rack()
+
+    @unpack
+    @data(
+        (10, 9),
+        (1, 0),
+    )
+    def test_should_raise_validation_error_when_position_in_rack_is_incorrect(
+        self, position, rack_max_height
+    ):
+        self.dc_asset.position = position
+        self.dc_asset.rack = RackFactory(max_u_height=rack_max_height)
+        with self.assertRaises(ValidationError):
+            self.dc_asset._validate_position_in_rack()
