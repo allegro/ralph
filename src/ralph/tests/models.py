@@ -16,3 +16,11 @@ class Car(models.Model):
     name = models.CharField(max_length=50)
     year = models.PositiveSmallIntegerField()
     manufacturer = models.ForeignKey(Manufacturer)
+
+
+class TestAsset(models.Model):
+    hostname = models.CharField(max_length=50)
+    sn = models.CharField(max_length=200, null=True, blank=True, unique=True)
+    barcode = models.CharField(
+        max_length=200, null=True, blank=True, unique=True, default=None,
+    )
