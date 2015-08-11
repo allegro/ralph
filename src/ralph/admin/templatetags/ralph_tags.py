@@ -13,10 +13,11 @@ def views_tabs(views, name=None, obj=None):
     return {'views': views, 'name': name, 'object': obj}
 
 
-@register.inclusion_tag('admin/search_form.html')
-def contextual_search_form(search_url, search_fields):
-    return {
+@register.inclusion_tag('admin/search_form.html', takes_context=True)
+def contextual_search_form(context, search_url, search_fields):
+    context.update({
         'search_url': search_url,
         'search_fields': search_fields,
         'search_var': SEARCH_VAR,
-    }
+    })
+    return context

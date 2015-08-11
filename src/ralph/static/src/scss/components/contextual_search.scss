@@ -1,0 +1,26 @@
+.popup .contextual_search {
+    margin-top: rem-calc(16);
+    .search {
+        background-color: $primary-color;
+        border-color: $primary-color;
+    }
+}
+
+.contextual_search {
+    #searchbar, .search {
+        padding: rem-calc(6) inherit;
+        font-size: 1rem;
+    }
+    #searchbar {
+        border-right: 0;
+        padding-left: rem-calc(6);
+        margin-bottom: rem-calc(4);
+    }
+    .search {
+        border: 1px solid #5B5B5B;
+        border-left: 0;
+        &:hover {
+            border-color: $primary-color;
+        }
+    }
+}
