@@ -1,4 +1,4 @@
-# -*- cmding: utf-8 -*-
+# -*- coding: utf-8 -*-
 from ddt import data, ddt, unpack
 from django.core.urlresolvers import reverse
 from django.test import RequestFactory, TestCase

@@ -14,19 +14,16 @@ from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
 
 
-class BackOfficeAssetForm(MultivalueFormMixin, forms.ModelForm):
+class BackOfficeAddAssetForm(MultivalueFormMixin, forms.ModelForm):
+    barcode = MultilineField('barcode')
+    sn = MultilineField('sn')
+    #TODO:: mv it to Meta
+    multivalue_fields = ['sn', 'barcode']
+    one_of_mulitvalue_required = ['sn', 'barcode']
 
     class Meta:
         model = BackOfficeAsset
         fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if not self.instance.id:
-            self.fields['sn'] = MultilineField('sn')
-            self.fields['barcode'] = MultilineField('barcode')
-            self.multivalue_fields = ['sn', 'barcode']
-            self.one_of_mulitvalue_required = ['sn', 'barcode']
 
 
 @register(BackOfficeAsset)
@@ -52,7 +49,7 @@ class BackOfficeAssetAdmin(
     list_select_related = ['model', 'user', 'warehouse', 'model__manufacturer']
     raw_id_fields = ['model', 'user', 'owner', 'service_env']
     resource_class = resources.BackOfficeAssetResource
-    form = BackOfficeAssetForm
+    _add_form = BackOfficeAddAssetForm
 
     fieldsets = (
         (_('Basic info'), {
