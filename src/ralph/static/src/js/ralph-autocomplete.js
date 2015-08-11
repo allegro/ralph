@@ -71,6 +71,7 @@
         }
         else {
             this.$widget.removeClass('edit');
+            this.$suggestList.hide();
         }
     };
     AutocompleteWidget.prototype.deleteItem = function(event) {
