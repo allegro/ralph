@@ -5,8 +5,10 @@ import re
 from django import forms
 from django.contrib import messages
 from django.db import transaction
+from django.forms import ValidationError
 from django.forms.models import save_instance
 from django.forms.util import ErrorList
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
 
@@ -17,6 +19,7 @@ class MultilineField(forms.CharField):
     Validation:
         - separated values cannot duplicate each other,
     """
+    allow_duplicates = True
     widget = forms.Textarea
     separators = ",|\n"
 
@@ -63,6 +66,13 @@ class MultivalueFormMixin(object):
     """
     multivalue_fields = []
     one_of_mulitvalue_required = []
+
+    def _get_validation_exclusions(self):
+        exclude = super()._get_validation_exclusions()
+        # you can't rely on django uniqness validation, becasue MultilineField
+        # is too custom and it handled uniqness validation by itself
+        exclude.extend(self.multivalue_fields)
+        return exclude
 
     def save(self, commit=True):
         if self.instance.id:
@@ -147,8 +157,48 @@ class MultivalueFormMixin(object):
                         )
                         errors.append(_(msg))
 
+    def check_field_uniqueness(self, model, field_name, values):
+        '''
+            TODO:: write it
+            Check field (pointed by *self.db_field_path*) uniqueness.
+            If duplicated value is found then raise ValidationError
+
+            :param string Model: model field to be unique (as a string)
+            :param list values: list of field values
+        '''
+        if not values:
+            return
+        conditions = {'{}__in'.format(field_name): values}
+        objs = model.objects.filter(**conditions)
+        if objs:
+            if hasattr(model, 'get_absolute_url'):
+                url = '<a href="{}">{}</a>'
+                comma_items = ', '.join([
+                    url.format(obj.get_absolute_url(), obj.id)
+                    for obj in objs
+                ])
+            else:
+                comma_items = ', '.join([str(obj) for obj in objs])
+                import ipdb; ipdb.set_trace()
+            msg = 'Following items already exist: ' + comma_items
+            raise ValidationError(mark_safe(msg))
+
+    def check_uniqness(self, data):
+        for field_name in self.multivalue_fields:
+            field = self[field_name].field
+            if field.allow_duplicates:
+                continue
+            try:
+                self.check_field_uniqueness(
+                    self._meta.model, field_name, data.get(field_name, [])
+                )
+            except forms.ValidationError as error:
+                self._errors.setdefault(field_name, [])
+                self._errors[field_name] += error.messages
+
     def clean(self):
         data = super().clean()
         self.equal_count_validator(data)
         self.any_in_multivalues_validator(data)
+        self.check_uniqness(data)
         return data

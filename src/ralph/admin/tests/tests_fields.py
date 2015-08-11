@@ -23,8 +23,8 @@ class OneRequiredTestForm(MultivalueFormMixin, forms.Form):
 class TestAssetForm(MultivalueFormMixin, forms.ModelForm):
     multivalue_fields = ['sn', 'barcode']
     one_of_mulitvalue_required = ['sn', 'barcode']
-    sn = MultilineField('sn')
-    barcode = MultilineField('barcode')
+    sn = MultilineField(allow_duplicates=False)
+    barcode = MultilineField()
 
     class Meta:
         model = TestAsset
@@ -90,6 +90,18 @@ class MultiValueFormTest(SimpleTestCase):
         form.save()
         self.assertEqual(len(sns), query.count())
 
+    def test_not_valid_when_values_not_unique(self):
+        asset = TestAsset(hostname='hostname1', sn='sn1', barcode='bc1')
+        asset.save()
+        data = {
+            'hostname': 'hostname1',
+            'sn': asset.sn,
+            'barcode': 'bc1',
+        }
+        form = TestAssetForm(data=data)
+        self.assertFalse(form.is_valid())
+        self.assertIn('exist', form.errors['sn'][0])
+
 
 class MultilineFieldTest(SimpleTestCase):
     def test_field_works_for_single_value(self):
@@ -114,11 +126,11 @@ class MultilineFieldTest(SimpleTestCase):
         self.assertEqual(field.clean(value_with_duplicates), ['1', '1'])
 
     def test_field_strips_whitespaces(self):
-        field = MultilineField(allow_duplicates=True)
+        field = MultilineField()
         value_with_duplicates = ' 1 '
         self.assertEqual(field.clean(value_with_duplicates), ['1'])
 
     def test_field_allows_blank_elements(self):
-        field = MultilineField(allow_duplicates=True)
+        field = MultilineField()
         value_with_empty = '1,,3'
         self.assertEqual(field.clean(value_with_empty), ['1', '', '3'])

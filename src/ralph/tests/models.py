@@ -18,7 +18,7 @@ class Car(models.Model):
     manufacturer = models.ForeignKey(Manufacturer)
 
 
-class TestAsset(models.Model):
+class TestAsset(AdminAbsoluteUrlMixin, models.Model):
     hostname = models.CharField(max_length=50)
     sn = models.CharField(max_length=200, null=True, blank=True, unique=True)
     barcode = models.CharField(
