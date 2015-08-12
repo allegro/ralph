@@ -62,8 +62,8 @@ class NetworkView(RalphDetailViewAdmin):
 
 
 class DataCenterAddAssetForm(MultivalueFormMixin, forms.ModelForm):
-    sn = MultilineField('sn')
-    barcode = MultilineField('barcode')
+    sn = MultilineField(allow_duplicates=False)
+    barcode = MultilineField(allow_duplicates=False)
     multivalue_fields = ['sn', 'barcode']
     one_of_mulitvalue_required = ['sn', 'barcode']
 

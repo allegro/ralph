@@ -34,8 +34,8 @@ class TestAssetForm(MultivalueFormMixin, forms.ModelForm):
 class MultiValueFormTest(SimpleTestCase):
     def test_works_for_single_value_each(self):
         data = {
-            'sn': 'sn1',
-            'barcode': 'bc1',
+            'sn': 'sn',
+            'barcode': 'bc',
         }
         form = SimpleTestForm(data)
         self.assertTrue(form.is_valid())
@@ -77,16 +77,15 @@ class MultiValueFormTest(SimpleTestCase):
         self.assertIn('barcode', form.errors)
 
     def test_saves_many_objects(self):
-        sns = ['sn1', 'sn2', 'sn3']
+        sns = ['sn11', 'sn12', 'sn13']
         data = {
             'hostname': 'hostname1',
             'sn': ', '.join(sns),
-            'barcode': 'bc1, bc2, bc3',
+            'barcode': 'bc11, bc12, bc13',
         }
         form = TestAssetForm(data=data)
         query = TestAsset.objects.filter(sn__in=sns)
-        form.is_valid()
-        self.assertEqual(0, query.count())
+        self.assertTrue(form.is_valid())
         form.save()
         self.assertEqual(len(sns), query.count())
 

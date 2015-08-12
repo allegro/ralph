@@ -15,8 +15,8 @@ from ralph.lib.permissions.admin import PermissionAdminMixin
 
 
 class BackOfficeAddAssetForm(MultivalueFormMixin, forms.ModelForm):
-    barcode = MultilineField('barcode')
-    sn = MultilineField('sn')
+    barcode = MultilineField(allow_duplicates=False)
+    sn = MultilineField(allow_duplicates=False)
     #TODO:: mv it to Meta
     multivalue_fields = ['sn', 'barcode']
     one_of_mulitvalue_required = ['sn', 'barcode']

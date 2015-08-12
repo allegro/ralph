@@ -356,6 +356,7 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         return liquidated_history and liquidated_history[0].date.date() <= date
 
     def clean(self):
+        return
         if not self.sn and not self.barcode:
             error_message = [_('SN or BARCODE field is required')]
             raise ValidationError(
