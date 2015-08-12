@@ -50,7 +50,28 @@ def get_inline_media():
     )
 
 
-class RalphAdminMixin(object):
+class RalphAutocompleteMixin(object):
+    raw_id_override_parent = {}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.formfield_overrides.update(FORMFIELD_FOR_DBFIELD_DEFAULTS)
+
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        if db_field.name in self.raw_id_fields:
+            kw = {}
+            if db_field.name in self.raw_id_override_parent:
+                kw['rel_to'] = self.raw_id_override_parent[db_field.name]
+            kwargs['widget'] = widgets.AutocompleteWidget(
+                db_field.rel, self.admin_site, using=kwargs.get('using'),
+                request=request, **kw
+            )
+            return db_field.formfield(**kwargs)
+        else:
+            return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+class RalphAdminMixin(RalphAutocompleteMixin):
 
     """Ralph admin mixin."""
 
@@ -58,7 +79,6 @@ class RalphAdminMixin(object):
     change_views = None
     change_list_template = 'admin/change_list.html'
     change_form_template = 'admin/change_form.html'
-    raw_id_override_parent = {}
 
     def __init__(self, *args, **kwargs):
         self.list_views = copy(self.list_views) or []
@@ -129,19 +149,6 @@ class RalphAdminMixin(object):
             request, object_id, form_url, extra_context
         )
 
-    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
-        if db_field.name in self.raw_id_fields:
-            kw = {}
-            if db_field.name in self.raw_id_override_parent:
-                kw['rel_to'] = self.raw_id_override_parent[db_field.name]
-            kwargs['widget'] = widgets.AutocompleteWidget(
-                db_field.rel, self.admin_site, using=kwargs.get('using'),
-                request=request, **kw
-            )
-            return db_field.formfield(**kwargs)
-        else:
-            return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
     def formfield_for_manytomany(self, db_field, request=None, **kwargs):
         if db_field.name in ('user_permissions', 'permissions'):
             kwargs['widget'] = widgets.PermissionsSelectWidget()
@@ -154,13 +161,23 @@ class RalphAdmin(
     RalphAdminMixin,
     VersionAdmin
 ):
-    def __init__(self, *args, **kwargs):
-        super(RalphAdmin, self).__init__(*args, **kwargs)
-        self.formfield_overrides.update(FORMFIELD_FOR_DBFIELD_DEFAULTS)
-
     @property
     def media(self):
         return super().media + get_common_media()
+
+
+class RalphTabularInline(
+    RalphAutocompleteMixin,
+    admin.TabularInline
+):
+    pass
+
+
+class RalphStackedInline(
+    RalphAutocompleteMixin,
+    admin.StackedInline
+):
+    pass
 
 
 class RalphTemplateView(TemplateView):

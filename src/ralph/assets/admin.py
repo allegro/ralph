@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.contrib.admin import TabularInline
-
-from ralph.admin import RalphAdmin, register
+from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.assets.models.assets import (
     Asset,
     AssetModel,
@@ -25,8 +23,9 @@ class ServiceEnvironmentAdmin(RalphAdmin):
     resource_class = resources.ServiceEnvironmentResource
 
 
-class ServiceEnvironmentInline(TabularInline):
+class ServiceEnvironmentInline(RalphTabularInline):
     model = ServiceEnvironment
+    raw_id_fields = ['environment']
 
 
 @register(Service)

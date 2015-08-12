@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-from django.contrib.admin import TabularInline
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, register
+from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
@@ -21,7 +20,7 @@ class BaseObjectLicenceView(RalphDetailViewAdmin):
     label = 'Assignments'
     url_name = 'assignments'
 
-    class BaseObjectLicenceInline(TabularInline):
+    class BaseObjectLicenceInline(RalphTabularInline):
         model = BaseObjectLicence
         raw_id_fields = ('base_object',)
         extra = 1
@@ -35,7 +34,7 @@ class LicenceUserView(RalphDetailViewAdmin):
     label = 'Assigned to users'
     url_name = 'assigned-to-users'
 
-    class LicenceUserInline(TabularInline):
+    class LicenceUserInline(RalphTabularInline):
         model = LicenceUser
         raw_id_fields = ('user',)
         extra = 1

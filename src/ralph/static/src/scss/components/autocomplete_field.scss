@@ -136,3 +136,7 @@ $lookup-icon-width: 20px;
         background-color: transparent;
     }
 }
+
+.inline-group .autocomplete-widget {
+    margin: $form-spacing 0 $form-spacing 0;
+}
