@@ -89,7 +89,6 @@ class TestReportCategoryTreeView(ClientMixin, RalphTestCase):
         }) for _ in range(3)]
 
     def _get_item(self, data, name):
-        # import ipdb; ipdb.set_trace()
         for item in data:
             if item['name'] == name:
 

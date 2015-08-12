@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from ralph.admin import RalphAdmin, register
-from ralph.tests.models import Car, Manufacturer
+from ralph.tests.models import Car, Manufacturer, TestAsset
 
 
 @register(Car)
@@ -11,3 +11,7 @@ class CarAdmin(RalphAdmin):
 @register(Manufacturer)
 class ManufacturerAdmin(RalphAdmin):
     ordering = ['name', '-country']
+
+@register(TestAsset)
+class TestAssetAdmin(RalphAdmin):
+    ordering = ['name']

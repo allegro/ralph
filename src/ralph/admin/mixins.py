@@ -154,6 +154,8 @@ class RalphAdmin(
     RalphAdminMixin,
     VersionAdmin
 ):
+    _add_form = None
+    
     def __init__(self, *args, **kwargs):
         super(RalphAdmin, self).__init__(*args, **kwargs)
         self.formfield_overrides.update(FORMFIELD_FOR_DBFIELD_DEFAULTS)
@@ -161,6 +163,15 @@ class RalphAdmin(
     @property
     def media(self):
         return super().media + get_common_media()
+
+    def get_form(self, request, obj=None, **kwargs):
+        defaults = {}
+        if obj is None and self._add_form:
+            defaults['form'] = self._add_form
+        defaults.update(kwargs)
+        Form = super().get_form(request, obj, **defaults)
+        Form._request = request
+        return Form
 
 
 class RalphTemplateView(TemplateView):
