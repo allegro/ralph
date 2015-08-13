@@ -6,6 +6,7 @@ from django.db.models import Sum
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.accounts.models import Regionalizable
 from ralph.assets.models.assets import Manufacturer
 from ralph.assets.models.base import BaseObject
 from ralph.lib.mixins.models import (
@@ -48,6 +49,7 @@ class SoftwareCategory(PermByFieldMixin, NamedMixin, models.Model):
 
 
 class Licence(
+    Regionalizable,
     AdminAbsoluteUrlMixin,
     PermByFieldMixin,
     TimeStampMixin,
@@ -131,13 +133,7 @@ class Licence(
     invoice_no = models.CharField(
         max_length=128, db_index=True, null=True, blank=True
     )
-    remarks = models.CharField(
-        verbose_name=_('Additional remarks'),
-        max_length=1024,
-        null=True,
-        blank=True,
-        default=None,
-    )
+    remarks = models.TextField(blank=True)
     license_details = models.CharField(
         verbose_name=_('License details'),
         max_length=1024,

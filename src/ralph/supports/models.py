@@ -6,6 +6,7 @@ from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.accounts.models import Regionalizable
 from ralph.assets.models.base import BaseObject
 from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
 from ralph.lib.permissions import PermByFieldMixin
@@ -23,7 +24,11 @@ class SupportStatus(Choices):
 
 
 class Support(
-    PermByFieldMixin, NamedMixin.NonUnique, TimeStampMixin, models.Model
+    Regionalizable,
+    PermByFieldMixin,
+    NamedMixin.NonUnique,
+    TimeStampMixin,
+    models.Model,
 ):
     contract_id = models.CharField(max_length=50, blank=False)
     description = models.CharField(max_length=100, blank=True)
@@ -38,7 +43,7 @@ class Support(
     date_to = models.DateField(null=False, blank=False)
     escalation_path = models.CharField(max_length=200, blank=True)
     contract_terms = models.CharField(max_length=200, blank=True)
-    additional_notes = models.CharField(max_length=200, blank=True)
+    remarks = models.TextField(blank=True)
     sla_type = models.CharField(max_length=200, blank=True)
     # asset_type = models.PositiveSmallIntegerField(
     #     choices=AssetType()

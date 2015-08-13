@@ -4,6 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core import management
 from django.test import TestCase
 
+from ralph.accounts.models import Region
 from ralph.assets.models.assets import (
     AssetModel,
     Environment,
@@ -62,6 +63,15 @@ class DataImporterTestCase(TestCase):
         service_environment.environment = environment
         service_environment.service = service
         service_environment.save()
+
+        region = Region(name='region_1')
+        region.save()
+        region_content_type = ContentType.objects.get_for_model(region)
+        ImportedObjects.objects.create(
+            content_type=region_content_type,
+            object_pk=region.pk,
+            old_object_pk=1
+        )
 
     def test_get_resource(self):
         """Test get resources method."""

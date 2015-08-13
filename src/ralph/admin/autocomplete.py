@@ -8,6 +8,7 @@ from django.views.generic import View
 
 from ralph.admin.helpers import get_admin_url
 from ralph.admin.sites import ralph_site
+from ralph.lib.permissions.models import PermissionsForObjectMixin
 
 QUERY_PARAM = 'q'
 DETAIL_PARAM = 'pk'
@@ -42,7 +43,7 @@ class SuggestView(JsonViewMixin, View):
                 'pk': obj.pk,
                 '__str__': str(obj),
                 'edit_url': get_admin_url(obj, 'change') if can_edit else None,
-            } for obj in self.get_queryset()
+            } for obj in self.get_queryset(request.user)
         ]
         return self.render_to_json_response({'results': results})
 
@@ -67,7 +68,7 @@ class AjaxAutocompleteMixin(object):
                     return HttpResponseBadRequest()
                 return super().dispatch(request, *args, **kwargs)
 
-            def get_queryset(self):
+            def get_queryset(self, user):
                 queryset = self.model._default_manager.all()
                 if self.query:
                     qs = [
@@ -75,6 +76,8 @@ class AjaxAutocompleteMixin(object):
                         for field in search_fields
                     ]
                     queryset = queryset.filter(reduce(operator.or_, qs))
+                if issubclass(self.model, PermissionsForObjectMixin):
+                    queryset = self.model._get_objects_for_user(user, queryset)
                 return queryset.order_by(*ordering)[:self.limit]
 
         class Detail(SuggestView):
@@ -86,8 +89,10 @@ class AjaxAutocompleteMixin(object):
                     return HttpResponseBadRequest()
                 return super().dispatch(request, *args, **kwargs)
 
-            def get_queryset(self):
+            def get_queryset(self, user):
                 queryset = self.model.objects.filter(pk=int(self.pk))
+                if issubclass(self.model, PermissionsForObjectMixin):
+                    queryset = self.model._get_objects_for_user(user, queryset)
                 if not queryset.exists():
                     raise Http404
                 return queryset

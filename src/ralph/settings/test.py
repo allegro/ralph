@@ -14,6 +14,7 @@ PASSWORD_HASHERS = ('django_plainpasswordhasher.PlainPasswordHasher', )
 INSTALLED_APPS += (
     'ralph.lib.mixins',
     'ralph.tests',
+    'ralph.lib.permissions.tests',
 )
 
 PASSWORD_HASHERS = (

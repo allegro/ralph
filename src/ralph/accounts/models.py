@@ -5,6 +5,41 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.lib.mixins.models import NamedMixin
+from ralph.lib.permissions import PermissionsForObjectMixin, user_permission
+
+
+@user_permission
+def has_region(user):
+    """
+    Check if user has rights to region.
+    """
+    return models.Q(id__in=user.regions_ids)
+
+
+class Region(PermissionsForObjectMixin, NamedMixin):
+    """Used for distinguishing the origin of the object by region"""
+    class Permissions:
+        has_access = has_region
+
+
+@user_permission
+def object_has_region(user):
+    """
+    Check if object's region is one of user regions.
+    """
+    return models.Q(region__in=user.regions_ids)
+
+
+class Regionalizable(PermissionsForObjectMixin):
+    region = models.ForeignKey(Region, blank=False, null=False)
+
+    class Meta:
+        abstract = True
+
+    class Permissions:
+        has_access = object_has_region
+
 
 class RalphUser(AbstractUser):
 
@@ -63,9 +98,21 @@ class RalphUser(AbstractUser):
         max_length=256,
         blank=True,
     )
+    regions = models.ManyToManyField(Region)
 
     class Meta(AbstractUser.Meta):
         swappable = 'AUTH_USER_MODEL'
+
+    @property
+    def regions_ids(self):
+        """
+        Get region ids without additional SQL joins.
+        """
+        return self.regions.through.objects.filter(
+            ralphuser=self
+        ).values_list(
+            'region_id', flat=True
+        )
 
     def save(self, *args, **kwargs):
         # set default values if None provided

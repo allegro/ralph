@@ -3,13 +3,18 @@ from django.contrib.auth.admin import GroupAdmin, UserAdmin
 from django.contrib.auth.models import Group
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.accounts.models import RalphUser
+from ralph.accounts.models import RalphUser, Region
 from ralph.admin import RalphAdmin, register
+from ralph.admin.mixins import RalphAdminFormMixin
+
+
+class RalphUserChangeForm(RalphAdminFormMixin, UserAdmin.form):
+    pass
 
 
 @register(RalphUser)
 class RalphUserAdmin(UserAdmin, RalphAdmin):
-
+    form = RalphUserChangeForm
     fieldsets = (
         (None, {
             'fields': ('username', 'password')
@@ -28,7 +33,7 @@ class RalphUserAdmin(UserAdmin, RalphAdmin):
         }),
         (_('Profile'), {
             'fields': (
-                'gender', 'country', 'city',
+                'gender', 'country', 'city', 'regions'
             )
         }),
         (_('Job info'), {
@@ -43,3 +48,8 @@ class RalphUserAdmin(UserAdmin, RalphAdmin):
 @register(Group)
 class RalphGroupAdmin(GroupAdmin, RalphAdmin):
     pass
+
+
+@register(Region)
+class RegionAdmin(RalphAdmin):
+    search_fields = ['name']
