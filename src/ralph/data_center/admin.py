@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-from django.contrib.admin import TabularInline
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, register
+from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.data_center.forms.network import NetworkInlineFormset
@@ -45,7 +44,7 @@ class DataCenterAdmin(RalphAdmin):
     search_fields = ['name']
 
 
-class NetworkInline(TabularInline):
+class NetworkInline(RalphTabularInline):
     formset = NetworkInlineFormset
     model = IPAddress
 
@@ -124,7 +123,7 @@ class ServerRoomAdmin(RalphAdmin):
     resource_class = resources.ServerRoomResource
 
 
-class RackAccessoryInline(TabularInline):
+class RackAccessoryInline(RalphTabularInline):
     model = RackAccessory
 
 
