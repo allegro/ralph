@@ -7,3 +7,4 @@ sphinx
 flake8
 django-plainpasswordhasher
 ddt
+flake8_tuple
