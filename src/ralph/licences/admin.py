@@ -17,7 +17,7 @@ from ralph.licences.models import (
 class BaseObjectLicenceView(RalphDetailViewAdmin):
     icon = 'laptop'
     name = 'base-object'
-    label = 'Assignments'
+    label = _('Assignments')
     url_name = 'assignments'
 
     class BaseObjectLicenceInline(RalphTabularInline):
@@ -31,7 +31,7 @@ class BaseObjectLicenceView(RalphDetailViewAdmin):
 class LicenceUserView(RalphDetailViewAdmin):
     icon = 'user'
     name = 'users'
-    label = 'Assigned to users'
+    label = _('Assigned to users')
     url_name = 'assigned-to-users'
 
     class LicenceUserInline(RalphTabularInline):

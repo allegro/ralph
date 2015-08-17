@@ -1,10 +1,26 @@
 # -*- coding: utf-8 -*-
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, register
+from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
 from ralph.supports.models import Support, SupportType
+
+
+class BaseObjectSupportView(RalphDetailViewAdmin):
+    icon = 'laptop'
+    name = 'base-object-assignments'
+    label = _('Assignments')
+    url_name = 'assignments'
+
+    class BaseObjectSupportInline(RalphTabularInline):
+        model = Support.base_objects.through
+        raw_id_fields = ('baseobject',)
+        extra = 1
+        verbose_name = _('Base object support')
+
+    inlines = [BaseObjectSupportInline]
 
 
 @register(Support)
@@ -12,6 +28,7 @@ class SupportAdmin(PermissionAdminMixin, RalphAdmin):
 
     """Support model admin class."""
 
+    change_views = [BaseObjectSupportView]
     search_fields = [
         'name', 'serial_no', 'contract_id', 'description', 'remarks'
     ]

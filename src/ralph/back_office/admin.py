@@ -1,16 +1,48 @@
 # -*- coding: utf-8 -*-
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, register
+from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.mixins import BulkEditChangeListMixin
+from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.back_office.models import BackOfficeAsset, Warehouse
 from ralph.back_office.views import (
     BackOfficeAssetComponents,
-    BackOfficeAssetLicence,
     BackOfficeAssetSoftware
 )
 from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
+from ralph.licences.models import BaseObjectLicence
+
+
+class BackOfficeAssetSupport(RalphDetailViewAdmin):
+    icon = 'bookmark'
+    name = 'bo_asset_support'
+    label = _('Supports')
+    url_name = 'back_office_asset_support'
+
+    class BackOfficeAssetSupportInline(RalphTabularInline):
+        model = BackOfficeAsset.supports.related.through
+        raw_id_fields = ('support',)
+        extra = 1
+        verbose_name = _('Support')
+
+    inlines = [BackOfficeAssetSupportInline]
+
+
+class BackOfficeAssetLicence(RalphDetailViewAdmin):
+
+    icon = 'key'
+    name = 'bo_asset_licence'
+    label = _('Licence')
+    url_name = 'back_office_asset_licence'
+
+    class BackOfficeAssetLicenceInline(RalphTabularInline):
+        model = BaseObjectLicence
+        raw_id_fields = ('licence',)
+        extra = 1
+        verbose_name = _('Licence')
+
+    inlines = [BackOfficeAssetLicenceInline]
 
 
 @register(BackOfficeAsset)
@@ -26,6 +58,7 @@ class BackOfficeAssetAdmin(
         BackOfficeAssetComponents,
         BackOfficeAssetSoftware,
         BackOfficeAssetLicence,
+        BackOfficeAssetSupport,
     ]
     list_display = [
         'status', 'barcode', 'purchase_order', 'model', 'user', 'warehouse',
