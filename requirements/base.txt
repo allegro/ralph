@@ -1,4 +1,4 @@
-Django==1.8.3
+Django==1.8.4
 dj.choices==0.10.0
 django-import-export==0.2.7
 django-mptt==0.7.4
