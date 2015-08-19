@@ -13,6 +13,8 @@ Features:
 It is an Open Source project provided on Apache v2.0 License.
 
 [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/allegro/ralph?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/allegro/ralph.svg)](https://travis-ci.org/allegro/ralph)
+[![Coverage Status](https://coveralls.io/repos/allegro/ralph/badge.svg?branch=ng&service=github)](https://coveralls.io/github/allegro/ralph?branch=ng)
 [![Code Health](https://landscape.io/github/allegro/ralph/ng/landscape.svg?style=flat)](https://landscape.io/github/allegro/ralph/ng)
 
 ## Documentation
@@ -51,7 +53,7 @@ If you want to install it in production, after cloning ralph repository, and act
     make install
     ralph migrate
     make menu
-    
+
 Or if you want to run in debug mode for detailed error messages and debug toolbar:
 
     make install-dev
@@ -60,7 +62,7 @@ Or if you want to run in debug mode for detailed error messages and debug toolba
 
 will install it for you as well.
 
-    
+
 
 ## Running
 
@@ -68,11 +70,11 @@ will install it for you as well.
 Make sure virtualenv is activated. To start server in debug mode:
 
     make run
-    
+
 or if you don't want the debug output
 
     ralph runserver_plus 0.0.0.0:8000
-    
+
 
 Ralph is available at `127.0.0.1:8000`.
 
