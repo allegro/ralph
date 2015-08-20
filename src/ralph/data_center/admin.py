@@ -30,12 +30,12 @@ from ralph.data_center.models.virtual import (
 )
 from ralph.data_center.views.ui import (
     DataCenterAssetComponents,
-    DataCenterAssetLicence,
     DataCenterAssetSecurityInfo,
     DataCenterAssetSoftware
 )
 from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
+from ralph.licences.models import BaseObjectLicence
 
 
 @register(DataCenter)
@@ -58,6 +58,35 @@ class NetworkView(RalphDetailViewAdmin):
     inlines = [NetworkInline]
 
 
+class DataCenterAssetSupport(RalphDetailViewAdmin):
+    icon = 'bookmark'
+    name = 'dc_asset_support'
+    label = _('Supports')
+    url_name = 'data_center_asset_support'
+
+    class DataCenterAssetSupportInline(RalphTabularInline):
+        model = DataCenterAsset.supports.related.through
+        raw_id_fields = ('support',)
+        extra = 1
+        verbose_name = _('Support')
+
+    inlines = [DataCenterAssetSupportInline]
+
+
+class DataCenterAssetLicence(RalphDetailViewAdmin):
+    icon = 'key'
+    name = 'dc_asset_licences'
+    label = _('Licences')
+    url_name = 'data_center_asset_licences'
+
+    class DataCenterAssetLicenceInline(RalphTabularInline):
+        model = BaseObjectLicence
+        raw_id_fields = ('licence',)
+        extra = 1
+
+    inlines = [DataCenterAssetLicenceInline]
+
+
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(
     BulkEditChangeListMixin,
@@ -71,6 +100,7 @@ class DataCenterAssetAdmin(
         DataCenterAssetSoftware,
         DataCenterAssetSecurityInfo,
         DataCenterAssetLicence,
+        DataCenterAssetSupport,
         NetworkView,
     ]
     resource_class = resources.DataCenterAssetResource
