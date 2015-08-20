@@ -48,6 +48,7 @@ class CategoryModelReport(BaseReport):
 
     slug = 'category_model_report'
     name = _('Category - model')
+    description = _('Number of assets in each model category.')
 
     def prepare(self, model, *args, **kwargs):
         queryset = model.objects
@@ -71,6 +72,7 @@ class CategoryModelStatusReport(BaseReport):
 
     slug = 'category_model__status_report'
     name = _('Category - model - status')
+    description = _('Number of assets in each status in the model category.')
 
     def prepare(self, model, *args, **kwargs):
         queryset = model.objects
@@ -101,6 +103,7 @@ class ManufacturerCategoryModelReport(BaseReport):
 
     slug = 'manufactured_category_model_report'
     name = _('Manufactured - category - model')
+    description = _('Number of assets in each manufacturer.')
 
     def prepare(self, model, *args, **kwargs):
         queryset = AssetModel.objects
@@ -138,6 +141,7 @@ class StatusModelReport(BaseReport):
     with_datacenters = True
     slug = 'status_model_report'
     name = _('Status - model')
+    description = _('Number of assets in each the asset status.')
 
     def prepare(self, model, dc=None):
         queryset = model.objects

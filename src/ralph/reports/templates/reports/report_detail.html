@@ -6,10 +6,12 @@
 {% endblock %}
 
 {% block content %}
+
 {% cache 3600 report cache_key %}
   <br />
   <div id="content-main" class="row">
     <h1>{{ report.name }} <small>{% trans 'Last update:' %} {% now "SHORT_DATETIME_FORMAT" %}</small></h1>
+    <p>{{ report.description }}</p>
     <br />
     {% if report.with_modes %}
       <dl class="sub-nav">
