@@ -70,6 +70,7 @@ def get_http_info(ip):
 
 
 def guess_family(headers, document):
+    document = document.decode("utf8")
     server = headers.get('server', '')
     if '/' in server:
         server = server.split('/', 1)[0]
@@ -113,13 +114,14 @@ def guess_family(headers, document):
         if 'ERIC_RESPONSE_OK' in document:
             family = 'VTL'
     elif family in ('Mbedthis-Appweb', 'Embedthis-Appweb', 'Embedthis-http'):
-        document = document.decode("utf8")
         if 'sclogin.html' in document:
             family = 'Dell'
         elif 'Juniper' in document:
             family = 'Juniper'
     if 'pve-api-daemon' in family:
         family = 'Proxmox3'
+    if 'sclogin.html' in document:
+        family = 'Dell'
     return family
 
 
