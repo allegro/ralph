@@ -114,6 +114,9 @@ class RalphUser(AbstractUser):
             'region_id', flat=True
         )
 
+    def has_any_perms(self, perms, obj=None):
+        return any([self.has_perm(p, obj=obj) for p in perms])
+
     def save(self, *args, **kwargs):
         # set default values if None provided
         for field in ('gender', 'country'):

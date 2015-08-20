@@ -23,4 +23,7 @@ PASSWORD_HASHERS = (
 
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
-ROOT_URLCONF = 'ralph.urls.base'
+ROOT_URLCONF = 'ralph.urls.test'
+# specify all url modules to reload during specific tests
+# see `ralph.tests.mixins.ReloadUrlsMixin` for details
+URLCONF_MODULES = ['ralph.urls.base', ROOT_URLCONF]

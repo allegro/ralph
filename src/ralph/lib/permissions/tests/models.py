@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 from django.conf import settings
 from django.db import models
 
 from ralph.lib.permissions.models import (
+    PermByFieldMixin,
     PermissionsForObjectMixin,
     user_permission
 )
@@ -22,10 +24,11 @@ def has_long_title(user):
     return models.Q(title__regex=r'.{10}.*')
 
 
-class Article(PermissionsForObjectMixin, models.Model):
+class Article(PermByFieldMixin, PermissionsForObjectMixin, models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL)
     title = models.CharField(max_length=100)
     content = models.CharField(max_length=1000)
+    custom_field_1 = models.CharField(max_length=100, null=True, blank=True)
     collaborators = models.ManyToManyField(settings.AUTH_USER_MODEL)
 
     class Permissions:
@@ -37,6 +40,7 @@ class Article(PermissionsForObjectMixin, models.Model):
 
 class LongArticle(Article):
     remarks = models.CharField(max_length=100)
+    custom_field_2 = models.ForeignKey(Article, null=True, blank=True)
 
     class Permissions:
         # notice that this permission is anded (&) with Article permissions

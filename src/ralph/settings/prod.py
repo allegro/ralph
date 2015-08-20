@@ -6,3 +6,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'var', 'static')
 # FIXME: when going for full production, change it to False
 
 DEBUG = True
+REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'] = (
+    'rest_framework.authentication.TokenAuthentication',
+)

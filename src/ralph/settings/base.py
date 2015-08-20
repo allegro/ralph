@@ -49,6 +49,7 @@ MIDDLEWARE_CLASSES = (
 )
 
 ROOT_URLCONF = 'ralph.urls'
+URLCONF_MODULES = [ROOT_URLCONF]
 
 TEMPLATES = [
     {
@@ -142,5 +143,16 @@ LOGGING = {
 }
 
 REST_FRAMEWORK = {
-    'PAGE_SIZE': 10
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'ralph.api.permissions.RalphPermission',
+    ),
+    'DEFAULT_FILTER_BACKENDS': (
+        'ralph.lib.permissions.api.PermissionsForObjectFilter',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',  # noqa
+    'PAGE_SIZE': 10,
 }
