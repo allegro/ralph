@@ -65,7 +65,7 @@ class LicenceAdmin(PermissionAdminMixin, RalphAdmin):
         (_('Basic info'), {
             'fields': (
                 'licence_type', 'manufacturer', 'software_category',
-                'niw', 'sn', 'valid_thru', 'license_details',
+                'niw', 'sn', 'valid_thru', 'license_details', 'region',
                 'remarks'
             )
         }),

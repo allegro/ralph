@@ -2,6 +2,7 @@
 import os
 import urllib
 from copy import copy
+from functools import wraps
 
 from django import forms
 from django.conf import settings
@@ -11,6 +12,7 @@ from django.core import urlresolvers
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.http import HttpResponseRedirect
+from django.utils.functional import curry
 from django.views.generic import TemplateView
 from import_export.admin import ImportExportModelAdmin
 from reversion import VersionAdmin
@@ -19,6 +21,8 @@ from ralph.admin import widgets
 from ralph.admin.autocomplete import AjaxAutocompleteMixin
 from ralph.admin.helpers import get_field_by_relation_path
 from ralph.admin.views.main import BULK_EDIT_VAR, BULK_EDIT_VAR_IDS
+from ralph.lib.mixins.forms import RequestFormMixin
+from ralph.lib.permissions.admin import PermissionsPerObjectFormMixin
 
 FORMFIELD_FOR_DBFIELD_DEFAULTS = {
     models.DateField: {'widget': widgets.AdminDateWidget},
@@ -71,14 +75,43 @@ class RalphAutocompleteMixin(object):
             return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-class RalphAdminMixin(RalphAutocompleteMixin):
+class RalphAdminFormMixin(PermissionsPerObjectFormMixin, RequestFormMixin):
+    pass
 
+
+class RalphAdminForm(RalphAdminFormMixin, forms.ModelForm):
+    pass
+
+
+class RalphAdminChecks(admin.checks.ModelAdminChecks):
+    def _check_form(self, cls, model):
+        """
+        Check if form subclasses RalphAdminFormMixin
+        """
+        result = super()._check_form(cls, model)
+        if (
+            hasattr(cls, 'form') and
+            not issubclass(cls.form, RalphAdminFormMixin)
+        ):
+            result += admin.checks.must_inherit_from(
+                parent='RalphAdminFormMixin',
+                option='form',
+                obj=cls,
+                id='admin.E016'
+            )
+        return result
+
+
+class RalphAdminMixin(RalphAutocompleteMixin):
     """Ralph admin mixin."""
 
     list_views = None
     change_views = None
     change_list_template = 'admin/change_list.html'
     change_form_template = 'admin/change_form.html'
+
+    checks_class = RalphAdminChecks
+    form = RalphAdminForm
 
     def __init__(self, *args, **kwargs):
         self.list_views = copy(self.list_views) or []
@@ -87,6 +120,13 @@ class RalphAdminMixin(RalphAutocompleteMixin):
         else:
             self.change_views = copy(self.change_views) or []
         super().__init__(*args, **kwargs)
+
+    def get_form(self, request, obj=None, **kwargs):
+        """
+        Return form with request param passed by default.
+        """
+        Form = super().get_form(request, obj, **kwargs)
+        return wraps(Form)(curry(Form, _request=request))
 
     def get_changelist(self, request, **kwargs):
         from ralph.admin.views.main import RalphChangeList
