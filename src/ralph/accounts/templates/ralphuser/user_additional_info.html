@@ -1,0 +1,14 @@
+{% extends BASE_TEMPLATE %}
+{% load i18n table %}
+{% block view_content %}
+<div class="large-12 columns">
+  <h1>{{ object.first_name }} {{ object.last_name }}</h1>
+  <br /> <br />
+  <h5>{% trans 'Assigned assets' %}:</h5>
+
+  {% table asset_list.get_table_content %}
+ <br />
+  <h5>{% trans 'Assigned licences' %}:</h5>
+  {% table licence_list.get_table_content %}
+</div>
+{% endblock %}

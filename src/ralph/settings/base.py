@@ -32,6 +32,7 @@ INSTALLED_APPS = (
     'ralph.licences',
     'ralph.supports',
     'ralph.lib.foundation',
+    'ralph.lib.table',
     'ralph.data_importer',
     'ralph.dc_view',
     'ralph.reports',

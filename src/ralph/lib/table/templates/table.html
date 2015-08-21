@@ -1,0 +1,21 @@
+{% load table %}
+<table>
+  <thead>
+    <tr>
+      {% for header_name in headers %}
+        <th>{{ header_name|title }}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+  {% for items in rows %}
+    <tr>
+      {% for item in items %}
+        <td{{ item.html_attributes }}>
+          {{ item.value|safe }}
+        </td>
+      {% endfor %}
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
