@@ -4,14 +4,20 @@ from django.db import models
 from ralph.lib.mixins.models import TimeStampMixin
 from ralph.lib.permissions import PermByFieldMixin
 from ralph.lib.permissions.models import PermissionsBase
+from ralph.lib.polymorphic.models import Polymorphic, PolymorphicBase
 from ralph.lib.transitions import TransitionWorkflowBase
 
 BaseObjectMeta = type(
-    'BaseObjectMeta', (PermissionsBase, TransitionWorkflowBase), {}
+    'BaseObjectMeta', (
+        PolymorphicBase,
+        PermissionsBase,
+        TransitionWorkflowBase
+    ), {}
 )
 
 
 class BaseObject(
+    Polymorphic,
     PermByFieldMixin,
     TimeStampMixin,
     models.Model,

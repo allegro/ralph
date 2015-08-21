@@ -298,6 +298,9 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         null=True,
     )
 
+    def __str__(self):
+        return 'Asset: {}'.format(self.hostname)
+
     def get_deprecation_months(self):
         return int(
             (1 / (self.depreciation_rate / 100) * 12)
