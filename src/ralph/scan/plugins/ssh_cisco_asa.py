@@ -104,12 +104,32 @@ def scan_address(ip_address, **kwargs):
     ssh = _connect_ssh(ip_address, SSH_USER, SSH_PASS)
     try:
         lines = ssh.asa_command(
-            "show version | grep (^Hardware|Boot microcode|^Serial|address is)"
+            "show version | grep (^Hardware|Boot microcode|address is)"
         )
+        raw_inventory = ssh.asa_command("show inventory")
     finally:
         ssh.close()
+
+    inventory = [item for item in raw_inventory if item != '\r']
+    subdevices = []
+
+    def gen_subdevices(inventory):
+        even_lines = inventory[::2]
+        odd_lines = inventory[1::2]
+        for even_line, odd_line in zip(even_lines, odd_lines):
+            subdevice = even_line + ', ' + odd_line
+            yield subdevice
+    # pair_finder pulls out words or groups of words
+    # (which are in brackets) separated by commas
+    pair_finder = re.compile(r'(?:[^,"]|"(?:\.|[^"])*")+')
+    for subdevice in gen_subdevices(inventory):
+        parameters = {}
+        for parameter in pair_finder.findall(subdevice):
+            name, value = parameter.split(":")
+            parameters[name.strip().lower()] = value.strip().replace('"', '')
+        subdevices.append(parameters)
+
     pairs = parse.pairs(lines=[line.strip() for line in lines])
-    sn = pairs.get('Serial Number', None)
     model, ram, cpu = pairs['Hardware'].split(',')[:3]
     boot_firmware = pairs['Boot microcode']
     macs = []
@@ -147,6 +167,10 @@ def scan_address(ip_address, **kwargs):
             }],
         },
     })
+    sn = None
+    for subdevice in subdevices:
+        if 'chassis' in subdevice['name'].lower():
+            sn = subdevice['sn']
     if sn not in SERIAL_BLACKLIST:
         result['device']['serial_number'] = sn
     return result
