@@ -8,6 +8,12 @@ from django.forms.formsets import formset_factory
 from ralph.admin.mixins import RalphTemplateView
 from django.db import transaction
 from django.conf.urls import url
+from ralph.admin.fields import MultilineField
+from django.http import HttpResponseRedirect
+from django.utils.translation import ugettext_lazy as _
+
+from django.db import IntegrityError
+from django.shortcuts import render_to_response
 
 class MultiAddView(RalphTemplateView):
     template_name = 'admin/xxx.html'
@@ -36,8 +42,8 @@ class MultiAddView(RalphTemplateView):
     def get_form(self):
         form_kwargs = {}
         class BackOfficeAssetMultiForm(forms.Form):
-            sn = forms.CharField()
-            barcode = forms.CharField()
+            sn = MultilineField(allow_duplicates=False)
+            barcode = MultilineField(allow_duplicates=False)
         if self.request.method == 'POST':
             form_kwargs['data'] = self.request.POST
         return BackOfficeAssetMultiForm(**form_kwargs)
@@ -55,7 +61,13 @@ class MultiAddView(RalphTemplateView):
         #TODO:: validation duplicates
         #TODO:: multivalues as textarea
         if form.is_valid():
-            return self.form_valid(form)
+            try:
+                return self.form_valid(form)
+            except IntegrityError as e:
+                context = self.get_context_data()
+                context['form'] = form
+                form.add_error(None, e.args[1])
+                return self.render_to_response(context)
         else:
             return self.form_invalid(form)
 
@@ -65,10 +77,8 @@ class MultiAddView(RalphTemplateView):
 
     @transaction.atomic
     def form_valid(self, form):
-        from django.http import HttpResponseRedirect
-        from django.utils.translation import ugettext_lazy as _
         for barcode, sn in zip(
-            form.cleaned_data['barcode'].split(','), form.cleaned_data['sn'].split(',')
+            form.cleaned_data['barcode'], form.cleaned_data['sn']
         ):
             self.obj.baseobject_ptr_id = None
             self.obj.asset_ptr_id = None
