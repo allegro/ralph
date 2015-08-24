@@ -4,6 +4,19 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
+from ralph.assets.filters import (
+    BarcodeFilter,
+    DepreciationDateFilter,
+    ForceDepreciationFilter,
+    HostnameFilter,
+    InvoiceDateFilter,
+    InvoiceNoFilter,
+    ModelFilter,
+    OrderNoFilter,
+    RemarksFilter,
+    SNFilter,
+    StatusFilter
+)
 from ralph.back_office.models import BackOfficeAsset, Warehouse
 from ralph.back_office.views import (
     BackOfficeAssetComponents,
@@ -65,7 +78,11 @@ class BackOfficeAssetAdmin(
         'sn', 'hostname', 'invoice_date', 'invoice_no', 'region',
     ]
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
-    list_filter = ['status']
+    list_filter = [
+        StatusFilter, BarcodeFilter, SNFilter, HostnameFilter, InvoiceNoFilter,
+        InvoiceDateFilter, OrderNoFilter, ModelFilter, DepreciationDateFilter,
+        ForceDepreciationFilter, RemarksFilter
+    ]
     date_hierarchy = 'created'
     list_select_related = ['model', 'user', 'warehouse', 'model__manufacturer']
     raw_id_fields = ['model', 'user', 'owner', 'service_env']

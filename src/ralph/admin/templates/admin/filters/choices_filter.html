@@ -1,0 +1,13 @@
+{% load i18n %}
+<h6>
+  {% blocktrans with filter_title=title %}
+    {{ filter_title }}
+  {% endblocktrans %}
+</h6>
+<select class="filter" name="{{ choices.0.parameter_name }}">
+  {% for choice in choices %}
+    <option value="{{ choice.value }}"{% if choice.selected %} selected{% endif %}>
+      {{ choice.display }}
+    </option>
+  {% endfor %}
+</select>

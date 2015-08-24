@@ -43,6 +43,8 @@ def get_common_media():
         ('vendor', 'js', 'foundation.min.js'),
         ('vendor', 'js', 'modernizr.js'),
         ('src', 'js', 'fill-fields.js'),
+        ('vendor', 'js', 'foundation-datepicker.js'),
+        ('src', 'js', 'foundation-datepicker-init.js'),
     ])
     return forms.Media(
         js=[static('%s' % url) for url in js],

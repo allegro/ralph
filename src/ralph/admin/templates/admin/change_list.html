@@ -25,6 +25,7 @@
     {% contextual_search_form search_url search_fields %}
   {% endif %}
   <div id="content-main">
+    <form method="get" id="filter-form" class="hide"></form>
     <form id="changelist-form" action="" method="post"{% if cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>{% csrf_token %}
       <div class="row header">
         <div class="large-2 small-6 columns">
@@ -93,9 +94,12 @@
                 {% admin_actions %}
                 <div class="panel">
                   <h4>Filters</h4>
-                  {% for spec in cl.filter_specs %}
-                    {% admin_list_filter cl spec %}
-                  {% endfor %}
+                  <div class="filter-container">
+                    {% for spec in cl.filter_specs %}
+                      {% admin_list_filter cl spec %}
+                    {% endfor %}
+                  </div>
+                  <input type="button" class="button" id="filter-button" value="Filter" />
                 </div>
 
               </div>
