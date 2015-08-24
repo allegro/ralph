@@ -8,7 +8,7 @@ from django.forms.formsets import formset_factory
 from ralph.admin.mixins import RalphTemplateView
 from django.db import transaction
 from django.conf.urls import url
-from ralph.admin.fields import MultilineField
+from ralph.admin.fields import MultilineField, MultivalueFormMixin
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
@@ -41,9 +41,11 @@ class MultiAddView(RalphTemplateView):
 
     def get_form(self):
         form_kwargs = {}
-        class BackOfficeAssetMultiForm(forms.Form):
+        class BackOfficeAssetMultiForm(MultivalueFormMixin, forms.Form):
+            multivalue_fields = ['sn', 'barcode']
             sn = MultilineField(allow_duplicates=False)
             barcode = MultilineField(allow_duplicates=False)
+            model = BackOfficeAsset
         if self.request.method == 'POST':
             form_kwargs['data'] = self.request.POST
         return BackOfficeAssetMultiForm(**form_kwargs)
@@ -57,9 +59,6 @@ class MultiAddView(RalphTemplateView):
 
     def post(self, request, *args, **kwargs):
         form = self.get_form()
-        #TODO:: validation across the forms
-        #TODO:: validation duplicates
-        #TODO:: multivalues as textarea
         if form.is_valid():
             try:
                 return self.form_valid(form)

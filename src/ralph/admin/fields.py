@@ -36,6 +36,7 @@ class MultilineField(forms.CharField):
             raise forms.ValidationError(error_msg, code='required')
         if not self.allow_duplicates:
             # check if duplicates
+            #TODO FIXME this won't work for blanked items :P
             has_duplicates = len(set(values)) != len(values)
             if has_duplicates:
                 raise forms.ValidationError(_("There are duplicates in field."))
@@ -66,45 +67,46 @@ class MultivalueFormMixin(object):
     """
     multivalue_fields = []
     one_of_mulitvalue_required = []
-
-    def _get_validation_exclusions(self):
-        exclude = super()._get_validation_exclusions()
-        # you can't rely on django uniqness validation, becasue MultilineField
-        # is too custom and it handled uniqness validation by itself
-        exclude.extend(self.multivalue_fields)
-        return exclude
-
-    def save(self, commit=True):
-        if self.instance.id:
-            obj = super().save(commit)
-        else:
-            obj = self.bulk_add(commit)
-        return obj
-
-    @transaction.atomic
-    def bulk_add(self, commit):
-        objs = []
-        fail_message = _('Unable to add assets')
-        for row_as_dict in self.multivalue_rows_as_dict():
-            obj_data = copy.deepcopy(self.cleaned_data)
-            obj_data.update(row_as_dict)
-            obj = self._meta.model(**obj_data)
-            save_instance(
-                self, obj, self._meta.fields, fail_message, commit,
-                self._meta.exclude, construct=False
-            )
-            objs.append(obj)
-        if len(objs) > 1:
-            obj_name = self._meta.model._meta.verbose_name_plural
-        else:
-            obj_name = self._meta.model._meta.verbose_name
-        msg = _(
-            'Successfully added {} {}'.format(len(objs), str(obj_name)),
-        )
-        if hasattr(self, '_request'):
-            messages.info(self._request, msg)
-        return objs[0]
-
+    model = None
+#
+#    def _get_validation_exclusions(self):
+#        exclude = super()._get_validation_exclusions()
+#        # you can't rely on django uniqness validation, becasue MultilineField
+#        # is too custom and it handled uniqness validation by itself
+#        exclude.extend(self.multivalue_fields)
+#        return exclude
+#
+#    def save(self, commit=True):
+#        if self.instance.id:
+#            obj = super().save(commit)
+#        else:
+#            obj = self.bulk_add(commit)
+#        return obj
+#
+#    @transaction.atomic
+#    def bulk_add(self, commit):
+#        objs = []
+#        fail_message = _('Unable to add assets')
+#        for row_as_dict in self.multivalue_rows_as_dict():
+#            obj_data = copy.deepcopy(self.cleaned_data)
+#            obj_data.update(row_as_dict)
+#            obj = self._meta.model(**obj_data)
+#            save_instance(
+#                self, obj, self._meta.fields, fail_message, commit,
+#                self._meta.exclude, construct=False
+#            )
+#            objs.append(obj)
+#        if len(objs) > 1:
+#            obj_name = self._meta.model._meta.verbose_name_plural
+#        else:
+#            obj_name = self._meta.model._meta.verbose_name
+#        msg = _(
+#            'Successfully added {} {}'.format(len(objs), str(obj_name)),
+#        )
+#        if hasattr(self, '_request'):
+#            messages.info(self._request, msg)
+#        return objs[0]
+#
     def equal_count_validator(self, cleaned_data):
         """Adds a validation error if form's multivalues fields have
         different count of items."""
@@ -118,23 +120,24 @@ class MultivalueFormMixin(object):
                     msg = "Fields: {} - require the same count".format(
                         ', '.join(self.multivalue_fields)
                     )
+                    #TODO:: replace it with form.add_errror
                     self.errors.setdefault(field, []).append(msg)
-
-    def multivalue_rows_as_dict(self):
-        for key in self.multivalue_fields:
-            if key in self.cleaned_data:
-                any_row = self.cleaned_data[key]
-                break
-        else:
-            return []
-
-        for idx, null in enumerate(any_row):
-            row = {}
-            for key in self.multivalue_fields:
-                if key in self.cleaned_data:
-                    row[key] = self.cleaned_data[key][idx]
-            yield row
-
+#
+#    def multivalue_rows_as_dict(self):
+#        for key in self.multivalue_fields:
+#            if key in self.cleaned_data:
+#                any_row = self.cleaned_data[key]
+#                break
+#        else:
+#            return []
+#
+#        for idx, null in enumerate(any_row):
+#            row = {}
+#            for key in self.multivalue_fields:
+#                if key in self.cleaned_data:
+#                    row[key] = self.cleaned_data[key][idx]
+#            yield row
+#
     def any_in_multivalues_validator(self, data):
         def rows_of_required():
             rows_of_required = [
@@ -149,6 +152,7 @@ class MultivalueFormMixin(object):
             for row_of_required in rows_of_required():
                 if not any(row_of_required):
                     for field_name in self.one_of_mulitvalue_required:
+                        #TODO:: s/../form.add_error
                         errors = self._errors.setdefault(
                             field_name, ErrorList()
                         )
@@ -179,18 +183,18 @@ class MultivalueFormMixin(object):
                 ])
             else:
                 comma_items = ', '.join([str(obj) for obj in objs])
-                import ipdb; ipdb.set_trace()
             msg = 'Following items already exist: ' + comma_items
             raise ValidationError(mark_safe(msg))
 
     def check_uniqness(self, data):
+        #TODO:: this is relevant to model form (find a solution)
         for field_name in self.multivalue_fields:
             field = self[field_name].field
             if field.allow_duplicates:
                 continue
             try:
                 self.check_field_uniqueness(
-                    self._meta.model, field_name, data.get(field_name, [])
+                    self.model, field_name, data.get(field_name, [])
                 )
             except forms.ValidationError as error:
                 self._errors.setdefault(field_name, [])
