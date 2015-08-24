@@ -1,5 +1,6 @@
 Django==1.8.4
 dj.choices==0.10.0
+django-extensions==1.5.5
 django-import-export==0.2.7
 django-mptt==0.7.4
 django-reversion==1.8.6

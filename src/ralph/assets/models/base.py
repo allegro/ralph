@@ -3,9 +3,20 @@ from django.db import models
 
 from ralph.lib.mixins.models import TimeStampMixin
 from ralph.lib.permissions import PermByFieldMixin
+from ralph.lib.permissions.models import PermissionsBase
+from ralph.lib.transitions import TransitionWorkflowBase
+
+BaseObjectMeta = type(
+    'BaseObjectMeta', (PermissionsBase, TransitionWorkflowBase), {}
+)
 
 
-class BaseObject(PermByFieldMixin, TimeStampMixin, models.Model):
+class BaseObject(
+    PermByFieldMixin,
+    TimeStampMixin,
+    models.Model,
+    metaclass=BaseObjectMeta
+):
 
     """Base object mixin."""
 

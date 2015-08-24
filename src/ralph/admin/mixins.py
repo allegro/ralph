@@ -32,9 +32,13 @@ FORMFIELD_FOR_DBFIELD_DEFAULTS = {
 
 def get_common_media():
     """
-    Shared by across extra views and admin class
+    Shared across extra views and admin class
     """
     js = map(lambda x: os.path.join(*x), [
+        ('admin', 'js', 'jquery.js'),
+        ('admin', 'js', 'jquery.init.js'),
+        ('admin', 'js', 'actions.js'),
+        ('admin', 'js', 'admin', 'RelatedObjectLookups.js'),
         ('vendor', 'js', 'jquery.js'),
         ('vendor', 'js', 'foundation.min.js'),
         ('vendor', 'js', 'modernizr.js'),
