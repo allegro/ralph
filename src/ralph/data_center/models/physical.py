@@ -3,18 +3,23 @@ import re
 from collections import namedtuple
 from itertools import chain
 
+from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.admin.sites import ralph_site
+from ralph.admin.widgets import AutocompleteWidget
 from ralph.assets.models.assets import AdminAbsoluteUrlMixin, Asset, NamedMixin
-from ralph.assets.models.choices import AssetSource
+from ralph.assets.models.choices import AssetSource, AssetStatus
 from ralph.data_center.models.choices import (
     ConnectionType,
     Orientation,
     RackOrientation
 )
+from ralph.lib.transitions.decorators import transition_action
+from ralph.lib.transitions.fields import TransitionField
 
 # i.e. number in range 1-16 and optional postfix 'A' or 'B'
 VALID_SLOT_NUMBER_FORMAT = re.compile('^([1-9][A,B]?|1[0-6][A,B]?)$')
@@ -206,6 +211,10 @@ class Rack(NamedMixin.NonUnique, models.Model):
 class DataCenterAsset(Asset):
 
     rack = models.ForeignKey(Rack, null=True)
+    status = TransitionField(
+        default=AssetStatus.new.id,
+        choices=AssetStatus(),
+    )
     position = models.IntegerField(null=True)
     orientation = models.PositiveIntegerField(
         choices=Orientation(),
@@ -343,6 +352,18 @@ class DataCenterAsset(Asset):
             Gap.generate_gaps(assets) for assets in assets_by_orientation
         ]
         return chain(*assets)
+
+    @transition_action
+    def change_rack(self, **kwargs):
+        self.rack = Rack.objects.get(pk=kwargs['rack'])
+        self.position = kwargs['position']
+
+    change_rack.form_fields = {
+        'rack': forms.CharField(widget=AutocompleteWidget(
+            rel=rack.rel, admin_site=ralph_site
+        )),
+        'position': forms.IntegerField(),
+    }
 
 
 class Connection(models.Model):

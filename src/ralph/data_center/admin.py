@@ -35,6 +35,7 @@ from ralph.data_center.views.ui import (
 )
 from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
+from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
 
 
@@ -89,6 +90,7 @@ class DataCenterAssetLicence(RalphDetailViewAdmin):
 
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(
+    TransitionAdminMixin,
     BulkEditChangeListMixin,
     PermissionAdminMixin,
     RalphAdmin,

@@ -34,6 +34,7 @@ INSTALLED_APPS = (
     'ralph.data_importer',
     'ralph.dc_view',
     'ralph.reports',
+    'ralph.lib.transitions',
     'rest_framework',
 )
 

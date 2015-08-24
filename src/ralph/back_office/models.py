@@ -6,7 +6,9 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
 from ralph.assets.models.assets import Asset
+from ralph.assets.models.choices import AssetStatus
 from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
+from ralph.lib.transitions.fields import TransitionField
 
 
 class Warehouse(NamedMixin, TimeStampMixin, models.Model):
@@ -27,6 +29,10 @@ class BackOfficeAsset(Regionalizable, Asset):
     purchase_order = models.CharField(max_length=50, null=True, blank=True)
     loan_end_date = models.DateField(
         null=True, blank=True, default=None, verbose_name=_('Loan end date'),
+    )
+    status = TransitionField(
+        default=AssetStatus.new.id,
+        choices=AssetStatus(),
     )
 
     class Meta:

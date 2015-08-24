@@ -237,13 +237,6 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         null=True,
         verbose_name=_('Inventory number'),
     )
-    status = models.PositiveSmallIntegerField(
-        blank=True,
-        choices=AssetStatus(),
-        default=AssetStatus.new.id,
-        null=True,
-        verbose_name=_("status"),
-    )
     required_support = models.BooleanField(default=False)
 
     order_no = models.CharField(

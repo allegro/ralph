@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load i18n admin_urls ralph_tags admin_static admin_modify foundation_form foundation_alert sitetree %}
+{% load i18n admin_urls ralph_tags admin_static admin_modify foundation_form foundation_alert sitetree transitions_tags %}
 
 {% block extrahead %}{{ block.super }}
   <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
@@ -25,6 +25,7 @@
       </div>
       <div class="large-2 medium-2 small-2 columns">
         <div class="header-toolbar">
+          {% available_transitions original 'status' %}
           {% block object-tools %}
             {% if change %}
               {% if not is_popup %}
@@ -83,26 +84,6 @@
     </form>
   </div>
 {% endblock %}
+
 {% block admin_change_form_document_ready %}
-  <script type="text/javascript">
-    (function($) {
-      $(document).ready(function() {
-        $('.add-related').click(function(e) {
-          e.preventDefault();
-          showAddAnotherPopup(this);
-        });
-        $('.related-lookup').click(function(e) {
-          e.preventDefault();
-          showRelatedObjectLookupPopup(this);
-        });
-        $('.change-related').click(function(e) {
-          e.preventDefault();
-          showRelatedObjectPopup(this);
-        });
-      {% if adminform and add %}
-        $('form#{{ opts.model_name }}_form :input:visible:enabled:first').focus()
-      {% endif %}
-      });
-    })(django.jQuery);
-  </script>
 {% endblock %}
