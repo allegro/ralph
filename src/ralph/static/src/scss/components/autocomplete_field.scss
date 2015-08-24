@@ -1,16 +1,23 @@
-$item-padding: 0.1rem;
-$widget-padding: $input-padding - $item-padding;
-$lookup-icon-width: 20px;
+$item-padding: 0.25rem;
+$lookup-icon-width: 25px;
+$font-size: rem-calc(16);
 
 @mixin right-lookup() {
     width: calc(100%  - #{($lookup-icon-width * 2)});
     float: left;
 }
 
+@mixin common-styles() {
+    margin: 1px;
+    padding: $item-padding 0;
+    font-size: $input-font-size;
+}
+
 .autocomplete-widget {
     position: relative;
-    margin: 0 0 $form-spacing 0;
+    margin: $form-spacing / 2 0;
     .widget-wrapper {
+        overflow: hidden;
         background: $input-bg-color;
         border: {
             style: $input-border-style;
@@ -18,14 +25,15 @@ $lookup-icon-width: 20px;
             color: $input-border-color;
           }
         box-shadow: $input-box-shadow;
-        padding: $widget-padding;
         .item-wrapper {
             @include right-lookup;
             .item {
-                display:inline;
+                line-height: 1rem;
+                display: inline-block;
                 background: #ededed;
-                padding: $item-padding 0;
                 border: 1px solid #cacaca;
+                white-space: nowrap;
+                @include common-styles;
                 .title {
                     margin-left: $item-padding;
                 }
@@ -40,16 +48,20 @@ $lookup-icon-width: 20px;
                 padding: 0 4px;
             }
         }
-        .widget-icons .fa {
-            font-size: rem-calc(18);
+        .widget-icons {
+            margin-top: 5px;
+            .fa {
+                font-size: $font-size;
+            }
         }
         .input {
             @include right-lookup;
-            padding: $item-padding;
-            margin: 0;
+            @include common-styles;
             display: none;
-            float: left;
-            border: 0;
+            padding-left: 4px;
+            border: 3px solid transparent;
+            border-left: 0;
+            border-right: 0;
         }
         .delete, .title, .related-lookup {
             font-size: $input-font-size;
