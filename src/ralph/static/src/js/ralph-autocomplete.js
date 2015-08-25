@@ -4,7 +4,8 @@
         this.$widget = $(widget);
         this.options = {
             interval: 500,
-            sentenceLength: 3
+            sentenceLength: 3,
+            watch: true
         };
         this.options = $.extend(this.options, options, this.$widget.data());
         this.$queryInput = $('.input', this.$widget);
@@ -19,15 +20,17 @@
         this.$deleteButton.on('click', function(e) {that.deleteItem(e);});
         this.$queryInput.on('keydown', function(e) {that.keyDown(e);});
 
-        Object.defineProperty(document.querySelector(that.options.targetSelector), 'value', {
-            get: function(){
-                return this.getAttribute('value');
-            },
-            set: function(val) {
-                that.changeTargetAfterPopup(val);
-                this.setAttribute('value', val);
-            }
-        });
+        if(this.options.watch) {
+            Object.defineProperty(document.querySelector(that.options.targetSelector), 'value', {
+                get: function(){
+                    return this.getAttribute('value');
+                },
+                set: function(val) {
+                    that.changeTargetAfterPopup(val);
+                    this.setAttribute('value', val);
+                }
+            });
+        }
     };
     AutocompleteWidget.prototype.keyDown = function(event) {
         var that = this;
@@ -170,8 +173,9 @@
     };
 })(jQuery, Foundation);
 
-function updateAfterClose(id, newValue) {
-    var $parent = $('#' + id).val(newValue);
-}
-
-$('.autocomplete-widget').autocomplete();
+(function($) {
+    function updateAfterClose(id, newValue) {
+        var $parent = $('#' + id).val(newValue);
+    }
+    $('.autocomplete-widget').autocomplete();
+}(jQuery));

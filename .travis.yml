@@ -1,6 +1,11 @@
 sudo: false
 language: python
 
+cache:
+  directories:
+    - node_modules
+    - bower_components
+
 python:
     - "3.4"
 
@@ -9,6 +14,7 @@ before_install:
     - make flake
 
 install:
+    - npm config set python /usr/bin/python2.7
     - npm install
     - make js-hint
     - gulp
