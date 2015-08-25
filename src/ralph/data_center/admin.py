@@ -17,6 +17,7 @@ from ralph.assets.filters import (
     SNFilter,
     StatusFilter
 )
+from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_center.filters import RackFilter
 from ralph.data_center.forms.network import NetworkInlineFormset
 from ralph.data_center.models.components import DiskShare, DiskShareMount
@@ -107,6 +108,7 @@ class DataCenterAssetAdmin(
     TransitionAdminMixin,
     BulkEditChangeListMixin,
     PermissionAdminMixin,
+    AttachmentsMixin,
     RalphAdmin,
 ):
     """Data Center Asset admin class."""

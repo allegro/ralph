@@ -105,6 +105,11 @@ input.datepicker {
     position: inherit;
 }
 
+input[type="file"] {
+    width: auto;
+    margin: 0;
+}
+
 .add-related .fa {
     color: $success-color;
 }

@@ -27,6 +27,7 @@ INSTALLED_APPS = (
     'sitetree',
     'ralph.accounts',
     'ralph.assets',
+    'ralph.attachments',
     'ralph.back_office',
     'ralph.data_center',
     'ralph.licences',
@@ -107,6 +108,10 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
+STATIC_ROOT = os.path.join(BASE_DIR, 'var', 'static')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'var', 'media')
 
 # adapt message's tags to bootstrap
 MESSAGE_TAGS = {

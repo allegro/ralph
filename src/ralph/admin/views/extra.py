@@ -3,7 +3,12 @@ from copy import copy
 
 from django.shortcuts import get_object_or_404
 
-from ralph.admin.mixins import RalphAdmin, RalphTemplateView, get_inline_media
+from ralph.admin.mixins import (
+    RalphAdmin,
+    RalphTemplateView,
+    get_common_media,
+    get_inline_media
+)
 from ralph.admin.sites import ralph_site
 
 VIEW_TYPES = CHANGE, LIST = ('change', 'list')
@@ -99,6 +104,7 @@ class RalphDetailView(RalphExtraViewMixin, RalphTemplateView):
         context['object'] = self.object
         context['original'] = self.object
         context['change_views'] = self.views
+        context['media'] += get_common_media() + get_inline_media()
         return context
 
     @classmethod
@@ -114,7 +120,7 @@ class AdminViewBase(type):
         empty_fieldset = (('__empty__', {'fields': []}),)
         admin_whitelist = ['inlines', 'fieldsets']
         admin_attrs = {
-            key: attrs.pop(key, None) for key in admin_whitelist
+            key: attrs.pop(key, []) for key in admin_whitelist
         }
         admin_attrs['change_form_template'] = base_template
         admin_attrs['fieldsets'] = admin_attrs['fieldsets'] or empty_fieldset
@@ -133,8 +139,7 @@ class RalphDetailViewAdmin(RalphDetailView, metaclass=AdminViewBase):
         self.admin_class_instance = self.admin_class(
             model, ralph_site, change_views=self.views
         )
-        extra_context['media'] = self.admin_class_instance.media + \
-            get_inline_media()
+        extra_context['media'] += self.admin_class_instance.media
         return self.admin_class_instance.change_view(
             request,
             pk,

@@ -2,7 +2,6 @@
 import os
 import urllib
 from copy import copy
-from functools import wraps
 
 from django import forms
 from django.conf import settings
@@ -12,7 +11,6 @@ from django.core import urlresolvers
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.http import HttpResponseRedirect
-from django.utils.functional import curry
 from django.views.generic import TemplateView
 from import_export.admin import ImportExportModelAdmin
 from reversion import VersionAdmin
@@ -21,6 +19,7 @@ from ralph.admin import widgets
 from ralph.admin.autocomplete import AjaxAutocompleteMixin
 from ralph.admin.helpers import get_field_by_relation_path
 from ralph.admin.views.main import BULK_EDIT_VAR, BULK_EDIT_VAR_IDS
+from ralph.helpers import add_request_to_form
 from ralph.lib.mixins.forms import RequestFormMixin
 from ralph.lib.permissions.admin import PermissionsPerObjectFormMixin
 
@@ -35,6 +34,7 @@ def get_common_media():
     Shared across extra views and admin class
     """
     js = map(lambda x: os.path.join(*x), [
+        ('admin', 'js', 'core.js'),
         ('admin', 'js', 'jquery.js'),
         ('admin', 'js', 'jquery.init.js'),
         ('admin', 'js', 'actions.js'),
@@ -131,8 +131,8 @@ class RalphAdminMixin(RalphAutocompleteMixin):
         """
         Return form with request param passed by default.
         """
-        Form = super().get_form(request, obj, **kwargs)
-        return wraps(Form)(curry(Form, _request=request))
+        Form = super().get_form(request, obj, **kwargs)  # noqa
+        return add_request_to_form(Form, request=request)
 
     def get_changelist(self, request, **kwargs):
         from ralph.admin.views.main import RalphChangeList
