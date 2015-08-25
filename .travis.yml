@@ -16,7 +16,6 @@ install:
     - pip install coveralls
 
 script:
-    - gulp test
     - make coveralls
 
 after_success:
