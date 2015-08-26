@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 from ralph.lib.permissions.admin import PermissionsPerObjectFormMixin
+from ralph.lib.permissions.tests._base import PermissionsTestMixin
 from ralph.lib.permissions.tests.models import (
     Article,
     Library,
@@ -73,45 +74,8 @@ class TestUserPermissions(TestCase):
         )
 
 
-class PermissionsPerObjectTestMixin(object):
-    def _create_users_and_articles(self):
-        self.user1 = get_user_model().objects.create(username='user1')
-        self.user2 = get_user_model().objects.create(username='user2')
-        self.user3 = get_user_model().objects.create(username='user3')
-        self.superuser = get_user_model().objects.create(
-            username='superuser', is_superuser=True
-        )
-
-        # create two articles for each user
-        self.article_1 = Article.objects.create(
-            author=self.user1,
-            title='1',
-            content='1'*10,
-        )
-        self.article_2 = Article.objects.create(
-            author=self.user2,
-            title='1',
-            content='1'*10,
-        )
-
-        # create group article
-        self.article_1.collaborators.add(self.user2)
-
-        # create article with long title
-        self.long_article = LongArticle.objects.create(
-            author=self.user1,
-            title='####### long article ########',
-            content='lorem ipsum'
-        )
-        self.long_article_2 = LongArticle.objects.create(
-            author=self.user1,
-            title='short',
-            content='lorem ipsum'
-        )
-
-
 @ddt
-class TestPermissionsPerObject(PermissionsPerObjectTestMixin, TestCase):
+class TestPermissionsPerObject(PermissionsTestMixin, TestCase):
     def setUp(self):
         self._create_users_and_articles()
 
@@ -179,7 +143,7 @@ class TestPermissionsPerObject(PermissionsPerObjectTestMixin, TestCase):
         )
 
 
-class TestPermissionsPerObjectForm(PermissionsPerObjectTestMixin, TestCase):
+class TestPermissionsPerObjectForm(PermissionsTestMixin, TestCase):
     class SampleForm(PermissionsPerObjectFormMixin, forms.ModelForm):
         class Meta:
             model = Library

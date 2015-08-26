@@ -80,7 +80,7 @@ class user_permission(object):  # noqa
             return operator_(self(*args, **kwargs), other(*args, **kwargs))
         func._is_operator = True
         return type(self)(func, name='({}: {}, {})'.format(
-            operator.__name__.rstrip('_').upper(),
+            operator_.__name__.rstrip('_').upper(),
             self,
             other
         ))
@@ -122,7 +122,11 @@ class PermissionsBase(ModelBase):
         new_class = super().__new__(cls, name, bases, attrs)
 
         permissions = attrs.pop('Permissions', None)
+        apply_bases_permissions = True
         if not permissions:
+            # apply bases permissions only if there are new permissions in
+            # new class
+            apply_bases_permissions = False
             permissions = getattr(
                 new_class,
                 'Permissions',
@@ -130,7 +134,7 @@ class PermissionsBase(ModelBase):
             )
         permissions.blacklist = cls._init_blacklist(cls, permissions, bases)
         permissions.has_access = cls._init_object_permissions(
-            cls, permissions, bases
+            cls, permissions, bases, apply_bases_permissions
         )
         new_class.add_to_class('_permissions', permissions)
         cls._init_meta_permissions(cls, new_class)
@@ -147,7 +151,10 @@ class PermissionsBase(ModelBase):
 
     def _init_meta_permissions(cls, new_class):
         class_name = new_class._meta.model_name
-        model_fields = new_class._meta.fields
+        model_fields = (
+            new_class._meta.fields +
+            new_class._meta.many_to_many
+        )
         for field in model_fields:
             name = field.name
             if (
@@ -163,13 +170,14 @@ class PermissionsBase(ModelBase):
                     _('Can view {} field').format(field.verbose_name)
                 ))
 
-    def _init_object_permissions(cls, permissions, bases):
+    def _init_object_permissions(cls, permissions, bases, apply_bases=True):
         has_access = getattr(permissions, 'has_access', user_permission())
-        for base in bases:
-            try:
-                has_access &= base.Permissions.has_access
-            except AttributeError:
-                pass
+        if apply_bases:
+            for base in bases:
+                try:
+                    has_access &= base.Permissions.has_access
+                except AttributeError:
+                    pass
         return has_access
 
 
@@ -198,6 +206,7 @@ class PermByFieldMixin(models.Model, metaclass=PermissionsBase):
         :return: True or False
         :rtype: bool
         """
+        # TODO: if it's m2m field, check on the other side
         perm_key = get_perm_key(
             action,
             cls._meta.model_name,
@@ -209,14 +218,7 @@ class PermByFieldMixin(models.Model, metaclass=PermissionsBase):
         # If the user does not have rights to view,
         # but has the right to change he can view the field
         if action == 'view' and not perm:
-            perm_key = get_perm_key(
-                'change',
-                cls._meta.model_name,
-                field_name
-            )
-            perm = user.has_perm(
-                '{}.{}'.format(cls._meta.app_label, perm_key)
-            )
+            return cls.has_access_to_field(field_name, user, action='change')
         return perm
 
     @classmethod
@@ -242,7 +244,7 @@ class PermByFieldMixin(models.Model, metaclass=PermissionsBase):
         result = []
         blacklist = cls._permissions.blacklist
 
-        for field in cls._meta.fields:
+        for field in (cls._meta.fields + cls._meta.many_to_many):
             if (
                 not field.primary_key and
                 field.name not in blacklist and
