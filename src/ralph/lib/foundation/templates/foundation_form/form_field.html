@@ -1,6 +1,6 @@
 {% load foundation_form %}
 
-<div class="field-row large-12 columns{% if field.field.errors %} error{% endif %}">
+<div class="field-row large-12 columns{% if field.errors %} error{% endif %}">
   <div class="row">
     <div class="small-3 columns">
       {% if show_label %}
@@ -11,20 +11,20 @@
       {% if field.is_readonly %}
         <span class='read-only'>{{ field.contents|default:"-" }}</span>
       {% else %}
-        {{ field.field }}
+        {{ field }}
       {% endif %}
-      {% if field.field.errors %}
-        {% for error in field.field.errors %}
+      {% if field.errors %}
+        {% for error in field.errors %}
           <small class="error">{{ error }}</small>
         {% endfor %}
       {% endif %}
-      {% if field.field.help_text %}
+      {% if field.help_text %}
         <span class="help-text">
           <i
             class="fa fa-lg fa-info-circle has-tip tip-top"
             data-tooltip
             aria-haspopup="true"
-            title="{{ field.field.help_text | escape }}"
+            title="{{ field.help_text | escape }}"
           >
           </i>
         </span>

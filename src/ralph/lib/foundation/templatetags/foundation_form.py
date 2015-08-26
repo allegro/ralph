@@ -10,9 +10,12 @@ def label(field):
 
 
 @register.inclusion_tag('foundation_form/form_field.html')
-def field(field):
+def field(field, is_admin=True, show_label=True):
     """Render foundation field."""
-    return {'field': field, 'show_label': True}
+    return {
+        'field': field.field if is_admin else field,
+        'show_label': show_label
+    }
 
 
 @register.inclusion_tag('foundation_form/form_field.html')
