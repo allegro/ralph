@@ -36,8 +36,8 @@ class TestRestAssetInfoPerRack(TestCase):
         self.client.login(username='test', password='test')
 
         environment = EnvironmentFactory()
-        service = ServiceFactory()
-        service_env = ServiceEnvironment(
+        service = ServiceFactory(name='Service1')
+        service_env = ServiceEnvironment.objects.create(
             service=service,
             environment=environment
         )
@@ -112,12 +112,12 @@ class TestRestAssetInfoPerRack(TestCase):
                     'position': self.asset_1.position,
                     'model': self.asset_1.model.name,
                     'children': [],
-                    'front_layout': u'',
-                    'back_layout': u'',
+                    'front_layout': '',
+                    'back_layout': '',
                     'management_ip': "",
                     'orientation': 'front',
-                    'remarks': u'',
-                    'service': u'Backup systems',
+                    'remarks': '',
+                    'service': 'Service1',
                     'url': self.asset_1.get_absolute_url()
                 },
                 {

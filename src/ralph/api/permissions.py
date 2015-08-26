@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from rest_framework.compat import get_model_name
 from rest_framework.permissions import IsAuthenticated as DRFIsAuthenticated
+from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 from ralph.lib.permissions.api import ObjectPermissionsMixin
 
@@ -25,6 +26,20 @@ class IsAuthenticated(DRFIsAuthenticated):
     """
     def has_permission(self, request, view):
         return super().has_permission(request, view) and is_staff(request.user)
+
+
+class IsSuperuserOrReadonly(BasePermission):
+    """
+    Allow only superuser to save. Every other user has readonly rights.
+    """
+    def has_permission(self, request, view):
+        return super().has_permission(request, view) and (
+            request.method in SAFE_METHODS or
+            (
+                request.user and
+                request.user.is_superuser
+            )
+        )
 
 
 class RalphPermission(ObjectPermissionsMixin, IsAuthenticated):

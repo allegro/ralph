@@ -12,6 +12,13 @@ class QuerysetRelatedMixin(object):
     prefetch_related = None
     _skip_admin_list_select_related = False
 
+    def __init__(self, *args, **kwargs):
+        self.select_related = kwargs.pop('select_related', self.select_related)
+        self.prefetch_related = kwargs.pop(
+            'prefetch_related', self.prefetch_related
+        )
+        super().__init__(*args, **kwargs)
+
     def get_queryset(self):
         queryset = super().get_queryset()
         admin_site = ralph_site._registry.get(queryset.model)

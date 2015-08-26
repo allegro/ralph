@@ -7,6 +7,9 @@ from ralph.api import router
 # notice that each module should have `urlpatters` variable defined
 # (as empty list if there is any custom url)
 api_urls = list(map(lambda u: url(r'^', include(u)), [
+    'ralph.accounts.api',
+    'ralph.assets.api.routers',
+    'ralph.back_office.api',
     'ralph.data_center.urls.api',
     'ralph.dc_view.urls.api',
     'ralph.supports.api',

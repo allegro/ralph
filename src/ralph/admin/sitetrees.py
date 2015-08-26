@@ -163,6 +163,8 @@ sitetrees = [
                 section(_('Asset model'), 'assets', 'AssetModel'),
                 section(_('Asset category'), 'assets', 'Category'),
                 section(_('Manufacturer'), 'assets', 'Manufacturer'),
+                section(_('Business segment'), 'assets', 'BusinessSegment'),
+                section(_('Profit center'), 'assets', 'ProfitCenter'),
                 section(_('Service'), 'assets', 'Service'),
                 section(_('Environment'), 'assets', 'Environment'),
                 section(
