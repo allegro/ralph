@@ -12,6 +12,7 @@ before_install:
     - make flake
 
 install:
+    # TODO: pull base image first?
     - docker build -t allegrogroup/ralph-ng .
 
 script:
