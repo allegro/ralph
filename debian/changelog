@@ -183,6 +183,6 @@ ralph (3.0.0-2) UNRELEASED; urgency=medium
 
 ralph (3.0.0-1) UNRELEASED; urgency=medium
 
-  * Initial release. 
+  * Initial release.
 
  -- MAINTAINER <vagrant@ralph-dev>  Mon, 29 Jun 2015 11:39:55 +0000
