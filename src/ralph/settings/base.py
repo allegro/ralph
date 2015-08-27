@@ -92,7 +92,8 @@ DATABASES = {
         'USER': os.environ.get('DB_ENV_MYSQL_USER', 'ralph_ng'),
         'PASSWORD': os.environ.get('DB_ENV_MYSQL_PASSWORD', 'ralph_ng'),
         'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
-        'OPTIONS': MYSQL_OPTIONS
+        'OPTIONS': MYSQL_OPTIONS,
+        'ATOMIC_REQUESTS': True,
     }
 }
 

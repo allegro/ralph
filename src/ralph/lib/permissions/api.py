@@ -55,7 +55,7 @@ class PermissionsPerFieldSerializerMixin(object):
         DRF nomenclature.
         """
         result = super().get_field_names(declared_fields, model_info)
-        model = model_info.pk.model
+        model = self.Meta.model
         permissioned_fields = set(
             list(model_info.fields.keys()) +
             list(model_info.forward_relations.keys())
