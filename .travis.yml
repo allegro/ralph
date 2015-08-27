@@ -1,5 +1,8 @@
-sudo: false
+sudo: required
 language: python
+
+services:
+  - docker
 
 cache:
   directories:
@@ -27,6 +30,9 @@ script:
 
 after_success:
     - coveralls
+
+deploy:
+    - docker build -t allegrogroup/ralph-ng .
 
 notifications:
   webhooks:
