@@ -11,6 +11,13 @@ import socket
 from pysnmp.entity.rfc3413.oneliner import cmdgen
 from pysnmp.proto.rfc1902 import OctetString
 
+PRIV_PROTOCOLS = (
+    cmdgen.usmDESPrivProtocol,
+    cmdgen.usmAesCfb128Protocol,
+    cmdgen.usmAesCfb192Protocol,
+    cmdgen.usmAesCfb256Protocol,
+)
+
 
 def check_snmp_port(ip, port=161, timeout=1):
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -50,48 +57,52 @@ def user_data(auth, snmp_version, priv_protocol=cmdgen.usmDESPrivProtocol):
 
 
 def snmp_command(
-    hostname, community, oid, snmp_version='2c', timeout=1, attempts=3,
-    priv_protocol=cmdgen.usmDESPrivProtocol
+    hostname, community, oid, snmp_version='2c', timeout=2, attempts=3
 ):
     transport = cmdgen.UdpTransportTarget((hostname, 161), attempts, timeout)
-    data = user_data(community, snmp_version, priv_protocol=priv_protocol)
     gen = cmdgen.CommandGenerator()
-    error, status, index, vars = gen.getCmd(data, transport, oid)
-    if error:
-        return None
-    else:
-        return vars
+    for priv_protocol in PRIV_PROTOCOLS:
+        data = user_data(community, snmp_version, priv_protocol=priv_protocol)
+        error, status, index, vars = gen.getCmd(data, transport, oid)
+        if not error:
+            return vars
+    return None
 
 
 def snmp_walk(
-    hostname, community, oid, snmp_version='2c', timeout=1, attempts=3,
-    priv_protocol=cmdgen.usmDESPrivProtocol
+    hostname, community, oid, snmp_version='2c', timeout=2, attempts=3
 ):
     transport = cmdgen.UdpTransportTarget((hostname, 161), attempts, timeout)
-    data = user_data(community, snmp_version, priv_protocol=priv_protocol)
     gen = cmdgen.CommandGenerator()
-    error, status, index, values = gen.nextCmd(data, transport, oid)
-    if not error:
-        return values
+    for priv_protocol in PRIV_PROTOCOLS:
+        data = user_data(community, snmp_version, priv_protocol=priv_protocol)
+        error, status, index, vars = gen.nextCmd(data, transport, oid)
+        if not error:
+            return vars
+    return None
 
 
 def snmp_bulk(
-    hostname, community, oid, snmp_version='2c', timeout=1, attempts=3
+    hostname, community, oid, snmp_version='2c', timeout=2, attempts=3
 ):
     transport = cmdgen.UdpTransportTarget((hostname, 161), attempts, timeout)
-    data = user_data(community, snmp_version)
-    gen = cmdgen.CommandGenerator()
-    if snmp_version in ('2c', '3', 3):
-        error, status, index, vars = gen.bulkCmd(data, transport, 0, 25, oid)
-    else:
-        error, status, index, vars = gen.nextCmd(data, transport, oid)
-    if error:
-        return {}
-    return dict(i for i, in vars)
+    for priv_protocol in PRIV_PROTOCOLS:
+        data = user_data(community, snmp_version, priv_protocol=priv_protocol)
+        gen = cmdgen.CommandGenerator()
+        if snmp_version in ('2c', '3', 3):
+            error, status, index, vars = gen.bulkCmd(
+                data, transport, 0, 25, oid
+            )
+        else:
+            error, status, index, vars = gen.nextCmd(data, transport, oid)
+        if not error:
+            # equivalent to dict(i for i, in vars)
+            return dict(i[0] for i in vars)
+    return {}
 
 
 def snmp_macs(
-    hostname, community, oid, snmp_version='2c', timeout=1, attempts=3
+    hostname, community, oid, snmp_version='2c', timeout=2, attempts=3
 ):
     for oid, value in snmp_bulk(hostname, community, oid, snmp_version,
                                 timeout, attempts).iteritems():
