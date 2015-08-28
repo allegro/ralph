@@ -191,7 +191,7 @@ class AutocompleteWidget(forms.TextInput):
                     pass
         current_object = None
         if value:
-            current_object = self.rel_to.objects.select_related(
+            current_object = self.rel_to._default_manager.select_related(
                 # https://docs.djangoproject.com/en/1.8/ref/models/querysets/#select-related
                 # we cannot pass empty list - this would select all related
                 # model - instead we pass None, which means that none of
@@ -212,14 +212,15 @@ class AutocompleteWidget(forms.TextInput):
         can_edit = self.admin_site._registry[self.rel_to].has_change_permission(
             self.request
         )
-        if value and can_edit:
+        is_polymorphic = getattr(self.rel_to, 'is_polymorphic', False)
+        if value and can_edit and not is_polymorphic:
             context['change_related_template_url'] = self.get_related_url(
                 info, 'change', value,
             )
         can_add = self.admin_site._registry[self.rel_to].has_add_permission(
             self.request
         )
-        if can_add:
+        if not is_polymorphic and can_add:
             context['add_related_url'] = self.get_related_url(info, 'add')
         template = loader.get_template('admin/widgets/autocomplete.html')
         return template.render(context)

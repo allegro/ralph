@@ -23,6 +23,7 @@ class BackOfficeAssetSerializer(AssetSerializer):
     class Meta:
         model = BackOfficeAsset
         depth = 1
+        exclude = ('content_type',)
 
 
 class BackOfficeAssetViewSet(RalphAPIViewSet):

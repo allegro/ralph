@@ -101,3 +101,5 @@ class AssetAdmin(RalphAdmin):
 @register(BaseObject)
 class BaseObjectAdmin(RalphAdmin):
     raw_id_fields = ['parent', 'service_env']
+    exclude = ('content_type',)
+    list_select_related = ['content_type']

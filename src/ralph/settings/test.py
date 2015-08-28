@@ -16,6 +16,7 @@ INSTALLED_APPS += (
     'ralph.lib.mixins',
     'ralph.tests',
     'ralph.lib.permissions.tests',
+    'ralph.lib.polymorphic.tests',
 )
 
 PASSWORD_HASHERS = (
