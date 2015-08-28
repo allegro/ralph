@@ -30,6 +30,16 @@ $(document).ready(function() {
           $form.submit();
       });
 
+      // If you press "enter" in the filter form field
+      // run submit on this form. (Default is not working)
+      $('.filter-container').on('keypress', function(event) {
+          if(event.keyCode == 13) {  // For "enter" key
+              event.preventDefault();
+              $('#filter-button').click();
+              return false;
+          }
+      });
+
     $(document).foundation();
 
     $('.inline-related').each(function() {
