@@ -486,7 +486,7 @@ class SupportTypeResource(resources.ModelResource):
 
 
 class SupportResource(resources.ModelResource):
-    remarks = fields.Field('remarks', column_name='additional_notes')
+    remarks = fields.Field(column_name='additional_notes')
     base_objects = fields.Field()
 
     class Meta:
