@@ -6,6 +6,7 @@ from ralph.assets.models.assets import (
     AssetModel,
     Category,
     Environment,
+    Manufacturer,
     Service,
     ServiceEnvironment
 )
@@ -18,9 +19,19 @@ class CategoryFactory(DjangoModelFactory):
         model = Category
 
 
+class ManufacturerFactory(DjangoModelFactory):
+
+    name = factory.Iterator(['Dell', 'Apple', 'Samsung'])
+
+    class Meta:
+        model = Manufacturer
+        django_get_or_create = ['name']
+
+
 class BackOfficeAssetModelFactory(DjangoModelFactory):
 
     name = factory.Iterator(['3310', 'XD300S', 'Hero 3', 'Computer set'])
+    type = ObjectModelType.back_office
 
     class Meta:
         model = AssetModel
@@ -55,7 +66,10 @@ class ServiceFactory(DjangoModelFactory):
         django_get_or_create = ['name']
 
 
-class ServiceEnvironment(DjangoModelFactory):
+class ServiceEnvironmentFactory(DjangoModelFactory):
+
+    service = factory.SubFactory(ServiceFactory)
+    environment = factory.SubFactory(EnvironmentFactory)
 
     class Meta:
         model = ServiceEnvironment

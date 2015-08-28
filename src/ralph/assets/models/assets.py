@@ -34,14 +34,6 @@ if not ASSET_HOSTNAME_TEMPLATE:
     raise ImproperlyConfigured('"ASSET_HOSTNAME_TEMPLATE" must be specified.')
 
 
-def _replace_empty_with_none(obj, fields):
-    # XXX: replace '' with None, because null=True on model doesn't work
-    for field in fields:
-        value = getattr(obj, field, None)
-        if value == '':
-            setattr(obj, field, None)
-
-
 def get_user_iso3_country_name(user):
     """
     :param user: instance of django.contrib.auth.models.User which has profile
@@ -52,6 +44,14 @@ def get_user_iso3_country_name(user):
     return iso3_country_name
 
 
+class BusinessSegment(NamedMixin, models.Model):
+    pass
+
+
+class ProfitCenter(NamedMixin, models.Model):
+    business_segment = models.ForeignKey(BusinessSegment)
+
+
 class Environment(NamedMixin, TimeStampMixin, models.Model):
     pass
 
@@ -59,10 +59,20 @@ class Environment(NamedMixin, TimeStampMixin, models.Model):
 class Service(NamedMixin, TimeStampMixin, models.Model):
     # Fixme: let's do service catalog replacement from that
     uid = NullableCharField(max_length=40, unique=True, blank=True, null=True)
-    profit_center = models.CharField(max_length=100, blank=True)
+    profit_center = models.ForeignKey(ProfitCenter, null=True, blank=True)
     cost_center = models.CharField(max_length=100, blank=True)
     environments = models.ManyToManyField(
         'Environment', through='ServiceEnvironment'
+    )
+    business_owners = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='services_business_owner',
+        blank=True,
+    )
+    technical_owners = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='services_technical_owner',
+        blank=True,
     )
 
     def __str__(self):
