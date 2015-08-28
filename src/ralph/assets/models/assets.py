@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from dateutil.relativedelta import relativedelta
+from dj.choices import Country
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.core.urlresolvers import reverse
@@ -8,13 +9,13 @@ from django.template import Context, Template
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
+from ralph.assets.country_utils import iso2_to_iso3
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import (
     AssetStatus,
     ModelVisualizationLayout,
     ObjectModelType
 )
-from ralph.assets.overrides import Country
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
@@ -39,8 +40,8 @@ def get_user_iso3_country_name(user):
     :param user: instance of django.contrib.auth.models.User which has profile
         with country attribute
     """
-    country_name = Country.name_from_id(user.get_profile().country)
-    iso3_country_name = Country.iso2_to_iso3(country_name)
+    country_name = Country.name_from_id(int(user.country))
+    iso3_country_name = iso2_to_iso3(country_name)
     return iso3_country_name
 
 
@@ -345,6 +346,20 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         self.hostname = last_hostname.formatted_hostname(fill=counter_length)
         if commit:
             self.save()
+
+    def _try_assign_hostname(self, commit):
+        if self.owner and self.model.category and self.model.category.code:
+            template_vars = {
+                'code': self.model.category.code,
+                'country_code': self.country_code,
+            }
+            if not self.hostname:
+                self.generate_hostname(commit, template_vars)
+            else:
+                user_country = get_user_iso3_country_name(self.owner)
+                different_country = user_country not in self.hostname
+                if different_country:
+                    self.generate_hostname(commit, template_vars)
 
     def is_liquidated(self, date=None):
         date = date or datetime.date.today()

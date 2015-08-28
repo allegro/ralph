@@ -8,18 +8,20 @@
   {% endif %}
   <form method="POST">
     {% csrf_token %}
-    <table>
-      <thead>
-        <tr>
-          <th>{% trans 'Option' %}</th>
-          <th>{% trans 'Value' %}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{ form.as_table }}
-      </tbody>
-    </table>
-
+    {% if form.fields %}
+      {# If there are no fields on the form does not display table #}
+      <table>
+        <thead>
+          <tr>
+            <th>{% trans 'Option' %}</th>
+            <th>{% trans 'Value' %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{ form.as_table }}
+        </tbody>
+      </table>
+    {% endif %}
     <div class="admin_bottom panel">
       <div class="row">
         <div class="small-2 columns">

@@ -24,6 +24,7 @@ from ralph.back_office.views import (
 )
 from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
+from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
 
 
@@ -62,6 +63,7 @@ class BackOfficeAssetLicence(RalphDetailViewAdmin):
 class BackOfficeAssetAdmin(
     BulkEditChangeListMixin,
     PermissionAdminMixin,
+    TransitionAdminMixin,
     RalphAdmin
 ):
 

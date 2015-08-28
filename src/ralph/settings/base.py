@@ -123,7 +123,12 @@ MESSAGE_TAGS = {
 
 DEFAULT_DEPRECIATION_RATE = 25
 CHECK_IP_HOSTNAME_ON_SAVE = True
-ASSET_HOSTNAME_TEMPLATE = 'test'
+ASSET_HOSTNAME_TEMPLATE = {
+    'prefix': '{{ country_code|upper }}{{ code|upper }}',
+    'postfix': '',
+    'counter_length': 5,
+}
+
 
 LDAP_SERVER_OBJECT_USER_CLASS = 'user'  # possible values: user, person
 
