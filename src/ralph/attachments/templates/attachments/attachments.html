@@ -1,0 +1,42 @@
+{% extends BASE_TEMPLATE %}
+
+{% load i18n foundation_form %}
+
+{% block view_content %}
+  <form method="post" action="" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    <table class="full" id="attachemnts">
+      <thead>
+        <tr>
+          <th>{% trans "File" %}</th>
+          <th>{% trans "Description" %}</th>
+          <th>{% trans "Delete" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for form in formset %}
+          <tr>
+              {% with obj=form.instance %}
+                <td>
+                  {{ form.id }}
+                  {% if obj.pk %}
+                    <a href="{% url 'admin:get_attachment' obj.id obj.original_filename %}">
+                      {{ obj.original_filename }}
+                    </a>
+                  {% else %}
+                    {% field form.file is_admin=False show_label=False %}
+                  {% endif %}
+                </td>
+                <td>{% field form.description is_admin=False show_label=False %}</td>
+                <td>{% field form.DELETE is_admin=False show_label=False %}</td>
+              {% endwith %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <button type="submit">Submit</button>
+  </form>
+{% endblock %}
+
+

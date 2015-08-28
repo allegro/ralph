@@ -126,8 +126,9 @@ class PermissionsSelectWidget(forms.Widget):
 
 class AutocompleteWidget(forms.TextInput):
     def __init__(self, rel, admin_site, attrs=None, using=None, **kwargs):
-        self.request = kwargs.get('request', None)
         self.rel = rel
+        self.request = kwargs.get('request', None)
+        self.rel_to = kwargs.get('rel_to') or rel.to
         self.admin_site = admin_site
         self.db = using
         super().__init__(attrs)
@@ -152,9 +153,10 @@ class AutocompleteWidget(forms.TextInput):
         )
 
     def render(self, name, value, attrs=None):
-        rel_to = self.rel.to
-        admin_model = self.admin_site._registry[rel_to]
-        model_options = rel_to._meta.app_label, rel_to._meta.model_name
+        admin_model = self.admin_site._registry[self.rel_to]
+        model_options = (
+            self.rel_to._meta.app_label, self.rel_to._meta.model_name
+        )
         widget_options = {
             'data-suggest-url': reverse(
                 'admin:{}_{}_autocomplete_suggest'.format(*model_options)
@@ -172,44 +174,53 @@ class AutocompleteWidget(forms.TextInput):
         widget_options['data-target-selector'] = '#' + attrs.get('id')
         input_field = super().render(name, value, attrs)
 
-        if rel_to in self.admin_site._registry:
+        if self.rel_to in self.admin_site._registry:
             related_url = reverse(
                 'admin:%s_%s_changelist' % (
-                    rel_to._meta.app_label,
-                    rel_to._meta.model_name,
+                    self.rel_to._meta.app_label,
+                    self.rel_to._meta.model_name,
                 ),
                 current_app=self.admin_site.name,
             ) + self.get_url_parameters()
             searched_fields = []
             for field_name in admin_model.search_fields:
                 try:
-                    field = get_field_by_relation_path(rel_to, field_name)
+                    field = get_field_by_relation_path(self.rel_to, field_name)
                     searched_fields.append(str(field.verbose_name))
                 except FieldDoesNotExist:
                     pass
-
+        current_object = None
+        if value:
+            current_object = self.rel_to._default_manager.select_related(
+                # https://docs.djangoproject.com/en/1.8/ref/models/querysets/#select-related
+                # we cannot pass empty list - this would select all related
+                # model - instead we pass None, which means that none of
+                # related models will be selected
+                *(admin_model.list_select_related or [None])
+            ).filter(
+                pk=value
+            ).first()
         context = RenderContext({
-            'current_object': rel_to.objects.filter(
-                pk=value or None
-            ).first() or None,
+            'current_object': current_object,
             'attrs': flatatt(widget_options),
             'related_url': related_url,
             'name': name,
             'input_field': input_field,
             'searched_fields': ', '.join(searched_fields),
         })
-        info = (self.rel.to._meta.app_label, self.rel.to._meta.model_name)
-        can_edit = self.admin_site._registry[rel_to].has_change_permission(
+        info = (self.rel_to._meta.app_label, self.rel_to._meta.model_name)
+        can_edit = self.admin_site._registry[self.rel_to].has_change_permission(
             self.request
         )
-        if value and can_edit:
+        is_polymorphic = getattr(self.rel_to, 'is_polymorphic', False)
+        if value and can_edit and not is_polymorphic:
             context['change_related_template_url'] = self.get_related_url(
                 info, 'change', value,
             )
-        can_add = self.admin_site._registry[rel_to].has_add_permission(
+        can_add = self.admin_site._registry[self.rel_to].has_add_permission(
             self.request
         )
-        if can_add:
+        if not is_polymorphic and can_add:
             context['add_related_url'] = self.get_related_url(info, 'add')
         template = loader.get_template('admin/widgets/autocomplete.html')
         return template.render(context)

@@ -4,6 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ComponentType
+from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import NamedMixin
 
 
@@ -59,7 +60,7 @@ class GenericComponent(Component):
         verbose_name=_('label'), max_length=255, blank=True,
         null=True, default=None,
     )
-    sn = models.CharField(
+    sn = NullableCharField(
         verbose_name=_('vendor SN'), max_length=255, unique=True, null=True,
         blank=True, default=None,
     )

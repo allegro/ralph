@@ -44,14 +44,16 @@
 @import 'foundation/components/visibility';
 
 @import 'components/accordions';
-@import 'components/date_hierarchy';
 @import 'components/autocomplete_field';
+@import 'components/bulk_edit';
+@import 'components/contextual_search';
+@import 'components/date_hierarchy';
 @import 'components/fieldsets';
+@import 'components/header';
 @import 'components/login';
 @import 'components/tables';
 @import 'components/tabs';
 @import 'components/visualization';
-@import 'components/bulk_edit';
 
 @import 'styles';
 @import 'overrides';

@@ -19,6 +19,9 @@ from ralph.admin import widgets
 from ralph.admin.autocomplete import AjaxAutocompleteMixin
 from ralph.admin.helpers import get_field_by_relation_path
 from ralph.admin.views.main import BULK_EDIT_VAR, BULK_EDIT_VAR_IDS
+from ralph.helpers import add_request_to_form
+from ralph.lib.mixins.forms import RequestFormMixin
+from ralph.lib.permissions.admin import PermissionsPerObjectFormMixin
 
 FORMFIELD_FOR_DBFIELD_DEFAULTS = {
     models.DateField: {'widget': widgets.AdminDateWidget},
@@ -28,13 +31,20 @@ FORMFIELD_FOR_DBFIELD_DEFAULTS = {
 
 def get_common_media():
     """
-    Shared by across extra views and admin class
+    Shared across extra views and admin class
     """
     js = map(lambda x: os.path.join(*x), [
+        ('admin', 'js', 'core.js'),
+        ('admin', 'js', 'jquery.js'),
+        ('admin', 'js', 'jquery.init.js'),
+        ('admin', 'js', 'actions.js'),
+        ('admin', 'js', 'admin', 'RelatedObjectLookups.js'),
         ('vendor', 'js', 'jquery.js'),
         ('vendor', 'js', 'foundation.min.js'),
         ('vendor', 'js', 'modernizr.js'),
         ('src', 'js', 'fill-fields.js'),
+        ('vendor', 'js', 'foundation-datepicker.js'),
+        ('src', 'js', 'foundation-datepicker-init.js'),
     ])
     return forms.Media(
         js=[static('%s' % url) for url in js],
@@ -44,20 +54,71 @@ def get_common_media():
 def get_inline_media():
     js = map(lambda x: os.path.join(*x), [
         ('admin', 'js', 'inlines.js'),
+        ('src', 'js', 'ralph-autocomplete.js'),
     ])
     return forms.Media(
         js=[static('%s' % url) for url in js],
     )
 
 
-class RalphAdminMixin(object):
+class RalphAutocompleteMixin(object):
+    raw_id_override_parent = {}
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.formfield_overrides.update(FORMFIELD_FOR_DBFIELD_DEFAULTS)
+
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        if db_field.name in self.raw_id_fields:
+            kw = {}
+            if db_field.name in self.raw_id_override_parent:
+                kw['rel_to'] = self.raw_id_override_parent[db_field.name]
+            kwargs['widget'] = widgets.AutocompleteWidget(
+                db_field.rel, self.admin_site, using=kwargs.get('using'),
+                request=request, **kw
+            )
+            return db_field.formfield(**kwargs)
+        else:
+            return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+class RalphAdminFormMixin(PermissionsPerObjectFormMixin, RequestFormMixin):
+    pass
+
+
+class RalphAdminForm(RalphAdminFormMixin, forms.ModelForm):
+    pass
+
+
+class RalphAdminChecks(admin.checks.ModelAdminChecks):
+    def _check_form(self, cls, model):
+        """
+        Check if form subclasses RalphAdminFormMixin
+        """
+        result = super()._check_form(cls, model)
+        if (
+            hasattr(cls, 'form') and
+            not issubclass(cls.form, RalphAdminFormMixin)
+        ):
+            result += admin.checks.must_inherit_from(
+                parent='RalphAdminFormMixin',
+                option='form',
+                obj=cls,
+                id='admin.E016'
+            )
+        return result
+
+
+class RalphAdminMixin(RalphAutocompleteMixin):
     """Ralph admin mixin."""
 
     list_views = None
     change_views = None
     change_list_template = 'admin/change_list.html'
     change_form_template = 'admin/change_form.html'
+
+    checks_class = RalphAdminChecks
+    form = RalphAdminForm
 
     def __init__(self, *args, **kwargs):
         self.list_views = copy(self.list_views) or []
@@ -66,6 +127,13 @@ class RalphAdminMixin(object):
         else:
             self.change_views = copy(self.change_views) or []
         super().__init__(*args, **kwargs)
+
+    def get_form(self, request, obj=None, **kwargs):
+        """
+        Return form with request param passed by default.
+        """
+        Form = super().get_form(request, obj, **kwargs)  # noqa
+        return add_request_to_form(Form, request=request)
 
     def get_changelist(self, request, **kwargs):
         from ralph.admin.views.main import RalphChangeList
@@ -128,16 +196,6 @@ class RalphAdminMixin(object):
             request, object_id, form_url, extra_context
         )
 
-    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
-        if db_field.name in self.raw_id_fields:
-            kwargs['widget'] = widgets.AutocompleteWidget(
-                db_field.rel, self.admin_site, using=kwargs.get('using'),
-                request=request,
-            )
-            return db_field.formfield(**kwargs)
-        else:
-            return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
     def formfield_for_manytomany(self, db_field, request=None, **kwargs):
         if db_field.name in ('user_permissions', 'permissions'):
             kwargs['widget'] = widgets.PermissionsSelectWidget()
@@ -150,13 +208,23 @@ class RalphAdmin(
     RalphAdminMixin,
     VersionAdmin
 ):
-    def __init__(self, *args, **kwargs):
-        super(RalphAdmin, self).__init__(*args, **kwargs)
-        self.formfield_overrides.update(FORMFIELD_FOR_DBFIELD_DEFAULTS)
-
     @property
     def media(self):
         return super().media + get_common_media()
+
+
+class RalphTabularInline(
+    RalphAutocompleteMixin,
+    admin.TabularInline
+):
+    pass
+
+
+class RalphStackedInline(
+    RalphAutocompleteMixin,
+    admin.StackedInline
+):
+    pass
 
 
 class RalphTemplateView(TemplateView):

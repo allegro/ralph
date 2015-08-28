@@ -1,21 +1,5 @@
 # -*- coding: utf-8 -*-
 from ralph.admin.views.extra import RalphDetailView
-from ralph.licences.models import Licence
-
-
-class DataCenterAssetLicence(RalphDetailView):
-
-    icon = 'bookmark'
-    name = 'dc_asset_licences'
-    label = 'Licences'
-    url_name = 'data_center_asset_licences'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['licences'] = Licence.objects.filter(
-            base_objects=self.object.baseobject_ptr
-        )
-        return context
 
 
 class DataCenterAssetComponents(RalphDetailView):

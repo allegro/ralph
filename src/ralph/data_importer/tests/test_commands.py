@@ -1,9 +1,11 @@
 import os
 
+from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core import management
 from django.test import TestCase
 
+from ralph.accounts.models import Region
 from ralph.assets.models.assets import (
     AssetModel,
     Environment,
@@ -63,6 +65,19 @@ class DataImporterTestCase(TestCase):
         service_environment.service = service
         service_environment.save()
 
+        region = Region(name='region_1')
+        region.save()
+        region_content_type = ContentType.objects.get_for_model(region)
+        ImportedObjects.objects.create(
+            content_type=region_content_type,
+            object_pk=region.pk,
+            old_object_pk=1
+        )
+
+        user_model = get_user_model()
+        for user in ('iron.man', 'superman', 'james.bond', 'sherlock.holmes'):
+            user_model.objects.create(username=user)
+
     def test_get_resource(self):
         """Test get resources method."""
         asset_model_resource = importer.get_resource('AssetModel')
@@ -112,6 +127,25 @@ class DataImporterTestCase(TestCase):
             back_office_asset.service_env.service.name,
             "service_1"
         )
+
+    def test_importer_command_regions(self):
+        """Test importer management command with BackOfficeAsset model."""
+        regions_csv = os.path.join(
+            self.base_dir,
+            'tests/samples/regions.csv'
+        )
+        management.call_command(
+            'importer',
+            regions_csv,
+            type='file',
+            model_name='Region',
+        )
+        self.assertEqual(Region.objects.count(), 2)
+        region_1 = Region.objects.get(name='USA')
+        for user in ('iron.man', 'superman'):
+            self.assertIn(
+                user, region_1.users.values_list('username', flat=True)
+            )
 
     def test_importer_command_with_tab(self):
         """Test importer management command with Warehouse model and

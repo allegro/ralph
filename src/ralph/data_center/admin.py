@@ -1,10 +1,24 @@
 # -*- coding: utf-8 -*-
-from django.contrib.admin import TabularInline
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, register
+from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
+from ralph.assets.filters import (
+    BarcodeFilter,
+    DepreciationDateFilter,
+    ForceDepreciationFilter,
+    HostnameFilter,
+    InvoiceDateFilter,
+    InvoiceNoFilter,
+    ModelFilter,
+    OrderNoFilter,
+    RemarksFilter,
+    SNFilter,
+    StatusFilter
+)
+from ralph.attachments.admin import AttachmentsMixin
+from ralph.data_center.filters import RackFilter
 from ralph.data_center.forms.network import NetworkInlineFormset
 from ralph.data_center.models.components import DiskShare, DiskShareMount
 from ralph.data_center.models.networks import (
@@ -31,12 +45,13 @@ from ralph.data_center.models.virtual import (
 )
 from ralph.data_center.views.ui import (
     DataCenterAssetComponents,
-    DataCenterAssetLicence,
     DataCenterAssetSecurityInfo,
     DataCenterAssetSoftware
 )
 from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
+from ralph.lib.transitions.admin import TransitionAdminMixin
+from ralph.licences.models import BaseObjectLicence
 
 
 @register(DataCenter)
@@ -45,7 +60,7 @@ class DataCenterAdmin(RalphAdmin):
     search_fields = ['name']
 
 
-class NetworkInline(TabularInline):
+class NetworkInline(RalphTabularInline):
     formset = NetworkInlineFormset
     model = IPAddress
 
@@ -59,10 +74,41 @@ class NetworkView(RalphDetailViewAdmin):
     inlines = [NetworkInline]
 
 
+class DataCenterAssetSupport(RalphDetailViewAdmin):
+    icon = 'bookmark'
+    name = 'dc_asset_support'
+    label = _('Supports')
+    url_name = 'data_center_asset_support'
+
+    class DataCenterAssetSupportInline(RalphTabularInline):
+        model = DataCenterAsset.supports.related.through
+        raw_id_fields = ('support',)
+        extra = 1
+        verbose_name = _('Support')
+
+    inlines = [DataCenterAssetSupportInline]
+
+
+class DataCenterAssetLicence(RalphDetailViewAdmin):
+    icon = 'key'
+    name = 'dc_asset_licences'
+    label = _('Licences')
+    url_name = 'data_center_asset_licences'
+
+    class DataCenterAssetLicenceInline(RalphTabularInline):
+        model = BaseObjectLicence
+        raw_id_fields = ('licence',)
+        extra = 1
+
+    inlines = [DataCenterAssetLicenceInline]
+
+
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(
+    TransitionAdminMixin,
     BulkEditChangeListMixin,
     PermissionAdminMixin,
+    AttachmentsMixin,
     RalphAdmin,
 ):
     """Data Center Asset admin class."""
@@ -72,42 +118,50 @@ class DataCenterAssetAdmin(
         DataCenterAssetSoftware,
         DataCenterAssetSecurityInfo,
         DataCenterAssetLicence,
+        DataCenterAssetSupport,
         NetworkView,
     ]
     resource_class = resources.DataCenterAssetResource
     list_display = [
-        'status', 'barcode', 'purchase_order', 'model',
+        'status', 'barcode', 'model',
         'sn', 'hostname', 'invoice_date', 'invoice_no',
     ]
     bulk_edit_list = list_display
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
-    list_filter = ['status']
+    list_filter = [
+        StatusFilter, BarcodeFilter, SNFilter, HostnameFilter, InvoiceNoFilter,
+        InvoiceDateFilter, OrderNoFilter, ModelFilter, DepreciationDateFilter,
+        ForceDepreciationFilter, RemarksFilter, RackFilter
+    ]
     date_hierarchy = 'created'
     list_select_related = ['model', 'model__manufacturer']
-    raw_id_fields = ['model', 'rack', 'service_env']
+    raw_id_fields = ['model', 'rack', 'service_env', 'parent']
+    raw_id_override_parent = {'parent': DataCenterAsset}
 
     fieldsets = (
         (_('Basic info'), {
             'fields': (
-                'model', 'purchase_order', 'niw', 'barcode', 'sn',
-                'status', 'task_url',
-                'loan_end_date', 'hostname', 'service_env',
-                'production_year', 'production_use_date',
-                'required_support', 'remarks'
+                'hostname', 'model', 'status', 'barcode', 'sn', 'niw',
+                'required_support', 'remarks', 'parent',
             )
         }),
-        (_('Financial Info'), {
+        (_('Location Info'), {
             'fields': (
-                'order_no', 'invoice_date', 'invoice_no', 'price',
-                'depreciation_rate', 'source', 'request_date', 'provider',
-                'provider_order_date', 'delivery_date', 'depreciation_end_date',
-                'force_depreciation'
+                'rack', 'position', 'orientation', 'slot_no',
             )
         }),
-        (_('Additional Info'), {
+        (_('Usage info'), {
             'fields': (
-                'rack', 'slots', 'slot_no', 'configuration_path',
-                'position', 'orientation'
+                'service_env', 'configuration_path', 'production_year',
+                'production_use_date',
+            )
+        }),
+        (_('Financial & Order Info'), {
+            'fields': (
+                'order_no', 'invoice_date', 'invoice_no', 'task_url', 'price',
+                'depreciation_rate', 'depreciation_end_date',
+                'force_depreciation', 'source', 'provider', 'delivery_date',
+
             )
         }),
     )
@@ -121,7 +175,7 @@ class ServerRoomAdmin(RalphAdmin):
     resource_class = resources.ServerRoomResource
 
 
-class RackAccessoryInline(TabularInline):
+class RackAccessoryInline(RalphTabularInline):
     model = RackAccessory
 
 

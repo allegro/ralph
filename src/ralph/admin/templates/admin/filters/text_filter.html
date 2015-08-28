@@ -1,0 +1,9 @@
+{% load i18n %}
+<h6>
+  {% blocktrans with filter_title=title %}
+    {{ filter_title }}
+  {% endblocktrans %}
+</h6>
+{% with choices.0 as i %}
+  <input type="text" name="{{ i.parameter_name }}" value="{{ i.current_value|default_if_none:"" }}" />
+{% endwith %}

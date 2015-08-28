@@ -55,3 +55,9 @@ menu:
 	ralph sitetree_resync_apps
 
 coveralls: install-docs docs coverage
+
+translate_messages:
+	ralph makemessages -a
+
+compile_messages:
+	ralph compilemessages

@@ -1,13 +1,14 @@
+{% load humanize %}
 <li class="accordion-navigation">
   <a href="#{{ node.uid }}">
-    {{ node.name }} <span class="right">{{ node.count }}</span>
+    {{ node.name }} <span class="right">{{ node.count|intcomma }}</span>
   </a>
   <div id="{{ node.uid }}" class="content">
     <div class="row">
       <div class="small-12 columns">
         {{ node.name }}
         <span class="right">
-          {{ node.count }}
+          {{ node.count|intcomma }}
         </span>
         {% if node.children %}
           {% for ch in node.children %}

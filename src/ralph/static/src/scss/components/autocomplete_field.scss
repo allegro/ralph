@@ -1,4 +1,4 @@
-$item-padding: 0.2rem;
+$item-padding: 0.1rem;
 $widget-padding: $input-padding - $item-padding;
 $lookup-icon-width: 20px;
 
@@ -37,7 +37,7 @@ $lookup-icon-width: 20px;
                 }
             }
             .change-related .fa-pencil {
-                padding: 0 10px;
+                padding: 0 4px;
             }
         }
         .widget-icons .fa {
@@ -62,8 +62,8 @@ $lookup-icon-width: 20px;
         }
         .status{
             position: absolute;
-            top: 6px;
-            right: 25px;
+            top: 5px;
+            right: 48px;
             .fa {
                 display: none;
                 font-size: 1.25rem;
@@ -135,4 +135,8 @@ $lookup-icon-width: 20px;
         box-shadow: none;
         background-color: transparent;
     }
+}
+
+.inline-group .autocomplete-widget {
+    margin: $form-spacing 0 $form-spacing 0;
 }

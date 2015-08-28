@@ -1,13 +1,8 @@
 {% extends "admin/base_site.html" %}
-{% load i18n admin_urls ralph_tags admin_static admin_modify foundation_form foundation_alert sitetree %}
+{% load i18n admin_urls ralph_tags admin_static admin_modify foundation_form foundation_alert sitetree transitions_tags %}
 
 {% block extrahead %}{{ block.super }}
   <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
-{% endblock %}
-
-{% block extrastyle %}
-  {{ block.super }}
-  <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
 {% endblock %}
 
 {% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-form{% endblock %}
@@ -15,16 +10,17 @@
 {% block content %}
   <div id="content-main">
     <div class="row header">
-      <div class="large-4 columns">
-        <h1>{% block title_head %}Edit {{ header_obj_name }}{% endblock %}</h1>
+      <div class="large-3 medium-2 small-3 columns">
+        <h1 class="ellipsis-hidden">{% block title_head %}Edit {{ header_obj_name }}{% endblock %}</h1>
       </div>
-      <div class="large-6 columns">
+      <div class="large-7 medium-8 small-7 columns">
         {% block tabs %}
           {% views_tabs change_views '' original %}
         {% endblock %}
       </div>
-      <div class="large-2 columns">
+      <div class="large-2 medium-2 small-2 columns">
         <div class="header-toolbar">
+          {% available_transitions original 'status' %}
           {% block object-tools %}
             {% if change %}
               {% if not is_popup %}
@@ -83,22 +79,6 @@
     </form>
   </div>
 {% endblock %}
+
 {% block admin_change_form_document_ready %}
-  <script type="text/javascript">
-    (function($) {
-      $(document).ready(function() {
-        $('.add-another').click(function(e) {
-          e.preventDefault();
-          showAddAnotherPopup(this);
-        });
-        $('.related-lookup').click(function(e) {
-          e.preventDefault();
-          showRelatedObjectLookupPopup(this);
-        });
-      {% if adminform and add %}
-        $('form#{{ opts.model_name }}_form :input:visible:enabled:first').focus()
-      {% endif %}
-      });
-    })(django.jQuery);
-  </script>
 {% endblock %}

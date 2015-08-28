@@ -9,6 +9,29 @@ select {
     padding-right: 20px;
     margin-right: 10px;
 }
+.row {
+    table {
+        tbody {
+            td {
+                ul {
+                    list-style-type: none;
+                    li {
+                        label {
+                            text-align: left;
+                        }
+                    }
+                    &.errorlist {
+                        margin: 0;
+                        padding: 0;
+                        li {
+                            color: $alert-color;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 .datepicker {
     td, th {

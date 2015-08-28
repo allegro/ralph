@@ -3,15 +3,26 @@ import re
 from collections import namedtuple
 from itertools import chain
 
+from django import forms
+from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.admin.sites import ralph_site
+from ralph.admin.widgets import AutocompleteWidget
 from ralph.assets.models.assets import AdminAbsoluteUrlMixin, Asset, NamedMixin
+from ralph.assets.models.choices import AssetSource, AssetStatus
 from ralph.data_center.models.choices import (
     ConnectionType,
     Orientation,
     RackOrientation
 )
+from ralph.lib.transitions.decorators import transition_action
+from ralph.lib.transitions.fields import TransitionField
+
+# i.e. number in range 1-16 and optional postfix 'A' or 'B'
+VALID_SLOT_NUMBER_FORMAT = re.compile('^([1-9][A,B]?|1[0-6][A,B]?)$')
 
 
 class Gap(object):
@@ -200,43 +211,61 @@ class Rack(NamedMixin.NonUnique, models.Model):
 class DataCenterAsset(Asset):
 
     rack = models.ForeignKey(Rack, null=True)
-
-    # TODO: maybe move to objectModel?
-    slots = models.FloatField(
-        verbose_name='Slots',
-        help_text=('For blade centers: the number of slots available in this '
-                   'device. For blade devices: the number of slots occupied.'),
-        max_length=64,
-        default=0,
-    )
-    slot_no = models.CharField(
-        verbose_name=_('slot number'), max_length=3, null=True, blank=True,
-        help_text=_('Fill it if asset is blade server'),
-    )
-    # TODO: convert to foreign key
-    configuration_path = models.CharField(
-        _('configuration path'),
-        max_length=100,
-        help_text=_('Path to configuration for e.g. puppet, chef.'),
+    status = TransitionField(
+        default=AssetStatus.new.id,
+        choices=AssetStatus(),
     )
     position = models.IntegerField(null=True)
     orientation = models.PositiveIntegerField(
         choices=Orientation(),
         default=Orientation.front.id,
     )
+    slot_no = models.CharField(
+        blank=True,
+        help_text=_('Fill it if asset is blade server'),
+        max_length=3,
+        null=True,
+        validators=[
+            RegexValidator(
+                regex=VALID_SLOT_NUMBER_FORMAT,
+                message=_(
+                    "Slot number should be a number from range 1-16 with "
+                    "an optional postfix 'A' or 'B' (e.g. '16A')"
+                ),
+                code='invalid_slot_no'
+            )
+        ],
+        verbose_name=_('slot number'),
+    )
 
+    # TODO: convert to foreign key
+    configuration_path = models.CharField(
+        help_text=_('Path to configuration for e.g. puppet, chef.'),
+        max_length=100,
+        verbose_name=_('configuration path'),
+    )
     connections = models.ManyToManyField(
         'self',
         through='Connection',
         symmetrical=False,
     )
+    source = models.PositiveIntegerField(
+        blank=True,
+        choices=AssetSource(),
+        db_index=True,
+        null=True,
+        verbose_name=_("source"),
+    )
+    delivery_date = models.DateField(null=True, blank=True)
+    production_year = models.PositiveSmallIntegerField(null=True, blank=True)
+    production_use_date = models.DateField(null=True, blank=True)
 
     class Meta:
         verbose_name = _('data center asset')
         verbose_name_plural = _('data center assets')
 
     def __str__(self):
-        return '{} <id: {}>'.format(self.hostname, self.id)
+        return 'DataCenterAsset: {}'.format(self.hostname)
 
     def get_orientation_desc(self):
         return Orientation.name_from_id(self.orientation)
@@ -246,6 +275,66 @@ class DataCenterAsset(Asset):
         """Returns cores count assigned to device in Ralph"""
         asset_cores_count = self.model.cores_count if self.model else 0
         return asset_cores_count
+
+    @property
+    def management_ip(self):
+        """A property that gets management IP of a asset."""
+        management_ip = self.ipaddress_set.filter(is_management=True).order_by(
+            '-address'
+        ).first()
+        return management_ip.address if management_ip else ''
+
+    def _validate_orientation(self):
+        """
+        Validate if orientation is valid for given position.
+        """
+        if self.position is None:
+            return
+        if self.position == 0 and not Orientation.is_width(self.orientation):
+            msg = 'Valid orientations for picked position are: {}'.format(
+                ', '.join(
+                    choice.desc for choice in Orientation.WIDTH.choices
+                )
+            )
+            raise ValidationError({'orientation': [msg]})
+        if self.position > 0 and not Orientation.is_depth(self.orientation):
+            msg = 'Valid orientations for picked position are: {}'.format(
+                ', '.join(
+                    choice.desc for choice in Orientation.DEPTH.choices
+                )
+            )
+            raise ValidationError({'orientation': [msg]})
+
+    def _validate_position_in_rack(self):
+        """
+        Validate if position is in rack height range.
+        """
+        if (
+            self.rack and
+            self.position is not None and
+            self.position > self.rack.max_u_height
+        ):
+            msg = 'Position is higher than "max u height" = {}'.format(
+                self.rack.max_u_height,
+            )
+            raise ValidationError({'position': [msg]})
+
+    def clean(self):
+        # TODO: this should be default logic of clean method;
+        # we could register somehow validators (or take each func with
+        # _validate prefix) and call it here
+        errors = {}
+        for validator in [
+            super().clean,
+            self._validate_orientation,
+            self._validate_position_in_rack
+        ]:
+            try:
+                validator()
+            except ValidationError as e:
+                e.update_error_dict(errors)
+        if errors:
+            raise ValidationError(errors)
 
     def get_related_assets(self):
         """Returns the children of a blade chassis"""
@@ -264,13 +353,17 @@ class DataCenterAsset(Asset):
         ]
         return chain(*assets)
 
-    @property
-    def management_ip(self):
-        """A property that gets management IP of a asset."""
-        management_ip = self.ipaddress_set.filter(is_management=True).order_by(
-            '-address'
-        ).first()
-        return management_ip.address if management_ip else ''
+    @transition_action
+    def change_rack(self, **kwargs):
+        self.rack = Rack.objects.get(pk=kwargs['rack'])
+        self.position = kwargs['position']
+
+    change_rack.form_fields = {
+        'rack': forms.CharField(widget=AutocompleteWidget(
+            rel=rack.rel, admin_site=ralph_site
+        )),
+        'position': forms.IntegerField(),
+    }
 
 
 class Connection(models.Model):

@@ -1,6 +1,7 @@
 .tabs {
     display: inline-block;
     vertical-align: middle;
+    margin-bottom: rem-calc(-25);
     ul, li {
         padding: 0;
         margin: 0;
@@ -10,15 +11,18 @@
         li {
             list-style-type: none;
             float: left;
-            margin-right: 5px;
+            margin-right: 3px;
             a {
                 background-color: $tabs-content-bg-color;
                 border: 1px solid $tabs-border-color;
                 border-bottom: 0;
                 font-size: $button-font-med;
-                padding: rem-calc(10 20);
-                padding-bottom: rem-calc(11);
+                padding: rem-calc(8 16);
+                padding-bottom: rem-calc(7);
                 transition: all .1s ease-in-out;
+                .tab-label {
+                    display: none;
+                }
             }
             &:last-child a {
             }
@@ -30,5 +34,11 @@
                 border-bottom: 1px solid $tabs-content-bg-color;
             }
         }
+    }
+}
+
+@media #{$medium-up} {
+    .tabs ul li a .tab-label {
+        display: inline;
     }
 }

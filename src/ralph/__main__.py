@@ -3,8 +3,11 @@ import os
 import sys
 
 
-def main(settings_module='ralph.settings'):
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', settings_module)
+def main(settings_module='ralph.settings', force=False):
+    if force:
+        os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
+    else:
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', settings_module)
 
     from django.core.management import execute_from_command_line
 
@@ -16,7 +19,10 @@ def dev():
 
 
 def test():
-    main('ralph.settings.test')
+    # test only with test settings, not local (or any set by environment
+    # variable DJANGO_SETTINGS_MODULE) - especially usefull in vagrant, when
+    # default DJANGO_SETTINGS_MODULE is overwrited in .profile
+    main('ralph.settings.test', force=True)
 
 
 def prod():

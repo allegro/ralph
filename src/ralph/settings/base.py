@@ -18,6 +18,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
+    'django.contrib.humanize',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
@@ -26,14 +27,17 @@ INSTALLED_APPS = (
     'sitetree',
     'ralph.accounts',
     'ralph.assets',
+    'ralph.attachments',
     'ralph.back_office',
     'ralph.data_center',
     'ralph.licences',
     'ralph.supports',
     'ralph.lib.foundation',
+    'ralph.lib.table',
     'ralph.data_importer',
     'ralph.dc_view',
     'ralph.reports',
+    'ralph.lib.transitions',
     'rest_framework',
 )
 
@@ -49,11 +53,11 @@ MIDDLEWARE_CLASSES = (
 )
 
 ROOT_URLCONF = 'ralph.urls'
+URLCONF_MODULES = [ROOT_URLCONF]
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -61,6 +65,11 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'loaders': [
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader',
+                'ralph.lib.template.loaders.AppTemplateLoader',
+            ]
         },
     },
 ]
@@ -83,27 +92,28 @@ DATABASES = {
         'USER': os.environ.get('DB_ENV_MYSQL_USER', 'ralph_ng'),
         'PASSWORD': os.environ.get('DB_ENV_MYSQL_PASSWORD', 'ralph_ng'),
         'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
-        'OPTIONS': MYSQL_OPTIONS
+        'OPTIONS': MYSQL_OPTIONS,
+        'ATOMIC_REQUESTS': True,
     }
 }
 
 AUTH_USER_MODEL = 'accounts.RalphUser'
 
 LANGUAGE_CODE = 'en-us'
-
+LOCALE_PATHS = (os.path.join(BASE_DIR, 'locale'), )
 TIME_ZONE = 'Europe/Warsaw'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = False
 
 STATIC_URL = '/static/'
-
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
+STATIC_ROOT = os.path.join(BASE_DIR, 'var', 'static')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'var', 'media')
 
 # adapt message's tags to bootstrap
 MESSAGE_TAGS = {
@@ -138,5 +148,16 @@ LOGGING = {
 }
 
 REST_FRAMEWORK = {
-    'PAGE_SIZE': 10
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'ralph.api.permissions.RalphPermission',
+    ),
+    'DEFAULT_FILTER_BACKENDS': (
+        'ralph.lib.permissions.api.PermissionsForObjectFilter',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',  # noqa
+    'PAGE_SIZE': 10,
 }

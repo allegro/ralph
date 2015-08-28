@@ -4,7 +4,8 @@
         this.$widget = $(widget);
         this.options = {
             interval: 500,
-            sentenceLength: 3
+            sentenceLength: 3,
+            watch: true
         };
         this.options = $.extend(this.options, options, this.$widget.data());
         this.$queryInput = $('.input', this.$widget);
@@ -17,26 +18,33 @@
 
         var that = this;
         this.$deleteButton.on('click', function(e) {that.deleteItem(e);});
-        this.$queryInput.on('keypress', function(e) {that.keyPress(e);});
+        this.$queryInput.on('keydown', function(e) {that.keyDown(e);});
 
-        Object.defineProperty(document.querySelector(that.options.targetSelector), 'value', {
-            get: function(){
-                return this.getAttribute('value');
-            },
-            set: function(val) {
-                that.changeTargetAfterPopup(val);
-                this.setAttribute('value', val);
-            }
-        });
-
+        if(this.options.watch) {
+            Object.defineProperty(document.querySelector(that.options.targetSelector), 'value', {
+                get: function(){
+                    return this.getAttribute('value');
+                },
+                set: function(val) {
+                    that.changeTargetAfterPopup(val);
+                    this.setAttribute('value', val);
+                }
+            });
+        }
     };
-    AutocompleteWidget.prototype.keyPress = function(event) {
+    AutocompleteWidget.prototype.keyDown = function(event) {
         var that = this;
         var code = event.keyCode || event.which;
         var startChar = 20; // [space] in ASCII
         var endChar = 126; // ~ in ASCII
-        if (code < startChar || code > endChar) {
-           return;
+        var specialCodes = [
+            8, // backspace
+        ];
+        if (
+            (code < startChar || code > endChar) &&
+            $.inArray(code, specialCodes) === -1
+        ) {
+            return;
         }
         if(that.timer) {
             clearTimeout(that.timer);
@@ -66,6 +74,7 @@
         }
         else {
             this.$widget.removeClass('edit');
+            this.$suggestList.hide();
         }
     };
     AutocompleteWidget.prototype.deleteItem = function(event) {
@@ -106,15 +115,16 @@
     };
     AutocompleteWidget.prototype.clearSuggestList = function() {
         this.$noResults.hide();
+        this.$suggestList.hide();
         $('>:not(.template)', this.$suggestList).remove();
     };
     AutocompleteWidget.prototype.suggest = function() {
         var that = this;
         var query = that.getQuery();
+        that.clearSuggestList();
         if (query.length < that.options.sentenceLength) {
             return false;
         }
-        that.clearSuggestList();
         that.fetchItems(query, function(data) {
             if (data.results.length !== 0) {
                 $.each(data.results, function() {
@@ -124,6 +134,7 @@
             else {
                 that.$noResults.show();
             }
+            that.$suggestList.show();
         });
     };
     AutocompleteWidget.prototype.fetchItems = function(query, callback) {
@@ -162,8 +173,9 @@
     };
 })(jQuery, Foundation);
 
-function updateAfterClose(id, newValue) {
-    var $parent = $('#' + id).val(newValue);
-}
-
-$('.autocomplete-widget').autocomplete();
+(function($) {
+    function updateAfterClose(id, newValue) {
+        var $parent = $('#' + id).val(newValue);
+    }
+    $('.autocomplete-widget').autocomplete();
+}(jQuery));

@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-from django.contrib.admin import TabularInline
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, register
+from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
@@ -18,10 +17,10 @@ from ralph.licences.models import (
 class BaseObjectLicenceView(RalphDetailViewAdmin):
     icon = 'laptop'
     name = 'base-object'
-    label = 'Assignments'
+    label = _('Assignments')
     url_name = 'assignments'
 
-    class BaseObjectLicenceInline(TabularInline):
+    class BaseObjectLicenceInline(RalphTabularInline):
         model = BaseObjectLicence
         raw_id_fields = ('base_object',)
         extra = 1
@@ -32,10 +31,10 @@ class BaseObjectLicenceView(RalphDetailViewAdmin):
 class LicenceUserView(RalphDetailViewAdmin):
     icon = 'user'
     name = 'users'
-    label = 'Assigned to users'
+    label = _('Assigned to users')
     url_name = 'assigned-to-users'
 
-    class LicenceUserInline(TabularInline):
+    class LicenceUserInline(RalphTabularInline):
         model = LicenceUser
         raw_id_fields = ('user',)
         extra = 1
@@ -66,7 +65,7 @@ class LicenceAdmin(PermissionAdminMixin, RalphAdmin):
         (_('Basic info'), {
             'fields': (
                 'licence_type', 'manufacturer', 'software_category',
-                'niw', 'sn', 'valid_thru', 'license_details',
+                'niw', 'sn', 'valid_thru', 'license_details', 'region',
                 'remarks'
             )
         }),

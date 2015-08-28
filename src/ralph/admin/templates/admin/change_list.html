@@ -2,14 +2,6 @@
 {% load i18n admin_urls ralph_tags admin_static admin_list foundation_alert sitetree %}
 {% block extrastyle %}
   {{ block.super }}
-  <link rel="stylesheet" type="text/css" href="{% static "admin/css/changelists.css" %}" />
-  {% if cl.formset %}
-    <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
-  {% endif %}
-  {% if cl.formset or action_form %}
-    <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
-  {% endif %}
-  {{ media.css }}
   {% if not actions_on_top and not actions_on_bottom %}
     <style>
       #changelist table thead th:first-child {width: inherit}
@@ -22,18 +14,21 @@
 
 {% block content %}
   {% if is_popup and cl %}
-    {% search_form cl %}
+    {% contextual_search_form search_url search_fields %}
   {% endif %}
   <div id="content-main">
+    <form method="get" id="filter-form" class="hide"></form>
     <form id="changelist-form" action="" method="post"{% if cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>{% csrf_token %}
       <div class="row header">
-        <div class="large-2 columns">
+        <div class="large-2 small-6 columns">
             <h1>{{ header_obj_name|capfirst }}</h1>
         </div>
-        <div class="large-6 columns">
-          {% views_tabs list_views %}
-        </div>
-        <div class="large-4 columns">
+        {% if not is_popup %}
+          <div class="large-6 columns">
+            {% views_tabs list_views %}
+          </div>
+        {% endif %}
+        <div class="large-4 small-6 columns">
           <div class="header-toolbar">
             {% if bulk_edit %}
               <a href="{{ request.path_info }}" class="button secondary small">
@@ -91,9 +86,12 @@
                 {% admin_actions %}
                 <div class="panel">
                   <h4>Filters</h4>
-                  {% for spec in cl.filter_specs %}
-                    {% admin_list_filter cl spec %}
-                  {% endfor %}
+                  <div class="filter-container">
+                    {% for spec in cl.filter_specs %}
+                      {% admin_list_filter cl spec %}
+                    {% endfor %}
+                  </div>
+                  <input type="button" class="button" id="filter-button" value="Filter" />
                 </div>
 
               </div>

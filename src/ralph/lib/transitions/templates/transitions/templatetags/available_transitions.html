@@ -1,0 +1,15 @@
+{% load i18n %}
+
+{% if transitions %}
+  <a href="#" data-options="align:left" class="button dropdown small open" data-dropdown="transitions_status" aria-expanded="true">
+    {% trans 'Transitions' %}
+  </a>
+
+  <ul id="transitions_status" class="f-dropdown" data-dropdown-content aria-hidden="true" tabindex="-1">
+    {% for transition in transitions %}
+      <li>
+        <a href="{% url transition_url_name original.pk transition.pk %}">{{ transition.name }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}

@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.assets import Asset
 from ralph.assets.models.components import Component
+from ralph.lib.mixins.fields import NullableCharField
 
 
 @python_2_unicode_compatible
@@ -22,7 +23,7 @@ class DiskShare(Component):
     snapshot_size = models.PositiveIntegerField(
         verbose_name=_('size for snapshots (MiB)'), null=True, blank=True,
     )
-    wwn = models.CharField(
+    wwn = NullableCharField(
         verbose_name=_('Volume serial'), max_length=33, unique=True,
     )
     full = models.BooleanField(default=True)

@@ -3,29 +3,80 @@
 <script type="text/javascript">window.__admin_utc_offset__ = "{% filter escapejs %}{% now "Z" %}{% endfilter %}";</script>
 <script type="text/javascript">window.__admin_media_prefix__ = "{% static '' %}";</script>
 <script>
-  $(document).ready(function(){
-    $('select.filter').on('change', function(data) {
-        window.location.href = $('option:selected', this).val();
-    });
+$(document).ready(function() {
+      $('#filter-button').bind('click', function() {
+          /**
+           * Because Django change_list uses the form to actions and bulk_edit
+           * and sends the data via POST. All filters work through the GET
+           * method.
+           * We have created an additional form which is responsible for
+           * generating GET parameters for filters.
+           *
+           * Cloned data from #filter-container and insert to #filter-form,
+           * then click submit.
+           */
+
+          var $form = $('#filter-form');
+          $form.empty();
+          var $orginal = $('.filter-container');
+          var $clone = $orginal.clone();
+          var $original_selects = $orginal.find('select');
+
+          // We have to select the <select> because jQuery.clone() does not copy it.
+          $clone.find('select').each(function(index, item) {
+              $(item).val($original_selects.eq(index).val());
+          });
+          $clone.appendTo($form);
+          $form.submit();
+      });
+
+      // If you press "enter" in the filter form field
+      // run submit on this form. (Default is not working)
+      $('.filter-container').on('keypress', function(event) {
+          if(event.keyCode == 13) {  // For "enter" key
+              event.preventDefault();
+              $('#filter-button').click();
+              return false;
+          }
+      });
+
     $(document).foundation();
 
     $('.inline-related').each(function() {
-      var group_id = $(this).data('group-id'),
-          prefix = $(this).data('prefix'),
-          add_text = $(this).data('add-text'),
-          delete_text = $(this).data('delete-text');
-      (function($) {
-        $("#" + group_id + "-group .tabular.inline-related tbody tr").tabularFormset({
-          prefix: prefix,
-          addText: add_text,
-          deleteText: delete_text
-        });
-      })(django.jQuery);
+        var group_id = $(this).data('group-id'),
+            prefix = $(this).data('prefix'),
+            add_text = $(this).data('add-text'),
+            delete_text = $(this).data('delete-text');
+        (function($) {
+          $("#" + group_id + "-group .tabular.inline-related tbody tr").tabularFormset({
+              prefix: prefix,
+              addText: add_text,
+              deleteText: delete_text
+            });
+        })(django.jQuery);
     });
-  });
-  (function($) {
+});
+(function($) {
     $(document).ready(function($) {
         $("tr input.action-select").actions();
+        var initPopupButtons = function() {
+            $('.add-related').click(function(e) {
+                e.preventDefault();
+                showAddAnotherPopup(this);
+            });
+            $('.related-lookup').click(function(e) {
+                e.preventDefault();
+                showRelatedObjectLookupPopup(this);
+            });
+            $('.change-related').click(function(e) {
+                e.preventDefault();
+                showRelatedObjectPopup(this);
+            });
+        }
+        initPopupButtons();
+        $('.add-row a').click(function() {
+            initPopupButtons();
+        });
     });
 })(django.jQuery);
 </script>

@@ -1,0 +1,10 @@
+{% load i18n %}
+<h6>
+  {% blocktrans with filter_title=title %}
+    {{ filter_title }}
+  {% endblocktrans %}
+</h6>
+{% with choices.0 as i %}
+  <input type="text" name="{{ i.parameter_name_start }}" placeholder="Start {{ i.date_format }}" class="datepicker" value="{{ i.date_start }}" />
+  <input type="text" name="{{ i.parameter_name_end }}" placeholder="End {{ i.date_format }}" class="datepicker" value="{{ i.date_end }}" />
+{% endwith %}
