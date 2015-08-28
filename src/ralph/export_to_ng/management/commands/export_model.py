@@ -39,6 +39,7 @@ SIMPLE_MODELS = [
     # TODO: VirtualServer
     'NetworkKind',
     'SupportType',
+    'Region',
 ]
 DEPENDENT_MODELS = [
     'ServiceEnvironment',

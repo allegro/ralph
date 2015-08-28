@@ -12,6 +12,8 @@ from django.conf import settings
 from django.db.models import Q
 from import_export import fields
 from import_export import resources
+
+from ralph.account.models import Region
 from ralph.cmdb import models_ci
 from ralph.discovery import models_component
 from ralph.discovery import models_device
@@ -65,6 +67,7 @@ class BackOfficeAssetResource(AssetResource):
             'provider',
             'provider_order_date',
             'purchase_order',
+            'region',
             'request_date',
             'required_support',
             'sn',
@@ -483,16 +486,16 @@ class SupportTypeResource(resources.ModelResource):
 
 
 class SupportResource(resources.ModelResource):
-
+    remarks = fields.Field('remarks', column_name='additional_notes')
     base_objects = fields.Field()
 
     class Meta:
         fields = [
             'contract_id', 'description', 'price', 'date_from', 'date_to',
-            'escalation_path', 'contract_terms', 'additional_notes',
+            'escalation_path', 'contract_terms', 'remarks',
             'sla_type', 'asset_type', 'status', 'producer', 'supplier',
             'serial_no', 'invoice_no', 'invoice_date', 'period_in_months',
-            'support_type', 'base_objects', 'name'
+            'support_type', 'base_objects', 'name', 'region',
         ]
         model = models_support.Support
 
@@ -538,7 +541,7 @@ class LicenceResource(resources.ModelResource):
             'number_bought', 'sn', 'niw', 'valid_thru',
             'order_no', 'price', 'accounting_id', 'invoice_date', 'provider',
             'invoice_no', 'remarks', 'license_details', 'licence_type',
-            'software_category'
+            'software_category', 'region',
         ]
 
 
@@ -564,3 +567,14 @@ class BaseObjectLicenceResource(resources.ModelResource):
             asset_type,
             licence_asset.asset.pk
         )
+
+
+class RegionResource(resources.ModelResource):
+    users = fields.Field()
+
+    class Meta:
+        model = Region
+        fields = ['id', 'name', 'users']
+
+    def dehydrate_users(self, region):
+        return ','.join([u.username for u in region.profile.all()])
