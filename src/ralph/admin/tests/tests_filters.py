@@ -6,9 +6,9 @@ from django.test import TestCase
 from ralph.admin.filters import (
     BooleanFilter,
     ChoicesFilter,
+    date_format_to_human,
     DateFilter,
-    TextFilter,
-    date_format_to_human
+    TextFilter
 )
 from ralph.assets.models.choices import AssetStatus
 from ralph.data_center.admin import DataCenterAssetAdmin
