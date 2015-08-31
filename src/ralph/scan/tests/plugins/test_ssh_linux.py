@@ -13,6 +13,7 @@ from ralph.scan.plugins.ssh_linux import (
     _get_base_device_info,
     _get_disk_shares,
     _get_hostname,
+    _get_ip_addresses,
     _get_mac_addresses,
     _get_os_info,
     _get_os_visible_cores_count,
@@ -22,6 +23,10 @@ from ralph.scan.plugins.ssh_linux import (
 )
 
 
+GET_IP_ADDRESSES_RESULT = """\
+inet 192.168.1.52/24 brd 192.168.1.255 scope global eth0
+inet 192.168.1.54/24 brd 192.168.1.255 scope global secondary eth0:1
+"""
 GET_MAC_ADDRESSES_RESULT = """\
 link/ether c8:2a:14:05:3d:53 brd ff:ff:ff:ff:ff:ff
 link/ether e0:f8:47:24:c9:e6 brd ff:ff:ff:ff:ff:ff
@@ -70,6 +75,18 @@ LogVol01 VolGroup00 -wi-ao   2080.37M
 
 
 class SshLinuxPluginTest(TestCase):
+
+    def test_get_ip_addresses(self):
+        ssh = MockSSH([
+            (
+                "/sbin/ip addr show | /bin/grep 'scope global'",
+                GET_IP_ADDRESSES_RESULT,
+            )
+        ])
+        self.assertItemsEqual(
+            _get_ip_addresses(ssh),
+            ['192.168.1.52', '192.168.1.54'],
+        )
 
     def test_get_mac_addresses(self):
         ssh = MockSSH([
