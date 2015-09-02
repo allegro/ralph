@@ -53,7 +53,10 @@ class BackOfficeAsset(Regionalizable, Asset):
         return 'POL'
 
     def __str__(self):
-        return 'BackOfficeAsset: {}'.format(self.hostname)
+        return '{}'.format(self.hostname)
+
+    def __repr__(self):
+        return '<BackOfficeAsset: {}>'.format(self.id)
 
     @transition_action
     def assign_user(self, **kwargs):

@@ -1,16 +1,20 @@
 .tabs {
-    display: inline-block;
     vertical-align: middle;
-    margin-bottom: rem-calc(-25);
+    margin-bottom: -1px;
     ul, li {
         padding: 0;
         margin: 0;
     }
     ul {
-        line-height: 3rem;
+        display: -webkit-flex;
+        display: flex;
+        -webkit-flex-direction: row;
+        flex-direction: row;
         li {
+            -webkit-flex: 1 1 auto;
+            flex: 1 1 auto;
             list-style-type: none;
-            float: left;
+            text-align: center;
             margin-right: 3px;
             a {
                 background-color: $tabs-content-bg-color;
@@ -19,7 +23,7 @@
                 font-size: $button-font-med;
                 padding: rem-calc(8 16);
                 padding-bottom: rem-calc(7);
-                transition: all .1s ease-in-out;
+                margin-top: 3px;
                 .tab-label {
                     display: none;
                 }
@@ -27,6 +31,7 @@
             &:last-child a {
             }
             &.active a, a:hover {
+                margin-top: 0;
                 border-top: 4px solid $mdc-orange-500;
                 background-color: $tabs-content-bg-color;
             }
