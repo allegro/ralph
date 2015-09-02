@@ -21,12 +21,29 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
 # and https://bugs.launchpad.net/ubuntu/+source/python3.4/+bug/1290847
 pyvenv-3.4 --without-pip .
 . bin/activate
-curl https://bootstrap.pypa.io/get-pip.py | python
+
+mkdir py-temp
+cd py-temp
+wget https://pypi.python.org/packages/source/s/setuptools/setuptools-3.4.4.tar.gz
+tar -vzxf setuptools-3.4.4.tar.gz
+cd setuptools-3.4.4
+python setup.py install
+cd ..
+wget https://pypi.python.org/packages/source/p/pip/pip-1.5.6.tar.gz
+tar -vzxf pip-1.5.6.tar.gz
+cd pip-1.5.6
+python setup.py install
+cd ../..
+deactivate
+. ./bin/activate
+pip install pip -U
+rm -Rf py-temp
+
 cd src/ralph/
 make install-dev
 
 cat /home/vagrant/src/ralph/vagrant/provisioning_scripts/profile_extensions >> /home/vagrant/.profile
-source /home/vagrant/.profile
+. /home/vagrant/.profile
 
 # create local settings file
 SETTINGS_LOCAL_PATH=/home/vagrant/src/ralph/src/ralph/settings/local.py

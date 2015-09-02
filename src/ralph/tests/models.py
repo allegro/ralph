@@ -3,9 +3,9 @@ from django.db import models
 
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 from ralph.lib.transitions import (
-    transition_action,
     TransitionField,
-    TransitionWorkflowBase
+    TransitionWorkflowBase,
+    transition_action
 )
 
 

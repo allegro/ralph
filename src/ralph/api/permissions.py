@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from rest_framework.compat import get_model_name
 from rest_framework.permissions import IsAuthenticated as DRFIsAuthenticated
-from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 from ralph.lib.permissions.api import ObjectPermissionsMixin
 

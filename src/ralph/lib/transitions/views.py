@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.mixins import RalphTemplateView
-from ralph.lib.transitions.models import run_field_transition, Transition
+from ralph.lib.transitions.models import Transition, run_field_transition
 
 
 class RunTransitionView(RalphTemplateView):
