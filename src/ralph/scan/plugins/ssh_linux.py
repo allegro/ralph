@@ -90,6 +90,19 @@ def _parse_dmidecode(data):
     return result
 
 
+def _get_ip_addresses(ssh):
+    """Get the IP addresses"""
+
+    stdin, stdout, stderr = ssh.exec_command(
+        "/sbin/ip addr show | /bin/grep 'scope global'",
+    )
+    ip_addresses = set()
+    for line in stdout:
+        ip_address = line.split()[1].split('/')[0]
+        ip_addresses.add(ip_address)
+    return list(ip_addresses)
+
+
 def _get_mac_addresses(ssh):
     """Get the MAC addresses"""
 
@@ -212,9 +225,11 @@ def _get_lldp_info(ssh, messages=[]):
 def _ssh_linux(ssh, ip_address, messages=[]):
     device_info = _get_base_device_info(ssh)
     mac_addresses = _get_mac_addresses(ssh)
+    ip_addresses = _get_ip_addresses(ssh)
+    if ip_addresses:
+        device_info['system_ip_addresses'] = ip_addresses
     if mac_addresses:
         device_info['mac_addresses'] = mac_addresses
-    device_info['system_ip_addresses'] = [ip_address]
     device_info['hostname'] = _get_hostname(ssh)
     disk_shares = _get_disk_shares(ssh)
     if disk_shares:
