@@ -118,7 +118,7 @@ class BackOfficeAssetResource(AssetResource):
 
     def dehydrate_hostname(self, asset):
         try:
-            hostname = asset.device_info.ralph_device.name or ''
+            hostname = asset.hostname or ''
         except AttributeError:
             hostname = ''
         return hostname
