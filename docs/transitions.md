@@ -30,14 +30,14 @@ from django import forms
 
     ...
     @transition_action
-        def pack(self, **kwargs):
-            notify_buyer(
-                'We pack your order for you.',
-                pickers_comment=kwargs['comment'],
-            )
-        pack.form_fields = {
-            'comment': forms.CharField()
-        }
+    def pack(self, **kwargs):
+        notify_buyer(
+            'We pack your order for you.',
+            pickers_comment=kwargs['comment'],
+        )
+    pack.form_fields = {
+        'comment': {'field': forms.CharField()}
+    }
 ```
 
 ![Extra params](img/extra_params.png)

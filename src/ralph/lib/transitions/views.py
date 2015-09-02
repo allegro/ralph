@@ -5,6 +5,8 @@ from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.mixins import RalphTemplateView
+from ralph.admin.sites import ralph_site
+from ralph.admin.widgets import AutocompleteWidget
 from ralph.lib.transitions.models import run_field_transition, Transition
 
 
@@ -27,9 +29,20 @@ class RunTransitionView(RalphTemplateView):
         fields = {}
         for action in self.actions:
             action_fields = getattr(action, 'form_fields', {})
-            for name, field in action_fields.items():
-                field.widget.request = self.request
-                fields['{}__{}'.format(action.__name__, name)] = field
+            for name, options in action_fields.items():
+                if options.get('autocomplete_field', False):
+                    rel = self.obj._meta.get_field(
+                        options['autocomplete_field']
+                    ).rel
+                    options['field'].widget = AutocompleteWidget(
+                        rel=rel,
+                        admin_site=ralph_site,
+                        request=self.request,
+                    )
+                else:
+                    options['field'].widget.request = self.request
+                field_key = '{}__{}'.format(action.__name__, name)
+                fields[field_key] = options['field']
         return fields
 
     def get_form(self):

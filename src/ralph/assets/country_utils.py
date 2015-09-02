@@ -1,4 +1,4 @@
-from dj.choices import Country as ChoiceCountry
+# -*- coding: utf-8 -*-
 
 ISO_3166 = (
     ('AF', 'AFG'), ('AX', 'ALA'), ('AL', 'ALB'), ('DZ', 'DZA'), ('AS', 'ASM'),
@@ -54,13 +54,11 @@ ISO_3166 = (
 )
 
 
-class Country(ChoiceCountry):
-    @classmethod
-    def iso2_to_iso3(cls, iso2_country):
-        iso2_country = iso2_country.upper()
-        return {k: v for k, v in ISO_3166}[iso2_country]
+def iso2_to_iso3(iso2_country):
+    iso2_country = iso2_country.upper()
+    return {k: v for k, v in ISO_3166}[iso2_country]
 
-    @classmethod
-    def iso3_to_iso2(cls, iso3_country):
-        iso3_country = iso3_country.upper()
-        return {v: k for k, v in ISO_3166}[iso3_country]
+
+def iso3_to_iso2(iso3_country):
+    iso3_country = iso3_country.upper()
+    return {v: k for k, v in ISO_3166}[iso3_country]

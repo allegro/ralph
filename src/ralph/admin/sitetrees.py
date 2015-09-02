@@ -173,6 +173,7 @@ sitetrees = [
                 section(_('Users list'), 'accounts', 'RalphUser'),
                 section(_('Groups list'), 'auth', 'Group'),
                 section(_('Regions'), 'accounts', 'Region'),
+                section(_('Transitions'), 'transitions', 'TransitionModel'),
             ]
         )
     ])

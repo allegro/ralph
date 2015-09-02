@@ -9,6 +9,8 @@ from ralph.back_office.models import BackOfficeAsset, Warehouse
 
 class WarehouseFactory(DjangoModelFactory):
 
+    name = factory.Sequence(lambda n: 'Warehouse {}'.format(n))
+
     class Meta:
         model = Warehouse
 
