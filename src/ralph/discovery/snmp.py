@@ -60,8 +60,8 @@ def snmp_command(
     hostname, community, oid, snmp_version='2c', timeout=2, attempts=3
 ):
     transport = cmdgen.UdpTransportTarget((hostname, 161), attempts, timeout)
-    gen = cmdgen.CommandGenerator()
     for priv_protocol in PRIV_PROTOCOLS:
+        gen = cmdgen.CommandGenerator()
         data = user_data(community, snmp_version, priv_protocol=priv_protocol)
         error, status, index, vars = gen.getCmd(data, transport, oid)
         if not error:
@@ -73,8 +73,8 @@ def snmp_walk(
     hostname, community, oid, snmp_version='2c', timeout=2, attempts=3
 ):
     transport = cmdgen.UdpTransportTarget((hostname, 161), attempts, timeout)
-    gen = cmdgen.CommandGenerator()
     for priv_protocol in PRIV_PROTOCOLS:
+        gen = cmdgen.CommandGenerator()
         data = user_data(community, snmp_version, priv_protocol=priv_protocol)
         error, status, index, vars = gen.nextCmd(data, transport, oid)
         if not error:
