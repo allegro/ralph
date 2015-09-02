@@ -51,14 +51,14 @@ class DCAssetsView(APIView):
 
     def put(self, request, rack_id, format=None):
         serializer = RackSerializer(
-            self.get_object(rack_id), data=request.DATA)
+            self.get_object(rack_id), data=request.data)
         if serializer.is_valid():
-            rack = serializer.update(data=request.DATA)
+            rack = serializer.update(data=request.data)
             return Response(self._get_rack_data(rack))
         return Response(serializer.errors)
 
     def post(self, request, format=None):
-        serializer = RackBaseSerializer(data=request.DATA)
+        serializer = RackBaseSerializer(data=request.data)
         if serializer.is_valid():
             rack = serializer.create(serializer.data)
             return Response(self._get_rack_data(rack))
