@@ -84,7 +84,9 @@ class BackOfficeAssetAdmin(
         ForceDepreciationFilter, RemarksFilter
     ]
     date_hierarchy = 'created'
-    list_select_related = ['model', 'user', 'warehouse', 'model__manufacturer']
+    list_select_related = [
+        'model', 'user', 'warehouse', 'model__manufacturer', 'region'
+    ]
     raw_id_fields = ['model', 'user', 'owner', 'service_env']
     resource_class = resources.BackOfficeAssetResource
     bulk_edit_list = list_display

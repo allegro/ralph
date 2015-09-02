@@ -8,11 +8,11 @@ from ralph.lib.permissions.admin import PermissionsPerObjectFormMixin
 from ralph.lib.permissions.tests._base import PermissionsTestMixin
 from ralph.lib.permissions.tests.models import (
     Article,
-    Library,
-    LongArticle,
     has_long_title,
     is_author,
-    is_collabolator
+    is_collabolator,
+    Library,
+    LongArticle
 )
 
 

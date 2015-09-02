@@ -13,7 +13,8 @@ def label(field):
 def field(field, is_admin=True, show_label=True):
     """Render foundation field."""
     return {
-        'field': field.field if is_admin else field,
+        'admin_field': field.field if is_admin else field,
+        'field': field,
         'show_label': show_label
     }
 

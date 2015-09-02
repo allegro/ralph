@@ -98,7 +98,7 @@ class RalphUser(AbstractUser):
         max_length=256,
         blank=True,
     )
-    regions = models.ManyToManyField(Region)
+    regions = models.ManyToManyField(Region, related_name='users')
 
     class Meta(AbstractUser.Meta):
         swappable = 'AUTH_USER_MODEL'

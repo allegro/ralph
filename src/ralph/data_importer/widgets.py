@@ -59,6 +59,17 @@ class UserWidget(widgets.ForeignKeyWidget):
         return result
 
 
+class UserManyToManyWidget(widgets.ManyToManyWidget):
+
+    """Widget for many Ralph Users Foreign Key field."""
+
+    def clean(self, value):
+        if not value:
+            return get_user_model().objects.none()
+        usernames = value.split(self.separator)
+        return get_user_model().objects.filter(username__in=usernames)
+
+
 class BaseObjectManyToManyWidget(widgets.ManyToManyWidget):
 
     """Widget for BO/DC base objects."""

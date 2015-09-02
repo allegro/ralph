@@ -4,9 +4,11 @@ from ralph.assets.models.assets import (
     Asset,
     AssetModel,
     BaseObject,
+    BusinessSegment,
     Category,
     Environment,
     Manufacturer,
+    ProfitCenter,
     Service,
     ServiceEnvironment
 )
@@ -43,6 +45,18 @@ class ManufacturerAdmin(RalphAdmin):
 
 @register(Environment)
 class EnvironmentAdmin(RalphAdmin):
+
+    search_fields = ['name']
+
+
+@register(BusinessSegment)
+class BusinessSegmentAdmin(RalphAdmin):
+
+    search_fields = ['name']
+
+
+@register(ProfitCenter)
+class ProfitCenterAdmin(RalphAdmin):
 
     search_fields = ['name']
 
@@ -87,3 +101,5 @@ class AssetAdmin(RalphAdmin):
 @register(BaseObject)
 class BaseObjectAdmin(RalphAdmin):
     raw_id_fields = ['parent', 'service_env']
+    exclude = ('content_type',)
+    list_select_related = ['content_type']

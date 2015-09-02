@@ -44,10 +44,13 @@ class PermissionPerFieldAdminMixin(object):
 
     def get_form(self, request, obj=None, **kwargs):
         """Return form with fields which user have access."""
-        kwargs['fields'] = self.model.allowed_fields(request.user)
-        return super().get_form(
-            request, obj, **kwargs
-        )
+        form = super().get_form(request, obj, **kwargs)
+        user_allowed_fields = self.model.allowed_fields(request.user)
+        forbidden_fields = set(form._meta.fields) - user_allowed_fields
+        if forbidden_fields:
+            for field in forbidden_fields:
+                form.Meta.fields.remove(field)
+        return form
 
     def get_list_display(self, request):
         """Return fields with respect to user permissions."""

@@ -35,7 +35,11 @@ class SuggestView(JsonViewMixin, View):
         """
         Returns serialized dict as JSON object.
         """
-        can_edit = ralph_site._registry[self.model].has_change_permission(
+        # TODO
+        # Add in the future redirected to the model that is being edited
+        can_edit = not getattr(
+            self.model, 'is_polymorphic', False
+        ) and ralph_site._registry[self.model].has_change_permission(
             self.request
         )
         results = [
@@ -68,16 +72,46 @@ class AjaxAutocompleteMixin(object):
                     return HttpResponseBadRequest()
                 return super().dispatch(request, *args, **kwargs)
 
+            def get_base_ids(self, model, value):
+                """
+                Return IDs for related models.
+                """
+                search_fields = ralph_site._registry[model].search_fields
+                query_filters = [
+                    Q(**{'{}__icontains'.format(field): value})
+                    for field in search_fields
+                ]
+                if issubclass(model, PermissionsForObjectMixin):
+                    queryset = model._get_objects_for_user(
+                        self.request.user, model.objects
+                    )
+                else:
+                    queryset = model.objects
+                return queryset.filter(
+                    *query_filters
+                )[:self.limit].values_list('pk', flat=True)
+
             def get_queryset(self, user):
                 queryset = self.model._default_manager.all()
-                if self.query:
-                    qs = [
-                        Q(**{'{}__icontains'.format(field): self.query})
-                        for field in search_fields
-                    ]
-                    queryset = queryset.filter(reduce(operator.or_, qs))
-                if issubclass(self.model, PermissionsForObjectMixin):
-                    queryset = self.model._get_objects_for_user(user, queryset)
+                if getattr(self.model, 'is_polymorphic', False):
+                    id_list = []
+                    for related_model in self.model._polymorphic_descendants:
+                        id_list.extend(self.get_base_ids(
+                            related_model,
+                            self.query,
+                        ))
+                    queryset = queryset.filter(pk__in=id_list)
+                else:
+                    if self.query:
+                        qs = [
+                            Q(**{'{}__icontains'.format(field): self.query})
+                            for field in search_fields
+                        ]
+                        queryset = queryset.filter(reduce(operator.or_, qs))
+                    if issubclass(self.model, PermissionsForObjectMixin):
+                        queryset = self.model._get_objects_for_user(
+                            user, queryset
+                        )
                 return queryset.order_by(*ordering)[:self.limit]
 
         class Detail(SuggestView):
@@ -90,7 +124,7 @@ class AjaxAutocompleteMixin(object):
                 return super().dispatch(request, *args, **kwargs)
 
             def get_queryset(self, user):
-                queryset = self.model.objects.filter(pk=int(self.pk))
+                queryset = self.model._default_manager.filter(pk=int(self.pk))
                 if issubclass(self.model, PermissionsForObjectMixin):
                     queryset = self.model._get_objects_for_user(user, queryset)
                 if not queryset.exists():

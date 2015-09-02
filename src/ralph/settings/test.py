@@ -6,6 +6,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': ':memory:',
+        'ATOMIC_REQUESTS': True,
     }
 }
 
@@ -15,6 +16,7 @@ INSTALLED_APPS += (
     'ralph.lib.mixins',
     'ralph.tests',
     'ralph.lib.permissions.tests',
+    'ralph.lib.polymorphic.tests',
 )
 
 PASSWORD_HASHERS = (

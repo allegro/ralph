@@ -8,8 +8,8 @@ from ralph.admin.sites import ralph_site
 from ralph.admin.views.extra import (
     CHANGE,
     LIST,
-    VIEW_TYPES,
-    RalphExtraViewMixin
+    RalphExtraViewMixin,
+    VIEW_TYPES
 )
 
 register = partial(django_register, site=ralph_site)

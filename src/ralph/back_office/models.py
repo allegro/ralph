@@ -42,3 +42,6 @@ class BackOfficeAsset(Regionalizable, Asset):
     @property
     def country_code(self):
         return 'PL'
+
+    def __str__(self):
+        return 'BackOfficeAsset: {}'.format(self.hostname)

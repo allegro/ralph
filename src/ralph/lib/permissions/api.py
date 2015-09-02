@@ -54,12 +54,12 @@ class PermissionsPerFieldSerializerMixin(object):
         always passed here (for any user) - it's `declared_fields` in
         DRF nomenclature.
         """
-        result = super().get_field_names(declared_fields, model_info)
-        model = model_info.pk.model
+        result = list(super().get_field_names(declared_fields, model_info))
+        model = self.Meta.model
         permissioned_fields = set(
             list(model_info.fields.keys()) +
             list(model_info.forward_relations.keys())
-        )
+        ) & set(result)
         if issubclass(model, PermByFieldMixin):
             user = self.context['request'].user
             view_fields = model.allowed_fields(user, action='view')

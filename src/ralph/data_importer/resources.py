@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from import_export import fields, resources
 
+from ralph.accounts.models import Region
 from ralph.assets.models import assets, base
 from ralph.back_office.models import BackOfficeAsset, Warehouse
 from ralph.data_center.models import networks, physical
@@ -10,6 +11,7 @@ from ralph.data_importer.widgets import (
     BaseObjectManyToManyWidget,
     BaseObjectWidget,
     ImportedForeignKeyWidget,
+    UserManyToManyWidget,
     UserWidget
 )
 from ralph.licences.models import (
@@ -83,6 +85,11 @@ class BackOfficeAssetResource(ImportForeignKeyMixin, resources.ModelResource):
         column_name='warehouse',
         attribute='warehouse',
         widget=ImportedForeignKeyWidget(Warehouse),
+    )
+    region = fields.Field(
+        column_name='region',
+        attribute='region',
+        widget=ImportedForeignKeyWidget(Region),
     )
 
     class Meta:
@@ -223,6 +230,11 @@ class LicenceResource(ImportForeignKeyMixin, resources.ModelResource):
         attribute='software_category',
         widget=ImportedForeignKeyWidget(SoftwareCategory),
     )
+    region = fields.Field(
+        column_name='region',
+        attribute='region',
+        widget=ImportedForeignKeyWidget(Region),
+    )
 
     class Meta:
         model = Licence
@@ -247,6 +259,11 @@ class SupportResource(ImportForeignKeyMixin, resources.ModelResource):
         column_name='base_objects',
         attribute='base_objects',
         widget=BaseObjectManyToManyWidget(base.BaseObject),
+    )
+    region = fields.Field(
+        column_name='region',
+        attribute='region',
+        widget=ImportedForeignKeyWidget(Region),
     )
 
     class Meta:
@@ -323,3 +340,14 @@ class RackAccessoryResource(ImportForeignKeyMixin, resources.ModelResource):
 
     class Meta:
         model = physical.RackAccessory
+
+
+class RegionResource(ImportForeignKeyMixin, resources.ModelResource):
+    users = fields.Field(
+        column_name='users',
+        attribute='users',
+        widget=UserManyToManyWidget(get_user_model()),
+    )
+
+    class Meta:
+        model = Region
