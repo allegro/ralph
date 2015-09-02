@@ -4,10 +4,10 @@ from copy import copy
 from django.shortcuts import get_object_or_404
 
 from ralph.admin.mixins import (
-    get_common_media,
-    get_inline_media,
     RalphAdmin,
-    RalphTemplateView
+    RalphTemplateView,
+    get_common_media,
+    get_inline_media
 )
 from ralph.admin.sites import ralph_site
 

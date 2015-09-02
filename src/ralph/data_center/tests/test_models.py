@@ -4,9 +4,9 @@ from django.core.exceptions import ValidationError
 
 from ralph.data_center.models.choices import Orientation
 from ralph.data_center.models.networks import (
-    get_network_tree,
     IPAddress,
-    Network
+    Network,
+    get_network_tree
 )
 from ralph.data_center.tests.factories import (
     DataCenterAssetFactory,
