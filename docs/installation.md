@@ -1,6 +1,6 @@
 # Installation guide
 
-For production, we provide both deb package and  docker(compose) image. 
+For production, we provide both deb package and  docker(compose) image.
 We only support Ubuntu 14.04 Trusty distribution.
 
 On the other hand, if you are developer, we strongly suggest using our `Vagrant` inside the `vagrant` directory
@@ -9,16 +9,16 @@ with many development *bells and whistles* included.
 ## Debian/Ubuntu package - recommended
 
 Make sure, your installation is clean Ubuntu 14.04, without any other packages installed.
-  
+
 First, add our official ralph repository:
 
     sudo apt-key adv --keyserver  hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
-    sudo echo "deb https://dl.bintray.com/vi4m/ralph wheezy main" >  /etc/apt/sources.list.d/vi4m_ralph.list
+    sudo sh -c "echo 'deb https://dl.bintray.com/vi4m/ralph wheezy main' >  /etc/apt/sources.list.d/vi4m_ralph.list"
 
 Then, just install ralph the traditional way:
 
-    apt-get update
-    apt-get install ralph-core redis-server mysql-server
+    sudo apt-get update
+    sudo apt-get install ralph-core redis-server mysql-server
 
 Note: Main www instance of Ralph requires redis and mysql server installed. If you want to install only ralph agent somewhere, just install `ralph-core` and point it to the particular mysql and redis instance somewhere on your network.
 
@@ -45,7 +45,7 @@ cat ~/.profile
     export PATH=/opt/ralph/ralph-core/bin/:$PATH
 
 ### Initialization
-1. Type `ralph migrate` to create tables in your database. 
+1. Type `ralph migrate` to create tables in your database.
 2. Type `ralph sitetree_resync_apps` to reload menu.
 3. Type `ralph createsuperuser` to add new user.
 
@@ -90,7 +90,7 @@ If you are upgrading ralph image (source code) run::
     docker-compose run --rm web /root/upgrade.sh
 
 
-# LDAP Authentication 
+# LDAP Authentication
 
 It is possible to enable authentication via various LDAP/AD systems.
 
