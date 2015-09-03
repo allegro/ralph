@@ -10,15 +10,15 @@
 {% block content %}
   <div id="content-main">
     <div class="row header">
-      <div class="large-3 small-3 columns">
+      <div class="large-2 small-2 columns">
         <h1 class="ellipsis-hidden">{% block title_head %}{% if original %}{{ original }}{% else %}{% trans 'Add' %}{% endif %}{% endblock %}</h1>
       </div>
-      <div class="large-7 small-7 columns">
+      <div class="large-9 small-9 columns">
         {% block tabs %}
           {% views_tabs change_views '' original %}
         {% endblock %}
       </div>
-      <div class="large-2 small-2 columns">
+      <div class="large-1 small-1 columns">
         <div class="header-toolbar">
           {% available_transitions original 'status' %}
           {% block object-tools %}
