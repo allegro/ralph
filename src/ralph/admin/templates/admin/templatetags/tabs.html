@@ -10,7 +10,7 @@
         aria-haspopup="true"
         data-options="show_on:small"
       >
-        <a href="{{ object.get_absolute_url }}" title="{% trans "Basic info" %}">
+        <a href="{{ object.get_absolute_url }}" title="{% trans "Basic info" %}" class="ellipsis-hidden">
           <i class="fa fa-info"></i> <span class="tab-label">{% trans "Basic info" %}</span>
         </a>
       </li>
@@ -29,6 +29,7 @@
               {% url view.url_with_namespace %}
             {% endif %}
             " title="{{ view.label }}"
+            class="ellipsis-hidden"
           />
             {% if view.icon %}
               <i class="fa fa-{{ view.icon }}"></i>

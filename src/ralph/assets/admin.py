@@ -100,6 +100,10 @@ class AssetAdmin(RalphAdmin):
 
 @register(BaseObject)
 class BaseObjectAdmin(RalphAdmin):
+    list_display = ['repr']
     raw_id_fields = ['parent', 'service_env']
     exclude = ('content_type',)
     list_select_related = ['content_type']
+
+    def repr(self, obj):
+        return '{}: {}'.format(obj.content_type, obj)

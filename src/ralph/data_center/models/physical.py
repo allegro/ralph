@@ -265,7 +265,10 @@ class DataCenterAsset(Asset):
         verbose_name_plural = _('data center assets')
 
     def __str__(self):
-        return 'DataCenterAsset: {}'.format(self.hostname)
+        return '{}'.format(self.hostname)
+
+    def __repr__(self):
+        return '<DataCenterAsset: {}>'.format(self.id)
 
     def get_orientation_desc(self):
         return Orientation.name_from_id(self.orientation)
