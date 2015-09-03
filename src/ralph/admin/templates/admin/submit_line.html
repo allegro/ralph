@@ -10,6 +10,12 @@
     <div class="small-{% if show_delete_link %}11{% else %}12{% endif %} columns text_right right_section">
       {% block additional_buttons %}{% endblock %}
       <ul class="button-group radius right">
+        <li>
+        {% comment %}
+            <a href="{% url myxxx asset.pk  %}" class="default button small info">Bulk Add</a>
+        {% endcomment %}
+            <a href="/back_office/backofficeasset/2/multiadd/" class="default button small info">Bulk Add</a>
+        </li>
         {% if show_save %}
         <li>
           <input type="submit" value="{% trans 'Save' %}" class="default button small success" name="_save" />

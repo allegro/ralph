@@ -3,10 +3,9 @@
 
 {% block content %}
 
-  <h1>{% trans 'Tranisition' %}&nbsp;{{ transition.name|lower }}</h1>
-  {% if transition.description %}
-    <p>{{ transition.description }}</p>
-  {% endif %}
+  <h1>{% trans 'Bulk adding:' %}&nbsp;
+      <a href="{{ asset.get_absolute_url }}">{{ asset.hostname }}</a>
+  </h1>
   <form method="POST">
     {% csrf_token %}
     <table>
@@ -24,12 +23,12 @@
     <div class="admin_bottom panel">
       <div class="row">
         <div class="small-2 columns">
-          <a href="{{ back_url }}" class="button alert">{% trans 'Cancel transition' %}</a>
+          <a href="{{ back_url }}" class="button alert">{% trans 'Cancel' %}</a>
         </div>
         <div class="small-10 columns text_right right_section">
           <ul class="button-group radius right">
             <li>
-              <button class="button success">{% trans 'Run transition' %}</button>
+              <button class="button success">{% trans 'Add' %}</button>
             </li>
           </ul>
         </div>

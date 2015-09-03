@@ -53,8 +53,8 @@ class MultiAddView(RalphTemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = self.get_form()
-        #context['transition'] = self.transition
-        #context['back_url'] = self.obj.get_absolute_url()
+        context['asset'] = self.obj
+        context['back_url'] = self.obj.get_absolute_url()
         return context
 
     def post(self, request, *args, **kwargs):
@@ -101,16 +101,16 @@ class MulitiAddAdminMixin(object):
             url = 'admin:' + url
         return url
 
-    #def change_view(self, request, object_id, form_url='', extra_context=None):
-    #    #TODO:: rm it
-    #    if not extra_context:
-    #        extra_context = {}
-    #    extra_context.update({
-    #        'transition_url_name': self.get_transition_url_name()
-    #    })
-    #    return super().changeform_view(
-    #        request, object_id, form_url, extra_context
-    #    )
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        #TODO:: rm it
+        if not extra_context:
+            extra_context = {}
+        extra_context.update({
+            'transition_url_name': self.get_transition_url_name()
+        })
+        return super().changeform_view(
+            request, object_id, form_url, extra_context
+        )
 
     def get_urls(self):
         urls = super().get_urls()
@@ -120,7 +120,8 @@ class MulitiAddAdminMixin(object):
                 r'^(?P<object_pk>.+)/multiadd/$',
                 self.admin_site.admin_view(self.run_transition_view.as_view()),
                 {'model': self.model},
-                name=self.get_transition_url_name(False),
+                name='myxxx',
+                #name=self.get_transition_url_name(False),
             ),
         ]
         return _urls + urls
