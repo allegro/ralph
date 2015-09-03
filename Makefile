@@ -12,7 +12,7 @@ upload-package:
 	./packaging/upload-package.sh
 
 install-js:
-	npm install gulp-watch gulp-autoprefixer gulp-bower gulp-less gulp-rename gulp-sass run-sequence jshint
+	npm install gulp-watch gulp-autoprefixer gulp-bower gulp-less gulp-rename gulp-sass run-sequence jshint node-qunit-phantomjs
 
 js-hint:
 	find src/ralph|grep "\.js$$"|grep -v vendor|xargs ./node_modules/.bin/jshint;
