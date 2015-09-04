@@ -380,6 +380,7 @@ class DeviceBulkForm(DeviceForm):
 class DeviceInfoForm(DeviceForm):
 
     asset_status = forms.CharField(
+        required=False,
         widget=ReadOnlyWidget(), label=_('asset status'),
     )
 
