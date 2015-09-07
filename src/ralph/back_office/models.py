@@ -50,7 +50,7 @@ class BackOfficeAsset(Regionalizable, Asset):
         if self.owner:
             iso2 = Country.name_from_id(int(self.owner.country)).upper()
             return iso2_to_iso3(iso2)
-        return 'POL'
+        return settings.DEFAULT_COUNTRY_CODE
 
     def __str__(self):
         return '{}'.format(self.hostname)
