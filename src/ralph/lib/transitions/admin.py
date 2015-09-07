@@ -46,7 +46,7 @@ class TransitionAdminMixin(object):
         extra_context.update({
             'transition_url_name': self.get_transition_url_name()
         })
-        return super().changeform_view(
+        return super().change_view(
             request, object_id, form_url, extra_context
         )
 

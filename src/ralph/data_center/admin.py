@@ -4,6 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
+from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.assets.filters import (
     BarcodeFilter,
     DepreciationDateFilter,
@@ -105,6 +106,7 @@ class DataCenterAssetLicence(RalphDetailViewAdmin):
 
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(
+    MulitiAddAdminMixin,
     TransitionAdminMixin,
     BulkEditChangeListMixin,
     PermissionAdminMixin,
@@ -126,6 +128,7 @@ class DataCenterAssetAdmin(
         'status', 'barcode', 'model',
         'sn', 'hostname', 'invoice_date', 'invoice_no',
     ]
+    multiadd_info_fields = list_display
     bulk_edit_list = list_display
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
     list_filter = [
@@ -165,6 +168,9 @@ class DataCenterAssetAdmin(
             )
         }),
     )
+
+    def get_multiadd_fields(self):
+        return ['sn', 'barcode', 'position']
 
 
 @register(ServerRoom)

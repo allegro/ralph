@@ -45,3 +45,11 @@ class Order(models.Model, metaclass=TransitionWorkflowBase):
     @transition_action
     def go_to_post_office(self, **kwargs):
         pass
+
+
+class TestAsset(models.Model):
+    hostname = models.CharField(max_length=50)
+    sn = models.CharField(max_length=200, null=True, blank=True, unique=True)
+    barcode = models.CharField(
+        max_length=200, null=True, blank=True, unique=True, default=None,
+    )

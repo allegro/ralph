@@ -1,0 +1,81 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n foundation_form ralph_tags %}
+
+{% block content %}
+ <h1>{% trans 'Bulk adding:' %}
+    <a href="{{ obj.get_absolute_url }}">
+      {{ obj }}
+    </a>
+  </h1>
+  <br />
+  <div>
+    <h5>{% trans "This object will be copied" %}</h5>
+    <table>
+      <thead>
+        {% for field in info_fields %}
+          <th>
+            {{ obj|get_verbose_name:field }}
+          </th>
+        {% endfor %}
+      </thead>
+      <tbody>
+        <tr>
+          {% for field in info_fields %}
+            <td>
+              {{ obj|get_attr:field }}
+            </td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <br />
+  <h5>
+    {% trans "Please add multiple values separated with comma, new line or pipe" %}
+  </h5>
+  <form method="POST">
+    {% csrf_token %}
+    {% errors form %}
+    <table>
+      <thead>
+        <tr>
+          {% for field in form %}
+           <th>{{ field.label }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+           {% for field in form %}
+            <td>
+              {% for error in field.errors %}
+                {{ error }}
+              {% endfor %}
+              {{ field }}
+            </td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+    <div class="admin_bottom panel">
+      <div class="row">
+        <div class="small-2 columns">
+          <a href="{{ obj.get_absolute_url }}" class="button alert">
+            {% trans 'Cancel' %}
+          </a>
+        </div>
+        <div class="small-10 columns text_right right_section">
+          <ul class="button-group radius right">
+            <li>
+              <button class="button success">{% trans 'Add' %}</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </form>
+{% endblock %}
+{% block extra_scripts %}
+  {{ block.super }}
+  {{ form.media.js }}
+{% endblock %}
