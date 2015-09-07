@@ -264,11 +264,22 @@ class DataCenterAsset(Asset):
         verbose_name = _('data center asset')
         verbose_name_plural = _('data center assets')
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Saved current rack value to check if changed.
+        self._rack_id = self.rack_id
+
     def __str__(self):
         return '{}'.format(self.hostname)
 
     def __repr__(self):
         return '<DataCenterAsset: {}>'.format(self.id)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # When changing rack we search and save all descendants
+        if self.pk and self._rack_id != self.rack_id:
+            DataCenterAsset.objects.filter(parent=self).update(rack=self.rack)
 
     def get_orientation_desc(self):
         return Orientation.name_from_id(self.orientation)
