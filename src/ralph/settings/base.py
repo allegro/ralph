@@ -128,6 +128,7 @@ ASSET_HOSTNAME_TEMPLATE = {
     'postfix': '',
     'counter_length': 5,
 }
+DEFAULT_COUNTRY_CODE = 'POL'
 
 
 LDAP_SERVER_OBJECT_USER_CLASS = 'user'  # possible values: user, person
