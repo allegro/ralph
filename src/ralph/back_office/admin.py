@@ -59,8 +59,10 @@ class BackOfficeAssetLicence(RalphDetailViewAdmin):
     inlines = [BackOfficeAssetLicenceInline]
 
 
+from ralph.admin.views.multiadd import MulitiAddAdminMixin
 @register(BackOfficeAsset)
 class BackOfficeAssetAdmin(
+    MulitiAddAdminMixin,
     BulkEditChangeListMixin,
     PermissionAdminMixin,
     TransitionAdminMixin,

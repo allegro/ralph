@@ -1,0 +1,44 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n %}
+
+{% block content %}
+
+  <h1>{% trans 'Bulk adding:' %}&nbsp;
+      <a href="{{ asset.get_absolute_url }}">{{ asset.hostname }}</a>
+  </h1>
+  <form method="POST">
+    {% csrf_token %}
+    <table>
+      <thead>
+        <tr>
+          <th>{% trans 'Option' %}</th>
+          <th>{% trans 'Value' %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{ form.as_table }}
+      </tbody>
+    </table>
+
+    <div class="admin_bottom panel">
+      <div class="row">
+        <div class="small-2 columns">
+          <a href="{{ back_url }}" class="button alert">{% trans 'Cancel' %}</a>
+        </div>
+        <div class="small-10 columns text_right right_section">
+          <ul class="button-group radius right">
+            <li>
+              <button class="button success">{% trans 'Add' %}</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </form>
+
+{% endblock %}
+
+{% block extra_scripts %}
+  {{ block.super }}
+  {{ form.media.js }}
+{% endblock %}
