@@ -142,6 +142,7 @@ class DataCenterAssetResource(AssetResource):
 
     def dehydrate_parent(self, asset):
         if (
+            not asset.model.category or
             not asset.model.category.is_blade or
             not asset.device_info.position or
             not asset.device_info.rack
@@ -152,7 +153,6 @@ class DataCenterAssetResource(AssetResource):
         ).filter(
             Q(device_info__slot_no__isnull=True) | Q(device_info__slot_no=''),
             type=models_assets.AssetType.data_center,
-            model__category__is_blade=False,
             part_info=None,
             device_info__rack=asset.device_info.rack,
             device_info__position=asset.device_info.position,
@@ -161,6 +161,7 @@ class DataCenterAssetResource(AssetResource):
             ]
         ).exclude(
             device_info__rack__in=settings.NG_EXPORTER['rack_ids_where_parents_are_disallowed'],  # noqa
+            model__category__is_blade=True,
         )
         parents_ids = parents.values_list('id', flat=True)
         if len(parents_ids) == 0:
@@ -277,14 +278,12 @@ class DataCenterAssetResource(AssetResource):
         parents = self.Meta.model.objects.filter(
             Q(device_info__slot_no__isnull=True) | Q(device_info__slot_no=''),
             type=models_assets.AssetType.data_center,
-            model__category__is_blade=False,
             part_info=None,
-        )
+        ).exclude(model__category__is_blade=True)
         children = self.Meta.model.objects.filter(
             type=models_assets.AssetType.data_center,
-            model__category__is_blade=True,
             part_info=None,
-        )
+        ).exclude(id__in=parents.values_list('id', flat=True))
         return list(chain(parents, children))
 
 
@@ -451,10 +450,8 @@ class ServiceResource(resources.ModelResource):
         )
         assert len(profit_center) < 2, 'found many profit centers'
         if profit_center:
-            profit_center_name = profit_center[0].parent.name
-        else:
-            profit_center_name = ''
-        return profit_center_name
+            return profit_center[0].parent.id
+        return ''
 
     def get_queryset(self):
         return models_device.ServiceCatalog.objects.all()
@@ -470,6 +467,52 @@ class ServiceResource(resources.ModelResource):
             # 'cost_center': '',
         )
         model = models_ci.CIRelation
+
+
+class BusinessSegmentResource(resources.ModelResource):
+    class Meta:
+        fields = ('id', 'name', 'created', 'modified',)
+        model = models_ci.CI
+
+    def get_queryset(self):
+        return models_ci.CI.objects.filter(type=models_ci.CI_TYPES.BUSINESSLINE)
+
+
+class ProfitCenterResource(resources.ModelResource):
+    description = fields.Field(
+        'description', column_name='description'
+    )
+    business_segment = fields.Field(
+        'business_segment', column_name='business_segment'
+    )
+
+    class Meta:
+        fields = (
+            'id', 'name', 'created', 'modified', 'description',
+            'business_segment',
+        )
+        model = models_ci.CI
+
+    def get_queryset(self):
+        return models_ci.CI.objects.filter(
+            type=models_ci.CI_TYPES.PROFIT_CENTER
+        )
+
+    def dehydrate_business_segment(self, profit_center):
+        business_segment = profit_center.child.filter(
+            parent__type=models_ci.CI_TYPES.BUSINESSLINE,
+        )
+        assert len(business_segment) < 2, 'found too many business segments'
+        if business_segment:
+            return business_segment[0].parent.id
+        return ''
+
+    def dehydrate_description(self, profit_center):
+        description = profit_center.ciattributevalue_set.filter(attribute=5)
+        assert len(description) < 2, 'found too many descriptions'
+        if description:
+            return description[0].value
+        return ''
 
 
 class RackResource(resources.ModelResource):
