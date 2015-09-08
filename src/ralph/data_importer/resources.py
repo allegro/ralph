@@ -273,6 +273,32 @@ class SupportResource(ImportForeignKeyMixin, resources.ModelResource):
         return str(support.price)
 
 
+class ProfitCenterResource(
+    ImportForeignKeyMixin, resources.ModelResource
+):
+    business_segment = fields.Field(
+        column_name='business_segment',
+        attribute='business_segment',
+        widget=ImportedForeignKeyWidget(assets.BusinessSegment),
+    )
+
+    class Meta:
+        model = assets.ProfitCenter
+
+
+class ServiceResource(
+    ImportForeignKeyMixin, resources.ModelResource
+):
+    profit_center = fields.Field(
+        column_name='profit_center',
+        attribute='profit_center',
+        widget=ImportedForeignKeyWidget(assets.ProfitCenter),
+    )
+
+    class Meta:
+        model = assets.Service
+
+
 class ServiceEnvironmentResource(
     ImportForeignKeyMixin, resources.ModelResource
 ):
