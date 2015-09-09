@@ -129,8 +129,8 @@ class AdminFiltersTestCase(TestCase):
         datet_filter = InvoiceDateFilter(
             request=None,
             params={
-                'invoice_date_start': '2015-01-20',
-                'invoice_date_end': '2015-04-01',
+                'invoice_date__start': '2015-01-20',
+                'invoice_date__end': '2015-04-01',
             },
             model=DataCenterAsset,
             model_admin=DataCenterAssetAdmin,
@@ -143,8 +143,8 @@ class AdminFiltersTestCase(TestCase):
         datet_filter = InvoiceDateFilter(
             request=None,
             params={
-                'invoice_date_start': '2015-02-1',
-                'invoice_date_end': '',
+                'invoice_date__start': '2015-02-1',
+                'invoice_date__end': '',
             },
             model=DataCenterAsset,
             model_admin=DataCenterAssetAdmin,
@@ -157,8 +157,8 @@ class AdminFiltersTestCase(TestCase):
         datet_filter = InvoiceDateFilter(
             request=None,
             params={
-                'invoice_date_start': '',
-                'invoice_date_end': '2015-02-20',
+                'invoice_date__start': '',
+                'invoice_date__end': '2015-02-20',
             },
             model=DataCenterAsset,
             model_admin=DataCenterAssetAdmin,

@@ -111,3 +111,27 @@ class ExtraView(RalphDetailView):
     name = 'extra_details'
     label = 'Extra Detail View'
 ```
+
+
+## Using advanced search filters
+
+You could easily define your own advanced search filters (to search by text, date etc). Available filters are:
+
+* BooleanFilter (`ralph.admin.filters.BooleanFilter`)
+* ChoicesFilter (`ralph.admin.filters.ChoicesFilter`)
+* DateFilter (`ralph.admin.filters.DateFilter`)
+* TextFilter (`ralph.admin.filters.TextFilter`)
+
+To use filter define your class, where you specify field title and parameter
+against which result will be filtered:
+
+    class BarcodeFilter(TextFilter):
+        title = _('Barcode')
+        parameter_name = 'barcode'
+
+Then simply add this class to `list_filter` attribute in your admin class definition:
+
+    class MyAdmin(RalphAdmin):
+        list_filter = [BarcodeFilter]
+
+To use `ChoicesFilter` you need to specify one additional param: `choices_list`, which should be list of available choices to select from (`dj.choices.Choices` instance is recommended here).

@@ -86,6 +86,9 @@ class DateFilter(BaseCustomFilter):
 
     def __init__(self, request, params, model, model_admin):
         used_parameters = {}
+        self.parameter_name_start = self.parameter_name + '__start'
+        self.parameter_name_end = self.parameter_name + '__end'
+
         for param in self.expected_parameters():
             try:
                 used_parameters[param] = params.pop(param, '')
