@@ -66,6 +66,7 @@ class AssetModelAdmin(PermissionAdminMixin, RalphAdmin):
 
     resource_class = resources.AssetModelResource
     list_select_related = ['manufacturer']
+    list_display = ['name', 'manufacturer']
     raw_id_fields = ['manufacturer']
     search_fields = ['name', 'manufacturer__name']
     ordering = ['name']

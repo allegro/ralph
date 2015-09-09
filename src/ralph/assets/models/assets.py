@@ -300,7 +300,7 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
     )
 
     def __str__(self):
-        return 'Asset: {}'.format(self.hostname)
+        return self.hostname
 
     def get_deprecation_months(self):
         return int(
