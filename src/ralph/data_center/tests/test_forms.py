@@ -22,7 +22,7 @@ class NetworkLineFormsetTest(RalphTestCase):
             'DELETE': False,
             'is_management': True,
         }
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
             ValidationError,
             (
                 'Only one managment IP address can be assigned '
@@ -42,7 +42,7 @@ class NetworkLineFormsetTest(RalphTestCase):
             'DELETE': False,
             'is_management': False,
         }
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
             ValidationError,
             'One IP address must be management',
         ):

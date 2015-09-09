@@ -29,7 +29,9 @@ class MultilineField(forms.CharField):
                 "by new line or comma."
             )
             raise forms.ValidationError(error_msg, code='required')
-        non_empty_values = [item for item in values if len(item.strip()) > 0]
+        non_empty_values = [
+            item for item in values if str(item).strip()
+        ]
         if not self.allow_duplicates:
             has_duplicates = len(set(non_empty_values)) != len(non_empty_values)
             if has_duplicates:
@@ -42,6 +44,16 @@ class MultilineField(forms.CharField):
                 items.append(item.strip(' \t\n\r'))
 
         return items
+
+
+class IntegerMultilineField(MultilineField):
+
+    def to_python(self, value):
+        result = super().to_python(value)
+        try:
+            return [int(i) for i in result]
+        except ValueError:
+            raise ValidationError(_('Enter a valid number.'))
 
 
 class MultivalueFormMixin(object):

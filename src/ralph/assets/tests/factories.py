@@ -15,6 +15,8 @@ from ralph.assets.models.choices import ObjectModelType
 
 class CategoryFactory(DjangoModelFactory):
 
+    imei_required = True
+
     class Meta:
         model = Category
 
@@ -32,6 +34,7 @@ class BackOfficeAssetModelFactory(DjangoModelFactory):
 
     name = factory.Iterator(['3310', 'XD300S', 'Hero 3', 'Computer set'])
     type = ObjectModelType.back_office
+    category = factory.SubFactory(CategoryFactory)
 
     class Meta:
         model = AssetModel

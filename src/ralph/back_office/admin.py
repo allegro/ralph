@@ -102,7 +102,7 @@ class BackOfficeAssetAdmin(
             'fields': (
                 'hostname', 'model', 'barcode', 'sn', 'niw', 'status',
                 'warehouse', 'location', 'region', 'loan_end_date',
-                'service_env', 'remarks'
+                'service_env', 'remarks', 'imei'
             )
         }),
         (_('User Info'), {
@@ -120,8 +120,17 @@ class BackOfficeAssetAdmin(
         }),
     )
 
-    def get_multiadd_fields(self):
-        return ['sn', 'barcode']
+    def get_multiadd_fields(self, obj=None):
+        multi_add_fields = [
+            {'field': 'sn', 'allow_duplicates': False},
+            {'field': 'barcode', 'allow_duplicates': False},
+        ]
+        # Check only obj, because model is required field
+        if obj and obj.model.category.imei_required:
+            multi_add_fields.append(
+                {'field': 'imei', 'allow_duplicates': False}
+            )
+        return multi_add_fields
 
 
 @register(Warehouse)

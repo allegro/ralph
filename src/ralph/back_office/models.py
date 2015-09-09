@@ -1,20 +1,26 @@
 # -*- coding: utf-8 -*-
+import re
 
 from dj.choices import Country
 from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.forms import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
 from ralph.assets.country_utils import iso2_to_iso3
 from ralph.assets.models.assets import Asset
 from ralph.assets.models.choices import AssetStatus
+from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
 from ralph.licences.models import BaseObjectLicence
+
+IMEI_UNTIL_2003 = re.compile(r'^\d{6} *\d{2} *\d{6} *\d$')
+IMEI_SINCE_2003 = re.compile(r'^\d{8} *\d{6} *\d$')
 
 
 class Warehouse(NamedMixin, TimeStampMixin, models.Model):
@@ -40,6 +46,9 @@ class BackOfficeAsset(Regionalizable, Asset):
         default=AssetStatus.new.id,
         choices=AssetStatus(),
     )
+    imei = NullableCharField(
+        max_length=18, null=True, blank=True, unique=True
+    )
 
     class Meta:
         verbose_name = _('Back Office Asset')
@@ -57,6 +66,16 @@ class BackOfficeAsset(Regionalizable, Asset):
 
     def __repr__(self):
         return '<BackOfficeAsset: {}>'.format(self.id)
+
+    def validate_imei(self):
+        return IMEI_SINCE_2003.match(self.imei) or \
+            IMEI_UNTIL_2003.match(self.imei)
+
+    def clean(self):
+        if self.imei and not self.validate_imei():
+            raise ValidationError({
+                'imei': _('%(imei)s is not IMEI format') % {'imei': self.imei}
+            })
 
     @transition_action
     def assign_user(self, **kwargs):

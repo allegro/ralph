@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from dj.choices import Country
 from django.conf import settings
+from django.forms import ValidationError
 
 from ralph.assets.country_utils import iso2_to_iso3, iso3_to_iso2
 from ralph.assets.models import AssetLastHostname
@@ -110,3 +111,10 @@ class HostnameGeneratorTests(RalphTestCase):
 
     def test_convert_iso3_to_iso2(self):
         self.assertEqual(iso3_to_iso2('POL'), 'PL')
+
+    def test_validate_imei(self):
+        bo_asset_failed = BackOfficeAssetFactory(imei='failed')
+        bo_asset = BackOfficeAssetFactory(imei='990000862471854')
+
+        self.assertFalse(bo_asset_failed.validate_imei())
+        self.assertTrue(bo_asset.validate_imei())
