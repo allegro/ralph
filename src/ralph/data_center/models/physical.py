@@ -136,7 +136,7 @@ class RackAccessory(AdminAbsoluteUrlMixin, models.Model):
     def __str__(self):
         rack_name = self.rack.name if self.rack else ''
         accessory_name = self.accessory.name if self.accessory else ''
-        return 'RackAccessory: {rack_name} - {accessory_name}'.format(
+        return '{rack_name} - {accessory_name}'.format(
             rack_name=rack_name, accessory_name=accessory_name,
         )
 

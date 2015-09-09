@@ -179,6 +179,7 @@ class ServerRoomAdmin(RalphAdmin):
     list_select_related = ['data_center']
     search_fields = ['name', 'data_center__name']
     resource_class = resources.ServerRoomResource
+    list_display = ['name', 'data_center']
 
 
 class RackAccessoryInline(RalphTabularInline):
@@ -189,12 +190,22 @@ class RackAccessoryInline(RalphTabularInline):
 class RackAdmin(RalphAdmin):
 
     exclude = ['accessories']
-    list_display = ['name', 'server_room']
+    list_display = ['name', 'server_room_name', 'data_center_name']
     list_filter = ['server_room__data_center']
     list_select_related = ['server_room', 'server_room__data_center']
     search_fields = ['name']
     inlines = [RackAccessoryInline]
     resource_class = resources.RackResource
+
+    def server_room_name(self, obj):
+        return obj.server_room.name if obj.server_room else ''
+    server_room_name.short_description = _('Server room')
+    server_room_name.admin_order_field = 'server_room__name'
+
+    def data_center_name(self, obj):
+        return obj.server_room.data_center.name if obj.server_room else ''
+    data_center_name.short_description = _('Data Center')
+    data_center_name.admin_order_field = 'server_room__data_center__name'
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "server_room":
@@ -212,6 +223,7 @@ class RackAccessoryAdmin(RalphAdmin):
     list_select_related = ['rack', 'accessory']
     search_fields = ['accessory__name', 'rack__name']
     raw_id_fields = ['rack']
+    list_display = ['__str__', 'position']
     resource_class = resources.RackAccessoryResource
 
 
