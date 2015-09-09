@@ -24,6 +24,8 @@ NAMESPACE_SIZE = 10
 SIMPLE_MODELS = [
     'AssetLastHostname',
     'Environment',
+    'BusinessSegment',
+    'ProfitCenter',
     'Service',
     'Manufacturer',
     'Category',
@@ -54,8 +56,8 @@ DEPENDENT_MODELS = [
     # new scan handles that: 'DiskShareMount',
     'Licence',
     'Support',
-    'Network',
-    'IPAddress',
+    # to export with core models: 'Network',
+    # to export with core models: 'IPAddress',
 ]
 MANY_TO_MANY = [
     'BaseObjectLicence',
