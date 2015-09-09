@@ -11,7 +11,7 @@ urlpatterns = [
     ),
     url(
         r'^category_model__status_report/?$',
-        views.ReportDetail.as_view(),
+        views.ReportWithoutAllModeDetail.as_view(),
         name='category_model__status_report'
     ),
     url(
@@ -21,7 +21,7 @@ urlpatterns = [
     ),
     url(
         r'^status_model_report/?$',
-        views.ReportDetail.as_view(),
+        views.ReportWithoutAllModeDetail.as_view(),
         name='status_model_report'
     ),
 ]
