@@ -2,11 +2,11 @@
 from collections import OrderedDict
 
 from django.core.urlresolvers import NoReverseMatch
-from rest_framework import routers, views
+from rest_framework import routers
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-from ralph.api.permissions import RalphPermission
+from ralph.lib.permissions.api import RalphPermission
 
 
 class RalphRouter(routers.DefaultRouter):
@@ -21,6 +21,8 @@ class RalphRouter(routers.DefaultRouter):
             api_root_dict[prefix] = (
                 list_name.format(basename=basename), viewset
             )
+
+        from rest_framework import views
 
         class APIRoot(views.APIView):
             _ignore_model_permissions = True

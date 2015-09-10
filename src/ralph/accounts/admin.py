@@ -98,9 +98,10 @@ class RalphUserAdmin(UserAdmin, RalphAdmin):
     change_views = [
         UserInfoView
     ]
+    readonly_fields = ('api_token_key',)
     fieldsets = (
         (None, {
-            'fields': ('username', 'password')
+            'fields': ('username', 'password', 'api_token_key')
         }),
         (_('Personal info'), {
             'fields': ('first_name', 'last_name', 'email')
@@ -126,6 +127,11 @@ class RalphUserAdmin(UserAdmin, RalphAdmin):
             )
         })
     )
+
+    def get_queryset(self, *args, **kwargs):
+        return super().get_queryset(*args, **kwargs).select_related(
+            'auth_token'
+        )
 
 
 @register(Group)

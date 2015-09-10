@@ -7,7 +7,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'var', 'static')
 
 DEBUG = True
 
-# commented until token authentication will work properly (#1735)
-# REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'] = (
-#     'rest_framework.authentication.TokenAuthentication',
-# )
+REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'] = (
+    'rest_framework.authentication.TokenAuthentication',
+    # session authentication enabled for API requests from UI (ex. in
+    # visualisation)
+    'rest_framework.authentication.SessionAuthentication',
+)

@@ -50,3 +50,7 @@ class LongArticle(Article):
 class Library(models.Model):
     lead_article = models.ForeignKey(Article)
     articles = models.ManyToManyField(Article)
+
+
+class Foo(models.Model):
+    bar = models.CharField('bar', max_length=50)

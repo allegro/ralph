@@ -8,7 +8,12 @@ from ralph.lib.permissions.api import (
     PermissionsPerFieldSerializerMixin,
     RelatedObjectsPermissionsSerializerMixin
 )
-from ralph.lib.permissions.tests.models import Article, Library, LongArticle
+from ralph.lib.permissions.tests.models import (
+    Article,
+    Foo,
+    Library,
+    LongArticle
+)
 
 
 class Permission(ObjectPermissionsMixin, permissions.IsAuthenticated):
@@ -61,10 +66,21 @@ class LibraryViewSet(viewsets.ModelViewSet):
     serializer_class = LibrarySerializer
 
 
+class FooSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Foo
+
+
+class FooViewSet(viewsets.ModelViewSet):
+    queryset = Foo.objects.all()
+    serializer_class = FooSerializer
+
+
 router = routers.DefaultRouter()
 router.register(r'articles', ArticleViewSet)
 router.register(r'long-articles', LongArticleViewSet)
 router.register(r'library', LibraryViewSet)
+router.register(r'foo', FooViewSet)
 urlpatterns = [
     url(r'^test-api/', include(router.urls, namespace='test-api')),
 ]

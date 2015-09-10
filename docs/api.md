@@ -6,11 +6,20 @@ every topic related to it should work in Ralph API as well.
 
 ## Authentication
 
-`TODO when token authentication will be included (https://github.com/allegro/ralph/issues/1735).`
+Each user has auto-generated personal token for API authentication. You could obtain your token either by visiting your profile page or by sending request to `api-token-auth` enpoint:
+
+    curl -X  POST https://<YOUR-RALPH-URL>/api-token-auth/ -d '{"username": "<YOUR-USERNAME>", "password": "<YOUR-PASSWORD>"}'
+    {"token":"79ee13720dbf474399dde532daad558aaeb131c3"}
+
+If you don't have API token assigned, send request to as above - it'll generate you API token automatically.
+
+In each request to API you have to use your API Token Key in request header:
+
+    curl -X GET https://<YOUR-RALPH-URL>/api/ -H 'Authorization: Token <YOUR-TOKEN>'
 
 ## Output format
 
-Ralph API supports JSON output format (by default) and HTML preview in your browser (go to http://<YOUR-RALPH-URL>/api/ to see preview).
+Ralph API supports JSON output format (by default) and HTML preview in your browser (go to https://<YOUR-RALPH-URL>/api/ to see preview).
 
 ## Available resources
 
@@ -34,7 +43,7 @@ specific module for more precise explanation.
 
 Use HTTP GET method to get details of the resource. Example:
 
-`curl http://127.0.0.1:8000/api/data-center-assets/1/ | python -m json.tool`
+`curl https://<YOUR-RALPH-URL>/api/data-center-assets/1/ | python -m json.tool`
 
 results in:
 
