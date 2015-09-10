@@ -51,8 +51,6 @@ class DepreciationDateFilter(DateFilter):
 
     title = _('Depreciation date')
     parameter_name = 'depreciation_end_date'
-    parameter_name_start = 'depreciation_end_date_start'
-    parameter_name_end = 'depreciation_end_date_end'
 
 
 class ForceDepreciationFilter(BooleanFilter):
@@ -65,8 +63,6 @@ class InvoiceDateFilter(DateFilter):
 
     title = _('Invoice date')
     parameter_name = 'invoice_date'
-    parameter_name_start = 'invoice_date_start'
-    parameter_name_end = 'invoice_date_end'
 
 
 class InvoiceNoFilter(TextFilter):

@@ -67,25 +67,25 @@ Copy ``docker-compose.yml.tmpl`` outside ralph sources to docker-compose.yml
 and tweak it.
 
 ### Build
-Then build ralph::
+Then build ralph:
 
     docker-compose build
 
 
-To initialize database run::
+To initialize database run:
 
     docker-compose run --rm web /root/init.sh
 
 Notice that this command should be executed only once, at the very beginning.
 
 ### Run
-Run ralph at the end::
+Run ralph at the end:
 
     docker-compose up
 
 Ralph should be accessible at ``http://127.0.0.1`` (or if you are using ``boot2docker`` at ``$(boot2docker ip)``). Documentation is available at ``http://127.0.0.1/docs``.
 
-If you are upgrading ralph image (source code) run::
+If you are upgrading ralph image (source code) run:
 
     docker-compose run --rm web /root/upgrade.sh
 
@@ -95,7 +95,7 @@ If you are upgrading ralph image (source code) run::
 It is possible to enable authentication via various LDAP/AD systems.
 
 You will need to install ``pip install -r requirements/prod_ldap.txt``.
-Then add LDAP as an authentication backend in your local settings::
+Then add LDAP as an authentication backend in your local settings:
 
 ```python3
   AUTHENTICATION_BACKENDS = (
@@ -181,7 +181,7 @@ AUTH_LDAP_GROUP_SEARCH = LDAPSearch("DC=organization,DC=internal",
     ldap.SCOPE_SUBTREE, '(objectClass=group)')
 ```
 
-Note: For OpenDJ implementation ``AUTH_LDAP_GROUP_MAPPING`` is not obligatory. ``AUTH_LDAP_GROUP_TYPE`` and ``AUTH_LDAP_GROUP_SEARCH`` should be set as follows::
+Note: For OpenDJ implementation ``AUTH_LDAP_GROUP_MAPPING`` is not obligatory. ``AUTH_LDAP_GROUP_TYPE`` and ``AUTH_LDAP_GROUP_SEARCH`` should be set as follows:
 
 ```python3
 from django_auth_ldap.config import GroupOfUniqueNamesType
@@ -197,7 +197,7 @@ special meanings. For example users need to be in ``staff`` to log in,
 ``superuser`` gives superuser privileges. You can read more info
 in :ref:`groups`.
 
-You can define users filter, if you don't want to import all users to ralph::
+You can define users filter, if you don't want to import all users to ralph:
 
 ```python3
 AUTH_LDAP_USER_FILTER = '(|(memberOf=CN=_gr_ralph_group1,OU=something,'\
@@ -207,7 +207,7 @@ AUTH_LDAP_USER_FILTER = '(|(memberOf=CN=_gr_ralph_group1,OU=something,'\
 
 In case of OpenDJ please use ``isMemberOf`` instead of ``memberOf``.
 
-To synchronize user list you must run command::
+To synchronize user list you must run command:
 
     $ ralph ldap_sync
 
