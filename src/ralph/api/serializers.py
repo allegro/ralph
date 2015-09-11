@@ -2,7 +2,7 @@
 import logging
 from collections import OrderedDict
 
-from rest_framework import permissions, serializers
+from rest_framework import permissions, relations, serializers
 
 from ralph.api.relations import RalphHyperlinkedRelatedField, RalphRelatedField
 from ralph.lib.permissions.api import (
@@ -126,6 +126,20 @@ class RalphAPISerializerMixin(
             field_name, relation_info, nested_depth
         )
         field_class = NestedSerializer
+        return field_class, field_kwargs
+
+
+class RalphAPISaveSerializer(serializers.ModelSerializer):
+    def build_field(self, *args, **kwargs):
+        field_class, field_kwargs = super().build_field(*args, **kwargs)
+        # replace choice field by basic input
+        # this affect browsable api form, which perform poorly when there is
+        # lot of related objects (select_related couldn't be specified for them
+        # so this sometimes results in n+1 SQL queries)
+        # TODO: autocomplete field
+        # http://www.django-rest-framework.org/topics/browsable-api/#customizing
+        if issubclass(field_class, relations.RelatedField):
+            field_kwargs.setdefault('style', {})['base_template'] = 'input.html'
         return field_class, field_kwargs
 
 
