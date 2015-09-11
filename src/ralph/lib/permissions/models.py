@@ -157,18 +157,18 @@ class PermissionsBase(ModelBase):
         )
         for field in model_fields:
             name = field.name
-            if (
-                not field.primary_key and
-                name not in new_class._permissions.blacklist
-            ):
-                new_class._meta.permissions.append((
-                    get_perm_key('change', class_name, name),
-                    _('Can change {} field').format(field.verbose_name)
-                ))
-                new_class._meta.permissions.append((
-                    get_perm_key('view', class_name, name),
-                    _('Can view {} field').format(field.verbose_name)
-                ))
+            if name in new_class._permissions.blacklist:
+                continue
+            new_class._meta.permissions.append((
+                get_perm_key('view', class_name, name),
+                _('Can view {} field').format(field.verbose_name)
+            ))
+            if field.primary_key:
+                continue
+            new_class._meta.permissions.append((
+                get_perm_key('change', class_name, name),
+                _('Can change {} field').format(field.verbose_name)
+            ))
 
     def _init_object_permissions(cls, permissions, bases, apply_bases=True):
         has_access = getattr(permissions, 'has_access', user_permission())
@@ -246,7 +246,6 @@ class PermByFieldMixin(models.Model, metaclass=PermissionsBase):
 
         for field in (cls._meta.fields + cls._meta.many_to_many):
             if (
-                not field.primary_key and
                 field.name not in blacklist and
                 cls.has_access_to_field(field.name, user, action)
             ):

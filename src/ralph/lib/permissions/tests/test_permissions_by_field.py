@@ -91,7 +91,7 @@ class PermissionsByFieldTestCase(TestCase):
         allowed_fields = set([
             'name', 'type', 'manufacturer', 'category', 'power_consumption',
             'height_of_device', 'cores_count', 'visualization_layout_front',
-            'visualization_layout_back', 'has_parent'
+            'visualization_layout_back', 'has_parent', 'id'
         ])
         fields_list = self.asset_model.allowed_fields(
             self.super_user,
