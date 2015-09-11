@@ -212,3 +212,8 @@ To synchronize user list you must run command:
     $ ralph ldap_sync
 
 During the process, script will report progress on every 100-th item loaded.
+
+
+# Migration from Ralph 2
+
+If you used Ralph 2 before and want to save all your data see [Migration from Ralph 2 guide](./data_migration.md#migration_ralph2)
