@@ -26,5 +26,6 @@ urlpatterns = [
     url(r'^api/', include(api_urls)),
     url(r'^api-token-auth/', views.obtain_auth_token),
     url(r'^', include('ralph.dc_view.urls.ui')),
+    url(r'^', include('ralph.accounts.urls')),
     url(r'^', include('ralph.reports.urls')),
 ]

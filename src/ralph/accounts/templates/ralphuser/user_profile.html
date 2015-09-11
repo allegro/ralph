@@ -1,0 +1,81 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_static %}
+
+{% block title %}
+  {% trans "My profile" %}
+{% endblock %}
+
+{% block content %}
+<h1>{% trans "My profile" %}</h1>
+<br />
+<div id="content-main" class="row">
+  <div class="large-12 columns">
+    <fieldset>
+      <legend>{% trans "Personal info" %}</legend>
+      <div class="row">
+        <div class="small-3 columns">
+          <dl>
+            <dt>{% trans "Username" %}</dt>
+            <dd>{{ request.user.username }}</dd>
+            <dt>{% trans "Full name" %}</dt>
+            <dd>{{ request.user.get_full_name }}</dd>
+          </dl>
+        </div>
+        <div class="small-3 columns end">
+          <dl>
+            <dt>{% trans "API Token" %}</dt>
+            <dd>{{ request.user.api_token_key }}</dd>
+          </dl>
+        </div>
+      </div>
+
+    </fieldset>
+    <fieldset>
+      <legend>{% trans "Profile" %}</legend>
+      <div class="row">
+        <div class="small-3 columns">
+          <dl>
+            <dt>{% trans "Country" %}</dt>
+            <dd>{{ request.user.get_country_display }}</dd>
+            <dt>{% trans "City" %}</dt>
+            <dd>{{ request.user.get_city_display }}</dd>
+          </dl>
+        </div>
+        <div class="small-3 columns end">
+          <dl>
+            <dt>{% trans "Gender" %}</dt>
+            <dd>{{ request.user.get_gender_display }}</dd>
+          </dl>
+        </div>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>{% trans "Job info" %}</legend>
+      <div class="row">
+        <div class="small-3 columns">
+          <dl>
+            <dt>{% trans "Company" %}</dt>
+            <dd>{{ request.user.company }}</dd>
+            <dt>{% trans "Profit center" %}</dt>
+            <dd>{{ request.user.profit_center }}</dd>
+            <dt>{% trans "Cost center" %}</dt>
+            <dd>{{ request.user.cost_center }}</dd>
+            <dt>{% trans "Department" %}</dt>
+            <dd>{{ request.user.department }}</dd>
+          </dl>
+        </div>
+        <div class="small-3 columns end">
+          <dl>
+            <dt>{% trans "Manager" %}</dt>
+            <dd>{{ request.user.manager }}</dd>
+            <dt>{% trans "Location" %}</dt>
+            <dd>{{ request.user.location }}</dd>
+            <dt>{% trans "Segment" %}</dt>
+            <dd>{{ request.user.segment }}</dd>
+          </dl>
+        </div>
+      </div>
+    </fieldset>
+  </div>
+</div>
+{% endblock %}

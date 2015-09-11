@@ -109,7 +109,7 @@ class RalphUserAdmin(UserAdmin, RalphAdmin):
         (_('Permissions'), {
             'fields': (
                 'is_active', 'is_staff', 'is_superuser', 'groups',
-                'user_permissions'
+                'user_permissions', 'regions'
             )
         }),
         (_('Important dates'), {
@@ -117,7 +117,7 @@ class RalphUserAdmin(UserAdmin, RalphAdmin):
         }),
         (_('Profile'), {
             'fields': (
-                'gender', 'country', 'city', 'regions'
+                'gender', 'country', 'city'
             )
         }),
         (_('Job info'), {
