@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.contrib.auth import get_user_model
 
-from ralph.accounts.models import Region
+from ralph.accounts.models import Region, Team
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.permissions import IsSuperuserOrReadonly
 
@@ -42,6 +42,17 @@ class RegionViewSet(RalphAPIViewSet):
     serializer_class = RegionSerializer
 
 
+class TeamSerializer(RalphAPISerializer):
+    class Meta:
+        model = Team
+
+
+class TeamViewSet(RalphAPIViewSet):
+    queryset = Team.objects.all()
+    serializer_class = TeamSerializer
+
+
 router.register(r'users', RalphUserViewSet)
 router.register(r'regions', RegionViewSet)
+router.register(r'teams', TeamViewSet)
 urlpatterns = []
