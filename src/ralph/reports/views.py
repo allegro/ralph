@@ -171,6 +171,7 @@ class ReportViewBase(BaseReport, RalphTemplateView):
         ManufacturerCategoryModelReport,
         StatusModelReport,
     ]
+
     modes = [
         {
             'name': 'all',
@@ -216,6 +217,7 @@ class ReportViewBase(BaseReport, RalphTemplateView):
 class ReportDetail(ReportViewBase):
 
     template_name = 'reports/report_detail.html'
+    default_mode = 'all'
 
     @property
     def active_sidebar_item(self):
@@ -248,7 +250,7 @@ class ReportDetail(ReportViewBase):
         except (DataCenter.DoesNotExist, ValueError):
             self.dc = None
         self.slug = request.resolver_match.url_name
-        self.asset_type = request.GET.get('asset_type', 'all')
+        self.asset_type = request.GET.get('asset_type') or self.default_mode
         self.report = self.get_report(self.slug)
         if not self.report:
             raise Http404
@@ -264,7 +266,7 @@ class ReportDetail(ReportViewBase):
                 self.dc,
             ),
             'cache_key': (
-                (str(self.asset_type) or 'all') +
+                self.asset_type +
                 (str(self.dc.id) if self.dc else 'all') +
                 self.slug
             ),
@@ -275,3 +277,14 @@ class ReportDetail(ReportViewBase):
             'dc': self.dc.id if self.dc else 'all',
         })
         return context_data
+
+
+class ReportWithoutAllModeDetail(ReportDetail):
+    """
+    Turns off 'All' mode for report. Default mode is 'dc'.
+    """
+    default_mode = 'dc'
+
+    @property
+    def modes(self):
+        return ReportDetail.modes[1:]
