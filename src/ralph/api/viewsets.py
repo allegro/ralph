@@ -2,16 +2,10 @@
 import inspect
 
 from django.contrib.admin import SimpleListFilter
-from rest_framework import (
-    filters,
-    permissions,
-    relations,
-    serializers,
-    viewsets
-)
+from rest_framework import filters, permissions, relations, viewsets
 
 from ralph.admin.sites import ralph_site
-from ralph.api.serializers import ReversedChoiceField
+from ralph.api.serializers import RalphAPISaveSerializer, ReversedChoiceField
 from ralph.api.utils import QuerysetRelatedMixin
 from ralph.lib.permissions.api import (
     PermissionsForObjectFilter,
@@ -90,7 +84,7 @@ class RalphAPIViewSetMixin(QuerysetRelatedMixin, AdminSearchFieldsMixin):
 
             return type(
                 '{}SaveSerializer'.format(Meta.model.__name__),
-                (serializers.ModelSerializer,),
+                (RalphAPISaveSerializer,),
                 {
                     'Meta': Meta,
                     'serializer_choice_field': ReversedChoiceField,

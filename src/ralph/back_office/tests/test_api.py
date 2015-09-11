@@ -15,7 +15,7 @@ from ralph.back_office.tests.factories import (
 )
 
 
-class BackOffieAssetAPITests(RalphAPITestCase):
+class BackOfficeAssetAPITests(RalphAPITestCase):
     def setUp(self):
         super().setUp()
         self.service_env = ServiceEnvironmentFactory()

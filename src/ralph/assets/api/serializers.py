@@ -101,10 +101,13 @@ class AssetModelSerializer(RalphAPISerializer):
 class BaseObjectSerializer(RalphAPISerializer):
     service_env = ServiceEnvironmentSerializer()
 
+    # TODO: proper parent handling (depending on type - similar to #1725)
+
     class Meta:
         model = BaseObject
+        exclude = ('content_type',)
 
 
 class AssetSerializer(BaseObjectSerializer):
-    class Meta:
+    class Meta(BaseObjectSerializer.Meta):
         model = Asset

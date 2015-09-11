@@ -17,6 +17,7 @@ class QuerysetRelatedMixin(object):
         self.prefetch_related = kwargs.pop(
             'prefetch_related', self.prefetch_related
         )
+        kwargs.setdefault('style', {})['base_template'] = 'input.html'
         super().__init__(*args, **kwargs)
 
     def get_queryset(self):
