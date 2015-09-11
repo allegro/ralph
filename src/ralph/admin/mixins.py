@@ -235,6 +235,8 @@ class RalphTemplateView(TemplateView):
         )
         context['site_header'] = settings.ADMIN_SITE_HEADER
         context['media'] = get_common_media()
+        # checks if user is allowed to see elements in template
+        context['has_permission'] = self.request.user.is_authenticated()
         return context
 
 

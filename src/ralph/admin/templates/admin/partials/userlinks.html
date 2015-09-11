@@ -1,4 +1,7 @@
 {% load i18n %}
+<li>
+  <a href="{% url 'user_profile' %}">{% trans 'My profile' %}</a>
+</li>
 {% if user.has_usable_password %}
   <li>
     <a href="{% url 'admin:password_change' %}">{% trans 'Change password' %}</a>
