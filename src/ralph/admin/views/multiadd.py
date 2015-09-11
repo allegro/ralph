@@ -3,12 +3,17 @@ from django import forms
 from django.conf.urls import url
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, models, transaction
+from django.forms import ValidationError
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin.fields import MultilineField, MultivalueFormMixin
+from ralph.admin.fields import (
+    IntegerMultilineField,
+    MultilineField,
+    MultivalueFormMixin
+)
 from ralph.admin.mixins import RalphTemplateView
 from ralph.admin.sites import ralph_site
 
@@ -22,19 +27,27 @@ class MultiAddView(RalphTemplateView):
     def dispatch(self, request, object_pk, model, *args, **kwargs):
         admin_model = ralph_site._registry[model]
         self.model = model
-        self.fields = admin_model.get_multiadd_fields()
         self.info_fields = admin_model.multiadd_info_fields
         self.obj = get_object_or_404(model, pk=object_pk)
+        self.fields = admin_model.get_multiadd_fields(obj=self.obj)
         return super().dispatch(request, *args, **kwargs)
 
     def get_form(self):
         form_kwargs = {}
         multi_form_attrs = {
-            'multivalue_fields': self.fields,
+            'multivalue_fields': [i['field'] for i in self.fields],
             'model': self.model
         }
-        for field in self.fields:
-            multi_form_attrs[field] = MultilineField(allow_duplicates=False)
+        for item in self.fields:
+            field_type = self.model._meta.get_field(item['field'])
+            if isinstance(field_type, models.IntegerField):
+                multi_form_attrs[item['field']] = IntegerMultilineField(
+                    allow_duplicates=item['allow_duplicates']
+                )
+            else:
+                multi_form_attrs[item['field']] = MultilineField(
+                    allow_duplicates=item['allow_duplicates']
+                )
 
         multi_form = type(
             'MultiForm', (MultivalueFormMixin, forms.Form), multi_form_attrs
@@ -86,14 +99,21 @@ class MultiAddView(RalphTemplateView):
     @transaction.atomic
     def form_valid(self, form):
         saved_assets = []
-        args = [form.cleaned_data[field] for field in self.fields]
+        args = [form.cleaned_data[field['field']] for field in self.fields]
         for data in zip(*args):
             for field in self._get_ancestors_pointers(self.obj):
                 setattr(self.obj, field, None)
             self.obj.id = self.obj.pk = None
 
             for i, field in enumerate(self.fields):
-                setattr(self.obj, field, data[i])
+                setattr(self.obj, field['field'], data[i])
+
+            try:
+                self.obj.clean()
+            except ValidationError as exc:
+                for error in exc:
+                    form.add_error(error[0], error[1])
+                return self.form_invalid(form)
 
             self.obj.save()
             saved_assets.append(str(self.obj))
@@ -115,8 +135,8 @@ class MulitiAddAdminMixin(object):
 
     Example:
     >>> class MyAdminView(admin.ModelAdmin, MulitiAddAdminMixin):
-    ...     def get_multiadd_fields(self):
-    ...         return ['field1', 'field2']
+    ...     def get_multiadd_fields(self, obj=None):
+    ...         return [{'field': 'field1', 'allow_duplicates': False}]
     ...     multiadd_info_fields = ['field1', 'field2']
     ...     # Fields that displays information about the copied object
 
@@ -130,6 +150,14 @@ class MulitiAddAdminMixin(object):
         if with_namespace:
             url = 'admin:' + url
         return url
+
+    def add_view(self, request, form_url='', extra_context=None):
+        if not extra_context:
+            extra_context = {}
+        extra_context.update({
+            'multi_add_field': True
+        })
+        return super().add_view(request, form_url, extra_context)
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         if not extra_context:
@@ -153,3 +181,15 @@ class MulitiAddAdminMixin(object):
             ),
         ]
         return _urls + urls
+
+    def response_add(self, request, obj, post_url_continue=None):
+        """
+        Override response add from django model admin.
+
+        Adding support for multiadd.
+        """
+        if '_multi_add' in request.POST:
+            return HttpResponseRedirect(
+                reverse(self.get_url_name(), args=[obj.pk])
+            )
+        return super().response_add(request, obj, post_url_continue)

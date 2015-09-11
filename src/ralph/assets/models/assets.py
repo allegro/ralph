@@ -171,6 +171,7 @@ class Category(MPTTModel, NamedMixin.NonUnique, TimeStampMixin, models.Model):
         related_name='children',
         db_index=True
     )
+    imei_required = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = _('category')

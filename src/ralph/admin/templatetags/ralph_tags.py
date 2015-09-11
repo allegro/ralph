@@ -34,6 +34,7 @@ def ralph_submit_row(context):
     """
     ctx = submit_row(context)
     ctx['multi_add_url'] = context.get('multi_add_url', None)
+    ctx['multi_add_field'] = context.get('multi_add_field', None)
     return ctx
 
 

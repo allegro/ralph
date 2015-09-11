@@ -169,8 +169,12 @@ class DataCenterAssetAdmin(
         }),
     )
 
-    def get_multiadd_fields(self):
-        return ['sn', 'barcode', 'position']
+    def get_multiadd_fields(self, obj=None):
+        return [
+            {'field': 'sn', 'allow_duplicates': False},
+            {'field': 'barcode', 'allow_duplicates': False},
+            {'field': 'position', 'allow_duplicates': True},
+        ]
 
 
 @register(ServerRoom)

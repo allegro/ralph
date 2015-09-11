@@ -11,13 +11,16 @@
     <div class="small-{% if show_delete_link %}11{% else %}12{% endif %} columns text_right right_section">
       {% block additional_buttons %}{% endblock %}
       <ul class="button-group radius right">
-        {% if multi_add_url %}
           <li>
+            {% if multi_add_url %}
               <a href="{{ multi_add_url }}" class="default button small info">
-                {% trans "Bulk Add" %}
+                {% trans "Duplicate" %}
               </a>
+            {% endif %}
+            {% if multi_add_field %}
+              <input type="submit" value="{% trans 'Bulk add' %}" class="default button small info" name="_multi_add" />
+            {% endif %}
           </li>
-        {% endif %}
         {% if show_save %}
         <li>
           <input type="submit" value="{% trans 'Save' %}" class="default button small success" name="_save" />
