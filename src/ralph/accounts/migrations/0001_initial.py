@@ -13,6 +13,10 @@ class Migration(migrations.Migration):
         ('auth', '0006_require_contenttypes_0002'),
     ]
 
+    needed_by = (
+        ('authtoken', '0001_initial'),
+    )
+
     operations = [
         migrations.CreateModel(
             name='RalphUser',

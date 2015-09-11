@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     'ralph.reports',
     'ralph.lib.transitions',
     'rest_framework',
+    'rest_framework.authtoken',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -159,7 +160,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'ralph.api.permissions.RalphPermission',
+        'ralph.lib.permissions.api.RalphPermission',
     ),
     'DEFAULT_FILTER_BACKENDS': (
         'ralph.lib.permissions.api.PermissionsForObjectFilter',

@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from dj.choices import Country, Gender
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
+from rest_framework.authtoken.models import Token
 
 from ralph.lib.mixins.models import NamedMixin
 from ralph.lib.permissions import PermissionsForObjectMixin, user_permission
@@ -104,6 +108,13 @@ class RalphUser(AbstractUser):
         swappable = 'AUTH_USER_MODEL'
 
     @property
+    def api_token_key(self):
+        try:
+            return self.auth_token.key
+        except Token.DoesNotExist:
+            return None
+
+    @property
     def regions_ids(self):
         """
         Get region ids without additional SQL joins.
@@ -125,3 +136,12 @@ class RalphUser(AbstractUser):
                 val = self._meta.get_field_by_name(field)[0].default
                 setattr(self, field, val)
         return super().save(*args, **kwargs)
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_auth_token(sender, instance=None, created=False, **kwargs):
+    """
+    Create token for newly created user.
+    """
+    if created:
+        Token.objects.create(user=instance)

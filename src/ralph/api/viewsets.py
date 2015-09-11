@@ -11,10 +11,12 @@ from rest_framework import (
 )
 
 from ralph.admin.sites import ralph_site
-from ralph.api.permissions import RalphPermission
 from ralph.api.serializers import ReversedChoiceField
 from ralph.api.utils import QuerysetRelatedMixin
-from ralph.lib.permissions.api import PermissionsForObjectFilter
+from ralph.lib.permissions.api import (
+    PermissionsForObjectFilter,
+    RalphPermission
+)
 
 
 class AdminSearchFieldsMixin(object):
