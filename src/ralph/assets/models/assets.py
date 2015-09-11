@@ -9,6 +9,7 @@ from django.template import Context, Template
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
+from ralph.accounts.models import Team
 from ralph.assets.country_utils import iso2_to_iso3
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import (
@@ -51,6 +52,7 @@ class BusinessSegment(NamedMixin, models.Model):
 
 class ProfitCenter(NamedMixin, models.Model):
     business_segment = models.ForeignKey(BusinessSegment)
+    description = models.TextField(blank=True)
 
 
 class Environment(NamedMixin, TimeStampMixin, models.Model):
@@ -59,6 +61,7 @@ class Environment(NamedMixin, TimeStampMixin, models.Model):
 
 class Service(NamedMixin, TimeStampMixin, models.Model):
     # Fixme: let's do service catalog replacement from that
+    active = models.BooleanField(default=True)
     uid = NullableCharField(max_length=40, unique=True, blank=True, null=True)
     profit_center = models.ForeignKey(ProfitCenter, null=True, blank=True)
     cost_center = models.CharField(max_length=100, blank=True)
@@ -74,6 +77,9 @@ class Service(NamedMixin, TimeStampMixin, models.Model):
         settings.AUTH_USER_MODEL,
         related_name='services_technical_owner',
         blank=True,
+    )
+    support_team = models.ForeignKey(
+        Team, null=True, blank=True, related_name='services',
     )
 
     def __str__(self):

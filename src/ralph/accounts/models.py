@@ -45,6 +45,10 @@ class Regionalizable(PermissionsForObjectMixin):
         has_access = object_has_region
 
 
+class Team(NamedMixin):
+    pass
+
+
 class RalphUser(AbstractUser):
 
     gender = models.PositiveIntegerField(
@@ -103,6 +107,7 @@ class RalphUser(AbstractUser):
         blank=True,
     )
     regions = models.ManyToManyField(Region, related_name='users')
+    team = models.ForeignKey(Team, null=True, blank=True)
 
     class Meta(AbstractUser.Meta):
         swappable = 'AUTH_USER_MODEL'

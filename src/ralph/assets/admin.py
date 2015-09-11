@@ -34,7 +34,7 @@ class ServiceEnvironmentInline(RalphTabularInline):
 class ServiceAdmin(RalphAdmin):
     exclude = ['environments']
     inlines = [ServiceEnvironmentInline]
-    search_fields = ['name']
+    search_fields = ['name', 'uid']
 
 
 @register(Manufacturer)

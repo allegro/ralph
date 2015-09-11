@@ -4,7 +4,7 @@ from django.contrib.auth.models import Group
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.accounts.models import RalphUser, Region
+from ralph.accounts.models import RalphUser, Region, Team
 from ralph.admin import RalphAdmin, register
 from ralph.admin.mixins import RalphAdminFormMixin
 from ralph.admin.views.extra import RalphDetailView
@@ -123,7 +123,7 @@ class RalphUserAdmin(UserAdmin, RalphAdmin):
         (_('Job info'), {
             'fields': (
                 'company', 'profit_center', 'cost_center', 'department',
-                'manager', 'location', 'segment'
+                'manager', 'location', 'segment', 'team',
             )
         })
     )
@@ -141,4 +141,9 @@ class RalphGroupAdmin(GroupAdmin, RalphAdmin):
 
 @register(Region)
 class RegionAdmin(RalphAdmin):
+    search_fields = ['name']
+
+
+@register(Team)
+class TeamAdmin(RalphAdmin):
     search_fields = ['name']
