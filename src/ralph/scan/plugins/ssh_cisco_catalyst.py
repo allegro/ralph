@@ -103,6 +103,9 @@ def scan_address(ip_address, **kwargs):
         raise NoMatchError('Incompatible Juniper found.')
     if 'nx-os' in (kwargs.get('snmp_name', '') or '').lower():
         raise NoMatchError('Incompatible Nexus found.')
+    if 'cisco' not in (kwargs.get('snmp_name', '')
+                       or kwargs.get('http_family', '')).lower():
+        raise NoMatchError('Not a Cisco device')
     if kwargs.get('http_family') not in ('Unspecified', 'Cisco'):
         raise NoMatchError('It is not Cisco.')
     if not SSH_USER or not SSH_PASSWORD:
