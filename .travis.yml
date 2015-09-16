@@ -8,9 +8,10 @@ cache:
 
 python:
     - "3.4"
+    - "3.5"
 
 before_install:
-    - pip install flake8 isort --use-mirrors
+    - pip install flake8 isort
     - make flake
 
 install:
