@@ -44,11 +44,14 @@
             $scope.addOrEdit = function(rack) {
                 var rack_model = new RackModel(rack);
                 var rack_promise = null;
-                if (rack.id !== undefined) {
+                var success_msg = '';
+                if (typeof(rack.id) !== 'undefined') {
                     rack_promise = rack_model.$update();
+                    success_msg = 'updated';
                 }
                 else {
                     rack_promise = rack_model.$save();
+                    success_msg = 'added to data center';
                 }
                 rack_promise.then(function(data) {
                     if (data.non_field_errors) {
@@ -59,7 +62,7 @@
                         rack.new = false;
                         rack.saved = true;
                         $scope.forms.edit_form.$error.all = null;
-                        $scope.forms.edit_form.$success = ['The rack has been successfully added to data center.'];
+                        $scope.forms.edit_form.$success = ['The rack has been successfully ' + success_msg + '.'];
                         $scope.rack = undefined;
                     }
                 });
