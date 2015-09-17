@@ -14,5 +14,4 @@ DATABASES = {
     }
 }
 
-
 STATIC_ROOT = '/opt/static'

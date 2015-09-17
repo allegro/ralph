@@ -172,8 +172,8 @@ REST_FRAMEWORK = {
 
 RQ_QUEUES = {
     'ext': {
-        'HOST': 'localhost',
-        'PORT': 6379,
+        'HOST': os.environ.get('REDIS_HOST', 'localhost'),
+        'PORT': os.environ.get('REDIS_PORT', '6379'),
         'DB': 0,
         'ASYNC': False,
     },
