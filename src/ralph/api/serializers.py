@@ -143,8 +143,22 @@ class RalphAPISaveSerializer(serializers.ModelSerializer):
         return field_class, field_kwargs
 
 
+serializers_registry = {}
+
+
+class RalphAPISerializerMetaclass(serializers.SerializerMetaclass):
+    def __new__(cls, name, bases, attrs):
+        attrs['_serializers_registry'] = serializers_registry
+        new_cls = super().__new__(cls, name, bases, attrs)
+        meta = getattr(new_cls, 'Meta', None)
+        if getattr(meta, 'model', None):
+            serializers_registry[meta.model] = new_cls
+        return new_cls
+
+
 class RalphAPISerializer(
     RalphAPISerializerMixin,
-    serializers.HyperlinkedModelSerializer
+    serializers.HyperlinkedModelSerializer,
+    metaclass=RalphAPISerializerMetaclass
 ):
     pass
