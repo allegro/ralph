@@ -84,8 +84,7 @@ class BackOfficeAssetResource(AssetResource):
         model = models_assets.Asset
 
     def get_queryset(self):
-        return self.Meta.model.objects.filter(
-            type=models_assets.AssetType.back_office,
+        return self.Meta.model.admin_objects_bo.filter(
             part_info=None,
         ).select_related('office_info')
 
