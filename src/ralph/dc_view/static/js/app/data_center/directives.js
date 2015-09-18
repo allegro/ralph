@@ -30,25 +30,32 @@
                             scope.is_move = true;
                         }
                     });
+                    function canDrop(x, y) {
+                        if (x >= scope.dc.visualization_cols_num || y >= scope.dc.visualization_rows_num)
+                        {
+                            return false;
+                        }
+                        angular.forEach(scope.dc.rack_set, function(value) {
+                            var isSelectedRack = value.id !== scope.rack.id;
+                            var isOccupiedSpace = value.visualization_col == x && value.visualization_row == y;
+                            if (isSelectedRack && isOccupiedSpace) {
+                                return false;
+                            }
+                        });
+                        return true;
+                    }
                     function mousemove(event) {
-                        var can_drop = true;
                         var x = event.pageX - offset.left;
                         var y = event.pageY - offset.top;
                         var position_x = (x - (x % gridSize)) / gridSize;
                         var position_y = (y - (y % gridSize)) / gridSize;
-                        angular.forEach(scope.dc.rack_set, function(value) {
-                            var isSelectedRack = value.id !== scope.rack.id;
-                            var isOccupiedSpace = value.visualization_col == position_x && value.visualization_row == position_y;
-                            if (isSelectedRack && isOccupiedSpace) {
-                                can_drop = false;
-                            }
-                        });
-                        if(can_drop) {
+                        var drop_condition = canDrop(position_x, position_y);
+                        if(drop_condition) {
                             scope.rack.visualization_col = position_x;
                             scope.rack.visualization_row = position_y;
                             changedPosition = true;
                         }
-                        scope.can_drop = can_drop;
+                        scope.can_drop = drop_condition;
                     }
                     function mouseup() {
                         $document.unbind('mousemove', mousemove);
