@@ -3,14 +3,15 @@
   "repository": "allegro/ralph",
   "version": "3.0.0",
   "dependencies": {
+    "bower": "~1.4.1",
     "gulp": "~3.9.0",
+    "gulp-autoprefixer": "~2.3.1",
     "gulp-bower": "0.0.10",
     "gulp-rename": "~1.2.2",
-    "run-sequence": "~1.1.0",
     "gulp-sass": "~2.0.1",
-    "gulp-autoprefixer": "~2.3.1",
-    "bower": "~1.4.1",
-    "jshint": "~2.8.0"
+    "gulp-sourcemaps": "^1.5.2",
+    "jshint": "~2.8.0",
+    "run-sequence": "~1.1.0"
   },
   "devDependencies": {
     "gulp-watch": "~4.2.4",

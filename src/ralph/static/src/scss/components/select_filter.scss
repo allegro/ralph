@@ -1,0 +1,42 @@
+$chooser-size: 50px;
+$selector-size: calc(50% - #{($chooser-size / 2)};
+
+#content-main .content .selector h2 {
+    font-size: 1rem;
+}
+.selector {
+    width: 100%;
+    margin-bottom: 10px;
+    .help {
+        display: none;
+    }
+    select {
+        width: 100%;
+        height: 17.2em;
+        margin: 0;
+        &.fitered {
+            height: 20.6rem;
+        }
+    }
+    .selector-available, .selector-chosen {
+        width: $selector-size;
+        float: left;
+    }
+    .selector-available {
+        .selector-filter {
+            margin-bottom: 0;
+            label {
+                display: none;
+            }
+        }
+    }
+    .selector-chooser {
+        margin-top: 100px;
+        list-style: none;
+        margin: 100px 0 0 0;
+        width: $chooser-size;
+        float: left;
+        text-align: center;
+    }
+}
+

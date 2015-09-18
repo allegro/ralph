@@ -199,7 +199,8 @@ class RalphAdminMixin(RalphAutocompleteMixin):
     def formfield_for_manytomany(self, db_field, request=None, **kwargs):
         if db_field.name in ('user_permissions', 'permissions'):
             kwargs['widget'] = widgets.PermissionsSelectWidget()
-        return db_field.formfield(**kwargs)
+            return db_field.formfield(**kwargs)
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
 
 
 class RalphAdmin(
