@@ -23,8 +23,8 @@
                 rack.visualization_col = x;
                 rack.visualization_row = y;
                 rack.orientation = 'top';
+                rack.server_room = '';
                 rack.name = 'New rack';
-                rack.data_center = data_center.id;
                 rack.new = true;
                 data_center.rack_set.push(rack);
                 $scope.$emit('edit_rack', rack);
@@ -45,6 +45,7 @@
                 var rack_model = new RackModel(rack);
                 var rack_promise = null;
                 var success_msg = '';
+
                 if (typeof(rack.id) !== 'undefined') {
                     rack_promise = rack_model.$update();
                     success_msg = 'updated';
@@ -73,6 +74,7 @@
                     rack.active = false;
                 });
                 rack.active = true;
+                rack.server_room = rack.server_room && rack.server_room.toString();
                 $scope.rack = rack;
                 $scope.forms.edit_form.action = 'edit';
                 $scope.forms.edit_form.$error = {};
