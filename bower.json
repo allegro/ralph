@@ -25,6 +25,8 @@
     "angular-loading-bar": "~0.8.0"
   },
   "devDependencies": {
-    "qunit": "~1.18.0"
+    "qunit": "~1.18.0",
+    "sinon": "http://sinonjs.org/releases/sinon-1.16.1.js",
+    "sinon-qunit": "~2.0.0"
   }
 }
