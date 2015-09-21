@@ -5,6 +5,7 @@ var gulp = require('gulp');
     bower = require('gulp-bower'),
     prefixer = require('gulp-autoprefixer'),
     sass = require('gulp-sass'),
+    sourcemaps = require('gulp-sourcemaps'),
     qunit = require('node-qunit-phantomjs');
 
 var config = {
@@ -15,6 +16,7 @@ var config = {
 }
 
 var sass_config = {
+    outputStyle: 'compressed',
     includePaths: [
         config.bowerDir + 'foundation/scss',
         config.bowerDir + 'fontawesome/scss',
@@ -28,8 +30,10 @@ gulp.task('bower', function() { 
 
 gulp.task('scss', function() {
     gulp.src(config.srcRoot + 'scss/*.scss')
+        .pipe(sourcemaps.init())
         .pipe(sass(sass_config).on('error', sass.logError))
         .pipe(prefixer())
+        .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest(config.staticRoot + 'css/'))
 });
 

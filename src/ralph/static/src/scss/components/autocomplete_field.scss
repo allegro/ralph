@@ -1,31 +1,41 @@
-$item-padding: 0.1rem;
-$widget-padding: $input-padding - $item-padding;
-$lookup-icon-width: 20px;
+$item-padding: 0.25rem;
+$lookup-icon-width: 25px;
+$icons-count: 2;
+$icons-wrapper-margin: 5px;
+$font-size: rem-calc(16);
 
 @mixin right-lookup() {
-    width: calc(100%  - #{($lookup-icon-width * 2)});
+    width: calc(100%  - #{($lookup-icon-width * $icons-count) + $icons-wrapper-margin});
     float: left;
+}
+
+@mixin common-styles() {
+    padding: $item-padding 0;
+    font-size: $input-font-size;
 }
 
 .autocomplete-widget {
     position: relative;
-    margin: 0 0 $form-spacing 0;
+    margin: $form-spacing / 2 0;
     .widget-wrapper {
+        overflow: hidden;
         background: $input-bg-color;
         border: {
             style: $input-border-style;
             width: $input-border-width;
             color: $input-border-color;
-          }
+        }
         box-shadow: $input-box-shadow;
-        padding: $widget-padding;
         .item-wrapper {
             @include right-lookup;
             .item {
-                display:inline;
+                line-height: 1rem;
+                display: inline-block;
                 background: #ededed;
-                padding: $item-padding 0;
                 border: 1px solid #cacaca;
+                white-space: nowrap;
+                margin: 1px;
+                @include common-styles;
                 .title {
                     margin-left: $item-padding;
                 }
@@ -40,16 +50,25 @@ $lookup-icon-width: 20px;
                 padding: 0 4px;
             }
         }
-        .widget-icons .fa {
-            font-size: rem-calc(18);
+        .widget-icons {
+            width: #{($lookup-icon-width * $icons-count)};
+            float: right;
+            text-align: right;
+            margin-top: 5px;
+            margin-right: $icons-wrapper-margin;
+            .fa {
+                font-size: $font-size;
+            }
         }
         .input {
             @include right-lookup;
-            padding: $item-padding;
-            margin: 0;
+            @include common-styles;
             display: none;
-            float: left;
+            padding-left: 4px;
+            margin: 4px 0;
             border: 0;
+            border-left: 0;
+            border-right: 0;
         }
         .delete, .title, .related-lookup {
             font-size: $input-font-size;
@@ -62,11 +81,11 @@ $lookup-icon-width: 20px;
         }
         .status{
             position: absolute;
-            top: 5px;
-            right: 48px;
+            top: 8px;
+            right: 45px;
             .fa {
                 display: none;
-                font-size: 1.25rem;
+                font-size: $font-size;
                 &.fa-spin {
                     -webkit-animation-duration: 1s;
                     animation-duration: 1s;
@@ -128,7 +147,8 @@ $lookup-icon-width: 20px;
     }
 }
 
-.error .suggest-field-widget .widget-wrapper {
+.error .autocomplete-widget .widget-wrapper {
+    background-color: #fff5c3;
     border-color: $alert-color;
     .input {
         border: none;
