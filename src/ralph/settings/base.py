@@ -25,6 +25,7 @@ INSTALLED_APPS = (
     'import_export',
     'reversion',
     'sitetree',
+    'django_rq',
     'ralph.accounts',
     'ralph.assets',
     'ralph.attachments',
@@ -167,4 +168,13 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',  # noqa
     'PAGE_SIZE': 10,
+}
+
+RQ_QUEUES = {
+    'ext': {
+        'HOST': os.environ.get('REDIS_HOST', 'localhost'),
+        'PORT': os.environ.get('REDIS_PORT', '6379'),
+        'DB': 0,
+        'ASYNC': False,
+    },
 }

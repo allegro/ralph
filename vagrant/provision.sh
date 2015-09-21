@@ -39,3 +39,7 @@ fi
 
 # final setups
 ./vagrant/provisioning_scripts/setup_js_env.sh
+
+# copy config file and start rqworker service
+sudo cp /home/vagrant/src/ralph/vagrant/upstart/rqworker.conf /etc/init/rqworker.conf
+sudo start rqworker
