@@ -14,5 +14,5 @@ __all__ = [
     'register',
     'RalphAdmin',
     'RalphStackedInline',
-    'RalphTabularInline',
+    'RalphTabularInline'
 ]

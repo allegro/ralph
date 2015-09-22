@@ -5,21 +5,7 @@ from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
-from ralph.assets.filters import (
-    BarcodeFilter,
-    DepreciationDateFilter,
-    ForceDepreciationFilter,
-    HostnameFilter,
-    InvoiceDateFilter,
-    InvoiceNoFilter,
-    ModelFilter,
-    OrderNoFilter,
-    RemarksFilter,
-    SNFilter,
-    StatusFilter
-)
 from ralph.attachments.admin import AttachmentsMixin
-from ralph.data_center.filters import RackFilter
 from ralph.data_center.forms.network import NetworkInlineFormset
 from ralph.data_center.models.components import DiskShare, DiskShareMount
 from ralph.data_center.models.networks import (
@@ -132,9 +118,9 @@ class DataCenterAssetAdmin(
     bulk_edit_list = list_display
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
     list_filter = [
-        StatusFilter, BarcodeFilter, SNFilter, HostnameFilter, InvoiceNoFilter,
-        InvoiceDateFilter, OrderNoFilter, ModelFilter, DepreciationDateFilter,
-        ForceDepreciationFilter, RemarksFilter, RackFilter
+        'status', 'barcode', 'sn', 'hostname', 'invoice_no', 'invoice_date',
+        'order_no', 'model__name', 'depreciation_end_date',
+        'force_depreciation', 'remarks', 'rack__name'
     ]
     date_hierarchy = 'created'
     list_select_related = ['model', 'model__manufacturer']
@@ -195,7 +181,7 @@ class RackAdmin(RalphAdmin):
 
     exclude = ['accessories']
     list_display = ['name', 'server_room_name', 'data_center_name']
-    list_filter = ['server_room__data_center']
+    list_filter = ['server_room__data_center']  # TODO use fk field in filter
     list_select_related = ['server_room', 'server_room__data_center']
     search_fields = ['name']
     inlines = [RackAccessoryInline]
