@@ -15,10 +15,10 @@ ENV RALPH_STATIC=/root/static
 ENV RALPH_DOCS=$RALPH_DIR/docs
 ENV SCRIPTS_PATH=/root
 
-ADD docker/* $SCRIPTS_PATH/
-
 # basic provisioning
 RUN $SCRIPTS_PATH/provision.sh
+
+ADD docker/* $SCRIPTS_PATH/
 
 # npm provisioning
 ADD package.json $RALPH_DIR/package.json
