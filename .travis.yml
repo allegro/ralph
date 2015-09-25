@@ -7,27 +7,36 @@ cache:
     - bower_components
 
 python:
-    - "3.4"
-    - "3.5"
+  - "3.4"
+  - "3.5"
+
+env:
+  - DJANGO_VERSION=1.8.5
+  - DJANGO_VERSION=1.9b1
+
+matrix:
+  allow_failures:
+    - DJANGO_VERSION=1.9a1
 
 before_install:
-    - pip install flake8 isort
-    - make flake
+  - pip install flake8 isort
+  - make flake
 
 install:
-    - npm config set python /usr/bin/python2.7
-    - npm install
-    - make js-hint
-    - gulp
-    - make install-test
-    - pip install coveralls
+  - npm config set python /usr/bin/python2.7
+  - npm install
+  - make js-hint
+  - gulp
+  - make install-test
+  - pip install coveralls
+  - pip install django==$DJANGO_VERSION
 
 script:
-    - gulp test
-    - make coveralls
+  - gulp test
+  - make coveralls
 
 after_success:
-    - coveralls
+  - coveralls
 
 notifications:
   webhooks:
