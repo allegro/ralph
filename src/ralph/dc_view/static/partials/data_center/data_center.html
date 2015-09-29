@@ -34,7 +34,7 @@
         </div>
         <div ng-show="rack">
             <form name="forms.edit_form" class="form" ng-submit="addOrEdit(rack)">
-                <div data-alert class="alert-box error" ng-show="forms.edit_form.$error.all" ng-repeat="error in forms.edit_form.$error.all">
+                <div data-alert class="alert-box alert" ng-show="forms.edit_form.$error.all" ng-repeat="error in forms.edit_form.$error.all">
                     {{ error }}
                 </div>
                 <div class="row">
@@ -46,13 +46,15 @@
                   </div>
                 </div>
                 <div class="row">
-                  <div class="large-12 columns">
+                  <div class="large-12 columns" ng-class="{'error': forms.edit_form.server_room.$invalid}">
                       <label for="id_name">Server room
-                        <select name="server_room" ng-model="rack.server_room"  required>
+                        <select name="server_room" ng-model="rack.server_room" required>
+                          <option value="">----</option>
                           <option value="{{ room.id }}" ng-repeat="room in data_center.server_rooms">
                             {{ room.name }}
                           </option>
                         </select>
+                        <span class="help-inline" ng-show="forms.edit_form.server_room.$error.required">Select server room.</span>
                       </label>
                   </div>
                 </div>

@@ -69,6 +69,7 @@ select {
 label, label.inline, select, #{text-inputs(all, 'input')} {
     padding: $input-padding;
     height: auto;
+    margin: $form-spacing / 2 0;
 }
 
 button.button.search {

@@ -8,13 +8,14 @@
 
 .contextual_search {
     #searchbar, .search {
-        padding: rem-calc(6) inherit;
+        padding: rem-calc(6);
         font-size: 1rem;
     }
     #searchbar {
         border-right: 0;
         padding-left: rem-calc(6);
         margin-bottom: rem-calc(4);
+        margin-top: 0;
     }
     .search {
         border: 1px solid #5B5B5B;

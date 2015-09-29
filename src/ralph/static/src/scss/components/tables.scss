@@ -62,7 +62,7 @@ table {
                 background-color: darken($row-odd-bg-color, 1%);
             }
             td, th {
-                text-align: center;
+                text-align: left;
                 @include cell-border();
                 padding: 0 5px;
             }
