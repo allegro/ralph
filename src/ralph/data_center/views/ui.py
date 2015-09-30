@@ -54,7 +54,9 @@ class DataCenterAssetComponents(RalphDetailView):
         return context
 
 
-class DataCenterAssetSoftware(RalphDetailView):
+class DataCenterAssetSoftware(
+    RalphDetailView
+):
 
     icon = 'wrench'
     label = 'Software'
@@ -74,7 +76,9 @@ class DataCenterAssetSoftware(RalphDetailView):
         return context
 
 
-class DataCenterAssetSecurityInfo(RalphDetailView):
+class DataCenterAssetSecurityInfo(
+    RalphDetailView
+):
 
     icon = 'lock'
     label = 'Security Info'

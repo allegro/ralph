@@ -22,6 +22,7 @@ from ralph.admin.views.main import BULK_EDIT_VAR, BULK_EDIT_VAR_IDS
 from ralph.helpers import add_request_to_form
 from ralph.lib.mixins.forms import RequestFormMixin
 from ralph.lib.permissions.admin import PermissionsPerObjectFormMixin
+from ralph.lib.permissions.views import PermissionViewMetaClass
 
 FORMFIELD_FOR_DBFIELD_DEFAULTS = {
     models.DateField: {'widget': widgets.AdminDateWidget},
@@ -228,7 +229,7 @@ class RalphStackedInline(
     pass
 
 
-class RalphTemplateView(TemplateView):
+class RalphTemplateView(TemplateView, metaclass=PermissionViewMetaClass):
 
     def get_context_data(self, **kwargs):
         context = super(RalphTemplateView, self).get_context_data(
