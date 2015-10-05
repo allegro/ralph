@@ -12,6 +12,7 @@ from django.conf import settings
 from django.db.models import Q
 from import_export import fields
 from import_export import resources
+from lck.django.choices import Choices
 
 from ralph.account.models import Region
 from ralph.cmdb import models_ci
@@ -40,6 +41,41 @@ class AssetResource(resources.ModelResource):
     force_deprecation = fields.Field(
         'force_deprecation', column_name='force_depreciation'
     )
+
+
+class BackOfficeAssetStatusNG(Choices):
+    _ = Choices.Choice
+
+    new = _("new")
+    in_progress = _("in progress")
+    waiting_for_release = _("waiting for release")
+    used = _("in use")
+    loan = _("loan")
+    damaged = _("damaged")
+    liquidated = _("liquidated")
+    in_service = _("in service")
+    installed = _("installed")
+    free = _("free")
+    reserved = _("reserved")
+
+
+BACK_OFFICE_ASSET_STATUS_MAPPING = {
+    models_assets.AssetStatus.new: BackOfficeAssetStatusNG.new.id,
+    models_assets.AssetStatus.in_progress: BackOfficeAssetStatusNG.in_progress.id,
+    models_assets.AssetStatus.waiting_for_release: BackOfficeAssetStatusNG.waiting_for_release.id,
+    models_assets.AssetStatus.used: BackOfficeAssetStatusNG.used.id,
+    models_assets.AssetStatus.loan: BackOfficeAssetStatusNG.loan.id,
+    models_assets.AssetStatus.damaged: BackOfficeAssetStatusNG.damaged.id,
+    models_assets.AssetStatus.liquidated: BackOfficeAssetStatusNG.liquidated.id,
+    models_assets.AssetStatus.in_service: BackOfficeAssetStatusNG.in_service.id,
+    models_assets.AssetStatus.installed: BackOfficeAssetStatusNG.installed.id,
+    models_assets.AssetStatus.free: BackOfficeAssetStatusNG.free.id,
+    models_assets.AssetStatus.reserved: BackOfficeAssetStatusNG.reserved.id,
+
+    models_assets.AssetStatus.to_deploy: BackOfficeAssetStatusNG.waiting_for_release.id,
+    models_assets.AssetStatus.in_repair: BackOfficeAssetStatusNG.damaged.id,
+    models_assets.AssetStatus.ok: BackOfficeAssetStatusNG.used.id,
+}
 
 
 class BackOfficeAssetResource(AssetResource):
@@ -130,6 +166,41 @@ class BackOfficeAssetResource(AssetResource):
         if service and device_environment:
             service_env = "{}|{}".format(service, device_environment)
         return service_env
+
+    def dehydrate_status(self, asset):
+        if asset.status:
+            return BACK_OFFICE_ASSET_STATUS_MAPPING[asset.status]
+        return asset.status
+
+
+class DataCenterAssetStatusNG(Choices):
+    _ = Choices.Choice
+
+    new = _('new')
+    used = _('in use')
+    free = _('free')
+    damaged = _('damaged')
+    liquidated = _('liquidated')
+    to_deploy = _('to deploy')
+
+
+DATA_CENTER_ASSET_STATUS_MAPPING = {
+    models_assets.AssetStatus.new: DataCenterAssetStatusNG.new.id,
+    models_assets.AssetStatus.used: DataCenterAssetStatusNG.used.id,
+    models_assets.AssetStatus.free: DataCenterAssetStatusNG.free.id,
+    models_assets.AssetStatus.damaged: DataCenterAssetStatusNG.damaged.id,
+    models_assets.AssetStatus.liquidated: DataCenterAssetStatusNG.liquidated.id,
+    models_assets.AssetStatus.to_deploy: DataCenterAssetStatusNG.to_deploy.id,
+
+    models_assets.AssetStatus.in_progress: DataCenterAssetStatusNG.used.id,
+    models_assets.AssetStatus.waiting_for_release: DataCenterAssetStatusNG.new.id,
+    models_assets.AssetStatus.loan: DataCenterAssetStatusNG.used.id,
+    models_assets.AssetStatus.in_service: DataCenterAssetStatusNG.used.id,
+    models_assets.AssetStatus.in_repair: DataCenterAssetStatusNG.damaged.id,
+    models_assets.AssetStatus.ok: DataCenterAssetStatusNG.used.id,
+    models_assets.AssetStatus.installed: DataCenterAssetStatusNG.used.id,
+    models_assets.AssetStatus.reserved: DataCenterAssetStatusNG.used.id,
+}
 
 
 class DataCenterAssetResource(AssetResource):
@@ -230,6 +301,11 @@ class DataCenterAssetResource(AssetResource):
             service_env = "{}|{}".format(service, device_environment)
         return service_env
 
+    def dehydrate_status(self, asset):
+        if asset.status:
+            return DATA_CENTER_ASSET_STATUS_MAPPING[asset.status]
+        return asset.status
+
     class Meta:
         fields = (
             # to be skipped
@@ -275,13 +351,11 @@ class DataCenterAssetResource(AssetResource):
         model = models_assets.Asset
 
     def get_queryset(self):
-        parents = self.Meta.model.objects.filter(
+        parents = self.Meta.model.admin_objects_dc.filter(
             Q(device_info__slot_no__isnull=True) | Q(device_info__slot_no=''),
-            type=models_assets.AssetType.data_center,
             part_info=None,
         ).exclude(model__category__is_blade=True)
-        children = self.Meta.model.objects.filter(
-            type=models_assets.AssetType.data_center,
+        children = self.Meta.model.admin_objects_dc.filter(
             part_info=None,
         ).exclude(id__in=parents.values_list('id', flat=True))
         return list(chain(parents, children))
@@ -350,6 +424,21 @@ class IPAddressResource(resources.ModelResource):
         model = models_network.IPAddress
 
 
+class AssetTypeNG(Choices):
+    _ = Choices.Choice
+
+    back_office = _('back office')
+    data_center = _('data center')
+
+
+ASSET_TYPE_MAPPING = {
+    models_assets.AssetType.data_center: AssetTypeNG.data_center.id,
+    models_assets.AssetType.back_office: AssetTypeNG.back_office.id,
+    models_assets.AssetType.administration: AssetTypeNG.back_office.id,
+    models_assets.AssetType.other: AssetTypeNG.back_office.id,  # ?
+}
+
+
 class AssetModelResource(resources.ModelResource):
     has_parent = fields.Field('has_parent', column_name='has_parent')
 
@@ -359,6 +448,11 @@ class AssetModelResource(resources.ModelResource):
         except AttributeError:
             has_parent = False
         return int(has_parent)
+
+    def dehydrate_type(self, asset_model):
+        if asset_model.type:
+            return ASSET_TYPE_MAPPING[asset_model.type]
+        return asset_model.type
 
     class Meta:
         fields = (
