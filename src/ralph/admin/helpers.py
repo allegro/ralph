@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+from django.contrib.admin.utils import get_fields_from_path
 from django.core.urlresolvers import reverse
+from django.db.models.constants import LOOKUP_SEP
 
 
 def get_admin_url(obj, action):
@@ -19,19 +21,17 @@ def get_field_by_relation_path(model, field_path):
         get_field_by_relation_path(BackOfficeAsset, 'model__manufacturer__name')
     returns:
         <django.db.models.fields.CharField: name>
-    This is achieved by dynamically executing such code:
-        self.model.\
-        _meta.get_field('model').related_model.\
-        _meta.get_field('manufacturer').related_model.\
-        _meta.get_field('name')
     """
-    def get_related_model(model, field_name):
-        related_model = model._meta.get_field(field_name).related_model
-        return related_model
+    return get_fields_from_path(model, field_path)[-1]
 
-    hops = field_path.split('__')
-    relation_hops, dst_field = hops[:-1], hops[-1]
-    for field_name in relation_hops:
-        model = get_related_model(model, field_name)
-    found_field = model._meta.get_field(dst_field)
-    return found_field
+
+def get_value_by_relation_path(obj, field_path):
+    """
+    Return value of object field (which may be nested using __ notation).
+
+    >>> get_value_by_relation_path(user, 'city__country__name')
+    ... Poznan
+    """
+    current_field, __, rest = field_path.partition(LOOKUP_SEP)
+    value = getattr(obj, current_field)
+    return get_value_by_relation_path(value, rest) if rest else value

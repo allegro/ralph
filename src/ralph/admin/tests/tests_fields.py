@@ -8,9 +8,10 @@ from ralph.tests.models import TestAsset
 
 
 class SimpleTestForm(MultivalueFormMixin, forms.Form):
-    multivalue_fields = ['sn', 'barcode']
+    multivalue_fields = ['sn', 'barcode', 'niw']
     sn = MultilineField()
     barcode = MultilineField()
+    niw = MultilineField(required=False)
 
 
 class OneRequiredTestForm(MultivalueFormMixin, forms.Form):
@@ -32,10 +33,37 @@ class TestAssetForm(MultivalueFormMixin, forms.ModelForm):
 
 
 class MultiValueFormTest(SimpleTestCase):
+    def test_extend_empty_fields_at_the_end(self):
+        data = {
+            'sn': ['1', '2', '3'],
+            'barcode': ['1'],
+        }
+        form = SimpleTestForm({})
+        result = form.extend_empty_fields_at_the_end(data)
+        self.assertEqual(result, {
+            'sn': ['1', '2', '3'],
+            'barcode': ['1', '', ''],
+            'niw': ['', '', ''],
+        })
+
+    def test_extend_empty_fields_at_the_end_with_empty_row(self):
+        data = {
+            'sn': ['1', '2', '3', ''],
+            'barcode': ['1', '', '', ''],
+        }
+        form = SimpleTestForm({})
+        result = form.extend_empty_fields_at_the_end(data)
+        self.assertEqual(result, {
+            'sn': ['1', '2', '3'],
+            'barcode': ['1', '', ''],
+            'niw': ['', '', ''],
+        })
+
     def test_works_for_single_value_each(self):
         data = {
             'sn': 'sn1',
             'barcode': 'bc1',
+            'niw': 'niw1',
         }
         form = SimpleTestForm(data)
         self.assertTrue(form.is_valid())
@@ -44,19 +72,50 @@ class MultiValueFormTest(SimpleTestCase):
         data = {
             'sn': 'sn1, sn2, sn3',
             'barcode': 'bc1, bc2, bc3',
+            'niw': 'niw1, niw2, niw3',
         }
         form = SimpleTestForm(data)
         self.assertTrue(form.is_valid())
 
-    def test_not_valid_when_different_count(self):
+    def test_works_for_multi_value_with_empty_holes(self):
+        data = {
+            'sn': 'sn1, sn2, sn3',
+            'barcode': 'bc1, bc2, bc3',
+            'niw': 'niw1, , niw3',
+        }
+        form = SimpleTestForm(data)
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data['niw'], ['niw1', '', 'niw3'])
+
+    def test_works_for_multi_value_with_empty_holes_at_the_end(self):
+        data = {
+            'sn': 'sn1, sn2, sn3',
+            'barcode': 'bc1, bc2, bc3',
+            'niw': 'niw1, ,',
+        }
+        form = SimpleTestForm(data)
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data['niw'], ['niw1', '', ''])
+
+    def test_works_for_multi_value_with_extension_to_longest_field(self):
+        data = {
+            'sn': 'sn1, sn2, sn3',
+            'barcode': 'bc1, bc2, bc3',
+            'niw': 'niw1',
+        }
+        form = SimpleTestForm(data)
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data['niw'], ['niw1', '', ''])
+
+    def test_valid_when_different_count(self):
         data = {
             'sn': 'sn1',
             'barcode': 'bc1, bc2',
+            'niw': 'niw1, niw2'
         }
         form = SimpleTestForm(data)
-        self.assertFalse(form.is_valid())
-        self.assertIn('sn', form.errors)
-        self.assertIn('barcode', form.errors)
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data['sn'], ['sn1', ''])
 
     def test_not_valid_when_empty_multivalues(self):
         data = {

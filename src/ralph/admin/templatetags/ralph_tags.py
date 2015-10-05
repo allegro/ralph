@@ -3,6 +3,11 @@ from django.contrib.admin.templatetags.admin_modify import submit_row
 from django.contrib.admin.views.main import SEARCH_VAR
 from django.template import Library
 
+from ralph.admin.helpers import (
+    get_field_by_relation_path,
+    get_value_by_relation_path
+)
+
 register = Library()
 
 
@@ -47,7 +52,7 @@ def get_attr(obj, attr):
     {{ obj|get_attr:"my_atribute" }}
 
     """
-    return getattr(obj, attr, None)
+    return get_value_by_relation_path(obj, attr)
 
 
 @register.filter
@@ -59,4 +64,4 @@ def get_verbose_name(obj, name):
     {{ obj|get_verbose_name:"my_field" }}
 
     """
-    return obj._meta.get_field(name).verbose_name
+    return get_field_by_relation_path(obj, name).verbose_name

@@ -62,7 +62,7 @@ class BackOfficeAsset(Regionalizable, Asset):
         return settings.DEFAULT_COUNTRY_CODE
 
     def __str__(self):
-        return '{}'.format(self.hostname)
+        return '{}'.format(self.hostname or self.barcode or self.sn)
 
     def __repr__(self):
         return '<BackOfficeAsset: {}>'.format(self.id)

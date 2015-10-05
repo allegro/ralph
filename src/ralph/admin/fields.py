@@ -16,13 +16,14 @@ class MultilineField(forms.CharField):
         - separated values cannot duplicate each other,
     """
     widget = forms.Textarea
-    separators = ",|\n"
+    separators = r',|\n|\|'
 
     def __init__(self, allow_duplicates=True, *args, **kwargs):
         self.allow_duplicates = allow_duplicates
         super().__init__(*args, **kwargs)
 
     def validate(self, values):
+
         if not values and self.required:
             error_msg = _(
                 "Field can't be empty. Please put the item OR items separated "
@@ -158,8 +159,33 @@ class MultivalueFormMixin(object):
                 self._errors.setdefault(field_name, [])
                 self._errors[field_name] += error.messages
 
+    def extend_empty_fields_at_the_end(self, data):
+        """
+        Extend every field to have the same number of items. Additionaly remove
+        empty rows from the end.
+        """
+        max_length = 0
+        for field in self.multivalue_fields:
+            value = data.get(field, [])
+            max_length = max(max_length, len(value))
+        for field in self.multivalue_fields:
+            value = data.get(field, [])
+            data[field] = value + [''] * (max_length - len(value))  # None?
+        # remove empty lines
+        while True:
+            rows = list(zip(*[data[f] for f in self.multivalue_fields]))
+            if len(rows) == 0:
+                break
+            if not any(rows[-1]):
+                for field in self.multivalue_fields:
+                    data[field].pop()
+            else:
+                break
+        return data
+
     def clean(self):
         data = super().clean()
+        self.extend_empty_fields_at_the_end(data)
         self.equal_count_validator(data)
         self.any_in_multivalues_validator(data)
         self.check_uniqness(data)

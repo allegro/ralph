@@ -272,7 +272,7 @@ class DataCenterAsset(Asset):
         self._rack_id = self.rack_id
 
     def __str__(self):
-        return '{}'.format(self.hostname)
+        return '{}'.format(self.hostname or self.barcode or self.sn)
 
     def __repr__(self):
         return '<DataCenterAsset: {}>'.format(self.id)

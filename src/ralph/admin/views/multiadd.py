@@ -7,6 +7,7 @@ from django.db import IntegrityError, models, transaction
 from django.forms import ValidationError
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.fields import (
@@ -30,23 +31,28 @@ class MultiAddView(RalphTemplateView):
         self.info_fields = admin_model.multiadd_info_fields
         self.obj = get_object_or_404(model, pk=object_pk)
         self.fields = admin_model.get_multiadd_fields(obj=self.obj)
+        self.one_of_mulitval_required = admin_model.one_of_mulitvalue_required
         return super().dispatch(request, *args, **kwargs)
 
     def get_form(self):
         form_kwargs = {}
         multi_form_attrs = {
             'multivalue_fields': [i['field'] for i in self.fields],
-            'model': self.model
+            'model': self.model,
+            'one_of_mulitvalue_required': self.one_of_mulitval_required,
         }
         for item in self.fields:
             field_type = self.model._meta.get_field(item['field'])
+            required = item.get('required', not field_type.blank)
             if isinstance(field_type, models.IntegerField):
                 multi_form_attrs[item['field']] = IntegerMultilineField(
-                    allow_duplicates=item['allow_duplicates']
+                    allow_duplicates=item['allow_duplicates'],
+                    required=required,
                 )
             else:
                 multi_form_attrs[item['field']] = MultilineField(
-                    allow_duplicates=item['allow_duplicates']
+                    allow_duplicates=item['allow_duplicates'],
+                    required=required,
                 )
 
         multi_form = type(
@@ -98,7 +104,7 @@ class MultiAddView(RalphTemplateView):
 
     @transaction.atomic
     def form_valid(self, form):
-        saved_assets = []
+        saved_objects = []
         args = [form.cleaned_data[field['field']] for field in self.fields]
         for data in zip(*args):
             for field in self._get_ancestors_pointers(self.obj):
@@ -116,12 +122,19 @@ class MultiAddView(RalphTemplateView):
                 return self.form_invalid(form)
 
             self.obj.save()
-            saved_assets.append(str(self.obj))
+            saved_objects.append('<a href="{}">{}</a>'.format(
+                self.obj.get_absolute_url(),
+                str(self.obj)
+            ))
 
         messages.success(
-            self.request, _('Saved %(assets)s assets') % {
-                'assets': ", ".join(saved_assets)
-            }
+            self.request,
+            mark_safe(
+                _('Saved %(count)d object(s): %(objects)s') % {
+                    'count': len(saved_objects),
+                    'objects': ", ".join(saved_objects)
+                }
+            )
         )
         return HttpResponseRedirect(self.get_url_name())
 
@@ -143,6 +156,14 @@ class MulitiAddAdminMixin(object):
     """
 
     view = MultiAddView
+    one_of_mulitvalue_required = []
+
+    @property
+    def multiadd_info_fields(self):
+        return self.list_display
+
+    def get_multiadd_fields(self, obj=None):
+        raise NotImplementedError()
 
     def get_url_name(self, with_namespace=True):
         params = self.model._meta.app_label, self.model._meta.model_name
