@@ -5,19 +5,6 @@ from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
-from ralph.assets.filters import (
-    BarcodeFilter,
-    DepreciationDateFilter,
-    ForceDepreciationFilter,
-    HostnameFilter,
-    InvoiceDateFilter,
-    InvoiceNoFilter,
-    ModelFilter,
-    OrderNoFilter,
-    RemarksFilter,
-    SNFilter,
-    StatusFilter
-)
 from ralph.back_office.models import BackOfficeAsset, Warehouse
 from ralph.back_office.views import (
     BackOfficeAssetComponents,
@@ -85,9 +72,9 @@ class BackOfficeAssetAdmin(
 
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
     list_filter = [
-        StatusFilter, BarcodeFilter, SNFilter, HostnameFilter, InvoiceNoFilter,
-        InvoiceDateFilter, OrderNoFilter, ModelFilter, DepreciationDateFilter,
-        ForceDepreciationFilter, RemarksFilter
+        'status', 'barcode', 'sn', 'hostname', 'invoice_no', 'invoice_date',
+        'order_no', 'model__name', 'depreciation_end_date',
+        'force_depreciation', 'remarks'
     ]
     date_hierarchy = 'created'
     list_select_related = [

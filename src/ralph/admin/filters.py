@@ -3,7 +3,9 @@ import re
 from datetime import datetime
 from functools import lru_cache
 
-from django.contrib.admin import SimpleListFilter
+from django.contrib.admin.filters import FieldListFilter
+from django.contrib.admin.utils import get_model_from_relation
+from django.db import models
 from django.db.models import Q
 from django.utils.encoding import smart_text
 from django.utils.formats import get_format
@@ -32,7 +34,32 @@ def date_format_to_human(value):
     return value
 
 
-class BaseCustomFilter(SimpleListFilter):
+class BaseCustomFilter(FieldListFilter):
+
+    """Base class for custom filters."""
+
+    def __init__(self, field, request, params, model, model_admin, field_path):
+        self.lookup_kwarg = field_path
+        self.model = model
+        if field.flatchoices:
+            self.choices_list = field.flatchoices
+        super().__init__(
+            field, request, params, model, model_admin, field_path
+        )
+
+        if '__' in field_path:
+            self.title = '{} {}'.format(
+                field.model._meta.verbose_name,
+                self.title
+            )
+
+    def value(self):
+        """
+        Returns the value (in string format) provided in the request's
+        query string for this filter, if any. If the value wasn't provided then
+        returns None.
+        """
+        return self.used_parameters.get(self.field_path, None)
 
     def has_output(self):
         return True
@@ -40,61 +67,73 @@ class BaseCustomFilter(SimpleListFilter):
     def lookups(self, request, model_admin):
         return None
 
+    def expected_parameters(self):
+        return [self.lookup_kwarg]
 
-class ChoicesFilter(BaseCustomFilter):
+
+class ChoicesListFilter(BaseCustomFilter):
 
     """Renders filter form with choices field."""
 
     template = 'admin/filters/choices_filter.html'
-    choices_list = []
+    _choices_list = []
+
+    @property
+    def choices_list(self):
+        return self._choices_list
+
+    @choices_list.setter
+    def choices_list(self, value):
+        self._choices_list = value
 
     def choices(self, cl):
         yield {
             'selected': False,
             'value': '',
             'display': _('All'),
-            'parameter_name': self.parameter_name
+            'parameter_name': self.field_path
         }
+
         for lookup, title in self.choices_list:
             yield {
                 'selected': smart_text(lookup) == self.value(),
                 'value': lookup,
                 'display': title,
-                'parameter_name': self.parameter_name,
+                'parameter_name': self.field_path,
             }
 
     def queryset(self, request, queryset):
         if self.value():
-            return queryset.filter(**{self.parameter_name: self.value()})
+            return queryset.filter(**{self.field_path: self.value()})
 
 
-class BooleanFilter(ChoicesFilter):
+class BooleanListFilter(ChoicesListFilter):
 
-    """Renders filter form with boolean field."""
-
-    choices_list = [
+    _choices_list = [
         ('1', _('Yes')),
         ('0', _('No')),
     ]
 
 
-class DateFilter(BaseCustomFilter):
+class DateListFilter(BaseCustomFilter):
 
     """Renders filter form with date field."""
 
     template = 'admin/filters/date_filter.html'
 
-    def __init__(self, request, params, model, model_admin):
+    def __init__(self, field, request, params, model, model_admin, field_path):
         used_parameters = {}
-        self.parameter_name_start = self.parameter_name + '__start'
-        self.parameter_name_end = self.parameter_name + '__end'
+        self.parameter_name_start = field_path + '__start'
+        self.parameter_name_end = field_path + '__end'
 
         for param in self.expected_parameters():
             try:
                 used_parameters[param] = params.pop(param, '')
             except KeyError:
                 pass
-        super().__init__(request, params, model, model_admin)
+        super().__init__(
+            field, request, params, model, model_admin, field_path
+        )
         self.used_parameters = used_parameters
 
     def expected_parameters(self):
@@ -114,7 +153,7 @@ class DateFilter(BaseCustomFilter):
                     date[0], get_format('DATE_INPUT_FORMATS')[0]
                 )
                 queryset = queryset.filter(**{
-                    '{}__gte'.format(self.parameter_name): date_start,
+                    '{}__gte'.format(self.field_path): date_start,
                 })
             except ValueError:
                 pass
@@ -124,7 +163,7 @@ class DateFilter(BaseCustomFilter):
                     date[1], get_format('DATE_INPUT_FORMATS')[0]
                 )
                 queryset = queryset.filter(**{
-                    '{}__lte'.format(self.parameter_name): date_end,
+                    '{}__lte'.format(self.field_path): date_end,
                 })
             except ValueError:
                 pass
@@ -144,7 +183,7 @@ class DateFilter(BaseCustomFilter):
         }
 
 
-class TextFilter(BaseCustomFilter):
+class TextListFilter(BaseCustomFilter):
 
     """Renders filter form with char field."""
 
@@ -155,12 +194,46 @@ class TextFilter(BaseCustomFilter):
             query = Q()
             for value in re.split(r'[;|]', self.value()):
                 query |= Q(
-                    **{'{}__icontains'.format(self.parameter_name): value}
+                    **{'{}__icontains'.format(self.field_path): value}
                 )
             return queryset.filter(query)
 
     def choices(self, cl):
         return ({
             'current_value': self.value(),
-            'parameter_name': self.parameter_name
+            'parameter_name': self.field_path
         },)
+
+
+class RelatedFieldListFilter(ChoicesListFilter):
+
+    """Filter for Foregin key field."""
+
+    @property
+    def choices_list(self):
+        model = get_model_from_relation(self.field)
+        return [(i.id, str(i)) for i in model._default_manager.all()]
+
+
+def register_custom_filters():
+    """
+    Register custom filters for the Django admin.
+    
+    This function is called in AppConfig.ready() (ralph.admin.apps).
+    """
+    field_filter_mapper = [
+        (lambda f: bool(f.choices), ChoicesListFilter),
+        (lambda f: isinstance(f, (
+            models.BooleanField, models.NullBooleanField
+        )), BooleanListFilter),
+        (lambda f: isinstance(f, (models.DateField)), DateListFilter),
+        (lambda f: isinstance(f, (
+            models.CharField, models.TextField, models.IntegerField
+        )), TextListFilter),
+        (lambda f: isinstance(f, models.ForeignKey), RelatedFieldListFilter),
+    ]
+
+    for func, filter_class in field_filter_mapper:
+        FieldListFilter.register(
+            func, filter_class, take_priority=True
+        )

@@ -46,7 +46,7 @@ class PermissionPerFieldAdminMixin(object):
         """Return form with fields which user have access."""
         form = super().get_form(request, obj, **kwargs)
         user_allowed_fields = self.model.allowed_fields(request.user)
-        forbidden_fields = set(form._meta.fields) - user_allowed_fields
+        forbidden_fields = set(form._meta.fields or []) - user_allowed_fields
         if forbidden_fields:
             for field in forbidden_fields:
                 form.Meta.fields.remove(field)
