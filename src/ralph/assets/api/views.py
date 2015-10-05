@@ -1,4 +1,5 @@
 from ralph.api import RalphAPIViewSet
+from ralph.api.utils import PolymorphicViewSetMixin
 from ralph.assets import models
 from ralph.assets.api import serializers
 
@@ -48,3 +49,9 @@ class CategoryViewSet(RalphAPIViewSet):
 class AssetModelViewSet(RalphAPIViewSet):
     queryset = models.AssetModel.objects.all()
     serializer_class = serializers.AssetModelSerializer
+
+
+class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
+    queryset = models.BaseObject.polymorphic_objects.all()
+    serializer_class = serializers.BaseObjectPolymorphicSerializer
+    http_method_names = ['get', 'options', 'head']

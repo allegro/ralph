@@ -94,5 +94,22 @@ class RalphAPIViewSetMixin(QuerysetRelatedMixin, AdminSearchFieldsMixin):
         return base_serializer
 
 
-class RalphAPIViewSet(RalphAPIViewSetMixin, viewsets.ModelViewSet):
+_viewsets_registry = {}
+
+
+class RalphAPIViewSetMetaclass(type):
+    def __new__(cls, name, bases, attrs):
+        attrs['_viewsets_registry'] = _viewsets_registry
+        new_cls = super().__new__(cls, name, bases, attrs)
+        queryset = getattr(new_cls, 'queryset', None)
+        if queryset is not None:  # don't evaluate queryset
+            _viewsets_registry[queryset.model] = new_cls
+        return new_cls
+
+
+class RalphAPIViewSet(
+    RalphAPIViewSetMixin,
+    viewsets.ModelViewSet,
+    metaclass=RalphAPIViewSetMetaclass
+):
     pass

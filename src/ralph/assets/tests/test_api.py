@@ -19,6 +19,8 @@ from ralph.assets.tests.factories import (
     ManufacturerFactory,
     ServiceFactory
 )
+from ralph.back_office.tests.factories import BackOfficeAssetFactory
+from ralph.data_center.tests.factories import DataCenterAssetFactory
 
 
 class ServicesEnvironmentsAPITests(RalphAPITestCase):
@@ -286,3 +288,24 @@ class AssetModelAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.asset_model.refresh_from_db()
         self.assertEqual(self.asset_model.name, 'Iphone 6')
+
+
+class BaseObjectAPITests(RalphAPITestCase):
+    def setUp(self):
+        super().setUp()
+        self.bo_asset = BackOfficeAssetFactory(barcode='12345')
+        self.dc_asset = DataCenterAssetFactory(barcode='54321')
+
+    def test_get_base_objects_list(self):
+        url = reverse('baseobject-list')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+        barcodes = [item['barcode'] for item in response.data['results']]
+        self.assertCountEqual(barcodes, set(['12345', '54321']))
+
+    def test_get_asset_model_details(self):
+        url = reverse('baseobject-detail', args=(self.bo_asset.id,))
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['barcode'], '12345')
