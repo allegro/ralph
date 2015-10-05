@@ -14,7 +14,6 @@ from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import (
     AssetPurpose,
     AssetSource,
-    AssetStatus,
     ComponentType,
     ModelVisualizationLayout,
     ObjectModelType
@@ -31,7 +30,6 @@ __all__ = [
     'AssetModel',
     'AssetPurpose',
     'AssetSource',
-    'AssetStatus',
     'BaseObject',
     'BusinessSegment',
     'Category',

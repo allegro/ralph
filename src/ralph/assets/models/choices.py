@@ -14,23 +14,6 @@ class AssetPurpose(Choices):
     others = _("others")
 
 
-class AssetStatus(Choices):
-    _ = Choices.Choice
-
-    HARDWARE = Choices.Group(0)
-    new = _('new')
-    in_progress = _('in progress')
-    waiting_for_release = _('waiting for release')
-    used = _('in use')
-    loan = _('loan')
-    damaged = _('damaged')
-    liquidated = _('liquidated')
-    in_service = _('in service')
-    in_repair = _('in repair')
-    ok = _('ok')
-    to_deploy = _('to deploy')
-
-
 class AssetSource(Choices):
     _ = Choices.Choice
 

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 
 from django.db.models import Count
 from django.http import Http404
@@ -6,16 +7,22 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.mixins import RalphTemplateView
 from ralph.assets.models.assets import Asset, AssetModel
-from ralph.assets.models.choices import AssetStatus, ObjectModelType
+from ralph.assets.models.choices import ObjectModelType
 from ralph.back_office.models import BackOfficeAsset
 from ralph.data_center.models.physical import DataCenter, DataCenterAsset
 from ralph.reports.base import ReportContainer
 
+logger = logging.getLogger(__name__)
 
-def get_desc(choices_class, key, default='------'):
+
+def get_choice_name(choices_class, key, default='------'):
+    """
+    Return raw name of choice for given key.
+    """
     try:
         return choices_class.from_id(key) if key else default
     except ValueError:
+        logger.error('Choice not found for key {}'.format(key))
         return 'Does not exist for key {}'.format(key)
 
 
@@ -83,7 +90,8 @@ class CategoryModelStatusReport(BaseReport):
         ).annotate(
             num=Count('status')
         ).order_by('model__category__name')
-
+        # get status class dynamically for BO/DC Asset
+        status_class = model._meta.get_field('status').choices.__class__
         for item in queryset:
             parent = item['model__category__name'] or 'Without category'
             name = item['model__name']
@@ -92,7 +100,7 @@ class CategoryModelStatusReport(BaseReport):
                 parent=parent,
             )
             self.report.add(
-                name=get_desc(AssetStatus, item['status']),
+                name=get_choice_name(status_class, item['status']),
                 parent=node,
                 count=item['num'],
                 unique=False
@@ -154,11 +162,13 @@ class StatusModelReport(BaseReport):
         ).annotate(
             num=Count('model')
         )
+        # get status class dynamically for BO/DC Asset
+        status_class = model._meta.get_field('status').choices.__class__
         for item in queryset:
             self.report.add(
                 name=item['model__name'],
                 count=item['num'],
-                parent=get_desc(AssetStatus, item['status']),
+                parent=get_choice_name(status_class, item['status']),
                 unique=False,
             )
 

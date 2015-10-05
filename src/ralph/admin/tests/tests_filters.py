@@ -11,9 +11,12 @@ from ralph.admin.filters import (
     RelatedFieldListFilter,
     TextListFilter
 )
-from ralph.assets.models.choices import AssetStatus
 from ralph.data_center.admin import DataCenterAssetAdmin
-from ralph.data_center.models.physical import DataCenterAsset, Rack
+from ralph.data_center.models.physical import (
+    DataCenterAsset,
+    DataCenterAssetStatus,
+    Rack
+)
 from ralph.data_center.tests.factories import (
     DataCenterAssetFactory,
     RackFactory
@@ -29,14 +32,17 @@ class AdminFiltersTestCase(TestCase):
         cls.dca_1 = DataCenterAssetFactory(
             invoice_date=datetime.date(2015, 1, 1),
             barcode='barcode_one',
+            status=DataCenterAssetStatus.new,
         )
         cls.dca_2 = DataCenterAssetFactory(
             invoice_date=datetime.date(2015, 2, 1),
-            barcode='barcode_two'
+            barcode='barcode_two',
+            status=DataCenterAssetStatus.new,
         )
         cls.dca_3 = DataCenterAssetFactory(
             invoice_date=datetime.date(2015, 3, 1),
-            force_depreciation=True
+            force_depreciation=True,
+            status=DataCenterAssetStatus.used,
         )
         cls.dca_4 = DataCenterAssetFactory(
             rack=RackFactory()
@@ -63,26 +69,26 @@ class AdminFiltersTestCase(TestCase):
         choices_filter = ChoicesListFilter(
             field=DataCenterAsset._meta.get_field('status'),
             request=None,
-            params={'status': AssetStatus.new},
+            params={'status': DataCenterAssetStatus.new},
             model=DataCenterAsset,
             model_admin=DataCenterAssetAdmin,
             field_path='status'
         )
         queryset = choices_filter.queryset(None, DataCenterAsset.objects.all())
 
-        self.assertEqual(4, queryset.count())
+        self.assertEqual(3, queryset.count())
 
         choices_filter = ChoicesListFilter(
             field=DataCenterAsset._meta.get_field('status'),
             request=None,
-            params={'status': AssetStatus.in_progress},
+            params={'status': DataCenterAssetStatus.used},
             model=DataCenterAsset,
             model_admin=DataCenterAssetAdmin,
             field_path='status'
         )
         queryset = choices_filter.queryset(None, DataCenterAsset.objects.all())
 
-        self.assertEqual(0, queryset.count())
+        self.assertEqual(1, queryset.count())
 
     def test_text_filter(self):
         text_filter = TextListFilter(

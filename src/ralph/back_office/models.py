@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+import datetime
 import re
 
-from dj.choices import Country
+from dj.choices import Choices, Country
 from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -12,7 +13,6 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.accounts.models import Regionalizable
 from ralph.assets.country_utils import iso2_to_iso3
 from ralph.assets.models.assets import Asset
-from ralph.assets.models.choices import AssetStatus
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
 from ralph.lib.transitions.decorators import transition_action
@@ -25,6 +25,22 @@ IMEI_SINCE_2003 = re.compile(r'^\d{8} *\d{6} *\d$')
 
 class Warehouse(NamedMixin, TimeStampMixin, models.Model):
     pass
+
+
+class BackOfficeAssetStatus(Choices):
+    _ = Choices.Choice
+
+    new = _("new")
+    in_progress = _("in progress")
+    waiting_for_release = _("waiting for release")
+    used = _("in use")
+    loan = _("loan")
+    damaged = _("damaged")
+    liquidated = _("liquidated")
+    in_service = _("in service")
+    installed = _("installed")
+    free = _("free")
+    reserved = _("reserved")
 
 
 class BackOfficeAsset(Regionalizable, Asset):
@@ -43,8 +59,8 @@ class BackOfficeAsset(Regionalizable, Asset):
         null=True, blank=True, default=None, verbose_name=_('Loan end date'),
     )
     status = TransitionField(
-        default=AssetStatus.new.id,
-        choices=AssetStatus(),
+        default=BackOfficeAssetStatus.new.id,
+        choices=BackOfficeAssetStatus(),
     )
     imei = NullableCharField(
         max_length=18, null=True, blank=True, unique=True
@@ -76,6 +92,17 @@ class BackOfficeAsset(Regionalizable, Asset):
             raise ValidationError({
                 'imei': _('%(imei)s is not IMEI format') % {'imei': self.imei}
             })
+
+    def is_liquidated(self, date=None):
+        date = date or datetime.date.today()
+        # check if asset has status 'liquidated' and if yes, check if it has
+        # this status on given date
+        if (
+            self.status == BackOfficeAssetStatus.liquidated and
+            self._liquidated_at(date)
+        ):
+            return True
+        return False
 
     @transition_action
     def assign_user(self, **kwargs):

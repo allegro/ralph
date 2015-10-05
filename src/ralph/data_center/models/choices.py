@@ -3,6 +3,17 @@
 from dj.choices import Choices
 
 
+class DataCenterAssetStatus(Choices):
+    _ = Choices.Choice
+
+    new = _('new')
+    used = _('in use')
+    free = _('free')
+    damaged = _('damaged')
+    liquidated = _('liquidated')
+    to_deploy = _('to deploy')
+
+
 class Orientation(Choices):
     _ = Choices.Choice
 
