@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.db import models
 
-from ralph.lib.mixins.models import TimeStampMixin
+from ralph.lib.mixins.models import TaggableMixin, TimeStampMixin
 from ralph.lib.permissions import PermByFieldMixin
 from ralph.lib.permissions.models import PermissionsBase
 from ralph.lib.polymorphic.models import Polymorphic, PolymorphicBase
@@ -18,6 +18,7 @@ BaseObjectMeta = type(
 
 class BaseObject(
     Polymorphic,
+    TaggableMixin,
     PermByFieldMixin,
     TimeStampMixin,
     models.Model,

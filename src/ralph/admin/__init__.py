@@ -1,6 +1,7 @@
 from ralph.admin.sites import ralph_site
 from ralph.admin.mixins import (
     RalphAdmin,
+    RalphAdminForm,
     RalphStackedInline,
     RalphTabularInline,
 )
@@ -13,6 +14,7 @@ __all__ = [
     'default_app_config',
     'register',
     'RalphAdmin',
+    'RalphAdminForm',
     'RalphStackedInline',
     'RalphTabularInline'
 ]

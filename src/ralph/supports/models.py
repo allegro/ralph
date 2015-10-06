@@ -8,7 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
 from ralph.assets.models.base import BaseObject
-from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
+from ralph.lib.mixins.models import NamedMixin, TaggableMixin, TimeStampMixin
 from ralph.lib.permissions import PermByFieldMixin
 
 
@@ -28,6 +28,7 @@ class Support(
     PermByFieldMixin,
     NamedMixin.NonUnique,
     TimeStampMixin,
+    TaggableMixin,
     models.Model,
 ):
     contract_id = models.CharField(max_length=50, blank=False)
