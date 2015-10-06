@@ -33,6 +33,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             rack=self.rack,
             model=self.model,
         )
+        self.dc_asset.tags.add('db', 'test')
 
     def test_get_data_center_assets_list(self):
         url = reverse('datacenterasset-list')
@@ -71,17 +72,38 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         self.assertEqual(dc_asset.service_env, self.service_env)
         self.assertEqual(dc_asset.rack, self.rack)
 
+    def test_create_data_center_with_tags(self):
+        url = reverse('datacenterasset-list')
+        data = {
+            'hostname': '12345',
+            'model': self.model.id,
+            'rack': self.rack.id,
+            'service_env': self.service_env.id,
+            'force_depreciation': False,
+            'configuration_path': '/monitoring/www',
+            'tags': ['prod', 'db']
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        dc_asset = DataCenterAsset.objects.get(pk=response.data['id'])
+        self.assertEqual(dc_asset.hostname, '12345')
+        self.assertEqual(dc_asset.service_env, self.service_env)
+        self.assertEqual(dc_asset.rack, self.rack)
+        self.assertEqual(dc_asset.tags.count(), 2)
+
     def test_patch_data_center_asset(self):
         url = reverse('datacenterasset-detail', args=(self.dc_asset.id,))
         data = {
             'hostname': '54321',
             'force_depreciation': True,
+            'tags': ['net']
         }
         response = self.client.patch(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.dc_asset.refresh_from_db()
         self.assertEqual(self.dc_asset.hostname, '54321')
         self.assertTrue(self.dc_asset.force_depreciation)
+        self.assertEqual(self.dc_asset.tags.count(), 1)
 
 
 class RackAPITests(RalphAPITestCase):

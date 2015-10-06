@@ -40,6 +40,8 @@ INSTALLED_APPS = (
     'ralph.lib.transitions',
     'rest_framework',
     'rest_framework.authtoken',
+    'taggit',
+    'taggit_serializer',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -168,3 +170,5 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',  # noqa
     'PAGE_SIZE': 10,
 }
+
+TAGGIT_CASE_INSENSITIVE = True  # case insensitive tags

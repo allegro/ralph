@@ -22,7 +22,7 @@ class QuerysetRelatedMixin(object):
         ) or []
         self.prefetch_related = kwargs.pop(
             'prefetch_related', self.prefetch_related
-        )
+        ) or []
         if getattr(self, 'queryset', None) is not None:
             admin_site = ralph_site._registry.get(self.queryset.model)
             if (

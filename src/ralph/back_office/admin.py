@@ -102,7 +102,7 @@ class BackOfficeAssetAdmin(
             'fields': (
                 'hostname', 'model', 'barcode', 'sn', 'niw', 'status',
                 'warehouse', 'location', 'region', 'loan_end_date',
-                'service_env', 'remarks', 'imei'
+                'service_env', 'remarks', 'imei', 'tags',
             )
         }),
         (_('User Info'), {
