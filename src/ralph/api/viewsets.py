@@ -33,7 +33,10 @@ class AdminSearchFieldsMixin(object):
             filter_fields.extend(admin_site.search_fields or [])
         if admin_site and not self._skip_admin_list_filter:
             for f in admin_site.list_filter or []:
-                f_name = f
+                if isinstance(f, (tuple, list)):
+                    f_name = f[0]
+                else:
+                    f_name = f
                 if inspect.isclass(f) and issubclass(f, SimpleListFilter):
                     f_name = f.parameter_name
                 filter_fields.append(f_name)
