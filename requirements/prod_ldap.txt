@@ -1,3 +1,2 @@
 -r prod.txt
-django-auth-ldap==1.2.6
-git+https://github.com/rbarrois/python-ldap@py3  # py3 branch, not on pypi
+django-auth-ldap==1.2.7
