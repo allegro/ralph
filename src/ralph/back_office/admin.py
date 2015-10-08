@@ -80,9 +80,17 @@ class BackOfficeAssetAdmin(
     list_select_related = [
         'model', 'user', 'warehouse', 'model__manufacturer', 'region'
     ]
-    raw_id_fields = ['model', 'user', 'owner', 'service_env']
+    raw_id_fields = [
+        'model', 'user', 'owner', 'service_env', 'region', 'warehouse'
+    ]
     resource_class = resources.BackOfficeAssetResource
-    bulk_edit_list = list_display
+    bulk_edit_list = [
+        'status', 'barcode', 'hostname', 'model', 'purchase_order',
+        'user', 'owner', 'warehouse', 'sn', 'region', 'remarks',
+        'invoice_date', 'provider', 'task_url', 'depreciation_rate',
+        'order_no', 'depreciation_end_date'
+    ]
+    bulk_edit_no_fillable = ['barcode', 'sn', 'hostname']
 
     fieldsets = (
         (_('Basic info'), {
