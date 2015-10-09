@@ -29,9 +29,9 @@ class MultiAddTest(ClientMixin, TestCase):
 
     def tests_multi_add_bo(self):
         post_data = {
-            'sn': 'sn,sn2',
+            'sn': 'sn|sn2',
             'barcode': 'barcode,barcode2',
-            'imei': '990000862471854,990000862471855'
+            'imei': '990000862471854\n990000862471855'
         }
         response = self.client.post(
             reverse(
@@ -51,11 +51,12 @@ class MultiAddTest(ClientMixin, TestCase):
         ).count()
         self.assertEqual(result, 1)
 
-    def test_multi_add_dc(self):
+    def test_multi_add_dc_with_not_required_field(self):
         post_data = {
             'sn': 'dc_sn,dc_sn2',
             'barcode': 'dc_barcode,dc_barcode2',
-            'position': '1,2'
+            'position': '1,2',
+            'niw': '',
         }
         response = self.client.post(
             reverse(
@@ -78,7 +79,8 @@ class MultiAddTest(ClientMixin, TestCase):
         post_data = {
             'sn': 'dc_sn,dc_sn2',
             'barcode': '',
-            'position': '1,2'
+            'position': '1,2',
+            'niw': '',
         }
         response = self.client.post(
             reverse(
@@ -88,21 +90,15 @@ class MultiAddTest(ClientMixin, TestCase):
             post_data,
             follow=True
         )
-        self.assertFormError(
-            response,
-            'form',
-            'barcode',
-            (
-                'Field can\'t be empty. Please put the item OR items separated'
-                ' by new line or comma.'
-            )
-        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(DataCenterAsset.objects.count(), 3)
 
     def test_multi_add_smaller_number_of_lines(self):
         post_data = {
             'sn': 'dc_sn,dc_sn2',
             'barcode': 'barcode',
-            'position': '1,2'
+            'position': '1,2',
+            'niw': '',
         }
         response = self.client.post(
             reverse(
@@ -112,18 +108,15 @@ class MultiAddTest(ClientMixin, TestCase):
             post_data,
             follow=True
         )
-        self.assertFormError(
-            response,
-            'form',
-            'barcode',
-            'Fields: sn, barcode, position - require the same number of items'
-        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(DataCenterAsset.objects.count(), 3)
 
     def test_multi_add_duplicate_sn(self):
         post_data = {
             'sn': 'dc_sn,dc_sn',
             'barcode': 'barcode,barcode2',
-            'position': '1,2'
+            'position': '1,2',
+            'niw': '',
         }
         response = self.client.post(
             reverse(
@@ -140,11 +133,34 @@ class MultiAddTest(ClientMixin, TestCase):
             'There are duplicates in field.'
         )
 
+    def test_multi_add_barcode_and_sn_empty(self):
+        post_data = {
+            'sn': 'dc_sn,,dc_sn2',
+            'barcode': 'barcode,,barcode2',
+            'position': '1,2,3',
+            'niw': '',
+        }
+        response = self.client.post(
+            reverse(
+                self.dc_admin.get_url_name(),
+                args=[self.dc_1.pk]
+            ),
+            post_data,
+            follow=True
+        )
+        self.assertFormError(
+            response,
+            'form',
+            'sn',
+            'Fill at least on of sn,barcode in each row'
+        )
+
     def test_multi_add_is_sn_exists(self):
         post_data = {
             'sn': self.dc_1.sn,
             'barcode': 'barcode',
-            'position': '1'
+            'position': '1',
+            'niw': '',
         }
         response = self.client.post(
             reverse(
@@ -170,7 +186,8 @@ class MultiAddTest(ClientMixin, TestCase):
         post_data = {
             'sn': 'sn5',
             'barcode': 'barcode5',
-            'position': 'string'
+            'position': 'string',
+            'niw': '',
         }
         response = self.client.post(
             reverse(
