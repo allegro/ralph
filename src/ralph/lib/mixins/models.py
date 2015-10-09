@@ -3,6 +3,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
+from taggit.managers import TaggableManager
 
 
 class NamedMixin(models.Model):
@@ -66,3 +67,10 @@ class AdminAbsoluteUrlMixin(object):
                 self._meta.app_label, self._meta.model_name
             ), args=(self.pk,)
         )
+
+
+class TaggableMixin(models.Model):
+    tags = TaggableManager(blank=True)
+
+    class Meta:
+        abstract = True

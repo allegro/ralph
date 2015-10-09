@@ -12,6 +12,7 @@ from ralph.assets.models.base import BaseObject
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     NamedMixin,
+    TaggableMixin,
     TimeStampMixin
 )
 from ralph.lib.permissions import PermByFieldMixin
@@ -53,6 +54,7 @@ class Licence(
     AdminAbsoluteUrlMixin,
     PermByFieldMixin,
     TimeStampMixin,
+    TaggableMixin,
     models.Model,
 ):
 

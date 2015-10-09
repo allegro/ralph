@@ -3,8 +3,13 @@ import logging
 from collections import OrderedDict
 
 from rest_framework import permissions, relations, serializers
+from taggit_serializer.serializers import (
+    TaggitSerializer,
+    TagListSerializerField
+)
 
 from ralph.api.relations import RalphHyperlinkedRelatedField, RalphRelatedField
+from ralph.lib.mixins.models import TaggableMixin
 from ralph.lib.permissions.api import (
     PermissionsPerFieldSerializerMixin,
     RelatedObjectsPermissionsSerializerMixin
@@ -49,9 +54,28 @@ class ReversedChoiceField(serializers.ChoiceField):
         return super(ReversedChoiceField, self).to_internal_value(data)
 
 
+class DeclaredFieldsMetaclass(serializers.SerializerMetaclass):
+    """
+    Add additional declared fields in specific cases.
+
+    When serializer's model inherits from
+    `ralph.lib.mixins.models.TaggableMixin`, tags field is attached.
+    """
+    def __new__(cls, name, bases, attrs):
+        model = getattr(attrs.get('Meta'), 'model', None)
+        if model and issubclass(model, TaggableMixin):
+            attrs['tags'] = TagListSerializerField(required=False)
+            attrs['prefetch_related'] = (
+                list(attrs.get('prefetch_related', [])) + ['tags']
+            )
+        return super().__new__(cls, name, bases, attrs)
+
+
 class RalphAPISerializerMixin(
+    TaggitSerializer,
     RelatedObjectsPermissionsSerializerMixin,
     PermissionsPerFieldSerializerMixin,
+    metaclass=DeclaredFieldsMetaclass
 ):
     """
     Mix used in Ralph API serializers features:
@@ -129,7 +153,14 @@ class RalphAPISerializerMixin(
         return field_class, field_kwargs
 
 
-class RalphAPISaveSerializer(serializers.ModelSerializer):
+class RalphAPISaveSerializer(
+    TaggitSerializer,
+    serializers.ModelSerializer,
+    metaclass=DeclaredFieldsMetaclass
+):
+    serializer_choice_field = ReversedChoiceField
+    serializer_related_field = relations.PrimaryKeyRelatedField
+
     def build_field(self, *args, **kwargs):
         field_class, field_kwargs = super().build_field(*args, **kwargs)
         # replace choice field by basic input
@@ -146,7 +177,7 @@ class RalphAPISaveSerializer(serializers.ModelSerializer):
 serializers_registry = {}
 
 
-class RalphAPISerializerMetaclass(serializers.SerializerMetaclass):
+class RalphAPISerializerMetaclass(DeclaredFieldsMetaclass):
     def __new__(cls, name, bases, attrs):
         attrs['_serializers_registry'] = serializers_registry
         new_cls = super().__new__(cls, name, bases, attrs)
