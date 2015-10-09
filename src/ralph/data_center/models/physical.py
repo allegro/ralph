@@ -12,9 +12,10 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.admin.sites import ralph_site
 from ralph.admin.widgets import AutocompleteWidget
 from ralph.assets.models.assets import AdminAbsoluteUrlMixin, Asset, NamedMixin
-from ralph.assets.models.choices import AssetSource, AssetStatus
+from ralph.assets.models.choices import AssetSource
 from ralph.data_center.models.choices import (
     ConnectionType,
+    DataCenterAssetStatus,
     Orientation,
     RackOrientation
 )
@@ -214,8 +215,8 @@ class DataCenterAsset(Asset):
 
     rack = models.ForeignKey(Rack, null=True)
     status = TransitionField(
-        default=AssetStatus.new.id,
-        choices=AssetStatus(),
+        default=DataCenterAssetStatus.new.id,
+        choices=DataCenterAssetStatus(),
     )
     position = models.IntegerField(null=True)
     orientation = models.PositiveIntegerField(
