@@ -10,6 +10,7 @@ from ralph.admin.mixins import (
     RalphTemplateView
 )
 from ralph.admin.sites import ralph_site
+from ralph.lib.permissions.views import PermissionViewMetaClass
 
 VIEW_TYPES = CHANGE, LIST = ('change', 'list')
 
@@ -89,7 +90,31 @@ class RalphListView(RalphExtraViewMixin, RalphTemplateView):
         )
 
 
-class RalphDetailView(RalphExtraViewMixin, RalphTemplateView):
+class AdminViewBase(type):
+    def __new__(cls, name, bases, attrs):
+        base_template = 'admin/extra_views/base_admin_change.html'
+        empty_fieldset = (('__empty__', {'fields': []}),)
+        admin_whitelist = ['inlines', 'fieldsets']
+        admin_attrs = {
+            key: attrs.pop(key, []) for key in admin_whitelist
+        }
+        admin_attrs['change_form_template'] = base_template
+        admin_attrs['fieldsets'] = admin_attrs['fieldsets'] or empty_fieldset
+        new_class = super().__new__(cls, name, bases, attrs)
+        new_class.admin_class = type('AdminView', (RalphAdmin,), admin_attrs)
+        return new_class
+
+
+PermissionAdminViewBase = type(
+    'PermissionAdminViewBase',
+    (PermissionViewMetaClass, AdminViewBase),
+    {}
+)
+
+
+class RalphDetailView(
+    RalphExtraViewMixin, RalphTemplateView, metaclass=PermissionAdminViewBase
+):
     _type = CHANGE
     extra_view_base_template = 'admin/extra_views/base_change.html'
 
@@ -114,22 +139,7 @@ class RalphDetailView(RalphExtraViewMixin, RalphTemplateView):
         )
 
 
-class AdminViewBase(type):
-    def __new__(cls, name, bases, attrs):
-        base_template = 'admin/extra_views/base_admin_change.html'
-        empty_fieldset = (('__empty__', {'fields': []}),)
-        admin_whitelist = ['inlines', 'fieldsets']
-        admin_attrs = {
-            key: attrs.pop(key, []) for key in admin_whitelist
-        }
-        admin_attrs['change_form_template'] = base_template
-        admin_attrs['fieldsets'] = admin_attrs['fieldsets'] or empty_fieldset
-        new_class = type.__new__(cls, name, bases, attrs)
-        new_class.admin_class = type('AdminView', (RalphAdmin,), admin_attrs)
-        return new_class
-
-
-class RalphDetailViewAdmin(RalphDetailView, metaclass=AdminViewBase):
+class RalphDetailViewAdmin(RalphDetailView):
     """This class helps to display standard model admin in tab."""
     def dispatch(self, request, model, pk, *args, **kwargs):
         self.object = get_object_or_404(model, pk=pk)

@@ -31,6 +31,8 @@ def ralph_item(*args, **kwargs):
                 '{}.add_{}'.format(app, model),
                 '{}.change_{}'.format(app, model),
             ])
+        elif hasattr(child, 'permissions'):
+            access_by_perms.extend(child.permissions)
     if access_by_perms:
         kwargs['access_by_perms'] = list(set(access_by_perms))
     return item(*args, **kwargs)
@@ -99,7 +101,7 @@ sitetrees = [
         ralph_item(
             title=_('DC Visualization'),
             url='dc_view',
-            # TODO add permissions
+            access_by_perms='accounts.can_view_extra_datacenterview'
         ),
         ralph_item(
             title=_('Back Office'),
@@ -135,22 +137,32 @@ sitetrees = [
         ralph_item(
             title=_('Reports'),
             url='#',
+            url_as_pattern=False,
+            perms_mode_all=False,
             children=[
                 ralph_item(
                     title=_('Category model'),
                     url='category_model_report',
+                    access_by_perms='accounts.can_view_extra_reportdetail',
                 ),
                 ralph_item(
                     title=_('Category model status'),
                     url='category_model__status_report',
+                    access_by_perms=(
+                        'accounts.can_view_extra_reportwithoutallmodedetail'
+                    ),
                 ),
                 ralph_item(
                     title=_('Manufacturer category model'),
                     url='manufactured_category_model_report',
+                    access_by_perms='accounts.can_view_extra_reportdetail',
                 ),
                 ralph_item(
                     title=_('Status model'),
                     url='status_model_report',
+                    access_by_perms=(
+                        'accounts.can_view_extra_reportwithoutallmodedetail'
+                    ),
                 ),
             ]
         ),
