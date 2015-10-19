@@ -1,0 +1,48 @@
+provisioning_command: /root/init.sh
+compose:
+  db:
+    image: mysql:5.6
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: yes
+      MYSQL_DATABASE: ralph_ng
+      MYSQL_ROOT_PASSWORD:
+      MYSQL_USER: ralph_ng
+      MYSQL_PASSWORD: ralph_ng
+    volumes_from:
+      - data
+
+  web:
+    build: .
+    restart: always
+    environment:
+      - DJANGO_SETTINGS_MODULE=ralph.settings.settings_local
+    ports:
+      - "8000"
+    volumes:
+      # temporary - fix when ralph will handle local settings in a better way
+      - ./docker/settings_local.py:/opt/ralph/src/ralph/settings/settings_local.py
+    volumes_from:
+      - data
+    links:
+      - db:db
+
+  nginx:
+    image: nginx
+    restart: always
+    ports:
+      - "80"
+    links:
+      - web:web
+    volumes:
+      - ./contrib/ralph.conf.nginx:/etc/nginx/conf.d/default.conf
+    volumes_from:
+      - data
+
+  data:
+    image: mysql:5.6
+    restart: no
+    volumes:
+      - /root/logs
+      - /root/static
+      - /var/lib/mysql
+    command: /bin/true
