@@ -3,9 +3,8 @@ compose:
   db:
     image: mysql:5.6
     environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: yes
       MYSQL_DATABASE: ralph_ng
-      MYSQL_ROOT_PASSWORD:
+      MYSQL_ROOT_PASSWORD: ralph_ng
       MYSQL_USER: ralph_ng
       MYSQL_PASSWORD: ralph_ng
     volumes_from:
@@ -40,7 +39,6 @@ compose:
 
   data:
     image: mysql:5.6
-    restart: no
     volumes:
       - /root/logs
       - /root/static
