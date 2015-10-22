@@ -87,9 +87,9 @@ class BackOfficeAssetAdmin(
     fieldsets = (
         (_('Basic info'), {
             'fields': (
-                'hostname', 'model', 'barcode', 'sn', 'niw', 'status',
+                'hostname', 'model', 'barcode', 'sn', 'imei', 'niw', 'status',
                 'warehouse', 'location', 'region', 'loan_end_date',
-                'service_env', 'remarks', 'imei', 'tags',
+                'service_env', 'remarks', 'tags',
             )
         }),
         (_('User Info'), {
