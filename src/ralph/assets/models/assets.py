@@ -150,7 +150,14 @@ class AssetModel(
         verbose_name_plural = _('models')
 
     def __str__(self):
-        return '%s %s' % (self.manufacturer, self.name)
+        if self.category:
+            return '[{}] {} {}'.format(
+                self.category, self.manufacturer, self.name
+            )
+        else:
+            return '{} {}'.format(
+                self.manufacturer, self.name
+            )
 
     def _get_layout_class(self, field):
         item = ModelVisualizationLayout.from_id(field)
