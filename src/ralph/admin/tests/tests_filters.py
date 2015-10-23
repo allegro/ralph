@@ -179,14 +179,14 @@ class AdminFiltersTestCase(TestCase):
 
     def test_related_field(self):
         related_filter = RelatedFieldListFilter(
-            field=Rack._meta.get_field('name'),
+            field=DataCenterAsset._meta.get_field('rack'),
             request=None,
             params={
-                'rack__name': self.dca_4.rack.name,
+                'rack': self.dca_4.rack.id,
             },
             model=DataCenterAsset,
             model_admin=DataCenterAssetAdmin,
-            field_path='rack__name'
+            field_path='rack'
         )
         queryset = related_filter.queryset(None, DataCenterAsset.objects.all())
 

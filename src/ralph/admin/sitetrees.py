@@ -182,6 +182,7 @@ sitetrees = [
                 section(
                     _('Service Environment'), 'assets', 'ServiceEnvironment'
                 ),
+                section(_('Asset holder'), 'back_office', 'AssetHolder'),
                 section(_('Users list'), 'accounts', 'RalphUser'),
                 section(_('Groups list'), 'auth', 'Group'),
                 section(_('Regions'), 'accounts', 'Region'),

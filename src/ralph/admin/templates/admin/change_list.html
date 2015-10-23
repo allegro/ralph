@@ -117,4 +117,9 @@
     </form>
   </div>
 {% endblock %}
+{% block extra_scripts %}
+  {{ block.super }}
+  <script type="text/javascript" src="/static/src/js/ralph-autocomplete.js"></script>
+{% endblock %}
+
 

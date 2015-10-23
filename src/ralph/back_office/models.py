@@ -27,6 +27,10 @@ class Warehouse(NamedMixin, TimeStampMixin, models.Model):
     pass
 
 
+class AssetHolder(NamedMixin.NonUnique, TimeStampMixin, models.Model):
+    pass
+
+
 class BackOfficeAssetStatus(Choices):
     _ = Choices.Choice
 
@@ -64,6 +68,12 @@ class BackOfficeAsset(Regionalizable, Asset):
     )
     imei = NullableCharField(
         max_length=18, null=True, blank=True, unique=True
+    )
+    property_of = models.ForeignKey(
+        AssetHolder,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
     )
 
     class Meta:

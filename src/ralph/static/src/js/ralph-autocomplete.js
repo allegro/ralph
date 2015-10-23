@@ -11,7 +11,7 @@
         this.$queryInput = $('.input', this.$widget);
         this.$status = $('.status', this.$widget);
         this.$suggestList = $('.suggest-list', this.$widget);
-        this.$target = $(this.options.targetSelector, this.$widget);
+        this.$target = $(this.options.targetSelector);
         this.$currentItem = $('.item', this.$widget);
         this.$deleteButton = $('.delete', this.$currentItem);
         this.$noResults = $('.template.no-results', this.$suggestList);
@@ -19,10 +19,9 @@
         var that = this;
         this.$deleteButton.on('click', function(e) {that.deleteItem(e);});
         this.$queryInput.on('keydown', function(e) {that.keyDown(e);});
-
         if(this.options.watch) {
             Object.defineProperty(document.querySelector(that.options.targetSelector), 'value', {
-                get: function(){
+                get: function() {
                     return this.getAttribute('value');
                 },
                 set: function(val) {

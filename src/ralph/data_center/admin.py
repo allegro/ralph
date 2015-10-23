@@ -125,7 +125,7 @@ class DataCenterAssetAdmin(
         'force_depreciation', 'remarks', 'rack__name'
     ]
     date_hierarchy = 'created'
-    list_select_related = ['model', 'model__manufacturer']
+    list_select_related = ['model', 'model__manufacturer', 'model__category']
     raw_id_fields = ['model', 'rack', 'service_env', 'parent']
     raw_id_override_parent = {'parent': DataCenterAsset}
 
