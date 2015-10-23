@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect
 from ralph.admin.views.extra import RalphDetailView
 from ralph.attachments.forms import AttachmentForm
 from ralph.attachments.models import Attachment, AttachmentItem
-from ralph.helpers import add_request_to_form
+from ralph.helpers import add_request_to_form, get_model_view_url_name
 
 
 class AttachmentsView(RalphDetailView):
@@ -35,6 +35,20 @@ class AttachmentsView(RalphDetailView):
         """
         formset = self.get_formset(request)
         return self.render_to_response(self.get_context_data(formset=formset))
+
+    def get_context_data(self, *args, **kwargs):
+        """
+        Extends context by:
+        * url name for attachments for current model
+        """
+        context_data = super().get_context_data(*args, **kwargs)
+        context_data.update({
+            'attachment_url_name': get_model_view_url_name(
+                self.object._meta.model,
+                'attachment',
+            ),
+        })
+        return context_data
 
     def post(self, request):
         """
