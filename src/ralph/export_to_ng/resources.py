@@ -116,6 +116,7 @@ class BackOfficeAssetResource(AssetResource):
             'user',
             'remarks',
             'service_env',
+            'property_of',
         ]
         model = models_assets.Asset
 
@@ -619,6 +620,12 @@ class SupportTypeResource(resources.ModelResource):
     class Meta:
         fields = ['id', 'name']
         model = models_support.SupportType
+
+
+class AssetHolderResource(resources.ModelResource):
+    class Meta:
+        fields = ('id', 'name')
+        model = models_assets.AssetOwner
 
 
 class SupportResource(resources.ModelResource):
