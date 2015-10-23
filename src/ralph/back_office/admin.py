@@ -59,10 +59,10 @@ class BackOfficeAssetAdmin(
     """Back Office Asset admin class."""
     actions = ['bulk_edit_action']
     change_views = [
-        BackOfficeAssetComponents,
-        BackOfficeAssetSoftware,
         BackOfficeAssetLicence,
         BackOfficeAssetSupport,
+        BackOfficeAssetComponents,
+        BackOfficeAssetSoftware,
     ]
     list_display = [
         'status', 'barcode', 'purchase_order', 'model', 'user', 'warehouse',
