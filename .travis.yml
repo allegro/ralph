@@ -1,10 +1,8 @@
-sudo: false
+sudo: required
 language: python
 
-cache:
-  directories:
-    - node_modules
-    - bower_components
+services:
+  - docker
 
 python:
     - "3.4"
@@ -15,19 +13,15 @@ before_install:
     - make flake
 
 install:
-    - npm config set python /usr/bin/python2.7
-    - npm install
-    - make js-hint
-    - gulp
-    - make install-test
-    - pip install coveralls
+    # TODO: pull base image first?
+    - docker build -t allegrogroup/ralph-ng .
 
 script:
-    - gulp test
-    - make coveralls
+    - docker run --name=ralph-test allegrogroup/ralph-ng make coveralls
 
 after_success:
     - coveralls
+    # TODO: push image to docker registry if not PR (TRAVIS_PULL_REQUEST is false)
 
 notifications:
   webhooks:
