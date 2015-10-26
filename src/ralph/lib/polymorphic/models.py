@@ -31,6 +31,11 @@ class PolymorphicQuerySet(models.QuerySet):
         """
         result = []
         content_types_ids = set()
+        select_related = None
+        if self.query.select_related:
+            select_related = self.query.select_related
+            self.query.select_related = False
+
         for obj in super().iterator():
             content_types_ids.add(obj.content_type_id)
             result.append((
@@ -43,7 +48,6 @@ class PolymorphicQuerySet(models.QuerySet):
                 pk__in=list(content_types_ids)
             )
         }
-
         # result_query = []
         for k, v in result:
             model = content_type_model_map[k]
@@ -56,6 +60,9 @@ class PolymorphicQuerySet(models.QuerySet):
                 # or reset select_related accidentally
                 # see https://docs.djangoproject.com/en/1.8/ref/models/querysets/#select-related  # noqa
                 # for details
+                if select_related:
+                    model_query.query.select_related = select_related.copy()
+
                 if model_name in self._polymorphic_select_related:
                     model_query = model_query.select_related(
                         *self._polymorphic_select_related[model_name]
