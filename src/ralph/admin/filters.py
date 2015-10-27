@@ -41,8 +41,11 @@ class BaseCustomFilter(FieldListFilter):
     def __init__(self, field, request, params, model, model_admin, field_path):
         self.lookup_kwarg = field_path
         self.model = model
-        if field.flatchoices:
-            self.choices_list = field.flatchoices
+        try:
+            if field.flatchoices:
+                self.choices_list = field.flatchoices
+        except AttributeError:
+            pass
         super().__init__(
             field, request, params, model, model_admin, field_path
         )
