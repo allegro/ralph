@@ -18,7 +18,7 @@
                 $scope.info = item;
             };
 
-            $scope.newRack = function(data_center, x, y) {
+            $scope.newRack = function(x, y) {
                 var rack = new RackModel();
                 rack.visualization_col = x;
                 rack.visualization_row = y;

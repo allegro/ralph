@@ -73,7 +73,7 @@
 <div class="data-center">
     <div class="grid rows-{{ data_center.visualization_rows_num }} cols-{{ data_center.visualization_cols_num }} {{ mode }}">
         <div class="grid_wrapper" ng-mousemove="updatePosition($event)">
-            <div class="rack add x-{{ actualX }} y-{{ actualY }}" ng-show="mode == 'edit'" ng-click="newRack(data_center, actualX, actualY)">+</div>
+            <div class="rack add x-{{ actualX }} y-{{ actualY }}" ng-show="mode == 'edit'" ng-click="newRack(actualX, actualY)">+</div>
             <rack-top
                 ng-mouseleave="setInfo(null)"
                 ng-mouseover="setInfo(rack)"

@@ -1,4 +1,4 @@
-var gulp = require('gulp');
+var gulp = require('gulp'),
     watch = require('gulp-watch'),
     runSequence = require('run-sequence'),
     rename = require('gulp-rename'),
@@ -81,8 +81,9 @@ gulp.task('js', function(){
 });
 
 gulp.task('test', function() {
-    qunit('./src/ralph/js_tests/test_runner.html', {}, function(code) {
-        process.exit(code);
+    var runners = ['test_runner', 'angular_runner'];
+    runners.forEach(function(runner) {
+        qunit('./src/ralph/js_tests/' + runner + '.html');
     });
 });
 
