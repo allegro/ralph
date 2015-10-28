@@ -23,6 +23,7 @@ ZIP_EXT = '.zip'
 NAMESPACE_SIZE = 10
 SIMPLE_MODELS = [
     'AssetLastHostname',
+    'AssetHolder'
     'Environment',
     'BusinessSegment',
     'ProfitCenter',
