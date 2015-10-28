@@ -164,6 +164,20 @@ sitetrees = [
                         'accounts.can_view_extra_reportwithoutallmodedetail'
                     ),
                 ),
+                ralph_item(
+                    title=_('Asset - relations'),
+                    url='asset-relations',
+                    access_by_perms=(
+                        'accounts.can_view_extra_reportwithoutallmodedetail'
+                    ),
+                ),
+                ralph_item(
+                    title=_('Licence - relations'),
+                    url='licence-relations',
+                    access_by_perms=(
+                        'accounts.can_view_extra_reportwithoutallmodedetail'
+                    ),
+                ),
             ]
         ),
         ralph_item(

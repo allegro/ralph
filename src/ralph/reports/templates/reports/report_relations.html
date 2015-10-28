@@ -1,0 +1,11 @@
+{% extends 'reports/report_detail.html' %}
+{% load cache i18n %}
+{% block report_content %}
+  <div class="row">
+    <div class="small-12 large-6 columns end">
+      <a href="?asset_type={{ mode }}&csv=on" class="button">
+        {% trans "download report" %}
+      </a>
+    </div>
+  </div>
+{% endblock %}

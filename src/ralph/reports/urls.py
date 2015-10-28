@@ -24,4 +24,14 @@ urlpatterns = [
         views.ReportWithoutAllModeDetail.as_view(),
         name='status_model_report'
     ),
+    url(
+        r'^asset_relations/?$',
+        views.ReportWithoutAllModeDetail.as_view(),
+        name='asset-relations'
+    ),
+    url(
+        r'^licence_relations/?$',
+        views.ReportWithoutAllModeDetail.as_view(),
+        name='licence-relations'
+    ),
 ]
