@@ -140,17 +140,57 @@ class RalphAPISerializerMixin(
 
     def build_nested_field(self, field_name, relation_info, nested_depth):
         """
-        Nested serializer is inheriting from `RalphAPISerializer`.
+        Create nested fields for forward and reverse relationships.
         """
-        class NestedSerializer(RalphAPISerializer):
-            class Meta:
+        from rest_framework.utils.field_mapping import (
+            ClassLookupDict, get_field_kwargs, get_nested_relation_kwargs,
+            get_relation_kwargs, get_url_kwargs
+        )
+        model_serializer = self._serializers_registry.get(
+            relation_info.related_model
+        )
+        field_kwargs = get_nested_relation_kwargs(relation_info)
+        print(nested_depth)
+        print(relation_info.related_model, model_serializer)
+        if model_serializer:
+            return model_serializer, field_kwargs
+
+        class NestedSerializer(model_serializer):
+            class Meta(model_serializer.Meta):
                 model = relation_info.related_model
                 depth = nested_depth - 1
-        field_class, field_kwargs = super().build_nested_field(
-            field_name, relation_info, nested_depth
-        )
+
         field_class = NestedSerializer
+        field_kwargs = get_nested_relation_kwargs(relation_info)
+
         return field_class, field_kwargs
+
+
+    # def build_nested_field(self, field_name, relation_info, nested_depth):
+    #     """
+    #     Nested serializer is inheriting from `RalphAPISerializer`.
+    #     """
+    #     # exclude_fields = []
+    #     model_serializer = self._serializers_registry.get(
+    #         relation_info.related_model
+    #     )
+    #     # if model_serializer:
+    #     #     exclude_fields = getattr(model_serializer.Meta, 'exclude', [])
+    #     print(model_serializer)
+    #     print(id(model_serializer))
+    #     print(nested_depth)
+    #     class NestedSerializer(RalphAPISerializer):
+    #         class Meta(model_serializer.Meta):
+    #             model = relation_info.related_model
+    #             # depth = nested_depth - 1
+    #             depth = nested_depth
+    #             # exclude = exclude_fields
+
+    #     field_class, field_kwargs = super().build_nested_field(
+    #         field_name, relation_info, nested_depth
+    #     )
+    #     field_class = NestedSerializer
+    #     return field_class, field_kwargs
 
 
 class RalphAPISaveSerializer(
