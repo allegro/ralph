@@ -111,6 +111,7 @@ class BaseObjectPolymorphicSerializer(
 
     class Meta:
         model = BaseObject
+        exclude = ('content_type', )
 
 
 class BaseObjectSerializer(RalphAPISerializer):
@@ -127,3 +128,4 @@ class BaseObjectSerializer(RalphAPISerializer):
 class AssetSerializer(BaseObjectSerializer):
     class Meta(BaseObjectSerializer.Meta):
         model = Asset
+        exclude = ('content_type', )
