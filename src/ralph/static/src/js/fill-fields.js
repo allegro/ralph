@@ -6,24 +6,30 @@ $(function () {
     // Disable autocomplete without cluttering html attributes
     $('input').attr('autocomplete', 'off');
 
-    $('.result-list input[type=text]:not(.no-fillable), .result-list select').blur(function() {
+    $('.result-list input[type=text]:not(.no-fillable), .result-list select, .autocomplete-widget').blur(function() {
         $('#float_toolbar').hide();
     });
 
-    var toggle_toolbar = function(input) {
+    var toggle_toolbar = function(element) {
         var $toolbar = $('#float_toolbar');
-        var offset = $(input).offset();
-        var width = input.clientWidth;
-        var distance_left = -30;
-        var distance_top = -134;
+        var result_list_offset = $('#bulk-edit-result').offset();
+        var input_offset = $(element).offset();
+        var width = element.clientWidth;
+        var distance_top = input_offset.top - result_list_offset.top;
+        var distance_left = -18;
+        var element_id = element.id;
 
-        $toolbar.data('input_id', input.id);
-        $toolbar.css('left', parseInt(offset.left) + width + distance_left + 'px');
-        $toolbar.css('top', parseInt(offset.top) + distance_top + 'px');
+        if ($(element).hasClass('autocomplete-widget')) {
+            element_id = $(element).data('target-selector').substr(1);
+        }
+
+        $toolbar.data('input_id', element_id);
+        $toolbar.css('left', parseInt(input_offset.left) + width + distance_left + 'px');
+        $toolbar.css('top', distance_top + 'px');
         $toolbar.show();
     };
 
-    $('.result-list input[type=text]:not(.no-fillable), .result-list select').focus(function() {
+    $('.result-list input[type=text]:not(.no-fillable), .result-list select, .autocomplete-widget').mouseover(function() {
         toggle_toolbar(this);
     });
 
@@ -33,13 +39,16 @@ $(function () {
      */
     $('#float_toolbar').mousedown(function() {
         var input_id = $(this).data('input_id');
+        var from = $(this).data('from');
         var matcher = /(.*)-([0-9]+)-(.*)/;
         var results = matcher.exec(input_id);
         var $fields = $('[id^=' + results[1] + '-][id$=-' + results[3] + ']');
-
-        $fields.val($('#' + input_id).val());
-        $fields.parent().addClass('fill-changed');
-        $fields.parent().animate({backgroundColor: 'white'});
+        var value = $('#' + input_id).val();
+        if (value) {
+            $fields.val(value);
+            $fields.closest('td').addClass('fill-changed');
+            $fields.closest('td').animate({backgroundColor: 'white'});
+        }
 
         $(this).hide();
         return false;
