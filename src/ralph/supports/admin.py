@@ -32,7 +32,10 @@ class SupportAdmin(PermissionAdminMixin, RalphAdmin):
     search_fields = [
         'name', 'serial_no', 'contract_id', 'description', 'remarks'
     ]
-    list_filter = ['support_type']
+    list_filter = [
+        'contract_id', 'name', 'serial_no', 'price', 'remarks', 'description',
+        'support_type'
+    ]
     date_hierarchy = 'created'
     list_display = [
         'support_type', 'contract_id', 'name', 'serial_no', 'date_from',

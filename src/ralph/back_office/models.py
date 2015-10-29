@@ -12,7 +12,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
 from ralph.assets.country_utils import iso2_to_iso3
-from ralph.assets.models.assets import Asset
+from ralph.assets.models.assets import Asset, AssetHolder
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
 from ralph.lib.transitions.decorators import transition_action
@@ -24,10 +24,6 @@ IMEI_SINCE_2003 = re.compile(r'^\d{8} *\d{6} *\d$')
 
 
 class Warehouse(NamedMixin, TimeStampMixin, models.Model):
-    pass
-
-
-class AssetHolder(NamedMixin.NonUnique, TimeStampMixin, models.Model):
     pass
 
 

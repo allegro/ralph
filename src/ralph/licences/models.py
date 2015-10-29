@@ -7,8 +7,9 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
-from ralph.assets.models.assets import Manufacturer
+from ralph.assets.models.assets import AssetHolder, Manufacturer
 from ralph.assets.models.base import BaseObject
+from ralph.assets.models.choices import ObjectModelType
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     NamedMixin,
@@ -27,13 +28,13 @@ class LicenceType(PermByFieldMixin, NamedMixin, models.Model):
         return cls(name=string_name)
 
 
-class SoftwareCategory(PermByFieldMixin, NamedMixin, models.Model):
+class Software(PermByFieldMixin, NamedMixin, models.Model):
 
     """The category of the licensed software"""
 
-    # asset_type = models.PositiveSmallIntegerField(
-    #     choices=AssetType()
-    # )
+    asset_type = models.PositiveSmallIntegerField(
+        choices=ObjectModelType(), default=ObjectModelType.all
+    )
 
     @classmethod
     def create_from_string(cls, asset_type, string_name):
@@ -73,13 +74,14 @@ class Licence(
             "Should be like 'per processor' or 'per machine' and so on. ",
         ),
     )
-    # property_of = models.ForeignKey(
-    #     settings.AUTH_USER_MODEL,
-    #     on_delete=models.PROTECT,
-    #     null=True,
-    # )
-    software_category = models.ForeignKey(
-        SoftwareCategory,
+    property_of = models.ForeignKey(
+        AssetHolder,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+    software = models.ForeignKey(
+        Software,
         on_delete=models.PROTECT,
     )
     number_bought = models.IntegerField(
@@ -158,10 +160,6 @@ class Licence(
     #     default=None,
     #     null=True,
     #     on_delete=models.PROTECT,
-    # )
-    # asset_type = models.PositiveSmallIntegerField(
-    #     choices=AssetType(),
-    #     verbose_name=_('Type'),
     # )
 
     _used = None
