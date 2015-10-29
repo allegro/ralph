@@ -150,7 +150,7 @@ class AssetModel(
         verbose_name_plural = _('models')
 
     def __str__(self):
-        if self.category:
+        if self.category_id:
             return '[{}] {} {}'.format(
                 self.category, self.manufacturer, self.name
             )

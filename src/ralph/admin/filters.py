@@ -5,11 +5,15 @@ from functools import lru_cache
 
 from django.contrib.admin.filters import FieldListFilter
 from django.contrib.admin.utils import get_model_from_relation
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
+from django.forms.utils import flatatt
 from django.utils.encoding import smart_text
 from django.utils.formats import get_format
 from django.utils.translation import ugettext_lazy as _
+
+from ralph.admin.autocomplete import DETAIL_PARAM, QUERY_PARAM
 
 
 @lru_cache()
@@ -205,14 +209,62 @@ class TextListFilter(BaseCustomFilter):
         },)
 
 
-class RelatedFieldListFilter(ChoicesListFilter):
+class RelatedFieldListFilter(BaseCustomFilter):
 
     """Filter for Foregin key field."""
 
-    @property
-    def choices_list(self):
-        model = get_model_from_relation(self.field)
-        return [(i.id, str(i)) for i in model._default_manager.all()]
+    template = "admin/filters/related_filter.html"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.field_model = get_model_from_relation(self.field)
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if value:
+            queryset = queryset.filter(**{self.field_path: value})
+        return queryset
+
+    def get_related_url(self):
+        return reverse(
+            'admin:%s_%s_changelist' % (
+                self.field_model._meta.app_label,
+                self.field_model._meta.model_name,
+            ),
+        )
+
+    def choices(self, cl):
+        model_options = (
+            self.field_model._meta.app_label, self.field_model._meta.model_name
+        )
+        widget_options = {
+            'data-suggest-url': reverse(
+                'admin:{}_{}_autocomplete_suggest'.format(*model_options)
+            ),
+            'data-details-url': reverse(
+                'admin:{}_{}_autocomplete_details'.format(*model_options)
+            ),
+            'data-query-var': QUERY_PARAM,
+            'data-detail-var': DETAIL_PARAM,
+            'data-target-selector': '#id_{}'.format(self.field_path)
+        }
+        value = self.value()
+        current_object = None
+        if value:
+            try:
+                current_object = self.field_model.objects.get(pk=int(value))
+            except self.field_model.DoesNotExist:
+                pass
+
+        return ({
+            'current_value': self.value(),
+            'parameter_name': self.field_path,
+            'searched_fields': self.title,
+            'related_url': self.get_related_url(),
+            'name': self.field_path,
+            'attrs': flatatt(widget_options),
+            'current_object': current_object
+        },)
 
 
 def register_custom_filters():
