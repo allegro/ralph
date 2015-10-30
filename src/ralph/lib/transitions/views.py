@@ -30,6 +30,9 @@ class RunTransitionView(RalphTemplateView):
         for action in self.actions:
             action_fields = getattr(action, 'form_fields', {})
             for name, options in action_fields.items():
+                condition = options.get('condition', lambda x: True)
+                if not condition(self.obj):
+                    continue
                 if options.get('autocomplete_field', False):
                     rel = self.obj._meta.get_field(
                         options['autocomplete_field']
