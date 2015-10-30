@@ -264,8 +264,11 @@ class PermissionsForObjectMixin(models.Model, metaclass=PermissionsBase):
         """
         Check if user has all rights to single object.
         """
+        user_perms = self._permissions.has_access(user)
+        if not user_perms:
+            return True
         return self._default_manager.filter(
-            self._permissions.has_access(user),
+            user_perms,
             pk=self.pk
         ).exists()
 
