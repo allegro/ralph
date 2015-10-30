@@ -204,6 +204,27 @@ sitetrees = [
                         'accounts.can_view_extra_licencerelationsreport'
                     ),
                 ),
+                ralph_item(
+                    title=_('Failures'),
+                    url='failures-report',
+                    access_by_perms=(
+                        'accounts.can_view_extra_failurereport'
+                    ),
+                ),
+            ]
+        ),
+        ralph_item(
+            title=_('Operations'),
+            url='#',
+            url_as_pattern=False,
+            perms_mode_all=False,
+            children=[
+                section(_('Changes'), 'operations', 'Change'),
+                section(_('Problems'), 'operations', 'Problem'),
+                section(_('Incidents'), 'operations', 'Incident'),
+                section(_('Failures'), 'operations', 'Failure'),
+                section(_('All'), 'operations', 'Operation'),
+                section(_('Types'), 'operations', 'OperationType'),
             ]
         ),
         ralph_item(

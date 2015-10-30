@@ -118,6 +118,7 @@ class RalphDetailView(
 ):
     _type = CHANGE
     extra_view_base_template = 'admin/extra_views/base_change.html'
+    summary_fields = None
 
     def dispatch(self, request, model, pk, *args, **kwargs):
         self.object = get_object_or_404(model, pk=pk)
@@ -128,6 +129,7 @@ class RalphDetailView(
         context['object'] = context['original'] = self.object
         context['change_views'] = self.views
         context['media'] = get_inline_media()
+        context['summary_fields'] = self.summary_fields or []
         return context
 
     @classmethod

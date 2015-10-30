@@ -14,6 +14,7 @@ from ralph.assets.models.choices import ObjectModelType
 from ralph.back_office.models import BackOfficeAsset
 from ralph.data_center.models.physical import DataCenter, DataCenterAsset
 from ralph.licences.models import BaseObjectLicence, Licence, LicenceUser
+from ralph.operations.models import Failure, OperationType
 from ralph.reports.base import ReportContainer
 
 logger = logging.getLogger(__name__)
@@ -453,3 +454,36 @@ class LicenceRelationsReport(BaseRelationsReport):
                 yield base_row + fill_empty_assets + row + [
                     single_licence_cost
                 ]
+
+
+class FailureReport(ReportWithoutAllModeDetail, ReportDetail):
+    with_datacenters = True
+    name = _('Failures')
+    description = _('Failure types for each manufacturer.')
+
+    def prepare(self, model, dc=None):
+        queryset = model._default_manager
+        if dc:
+            queryset = queryset.filter(rack__server_room__data_center=dc)
+        operation_types = OperationType.objects.get(
+            pk=OperationType.choices.failure
+        ).get_descendants(include_self=True)
+        failures = Failure.base_objects.through.objects.filter(
+            baseobject__in=queryset.all(),
+            operation__type__in=operation_types
+        ).values(
+            'baseobject__asset__model__manufacturer__name',
+            'operation__type__name'
+        ).annotate(
+            count=Count('id'),
+        )
+        for item in failures:
+            parent = (
+                item['baseobject__asset__model__manufacturer__name'] or 'None'
+            )
+            self.report.add(
+                name=item['operation__type__name'],
+                count=item['count'],
+                parent=parent,
+                unique=False,
+            )

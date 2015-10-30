@@ -2,9 +2,9 @@ from ralph.admin.sites import ralph_site
 from ralph.admin.mixins import (
     RalphAdmin,
     RalphAdminForm,
+    RalphMPTTAdmin,
     RalphStackedInline,
     RalphTabularInline,
-    RalphMPTTAdmin
 )
 from ralph.admin.decorators import register
 
@@ -16,7 +16,7 @@ __all__ = [
     'register',
     'RalphAdmin',
     'RalphAdminForm',
+    'RalphMPTTAdmin',
     'RalphStackedInline',
     'RalphTabularInline',
-    'RalphMPTTAdmin'
 ]

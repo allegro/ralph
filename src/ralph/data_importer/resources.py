@@ -30,6 +30,7 @@ from ralph.licences.models import (
     LicenceUser,
     Software
 )
+from ralph.operations.models import Operation, OperationType
 from ralph.supports.models import BaseObjectsSupport, Support, SupportType
 
 RalphResourceMeta = type(
@@ -515,3 +516,25 @@ class DomainResource(RalphModelResource):
 
     class Meta:
         model = Domain
+
+
+class OperationTypeResource(RalphModelResource):
+    parent = fields.Field(
+        column_name='parent',
+        attribute='parent',
+        widget=ImportedForeignKeyWidget(OperationType),
+    )
+
+    class Meta:
+        model = OperationType
+
+
+class OperationResource(RalphModelResource):
+    type = fields.Field(
+        column_name='type',
+        attribute='type',
+        widget=ImportedForeignKeyWidget(OperationType),
+    )
+
+    class Meta:
+        model = Operation

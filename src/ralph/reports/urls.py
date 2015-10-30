@@ -34,4 +34,9 @@ urlpatterns = [
         views.LicenceRelationsReport.as_view(),
         name='licence-relations'
     ),
+    url(
+        r'^failures_report/?$',
+        views.FailureReport.as_view(),
+        name='failures-report'
+    ),
 ]

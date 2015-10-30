@@ -51,9 +51,6 @@ select {
         }
         td {
             padding: 0 rem-calc(5);
-            &.original p {
-                display: none;
-            }
             #{text-inputs(all, 'input')}, select{
                 margin: 0;
             }

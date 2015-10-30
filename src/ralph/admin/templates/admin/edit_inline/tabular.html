@@ -19,7 +19,9 @@
                 {% endif %}
               {% endfor %}
               {% if inline_admin_formset.formset.can_delete %}
-                <th>{% trans "Delete?" %}</th>
+                {% block delete_header %}
+                  <th>{% trans "Delete?" %}</th>
+                {% endblock %}
               {% endif %}
             </tr>
           </thead>
@@ -35,22 +37,10 @@
             {% endif %}
             <tr class="form-row {% cycle "row1" "row2" %} {% if inline_admin_form.original or inline_admin_form.show_url %}has_original{% endif %}{% if forloop.last %} empty-form{% endif %}" id="{{ inline_admin_formset.formset.prefix }}-{% if not forloop.last %}{{ forloop.counter0 }}{% else %}empty{% endif %}">
               <td class="original">
-                {% if inline_admin_form.original or inline_admin_form.show_url %}
-                  <p>
-                    {% if inline_admin_form.original %}
-                      {{ inline_admin_form.original }}
-                      {% if inline_admin_form.model_admin.show_change_link and inline_admin_form.model_admin.has_registered_model %}
-                        <a href="{% url inline_admin_form.model_admin.opts|admin_urlname:'change' inline_admin_form.original.pk|admin_urlquote %}" class="inlinechangelink">
-                          {% trans "Change" %}
-                        </a>
-                      {% endif %}
-                    {% endif %}
-                    {% if inline_admin_form.show_url %}
-                      <a href="{{ inline_admin_form.absolute_url }}">
-                        {% trans "View on site" %}
-                      </a>
-                    {% endif %}
-                  </p>
+                {% if inline_admin_form.original and inline_admin_form.model_admin.show_change_link and inline_admin_form.model_admin.has_registered_model %}
+                  <a href="{% url inline_admin_form.model_admin.opts|admin_urlname:'change' inline_admin_form.original.pk|admin_urlquote %}" class="inlinechangelink change-related" title="{% trans 'Change' %}">
+                    <i class="fa fa-pencil fa-lg"></i>
+                  </a>
                 {% endif %}
                 {% if inline_admin_form.needs_explicit_pk_field %}
                   {{ inline_admin_form.pk_field.field }}

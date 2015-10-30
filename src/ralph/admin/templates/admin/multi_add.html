@@ -10,24 +10,7 @@
   <br />
   <div>
     <h5>{% trans "This object will be multiplied" %}</h5>
-    <table>
-      <thead>
-        {% for field in info_fields %}
-          <th>
-            {{ obj|get_verbose_name:field }}
-          </th>
-        {% endfor %}
-      </thead>
-      <tbody>
-        <tr>
-          {% for field in info_fields %}
-            <td>
-              {{ obj|get_attr:field }}
-            </td>
-          {% endfor %}
-        </tr>
-      </tbody>
-    </table>
+    {% include "admin/includes/summary_table.html" %}
   </div>
   <br />
   <h5>

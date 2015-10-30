@@ -92,7 +92,7 @@ class BackOfficeAssetAdmin(
         'status', 'barcode', 'purchase_order', 'model', 'user', 'warehouse',
         'sn', 'hostname', 'invoice_date', 'invoice_no', 'region', 'property_of'
     ]
-    multiadd_info_fields = list_display
+    multiadd_summary_fields = list_display
 
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
 
