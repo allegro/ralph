@@ -19,7 +19,7 @@ from ralph.licences.models import (
     Licence,
     LicenceType,
     LicenceUser,
-    SoftwareCategory
+    Software
 )
 from ralph.supports.models import Support, SupportType
 
@@ -230,10 +230,10 @@ class LicenceResource(ImportForeignKeyMixin, resources.ModelResource):
         attribute='licence_type',
         widget=ImportedForeignKeyWidget(LicenceType),
     )
-    software_category = fields.Field(
+    software = fields.Field(
         column_name='software_category',
         attribute='software_category',
-        widget=ImportedForeignKeyWidget(SoftwareCategory),
+        widget=ImportedForeignKeyWidget(Software),
     )
     region = fields.Field(
         column_name='region',

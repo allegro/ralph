@@ -187,6 +187,41 @@ class DateListFilter(BaseCustomFilter):
         }
 
 
+class NumberListFilter(DateListFilter):
+
+    """Renders filter form with decimal field."""
+
+    template = 'admin/filters/number_filter.html'
+
+    def queryset(self, request, queryset):
+        if any(self.value()):
+            value = self.value()
+            if value[0]:
+                queryset = queryset.filter(**{
+                    '{}__gte'.format(self.field_path): value[0]
+                })
+            if value[1]:
+                queryset = queryset.filter(**{
+                    '{}__lte'.format(self.field_path): value[1]
+                })
+        return queryset
+
+    def choices(self, cl):
+        value = self.value()
+        # default is decimal
+        step = 0.01
+        if isinstance(self.field, models.IntegerField):
+            step = 1
+
+        yield {
+            'parameter_name_start': self.parameter_name_start,
+            'parameter_name_end': self.parameter_name_end,
+            'start_value': value[0],
+            'end_value': value[1],
+            'step': step
+        }
+
+
 class TextListFilter(BaseCustomFilter):
 
     """Renders filter form with char field."""
@@ -275,6 +310,9 @@ def register_custom_filters():
     """
     field_filter_mapper = [
         (lambda f: bool(f.choices), ChoicesListFilter),
+        (lambda f: isinstance(f, (
+            models.DecimalField, models.IntegerField
+        )), NumberListFilter),
         (lambda f: isinstance(f, (
             models.BooleanField, models.NullBooleanField
         )), BooleanListFilter),
