@@ -3,6 +3,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.views.extra import RalphDetailViewAdmin
+from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
 from ralph.licences.models import (
@@ -43,7 +44,7 @@ class LicenceUserView(RalphDetailViewAdmin):
 
 
 @register(Licence)
-class LicenceAdmin(PermissionAdminMixin, RalphAdmin):
+class LicenceAdmin(PermissionAdminMixin, AttachmentsMixin, RalphAdmin):
 
     """Licence admin class."""
     change_views = [

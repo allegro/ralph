@@ -5,6 +5,7 @@ from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
+from ralph.attachments.admin import AttachmentsMixin
 from ralph.back_office.models import AssetHolder, BackOfficeAsset, Warehouse
 from ralph.back_office.views import (
     BackOfficeAssetComponents,
@@ -52,6 +53,7 @@ class BackOfficeAssetAdmin(
     MulitiAddAdminMixin,
     BulkEditChangeListMixin,
     PermissionAdminMixin,
+    AttachmentsMixin,
     TransitionAdminMixin,
     RalphAdmin
 ):

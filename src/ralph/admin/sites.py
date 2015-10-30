@@ -19,11 +19,12 @@ class RalphAdminSiteMixin(object):
 
     def register(self, model_or_iterable, *args, **kwargs):
         super().register(model_or_iterable, *args, **kwargs)
-        admin_class = kwargs.get('admin_class', None)
-        if not admin_class:
-            return
-        for view in self._get_views(admin_class):
-            for model in model_or_iterable:
+        # operate on admin class instance to get processed extra views
+        for model in model_or_iterable:
+            if model._meta.swapped:
+                continue
+            admin_instance = self._registry[model]
+            for view in self._get_views(admin_instance):
                 view.post_register(self.name, model)
 
     def get_urls(self, *args, **kwargs):
