@@ -240,6 +240,22 @@
 .racks .rack .wrapper .listing-u .position.position-u-48 {
   bottom: 1175px;
 }
+.racks .rack .wrapper .devices .device.position-u-49,
+.racks .rack .wrapper .listing-u .position.position-u-49 {
+  bottom: 1200px;
+}
+.racks .rack .wrapper .devices .device.position-u-50,
+.racks .rack .wrapper .listing-u .position.position-u-50 {
+  bottom: 1225px;
+}
+.racks .rack .wrapper .devices .device.position-u-51,
+.racks .rack .wrapper .listing-u .position.position-u-51 {
+  bottom: 1250px;
+}
+.racks .rack .wrapper .devices .device.position-u-52,
+.racks .rack .wrapper .listing-u .position.position-u-52 {
+  bottom: 1275px;
+}
 .racks .rack .wrapper .devices .device.height-u-0 {
   z-index: 10000;
   background-color: #f33;
@@ -448,6 +464,18 @@
 }
 .racks .rack.rack-u-48 .wrapper {
   height: 1200px;
+}
+.racks .rack.rack-u-49 .wrapper {
+  height: 1225px;
+}
+.racks .rack.rack-u-50 .wrapper {
+  height: 1250px;
+}
+.racks .rack.rack-u-51 .wrapper {
+  height: 1275px;
+}
+.racks .rack.rack-u-52 .wrapper {
+  height: 1300px;
 }
 .racks .rack .wrapper {
   background-color: #666;
@@ -738,6 +766,18 @@
 }
 .racks .rack .wrapper .devices .device.height-u-48 {
   height: 1200px;
+}
+.racks .rack .wrapper .devices .device.height-u-49 {
+  height: 1225px;
+}
+.racks .rack .wrapper .devices .device.height-u-50 {
+  height: 1250px;
+}
+.racks .rack .wrapper .devices .device.height-u-51 {
+  height: 1275px;
+}
+.racks .rack .wrapper .devices .device.height-u-52 {
+  height: 1300px;
 }
 .racks .rack .wrapper .devices .device.height-u-0 .sn,
 .racks .rack .wrapper .devices .device.height-u-1 .sn {
