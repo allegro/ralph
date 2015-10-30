@@ -9,6 +9,10 @@ IGNORED_FIELDS = (BULK_EDIT_VAR, BULK_EDIT_VAR_IDS, SEARCH_SCOPE_VAR)
 
 class RalphChangeList(ChangeList):
 
+    def __init__(self, request, *args, **kwargs):
+        self.bulk_edit = request.GET.get(BULK_EDIT_VAR, False)
+        super().__init__(request, *args, **kwargs)
+
     def get_filters_params(self, params=None):
         result = super().get_filters_params(params)
         for field in IGNORED_FIELDS:
