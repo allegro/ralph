@@ -66,7 +66,7 @@ class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
         Added extra view to list view by added to admin class.
         """
         class FooListAdmin(RalphAdmin):
-            list_views = [ExtraListView]
+            list_views = [type('ExtraListView', (ExtraListView,), {})]
         self._register_model_in_admin(Foo, FooListAdmin)
 
         response = self.client.get(
@@ -84,7 +84,7 @@ class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
         obj = Foo.objects.create(bar='test')
 
         class FooChangeAdmin(RalphAdmin):
-            change_views = [ExtraDetailView]
+            change_views = [type('ExtraDetailView', (ExtraDetailView,), {})]
         self._register_model_in_admin(Foo, FooChangeAdmin)
 
         response = self.client.get(
@@ -100,7 +100,7 @@ class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
         Visit extra list view.
         """
         class FooListAdmin(RalphAdmin):
-            list_views = [ExtraListView]
+            list_views = [type('ExtraListView', (ExtraListView,), {})]
         self._register_model_in_admin(Foo, FooListAdmin)
 
         response = self.client.get(
@@ -115,7 +115,7 @@ class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
         obj = Foo.objects.create(bar='test')
 
         class FooListAdmin(RalphAdmin):
-            change_views = [ExtraDetailView]
+            change_views = [type('ExtraDetailView', (ExtraDetailView,), {})]
         self._register_model_in_admin(Foo, FooListAdmin)
 
         response = self.client.get(

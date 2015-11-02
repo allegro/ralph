@@ -130,14 +130,6 @@ class RalphAdminMixin(RalphAutocompleteMixin):
         else:
             self.change_views = copy(self.change_views) or []
         super().__init__(*args, **kwargs)
-        # create copy (subclass) of view class to assign unique
-        # class to each admin when it's used (prevents conflicts between urls
-        # etc). See ralph.admin.extra.RalphExtraViewMixin.post_register for
-        # details
-        self.list_views = [type(c.__name__, (c,), {}) for c in self.list_views]
-        self.change_views = [
-            type(c.__name__, (c,), {}) for c in self.change_views
-        ]
 
     def get_form(self, request, obj=None, **kwargs):
         """
