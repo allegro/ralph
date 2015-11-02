@@ -141,7 +141,7 @@ class Network(NamedMixin, TimeStampMixin, models.Model):
         null=True,
         default=None,
     )
-    gateway_as_int = models.PositiveIntegerField(
+    gateway_as_int = models.BigIntegerField(
         verbose_name=_('gateway as int'),
         null=True,
         blank=True,
@@ -194,14 +194,14 @@ class Network(NamedMixin, TimeStampMixin, models.Model):
         blank=True,
         on_delete=models.SET_NULL,
     )
-    min_ip = models.PositiveIntegerField(
+    min_ip = models.BigIntegerField(
         verbose_name=_('smallest IP number'),
         null=True,
         blank=True,
         default=None,
         editable=False,
     )
-    max_ip = models.PositiveIntegerField(
+    max_ip = models.BigIntegerField(
         verbose_name=_('largest IP number'),
         null=True,
         blank=True,
