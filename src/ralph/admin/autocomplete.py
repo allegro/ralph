@@ -93,7 +93,7 @@ class AjaxAutocompleteMixin(object):
 
             def get_queryset(self, user):
                 queryset = self.model._default_manager.all()
-                if getattr(self.model, 'is_polymorphic', False):
+                if getattr(self.model, '_polymorphic_descendants', []):
                     id_list = []
                     for related_model in self.model._polymorphic_descendants:
                         id_list.extend(self.get_base_ids(
@@ -112,6 +112,7 @@ class AjaxAutocompleteMixin(object):
                         queryset = self.model._get_objects_for_user(
                             user, queryset
                         )
+
                 return queryset.order_by(*ordering)[:self.limit]
 
         class Detail(SuggestView):
