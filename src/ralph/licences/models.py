@@ -167,7 +167,7 @@ class Licence(
     def __str__(self):
         return "{} x {} - {}".format(
             self.number_bought,
-            self.software_category.name,
+            self.software.name,
             self.invoice_date,
         )
 
