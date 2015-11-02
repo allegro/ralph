@@ -2,6 +2,7 @@
 import logging
 from collections import OrderedDict
 
+from django.db.models.fields import exceptions
 from rest_framework import permissions, relations, serializers
 from taggit_serializer.serializers import (
     TaggitSerializer,
@@ -16,6 +17,8 @@ from ralph.lib.permissions.api import (
 )
 
 logger = logging.getLogger(__name__)
+
+NESTED_SERIALIZER_FIELDS_BLACKLIST = ['content_type']
 
 
 class ReversedChoiceField(serializers.ChoiceField):
@@ -142,10 +145,25 @@ class RalphAPISerializerMixin(
         """
         Nested serializer is inheriting from `RalphAPISerializer`.
         """
+        class NestedMeta:
+            model = relation_info.related_model
+            depth = nested_depth - 1
+            # don't register this serializer as main model serializer
+            exclude_from_registry = True
+            exclude = []
+
+        # exclude some fields from nested serializer
+        for field in NESTED_SERIALIZER_FIELDS_BLACKLIST:
+            try:
+                relation_info.related_model._meta.get_field_by_name(field)
+            except exceptions.FieldDoesNotExist:
+                pass
+            else:
+                NestedMeta.exclude.append(field)
+
         class NestedSerializer(RalphAPISerializer):
-            class Meta:
-                model = relation_info.related_model
-                depth = nested_depth - 1
+            Meta = NestedMeta
+
         field_class, field_kwargs = super().build_nested_field(
             field_name, relation_info, nested_depth
         )
@@ -182,7 +200,10 @@ class RalphAPISerializerMetaclass(DeclaredFieldsMetaclass):
         attrs['_serializers_registry'] = serializers_registry
         new_cls = super().__new__(cls, name, bases, attrs)
         meta = getattr(new_cls, 'Meta', None)
-        if getattr(meta, 'model', None):
+        if (
+            getattr(meta, 'model', None) and
+            not getattr(meta, 'exclude_from_registry', False)
+        ):
             serializers_registry[meta.model] = new_cls
         return new_cls
 
