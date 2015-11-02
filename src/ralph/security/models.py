@@ -115,7 +115,7 @@ class Vulnerability(
     TaggableMixin,
     models.Model,
 ):
-    name = models.CharField(verbose_name=_("name"), max_length=511, unique=True)
+    name = models.CharField(verbose_name=_("name"), max_length=255, unique=True)  # mysql unique 255
     days_to_patch = models.PositiveIntegerField()
     risk = models.PositiveIntegerField(choices=Risk())
     #compliance_patching_policy = models.CharField(max_length=100, blank=True)

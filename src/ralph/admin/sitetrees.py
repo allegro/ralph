@@ -135,6 +135,24 @@ sitetrees = [
             ]
         ),
         ralph_item(
+            title=_('Security'),
+            url='#',
+            url_as_pattern=False,
+            perms_mode_all=False,
+            children=[
+                section(
+                    section_name=_('Security Scans'),
+                    app='security',
+                    model='SecurityScan'
+                ),
+                section(
+                    section_name=_('Vulnerability'),
+                    app='security',
+                    model='Vulnerability'
+                ),
+            ]
+        ),
+        ralph_item(
             title=_('Reports'),
             url='#',
             url_as_pattern=False,

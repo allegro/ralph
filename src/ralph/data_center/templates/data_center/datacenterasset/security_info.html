@@ -1,63 +1,46 @@
 {% extends BASE_TEMPLATE %}
 {% load i18n %}
 {% block view_content %}
-<div class="row">
-  <div class="large-5 columns">
-    <h5>Data classification</h5>
-    <table class="full">
-      <thead>
-        <tr>
-          <th>{% trans "Label" %}</th>
-          <th>{% trans "Version" %}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in data_classification %}
-          <tr>
-            <td>{{ item.label }}</td>
-            <td>{{ item.value }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
+
+  <h1>Security scan</h1>
+  {% if security_scan %}
+    <table>
+      <tr>
+        <td>host ip:</td>
+        <td>security_scan.asset (TODO:: how?)</td>
+      </tr>
+      <tr>
+        <td>last scan date</td>
+        <td>{{ security_scan.last_scan_date }}</td>
+      </tr>
+      <tr>
+        <td>scan status</td>
+        <td>{{ security_scan.scan_status }}</td>
+      </tr>
+      <tr>
+        <td>next scan date</td>
+        <td>{{ security_scan.next_scan_date }}</td>
+      </tr>
+      <tr>
+        <td>details</td>
+        <td><a href='{{ security_scan.details_url }}'></a>{{ security_scan.details_url|default:"-"}}</td>
+      </tr>
+      <tr>
+        <td>request for a scan</td>
+        <td><a href='{{ security_scan.rescan_url }}'></a>{{ security_scan.rescan_url|default:"-"}}</td>
+      </tr>
     </table>
-  </div>
-  <div class="large-7 columns">
-    <h5>Log location</h5>
-    <table class="full">
-     <thead>
-        <tr>
-          <th>{% trans "Path" %}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in logs %}
-          <tr>
-            <td>{{ item }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
-<div class="row">
-  <div class="large-12 columns">
-    <h5>Critical Patch Updates</h5>
-    <table class="full">
-      <thead>
-        <tr>
-          <th>{% trans "Critical Patch Update" %}</th>
-          <th>{% trans "Latest Version/Date" %}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in critical_pathes %}
-          <tr>
-            <td>{{ item.label }}</td>
-            <td>{{ item.value }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
+  {% else %}
+    <p>No scan so far</p>
+  {% endif %}
+
+
+  <h3>Vulnerabilities</h3>
+  {% for v in security_scan.vulnerability_set.all %}
+    {{ v.name }}<br />
+    {{ v.days_to_patch }}<br />
+    {{ v.risk }}<br />
+    TODO:: filter saying red or green<br />
+  {% endfor %}
+
 {% endblock %}
