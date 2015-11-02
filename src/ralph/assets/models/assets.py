@@ -41,6 +41,10 @@ def get_user_iso3_country_name(user):
     return iso3_country_name
 
 
+class AssetHolder(NamedMixin.NonUnique, TimeStampMixin, models.Model):
+    pass
+
+
 class BusinessSegment(NamedMixin, models.Model):
     pass
 
@@ -150,7 +154,7 @@ class AssetModel(
         verbose_name_plural = _('models')
 
     def __str__(self):
-        if self.category:
+        if self.category_id:
             return '[{}] {} {}'.format(
                 self.category, self.manufacturer, self.name
             )

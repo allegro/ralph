@@ -7,7 +7,9 @@ from ralph.accounts.models import Region
 
 class RegionFactory(DjangoModelFactory):
 
-    name = factory.Sequence(lambda n: 'Region {}'.format(n))
+    name = factory.Iterator(['pl', 'de', 'ua'])
+
 
     class Meta:
         model = Region
+        django_get_or_create = ['name']

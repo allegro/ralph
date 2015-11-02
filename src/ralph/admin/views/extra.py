@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from copy import copy
 
+from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import get_object_or_404
 
 from ralph.admin.mixins import (
@@ -31,6 +32,12 @@ class RalphExtraViewMixin(object):
 
     @classmethod
     def post_register(cls, namespace, model):
+        # make sure that single view is not processed more than once
+        if getattr(cls, 'namespace', None):
+            raise ImproperlyConfigured((
+                'Single view class ({}) cannot be attached to more than one '
+                'admin site'
+            ).format(cls.__name__))
         cls.namespace = namespace
         cls.url_to_reverse = '{}_{}_{}'.format(
             model._meta.app_label, model._meta.model_name, cls.url_name
