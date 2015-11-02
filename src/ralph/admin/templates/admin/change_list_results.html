@@ -6,12 +6,14 @@
   </div>
 {% endif %}
 {% if results %}
-  <div class="result-list bulk-edit">
-    <div id="float_toolbar" class="bulk-edit-fill">
-      <a id="fill_all_rows" href="#" title="Fill all rows">
-        <i class="fa fa-arrows-v fa-lg" aria-hidden="true"></i>
-      </a>
-    </div>
+  <div class="result-list{% if cl.bulk_edit %} bulk-edit{% endif %}" id="bulk-edit-result">
+    {% if cl.bulk_edit %}
+      <div id="float_toolbar" class="bulk-edit-fill">
+        <a id="fill_all_rows" href="#" title="Fill all rows">
+          <i class="fa fa-arrows-v fa-lg" aria-hidden="true"></i>
+        </a>
+      </div>
+    {% endif %}
     <table id="result_list" class="full stripped">
       <thead>
         <tr>

@@ -21,7 +21,7 @@
                 <td>
                   {{ form.id }}
                   {% if obj.pk %}
-                    <a href="{% url 'admin:get_attachment' obj.id obj.original_filename %}">
+                    <a href="{% url attachment_url_name obj.id obj.original_filename %}">
                       {{ obj.original_filename }}
                     </a>
                   {% else %}

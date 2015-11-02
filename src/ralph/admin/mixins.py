@@ -120,6 +120,8 @@ class RalphAdminMixin(RalphAutocompleteMixin):
 
     checks_class = RalphAdminChecks
     form = RalphAdminForm
+    # List of fields that are to be excluded from fillable on bulk edit
+    bulk_edit_no_fillable = []
 
     def __init__(self, *args, **kwargs):
         self.list_views = copy(self.list_views) or []
@@ -202,6 +204,24 @@ class RalphAdminMixin(RalphAutocompleteMixin):
             kwargs['widget'] = widgets.PermissionsSelectWidget()
             return db_field.formfield(**kwargs)
         return super().formfield_for_manytomany(db_field, request, **kwargs)
+
+    def get_changelist_form(self, request, **kwargs):
+        """
+        Returns a FormSet class for use on the changelist page if list_editable
+        is used.
+        """
+        if self.bulk_edit_no_fillable:
+            widgets = {}
+            for field_name in self.bulk_edit_no_fillable:
+                field = self.model._meta.get_field(field_name)
+                widget = field.formfield().widget
+                # Added vTextField CSS class to widget,
+                # because Django admin form has it default
+                widget.attrs['class'] = 'vTextField no-fillable'
+                widgets[field_name] = widget
+            if widgets:
+                kwargs['widgets'] = widgets
+        return super().get_changelist_form(request, **kwargs)
 
 
 class RalphAdmin(

@@ -7,7 +7,14 @@ from ralph.assets.tests.factories import (
 )
 from ralph.data_center.models.physical import DataCenterAsset
 from ralph.data_center.tests.factories import DataCenterAssetFactory
-from ralph.reports.views import CategoryModelReport, CategoryModelStatusReport
+from ralph.licences.factories import LicenceFactory
+from ralph.licences.models import BaseObjectLicence
+from ralph.reports.views import (
+    AssetRelationsReport,
+    CategoryModelReport,
+    CategoryModelStatusReport,
+    LicenceRelationsReport
+)
 from ralph.tests import RalphTestCase
 from ralph.tests.mixins import ClientMixin
 
@@ -131,3 +138,67 @@ class TestReportCategoryTreeView(ClientMixin, RalphTestCase):
         self.assertEqual(item[0]['count'], 3)
         item = self._get_item(report, 'Shredder')['children'][0]['children']
         self.assertEqual(item[0]['count'], 3)
+
+
+class TestReportAssetAndLicence(RalphTestCase):
+    def setUp(self):
+        self.model = DataCenterAssetModelFactory(
+            category=CategoryFactory(name="Keyboard"),
+            type=ObjectModelType.data_center,
+            name='Keyboard1',
+        )
+        self.dc_1 = DataCenterAssetFactory(
+            force_depreciation=False,
+            model=self.model
+        )
+        self.licence = LicenceFactory(
+            number_bought=1,
+            niw='N/A'
+        )
+        BaseObjectLicence.objects.create(
+            licence=self.licence, base_object=self.dc_1.baseobject_ptr
+        )
+
+    def test_asset_relation(self):
+        asset_relation = AssetRelationsReport()
+        report_result = list(asset_relation.prepare(DataCenterAsset))
+        result = [
+            [
+                'id', 'niw', 'barcode', 'sn', 'model__category__name',
+                'model__manufacturer__name', 'status',
+                'service_env__service__name', 'invoice_date', 'invoice_no',
+                'hostname'
+            ],
+            [
+                1, None, None, None, 'Keyboard', None, 1, None, None, None,
+                None
+            ]
+        ]
+        self.assertEqual(report_result, result)
+
+    def test_licence_relation(self):
+        licence_relation = LicenceRelationsReport()
+        report_result = list(licence_relation.prepare(
+            DataCenterAsset)
+        )
+        result = [
+            [
+                'niw', 'software', 'number_bought', 'price', 'invoice_date',
+                'invoice_no', 'id', 'asset__barcode', 'asset__niw',
+                'asset__user__username', 'asset__user__first_name',
+                'asset__user__last_name', 'asset__owner__username',
+                'asset__owner__first_name', 'asset__owner__last_name',
+                'region__name', 'username', 'first_name', 'last_name',
+                'single_cost'
+            ],
+            [
+                'N/A', 'Project Info', '1', '0.00', 'None', 'None', '', '',
+                '', '', '', '', '', '', '', '', '', '', '', ''
+            ],
+            [
+                'N/A', 'Project Info', '1', '0.00', 'None', 'None', '1', '',
+                '', 'None', 'None', 'None', 'None', 'None', 'None', 'None',
+                '', '', '', ''
+            ]
+        ]
+        self.assertEqual(report_result, result)

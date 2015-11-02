@@ -7,6 +7,7 @@ from django.utils.http import http_date
 
 from ralph.attachments.models import Attachment
 from ralph.attachments.views import AttachmentsView
+from ralph.helpers import get_model_view_url_name
 
 
 class AttachmentsMixin(object):
@@ -14,16 +15,25 @@ class AttachmentsMixin(object):
     Mixin add new URL to admin for download file.
     """
     def __init__(self, *args, **kwargs):
-        self.change_views.append(AttachmentsView)
+        # create unique AttachmentsView subclass for each descendant admin site
+        # this prevents conflicts between urls etc.
+        # See ralph.admin.extra.RalphExtraViewMixin.post_register for details
+        self.change_views.append(type(
+            '{}AttachmentsView'.format(self.__class__.__name__),
+            (AttachmentsView,),
+            {}
+        ))
         super().__init__(*args, **kwargs)
 
     def get_urls(self):
         urlpatterns = super().get_urls()
         urlpatterns += [
             url(
-                r'^attachment/(?P<id>\d+)-(?P<filename>\S+)',
+                r'^attachment/(?P<id>\d+)-(?P<filename>.+)',
                 self.serve_attachment,
-                name='get_attachment'
+                name=get_model_view_url_name(
+                    self.model, 'attachment', with_admin_namespace=False
+                )
             ),
         ]
         return urlpatterns

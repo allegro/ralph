@@ -12,7 +12,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
 from ralph.assets.country_utils import iso2_to_iso3
-from ralph.assets.models.assets import Asset
+from ralph.assets.models.assets import Asset, AssetHolder
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
 from ralph.lib.transitions.decorators import transition_action
@@ -64,6 +64,12 @@ class BackOfficeAsset(Regionalizable, Asset):
     )
     imei = NullableCharField(
         max_length=18, null=True, blank=True, unique=True
+    )
+    property_of = models.ForeignKey(
+        AssetHolder,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
     )
 
     class Meta:

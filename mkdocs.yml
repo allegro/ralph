@@ -12,6 +12,7 @@ pages:
       - Architecture: development/overview.md
       - Addons : development/addons.md
       - Packaging: development/packaging.md
+      - FAQ: development/faq.md
 theme: readthedocs
 strict: true
 dev_addr: 0.0.0.0:8000

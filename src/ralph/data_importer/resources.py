@@ -3,7 +3,7 @@ from import_export import fields, resources
 
 from ralph.accounts.models import Region
 from ralph.assets.models import assets, base
-from ralph.back_office.models import BackOfficeAsset, Warehouse
+from ralph.back_office.models import AssetHolder, BackOfficeAsset, Warehouse
 from ralph.data_center.models import networks, physical
 from ralph.data_importer.mixins import ImportForeignKeyMixin
 from ralph.data_importer.widgets import (
@@ -19,7 +19,7 @@ from ralph.licences.models import (
     Licence,
     LicenceType,
     LicenceUser,
-    SoftwareCategory
+    Software
 )
 from ralph.supports.models import Support, SupportType
 
@@ -90,6 +90,11 @@ class BackOfficeAssetResource(ImportForeignKeyMixin, resources.ModelResource):
         column_name='region',
         attribute='region',
         widget=ImportedForeignKeyWidget(Region),
+    )
+    property_of = fields.Field(
+        column_name='property_of',
+        attribute='property_of',
+        widget=ImportedForeignKeyWidget(AssetHolder),
     )
 
     class Meta:
@@ -225,10 +230,10 @@ class LicenceResource(ImportForeignKeyMixin, resources.ModelResource):
         attribute='licence_type',
         widget=ImportedForeignKeyWidget(LicenceType),
     )
-    software_category = fields.Field(
+    software = fields.Field(
         column_name='software_category',
         attribute='software_category',
-        widget=ImportedForeignKeyWidget(SoftwareCategory),
+        widget=ImportedForeignKeyWidget(Software),
     )
     region = fields.Field(
         column_name='region',
@@ -377,3 +382,9 @@ class RegionResource(ImportForeignKeyMixin, resources.ModelResource):
 
     class Meta:
         model = Region
+
+
+class AssetHolderResource(ImportForeignKeyMixin, resources.ModelResource):
+
+    class Meta:
+        model = AssetHolder
