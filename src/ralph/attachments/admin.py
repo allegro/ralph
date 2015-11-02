@@ -15,7 +15,14 @@ class AttachmentsMixin(object):
     Mixin add new URL to admin for download file.
     """
     def __init__(self, *args, **kwargs):
-        self.change_views.append(AttachmentsView)
+        # create unique AttachmentsView subclass for each descendant admin site
+        # this prevents conflicts between urls etc.
+        # See ralph.admin.extra.RalphExtraViewMixin.post_register for details
+        self.change_views.append(type(
+            '{}AttachmentsView'.format(self.__class__.__name__),
+            (AttachmentsView,),
+            {}
+        ))
         super().__init__(*args, **kwargs)
 
     def get_urls(self):
