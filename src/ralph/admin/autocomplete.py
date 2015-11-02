@@ -46,7 +46,9 @@ class SuggestView(JsonViewMixin, View):
             {
                 'pk': obj.pk,
                 '__str__': str(obj),
-                'edit_url': get_admin_url(obj, 'change') if can_edit else None,
+                'edit_url': '{}?_popup=1'.format(
+                    get_admin_url(obj, 'change')
+                ) if can_edit else None,
             } for obj in self.get_queryset(request.user)
         ]
         return self.render_to_json_response({'results': results})
