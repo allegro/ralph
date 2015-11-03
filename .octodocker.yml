@@ -24,6 +24,7 @@ compose:
       - data
     links:
       - db:db
+      - redis:redis
 
   nginx:
     image: nginx
@@ -44,3 +45,15 @@ compose:
       - /root/static
       - /var/lib/mysql
     command: /bin/true
+
+  redis:
+    image: redis:3.0
+    restart: always
+    ports:
+      - "6379"
+
+  inkpy:
+    image: ar4s/inkpy_jinja:latest
+    restart: always
+    links:
+      - redis:redis

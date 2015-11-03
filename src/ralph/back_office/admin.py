@@ -51,9 +51,9 @@ class BackOfficeAssetLicence(RalphDetailViewAdmin):
 @register(BackOfficeAsset)
 class BackOfficeAssetAdmin(
     MulitiAddAdminMixin,
+    AttachmentsMixin,
     BulkEditChangeListMixin,
     PermissionAdminMixin,
-    AttachmentsMixin,
     TransitionAdminMixin,
     RalphAdmin
 ):

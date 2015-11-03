@@ -249,6 +249,7 @@ class RelatedFieldListFilter(BaseCustomFilter):
     """Filter for Foregin key field."""
 
     template = "admin/filters/related_filter.html"
+    empty_value = '##@_empty_@##'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -257,7 +258,12 @@ class RelatedFieldListFilter(BaseCustomFilter):
     def queryset(self, request, queryset):
         value = self.value()
         if value:
-            queryset = queryset.filter(**{self.field_path: value})
+            if value == self.empty_value:
+                queryset = queryset.filter(
+                    **{'{}__isnull'.format(self.field_path): True}
+                )
+            else:
+                queryset = queryset.filter(**{self.field_path: value})
         return queryset
 
     def get_related_url(self):
@@ -286,10 +292,15 @@ class RelatedFieldListFilter(BaseCustomFilter):
         value = self.value()
         current_object = None
         if value:
-            try:
-                current_object = self.field_model.objects.get(pk=int(value))
-            except self.field_model.DoesNotExist:
-                pass
+            if value == self.empty_value:
+                current_object = '<empty>'
+            else:
+                try:
+                    current_object = self.field_model.objects.get(
+                        pk=int(value)
+                    )
+                except self.field_model.DoesNotExist:
+                    pass
 
         return ({
             'current_value': self.value(),
@@ -298,7 +309,9 @@ class RelatedFieldListFilter(BaseCustomFilter):
             'related_url': self.get_related_url(),
             'name': self.field_path,
             'attrs': flatatt(widget_options),
-            'current_object': current_object
+            'current_object': current_object,
+            'empty_value': self.empty_value,
+            'is_empty': True
         },)
 
 
