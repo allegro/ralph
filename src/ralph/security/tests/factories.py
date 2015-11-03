@@ -22,6 +22,17 @@ class SecurityScanFactory(DjangoModelFactory):
     rescan_url = 'https://www.example.com/rescan'
     asset = factory.SubFactory(BaseObjectFactory)
 
+    @factory.post_generation
+    def vulnerabilities(self, create, extracted, **kwargs):
+        if not create:
+            # simple build, do nothing.
+            return
+
+        if extracted:
+            # a list of vulnerabilities were passed in, use them
+            for vulnerability in extracted:
+                self.vulnerabilities.add(vulnerability)
+
 
 class VulnerabilityFactory(DjangoModelFactory):
 
@@ -34,14 +45,3 @@ class VulnerabilityFactory(DjangoModelFactory):
 
     class Meta:
         model = Vulnerability
-
-    @factory.post_generation
-    def security_scans(self, create, extracted, **kwargs):
-        if not create:
-            # Simple build, do nothing.
-            return
-
-        if extracted:
-            # A list of security_scans were passed in, use them
-            for security_scan in extracted:
-                self.security_scans.add(security_scan)
