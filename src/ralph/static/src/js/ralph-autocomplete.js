@@ -125,6 +125,11 @@
             return false;
         }
         that.fetchItems(query, function(data) {
+            if (that.options.isEmpty) {
+                that.addItemToList(
+                    {'__str__': '&lt;empty&gt;', 'pk': that.options.emptyValue}
+                );
+            }
             if (data.results.length !== 0) {
                 $.each(data.results, function() {
                     that.addItemToList(this);

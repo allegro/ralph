@@ -6,7 +6,7 @@ $(function () {
     // Disable autocomplete without cluttering html attributes
     $('input').attr('autocomplete', 'off');
 
-    $('.bulk-edit input[type=text]:not(.no-fillable), .bulk-editt select, .autocomplete-widget').blur(function() {
+    $('.bulk-edit input[type=text]:not(.no-fillable), .bulk-edit select, .bulk-edit .autocomplete-widget').blur(function() {
         $('#float_toolbar').hide();
     });
 
@@ -29,7 +29,7 @@ $(function () {
         $toolbar.show();
     };
 
-    $('.bulk-edit input[type=text]:not(.no-fillable), .bulk-edit select, .autocomplete-widget').mouseover(function() {
+    $('.bulk-edit input[type=text]:not(.no-fillable), .bulk-edit select, .bulk-edit .autocomplete-widget').mouseover(function() {
         toggle_toolbar(this);
     });
 
