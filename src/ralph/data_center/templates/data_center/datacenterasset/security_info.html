@@ -2,40 +2,40 @@
 {% load i18n %}
 {% block view_content %}
 
-  <h1>Security scan</h1>
+<h1>{% trans "Security scan" %}</h1>
   {% if security_scan %}
     <table>
       <tr>
-        <td>host ip:</td>
+        <td>{% trans "host ip:" %}</td>
         <td>security_scan.asset (TODO:: how?)</td>
       </tr>
       <tr>
-        <td>last scan date</td>
+        <td>{% trans "last scan date" %}</td>
         <td>{{ security_scan.last_scan_date }}</td>
       </tr>
       <tr>
-        <td>scan status</td>
+        <td>{% trans "scan status" %}</td>
         <td>{{ security_scan.scan_status }}</td>
       </tr>
       <tr>
-        <td>next scan date</td>
+        <td>{% trans "next scan date" %}</td>
         <td>{{ security_scan.next_scan_date }}</td>
       </tr>
       <tr>
-        <td>details</td>
+        <td>{% trans "details" %}</td>
         <td><a href='{{ security_scan.details_url }}'></a>{{ security_scan.details_url|default:"-"}}</td>
       </tr>
       <tr>
-        <td>request for a scan</td>
+        <td>{% trans "request for a scan" %}</td>
         <td><a href='{{ security_scan.rescan_url }}'></a>{{ security_scan.rescan_url|default:"-"}}</td>
       </tr>
     </table>
   {% else %}
-    <p>No scan so far</p>
+    <p>{% trans "No scan so far" %}</p>
   {% endif %}
 
 
-  <h3>Vulnerabilities</h3>
+  <h3>{% trans "Vulnerabilities" %}</h3>
   {% for v in security_scan.vulnerability_set.all %}
     {{ v.name }}<br />
     {{ v.days_to_patch }}<br />

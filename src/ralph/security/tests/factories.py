@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import factory
 from factory.django import DjangoModelFactory
@@ -26,10 +26,22 @@ class SecurityScanFactory(DjangoModelFactory):
 class VulnerabilityFactory(DjangoModelFactory):
 
     name = factory.Sequence(lambda n: 'vulnserability %d' % n)
-    days_to_patch = 10
+    patch_deadline = factory.LazyAttribute(
+        lambda o: datetime.now() + timedelta(days=10)
+    )
     risk = Risk.low
     external_vulnerability_id = factory.Sequence(lambda n: n)
-    security_scan = factory.SubFactory(SecurityScanFactory)
 
     class Meta:
         model = Vulnerability
+
+    @factory.post_generation
+    def security_scans(self, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if extracted:
+            # A list of security_scans were passed in, use them
+            for security_scan in extracted:
+                self.security_scans.add(security_scan)

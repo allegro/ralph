@@ -146,7 +146,7 @@ sitetrees = [
                     model='SecurityScan'
                 ),
                 section(
-                    section_name=_('Vulnerability'),
+                    section_name=_('Vulnerabilities'),
                     app='security',
                     model='Vulnerability'
                 ),

@@ -105,7 +105,7 @@ class SecurityScan(
     next_scan_date = models.DateTimeField()
     details_url = models.URLField(max_length=255, blank=True)
     rescan_url = models.URLField(blank=True, verbose_name='Rescan url')
-    asset = models.OneToOneField(BaseObject, primary_key=True)
+    asset = models.ForeignKey(BaseObject, null=True)
 
 class Vulnerability(
     #Regionalizable,
@@ -116,13 +116,12 @@ class Vulnerability(
     models.Model,
 ):
     name = models.CharField(verbose_name=_("name"), max_length=255, unique=True)  # mysql unique 255
-    days_to_patch = models.PositiveIntegerField()
+    patch_deadline = models.DateTimeField(null=True, blank=True)
     risk = models.PositiveIntegerField(choices=Risk())
-    #compliance_patching_policy = models.CharField(max_length=100, blank=True)
     external_vulnerability_id = models.IntegerField(
         unique=True,  # id means id
         null=True,
         blank=True,
         help_text=_('Id of vulnerability from external system'),
     )
-    security_scan = models.ForeignKey(SecurityScan)
+    security_scans = models.ManyToManyField(SecurityScan)
