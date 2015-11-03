@@ -200,6 +200,7 @@ class AutocompleteWidget(forms.TextInput):
             ).filter(
                 pk=value
             ).first()
+        show_tooltip = hasattr(self.rel_to, 'autocomplete_tooltip')
         context = RenderContext({
             'current_object': current_object,
             'attrs': flatatt(widget_options),
@@ -207,6 +208,7 @@ class AutocompleteWidget(forms.TextInput):
             'name': name,
             'input_field': input_field,
             'searched_fields': ', '.join(searched_fields),
+            'show_tooltip': show_tooltip,
         })
         info = (self.rel_to._meta.app_label, self.rel_to._meta.model_name)
         can_edit = self.admin_site._registry[self.rel_to].has_change_permission(
@@ -222,5 +224,7 @@ class AutocompleteWidget(forms.TextInput):
         )
         if not is_polymorphic and can_add:
             context['add_related_url'] = self.get_related_url(info, 'add')
+        if show_tooltip and current_object:
+            context['tooltip'] = current_object.autocomplete_tooltip
         template = loader.get_template('admin/widgets/autocomplete.html')
         return template.render(context)

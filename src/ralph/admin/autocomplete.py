@@ -42,6 +42,7 @@ class SuggestView(JsonViewMixin, View):
         ) and ralph_site._registry[self.model].has_change_permission(
             self.request
         )
+        show_tooltip = hasattr(self.model, 'autocomplete_tooltip')
         results = [
             {
                 'pk': obj.pk,
@@ -49,6 +50,7 @@ class SuggestView(JsonViewMixin, View):
                 'edit_url': '{}?_popup=1'.format(
                     get_admin_url(obj, 'change')
                 ) if can_edit else None,
+                'tooltip': obj.autocomplete_tooltip if show_tooltip else None,
             } for obj in self.get_queryset(request.user)
         ]
         return self.render_to_json_response({'results': results})
