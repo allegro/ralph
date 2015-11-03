@@ -201,6 +201,7 @@ sitetrees = [
                 section(_('Groups list'), 'auth', 'Group'),
                 section(_('Regions'), 'accounts', 'Region'),
                 section(_('Transitions'), 'transitions', 'TransitionModel'),
+                section(_('Report template'), 'reports', 'Report'),
             ]
         )
     ])
