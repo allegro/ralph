@@ -32,6 +32,9 @@ class SecurityScanFactory(DjangoModelFactory):
             # a list of vulnerabilities were passed in, use them
             for vulnerability in extracted:
                 self.vulnerabilities.add(vulnerability)
+        else:
+            vulnerability = VulnerabilityFactory()
+            self.vulnerabilities.add(vulnerability)
 
 
 class VulnerabilityFactory(DjangoModelFactory):
