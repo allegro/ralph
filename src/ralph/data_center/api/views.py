@@ -34,6 +34,11 @@ class DataCenterAssetViewSet(RalphAPIViewSet):
         'connections',
         'tags',
     ]
+    filter_fields = [
+        'service_env__service__uid',
+        'service_env__service__name',
+        'service_env__service__id'
+    ]
 
 
 class AccessoryViewSet(RalphAPIViewSet):
