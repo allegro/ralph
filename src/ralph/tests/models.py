@@ -41,10 +41,12 @@ class Order(models.Model, metaclass=TransitionWorkflowBase):
     @transition_action
     def pack(self, **kwargs):
         pass
+    pack.verbose_name= 'Pack'
 
     @transition_action
     def go_to_post_office(self, **kwargs):
         pass
+    go_to_post_office.verbose_name = 'Go to post office'
 
 
 class TestAsset(models.Model):

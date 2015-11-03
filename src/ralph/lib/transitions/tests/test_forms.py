@@ -21,7 +21,7 @@ class TransitionFormTest(TransitionTestCase):
         form = self._get_form(transition_model)(instance=transition)
         self.assertCountEqual(
             [x[1] for x in form.fields['actions'].choices],
-            [a.name for a in actions]
+            [getattr(Order, a.name).verbose_name for a in actions]
         )
 
     def test_source_choices(self):

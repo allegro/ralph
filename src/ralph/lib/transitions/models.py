@@ -2,6 +2,7 @@
 import inspect
 import operator
 
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models.base import ModelBase
@@ -9,6 +10,9 @@ from django.db.models.signals import post_migrate
 from django.utils.functional import curry
 from django_extensions.db.fields.json import JSONField
 
+from ralph.admin.helpers import get_field_by_relation_path
+from ralph.attachments.models import Attachment
+from ralph.lib.mixins.models import TimeStampMixin
 from ralph.lib.transitions.conf import TRANSITION_ATTR_TAG
 from ralph.lib.transitions.exceptions import TransitionNotAllowedError
 from ralph.lib.transitions.fields import TransitionField
@@ -29,6 +33,9 @@ def run_field_transition(instance, transition, field, data={}, **kwargs):
     if instance.status not in [int(s) for s in transition.source]:
         raise TransitionNotAllowedError()
     setattr(instance, field, int(transition.target))
+    attachment = None
+    action_names = []
+    history_kwargs = {}
     for action in transition.actions.all():
         func = getattr(instance, action.name)
         if func:
@@ -37,8 +44,32 @@ def run_field_transition(instance, transition, field, data={}, **kwargs):
                 for key, value in data.items()
                 if key.startswith(action.name)
             }
+            for k, v in defaults.items():
+                field = get_field_by_relation_path(instance, k)
+                value = v
+                if field.rel:
+                    value = str(field.rel.to.objects.get(pk=v))
+                history_kwargs[str(field.verbose_name)] = value
+
             defaults.update(kwargs)
-            func(**defaults)
+            result = func(**defaults)
+            action_names.append(str(getattr(
+                func,
+                'verbose_name',
+                func.__name__.replace('_', ' ').capitalize()
+            )))
+
+            if isinstance(result, Attachment):
+                attachment = result
+
+    TransitionsHistory.objects.create(
+        transition=transition,
+        object_id=instance.pk,
+        logged_user=kwargs['request'].user,
+        attachment=attachment,
+        kwargs=history_kwargs,
+        actions=action_names
+    )
     instance.save()
     return True
 
@@ -105,6 +136,9 @@ class Transition(models.Model):
     class Meta:
         unique_together = ('name', 'model')
 
+    def __str__(self):
+        return self.name
+
 
 class Action(models.Model):
     content_type = models.ManyToManyField(ContentType)
@@ -117,6 +151,19 @@ class Action(models.Model):
     def actions_for_model(cls, model):
         content_type = ContentType.objects.get_for_model(model)
         return cls.objects.filter(content_type=content_type)
+
+
+class TransitionsHistory(TimeStampMixin):
+
+    transition = models.ForeignKey(Transition)
+    object_id = models.IntegerField(db_index=True)
+    logged_user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    attachment = models.ForeignKey(Attachment, blank=True, null=True)
+    kwargs = JSONField()
+    actions = JSONField()
+
+    def __str__(self):
+        return str(self.transition)
 
 
 def update_models_attrs():
