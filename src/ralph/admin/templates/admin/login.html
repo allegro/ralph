@@ -53,7 +53,7 @@
             </label>
             <button>{% trans 'Log in' %}</button>
           </fieldset>
-          <input type="hidden" name="next" value="{{ next }}" />
+          <input type="hidden" name="next" value="{% if next and next != '/' %}{{ next }}{% else %}{% url 'admin:back_office_backofficeasset_changelist' %}{% endif %}" />
           <div class="password-reset-link">
             {% url 'admin_password_reset' as password_reset_url %}
             {% if password_reset_url %}

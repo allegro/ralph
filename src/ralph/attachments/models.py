@@ -1,28 +1,15 @@
 import os
 import string
-from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
+from django.core.files.base import ContentFile
 from django.db import models, transaction
 from unidecode import unidecode
 
+from ralph.attachments.helpers import get_file_path
 from ralph.lib.mixins.models import TimeStampMixin
-
-
-def get_file_path(instance, filename):
-    """
-    Function returns normalized filename with directory structure.
-    Used in FileField as upload_to argument.
-
-    Example:
-    >>> get_file_path(object(), 'secret_shipping_document.pdf')
-    'attachments/a/3/a3349176-ecac-47ff-beba-5e8480eac070.pdf'
-    """
-    ext = os.path.splitext(filename)[1]
-    name = ''.join([str(uuid4()), ext])
-    return os.path.join('attachments', name[:1], name[1:2], name)
 
 
 class AttachmentManager(models.Manager):
@@ -40,6 +27,16 @@ class AttachmentManager(models.Manager):
             items__content_type=content_type,
             items__object_id=obj.id,
         )
+
+    def create_from_file_path(self, file_path, uploaded_by):
+        attachment = self.model()
+        attachment.uploaded_by = uploaded_by
+        with open(file_path, 'rb') as f:
+            content = ContentFile(f.read())
+            filename = os.path.basename(file_path)
+            attachment.file.save(filename, content, save=True)
+        attachment.original_filename = os.path.basename(file_path)
+        return attachment
 
 
 class AttachmentItemManager(models.Manager):

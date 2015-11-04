@@ -8,6 +8,7 @@ from ralph.admin.filters import (
     ChoicesListFilter,
     date_format_to_human,
     DateListFilter,
+    NumberListFilter,
     RelatedFieldListFilter,
     TextListFilter
 )
@@ -21,6 +22,9 @@ from ralph.data_center.tests.factories import (
     DataCenterAssetFactory,
     RackFactory
 )
+from ralph.supports.admin import SupportAdmin
+from ralph.supports.models import Support
+from ralph.supports.tests.factories import SupportFactory
 
 
 class AdminFiltersTestCase(TestCase):
@@ -47,6 +51,8 @@ class AdminFiltersTestCase(TestCase):
         cls.dca_4 = DataCenterAssetFactory(
             rack=RackFactory()
         )
+        cls.support_1 = SupportFactory(price=10)
+        cls.support_2 = SupportFactory(price=100)
 
     def test_date_format_to_human(self):
         self.assertEqual('YYYY-MM-DD', date_format_to_human('%Y-%m-%d'))
@@ -189,5 +195,53 @@ class AdminFiltersTestCase(TestCase):
             field_path='rack'
         )
         queryset = related_filter.queryset(None, DataCenterAsset.objects.all())
+
+        self.assertEqual(1, queryset.count())
+
+    def test_decimal_filter(self):
+        datet_filter = NumberListFilter(
+            field=Support._meta.get_field('price'),
+            request=None,
+            params={
+                'price__start': 0,
+                'price__end': 200,
+            },
+            model=Support,
+            model_admin=SupportAdmin,
+            field_path='price'
+        )
+        queryset = datet_filter.queryset(None, Support.objects.all())
+
+        self.assertEqual(2, queryset.count())
+
+    def test_decimal_filter_start(self):
+        datet_filter = NumberListFilter(
+            field=Support._meta.get_field('price'),
+            request=None,
+            params={
+                'price__start': 50,
+                'price__end': '',
+            },
+            model=Support,
+            model_admin=SupportAdmin,
+            field_path='price'
+        )
+        queryset = datet_filter.queryset(None, Support.objects.all())
+
+        self.assertEqual(1, queryset.count())
+
+    def test_decimal_filter_end(self):
+        datet_filter = NumberListFilter(
+            field=Support._meta.get_field('price'),
+            request=None,
+            params={
+                'price__start': '',
+                'price__end': 50,
+            },
+            model=Support,
+            model_admin=SupportAdmin,
+            field_path='price'
+        )
+        queryset = datet_filter.queryset(None, Support.objects.all())
 
         self.assertEqual(1, queryset.count())

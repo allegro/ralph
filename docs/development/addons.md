@@ -7,7 +7,7 @@ Note: We encourage the developers to contribute new functions and integrations! 
 
 ## Extending the Detail View
 
-Providing custom sub-page for asset detail view is the most convenient way to integrate content from another Django app into a Ralph admin page. All registred views will be represented by tab on ralph site.
+Providing custom sub-page for asset detail view is the most convenient way to integrate content from another Django app into a Ralph admin page. All registred views will be represented by tab on ralph site. Notice that single view class cannot be reused in multiple admin sites.
 
 You must write your own class view and template. There are two possibilities to add extra view: by decorator and by class' attribute.
 

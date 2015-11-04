@@ -2,7 +2,7 @@
 from django.core.exceptions import FieldDoesNotExist
 from django.test import TestCase
 
-from ralph.admin.helpers import get_field_by_relation_path
+from ralph.admin.helpers import get_field_by_relation_path, getattr_dunder
 from ralph.assets.models.assets import Asset, Manufacturer
 
 
@@ -20,3 +20,14 @@ class ModelFieldsTestCase(TestCase):
         fake_field = 'device_info__fortunately_unexisting_deprecated_field'
         with self.assertRaises(FieldDoesNotExist):
             found = get_field_by_relation_path(Asset, fake_field)
+
+    def test_getattr_dunder(self):
+        """getattr_dunder works recursively"""
+
+        class A():
+            pass
+
+        a = A()
+        a.b = A()
+        a.b.name = 'spam'
+        self.assertEqual(getattr_dunder(a, 'b__name'), 'spam')

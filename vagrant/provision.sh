@@ -21,7 +21,9 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
 # and https://bugs.launchpad.net/ubuntu/+source/python3.4/+bug/1290847
 pyvenv-3.4 --without-pip .
 . bin/activate
+
 curl https://bootstrap.pypa.io/get-pip.py | python
+
 cd src/ralph/
 make install-dev
 
@@ -39,3 +41,6 @@ fi
 
 # final setups
 ./vagrant/provisioning_scripts/setup_js_env.sh
+
+# install LibreOffice and dependencies
+./vagrant/provisioning_scripts/libre_office.sh

@@ -49,7 +49,8 @@ class RalphAPIViewSetMixin(QuerysetRelatedMixin, AdminSearchFieldsMixin):
     model permissions checking (using Django-admin permissions).
     """
     filter_backends = AdminSearchFieldsMixin.filter_backends + [
-        PermissionsForObjectFilter, filters.OrderingFilter
+        PermissionsForObjectFilter, filters.OrderingFilter,
+        filters.DjangoFilterBackend, filters.SearchFilter
     ]
     permission_classes = [RalphPermission]
     save_serializer_class = None

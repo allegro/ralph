@@ -37,6 +37,7 @@
         {% endfor %}
       </dl>
     {% endif %}
+    {% block report_content %}
     <div class="row">
       <div class="small-12 large-6 columns end">
         <ul class="accordion" data-accordion>
@@ -46,6 +47,7 @@
         </ul>
       </div>
     </div>
+    {% endblock %}
   </div>
 {% endcache %}
 {% endblock %}

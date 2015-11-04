@@ -41,6 +41,10 @@ def get_user_iso3_country_name(user):
     return iso3_country_name
 
 
+class AssetHolder(NamedMixin.NonUnique, TimeStampMixin, models.Model):
+    pass
+
+
 class BusinessSegment(NamedMixin, models.Model):
     pass
 

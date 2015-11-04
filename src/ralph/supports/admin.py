@@ -3,6 +3,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.views.extra import RalphDetailViewAdmin
+from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
 from ralph.supports.models import Support, SupportType
@@ -24,7 +25,7 @@ class BaseObjectSupportView(RalphDetailViewAdmin):
 
 
 @register(Support)
-class SupportAdmin(PermissionAdminMixin, RalphAdmin):
+class SupportAdmin(PermissionAdminMixin, AttachmentsMixin, RalphAdmin):
 
     """Support model admin class."""
 
@@ -32,7 +33,10 @@ class SupportAdmin(PermissionAdminMixin, RalphAdmin):
     search_fields = [
         'name', 'serial_no', 'contract_id', 'description', 'remarks'
     ]
-    list_filter = ['support_type']
+    list_filter = [
+        'contract_id', 'name', 'serial_no', 'price', 'remarks', 'description',
+        'support_type'
+    ]
     date_hierarchy = 'created'
     list_display = [
         'support_type', 'contract_id', 'name', 'serial_no', 'date_from',
