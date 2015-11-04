@@ -10,8 +10,6 @@ DATABASES = {
     }
 }
 
-PASSWORD_HASHERS = ('django_plainpasswordhasher.PlainPasswordHasher', )
-
 INSTALLED_APPS += (
     'ralph.lib.mixins',
     'ralph.tests',
@@ -19,9 +17,7 @@ INSTALLED_APPS += (
     'ralph.lib.polymorphic.tests',
 )
 
-PASSWORD_HASHERS = (
-    'django.contrib.auth.hashers.MD5PasswordHasher',
-)
+PASSWORD_HASHERS = ('django_plainpasswordhasher.PlainPasswordHasher',)
 
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
