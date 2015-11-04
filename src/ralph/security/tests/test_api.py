@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime, timedelta
+
 from django.core.urlresolvers import reverse
 from rest_framework import status
 
@@ -59,6 +61,7 @@ class SecurityScanAPITests(RalphAPITestCase):
         # region = Region.objects.create(name='EU')
         ip = IPAddressFactory(address="192.168.128.10")
         vulnerability = VulnerabilityFactory()
+        #TODO:: make saving vulnerabilities by exteranl or by pk
         data = {
             'last_scan_date': '2015-01-01T00:00:00',
             'scan_status': ScanStatus.ok.name,
@@ -123,29 +126,33 @@ class VulnerabilityAPITests(RalphAPITestCase):
             self.vulnerability.external_vulnerability_id,
         )
 
+    def test_create_vulnerability(self):
+        # region = Region.objects.create(name='EU')
+        url = reverse('vulnerability-list')
+        data = {
+            'name': "Ubuntu 12.04 LTS : icu regression (USN-2522-2)",
+            'patch_deadline': (datetime.now() + timedelta(days=10)).isoformat(),
+            'risk': Risk.low.name,
+            'external_vulnerability_id': 100,
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        vulnerability = Vulnerability.objects.get(pk=response.data['id'])
+        self.assertEqual(vulnerability.name, data['name'])
+        self.assertEqual(
+            vulnerability.patch_deadline.isoformat(), data['patch_deadline'],
+        )
+        self.assertEqual(vulnerability.risk, Risk.low)
+        self.assertEqual(
+            vulnerability.external_vulnerability_id,
+            data['external_vulnerability_id']
+        )
+
 # class SupportAPITests(RalphAPITestCase):
 #    def setUp(self):
 #        super().setUp()
 #        self.support = SupportFactory(name='support1')
-#
-#    def test_create_support(self):
-#        region = Region.objects.create(name='EU')
-#        url = reverse('support-list')
-#        data = {
-#            'name': 'support2',
-#            'region': region.id,
-#            'contract_id': '12345',
-#            'status': 'new',
-#            'date_to': '2020-01-01',
-#        }
-#        response = self.client.post(url, data, format='json')
-#        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-#        support = Support.objects.get(pk=response.data['id'])
-#        self.assertEqual(support.name, 'support2')
-#        self.assertEqual(support.region, region)
-#        self.assertEqual(support.contract_id, '12345')
-#        self.assertEqual(support.status, SupportStatus.new.id)
-#        self.assertEqual(support.date_to, date(2020, 1, 1))
 #
 #    def test_patch_support(self):
 #        url = reverse('support-detail', args=(self.support.id,))
