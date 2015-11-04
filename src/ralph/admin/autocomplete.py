@@ -46,7 +46,9 @@ class SuggestView(JsonViewMixin, View):
             {
                 'pk': obj.pk,
                 '__str__': str(obj),
-                'edit_url': get_admin_url(obj, 'change') if can_edit else None,
+                'edit_url': '{}?_popup=1'.format(
+                    get_admin_url(obj, 'change')
+                ) if can_edit else None,
             } for obj in self.get_queryset(request.user)
         ]
         return self.render_to_json_response({'results': results})
@@ -93,7 +95,7 @@ class AjaxAutocompleteMixin(object):
 
             def get_queryset(self, user):
                 queryset = self.model._default_manager.all()
-                if getattr(self.model, 'is_polymorphic', False):
+                if getattr(self.model, '_polymorphic_descendants', []):
                     id_list = []
                     for related_model in self.model._polymorphic_descendants:
                         id_list.extend(self.get_base_ids(
@@ -112,6 +114,7 @@ class AjaxAutocompleteMixin(object):
                         queryset = self.model._get_objects_for_user(
                             user, queryset
                         )
+
                 return queryset.order_by(*ordering)[:self.limit]
 
         class Detail(SuggestView):

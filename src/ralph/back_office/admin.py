@@ -5,7 +5,8 @@ from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
-from ralph.back_office.models import BackOfficeAsset, Warehouse
+from ralph.attachments.admin import AttachmentsMixin
+from ralph.back_office.models import AssetHolder, BackOfficeAsset, Warehouse
 from ralph.back_office.views import (
     BackOfficeAssetComponents,
     BackOfficeAssetSoftware
@@ -50,6 +51,7 @@ class BackOfficeAssetLicence(RalphDetailViewAdmin):
 @register(BackOfficeAsset)
 class BackOfficeAssetAdmin(
     MulitiAddAdminMixin,
+    AttachmentsMixin,
     BulkEditChangeListMixin,
     PermissionAdminMixin,
     TransitionAdminMixin,
@@ -71,17 +73,24 @@ class BackOfficeAssetAdmin(
     multiadd_info_fields = list_display
 
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
+
     list_filter = [
-        'status', 'barcode', 'sn', 'hostname', 'invoice_no', 'invoice_date',
-        'order_no', 'model__name', 'depreciation_end_date',
-        'force_depreciation', 'remarks'
+        'barcode', 'status', 'imei', 'sn', 'model', 'purchase_order',
+        'hostname', 'required_support', 'service_env__environment', 'region',
+        'warehouse', 'task_url', 'model__category', 'loan_end_date', 'niw',
+        'model__manufacturer', 'service_env__service', 'location', 'remarks',
+        'user', 'owner', 'user__segment', 'user__company', 'user__employee_id',
+        'property_of', 'invoice_no', 'invoice_date', 'order_no', 'provider',
+        'depreciation_rate', 'depreciation_end_date', 'force_depreciation'
     ]
     date_hierarchy = 'created'
     list_select_related = [
-        'model', 'user', 'warehouse', 'model__manufacturer', 'region'
+        'model', 'user', 'warehouse', 'model__manufacturer', 'region',
+        'model__category'
     ]
     raw_id_fields = [
-        'model', 'user', 'owner', 'service_env', 'region', 'warehouse'
+        'model', 'user', 'owner', 'service_env', 'region', 'warehouse',
+        'property_of'
     ]
     resource_class = resources.BackOfficeAssetResource
     bulk_edit_list = [
@@ -97,7 +106,7 @@ class BackOfficeAssetAdmin(
             'fields': (
                 'hostname', 'model', 'barcode', 'sn', 'imei', 'niw', 'status',
                 'warehouse', 'location', 'region', 'loan_end_date',
-                'service_env', 'remarks', 'tags',
+                'service_env', 'remarks', 'tags', 'property_of'
             )
         }),
         (_('User Info'), {
@@ -130,5 +139,11 @@ class BackOfficeAssetAdmin(
 
 @register(Warehouse)
 class WarehouseAdmin(RalphAdmin):
+
+    search_fields = ['name']
+
+
+@register(AssetHolder)
+class AssetHolderAdmin(RalphAdmin):
 
     search_fields = ['name']

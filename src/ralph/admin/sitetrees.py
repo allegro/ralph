@@ -121,7 +121,7 @@ sitetrees = [
             children=[
                 section(_('Licences'), 'licences', 'Licence'),
                 section(_('Types'), 'licences', 'LicenceType'),
-                section(_('Categories'), 'licences', 'SoftwareCategory'),
+                section(_('Software'), 'licences', 'Software'),
             ]
         ),
         ralph_item(
@@ -164,6 +164,20 @@ sitetrees = [
                         'accounts.can_view_extra_reportwithoutallmodedetail'
                     ),
                 ),
+                ralph_item(
+                    title=_('Asset - relations'),
+                    url='asset-relations',
+                    access_by_perms=(
+                        'accounts.can_view_extra_reportwithoutallmodedetail'
+                    ),
+                ),
+                ralph_item(
+                    title=_('Licence - relations'),
+                    url='licence-relations',
+                    access_by_perms=(
+                        'accounts.can_view_extra_reportwithoutallmodedetail'
+                    ),
+                ),
             ]
         ),
         ralph_item(
@@ -182,10 +196,12 @@ sitetrees = [
                 section(
                     _('Service Environment'), 'assets', 'ServiceEnvironment'
                 ),
+                section(_('Asset holder'), 'assets', 'AssetHolder'),
                 section(_('Users list'), 'accounts', 'RalphUser'),
                 section(_('Groups list'), 'auth', 'Group'),
                 section(_('Regions'), 'accounts', 'Region'),
                 section(_('Transitions'), 'transitions', 'TransitionModel'),
+                section(_('Report template'), 'reports', 'Report'),
             ]
         )
     ])

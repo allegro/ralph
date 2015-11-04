@@ -17,6 +17,7 @@ from ralph.admin.fields import (
 )
 from ralph.admin.mixins import RalphTemplateView
 from ralph.admin.sites import ralph_site
+from ralph.helpers import get_model_view_url_name
 
 
 class MultiAddView(RalphTemplateView):
@@ -166,11 +167,7 @@ class MulitiAddAdminMixin(object):
         raise NotImplementedError()
 
     def get_url_name(self, with_namespace=True):
-        params = self.model._meta.app_label, self.model._meta.model_name
-        url = '{}_{}_multiadd'.format(*params)
-        if with_namespace:
-            url = 'admin:' + url
-        return url
+        return get_model_view_url_name(self.model, 'multiadd', with_namespace)
 
     def add_view(self, request, form_url='', extra_context=None):
         if not extra_context:

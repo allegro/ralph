@@ -10,10 +10,11 @@ from ralph.supports.models import Support, SupportStatus, SupportType
 
 class SupportTypeFactory(DjangoModelFactory):
 
-    name = 'warranty'
+    name = factory.Iterator(['warranty', 'additional'])
 
     class Meta:
         model = SupportType
+        django_get_or_create = ['name']
 
 
 class SupportFactory(DjangoModelFactory):

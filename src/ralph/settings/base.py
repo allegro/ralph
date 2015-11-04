@@ -170,6 +170,20 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',  # noqa
     'PAGE_SIZE': 10,
+    'DEFAULT_METADATA_CLASS': 'ralph.lib.api.utils.RalphApiMetadata'
+}
+
+REDIS_CONNECTION = {
+    'HOST': os.environ.get('REDIS_PORT_6379_TCP_ADDR', 'localhost'),
+    'PORT': os.environ.get('REDIS_PORT_6379_TCP_PORT', '6379'),
+    'DB': int(os.environ.get('REDIS_PORT_6379_TCP_DB', 0)),
 }
 
 TAGGIT_CASE_INSENSITIVE = True  # case insensitive tags
+
+RALPH_EXTERNAL_SERVICES = {
+    'PDF': {
+        'name': 'ralph_ext_pdf',
+        'method': 'inkpy_jinja.pdf',
+    }
+}

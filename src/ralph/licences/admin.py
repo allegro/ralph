@@ -3,6 +3,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.views.extra import RalphDetailViewAdmin
+from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
 from ralph.licences.models import (
@@ -10,7 +11,7 @@ from ralph.licences.models import (
     Licence,
     LicenceType,
     LicenceUser,
-    SoftwareCategory
+    Software
 )
 
 
@@ -43,7 +44,7 @@ class LicenceUserView(RalphDetailViewAdmin):
 
 
 @register(Licence)
-class LicenceAdmin(PermissionAdminMixin, RalphAdmin):
+class LicenceAdmin(PermissionAdminMixin, AttachmentsMixin, RalphAdmin):
 
     """Licence admin class."""
     change_views = [
@@ -51,20 +52,25 @@ class LicenceAdmin(PermissionAdminMixin, RalphAdmin):
         LicenceUserView,
     ]
     search_fields = ['niw', 'sn', 'license_details', 'remarks']
-    list_filter = ['licence_type']
+    list_filter = [
+        'niw', 'sn', 'remarks', 'software', 'property_of',
+        'licence_type', 'valid_thru', 'invoice_no', 'invoice_date',
+        'manufacturer', 'region'
+
+    ]
     date_hierarchy = 'created'
     list_display = [
-        'niw', 'licence_type', 'software_category', 'number_bought',
+        'niw', 'licence_type', 'software', 'number_bought',
         'invoice_date', 'invoice_no', 'valid_thru', 'created'
     ]
-    list_select_related = ['licence_type', 'software_category']
-    raw_id_fields = ['software_category', 'manufacturer']
+    list_select_related = ['licence_type', 'software']
+    raw_id_fields = ['software', 'manufacturer']
     resource_class = resources.LicenceResource
 
     fieldsets = (
         (_('Basic info'), {
             'fields': (
-                'licence_type', 'manufacturer', 'software_category',
+                'licence_type', 'manufacturer', 'software',
                 'niw', 'sn', 'valid_thru', 'license_details', 'region',
                 'remarks'
             )
@@ -87,8 +93,8 @@ class LicenceTypeAdmin(
     search_fields = ['name']
 
 
-@register(SoftwareCategory)
-class SoftwareCategoryAdmin(
+@register(Software)
+class Software(
     PermissionAdminMixin,
     RalphAdmin
 ):

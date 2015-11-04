@@ -32,11 +32,13 @@ def run_field_transition(instance, transition, field, data={}, **kwargs):
     for action in transition.actions.all():
         func = getattr(instance, action.name)
         if func:
-            func(**{
+            defaults = {
                 key.split('__')[1]: value
                 for key, value in data.items()
                 if key.startswith(action.name)
-            })
+            }
+            defaults.update(kwargs)
+            func(**defaults)
     instance.save()
     return True
 
