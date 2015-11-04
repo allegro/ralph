@@ -8,24 +8,24 @@ import taggit.managers
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assets', '0005_assetholder'),
         ('taggit', '0002_auto_20150616_2121'),
+        ('data_center', '0003_fix_ip_int'),
     ]
 
     operations = [
         migrations.CreateModel(
             name='SecurityScan',
             fields=[
-                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
-                ('created', models.DateTimeField(auto_now=True, verbose_name='date created')),
-                ('modified', models.DateTimeField(auto_now_add=True, verbose_name='last modified')),
+                ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
+                ('created', models.DateTimeField(verbose_name='date created', auto_now=True)),
+                ('modified', models.DateTimeField(verbose_name='last modified', auto_now_add=True)),
                 ('last_scan_date', models.DateTimeField()),
                 ('scan_status', models.PositiveIntegerField(choices=[(1, 'ok'), (2, 'fail'), (3, 'error')])),
                 ('next_scan_date', models.DateTimeField()),
                 ('details_url', models.URLField(max_length=255, blank=True)),
-                ('rescan_url', models.URLField(verbose_name='Rescan url', blank=True)),
-                ('asset', models.ForeignKey(null=True, to='assets.BaseObject')),
-                ('tags', taggit.managers.TaggableManager(to='taggit.Tag', blank=True, through='taggit.TaggedItem', help_text='A comma-separated list of tags.', verbose_name='Tags')),
+                ('rescan_url', models.URLField(blank=True, verbose_name='Rescan url')),
+                ('asset', models.ForeignKey(null=True, to='data_center.DataCenterAsset')),
+                ('tags', taggit.managers.TaggableManager(blank=True, through='taggit.TaggedItem', verbose_name='Tags', help_text='A comma-separated list of tags.', to='taggit.Tag')),
             ],
             options={
                 'abstract': False,
@@ -34,14 +34,14 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Vulnerability',
             fields=[
-                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
-                ('created', models.DateTimeField(auto_now=True, verbose_name='date created')),
-                ('modified', models.DateTimeField(auto_now_add=True, verbose_name='last modified')),
-                ('name', models.CharField(unique=True, max_length=255, verbose_name='name')),
-                ('patch_deadline', models.DateTimeField(null=True, blank=True)),
+                ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
+                ('created', models.DateTimeField(verbose_name='date created', auto_now=True)),
+                ('modified', models.DateTimeField(verbose_name='last modified', auto_now_add=True)),
+                ('name', models.CharField(max_length=255, verbose_name='name', unique=True)),
+                ('patch_deadline', models.DateTimeField(blank=True, null=True)),
                 ('risk', models.PositiveIntegerField(choices=[(1, 'low'), (2, 'medium'), (3, 'high')])),
-                ('external_vulnerability_id', models.IntegerField(unique=True, null=True, help_text='Id of vulnerability from external system', blank=True)),
-                ('tags', taggit.managers.TaggableManager(to='taggit.Tag', blank=True, through='taggit.TaggedItem', help_text='A comma-separated list of tags.', verbose_name='Tags')),
+                ('external_vulnerability_id', models.IntegerField(blank=True, null=True, unique=True, help_text='Id of vulnerability from external system')),
+                ('tags', taggit.managers.TaggableManager(blank=True, through='taggit.TaggedItem', verbose_name='Tags', help_text='A comma-separated list of tags.', to='taggit.Tag')),
             ],
             options={
                 'abstract': False,

@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
-from datetime import date
-
 from django.core.urlresolvers import reverse
 from rest_framework import status
 
-#from ralph.accounts.models import Region
+# from ralph.accounts.models import Region
 from ralph.api.tests._base import RalphAPITestCase
+from ralph.data_center.tests.factories import IPAddressFactory
 from ralph.security.choices import Risk, ScanStatus
 from ralph.security.models import SecurityScan, Vulnerability
-from ralph.security.tests.factories import SecurityScanFactory, VulnerabilityFactory
+from ralph.security.tests.factories import (
+    SecurityScanFactory, VulnerabilityFactory,
+)
+
 
 class SecurityScanAPITests(RalphAPITestCase):
+
     def setUp(self):
         super().setUp()
         self.security_scan = SecurityScanFactory()
@@ -27,7 +30,7 @@ class SecurityScanAPITests(RalphAPITestCase):
         url = reverse('securityscan-detail', args=(self.security_scan.id,))
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        for field in ['last_scan_date','next_scan_date']:
+        for field in ['last_scan_date', 'next_scan_date']:
             self.assertEqual(
                 response.data[field],
                 getattr(self.security_scan, field).isoformat(),
@@ -44,7 +47,7 @@ class SecurityScanAPITests(RalphAPITestCase):
             )
         )
         self.assertEqual(
-            response.data['vulnerabilities'][0]['id'],
+            len(response.data['vulnerabilities']),
             self.security_scan.vulnerabilities.count(),
         )
         self.assertEqual(
@@ -52,10 +55,46 @@ class SecurityScanAPITests(RalphAPITestCase):
             self.security_scan.vulnerabilities.all()[0].id,
         )
 
+    def test_create_security_scan(self):
+        # region = Region.objects.create(name='EU')
+        ip = IPAddressFactory(address="192.168.128.10")
+        vulnerability = VulnerabilityFactory()
+        data = {
+            'last_scan_date': '2015-01-01T00:00:00',
+            'scan_status': ScanStatus.ok.name,
+            'next_scan_date': '2016-01-01T00:00:00',
+            'details_url': 'https://example.com/scan-deatils',
+            'rescan_url': 'https://example.com/rescan-url',
+            'host ip': ip.address,
+            'vulnerabilities': [vulnerability.id, ],
+        }
+
+        url = reverse('securityscan-list')
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        security_scan = SecurityScan.objects.get(pk=response.data['id'])
+        self.assertEqual(
+            security_scan.last_scan_date.isoformat(), data['last_scan_date']
+        )
+        self.assertEqual(security_scan.scan_status, ScanStatus.ok)
+        self.assertEqual(
+            security_scan.next_scan_date.isoformat(), data['next_scan_date']
+        )
+        self.assertEqual(security_scan.details_url, data['details_url'])
+        self.assertEqual(security_scan.rescan_url, data['rescan_url'])
+        self.assertEqual(security_scan.asset, ip.asset)
+        self.assertEqual(security_scan.asset, ip.asset)
+        self.assertEqual(
+            security_scan.vulnerabilities.count(), 1
+        )
+        self.assertEqual(
+            security_scan.vulnerabilities.get(), vulnerability
+        )
 
 
 class VulnerabilityAPITests(RalphAPITestCase):
-#TODO:: scan: save by vulnerabilty ids
+
     def setUp(self):
         super().setUp()
         self.vulnerability = VulnerabilityFactory()
@@ -84,7 +123,7 @@ class VulnerabilityAPITests(RalphAPITestCase):
             self.vulnerability.external_vulnerability_id,
         )
 
-#class SupportAPITests(RalphAPITestCase):
+# class SupportAPITests(RalphAPITestCase):
 #    def setUp(self):
 #        super().setUp()
 #        self.support = SupportFactory(name='support1')

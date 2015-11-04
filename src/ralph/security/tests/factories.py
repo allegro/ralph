@@ -5,7 +5,8 @@ import factory
 from factory.django import DjangoModelFactory
 
 # from ralph.accounts.tests.factories import RegionFactory
-from ralph.assets.tests.factories import BaseObjectFactory
+from ralph.data_center.tests.factories import DataCenterAssetFactory
+
 from ralph.security.choices import Risk, ScanStatus
 from ralph.security.models import SecurityScan, Vulnerability
 
@@ -20,7 +21,7 @@ class SecurityScanFactory(DjangoModelFactory):
     next_scan_date = datetime(2016, 1, 1)
     details_url = 'https://www.example.com/details'
     rescan_url = 'https://www.example.com/rescan'
-    asset = factory.SubFactory(BaseObjectFactory)
+    asset = factory.SubFactory(DataCenterAssetFactory)
 
     @factory.post_generation
     def vulnerabilities(self, create, extracted, **kwargs):

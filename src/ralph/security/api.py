@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+from rest_framework import serializers
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.security.models import SecurityScan, Vulnerability
+from ralph.data_center.models.networks import IPAddress
 
 
 class VulnerabilitySerializer(RalphAPISerializer):
@@ -22,9 +24,36 @@ class SecurityScanSerializer(RalphAPISerializer):
         model = SecurityScan
 
 
+class SaveSecurityScanSerializer(RalphAPISerializer):
+
+    class Meta:
+        model = SecurityScan
+
+    def to_internal_value(self, data):
+        result = super(SaveSecurityScanSerializer, self).to_internal_value(data)
+        host_ip = data.get('host ip', None)
+        if not host_ip:
+            raise serializers.ValidationError("'Host ip' is required'")
+
+        ip_address = IPAddress.objects.filter(address=host_ip)
+        if ip_address.count() == 0:
+            raise serializers.ValidationError("Unknown host ip")
+        try:
+            asset = ip_address.get().asset.datacenterasset
+            if not asset:
+                raise serializers.ValidationError(
+                    "Ip is not assigned to any host"
+                )
+        except AttributeError:
+            raise serializers.ValidationError("Ip is not assigned to any host")
+        result['asset'] = asset
+        return result
+
+
 class SecurityScanViewSet(RalphAPIViewSet):
     queryset = SecurityScan.objects.all()
     serializer_class = SecurityScanSerializer
+    save_serializer_class = SaveSecurityScanSerializer
 
 
 router.register(r'vulnerabilities', VulnerabilityViewSet)
