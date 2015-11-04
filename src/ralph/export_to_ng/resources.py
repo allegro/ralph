@@ -686,6 +686,8 @@ class GenericComponentResource(resources.ModelResource):
 
 
 class LicenceResource(resources.ModelResource):
+    software = fields.Field()
+
     class Meta:
         model = Licence
         fields = [
@@ -693,11 +695,14 @@ class LicenceResource(resources.ModelResource):
             'number_bought', 'sn', 'niw', 'valid_thru',
             'order_no', 'price', 'accounting_id', 'invoice_date', 'provider',
             'invoice_no', 'remarks', 'license_details', 'licence_type',
-            'software_category', 'region',
+            'software', 'region',
         ]
 
     def get_queryset(self):
         return Licence.admin_objects.all()
+
+    def dehydrate_software(self, licence):
+        return licence.software_category_id or ''
 
 
 class BaseObjectLicenceResource(resources.ModelResource):
@@ -721,7 +726,7 @@ class BaseObjectLicenceResource(resources.ModelResource):
         )
 
 
-class UserLicenceResource(resources.ModelResource):
+class LicenceUserResource(resources.ModelResource):
 
     user = fields.Field()
 
