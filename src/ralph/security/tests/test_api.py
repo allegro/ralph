@@ -44,7 +44,7 @@ class SecurityScanAPITests(RalphAPITestCase):
         self.assertEqual(response.data['scan_status'], ScanStatus.ok.name)
         self.assertEqual(
             response.data['asset'],
-            'http://testserver/api/base-objects/{}/'.format(
+            'http://testserver/api/data-center-assets/{}/'.format(
                 self.security_scan.asset.id
             )
         )
@@ -61,7 +61,7 @@ class SecurityScanAPITests(RalphAPITestCase):
         # region = Region.objects.create(name='EU')
         ip = IPAddressFactory(address="192.168.128.10")
         vulnerability = VulnerabilityFactory()
-        #TODO:: make saving vulnerabilities by exteranl or by pk
+        # TODO:: make saving vulnerabilities by exteranl or by pk
         data = {
             'last_scan_date': '2015-01-01T00:00:00',
             'scan_status': ScanStatus.ok.name,
@@ -87,12 +87,41 @@ class SecurityScanAPITests(RalphAPITestCase):
         self.assertEqual(security_scan.details_url, data['details_url'])
         self.assertEqual(security_scan.rescan_url, data['rescan_url'])
         self.assertEqual(security_scan.asset, ip.asset)
-        self.assertEqual(security_scan.asset, ip.asset)
+        self.assertEqual(security_scan.vulnerabilities.count(), 1)
+        self.assertEqual(security_scan.vulnerabilities.get(), vulnerability)
+
+    def test_patch_security_scan(self):
+        ip = IPAddressFactory(address="192.168.128.66")
+        url = reverse('securityscan-detail', args=(self.security_scan.id,))
+        vulnerability = VulnerabilityFactory()
+        data = {
+            'last_scan_date': (datetime.now() + timedelta(days=10)).isoformat(),
+            'scan_status': ScanStatus.error.name,
+            'next_scan_date': (datetime.now() + timedelta(days=15)).isoformat(),
+            'details_url': self.security_scan.details_url + ' new',
+            'rescan_url': self.security_scan.rescan_url + ' new',
+            'host ip': ip.address,
+            'vulnerabilities': [vulnerability.id, ],
+        }
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.security_scan.refresh_from_db()
         self.assertEqual(
-            security_scan.vulnerabilities.count(), 1
+            self.security_scan.last_scan_date.isoformat(),
+            data['last_scan_date']
         )
+        self.assertEqual(self.security_scan.scan_status, ScanStatus.error)
         self.assertEqual(
-            security_scan.vulnerabilities.get(), vulnerability
+            self.security_scan.next_scan_date.isoformat(),
+            data['next_scan_date']
+        )
+        self.assertEqual(self.security_scan.details_url, data['details_url'])
+        self.assertEqual(self.security_scan.rescan_url, data['rescan_url'])
+        self.assertEqual(self.security_scan.asset, ip.asset)
+        self.assertEqual(self.security_scan.vulnerabilities.count(), 1)
+        self.assertEqual(
+            self.security_scan.vulnerabilities.get(), vulnerability,
         )
 
 
@@ -149,21 +178,26 @@ class VulnerabilityAPITests(RalphAPITestCase):
             data['external_vulnerability_id']
         )
 
-# class SupportAPITests(RalphAPITestCase):
-#    def setUp(self):
-#        super().setUp()
-#        self.support = SupportFactory(name='support1')
-#
-#    def test_patch_support(self):
-#        url = reverse('support-detail', args=(self.support.id,))
-#        data = {
-#            'name': 'support2',
-#            'contract_id': '12345',
-#            'date_to': '2015-12-31',
-#        }
-#        response = self.client.patch(url, data, format='json')
-#        self.assertEqual(response.status_code, status.HTTP_200_OK)
-#        self.support.refresh_from_db()
-#        self.assertEqual(self.support.name, 'support2')
-#        self.assertEqual(self.support.contract_id, '12345')
-#        self.assertEqual(self.support.date_to, date(2015, 12, 31))
+    def test_patch_vulnerability(self):
+        # TODO:: patch also by extenral_id
+        url = reverse('vulnerability-detail', args=(self.vulnerability.id,))
+        data = {
+            'name': self.vulnerability.name + ' new',
+            'patch_deadline': (
+                self.vulnerability.patch_deadline + timedelta(days=3)
+            ).isoformat(),
+            'risk': Risk.high.name,
+            'external_vulnerability_id': self.vulnerability.external_vulnerability_id + 10  # noqa
+        }
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.vulnerability.refresh_from_db()
+        self.assertEqual(self.vulnerability.name, data['name'])
+        self.assertEqual(
+            self.vulnerability.patch_deadline.isoformat(),
+            data['patch_deadline'])
+        self.assertEqual(self.vulnerability.risk, Risk.high)
+        self.assertEqual(
+            self.vulnerability.external_vulnerability_id,
+            data['external_vulnerability_id'])
