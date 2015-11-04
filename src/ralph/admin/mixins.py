@@ -36,15 +36,16 @@ def get_common_media():
     """
     js = map(lambda x: os.path.join(*x), [
         ('admin', 'js', 'core.js'),
-        ('admin', 'js', 'jquery.js'),
+        ('vendor', 'js', 'jquery.js'),
         ('admin', 'js', 'jquery.init.js'),
         ('admin', 'js', 'actions.js'),
         ('admin', 'js', 'admin', 'RelatedObjectLookups.js'),
-        ('vendor', 'js', 'jquery.js'),
-        ('vendor', 'js', 'foundation.min.js'),
+        ('src', 'js', 'ralph.init.js'),
+        ('vendor', 'js', 'foundation.js'),
         ('vendor', 'js', 'modernizr.js'),
-        ('src', 'js', 'fill-fields.js'),
         ('vendor', 'js', 'foundation-datepicker.js'),
+        ('src', 'js', 'fill-fields.js'),
+        ('src', 'js', 'autofill.js'),
         ('src', 'js', 'foundation-datepicker-init.js'),
     ])
     return forms.Media(

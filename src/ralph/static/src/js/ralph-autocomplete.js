@@ -64,7 +64,7 @@
             that.editMode(false);
             $('.title', that.$currentItem).html(data.results[0].__str__);
         });
-
+        that.$target.trigger({type: 'change', val: val});
     };
     AutocompleteWidget.prototype.editMode = function(on) {
         if (on) {
@@ -119,6 +119,7 @@
         this.$target.val(item.pk);
         this.editMode(false);
         this.updateEditUrl(item.edit_url);
+        this.$target.trigger({type: 'change', val: item.pk});
     };
     AutocompleteWidget.prototype.clearSuggestList = function() {
         this.$noResults.hide();
@@ -183,11 +184,11 @@
             $.data(this, 'autocomplete', new AutocompleteWidget(this, options));
         });
     };
-})(jQuery, Foundation);
+})(ralph.jQuery, Foundation);
 
 (function($) {
     function updateAfterClose(id, newValue) {
         var $parent = $('#' + id).val(newValue);
     }
     $('.autocomplete-widget').autocomplete();
-}(jQuery));
+}(ralph.jQuery));
