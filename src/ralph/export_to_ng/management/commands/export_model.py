@@ -36,7 +36,7 @@ SIMPLE_MODELS = [
     'Accessory',
     # TODO: 'CloudProject',
     'LicenceType',
-    'SoftwareCategory',
+    'Software',
     # TODO: Database
     # TODO: VIP
     # TODO: VirtualServer
@@ -62,7 +62,7 @@ DEPENDENT_MODELS = [
 ]
 MANY_TO_MANY = [
     'BaseObjectLicence',
-    # 'LicenceUser',
+    'UserLicence',
     'RackAccessory',
 ]
 
@@ -91,6 +91,7 @@ APP_MODELS.update({
     'DataCenter': ralph_assets.models_dc_assets.DataCenter,
     'Warehouse': ralph_assets.models.Warehouse,
     'Service': models_device.ServiceCatalog,
+    'Software': ralph_assets.licences.models.SoftwareCategory,
 })
 
 

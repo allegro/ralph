@@ -25,6 +25,7 @@ from ralph_assets import models_support
 from ralph_assets.licences.models import (
     Licence,
     LicenceAsset,
+    LicenceUser
 )
 
 
@@ -267,9 +268,12 @@ class DataCenterAssetResource(AssetResource):
         return orientation
 
     def dehydrate_position(self, asset):
+        position = ''
         try:
-            position = asset.device_info.position or ''
+            position = asset.device_info.position
         except AttributeError:
+            pass
+        if position is None:
             position = ''
         return position
 
@@ -534,6 +538,7 @@ class ServiceEnvironmentResource(resources.ModelResource):
 class ServiceResource(resources.ModelResource):
     name = fields.Field(column_name='name')
     profit_center = fields.Field(column_name='profit_center')
+    uid = fields.Field(column_name='uid')
 
     def dehydrate_name(self, service):
         return service.name
@@ -547,6 +552,9 @@ class ServiceResource(resources.ModelResource):
             return profit_center[0].parent.id
         return ''
 
+    def dehydrate_uid(self, service):
+        return service.uid
+
     def get_queryset(self):
         return models_device.ServiceCatalog.objects.all()
 
@@ -557,6 +565,7 @@ class ServiceResource(resources.ModelResource):
             'created',
             'modified',
             'profit_center',
+            'uid',
             # TODO: no table in NG for now
             # 'cost_center': '',
         )
@@ -687,6 +696,9 @@ class LicenceResource(resources.ModelResource):
             'software_category', 'region',
         ]
 
+    def get_queryset(self):
+        return Licence.admin_objects.all()
+
 
 class BaseObjectLicenceResource(resources.ModelResource):
 
@@ -697,10 +709,7 @@ class BaseObjectLicenceResource(resources.ModelResource):
         fields = ['licence', 'base_object', 'quantity']
 
     def get_queryset(self):
-        return LicenceAsset.objects.filter(
-            asset__in=models_assets.Asset.objects.all(),
-            licence__in=Licence.objects.all(),
-        )
+        return LicenceAsset.objects.all()
 
     def dehydrate_base_object(self, licence_asset):
         asset_type = models_assets.AssetType.from_id(
@@ -710,6 +719,21 @@ class BaseObjectLicenceResource(resources.ModelResource):
             asset_type,
             licence_asset.asset.pk
         )
+
+
+class UserLicenceResource(resources.ModelResource):
+
+    user = fields.Field()
+
+    class Meta:
+        model = LicenceUser
+        fields = ['licence', 'user', 'quantity']
+
+    def get_queryset(self):
+        return LicenceUser.objects.all()
+
+    def dehydrate_user(self, licence_user):
+        return licence_user.user.username
 
 
 class RegionResource(resources.ModelResource):
