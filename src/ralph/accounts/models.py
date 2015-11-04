@@ -142,6 +142,28 @@ class RalphUser(AbstractUser, AdminAbsoluteUrlMixin):
                 setattr(self, field, val)
         return super().save(*args, **kwargs)
 
+    @property
+    def autocomplete_tooltip(self):
+        fields = [
+            'employee_id',
+            'company',
+            'department',
+            'manager',
+            'profit_center',
+            'cost_center'
+        ]
+        empty_element = '<i class="empty">&lt;empty&gt;</i>'
+        tooltip = ''
+        for field in fields:
+            if not hasattr(self, field):
+                continue
+            value = getattr(self, field)
+            label = str(self._meta.get_field(field).verbose_name)
+            tooltip += '<strong>{}:</strong>&nbsp;{}<br>'.format(
+                label.capitalize(), value or empty_element
+            )
+        return tooltip
+
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):

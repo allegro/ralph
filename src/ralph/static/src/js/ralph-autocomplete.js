@@ -106,7 +106,15 @@
         event.preventDefault();
         var $clickedItem = $(event.target);
         var item = $clickedItem.data('item');
+        var $tooltip = $('.has-tip', this.$currentItem);
         $('.title', this.$currentItem).html(item.__str__);
+        var tip = Foundation.libs.tooltip.getTip($tooltip);
+        if(item.tooltip) {
+            tip.html(item.tooltip);
+        } else {
+            tip.remove();
+        }
+
         this.notFromPopup = true;
         this.$target.val(item.pk);
         this.editMode(false);
