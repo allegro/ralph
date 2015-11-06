@@ -62,7 +62,7 @@ DEPENDENT_MODELS = [
 ]
 MANY_TO_MANY = [
     'BaseObjectLicence',
-    'UserLicence',
+    'LicenceUser',
     'RackAccessory',
 ]
 
