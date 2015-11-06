@@ -2,6 +2,7 @@
 import inspect
 
 from django.contrib.admin import SimpleListFilter
+from django.db.models import Q
 from rest_framework import filters, permissions, relations, viewsets
 
 from ralph.admin.sites import ralph_site
@@ -116,4 +117,20 @@ class RalphAPIViewSet(
     viewsets.ModelViewSet,
     metaclass=RalphAPIViewSetMetaclass
 ):
-    pass
+    extend_filter_fields = None
+
+    def __init__(self, *args, **kwargs):
+        if self.extend_filter_fields is None:
+            self.extend_filter_fields = {}
+        super().__init__(*args, **kwargs)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        for field, field_filters in self.extend_filter_fields.items():
+            value = self.request.query_params.get(field, None)
+            if value:
+                q_param = Q()
+                for field_name in field_filters:
+                    q_param |= Q(**{field_name: value})
+                queryset = queryset.filter(q_param)
+        return queryset

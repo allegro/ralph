@@ -55,3 +55,10 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
     queryset = models.BaseObject.polymorphic_objects.all()
     serializer_class = serializers.BaseObjectPolymorphicSerializer
     http_method_names = ['get', 'options', 'head']
+
+    filter_fields = ['id']
+    extend_filter_fields = {
+        'name': ['asset__hostname'],
+        'sn': ['asset__sn'],
+        'barcode': ['asset__barcode'],
+    }

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+from django.contrib.auth import get_user_model
 from rest_framework import relations
-from rest_framework.test import APIRequestFactory
+from rest_framework.test import APIClient, APIRequestFactory
 
 from ralph.api.serializers import ReversedChoiceField
 from ralph.api.tests.api import (
@@ -12,6 +13,7 @@ from ralph.api.tests.api import (
 )
 from ralph.api.viewsets import RalphAPIViewSet
 from ralph.tests import RalphTestCase
+from ralph.tests.factories import ManufacturerFactory
 
 
 class ViewsetWithoutRalphPermission(RalphAPIViewSet):
@@ -26,6 +28,17 @@ class TestRalphViewset(RalphTestCase):
     def setUp(self):
         super().setUp()
         self.request_factory = APIRequestFactory()
+        self.manufacture_1 = ManufacturerFactory(
+            name='test', country='Poland'
+        )
+        self.manufacture_2 = ManufacturerFactory(
+            name='test2', country='test'
+        )
+        get_user_model().objects.create_superuser(
+            'test', 'test@test.test', 'test'
+        )
+        self.client = APIClient()
+        self.client.login(username='test', password='test')
 
     def test_should_raise_attributeerror_when_ralph_permission_missing(self):
         with self.assertRaises(AttributeError):
@@ -62,6 +75,21 @@ class TestRalphViewset(RalphTestCase):
         mvs = ManufacturerViewSet()
         mvs.request = request
         self.assertEqual(mvs.get_serializer_class(), ManufacturerSerializer2)
+
+    def test_extend_filter_fields(self):
+        request = self.request_factory.get('/')
+        request.query_params = {'name': 'test'}
+        mvs = ManufacturerViewSet()
+        mvs.request = request
+        self.assertEqual(len(mvs.get_queryset()), 2)
+
+        request.query_params = {'name': 'test2'}
+        mvs.request = request
+        self.assertEqual(len(mvs.get_queryset()), 1)
+
+    def test_options_filtering(self):
+        response = self.client.options('/api/manufacturers/')
+        self.assertListEqual(response.data['filtering'], ['name'])
 
 
 class TestAdminSearchFieldsMixin(RalphTestCase):
