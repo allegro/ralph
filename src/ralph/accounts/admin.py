@@ -74,7 +74,7 @@ class UserInfoView(RalphDetailView):
         ).select_related('model', 'model__category', 'model__manufacturer')
         licence_list_queryset = Licence.objects.filter(
             users=self.object
-        ).select_related('software_category')
+        ).select_related('software')
 
         context['asset_list'] = AssetList(
             asset_list_queryset,
@@ -86,7 +86,7 @@ class UserInfoView(RalphDetailView):
         )
         context['licence_list'] = AssignedLicenceList(
             licence_list_queryset,
-            ['id', 'software_category__name', 'niw', 'url']
+            ['id', 'software__name', 'niw', 'url']
         )
         return context
 

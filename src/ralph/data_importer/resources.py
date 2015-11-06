@@ -231,8 +231,8 @@ class LicenceResource(ImportForeignKeyMixin, resources.ModelResource):
         widget=ImportedForeignKeyWidget(LicenceType),
     )
     software = fields.Field(
-        column_name='software_category',
-        attribute='software_category',
+        column_name='software',
+        attribute='software',
         widget=ImportedForeignKeyWidget(Software),
     )
     region = fields.Field(
