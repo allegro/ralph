@@ -62,7 +62,9 @@
         data[that.options.detailVar] = val;
         that.fetch(that.options.detailsUrl, data, function(data) {
             that.editMode(false);
-            $('.title', that.$currentItem).html(data.results[0].__str__);
+            $('.title', that.$currentItem).html(
+                data.results[0].label || data.results[0].__str__
+            );
         });
 
     };
@@ -90,7 +92,7 @@
         var that = this;
         var $template = $('.template.item', that.$suggestList);
         var htmlItem = $template.clone().removeClass('template');
-        $('.link', htmlItem).html(item.__str__).data('item', item);
+        $('.link', htmlItem).html(item.label || item.__str__).data('item', item);
         that.$suggestList.append(htmlItem);
         htmlItem.on('click', function(event){that.itemClick(event);});
         return htmlItem;
@@ -135,7 +137,10 @@
         that.fetchItems(query, function(data) {
             if (that.options.isEmpty) {
                 that.addItemToList(
-                    {'__str__': '&lt;empty&gt;', 'pk': that.options.emptyValue}
+                    {
+                        __str__: '&lt;empty&gt;',
+                        pk: that.options.emptyValue
+                    }
                 );
             }
             if (data.results.length !== 0) {
