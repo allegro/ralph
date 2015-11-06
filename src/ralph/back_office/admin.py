@@ -96,9 +96,9 @@ class BackOfficeAssetAdmin(
     resource_class = resources.BackOfficeAssetResource
     bulk_edit_list = [
         'status', 'barcode', 'hostname', 'model', 'purchase_order',
-        'user', 'owner', 'warehouse', 'sn', 'region', 'remarks',
-        'invoice_date', 'provider', 'task_url', 'depreciation_rate',
-        'order_no', 'depreciation_end_date'
+        'user', 'owner', 'warehouse', 'sn', 'region', 'property_of', 'remarks',
+        'invoice_date', 'invoice_no', 'provider', 'task_url',
+        'depreciation_rate', 'price', 'order_no', 'depreciation_end_date'
     ]
     bulk_edit_no_fillable = ['barcode', 'sn', 'hostname']
 
