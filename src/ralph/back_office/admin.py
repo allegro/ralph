@@ -76,11 +76,12 @@ class BackOfficeAssetAdmin(
 
     list_filter = [
         'barcode', 'status', 'imei', 'sn', 'model', 'purchase_order',
-        'hostname', 'required_support', 'service_env__environment', 'region',
+        'hostname', 'required_support', 'service_env', 'region',
         'warehouse', 'task_url', 'model__category', 'loan_end_date', 'niw',
-        'model__manufacturer', 'service_env__service', 'location', 'remarks',
-        'user', 'owner', 'user__segment', 'user__company', 'user__employee_id',
-        'property_of', 'invoice_no', 'invoice_date', 'order_no', 'provider',
+        'model__manufacturer', 'location', 'remarks',
+        'user', 'owner', 'user__segment', 'user__company', 'user__department',
+        'user__employee_id', 'property_of', 'invoice_no', 'invoice_date',
+        'order_no', 'provider',
         'depreciation_rate', 'depreciation_end_date', 'force_depreciation'
     ]
     date_hierarchy = 'created'
