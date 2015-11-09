@@ -54,7 +54,7 @@ class LicenceAdmin(PermissionAdminMixin, AttachmentsMixin, RalphAdmin):
     search_fields = ['niw', 'sn', 'license_details', 'remarks']
     list_filter = [
         'niw', 'sn', 'remarks', 'software', 'property_of',
-        'licence_type', 'valid_thru', 'invoice_no', 'invoice_date',
+        'licence_type', 'valid_thru', 'order_no', 'invoice_no', 'invoice_date',
         'manufacturer', 'region'
 
     ]
