@@ -3,6 +3,7 @@ from django.conf.urls import url
 from django.contrib.admin import TabularInline
 
 from ralph.admin import RalphAdmin, register
+from ralph.helpers import get_model_view_url_name
 from ralph.lib.transitions.forms import TransitionForm
 from ralph.lib.transitions.models import Transition, TransitionModel
 from ralph.lib.transitions.views import RunTransitionView
@@ -34,11 +35,9 @@ class TransitionAdminMixin(object):
     run_transition_view = RunTransitionView
 
     def get_transition_url_name(self, with_namespace=True):
-        params = self.model._meta.app_label, self.model._meta.model_name
-        url = '{}_{}_transition'.format(*params)
-        if with_namespace:
-            url = 'admin:' + url
-        return url
+        return get_model_view_url_name(
+            self.model, 'transition', with_namespace
+        )
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         if not extra_context:
