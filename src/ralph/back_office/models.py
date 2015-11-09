@@ -196,6 +196,30 @@ class BackOfficeAsset(Regionalizable, Asset):
         }
     }
 
+    @transition_action
+    def change_user_and_owner(self, **kwargs):
+        UserModel = get_user_model()  # noqa
+        user_id = kwargs.get('user', None)
+        user = UserModel.objects.get(id=user_id)
+        owner_id = kwargs.get('owner', None)
+        if not owner_id:
+            self.owner = user
+        else:
+            self.owner = UserModel.objects.get(id=owner_id)
+        self.location = user.location
+
+    change_user_and_owner.form_fields = {
+        'user': {
+            'field': forms.CharField(label=_('User')),
+            'autocomplete_field': 'user',
+        },
+        'owner': {
+            'field': forms.CharField(label=_('Owner')),
+            'autocomplete_field': 'owner',
+            'condition': lambda obj: bool(obj.owner),
+        }
+    }
+
     def _generate_report(self, name, request):
         report = Report.objects.get(name=name)
         template = report.templates.filter(default=True)
