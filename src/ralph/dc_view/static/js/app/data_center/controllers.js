@@ -11,7 +11,9 @@
         .controller('DataCenterController', ['$scope', '$stateParams', 'data_center', 'RackModel', function ($scope, $stateParams, data_center, RackModel) {
             var gridSize = 40;
 
-            $scope.forms = {};
+            $scope.forms = {
+                edit_form: {}
+            };
             $scope.data_center = data_center;
 
             $scope.setInfo = function(item) {

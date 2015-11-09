@@ -10,6 +10,7 @@
     };
 
     var beforeEach = function(that) {
+        $(document).foundation();
         $('#qunit-fixture').append(mockedField);
         that.$field = $('.suggest-field-widget');
         that.widget = that.$field.autocomplete({watch: false}).data('autocomplete');
