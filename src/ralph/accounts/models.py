@@ -143,6 +143,10 @@ class RalphUser(AbstractUser, AdminAbsoluteUrlMixin):
         return super().save(*args, **kwargs)
 
     @property
+    def autocomplete_str(self):
+        return '{} <i>{}</i>'.format(str(self), self.department)
+
+    @property
     def autocomplete_tooltip(self):
         fields = [
             'employee_id',
