@@ -6,32 +6,32 @@ from ralph.reports import views
 urlpatterns = [
     url(
         r'^category_model_report/?$',
-        views.ReportDetail.as_view(),
+        views.CategoryModelReport.as_view(),
         name='category_model_report'
     ),
     url(
         r'^category_model__status_report/?$',
-        views.ReportWithoutAllModeDetail.as_view(),
+        views.CategoryModelStatusReport.as_view(),
         name='category_model__status_report'
     ),
     url(
         r'^manufactured_category_model_report/?$',
-        views.ReportDetail.as_view(),
+        views.ManufacturerCategoryModelReport.as_view(),
         name='manufactured_category_model_report'
     ),
     url(
         r'^status_model_report/?$',
-        views.ReportWithoutAllModeDetail.as_view(),
+        views.StatusModelReport.as_view(),
         name='status_model_report'
     ),
     url(
         r'^asset_relations/?$',
-        views.ReportWithoutAllModeDetail.as_view(),
+        views.AssetRelationsReport.as_view(),
         name='asset-relations'
     ),
     url(
         r'^licence_relations/?$',
-        views.ReportWithoutAllModeDetail.as_view(),
+        views.LicenceRelationsReport.as_view(),
         name='licence-relations'
     ),
 ]

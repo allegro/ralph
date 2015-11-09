@@ -143,39 +143,44 @@ sitetrees = [
                 ralph_item(
                     title=_('Category model'),
                     url='category_model_report',
-                    access_by_perms='accounts.can_view_extra_reportdetail',
+                    access_by_perms=(
+                        'accounts.can_view_extra_categorymodelreport'
+                    ),
                 ),
                 ralph_item(
                     title=_('Category model status'),
                     url='category_model__status_report',
                     access_by_perms=(
-                        'accounts.can_view_extra_reportwithoutallmodedetail'
+                        'accounts.can_view_extra_categorymodelstatusreport'
                     ),
                 ),
                 ralph_item(
                     title=_('Manufacturer category model'),
                     url='manufactured_category_model_report',
-                    access_by_perms='accounts.can_view_extra_reportdetail',
+                    access_by_perms=(
+                        'accounts.'
+                        'can_view_extra_manufacturercategorymodelreport'
+                    ),
                 ),
                 ralph_item(
                     title=_('Status model'),
                     url='status_model_report',
                     access_by_perms=(
-                        'accounts.can_view_extra_reportwithoutallmodedetail'
+                        'accounts.can_view_extra_statusmodelreport'
                     ),
                 ),
                 ralph_item(
                     title=_('Asset - relations'),
                     url='asset-relations',
                     access_by_perms=(
-                        'accounts.can_view_extra_reportwithoutallmodedetail'
+                        'accounts.can_view_extra_assetrelationsreport'
                     ),
                 ),
                 ralph_item(
                     title=_('Licence - relations'),
                     url='licence-relations',
                     access_by_perms=(
-                        'accounts.can_view_extra_reportwithoutallmodedetail'
+                        'accounts.can_view_extra_licencerelationsreport'
                     ),
                 ),
             ]
