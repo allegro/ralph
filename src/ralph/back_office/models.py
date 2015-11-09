@@ -222,7 +222,7 @@ class BackOfficeAsset(Regionalizable, Asset):
 
     def _generate_report(self, name, request):
         report = Report.objects.get(name=name)
-        template = report.templates.filter(default=True)
+        template = report.templates.filter(default=True).first()
         template_content = ''
         with open(template.template.path, 'rb') as f:
             template_content = f.read()
