@@ -7,8 +7,8 @@ from ralph.assets.tests.factories import (
 )
 from ralph.data_center.models.physical import DataCenterAsset
 from ralph.data_center.tests.factories import DataCenterAssetFactory
-from ralph.licences.factories import LicenceFactory
 from ralph.licences.models import BaseObjectLicence
+from ralph.licences.tests.factories import LicenceFactory
 from ralph.reports.views import (
     AssetRelationsReport,
     CategoryModelReport,
@@ -153,7 +153,8 @@ class TestReportAssetAndLicence(RalphTestCase):
         )
         self.licence = LicenceFactory(
             number_bought=1,
-            niw='N/A'
+            niw='N/A',
+            software__name='Project Info',
         )
         BaseObjectLicence.objects.create(
             licence=self.licence, base_object=self.dc_1.baseobject_ptr

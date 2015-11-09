@@ -12,6 +12,9 @@ from ralph.accounts.management.commands.ldap_sync import (
 )
 from ralph.accounts.models import RalphUser, Region
 from ralph.api.tests._base import RalphAPITestCase
+from ralph.back_office.tests.factories import BackOfficeAssetFactory
+from ralph.licences.models import LicenceUser
+from ralph.licences.tests.factories import LicenceFactory
 from ralph.tests import factories
 
 NO_LDAP_MODULE = not ldap_module_exists
@@ -93,6 +96,10 @@ class RalphUserAPITests(RalphAPITestCase):
     def test_get_user_details(self):
         region = Region.objects.create(name='EU')
         self.user1.regions.add(region)
+        bo_asset_as_user = BackOfficeAssetFactory(user=self.user1)
+        bo_asset_as_owner = BackOfficeAssetFactory(owner=self.user1)
+        licence = LicenceFactory()
+        LicenceUser.objects.create(licence=licence, user=self.user1)
         url = reverse('ralphuser-detail', args=(self.user1.id,))
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -100,6 +107,15 @@ class RalphUserAPITests(RalphAPITestCase):
         self.assertEqual(response.data['first_name'], self.user1.first_name)
         self.assertEqual(response.data['last_name'], self.user1.last_name)
         self.assertEqual(response.data['regions'][0]['id'], region.id)
+        self.assertEqual(
+            response.data['assets_as_owner'][0]['id'], bo_asset_as_owner.id
+        )
+        self.assertEqual(
+            response.data['assets_as_user'][0]['id'], bo_asset_as_user.id
+        )
+        self.assertEqual(
+            response.data['licences'][0]['licence']['id'], licence.id
+        )
 
     def test_create_user_should_raise_method_not_allowed(self):
         url = reverse('ralphuser-list')

@@ -1,9 +1,18 @@
 # -*- coding: utf-8 -*-
-from ralph.accounts.api import SimpleRalphUserSerializer
+from django.contrib.auth import get_user_model
+
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.assets.api.serializers import AssetSerializer
 from ralph.back_office.admin import BackOfficeAssetAdmin
 from ralph.back_office.models import BackOfficeAsset, Warehouse
+
+
+class SimpleRalphUserSerializer(RalphAPISerializer):
+    class Meta:
+        model = get_user_model()
+        fields = ('id', 'url', 'username', 'first_name', 'last_name')
+        read_only_fields = fields
+        depth = 1
 
 
 class WarehouseSerializer(RalphAPISerializer):

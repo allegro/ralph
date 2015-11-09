@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import factory
 from factory.django import DjangoModelFactory
+from factory.fuzzy import FuzzyText
 
 from ralph.accounts.tests.factories import RegionFactory
+from ralph.assets.tests.factories import ManufacturerFactory
 from ralph.licences.models import Licence, LicenceType, Software
 
 
@@ -26,9 +28,12 @@ class SoftwareFactory(DjangoModelFactory):
 
 class LicenceFactory(DjangoModelFactory):
 
-    region = factory.SubFactory(RegionFactory)
     licence_type = factory.SubFactory(LicenceTypeFactory)
     software = factory.SubFactory(SoftwareFactory)
+    region = factory.SubFactory(RegionFactory)
+    manufacturer = factory.SubFactory(ManufacturerFactory)
+    niw = FuzzyText()
+    number_bought = 10
 
     class Meta:
         model = Licence

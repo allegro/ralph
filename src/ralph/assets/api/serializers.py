@@ -111,7 +111,7 @@ class BaseObjectPolymorphicSerializer(
 
     class Meta:
         model = BaseObject
-        exclude = ('content_type', )
+        exclude = ('content_type',)
 
 
 class BaseObjectSerializer(RalphAPISerializer):
