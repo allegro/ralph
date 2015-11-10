@@ -3,7 +3,12 @@ from import_export import fields, resources
 
 from ralph.accounts.models import Region
 from ralph.assets.models import assets, base
-from ralph.back_office.models import AssetHolder, BackOfficeAsset, Warehouse
+from ralph.back_office.models import (
+    AssetHolder,
+    BackOfficeAsset,
+    OfficeInfrastructure,
+    Warehouse
+)
 from ralph.data_center.models import networks, physical
 from ralph.data_importer.mixins import ImportForeignKeyMixin
 from ralph.data_importer.widgets import (
@@ -388,3 +393,11 @@ class AssetHolderResource(ImportForeignKeyMixin, resources.ModelResource):
 
     class Meta:
         model = AssetHolder
+
+
+class OfficeInfrastructureResource(
+    ImportForeignKeyMixin, resources.ModelResource
+):
+
+    class Meta:
+        model = OfficeInfrastructure
