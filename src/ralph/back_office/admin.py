@@ -48,6 +48,17 @@ class BackOfficeAssetLicence(RalphDetailViewAdmin):
     inlines = [BackOfficeAssetLicenceInline]
 
 
+class BackOfficeAssetAdminForm(RalphAdmin.form):
+    """
+    Service_env is not required for BackOffice assets.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        service_env = self.fields['service_env']
+        service_env.widget.is_required = False
+        service_env.required = False
+
+
 @register(BackOfficeAsset)
 class BackOfficeAssetAdmin(
     MulitiAddAdminMixin,
@@ -59,6 +70,7 @@ class BackOfficeAssetAdmin(
 ):
 
     """Back Office Asset admin class."""
+    form = BackOfficeAssetAdminForm
     actions = ['bulk_edit_action']
     change_views = [
         BackOfficeAssetLicence,
