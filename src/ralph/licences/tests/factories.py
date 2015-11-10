@@ -3,9 +3,16 @@ import factory
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyText
 
-from ralph.accounts.tests.factories import RegionFactory
+from ralph.accounts.tests.factories import RegionFactory, UserFactory
 from ralph.assets.tests.factories import ManufacturerFactory
-from ralph.licences.models import Licence, LicenceType, Software
+from ralph.back_office.tests.factories import BackOfficeAssetFactory
+from ralph.licences.models import (
+    BaseObjectLicence,
+    Licence,
+    LicenceType,
+    LicenceUser,
+    Software
+)
 
 
 class LicenceTypeFactory(DjangoModelFactory):
@@ -37,3 +44,24 @@ class LicenceFactory(DjangoModelFactory):
 
     class Meta:
         model = Licence
+
+
+class LicenceUserFactory(DjangoModelFactory):
+    licence = factory.SubFactory(LicenceFactory)
+    user = factory.SubFactory(UserFactory)
+
+    class Meta:
+        model = LicenceUser
+
+
+class BaseObjectLicence(DjangoModelFactory):
+    licence = factory.SubFactory(LicenceFactory)
+    base_object = factory.SubFactory(BackOfficeAssetFactory)
+
+    class Meta:
+        model = BaseObjectLicence
+
+
+class LicenceWithUserAndBaseObjectsFactory(LicenceFactory):
+    users = factory.RelatedFactory(LicenceUserFactory, 'licence')
+    base_objects = factory.RelatedFactory(BaseObjectLicence, 'licence')
