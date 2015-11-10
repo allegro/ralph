@@ -2,8 +2,7 @@
 import logging
 
 import tablib
-from django.contrib.contenttypes.models import ContentType
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 from django.http import HttpResponse
 from django.utils.encoding import smart_str
 from django.utils.translation import ugettext_lazy as _
@@ -14,7 +13,7 @@ from ralph.assets.models.assets import Asset, AssetModel
 from ralph.assets.models.choices import ObjectModelType
 from ralph.back_office.models import BackOfficeAsset
 from ralph.data_center.models.physical import DataCenter, DataCenterAsset
-from ralph.licences.models import Licence
+from ralph.licences.models import BaseObjectLicence, Licence, LicenceUser
 from ralph.reports.base import ReportContainer
 
 logger = logging.getLogger(__name__)
@@ -360,38 +359,65 @@ class LicenceRelationsReport(BaseRelationsReport):
         'niw', 'software', 'number_bought', 'price', 'invoice_date',
         'invoice_no'
     ]
-    licecses_asset_headers = [
-        'id', 'asset__barcode', 'asset__niw', 'asset__user__username',
-        'asset__user__first_name', 'asset__user__last_name',
-        'asset__owner__username', 'asset__owner__first_name',
-        'asset__owner__last_name', 'region__name'
+    licences_asset_headers = [
+        'id', 'asset__barcode', 'asset__niw',
+        'asset__backofficeasset__user__username',
+        'asset__backofficeasset__user__first_name',
+        'asset__backofficeasset__user__last_name',
+        'asset__backofficeasset__owner__username',
+        'asset__backofficeasset__owner__first_name',
+        'asset__backofficeasset__owner__last_name',
+        'asset__backofficeasset__region__name'
     ]
-    licenses_users_headers = ['username', 'first_name', 'last_name']
+    licences_users_headers = [
+        'user__username', 'user__first_name', 'user__last_name'
+    ]
 
     def prepare(self, model, *args, **kwargs):
         queryset = Licence.objects.all()
+        asset_related = [None]
         if model._meta.object_name == 'BackOfficeAsset':
             queryset = queryset.filter(
-                base_objects__content_type=ContentType.objects.get_for_model(
-                    BackOfficeAsset
+                software__asset_type__in=(
+                    ObjectModelType.back_office, ObjectModelType.all
                 )
             )
+            asset_related = [
+                'base_object__asset', 'base_object__asset__backofficeasset',
+                'base_object__asset__backofficeasset__user',
+                'base_object__asset__backofficeasset__owner',
+                'base_object__asset__backofficeasset__region'
+            ]
         if model._meta.object_name == 'DataCenterAsset':
             queryset = queryset.filter(
-                base_objects__content_type=ContentType.objects.get_for_model(
-                    DataCenterAsset
-                )
+                software__asset_type=ObjectModelType.data_center
             )
+            asset_related = [
+                'base_object__asset',
+                'base_object__asset__backofficeasset'
+            ]
 
-        fill_empty_assets = [''] * len(self.licecses_asset_headers)
-        fill_empty_licences = [''] * len(self.licenses_users_headers)
+        fill_empty_assets = [''] * len(self.licences_asset_headers)
+        fill_empty_licences = [''] * len(self.licences_users_headers)
 
-        headers = self.licences_headers + self.licecses_asset_headers + \
-            self.licenses_users_headers + ['single_cost']
-
+        headers = self.licences_headers + self.licences_asset_headers + \
+            self.licences_users_headers + ['single_cost']
         yield headers
 
-        queryset = queryset.select_related('software')
+        queryset = queryset.select_related(
+            'software'
+        ).prefetch_related(
+            Prefetch(
+                'licenceuser_set',
+                queryset=LicenceUser.objects.select_related('user')
+            ),
+            Prefetch(
+                'baseobjectlicence_set',
+                queryset=BaseObjectLicence.objects.select_related(
+                    *asset_related
+                )
+            )
+        )
 
         for licence in queryset:
             row = [
@@ -409,29 +435,19 @@ class LicenceRelationsReport(BaseRelationsReport):
             else:
                 single_licence_cost = ''
 
-            asset_related = [None]
-            if model._meta.object_name == 'BackOfficeAsset':
-                asset_related = [
-                    'asset_ptr', 'asset_ptr__user', 'asset_ptr__owner',
-                    'asset_ptr__region'
-                ]
-            for asset in licence.base_objects.all().select_related(
-                *asset_related
-            ):
+            for asset in licence.baseobjectlicence_set.all():
                 row = [
                     smart_str(
-                        getattr_dunder(asset, column),
-                    ) for column in self.licecses_asset_headers
+                        getattr_dunder(asset.base_object, column),
+                    ) for column in self.licences_asset_headers
                 ]
                 yield base_row + row + fill_empty_licences + [
                     single_licence_cost
                 ]
-            for user in licence.users.all().values(
-                *self.licenses_users_headers
-            ):
+            for user in licence.licenceuser_set.all():
                 row = [
-                    smart_str(user.get(column))
-                    for column in self.licenses_users_headers
+                    smart_str(getattr_dunder(user, column))
+                    for column in self.licences_users_headers
                 ]
                 yield base_row + fill_empty_assets + row + [
                     single_licence_cost
