@@ -13,6 +13,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
     mysql-server-5.6 \
     python3.4 \
     python3.4-dev \
+    python3.4-venv \
     redis-server
 
 # INSTALL Ralph in virtualenv
