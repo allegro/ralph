@@ -5,6 +5,7 @@ from ralph.api import RalphAPISerializer
 from ralph.api.utils import PolymorphicSerializer
 from ralph.assets.models import (
     Asset,
+    AssetHolder,
     AssetModel,
     BaseObject,
     BusinessSegment,
@@ -112,6 +113,11 @@ class BaseObjectPolymorphicSerializer(
     class Meta:
         model = BaseObject
         exclude = ('content_type',)
+
+
+class AssetHolderSerializer(RalphAPISerializer):
+    class Meta:
+        model = AssetHolder
 
 
 class BaseObjectSerializer(RalphAPISerializer):

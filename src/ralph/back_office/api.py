@@ -4,7 +4,11 @@ from django.contrib.auth import get_user_model
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.assets.api.serializers import AssetSerializer
 from ralph.back_office.admin import BackOfficeAssetAdmin
-from ralph.back_office.models import BackOfficeAsset, Warehouse
+from ralph.back_office.models import (
+    BackOfficeAsset,
+    OfficeInfrastructure,
+    Warehouse
+)
 
 
 class SimpleRalphUserSerializer(RalphAPISerializer):
@@ -23,6 +27,16 @@ class WarehouseSerializer(RalphAPISerializer):
 class WarehouseViewSet(RalphAPIViewSet):
     queryset = Warehouse.objects.all()
     serializer_class = WarehouseSerializer
+
+
+class OfficeInfrastructureSerializer(RalphAPISerializer):
+    class Meta:
+        model = OfficeInfrastructure
+
+
+class OfficeInfrastructureViewSet(RalphAPIViewSet):
+    queryset = OfficeInfrastructure.objects.all()
+    serializer_class = OfficeInfrastructureSerializer
 
 
 class BackOfficeAssetSerializer(AssetSerializer):
@@ -51,5 +65,6 @@ class BackOfficeAssetViewSet(RalphAPIViewSet):
 
 
 router.register(r'warehouses', WarehouseViewSet)
+router.register(r'office-infrastructures', OfficeInfrastructureViewSet)
 router.register(r'back-office-assets', BackOfficeAssetViewSet)
 urlpatterns = []

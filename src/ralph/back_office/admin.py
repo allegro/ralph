@@ -137,7 +137,7 @@ class BackOfficeAssetAdmin(
             'fields': (
                 'order_no', 'purchase_order', 'invoice_date', 'invoice_no',
                 'price', 'depreciation_rate', 'depreciation_end_date',
-                'force_depreciation', 'provider',
+                'force_depreciation', 'provider', 'office_infrastructure'
             )
         }),
     )
