@@ -102,6 +102,7 @@ DATABASES = {
 }
 
 AUTH_USER_MODEL = 'accounts.RalphUser'
+LOGIN_URL = '/login/'
 
 LANGUAGE_CODE = 'en-us'
 LOCALE_PATHS = (os.path.join(BASE_DIR, 'locale'), )
