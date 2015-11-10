@@ -118,6 +118,8 @@ class BackOfficeAssetResource(AssetResource):
             'remarks',
             'service_env',
             'property_of',
+            'budget_info',
+            'office_infrastructure',
         ]
         model = models_assets.Asset
 
@@ -132,6 +134,9 @@ class BackOfficeAssetResource(AssetResource):
         except AttributeError:
             imei = ''
         return imei
+
+    def dehydrate_office_infrastructure(self, asset):
+        return asset.service_name_id or ''
 
     def dehydrate_barcode(self, asset):
         return asset.barcode or ''
@@ -351,6 +356,7 @@ class DataCenterAssetResource(AssetResource):
             'status',
             'task_url',
             'hostname',
+            'budget_info',
         )
         model = models_assets.Asset
 
@@ -695,7 +701,7 @@ class LicenceResource(resources.ModelResource):
             'number_bought', 'sn', 'niw', 'valid_thru',
             'order_no', 'price', 'accounting_id', 'invoice_date', 'provider',
             'invoice_no', 'remarks', 'license_details', 'licence_type',
-            'software', 'region',
+            'software', 'region', 'budget_info'
         ]
 
     def get_queryset(self):
@@ -755,4 +761,10 @@ class RegionResource(resources.ModelResource):
 class OfficeInfrastructureResource(resources.ModelResource):
     class Meta:
         model = models_assets.Service
+        fields = ['id', 'name', 'created', 'modified']
+
+
+class BudgetInfoResource(resources.ModelResource):
+    class Meta:
+        model = models_assets.BudgetInfo
         fields = ['id', 'name', 'created', 'modified']
