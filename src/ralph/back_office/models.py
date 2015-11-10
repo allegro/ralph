@@ -47,6 +47,13 @@ class BackOfficeAssetStatus(Choices):
     reserved = _("reserved")
 
 
+class OfficeInfrastructure(NamedMixin, TimeStampMixin, models.Model):
+
+    class Meta:
+        verbose_name = _('Office Infrastructure')
+        verbose_name_plural = _('Office Infrastructures')
+
+
 class BackOfficeAsset(Regionalizable, Asset):
     warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT)
     owner = models.ForeignKey(
@@ -74,6 +81,9 @@ class BackOfficeAsset(Regionalizable, Asset):
         on_delete=models.PROTECT,
         null=True,
         blank=True,
+    )
+    office_infrastructure = models.ForeignKey(
+        OfficeInfrastructure, null=True, blank=True
     )
 
     class Meta:

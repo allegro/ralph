@@ -111,6 +111,11 @@ sitetrees = [
             children=[
                 section(_('Hardware'), 'back_office', 'backofficeasset'),
                 section(_('Warehouses'), 'back_office', 'warehouse'),
+                section(
+                    _('Office Infrastructures'),
+                    'back_office',
+                    'officeinfrastructure'
+                ),
             ]
         ),
         ralph_item(

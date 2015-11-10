@@ -6,7 +6,12 @@ from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.attachments.admin import AttachmentsMixin
-from ralph.back_office.models import AssetHolder, BackOfficeAsset, Warehouse
+from ralph.back_office.models import (
+    AssetHolder,
+    BackOfficeAsset,
+    OfficeInfrastructure,
+    Warehouse
+)
 from ralph.back_office.views import (
     BackOfficeAssetComponents,
     BackOfficeAssetSoftware
@@ -147,4 +152,9 @@ class WarehouseAdmin(RalphAdmin):
 @register(AssetHolder)
 class AssetHolderAdmin(RalphAdmin):
 
+    search_fields = ['name']
+
+
+@register(OfficeInfrastructure)
+class OfficeInfrastructureAdmin(RalphAdmin):
     search_fields = ['name']
