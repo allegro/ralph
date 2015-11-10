@@ -125,11 +125,11 @@ class DataCenterAssetAdmin(
     list_filter = [
         'status', 'barcode', 'sn', 'hostname', 'invoice_no', 'invoice_date',
         'order_no', 'model__name', 'depreciation_end_date',
-        'force_depreciation', 'remarks', 'rack__name'
+        'force_depreciation', 'remarks', 'budget_info', 'rack__name'
     ]
     date_hierarchy = 'created'
     list_select_related = ['model', 'model__manufacturer', 'model__category']
-    raw_id_fields = ['model', 'rack', 'service_env', 'parent']
+    raw_id_fields = ['model', 'rack', 'service_env', 'parent', 'budget_info']
     raw_id_override_parent = {'parent': DataCenterAsset}
 
     fieldsets = (
@@ -141,7 +141,7 @@ class DataCenterAssetAdmin(
         }),
         (_('Location Info'), {
             'fields': (
-                'rack', 'position', 'orientation', 'slot_no',
+                'rack', 'position', 'orientation', 'slot_no', 'budget_info'
             )
         }),
         (_('Usage info'), {

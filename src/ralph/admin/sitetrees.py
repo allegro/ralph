@@ -203,6 +203,7 @@ sitetrees = [
                 section(_('Profit center'), 'assets', 'ProfitCenter'),
                 section(_('Service'), 'assets', 'Service'),
                 section(_('Environment'), 'assets', 'Environment'),
+                section(_('Budget info'), 'assets', 'BudgetInfo'),
                 section(
                     _('Service Environment'), 'assets', 'ServiceEnvironment'
                 ),

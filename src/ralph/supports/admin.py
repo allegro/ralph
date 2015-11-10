@@ -35,7 +35,7 @@ class SupportAdmin(PermissionAdminMixin, AttachmentsMixin, RalphAdmin):
     ]
     list_filter = [
         'contract_id', 'name', 'serial_no', 'price', 'remarks', 'description',
-        'support_type'
+        'support_type', 'budget_info'
     ]
     date_hierarchy = 'created'
     list_display = [
@@ -44,6 +44,7 @@ class SupportAdmin(PermissionAdminMixin, AttachmentsMixin, RalphAdmin):
     ]
     list_select_related = ['support_type']
     resource_class = resources.SupportResource
+    raw_id_fields = ['budget_info']
     fieldsets = (
         (_('Basic info'), {
             'fields': (
@@ -55,7 +56,8 @@ class SupportAdmin(PermissionAdminMixin, AttachmentsMixin, RalphAdmin):
         (_('Contract info'), {
             'fields': (
                 'contract_id', 'contract_terms', 'sla_type', 'price',
-                'supplier', 'invoice_date', 'invoice_no', 'period_in_months',
+                'supplier', 'invoice_date', 'invoice_no', 'budget_info',
+                'period_in_months',
             )
         }),
     )

@@ -7,7 +7,7 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
-from ralph.assets.models.assets import AssetHolder, Manufacturer
+from ralph.assets.models.assets import AssetHolder, BudgetInfo, Manufacturer
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
 from ralph.lib.mixins.models import (
@@ -154,13 +154,13 @@ class Licence(
     # )
     # TODO. To discuss
     # service_name = models.ForeignKey(Service, null=True, blank=True)
-    # budget_info = models.ForeignKey(
-    #     BudgetInfo,
-    #     blank=True,
-    #     default=None,
-    #     null=True,
-    #     on_delete=models.PROTECT,
-    # )
+    budget_info = models.ForeignKey(
+        BudgetInfo,
+        blank=True,
+        default=None,
+        null=True,
+        on_delete=models.PROTECT,
+    )
 
     _used = None
 
