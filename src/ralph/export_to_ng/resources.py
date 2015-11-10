@@ -750,3 +750,9 @@ class RegionResource(resources.ModelResource):
 
     def dehydrate_users(self, region):
         return ','.join([u.username for u in region.profile.all()])
+
+
+class OfficeInfrastructureResource(resources.ModelResource):
+    class Meta:
+        model = models_assets.Service
+        fields = ['id', 'name', 'created', 'modified']

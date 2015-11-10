@@ -36,6 +36,7 @@ SIMPLE_MODELS = [
     'Accessory',
     # TODO: 'CloudProject',
     'LicenceType',
+    'OfficeInfrastructure',
     'Software',
     # TODO: Database
     # TODO: VIP
@@ -92,6 +93,7 @@ APP_MODELS.update({
     'Warehouse': ralph_assets.models.Warehouse,
     'Service': models_device.ServiceCatalog,
     'Software': ralph_assets.licences.models.SoftwareCategory,
+    'OfficeInfrastructure': ralph_assets.models_assets.Service,
 })
 
 
