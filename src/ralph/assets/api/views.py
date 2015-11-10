@@ -62,3 +62,8 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
         'sn': ['asset__sn'],
         'barcode': ['asset__barcode'],
     }
+
+
+class AssetHolderViewSet(RalphAPIViewSet):
+    queryset = models.AssetHolder.objects.all()
+    serializer_class = serializers.AssetHolderSerializer
