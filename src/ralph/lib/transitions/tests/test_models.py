@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from django.contrib.auth import get_user_model
+from django.test import RequestFactory
+
 from ralph.lib.transitions.models import (
     Action,
     Transition,
@@ -9,6 +12,15 @@ from ralph.tests.models import Order, OrderStatus
 
 
 class TransitionsTest(TransitionTestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.request = RequestFactory()
+        self.request.user = get_user_model().objects.create_user(
+            username='test1',
+            password='password',
+        )
+
     def test_transition_change_status(self):
         order = Order.objects.create()
         transition = Transition.objects.create(
@@ -18,7 +30,7 @@ class TransitionsTest(TransitionTestCase):
         )
 
         self.assertEqual(order.status, OrderStatus.new.id)
-        order.run_status_transition(transition)
+        order.run_status_transition(transition, request=self.request)
         self.assertEqual(order.status, OrderStatus.to_send.id)
 
     def test_run_action_during_transition(self):
@@ -33,7 +45,7 @@ class TransitionsTest(TransitionTestCase):
         def mocked_action(**kwargs):
             mocked_action.runned = True
         order.go_to_post_office = mocked_action
-        order.run_status_transition(transition)
+        order.run_status_transition(transition, request=self.request)
         self.assertTrue(mocked_action.runned)
 
     def test_run_transition_from_string(self):
@@ -45,13 +57,15 @@ class TransitionsTest(TransitionTestCase):
             source=[OrderStatus.to_send.id],
             target=OrderStatus.sended.id,
         )
-        self.assertTrue(order.run_status_transition(transition_name))
+        self.assertTrue(
+            order.run_status_transition(transition_name, request=self.request)
+        )
 
     def test_run_non_existent_transition(self):
         transition_name = 'non_existent_transition'
         order = Order.objects.create()
         with self.assertRaises(Transition.DoesNotExist):
-            order.run_status_transition(transition_name)
+            order.run_status_transition(transition_name, request=self.request)
 
     def test_available_transitions(self):
         order = Order.objects.create()
@@ -84,4 +98,4 @@ class TransitionsTest(TransitionTestCase):
             list(order.get_available_transitions_for_status()), []
         )
         with self.assertRaises(TransitionNotAllowedError):
-            order.run_status_transition(transition)
+            order.run_status_transition(transition, request=self.request)

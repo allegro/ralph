@@ -381,6 +381,7 @@ class DataCenterAsset(Asset):
         )),
         'position': forms.IntegerField(),
     }
+    change_rack.verbose_name = _('Change rack')
 
 
 class Connection(models.Model):

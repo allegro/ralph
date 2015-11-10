@@ -124,6 +124,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             'autocomplete_field': 'user'
         }
     }
+    assign_user.verbose_name = _('Assign user')
 
     @transition_action
     def assign_owner(self, **kwargs):
@@ -135,14 +136,17 @@ class BackOfficeAsset(Regionalizable, Asset):
             'autocomplete_field': 'owner'
         }
     }
+    assign_owner.verbose_name = _('Assign owner')
 
     @transition_action
     def unassign_owner(self, **kwargs):
         self.owner = None
+    unassign_owner.verbose_name = _('Unassign owner')
 
     @transition_action
     def unassign_user(self, **kwargs):
         self.user = None
+    unassign_user.verbose_name = _('Unassign user')
 
     @transition_action
     def assign_loan_end_date(self, **kwargs):
@@ -156,10 +160,12 @@ class BackOfficeAsset(Regionalizable, Asset):
             )
         }
     }
+    assign_loan_end_date.verbose_name = _('Assign loan end date')
 
     @transition_action
     def unassign_loan_end_date(self, **kwargs):
         self.loan_end_date = None
+    unassign_loan_end_date.verbose_name = _('Unassign loan end date')
 
     @transition_action
     def assign_warehouse(self, **kwargs):
@@ -171,10 +177,12 @@ class BackOfficeAsset(Regionalizable, Asset):
             'autocomplete_field': 'warehouse'
         }
     }
+    assign_warehouse.verbose_name = _('Assign warehouse')
 
     @transition_action
     def unassign_licences(self, **kwargs):
         BaseObjectLicence.objects.filter(base_object=self).delete()
+    unassign_licences.verbose_name = _('Unassign licences')
 
     @transition_action
     def change_hostname(self, **kwargs):
@@ -195,6 +203,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             )
         }
     }
+    change_hostname.verbose_name = _('Change hostname')
 
     @transition_action
     def change_user_and_owner(self, **kwargs):
@@ -219,6 +228,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             'condition': lambda obj: bool(obj.owner),
         }
     }
+    change_user_and_owner.verbose_name = _('Change user and owner')
 
     def _generate_report(self, name, request):
         report = Report.objects.get(name=name)
@@ -259,6 +269,9 @@ class BackOfficeAsset(Regionalizable, Asset):
         attachment = self._generate_report(name='release', request=request)
         attachment.description = kwargs.get('comment', '')
         attachment.save()
+
+        return attachment
+
     release_report.form_fields = {
         'comment': {
             'field': forms.CharField(
@@ -267,7 +280,10 @@ class BackOfficeAsset(Regionalizable, Asset):
             )
         }
     }
+    release_report.verbose_name = _('Release report')
 
     @transition_action
     def return_report(self, request, **kwargs):
         self._generate_report(name='return', request=request)
+
+    return_report.verbose_name = _('Return report')

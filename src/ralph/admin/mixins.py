@@ -195,6 +195,7 @@ class RalphAdminMixin(RalphAutocompleteMixin):
             extra_context['change_views'] = views
         extra_context['header_obj_name'] = self.model._meta.verbose_name
         self._initialize_search_form(extra_context)
+        extra_context['admin_view'] = self
         return super(RalphAdminMixin, self).changeform_view(
             request, object_id, form_url, extra_context
         )

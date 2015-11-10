@@ -80,7 +80,7 @@ class RunTransitionView(RalphTemplateView):
             transition=self.transition,
             field=self.transition.model.field_name,
             data=form.cleaned_data,
-            request=self.request,
+            request=self.request
         )
         messages.success(self.request, _('Transitions performed successfully'))
         return HttpResponseRedirect(self.obj.get_absolute_url())

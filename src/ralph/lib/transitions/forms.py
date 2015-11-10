@@ -18,11 +18,16 @@ class TransitionForm(forms.ModelForm):
         self.fields['target'] = forms.ChoiceField(
             choices=(('', '-------'),) + choices
         )
-        self.fields['actions'].widget = forms.CheckboxSelectMultiple()
-        self.fields['actions'].required = False
-        self.fields['actions'].queryset = Action.objects.filter(
-            content_type=self._transition_model_instance.content_type
+        actions_choices = [
+            (i.id, getattr(model, i.name).verbose_name)
+            for i in Action.objects.filter(
+                content_type=self._transition_model_instance.content_type
+            )
+        ]
+        self.fields['actions'] = forms.MultipleChoiceField(
+            choices=actions_choices, widget=forms.CheckboxSelectMultiple()
         )
+        self.fields['actions'].required = False
 
     class Meta:
         model = Transition

@@ -73,8 +73,11 @@
 
         {# JavaScript for prepopulated fields #}
         {% prepopulated_fields_js %}
-
+        {% if admin_view.show_transition_history and original %}
+          {% transition_history original %}
+        {% endif %}
       </div>
+
       {% block submit_buttons_bottom %}{% ralph_submit_row %}{% endblock %}
     </form>
   </div>

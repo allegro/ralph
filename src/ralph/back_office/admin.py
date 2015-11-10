@@ -72,6 +72,7 @@ class BackOfficeAssetAdmin(
     """Back Office Asset admin class."""
     form = BackOfficeAssetAdminForm
     actions = ['bulk_edit_action']
+    show_transition_history = True
     change_views = [
         BackOfficeAssetLicence,
         BackOfficeAssetSupport,
@@ -119,7 +120,7 @@ class BackOfficeAssetAdmin(
             'fields': (
                 'hostname', 'model', 'barcode', 'sn', 'imei', 'niw', 'status',
                 'warehouse', 'location', 'region', 'loan_end_date',
-                'service_env', 'remarks', 'tags', 'property_of'
+                'service_env', 'remarks', 'tags', 'property_of', 'task_url'
             )
         }),
         (_('User Info'), {
@@ -130,9 +131,8 @@ class BackOfficeAssetAdmin(
         (_('Financial Info'), {
             'fields': (
                 'order_no', 'purchase_order', 'invoice_date', 'invoice_no',
-                'task_url', 'price', 'depreciation_rate',
-                'depreciation_end_date', 'force_depreciation', 'provider',
-
+                'price', 'depreciation_rate', 'depreciation_end_date',
+                'force_depreciation', 'provider',
             )
         }),
     )
