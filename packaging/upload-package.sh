@@ -7,7 +7,7 @@ SRC_DIR="$DIR/.."
 
 cd $SRC_DIR
 
-if [ ! -z "$BINTRAY_APIKEY" ]; then 
+if [ ! -z "$BINTRAY_APIKEY" ]; then
 	DEB_NAME=$(ls $SRC_DIR/../*.deb | sort -Vr  | head -1)
 	echo "Uploading $DEB_NAME"
 	GENERIC_DEB_NAME=`basename $DEB_NAME`

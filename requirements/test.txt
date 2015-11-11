@@ -1,9 +1,10 @@
 -e .
 -r prod_ldap.txt
 -r docs.txt
-factory-boy
 coverage
-sphinx
-flake8
-django-plainpasswordhasher
+coveralls
 ddt
+django-plainpasswordhasher
+factory-boy
+flake8
+sphinx
