@@ -2,8 +2,10 @@
 import inspect
 import operator
 
+from django import forms
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import FieldDoesNotExist
 from django.db import models
 from django.db.models.base import ModelBase
 from django.db.models.signals import post_migrate
@@ -45,11 +47,19 @@ def run_field_transition(instance, transition, field, data={}, **kwargs):
                 if key.startswith(action.name)
             }
             for k, v in defaults.items():
-                field = get_field_by_relation_path(instance, k)
                 value = v
-                if field.rel:
-                    value = str(field.rel.to.objects.get(pk=v))
-                history_kwargs[str(field.verbose_name)] = value
+                try:
+                    field = get_field_by_relation_path(instance, k)
+                    field_name = field.verbose_name
+                    if field.rel:
+                        value = str(field.rel.to.objects.get(pk=v))
+                except FieldDoesNotExist:
+                    field = func.form_fields[k]['field']
+                    if isinstance(field, forms.ChoiceField):
+                        value = dict(field.choices).get(int(v))
+
+                    field_name = field.label
+                history_kwargs[str(field_name)] = value
 
             defaults.update(kwargs)
             result = func(**defaults)
