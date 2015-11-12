@@ -221,6 +221,7 @@ class BackOfficeAsset(Regionalizable, Asset):
         user_id = kwargs.get('user', None)
         user = UserModel.objects.get(id=user_id)
         owner_id = kwargs.get('owner', None)
+        self.user = user
         if not owner_id:
             self.owner = user
         else:
