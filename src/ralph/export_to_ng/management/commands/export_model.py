@@ -37,6 +37,7 @@ SIMPLE_MODELS = [
     # TODO: 'CloudProject',
     'LicenceType',
     'OfficeInfrastructure',
+    'BudgetInfo',
     'Software',
     # TODO: Database
     # TODO: VIP
