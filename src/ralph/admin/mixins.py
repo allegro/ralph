@@ -30,28 +30,6 @@ FORMFIELD_FOR_DBFIELD_DEFAULTS = {
 }
 
 
-def get_common_media():
-    """
-    Shared across extra views and admin class
-    """
-    js = map(lambda x: os.path.join(*x), [
-        ('admin', 'js', 'core.js'),
-        ('admin', 'js', 'jquery.js'),
-        ('admin', 'js', 'jquery.init.js'),
-        ('admin', 'js', 'actions.js'),
-        ('admin', 'js', 'admin', 'RelatedObjectLookups.js'),
-        ('vendor', 'js', 'jquery.js'),
-        ('vendor', 'js', 'foundation.min.js'),
-        ('vendor', 'js', 'modernizr.js'),
-        ('src', 'js', 'fill-fields.js'),
-        ('vendor', 'js', 'foundation-datepicker.js'),
-        ('src', 'js', 'foundation-datepicker-init.js'),
-    ])
-    return forms.Media(
-        js=[static('%s' % url) for url in js],
-    )
-
-
 def get_inline_media():
     js = map(lambda x: os.path.join(*x), [
         ('admin', 'js', 'inlines.js'),
@@ -231,9 +209,7 @@ class RalphAdmin(
     RalphAdminMixin,
     VersionAdmin
 ):
-    @property
-    def media(self):
-        return super().media + get_common_media()
+    pass
 
 
 class RalphTabularInline(
@@ -257,7 +233,6 @@ class RalphTemplateView(TemplateView, metaclass=PermissionViewMetaClass):
             **kwargs
         )
         context['site_header'] = settings.ADMIN_SITE_HEADER
-        context['media'] = get_common_media()
         # checks if user is allowed to see elements in template
         context['has_permission'] = self.request.user.is_authenticated()
         return context

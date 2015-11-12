@@ -4,12 +4,7 @@ from copy import copy
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import get_object_or_404
 
-from ralph.admin.mixins import (
-    get_common_media,
-    get_inline_media,
-    RalphAdmin,
-    RalphTemplateView
-)
+from ralph.admin.mixins import get_inline_media, RalphAdmin, RalphTemplateView
 from ralph.admin.sites import ralph_site
 from ralph.helpers import get_model_view_url_name
 from ralph.lib.permissions.views import PermissionViewMetaClass
@@ -132,7 +127,7 @@ class RalphDetailView(
         context = super().get_context_data(**kwargs)
         context['object'] = context['original'] = self.object
         context['change_views'] = self.views
-        context['media'] += get_common_media() + get_inline_media()
+        context['media'] = get_inline_media()
         return context
 
     @classmethod
