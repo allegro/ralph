@@ -255,6 +255,11 @@ class LicenceResource(ImportForeignKeyMixin, resources.ModelResource):
         attribute='region',
         widget=ImportedForeignKeyWidget(Region),
     )
+    office_infrastructure = fields.Field(
+        column_name='office_infrastructure',
+        attribute='office_infrastructure',
+        widget=ImportedForeignKeyWidget(OfficeInfrastructure),
+    )
 
     class Meta:
         model = Licence
