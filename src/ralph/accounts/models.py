@@ -106,7 +106,7 @@ class RalphUser(AbstractUser, AdminAbsoluteUrlMixin):
         max_length=256,
         blank=True,
     )
-    regions = models.ManyToManyField(Region, related_name='users')
+    regions = models.ManyToManyField(Region, related_name='users', blank=True)
     team = models.ForeignKey(Team, null=True, blank=True)
 
     class Meta(AbstractUser.Meta):
