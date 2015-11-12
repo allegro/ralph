@@ -209,7 +209,9 @@ class RalphAdmin(
     RalphAdminMixin,
     VersionAdmin
 ):
-    pass
+    @property
+    def media(self):
+        return forms.Media()
 
 
 class RalphTabularInline(
