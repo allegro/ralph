@@ -144,16 +144,9 @@ class Licence(
         blank=True,
         default='',
     )
-    # TODO. To discuss
-    # parent = TreeForeignKey(
-    #     'self',
-    #     null=True,
-    #     blank=True,
-    #     related_name='children',
-    #     verbose_name=_('Parent licence'),
-    # )
-    # TODO. To discuss
-    # service_name = models.ForeignKey(Service, null=True, blank=True)
+    office_infrastructure = models.ForeignKey(
+        'back_office.OfficeInfrastructure', null=True, blank=True
+    )
     budget_info = models.ForeignKey(
         BudgetInfo,
         blank=True,
