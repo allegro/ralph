@@ -11,7 +11,8 @@ from ralph.back_office.api import (
     BackOfficeAssetViewSet
 )
 from ralph.back_office.models import BackOfficeAsset
-from ralph.licences.api import LicenceUserViewSet, SimpleLicenceUserSerializer
+from ralph.licences.api import LicenceUserViewSet
+from ralph.licences.api_simple import SimpleLicenceUserSerializer
 from ralph.licences.models import LicenceUser
 
 

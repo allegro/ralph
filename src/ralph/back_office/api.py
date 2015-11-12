@@ -1,22 +1,14 @@
 # -*- coding: utf-8 -*-
-from django.contrib.auth import get_user_model
-
+from ralph.accounts.api_simple import SimpleRalphUserSerializer
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.assets.api.serializers import AssetSerializer
+from ralph.assets.api.views import BaseObjectViewSet
 from ralph.back_office.admin import BackOfficeAssetAdmin
 from ralph.back_office.models import (
     BackOfficeAsset,
     OfficeInfrastructure,
     Warehouse
 )
-
-
-class SimpleRalphUserSerializer(RalphAPISerializer):
-    class Meta:
-        model = get_user_model()
-        fields = ('id', 'url', 'username', 'first_name', 'last_name')
-        read_only_fields = fields
-        depth = 1
 
 
 class WarehouseSerializer(RalphAPISerializer):
@@ -51,9 +43,9 @@ class BackOfficeAssetSerializer(AssetSerializer):
 class BackOfficeAssetViewSet(RalphAPIViewSet):
     select_related = BackOfficeAssetAdmin.list_select_related + [
         'service_env', 'service_env__service', 'service_env__environment',
-        'user', 'owner',
+        'user', 'owner', 'property_of', 'office_infrastructure',
     ]
-    prefetch_related = [
+    prefetch_related = BaseObjectViewSet.prefetch_related + [
         'user__groups', 'user__user_permissions',
         'service_env__service__environments',
         'service_env__service__business_owners',

@@ -16,6 +16,7 @@ from ralph.assets.models import (
     Service,
     ServiceEnvironment
 )
+from ralph.licences.api_simple import SimpleBaseObjectLicenceSerializer
 
 
 class BusinessSegmentSerializer(RalphAPISerializer):
@@ -125,6 +126,7 @@ class BaseObjectSerializer(RalphAPISerializer):
     Base class for other serializers inheriting from `BaseObject`.
     """
     service_env = ServiceEnvironmentSerializer()
+    licences = SimpleBaseObjectLicenceSerializer(read_only=True, many=True)
 
     class Meta:
         model = BaseObject
