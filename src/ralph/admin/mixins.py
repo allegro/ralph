@@ -7,7 +7,6 @@ from django import forms
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.templatetags.admin_static import static
-from django.core import urlresolvers
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.http import HttpResponseRedirect
@@ -126,7 +125,7 @@ class RalphAdminMixin(RalphAutocompleteMixin):
             field = get_field_by_relation_path(self.model, field_name)
             search_fields.append(field.verbose_name)
         extra_context['search_fields'] = search_fields
-        extra_context['search_url'] = urlresolvers.reverse(
+        extra_context['search_url'] = reverse(
             'admin:{app_label}_{model_name}_changelist'.format(
                 app_label=self.model._meta.app_label,
                 model_name=self.model._meta.model_name,

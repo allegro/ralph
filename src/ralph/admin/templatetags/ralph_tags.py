@@ -15,6 +15,17 @@ from ralph.lib.transitions.models import TransitionsHistory
 register = Library()
 
 
+@register.inclusion_tag(
+    'admin/templatetags/download_attachment.html', takes_context=True
+)
+def download_attachment(context):
+    return {
+        'attachment': context.request.session.pop(
+            'attachment_to_download', None
+        )
+    }
+
+
 @register.inclusion_tag('admin/templatetags/tabs.html')
 def views_tabs(views, name=None, obj=None):
     """
