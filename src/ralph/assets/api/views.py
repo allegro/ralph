@@ -14,6 +14,11 @@ class ProfitCenterViewSet(RalphAPIViewSet):
     serializer_class = serializers.ProfitCenterSerializer
 
 
+class BudgetInfoViewSet(RalphAPIViewSet):
+    queryset = models.BudgetInfo.objects.all()
+    serializer_class = serializers.BudgetInfoSerializer
+
+
 class EnvironmentViewSet(RalphAPIViewSet):
     queryset = models.Environment.objects.all()
     serializer_class = serializers.EnvironmentSerializer

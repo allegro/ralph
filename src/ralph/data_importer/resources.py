@@ -101,6 +101,11 @@ class BackOfficeAssetResource(ImportForeignKeyMixin, resources.ModelResource):
         attribute='property_of',
         widget=ImportedForeignKeyWidget(AssetHolder),
     )
+    budget_info = fields.Field(
+        column_name='budget_info',
+        attribute='budget_info',
+        widget=ImportedForeignKeyWidget(assets.BudgetInfo),
+    )
 
     class Meta:
         model = BackOfficeAsset
@@ -196,6 +201,11 @@ class DataCenterAssetResource(ImportForeignKeyMixin, resources.ModelResource):
         column_name='rack',
         attribute='rack',
         widget=ImportedForeignKeyWidget(physical.Rack),
+    )
+    budget_info = fields.Field(
+        column_name='budget_info',
+        attribute='budget_info',
+        widget=ImportedForeignKeyWidget(assets.BudgetInfo),
     )
 
     class Meta:
@@ -401,3 +411,9 @@ class OfficeInfrastructureResource(
 
     class Meta:
         model = OfficeInfrastructure
+
+
+class BudgetInfoResource(ImportForeignKeyMixin, resources.ModelResource):
+
+    class Meta:
+        model = assets.BudgetInfo

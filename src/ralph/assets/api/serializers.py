@@ -8,6 +8,7 @@ from ralph.assets.models import (
     AssetHolder,
     AssetModel,
     BaseObject,
+    BudgetInfo,
     BusinessSegment,
     Category,
     Environment,
@@ -21,6 +22,11 @@ from ralph.assets.models import (
 class BusinessSegmentSerializer(RalphAPISerializer):
     class Meta:
         model = BusinessSegment
+
+
+class BudgetInfoSerializer(RalphAPISerializer):
+    class Meta:
+        model = BudgetInfo
 
 
 class ProfitCenterSerializer(RalphAPISerializer):

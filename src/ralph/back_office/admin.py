@@ -99,7 +99,7 @@ class BackOfficeAssetAdmin(
         'model__manufacturer', 'location', 'remarks',
         'user', 'owner', 'user__segment', 'user__company', 'user__department',
         'user__employee_id', 'property_of', 'invoice_no', 'invoice_date',
-        'order_no', 'provider',
+        'order_no', 'provider', 'budget_info',
         'depreciation_rate', 'depreciation_end_date', 'force_depreciation'
     ]
     date_hierarchy = 'created'
@@ -109,7 +109,7 @@ class BackOfficeAssetAdmin(
     ]
     raw_id_fields = [
         'model', 'user', 'owner', 'service_env', 'region', 'warehouse',
-        'property_of'
+        'property_of', 'budget_info', 'office_infrastructure'
     ]
     resource_class = resources.BackOfficeAssetResource
     bulk_edit_list = [
@@ -125,7 +125,8 @@ class BackOfficeAssetAdmin(
             'fields': (
                 'hostname', 'model', 'barcode', 'sn', 'imei', 'niw', 'status',
                 'warehouse', 'location', 'region', 'loan_end_date',
-                'service_env', 'remarks', 'tags', 'property_of', 'task_url'
+                'service_env', 'remarks', 'tags', 'property_of', 'task_url',
+                'office_infrastructure'
             )
         }),
         (_('User Info'), {
@@ -137,7 +138,8 @@ class BackOfficeAssetAdmin(
             'fields': (
                 'order_no', 'purchase_order', 'invoice_date', 'invoice_no',
                 'price', 'depreciation_rate', 'depreciation_end_date',
-                'force_depreciation', 'provider', 'office_infrastructure'
+                'force_depreciation', 'provider', 'budget_info',
+                'office_infrastructure'
             )
         }),
     )

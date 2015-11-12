@@ -4,6 +4,7 @@ from ralph.assets.models.assets import (
     Asset,
     AssetModel,
     BaseObject,
+    BudgetInfo,
     BusinessSegment,
     Category,
     Environment,
@@ -40,6 +41,12 @@ class ServiceAdmin(RalphAdmin):
 
 @register(Manufacturer)
 class ManufacturerAdmin(RalphAdmin):
+
+    search_fields = ['name']
+
+
+@register(BudgetInfo)
+class BudgetInfoAdmin(RalphAdmin):
 
     search_fields = ['name']
 
