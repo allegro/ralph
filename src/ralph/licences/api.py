@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
+from ralph.accounts.api_simple import SimpleRalphUserSerializer
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
-from ralph.back_office.api import SimpleRalphUserSerializer
 from ralph.licences.models import (
     BaseObjectLicence,
     Licence,
@@ -8,23 +8,6 @@ from ralph.licences.models import (
     LicenceUser,
     Software
 )
-
-
-# ==================
-# SIMPLE SERIALIZERS
-# ==================
-class SimpleLicenceSerializer(RalphAPISerializer):
-    class Meta:
-        model = Licence
-        depth = 1
-        exclude = ('base_objects', 'users')
-
-
-class SimpleLicenceUserSerializer(RalphAPISerializer):
-    licence = SimpleLicenceSerializer()
-
-    class Meta:
-        model = LicenceUser
 
 
 # ===========
@@ -72,6 +55,10 @@ class SoftwareSerializer(RalphAPISerializer):
 class BaseObjectLicenceViewSet(RalphAPIViewSet):
     queryset = BaseObjectLicence.objects.all()
     serializer_class = BaseObjectLicenceSerializer
+    select_related = [
+        'licence', 'licence__region', 'licence__manufacturer',
+        'licence__licence_type', 'licence__software', 'base_object'
+    ]
 
 
 class LicenceTypeViewSet(RalphAPIViewSet):

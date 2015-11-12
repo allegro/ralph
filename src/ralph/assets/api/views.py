@@ -1,7 +1,12 @@
+# -*- coding: utf-8 -*-
+from django.db.models import Prefetch
+
 from ralph.api import RalphAPIViewSet
 from ralph.api.utils import PolymorphicViewSetMixin
 from ralph.assets import models
 from ralph.assets.api import serializers
+from ralph.licences.api import BaseObjectLicenceViewSet
+from ralph.licences.models import BaseObjectLicence
 
 
 class BusinessSegmentViewSet(RalphAPIViewSet):
@@ -60,7 +65,11 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
     queryset = models.BaseObject.polymorphic_objects.all()
     serializer_class = serializers.BaseObjectPolymorphicSerializer
     http_method_names = ['get', 'options', 'head']
-
+    prefetch_related = [
+        Prefetch('licences', queryset=BaseObjectLicence.objects.select_related(
+            *BaseObjectLicenceViewSet.select_related
+        )),
+    ]
     filter_fields = ['id']
     extend_filter_fields = {
         'name': ['asset__hostname'],
