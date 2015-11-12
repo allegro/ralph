@@ -188,11 +188,8 @@
             $.data(this, 'autocomplete', new AutocompleteWidget(this, options));
         });
     };
-})(jQuery, Foundation);
-
-(function($) {
     function updateAfterClose(id, newValue) {
         var $parent = $('#' + id).val(newValue);
     }
     $('.autocomplete-widget').autocomplete();
-}(jQuery));
+})(ralph.jQuery, Foundation);

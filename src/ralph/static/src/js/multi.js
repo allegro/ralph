@@ -87,4 +87,4 @@
             new PermissionWidget(value);
         });
     });
-})(django.jQuery);
+})(ralph.jQuery);
