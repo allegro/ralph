@@ -279,9 +279,8 @@ class BackOfficeAsset(Regionalizable, Asset):
         attachment = self._generate_report(name='release', request=request)
         attachment.description = kwargs.get('comment', '')
         attachment.save()
-
         return attachment
-
+    release_report.return_attachment = True
     release_report.form_fields = {
         'comment': {
             'field': forms.CharField(
@@ -295,5 +294,5 @@ class BackOfficeAsset(Regionalizable, Asset):
     @transition_action
     def return_report(self, request, **kwargs):
         self._generate_report(name='return', request=request)
-
+    return_report.return_attachment = True
     return_report.verbose_name = _('Return report')

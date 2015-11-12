@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib import messages
+from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
@@ -7,6 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.admin.mixins import RalphTemplateView
 from ralph.admin.sites import ralph_site
 from ralph.admin.widgets import AutocompleteWidget
+from ralph.helpers import get_model_view_url_name
 from ralph.lib.transitions.models import run_field_transition, Transition
 
 
@@ -16,14 +18,20 @@ class RunTransitionView(RalphTemplateView):
     def dispatch(
         self, request, object_pk, transition_pk, model, *args, **kwargs
     ):
+        self.model = model
         self.obj = get_object_or_404(model, pk=object_pk)
         self.transition = get_object_or_404(Transition, pk=transition_pk)
-        self.actions = self.collect_actions(self.transition)
+        self.actions, self.return_attachment = self.collect_actions(self.transition)  # noqa
         return super().dispatch(request, *args, **kwargs)
 
     def collect_actions(self, transition):
         names = transition.actions.values_list('name', flat=True).all()
-        return [getattr(self.obj, name) for name in names]
+        actions = [getattr(self.obj, name) for name in names]
+        return_attachment = [
+            getattr(action, 'return_attachment', False)
+            for action in actions
+        ]
+        return actions, any(return_attachment)
 
     def get_form_fields_from_actions(self):
         fields = {}
@@ -75,12 +83,21 @@ class RunTransitionView(RalphTemplateView):
         return self.render_to_response(context)
 
     def form_valid(self, form):
-        run_field_transition(
+        status, attachment = run_field_transition(
             instance=self.obj,
             transition=self.transition,
             field=self.transition.model.field_name,
             data=form.cleaned_data,
             request=self.request
         )
-        messages.success(self.request, _('Transitions performed successfully'))
+        if status:
+            messages.success(
+                self.request, _('Transitions performed successfully')
+            )
+        if attachment:
+            url = reverse(
+                get_model_view_url_name(self.model, 'attachment'),
+                args=(attachment.id, attachment.original_filename)
+            )
+            self.request.session['attachment_to_download'] = url
         return HttpResponseRedirect(self.obj.get_absolute_url())

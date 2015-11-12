@@ -50,3 +50,5 @@ ALLOW_COMMENT = True
 Allowed params for field::
     ``field`` - standard form field, e.g. from ``django.forms``,
     ``condition`` - function wich accept one parameter and return boolean, when condition have be met the field will be shown.
+
+Set ``return_attachment`` to ``True`` if action return attachment (e.g.: PDF document).

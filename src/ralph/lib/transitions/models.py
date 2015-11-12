@@ -40,37 +40,38 @@ def run_field_transition(instance, transition, field, data={}, **kwargs):
     history_kwargs = {}
     for action in transition.actions.all():
         func = getattr(instance, action.name)
-        if func:
-            defaults = {
-                key.split('__')[1]: value
-                for key, value in data.items()
-                if key.startswith(action.name)
-            }
-            for k, v in defaults.items():
-                value = v
-                try:
-                    field = get_field_by_relation_path(instance, k)
-                    field_name = field.verbose_name
-                    if field.rel:
-                        value = str(field.rel.to.objects.get(pk=v))
-                except FieldDoesNotExist:
-                    field = func.form_fields[k]['field']
-                    if isinstance(field, forms.ChoiceField):
-                        value = dict(field.choices).get(int(v))
+        if not func:
+            continue
+        defaults = {
+            key.split('__')[1]: value
+            for key, value in data.items()
+            if key.startswith(action.name)
+        }
+        for k, v in defaults.items():
+            value = v
+            try:
+                field = get_field_by_relation_path(instance, k)
+                field_name = field.verbose_name
+                if field.rel:
+                    value = str(field.rel.to.objects.get(pk=v))
+            except FieldDoesNotExist:
+                field = func.form_fields[k]['field']
+                if isinstance(field, forms.ChoiceField):
+                    value = dict(field.choices).get(int(v))
 
-                    field_name = field.label
-                history_kwargs[str(field_name)] = value
+                field_name = field.label
+            history_kwargs[str(field_name)] = value
 
-            defaults.update(kwargs)
-            result = func(**defaults)
-            action_names.append(str(getattr(
-                func,
-                'verbose_name',
-                func.__name__.replace('_', ' ').capitalize()
-            )))
+        defaults.update(kwargs)
+        result = func(**defaults)
+        action_names.append(str(getattr(
+            func,
+            'verbose_name',
+            func.__name__.replace('_', ' ').capitalize()
+        )))
 
-            if isinstance(result, Attachment):
-                attachment = result
+        if isinstance(result, Attachment):
+            attachment = result
 
     TransitionsHistory.objects.create(
         transition=transition,
@@ -81,7 +82,7 @@ def run_field_transition(instance, transition, field, data={}, **kwargs):
         actions=action_names
     )
     instance.save()
-    return True
+    return True, attachment
 
 
 def get_available_transitions_for_field(instance, field):
