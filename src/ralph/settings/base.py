@@ -171,7 +171,10 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',  # noqa
     'PAGE_SIZE': 10,
-    'DEFAULT_METADATA_CLASS': 'ralph.lib.api.utils.RalphApiMetadata'
+    'DEFAULT_METADATA_CLASS': 'ralph.lib.api.utils.RalphApiMetadata',
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.AcceptHeaderVersioning',  # noqa
+    'DEFAULT_VERSION': 'v1',
+    'ALLOWED_VERSIONS': ('v1',)
 }
 
 REDIS_CONNECTION = {

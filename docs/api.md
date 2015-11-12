@@ -17,6 +17,17 @@ In each request to API you have to use your API Token Key in request header:
 
     curl -X GET https://<YOUR-RALPH-URL>/api/ -H 'Authorization: Token <YOUR-TOKEN>'
 
+## API Versioning
+
+Api requires the client to specify the version in the Accept header.
+
+```
+Example:
+GET /bookings/ HTTP/1.1
+Host: example.com
+Accept: application/json; version=v1
+```
+
 ## Output format
 
 Ralph API supports JSON output format (by default) and HTML preview in your browser (go to https://<YOUR-RALPH-URL>/api/ to see preview).
