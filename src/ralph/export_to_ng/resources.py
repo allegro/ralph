@@ -701,11 +701,14 @@ class LicenceResource(resources.ModelResource):
             'number_bought', 'sn', 'niw', 'valid_thru',
             'order_no', 'price', 'accounting_id', 'invoice_date', 'provider',
             'invoice_no', 'remarks', 'license_details', 'licence_type',
-            'software', 'region', 'budget_info'
+            'software', 'region', 'budget_info', 'office_infrastructure'
         ]
 
     def get_queryset(self):
         return Licence.admin_objects.all()
+
+    def dehydrate_office_infrastructure(self, licence):
+        return licence.service_name_id or ''
 
     def dehydrate_software(self, licence):
         return licence.software_category_id or ''
