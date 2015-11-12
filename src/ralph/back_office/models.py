@@ -9,6 +9,8 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from django.forms import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
@@ -296,3 +298,17 @@ class BackOfficeAsset(Regionalizable, Asset):
         self._generate_report(name='return', request=request)
     return_report.return_attachment = True
     return_report.verbose_name = _('Return report')
+
+
+@receiver(pre_save, sender=BackOfficeAsset)
+def hostname_assigning(sender, instance, raw, using, **kwargs):
+    """Hostname is assigned for new assets with in_progress status or
+    edited assets when status has changed to in_progress.
+    """
+    if getattr(settings, 'BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME', None):
+        if instance.status == BackOfficeAssetStatus.in_progress:
+            if instance.pk:
+                bo_asset = BackOfficeAsset.objects.get(pk=instance.pk)
+                if bo_asset.status == BackOfficeAssetStatus.in_progress:
+                    return
+            instance._try_assign_hostname(commit=False)

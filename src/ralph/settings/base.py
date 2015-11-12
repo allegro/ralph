@@ -183,6 +183,8 @@ REDIS_CONNECTION = {
     'DB': int(os.environ.get('REDIS_PORT_6379_TCP_DB', 0)),
 }
 
+BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME = True
+
 TAGGIT_CASE_INSENSITIVE = True  # case insensitive tags
 
 RALPH_EXTERNAL_SERVICES = {
