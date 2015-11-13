@@ -12,6 +12,7 @@ from django.db import models
 from django.http import HttpResponseRedirect
 from django.views.generic import TemplateView
 from import_export.admin import ImportExportModelAdmin
+from mptt.admin import MPTTAdminForm, MPTTModelAdmin
 from reversion import VersionAdmin
 
 from ralph.admin import widgets
@@ -85,6 +86,10 @@ class RalphAdminChecks(admin.checks.ModelAdminChecks):
                 id='admin.E016'
             )
         return result
+
+
+class RalphMPTTAdminForm(RalphAdminFormMixin, MPTTAdminForm):
+    pass
 
 
 class RalphAdminMixin(RalphAutocompleteMixin):
@@ -237,6 +242,10 @@ class RalphTemplateView(TemplateView, metaclass=PermissionViewMetaClass):
         # checks if user is allowed to see elements in template
         context['has_permission'] = self.request.user.is_authenticated()
         return context
+
+
+class RalphMPTTAdmin(MPTTModelAdmin, RalphAdmin):
+    form = RalphMPTTAdminForm
 
 
 class BulkEditChangeListMixin(object):

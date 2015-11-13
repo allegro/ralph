@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin import RalphAdmin, RalphMPTTAdmin, RalphTabularInline, register
 from ralph.assets.models.assets import (
     Asset,
     AssetModel,
@@ -73,10 +73,11 @@ class ProfitCenterAdmin(RalphAdmin):
 class AssetModelAdmin(PermissionAdminMixin, RalphAdmin):
 
     resource_class = resources.AssetModelResource
-    list_select_related = ['manufacturer']
-    list_display = ['name', 'manufacturer']
+    list_select_related = ['manufacturer', 'category']
+    list_display = ['name', 'type', 'manufacturer', 'category']
     raw_id_fields = ['manufacturer']
     search_fields = ['name', 'manufacturer__name']
+    list_filter = ['type', 'manufacturer', 'category']
     ordering = ['name']
     fields = (
         'name', 'manufacturer', 'category', 'type', 'has_parent',
@@ -86,10 +87,14 @@ class AssetModelAdmin(PermissionAdminMixin, RalphAdmin):
 
 
 @register(Category)
-class CategoryAdmin(RalphAdmin):
+class CategoryAdmin(RalphMPTTAdmin):
 
     search_fields = ['name']
+    list_display = ['name', 'code']
     resource_class = resources.CategoryResource
+
+    def get_actions(self, request):
+        return []
 
 
 @register(ComponentModel)

@@ -11,7 +11,10 @@ from django.db.models import Q
 from django.forms.utils import flatatt
 from django.utils.encoding import smart_text
 from django.utils.formats import get_format
+from django.utils.html import conditional_escape, mark_safe
 from django.utils.translation import ugettext_lazy as _
+from mptt.fields import TreeForeignKey
+from mptt.settings import DEFAULT_LEVEL_INDICATOR
 
 from ralph.admin.autocomplete import DETAIL_PARAM, QUERY_PARAM
 
@@ -244,15 +247,30 @@ class TextListFilter(BaseCustomFilter):
         },)
 
 
-class RelatedFieldListFilter(BaseCustomFilter):
+class RelatedFieldListFilter(ChoicesListFilter):
+    """
+    Filter for related fields (ForeignKeys) which is displayed as regular HTML
+    select list (all options are fetched at once).
+    """
+    def label_for_instance(self, obj):
+        return smart_text(obj)
+
+    @property
+    def choices_list(self):
+        model = get_model_from_relation(self.field)
+        queryset = model._default_manager.all()
+        return [(i._get_pk_val(), self.label_for_instance(i)) for i in queryset]
+
+
+class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
 
     """Filter for Foregin key field."""
 
     template = "admin/filters/related_filter.html"
     empty_value = '##@_empty_@##'
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, field, request, params, model, model_admin, field_path):
+        super().__init__(field, request, params, model, model_admin, field_path)
         self.field_model = get_model_from_relation(self.field)
 
     def queryset(self, request, queryset):
@@ -315,6 +333,29 @@ class RelatedFieldListFilter(BaseCustomFilter):
         },)
 
 
+class TreeRelatedFieldListFilter(RelatedFieldListFilter):
+    """
+    Related filter for TreeForeignKeys.
+    """
+    def __init__(self, field, request, params, model, model_admin, field_path):
+        self.level_indicator = DEFAULT_LEVEL_INDICATOR
+        super().__init__(field, request, params, model, model_admin, field_path)
+
+    def _get_level_indicator(self, obj):
+        """
+        Generates level indicator (---) for object based on object level in tree
+        hierarchy.
+        """
+        level = getattr(obj, obj._mptt_meta.level_attr)
+        return mark_safe(conditional_escape(self.level_indicator) * level)
+
+    def label_for_instance(self, obj):
+        level_indicator = self._get_level_indicator(obj)
+        return mark_safe(
+            level_indicator + ' ' + conditional_escape(smart_text(obj))
+        )
+
+
 def register_custom_filters():
     """
     Register custom filters for the Django admin.
@@ -333,7 +374,21 @@ def register_custom_filters():
         (lambda f: isinstance(f, (
             models.CharField, models.TextField, models.IntegerField
         )), TextListFilter),
-        (lambda f: isinstance(f, models.ForeignKey), RelatedFieldListFilter),
+        (
+            lambda f: isinstance(f, TreeForeignKey),
+            TreeRelatedFieldListFilter
+        ),
+        (
+            lambda f: (
+                isinstance(f, TreeForeignKey) and
+                not getattr(f, '_autocomplete', True)
+            ),
+            RelatedFieldListFilter
+        ),
+        (
+            lambda f: isinstance(f, models.ForeignKey),
+            RelatedAutocompleteFieldListFilter
+        ),
     ]
 
     for func, filter_class in field_filter_mapper:
