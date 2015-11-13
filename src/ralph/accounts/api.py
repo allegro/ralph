@@ -19,6 +19,7 @@ from ralph.licences.models import LicenceUser
 class GroupSerializer(RalphAPISerializer):
     class Meta:
         model = Group
+        exclude = ('permissions',)
 
 
 class GroupViewSet(RalphAPIViewSet):
