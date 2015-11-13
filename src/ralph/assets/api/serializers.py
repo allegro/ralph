@@ -61,11 +61,25 @@ class SaveServiceSerializer(RalphAPISerializer):
         """
         Save service-environments many-to-many records.
         """
-        ServiceEnvironment.objects.filter(service=instance).delete()
-        ServiceEnvironment.objects.bulk_create([
-            ServiceEnvironment(service=instance, environment=env)
-            for env in environments
-        ])
+        # delete ServiceEnv for missing environments
+        ServiceEnvironment.objects.filter(service=instance).exclude(
+            environment__in=environments
+        ).delete()
+        current_environments = set(
+            ServiceEnvironment.objects.filter(
+                service=instance
+            ).values_list(
+                'environment_id', flat=True
+            )
+        )
+        # create ServiceEnv for new environments
+        service_env_to_create = []
+        for environment in environments:
+            if environment.id not in current_environments:
+                service_env_to_create.append(ServiceEnvironment(
+                    service=instance, environment=environment
+                ))
+        ServiceEnvironment.objects.bulk_create(service_env_to_create)
 
     def create(self, validated_data):
         environments = validated_data.pop('environments', [])
@@ -74,9 +88,10 @@ class SaveServiceSerializer(RalphAPISerializer):
         return instance
 
     def update(self, instance, validated_data):
-        environments = validated_data.pop('environments', [])
+        environments = validated_data.pop('environments', None)
         result = super().update(instance, validated_data)
-        self._save_environments(instance, environments)
+        if environments is not None:
+            self._save_environments(instance, environments)
         return result
 
 

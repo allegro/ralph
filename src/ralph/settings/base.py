@@ -124,7 +124,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'var', 'media')
 # adapt message's tags to bootstrap
 MESSAGE_TAGS = {
     messages.DEBUG: 'info',
-    messages.ERROR: 'danger',
+    messages.ERROR: 'alert',
 }
 
 DEFAULT_DEPRECIATION_RATE = 25

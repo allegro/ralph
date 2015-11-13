@@ -109,6 +109,56 @@ class ServicesEnvironmentsAPITests(RalphAPITestCase):
         )
         self.assertIn(self.user2, service.technical_owners.all())
 
+    def test_patch_service_keep_environments_when_not_in_request(self):
+        """
+        Check if ServiceEnvironment for service are not cleaned after PATCH
+        without environments fields.
+        """
+        service = self.services[0]
+        environments_ids = [env.id for env in service.environments.all()]
+        service_env_ids = [
+            se.id for se in service.serviceenvironment_set.all()
+        ]
+        url = reverse('service-detail', args=(service.id,))
+        data = {
+            'name': 'test-service-2',
+        }
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        service.refresh_from_db()
+        self.assertEqual(service.name, 'test-service-2')
+        new_environments_ids = [env.id for env in service.environments.all()]
+        new_service_env_ids = [
+            se.id for se in service.serviceenvironment_set.all()
+        ]
+        self.assertCountEqual(environments_ids, new_environments_ids)
+        self.assertCountEqual(service_env_ids, new_service_env_ids)
+
+    def test_patch_service_keep_environments_ids(self):
+        """
+        Check if ServiceEnvironment ids are kept after PATCH.
+        """
+        service = self.services[0]
+        environments_ids = [env.id for env in service.environments.all()]
+        service_env_ids = [
+            se.id for se in service.serviceenvironment_set.all()
+        ]
+        url = reverse('service-detail', args=(service.id,))
+        data = {
+            'name': 'test-service-2',
+            'environments': environments_ids,
+        }
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        service.refresh_from_db()
+        self.assertEqual(service.name, 'test-service-2')
+        new_environments_ids = [env.id for env in service.environments.all()]
+        new_service_env_ids = [
+            se.id for se in service.serviceenvironment_set.all()
+        ]
+        self.assertCountEqual(environments_ids, new_environments_ids)
+        self.assertCountEqual(service_env_ids, new_service_env_ids)
+
     def test_get_service_environment(self):
         service_env = ServiceEnvironment.objects.all()[0]
         url = reverse('serviceenvironment-detail', args=(service_env.id,))
