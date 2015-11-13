@@ -20,18 +20,3 @@ class VIP(BaseObject):
 
     def __str__(self):
         return 'VIP: {}'.format(self.service_env)
-
-
-class VirtualServer(BaseObject):
-    class Meta:
-        verbose_name = _('Virtual server (VM)')
-        verbose_name_plural = _('Virtual servers (VM)')
-
-    def __str__(self):
-        return 'VirtualServer: {}'.format(self.service_env)
-
-
-class CloudProject(BaseObject):
-
-    def __str__(self):
-        return 'CloudProject: {}'.format(self.service_env)
