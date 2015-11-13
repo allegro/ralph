@@ -61,6 +61,7 @@ class Order(
     def go_to_post_office(self, **kwargs):
         pass
     go_to_post_office.verbose_name = 'Go to post office'
+    go_to_post_office.return_attachment = True
 
 
 class TestAsset(models.Model):
