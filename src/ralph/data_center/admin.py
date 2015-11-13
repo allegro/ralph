@@ -27,12 +27,7 @@ from ralph.data_center.models.physical import (
     RackAccessory,
     ServerRoom
 )
-from ralph.data_center.models.virtual import (
-    CloudProject,
-    Database,
-    VIP,
-    VirtualServer
-)
+from ralph.data_center.models.virtual import Database, VIP
 from ralph.data_center.views.ui import (
     DataCenterAssetComponents,
     DataCenterAssetSecurityInfo,
@@ -238,16 +233,6 @@ class DatabaseAdmin(RalphAdmin):
 
 @register(VIP)
 class VIPAdmin(RalphAdmin):
-    pass
-
-
-@register(VirtualServer)
-class VirtualServerAdmin(RalphAdmin):
-    pass
-
-
-@register(CloudProject)
-class CloudProjectAdmin(RalphAdmin):
     pass
 
 
