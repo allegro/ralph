@@ -26,15 +26,12 @@ from ralph.data_center.models.physical import (
     ServerRoom,
 )
 from ralph.data_center.models.virtual import (
-    CloudProject,
     Database,
     VIP,
-    VirtualServer,
 )
 
 __all__ = [
     'Accessory',
-    'CloudProject',
     'Connection',
     'ConnectionType',
     'Database',
@@ -55,5 +52,4 @@ __all__ = [
     'RackOrientation',
     'ServerRoom',
     'VIP',
-    'VirtualServer',
 ]
