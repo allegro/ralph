@@ -30,6 +30,11 @@ class BaseObjectLicenceSerializer(RalphAPISerializer):
     class Meta:
         model = BaseObjectLicence
 
+    def validate(self, data):
+        base_object_licence = BaseObjectLicence(**data)
+        base_object_licence.clean()
+        return data
+
 
 class LicenceSerializer(RalphAPISerializer):
     base_objects = BaseObjectLicenceSerializer(
@@ -59,6 +64,7 @@ class BaseObjectLicenceViewSet(RalphAPIViewSet):
         'licence', 'licence__region', 'licence__manufacturer',
         'licence__licence_type', 'licence__software', 'base_object'
     ]
+    save_serializer_class = BaseObjectLicenceSerializer
 
 
 class LicenceTypeViewSet(RalphAPIViewSet):

@@ -60,9 +60,9 @@ class LicenceAdmin(PermissionAdminMixin, AttachmentsMixin, RalphAdmin):
     date_hierarchy = 'created'
     list_display = [
         'niw', 'licence_type', 'software', 'number_bought',
-        'invoice_date', 'invoice_no', 'valid_thru', 'created'
+        'invoice_date', 'invoice_no', 'valid_thru', 'created', 'region'
     ]
-    list_select_related = ['licence_type', 'software']
+    list_select_related = ['licence_type', 'software', 'region']
     raw_id_fields = [
         'software', 'manufacturer', 'budget_info', 'office_infrastructure'
     ]
