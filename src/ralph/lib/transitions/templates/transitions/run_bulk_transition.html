@@ -1,0 +1,44 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n %}
+
+{% block content %}
+  <h1>{% trans 'Tranisition' %}&nbsp;{{ transition.name|lower }}</h1>
+  {% if transition.description %}
+    <p>{{ transition.description }}</p>
+  {% endif %}
+  <form method="POST">
+    {% csrf_token %}
+    {% if form.fields %}
+      {# If there are no fields on the form does not display table #}
+      <table>
+        <thead>
+          <tr>
+            <th>{% trans 'Option' %}</th>
+            <th>{% trans 'Value' %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{ form.as_table }}
+        </tbody>
+      </table>
+    {% endif %}
+    <div class="admin_bottom panel">
+      <div class="row">
+        <div class="small-2 columns">
+          <a href="{{ back_url }}" class="button alert">{% trans 'Cancel transition' %}</a>
+        </div>
+        <div class="small-10 columns text_right right_section">
+          <ul class="button-group radius right">
+            <li>
+              <button class="button success">{% trans 'Run transition' %}</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </form>
+{% endblock %}
+{% block extra_scripts %}
+  {{ block.super }}
+  {{ form.media.js }}
+{% endblock %}

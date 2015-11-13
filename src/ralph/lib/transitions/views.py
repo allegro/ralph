@@ -12,18 +12,7 @@ from ralph.helpers import get_model_view_url_name
 from ralph.lib.transitions.models import run_field_transition, Transition
 
 
-class RunTransitionView(RalphTemplateView):
-    template_name = 'transitions/run_transition.html'
-
-    def dispatch(
-        self, request, object_pk, transition_pk, model, *args, **kwargs
-    ):
-        self.model = model
-        self.obj = get_object_or_404(model, pk=object_pk)
-        self.transition = get_object_or_404(Transition, pk=transition_pk)
-        self.actions, self.return_attachment = self.collect_actions(self.transition)  # noqa
-        return super().dispatch(request, *args, **kwargs)
-
+class TransitionViewMixin(object):
     def collect_actions(self, transition):
         names = transition.actions.values_list('name', flat=True).all()
         actions = [getattr(self.obj, name) for name in names]
@@ -63,6 +52,38 @@ class RunTransitionView(RalphTemplateView):
         if self.request.method == 'POST':
             form_kwargs['data'] = self.request.POST
         return ParamsForm(**form_kwargs)
+
+
+class RunBulkTransitionView(TransitionViewMixin, RalphTemplateView):
+    template_name = 'transitions/run_bulk_transition.html'
+
+    def dispatch(
+        self, request, transition_pk, model, *args, **kwargs
+    ):
+        self.model = model
+        self.transition = get_object_or_404(Transition, pk=transition_pk)
+        # self.actions, self.return_attachment = self.collect_actions(self.transition)  # noqa
+        ids = [int(i) for i in self.request.GET.getlist('select')]
+        self.objects = self.model.objects.filter(id__in=ids)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['objects'] = self.objects
+        return context
+
+
+class RunTransitionView(TransitionViewMixin, RalphTemplateView):
+    template_name = 'transitions/run_transition.html'
+
+    def dispatch(
+        self, request, object_pk, transition_pk, model, *args, **kwargs
+    ):
+        self.model = model
+        self.obj = get_object_or_404(model, pk=object_pk)
+        self.transition = get_object_or_404(Transition, pk=transition_pk)
+        self.actions, self.return_attachment = self.collect_actions(self.transition)  # noqa
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

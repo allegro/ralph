@@ -1,5 +1,6 @@
 import mimetypes
 import os
+from collections import Iterable
 from uuid import uuid4
 
 
@@ -55,5 +56,8 @@ def add_attachment_from_disk(obj, local_path_to_file, owner, description=''):
     attachment.mime_type = mimetypes.guess_type(local_path_to_file)[0]
     attachment.description = description
     attachment.save()
-    AttachmentItem.objects.refresh(obj, new_objects=[attachment])
+    if not isinstance(obj, Iterable):
+        objs = [obj]
+    for obj in objs:
+        AttachmentItem.objects.refresh(obj, new_objects=[attachment])
     return attachment

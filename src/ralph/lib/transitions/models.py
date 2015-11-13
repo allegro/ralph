@@ -150,6 +150,11 @@ class Transition(models.Model):
     def __str__(self):
         return self.name
 
+    @classmethod
+    def transitions_for_model(cls, model):
+        content_type = ContentType.objects.get_for_model(model)
+        return cls.objects.filter(model__content_type=content_type)
+
 
 class Action(models.Model):
     content_type = models.ManyToManyField(ContentType)
