@@ -46,6 +46,7 @@ INSTALLED_APPS = (
     'ralph.data_importer',
     'ralph.dc_view',
     'ralph.reports',
+    'ralph.virtual',
     'ralph.lib.transitions',
     'ralph.lib.permissions',
     'rest_framework',
@@ -271,3 +272,5 @@ MY_EQUIPMENT_REPORT_FAILURE_URL = os.environ.get('MY_EQUIPMENT_REPORT_FAILURE_UR
 MY_EQUIPMENT_SHOW_BUYOUT_DATE = os_env_true('MY_EQUIPMENT_SHOW_BUYOUT_DATE')
 
 MAP_IMPORTED_ID_TO_NEW_ID = False
+
+OPENSTACK_INSTANCES = json.loads(os.environ.get('OPENSTACK_INSTANCES', '[]'))

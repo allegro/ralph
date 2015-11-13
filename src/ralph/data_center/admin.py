@@ -34,12 +34,13 @@ from ralph.data_center.models.physical import (
     ServerRoom
 )
 from ralph.data_center.models.virtual import (
-    CloudProject,
     Database,
     VIP,
-    VirtualServer
 )
-from ralph.data_center.views.ui import DataCenterAssetSecurityInfo
+from ralph.data_center.views.ui import (
+    DataCenterAssetComponents,
+    DataCenterAssetSecurityInfo,
+)
 from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
@@ -101,20 +102,6 @@ class DataCenterAssetLicence(RalphDetailViewAdmin):
         extra = 1
 
     inlines = [DataCenterAssetLicenceInline]
-
-
-class DataCenterAssetComponents(RalphDetailViewAdmin):
-    icon = 'folder'
-    name = 'dc_components'
-    label = _('Components')
-    url_name = 'datacenter_asset_components'
-
-    class DataCenterComponentsInline(RalphTabularInline):
-        model = AssetComponent
-        raw_id_fields = ('model',)
-        extra = 1
-
-    inlines = [DataCenterComponentsInline]
 
 
 @register(DataCenterAsset)
@@ -269,16 +256,6 @@ class DatabaseAdmin(RalphAdmin):
 
 @register(VIP)
 class VIPAdmin(RalphAdmin):
-    pass
-
-
-@register(VirtualServer)
-class VirtualServerAdmin(RalphAdmin):
-    pass
-
-
-@register(CloudProject)
-class CloudProjectAdmin(RalphAdmin):
     pass
 
 
