@@ -23,6 +23,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'import_export',
+    'mptt',
     'reversion',
     'sitetree',
     'ralph.accounts',
