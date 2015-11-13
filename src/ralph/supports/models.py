@@ -9,7 +9,12 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.accounts.models import Regionalizable
 from ralph.assets.models.assets import BudgetInfo
 from ralph.assets.models.base import BaseObject
-from ralph.lib.mixins.models import NamedMixin, TaggableMixin, TimeStampMixin
+from ralph.lib.mixins.models import (
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    TaggableMixin,
+    TimeStampMixin
+)
 from ralph.lib.permissions import PermByFieldMixin
 
 
@@ -25,6 +30,7 @@ class SupportStatus(Choices):
 
 
 class Support(
+    AdminAbsoluteUrlMixin,
     Regionalizable,
     PermByFieldMixin,
     NamedMixin.NonUnique,
