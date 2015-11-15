@@ -5,7 +5,7 @@ from django.contrib.messages import constants as messages
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = 'CHANGE_ME'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'CHANGE_ME')
 
 DEBUG = False
 
@@ -93,10 +93,11 @@ MYSQL_OPTIONS = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('DB_ENV_MYSQL_DATABASE', 'ralph_ng'),
-        'USER': os.environ.get('DB_ENV_MYSQL_USER', 'ralph_ng'),
-        'PASSWORD': os.environ.get('DB_ENV_MYSQL_PASSWORD', 'ralph_ng'),
-        'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
+        'NAME': os.environ.get('DATABASE_NAME', 'ralph_ng'),
+        'USER': os.environ.get('DATABASE_USER', 'ralph_ng'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'ralph_ng'),
+        'HOST': os.environ.get('DATABASE_HOST', '127.0.0.1'),
+        'PORT': os.environ.get('DATABASE_PORT', 3306),
         'OPTIONS': MYSQL_OPTIONS,
         'ATOMIC_REQUESTS': True,
     }
@@ -116,10 +117,14 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
-STATIC_ROOT = os.path.join(BASE_DIR, 'var', 'static')
+STATIC_ROOT = os.environ.get(
+    'STATIC_ROOT', os.path.join(BASE_DIR, 'var', 'static')
+)
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'var', 'media')
+MEDIA_ROOT = os.environ.get(
+    'MEDIA_ROOT', os.path.join(BASE_DIR, 'var', 'media')
+)
 
 # adapt message's tags to bootstrap
 MESSAGE_TAGS = {
@@ -127,14 +132,14 @@ MESSAGE_TAGS = {
     messages.ERROR: 'danger',
 }
 
-DEFAULT_DEPRECIATION_RATE = 25
+DEFAULT_DEPRECIATION_RATE = int(os.environ.get('DEFAULT_DEPRECIATION_RATE', 25))
 CHECK_IP_HOSTNAME_ON_SAVE = True
 ASSET_HOSTNAME_TEMPLATE = {
     'prefix': '{{ country_code|upper }}{{ code|upper }}',
     'postfix': '',
     'counter_length': 5,
 }
-DEFAULT_COUNTRY_CODE = 'POL'
+DEFAULT_COUNTRY_CODE = os.environ.get('DEFAULT_COUNTRY_CODE', 'POL')
 
 
 LDAP_SERVER_OBJECT_USER_CLASS = 'user'  # possible values: user, person
@@ -144,18 +149,51 @@ ADMIN_SITE_HEADER = 'Ralph 3'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'datefmt': '%d.%m.%Y %H:%M:%S',
+            'format': (
+                '[%(asctime)08s,%(msecs)03d] %(levelname)-7s [%(processName)s'
+                ' %(process)d] %(module)s - %(message)s'),
+        },
+        'simple': {
+            'datefmt': '%H:%M:%S',
+            'format': '[%(asctime)08s] %(levelname)-7s %(message)s',
+        },
+    },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'maxBytes': 1024 * 1024 * 100,  # 100 MB
+            'backupCount': 10,
+            'filename': os.environ.get(
+                'LOG_FILEPATH', os.path.join(BASE_DIR, 'runtime.log')
+            ),
+            'formatter': 'verbose',
         },
     },
     'loggers': {
-        'ralph.data_importer': {
-            'handlers': ['console'],
-            'level': 'INFO',
+        'django.request': {
+            'handlers': ['file'],
+            'level': os.environ.get('LOGGING_DJANGO_REQUEST_LEVEL', 'WARNING'),
             'propagate': True,
         },
+        'ralph': {
+            'handlers': ['file'],
+            'level': os.environ.get('LOGGING_RALPH_LEVEL', 'WARNING'),
+            'propagate': True,
+        },
+        'rq.worker': {
+            'level': os.environ.get('LOGGING_RQ_LEVEL', 'WARNING'),
+            'handlers': ['file'],
+            'propagate': True,
+        }
     },
 }
 
@@ -190,9 +228,9 @@ REST_FRAMEWORK = {
 }
 
 REDIS_CONNECTION = {
-    'HOST': os.environ.get('REDIS_PORT_6379_TCP_ADDR', 'localhost'),
-    'PORT': os.environ.get('REDIS_PORT_6379_TCP_PORT', '6379'),
-    'DB': int(os.environ.get('REDIS_PORT_6379_TCP_DB', 0)),
+    'HOST': os.environ.get('REDIS_HOST', 'localhost'),
+    'PORT': os.environ.get('REDIS_PORT', '6379'),
+    'DB': int(os.environ.get('REDIS_DB', 0)),
 }
 
 BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME = True
