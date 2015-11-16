@@ -27,8 +27,5 @@ ROOT_URLCONF = 'ralph.urls.dev'
 RAISE_ITEMS_ERRORS_ON_DEBUG = False
 
 
-LOGGING['loggers']['ralph'] = {
-    'handlers': ['console'],
-    'level': 'DEBUG',
-    'propagate': True,
-}
+for logger in LOGGING['loggers']:
+    LOGGING['loggers'][logger]['level'] = 'DEBUG'

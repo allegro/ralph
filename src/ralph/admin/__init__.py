@@ -4,6 +4,7 @@ from ralph.admin.mixins import (
     RalphAdminForm,
     RalphStackedInline,
     RalphTabularInline,
+    RalphMPTTAdmin
 )
 from ralph.admin.decorators import register
 
@@ -16,5 +17,6 @@ __all__ = [
     'RalphAdmin',
     'RalphAdminForm',
     'RalphStackedInline',
-    'RalphTabularInline'
+    'RalphTabularInline',
+    'RalphMPTTAdmin'
 ]
