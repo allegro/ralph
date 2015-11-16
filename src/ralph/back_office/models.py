@@ -243,7 +243,7 @@ class BackOfficeAsset(Regionalizable, Asset):
     change_user_and_owner.verbose_name = _('Change user and owner')
 
     @classmethod
-    def _generate_report(self, name, request, instances):
+    def _generate_report(cls, name, request, instances):
         report = Report.objects.get(name=name)
         template = report.templates.filter(default=True).first()
         template_content = ''
@@ -262,16 +262,16 @@ class BackOfficeAsset(Regionalizable, Asset):
         result = service_pdf.run(
             template=template_content,
             data={
-                'id': self.id,
+                'id': ', '.join([obj.id for obj in instances]),
                 'logged_user': obj_to_dict(request.user),
-                'affected_user': obj_to_dict(self.user),
+                'affected_user': obj_to_dict(cls.user),
                 'assets': data_instances,
             }
         )
         output_path = os.path.join(
             tempfile.gettempdir(), '{}-{}.pdf'.format(
-                self.user.get_full_name().lower().replace(' ', '-'),
-                self.pk
+                cls.user.get_full_name().lower().replace(' ', '-'),
+                cls.pk
             )
         )
         with open(output_path, 'wb') as f:
@@ -301,7 +301,9 @@ class BackOfficeAsset(Regionalizable, Asset):
     release_report.verbose_name = _('Release report')
 
     @transition_action
-    def return_report(cls, request, **kwargs):
-        cls._generate_report(name='return', request=request)
+    def return_report(cls, instances, request, **kwargs):
+        cls._generate_report(
+            instances=instances, name='return', request=request
+        )
     return_report.return_attachment = True
     return_report.verbose_name = _('Return report')

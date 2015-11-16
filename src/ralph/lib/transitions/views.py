@@ -105,7 +105,7 @@ class RunTransitionView(TransitionViewMixin, RalphTemplateView):
 
     def form_valid(self, form):
         status, attachment = run_field_transition(
-            instance=self.obj,
+            instance=[self.obj],
             transition=self.transition,
             field=self.transition.model.field_name,
             data=form.cleaned_data,

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import inspect
 import operator
+from collections import defaultdict, Iterable
 
 from django import forms
 from django.conf import settings
@@ -22,67 +23,75 @@ from ralph.lib.transitions.fields import TransitionField
 _transitions_fields = {}
 
 
-def run_field_transition(instance, transition, field, data={}, **kwargs):
+def run_field_transition(instances, transition, field, data={}, **kwargs):
     """
     Execute all actions assigned to the selected transition.
     """
-    transition_model = instance.transition_models[field]
+    if not isinstance(instances, Iterable):
+        instances = [instances]
+
+    transition_model = instances[0].transition_models[field]
     if isinstance(transition, str):
         transition = Transition.objects.get(
             name=transition,
             model=transition_model,
         )
-    if instance.status not in [int(s) for s in transition.source]:
-        raise TransitionNotAllowedError()
-    setattr(instance, field, int(transition.target))
-    attachment = None
-    action_names = []
-    history_kwargs = {}
-    for action in transition.actions.all():
-        func = getattr(instance, action.name)
-        if not func:
-            continue
-        defaults = {
-            key.split('__')[1]: value
-            for key, value in data.items()
-            if key.startswith(action.name)
-        }
-        for k, v in defaults.items():
-            value = v
-            try:
-                field = get_field_by_relation_path(instance, k)
-                field_name = field.verbose_name
-                if field.rel:
-                    value = str(field.rel.to.objects.get(pk=v))
-            except FieldDoesNotExist:
-                field = func.form_fields[k]['field']
-                if isinstance(field, forms.ChoiceField):
-                    value = dict(field.choices).get(int(v))
+    for instance in instances:
+        errors = defaultdict(list)
+        if instance.status not in [int(s) for s in transition.source]:
+            errors[instance] = 'wrong source status'
+        raise TransitionNotAllowedError(
+            'Transition is not allowed for '
+        )
+    # setattr(instance, field, int(transition.target))
+    # attachment = None
+    # action_names = []
+    # history_kwargs = {}
+    # for action in transition.actions.all():
+    #     func = getattr(instance, action.name)
+    #     if not func:
+    #         continue
+    #     defaults = {
+    #         key.split('__')[1]: value
+    #         for key, value in data.items()
+    #         if key.startswith(action.name)
+    #     }
+    #     for k, v in defaults.items():
+    #         value = v
+    #         try:
+    #             field = get_field_by_relation_path(instance, k)
+    #             field_name = field.verbose_name
+    #             if field.rel:
+    #                 value = str(field.rel.to.objects.get(pk=v))
+    #         except FieldDoesNotExist:
+    #             field = func.form_fields[k]['field']
+    #             if isinstance(field, forms.ChoiceField):
+    #                 value = dict(field.choices).get(int(v))
 
-                field_name = field.label
-            history_kwargs[str(field_name)] = value
+    #             field_name = field.label
+    #         history_kwargs[str(field_name)] = value
 
-        defaults.update(kwargs)
-        result = func(**defaults)
-        action_names.append(str(getattr(
-            func,
-            'verbose_name',
-            func.__name__.replace('_', ' ').capitalize()
-        )))
+    #     defaults.update(kwargs)
+    #     result = func(**defaults)
+    #     action_names.append(str(getattr(
+    #         func,
+    #         'verbose_name',
+    #         func.__name__.replace('_', ' ').capitalize()
+    #     )))
 
-        if isinstance(result, Attachment):
-            attachment = result
+    #     if isinstance(result, Attachment):
+    #         attachment = result
 
-    TransitionsHistory.objects.create(
-        transition=transition,
-        object_id=instance.pk,
-        logged_user=kwargs['request'].user,
-        attachment=attachment,
-        kwargs=history_kwargs,
-        actions=action_names
-    )
-    instance.save()
-    return True, attachment
+    # TransitionsHistory.objects.create(
+    #     transition=transition,
+    #     object_id=instance.pk,
+    #     logged_user=kwargs['request'].user,
+    #     attachment=attachment,
+    #     kwargs=history_kwargs,
+    #     actions=action_names
+    # )
+    # instance.save()
+    return True, None #attachment
 
 
 def get_available_transitions_for_field(instance, field):
