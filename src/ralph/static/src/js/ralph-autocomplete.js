@@ -106,7 +106,7 @@
     };
     AutocompleteWidget.prototype.itemClick = function(event) {
         event.preventDefault();
-        var $clickedItem = $(event.target);
+        var $clickedItem = $(event.target).closest('.link');
         var item = $clickedItem.data('item');
         var $tooltip = $('.has-tip', this.$currentItem);
         $('.title', this.$currentItem).html(item.__str__);
