@@ -129,7 +129,7 @@ MEDIA_ROOT = os.environ.get(
 # adapt message's tags to bootstrap
 MESSAGE_TAGS = {
     messages.DEBUG: 'info',
-    messages.ERROR: 'danger',
+    messages.ERROR: 'alert',
 }
 
 DEFAULT_DEPRECIATION_RATE = int(os.environ.get('DEFAULT_DEPRECIATION_RATE', 25))
