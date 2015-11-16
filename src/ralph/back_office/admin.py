@@ -62,6 +62,7 @@ class BackOfficeAssetAdminForm(RalphAdmin.form):
         service_env = self.fields['service_env']
         service_env.widget.is_required = False
         service_env.required = False
+        self.fields['hostname'].widget.attrs['readonly'] = True
 
 
 @register(BackOfficeAsset)
@@ -94,7 +95,7 @@ class BackOfficeAssetAdmin(
 
     list_filter = [
         'barcode', 'status', 'imei', 'sn', 'model', 'purchase_order',
-        'hostname', 'required_support', 'service_env', 'region',
+        'hostname', 'required_support', 'region',
         'warehouse', 'task_url', 'model__category', 'loan_end_date', 'niw',
         'model__manufacturer', 'location', 'remarks',
         'user', 'owner', 'user__segment', 'user__company', 'user__department',
@@ -108,7 +109,7 @@ class BackOfficeAssetAdmin(
         'model__category'
     ]
     raw_id_fields = [
-        'model', 'user', 'owner', 'service_env', 'region', 'warehouse',
+        'model', 'user', 'owner', 'region', 'warehouse',
         'property_of', 'budget_info', 'office_infrastructure'
     ]
     resource_class = resources.BackOfficeAssetResource
