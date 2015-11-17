@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 """SAM module models."""
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Sum
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
+from ralph.admin.helpers import getattr_dunder
 from ralph.assets.models.assets import AssetHolder, BudgetInfo, Manufacturer
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
@@ -192,6 +194,15 @@ class BaseObjectLicence(models.Model):
         return '{} of {} assigned to {}'.format(
             self.quantity, self.licence, self.base_object
         )
+
+    def clean(self):
+        bo_asset = getattr_dunder(
+            self.base_object, 'asset__backofficeasset'
+        )
+        if bo_asset and self.licence.region_id != bo_asset.region_id:
+            raise ValidationError(
+                _('Asset region is in a different region than licence.')
+            )
 
 
 class LicenceUser(models.Model):
