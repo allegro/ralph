@@ -18,6 +18,8 @@ from mptt.settings import DEFAULT_LEVEL_INDICATOR
 
 from ralph.admin.autocomplete import DETAIL_PARAM, QUERY_PARAM
 
+SEARCH_SEPARATORS_REGEX = re.compile(r'[;|]')
+
 
 @lru_cache()
 def date_format_to_human(value):
@@ -234,9 +236,9 @@ class TextListFilter(BaseCustomFilter):
     def queryset(self, request, queryset):
         if self.value():
             query = Q()
-            for value in re.split(r'[;|]', self.value()):
+            for value in SEARCH_SEPARATORS_REGEX.split(self.value()):
                 query |= Q(
-                    **{'{}__icontains'.format(self.field_path): value}
+                    **{'{}__icontains'.format(self.field_path): value.strip()}
                 )
             return queryset.filter(query)
 
