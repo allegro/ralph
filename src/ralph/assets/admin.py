@@ -36,7 +36,7 @@ class ServiceAdmin(RalphAdmin):
     exclude = ['environments']
     inlines = [ServiceEnvironmentInline]
     filter_horizontal = ['business_owners', 'technical_owners']
-    search_fields = ['name']
+    search_fields = ['name', 'uid']
 
 
 @register(Manufacturer)
