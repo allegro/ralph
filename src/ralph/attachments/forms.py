@@ -1,6 +1,7 @@
 from django import forms
+from django.contrib.contenttypes.models import ContentType
 
-from ralph.attachments.models import Attachment
+from ralph.attachments.models import Attachment, AttachmentItem
 from ralph.lib.mixins.forms import RequestModelForm
 
 
@@ -27,10 +28,32 @@ class AttachmentForm(RequestModelForm):
             * mime_type - uploaded file's content type.
         """
         obj = super().save(commit=False)
+        md5 = Attachment.get_md5_sum(obj.file)
+        attachment = Attachment.objects.filter(md5=md5)
+        if obj.pk:
+            attachment = attachment.exclude(pk=obj.pk)
+        attachment = attachment.first()
+        # _parent_object is an object to which it is assigned Attachment.
+        # _parent_object is set in attachment.views.AttachmentsView
+        #  get_formset method.
+        if attachment:
+            content_type = ContentType.objects.get_for_model(
+                self._parent_object._meta.model
+            )
+            if not AttachmentItem.objects.filter(
+                content_type=content_type,
+                object_id=self._parent_object.pk,
+                attachment__md5=md5
+            ).exists():
+                AttachmentItem.objects.attach(
+                    self._parent_object.pk, content_type, [attachment]
+                )
+                return None
+            return
+        obj.md5 = md5
         obj.uploaded_by = self._request.user
         file = self.cleaned_data.get('file', None)
         if file and hasattr(file, 'content_type'):
             obj.mime_type = file.content_type
-        if commit:
-            obj.save()
+        obj.save()
         return obj

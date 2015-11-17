@@ -95,7 +95,7 @@ def transition_history(obj):
     """
     content_type = ContentType.objects.get_for_model(obj)
     history = TransitionsHistory.objects.filter(
-        transition__model__content_type=content_type, object_id=obj.pk
+        content_type=content_type, object_id=obj.pk
     ).select_related('logged_user')
     attachment_url_name = get_model_view_url_name(
         obj._meta.model,
