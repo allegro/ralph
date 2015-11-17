@@ -13,32 +13,34 @@
       <div class="large-2 small-2 columns">
         <h1 class="ellipsis-hidden">{% block title_head %}{% if original %}{{ original }}{% else %}{% trans 'Add' %}{% endif %}{% endblock %}</h1>
       </div>
-      <div class="large-9 small-9 columns">
-        {% block tabs %}
-          {% views_tabs change_views '' original %}
-        {% endblock %}
-      </div>
-      <div class="large-1 small-1 columns">
-        <div class="header-toolbar">
-          {% available_transitions original 'status' %}
-          {% block object-tools %}
-            {% if change %}
-              {% if not is_popup %}
-                <ul class="object-tools button-group radius">
-                  {% block object-tools-items %}
-                    <li>
-                      {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
-                      <a href="{% add_preserved_filters history_url %}" class="historylink small button small right">
-                        {% trans "History" %}
-                      </a>
-                    </li>
-                  {% endblock %}
-                </ul>
-              {% endif %}
-            {% endif %}
+      {% if not in_recovery_mode %}
+        <div class="large-9 small-9 columns">
+          {% block tabs %}
+            {% views_tabs change_views '' original %}
           {% endblock %}
         </div>
-      </div>
+        <div class="large-1 small-1 columns">
+          <div class="header-toolbar">
+            {% available_transitions original 'status' %}
+            {% block object-tools %}
+              {% if change %}
+                {% if not is_popup %}
+                  <ul class="object-tools button-group radius">
+                    {% block object-tools-items %}
+                      <li>
+                        {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
+                        <a href="{% add_preserved_filters history_url %}" class="historylink small button small right">
+                          {% trans "History" %}
+                        </a>
+                      </li>
+                    {% endblock %}
+                  </ul>
+                {% endif %}
+              {% endif %}
+            {% endblock %}
+          </div>
+        </div>
+      {% endif %}
     </div>
     <form  class="row content" {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.model_name }}_form" novalidate>{% csrf_token %}{% block form_top %}{% endblock %}
       <div>
@@ -73,7 +75,7 @@
 
         {# JavaScript for prepopulated fields #}
         {% prepopulated_fields_js %}
-        {% if admin_view.show_transition_history and original %}
+        {% if admin_view.show_transition_history and original and not in_recovery_mode %}
           {% transition_history original %}
         {% endif %}
       </div>
