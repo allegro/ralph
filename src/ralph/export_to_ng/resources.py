@@ -62,18 +62,18 @@ class BackOfficeAssetStatusNG(Choices):
 
 BACK_OFFICE_ASSET_STATUS_MAPPING = {
     models_assets.AssetStatus.new: BackOfficeAssetStatusNG.new.id,
-    models_assets.AssetStatus.in_progress: BackOfficeAssetStatusNG.in_progress.id,
-    models_assets.AssetStatus.waiting_for_release: BackOfficeAssetStatusNG.waiting_for_release.id,
+    models_assets.AssetStatus.in_progress: BackOfficeAssetStatusNG.in_progress.id,  # noqa
+    models_assets.AssetStatus.waiting_for_release: BackOfficeAssetStatusNG.waiting_for_release.id,  # noqa
     models_assets.AssetStatus.used: BackOfficeAssetStatusNG.used.id,
     models_assets.AssetStatus.loan: BackOfficeAssetStatusNG.loan.id,
     models_assets.AssetStatus.damaged: BackOfficeAssetStatusNG.damaged.id,
-    models_assets.AssetStatus.liquidated: BackOfficeAssetStatusNG.liquidated.id,
-    models_assets.AssetStatus.in_service: BackOfficeAssetStatusNG.in_service.id,
+    models_assets.AssetStatus.liquidated: BackOfficeAssetStatusNG.liquidated.id,  # noqa
+    models_assets.AssetStatus.in_service: BackOfficeAssetStatusNG.in_service.id,  # noqa
     models_assets.AssetStatus.installed: BackOfficeAssetStatusNG.installed.id,
     models_assets.AssetStatus.free: BackOfficeAssetStatusNG.free.id,
     models_assets.AssetStatus.reserved: BackOfficeAssetStatusNG.reserved.id,
 
-    models_assets.AssetStatus.to_deploy: BackOfficeAssetStatusNG.waiting_for_release.id,
+    models_assets.AssetStatus.to_deploy: BackOfficeAssetStatusNG.waiting_for_release.id,  # noqa
     models_assets.AssetStatus.in_repair: BackOfficeAssetStatusNG.damaged.id,
     models_assets.AssetStatus.ok: BackOfficeAssetStatusNG.used.id,
 }
@@ -195,11 +195,11 @@ DATA_CENTER_ASSET_STATUS_MAPPING = {
     models_assets.AssetStatus.used: DataCenterAssetStatusNG.used.id,
     models_assets.AssetStatus.free: DataCenterAssetStatusNG.free.id,
     models_assets.AssetStatus.damaged: DataCenterAssetStatusNG.damaged.id,
-    models_assets.AssetStatus.liquidated: DataCenterAssetStatusNG.liquidated.id,
+    models_assets.AssetStatus.liquidated: DataCenterAssetStatusNG.liquidated.id,  # noqa
     models_assets.AssetStatus.to_deploy: DataCenterAssetStatusNG.to_deploy.id,
 
     models_assets.AssetStatus.in_progress: DataCenterAssetStatusNG.used.id,
-    models_assets.AssetStatus.waiting_for_release: DataCenterAssetStatusNG.new.id,
+    models_assets.AssetStatus.waiting_for_release: DataCenterAssetStatusNG.new.id,  # noqa
     models_assets.AssetStatus.loan: DataCenterAssetStatusNG.used.id,
     models_assets.AssetStatus.in_service: DataCenterAssetStatusNG.used.id,
     models_assets.AssetStatus.in_repair: DataCenterAssetStatusNG.damaged.id,
@@ -584,7 +584,9 @@ class BusinessSegmentResource(resources.ModelResource):
         model = models_ci.CI
 
     def get_queryset(self):
-        return models_ci.CI.objects.filter(type=models_ci.CI_TYPES.BUSINESSLINE)
+        return models_ci.CI.objects.filter(
+            type=models_ci.CI_TYPES.BUSINESSLINE
+        )
 
 
 class ProfitCenterResource(resources.ModelResource):
