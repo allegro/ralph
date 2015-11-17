@@ -35,8 +35,9 @@ isort:
 test: clean
 	test_ralph test $(TEST)
 
-flake: clean isort
+flake: isort
 	flake8 src/ralph
+	@cat scripts/flake.txt
 
 clean:
 	find . -name '*.py[cod]' -exec rm -rf {} \;
