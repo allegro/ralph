@@ -59,9 +59,6 @@ class BackOfficeAssetAdminForm(RalphAdmin.form):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        service_env = self.fields['service_env']
-        service_env.widget.is_required = False
-        service_env.required = False
         self.fields['hostname'].widget.attrs['readonly'] = True
 
 
@@ -126,7 +123,7 @@ class BackOfficeAssetAdmin(
             'fields': (
                 'hostname', 'model', 'barcode', 'sn', 'imei', 'niw', 'status',
                 'warehouse', 'location', 'region', 'loan_end_date',
-                'service_env', 'remarks', 'tags', 'property_of', 'task_url',
+                'remarks', 'tags', 'property_of', 'task_url',
                 'office_infrastructure'
             )
         }),
