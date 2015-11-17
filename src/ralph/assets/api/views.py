@@ -1,7 +1,12 @@
+# -*- coding: utf-8 -*-
+from django.db.models import Prefetch
+
 from ralph.api import RalphAPIViewSet
 from ralph.api.utils import PolymorphicViewSetMixin
 from ralph.assets import models
 from ralph.assets.api import serializers
+from ralph.licences.api import BaseObjectLicenceViewSet
+from ralph.licences.models import BaseObjectLicence
 
 
 class BusinessSegmentViewSet(RalphAPIViewSet):
@@ -12,6 +17,11 @@ class BusinessSegmentViewSet(RalphAPIViewSet):
 class ProfitCenterViewSet(RalphAPIViewSet):
     queryset = models.ProfitCenter.objects.all()
     serializer_class = serializers.ProfitCenterSerializer
+
+
+class BudgetInfoViewSet(RalphAPIViewSet):
+    queryset = models.BudgetInfo.objects.all()
+    serializer_class = serializers.BudgetInfoSerializer
 
 
 class EnvironmentViewSet(RalphAPIViewSet):
@@ -34,6 +44,10 @@ class ServiceEnvironmentViewSet(RalphAPIViewSet):
     prefetch_related = [
         'service__{}'.format(pr) for pr in ServiceViewSet.prefetch_related
     ]
+    filter_fields = [
+        'service__uid', 'service__name', 'service__id',
+        'environment__name', 'environment__id',
+    ]
 
 
 class ManufacturerViewSet(RalphAPIViewSet):
@@ -55,3 +69,19 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
     queryset = models.BaseObject.polymorphic_objects.all()
     serializer_class = serializers.BaseObjectPolymorphicSerializer
     http_method_names = ['get', 'options', 'head']
+    prefetch_related = [
+        Prefetch('licences', queryset=BaseObjectLicence.objects.select_related(
+            *BaseObjectLicenceViewSet.select_related
+        )),
+    ]
+    filter_fields = ['id']
+    extend_filter_fields = {
+        'name': ['asset__hostname'],
+        'sn': ['asset__sn'],
+        'barcode': ['asset__barcode'],
+    }
+
+
+class AssetHolderViewSet(RalphAPIViewSet):
+    queryset = models.AssetHolder.objects.all()
+    serializer_class = serializers.AssetHolderSerializer

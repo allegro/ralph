@@ -4,13 +4,9 @@ from copy import copy
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import get_object_or_404
 
-from ralph.admin.mixins import (
-    get_common_media,
-    get_inline_media,
-    RalphAdmin,
-    RalphTemplateView
-)
+from ralph.admin.mixins import get_inline_media, RalphAdmin, RalphTemplateView
 from ralph.admin.sites import ralph_site
+from ralph.helpers import get_model_view_url_name
 from ralph.lib.permissions.views import PermissionViewMetaClass
 
 VIEW_TYPES = CHANGE, LIST = ('change', 'list')
@@ -26,9 +22,7 @@ class RalphExtraViewMixin(object):
     def dispatch(self, request, model, views, *args, **kwargs):
         self.model = model
         self.views = views
-        return super(RalphExtraViewMixin, self).dispatch(
-            request, *args, **kwargs
-        )
+        return super().dispatch(request, *args, **kwargs)
 
     @classmethod
     def post_register(cls, namespace, model):
@@ -61,7 +55,7 @@ class RalphExtraViewMixin(object):
         return self.extra_view_base_template
 
     def get_context_data(self, **kwargs):
-        context = super(RalphExtraViewMixin, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context.update(ralph_site.each_context(self.request))
         context['BASE_TEMPLATE'] = self.get_extra_view_base_template()
         context['label'] = self.label
@@ -86,7 +80,7 @@ class RalphListView(RalphExtraViewMixin, RalphTemplateView):
     extra_view_base_template = 'admin/extra_views/base_list.html'
 
     def get_context_data(self, **kwargs):
-        context = super(RalphListView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context['change_views'] = self.views
         return context
 
@@ -127,16 +121,13 @@ class RalphDetailView(
 
     def dispatch(self, request, model, pk, *args, **kwargs):
         self.object = get_object_or_404(model, pk=pk)
-        return super(RalphDetailView, self).dispatch(
-            request, model, *args, **kwargs
-        )
+        return super().dispatch(request, model, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = super(RalphDetailView, self).get_context_data(**kwargs)
-        context['object'] = self.object
-        context['original'] = self.object
+        context = super().get_context_data(**kwargs)
+        context['object'] = context['original'] = self.object
         context['change_views'] = self.views
-        context['media'] += get_common_media() + get_inline_media()
+        context['media'] = get_inline_media()
         return context
 
     @classmethod
@@ -153,6 +144,9 @@ class RalphDetailViewAdmin(RalphDetailView):
         self.views = kwargs['views']
         extra_context = copy(super().get_context_data())
         extra_context['object'] = self.object
+        extra_context['transition_url_name'] = get_model_view_url_name(
+            model, 'transition'
+        )
         self.admin_class_instance = self.admin_class(
             model, ralph_site, change_views=self.views
         )

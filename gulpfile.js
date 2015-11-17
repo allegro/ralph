@@ -6,7 +6,7 @@ var gulp = require('gulp'),
     prefixer = require('gulp-autoprefixer'),
     sass = require('gulp-sass'),
     sourcemaps = require('gulp-sourcemaps'),
-    qunit = require('node-qunit-phantomjs');
+    qunit = require('gulp-qunit');
 
 var config = {
      bowerDir: './bower_components/',
@@ -81,10 +81,7 @@ gulp.task('js', function(){
 });
 
 gulp.task('test', function() {
-    var runners = ['test_runner', 'angular_runner'];
-    runners.forEach(function(runner) {
-        qunit('./src/ralph/js_tests/' + runner + '.html');
-    });
+    return gulp.src('./src/ralph/js_tests/*_runner.html').pipe(qunit());
 });
 
 gulp.task('watch', function() {

@@ -3,7 +3,12 @@ from import_export import fields, resources
 
 from ralph.accounts.models import Region
 from ralph.assets.models import assets, base
-from ralph.back_office.models import AssetHolder, BackOfficeAsset, Warehouse
+from ralph.back_office.models import (
+    AssetHolder,
+    BackOfficeAsset,
+    OfficeInfrastructure,
+    Warehouse
+)
 from ralph.data_center.models import networks, physical
 from ralph.data_importer.mixins import ImportForeignKeyMixin
 from ralph.data_importer.widgets import (
@@ -95,6 +100,11 @@ class BackOfficeAssetResource(ImportForeignKeyMixin, resources.ModelResource):
         column_name='property_of',
         attribute='property_of',
         widget=ImportedForeignKeyWidget(AssetHolder),
+    )
+    budget_info = fields.Field(
+        column_name='budget_info',
+        attribute='budget_info',
+        widget=ImportedForeignKeyWidget(assets.BudgetInfo),
     )
 
     class Meta:
@@ -192,6 +202,11 @@ class DataCenterAssetResource(ImportForeignKeyMixin, resources.ModelResource):
         attribute='rack',
         widget=ImportedForeignKeyWidget(physical.Rack),
     )
+    budget_info = fields.Field(
+        column_name='budget_info',
+        attribute='budget_info',
+        widget=ImportedForeignKeyWidget(assets.BudgetInfo),
+    )
 
     class Meta:
         model = physical.DataCenterAsset
@@ -231,14 +246,19 @@ class LicenceResource(ImportForeignKeyMixin, resources.ModelResource):
         widget=ImportedForeignKeyWidget(LicenceType),
     )
     software = fields.Field(
-        column_name='software_category',
-        attribute='software_category',
+        column_name='software',
+        attribute='software',
         widget=ImportedForeignKeyWidget(Software),
     )
     region = fields.Field(
         column_name='region',
         attribute='region',
         widget=ImportedForeignKeyWidget(Region),
+    )
+    office_infrastructure = fields.Field(
+        column_name='office_infrastructure',
+        attribute='office_infrastructure',
+        widget=ImportedForeignKeyWidget(OfficeInfrastructure),
     )
 
     class Meta:
@@ -388,3 +408,17 @@ class AssetHolderResource(ImportForeignKeyMixin, resources.ModelResource):
 
     class Meta:
         model = AssetHolder
+
+
+class OfficeInfrastructureResource(
+    ImportForeignKeyMixin, resources.ModelResource
+):
+
+    class Meta:
+        model = OfficeInfrastructure
+
+
+class BudgetInfoResource(ImportForeignKeyMixin, resources.ModelResource):
+
+    class Meta:
+        model = assets.BudgetInfo

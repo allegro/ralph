@@ -106,7 +106,7 @@ class RalphUser(AbstractUser, AdminAbsoluteUrlMixin):
         max_length=256,
         blank=True,
     )
-    regions = models.ManyToManyField(Region, related_name='users')
+    regions = models.ManyToManyField(Region, related_name='users', blank=True)
     team = models.ForeignKey(Team, null=True, blank=True)
 
     class Meta(AbstractUser.Meta):
@@ -141,6 +141,32 @@ class RalphUser(AbstractUser, AdminAbsoluteUrlMixin):
                 val = self._meta.get_field_by_name(field)[0].default
                 setattr(self, field, val)
         return super().save(*args, **kwargs)
+
+    @property
+    def autocomplete_str(self):
+        return '{} <i>{}</i>'.format(str(self), self.department)
+
+    @property
+    def autocomplete_tooltip(self):
+        fields = [
+            'employee_id',
+            'company',
+            'department',
+            'manager',
+            'profit_center',
+            'cost_center'
+        ]
+        empty_element = '<i class="empty">&lt;empty&gt;</i>'
+        tooltip = ''
+        for field in fields:
+            if not hasattr(self, field):
+                continue
+            value = getattr(self, field)
+            label = str(self._meta.get_field(field).verbose_name)
+            tooltip += '<strong>{}:</strong>&nbsp;{}<br>'.format(
+                label.capitalize(), value or empty_element
+            )
+        return tooltip
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)

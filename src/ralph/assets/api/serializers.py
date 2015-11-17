@@ -5,8 +5,10 @@ from ralph.api import RalphAPISerializer
 from ralph.api.utils import PolymorphicSerializer
 from ralph.assets.models import (
     Asset,
+    AssetHolder,
     AssetModel,
     BaseObject,
+    BudgetInfo,
     BusinessSegment,
     Category,
     Environment,
@@ -15,11 +17,17 @@ from ralph.assets.models import (
     Service,
     ServiceEnvironment
 )
+from ralph.licences.api_simple import SimpleBaseObjectLicenceSerializer
 
 
 class BusinessSegmentSerializer(RalphAPISerializer):
     class Meta:
         model = BusinessSegment
+
+
+class BudgetInfoSerializer(RalphAPISerializer):
+    class Meta:
+        model = BudgetInfo
 
 
 class ProfitCenterSerializer(RalphAPISerializer):
@@ -53,11 +61,25 @@ class SaveServiceSerializer(RalphAPISerializer):
         """
         Save service-environments many-to-many records.
         """
-        ServiceEnvironment.objects.filter(service=instance).delete()
-        ServiceEnvironment.objects.bulk_create([
-            ServiceEnvironment(service=instance, environment=env)
-            for env in environments
-        ])
+        # delete ServiceEnv for missing environments
+        ServiceEnvironment.objects.filter(service=instance).exclude(
+            environment__in=environments
+        ).delete()
+        current_environments = set(
+            ServiceEnvironment.objects.filter(
+                service=instance
+            ).values_list(
+                'environment_id', flat=True
+            )
+        )
+        # create ServiceEnv for new environments
+        service_env_to_create = []
+        for environment in environments:
+            if environment.id not in current_environments:
+                service_env_to_create.append(ServiceEnvironment(
+                    service=instance, environment=environment
+                ))
+        ServiceEnvironment.objects.bulk_create(service_env_to_create)
 
     def create(self, validated_data):
         environments = validated_data.pop('environments', [])
@@ -66,9 +88,10 @@ class SaveServiceSerializer(RalphAPISerializer):
         return instance
 
     def update(self, instance, validated_data):
-        environments = validated_data.pop('environments', [])
+        environments = validated_data.pop('environments', None)
         result = super().update(instance, validated_data)
-        self._save_environments(instance, environments)
+        if environments is not None:
+            self._save_environments(instance, environments)
         return result
 
 
@@ -111,6 +134,12 @@ class BaseObjectPolymorphicSerializer(
 
     class Meta:
         model = BaseObject
+        exclude = ('content_type',)
+
+
+class AssetHolderSerializer(RalphAPISerializer):
+    class Meta:
+        model = AssetHolder
 
 
 class BaseObjectSerializer(RalphAPISerializer):
@@ -118,6 +147,7 @@ class BaseObjectSerializer(RalphAPISerializer):
     Base class for other serializers inheriting from `BaseObject`.
     """
     service_env = ServiceEnvironmentSerializer()
+    licences = SimpleBaseObjectLicenceSerializer(read_only=True, many=True)
 
     class Meta:
         model = BaseObject

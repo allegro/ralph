@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from ralph.api import RalphAPIViewSet
+from ralph.assets.api.views import BaseObjectViewSet
 from ralph.data_center.admin import DataCenterAssetAdmin
 from ralph.data_center.api.serializers import (
     AccessorySerializer,
@@ -27,12 +28,17 @@ class DataCenterAssetViewSet(RalphAPIViewSet):
         'service_env', 'service_env__service', 'service_env__environment',
         'rack', 'rack__server_room', 'rack__server_room__data_center',
     ]
-    prefetch_related = [
+    prefetch_related = BaseObjectViewSet.prefetch_related + [
         'service_env__service__environments',
         'service_env__service__business_owners',
         'service_env__service__technical_owners',
         'connections',
         'tags',
+    ]
+    filter_fields = [
+        'service_env__service__uid',
+        'service_env__service__name',
+        'service_env__service__id'
     ]
 
 

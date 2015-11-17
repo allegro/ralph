@@ -11,6 +11,7 @@
         <tr>
           <th>{% trans "File" %}</th>
           <th>{% trans "Description" %}</th>
+          <th>{% trans "Date" %}</th>
           <th>{% trans "Delete" %}</th>
         </tr>
       </thead>
@@ -29,6 +30,7 @@
                   {% endif %}
                 </td>
                 <td>{% field form.description is_admin=False show_label=False %}</td>
+                <td>{{ obj.created|default:"&mdash;" }}</td>
                 <td>{% field form.DELETE is_admin=False show_label=False %}</td>
               {% endwith %}
           </tr>

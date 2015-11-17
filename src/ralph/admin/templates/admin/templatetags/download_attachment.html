@@ -1,0 +1,10 @@
+{% if attachment %}
+  <script type="text/javascript">
+    (function($){
+      var $iframe = $('<iframe>')
+          .hide()
+          .prop('src', '{{ attachment }}')
+          .appendTo('body');
+    })(ralph.jQuery)
+  </script>
+{% endif %}

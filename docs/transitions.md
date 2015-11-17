@@ -28,6 +28,8 @@ If your action required extra parameters to execute you can add fields:
 ```django
 from django import forms
 
+ALLOW_COMMENT = True
+
     ...
     @transition_action
     def pack(self, **kwargs):
@@ -36,8 +38,17 @@ from django import forms
             pickers_comment=kwargs['comment'],
         )
     pack.form_fields = {
-        'comment': {'field': forms.CharField()}
+        'comment': {
+            'field': forms.CharField(),
+            'condition': lambda obj: (obj.status > 2) and ALLOW_COMMENT
+        }
     }
 ```
 
 ![Extra params](img/extra_params.png)
+
+Allowed params for field::
+    ``field`` - standard form field, e.g. from ``django.forms``,
+    ``condition`` - function wich accept one parameter and return boolean, when condition have be met the field will be shown.
+
+Set ``return_attachment`` to ``True`` if action return attachment (e.g.: PDF document).

@@ -1,5 +1,8 @@
-sudo: false
+sudo: required
 language: python
+
+services:
+    - docker
 
 cache:
   directories:
@@ -13,6 +16,8 @@ python:
 before_install:
     - pip install flake8 isort
     - make flake
+    - export RALPH_VERSION=$(cat VERSION)
+    - export NEW_TAG=$RALPH_VERSION-snapshot-$(date "+%Y%m%d")-$TRAVIS_BUILD_NUMBER
 
 install:
     - npm config set python /usr/bin/python2.7
@@ -28,6 +33,24 @@ script:
 
 after_success:
     - coveralls
+
+before_deploy:
+    - sudo add-apt-repository -y ppa:spotify-jyrki/dh-virtualenv
+    - sudo apt-get update
+    - sudo apt-get install -y devscripts python-virtualenv git equivs dh-virtualenv
+    - make build-package
+
+deploy:
+    -   provider: script
+        script: scripts/travis_deploy_docker.sh
+        on:
+            branch: ng
+            python: 3.4
+    -   provider: script
+        script: scripts/travis_deploy_bintray.sh
+        on:
+            branch: ng
+            python: 3.4
 
 notifications:
   webhooks:

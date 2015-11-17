@@ -7,8 +7,14 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
+from ralph.assets.models.assets import BudgetInfo
 from ralph.assets.models.base import BaseObject
-from ralph.lib.mixins.models import NamedMixin, TaggableMixin, TimeStampMixin
+from ralph.lib.mixins.models import (
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    TaggableMixin,
+    TimeStampMixin
+)
 from ralph.lib.permissions import PermByFieldMixin
 
 
@@ -24,6 +30,7 @@ class SupportStatus(Choices):
 
 
 class Support(
+    AdminAbsoluteUrlMixin,
     Regionalizable,
     PermByFieldMixin,
     NamedMixin.NonUnique,
@@ -70,6 +77,13 @@ class Support(
     #     null=True,
     #     blank=True,
     # )
+    budget_info = models.ForeignKey(
+        BudgetInfo,
+        blank=True,
+        default=None,
+        null=True,
+        on_delete=models.PROTECT,
+    )
     support_type = models.ForeignKey(
         SupportType,
         on_delete=models.PROTECT,

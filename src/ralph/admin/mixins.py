@@ -7,12 +7,12 @@ from django import forms
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.templatetags.admin_static import static
-from django.core import urlresolvers
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.http import HttpResponseRedirect
 from django.views.generic import TemplateView
 from import_export.admin import ImportExportModelAdmin
+from mptt.admin import MPTTAdminForm, MPTTModelAdmin
 from reversion import VersionAdmin
 
 from ralph.admin import widgets
@@ -28,28 +28,6 @@ FORMFIELD_FOR_DBFIELD_DEFAULTS = {
     models.DateField: {'widget': widgets.AdminDateWidget},
     models.DateTimeField: {'widget': widgets.ReadOnlyWidget},
 }
-
-
-def get_common_media():
-    """
-    Shared across extra views and admin class
-    """
-    js = map(lambda x: os.path.join(*x), [
-        ('admin', 'js', 'core.js'),
-        ('admin', 'js', 'jquery.js'),
-        ('admin', 'js', 'jquery.init.js'),
-        ('admin', 'js', 'actions.js'),
-        ('admin', 'js', 'admin', 'RelatedObjectLookups.js'),
-        ('vendor', 'js', 'jquery.js'),
-        ('vendor', 'js', 'foundation.min.js'),
-        ('vendor', 'js', 'modernizr.js'),
-        ('src', 'js', 'fill-fields.js'),
-        ('vendor', 'js', 'foundation-datepicker.js'),
-        ('src', 'js', 'foundation-datepicker-init.js'),
-    ])
-    return forms.Media(
-        js=[static('%s' % url) for url in js],
-    )
 
 
 def get_inline_media():
@@ -110,6 +88,10 @@ class RalphAdminChecks(admin.checks.ModelAdminChecks):
         return result
 
 
+class RalphMPTTAdminForm(RalphAdminFormMixin, MPTTAdminForm):
+    pass
+
+
 class RalphAdminMixin(RalphAutocompleteMixin):
     """Ralph admin mixin."""
 
@@ -148,7 +130,7 @@ class RalphAdminMixin(RalphAutocompleteMixin):
             field = get_field_by_relation_path(self.model, field_name)
             search_fields.append(field.verbose_name)
         extra_context['search_fields'] = search_fields
-        extra_context['search_url'] = urlresolvers.reverse(
+        extra_context['search_url'] = reverse(
             'admin:{app_label}_{model_name}_changelist'.format(
                 app_label=self.model._meta.app_label,
                 model_name=self.model._meta.model_name,
@@ -195,6 +177,7 @@ class RalphAdminMixin(RalphAutocompleteMixin):
             extra_context['change_views'] = views
         extra_context['header_obj_name'] = self.model._meta.verbose_name
         self._initialize_search_form(extra_context)
+        extra_context['admin_view'] = self
         return super(RalphAdminMixin, self).changeform_view(
             request, object_id, form_url, extra_context
         )
@@ -232,7 +215,7 @@ class RalphAdmin(
 ):
     @property
     def media(self):
-        return super().media + get_common_media()
+        return forms.Media()
 
 
 class RalphTabularInline(
@@ -256,10 +239,13 @@ class RalphTemplateView(TemplateView, metaclass=PermissionViewMetaClass):
             **kwargs
         )
         context['site_header'] = settings.ADMIN_SITE_HEADER
-        context['media'] = get_common_media()
         # checks if user is allowed to see elements in template
         context['has_permission'] = self.request.user.is_authenticated()
         return context
+
+
+class RalphMPTTAdmin(MPTTModelAdmin, RalphAdmin):
+    form = RalphMPTTAdminForm
 
 
 class BulkEditChangeListMixin(object):

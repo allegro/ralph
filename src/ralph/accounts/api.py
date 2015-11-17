@@ -1,29 +1,57 @@
 # -*- coding: utf-8 -*-
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+from django.db.models import Prefetch
 
 from ralph.accounts.models import Region, Team
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.permissions import IsSuperuserOrReadonly
+from ralph.back_office.api import (
+    BackOfficeAssetSerializer,
+    BackOfficeAssetViewSet
+)
+from ralph.back_office.models import BackOfficeAsset
+from ralph.licences.api import LicenceUserViewSet
+from ralph.licences.api_simple import SimpleLicenceUserSerializer
+from ralph.licences.models import LicenceUser
+
+
+class GroupSerializer(RalphAPISerializer):
+    class Meta:
+        model = Group
+        exclude = ('permissions',)
+
+
+class GroupViewSet(RalphAPIViewSet):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
 
 
 class RalphUserSerializer(RalphAPISerializer):
+    assets_as_user = BackOfficeAssetSerializer(read_only=True, many=True)
+    assets_as_owner = BackOfficeAssetSerializer(read_only=True, many=True)
+    licences = SimpleLicenceUserSerializer(read_only=True, many=True)
+
     class Meta:
         model = get_user_model()
-        exclude = ('user_permissions', 'password')
+        exclude = ('user_permissions', 'password', 'groups')
         depth = 1
-
-
-class SimpleRalphUserSerializer(RalphUserSerializer):
-    class Meta:
-        model = get_user_model()
-        fields = ('id', 'url', 'username', 'first_name', 'last_name')
-        read_only_fields = fields
 
 
 class RalphUserViewSet(RalphAPIViewSet):
     queryset = get_user_model().objects.all()
     serializer_class = RalphUserSerializer
-    prefetch_related = ['groups', 'regions', 'user_permissions']
+    _assets_queryset = BackOfficeAsset.objects.select_related(
+        *BackOfficeAssetViewSet.select_related
+    ).prefetch_related('tags')
+    prefetch_related = [
+        'regions', 'user_permissions',
+        Prefetch('licences', queryset=LicenceUser.objects.select_related(
+            *LicenceUserViewSet.select_related
+        )),
+        Prefetch('assets_as_user', queryset=_assets_queryset),
+        Prefetch('assets_as_owner', queryset=_assets_queryset),
+    ]
     permission_classes = RalphAPIViewSet.permission_classes + [
         IsSuperuserOrReadonly
     ]
@@ -52,6 +80,7 @@ class TeamViewSet(RalphAPIViewSet):
     serializer_class = TeamSerializer
 
 
+router.register(r'groups', GroupViewSet)
 router.register(r'users', RalphUserViewSet)
 router.register(r'regions', RegionViewSet)
 router.register(r'teams', TeamViewSet)

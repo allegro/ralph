@@ -230,6 +230,16 @@ class AssetLastHostname(models.Model):
         return self.formatted_hostname()
 
 
+class BudgetInfo(NamedMixin, TimeStampMixin, models.Model):
+
+    class Meta:
+        verbose_name = _('Budget info')
+        verbose_name_plural = _('Budgets info')
+
+    def __str__(self):
+        return self.name
+
+
 class Asset(AdminAbsoluteUrlMixin, BaseObject):
     model = models.ForeignKey(AssetModel, related_name='assets')
     hostname = models.CharField(
@@ -310,6 +320,13 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         help_text=('External workflow system URL'),
         max_length=2048,
         null=True,
+    )
+    budget_info = models.ForeignKey(
+        BudgetInfo,
+        blank=True,
+        default=None,
+        null=True,
+        on_delete=models.PROTECT,
     )
 
     def __str__(self):

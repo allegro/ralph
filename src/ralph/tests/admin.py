@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from ralph.admin import RalphAdmin, register
+from ralph.attachments.admin import AttachmentsMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.tests.models import Car, Manufacturer, Order
 
@@ -16,5 +17,5 @@ class ManufacturerAdmin(RalphAdmin):
 
 
 @register(Order)
-class OrderAdmin(TransitionAdminMixin, RalphAdmin):
-    pass
+class OrderAdmin(AttachmentsMixin, TransitionAdminMixin, RalphAdmin):
+    change_views = []

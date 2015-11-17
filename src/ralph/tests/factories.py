@@ -1,6 +1,8 @@
 import factory
 from django.contrib.auth import get_user_model
 
+from ralph.tests.models import Manufacturer
+
 
 class UserFactory(factory.Factory):
     """
@@ -31,3 +33,13 @@ class UserFactory(factory.Factory):
         user.set_password('ralph')
         user.save()
         return user
+
+
+class ManufacturerFactory(factory.django.DjangoModelFactory):
+
+    name = factory.Iterator(['Foxconn', 'Brother', 'Nokia', 'HTC'])
+    country = factory.Iterator(['Poland', 'Germany', 'Italy'])
+
+    class Meta:
+        model = Manufacturer
+        django_get_or_create = ['name', 'country']

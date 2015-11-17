@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 """SAM module models."""
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Sum
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
-from ralph.assets.models.assets import AssetHolder, Manufacturer
+from ralph.admin.helpers import getattr_dunder
+from ralph.assets.models.assets import AssetHolder, BudgetInfo, Manufacturer
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
 from ralph.lib.mixins.models import (
@@ -144,23 +146,16 @@ class Licence(
         blank=True,
         default='',
     )
-    # TODO. To discuss
-    # parent = TreeForeignKey(
-    #     'self',
-    #     null=True,
-    #     blank=True,
-    #     related_name='children',
-    #     verbose_name=_('Parent licence'),
-    # )
-    # TODO. To discuss
-    # service_name = models.ForeignKey(Service, null=True, blank=True)
-    # budget_info = models.ForeignKey(
-    #     BudgetInfo,
-    #     blank=True,
-    #     default=None,
-    #     null=True,
-    #     on_delete=models.PROTECT,
-    # )
+    office_infrastructure = models.ForeignKey(
+        'back_office.OfficeInfrastructure', null=True, blank=True
+    )
+    budget_info = models.ForeignKey(
+        BudgetInfo,
+        blank=True,
+        default=None,
+        null=True,
+        on_delete=models.PROTECT,
+    )
 
     _used = None
 
@@ -199,6 +194,15 @@ class BaseObjectLicence(models.Model):
         return '{} of {} assigned to {}'.format(
             self.quantity, self.licence, self.base_object
         )
+
+    def clean(self):
+        bo_asset = getattr_dunder(
+            self.base_object, 'asset__backofficeasset'
+        )
+        if bo_asset and self.licence.region_id != bo_asset.region_id:
+            raise ValidationError(
+                _('Asset region is in a different region than licence.')
+            )
 
 
 class LicenceUser(models.Model):

@@ -11,7 +11,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.sites import ralph_site
 from ralph.admin.widgets import AutocompleteWidget
-from ralph.assets.models.assets import AdminAbsoluteUrlMixin, Asset, NamedMixin
+from ralph.assets.models.assets import Asset, NamedMixin
 from ralph.assets.models.choices import AssetSource
 from ralph.data_center.models.choices import (
     ConnectionType,
@@ -19,6 +19,7 @@ from ralph.data_center.models.choices import (
     Orientation,
     RackOrientation
 )
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
 
@@ -142,8 +143,7 @@ class RackAccessory(AdminAbsoluteUrlMixin, models.Model):
         )
 
 
-class Rack(NamedMixin.NonUnique, models.Model):
-
+class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
     server_room = models.ForeignKey(
         ServerRoom, verbose_name=_('server room'),
         null=True,
@@ -381,6 +381,7 @@ class DataCenterAsset(Asset):
         )),
         'position': forms.IntegerField(),
     }
+    change_rack.verbose_name = _('Change rack')
 
 
 class Connection(models.Model):

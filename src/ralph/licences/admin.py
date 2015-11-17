@@ -54,17 +54,18 @@ class LicenceAdmin(PermissionAdminMixin, AttachmentsMixin, RalphAdmin):
     search_fields = ['niw', 'sn', 'license_details', 'remarks']
     list_filter = [
         'niw', 'sn', 'remarks', 'software', 'property_of',
-        'licence_type', 'valid_thru', 'invoice_no', 'invoice_date',
-        'manufacturer', 'region'
-
+        'licence_type', 'valid_thru', 'order_no', 'invoice_no', 'invoice_date',
+        'budget_info', 'manufacturer', 'region', 'office_infrastructure'
     ]
     date_hierarchy = 'created'
     list_display = [
         'niw', 'licence_type', 'software', 'number_bought',
-        'invoice_date', 'invoice_no', 'valid_thru', 'created'
+        'invoice_date', 'invoice_no', 'valid_thru', 'created', 'region'
     ]
-    list_select_related = ['licence_type', 'software']
-    raw_id_fields = ['software', 'manufacturer']
+    list_select_related = ['licence_type', 'software', 'region']
+    raw_id_fields = [
+        'software', 'manufacturer', 'budget_info', 'office_infrastructure'
+    ]
     resource_class = resources.LicenceResource
 
     fieldsets = (
@@ -78,7 +79,8 @@ class LicenceAdmin(PermissionAdminMixin, AttachmentsMixin, RalphAdmin):
         (_('Financial info'), {
             'fields': (
                 'order_no', 'invoice_no', 'price', 'invoice_date',
-                'number_bought', 'accounting_id', 'provider',
+                'number_bought', 'accounting_id', 'budget_info', 'provider',
+                'office_infrastructure'
             )
         }),
     )

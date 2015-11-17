@@ -1,14 +1,19 @@
 # -*- coding: utf-8 -*-
+import factory
 
 from ralph.assets.models.choices import ObjectModelType
 from ralph.assets.tests.factories import (
     CategoryFactory,
     DataCenterAssetModelFactory
 )
+from ralph.back_office.models import BackOfficeAsset
 from ralph.data_center.models.physical import DataCenterAsset
 from ralph.data_center.tests.factories import DataCenterAssetFactory
-from ralph.licences.factories import LicenceFactory
 from ralph.licences.models import BaseObjectLicence
+from ralph.licences.tests.factories import (
+    LicenceFactory,
+    LicenceWithUserAndBaseObjectsFactory
+)
 from ralph.reports.views import (
     AssetRelationsReport,
     CategoryModelReport,
@@ -153,7 +158,9 @@ class TestReportAssetAndLicence(RalphTestCase):
         )
         self.licence = LicenceFactory(
             number_bought=1,
-            niw='N/A'
+            niw='N/A',
+            software__name='Project Info',
+            software__asset_type=ObjectModelType.data_center
         )
         BaseObjectLicence.objects.create(
             licence=self.licence, base_object=self.dc_1.baseobject_ptr
@@ -176,6 +183,21 @@ class TestReportAssetAndLicence(RalphTestCase):
         ]
         self.assertEqual(report_result, result)
 
+    def test_num_queries_dc(self):
+        licence_relation = LicenceRelationsReport()
+        with self.assertNumQueries(3):
+            list(licence_relation.prepare(
+                DataCenterAsset)
+            )
+
+    def test_num_queries_bo(self):
+        factory.build_batch(LicenceWithUserAndBaseObjectsFactory, 100)
+        licence_relation = LicenceRelationsReport()
+        with self.assertNumQueries(3):
+            list(licence_relation.prepare(
+                BackOfficeAsset)
+            )
+
     def test_licence_relation(self):
         licence_relation = LicenceRelationsReport()
         report_result = list(licence_relation.prepare(
@@ -185,11 +207,14 @@ class TestReportAssetAndLicence(RalphTestCase):
             [
                 'niw', 'software', 'number_bought', 'price', 'invoice_date',
                 'invoice_no', 'id', 'asset__barcode', 'asset__niw',
-                'asset__user__username', 'asset__user__first_name',
-                'asset__user__last_name', 'asset__owner__username',
-                'asset__owner__first_name', 'asset__owner__last_name',
-                'region__name', 'username', 'first_name', 'last_name',
-                'single_cost'
+                'asset__backofficeasset__user__username',
+                'asset__backofficeasset__user__first_name',
+                'asset__backofficeasset__user__last_name',
+                'asset__backofficeasset__owner__username',
+                'asset__backofficeasset__owner__first_name',
+                'asset__backofficeasset__owner__last_name',
+                'asset__backofficeasset__region__name', 'user__username',
+                'user__first_name', 'user__last_name', 'single_cost'
             ],
             [
                 'N/A', 'Project Info', '1', '0.00', 'None', 'None', '', '',

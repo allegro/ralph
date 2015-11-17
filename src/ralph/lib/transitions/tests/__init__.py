@@ -25,12 +25,16 @@ class TransitionTestCase(TestCase):
         return Form
 
     def _create_transition(
-        self, model, name, actions=None, field='status'
+        self, model, name, actions=None, field='status',
+        source=None, target=None
     ):
         transition_model = model.transition_models[field]
-        transition = Transition.objects.create(
-            name=name, model=transition_model
-        )
+        transition_kwargs = {'name': name, 'model': transition_model}
+        if source:
+            transition_kwargs['source'] = source
+        if target:
+            transition_kwargs['target'] = target
+        transition = Transition.objects.create(**transition_kwargs)
         order_ct = ContentType.objects.get_for_model(Order)
         actions_query_kwargs = {'content_type': order_ct}
         if actions:

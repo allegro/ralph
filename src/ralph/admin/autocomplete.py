@@ -46,9 +46,11 @@ class SuggestView(JsonViewMixin, View):
             {
                 'pk': obj.pk,
                 '__str__': str(obj),
+                'label': getattr(obj, 'autocomplete_str', None),
                 'edit_url': '{}?_popup=1'.format(
                     get_admin_url(obj, 'change')
                 ) if can_edit else None,
+                'tooltip': getattr(obj, 'autocomplete_tooltip', None)
             } for obj in self.get_queryset(request.user)
         ]
         return self.render_to_json_response({'results': results})

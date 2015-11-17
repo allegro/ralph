@@ -1,7 +1,9 @@
 from ralph.api import router
 from ralph.assets.api.views import (
+    AssetHolderViewSet,
     AssetModelViewSet,
     BaseObjectViewSet,
+    BudgetInfoViewSet,
     BusinessSegmentViewSet,
     CategoryViewSet,
     EnvironmentViewSet,
@@ -11,7 +13,9 @@ from ralph.assets.api.views import (
     ServiceViewSet
 )
 
+router.register(r'assetholders', AssetHolderViewSet)
 router.register(r'assetmodels', AssetModelViewSet)
+router.register(r'budget-info', BudgetInfoViewSet)
 router.register(r'base-objects', BaseObjectViewSet)
 router.register(r'business-segments', BusinessSegmentViewSet)
 router.register(r'categories', CategoryViewSet)

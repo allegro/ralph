@@ -1,6 +1,10 @@
+import os
+import tempfile
+
 from dj.choices import Choices
 from django.db import models
 
+from ralph.attachments.helpers import add_attachment_from_disk
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 from ralph.lib.transitions import (
     transition_action,
@@ -32,19 +36,32 @@ class Car(models.Model):
     manufacturer = models.ForeignKey(Manufacturer)
 
 
-class Order(models.Model, metaclass=TransitionWorkflowBase):
+class Order(
+    AdminAbsoluteUrlMixin,
+    models.Model,
+    metaclass=TransitionWorkflowBase
+):
     status = TransitionField(
         default=OrderStatus.new.id,
         choices=OrderStatus(),
     )
 
     @transition_action
-    def pack(self, **kwargs):
-        pass
+    def pack(self, request, **kwargs):
+        path = os.path.join(tempfile.gettempdir(), 'test.txt')
+        with open(path, 'w') as f:
+            f.write('test')
+        return add_attachment_from_disk(
+            self, path, request.user, 'pack action'
+        )
+    pack.verbose_name = 'Pack'
+    pack.return_attachment = True
 
     @transition_action
     def go_to_post_office(self, **kwargs):
         pass
+    go_to_post_office.verbose_name = 'Go to post office'
+    go_to_post_office.return_attachment = True
 
 
 class TestAsset(models.Model):

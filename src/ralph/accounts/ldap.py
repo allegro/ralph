@@ -15,10 +15,10 @@ LDAPSettings.defaults['GROUP_MAPPING'] = {}
 @receiver(populate_user)
 def staff_superuser_populate(sender, user, ldap_user, **kwargs):
     user.is_superuser = 'superuser' in ldap_user.group_names
-    user.is_staff = 'staff' in ldap_user.group_names
     # only staff users will have access to ralph now,
     # because ralph using django admin panel
-    user.is_active = 'staff' in ldap_user.group_names
+    user.is_staff = 'active' in ldap_user.group_names
+    user.is_active = 'active' in ldap_user.group_names
 
 
 @receiver(populate_user)

@@ -6,7 +6,12 @@ from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.attachments.admin import AttachmentsMixin
-from ralph.back_office.models import AssetHolder, BackOfficeAsset, Warehouse
+from ralph.back_office.models import (
+    AssetHolder,
+    BackOfficeAsset,
+    OfficeInfrastructure,
+    Warehouse
+)
 from ralph.back_office.views import (
     BackOfficeAssetComponents,
     BackOfficeAssetSoftware
@@ -48,6 +53,15 @@ class BackOfficeAssetLicence(RalphDetailViewAdmin):
     inlines = [BackOfficeAssetLicenceInline]
 
 
+class BackOfficeAssetAdminForm(RalphAdmin.form):
+    """
+    Service_env is not required for BackOffice assets.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['hostname'].widget.attrs['readonly'] = True
+
+
 @register(BackOfficeAsset)
 class BackOfficeAssetAdmin(
     MulitiAddAdminMixin,
@@ -59,7 +73,9 @@ class BackOfficeAssetAdmin(
 ):
 
     """Back Office Asset admin class."""
+    form = BackOfficeAssetAdminForm
     actions = ['bulk_edit_action']
+    show_transition_history = True
     change_views = [
         BackOfficeAssetLicence,
         BackOfficeAssetSupport,
@@ -76,11 +92,12 @@ class BackOfficeAssetAdmin(
 
     list_filter = [
         'barcode', 'status', 'imei', 'sn', 'model', 'purchase_order',
-        'hostname', 'required_support', 'service_env__environment', 'region',
+        'hostname', 'required_support', 'region',
         'warehouse', 'task_url', 'model__category', 'loan_end_date', 'niw',
-        'model__manufacturer', 'service_env__service', 'location', 'remarks',
-        'user', 'owner', 'user__segment', 'user__company', 'user__employee_id',
-        'property_of', 'invoice_no', 'invoice_date', 'order_no', 'provider',
+        'model__manufacturer', 'location', 'remarks',
+        'user', 'owner', 'user__segment', 'user__company', 'user__department',
+        'user__employee_id', 'property_of', 'invoice_no', 'invoice_date',
+        'order_no', 'provider', 'budget_info',
         'depreciation_rate', 'depreciation_end_date', 'force_depreciation'
     ]
     date_hierarchy = 'created'
@@ -89,15 +106,15 @@ class BackOfficeAssetAdmin(
         'model__category'
     ]
     raw_id_fields = [
-        'model', 'user', 'owner', 'service_env', 'region', 'warehouse',
-        'property_of'
+        'model', 'user', 'owner', 'region', 'warehouse',
+        'property_of', 'budget_info', 'office_infrastructure'
     ]
     resource_class = resources.BackOfficeAssetResource
     bulk_edit_list = [
         'status', 'barcode', 'hostname', 'model', 'purchase_order',
-        'user', 'owner', 'warehouse', 'sn', 'region', 'remarks',
-        'invoice_date', 'provider', 'task_url', 'depreciation_rate',
-        'order_no', 'depreciation_end_date'
+        'user', 'owner', 'warehouse', 'sn', 'region', 'property_of', 'remarks',
+        'invoice_date', 'invoice_no', 'provider', 'task_url',
+        'depreciation_rate', 'price', 'order_no', 'depreciation_end_date'
     ]
     bulk_edit_no_fillable = ['barcode', 'sn', 'hostname']
 
@@ -106,7 +123,8 @@ class BackOfficeAssetAdmin(
             'fields': (
                 'hostname', 'model', 'barcode', 'sn', 'imei', 'niw', 'status',
                 'warehouse', 'location', 'region', 'loan_end_date',
-                'service_env', 'remarks', 'tags', 'property_of'
+                'remarks', 'tags', 'property_of', 'task_url',
+                'office_infrastructure'
             )
         }),
         (_('User Info'), {
@@ -117,9 +135,9 @@ class BackOfficeAssetAdmin(
         (_('Financial Info'), {
             'fields': (
                 'order_no', 'purchase_order', 'invoice_date', 'invoice_no',
-                'task_url', 'price', 'depreciation_rate',
-                'depreciation_end_date', 'force_depreciation', 'provider',
-
+                'price', 'depreciation_rate', 'depreciation_end_date',
+                'force_depreciation', 'provider', 'budget_info',
+                'office_infrastructure'
             )
         }),
     )
@@ -146,4 +164,9 @@ class WarehouseAdmin(RalphAdmin):
 @register(AssetHolder)
 class AssetHolderAdmin(RalphAdmin):
 
+    search_fields = ['name']
+
+
+@register(OfficeInfrastructure)
+class OfficeInfrastructureAdmin(RalphAdmin):
     search_fields = ['name']

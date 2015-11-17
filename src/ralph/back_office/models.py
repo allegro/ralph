@@ -9,6 +9,8 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from django.forms import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
@@ -47,6 +49,13 @@ class BackOfficeAssetStatus(Choices):
     reserved = _("reserved")
 
 
+class OfficeInfrastructure(NamedMixin, TimeStampMixin, models.Model):
+
+    class Meta:
+        verbose_name = _('Office Infrastructure')
+        verbose_name_plural = _('Office Infrastructures')
+
+
 class BackOfficeAsset(Regionalizable, Asset):
     warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT)
     owner = models.ForeignKey(
@@ -74,6 +83,9 @@ class BackOfficeAsset(Regionalizable, Asset):
         on_delete=models.PROTECT,
         null=True,
         blank=True,
+    )
+    office_infrastructure = models.ForeignKey(
+        OfficeInfrastructure, null=True, blank=True
     )
 
     class Meta:
@@ -124,6 +136,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             'autocomplete_field': 'user'
         }
     }
+    assign_user.verbose_name = _('Assign user')
 
     @transition_action
     def assign_owner(self, **kwargs):
@@ -135,14 +148,17 @@ class BackOfficeAsset(Regionalizable, Asset):
             'autocomplete_field': 'owner'
         }
     }
+    assign_owner.verbose_name = _('Assign owner')
 
     @transition_action
     def unassign_owner(self, **kwargs):
         self.owner = None
+    unassign_owner.verbose_name = _('Unassign owner')
 
     @transition_action
     def unassign_user(self, **kwargs):
         self.user = None
+    unassign_user.verbose_name = _('Unassign user')
 
     @transition_action
     def assign_loan_end_date(self, **kwargs):
@@ -156,10 +172,12 @@ class BackOfficeAsset(Regionalizable, Asset):
             )
         }
     }
+    assign_loan_end_date.verbose_name = _('Assign loan end date')
 
     @transition_action
     def unassign_loan_end_date(self, **kwargs):
         self.loan_end_date = None
+    unassign_loan_end_date.verbose_name = _('Unassign loan end date')
 
     @transition_action
     def assign_warehouse(self, **kwargs):
@@ -171,10 +189,12 @@ class BackOfficeAsset(Regionalizable, Asset):
             'autocomplete_field': 'warehouse'
         }
     }
+    assign_warehouse.verbose_name = _('Assign warehouse')
 
     @transition_action
     def unassign_licences(self, **kwargs):
         BaseObjectLicence.objects.filter(base_object=self).delete()
+    unassign_licences.verbose_name = _('Unassign licences')
 
     @transition_action
     def change_hostname(self, **kwargs):
@@ -195,10 +215,37 @@ class BackOfficeAsset(Regionalizable, Asset):
             )
         }
     }
+    change_hostname.verbose_name = _('Change hostname')
+
+    @transition_action
+    def change_user_and_owner(self, **kwargs):
+        UserModel = get_user_model()  # noqa
+        user_id = kwargs.get('user', None)
+        user = UserModel.objects.get(id=user_id)
+        owner_id = kwargs.get('owner', None)
+        self.user = user
+        if not owner_id:
+            self.owner = user
+        else:
+            self.owner = UserModel.objects.get(id=owner_id)
+        self.location = user.location
+
+    change_user_and_owner.form_fields = {
+        'user': {
+            'field': forms.CharField(label=_('User')),
+            'autocomplete_field': 'user',
+        },
+        'owner': {
+            'field': forms.CharField(label=_('Owner')),
+            'autocomplete_field': 'owner',
+            'condition': lambda obj: bool(obj.owner),
+        }
+    }
+    change_user_and_owner.verbose_name = _('Change user and owner')
 
     def _generate_report(self, name, request):
         report = Report.objects.get(name=name)
-        template = report.templates.filter(default=True)
+        template = report.templates.filter(default=True).first()
         template_content = ''
         with open(template.template.path, 'rb') as f:
             template_content = f.read()
@@ -235,6 +282,8 @@ class BackOfficeAsset(Regionalizable, Asset):
         attachment = self._generate_report(name='release', request=request)
         attachment.description = kwargs.get('comment', '')
         attachment.save()
+        return attachment
+    release_report.return_attachment = True
     release_report.form_fields = {
         'comment': {
             'field': forms.CharField(
@@ -243,7 +292,24 @@ class BackOfficeAsset(Regionalizable, Asset):
             )
         }
     }
+    release_report.verbose_name = _('Release report')
 
     @transition_action
     def return_report(self, request, **kwargs):
         self._generate_report(name='return', request=request)
+    return_report.return_attachment = True
+    return_report.verbose_name = _('Return report')
+
+
+@receiver(pre_save, sender=BackOfficeAsset)
+def hostname_assigning(sender, instance, raw, using, **kwargs):
+    """Hostname is assigned for new assets with in_progress status or
+    edited assets when status has changed to in_progress.
+    """
+    if getattr(settings, 'BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME', None):
+        if instance.status == BackOfficeAssetStatus.in_progress:
+            if instance.pk:
+                bo_asset = BackOfficeAsset.objects.get(pk=instance.pk)
+                if bo_asset.status == BackOfficeAssetStatus.in_progress:
+                    return
+            instance._try_assign_hostname(commit=False)

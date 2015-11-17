@@ -2,6 +2,7 @@
 from django.contrib.auth.admin import GroupAdmin, UserAdmin
 from django.contrib.auth.models import Group
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import RalphUser, Region, Team
@@ -61,21 +62,24 @@ class AssignedLicenceList(Table):
     url.title = _('Link')
 
 
-class UserInfoView(RalphDetailView):
-    icon = 'user'
-    name = 'user_additional_info'
-    label = _('Additional info')
-    url_name = 'user_additional_info'
+class UserInfoMixin(object):
+    user = None
+
+    def get_user(self):
+        if not self.user:
+            raise NotImplementedError('Please specify user.')
+        return self.user
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         asset_list_queryset = BackOfficeAsset.objects.filter(
-            user=self.object
+            Q(user=self.get_user()) | Q(owner=self.get_user())
         ).select_related('model', 'model__category', 'model__manufacturer')
         licence_list_queryset = Licence.objects.filter(
-            users=self.object
-        ).select_related('software_category')
+            users=self.get_user()
+        ).select_related('software')
 
+        # TODO: check permission to field or model
         context['asset_list'] = AssetList(
             asset_list_queryset,
             [
@@ -86,9 +90,19 @@ class UserInfoView(RalphDetailView):
         )
         context['licence_list'] = AssignedLicenceList(
             licence_list_queryset,
-            ['id', 'software_category__name', 'niw', 'url']
+            ['id', 'software__name', 'niw', 'url']
         )
         return context
+
+
+class UserInfoView(UserInfoMixin, RalphDetailView):
+    icon = 'user'
+    name = 'user_additional_info'
+    label = _('Additional info')
+    url_name = 'user_additional_info'
+
+    def get_user(self):
+        return self.object
 
 
 @register(RalphUser)
