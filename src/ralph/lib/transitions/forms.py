@@ -19,7 +19,6 @@ class TransitionForm(forms.ModelForm):
         self.fields['target'] = forms.ChoiceField(
             choices=(('', '-------'),) + choices
         )
-        import ipdb; ipdb.set_trace()
         actions_choices = [
             (i.id, getattr(self.model, i.name).verbose_name)
             for i in Action.objects.filter(

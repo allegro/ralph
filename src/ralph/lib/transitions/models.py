@@ -73,11 +73,7 @@ def run_field_transition(instances, transition, field, data={}, **kwargs):
 
     #     defaults.update(kwargs)
     #     result = func(**defaults)
-    #     action_names.append(str(getattr(
-    #         func,
-    #         'verbose_name',
-    #         func.__name__.replace('_', ' ').capitalize()
-    #     )))
+    #     action_names.append(func.verbose_name)
 
     #     if isinstance(result, Attachment):
     #         attachment = result
