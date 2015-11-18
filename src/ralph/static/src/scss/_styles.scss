@@ -147,3 +147,13 @@ input[type="file"] {
         color: #999;
     }
 }
+
+.panel .filter-container {
+    div.filter-header {
+        margin-bottom: 0px;
+        margin-top: rem-calc(15);
+        h6 {
+            display: inline;
+        }
+    }
+}
