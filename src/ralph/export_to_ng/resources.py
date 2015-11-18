@@ -117,6 +117,7 @@ class BackOfficeAssetResource(AssetResource):
             'user',
             'remarks',
             'service_env',
+            'deleted',
             'property_of',
             'budget_info',
             'office_infrastructure',
@@ -302,6 +303,14 @@ class DataCenterAssetResource(AssetResource):
             hostname = ''
         return hostname
 
+    def dehydrate_deleted(self, asset):
+        deleted = asset.deleted
+        try:
+            deleted = asset.deleted or asset.device_info.ralph_device.deleted
+        except AttributeError:
+            pass
+        return deleted
+
     def dehydrate_service_env(self, asset):
         service_env = ""
         service = getattr(asset.service, 'name', '')
@@ -356,6 +365,7 @@ class DataCenterAssetResource(AssetResource):
             'status',
             'task_url',
             'hostname',
+            'deleted',
             'budget_info',
         )
         model = models_assets.Asset
@@ -653,9 +663,12 @@ class SupportResource(resources.ModelResource):
             'escalation_path', 'contract_terms', 'remarks',
             'sla_type', 'asset_type', 'status', 'producer', 'supplier',
             'serial_no', 'invoice_no', 'invoice_date', 'period_in_months',
-            'support_type', 'base_objects', 'name', 'region',
+            'support_type', 'base_objects', 'name', 'region', 'deleted'
         ]
         model = models_support.Support
+
+    def get_queryset(self):
+        return models_support.Support.admin_objects.all()
 
     def dehydrate_base_objects(self, support):
         return ",".join(map(
@@ -701,7 +714,8 @@ class LicenceResource(resources.ModelResource):
             'number_bought', 'sn', 'niw', 'valid_thru',
             'order_no', 'price', 'accounting_id', 'invoice_date', 'provider',
             'invoice_no', 'remarks', 'license_details', 'licence_type',
-            'software', 'region', 'budget_info', 'office_infrastructure'
+            'software', 'region', 'budget_info', 'office_infrastructure',
+            'deleted'
         ]
 
     def get_queryset(self):
