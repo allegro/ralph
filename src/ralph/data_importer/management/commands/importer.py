@@ -129,15 +129,15 @@ class Command(BaseCommand):
                             ),
                             '',
                         ])
-                        logger.error(error_msg)
+                        self.stderr.write(error_msg)
                     if row.errors:
                         break
             after_import_count = model_resource._meta.model.objects.count()
             if len(csv_body) != after_import_count - current_count:
-                logger.error('Some of records were not imported')
+                self.stderr.write('Some of records were not imported')
             else:
-                logger.info('{} rows were imported'.format(len(csv_body)))
-            logger.info('Done\n')
+                self.stdout.write('{} rows were imported'.format(len(csv_body)))
+            self.stdout.write('Done\n')
 
     def handle(self, *args, **options):
         settings.CHECK_IP_HOSTNAME_ON_SAVE = False
