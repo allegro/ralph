@@ -5,6 +5,7 @@ from ralph.security.models import SecurityScan, Vulnerability
 from ralph.data_center.models.networks import IPAddress
 
 
+#TODO:: sec-scan:info show all vulnarabilites-fix it
 class VulnerabilitySerializer(RalphAPISerializer):
 
     class Meta:
@@ -31,6 +32,9 @@ class SaveSecurityScanSerializer(RalphAPISerializer):
 
     def to_internal_value(self, data):
         result = super(SaveSecurityScanSerializer, self).to_internal_value(data)
+
+
+        # host_ip 2 asset
         host_ip = data.get('host ip', None)
         if not host_ip:
             raise serializers.ValidationError("'Host ip' is required'")
@@ -47,6 +51,17 @@ class SaveSecurityScanSerializer(RalphAPISerializer):
         except AttributeError:
             raise serializers.ValidationError("Ip is not assigned to any host")
         result['asset'] = asset
+
+
+        # external_id to local_id
+        converted = Vulnerability.objects.filter(external_vulnerability_id__in=data['external_vulnerabilities'])
+        if len(converted) != len(data['external_vulnerabilities']):
+            import ipdb; ipdb.set_trace()
+            unknown = set(data['external_vulnerabilities']) - set([v.external_vulnerability_id for v in converted])
+            raise serializers.ValidationError("Unknow external_vulnerability: {}".format(unknown))
+        result['vulnerabilities'].extend(converted)
+
+
         return result
 
 

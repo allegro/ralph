@@ -22,7 +22,7 @@ class Vulnerability(
         max_length=255,
         unique=True)  # mysql unique 255
     patch_deadline = models.DateTimeField(null=True, blank=True)
-    risk = models.PositiveIntegerField(choices=Risk())
+    risk = models.PositiveIntegerField(choices=Risk(), null=True, blank=True)
     external_vulnerability_id = models.IntegerField(
         unique=True,  # id means id
         null=True,
