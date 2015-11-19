@@ -54,12 +54,12 @@ class SaveSecurityScanSerializer(RalphAPISerializer):
 
 
         # external_id to local_id
-        converted = Vulnerability.objects.filter(external_vulnerability_id__in=data['external_vulnerabilities'])
-        if len(converted) != len(data['external_vulnerabilities']):
-            import ipdb; ipdb.set_trace()
-            unknown = set(data['external_vulnerabilities']) - set([v.external_vulnerability_id for v in converted])
-            raise serializers.ValidationError("Unknow external_vulnerability: {}".format(unknown))
-        result['vulnerabilities'].extend(converted)
+        if 'external_vulnerabilities' in data:
+            converted = Vulnerability.objects.filter(external_vulnerability_id__in=data['external_vulnerabilities'])
+            if len(converted) != len(data['external_vulnerabilities']):
+                unknown = set(data['external_vulnerabilities']) - set([v.external_vulnerability_id for v in converted])
+                raise serializers.ValidationError("Unknow external_vulnerability: {}".format(unknown))
+            result['vulnerabilities'].extend(converted)
 
 
         return result

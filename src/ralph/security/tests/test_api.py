@@ -159,7 +159,7 @@ class VulnerabilityAPITests(RalphAPITestCase):
         # region = Region.objects.create(name='EU')
         url = reverse('vulnerability-list')
         data = {
-            'name': "Ubuntu 12.04 LTS : icu regression (USN-2522-2)",
+            'name': "vulnerability name",
             'patch_deadline': (datetime.now() + timedelta(days=10)).isoformat(),
             'risk': Risk.low.name,
             'external_vulnerability_id': 100,
