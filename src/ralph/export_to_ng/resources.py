@@ -661,8 +661,8 @@ class SupportResource(resources.ModelResource):
 
     class Meta:
         fields = [
-            'contract_id', 'description', 'price', 'date_from', 'date_to',
-            'escalation_path', 'contract_terms', 'remarks',
+            'id', 'contract_id', 'description', 'price', 'date_from',
+            'date_to', 'escalation_path', 'contract_terms', 'remarks',
             'sla_type', 'asset_type', 'status', 'producer', 'supplier',
             'serial_no', 'invoice_no', 'invoice_date', 'period_in_months',
             'support_type', 'base_objects', 'name', 'region', 'deleted'
