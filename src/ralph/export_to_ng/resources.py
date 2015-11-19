@@ -25,7 +25,8 @@ from ralph_assets import models_support
 from ralph_assets.licences.models import (
     Licence,
     LicenceAsset,
-    LicenceUser
+    LicenceUser,
+    SoftwareCategory,
 )
 
 
@@ -658,14 +659,16 @@ class AssetHolderResource(resources.ModelResource):
 class SupportResource(resources.ModelResource):
     remarks = fields.Field(column_name='additional_notes')
     base_objects = fields.Field()
+    asset_type = fields.Field()
 
     class Meta:
         fields = [
-            'contract_id', 'description', 'price', 'date_from', 'date_to',
-            'escalation_path', 'contract_terms', 'remarks',
+            'id', 'contract_id', 'description', 'price', 'date_from',
+            'date_to', 'escalation_path', 'contract_terms', 'remarks',
             'sla_type', 'asset_type', 'status', 'producer', 'supplier',
             'serial_no', 'invoice_no', 'invoice_date', 'period_in_months',
-            'support_type', 'base_objects', 'name', 'region', 'deleted'
+            'support_type', 'base_objects', 'name', 'region', 'deleted',
+            'property_of', 'asset_type',
         ]
         model = models_support.Support
 
@@ -677,6 +680,9 @@ class SupportResource(resources.ModelResource):
             unicode,
             support.assets.all().values_list('id', flat=True)
         ))
+
+    def dehydrate_asset_type(self, support):
+        return ASSET_TYPE_MAPPING[support.asset_type]
 
 
 class EnvironmentResource(resources.ModelResource):
@@ -704,6 +710,17 @@ class GenericComponentResource(resources.ModelResource):
 
     class Meta:
         model = models_component.GenericComponent
+
+
+class SoftwareResource(resources.ModelResource):
+    asset_type = fields.Field()
+
+    class Meta:
+        model = SoftwareCategory
+        fields = ['id', 'name', 'asset_type']
+
+    def dehydrate_asset_type(self, software):
+        return ASSET_TYPE_MAPPING[software.asset_type]
 
 
 class LicenceResource(resources.ModelResource):
