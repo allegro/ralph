@@ -122,9 +122,8 @@ class BackOfficeAssetAdmin(
         (_('Basic info'), {
             'fields': (
                 'hostname', 'model', 'barcode', 'sn', 'imei', 'niw', 'status',
-                'warehouse', 'location', 'region', 'loan_end_date',
-                'remarks', 'tags', 'property_of', 'task_url',
-                'office_infrastructure'
+                'warehouse', 'location', 'region', 'loan_end_date', 'remarks',
+                'tags', 'property_of', 'task_url', 'office_infrastructure'
             )
         }),
         (_('User Info'), {
@@ -137,7 +136,6 @@ class BackOfficeAssetAdmin(
                 'order_no', 'purchase_order', 'invoice_date', 'invoice_no',
                 'price', 'depreciation_rate', 'depreciation_end_date',
                 'force_depreciation', 'provider', 'budget_info',
-                'office_infrastructure'
             )
         }),
     )

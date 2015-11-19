@@ -206,6 +206,19 @@ class RalphAdminMixin(RalphAutocompleteMixin):
                 kwargs['widgets'] = widgets
         return super().get_changelist_form(request, **kwargs)
 
+    def _add_recovery_to_extra_context(self, extra_context):
+        extra_context = extra_context or {}
+        extra_context['in_recovery_mode'] = True
+        return extra_context
+
+    def revisionform_view(
+        self, request, version, template_name, extra_context=None
+    ):
+        return super().revisionform_view(
+            request, version, template_name,
+            self._add_recovery_to_extra_context(extra_context)
+        )
+
 
 class RalphAdmin(
     ImportExportModelAdmin,

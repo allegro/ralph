@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from django.db.models import Count
+from django.utils.translation import ugettext_lazy as _
+
 from ralph.admin import RalphAdmin, RalphMPTTAdmin, RalphTabularInline, register
 from ralph.assets.models.assets import (
     Asset,
@@ -74,7 +77,7 @@ class AssetModelAdmin(PermissionAdminMixin, RalphAdmin):
 
     resource_class = resources.AssetModelResource
     list_select_related = ['manufacturer', 'category']
-    list_display = ['name', 'type', 'manufacturer', 'category']
+    list_display = ['name', 'type', 'manufacturer', 'category', 'assets_count']
     raw_id_fields = ['manufacturer']
     search_fields = ['name', 'manufacturer__name']
     list_filter = ['type', 'manufacturer', 'category']
@@ -84,6 +87,14 @@ class AssetModelAdmin(PermissionAdminMixin, RalphAdmin):
         'cores_count', 'height_of_device', 'power_consumption',
         'visualization_layout_front', 'visualization_layout_back'
     )
+
+    def get_queryset(self, request):
+        return AssetModel.objects.annotate(assets_count=Count('assets'))
+
+    def assets_count(self, instance):
+        return instance.assets_count
+    assets_count.short_description = _('Assets count')
+    assets_count.admin_order_field = 'assets_count'
 
 
 @register(Category)

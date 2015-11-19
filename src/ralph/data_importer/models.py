@@ -24,6 +24,21 @@ class ImportedObjects(TimeStampMixin, models.Model):
         )
 
     @classmethod
+    def get_object_from_old_pk(cls, model, old_pk):
+        """
+        Return object based on old ID.
+        """
+        try:
+            imported_obj = cls.objects.get(
+                old_object_pk=old_pk,
+                content_type=ContentType.objects.get_for_model(model)
+            )
+        except cls.DoesNotExist:
+            raise ImportedObjectDoesNotExist()
+        else:
+            return model.objects.get(id=imported_obj.object_pk)
+
+    @classmethod
     def get_imported_id(cls, obj):
         """
         Return old object primary key for given object.

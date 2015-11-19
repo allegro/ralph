@@ -1,6 +1,6 @@
 {% load i18n %}
 
-{% if transitions %}
+{% if transitions and not in_recovery_mode %}
   <a href="#" data-options="align:left" class="button dropdown small open" data-dropdown="transitions_status" aria-expanded="true">
     {% trans 'Transitions' %}
   </a>

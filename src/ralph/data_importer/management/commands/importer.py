@@ -6,6 +6,7 @@ import os
 import tempfile
 import zipfile
 
+import reversion
 import tablib
 from django.apps import apps
 from django.conf import settings
@@ -13,6 +14,7 @@ from django.core.management.base import BaseCommand, CommandError
 from import_export import resources
 
 from ralph.data_importer import resources as ralph_resources
+from ralph.data_importer.models import ImportedObjects
 from ralph.data_importer.resources import DefaultResource
 
 APP_MODELS = {model._meta.model_name: model for model in apps.get_models()}
@@ -96,6 +98,23 @@ class Command(BaseCommand):
             options['source'] = item['path']
             self.from_file(options)
 
+    def delete_objs(self, data, model):
+        counter = 0
+        for old_id in data:
+            revision_manager = reversion.default_revision_manager
+            if not old_id:
+                continue
+            obj = ImportedObjects.get_object_from_old_pk(
+                model, int(old_id)
+            )
+            revision_manager.save_revision(
+                (obj,), comment='Imported from old Ralph'
+            )
+            with reversion.create_revision():
+                obj.delete()
+            counter += 1
+        return counter
+
     def from_file(self, options):
         if not options.get('model_name'):
             raise CommandError('You must select a model')
@@ -117,6 +136,10 @@ class Command(BaseCommand):
             model_resource = get_resource(options.get('model_name'))
             current_count = model_resource._meta.model.objects.count()
             dataset = tablib.Dataset(*csv_body, headers=headers)
+            objs_delete = [
+                obj.get('id', None) for obj in dataset.dict
+                if int(obj.get('deleted', 0)) == 1
+            ]
             result = model_resource.import_data(dataset, dry_run=False)
             if result.has_errors():
                 for idx, row in enumerate(result.rows):
@@ -129,15 +152,19 @@ class Command(BaseCommand):
                             ),
                             '',
                         ])
-                        logger.error(error_msg)
+                        self.stderr.write(error_msg)
                     if row.errors:
                         break
             after_import_count = model_resource._meta.model.objects.count()
             if len(csv_body) != after_import_count - current_count:
-                logger.error('Some of records were not imported')
+                self.stderr.write('Some of records were not imported')
             else:
-                logger.info('{} rows were imported'.format(len(csv_body)))
-            logger.info('Done\n')
+                self.stdout.write(
+                    '{} rows were imported'.format(len(csv_body))
+                )
+            deleted = self.delete_objs(objs_delete, model_resource._meta.model)
+            self.stdout.write('{} deleted\n'.format(deleted))
+            self.stdout.write('Done\n')
 
     def handle(self, *args, **options):
         settings.CHECK_IP_HOSTNAME_ON_SAVE = False

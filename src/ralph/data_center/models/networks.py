@@ -321,6 +321,11 @@ class Network(NamedMixin, TimeStampMixin, models.Model):
         return new_subnets
 
     @classmethod
+    def from_ip(cls, ip):
+        """Find the smallest network containing that IP."""
+        return cls.all_from_ip(ip)[0]
+
+    @classmethod
     def all_from_ip(cls, ip):
         """Find all networks for this IP."""
         ip_int = int(ipaddress.ip_address(ip))
@@ -475,6 +480,13 @@ class IPAddress(LastSeenMixin, TimeStampMixin, models.Model):
         null=True,
         default=None,
     )
+    hostname = models.CharField(
+        verbose_name=_('Hostname'),
+        max_length=255,
+        null=True,
+        blank=True,
+        default=None,
+    )
     number = models.BigIntegerField(
         verbose_name=_('IP address'),
         help_text=_('Presented as int.'),
@@ -503,8 +515,10 @@ class IPAddress(LastSeenMixin, TimeStampMixin, models.Model):
         # if not allow_device_change:
         #     self.assert_same_device()
         if settings.CHECK_IP_HOSTNAME_ON_SAVE:
-            if not self.address:
+            if not self.address and self.hostname:
                 self.address = network.hostname(self.hostname, reverse=True)
+            if not self.hostname and self.address:
+                self.hostname = network.hostname(self.address)
         self.number = int(ipaddress.ip_address(self.address))
         ip = ipaddress.ip_address(self.address)
         self.is_public = not ip.is_private
