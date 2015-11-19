@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
+
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -30,6 +32,15 @@ class Vulnerability(
         help_text=_('Id of vulnerability from external system'),
     )
 
+    @property
+    def is_deadline_exceeded(self):
+        result = True if self.patch_deadline < datetime.now() else False
+        return result
+
+    @property
+    def risk_verbose(self):
+        return Risk.from_id(self.risk).name
+
 
 class SecurityScan(
     # Regionalizable,
@@ -45,3 +56,7 @@ class SecurityScan(
     rescan_url = models.URLField(blank=True, verbose_name='Rescan url')
     asset = models.ForeignKey(DataCenterAsset, null=True)
     vulnerabilities = models.ManyToManyField(Vulnerability)
+
+    @property
+    def scan_status_verbose(self):
+        return ScanStatus.from_id(self.scan_status).name
