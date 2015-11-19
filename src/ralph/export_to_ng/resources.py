@@ -309,7 +309,7 @@ class DataCenterAssetResource(AssetResource):
             deleted = asset.deleted or asset.device_info.ralph_device.deleted
         except AttributeError:
             pass
-        return deleted
+        return '1' if deleted else '0'
 
     def dehydrate_service_env(self, asset):
         service_env = ""
