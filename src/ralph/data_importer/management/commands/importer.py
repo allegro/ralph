@@ -102,6 +102,8 @@ class Command(BaseCommand):
         counter = 0
         for old_id in data:
             revision_manager = reversion.default_revision_manager
+            if not old_id:
+                continue
             obj = ImportedObjects.get_object_from_old_pk(
                 model, int(old_id)
             )
