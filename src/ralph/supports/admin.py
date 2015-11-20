@@ -44,7 +44,7 @@ class SupportAdmin(PermissionAdminMixin, AttachmentsMixin, RalphAdmin):
     ]
     list_select_related = ['support_type']
     resource_class = resources.SupportResource
-    raw_id_fields = ['budget_info']
+    raw_id_fields = ['budget_info', 'region', 'support_type']
     fieldsets = (
         (_('Basic info'), {
             'fields': (
