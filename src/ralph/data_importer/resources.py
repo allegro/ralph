@@ -139,19 +139,16 @@ class RackResource(ImportForeignKeyMixin, resources.ModelResource):
 
 
 class NetworkResource(ImportForeignKeyMixin, resources.ModelResource):
-
     data_center = fields.Field(
         column_name='data_center',
         attribute='data_center',
         widget=ImportedForeignKeyWidget(physical.DataCenter),
     )
-
     network_environment = fields.Field(
         column_name='network_environment',
         attribute='network_environment',
         widget=ImportedForeignKeyWidget(networks.NetworkEnvironment),
     )
-
     kind = fields.Field(
         column_name='kind',
         attribute='kind',

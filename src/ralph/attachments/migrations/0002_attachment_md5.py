@@ -7,7 +7,7 @@ from ralph.attachments.models import Attachment
 
 def update_md5_checksum(apps, schema_editor):
     for item in Attachment.objects.all():
-        item.md5 = item.get_md5_sum()
+        item.md5 = item.get_md5_sum(item.file)
         item.save()
 
 

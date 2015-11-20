@@ -142,7 +142,8 @@ class DataCenterAssetAdmin(
         }),
         (_('Location Info'), {
             'fields': (
-                'rack', 'position', 'orientation', 'slot_no', 'budget_info'
+                'rack', 'position', 'orientation', 'slot_no',
+                'management_ip', 'management_hostname',
             )
         }),
         (_('Usage info'), {
@@ -156,7 +157,7 @@ class DataCenterAssetAdmin(
                 'order_no', 'invoice_date', 'invoice_no', 'task_url', 'price',
                 'depreciation_rate', 'depreciation_end_date',
                 'force_depreciation', 'source', 'provider', 'delivery_date',
-
+                'budget_info',
             )
         }),
     )
