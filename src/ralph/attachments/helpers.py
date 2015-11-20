@@ -52,7 +52,10 @@ def add_attachment_from_disk(obj, local_path_to_file, owner, description=''):
     attachment = Attachment.objects.create_from_file_path(
         local_path_to_file, owner
     )
-    attachment.mime_type = mimetypes.guess_type(local_path_to_file)[0]
+    mime_type = mimetypes.guess_type(local_path_to_file)[0]
+    if mime_type is None:
+        mime_type = 'application/octet-stream'
+    attachment.mime_type = mime_type
     attachment.description = description
     attachment.save()
     AttachmentItem.objects.refresh(obj, new_objects=[attachment])
