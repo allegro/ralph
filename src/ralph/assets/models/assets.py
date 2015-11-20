@@ -89,7 +89,7 @@ class Service(NamedMixin, TimeStampMixin, models.Model):
         return reverse('assets:service_detail', args=(self.pk,))
 
 
-class ServiceEnvironment(models.Model):
+class ServiceEnvironment(BaseObject):
     service = models.ForeignKey(Service)
     environment = models.ForeignKey(Environment)
 
