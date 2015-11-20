@@ -146,7 +146,7 @@ class DataCenterAssetAdmin(
         }),
         (_('Usage info'), {
             'fields': (
-                'service_env', 'configuration_path', 'production_year',
+                'service_env', 'production_year',
                 'production_use_date',
             )
         }),

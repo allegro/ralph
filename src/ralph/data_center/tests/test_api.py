@@ -63,7 +63,6 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             'rack': self.rack.id,
             'service_env': self.service_env.id,
             'force_depreciation': False,
-            'configuration_path': '/monitoring/www',
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -80,7 +79,6 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             'rack': self.rack.id,
             'service_env': self.service_env.id,
             'force_depreciation': False,
-            'configuration_path': '/monitoring/www',
             'tags': ['prod', 'db']
         }
         response = self.client.post(url, data, format='json')
