@@ -290,7 +290,7 @@ class IPAddressAdmin(RalphAdmin):
 
     search_fields = ['address']
     list_filter = ['is_public', 'is_management']
-    list_display = ['address', 'asset', 'is_public']
-    list_select_related = ['asset']
-    raw_id_fields = ['asset']
+    list_display = ['address', 'base_object', 'is_public']
+    list_select_related = ['base_object']
+    raw_id_fields = ['base_object']
     resource_class = resources.IPAddressResource

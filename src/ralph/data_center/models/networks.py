@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.assets.models.assets import Asset
+from ralph.assets.models.assets import BaseObject
 from ralph.data_center.models.physical import DataCenter, Rack
 from ralph.lib import network
 from ralph.lib.mixins.models import LastSeenMixin, NamedMixin, TimeStampMixin
@@ -464,9 +464,9 @@ class DiscoveryQueue(NamedMixin, models.Model):
 
 
 class IPAddress(LastSeenMixin, TimeStampMixin, models.Model):
-    asset = models.ForeignKey(
-        Asset,
-        verbose_name=_('asset'),
+    base_object = models.ForeignKey(
+        BaseObject,
+        verbose_name=_('Base object'),
         null=True,
         blank=True,
         default=None,

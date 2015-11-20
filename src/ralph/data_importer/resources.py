@@ -165,10 +165,10 @@ class NetworkResource(ImportForeignKeyMixin, resources.ModelResource):
 
 class IPAddressResource(ImportForeignKeyMixin, resources.ModelResource):
 
-    asset = fields.Field(
+    base_object = fields.Field(
         column_name='asset',
         attribute='asset',
-        widget=ImportedForeignKeyWidget(physical.DataCenterAsset),
+        widget=ImportedForeignKeyWidget(assets.BaseObject),
     )
 
     network = fields.Field(
