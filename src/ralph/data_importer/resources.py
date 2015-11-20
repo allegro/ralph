@@ -290,6 +290,16 @@ class SupportResource(ImportForeignKeyMixin, resources.ModelResource):
         attribute='region',
         widget=ImportedForeignKeyWidget(Region),
     )
+    budget_info = fields.Field(
+        column_name='budget_info',
+        attribute='budget_info',
+        widget=ImportedForeignKeyWidget(assets.BudgetInfo),
+    )
+    property_of = fields.Field(
+        column_name='property_of',
+        attribute='property_of',
+        widget=ImportedForeignKeyWidget(AssetHolder),
+    )
 
     class Meta:
         model = Support
