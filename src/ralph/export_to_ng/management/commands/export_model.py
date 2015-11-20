@@ -118,12 +118,20 @@ class Command(BaseCommand):
             '-z', '--zipfile',
             help='Path to zipped file where exported models should be stored',
         ),
+        make_option(
+            '-e', '--exclude',
+            help='Excluded models',
+            action="append",
+            type="str"
+        ),
     )
 
     def handle(self, *args, **options):
         models = args
         if not models:
             models = SIMPLE_MODELS + DEPENDENT_MODELS + MANY_TO_MANY
+        if options['exclude']:
+            models = [m for m in models if m not in options['exclude']]
         filename = options['zipfile']
         if not filename.endswith(ZIP_EXT):
             filename += ZIP_EXT

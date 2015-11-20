@@ -4,6 +4,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import ipaddr
 import logging
 import os
 from itertools import chain
@@ -218,6 +219,10 @@ class DataCenterAssetResource(AssetResource):
     orientation = fields.Field('orientation', column_name='orientation')
     position = fields.Field('position', column_name='position')
     slot_no = fields.Field('slot_no', column_name='slot_no')
+    management_ip = fields.Field('management_ip', column_name='management_ip')
+    management_hostname = fields.Field(
+        'management_hostname', column_name='management_hostname'
+    )
 
     def dehydrate_parent(self, asset):
         if (
@@ -325,6 +330,20 @@ class DataCenterAssetResource(AssetResource):
             return DATA_CENTER_ASSET_STATUS_MAPPING[asset.status]
         return asset.status
 
+    def dehydrate_management_ip(self, asset):
+        device = asset.linked_device
+        if not device:
+            return ''
+        management_ip = device.management_ip
+        return management_ip.address if management_ip else ''
+
+    def dehydrate_management_hostname(self, asset):
+        device = asset.linked_device
+        if not device:
+            return ''
+        management_ip = device.management_ip
+        return management_ip.hostname if management_ip else ''
+
     class Meta:
         fields = (
             # to be skipped
@@ -390,6 +409,10 @@ class NetworkResource(resources.ModelResource):
 
     def dehydrate_network_environment(self, network):
         return network.environment_id or ''
+
+    def dehydrate_address(self, network):
+        net = ipaddr.IPNetwork(network.address)
+        return '{}/{}'.format(str(net.network), net.prefixlen)
 
     class Meta:
         fields = (
