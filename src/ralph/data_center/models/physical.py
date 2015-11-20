@@ -240,13 +240,6 @@ class DataCenterAsset(Asset):
         ],
         verbose_name=_('slot number'),
     )
-
-    # TODO: convert to foreign key
-    configuration_path = models.CharField(
-        help_text=_('Path to configuration for e.g. puppet, chef.'),
-        max_length=100,
-        verbose_name=_('configuration path'),
-    )
     connections = models.ManyToManyField(
         'self',
         through='Connection',
