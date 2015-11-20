@@ -184,7 +184,11 @@ class Licence(
 
 class BaseObjectLicence(models.Model):
     licence = models.ForeignKey(Licence)
-    base_object = models.ForeignKey(BaseObject, related_name='licences')
+    base_object = models.ForeignKey(
+        BaseObject,
+        related_name='licences',
+        verbose_name=_('Asset')
+    )
     quantity = models.PositiveIntegerField(default=1)
 
     class Meta:
