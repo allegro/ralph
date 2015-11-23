@@ -18,7 +18,7 @@ from ralph.lib.permissions.api import (
 
 logger = logging.getLogger(__name__)
 
-NESTED_SERIALIZER_FIELDS_BLACKLIST = ['content_type']
+NESTED_SERIALIZER_FIELDS_BLACKLIST = ['content_type', 'password']
 
 
 class ReversedChoiceField(serializers.ChoiceField):
