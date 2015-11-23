@@ -123,7 +123,10 @@ class Command(BaseCommand):
             delimiter=str(options['delimiter'])
         )
         settings.REMOVE_ID_FROM_IMPORT = options.get('skipid')
-
+        self.stdout.write('Import {} resource from {}'.format(
+            options.get('model_name'),
+            options.get('source')
+        ))
         with open(options.get('source')) as csv_file:
             reader_kwargs = {}
             reader = csv.reader(

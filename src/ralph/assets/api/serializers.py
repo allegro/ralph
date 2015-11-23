@@ -1,6 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
 
+from ralph.accounts.api_simple import SimpleRalphUserSerializer
 from ralph.api import RalphAPISerializer
 from ralph.api.utils import PolymorphicSerializer
 from ralph.assets.models import (
@@ -96,6 +97,10 @@ class SaveServiceSerializer(RalphAPISerializer):
 
 
 class ServiceSerializer(RalphAPISerializer):
+
+    business_owners = SimpleRalphUserSerializer(many=True)
+    technical_owners = SimpleRalphUserSerializer(many=True)
+
     class Meta:
         model = Service
         depth = 1

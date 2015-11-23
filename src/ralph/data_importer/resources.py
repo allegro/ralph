@@ -328,6 +328,16 @@ class ServiceResource(
         attribute='profit_center',
         widget=ImportedForeignKeyWidget(assets.ProfitCenter),
     )
+    business_owners = fields.Field(
+        column_name='business_owners',
+        attribute='business_owners',
+        widget=UserManyToManyWidget(get_user_model()),
+    )
+    technical_owners = fields.Field(
+        column_name='technical_owners',
+        attribute='technical_owners',
+        widget=UserManyToManyWidget(get_user_model()),
+    )
 
     class Meta:
         model = assets.Service
