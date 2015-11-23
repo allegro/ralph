@@ -9,6 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('licences', '0005_software_asset_type'),
+        ('assets', '0005_assetholder'),
     ]
 
     operations = [

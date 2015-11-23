@@ -2,13 +2,16 @@ sudo: required
 language: python
 
 env:
-  matrix:
-    - TEST_DB_ENGINE=mysql
-    - TEST_DB_ENGINE=sqlite
+    global:
+        - DATABASE_USER=travis
+        - DATABASE_PASSWORD=
+    matrix:
+        - TEST_DB_ENGINE=mysql
+        - TEST_DB_ENGINE=sqlite
 
 services:
-    - docker
     - mysql
+    # - docker  # TEMPORARY - docker is not working with mysql
 
 cache:
   directories:
@@ -47,16 +50,18 @@ before_deploy:
     - make build-package
 
 deploy:
-    -   provider: script
-        script: scripts/travis_deploy_docker.sh
-        on:
-            branch: ng
-            python: 3.4
+    # -   provider: script
+    #     script: scripts/travis_deploy_docker.sh
+    #     on:
+    #         branch: ng
+    #         python: 3.4
+    #         condition: $TEST_DB_ENGINE = mysql
     -   provider: script
         script: scripts/travis_deploy_bintray.sh
         on:
             branch: ng
             python: 3.4
+            condition: $TEST_DB_ENGINE = mysql
 
 notifications:
   webhooks:

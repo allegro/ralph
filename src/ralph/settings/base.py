@@ -96,15 +96,13 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.environ.get('DATABASE_NAME', 'ralph_ng'),
         'USER': os.environ.get('DATABASE_USER', 'ralph_ng'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'ralph_ng'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'ralph_ng') or None,
         'HOST': os.environ.get('DATABASE_HOST', '127.0.0.1'),
         'PORT': os.environ.get('DATABASE_PORT', 3306),
         'OPTIONS': MYSQL_OPTIONS,
         'ATOMIC_REQUESTS': True,
         'TEST': {
             'NAME': 'test_ralph_ng',
-            'USER': 'root',
-            'PASSWORD': '',
         }
     }
 }

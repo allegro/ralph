@@ -130,6 +130,7 @@ class DataImporterTestCase(TestCase):
 
     def test_importer_command_regions(self):
         """Test importer management command with BackOfficeAsset model."""
+        old_regions_count = Region.objects.count()
         regions_csv = os.path.join(
             self.base_dir,
             'tests/samples/regions.csv'
@@ -140,7 +141,7 @@ class DataImporterTestCase(TestCase):
             type='file',
             model_name='Region',
         )
-        self.assertEqual(Region.objects.count(), 2)
+        self.assertEqual(Region.objects.count(), old_regions_count + 2)
         region_1 = Region.objects.get(name='USA')
         for user in ('iron.man', 'superman'):
             self.assertIn(
@@ -191,7 +192,6 @@ class DataImporterTestCase(TestCase):
             old_object_pk=200
         ).exists()
         self.assertTrue(warehouse_exists)
-
 
     def test_importer_command_with_semicolon(self):
         """Test importer management command with Warehouse model and

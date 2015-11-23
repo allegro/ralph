@@ -82,4 +82,7 @@ class LicenceAPITests(RalphAPITestCase):
         }
         response = self.client.post(url, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['id'], 2)
+        self.assertTrue(BaseObjectLicence.objects.filter(
+            base_object=self.base_object2.id,
+            licence=self.licence3.id
+        ).exists())
