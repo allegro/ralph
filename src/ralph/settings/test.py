@@ -2,13 +2,19 @@ from ralph.settings import *  # noqa
 
 DEBUG = False
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:',
-        'ATOMIC_REQUESTS': True,
+TEST_DB_ENGINE = os.environ.get('TEST_DB_ENGINE', 'sqlite')
+
+if TEST_DB_ENGINE == 'mysql':
+    pass  # use default mysql settings
+else:  # use sqlite as default
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',
+            'ATOMIC_REQUESTS': True,
+        }
     }
-}
+
 
 INSTALLED_APPS += (
     'ralph.lib.mixins',
