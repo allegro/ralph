@@ -25,6 +25,8 @@ class BaseObjectLicenceView(RalphDetailViewAdmin):
         model = BaseObjectLicence
         raw_id_fields = ('base_object',)
         extra = 1
+        verbose_name = _('assignments')
+        verbose_name_plural = _('Assignments')
 
     inlines = [BaseObjectLicenceInline]
 
