@@ -25,11 +25,11 @@ def has_long_title(user):
 
 
 class Article(PermByFieldMixin, PermissionsForObjectMixin, models.Model):
-    author = models.ForeignKey(settings.AUTH_USER_MODEL)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='articles_author')
     title = models.CharField(max_length=100)
     content = models.CharField(max_length=1000)
     custom_field_1 = models.CharField(max_length=100, null=True, blank=True)
-    collaborators = models.ManyToManyField(settings.AUTH_USER_MODEL)
+    collaborators = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='articles_collaborator')
 
     class Permissions:
         has_access = is_author | is_collabolator
@@ -40,7 +40,7 @@ class Article(PermByFieldMixin, PermissionsForObjectMixin, models.Model):
 
 class LongArticle(Article):
     remarks = models.CharField(max_length=100)
-    custom_field_2 = models.ForeignKey(Article, null=True, blank=True)
+    custom_field_2 = models.ForeignKey(Article, null=True, blank=True, related_name='long_article')
 
     class Permissions:
         # notice that this permission is anded (&) with Article permissions
@@ -48,8 +48,8 @@ class LongArticle(Article):
 
 
 class Library(models.Model):
-    lead_article = models.ForeignKey(Article)
-    articles = models.ManyToManyField(Article)
+    lead_article = models.ForeignKey(Article, related_name='library_lead')
+    articles = models.ManyToManyField(Article, related_name='library_articles')
 
 
 class Foo(models.Model):

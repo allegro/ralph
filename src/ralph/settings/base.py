@@ -101,6 +101,11 @@ DATABASES = {
         'PORT': os.environ.get('DATABASE_PORT', 3306),
         'OPTIONS': MYSQL_OPTIONS,
         'ATOMIC_REQUESTS': True,
+        'TEST': {
+            'NAME': 'test_ralph_ng',
+            'USER': 'root',
+            'PASSWORD': '',
+        }
     }
 }
 

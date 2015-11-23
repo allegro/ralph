@@ -1,8 +1,14 @@
 sudo: required
 language: python
 
+env:
+  matrix:
+    - TEST_DB_ENGINE=mysql
+    - TEST_DB_ENGINE=sqlite
+
 services:
     - docker
+    - mysql
 
 cache:
   directories:
