@@ -69,6 +69,8 @@ class RunTransitionView(RalphTemplateView):
         context['form'] = self.get_form()
         context['transition'] = self.transition
         context['back_url'] = self.obj.get_absolute_url()
+        context['object'] = self.obj
+        context['verbose_name'] = self.obj._meta.verbose_name
         return context
 
     def post(self, request, *args, **kwargs):

@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block content %}
-  <h1>{% trans 'Tranisition' %}&nbsp;{{ transition.name|lower }}</h1>
+  <h1>{% trans 'Tranisition' %}&nbsp;{{ transition.name|lower }} for {{ verbose_name }}: {{ object }}</h1>
   {% if transition.description %}
     <p>{{ transition.description }}</p>
   {% endif %}
