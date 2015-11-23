@@ -19,7 +19,8 @@ class BaseObjectSupportView(RalphDetailViewAdmin):
         model = Support.base_objects.through
         raw_id_fields = ('baseobject',)
         extra = 1
-        verbose_name = _('Base object support')
+        verbose_name = _('assignments')
+        verbose_name_plural = _('Assignments')
 
     inlines = [BaseObjectSupportInline]
 
