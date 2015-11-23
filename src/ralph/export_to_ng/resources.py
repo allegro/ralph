@@ -579,6 +579,20 @@ class ServiceResource(resources.ModelResource):
     name = fields.Field(column_name='name')
     profit_center = fields.Field(column_name='profit_center')
     uid = fields.Field(column_name='uid')
+    technical_owners = fields.Field(column_name='technical_owners')
+    business_owners = fields.Field(column_name='business_owners')
+
+    def dehydrate_technical_owners(self, service):
+        technical_owners = service.owners.filter(
+            ciownership__type=models_ci.CIOwnershipType.technical
+        ).values_list('profile__user__username', flat=True)
+        return ','.join(technical_owners)
+
+    def dehydrate_business_owners(self, service):
+        business_owners = service.owners.filter(
+            ciownership__type=models_ci.CIOwnershipType.business
+        ).values_list('profile__user__username', flat=True)
+        return ','.join(business_owners)
 
     def dehydrate_name(self, service):
         return service.name
@@ -596,7 +610,9 @@ class ServiceResource(resources.ModelResource):
         return service.uid
 
     def get_queryset(self):
-        return models_device.ServiceCatalog.objects.all()
+        return models_device.ServiceCatalog.objects.all().prefetch_related(
+            'owners'
+        )
 
     class Meta:
         fields = (
