@@ -125,7 +125,8 @@ class DataCenterAssetAdmin(
     list_filter = [
         'status', 'barcode', 'sn', 'hostname', 'invoice_no', 'invoice_date',
         'order_no', 'model__name', 'depreciation_end_date',
-        'force_depreciation', 'remarks', 'budget_info', 'rack__name'
+        'force_depreciation', 'remarks', 'budget_info', 'rack__name',
+        'property_of'
     ]
     date_hierarchy = 'created'
     list_select_related = ['model', 'model__manufacturer', 'model__category']
@@ -136,7 +137,7 @@ class DataCenterAssetAdmin(
         (_('Basic info'), {
             'fields': (
                 'hostname', 'model', 'status', 'barcode', 'sn', 'niw',
-                'required_support', 'remarks', 'parent', 'tags',
+                'required_support', 'remarks', 'parent', 'tags', 'property_of'
             )
         }),
         (_('Location Info'), {

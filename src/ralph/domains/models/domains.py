@@ -6,8 +6,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import BaseObject
-from ralph.assets.models.assets import BusinessSegment
-from ralph.back_office.models import AssetHolder
+from ralph.assets.models.assets import AssetHolder, BusinessSegment
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     NamedMixin,

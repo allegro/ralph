@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.admin import RalphAdmin, RalphMPTTAdmin, RalphTabularInline, register
 from ralph.assets.models.assets import (
     Asset,
+    AssetHolder,
     AssetModel,
     BaseObject,
     BudgetInfo,
@@ -132,3 +133,9 @@ class BaseObjectAdmin(RalphAdmin):
 
     def repr(self, obj):
         return '{}: {}'.format(obj.content_type, obj)
+
+
+@register(AssetHolder)
+class AssetHolderAdmin(RalphAdmin):
+
+    search_fields = ['name']

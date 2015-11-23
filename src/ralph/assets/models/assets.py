@@ -330,6 +330,12 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         null=True,
         on_delete=models.PROTECT,
     )
+    property_of = models.ForeignKey(
+        AssetHolder,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
 
     def __str__(self):
         return self.hostname
