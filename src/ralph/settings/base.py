@@ -232,6 +232,7 @@ REDIS_CONNECTION = {
     'HOST': os.environ.get('REDIS_HOST', 'localhost'),
     'PORT': os.environ.get('REDIS_PORT', '6379'),
     'DB': int(os.environ.get('REDIS_DB', 0)),
+    'PASSWORD': os.environ.get('REDIS_PASSWORD', ''),
 }
 
 BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME = True
