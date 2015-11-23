@@ -248,3 +248,9 @@ RALPH_EXTERNAL_SERVICES = {
         'method': 'inkpy_jinja.pdf',
     }
 }
+
+# Example:
+# MY_EQUIPMENT_LINKS = [
+#     {'url': 'http://....', 'name': 'Link name'},
+# ]
+MY_EQUIPMENT_LINKS = []

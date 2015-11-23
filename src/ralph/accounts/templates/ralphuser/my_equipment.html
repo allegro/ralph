@@ -10,5 +10,9 @@
     <br />
     <h5>{% trans 'Assigned licences' %}:</h5>
     {% table licence_list.get_table_content %}
+    <br /><br />
+    {% for link in my_equipment_links %}
+      <a href="{{ link.url }}">{{ link.name }}</a><br />
+    {% endfor %}
   </div>
 {% endblock %}
