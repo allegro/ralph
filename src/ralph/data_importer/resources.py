@@ -4,7 +4,6 @@ from import_export import fields, resources
 from ralph.accounts.models import Region
 from ralph.assets.models import assets, base
 from ralph.back_office.models import (
-    AssetHolder,
     BackOfficeAsset,
     OfficeInfrastructure,
     Warehouse
@@ -99,7 +98,7 @@ class BackOfficeAssetResource(ImportForeignKeyMixin, resources.ModelResource):
     property_of = fields.Field(
         column_name='property_of',
         attribute='property_of',
-        widget=ImportedForeignKeyWidget(AssetHolder),
+        widget=ImportedForeignKeyWidget(assets.AssetHolder),
     )
     budget_info = fields.Field(
         column_name='budget_info',
@@ -298,7 +297,7 @@ class SupportResource(ImportForeignKeyMixin, resources.ModelResource):
     property_of = fields.Field(
         column_name='property_of',
         attribute='property_of',
-        widget=ImportedForeignKeyWidget(AssetHolder),
+        widget=ImportedForeignKeyWidget(assets.AssetHolder),
     )
 
     class Meta:
@@ -417,7 +416,7 @@ class RegionResource(ImportForeignKeyMixin, resources.ModelResource):
 class AssetHolderResource(ImportForeignKeyMixin, resources.ModelResource):
 
     class Meta:
-        model = AssetHolder
+        model = assets.AssetHolder
 
 
 class OfficeInfrastructureResource(

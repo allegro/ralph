@@ -16,7 +16,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
 from ralph.assets.country_utils import iso2_to_iso3
-from ralph.assets.models.assets import Asset, AssetHolder
+from ralph.assets.models.assets import Asset
 from ralph.attachments.helpers import add_attachment_from_disk
 from ralph.lib.external_services import ExternalService, obj_to_dict
 from ralph.lib.mixins.fields import NullableCharField
@@ -77,12 +77,6 @@ class BackOfficeAsset(Regionalizable, Asset):
     )
     imei = NullableCharField(
         max_length=18, null=True, blank=True, unique=True
-    )
-    property_of = models.ForeignKey(
-        AssetHolder,
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
     )
     office_infrastructure = models.ForeignKey(
         OfficeInfrastructure, null=True, blank=True
