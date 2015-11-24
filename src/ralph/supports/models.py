@@ -10,13 +10,7 @@ from ralph.accounts.models import Regionalizable
 from ralph.assets.models.assets import AssetHolder, BudgetInfo
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
-from ralph.lib.mixins.models import (
-    AdminAbsoluteUrlMixin,
-    NamedMixin,
-    TaggableMixin,
-    TimeStampMixin
-)
-from ralph.lib.permissions import PermByFieldMixin
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
 
 
 class SupportType(NamedMixin, models.Model):
@@ -31,13 +25,10 @@ class SupportStatus(Choices):
 
 
 class Support(
-    AdminAbsoluteUrlMixin,
     Regionalizable,
-    PermByFieldMixin,
+    AdminAbsoluteUrlMixin,
     NamedMixin.NonUnique,
-    TimeStampMixin,
-    TaggableMixin,
-    models.Model,
+    BaseObject
 ):
     asset_type = models.PositiveSmallIntegerField(
         choices=ObjectModelType(), default=ObjectModelType.all.id,
@@ -51,7 +42,6 @@ class Support(
     date_to = models.DateField(null=False, blank=False)
     escalation_path = models.CharField(max_length=200, blank=True)
     contract_terms = models.TextField(blank=True)
-    remarks = models.TextField(blank=True)
     sla_type = models.CharField(max_length=200, blank=True)
     status = models.PositiveSmallIntegerField(
         default=SupportStatus.new.id,
