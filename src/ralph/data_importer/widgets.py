@@ -143,6 +143,11 @@ class ImportedForeignKeyWidget(widgets.ForeignKeyWidget):
         return result
 
 
+class NullStringWidget(widgets.CharWidget):
+    def clean(self, value):
+        return super().clean(value) or None
+
+
 class AssetServiceEnvWidget(widgets.ForeignKeyWidget):
 
     """Widget for AssetServiceEnv Foreign Key field.
