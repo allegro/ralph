@@ -88,7 +88,7 @@ class DataCenterAssetSerializer(DataCenterAssetSerializerBase):
         return TYPE_ASSET
 
     def get_management(self, obj):
-        return obj.management_ip
+        return obj.management_ip or ''
 
     class Meta:
         model = DataCenterAsset
