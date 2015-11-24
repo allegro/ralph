@@ -80,7 +80,7 @@ class NestedGroups(object):
                     )
                 )
                 self.group_users[group_name] = [
-                    u[1][settings.AUTH_LDAP_USER_USERNAME_ATTR][0]
+                    u[1][settings.AUTH_LDAP_USER_USERNAME_ATTR][0].decode('utf-8')  # noqa
                     for u in users
                 ]
 
@@ -100,6 +100,7 @@ class NestedGroups(object):
             if user.username in users:
                 group = self.get_group_from_db(group_name)
                 user.groups.add(group)
+                print('\tAdded', user.username, 'to', group_name)
 
 
 class Command(BaseCommand):
