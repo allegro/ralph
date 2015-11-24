@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
+from ralph.assets.api.serializers import BaseObjectSerializer
 from ralph.supports.models import Support, SupportType
 
 
@@ -13,7 +14,7 @@ class SupportTypeViewSet(RalphAPIViewSet):
     serializer_class = SupportTypeSerializer
 
 
-class SupportSerializer(RalphAPISerializer):
+class SupportSerializer(BaseObjectSerializer):
     class Meta:
         model = Support
         depth = 1
@@ -22,7 +23,7 @@ class SupportSerializer(RalphAPISerializer):
         # we should create serializer for this field which will call
         # proper serializer for each type returned by Polymorphic or try to
         # use generic nested serializer for concrete type
-        exclude = ('base_objects',)
+        exclude = ('base_objects', 'content_type')
 
 
 class SupportViewSet(RalphAPIViewSet):

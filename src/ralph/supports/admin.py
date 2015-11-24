@@ -21,6 +21,7 @@ class BaseObjectSupportView(RalphDetailViewAdmin):
         extra = 1
         verbose_name = _('assignments')
         verbose_name_plural = _('Assignments')
+        fk_name = 'support'
 
     inlines = [BaseObjectSupportInline]
 
