@@ -15,6 +15,7 @@ from ralph.data_importer.widgets import (
     BaseObjectManyToManyWidget,
     BaseObjectWidget,
     ImportedForeignKeyWidget,
+    NullStringWidget,
     UserManyToManyWidget,
     UserWidget
 )
@@ -202,6 +203,11 @@ class DataCenterAssetResource(ImportForeignKeyMixin, resources.ModelResource):
         column_name='budget_info',
         attribute='budget_info',
         widget=ImportedForeignKeyWidget(assets.BudgetInfo),
+    )
+    management_ip = fields.Field(
+        column_name='management_ip',
+        attribute='management_ip',
+        widget=NullStringWidget(),
     )
 
     class Meta:
