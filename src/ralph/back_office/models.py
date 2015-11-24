@@ -243,18 +243,19 @@ class BackOfficeAsset(Regionalizable, Asset):
         template_content = ''
         with open(template.template.path, 'rb') as f:
             template_content = f.read()
-
         service_pdf = ExternalService('PDF')
         result = service_pdf.run(
             template=template_content,
             data={
                 'id': self.id,
+                'now': datetime.datetime.now(),
                 'logged_user': obj_to_dict(request.user),
                 'affected_user': obj_to_dict(self.user),
                 'assets': [{
                     'sn': self.sn,
+                    'barcode': self.barcode,
                     'model': str(self.model),
-                    'office_info': {'imei': self.imei}
+                    'imei': self.imei or '-'
                 }]
             }
         )
