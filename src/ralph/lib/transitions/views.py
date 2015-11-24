@@ -22,7 +22,7 @@ class RunTransitionView(RalphTemplateView):
         self.obj = get_object_or_404(model, pk=object_pk)
         self.transition = get_object_or_404(Transition, pk=transition_pk)
         self.actions, self.return_attachment = self.collect_actions(self.transition)  # noqa
-        return super().dispatch(request, *args, **kwargs)
+        return super().dispatch(request, model=model, *args, **kwargs)
 
     def collect_actions(self, transition):
         names = transition.actions.values_list('name', flat=True).all()

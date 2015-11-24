@@ -22,7 +22,7 @@ class RalphExtraViewMixin(object):
     def dispatch(self, request, model, views, *args, **kwargs):
         self.model = model
         self.views = views
-        return super().dispatch(request, *args, **kwargs)
+        return super().dispatch(request, model=model, *args, **kwargs)
 
     @classmethod
     def post_register(cls, namespace, model):
