@@ -27,6 +27,8 @@ class BaseObject(
 
     """Base object mixin."""
 
-    parent = models.ForeignKey('self', null=True, blank=True)
+    parent = models.ForeignKey(
+        'self', null=True, blank=True, related_name='children'
+    )
     remarks = models.TextField(blank=True)
     service_env = models.ForeignKey('ServiceEnvironment', null=True)

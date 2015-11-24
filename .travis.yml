@@ -4,14 +4,13 @@ language: python
 env:
     global:
         - DATABASE_USER=travis
-        - DATABASE_PASSWORD=
+        - DATABASE_PASSWORD=travis
     matrix:
         - TEST_DB_ENGINE=mysql
         - TEST_DB_ENGINE=sqlite
 
 services:
-    - mysql
-    # - docker  # TEMPORARY - docker is not working with mysql
+    - docker
 
 cache:
   directories:
@@ -27,6 +26,7 @@ before_install:
     - make flake
     - export RALPH_VERSION=$(cat VERSION)
     - export NEW_TAG=$RALPH_VERSION-snapshot-$(date "+%Y%m%d")-$TRAVIS_BUILD_NUMBER
+    - if [[ $TEST_DB_ENGINE == mysql ]]; then docker run -d -v $(pwd)/docker/mysql.cnf:/etc/mysql/conf.d/mysql.cnf -p "3306:3306" -e "MYSQL_ALLOW_EMPTY_PASSWORD=yes" -e "MYSQL_DATABASE=ralph_ng" -e "MYSQL_ROOT_PASSWORD=root" -e "MYSQL_USER=travis" -e "MYSQL_PASSWORD=travis" mysql:5.6; fi
 
 install:
     - npm config set python /usr/bin/python2.7
@@ -50,12 +50,12 @@ before_deploy:
     - make build-package
 
 deploy:
-    # -   provider: script
-    #     script: scripts/travis_deploy_docker.sh
-    #     on:
-    #         branch: ng
-    #         python: 3.4
-    #         condition: $TEST_DB_ENGINE = mysql
+    -   provider: script
+        script: scripts/travis_deploy_docker.sh
+        on:
+            branch: ng
+            python: 3.4
+            condition: $TEST_DB_ENGINE = mysql
     -   provider: script
         script: scripts/travis_deploy_bintray.sh
         on:

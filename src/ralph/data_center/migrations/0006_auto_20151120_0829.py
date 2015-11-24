@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
+import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
@@ -21,8 +22,8 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(
                 to='assets.BaseObject',
                 default=None,
-                verbose_name='base_object',
-                on_delete=models.deletion.SET_NULL,
+                verbose_name='Base object',
+                on_delete=django.db.models.deletion.SET_NULL,
                 null=True,
                 blank=True
             ),

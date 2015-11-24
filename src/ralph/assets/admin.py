@@ -27,7 +27,9 @@ class ServiceEnvironmentAdmin(RalphAdmin):
 
     search_fields = ['service__name', 'environment__name']
     list_select_related = ['service', 'environment']
+    raw_id_fields = ['service', 'environment']
     resource_class = resources.ServiceEnvironmentResource
+    exclude = ('parent', 'service_env')
 
 
 class ServiceEnvironmentInline(RalphTabularInline):

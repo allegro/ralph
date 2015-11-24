@@ -74,13 +74,11 @@ class SaveServiceSerializer(RalphAPISerializer):
             )
         )
         # create ServiceEnv for new environments
-        service_env_to_create = []
         for environment in environments:
             if environment.id not in current_environments:
-                service_env_to_create.append(ServiceEnvironment(
+                ServiceEnvironment.objects.create(
                     service=instance, environment=environment
-                ))
-        ServiceEnvironment.objects.bulk_create(service_env_to_create)
+                )
 
     def create(self, validated_data):
         environments = validated_data.pop('environments', [])
@@ -110,6 +108,7 @@ class ServiceEnvironmentSerializer(RalphAPISerializer):
     class Meta:
         model = ServiceEnvironment
         depth = 1
+        exclude = ('content_type', 'parent', 'service_env')
 
 
 class ManufacturerSerializer(RalphAPISerializer):

@@ -33,6 +33,7 @@ class ServiceViewSet(RalphAPIViewSet):
     queryset = models.Service.objects.all()
     serializer_class = serializers.ServiceSerializer
     save_serializer_class = serializers.SaveServiceSerializer
+    select_related = ['profit_center']
     prefetch_related = ['business_owners', 'technical_owners', 'environments']
 
 
