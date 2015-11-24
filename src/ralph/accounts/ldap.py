@@ -53,7 +53,6 @@ def manager_country_attribute_populate(
 class MappedGroupOfNamesType(ActiveDirectoryGroupType):
 
     """Provide group mappings described in project settings."""
-
     def _get_group(self, group_dn, ldap_user, group_search):
         base_dn = group_search.base_dn
         group_search.base_dn = force_text(group_dn)
@@ -65,7 +64,6 @@ class MappedGroupOfNamesType(ActiveDirectoryGroupType):
         """Get groups which user belongs to."""
         self._ldap_groups = ldap_user.settings.GROUP_MAPPING
         group_map = []
-
         try:
             group_dns = ldap_user.attrs['memberOf']
         except KeyError:
