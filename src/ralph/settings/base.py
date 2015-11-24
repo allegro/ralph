@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import os
 
 from django.contrib.messages import constants as messages
@@ -253,4 +254,4 @@ RALPH_EXTERNAL_SERVICES = {
 # MY_EQUIPMENT_LINKS = [
 #     {'url': 'http://....', 'name': 'Link name'},
 # ]
-MY_EQUIPMENT_LINKS = []
+MY_EQUIPMENT_LINKS = json.loads(os.environ.get('MY_EQUIPMENT_LINKS', '[]'))

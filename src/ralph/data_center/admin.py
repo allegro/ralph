@@ -124,7 +124,7 @@ class DataCenterAssetAdmin(
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
     list_filter = [
         'status', 'barcode', 'sn', 'hostname', 'invoice_no', 'invoice_date',
-        'order_no', 'model__name', 'depreciation_end_date',
+        'order_no', 'model__name', 'service_env', 'depreciation_end_date',
         'force_depreciation', 'remarks', 'budget_info', 'rack__name',
         'property_of'
     ]
