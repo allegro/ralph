@@ -30,11 +30,11 @@ class NamedMixin(models.Model):
 class TimeStampMixin(models.Model):
     created = models.DateTimeField(
         verbose_name=_('date created'),
-        auto_now=True,
+        auto_now_add=True,
     )
     modified = models.DateTimeField(
         verbose_name=_('last modified'),
-        auto_now_add=True,
+        auto_now=True,
     )
 
     class Meta:
