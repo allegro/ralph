@@ -31,37 +31,53 @@ class SaveSecurityScanSerializer(RalphAPISerializer):
         model = SecurityScan
 
     def to_internal_value(self, data):
-        result = super(SaveSecurityScanSerializer, self).to_internal_value(data)
+        # external_id to local_id
 
+        from collections import OrderedDict
+        errors = OrderedDict()
+        #errors['vulnerabilities'] = 'msg'
+        #raise serializers.ValidationError(errors)
+
+        if 'external_vulnerabilities' in data:
+            external_ids = data.getlist('external_vulnerabilities')
+            converted = Vulnerability.objects.filter(external_vulnerability_id__in=external_ids)
+            if len(converted) != len(data['external_vulnerabilities']):
+                unknown = set(external_ids) - set([v.external_vulnerability_id for v in converted])
+                msg = "Unknow external_vulnerabilities: {}".format(
+                    ', '.join(unknown)
+                )
+                errors['external_vulnerability'] = msg
+                #raise serializers.ValidationError("Unknow external_vulnerability: {}".format(unknown))
+            merged_vulnerabilities = data.get('vulnerabilities') or []
+            merged_vulnerabilities.extend([c.id for c in converted])
+            data.setlist('vulnerabilities', merged_vulnerabilities)
 
         # host_ip 2 asset
         host_ip = data.get('host ip', None)
         if not host_ip:
-            raise serializers.ValidationError("'Host ip' is required'")
+            errors['host_ip'] = "'Host ip' is required'"
+            #raise serializers.ValidationError("'Host ip' is required'")
 
         ip_address = IPAddress.objects.filter(address=host_ip)
         if ip_address.count() == 0:
-            raise serializers.ValidationError("Unknown host ip")
+            errors['host_ip'] = "Unknown host ip"
+            #raise serializers.ValidationError("Unknown host ip")
         try:
             asset = ip_address.get().asset.datacenterasset
             if not asset:
-                raise serializers.ValidationError(
-                    "Ip is not assigned to any host"
-                )
+                errors['host_ip'] = "Ip is not assigned to any host"
+                #raise serializers.ValidationError(
+                #    "Ip is not assigned to any host"
+                #)
         except AttributeError:
-            raise serializers.ValidationError("Ip is not assigned to any host")
+            errors['host_ip'] = "Ip is not assigned to any host"
+            #raise serializers.ValidationError("Ip is not assigned to any host")
+
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        result = super(SaveSecurityScanSerializer, self).to_internal_value(data)
         result['asset'] = asset
-
-
-        # external_id to local_id
-        if 'external_vulnerabilities' in data:
-            converted = Vulnerability.objects.filter(external_vulnerability_id__in=data['external_vulnerabilities'])
-            if len(converted) != len(data['external_vulnerabilities']):
-                unknown = set(data['external_vulnerabilities']) - set([v.external_vulnerability_id for v in converted])
-                raise serializers.ValidationError("Unknow external_vulnerability: {}".format(unknown))
-            result['vulnerabilities'].extend(converted)
-
-
         return result
 
 
