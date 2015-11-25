@@ -41,14 +41,16 @@ class SaveSecurityScanSerializer(RalphAPISerializer):
         if 'external_vulnerabilities' in data:
             external_ids = data.getlist('external_vulnerabilities')
             converted = Vulnerability.objects.filter(external_vulnerability_id__in=external_ids)
-            if len(converted) != len(data['external_vulnerabilities']):
-                unknown = set(external_ids) - set([v.external_vulnerability_id for v in converted])
+            if len(converted) != len(external_ids):
+                unknown = set(external_ids) - set(
+                    [str(v.external_vulnerability_id) for v in converted]
+                )
                 msg = "Unknow external_vulnerabilities: {}".format(
                     ', '.join(unknown)
                 )
                 errors['external_vulnerability'] = msg
                 #raise serializers.ValidationError("Unknow external_vulnerability: {}".format(unknown))
-            merged_vulnerabilities = data.get('vulnerabilities') or []
+            merged_vulnerabilities = data.getlist('vulnerabilities') or []
             merged_vulnerabilities.extend([c.id for c in converted])
             data.setlist('vulnerabilities', merged_vulnerabilities)
 
@@ -63,7 +65,8 @@ class SaveSecurityScanSerializer(RalphAPISerializer):
             errors['host_ip'] = "Unknown host ip"
             #raise serializers.ValidationError("Unknown host ip")
         try:
-            asset = ip_address.get().asset.datacenterasset
+            #asset = ip_address.get().asset.datacenterasset
+            asset = ip_address[0].base_object and ip_address[0].base_object.asset
             if not asset:
                 errors['host_ip'] = "Ip is not assigned to any host"
                 #raise serializers.ValidationError(

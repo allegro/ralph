@@ -12,8 +12,8 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
-            model_name='vulnerability',
-            name='risk',
-            field=models.PositiveIntegerField(choices=[(1, 'low'), (2, 'medium'), (3, 'high')], null=True, blank=True),
+            model_name='securityscan',
+            name='asset',
+            field=models.ForeignKey(to='assets.BaseObject', null=True),
         ),
     ]

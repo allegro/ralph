@@ -4,7 +4,7 @@ from datetime import datetime
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.data_center.models.physical import DataCenterAsset
+from ralph.assets.models.base import BaseObject
 from ralph.lib.mixins.models import TaggableMixin, TimeStampMixin
 from ralph.lib.permissions import PermByFieldMixin
 
@@ -54,7 +54,7 @@ class SecurityScan(
     next_scan_date = models.DateTimeField()
     details_url = models.URLField(max_length=255, blank=True)
     rescan_url = models.URLField(blank=True, verbose_name='Rescan url')
-    asset = models.ForeignKey(DataCenterAsset, null=True)
+    asset = models.ForeignKey(BaseObject, null=True)
     vulnerabilities = models.ManyToManyField(Vulnerability)
 
     @property

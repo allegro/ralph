@@ -1,8 +1,10 @@
 {% extends BASE_TEMPLATE %}
 {% load i18n %}
-{% block view_content %}
 
 {% block bodyclass %}security-tab{% endblock%}
+
+{% block view_content %}
+
 
 <h1>{% trans "Security scan" %}</h1>
   {% if security_scan %}
