@@ -349,14 +349,14 @@ class DataCenterAssetResource(AssetResource):
         """
         Remove duplicated values for particular field.
         """
-        counter = Counter([row[field_pos] for row in data])
+        counter = Counter([row[field_pos].strip().lower() for row in data])
         duplicates = set([
             item for item, count in counter.items() if count > 1 and item
         ])
         for d in duplicates:
             print(d)
         for i, row in enumerate(data):
-            if row[field_pos] in duplicates:
+            if row[field_pos].strip().lower() in duplicates:
                 r = list(row)
                 r[field_pos] = empty_val
                 data[i] = tuple(r)
