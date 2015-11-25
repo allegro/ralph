@@ -122,6 +122,19 @@ class AdminFiltersTestCase(TestCase):
 
         self.assertEqual(2, queryset.count())
 
+    def test_text_filter_with_separator_and_whitespace(self):
+        text_filter = TextListFilter(
+            field=DataCenterAsset._meta.get_field('barcode'),
+            request=None,
+            params={'barcode': ' barcode_one | barcode_two'},
+            model=DataCenterAsset,
+            model_admin=DataCenterAssetAdmin,
+            field_path='barcode'
+        )
+        queryset = text_filter.queryset(None, DataCenterAsset.objects.all())
+
+        self.assertEqual(2, queryset.count())
+
     def test_text_filter_contains(self):
         text_filter = TextListFilter(
             field=DataCenterAsset._meta.get_field('barcode'),

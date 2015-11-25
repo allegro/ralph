@@ -4,7 +4,7 @@
         this.$widget = $(widget);
         this.options = {
             interval: 500,
-            sentenceLength: 3,
+            sentenceLength: 2,
             watch: true
         };
         this.options = $.extend(this.options, options, this.$widget.data());
@@ -52,6 +52,14 @@
             that.suggest();
         }, that.options.interval);
     };
+    AutocompleteWidget.prototype.getItemValue = function(item){
+        return item.label || item.__str__;
+    };
+    AutocompleteWidget.prototype.stripHTMLTags = function(value){
+        var div = document.createElement("div");
+        div.innerHTML = value;
+        return div.textContent || div.innerText || "";
+    };
     AutocompleteWidget.prototype.changeTargetAfterPopup = function(val) {
         var that = this;
         if (that.notFromPopup) {
@@ -62,9 +70,8 @@
         data[that.options.detailVar] = val;
         that.fetch(that.options.detailsUrl, data, function(data) {
             that.editMode(false);
-            $('.title', that.$currentItem).html(
-                data.results[0].label || data.results[0].__str__
-            );
+            var value = that.getItemValue(data.results[0]);
+            $('.title', that.$currentItem).html(value).attr('title', that.stripHTMLTags(value));
         });
 
     };
@@ -106,10 +113,11 @@
     };
     AutocompleteWidget.prototype.itemClick = function(event) {
         event.preventDefault();
-        var $clickedItem = $(event.target);
+        var $clickedItem = $(event.target).closest('.link');
         var item = $clickedItem.data('item');
         var $tooltip = $('.has-tip', this.$currentItem);
-        $('.title', this.$currentItem).html(item.__str__);
+        var value = this.getItemValue(item);
+        $('.title', this.$currentItem).html(value).attr('title', this.stripHTMLTags(value));
         var tip = Foundation.libs.tooltip.getTip($tooltip);
         if(item.tooltip) {
             tip.html(item.tooltip);

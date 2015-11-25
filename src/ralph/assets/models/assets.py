@@ -6,6 +6,7 @@ from dj.choices import Country
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.core.urlresolvers import reverse
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.template import Context, Template
 from django.utils.translation import ugettext_lazy as _
@@ -88,7 +89,7 @@ class Service(NamedMixin, TimeStampMixin, models.Model):
         return reverse('assets:service_detail', args=(self.pk,))
 
 
-class ServiceEnvironment(models.Model):
+class ServiceEnvironment(BaseObject):
     service = models.ForeignKey(Service)
     environment = models.ForeignKey(Environment)
 
@@ -119,7 +120,7 @@ class AssetModel(
     category = TreeForeignKey(
         'Category', null=True, related_name='models'
     )
-    power_consumption = models.IntegerField(
+    power_consumption = models.PositiveIntegerField(
         verbose_name=_("Power consumption"),
         blank=True,
         default=0,
@@ -128,8 +129,9 @@ class AssetModel(
         verbose_name=_("Height of device"),
         blank=True,
         default=0,
+        validators=[MinValueValidator(0)],
     )
-    cores_count = models.IntegerField(
+    cores_count = models.PositiveIntegerField(
         verbose_name=_("Cores count"),
         blank=True,
         default=0,
@@ -327,6 +329,12 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         default=None,
         null=True,
         on_delete=models.PROTECT,
+    )
+    property_of = models.ForeignKey(
+        AssetHolder,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
     )
 
     def __str__(self):

@@ -16,7 +16,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
 from ralph.assets.country_utils import iso2_to_iso3
-from ralph.assets.models.assets import Asset, AssetHolder
+from ralph.assets.models.assets import Asset
 from ralph.attachments.helpers import add_attachment_from_disk
 from ralph.lib.external_services import ExternalService, obj_to_dict
 from ralph.lib.mixins.fields import NullableCharField
@@ -77,12 +77,6 @@ class BackOfficeAsset(Regionalizable, Asset):
     )
     imei = NullableCharField(
         max_length=18, null=True, blank=True, unique=True
-    )
-    property_of = models.ForeignKey(
-        AssetHolder,
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
     )
     office_infrastructure = models.ForeignKey(
         OfficeInfrastructure, null=True, blank=True
@@ -192,6 +186,43 @@ class BackOfficeAsset(Regionalizable, Asset):
     assign_warehouse.verbose_name = _('Assign warehouse')
 
     @transition_action
+    def assign_office_infrastructure(self, **kwargs):
+        self.office_infrastructure = OfficeInfrastructure.objects.get(
+            pk=int(kwargs['office_infrastructure'])
+        )
+    assign_office_infrastructure.form_fields = {
+        'office_infrastructure': {
+            'field': forms.CharField(label=_('Office infrastructure')),
+            'autocomplete_field': 'office_infrastructure'
+        }
+    }
+    assign_office_infrastructure.verbose_name = _(
+        'Assign office infrastructure'
+    )
+
+    @transition_action
+    def add_remarks(self, **kwargs):
+        self.remarks = '{}\n{}'.format(self.remarks, kwargs['remarks'])
+
+    add_remarks.form_fields = {
+        'remarks': {
+            'field': forms.CharField(label=_('Remarks')),
+        }
+    }
+    add_remarks.verbose_name = _('Add remarks')
+
+    @transition_action
+    def assign_task_url(self, **kwargs):
+        self.task_url = kwargs['task_url']
+
+    assign_task_url.form_fields = {
+        'task_url': {
+            'field': forms.CharField(label=_('task_url')),
+        }
+    }
+    assign_task_url.verbose_name = _('Assign task URL ')
+
+    @transition_action
     def unassign_licences(self, **kwargs):
         BaseObjectLicence.objects.filter(base_object=self).delete()
     unassign_licences.verbose_name = _('Unassign licences')
@@ -256,7 +287,8 @@ class BackOfficeAsset(Regionalizable, Asset):
             {
                 'sn': obj.sn,
                 'model': str(obj.model),
-                'office_info': {'imei': obj.imei},
+                'imei': obj.imei,
+                'barcode': self.barcode,
             }
             for obj in instances
         ]
@@ -265,6 +297,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             template=template_content,
             data={
                 'id': ', '.join([obj.id for obj in instances]),
+                'now': datetime.datetime.now(),
                 'logged_user': obj_to_dict(request.user),
                 'affected_user': obj_to_dict(cls.user),
                 'assets': data_instances,
@@ -292,14 +325,6 @@ class BackOfficeAsset(Regionalizable, Asset):
         attachment.save()
         return attachment
     release_report.return_attachment = True
-    release_report.form_fields = {
-        'comment': {
-            'field': forms.CharField(
-                label=_('Description'),
-                widget=forms.TextInput()
-            )
-        }
-    }
     release_report.verbose_name = _('Release report')
 
     @transition_action
@@ -309,6 +334,14 @@ class BackOfficeAsset(Regionalizable, Asset):
         )
     return_report.return_attachment = True
     return_report.verbose_name = _('Return report')
+
+    @transition_action
+    def loan_report(self, request, **kwargs):
+        attachment = self._generate_report(name='loan', request=request)
+        attachment.save()
+        return attachment
+    loan_report.return_attachment = True
+    loan_report.verbose_name = _('Loan report')
 
 
 @receiver(pre_save, sender=BackOfficeAsset)

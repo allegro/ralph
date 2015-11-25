@@ -9,6 +9,9 @@
         <tr>
           <th>{% trans "Date" %}</th>
           <th>{% trans "Author" %}</th>
+          <th>{% trans "Transition" %}</th>
+          <th>{% trans "Source" %}</th>
+          <th>{% trans "Target" %}</th>
           <th>{% trans "Actions" %}</th>
           <th>{% trans "Data" %}</th>
           <th>{% trans "Attachment" %}</th>
@@ -19,6 +22,9 @@
             <tr>
               <td>{{ history.created }}</td>
               <td>{{ history.logged_user }}</td>
+              <td>{{ history.transition_name }}</td>
+              <td>{{ history.source|default:"&mdash;" }}</td>
+              <td>{{ history.target|default:"&mdash;" }}</td>
               <td>
                 {% if history.actions %}
                   {% for action in history.actions %}

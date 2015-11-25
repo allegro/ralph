@@ -1,7 +1,6 @@
 -r test.txt
 django-debug-toolbar
 Werkzeug
-pyinotify
 pudb
 ipython
 ipdb

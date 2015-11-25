@@ -21,9 +21,11 @@ class AttachmentsView(RalphDetailView):
         and current attachments assigned to object.
         """
         qs = Attachment.objects.get_attachments_for_object(self.object)
+        form = add_request_to_form(AttachmentForm, request)
+        form._parent_object = self.object
         return modelformset_factory(
             Attachment,
-            form=add_request_to_form(AttachmentForm, request),
+            form=form,
             fields=('file', 'description'),
             extra=self.extra,
             can_delete=True,
@@ -67,9 +69,11 @@ class AttachmentsView(RalphDetailView):
         """
         The method is executed only if formset is valid.
         """
-        formset.save()
+        formset.save(commit=False)
         AttachmentItem.objects.refresh(
-            self.object, formset.new_objects, formset.deleted_objects
+            self.object,
+            [obj for obj in formset.new_objects if obj is not None],
+            formset.deleted_objects
         )
         return HttpResponseRedirect('.')
 

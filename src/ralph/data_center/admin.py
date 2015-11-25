@@ -124,8 +124,9 @@ class DataCenterAssetAdmin(
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
     list_filter = [
         'status', 'barcode', 'sn', 'hostname', 'invoice_no', 'invoice_date',
-        'order_no', 'model__name', 'depreciation_end_date',
-        'force_depreciation', 'remarks', 'budget_info', 'rack__name'
+        'order_no', 'model__name', 'service_env', 'depreciation_end_date',
+        'force_depreciation', 'remarks', 'budget_info', 'rack__name',
+        'property_of'
     ]
     date_hierarchy = 'created'
     list_select_related = ['model', 'model__manufacturer', 'model__category']
@@ -136,17 +137,18 @@ class DataCenterAssetAdmin(
         (_('Basic info'), {
             'fields': (
                 'hostname', 'model', 'status', 'barcode', 'sn', 'niw',
-                'required_support', 'remarks', 'parent', 'tags',
+                'required_support', 'remarks', 'parent', 'tags', 'property_of'
             )
         }),
         (_('Location Info'), {
             'fields': (
-                'rack', 'position', 'orientation', 'slot_no', 'budget_info'
+                'rack', 'position', 'orientation', 'slot_no',
+                'management_ip', 'management_hostname',
             )
         }),
         (_('Usage info'), {
             'fields': (
-                'service_env', 'configuration_path', 'production_year',
+                'service_env', 'production_year',
                 'production_use_date',
             )
         }),
@@ -155,7 +157,7 @@ class DataCenterAssetAdmin(
                 'order_no', 'invoice_date', 'invoice_no', 'task_url', 'price',
                 'depreciation_rate', 'depreciation_end_date',
                 'force_depreciation', 'source', 'provider', 'delivery_date',
-
+                'budget_info',
             )
         }),
     )
@@ -290,7 +292,7 @@ class IPAddressAdmin(RalphAdmin):
 
     search_fields = ['address']
     list_filter = ['is_public', 'is_management']
-    list_display = ['address', 'asset', 'is_public']
-    list_select_related = ['asset']
-    raw_id_fields = ['asset']
+    list_display = ['address', 'base_object', 'is_public']
+    list_select_related = ['base_object']
+    raw_id_fields = ['base_object']
     resource_class = resources.IPAddressResource

@@ -1,3 +1,4 @@
+import hashlib
 import os
 import string
 
@@ -73,7 +74,11 @@ class AttachmentItemManager(models.Manager):
         """
         Dettach attachemnts from the object (through pk and content_type).
         """
-        self.filter(attachment__in=attachments).delete()
+        self.filter(
+            attachment__in=attachments,
+            content_type=content_type,
+            object_id=pk,
+        ).delete()
 
     @transaction.atomic
     def refresh(self, obj, new_objects=None, deleted_objects=None):
@@ -97,6 +102,7 @@ class Attachment(TimeStampMixin, models.Model):
         * description - e.g., description of file's content or some comment,
         * uploaded_by - the user who added attachment.
     """
+    md5 = models.CharField(max_length=32, unique=True)
     original_filename = models.CharField(
         max_length=255,
         unique=False,
@@ -117,14 +123,25 @@ class Attachment(TimeStampMixin, models.Model):
             self.original_filename, self.mime_type, self.uploaded_by
         )
 
+    @classmethod
+    def get_md5_sum(cls, file):
+        """
+        Return md5 checksum of a file.
+        """
+        file.seek(0)
+        md5 = hashlib.md5(file.read()).hexdigest()
+        file.seek(0)
+        return md5
+
     def save(self, *args, **kwargs):
         """
         Overrided standard save method. If object is saved first time then
         its file name is saved in database as original name.
         """
         if not self.pk:
+            self.md5 = self.get_md5_sum(self.file)
             self.original_filename = self._safe_filename(self.file.name)
-        super(Attachment, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     @staticmethod
     def _safe_filename(filename):

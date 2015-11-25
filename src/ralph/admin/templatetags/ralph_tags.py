@@ -26,12 +26,22 @@ def download_attachment(context):
     }
 
 
-@register.inclusion_tag('admin/templatetags/tabs.html')
-def views_tabs(views, name=None, obj=None):
+@register.inclusion_tag('admin/templatetags/tabs.html', takes_context=True)
+def views_tabs(context, views, name=None, obj=None):
     """
     Render extra views as tabs.
     """
-    return {'views': views, 'name': name, 'object': obj}
+    result = []
+    if obj:
+        for view in views:
+            codename = '{}.{}'.format(
+                obj._meta.app_label, view.permision_codename
+            )
+            if context.request.user.has_perm(codename):
+                result.append(view)
+    else:
+        result = views
+    return {'views': result, 'name': name, 'object': obj}
 
 
 @register.inclusion_tag('admin/search_form.html', takes_context=True)
@@ -95,7 +105,7 @@ def transition_history(obj):
     """
     content_type = ContentType.objects.get_for_model(obj)
     history = TransitionsHistory.objects.filter(
-        transition__model__content_type=content_type, object_id=obj.pk
+        content_type=content_type, object_id=obj.pk
     ).select_related('logged_user')
     attachment_url_name = get_model_view_url_name(
         obj._meta.model,

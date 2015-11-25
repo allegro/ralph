@@ -5,7 +5,9 @@ import textwrap
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand
+from django.utils.lru_cache import lru_cache
 from ldap.controls import SimplePagedResultsControl
 
 logger = logging.getLogger(__name__)
@@ -31,15 +33,74 @@ def _truncate(field_key, field_name, ldap_dict):
         ]
 
 
-def get_ldap():
-    """Gets an LDAP object according to the configuration of this instance."""
-    conn = ldap.initialize(settings.AUTH_LDAP_SERVER_URI)
-    conn.protocol_version = settings.AUTH_LDAP_PROTOCOL_VERSION
-    conn.simple_bind_s(
-        settings.AUTH_LDAP_BIND_DN,
-        settings.AUTH_LDAP_BIND_PASSWORD,
-    )
-    return conn
+class LDAPConnectionManager(object):
+    def __init__(self):
+        self.conn = ldap.initialize(settings.AUTH_LDAP_SERVER_URI)
+        self.conn.protocol_version = settings.AUTH_LDAP_PROTOCOL_VERSION
+        self.conn.simple_bind_s(
+            settings.AUTH_LDAP_BIND_DN,
+            settings.AUTH_LDAP_BIND_PASSWORD,
+        )
+
+    def __enter__(self):
+        return self.conn
+
+    def __exit__(self, type, value, traceback):
+        self.conn.unbind_s()
+
+
+class NestedGroups(object):
+    """
+    Class fetch nested groups and mapping them to standard Django's
+    group (get or create). django_auth_ldap and their class for nested
+    group (NestedGroupOfNamesType) are inefficient.
+    """
+    def __init__(self, backend):
+        """
+        Fetching users in nested group based on custom LDAP filter
+        (AUTH_LDAP_NESTED_FILTER) e.g. (memberOf:{}). AUTH_LDAP_NESTED_FILTER
+        is a simple dictonary where key is the name of group in DB, the value
+        contains DN for nested group.
+        """
+        self.group_users = {}
+        nested_groups = getattr(settings, 'AUTH_LDAP_NESTED_GROUPS', None)
+        if not nested_groups:
+            return
+        nested_filter = getattr(
+            settings, 'AUTH_LDAP_NESTED_FILTER', '(memberOf:{})'
+        )
+        with LDAPConnectionManager() as conn:
+            for group_name, value in nested_groups.items():
+                ldap_filter = nested_filter.format(value)
+                users = conn.search_s(
+                    settings.AUTH_LDAP_USER_SEARCH_BASE,
+                    ldap.SCOPE_SUBTREE,
+                    '(&(objectClass={}){})'.format(
+                        settings.LDAP_SERVER_OBJECT_USER_CLASS, ldap_filter
+                    )
+                )
+                self.group_users[group_name] = [
+                    u[1][settings.AUTH_LDAP_USER_USERNAME_ATTR][0].decode('utf-8')  # noqa
+                    for u in users
+                ]
+
+    @lru_cache()
+    def get_group_from_db(self, name):
+        return Group.objects.get_or_create(name=name)[0]
+
+    def handle(self, user):
+        """
+        Match user to group in fetched groups from LDAP and assign user
+        to Django's group.
+        """
+
+        if not self.group_users:
+            return
+        for group_name, users in self.group_users.items():
+            if user.username in users:
+                group = self.get_group_from_db(group_name)
+                user.groups.add(group)
+                print('\tAdded', user.username, 'to', group_name)
 
 
 class Command(BaseCommand):
@@ -52,19 +113,18 @@ class Command(BaseCommand):
         ldap_user = _LDAPUser(self.backend, username=username.lower())
         ldap_user._user_dn = user_dn
         ldap_user._user_attrs = ldap_dict
-        ldap_user.populate_user()
+        return ldap_user.populate_user()
 
     def _disconnect(self):
         self.conn.unbind_s()
 
     def _run_ldap_query(self, query):
-        self.conn = get_ldap()
-        try:
+        with LDAPConnectionManager() as conn:
             lc = SimplePagedResultsControl(
                 size=LDAP_RESULTS_PAGE_SIZE,
                 cookie=''
             )
-            msgid = self.conn.search_ext(
+            msgid = conn.search_ext(
                 settings.AUTH_LDAP_USER_SEARCH_BASE,
                 ldap.SCOPE_SUBTREE,
                 query,
@@ -73,7 +133,7 @@ class Command(BaseCommand):
             page_num = 0
             while True:
                 page_num += 1
-                r_type, r_data, r_msgid, serverctrls = self.conn.result3(msgid)
+                r_type, r_data, r_msgid, serverctrls = conn.result3(msgid)
                 self.stdout.write("Pack of %s users loaded (page %s)" % (
                     LDAP_RESULTS_PAGE_SIZE,
                     page_num,
@@ -84,7 +144,7 @@ class Command(BaseCommand):
                     if serverctrls[0].cookie:
                         lc.size = LDAP_RESULTS_PAGE_SIZE
                         lc.cookie = serverctrls[0].cookie
-                        msgid = self.conn.search_ext(
+                        msgid = conn.search_ext(
                             settings.AUTH_LDAP_USER_SEARCH_BASE,
                             ldap.SCOPE_SUBTREE,
                             query,
@@ -98,8 +158,6 @@ class Command(BaseCommand):
                         'Server ignores RFC 2696 control',
                     )
                     sys.exit(1)
-        finally:
-            self._disconnect()
 
     def _get_users(self):
         objcls = settings.LDAP_SERVER_OBJECT_USER_CLASS
@@ -109,8 +167,7 @@ class Command(BaseCommand):
             query = '(objectClass=%s)' % (objcls,)
         else:
             query = '(&(objectClass=%s)%s)' % (objcls, user_filter,)
-        ldap_users = self._run_ldap_query(query)
-        return ldap_users
+        return self._run_ldap_query(query)
 
     def _load_backend(self):
         path = settings.AUTHENTICATION_BACKENDS[0].split('.')
@@ -143,6 +200,8 @@ class Command(BaseCommand):
         """Load users from ldap command."""
         self.check_settings_existence()
         self._load_backend()
+        self.stdout.write("Fetch nested groups...")
+        self.nested_groups = NestedGroups(self.backend)
         self.stdout.write("Syncing...")
         if not ldap_module_exists:
             logger.error("ldap module not installed")
@@ -155,6 +214,7 @@ class Command(BaseCommand):
         synced = 0
         for user_dn, ldap_dict in self._get_users():
             _truncate('sn', 'last_name', ldap_dict)
-            self._create_or_update_user(user_dn, ldap_dict)
+            user = self._create_or_update_user(user_dn, ldap_dict)
+            self.nested_groups.handle(user)
             synced += 1
         return synced

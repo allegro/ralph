@@ -7,10 +7,10 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
-from ralph.assets.models.assets import BudgetInfo
+from ralph.assets.models.assets import AssetHolder, BudgetInfo
 from ralph.assets.models.base import BaseObject
-from ralph.lib.mixins.models import NamedMixin, TaggableMixin, TimeStampMixin
-from ralph.lib.permissions import PermByFieldMixin
+from ralph.assets.models.choices import ObjectModelType
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
 
 
 class SupportType(NamedMixin, models.Model):
@@ -26,30 +26,23 @@ class SupportStatus(Choices):
 
 class Support(
     Regionalizable,
-    PermByFieldMixin,
+    AdminAbsoluteUrlMixin,
     NamedMixin.NonUnique,
-    TimeStampMixin,
-    TaggableMixin,
-    models.Model,
+    BaseObject
 ):
+    asset_type = models.PositiveSmallIntegerField(
+        choices=ObjectModelType(), default=ObjectModelType.all.id,
+    )
     contract_id = models.CharField(max_length=50, blank=False)
     description = models.CharField(max_length=100, blank=True)
-    # TODO: new attachment mechanism
-    # attachments = models.ManyToManyField(
-    #     models_assets.Attachment, null=True, blank=True
-    # )
     price = models.DecimalField(
         max_digits=10, decimal_places=2, default=0, null=True, blank=True,
     )
     date_from = models.DateField(null=True, blank=True)
     date_to = models.DateField(null=False, blank=False)
     escalation_path = models.CharField(max_length=200, blank=True)
-    contract_terms = models.CharField(max_length=200, blank=True)
-    remarks = models.TextField(blank=True)
+    contract_terms = models.TextField(blank=True)
     sla_type = models.CharField(max_length=200, blank=True)
-    # asset_type = models.PositiveSmallIntegerField(
-    #     choices=AssetType()
-    # )
     status = models.PositiveSmallIntegerField(
         default=SupportStatus.new.id,
         verbose_name=_("status"),
@@ -65,12 +58,12 @@ class Support(
         null=True, blank=True, verbose_name=_('Invoice date'),
     )
     period_in_months = models.IntegerField(null=True, blank=True)
-    # property_of = models.ForeignKey(
-    #     AssetOwner,
-    #     on_delete=models.PROTECT,
-    #     null=True,
-    #     blank=True,
-    # )
+    property_of = models.ForeignKey(
+        AssetHolder,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
     budget_info = models.ForeignKey(
         BudgetInfo,
         blank=True,

@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.assets.models.assets import Asset
+from ralph.assets.models.assets import BaseObject
 from ralph.data_center.models.physical import DataCenter, Rack
 from ralph.lib import network
 from ralph.lib.mixins.models import LastSeenMixin, NamedMixin, TimeStampMixin
@@ -321,6 +321,11 @@ class Network(NamedMixin, TimeStampMixin, models.Model):
         return new_subnets
 
     @classmethod
+    def from_ip(cls, ip):
+        """Find the smallest network containing that IP."""
+        return cls.all_from_ip(ip)[0]
+
+    @classmethod
     def all_from_ip(cls, ip):
         """Find all networks for this IP."""
         ip_int = int(ipaddress.ip_address(ip))
@@ -459,9 +464,9 @@ class DiscoveryQueue(NamedMixin, models.Model):
 
 
 class IPAddress(LastSeenMixin, TimeStampMixin, models.Model):
-    asset = models.ForeignKey(
-        Asset,
-        verbose_name=_('asset'),
+    base_object = models.ForeignKey(
+        BaseObject,
+        verbose_name=_('Base object'),
         null=True,
         blank=True,
         default=None,
@@ -473,6 +478,13 @@ class IPAddress(LastSeenMixin, TimeStampMixin, models.Model):
         unique=True,
         blank=False,
         null=True,
+        default=None,
+    )
+    hostname = models.CharField(
+        verbose_name=_('Hostname'),
+        max_length=255,
+        null=True,
+        blank=True,
         default=None,
     )
     number = models.BigIntegerField(
@@ -503,8 +515,10 @@ class IPAddress(LastSeenMixin, TimeStampMixin, models.Model):
         # if not allow_device_change:
         #     self.assert_same_device()
         if settings.CHECK_IP_HOSTNAME_ON_SAVE:
-            if not self.address:
+            if not self.address and self.hostname:
                 self.address = network.hostname(self.hostname, reverse=True)
+            if not self.hostname and self.address:
+                self.hostname = network.hostname(self.address)
         self.number = int(ipaddress.ip_address(self.address))
         ip = ipaddress.ip_address(self.address)
         self.is_public = not ip.is_private

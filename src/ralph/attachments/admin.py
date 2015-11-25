@@ -18,6 +18,8 @@ class AttachmentsMixin(object):
         # create unique AttachmentsView subclass for each descendant admin site
         # this prevents conflicts between urls etc.
         # See ralph.admin.extra.RalphExtraViewMixin.post_register for details
+        if self.change_views is None:
+            self.change_views = []
         self.change_views.append(type(
             '{}AttachmentsView'.format(self.__class__.__name__),
             (AttachmentsView,),

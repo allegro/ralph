@@ -4,7 +4,6 @@ from import_export import fields, resources
 from ralph.accounts.models import Region
 from ralph.assets.models import assets, base
 from ralph.back_office.models import (
-    AssetHolder,
     BackOfficeAsset,
     OfficeInfrastructure,
     Warehouse
@@ -16,6 +15,7 @@ from ralph.data_importer.widgets import (
     BaseObjectManyToManyWidget,
     BaseObjectWidget,
     ImportedForeignKeyWidget,
+    NullStringWidget,
     UserManyToManyWidget,
     UserWidget
 )
@@ -99,7 +99,7 @@ class BackOfficeAssetResource(ImportForeignKeyMixin, resources.ModelResource):
     property_of = fields.Field(
         column_name='property_of',
         attribute='property_of',
-        widget=ImportedForeignKeyWidget(AssetHolder),
+        widget=ImportedForeignKeyWidget(assets.AssetHolder),
     )
     budget_info = fields.Field(
         column_name='budget_info',
@@ -140,19 +140,16 @@ class RackResource(ImportForeignKeyMixin, resources.ModelResource):
 
 
 class NetworkResource(ImportForeignKeyMixin, resources.ModelResource):
-
     data_center = fields.Field(
         column_name='data_center',
         attribute='data_center',
         widget=ImportedForeignKeyWidget(physical.DataCenter),
     )
-
     network_environment = fields.Field(
         column_name='network_environment',
         attribute='network_environment',
         widget=ImportedForeignKeyWidget(networks.NetworkEnvironment),
     )
-
     kind = fields.Field(
         column_name='kind',
         attribute='kind',
@@ -165,10 +162,10 @@ class NetworkResource(ImportForeignKeyMixin, resources.ModelResource):
 
 class IPAddressResource(ImportForeignKeyMixin, resources.ModelResource):
 
-    asset = fields.Field(
+    base_object = fields.Field(
         column_name='asset',
         attribute='asset',
-        widget=ImportedForeignKeyWidget(physical.DataCenterAsset),
+        widget=ImportedForeignKeyWidget(assets.BaseObject),
     )
 
     network = fields.Field(
@@ -206,6 +203,11 @@ class DataCenterAssetResource(ImportForeignKeyMixin, resources.ModelResource):
         column_name='budget_info',
         attribute='budget_info',
         widget=ImportedForeignKeyWidget(assets.BudgetInfo),
+    )
+    management_ip = fields.Field(
+        column_name='management_ip',
+        attribute='management_ip',
+        widget=NullStringWidget(),
     )
 
     class Meta:
@@ -290,6 +292,16 @@ class SupportResource(ImportForeignKeyMixin, resources.ModelResource):
         attribute='region',
         widget=ImportedForeignKeyWidget(Region),
     )
+    budget_info = fields.Field(
+        column_name='budget_info',
+        attribute='budget_info',
+        widget=ImportedForeignKeyWidget(assets.BudgetInfo),
+    )
+    property_of = fields.Field(
+        column_name='property_of',
+        attribute='property_of',
+        widget=ImportedForeignKeyWidget(assets.AssetHolder),
+    )
 
     class Meta:
         model = Support
@@ -318,6 +330,16 @@ class ServiceResource(
         column_name='profit_center',
         attribute='profit_center',
         widget=ImportedForeignKeyWidget(assets.ProfitCenter),
+    )
+    business_owners = fields.Field(
+        column_name='business_owners',
+        attribute='business_owners',
+        widget=UserManyToManyWidget(get_user_model()),
+    )
+    technical_owners = fields.Field(
+        column_name='technical_owners',
+        attribute='technical_owners',
+        widget=UserManyToManyWidget(get_user_model()),
     )
 
     class Meta:
@@ -407,7 +429,7 @@ class RegionResource(ImportForeignKeyMixin, resources.ModelResource):
 class AssetHolderResource(ImportForeignKeyMixin, resources.ModelResource):
 
     class Meta:
-        model = AssetHolder
+        model = assets.AssetHolder
 
 
 class OfficeInfrastructureResource(

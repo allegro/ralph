@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import random
+
 from django.apps import apps
 from django.test import TestCase
 from django.conf import settings
@@ -19,6 +21,7 @@ class AttachmentsTestCase(TestCase):
             user, _ = User.objects.get_or_create(username='tester')
         if not filename:
             filename = 'test'
+        content += str.encode(str(random.random()))
         attachment = Attachment.objects.create(
             file=SimpleUploadedFile(filename, content),
             uploaded_by=user,

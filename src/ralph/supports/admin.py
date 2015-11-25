@@ -19,7 +19,9 @@ class BaseObjectSupportView(RalphDetailViewAdmin):
         model = Support.base_objects.through
         raw_id_fields = ('baseobject',)
         extra = 1
-        verbose_name = _('Base object support')
+        verbose_name = _('assignments')
+        verbose_name_plural = _('Assignments')
+        fk_name = 'support'
 
     inlines = [BaseObjectSupportInline]
 
@@ -44,7 +46,7 @@ class SupportAdmin(PermissionAdminMixin, AttachmentsMixin, RalphAdmin):
     ]
     list_select_related = ['support_type']
     resource_class = resources.SupportResource
-    raw_id_fields = ['budget_info']
+    raw_id_fields = ['budget_info', 'region', 'support_type']
     fieldsets = (
         (_('Basic info'), {
             'fields': (

@@ -1,21 +1,18 @@
 # -*- coding: utf-8 -*-
 """SAM module models."""
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Sum
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
+from ralph.admin.helpers import getattr_dunder
 from ralph.assets.models.assets import AssetHolder, BudgetInfo, Manufacturer
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
-from ralph.lib.mixins.models import (
-    AdminAbsoluteUrlMixin,
-    NamedMixin,
-    TaggableMixin,
-    TimeStampMixin
-)
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
 from ralph.lib.permissions import PermByFieldMixin
 
 
@@ -50,14 +47,7 @@ class Software(PermByFieldMixin, NamedMixin, models.Model):
         verbose_name_plural = _('software categories')
 
 
-class Licence(
-    Regionalizable,
-    AdminAbsoluteUrlMixin,
-    PermByFieldMixin,
-    TimeStampMixin,
-    TaggableMixin,
-    models.Model,
-):
+class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
 
     """A set of licences for a single software with a single expiration date"""
 
@@ -137,7 +127,6 @@ class Licence(
     invoice_no = models.CharField(
         max_length=128, db_index=True, null=True, blank=True
     )
-    remarks = models.TextField(blank=True)
     license_details = models.CharField(
         verbose_name=_('License details'),
         max_length=1024,
@@ -182,7 +171,11 @@ class Licence(
 
 class BaseObjectLicence(models.Model):
     licence = models.ForeignKey(Licence)
-    base_object = models.ForeignKey(BaseObject, related_name='licences')
+    base_object = models.ForeignKey(
+        BaseObject,
+        related_name='licences',
+        verbose_name=_('Asset')
+    )
     quantity = models.PositiveIntegerField(default=1)
 
     class Meta:
@@ -192,6 +185,15 @@ class BaseObjectLicence(models.Model):
         return '{} of {} assigned to {}'.format(
             self.quantity, self.licence, self.base_object
         )
+
+    def clean(self):
+        bo_asset = getattr_dunder(
+            self.base_object, 'asset__backofficeasset'
+        )
+        if bo_asset and self.licence.region_id != bo_asset.region_id:
+            raise ValidationError(
+                _('Asset region is in a different region than licence.')
+            )
 
 
 class LicenceUser(models.Model):

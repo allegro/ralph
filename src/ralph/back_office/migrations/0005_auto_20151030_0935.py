@@ -10,6 +10,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('licences', '0006_auto_20151030_0935'),
         ('back_office', '0004_auto_20151023_1308'),
+        ('assets', '0005_assetholder')
     ]
 
     operations = [

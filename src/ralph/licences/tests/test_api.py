@@ -2,6 +2,7 @@
 from django.core.urlresolvers import reverse
 from rest_framework import status
 
+from ralph.accounts.tests.factories import RegionFactory
 from ralph.api.tests._base import RalphAPITestCase
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
 from ralph.licences.models import BaseObjectLicence, Licence, LicenceUser
@@ -12,7 +13,10 @@ class LicenceAPITests(RalphAPITestCase):
     def setUp(self):
         super().setUp()
         self.licence1, self.licence2 = LicenceFactory.create_batch(2)
+        region_pl = RegionFactory(name='pl')
+        self.licence3 = LicenceFactory(region=region_pl)
         self.base_object = BackOfficeAssetFactory()
+        self.base_object2 = BackOfficeAssetFactory(region=region_pl)
         LicenceUser.objects.create(licence=self.licence1, user=self.user1)
         BaseObjectLicence.objects.create(
             licence=self.licence2, base_object=self.base_object
@@ -56,3 +60,29 @@ class LicenceAPITests(RalphAPITestCase):
                 reverse('baseobject-detail', args=(self.base_object.id,))
             )
         )
+
+    def test_api_region_validate_error(self):
+        url = reverse('baseobjectlicence-list')
+        data = {
+            "base_object": self.base_object.id,
+            "licence": self.licence1.id
+        }
+        response = self.client.post(url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data['non_field_errors'],
+            ['Asset region is in a different region than licence.']
+        )
+
+    def test_api_region_validate_ok(self):
+        url = reverse('baseobjectlicence-list')
+        data = {
+            "base_object": self.base_object2.id,
+            "licence": self.licence3.id
+        }
+        response = self.client.post(url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(BaseObjectLicence.objects.filter(
+            base_object=self.base_object2.id,
+            licence=self.licence3.id
+        ).exists())

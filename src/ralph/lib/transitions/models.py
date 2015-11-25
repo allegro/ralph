@@ -36,6 +36,7 @@ def run_field_transition(instances, transition, field, data={}, **kwargs):
             name=transition,
             model=transition_model,
         )
+# <<<<<<< HEAD
     for instance in instances:
         errors = defaultdict(list)
         if instance.status not in [int(s) for s in transition.source]:
@@ -88,6 +89,72 @@ def run_field_transition(instances, transition, field, data={}, **kwargs):
     # )
     # instance.save()
     return True, None #attachment
+# =======
+#     transition_field = field
+#     transition_field_value = getattr(instance, transition_field, None)
+#     if transition_field_value not in [
+#         int(s) for s in transition.source
+#     ]:
+#         raise TransitionNotAllowedError()
+
+#     source_status = instance._meta.get_field(
+#         transition_field
+#     ).choices.from_id(int(transition_field_value)).name
+#     setattr(instance, transition_field, int(transition.target))
+#     attachment = None
+#     action_names = []
+#     history_kwargs = {}
+#     for action in transition.actions.all():
+#         func = getattr(instance, action.name)
+#         if not func:
+#             continue
+#         defaults = {
+#             key.split('__')[1]: value
+#             for key, value in data.items()
+#             if key.startswith(action.name)
+#         }
+#         for k, v in defaults.items():
+#             value = v
+#             try:
+#                 field = get_field_by_relation_path(instance, k)
+#                 field_name = field.verbose_name
+#                 if field.rel:
+#                     value = str(field.rel.to.objects.get(pk=v))
+#             except FieldDoesNotExist:
+#                 field = func.form_fields[k]['field']
+#                 if isinstance(field, forms.ChoiceField):
+#                     value = dict(field.choices).get(int(v))
+
+#                 field_name = field.label
+#             history_kwargs[str(field_name)] = value
+
+#         defaults.update(kwargs)
+#         result = func(**defaults)
+#         action_names.append(str(getattr(
+#             func,
+#             'verbose_name',
+#             func.__name__.replace('_', ' ').capitalize()
+#         )))
+
+#         if isinstance(result, Attachment):
+#             attachment = result
+
+#     TransitionsHistory.objects.create(
+#         transition_name=transition.name,
+#         content_type=ContentType.objects.get_for_model(instance._meta.model),
+#         object_id=instance.pk,
+#         logged_user=kwargs['request'].user,
+#         attachment=attachment,
+#         kwargs=history_kwargs,
+#         actions=action_names,
+#         source=source_status,
+#         target=instance._meta.get_field(
+#             transition_field
+#         ).choices.from_id(int(transition.target)).name
+#     )
+#     instance.save()
+#     return True, attachment
+# >>>>>>> ng
 
 
 def get_available_transitions_for_field(instance, field):
@@ -137,6 +204,7 @@ class TransitionModel(models.Model):
 
     class Meta:
         unique_together = ('content_type', 'field_name')
+        app_label = 'transitions'
 
     def __str__(self):
         return '{} {}'.format(self.content_type, self.field_name)
@@ -151,6 +219,7 @@ class Transition(models.Model):
 
     class Meta:
         unique_together = ('name', 'model')
+        app_label = 'transitions'
 
     def __str__(self):
         return self.name
@@ -165,6 +234,9 @@ class Action(models.Model):
     content_type = models.ManyToManyField(ContentType)
     name = models.CharField(max_length=50)
 
+    class Meta:
+        app_label = 'transitions'
+
     def __str__(self):
         return self.name
 
@@ -176,15 +248,21 @@ class Action(models.Model):
 
 class TransitionsHistory(TimeStampMixin):
 
-    transition = models.ForeignKey(Transition)
+    content_type = models.ForeignKey(ContentType)
+    transition_name = models.CharField(max_length=255)
+    source = models.CharField(max_length=50, blank=True, null=True)
+    target = models.CharField(max_length=50, blank=True, null=True)
     object_id = models.IntegerField(db_index=True)
     logged_user = models.ForeignKey(settings.AUTH_USER_MODEL)
     attachment = models.ForeignKey(Attachment, blank=True, null=True)
     kwargs = JSONField()
     actions = JSONField()
 
+    class Meta:
+        app_label = 'transitions'
+
     def __str__(self):
-        return str(self.transition)
+        return str(self.transition_name)
 
 
 def update_models_attrs():

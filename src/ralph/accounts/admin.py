@@ -70,18 +70,21 @@ class UserInfoMixin(object):
             raise NotImplementedError('Please specify user.')
         return self.user
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        asset_list_queryset = BackOfficeAsset.objects.filter(
+    def get_asset_queryset(self):
+        return BackOfficeAsset.objects.filter(
             Q(user=self.get_user()) | Q(owner=self.get_user())
         ).select_related('model', 'model__category', 'model__manufacturer')
-        licence_list_queryset = Licence.objects.filter(
+
+    def get_licence_queryset(self):
+        return Licence.objects.filter(
             users=self.get_user()
         ).select_related('software')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         # TODO: check permission to field or model
         context['asset_list'] = AssetList(
-            asset_list_queryset,
+            self.get_asset_queryset(),
             [
                 'id', 'model__category__name', 'model__manufacturer__name',
                 'model__name', 'sn', 'barcode', 'remarks', 'status', 'url'
@@ -89,7 +92,7 @@ class UserInfoMixin(object):
             ['user_licence']
         )
         context['licence_list'] = AssignedLicenceList(
-            licence_list_queryset,
+            self.get_licence_queryset(),
             ['id', 'software__name', 'niw', 'url']
         )
         return context

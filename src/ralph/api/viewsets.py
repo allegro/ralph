@@ -2,12 +2,14 @@
 import inspect
 
 from django.contrib.admin import SimpleListFilter
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from rest_framework import filters, permissions, relations, viewsets
 
 from ralph.admin.sites import ralph_site
 from ralph.api.serializers import RalphAPISaveSerializer, ReversedChoiceField
 from ralph.api.utils import QuerysetRelatedMixin
+from ralph.data_importer.models import ImportedObjects
 from ralph.lib.permissions.api import (
     PermissionsForObjectFilter,
     RalphPermission
@@ -126,6 +128,23 @@ class RalphAPIViewSet(
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        # filter by imported object id
+        imported_object_id = self.request.query_params.get(
+            '_imported_object_id'
+        )
+        if imported_object_id:
+            try:
+                imported_obj = ImportedObjects.objects.get(
+                    content_type=ContentType.objects.get_for_model(
+                        queryset.model
+                    ),
+                    old_object_pk=imported_object_id,
+                )
+            except ImportedObjects.DoesNotExist:
+                return queryset.model.objects.none()
+            else:
+                queryset = queryset.filter(pk=imported_obj.object_pk)
+        # filter by extended filters (usefull in Polymorphic objects)
         for field, field_filters in self.extend_filter_fields.items():
             value = self.request.query_params.get(field, None)
             if value:

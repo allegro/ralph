@@ -7,7 +7,6 @@ from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.back_office.models import (
-    AssetHolder,
     BackOfficeAsset,
     OfficeInfrastructure,
     Warehouse
@@ -59,9 +58,7 @@ class BackOfficeAssetAdminForm(RalphAdmin.form):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        service_env = self.fields['service_env']
-        service_env.widget.is_required = False
-        service_env.required = False
+        self.fields['hostname'].widget.attrs['readonly'] = True
 
 
 @register(BackOfficeAsset)
@@ -94,7 +91,7 @@ class BackOfficeAssetAdmin(
 
     list_filter = [
         'barcode', 'status', 'imei', 'sn', 'model', 'purchase_order',
-        'hostname', 'required_support', 'service_env', 'region',
+        'hostname', 'required_support', 'region',
         'warehouse', 'task_url', 'model__category', 'loan_end_date', 'niw',
         'model__manufacturer', 'location', 'remarks',
         'user', 'owner', 'user__segment', 'user__company', 'user__department',
@@ -108,7 +105,7 @@ class BackOfficeAssetAdmin(
         'model__category'
     ]
     raw_id_fields = [
-        'model', 'user', 'owner', 'service_env', 'region', 'warehouse',
+        'model', 'user', 'owner', 'region', 'warehouse',
         'property_of', 'budget_info', 'office_infrastructure'
     ]
     resource_class = resources.BackOfficeAssetResource
@@ -124,9 +121,8 @@ class BackOfficeAssetAdmin(
         (_('Basic info'), {
             'fields': (
                 'hostname', 'model', 'barcode', 'sn', 'imei', 'niw', 'status',
-                'warehouse', 'location', 'region', 'loan_end_date',
-                'service_env', 'remarks', 'tags', 'property_of', 'task_url',
-                'office_infrastructure'
+                'warehouse', 'location', 'region', 'loan_end_date', 'remarks',
+                'tags', 'property_of', 'task_url', 'office_infrastructure'
             )
         }),
         (_('User Info'), {
@@ -139,7 +135,6 @@ class BackOfficeAssetAdmin(
                 'order_no', 'purchase_order', 'invoice_date', 'invoice_no',
                 'price', 'depreciation_rate', 'depreciation_end_date',
                 'force_depreciation', 'provider', 'budget_info',
-                'office_infrastructure'
             )
         }),
     )
@@ -159,12 +154,6 @@ class BackOfficeAssetAdmin(
 
 @register(Warehouse)
 class WarehouseAdmin(RalphAdmin):
-
-    search_fields = ['name']
-
-
-@register(AssetHolder)
-class AssetHolderAdmin(RalphAdmin):
 
     search_fields = ['name']
 

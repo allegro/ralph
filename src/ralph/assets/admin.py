@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
+from django.db.models import Count
+from django.utils.translation import ugettext_lazy as _
+
 from ralph.admin import RalphAdmin, RalphMPTTAdmin, RalphTabularInline, register
 from ralph.assets.models.assets import (
     Asset,
+    AssetHolder,
     AssetModel,
     BaseObject,
     BudgetInfo,
@@ -23,7 +27,9 @@ class ServiceEnvironmentAdmin(RalphAdmin):
 
     search_fields = ['service__name', 'environment__name']
     list_select_related = ['service', 'environment']
+    raw_id_fields = ['service', 'environment']
     resource_class = resources.ServiceEnvironmentResource
+    exclude = ('parent', 'service_env')
 
 
 class ServiceEnvironmentInline(RalphTabularInline):
@@ -36,7 +42,7 @@ class ServiceAdmin(RalphAdmin):
     exclude = ['environments']
     inlines = [ServiceEnvironmentInline]
     filter_horizontal = ['business_owners', 'technical_owners']
-    search_fields = ['name']
+    search_fields = ['name', 'uid']
 
 
 @register(Manufacturer)
@@ -74,7 +80,7 @@ class AssetModelAdmin(PermissionAdminMixin, RalphAdmin):
 
     resource_class = resources.AssetModelResource
     list_select_related = ['manufacturer', 'category']
-    list_display = ['name', 'type', 'manufacturer', 'category']
+    list_display = ['name', 'type', 'manufacturer', 'category', 'assets_count']
     raw_id_fields = ['manufacturer']
     search_fields = ['name', 'manufacturer__name']
     list_filter = ['type', 'manufacturer', 'category']
@@ -84,6 +90,14 @@ class AssetModelAdmin(PermissionAdminMixin, RalphAdmin):
         'cores_count', 'height_of_device', 'power_consumption',
         'visualization_layout_front', 'visualization_layout_back'
     )
+
+    def get_queryset(self, request):
+        return AssetModel.objects.annotate(assets_count=Count('assets'))
+
+    def assets_count(self, instance):
+        return instance.assets_count
+    assets_count.short_description = _('Assets count')
+    assets_count.admin_order_field = 'assets_count'
 
 
 @register(Category)
@@ -121,3 +135,9 @@ class BaseObjectAdmin(RalphAdmin):
 
     def repr(self, obj):
         return '{}: {}'.format(obj.content_type, obj)
+
+
+@register(AssetHolder)
+class AssetHolderAdmin(RalphAdmin):
+
+    search_fields = ['name']

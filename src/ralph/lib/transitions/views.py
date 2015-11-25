@@ -13,6 +13,8 @@ from ralph.lib.transitions.models import run_field_transition, Transition
 
 
 class TransitionViewMixin(object):
+    template_name = 'transitions/run_transition.html'
+
     def collect_actions(self, transition):
         names = transition.actions.values_list('name', flat=True).all()
         actions = [getattr(self.obj, name) for name in names]
@@ -90,6 +92,8 @@ class RunTransitionView(TransitionViewMixin, RalphTemplateView):
         context['form'] = self.get_form()
         context['transition'] = self.transition
         context['back_url'] = self.obj.get_absolute_url()
+        context['object'] = self.obj
+        context['verbose_name'] = self.obj._meta.verbose_name
         return context
 
     def post(self, request, *args, **kwargs):
