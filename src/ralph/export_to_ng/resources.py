@@ -342,7 +342,7 @@ class DataCenterAssetResource(AssetResource):
         if not device:
             return ''
         management_ip = device.management_ip
-        return management_ip.hostname if management_ip else ''
+        return (management_ip.hostname if management_ip else '') or ''
 
     class Meta:
         fields = (
