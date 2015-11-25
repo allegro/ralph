@@ -41,7 +41,7 @@ class ComponentModel(NamedMixin, models.Model):
 
 
 class Component(models.Model):
-    asset = models.ForeignKey(BaseObject, related_name='%(class)s')
+    base_object = models.ForeignKey(BaseObject, related_name='%(class)s')
     model = models.ForeignKey(
         ComponentModel,
         verbose_name=_('model'),
