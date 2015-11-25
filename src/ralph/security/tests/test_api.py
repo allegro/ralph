@@ -98,8 +98,8 @@ class SecurityScanAPITests(RalphAPITestCase):
             'last_scan_date': (datetime.now() + timedelta(days=10)).isoformat(),
             'scan_status': ScanStatus.error.name,
             'next_scan_date': (datetime.now() + timedelta(days=15)).isoformat(),
-            'details_url': self.security_scan.details_url + ' new',
-            'rescan_url': self.security_scan.rescan_url + ' new',
+            'details_url': self.security_scan.details_url + '-new',
+            'rescan_url': self.security_scan.rescan_url + '-new',
             'host ip': ip.address,
             'vulnerabilities': [vulnerability.id, ],
         }

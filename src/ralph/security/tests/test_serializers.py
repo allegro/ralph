@@ -29,6 +29,7 @@ class SaveSecurityScanSerializerTests(RalphAPITestCase):
         ip = IPAddressFactory(address="192.168.128.10")
         vulnerability_1 = VulnerabilityFactory()
         vulnerability_2 = VulnerabilityFactory()
+        #TODO:: this should be changed to request-dict which is not regular dict
         data = {
             'last_scan_date': '2015-01-01T00:00:00',
             'scan_status': 'ok',
@@ -50,6 +51,7 @@ class SaveSecurityScanSerializerTests(RalphAPITestCase):
     def test_error_raised_when_unknown_external_id(self):
         ip = IPAddressFactory(address="192.168.128.10")
         vulnerability = VulnerabilityFactory()
+        #TODO:: this should be changed to request-dict which is not regular dict
         data = {
             'last_scan_date': '2015-01-01T00:00:00',
             'scan_status': 'ok',
