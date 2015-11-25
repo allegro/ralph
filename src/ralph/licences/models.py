@@ -30,7 +30,7 @@ class Software(PermByFieldMixin, NamedMixin, models.Model):
     """The category of the licensed software"""
 
     asset_type = models.PositiveSmallIntegerField(
-        choices=ObjectModelType(), default=ObjectModelType.all
+        choices=ObjectModelType(), default=ObjectModelType.all.id
     )
 
     @classmethod
