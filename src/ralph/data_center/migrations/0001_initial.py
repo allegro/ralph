@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import models, migrations
-import ralph.lib.mixins.fields
-import re
-import ralph.data_center.models.networks
+from django.db import migrations, models
+import django.db.models.deletion
+import django.core.validators
 import ralph.lib.mixins.models
 import ralph.lib.transitions.fields
-import django.core.validators
-import django.db.models.deletion
+import re
+import ralph.data_center.models.networks
+import ralph.lib.mixins.fields
 
 
 class Migration(migrations.Migration):
@@ -21,8 +21,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Accessory',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
-                ('name', models.CharField(verbose_name='name', max_length=255, unique=True)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(verbose_name='name', unique=True, max_length=255)),
             ],
             options={
                 'verbose_name': 'accessory',
@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='CloudProject',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(to='assets.BaseObject', auto_created=True, serialize=False, parent_link=True, primary_key=True)),
+                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False)),
             ],
             options={
                 'abstract': False,
@@ -42,14 +42,14 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Connection',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
-                ('connection_type', models.PositiveIntegerField(choices=[(1, 'network connection')], verbose_name='connection type')),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('connection_type', models.PositiveIntegerField(verbose_name='connection type', choices=[(1, 'network connection')])),
             ],
         ),
         migrations.CreateModel(
             name='Database',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(to='assets.BaseObject', auto_created=True, serialize=False, parent_link=True, primary_key=True)),
+                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False)),
             ],
             options={
                 'verbose_name': 'database',
@@ -60,8 +60,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='DataCenter',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
-                ('name', models.CharField(verbose_name='name', max_length=255, unique=True)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(verbose_name='name', unique=True, max_length=255)),
                 ('visualization_cols_num', models.PositiveIntegerField(verbose_name='visualization grid columns number', default=20)),
                 ('visualization_rows_num', models.PositiveIntegerField(verbose_name='visualization grid rows number', default=20)),
             ],
@@ -72,17 +72,18 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='DataCenterAsset',
             fields=[
-                ('asset_ptr', models.OneToOneField(to='assets.Asset', auto_created=True, serialize=False, parent_link=True, primary_key=True)),
-                ('status', ralph.lib.transitions.fields.TransitionField(choices=[(1, 'new'), (2, 'in progress'), (3, 'waiting for release'), (4, 'in use'), (5, 'loan'), (6, 'damaged'), (7, 'liquidated'), (8, 'in service'), (9, 'in repair'), (10, 'ok'), (11, 'to deploy')], default=1)),
+                ('asset_ptr', models.OneToOneField(primary_key=True, to='assets.Asset', auto_created=True, parent_link=True, serialize=False)),
+                ('status', ralph.lib.transitions.fields.TransitionField(choices=[(1, 'new'), (2, 'in use'), (3, 'free'), (4, 'damaged'), (5, 'liquidated'), (6, 'to deploy')], default=1)),
                 ('position', models.IntegerField(null=True)),
                 ('orientation', models.PositiveIntegerField(choices=[(1, 'front'), (2, 'back'), (3, 'middle'), (101, 'left'), (102, 'right')], default=1)),
-                ('slot_no', models.CharField(null=True, verbose_name='slot number', validators=[django.core.validators.RegexValidator(regex=re.compile('^([1-9][A,B]?|1[0-6][A,B]?)$', 32), code='invalid_slot_no', message="Slot number should be a number from range 1-16 with an optional postfix 'A' or 'B' (e.g. '16A')")], help_text='Fill it if asset is blade server', blank=True, max_length=3)),
-                ('configuration_path', models.CharField(help_text='Path to configuration for e.g. puppet, chef.', verbose_name='configuration path', max_length=100)),
-                ('source', models.PositiveIntegerField(null=True, choices=[(1, 'shipment'), (2, 'salvaged')], verbose_name='source', db_index=True, blank=True)),
-                ('delivery_date', models.DateField(null=True, blank=True)),
-                ('production_year', models.PositiveSmallIntegerField(null=True, blank=True)),
-                ('production_use_date', models.DateField(null=True, blank=True)),
-                ('connections', models.ManyToManyField(to='data_center.DataCenterAsset', through='data_center.Connection')),
+                ('slot_no', models.CharField(max_length=3, verbose_name='slot number', blank=True, validators=[django.core.validators.RegexValidator(code='invalid_slot_no', message="Slot number should be a number from range 1-16 with an optional postfix 'A' or 'B' (e.g. '16A')", regex=re.compile('^([1-9][A,B]?|1[0-6][A,B]?)$', 32))], null=True, help_text='Fill it if asset is blade server')),
+                ('source', models.PositiveIntegerField(verbose_name='source', choices=[(1, 'shipment'), (2, 'salvaged')], blank=True, db_index=True, null=True)),
+                ('delivery_date', models.DateField(blank=True, null=True)),
+                ('production_year', models.PositiveSmallIntegerField(blank=True, null=True)),
+                ('production_use_date', models.DateField(blank=True, null=True)),
+                ('management_ip', models.GenericIPAddressField(default=None, unique=True, verbose_name='Management IP address', blank=True, null=True, help_text='Presented as string.')),
+                ('management_hostname', ralph.lib.mixins.fields.NullableCharField(blank=True, null=True, unique=True, max_length=100)),
+                ('connections', models.ManyToManyField(through='data_center.Connection', to='data_center.DataCenterAsset')),
             ],
             options={
                 'verbose_name': 'data center asset',
@@ -93,8 +94,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='DiscoveryQueue',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
-                ('name', models.CharField(verbose_name='name', max_length=255, unique=True)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(verbose_name='name', unique=True, max_length=255)),
             ],
             options={
                 'verbose_name': 'discovery queue',
@@ -105,12 +106,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='DiskShare',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
-                ('share_id', models.PositiveIntegerField(null=True, verbose_name='share identifier', blank=True)),
-                ('label', models.CharField(null=True, verbose_name='name', blank=True, default=None, max_length=255)),
-                ('size', models.PositiveIntegerField(null=True, verbose_name='size (MiB)', blank=True)),
-                ('snapshot_size', models.PositiveIntegerField(null=True, verbose_name='size for snapshots (MiB)', blank=True)),
-                ('wwn', ralph.lib.mixins.fields.NullableCharField(verbose_name='Volume serial', max_length=33, unique=True)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('share_id', models.PositiveIntegerField(verbose_name='share identifier', blank=True, null=True)),
+                ('label', models.CharField(verbose_name='name', blank=True, default=None, null=True, max_length=255)),
+                ('size', models.PositiveIntegerField(verbose_name='size (MiB)', blank=True, null=True)),
+                ('snapshot_size', models.PositiveIntegerField(verbose_name='size for snapshots (MiB)', blank=True, null=True)),
+                ('wwn', ralph.lib.mixins.fields.NullableCharField(verbose_name='Volume serial', unique=True, max_length=33)),
                 ('full', models.BooleanField(default=True)),
             ],
             options={
@@ -121,11 +122,11 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='DiskShareMount',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
-                ('volume', models.CharField(null=True, verbose_name='volume', blank=True, default=None, max_length=255)),
-                ('size', models.PositiveIntegerField(null=True, verbose_name='size (MiB)', blank=True)),
-                ('asset', models.ForeignKey(null=True, to='assets.Asset', verbose_name='asset', default=None, on_delete=django.db.models.deletion.SET_NULL, blank=True)),
-                ('share', models.ForeignKey(to='data_center.DiskShare', verbose_name='share')),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('volume', models.CharField(verbose_name='volume', blank=True, default=None, null=True, max_length=255)),
+                ('size', models.PositiveIntegerField(verbose_name='size (MiB)', blank=True, null=True)),
+                ('asset', models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, default=None, verbose_name='asset', to='assets.Asset', blank=True, null=True)),
+                ('share', models.ForeignKey(verbose_name='share', to='data_center.DiskShare')),
             ],
             options={
                 'verbose_name': 'disk share mount',
@@ -135,15 +136,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='IPAddress',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('created', models.DateTimeField(verbose_name='date created', auto_now=True)),
                 ('modified', models.DateTimeField(verbose_name='last modified', auto_now_add=True)),
                 ('last_seen', models.DateTimeField(verbose_name='last seen', auto_now_add=True)),
-                ('address', models.GenericIPAddressField(null=True, verbose_name='IP address', default=None, unique=True, help_text='Presented as string.')),
-                ('number', models.BigIntegerField(editable=False, verbose_name='IP address', help_text='Presented as int.', unique=True)),
+                ('address', models.GenericIPAddressField(default=None, unique=True, verbose_name='IP address', help_text='Presented as string.', null=True)),
+                ('hostname', models.CharField(verbose_name='Hostname', blank=True, default=None, null=True, max_length=255)),
+                ('number', models.BigIntegerField(verbose_name='IP address', editable=False, help_text='Presented as int.', unique=True)),
                 ('is_management', models.BooleanField(verbose_name='This is a management address', default=False)),
-                ('is_public', models.BooleanField(editable=False, verbose_name='This is a public address', default=False)),
-                ('asset', models.ForeignKey(null=True, to='assets.Asset', verbose_name='asset', default=None, on_delete=django.db.models.deletion.SET_NULL, blank=True)),
+                ('is_public', models.BooleanField(verbose_name='This is a public address', editable=False, default=False)),
             ],
             options={
                 'verbose_name': 'IP address',
@@ -153,23 +154,23 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Network',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
-                ('name', models.CharField(verbose_name='name', max_length=255, unique=True)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(verbose_name='name', unique=True, max_length=255)),
                 ('created', models.DateTimeField(verbose_name='date created', auto_now=True)),
                 ('modified', models.DateTimeField(verbose_name='last modified', auto_now_add=True)),
-                ('address', models.CharField(help_text='Presented as string (e.g. 192.168.0.0/24)', verbose_name='network address', max_length=18, validators=[ralph.data_center.models.networks.network_validator], unique=True)),
-                ('gateway', models.GenericIPAddressField(null=True, verbose_name='gateway address', default=None, help_text='Presented as string.', blank=True)),
-                ('gateway_as_int', models.PositiveIntegerField(null=True, editable=False, verbose_name='gateway as int', blank=True, default=None)),
-                ('reserved', models.PositiveIntegerField(help_text='Number of addresses to be omitted in the automatic determination process, counted from the first in range.', verbose_name='reserved', default=10)),
-                ('reserved_top_margin', models.PositiveIntegerField(help_text='Number of addresses to be omitted in the automatic determination process, counted from the last in range.', verbose_name='reserved (top margin)', default=0)),
-                ('remarks', models.TextField(help_text='Additional information.', verbose_name='remarks', blank=True, default='')),
-                ('vlan', models.PositiveIntegerField(null=True, verbose_name='VLAN number', blank=True, default=None)),
-                ('min_ip', models.PositiveIntegerField(null=True, editable=False, verbose_name='smallest IP number', blank=True, default=None)),
-                ('max_ip', models.PositiveIntegerField(null=True, editable=False, verbose_name='largest IP number', blank=True, default=None)),
-                ('ignore_addresses', models.BooleanField(help_text='Addresses from this network should never be assigned to any device, because they are not unique.', verbose_name='Ignore addresses from this network', default=False)),
-                ('dhcp_broadcast', models.BooleanField(verbose_name='Broadcast in DHCP configuration', db_index=True, default=False)),
+                ('address', models.CharField(verbose_name='network address', help_text='Presented as string (e.g. 192.168.0.0/24)', validators=[ralph.data_center.models.networks.network_validator], unique=True, max_length=18)),
+                ('gateway', models.GenericIPAddressField(default=None, verbose_name='gateway address', blank=True, null=True, help_text='Presented as string.')),
+                ('gateway_as_int', models.BigIntegerField(verbose_name='gateway as int', editable=False, blank=True, default=None, null=True)),
+                ('reserved', models.PositiveIntegerField(verbose_name='reserved', help_text='Number of addresses to be omitted in the automatic determination process, counted from the first in range.', default=10)),
+                ('reserved_top_margin', models.PositiveIntegerField(verbose_name='reserved (top margin)', help_text='Number of addresses to be omitted in the automatic determination process, counted from the last in range.', default=0)),
+                ('remarks', models.TextField(verbose_name='remarks', blank=True, default='', help_text='Additional information.')),
+                ('vlan', models.PositiveIntegerField(verbose_name='VLAN number', blank=True, default=None, null=True)),
+                ('min_ip', models.BigIntegerField(verbose_name='smallest IP number', editable=False, blank=True, default=None, null=True)),
+                ('max_ip', models.BigIntegerField(verbose_name='largest IP number', editable=False, blank=True, default=None, null=True)),
+                ('ignore_addresses', models.BooleanField(verbose_name='Ignore addresses from this network', default=False, help_text='Addresses from this network should never be assigned to any device, because they are not unique.')),
+                ('dhcp_broadcast', models.BooleanField(verbose_name='Broadcast in DHCP configuration', default=False, db_index=True)),
                 ('dhcp_config', models.TextField(verbose_name='DHCP additional configuration', blank=True, default='')),
-                ('data_center', models.ForeignKey(null=True, to='data_center.DataCenter', verbose_name='data center', blank=True)),
+                ('data_center', models.ForeignKey(verbose_name='data center', to='data_center.DataCenter', blank=True, null=True)),
             ],
             options={
                 'verbose_name': 'network',
@@ -180,14 +181,14 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='NetworkEnvironment',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
-                ('name', models.CharField(verbose_name='name', max_length=255, unique=True)),
-                ('hosts_naming_template', models.CharField(help_text='E.g. h<200,299>.dc|h<400,499>.dc will produce: h200.dc h201.dc ... h299.dc h400.dc h401.dc', verbose_name='hosts naming template', max_length=30)),
-                ('next_server', models.CharField(help_text='The address for a TFTP server for DHCP.', verbose_name='next server', blank=True, default='', max_length=32)),
-                ('domain', models.CharField(null=True, verbose_name='domain', blank=True, max_length=255)),
-                ('remarks', models.TextField(null=True, help_text='Additional information.', verbose_name='remarks', blank=True)),
-                ('data_center', models.ForeignKey(to='data_center.DataCenter', verbose_name='data center')),
-                ('queue', models.ForeignKey(null=True, to='data_center.DiscoveryQueue', verbose_name='discovery queue', on_delete=django.db.models.deletion.SET_NULL, blank=True)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(verbose_name='name', unique=True, max_length=255)),
+                ('hosts_naming_template', models.CharField(verbose_name='hosts naming template', help_text='E.g. h<200,299>.dc|h<400,499>.dc will produce: h200.dc h201.dc ... h299.dc h400.dc h401.dc', max_length=30)),
+                ('next_server', models.CharField(verbose_name='next server', blank=True, default='', help_text='The address for a TFTP server for DHCP.', max_length=32)),
+                ('domain', models.CharField(verbose_name='domain', blank=True, null=True, max_length=255)),
+                ('remarks', models.TextField(verbose_name='remarks', blank=True, null=True, help_text='Additional information.')),
+                ('data_center', models.ForeignKey(verbose_name='data center', to='data_center.DataCenter')),
+                ('queue', models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, verbose_name='discovery queue', to='data_center.DiscoveryQueue', blank=True, null=True)),
             ],
             options={
                 'ordering': ('name',),
@@ -196,8 +197,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='NetworkKind',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
-                ('name', models.CharField(verbose_name='name', max_length=255, unique=True)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(verbose_name='name', unique=True, max_length=255)),
             ],
             options={
                 'verbose_name': 'network kind',
@@ -208,8 +209,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='NetworkTerminator',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
-                ('name', models.CharField(verbose_name='name', max_length=255, unique=True)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(verbose_name='name', unique=True, max_length=255)),
             ],
             options={
                 'verbose_name': 'network terminator',
@@ -220,7 +221,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Rack',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(verbose_name='name', max_length=75)),
                 ('description', models.CharField(verbose_name='description', blank=True, max_length=250)),
                 ('orientation', models.PositiveIntegerField(choices=[(1, 'top'), (2, 'bottom'), (3, 'left'), (4, 'right')], default=1)),
@@ -228,11 +229,12 @@ class Migration(migrations.Migration):
                 ('visualization_col', models.PositiveIntegerField(verbose_name='column number on visualization grid', default=0)),
                 ('visualization_row', models.PositiveIntegerField(verbose_name='row number on visualization grid', default=0)),
             ],
+            bases=(ralph.lib.mixins.models.AdminAbsoluteUrlMixin, models.Model),
         ),
         migrations.CreateModel(
             name='RackAccessory',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('orientation', models.PositiveIntegerField(choices=[(1, 'front'), (2, 'back'), (3, 'middle'), (101, 'left'), (102, 'right')], default=1)),
                 ('position', models.IntegerField(null=True)),
                 ('remarks', models.CharField(verbose_name='Additional remarks', blank=True, max_length=1024)),
@@ -247,9 +249,9 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ServerRoom',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(verbose_name='name', max_length=75)),
-                ('data_center', models.ForeignKey(to='data_center.DataCenter', verbose_name='data center')),
+                ('data_center', models.ForeignKey(verbose_name='data center', to='data_center.DataCenter')),
             ],
             options={
                 'abstract': False,
@@ -258,7 +260,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='VIP',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(to='assets.BaseObject', auto_created=True, serialize=False, parent_link=True, primary_key=True)),
+                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False)),
             ],
             options={
                 'verbose_name': 'VIP',
@@ -269,7 +271,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='VirtualServer',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(to='assets.BaseObject', auto_created=True, serialize=False, parent_link=True, primary_key=True)),
+                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False)),
             ],
             options={
                 'verbose_name': 'Virtual server (VM)',
@@ -280,57 +282,62 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='rack',
             name='accessories',
-            field=models.ManyToManyField(to='data_center.Accessory', through='data_center.RackAccessory'),
+            field=models.ManyToManyField(through='data_center.RackAccessory', to='data_center.Accessory'),
         ),
         migrations.AddField(
             model_name='rack',
             name='server_room',
-            field=models.ForeignKey(null=True, to='data_center.ServerRoom', verbose_name='server room', blank=True),
+            field=models.ForeignKey(verbose_name='server room', to='data_center.ServerRoom', blank=True, null=True),
         ),
         migrations.AddField(
             model_name='network',
             name='kind',
-            field=models.ForeignKey(null=True, to='data_center.NetworkKind', verbose_name='network kind', default=None, on_delete=django.db.models.deletion.SET_NULL, blank=True),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, default=None, verbose_name='network kind', to='data_center.NetworkKind', blank=True, null=True),
         ),
         migrations.AddField(
             model_name='network',
             name='network_environment',
-            field=models.ForeignKey(null=True, to='data_center.NetworkEnvironment', verbose_name='environment', on_delete=django.db.models.deletion.SET_NULL, blank=True),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, verbose_name='environment', to='data_center.NetworkEnvironment', blank=True, null=True),
         ),
         migrations.AddField(
             model_name='network',
             name='racks',
-            field=models.ManyToManyField(to='data_center.Rack', verbose_name='racks', blank=True),
+            field=models.ManyToManyField(verbose_name='racks', blank=True, to='data_center.Rack'),
         ),
         migrations.AddField(
             model_name='network',
             name='terminators',
-            field=models.ManyToManyField(to='data_center.NetworkTerminator', verbose_name='network terminators'),
+            field=models.ManyToManyField(verbose_name='network terminators', to='data_center.NetworkTerminator'),
+        ),
+        migrations.AddField(
+            model_name='ipaddress',
+            name='base_object',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, default=None, verbose_name='Base object', to='assets.BaseObject', blank=True, null=True),
         ),
         migrations.AddField(
             model_name='diskshare',
-            name='asset',
+            name='base_object',
             field=models.ForeignKey(to='assets.BaseObject', related_name='diskshare'),
         ),
         migrations.AddField(
             model_name='diskshare',
             name='model',
-            field=models.ForeignKey(null=True, to='assets.ComponentModel', verbose_name='model', default=None, on_delete=django.db.models.deletion.SET_NULL, blank=True),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, default=None, verbose_name='model', to='assets.ComponentModel', blank=True, null=True),
         ),
         migrations.AddField(
             model_name='datacenterasset',
             name='rack',
-            field=models.ForeignKey(null=True, to='data_center.Rack'),
+            field=models.ForeignKey(to='data_center.Rack', null=True),
         ),
         migrations.AddField(
             model_name='connection',
             name='inbound',
-            field=models.ForeignKey(to='data_center.DataCenterAsset', verbose_name='connected device', on_delete=django.db.models.deletion.PROTECT, related_name='inbound_connections'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, verbose_name='connected device', to='data_center.DataCenterAsset', related_name='inbound_connections'),
         ),
         migrations.AddField(
             model_name='connection',
             name='outbound',
-            field=models.ForeignKey(to='data_center.DataCenterAsset', verbose_name='connected to device', on_delete=django.db.models.deletion.PROTECT, related_name='outbound_connections'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, verbose_name='connected to device', to='data_center.DataCenterAsset', related_name='outbound_connections'),
         ),
         migrations.AlterUniqueTogether(
             name='rack',

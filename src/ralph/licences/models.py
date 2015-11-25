@@ -12,12 +12,7 @@ from ralph.admin.helpers import getattr_dunder
 from ralph.assets.models.assets import AssetHolder, BudgetInfo, Manufacturer
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
-from ralph.lib.mixins.models import (
-    AdminAbsoluteUrlMixin,
-    NamedMixin,
-    TaggableMixin,
-    TimeStampMixin
-)
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
 from ralph.lib.permissions import PermByFieldMixin
 
 
@@ -35,7 +30,7 @@ class Software(PermByFieldMixin, NamedMixin, models.Model):
     """The category of the licensed software"""
 
     asset_type = models.PositiveSmallIntegerField(
-        choices=ObjectModelType(), default=ObjectModelType.all
+        choices=ObjectModelType(), default=ObjectModelType.all.id
     )
 
     @classmethod
@@ -52,14 +47,7 @@ class Software(PermByFieldMixin, NamedMixin, models.Model):
         verbose_name_plural = _('software categories')
 
 
-class Licence(
-    Regionalizable,
-    AdminAbsoluteUrlMixin,
-    PermByFieldMixin,
-    TimeStampMixin,
-    TaggableMixin,
-    models.Model,
-):
+class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
 
     """A set of licences for a single software with a single expiration date"""
 
@@ -139,7 +127,6 @@ class Licence(
     invoice_no = models.CharField(
         max_length=128, db_index=True, null=True, blank=True
     )
-    remarks = models.TextField(blank=True)
     license_details = models.CharField(
         verbose_name=_('License details'),
         max_length=1024,
@@ -184,7 +171,11 @@ class Licence(
 
 class BaseObjectLicence(models.Model):
     licence = models.ForeignKey(Licence)
-    base_object = models.ForeignKey(BaseObject, related_name='licences')
+    base_object = models.ForeignKey(
+        BaseObject,
+        related_name='licences',
+        verbose_name=_('Asset')
+    )
     quantity = models.PositiveIntegerField(default=1)
 
     class Meta:

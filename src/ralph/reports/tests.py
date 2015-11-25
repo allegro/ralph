@@ -101,7 +101,6 @@ class TestReportCategoryTreeView(ClientMixin, RalphTestCase):
         }) for _ in range(3)]
 
     def _get_item(self, data, name):
-        # import ipdb; ipdb.set_trace()
         for item in data:
             if item['name'] == name:
 
@@ -177,8 +176,8 @@ class TestReportAssetAndLicence(RalphTestCase):
                 'hostname'
             ],
             [
-                1, None, None, None, 'Keyboard', None, 1, None, None, None,
-                None
+                self.dc_1.id, None, None, None, 'Keyboard', None, 1, None,
+                None, None, None
             ]
         ]
         self.assertEqual(report_result, result)
@@ -221,9 +220,9 @@ class TestReportAssetAndLicence(RalphTestCase):
                 '', '', '', '', '', '', '', '', '', '', '', ''
             ],
             [
-                'N/A', 'Project Info', '1', '0.00', 'None', 'None', '1', '',
-                '', 'None', 'None', 'None', 'None', 'None', 'None', 'None',
-                '', '', '', ''
+                'N/A', 'Project Info', '1', '0.00', 'None', 'None',
+                str(self.dc_1.id), '', '', 'None', 'None', 'None', 'None',
+                'None', 'None', 'None', '', '', '', ''
             ]
         ]
         self.assertEqual(report_result, result)

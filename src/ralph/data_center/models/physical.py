@@ -19,6 +19,7 @@ from ralph.data_center.models.choices import (
     Orientation,
     RackOrientation
 )
+from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
@@ -240,13 +241,6 @@ class DataCenterAsset(Asset):
         ],
         verbose_name=_('slot number'),
     )
-
-    # TODO: convert to foreign key
-    configuration_path = models.CharField(
-        help_text=_('Path to configuration for e.g. puppet, chef.'),
-        max_length=100,
-        verbose_name=_('configuration path'),
-    )
     connections = models.ManyToManyField(
         'self',
         through='Connection',
@@ -262,6 +256,28 @@ class DataCenterAsset(Asset):
     delivery_date = models.DateField(null=True, blank=True)
     production_year = models.PositiveSmallIntegerField(null=True, blank=True)
     production_use_date = models.DateField(null=True, blank=True)
+
+    # Temporary solution until core functionality will not be fully migrated to
+    # NG
+    management_ip = models.GenericIPAddressField(
+        verbose_name=_('Management IP address'),
+        help_text=_('Presented as string.'),
+        unique=True,
+        blank=True,
+        null=True,
+        default=None,
+    )
+    management_hostname = NullableCharField(
+        max_length=100, unique=True, null=True, blank=True
+    )
+
+    # @property
+    # def management_ip(self):
+    #     """A property that gets management IP of a asset."""
+    #     management_ip = self.ipaddress_set.filter(
+    #         is_management=True
+    #     ).order_by('-address').first()
+    #     return management_ip.address if management_ip else ''
 
     class Meta:
         verbose_name = _('data center asset')
@@ -292,14 +308,6 @@ class DataCenterAsset(Asset):
         """Returns cores count assigned to device in Ralph"""
         asset_cores_count = self.model.cores_count if self.model else 0
         return asset_cores_count
-
-    @property
-    def management_ip(self):
-        """A property that gets management IP of a asset."""
-        management_ip = self.ipaddress_set.filter(is_management=True).order_by(
-            '-address'
-        ).first()
-        return management_ip.address if management_ip else ''
 
     def _validate_orientation(self):
         """

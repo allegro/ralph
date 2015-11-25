@@ -130,6 +130,18 @@ sitetrees = [
             ]
         ),
         ralph_item(
+            title=_('Domains'),
+            url='#',
+            url_as_pattern=False,
+            perms_mode_all=False,
+            children=[
+                section(_('Domains'), 'domains', 'Domain'),
+                section(_('Contracts'), 'domains', 'DomainContract'),
+                section(_('Registrants'), 'domains', 'DomainRegistrant'),
+                section(_('Owners'), 'accounts', 'RalphUser'),
+            ]
+        ),
+        ralph_item(
             title=_('Supports'),
             url='#',
             url_as_pattern=False,

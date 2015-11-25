@@ -7,7 +7,6 @@ from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.back_office.models import (
-    AssetHolder,
     BackOfficeAsset,
     OfficeInfrastructure,
     Warehouse
@@ -155,12 +154,6 @@ class BackOfficeAssetAdmin(
 
 @register(Warehouse)
 class WarehouseAdmin(RalphAdmin):
-
-    search_fields = ['name']
-
-
-@register(AssetHolder)
-class AssetHolderAdmin(RalphAdmin):
 
     search_fields = ['name']
 

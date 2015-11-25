@@ -1,6 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
 
+from ralph.accounts.api_simple import SimpleRalphUserSerializer
 from ralph.api import RalphAPISerializer
 from ralph.api.utils import PolymorphicSerializer
 from ralph.assets.models import (
@@ -73,13 +74,11 @@ class SaveServiceSerializer(RalphAPISerializer):
             )
         )
         # create ServiceEnv for new environments
-        service_env_to_create = []
         for environment in environments:
             if environment.id not in current_environments:
-                service_env_to_create.append(ServiceEnvironment(
+                ServiceEnvironment.objects.create(
                     service=instance, environment=environment
-                ))
-        ServiceEnvironment.objects.bulk_create(service_env_to_create)
+                )
 
     def create(self, validated_data):
         environments = validated_data.pop('environments', [])
@@ -96,6 +95,10 @@ class SaveServiceSerializer(RalphAPISerializer):
 
 
 class ServiceSerializer(RalphAPISerializer):
+
+    business_owners = SimpleRalphUserSerializer(many=True)
+    technical_owners = SimpleRalphUserSerializer(many=True)
+
     class Meta:
         model = Service
         depth = 1
@@ -105,6 +108,7 @@ class ServiceEnvironmentSerializer(RalphAPISerializer):
     class Meta:
         model = ServiceEnvironment
         depth = 1
+        exclude = ('content_type', 'parent', 'service_env')
 
 
 class ManufacturerSerializer(RalphAPISerializer):

@@ -22,7 +22,7 @@ class RunTransitionView(RalphTemplateView):
         self.obj = get_object_or_404(model, pk=object_pk)
         self.transition = get_object_or_404(Transition, pk=transition_pk)
         self.actions, self.return_attachment = self.collect_actions(self.transition)  # noqa
-        return super().dispatch(request, *args, **kwargs)
+        return super().dispatch(request, model=model, *args, **kwargs)
 
     def collect_actions(self, transition):
         names = transition.actions.values_list('name', flat=True).all()
@@ -69,6 +69,8 @@ class RunTransitionView(RalphTemplateView):
         context['form'] = self.get_form()
         context['transition'] = self.transition
         context['back_url'] = self.obj.get_absolute_url()
+        context['object'] = self.obj
+        context['verbose_name'] = self.obj._meta.verbose_name
         return context
 
     def post(self, request, *args, **kwargs):

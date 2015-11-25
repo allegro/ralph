@@ -32,9 +32,17 @@ def run_field_transition(instance, transition, field, data={}, **kwargs):
             name=transition,
             model=transition_model,
         )
-    if instance.status not in [int(s) for s in transition.source]:
+    transition_field = field
+    transition_field_value = getattr(instance, transition_field, None)
+    if transition_field_value not in [
+        int(s) for s in transition.source
+    ]:
         raise TransitionNotAllowedError()
-    setattr(instance, field, int(transition.target))
+
+    source_status = instance._meta.get_field(
+        transition_field
+    ).choices.from_id(int(transition_field_value)).name
+    setattr(instance, transition_field, int(transition.target))
     attachment = None
     action_names = []
     history_kwargs = {}
@@ -74,12 +82,17 @@ def run_field_transition(instance, transition, field, data={}, **kwargs):
             attachment = result
 
     TransitionsHistory.objects.create(
-        transition=transition,
+        transition_name=transition.name,
+        content_type=ContentType.objects.get_for_model(instance._meta.model),
         object_id=instance.pk,
         logged_user=kwargs['request'].user,
         attachment=attachment,
         kwargs=history_kwargs,
-        actions=action_names
+        actions=action_names,
+        source=source_status,
+        target=instance._meta.get_field(
+            transition_field
+        ).choices.from_id(int(transition.target)).name
     )
     instance.save()
     return True, attachment
@@ -132,6 +145,7 @@ class TransitionModel(models.Model):
 
     class Meta:
         unique_together = ('content_type', 'field_name')
+        app_label = 'transitions'
 
     def __str__(self):
         return '{} {}'.format(self.content_type, self.field_name)
@@ -146,6 +160,7 @@ class Transition(models.Model):
 
     class Meta:
         unique_together = ('name', 'model')
+        app_label = 'transitions'
 
     def __str__(self):
         return self.name
@@ -154,6 +169,9 @@ class Transition(models.Model):
 class Action(models.Model):
     content_type = models.ManyToManyField(ContentType)
     name = models.CharField(max_length=50)
+
+    class Meta:
+        app_label = 'transitions'
 
     def __str__(self):
         return self.name
@@ -166,15 +184,21 @@ class Action(models.Model):
 
 class TransitionsHistory(TimeStampMixin):
 
-    transition = models.ForeignKey(Transition)
+    content_type = models.ForeignKey(ContentType)
+    transition_name = models.CharField(max_length=255)
+    source = models.CharField(max_length=50, blank=True, null=True)
+    target = models.CharField(max_length=50, blank=True, null=True)
     object_id = models.IntegerField(db_index=True)
     logged_user = models.ForeignKey(settings.AUTH_USER_MODEL)
     attachment = models.ForeignKey(Attachment, blank=True, null=True)
     kwargs = JSONField()
     actions = JSONField()
 
+    class Meta:
+        app_label = 'transitions'
+
     def __str__(self):
-        return str(self.transition)
+        return str(self.transition_name)
 
 
 def update_models_attrs():

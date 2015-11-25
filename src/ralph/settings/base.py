@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import os
 
 from django.contrib.messages import constants as messages
@@ -32,6 +33,7 @@ INSTALLED_APPS = (
     'ralph.back_office',
     'ralph.data_center',
     'ralph.licences',
+    'ralph.domains',
     'ralph.supports',
     'ralph.security',
     'ralph.lib.foundation',
@@ -96,11 +98,14 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.environ.get('DATABASE_NAME', 'ralph_ng'),
         'USER': os.environ.get('DATABASE_USER', 'ralph_ng'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'ralph_ng'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'ralph_ng') or None,
         'HOST': os.environ.get('DATABASE_HOST', '127.0.0.1'),
         'PORT': os.environ.get('DATABASE_PORT', 3306),
         'OPTIONS': MYSQL_OPTIONS,
         'ATOMIC_REQUESTS': True,
+        'TEST': {
+            'NAME': 'test_ralph_ng',
+        }
     }
 }
 
@@ -232,6 +237,7 @@ REDIS_CONNECTION = {
     'HOST': os.environ.get('REDIS_HOST', 'localhost'),
     'PORT': os.environ.get('REDIS_PORT', '6379'),
     'DB': int(os.environ.get('REDIS_DB', 0)),
+    'PASSWORD': os.environ.get('REDIS_PASSWORD', ''),
 }
 
 BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME = True
@@ -244,3 +250,9 @@ RALPH_EXTERNAL_SERVICES = {
         'method': 'inkpy_jinja.pdf',
     }
 }
+
+# Example:
+# MY_EQUIPMENT_LINKS = [
+#     {'url': 'http://....', 'name': 'Link name'},
+# ]
+MY_EQUIPMENT_LINKS = json.loads(os.environ.get('MY_EQUIPMENT_LINKS', '[]'))

@@ -4,6 +4,7 @@ pages:
   - User guide:
       - Welcome: index.md
       - Installation: installation.md
+      - Domains management: domains/overview.md
       - Migration from Ralph 2.x: data_migration.md
       - Transitions: transitions.md
       - API: api.md

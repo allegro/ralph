@@ -5,6 +5,7 @@ coverage
 coveralls
 ddt
 django-plainpasswordhasher
+django_migration_testcase
 factory-boy
 flake8
 sphinx

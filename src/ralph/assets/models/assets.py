@@ -89,7 +89,7 @@ class Service(NamedMixin, TimeStampMixin, models.Model):
         return reverse('assets:service_detail', args=(self.pk,))
 
 
-class ServiceEnvironment(models.Model):
+class ServiceEnvironment(BaseObject):
     service = models.ForeignKey(Service)
     environment = models.ForeignKey(Environment)
 
@@ -329,6 +329,12 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         default=None,
         null=True,
         on_delete=models.PROTECT,
+    )
+    property_of = models.ForeignKey(
+        AssetHolder,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
     )
 
     def __str__(self):

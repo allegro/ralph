@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.admin import RalphAdmin, RalphMPTTAdmin, RalphTabularInline, register
 from ralph.assets.models.assets import (
     Asset,
+    AssetHolder,
     AssetModel,
     BaseObject,
     BudgetInfo,
@@ -26,7 +27,9 @@ class ServiceEnvironmentAdmin(RalphAdmin):
 
     search_fields = ['service__name', 'environment__name']
     list_select_related = ['service', 'environment']
+    raw_id_fields = ['service', 'environment']
     resource_class = resources.ServiceEnvironmentResource
+    exclude = ('parent', 'service_env')
 
 
 class ServiceEnvironmentInline(RalphTabularInline):
@@ -132,3 +135,9 @@ class BaseObjectAdmin(RalphAdmin):
 
     def repr(self, obj):
         return '{}: {}'.format(obj.content_type, obj)
+
+
+@register(AssetHolder)
+class AssetHolderAdmin(RalphAdmin):
+
+    search_fields = ['name']

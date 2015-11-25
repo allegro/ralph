@@ -8,6 +8,11 @@ $thead-bg-color: $mdc-blue-grey-50;
 $row-even-bg-color: $mdc-grey-100;
 $row-odd-bg-color: #fff;
 
+
+.action-checkbox {
+    text-align:center;
+}
+
 table {
     &.full {
         width: 100%;
