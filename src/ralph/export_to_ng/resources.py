@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import ipaddr
 import logging
 import os
+from collections import Counter
 from itertools import chain
 
 from django.conf import settings
@@ -343,6 +344,31 @@ class DataCenterAssetResource(AssetResource):
             return ''
         management_ip = device.management_ip
         return (management_ip.hostname if management_ip else '') or ''
+
+    def _handle_duplicates(self, data, field_pos, empty_val=''):
+        """
+        Remove duplicated values for particular field.
+        """
+        counter = Counter([row[field_pos] for row in data])
+        duplicates = set([
+            item for item, count in counter.items() if count > 1 and item
+        ])
+        for d in duplicates:
+            print(d)
+        for i, row in enumerate(data):
+            if row[field_pos] in duplicates:
+                r = list(row)
+                r[field_pos] = empty_val
+                data[i] = tuple(r)
+
+    def export(self, *args, **kwargs):
+        data = super(DataCenterAssetResource, self).export(*args, **kwargs)
+        if getattr(settings, 'CLEAN_MANAGEMENT_IP_HOSTNAME_DUPLICATES', False):
+            fields = [f.column_name for f in self.get_fields()]
+            for f in ('management_ip', 'management_hostname'):
+                print('{} duplicates:'.format(f))
+                self._handle_duplicates(data, fields.index(f))
+        return data
 
     class Meta:
         fields = (
