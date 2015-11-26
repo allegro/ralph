@@ -98,6 +98,10 @@ h1 {
 .header {
     .header-toolbar {
         float: right;
+        display: inline-flex;
+        .button-group {
+            margin-right: 5px;
+        }
     }
 }
 
