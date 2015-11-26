@@ -25,7 +25,7 @@ def get_file_path(instance, filename, default_dir='attachments'):
     return os.path.join(default_dir, name[:1], name[1:2], name)
 
 
-def add_attachment_from_disk(obj, local_path_to_file, owner, description=''):
+def add_attachment_from_disk(objs, local_path_to_file, owner, description=''):
     """Create attachment from absolute file path.
 
     Function create and returns attachment object with file from local path.
@@ -59,8 +59,8 @@ def add_attachment_from_disk(obj, local_path_to_file, owner, description=''):
     attachment.mime_type = mime_type
     attachment.description = description
     attachment.save()
-    if not isinstance(obj, Iterable):
-        objs = [obj]
+    if not isinstance(objs, Iterable):
+        objs = [objs]
     for obj in objs:
         AttachmentItem.objects.refresh(obj, new_objects=[attachment])
     return attachment
