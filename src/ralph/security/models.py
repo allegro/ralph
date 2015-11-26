@@ -21,8 +21,8 @@ class Vulnerability(
 ):
     name = models.CharField(
         verbose_name=_("name"),
-        max_length=255,
-        unique=True)  # mysql unique 255
+        max_length=1024,
+        unique=False)
     patch_deadline = models.DateTimeField(null=True, blank=True)
     risk = models.PositiveIntegerField(choices=Risk(), null=True, blank=True)
     external_vulnerability_id = models.IntegerField(
