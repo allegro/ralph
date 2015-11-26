@@ -58,7 +58,8 @@ class BackOfficeAssetAdminForm(RalphAdmin.form):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['hostname'].widget.attrs['readonly'] = True
+        if 'hostname' in self.fields:
+            self.fields['hostname'].widget.attrs['readonly'] = True
 
 
 @register(BackOfficeAsset)
