@@ -40,6 +40,7 @@ INSTALLED_APPS = (
     'ralph.data_importer',
     'ralph.dc_view',
     'ralph.reports',
+    'ralph.virtual',
     'ralph.lib.transitions',
     'ralph.lib.permissions',
     'rest_framework',

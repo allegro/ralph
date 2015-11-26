@@ -217,3 +217,63 @@ During the process, script will report progress on every 100-th item loaded.
 # Migration from Ralph 2
 
 If you used Ralph 2 before and want to save all your data see [Migration from Ralph 2 guide](./data_migration.md#migration_ralph2)
+
+# Synchronization with OpenStack
+
+Ralph 3 supports one-way synchronization with OpenStack. It is possible to
+download data from OpenStack including projects and instances. All the
+synchronized data will be available in Ralph in read-only mode. It will be
+possible only to change the _Service Environment_, _Tags_ and _Remarks_ fields.
+
+**Note**: _Service Environment_ of a _CloudHost_ is inherited from a
+_Cloud Project_ to which it belongs.
+
+## Installation
+
+To enable openstack_sync plugin you will have to install python requirements
+by executing: ``pip install -r requirements/openstack.txt``
+
+It is also necessary to add your _OpenStack_ instances configuration to your
+local settings.
+Example configuration should look as follows:
+```python3
+OPENSTACK_INSTANCES = [
+    {
+        'username':     'someuser',
+        'password':     'somepassword',
+        'tenant_name':  'admin',
+        'version':      '2.0',
+        'auth_url':     'http://1.2.3.4:35357/v2.0/',
+        'tag':          'someinfo'
+    },
+    {
+    ... another instance ...
+    }
+]
+```
+
+``someuser:`` is an OpenStack user which has permissions to list all the
+projects/tenants and instances
+
+``tenant_name:`` project/tenant to which the user will authenticate
+
+``version:`` version of OpenStack API. Currently only **API 2.x** is
+supported
+
+``auth_url:`` address, where OpenStack API is available
+
+``tag:`` this is a tag that will be added to each _Cloud Projects_ and _Cloud
+Hosts_ migrated from OpenStack
+
+You can add multiple _OpenStack_ instances by adding another _python dict_ to
+_OPENSTACK_INSTANCES_ list.
+
+## How to execute
+
+You can either run the script manually by executing: ``ralph openstack_sync``
+or you can add it to _corntab_.
+
+First execution will add all the _Cloud Projects_, _Cloud Hosts_ and _Cloud
+Flavors_ from _OpenStack_ to _Ralph_. Following executions will add and modify
+data as well as delete all the objects which no longer exists in configured
+OpenStack Instances.
