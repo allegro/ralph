@@ -240,11 +240,12 @@ class BackOfficeAsset(Regionalizable, Asset):
         country_id = kwargs['country']
         country_name = Country.name_from_id(int(country_id)).upper()
         iso3_country_name = iso2_to_iso3(country_name)
-        template_vars = {
-            'code': cls.model.category.code,
-            'country_code': iso3_country_name,
-        }
-        cls.generate_hostname(template_vars=template_vars)
+        for instance in instances:
+            template_vars = {
+                'code': instance.model.category.code,
+                'country_code': iso3_country_name,
+            }
+            instance.generate_hostname(template_vars=template_vars)
 
     change_hostname.form_fields = {
         'country': {
@@ -263,12 +264,13 @@ class BackOfficeAsset(Regionalizable, Asset):
         user_id = kwargs.get('user', None)
         user = UserModel.objects.get(id=user_id)
         owner_id = kwargs.get('owner', None)
-        cls.user = user
-        if not owner_id:
-            cls.owner = user
-        else:
-            cls.owner = UserModel.objects.get(id=owner_id)
-        cls.location = user.location
+        for instance in instances:
+            instance.user = user
+            if not owner_id:
+                instance.owner = user
+            else:
+                instance.owner = UserModel.objects.get(id=owner_id)
+            instance.location = user.location
 
     change_user_and_owner.form_fields = {
         'user': {

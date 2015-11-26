@@ -35,7 +35,6 @@ def ralph_item(*args, **kwargs):
             access_by_perms.extend(child.permissions)
     if access_by_perms:
         kwargs['access_by_perms'] = list(set(access_by_perms))
-    print(kwargs)
     return item(*args, **kwargs)
 
 
