@@ -3,13 +3,19 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.mixins import RalphTemplateView
 from ralph.admin.sites import ralph_site
 from ralph.admin.widgets import AutocompleteWidget
 from ralph.helpers import get_model_view_url_name
-from ralph.lib.transitions.models import run_field_transition, Transition
+from ralph.lib.transitions.models import (
+    _check_instances_for_transition,
+    run_field_transition,
+    Transition
+)
+from ralph.lib.transitions.exceptions import TransitionNotAllowedError
 
 
 class TransitionViewMixin(object):
@@ -116,10 +122,39 @@ class RunBulkTransitionView(TransitionViewMixin, RalphTemplateView):
         context['verbose_name'] = self.obj._meta.verbose_name
         return context
 
+    def assets_is_valid(self):
+        try:
+            _check_instances_for_transition(self.objects, self.transition)
+        except TransitionNotAllowedError as e:
+            return False, e
+        return True, None
+
+    def get(self, request, *args, **kwargs):
+        is_valid, error = self.assets_is_valid()
+        if not is_valid:
+            messages.info(
+                self.request, _('Some assets are not valid')
+            )
+            additional_error_message = '<ul>'
+            for obj, msgs in error.errors.items():
+                additional_error_message += '<li>'
+                additional_error_message += '<a href="{}">{}</a> - {}'.format(
+                    obj.get_absolute_url(), obj, ','.join(msgs)
+                )
+                additional_error_message += '</li>'
+            additional_error_message += '</ul>'
+            messages.error(self.request, mark_safe(
+                '{}<br>{}'.format(error.message, additional_error_message)
+            ))
+            # TODO: replace url by reverse
+            return HttpResponseRedirect('..')
+        return super().get(request, *args, **kwargs)
+
     def get_objects(self):
         return self.objects
 
     def get_success_url(self):
+        # TODO: replace url by reverse
         return '../..'
 
 

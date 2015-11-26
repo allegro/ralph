@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 
 
-class TransitionNotAllowedError(Exception):
-    def init(self, message, errors):
+class TransitionError(Exception):
+    pass
+
+
+class TransitionNotAllowedError(TransitionError):
+    def __init__(self, message, errors):
         super().__init__(message)
+        self.message = message
         self.errors = errors
 
 
-class TransitionModelNotFoundError(Exception):
+class TransitionModelNotFoundError(TransitionError):
     pass
