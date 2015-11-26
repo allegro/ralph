@@ -10,12 +10,12 @@ from ralph.admin.mixins import RalphTemplateView
 from ralph.admin.sites import ralph_site
 from ralph.admin.widgets import AutocompleteWidget
 from ralph.helpers import get_model_view_url_name
+from ralph.lib.transitions.exceptions import TransitionNotAllowedError
 from ralph.lib.transitions.models import (
     _check_instances_for_transition,
     run_field_transition,
     Transition
 )
-from ralph.lib.transitions.exceptions import TransitionNotAllowedError
 
 
 class TransitionViewMixin(object):

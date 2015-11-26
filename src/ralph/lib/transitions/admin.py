@@ -9,10 +9,7 @@ from ralph.admin import RalphAdmin, register
 from ralph.helpers import get_model_view_url_name
 from ralph.lib.transitions.forms import TransitionForm
 from ralph.lib.transitions.models import Transition, TransitionModel
-from ralph.lib.transitions.views import (
-    RunBulkTransitionView,
-    RunTransitionView
-)
+from ralph.lib.transitions.views import RunBulkTransitionView, RunTransitionView
 
 
 class TransitionInline(TabularInline):

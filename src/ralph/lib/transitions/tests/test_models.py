@@ -2,14 +2,14 @@
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory
 
+from ralph.lib.transitions.exceptions import (
+    TransitionModelNotFoundError,
+    TransitionNotAllowedError
+)
 from ralph.lib.transitions.models import (
     _check_and_get_transition,
     Action,
     Transition
-)
-from ralph.lib.transitions.exceptions import (
-    TransitionModelNotFoundError,
-    TransitionNotAllowedError
 )
 from ralph.lib.transitions.tests import TransitionTestCase
 from ralph.tests.models import Foo, Order, OrderStatus
