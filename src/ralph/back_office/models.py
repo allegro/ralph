@@ -200,9 +200,13 @@ class BackOfficeAsset(Regionalizable, Asset):
         'Assign office infrastructure'
     )
 
+    @classmethod
     @transition_action
-    def add_remarks(self, **kwargs):
-        self.remarks = '{}\n{}'.format(self.remarks, kwargs['remarks'])
+    def add_remarks(cls, instances, request, **kwargs):
+        for instance in instances:
+            instance.remarks = '{}\n{}'.format(
+                instance.remarks, kwargs['remarks']
+            )
 
     add_remarks.form_fields = {
         'remarks': {
@@ -211,9 +215,11 @@ class BackOfficeAsset(Regionalizable, Asset):
     }
     add_remarks.verbose_name = _('Add remarks')
 
+    @classmethod
     @transition_action
-    def assign_task_url(self, **kwargs):
-        self.task_url = kwargs['task_url']
+    def assign_task_url(cls, instances, request, **kwargs):
+        for instance in instances:
+            instance.task_url = kwargs['task_url']
 
     assign_task_url.form_fields = {
         'task_url': {
@@ -222,21 +228,23 @@ class BackOfficeAsset(Regionalizable, Asset):
     }
     assign_task_url.verbose_name = _('Assign task URL ')
 
+    @classmethod
     @transition_action
-    def unassign_licences(self, **kwargs):
-        BaseObjectLicence.objects.filter(base_object=self).delete()
+    def unassign_licences(cls, instances, request, **kwargs):
+        BaseObjectLicence.objects.filter(base_object__in=instances).delete()
     unassign_licences.verbose_name = _('Unassign licences')
 
+    @classmethod
     @transition_action
-    def change_hostname(self, **kwargs):
+    def change_hostname(cls, instances, request, **kwargs):
         country_id = kwargs['country']
         country_name = Country.name_from_id(int(country_id)).upper()
         iso3_country_name = iso2_to_iso3(country_name)
         template_vars = {
-            'code': self.model.category.code,
+            'code': cls.model.category.code,
             'country_code': iso3_country_name,
         }
-        self.generate_hostname(template_vars=template_vars)
+        cls.generate_hostname(template_vars=template_vars)
 
     change_hostname.form_fields = {
         'country': {
@@ -250,7 +258,7 @@ class BackOfficeAsset(Regionalizable, Asset):
 
     @classmethod
     @transition_action
-    def change_user_and_owner(cls, **kwargs):
+    def change_user_and_owner(cls, instances, request, **kwargs):
         UserModel = get_user_model()  # noqa
         user_id = kwargs.get('user', None)
         user = UserModel.objects.get(id=user_id)
@@ -335,9 +343,10 @@ class BackOfficeAsset(Regionalizable, Asset):
     return_report.return_attachment = True
     return_report.verbose_name = _('Return report')
 
+    @classmethod
     @transition_action
-    def loan_report(self, request, **kwargs):
-        return self._generate_report(name='loan', request=request)
+    def loan_report(cls, instances, request, **kwargs):
+        return cls._generate_report(name='loan', request=request)
     loan_report.return_attachment = True
     loan_report.verbose_name = _('Loan report')
 

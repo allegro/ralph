@@ -47,21 +47,27 @@ def _save_transition_history(
     )
 
 
-def _get_history_dict(defaults, instance):
+def _get_history_dict(data, instance, runned_funcs):
     history = {}
-    for k, v in defaults.items():
-        value = v
-        try:
-            field = get_field_by_relation_path(instance, k)
-            field_name = field.verbose_name
-            if field.rel:
-                value = str(field.rel.to.objects.get(pk=v))
-        except FieldDoesNotExist:
-            field = func.form_fields[k]['field']
-            if isinstance(field, forms.ChoiceField):
-                value = dict(field.choices).get(int(v))
-            field_name = field.label
-        history[str(field_name)] = value
+    for func in runned_funcs:
+        defaults = {
+            key.split('__')[1]: value
+            for key, value in data.items()
+            if key.startswith(func.__name__)
+        }
+        for k, v in defaults.items():
+            value = v
+            try:
+                field = get_field_by_relation_path(instance, k)
+                field_name = field.verbose_name
+                if field.rel:
+                    value = str(field.rel.to.objects.get(pk=v))
+            except FieldDoesNotExist:
+                field = func.form_fields[k]['field']
+                if isinstance(field, forms.ChoiceField):
+                    value = dict(field.choices).get(int(v))
+                field_name = field.label
+            history[str(field_name)] = value
     return history
 
 
@@ -115,7 +121,7 @@ def run_field_transition(
     _check_instances_for_transition(instances, transition)
     attachment = None
     action_names = []
-    runned_funcs = {}
+    runned_funcs = []
     for action in transition.actions.all():
         func = getattr(first_instance, action.name)
         defaults = {
@@ -136,7 +142,7 @@ def run_field_transition(
             attachment = result
     for instance in instances:
         setattr(instance, field, int(transition.target))
-        history_kwargs = _get_history_dict(runned_funcs)
+        history_kwargs = _get_history_dict(data, instance, runned_funcs)
         _save_transition_history(
             instance=instance,
             transition=transition,
@@ -146,7 +152,7 @@ def run_field_transition(
             action_names=action_names,
             field=field
         )
-    instance.save()
+        instance.save()
     return True, attachment
 
 

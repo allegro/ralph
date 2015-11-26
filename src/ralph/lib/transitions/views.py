@@ -55,61 +55,13 @@ class TransitionViewMixin(object):
             form_kwargs['data'] = self.request.POST
         return ParamsForm(**form_kwargs)
 
-
-class RunBulkTransitionView(TransitionViewMixin, RalphTemplateView):
-    template_name = 'transitions/run_bulk_transition.html'
-
-    def dispatch(
-        self, request, transition_pk, model, *args, **kwargs
-    ):
-        self.model = model
-        self.transition = get_object_or_404(Transition, pk=transition_pk)
-        # self.actions, self.return_attachment = self.collect_actions(self.transition)  # noqa
-        ids = [int(i) for i in self.request.GET.getlist('select')]
-        self.objects = self.model.objects.filter(id__in=ids)
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['objects'] = self.objects
-        return context
-
-
-class RunTransitionView(TransitionViewMixin, RalphTemplateView):
-    template_name = 'transitions/run_transition.html'
-
-    def dispatch(
-        self, request, object_pk, transition_pk, model, *args, **kwargs
-    ):
-        self.model = model
-        self.obj = get_object_or_404(model, pk=object_pk)
-        self.transition = get_object_or_404(Transition, pk=transition_pk)
-        self.actions, self.return_attachment = self.collect_actions(self.transition)  # noqa
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form'] = self.get_form()
-        context['transition'] = self.transition
-        context['back_url'] = self.obj.get_absolute_url()
-        context['object'] = self.obj
-        context['verbose_name'] = self.obj._meta.verbose_name
-        return context
-
-    def post(self, request, *args, **kwargs):
-        form = self.get_form()
-        if form.is_valid():
-            return self.form_valid(form)
-        else:
-            return self.form_invalid(form)
-
     def form_invalid(self, form):
         context = self.get_context_data()
         return self.render_to_response(context)
 
     def form_valid(self, form):
         status, attachment = run_field_transition(
-            instances=[self.obj],
+            instances=self.get_objects(),
             transition_obj_or_name=self.transition,
             field=self.transition.model.field_name,
             data=form.cleaned_data,
@@ -125,4 +77,75 @@ class RunTransitionView(TransitionViewMixin, RalphTemplateView):
                 args=(attachment.id, attachment.original_filename)
             )
             self.request.session['attachment_to_download'] = url
-        return HttpResponseRedirect(self.obj.get_absolute_url())
+        return HttpResponseRedirect(self.get_success_url())
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    def get_objects(self):
+        raise NotImplementedError()
+
+    def get_success_url(self):
+        raise NotImplementedError()
+
+
+class RunBulkTransitionView(TransitionViewMixin, RalphTemplateView):
+    template_name = 'transitions/run_bulk_transition.html'
+
+    def dispatch(
+        self, request, transition_pk, model, *args, **kwargs
+    ):
+        self.model = model
+        self.transition = get_object_or_404(Transition, pk=transition_pk)
+        ids = [int(i) for i in self.request.GET.getlist('select')]
+        self.objects = self.model.objects.filter(id__in=ids)
+        self.obj = self.objects[0]
+        self.actions, self.return_attachment = self.collect_actions(self.transition)  # noqa,
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = self.get_form()
+        context['transition'] = self.transition
+        context['back_url'] = self.get_success_url()
+        context['objects'] = self.objects
+        context['verbose_name'] = self.obj._meta.verbose_name
+        return context
+
+    def get_objects(self):
+        return self.objects
+
+    def get_success_url(self):
+        return '../..'
+
+
+class RunTransitionView(TransitionViewMixin, RalphTemplateView):
+    template_name = 'transitions/run_transition.html'
+
+    def dispatch(
+        self, request, object_pk, transition_pk, model, *args, **kwargs
+    ):
+        self.model = model
+        self.transition = get_object_or_404(Transition, pk=transition_pk)
+        self.obj = get_object_or_404(model, pk=object_pk)
+        self.actions, self.return_attachment = self.collect_actions(self.transition)  # noqa
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = self.get_form()
+        context['transition'] = self.transition
+        context['back_url'] = self.get_success_url()
+        context['object'] = self.obj
+        context['verbose_name'] = self.obj._meta.verbose_name
+        return context
+
+    def get_objects(self):
+        return [self.obj]
+
+    def get_success_url(self):
+        return self.obj.get_absolute_url()
