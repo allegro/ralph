@@ -36,7 +36,12 @@ class ImportedObjects(TimeStampMixin, models.Model):
         except cls.DoesNotExist:
             raise ImportedObjectDoesNotExist()
         else:
-            return model.objects.get(id=imported_obj.object_pk)
+            try:
+                return model.objects.get(id=imported_obj.object_pk)
+            except model.DoesNotExist:
+                raise ImportedObjectDoesNotExist(
+                    'Target object does not exist (it was probably removed)'
+                )
 
     @classmethod
     def create(cls, obj, old_pk):
