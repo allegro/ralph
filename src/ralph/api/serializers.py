@@ -98,7 +98,7 @@ class RalphAPISerializerMixin(
         (contains url to related object). When it's not safe request (ex. POST),
         serializer expect to pass only PK for related object.
         """
-        if self.context['request'].method in permissions.SAFE_METHODS:
+        if self.context['request'] and self.context['request'].method in permissions.SAFE_METHODS:
             return RalphHyperlinkedRelatedField
         return RalphRelatedField
 

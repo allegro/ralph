@@ -10,6 +10,9 @@ from ralph.data_center.models.physical import (
     RackAccessory,
     ServerRoom
 )
+from ralph.data_center.models.networks import (
+    IPAddress
+)
 
 
 class DataCenterFactory(DjangoModelFactory):
@@ -59,6 +62,14 @@ class RackFactory(DjangoModelFactory):
 class DataCenterAssetFactory(DjangoModelFactory):
     force_depreciation = False
     model = factory.SubFactory(DataCenterAssetModelFactory)
+    hostname = factory.Sequence(lambda n: 'hostname #{}'.format(n))
 
     class Meta:
         model = DataCenterAsset
+
+
+class IPAddressFactory(DjangoModelFactory):
+    asset = factory.SubFactory(DataCenterAssetFactory)
+
+    class Meta:
+        model = IPAddress
