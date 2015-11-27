@@ -63,11 +63,11 @@ class PolymorphicQuerySet(models.QuerySet):
                 if select_related:
                     model_query.query.select_related = select_related.copy()
 
-                if model_name in self._polymorphic_select_related:
+                if self._polymorphic_select_related.get(model_name):
                     model_query = model_query.select_related(
                         *self._polymorphic_select_related[model_name]
                     )
-                if model_name in self._polymorphic_prefetch_related:
+                if self._polymorphic_prefetch_related.get(model_name):
                     model_query = model_query.prefetch_related(
                         *self._polymorphic_prefetch_related[model_name]
                     )
