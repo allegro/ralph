@@ -5,6 +5,7 @@ from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
+from ralph.assets.invoice_report import AssetInvoiceReportMixin
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.back_office.models import (
     BackOfficeAsset,
@@ -69,6 +70,7 @@ class BackOfficeAssetAdmin(
     BulkEditChangeListMixin,
     PermissionAdminMixin,
     TransitionAdminMixin,
+    AssetInvoiceReportMixin,
     RalphAdmin
 ):
 
@@ -117,6 +119,13 @@ class BackOfficeAssetAdmin(
         'depreciation_rate', 'price', 'order_no', 'depreciation_end_date'
     ]
     bulk_edit_no_fillable = ['barcode', 'sn', 'hostname']
+    _invoice_report_name = 'invoice-back-office-asset'
+    _invoice_report_item_fields = (
+        AssetInvoiceReportMixin._invoice_report_item_fields + ['owner']
+    )
+    _invoice_report_select_related = (
+        AssetInvoiceReportMixin._invoice_report_select_related + ['owner']
+    )
 
     fieldsets = (
         (_('Basic info'), {

@@ -3,6 +3,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.views.extra import RalphDetailViewAdmin
+from ralph.assets.invoice_report import InvoiceReportMixin
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
@@ -47,7 +48,12 @@ class LicenceUserView(RalphDetailViewAdmin):
 
 
 @register(Licence)
-class LicenceAdmin(PermissionAdminMixin, AttachmentsMixin, RalphAdmin):
+class LicenceAdmin(
+    PermissionAdminMixin,
+    AttachmentsMixin,
+    InvoiceReportMixin,
+    RalphAdmin
+):
 
     """Licence admin class."""
     change_views = [
@@ -72,6 +78,12 @@ class LicenceAdmin(PermissionAdminMixin, AttachmentsMixin, RalphAdmin):
         'software', 'manufacturer', 'budget_info', 'office_infrastructure'
     ]
     resource_class = resources.LicenceResource
+    _invoice_report_name = 'invoice-licence'
+    _invoice_report_select_related = ['software', 'manufacturer']
+    _invoice_report_item_fields = [
+        'software', 'manufacturer', 'software__get_asset_type_display', 'niw',
+        'sn', 'price', 'created'
+    ]
 
     fieldsets = (
         (_('Basic info'), {
