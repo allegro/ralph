@@ -200,9 +200,13 @@ class BackOfficeAsset(Regionalizable, Asset):
         'Assign office infrastructure'
     )
 
+    @classmethod
     @transition_action
-    def add_remarks(self, **kwargs):
-        self.remarks = '{}\n{}'.format(self.remarks, kwargs['remarks'])
+    def add_remarks(cls, instances, request, **kwargs):
+        for instance in instances:
+            instance.remarks = '{}\n{}'.format(
+                instance.remarks, kwargs['remarks']
+            )
 
     add_remarks.form_fields = {
         'remarks': {
@@ -211,9 +215,11 @@ class BackOfficeAsset(Regionalizable, Asset):
     }
     add_remarks.verbose_name = _('Add remarks')
 
+    @classmethod
     @transition_action
-    def assign_task_url(self, **kwargs):
-        self.task_url = kwargs['task_url']
+    def assign_task_url(cls, instances, request, **kwargs):
+        for instance in instances:
+            instance.task_url = kwargs['task_url']
 
     assign_task_url.form_fields = {
         'task_url': {
@@ -222,21 +228,24 @@ class BackOfficeAsset(Regionalizable, Asset):
     }
     assign_task_url.verbose_name = _('Assign task URL ')
 
+    @classmethod
     @transition_action
-    def unassign_licences(self, **kwargs):
-        BaseObjectLicence.objects.filter(base_object=self).delete()
+    def unassign_licences(cls, instances, request, **kwargs):
+        BaseObjectLicence.objects.filter(base_object__in=instances).delete()
     unassign_licences.verbose_name = _('Unassign licences')
 
+    @classmethod
     @transition_action
-    def change_hostname(self, **kwargs):
+    def change_hostname(cls, instances, request, **kwargs):
         country_id = kwargs['country']
         country_name = Country.name_from_id(int(country_id)).upper()
         iso3_country_name = iso2_to_iso3(country_name)
-        template_vars = {
-            'code': self.model.category.code,
-            'country_code': iso3_country_name,
-        }
-        self.generate_hostname(template_vars=template_vars)
+        for instance in instances:
+            template_vars = {
+                'code': instance.model.category.code,
+                'country_code': iso3_country_name,
+            }
+            instance.generate_hostname(template_vars=template_vars)
 
     change_hostname.form_fields = {
         'country': {
@@ -248,18 +257,20 @@ class BackOfficeAsset(Regionalizable, Asset):
     }
     change_hostname.verbose_name = _('Change hostname')
 
+    @classmethod
     @transition_action
-    def change_user_and_owner(self, **kwargs):
+    def change_user_and_owner(cls, instances, request, **kwargs):
         UserModel = get_user_model()  # noqa
         user_id = kwargs.get('user', None)
         user = UserModel.objects.get(id=user_id)
         owner_id = kwargs.get('owner', None)
-        self.user = user
-        if not owner_id:
-            self.owner = user
-        else:
-            self.owner = UserModel.objects.get(id=owner_id)
-        self.location = user.location
+        for instance in instances:
+            instance.user = user
+            if not owner_id:
+                instance.owner = user
+            else:
+                instance.owner = UserModel.objects.get(id=owner_id)
+            instance.location = user.location
 
     change_user_and_owner.form_fields = {
         'user': {
@@ -274,60 +285,70 @@ class BackOfficeAsset(Regionalizable, Asset):
     }
     change_user_and_owner.verbose_name = _('Change user and owner')
 
-    def _generate_report(self, name, request):
+    @classmethod
+    def _generate_report(cls, name, request, instances):
         report = Report.objects.get(name=name)
         template = report.templates.filter(default=True).first()
         template_content = ''
         with open(template.template.path, 'rb') as f:
             template_content = f.read()
+
+        data_instances = [
+            {
+                'sn': obj.sn,
+                'model': str(obj.model),
+                'imei': obj.imei,
+                'barcode': obj.barcode,
+            }
+            for obj in instances
+        ]
         service_pdf = ExternalService('PDF')
         result = service_pdf.run(
             template=template_content,
             data={
-                'id': self.id,
+                'id': ', '.join([str(obj.id) for obj in instances]),
                 'now': datetime.datetime.now(),
                 'logged_user': obj_to_dict(request.user),
-                'affected_user': obj_to_dict(self.user),
-                'assets': [{
-                    'sn': self.sn,
-                    'barcode': self.barcode,
-                    'model': str(self.model),
-                    'imei': self.imei or '-'
-                }]
+                # TODO: user validation
+                'affected_user': obj_to_dict(instances[0].user),
+                'assets': data_instances,
             }
         )
         output_path = os.path.join(
             tempfile.gettempdir(), '{}-{}.pdf'.format(
-                self.user.get_full_name().lower().replace(' ', '-'),
-                self.pk
+                instances[0].user.get_full_name().lower().replace(' ', '-'),
+                instances[0].pk
             )
         )
         with open(output_path, 'wb') as f:
             f.write(result)
         return add_attachment_from_disk(
-            self, output_path, request.user,
+            instances, output_path, request.user,
             _('Document autogenerated by {} transition.').format(name)
         )
 
+    @classmethod
     @transition_action
-    def release_report(self, request, **kwargs):
-        attachment = self._generate_report(name='release', request=request)
-        attachment.save()
-        return attachment
+    def release_report(cls, instances, request, **kwargs):
+        return cls._generate_report(
+            instances=instances, name='release', request=request
+        )
     release_report.return_attachment = True
     release_report.verbose_name = _('Release report')
 
+    @classmethod
     @transition_action
-    def return_report(self, request, **kwargs):
-        self._generate_report(name='return', request=request)
+    def return_report(cls, instances, request, **kwargs):
+        return cls._generate_report(
+            instances=instances, name='return', request=request
+        )
     return_report.return_attachment = True
     return_report.verbose_name = _('Return report')
 
+    @classmethod
     @transition_action
-    def loan_report(self, request, **kwargs):
-        attachment = self._generate_report(name='loan', request=request)
-        attachment.save()
-        return attachment
+    def loan_report(cls, instances, request, **kwargs):
+        return cls._generate_report(name='loan', request=request)
     loan_report.return_attachment = True
     loan_report.verbose_name = _('Loan report')
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import inspect
 import operator
+from collections import defaultdict, Iterable
 
 from django import forms
 from django.conf import settings
@@ -16,44 +17,43 @@ from ralph.admin.helpers import get_field_by_relation_path
 from ralph.attachments.models import Attachment
 from ralph.lib.mixins.models import TimeStampMixin
 from ralph.lib.transitions.conf import TRANSITION_ATTR_TAG
-from ralph.lib.transitions.exceptions import TransitionNotAllowedError
+from ralph.lib.transitions.exceptions import (
+    TransitionModelNotFoundError,
+    TransitionNotAllowedError
+)
 from ralph.lib.transitions.fields import TransitionField
 
 _transitions_fields = {}
 
 
-def run_field_transition(instance, transition, field, data={}, **kwargs):
-    """
-    Execute all actions assigned to the selected transition.
-    """
-    transition_model = instance.transition_models[field]
-    if isinstance(transition, str):
-        transition = Transition.objects.get(
-            name=transition,
-            model=transition_model,
-        )
-    transition_field = field
-    transition_field_value = getattr(instance, transition_field, None)
-    if transition_field_value not in [
-        int(s) for s in transition.source
-    ]:
-        raise TransitionNotAllowedError()
+def _save_transition_history(
+    instance, transition, user, attachment, history_kwargs, action_names, field
+):
+    field_value = getattr(instance, field, None)
+    TransitionsHistory.objects.create(
+        transition_name=transition.name,
+        content_type=ContentType.objects.get_for_model(instance._meta.model),
+        object_id=instance.pk,
+        logged_user=user,
+        attachment=attachment,
+        kwargs=history_kwargs,
+        actions=action_names,
+        source=instance._meta.get_field(
+            field
+        ).choices.from_id(int(field_value)).name,
+        target=instance._meta.get_field(
+            field
+        ).choices.from_id(int(transition.target)).name
+    )
 
-    source_status = instance._meta.get_field(
-        transition_field
-    ).choices.from_id(int(transition_field_value)).name
-    setattr(instance, transition_field, int(transition.target))
-    attachment = None
-    action_names = []
-    history_kwargs = {}
-    for action in transition.actions.all():
-        func = getattr(instance, action.name)
-        if not func:
-            continue
+
+def _get_history_dict(data, instance, runned_funcs):
+    history = {}
+    for func in runned_funcs:
         defaults = {
             key.split('__')[1]: value
             for key, value in data.items()
-            if key.startswith(action.name)
+            if key.startswith(func.__name__)
         }
         for k, v in defaults.items():
             value = v
@@ -66,35 +66,93 @@ def run_field_transition(instance, transition, field, data={}, **kwargs):
                 field = func.form_fields[k]['field']
                 if isinstance(field, forms.ChoiceField):
                     value = dict(field.choices).get(int(v))
-
                 field_name = field.label
-            history_kwargs[str(field_name)] = value
+            history[str(field_name)] = value
+    return history
 
+
+def _check_type_instances(instances):
+    if not all(
+        map(lambda x: isinstance(instances[0], x.__class__), instances)
+    ):
+        raise NotImplementedError()
+
+
+def _check_and_get_transition(obj, transition, field):
+    if obj.__class__ not in _transitions_fields.keys():
+        raise TransitionModelNotFoundError(
+            'Model {} not found in registry'.format(obj.__class__)
+        )
+    if isinstance(transition, str):
+        transition_model = obj.transition_models[field]
+        transition = Transition.objects.get(
+            name=transition,
+            model=transition_model,
+        )
+    return transition
+
+
+def _check_instances_for_transition(instances, transition):
+    errors = defaultdict(list)
+    for instance in instances:
+        if instance.status not in [int(s) for s in transition.source]:
+            errors[instance].append('wrong source status')
+    if errors:
+        raise TransitionNotAllowedError(
+            'Transition {} is not allowed for objects'.format(transition.name),
+            errors
+        )
+
+
+def run_field_transition(
+    instances, transition_obj_or_name, field, data={}, **kwargs
+):
+    """
+    Execute all actions assigned to the selected transition.
+    """
+    if not isinstance(instances, Iterable):
+        instances = [instances]
+    first_instance = instances[0]
+
+    _check_type_instances(instances)
+    transition = _check_and_get_transition(
+        first_instance, transition_obj_or_name, field
+    )
+    _check_instances_for_transition(instances, transition)
+    attachment = None
+    action_names = []
+    runned_funcs = []
+    for action in transition.actions.all():
+        func = getattr(first_instance, action.name)
+        defaults = {
+            key.split('__')[1]: value
+            for key, value in data.items()
+            if key.startswith(action.name)
+        }
         defaults.update(kwargs)
-        result = func(**defaults)
+        # TODO: transaction
+        result = func(instances=instances, **defaults)
+        runned_funcs.append(func)
         action_names.append(str(getattr(
             func,
             'verbose_name',
             func.__name__.replace('_', ' ').capitalize()
         )))
-
         if isinstance(result, Attachment):
             attachment = result
-
-    TransitionsHistory.objects.create(
-        transition_name=transition.name,
-        content_type=ContentType.objects.get_for_model(instance._meta.model),
-        object_id=instance.pk,
-        logged_user=kwargs['request'].user,
-        attachment=attachment,
-        kwargs=history_kwargs,
-        actions=action_names,
-        source=source_status,
-        target=instance._meta.get_field(
-            transition_field
-        ).choices.from_id(int(transition.target)).name
-    )
-    instance.save()
+    for instance in instances:
+        setattr(instance, field, int(transition.target))
+        history_kwargs = _get_history_dict(data, instance, runned_funcs)
+        _save_transition_history(
+            instance=instance,
+            transition=transition,
+            user=kwargs['request'].user,
+            attachment=attachment,
+            history_kwargs=history_kwargs,
+            action_names=action_names,
+            field=field
+        )
+        instance.save()
     return True, attachment
 
 
@@ -164,6 +222,11 @@ class Transition(models.Model):
 
     def __str__(self):
         return self.name
+
+    @classmethod
+    def transitions_for_model(cls, model):
+        content_type = ContentType.objects.get_for_model(model)
+        return cls.objects.filter(model__content_type=content_type)
 
 
 class Action(models.Model):

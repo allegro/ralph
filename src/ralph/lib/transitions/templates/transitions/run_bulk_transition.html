@@ -1,8 +1,8 @@
 {% extends 'admin/base_site.html' %}
-{% load i18n staticfiles %}
+{% load i18n %}
 
 {% block content %}
-  <h1>{% trans 'Tranisition' %}&nbsp;{{ transition.name|lower }} for {{ verbose_name }}: {{ object }}</h1>
+  <h1>{% trans 'Tranisition' %}&nbsp;{{ transition.name|lower }}</h1>
   {% if transition.description %}
     <p>{{ transition.description }}</p>
   {% endif %}
@@ -41,18 +41,4 @@
 {% block extra_scripts %}
   {{ block.super }}
   {{ form.media.js }}
-  <script type="text/javascript" src="{% static 'src/js/ralph-autocomplete.js' %}"></script>
-  <script type="text/javascript" src="{% static 'vendor/js/foundation-datepicker.js' %}"></script>
-  <script type="text/javascript" src="{% static 'src/js/foundation-datepicker-init.js' %}"></script>
-  <script type="text/javascript">
-  (function($) {
-    var $user_field = $('#id_assign_user__user');
-    var $owner_field = $('#id_assign_owner__owner');
-    if ($user_field.length === 1 && $owner_field.length === 1) {
-      $user_field.change(function() {
-        $owner_field.val($(this).val());
-      });
-    }
-  })(ralph.jQuery);
-  </script>
 {% endblock %}

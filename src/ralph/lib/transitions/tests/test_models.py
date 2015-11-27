@@ -2,13 +2,25 @@
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory
 
-from ralph.lib.transitions.models import (
-    Action,
-    Transition,
+from ralph.lib.transitions.exceptions import (
+    TransitionModelNotFoundError,
     TransitionNotAllowedError
 )
+from ralph.lib.transitions.models import (
+    _check_and_get_transition,
+    Action,
+    Transition
+)
 from ralph.lib.transitions.tests import TransitionTestCase
-from ralph.tests.models import Order, OrderStatus
+from ralph.tests.models import Foo, Order, OrderStatus
+
+
+def mocked_action(*args, **kwargs):
+    """
+    Mark action as runned.
+    """
+    mocked_action.runned = True
+    return None
 
 
 class TransitionsTest(TransitionTestCase):
@@ -21,12 +33,17 @@ class TransitionsTest(TransitionTestCase):
             password='password',
         )
 
+    def test_model_should_not_found_in_registry(self):
+        foo = Foo()
+        irrelevant_arg = None
+        with self.assertRaises(TransitionModelNotFoundError):
+            _check_and_get_transition(foo, irrelevant_arg, irrelevant_arg)
+
     def test_transition_change_status(self):
         order = Order.objects.create()
-        transition = Transition.objects.create(
-            name='prepare', model=order.transition_models['status'],
-            source=[OrderStatus.new.id],
-            target=OrderStatus.to_send.id,
+        _, transition, _ = self._create_transition(
+            model=order, name='prepare',
+            source=[OrderStatus.new.id], target=OrderStatus.to_send.id,
         )
 
         self.assertEqual(order.status, OrderStatus.new.id)
@@ -35,18 +52,14 @@ class TransitionsTest(TransitionTestCase):
 
     def test_run_action_during_transition(self):
         order = Order.objects.create(status=OrderStatus.to_send.id)
-        transition = Transition.objects.create(
-            name='send', model=order.transition_models['status'],
-            source=[OrderStatus.to_send.id],
-            target=OrderStatus.sended.id,
+        _, transition, actions = self._create_transition(
+            model=order, name='send',
+            source=[OrderStatus.to_send.id], target=OrderStatus.sended.id,
         )
         transition.actions.add(Action.objects.get(name='go_to_post_office'))
-
-        def mocked_action(**kwargs):
-            mocked_action.runned = True
-        order.go_to_post_office = mocked_action
+        order.__class__.go_to_post_office = mocked_action
         order.run_status_transition(transition, request=self.request)
-        self.assertTrue(mocked_action.runned)
+        self.assertTrue(order.go_to_post_office.runned)
 
     def test_run_transition_from_string(self):
         transition_name = 'send'

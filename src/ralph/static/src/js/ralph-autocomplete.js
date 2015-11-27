@@ -173,7 +173,7 @@
         }
 
         this.notFromPopup = true;
-        this.$target.val(item.pk);
+        this.$target.val(item.pk).change();
         this.editMode(false);
         this.updateEditUrl(item.edit_url);
     };
