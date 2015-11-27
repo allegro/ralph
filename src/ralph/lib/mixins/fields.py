@@ -23,3 +23,10 @@ class NullableCharField(
     metaclass=models.SubfieldBase
 ):
     pass
+
+
+class NullableGenericIPAddressField(
+    NullableCharField,
+    models.GenericIPAddressField
+):
+    pass

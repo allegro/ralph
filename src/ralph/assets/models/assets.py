@@ -315,6 +315,7 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         help_text=(
             'Check if you no longer want to bill for this asset'
         ),
+        default=False,
     )
     depreciation_end_date = models.DateField(blank=True, null=True)
     task_url = models.URLField(
