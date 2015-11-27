@@ -86,6 +86,9 @@
                 <div class="panel">
                   <h4>Filters</h4>
                   <div class="filter-container">
+                    {% if is_popup %}
+                      <input type="hidden" name="_popup" value="1" />
+                    {% endif %}
                     {% for spec in cl.filter_specs %}
                       {% admin_list_filter cl spec %}
                     {% endfor %}
