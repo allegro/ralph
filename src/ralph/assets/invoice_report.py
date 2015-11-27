@@ -105,7 +105,7 @@ class InvoiceReportMixin(object):
         """
         first_item = queryset[0]
         data = {
-            'id': slugify(first_item.invoice_no),
+            'id': str(slugify(first_item.invoice_no)),
             'model': queryset.model._meta.model_name,
             'base_info': {
                 'invoice_no': first_item.invoice_no,
