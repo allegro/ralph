@@ -152,7 +152,15 @@ class RalphAdminMixin(RalphAutocompleteMixin):
 
         extra_context['bulk_edit'] = request.GET.get(BULK_EDIT_VAR, False)
         if extra_context['bulk_edit']:
+            bulk_back_url = request.session.get('bulk_back_url')
+            if not bulk_back_url:
+                bulk_back_url = request.META.get('HTTP_REFERER')
+                request.session['bulk_back_url'] = bulk_back_url
+            extra_context['bulk_back_url'] = bulk_back_url
             extra_context['has_filters'] = False
+        else:
+            request.session['bulk_back_url'] = None
+
         self._initialize_search_form(extra_context)
         return super(RalphAdminMixin, self).changelist_view(
             request, extra_context

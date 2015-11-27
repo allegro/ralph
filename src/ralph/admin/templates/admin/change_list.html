@@ -30,7 +30,7 @@
         <div class="large-4 small-6 columns">
           <div class="header-toolbar">
             {% if bulk_edit %}
-              <a href="{{ request.path_info }}" class="button secondary small">
+              <a href="{{ bulk_back_url }}" class="button secondary small">
                 {% trans "Back to list" %}
               </a>
             {% endif %}
