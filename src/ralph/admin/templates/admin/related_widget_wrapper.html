@@ -19,13 +19,6 @@
           <i class="fa fa-plus-circle fa-lg"></i>
       </a>
       {% endif %}
-      {% if can_delete_related %}
-      <a class="related-widget-wrapper-link delete-related" id="delete_id_{{ name }}"
-          data-href-template="{{ delete_related_template_url }}?{{ url_params }}"
-          title="{% blocktrans %}Delete selected {{ model }}{% endblocktrans %}">
-          <i class="fa fa-trash fa-lg"></i>
-      </a>
-      {% endif %}
   {% endblock %}
   </div>
 </div>
