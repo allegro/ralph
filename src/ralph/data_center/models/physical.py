@@ -387,7 +387,7 @@ class DataCenterAsset(Asset):
         form_fields={
             'rack': {
                 'field': forms.CharField(widget=AutocompleteWidget(
-                    rel=rack.rel, admin_site=ralph_site
+                    field=rack, admin_site=ralph_site
                 )),
             }
         }

@@ -12,6 +12,7 @@ from ralph.admin.helpers import getattr_dunder
 from ralph.assets.models.assets import AssetHolder, BudgetInfo, Manufacturer
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
+from ralph.lib.mixins.fields import BaseObjectForeignKey
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
 from ralph.lib.permissions import PermByFieldMixin
 from ralph.lib.polymorphic.models import PolymorphicQuerySet
@@ -184,13 +185,21 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
     def free(self):
         return self.number_bought - self.used
 
+    @classmethod
+    def get_autocomplete_queryset(cls):
+        return cls.objects_used_free.all()
+
 
 class BaseObjectLicence(models.Model):
     licence = models.ForeignKey(Licence)
-    base_object = models.ForeignKey(
+    base_object = BaseObjectForeignKey(
         BaseObject,
         related_name='licences',
-        verbose_name=_('Asset')
+        verbose_name=_('Asset'),
+        limit_models=[
+            'back_office.BackOfficeAsset',
+            'data_center.DataCenterAsset'
+        ]
     )
     quantity = models.PositiveIntegerField(default=1)
 

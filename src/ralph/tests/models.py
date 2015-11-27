@@ -4,7 +4,9 @@ import tempfile
 from dj.choices import Choices
 from django.db import models
 
+from ralph.assets.models.base import BaseObject
 from ralph.attachments.helpers import add_attachment_from_disk
+from ralph.lib.mixins.fields import BaseObjectForeignKey
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 from ralph.lib.transitions import (
     transition_action,
@@ -71,4 +73,14 @@ class TestAsset(models.Model):
     sn = models.CharField(max_length=200, null=True, blank=True, unique=True)
     barcode = models.CharField(
         max_length=200, null=True, blank=True, unique=True, default=None,
+    )
+
+
+class BaseObjectForeignKeyModel(models.Model):
+    base_object = BaseObjectForeignKey(
+        BaseObject,
+        limit_models=[
+            'back_office.BackOfficeAsset',
+            'data_center.DataCenterAsset'
+        ]
     )

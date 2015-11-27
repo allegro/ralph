@@ -56,11 +56,11 @@ class TransitionViewMixin(object):
                     model = get_model(autocomplete_model)
 
                 if options.get('autocomplete_field', False):
-                    rel = model._meta.get_field(
+                    field = model._meta.get_field(
                         options['autocomplete_field']
-                    ).rel
+                    )
                     options['field'].widget = AutocompleteWidget(
-                        rel=rel,
+                        field=field,
                         admin_site=ralph_site,
                         request=self.request,
                     )
