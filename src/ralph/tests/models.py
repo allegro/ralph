@@ -46,22 +46,23 @@ class Order(
         choices=OrderStatus(),
     )
 
-    @transition_action
-    def pack(self, request, **kwargs):
+    @classmethod
+    @transition_action(return_attachment=True)
+    def pack(cls, instances, request, **kwargs):
         path = os.path.join(tempfile.gettempdir(), 'test.txt')
         with open(path, 'w') as f:
             f.write('test')
         return add_attachment_from_disk(
-            self, path, request.user, 'pack action'
+            instances, path, request.user, 'pack action'
         )
-    pack.verbose_name = 'Pack'
-    pack.return_attachment = True
 
-    @transition_action
-    def go_to_post_office(self, **kwargs):
+    @classmethod
+    @transition_action(
+        return_attachment=True,
+        verbose_name='Go to post office',
+    )
+    def go_to_post_office(cls, instances, **kwargs):
         pass
-    go_to_post_office.verbose_name = 'Go to post office'
-    go_to_post_office.return_attachment = True
 
 
 class TestAsset(models.Model):

@@ -120,216 +120,262 @@ class BackOfficeAsset(Regionalizable, Asset):
             return True
         return False
 
-    @transition_action
-    def assign_user(self, **kwargs):
-        self.user = get_user_model().objects.get(pk=int(kwargs['user']))
-
-    assign_user.form_fields = {
-        'user': {
-            'field': forms.CharField(label=_('User')),
-            'autocomplete_field': 'user'
+    @classmethod
+    @transition_action(
+        verbose_name=_('Assign user'),
+        form_fields={
+            'user': {
+                'field': forms.CharField(label=_('User')),
+                'autocomplete_field': 'user'
+            }
         }
-    }
-    assign_user.verbose_name = _('Assign user')
+    )
+    def assign_user(cls, instances, request, **kwargs):
+        user = get_user_model().objects.get(pk=int(kwargs['user']))
+        for instance in instances:
+            instance.user = user
 
-    @transition_action
-    def assign_owner(self, **kwargs):
-        self.owner = get_user_model().objects.get(pk=int(kwargs['owner']))
-
-    assign_owner.form_fields = {
-        'owner': {
-            'field': forms.CharField(label=_('Owner')),
-            'autocomplete_field': 'owner'
+    @classmethod
+    @transition_action(
+        verbose_name=_('Assign owner'),
+        form_fields={
+            'owner': {
+                'field': forms.CharField(label=_('Owner')),
+                'autocomplete_field': 'owner'
+            }
         }
-    }
-    assign_owner.verbose_name = _('Assign owner')
+    )
+    def assign_owner(cls, instances, request, **kwargs):
+        owner = get_user_model().objects.get(pk=int(kwargs['owner']))
+        for instance in instances:
+            instance.owner = owner
 
-    @transition_action
-    def unassign_owner(self, **kwargs):
-        self.owner = None
-    unassign_owner.verbose_name = _('Unassign owner')
+    @classmethod
+    @transition_action(
+        verbose_name=_('Unassign owner')
+    )
+    def unassign_owner(cls, instances, request, **kwargs):
+        for instance in instances:
+            instance.owner = None
 
-    @transition_action
-    def unassign_user(self, **kwargs):
-        self.user = None
-    unassign_user.verbose_name = _('Unassign user')
+    @classmethod
+    @transition_action(
+        verbose_name=_('Assign user')
+    )
+    def unassign_user(cls, instances, request, **kwargs):
+        for instance in instances:
+            instance.user = None
 
-    @transition_action
-    def assign_loan_end_date(self, **kwargs):
-        self.loan_end_date = kwargs['loan_end_date']
-
-    assign_loan_end_date.form_fields = {
-        'loan_end_date': {
-            'field': forms.CharField(
-                label=_('Loan end date'),
-                widget=forms.TextInput(attrs={'class': 'datepicker'})
-            )
+    @classmethod
+    @transition_action(
+        verbose_name=_('Assign loan end date'),
+        form_fields={
+            'loan_end_date': {
+                'field': forms.CharField(
+                    label=_('Loan end date'),
+                    widget=forms.TextInput(attrs={'class': 'datepicker'})
+                )
+            }
         }
-    }
-    assign_loan_end_date.verbose_name = _('Assign loan end date')
+    )
+    def assign_loan_end_date(cls, instances, request, **kwargs):
+        for instance in instances:
+            instance.loan_end_date = kwargs['loan_end_date']
 
-    @transition_action
-    def unassign_loan_end_date(self, **kwargs):
-        self.loan_end_date = None
-    unassign_loan_end_date.verbose_name = _('Unassign loan end date')
+    @classmethod
+    @transition_action(
+        verbose_name=_('Unassign loan end date')
+    )
+    def unassign_loan_end_date(cls, instances, request, **kwargs):
+        for instance in instances:
+            instance.loan_end_date = None
 
-    @transition_action
-    def assign_warehouse(self, **kwargs):
-        self.warehouse = Warehouse.objects.get(pk=int(kwargs['warehouse']))
-
-    assign_warehouse.form_fields = {
-        'warehouse': {
-            'field': forms.CharField(label=_('Warehouse')),
-            'autocomplete_field': 'warehouse'
+    @classmethod
+    @transition_action(
+        verbose_name=_('Assign warehouse'),
+        form_fields={
+            'warehouse': {
+                'field': forms.CharField(label=_('Warehouse')),
+                'autocomplete_field': 'warehouse'
+            }
         }
-    }
-    assign_warehouse.verbose_name = _('Assign warehouse')
+    )
+    def assign_warehouse(cls, instances, request, **kwargs):
+        warehouse = Warehouse.objects.get(pk=int(kwargs['warehouse']))
+        for instance in instances:
+            instance.warehouse = warehouse
 
-    @transition_action
-    def assign_office_infrastructure(self, **kwargs):
-        self.office_infrastructure = OfficeInfrastructure.objects.get(
+    @classmethod
+    @transition_action(
+        form_fields={
+            'office_infrastructure': {
+                'field': forms.CharField(label=_('Office infrastructure')),
+                'autocomplete_field': 'office_infrastructure'
+            }
+        },
+        verbose_name=_('Assign office infrastructure')
+    )
+    def assign_office_infrastructure(cls, instances, request, **kwargs):
+        office_inf = OfficeInfrastructure.objects.get(
             pk=int(kwargs['office_infrastructure'])
         )
-    assign_office_infrastructure.form_fields = {
-        'office_infrastructure': {
-            'field': forms.CharField(label=_('Office infrastructure')),
-            'autocomplete_field': 'office_infrastructure'
+        for instance in instances:
+            instance.office_infrastructure = office_inf
+
+    @classmethod
+    @transition_action(
+        verbose_name=_('Add remarks'),
+        form_fields={
+            'remarks': {
+                'field': forms.CharField(label=_('Remarks')),
+            }
         }
-    }
-    assign_office_infrastructure.verbose_name = _(
-        'Assign office infrastructure'
     )
+    def add_remarks(cls, instances, request, **kwargs):
+        for instance in instances:
+            instance.remarks = '{}\n{}'.format(
+                instance.remarks, kwargs['remarks']
+            )
 
-    @transition_action
-    def add_remarks(self, **kwargs):
-        self.remarks = '{}\n{}'.format(self.remarks, kwargs['remarks'])
-
-    add_remarks.form_fields = {
-        'remarks': {
-            'field': forms.CharField(label=_('Remarks')),
+    @classmethod
+    @transition_action(
+        verbose_name=_('Assign task URL '),
+        form_fields={
+            'task_url': {
+                'field': forms.CharField(label=_('task_url')),
+            }
         }
-    }
-    add_remarks.verbose_name = _('Add remarks')
+    )
+    def assign_task_url(cls, instances, request, **kwargs):
+        for instance in instances:
+            instance.task_url = kwargs['task_url']
 
-    @transition_action
-    def assign_task_url(self, **kwargs):
-        self.task_url = kwargs['task_url']
+    @classmethod
+    @transition_action(
+        verbose_name=_('Unassign licences')
+    )
+    def unassign_licences(cls, instances, request, **kwargs):
+        BaseObjectLicence.objects.filter(base_object__in=instances).delete()
 
-    assign_task_url.form_fields = {
-        'task_url': {
-            'field': forms.CharField(label=_('task_url')),
+    @classmethod
+    @transition_action(
+        verbose_name=_('Change hostname'),
+        form_fields={
+            'country': {
+                'field': forms.ChoiceField(
+                    label=_('Country'),
+                    choices=Country(),
+                )
+            }
         }
-    }
-    assign_task_url.verbose_name = _('Assign task URL ')
-
-    @transition_action
-    def unassign_licences(self, **kwargs):
-        BaseObjectLicence.objects.filter(base_object=self).delete()
-    unassign_licences.verbose_name = _('Unassign licences')
-
-    @transition_action
-    def change_hostname(self, **kwargs):
+    )
+    def change_hostname(cls, instances, request, **kwargs):
         country_id = kwargs['country']
         country_name = Country.name_from_id(int(country_id)).upper()
         iso3_country_name = iso2_to_iso3(country_name)
-        template_vars = {
-            'code': self.model.category.code,
-            'country_code': iso3_country_name,
-        }
-        self.generate_hostname(template_vars=template_vars)
+        for instance in instances:
+            template_vars = {
+                'code': instance.model.category.code,
+                'country_code': iso3_country_name,
+            }
+            instance.generate_hostname(template_vars=template_vars)
 
-    change_hostname.form_fields = {
-        'country': {
-            'field': forms.ChoiceField(
-                label=_('Country'),
-                choices=Country(),
-            )
+    @classmethod
+    @transition_action(
+        verbose_name=_('Change user and owner'),
+        form_fields={
+            'user': {
+                'field': forms.CharField(label=_('User')),
+                'autocomplete_field': 'user',
+            },
+            'owner': {
+                'field': forms.CharField(label=_('Owner')),
+                'autocomplete_field': 'owner',
+                'condition': lambda obj: bool(obj.owner),
+            }
         }
-    }
-    change_hostname.verbose_name = _('Change hostname')
-
-    @transition_action
-    def change_user_and_owner(self, **kwargs):
+    )
+    def change_user_and_owner(cls, instances, request, **kwargs):
         UserModel = get_user_model()  # noqa
         user_id = kwargs.get('user', None)
         user = UserModel.objects.get(id=user_id)
         owner_id = kwargs.get('owner', None)
-        self.user = user
-        if not owner_id:
-            self.owner = user
-        else:
-            self.owner = UserModel.objects.get(id=owner_id)
-        self.location = user.location
+        for instance in instances:
+            instance.user = user
+            if not owner_id:
+                instance.owner = user
+            else:
+                instance.owner = UserModel.objects.get(id=owner_id)
+            instance.location = user.location
 
-    change_user_and_owner.form_fields = {
-        'user': {
-            'field': forms.CharField(label=_('User')),
-            'autocomplete_field': 'user',
-        },
-        'owner': {
-            'field': forms.CharField(label=_('Owner')),
-            'autocomplete_field': 'owner',
-            'condition': lambda obj: bool(obj.owner),
-        }
-    }
-    change_user_and_owner.verbose_name = _('Change user and owner')
-
-    def _generate_report(self, name, request):
+    @classmethod
+    def _generate_report(cls, name, request, instances):
         report = Report.objects.get(name=name)
         template = report.templates.filter(default=True).first()
         template_content = ''
         with open(template.template.path, 'rb') as f:
             template_content = f.read()
+
+        data_instances = [
+            {
+                'sn': obj.sn,
+                'model': str(obj.model),
+                'imei': obj.imei,
+                'barcode': obj.barcode,
+            }
+            for obj in instances
+        ]
         service_pdf = ExternalService('PDF')
         result = service_pdf.run(
             template=template_content,
             data={
-                'id': self.id,
+                'id': ', '.join([str(obj.id) for obj in instances]),
                 'now': datetime.datetime.now(),
                 'logged_user': obj_to_dict(request.user),
-                'affected_user': obj_to_dict(self.user),
-                'assets': [{
-                    'sn': self.sn,
-                    'barcode': self.barcode,
-                    'model': str(self.model),
-                    'imei': self.imei or '-'
-                }]
+                'affected_user': obj_to_dict(instances[0].user),
+                'assets': data_instances,
             }
         )
         output_path = os.path.join(
             tempfile.gettempdir(), '{}-{}.pdf'.format(
-                self.user.get_full_name().lower().replace(' ', '-'),
-                self.pk
+                instances[0].user.get_full_name().lower().replace(' ', '-'),
+                instances[0].pk
             )
         )
         with open(output_path, 'wb') as f:
             f.write(result)
         return add_attachment_from_disk(
-            self, output_path, request.user,
+            instances, output_path, request.user,
             _('Document autogenerated by {} transition.').format(name)
         )
 
-    @transition_action
-    def release_report(self, request, **kwargs):
-        attachment = self._generate_report(name='release', request=request)
-        attachment.save()
-        return attachment
-    release_report.return_attachment = True
-    release_report.verbose_name = _('Release report')
+    @classmethod
+    @transition_action(
+        verbose_name=_('Release report'),
+        return_attachment=True
+    )
+    def release_report(cls, instances, request, **kwargs):
+        return cls._generate_report(
+            instances=instances, name='release', request=request
+        )
 
-    @transition_action
-    def return_report(self, request, **kwargs):
-        self._generate_report(name='return', request=request)
-    return_report.return_attachment = True
-    return_report.verbose_name = _('Return report')
+    @classmethod
+    @transition_action(
+        verbose_name=_('Return report'),
+        return_attachment=True
+    )
+    def return_report(cls, instances, request, **kwargs):
+        return cls._generate_report(
+            instances=instances, name='return', request=request
+        )
 
-    @transition_action
-    def loan_report(self, request, **kwargs):
-        attachment = self._generate_report(name='loan', request=request)
-        attachment.save()
-        return attachment
-    loan_report.return_attachment = True
-    loan_report.verbose_name = _('Loan report')
+    @classmethod
+    @transition_action(
+        verbose_name=_('Loan report'),
+        return_attachment=True
+    )
+    def loan_report(cls, instances, request, **kwargs):
+        return cls._generate_report(name='loan', request=request)
 
 
 @receiver(pre_save, sender=BackOfficeAsset)

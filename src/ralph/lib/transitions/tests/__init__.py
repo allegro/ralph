@@ -39,6 +39,8 @@ class TransitionTestCase(TestCase):
         actions_query_kwargs = {'content_type': order_ct}
         if actions:
             actions_query_kwargs = {'name__in': actions}
-        actions = Action.objects.filter(**actions_query_kwargs)
+            actions = Action.objects.filter(**actions_query_kwargs)
+        else:
+            actions = Action.actions_for_model(model)
         transition.actions.add(*[x for x in actions])
         return transition_model, transition, actions

@@ -381,18 +381,21 @@ class DataCenterAsset(Asset):
         ]
         return chain(*assets)
 
-    @transition_action
-    def change_rack(self, **kwargs):
-        self.rack = Rack.objects.get(pk=kwargs['rack'])
-        self.position = kwargs['position']
-
-    change_rack.form_fields = {
-        'rack': forms.CharField(widget=AutocompleteWidget(
-            rel=rack.rel, admin_site=ralph_site
-        )),
-        'position': forms.IntegerField(),
-    }
-    change_rack.verbose_name = _('Change rack')
+    @classmethod
+    @transition_action(
+        verbose_name=_('Change rack'),
+        form_fields={
+            'rack': {
+                'field': forms.CharField(widget=AutocompleteWidget(
+                    rel=rack.rel, admin_site=ralph_site
+                )),
+            }
+        }
+    )
+    def change_rack(cls, instances, request, **kwargs):
+        rack = Rack.objects.get(pk=kwargs['rack'])
+        for instance in instances:
+            instance.rack = rack
 
 
 class Connection(models.Model):

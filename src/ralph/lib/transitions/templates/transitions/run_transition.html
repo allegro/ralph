@@ -1,8 +1,14 @@
 {% extends 'admin/base_site.html' %}
+
 {% load i18n staticfiles %}
 
 {% block content %}
-  <h1>{% trans 'Tranisition' %}&nbsp;{{ transition.name|lower }} for {{ verbose_name }}: {{ object }}</h1>
+  <h1>{% trans 'Tranisition' %}&nbsp;{{ transition.name|lower }} for {{ verbose_name }}: </h1>
+  <ul>
+    {% for object in objects %}
+      <li><a href="{{ object.get_absolute_url }}">{{ object }}</a></li>
+    {% endfor %}
+  </ul>
   {% if transition.description %}
     <p>{{ transition.description }}</p>
   {% endif %}
@@ -44,4 +50,16 @@
   <script type="text/javascript" src="{% static 'src/js/ralph-autocomplete.js' %}"></script>
   <script type="text/javascript" src="{% static 'vendor/js/foundation-datepicker.js' %}"></script>
   <script type="text/javascript" src="{% static 'src/js/foundation-datepicker-init.js' %}"></script>
+  <script type="text/javascript">
+    (function($) {
+      $('#id_assign_user__user').on('change', function() {
+        // automatically assign owner to be the same as user
+        var $this = $(this);
+        var $owner_field = $('#id_assign_owner__owner');
+        if ($this.length === 1 && $owner_field.length === 1 && $this.val() !== '' && $owner_field.val() === '') {
+          $owner_field.val($this.val());
+        }
+      })
+    })(ralph.jQuery);
+  </script>
 {% endblock %}
