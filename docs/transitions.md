@@ -11,12 +11,14 @@ class Order(models.Model, metaclass=TransitionWorkflowBase):
         choices=OrderStatus(),
     )
 
+    @classmethod
     @transition_action
-    def pack(self, **kwargs):
+    def pack(cls, instances, request, **kwargs):
         notify_buyer('We pack your order for you.')
 
+    @classmethod
     @transition_action
-    def go_to_post_office(self, **kwargs):
+    def go_to_post_office(cls, instances, request, **kwargs):
         notify_buyer('We send your order to you.')
 ```
 
@@ -31,18 +33,20 @@ from django import forms
 ALLOW_COMMENT = True
 
     ...
-    @transition_action
-    def pack(self, **kwargs):
+    @classmethod
+    @transition_action(
+        form_fields = {
+            'comment': {
+                'field': forms.CharField(),
+                'condition': lambda obj: (obj.status > 2) and ALLOW_COMMENT
+            }
+        }
+    )
+    def pack(cls, instances, request, **kwargs):
         notify_buyer(
             'We pack your order for you.',
             pickers_comment=kwargs['comment'],
         )
-    pack.form_fields = {
-        'comment': {
-            'field': forms.CharField(),
-            'condition': lambda obj: (obj.status > 2) and ALLOW_COMMENT
-        }
-    }
 ```
 
 ![Extra params](img/extra_params.png)
