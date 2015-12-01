@@ -147,7 +147,7 @@ class RunBulkTransitionView(TransitionViewMixin, RalphTemplateView):
 
     def get_success_url(self):
         info = self.model._meta.app_label, self.model._meta.model_name
-        return reverse('{}_{}_changelist'.format(*info))
+        return reverse('admin:{}_{}_changelist'.format(*info))
 
 
 class RunTransitionView(TransitionViewMixin, RalphTemplateView):
