@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import inspect
+import logging
 import operator
 from collections import defaultdict, Iterable
 
@@ -25,6 +26,12 @@ from ralph.lib.transitions.exceptions import (
 from ralph.lib.transitions.fields import TransitionField
 
 _transitions_fields = {}
+
+logger = logging.getLogger(__name__)
+
+
+class CycleError(Exception):
+    pass
 
 
 def _generate_transition_history(
@@ -142,6 +149,48 @@ def _check_action_with_instances(instances, transition):
         validation_func(instances)
 
 
+def _create_graph_from_actions(actions, instance):
+    graph = {}
+    actions_set = set()
+    for action in actions:
+        actions_set.add(action.name)
+        func = getattr(instance, action.name)
+        graph.setdefault(action.name, [])
+        for requirement in getattr(func, 'run_after', []):
+            graph.setdefault(requirement, []).append(action.name)
+    return {k: v for (k, v) in graph.items() if k in actions_set}
+
+
+def _sort_graph_topologically(graph):
+    # calculate input degree (number of nodes pointing to particular node)
+    indeg = {k: 0 for k in graph}
+    for node, edges in graph.items():
+        for edge in edges:
+            indeg[edge] += 1
+    # sort graph topologically
+    # return nodes which input degree is 0
+    no_requirements = set([a for a in indeg if indeg.get(a, 0) == 0])
+    while no_requirements:
+        action_name = no_requirements.pop()
+        # for each node to which this one is pointing - decrease input degree
+        for dependency in graph[action_name]:
+            indeg[dependency] -= 1
+            # add to set of nodes ready to be returned (without nodes pointing
+            # to it)
+            if indeg[dependency] == 0:
+                no_requirements.add(dependency)
+        yield action_name
+    if any(indeg.values()):
+        raise CycleError("Cycle detected during topological sort")
+
+
+def _order_actions_by_requirements(actions, instance):
+    graph = _create_graph_from_actions(actions, instance)
+    actions_by_name = {a.name: a for a in actions}
+    for action in _sort_graph_topologically(graph):
+        yield actions_by_name[action]
+
+
 @transaction.atomic
 def run_field_transition(
     instances, transition_obj_or_name, field, data={}, **kwargs
@@ -162,15 +211,20 @@ def run_field_transition(
     attachment = None
     action_names = []
     runned_funcs = []
-    for action in transition.actions.all():
+    for action in _order_actions_by_requirements(
+        transition.actions.all(), first_instance
+    ):
+        logger.info('Performing action {} in transition {}'.format(
+            action, transition
+        ))
         func = getattr(first_instance, action.name)
-        defaults = {
+        defaults = data.copy()
+        defaults.update(kwargs)
+        defaults.update({
             key.split('__')[1]: value
             for key, value in data.items()
             if key.startswith(action.name)
-        }
-        defaults.update(kwargs)
-        # TODO: transaction
+        })
         result = func(instances=instances, **defaults)
         runned_funcs.append(func)
         action_names.append(str(getattr(
@@ -278,6 +332,7 @@ class Action(models.Model):
 
     class Meta:
         app_label = 'transitions'
+        ordering = ['name']
 
     def __str__(self):
         return self.name

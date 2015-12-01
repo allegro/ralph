@@ -11,6 +11,8 @@ def transition_action(method=None, **kwargs):
         )
         func.return_attachment = kwargs.get('return_attachment', False)
         func.form_fields = kwargs.get('form_fields', {})
+        func.run_after = kwargs.get('run_after', [])
+        func.help_text = kwargs.get('help_text', '')
         setattr(func, TRANSITION_ATTR_TAG, True)
 
         @wraps(func)

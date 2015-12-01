@@ -56,6 +56,26 @@ class OfficeInfrastructure(NamedMixin, TimeStampMixin, models.Model):
         verbose_name_plural = _('Office Infrastructures')
 
 
+def _is_field_in_transition_actions(actions, field_name):
+    """
+    Returns True if there is field with given name in one of actions.
+    """
+    for action in actions:
+        if field_name in getattr(action, 'form_fields', {}):
+            return True
+    return False
+
+
+def get_user_iso3_country_name(user):
+    """
+    :param user: instance of django.contrib.auth.models.User which has profile
+        with country attribute
+    """
+    country_name = Country.name_from_id(int(user.country))
+    iso3_country_name = iso2_to_iso3(country_name)
+    return iso3_country_name
+
+
 class BackOfficeAsset(Regionalizable, Asset):
     warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT)
     owner = models.ForeignKey(
@@ -120,9 +140,25 @@ class BackOfficeAsset(Regionalizable, Asset):
             return True
         return False
 
+    def _try_assign_hostname(
+        self, commit=False, country=None, force=False, request=None
+    ):
+        if self.model.category and self.model.category.code:
+            template_vars = {
+                'code': self.model.category.code,
+                'country_code': country or self.country_code,
+            }
+            if not self.hostname or force:
+                self.generate_hostname(commit, template_vars, request)
+            elif self.owner:
+                # check if owner country is different than in current hostname
+                user_country = get_user_iso3_country_name(self.owner)
+                different_country = user_country not in self.hostname
+                if different_country:
+                    self.generate_hostname(commit, template_vars, request)
+
     @classmethod
     @transition_action(
-        verbose_name=_('Assign user'),
         form_fields={
             'user': {
                 'field': forms.CharField(label=_('User')),
@@ -137,38 +173,38 @@ class BackOfficeAsset(Regionalizable, Asset):
 
     @classmethod
     @transition_action(
-        verbose_name=_('Assign owner'),
         form_fields={
             'owner': {
                 'field': forms.CharField(label=_('Owner')),
                 'autocomplete_field': 'owner'
             }
-        }
+        },
+        help_text=_(
+            'During this transition owner will be assigned as well as new '
+            'hostname might be generated for asset (only for particular model '
+            'categories and only if owner\'s country has changed)'
+        )
     )
     def assign_owner(cls, instances, request, **kwargs):
         owner = get_user_model().objects.get(pk=int(kwargs['owner']))
         for instance in instances:
             instance.owner = owner
+            instance._try_assign_hostname(request=request)
 
     @classmethod
-    @transition_action(
-        verbose_name=_('Unassign owner')
-    )
+    @transition_action()
     def unassign_owner(cls, instances, request, **kwargs):
         for instance in instances:
             instance.owner = None
 
     @classmethod
-    @transition_action(
-        verbose_name=_('Assign user')
-    )
+    @transition_action()
     def unassign_user(cls, instances, request, **kwargs):
         for instance in instances:
             instance.user = None
 
     @classmethod
     @transition_action(
-        verbose_name=_('Assign loan end date'),
         form_fields={
             'loan_end_date': {
                 'field': forms.CharField(
@@ -183,16 +219,13 @@ class BackOfficeAsset(Regionalizable, Asset):
             instance.loan_end_date = kwargs['loan_end_date']
 
     @classmethod
-    @transition_action(
-        verbose_name=_('Unassign loan end date')
-    )
+    @transition_action()
     def unassign_loan_end_date(cls, instances, request, **kwargs):
         for instance in instances:
             instance.loan_end_date = None
 
     @classmethod
     @transition_action(
-        verbose_name=_('Assign warehouse'),
         form_fields={
             'warehouse': {
                 'field': forms.CharField(label=_('Warehouse')),
@@ -213,7 +246,6 @@ class BackOfficeAsset(Regionalizable, Asset):
                 'autocomplete_field': 'office_infrastructure'
             }
         },
-        verbose_name=_('Assign office infrastructure')
     )
     def assign_office_infrastructure(cls, instances, request, **kwargs):
         office_inf = OfficeInfrastructure.objects.get(
@@ -224,7 +256,6 @@ class BackOfficeAsset(Regionalizable, Asset):
 
     @classmethod
     @transition_action(
-        verbose_name=_('Add remarks'),
         form_fields={
             'remarks': {
                 'field': forms.CharField(label=_('Remarks')),
@@ -239,7 +270,6 @@ class BackOfficeAsset(Regionalizable, Asset):
 
     @classmethod
     @transition_action(
-        verbose_name=_('Assign task URL '),
         form_fields={
             'task_url': {
                 'field': forms.CharField(label=_('task_url')),
@@ -251,38 +281,32 @@ class BackOfficeAsset(Regionalizable, Asset):
             instance.task_url = kwargs['task_url']
 
     @classmethod
-    @transition_action(
-        verbose_name=_('Unassign licences')
-    )
+    @transition_action()
     def unassign_licences(cls, instances, request, **kwargs):
         BaseObjectLicence.objects.filter(base_object__in=instances).delete()
 
     @classmethod
     @transition_action(
-        verbose_name=_('Change hostname'),
         form_fields={
             'country': {
                 'field': forms.ChoiceField(
                     label=_('Country'),
                     choices=Country(),
-                )
+                ),
             }
-        }
+        },
     )
     def change_hostname(cls, instances, request, **kwargs):
         country_id = kwargs['country']
         country_name = Country.name_from_id(int(country_id)).upper()
         iso3_country_name = iso2_to_iso3(country_name)
         for instance in instances:
-            template_vars = {
-                'code': instance.model.category.code,
-                'country_code': iso3_country_name,
-            }
-            instance.generate_hostname(template_vars=template_vars)
+            instance._try_assign_hostname(
+                country=iso3_country_name, force=True, request=request
+            )
 
     @classmethod
     @transition_action(
-        verbose_name=_('Change user and owner'),
         form_fields={
             'user': {
                 'field': forms.CharField(label=_('User')),
@@ -291,7 +315,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             'owner': {
                 'field': forms.CharField(label=_('Owner')),
                 'autocomplete_field': 'owner',
-                'condition': lambda obj: bool(obj.owner),
+                'condition': lambda obj, actions: bool(obj.owner),
             }
         }
     )
@@ -351,7 +375,6 @@ class BackOfficeAsset(Regionalizable, Asset):
 
     @classmethod
     @transition_action(
-        verbose_name=_('Release report'),
         return_attachment=True
     )
     def release_report(cls, instances, request, **kwargs):
@@ -361,7 +384,6 @@ class BackOfficeAsset(Regionalizable, Asset):
 
     @classmethod
     @transition_action(
-        verbose_name=_('Return report'),
         return_attachment=True
     )
     def return_report(cls, instances, request, **kwargs):
@@ -371,7 +393,6 @@ class BackOfficeAsset(Regionalizable, Asset):
 
     @classmethod
     @transition_action(
-        verbose_name=_('Loan report'),
         return_attachment=True
     )
     def loan_report(cls, instances, request, **kwargs):

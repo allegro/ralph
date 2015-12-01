@@ -8,7 +8,10 @@ from ralph.lib.transitions.exceptions import (
 )
 from ralph.lib.transitions.models import (
     _check_and_get_transition,
+    _create_graph_from_actions,
+    _sort_graph_topologically,
     Action,
+    CycleError,
     Transition
 )
 from ralph.lib.transitions.tests import TransitionTestCase
@@ -112,3 +115,50 @@ class TransitionsTest(TransitionTestCase):
         )
         with self.assertRaises(TransitionNotAllowedError):
             order.run_status_transition(transition, request=self.request)
+
+    def test_create_graph_from_actions(self):
+        order = Order.objects.create()
+        _, transition, _ = self._create_transition(
+            model=order, name='prepare',
+            source=[OrderStatus.new.id], target=OrderStatus.to_send.id,
+            actions=['go_to_post_office', 'pack']
+        )
+        graph = _create_graph_from_actions(transition.actions.all(), order)
+        self.assertEqual(graph, {
+            'pack': ['go_to_post_office'],
+            'go_to_post_office': [],
+        })
+
+    def test_create_graph_from_actions_when_requirement_not_in_transition(self):
+        order = Order.objects.create()
+        _, transition, _ = self._create_transition(
+            model=order, name='prepare',
+            source=[OrderStatus.new.id], target=OrderStatus.to_send.id,
+            actions=['go_to_post_office']
+        )
+        graph = _create_graph_from_actions(transition.actions.all(), order)
+        self.assertEqual(graph, {
+            'go_to_post_office': [],
+        })
+
+    def test_topological_sort(self):
+        graph = {
+            1: [],
+            2: [1, 4],
+            3: [],
+            4: [1]
+        }
+        order = [a for a in _sort_graph_topologically(graph)]
+        # order of 2 and 3 doesn't matter
+        self.assertEqual(set(order[:2]), set([2, 3]))
+        self.assertEqual(order[2:], [4, 1])
+
+    def test_topological_sort_cycle(self):
+        graph = {
+            1: [2],
+            2: [1, 4],
+            3: [],
+            4: [1]
+        }
+        with self.assertRaises(CycleError):
+            [a for a in _sort_graph_topologically(graph)]

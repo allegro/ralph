@@ -2,8 +2,8 @@
 import datetime
 
 from dateutil.relativedelta import relativedelta
-from dj.choices import Country
 from django.conf import settings
+from django.contrib import messages
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.core.urlresolvers import reverse
 from django.core.validators import MinValueValidator
@@ -13,7 +13,6 @@ from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
 from ralph.accounts.models import Team
-from ralph.assets.country_utils import iso2_to_iso3
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import (
     ModelVisualizationLayout,
@@ -30,16 +29,6 @@ from ralph.lib.permissions import PermByFieldMixin
 ASSET_HOSTNAME_TEMPLATE = getattr(settings, 'ASSET_HOSTNAME_TEMPLATE', None)
 if not ASSET_HOSTNAME_TEMPLATE:
     raise ImproperlyConfigured('"ASSET_HOSTNAME_TEMPLATE" must be specified.')
-
-
-def get_user_iso3_country_name(user):
-    """
-    :param user: instance of django.contrib.auth.models.User which has profile
-        with country attribute
-    """
-    country_name = Country.name_from_id(int(user.country))
-    iso3_country_name = iso2_to_iso3(country_name)
-    return iso3_country_name
 
 
 class AssetHolder(NamedMixin.NonUnique, TimeStampMixin, models.Model):
@@ -369,7 +358,7 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         # BACKWARD_COMPATIBILITY
         return self.is_depreciated()
 
-    def generate_hostname(self, commit=True, template_vars=None):
+    def generate_hostname(self, commit=True, template_vars=None, request=None):
         def render_template(template):
             template = Template(template)
             context = Context(template_vars or {})
@@ -385,20 +374,10 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         self.hostname = last_hostname.formatted_hostname(fill=counter_length)
         if commit:
             self.save()
-
-    def _try_assign_hostname(self, commit):
-        if self.owner and self.model.category and self.model.category.code:
-            template_vars = {
-                'code': self.model.category.code,
-                'country_code': self.country_code,
-            }
-            if not self.hostname:
-                self.generate_hostname(commit, template_vars)
-            else:
-                user_country = get_user_iso3_country_name(self.owner)
-                different_country = user_country not in self.hostname
-                if different_country:
-                    self.generate_hostname(commit, template_vars)
+        if request:
+            messages.info(
+                request, 'Hostname changed to {}'.format(self.hostname)
+            )
 
     def _liquidated_at(self, date):
         liquidated_history = self.get_history().filter(

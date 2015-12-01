@@ -1,8 +1,25 @@
 # -*- coding: utf-8 -*-
 from django import forms
+from django.utils.html import strip_tags
+from django.utils.text import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.lib.transitions.models import Action, Transition, TransitionModel
+
+
+def wrap_action_name(action):
+    verbose_name = action.verbose_name
+    help_text = action.help_text
+    if help_text:
+        verbose_name = verbose_name + """
+        &nbsp;<i
+            data-tooltip
+            class="has-tip fa fa-info-circle"
+            title='{txt}'></i>
+        """.format(
+            txt=strip_tags(str(help_text)),
+        )
+    return mark_safe(verbose_name)
 
 
 class TransitionForm(forms.ModelForm):
@@ -20,7 +37,7 @@ class TransitionForm(forms.ModelForm):
             choices=(('', '-------'),) + choices
         )
         actions_choices = [
-            (i.id, getattr(self.model, i.name).verbose_name)
+            (i.id, wrap_action_name(getattr(self.model, i.name)))
             for i in Action.objects.filter(
                 content_type=self._transition_model_instance.content_type
             )

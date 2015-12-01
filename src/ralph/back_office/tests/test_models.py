@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from dj.choices import Country
-from django.conf import settings
-from django.forms import ValidationError
+from django.contrib.messages.storage.fallback import FallbackStorage
+from django.test import RequestFactory
 
 from ralph.assets.country_utils import iso2_to_iso3, iso3_to_iso2
 from ralph.assets.models import AssetLastHostname
@@ -9,8 +9,9 @@ from ralph.assets.tests.factories import (
     BackOfficeAssetModelFactory,
     CategoryFactory
 )
-from ralph.back_office.models import BackOfficeAsset
+from ralph.back_office.models import BackOfficeAsset, BackOfficeAssetStatus
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
+from ralph.lib.transitions.tests import TransitionTestCase
 from ralph.tests import RalphTestCase
 from ralph.tests.factories import UserFactory
 
@@ -118,3 +119,140 @@ class HostnameGeneratorTests(RalphTestCase):
 
         self.assertFalse(bo_asset_failed.validate_imei())
         self.assertTrue(bo_asset.validate_imei())
+
+
+class TestBackOfficeAsset(RalphTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.user_pl = UserFactory(username='user_1', country=Country.pl)
+        cls.user_us = UserFactory(username='user_2', country=Country.us)
+        cls.category = CategoryFactory(code='PC')
+        cls.category_without_code = CategoryFactory()
+        cls.model = BackOfficeAssetModelFactory(category=cls.category)
+        cls.model_without_code = BackOfficeAssetModelFactory(
+            category=cls.category_without_code
+        )
+
+    def setUp(self):
+        super().setUp()
+        AssetLastHostname.objects.create(prefix='POLPC', counter=1000)
+        self.bo_asset = BackOfficeAssetFactory(
+            model=self.model,
+            hostname='abc',
+            owner=self.user_pl,
+        )
+
+    def test_try_assign_hostname(self):
+        self.bo_asset._try_assign_hostname(commit=True)
+        self.assertEqual(self.bo_asset.hostname, 'POLPC01001')
+
+    def test_try_assign_hostname_no_change(self):
+        self.bo_asset.hostname = 'POLPC01001'
+        self.bo_asset.save()
+        self.bo_asset._try_assign_hostname(commit=True)
+        self.assertEqual(self.bo_asset.hostname, 'POLPC01001')
+
+    def test_try_assign_hostname_no_hostname(self):
+        self.bo_asset.hostname = ''
+        self.bo_asset.save()
+        self.bo_asset._try_assign_hostname(commit=True)
+        self.assertEqual(self.bo_asset.hostname, 'POLPC01001')
+
+    def test_try_assign_hostname_forced(self):
+        self.bo_asset.hostname = 'POLPC001010'
+        self.bo_asset.save()
+        self.bo_asset._try_assign_hostname(commit=True, force=True)
+        self.assertEqual(self.bo_asset.hostname, 'POLPC01001')
+
+    def test_try_assign_hostname_with_country(self):
+        self.bo_asset._try_assign_hostname(country='US', commit=True)
+        self.assertEqual(self.bo_asset.hostname, 'USPC00001')
+
+    def test_try_assign_hostname_category_without_code(self):
+        bo_asset_2 = BackOfficeAssetFactory(
+            model=self.model_without_code, hostname='abcd'
+        )
+        bo_asset_2._try_assign_hostname(commit=True)
+        self.assertEqual(bo_asset_2.hostname, 'abcd')
+
+    def test_try_assign_hostname_when_status_in_progress(self):
+        self.bo_asset.status = BackOfficeAssetStatus.new
+        self.bo_asset.save()
+
+        self.bo_asset.status = BackOfficeAssetStatus.in_progress
+        self.bo_asset.save()
+        self.assertEqual(self.bo_asset.hostname, 'POLPC01001')
+
+
+class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.user_pl = UserFactory(username='user_1', country=Country.pl)
+        cls.user_us = UserFactory(username='user_2', country=Country.us)
+        cls.user_us_2 = UserFactory(username='user_3', country=Country.us)
+        cls.category = CategoryFactory(code='PC')
+        cls.model = BackOfficeAssetModelFactory(category=cls.category)
+
+    def setUp(self):
+        super().setUp()
+        AssetLastHostname.objects.create(prefix='POLPC', counter=1000)
+        self.bo_asset = BackOfficeAssetFactory(
+            model=self.model,
+            hostname='abc',
+            owner=self.user_us,
+        )
+        self.bo_asset._try_assign_hostname(commit=True, force=True)
+        self.request = RequestFactory().get('/assets/')
+        self.request.user = self.user_pl
+        # ugly hack from https://code.djangoproject.com/ticket/17971
+        setattr(self.request, 'session', 'session')
+        messages = FallbackStorage(self.request)
+        setattr(self.request, '_messages', messages)
+
+    def test_change_hostname(self):
+        _, transition, _ = self._create_transition(
+            model=self.bo_asset,
+            name='test',
+            source=[BackOfficeAssetStatus.new.id],
+            target=BackOfficeAssetStatus.used.id,
+            actions=['change_hostname']
+        )
+        self.bo_asset.run_status_transition(
+            transition_obj_or_name=transition,
+            data={'change_hostname__country': Country.pl},
+            request=self.request
+        )
+        self.assertEqual(self.bo_asset.hostname, 'POLPC01001')
+
+    def test_assign_owner(self):
+        _, transition, _ = self._create_transition(
+            model=self.bo_asset,
+            name='test',
+            source=[BackOfficeAssetStatus.new.id],
+            target=BackOfficeAssetStatus.used.id,
+            actions=['assign_owner']
+        )
+        self.bo_asset.run_status_transition(
+            transition_obj_or_name=transition,
+            data={'assign_owner__owner': self.user_pl.id},
+            request=self.request
+        )
+        self.assertEqual(self.bo_asset.hostname, 'POLPC01001')
+
+    def test_assign_owner_when_owner_country_not_changed(self):
+        current_hostname = self.bo_asset.hostname
+        _, transition, _ = self._create_transition(
+            model=self.bo_asset,
+            name='test',
+            source=[BackOfficeAssetStatus.new.id],
+            target=BackOfficeAssetStatus.used.id,
+            actions=['assign_owner']
+        )
+        self.bo_asset.run_status_transition(
+            transition_obj_or_name=transition,
+            data={'assign_owner__owner': self.user_us_2.id},
+            request=self.request
+        )
+        self.assertEqual(self.bo_asset.hostname, current_hostname)
