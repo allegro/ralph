@@ -44,7 +44,7 @@ class TransitionFormTest(TransitionTestCase):
             [s.name for s in OrderStatus.__choices__]
         )
 
-    def test_should_raise_vaild_error_when_user_checked_two_or_more_actions_with_attachemnt(self):  # noqa
+    def test_should_raise_vaild_error_when_user_checked_two_or_more_actions_with_attachment(self):  # noqa
         transition_model, transition, actions = self._create_transition(
             Order, 'test'
         )

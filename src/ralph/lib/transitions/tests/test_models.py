@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
 from django.test import RequestFactory
 
 from ralph.lib.transitions.exceptions import (
@@ -21,6 +22,37 @@ def mocked_action(*args, **kwargs):
     """
     mocked_action.runned = True
     return None
+
+
+class PermissionsTest(TransitionTestCase):
+    def test_create_transition_should_create_perm(self):
+        name = 'Foo'
+        _, transition, _ = self._create_transition(Order, name)
+        perm_exist = Permission.objects.filter(
+            **transition.permission_info
+        ).exists()
+        self.assertTrue(perm_exist)
+
+    def test_delete_transition_should_delete_perm(self):
+        name = 'Foo'
+        _, transition, _ = self._create_transition(Order, name)
+        transition.delete()
+        perm_exist = Permission.objects.filter(
+            **transition.permission_info
+        ).exists()
+        self.assertFalse(perm_exist)
+
+    def test_change_name_should_change_perm_name_and_codename(self):
+        name = 'Foo'
+        _, transition, _ = self._create_transition(Order, name)
+
+        transition.name = 'Bar'
+        transition.save()
+
+        perm_exist = Permission.objects.filter(
+            **transition.permission_info
+        ).exists()
+        self.assertTrue(perm_exist)
 
 
 class TransitionsTest(TransitionTestCase):

@@ -58,7 +58,7 @@ class AttachmentItemManager(models.Manager):
 
     def attach(self, pk, content_type, attachments):
         """
-        Attach attachemnts to the object (through pk and content_type).
+        Attach attachments to the object (through pk and content_type).
         """
         new_items = []
         for attachment in attachments:
@@ -72,7 +72,7 @@ class AttachmentItemManager(models.Manager):
 
     def dettach(self, pk, content_type, attachments):
         """
-        Dettach attachemnts from the object (through pk and content_type).
+        Dettach attachments from the object (through pk and content_type).
         """
         self.filter(
             attachment__in=attachments,
@@ -161,7 +161,7 @@ class Attachment(TimeStampMixin, models.Model):
 class AttachmentItem(models.Model):
     """
     This model is bridge between attachment and content type - with this
-    model we can add one attachemnt and link with many content types.
+    model we can add one attachment and link with many content types.
     """
     attachment = models.ForeignKey(Attachment, related_name='items')
     content_type = models.ForeignKey(ContentType)
