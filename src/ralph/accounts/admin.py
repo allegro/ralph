@@ -13,9 +13,58 @@ from ralph.back_office.models import BackOfficeAsset
 from ralph.lib.table import Table
 from ralph.licences.models import BaseObjectLicence, Licence
 
+# use string for whole app (app_label) or tuple (app_label, model_name) to
+# exclude particular model
+PERMISSIONS_EXCLUDE = [
+    'admin',
+    'attachment',
+    'authtoken',
+    'contenttypes',
+    'data_importer',
+    'reversion',
+    'sessions',
+    'sitetree',
+    'taggit',
+    ('assets', 'assetlasthostname'),
+    ('transitions', 'action'),
+    ('transitions', 'transitionshistory'),
+    ('transitions', 'transitionmodel'),
+]
 
-class RalphUserChangeForm(RalphAdminFormMixin, UserAdmin.form):
-    pass
+
+class EditPermissionsFormMixin(object):
+    def _simplify_permissions(self, queryset):
+        """
+        Exclude some permissions from widget.
+
+        Permissions to exclude are defined in PERMISSIONS_EXCLUDE.
+        """
+        queryset = queryset.exclude(content_type__app_label__in=[
+            ct for ct in PERMISSIONS_EXCLUDE if not isinstance(
+                ct, (tuple, list)
+            )
+        ])
+        for value in PERMISSIONS_EXCLUDE:
+            if isinstance(value, (tuple, list)):
+                app_label, model_name = value
+                queryset = queryset.exclude(
+                    content_type__app_label=app_label,
+                    content_type__model=model_name
+                )
+        queryset = queryset.select_related('content_type').order_by(
+            'content_type__model'
+        )
+        return queryset
+
+
+class RalphUserChangeForm(
+    EditPermissionsFormMixin, RalphAdminFormMixin, UserAdmin.form
+):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        field = self.fields.get('user_permissions', None)
+        if field:
+            self._simplify_permissions(field.queryset)
 
 
 class AssetList(Table):
@@ -152,8 +201,16 @@ class RalphUserAdmin(UserAdmin, RalphAdmin):
 
 
 @register(Group)
-class RalphGroupAdmin(GroupAdmin, RalphAdmin):
-    pass
+class RalphGroupAdmin(EditPermissionsFormMixin, GroupAdmin, RalphAdmin):
+    def formfield_for_manytomany(self, db_field, request=None, **kwargs):
+        if db_field.name == 'permissions':
+            qs = kwargs.get('queryset', db_field.rel.to.objects)
+            if qs:
+                qs = self._simplify_permissions(qs)
+            kwargs['queryset'] = qs
+        return super().formfield_for_manytomany(
+            db_field, request=request, **kwargs
+        )
 
 
 @register(Region)

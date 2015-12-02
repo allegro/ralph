@@ -88,7 +88,7 @@ class PermissionsSelectWidget(forms.Widget):
         separator = ' | '
         choices = sorted(
             chain(self.choices, choices),
-            key=lambda x: x[1].split(separator)[1]
+            key=lambda x: x[1].split(separator)[1].lower()
         )
         grouped = groupby(choices, lambda x: x[1].split(separator)[1])
         rendered_options = ''
