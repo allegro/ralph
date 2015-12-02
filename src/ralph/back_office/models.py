@@ -396,7 +396,9 @@ class BackOfficeAsset(Regionalizable, Asset):
         return_attachment=True
     )
     def loan_report(cls, instances, request, **kwargs):
-        return cls._generate_report(name='loan', request=request)
+        return cls._generate_report(
+            name='loan', request=request, instances=instances
+        )
 
 
 @receiver(pre_save, sender=BackOfficeAsset)
