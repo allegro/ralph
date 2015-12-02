@@ -10,7 +10,11 @@ from django.utils.translation import ugettext_lazy as _
 from rest_framework.authtoken.models import Token
 
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
-from ralph.lib.permissions import PermissionsForObjectMixin, user_permission
+from ralph.lib.permissions import (
+    PermByFieldMixin,
+    PermissionsForObjectMixin,
+    user_permission
+)
 
 
 @user_permission
@@ -49,7 +53,7 @@ class Team(NamedMixin):
     pass
 
 
-class RalphUser(AbstractUser, AdminAbsoluteUrlMixin):
+class RalphUser(PermByFieldMixin, AbstractUser, AdminAbsoluteUrlMixin):
 
     gender = models.PositiveIntegerField(
         verbose_name=_('gender'),
