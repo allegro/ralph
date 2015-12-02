@@ -12,5 +12,7 @@ def available_transitions(context, obj, field):
         obj, 'get_available_transitions_for_{}'.format(field), None
     )
     if get_available_transitions:
-        context.update({'transitions': get_available_transitions()})
+        context.update({
+            'transitions': get_available_transitions(user=context.request.user)
+        })
     return context

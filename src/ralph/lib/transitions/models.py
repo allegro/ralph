@@ -261,7 +261,7 @@ def run_field_transition(
     return True, attachment
 
 
-def get_available_transitions_for_field(instance, field):
+def get_available_transitions_for_field(instance, field, user=None):
     """
     Returns list of all available transitions for field.
     """
@@ -270,10 +270,19 @@ def get_available_transitions_for_field(instance, field):
     transitions = Transition.objects.filter(
         model=instance.transition_models[field],
     )
-    return [
-        transition for transition in transitions
-        if instance.status in [int(s) for s in transition.source]
-    ]
+    result = []
+    for transition in transitions:
+        # check if source field value is in values available for this transition
+        # and if user has rights to execute this transition
+        if (
+            getattr(instance, field) in [int(s) for s in transition.source] and
+            (user.has_perm('{}.{}'.format(
+                transition.permission_info['content_type'].app_label,
+                transition.permission_info['codename']
+            )) if user else True)
+        ):
+            result.append(transition)
+    return result
 
 
 class TransitionWorkflowBase(ModelBase):
