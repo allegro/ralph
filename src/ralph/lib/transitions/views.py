@@ -1,7 +1,11 @@
 from django import forms
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.http import (
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+    HttpResponseRedirect
+)
 from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -59,6 +63,15 @@ class TransitionViewMixin(object):
                 field_key = '{}__{}'.format(action.__name__, name)
                 fields[field_key] = options['field']
         return fields
+
+    def dispatch(self, request, *args, **kwargs):
+        if not hasattr(self, 'transition'):
+            return HttpResponseBadRequest()
+        if not request.user.has_perm(
+            self.transition.permission_info['codename']
+        ):
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

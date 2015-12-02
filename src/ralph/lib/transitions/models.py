@@ -6,12 +6,20 @@ from collections import defaultdict, Iterable
 
 from django import forms
 from django.conf import settings
+from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models, transaction
 from django.db.models.base import ModelBase
-from django.db.models.signals import post_migrate
+from django.db.models.signals import (
+    post_delete,
+    post_migrate,
+    post_save,
+    pre_save
+)
+from django.dispatch import receiver
 from django.utils.functional import curry
+from django.utils.text import slugify
 from django_extensions.db.fields.json import JSONField
 
 from ralph.admin.helpers import get_field_by_relation_path
@@ -266,6 +274,14 @@ class Transition(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def permission_info(self):
+        return {
+            'name': 'Can run {} transition'.format(self.name.lower()),
+            'content_type': self.model.content_type,
+            'codename': 'can_run_{}_transition'.format(slugify(self.name))
+        }
+
     @classmethod
     def transitions_for_model(cls, model):
         content_type = ContentType.objects.get_for_model(model)
@@ -349,3 +365,30 @@ def update_transitions_affter_migrate(**kwargs):
                 action.content_type.add(content_type)
 
 post_migrate.connect(update_transitions_affter_migrate)
+
+
+@receiver(post_delete, sender=Transition)
+def post_delete_transition(sender, instance, **kwargs):
+    Permission.objects.filter(**instance.permission_info).delete()
+
+
+@receiver(pre_save, sender=Transition)
+def post_save_transition(sender, instance, **kwargs):
+    if instance.pk:
+        old = sender.objects.get(pk=instance.pk)
+        setattr(instance, '_old_permission_info', old.permission_info)
+
+
+@receiver(post_save, sender=Transition)
+def create_permission(sender, instance, created, **kwargs):
+    if created:
+        Permission.objects.create(**instance.permission_info)
+    else:
+        old_info = getattr(instance, '_old_permission_info', None)
+        if not old_info:
+            return
+        perm, created = Permission.objects.get_or_create(**old_info)
+        if not created:
+            Permission.objects.filter(pk=perm.pk).update(
+                **instance.permission_info
+            )

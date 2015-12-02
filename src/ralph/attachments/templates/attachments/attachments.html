@@ -6,7 +6,7 @@
   <form method="post" action="" enctype="multipart/form-data">
     {% csrf_token %}
     {{ formset.management_form }}
-    <table class="full" id="attachemnts">
+    <table class="full">
       <thead>
         <tr>
           <th>{% trans "File" %}</th>
