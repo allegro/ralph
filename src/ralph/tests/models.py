@@ -60,6 +60,7 @@ class Order(
     @transition_action(
         return_attachment=True,
         verbose_name='Go to post office',
+        run_after=['pack'],
     )
     def go_to_post_office(cls, instances, **kwargs):
         pass
