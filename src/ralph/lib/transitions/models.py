@@ -157,6 +157,15 @@ def _check_action_with_instances(instances, transition):
         validation_func(instances)
 
 
+def _check_user_perm_for_transition(user, transition):
+    if not user:
+        return True
+    return user.has_perm('{}.{}'.format(
+        transition.permission_info['content_type'].app_label,
+        transition.permission_info['codename']
+    ))
+
+
 def _create_graph_from_actions(actions, instance):
     graph = {}
     actions_set = set()
@@ -276,10 +285,7 @@ def get_available_transitions_for_field(instance, field, user=None):
         # and if user has rights to execute this transition
         if (
             getattr(instance, field) in [int(s) for s in transition.source] and
-            (user.has_perm('{}.{}'.format(
-                transition.permission_info['content_type'].app_label,
-                transition.permission_info['codename']
-            )) if user else True)
+            _check_user_perm_for_transition(user, transition)
         ):
             result.append(transition)
     return result
@@ -346,9 +352,13 @@ class Transition(models.Model):
         }
 
     @classmethod
-    def transitions_for_model(cls, model):
+    def transitions_for_model(cls, model, user=None):
         content_type = ContentType.objects.get_for_model(model)
-        return cls.objects.filter(model__content_type=content_type)
+        transitions = cls.objects.filter(model__content_type=content_type)
+        return [
+            transition for transition in transitions
+            if _check_user_perm_for_transition(user, transition)
+        ]
 
 
 class Action(models.Model):
