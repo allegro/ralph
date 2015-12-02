@@ -18,15 +18,20 @@ def view_permission_dispatch(func):
     Adding to check the user has permission to dispatch method.
     """
     def wraps(self, request, *args, **kwargs):
-        model = kwargs.get('model', None)
-        if not model:
-            model = get_user_model()
-        perm_name = '{}.{}'.format(
-            model._meta.app_label, self.permision_codename
-        )
-        if not request.user.has_perm(perm_name):
-            return HttpResponseForbidden()
-        return func(self, request, *args, **kwargs)
+        # first try by model passed in kwargs, then, if user has not this perm
+        # try by checking if this perm is assigned directly to user
+        # (this happen ex. in transitions - user has perm to run transition at
+        # all, but concrete model has perm to run particular transition)
+        user_model = get_user_model()
+        for model in [kwargs.get('model'), user_model]:
+            if not model:
+                continue
+            perm_name = '{}.{}'.format(
+                model._meta.app_label, self.permision_codename
+            )
+            if request.user.has_perm(perm_name):
+                return func(self, request, *args, **kwargs)
+        return HttpResponseForbidden()
     return wraps
 
 

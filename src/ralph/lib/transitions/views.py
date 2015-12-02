@@ -68,7 +68,10 @@ class TransitionViewMixin(object):
         if not hasattr(self, 'transition'):
             return HttpResponseBadRequest()
         if not request.user.has_perm(
-            self.transition.permission_info['codename']
+            '{}.{}'.format(
+                self.transition.permission_info['content_type'].app_label,
+                self.transition.permission_info['codename'],
+            )
         ):
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
