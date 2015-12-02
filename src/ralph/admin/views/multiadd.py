@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.db import IntegrityError, models, transaction
 from django.forms import ValidationError
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -29,6 +29,10 @@ class MultiAddView(RalphTemplateView):
     def dispatch(self, request, object_pk, model, *args, **kwargs):
         admin_model = ralph_site._registry[model]
         self.model = model
+        if not request.user.has_perm('{}.add_{}'.format(
+            self.model._meta.app_label, self.model._meta.model_name
+        )):
+            return HttpResponseForbidden()
         self.info_fields = admin_model.multiadd_info_fields
         self.obj = get_object_or_404(model, pk=object_pk)
         self.fields = admin_model.get_multiadd_fields(obj=self.obj)
@@ -172,17 +176,19 @@ class MulitiAddAdminMixin(object):
     def add_view(self, request, form_url='', extra_context=None):
         if not extra_context:
             extra_context = {}
-        extra_context.update({
-            'multi_add_field': True
-        })
+        if self.has_add_permission(request):
+            extra_context.update({
+                'multi_add_field': True
+            })
         return super().add_view(request, form_url, extra_context)
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         if not extra_context:
             extra_context = {}
-        extra_context.update({
-            'multi_add_url': reverse(self.get_url_name(), args=[object_id])
-        })
+        if self.has_add_permission(request):
+            extra_context.update({
+                'multi_add_url': reverse(self.get_url_name(), args=[object_id])
+            })
 
         return super().change_view(
             request, object_id, form_url, extra_context
