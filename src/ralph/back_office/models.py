@@ -375,7 +375,8 @@ class BackOfficeAsset(Regionalizable, Asset):
 
     @classmethod
     @transition_action(
-        return_attachment=True
+        return_attachment=True,
+        run_before=['unassign_user', 'unassign_owner'],
     )
     def release_report(cls, instances, request, **kwargs):
         return cls._generate_report(
@@ -384,7 +385,8 @@ class BackOfficeAsset(Regionalizable, Asset):
 
     @classmethod
     @transition_action(
-        return_attachment=True
+        return_attachment=True,
+        run_before=['unassign_user', 'unassign_owner'],
     )
     def return_report(cls, instances, request, **kwargs):
         return cls._generate_report(
@@ -393,7 +395,8 @@ class BackOfficeAsset(Regionalizable, Asset):
 
     @classmethod
     @transition_action(
-        return_attachment=True
+        return_attachment=True,
+        run_before=['unassign_user', 'unassign_owner'],
     )
     def loan_report(cls, instances, request, **kwargs):
         return cls._generate_report(
