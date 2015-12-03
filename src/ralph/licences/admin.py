@@ -70,9 +70,11 @@ class LicenceAdmin(
     ]
     date_hierarchy = 'created'
     list_display = [
-        'niw', 'licence_type', 'software', 'number_bought',
-        'invoice_date', 'invoice_no', 'valid_thru', 'created', 'region'
+        'niw', 'licence_type', 'software', 'invoice_date', 'invoice_no',
+        'valid_thru', 'created', 'region', 'number_bought', 'used',
+        'free'
     ]
+    readonly_fields = ['used', 'free']
     list_select_related = ['licence_type', 'software', 'region']
     raw_id_fields = [
         'software', 'manufacturer', 'budget_info', 'office_infrastructure'
@@ -88,19 +90,24 @@ class LicenceAdmin(
     fieldsets = (
         (_('Basic info'), {
             'fields': (
-                'licence_type', 'manufacturer', 'software',
-                'niw', 'sn', 'valid_thru', 'license_details', 'region',
-                'remarks'
+                'licence_type', 'manufacturer', 'software', 'niw', 'sn',
+                'valid_thru', 'license_details', 'region', 'remarks',
             )
         }),
         (_('Financial info'), {
             'fields': (
                 'order_no', 'invoice_no', 'price', 'invoice_date',
-                'number_bought', 'accounting_id', 'budget_info', 'provider',
-                'office_infrastructure'
+                'number_bought', 'used', 'free', 'accounting_id',
+                'budget_info', 'provider', 'office_infrastructure'
             )
         }),
     )
+
+    def get_queryset(self, *args, **kwargs):
+        return Licence.objects_used_free.all()
+
+    def get_autocomplete_queryset(self):
+        return Licence.objects_used_free.all()
 
 
 @register(LicenceType)

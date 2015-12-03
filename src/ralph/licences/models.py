@@ -14,6 +14,7 @@ from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
 from ralph.lib.permissions import PermByFieldMixin
+from ralph.lib.polymorphic.models import PolymorphicQuerySet
 
 
 class LicenceType(PermByFieldMixin, NamedMixin, models.Model):
@@ -45,6 +46,14 @@ class Software(PermByFieldMixin, NamedMixin, models.Model):
 
     class Meta:
         verbose_name_plural = _('software categories')
+
+
+class LicencesUsedFreeManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().annotate(
+            user_count=Sum('licenceuser__quantity'),
+            baseobject_count=Sum('baseobjectlicence__quantity')
+        )
 
 
 class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
@@ -144,25 +153,32 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
         on_delete=models.PROTECT,
     )
 
-    _used = None
+    polymorphic_objects = PolymorphicQuerySet.as_manager()
+    objects_used_free = LicencesUsedFreeManager()
 
     def __str__(self):
-        return "{} x {} - {}".format(
+        return "{} ({} free) x {} - {} ({})".format(
             self.number_bought,
+            self.free,
             self.software.name,
             self.invoice_date,
+            self.niw,
         )
 
     @cached_property
     def used(self):
-        base_objects_qs = self.base_objects.through.objects.filter(
-            licence=self
-        )
-        users_qs = self.users.through.objects.filter(licence=self)
+        try:
+            # try use fields from objects_used_free manager
+            return (self.user_count or 0) + (self.baseobject_count or 0)
+        except AttributeError:
+            base_objects_qs = self.base_objects.through.objects.filter(
+                licence=self
+            )
+            users_qs = self.users.through.objects.filter(licence=self)
 
-        def get_sum(qs):
-            return qs.aggregate(sum=Sum('quantity'))['sum'] or 0
-        return sum(map(get_sum, [base_objects_qs, users_qs]))
+            def get_sum(qs):
+                return qs.aggregate(sum=Sum('quantity'))['sum'] or 0
+            return sum(map(get_sum, [base_objects_qs, users_qs]))
 
     @cached_property
     def free(self):

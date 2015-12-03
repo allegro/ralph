@@ -60,11 +60,15 @@ class AjaxAutocompleteMixin(object):
     """
     This mixin added new endpoint to admin's urls for autocomplete mechanism.
     """
+    def get_autocomplete_queryset(self):
+        return self.model._default_manager.all()
+
     def get_urls(self):
         urls = super().get_urls()
         outer_model = self.model
         search_fields = self.search_fields
         ordering = self.ordering or ()
+        get_autocomplete_queryset = self.get_autocomplete_queryset
 
         class List(SuggestView):
             limit = 10
@@ -96,7 +100,7 @@ class AjaxAutocompleteMixin(object):
                 )[:self.limit].values_list('pk', flat=True)
 
             def get_queryset(self, user):
-                queryset = self.model._default_manager.all()
+                queryset = get_autocomplete_queryset()
                 if getattr(self.model, '_polymorphic_descendants', []):
                     id_list = []
                     for related_model in self.model._polymorphic_descendants:
