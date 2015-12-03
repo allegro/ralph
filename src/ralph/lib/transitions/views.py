@@ -124,6 +124,7 @@ class TransitionViewMixin(object):
         return HttpResponseRedirect(self.get_success_url())
 
     def get(self, request, *args, **kwargs):
+
         is_valid, error = self._objects_are_valid()
         if not is_valid:
             messages.info(
@@ -168,8 +169,12 @@ class RunBulkTransitionView(TransitionViewMixin, RalphTemplateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
-        info = self.model._meta.app_label, self.model._meta.model_name
-        return reverse('admin:{}_{}_changelist'.format(*info))
+        transition_back_url = self.request.GET.get('back_url', None)
+        if not transition_back_url:
+            info = self.model._meta.app_label, self.model._meta.model_name
+            return reverse('admin:{}_{}_changelist'.format(*info))
+
+        return transition_back_url
 
 
 class RunTransitionView(TransitionViewMixin, RalphTemplateView):
