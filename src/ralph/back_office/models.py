@@ -172,7 +172,8 @@ class BackOfficeAsset(Regionalizable, Asset):
                 'field': forms.CharField(label=_('User')),
                 'autocomplete_field': 'user'
             }
-        }
+        },
+        run_before=['release_report']
     )
     def assign_user(cls, instances, request, **kwargs):
         user = get_user_model().objects.get(pk=int(kwargs['user']))
@@ -191,7 +192,8 @@ class BackOfficeAsset(Regionalizable, Asset):
             'During this transition owner will be assigned as well as new '
             'hostname might be generated for asset (only for particular model '
             'categories and only if owner\'s country has changed)'
-        )
+        ),
+        run_before=['release_report']
     )
     def assign_owner(cls, instances, request, **kwargs):
         owner = get_user_model().objects.get(pk=int(kwargs['owner']))
@@ -220,7 +222,8 @@ class BackOfficeAsset(Regionalizable, Asset):
                     widget=forms.TextInput(attrs={'class': 'datepicker'})
                 )
             }
-        }
+        },
+        run_before=['loan_report']
     )
     def assign_loan_end_date(cls, instances, request, **kwargs):
         for instance in instances:

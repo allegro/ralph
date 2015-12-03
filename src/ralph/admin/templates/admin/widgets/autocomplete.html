@@ -4,16 +4,18 @@
     <div class="widget-wrapper">
         <div class="item-wrapper">
             <div class="item">
-                <span class="title" title="{{ current_object }}">{{ current_object }}</span>
+                <div class="title" title="{{ current_object }}">{{ current_object }}</div>
                 {% if show_tooltip %}
                   <i data-tooltip class="has-tip fa fa-info-circle" title="{{ tooltip }}"></i>
                 {% endif %}
-                <a class="related-widget-wrapper-link change-related{% if not change_related_template_url %} hide{% endif %}" id="change_id_{{ name }}"
-                    href="{{ change_related_template_url }}?_popup=1"
-                    title="{% blocktrans %}Change selected {{ model }}{% endblocktrans %}">
-                    <i class="fa fa-pencil"></i>
-                </a>
-                <i class="fa fa-times delete"></i>
+                <div class="autocomplete-icons">
+                    <a class="related-widget-wrapper-link change-related{% if not change_related_template_url %} hide{% endif %}" id="change_id_{{ name }}"
+                        href="{{ change_related_template_url }}?_popup=1"
+                        title="{% blocktrans %}Change selected {{ model }}{% endblocktrans %}">
+                        <i class="fa fa-pencil"></i>
+                    </a>
+                    <i class="fa fa-times delete"></i>
+                </div>
             </div>
         </div>
         <input class="input" type="text" placeholder="{% trans 'Search by' %} {{ searched_fields }}"/>
