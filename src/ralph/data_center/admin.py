@@ -5,6 +5,7 @@ from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
+from ralph.assets.invoice_report import AssetInvoiceReportMixin
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_center.forms.network import NetworkInlineFormset
 from ralph.data_center.models.components import DiskShare, DiskShareMount
@@ -24,12 +25,7 @@ from ralph.data_center.models.physical import (
     RackAccessory,
     ServerRoom
 )
-from ralph.data_center.models.virtual import (
-    CloudProject,
-    Database,
-    VIP,
-    VirtualServer
-)
+from ralph.data_center.models.virtual import Database, VIP
 from ralph.data_center.views.ui import (
     DataCenterAssetComponents,
     DataCenterAssetSecurityInfo,
@@ -97,6 +93,7 @@ class DataCenterAssetAdmin(
     BulkEditChangeListMixin,
     PermissionAdminMixin,
     AttachmentsMixin,
+    AssetInvoiceReportMixin,
     RalphAdmin,
 ):
     """Data Center Asset admin class."""
@@ -111,8 +108,8 @@ class DataCenterAssetAdmin(
     ]
     resource_class = resources.DataCenterAssetResource
     list_display = [
-        'status', 'barcode', 'model',
-        'sn', 'hostname', 'invoice_date', 'invoice_no',
+        'status', 'barcode', 'model', 'sn', 'hostname', 'invoice_date',
+        'invoice_no',
     ]
     multiadd_info_fields = list_display + ['rack']
     one_of_mulitvalue_required = ['sn', 'barcode']
@@ -132,6 +129,7 @@ class DataCenterAssetAdmin(
     list_select_related = ['model', 'model__manufacturer', 'model__category']
     raw_id_fields = ['model', 'rack', 'service_env', 'parent', 'budget_info']
     raw_id_override_parent = {'parent': DataCenterAsset}
+    _invoice_report_name = 'invoice-data-center-asset'
 
     fieldsets = (
         (_('Basic info'), {
@@ -232,16 +230,6 @@ class DatabaseAdmin(RalphAdmin):
 
 @register(VIP)
 class VIPAdmin(RalphAdmin):
-    pass
-
-
-@register(VirtualServer)
-class VirtualServerAdmin(RalphAdmin):
-    pass
-
-
-@register(CloudProject)
-class CloudProjectAdmin(RalphAdmin):
     pass
 
 

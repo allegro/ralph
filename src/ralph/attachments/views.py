@@ -52,7 +52,7 @@ class AttachmentsView(RalphDetailView):
         })
         return context_data
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         """
         Valid and return response from appropriate method depending on
         the valid result (valid or not).

@@ -43,7 +43,7 @@ clean:
 	find . -name '*.py[cod]' -exec rm -rf {} \;
 
 coverage: clean
-	coverage run $(shell which test_ralph) test ralph --settings="ralph.settings.test"
+	coverage run $(shell which test_ralph) test $(TEST) --settings="ralph.settings.test"
 	coverage report
 
 docs:

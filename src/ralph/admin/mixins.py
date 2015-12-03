@@ -22,6 +22,7 @@ from ralph.admin.views.main import BULK_EDIT_VAR, BULK_EDIT_VAR_IDS
 from ralph.helpers import add_request_to_form
 from ralph.lib.mixins.forms import RequestFormMixin
 from ralph.lib.permissions.admin import PermissionsPerObjectFormMixin
+from ralph.lib.permissions.models import PermByFieldMixin
 from ralph.lib.permissions.views import PermissionViewMetaClass
 
 FORMFIELD_FOR_DBFIELD_DEFAULTS = {
@@ -152,7 +153,15 @@ class RalphAdminMixin(RalphAutocompleteMixin):
 
         extra_context['bulk_edit'] = request.GET.get(BULK_EDIT_VAR, False)
         if extra_context['bulk_edit']:
+            bulk_back_url = request.session.get('bulk_back_url')
+            if not bulk_back_url:
+                bulk_back_url = request.META.get('HTTP_REFERER')
+                request.session['bulk_back_url'] = bulk_back_url
+            extra_context['bulk_back_url'] = bulk_back_url
             extra_context['has_filters'] = False
+        else:
+            request.session['bulk_back_url'] = None
+
         self._initialize_search_form(extra_context)
         return super(RalphAdminMixin, self).changelist_view(
             request, extra_context
@@ -219,6 +228,20 @@ class RalphAdminMixin(RalphAutocompleteMixin):
             self._add_recovery_to_extra_context(extra_context)
         )
 
+    def get_list_display(self, request):
+        """
+        Apply permissions to list columns.
+        """
+        list_display = super().get_list_display(request)
+        if isinstance(self.model, PermByFieldMixin):
+            list_display = [
+                field for field in list_display
+                if self.model.has_access_to_field(
+                    field, request.user, action='view'
+                )
+            ]
+        return list_display
+
 
 class RalphAdmin(
     ImportExportModelAdmin,
@@ -276,21 +299,32 @@ class BulkEditChangeListMixin(object):
         Override django admin get list display method.
         Set new values for fields list_editable and list_display.
         """
+        self.list_editable = []
         if request.GET.get(BULK_EDIT_VAR):
-            bulk_list = [
-                field for field in self.bulk_edit_list
-                if self.model.has_access_to_field(
-                    field, request.user, action='change'
-                )
-            ]
-            list_display = bulk_list.copy()
+            # separate read-only and editable fields
+            bulk_list_display = self.bulk_edit_list
+            bulk_list_edit = self.bulk_edit_list
+            if isinstance(self.model, PermByFieldMixin):
+                bulk_list_display = [
+                    field for field in self.bulk_edit_list
+                    if self.model.has_access_to_field(
+                        field, request.user, action='view'
+                    )
+                ]
+                bulk_list_edit = [
+                    field for field in bulk_list_display
+                    if self.model.has_access_to_field(
+                        field, request.user, action='change'
+                    )
+                ]
+            # overwrite displayed fields in bulk-edit mode
+            list_display = bulk_list_display.copy()
             if 'id' not in list_display:
                 list_display.insert(0, 'id')
-            self.list_editable = bulk_list
+            # list editable is subset of list display in this case
+            self.list_editable = bulk_list_edit
             return list_display
-        else:
-            self.list_editable = []
-        return self.list_display
+        return super().get_list_display(request)
 
     def bulk_edit_action(self, request, queryset):
         """

@@ -22,23 +22,8 @@
             {% endif %}
           </li>
         {% if show_save %}
-        <li>
-          <input type="submit" value="{% trans 'Save' %}" class="default button small success" name="_save" />
-          {% endif %}
-        </li>
-        {% if show_save_as_new %}
           <li>
-            <input type="submit" value="{% trans 'Save as new' %}" name="_saveasnew" class="button small success" />
-          </li>
-        {% endif %}
-        {% if show_save_and_add_another %}
-          <li>
-            <input type="submit" value="{% trans 'Save and add another' %}" name="_addanother" class="button small success" />
-          </li>
-        {% endif %}
-        {% if show_save_and_continue %}
-          <li>
-            <input type="submit" value="{% trans 'Save and continue editing' %}" name="_continue" class="button small success" />
+            <input type="submit" value="{% trans 'Save' %}" name="_continue" class="button small success" />
           </li>
         {% endif %}
       </ul>

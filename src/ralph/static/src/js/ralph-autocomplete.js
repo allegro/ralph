@@ -15,6 +15,7 @@
         this.$currentItem = $('.item', this.$widget);
         this.$deleteButton = $('.delete', this.$currentItem);
         this.$noResults = $('.template.no-results', this.$suggestList);
+        this.selectItem = -1;
 
         var that = this;
         this.$deleteButton.on('click', function(e) {that.deleteItem(e);});
@@ -34,6 +35,43 @@
     AutocompleteWidget.prototype.keyDown = function(event) {
         var that = this;
         var code = event.keyCode || event.which;
+
+        // 40 key down in ASCII
+        var keyDown = 40;
+        // 38 key up in ASCII
+        var keyUp = 38;
+        // 13 enter key in ASCII
+        var enterKey = 13;
+        var $all_elements = $('li.item:not(.template, .no-results)', that.suggestList);
+        $all_elements.removeClass('selected');
+
+        if (code === keyDown) {
+            that.selectItem++;
+            if (that.selectItem === $all_elements.length) {
+                that.selectItem = 0;
+            }
+            $($all_elements[that.selectItem]).addClass('selected');
+            event.preventDefault();
+            return;
+        }
+        if (code === keyUp) {
+            that.selectItem--;
+            if (that.selectItem === -1) {
+                that.selectItem = $all_elements.length - 1;
+            }
+            $($all_elements[that.selectItem]).addClass('selected');
+            event.preventDefault();
+            return;
+        }
+
+        if (code === enterKey) {
+            that.itemClick({
+                target: $($all_elements[that.selectItem]).find('.link'),
+                preventDefault: function(){}
+            });
+            event.preventDefault();
+            return false;
+        }
         var startChar = 20; // [space] in ASCII
         var endChar = 126; // ~ in ASCII
         var specialCodes = [
@@ -45,7 +83,7 @@
         ) {
             return;
         }
-        if(that.timer) {
+        if (that.timer) {
             clearTimeout(that.timer);
         }
         that.timer = setTimeout(function() {
@@ -101,13 +139,22 @@
         var htmlItem = $template.clone().removeClass('template');
         $('.link', htmlItem).html(item.label || item.__str__).data('item', item);
         that.$suggestList.append(htmlItem);
+        htmlItem.on('mousemove', function(event) {
+            var li = $(event.target).closest('li')[0];
+            that.selectItem = $('li:not(.template)', that.$suggestList).index(li);
+        });
+        htmlItem.hover(function(event) {
+            $(this).addClass('selected');
+        }, function(event) {
+            $(this).removeClass('selected');
+        });
         htmlItem.on('click', function(event){that.itemClick(event);});
         return htmlItem;
     };
     AutocompleteWidget.prototype.updateEditUrl = function(editUrl) {
         var pencil = this.$widget.find('.change-related');
         pencil.attr('href', editUrl);
-        if(editUrl) {
+        if (editUrl) {
             pencil.show();
         }
     };
@@ -126,7 +173,7 @@
         }
 
         this.notFromPopup = true;
-        this.$target.val(item.pk);
+        this.$target.val(item.pk).change();
         this.editMode(false);
         this.updateEditUrl(item.edit_url);
     };
@@ -159,6 +206,7 @@
             else {
                 that.$noResults.show();
             }
+            that.selectItem = -1;
             that.$suggestList.show();
         });
     };

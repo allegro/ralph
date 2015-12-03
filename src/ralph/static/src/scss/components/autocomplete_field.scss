@@ -125,9 +125,9 @@ $font-size: rem-calc(16);
             a {
                 display: block;
                 padding: 5px;
-                &:hover {
-                    background-color: #fafafa;
-                }
+            }
+            &.selected {
+                background-color: #d8d9da;
             }
         }
     }

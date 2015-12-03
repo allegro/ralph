@@ -19,7 +19,10 @@ from ralph.data_center.models.choices import (
     Orientation,
     RackOrientation
 )
-from ralph.lib.mixins.fields import NullableCharField
+from ralph.lib.mixins.fields import (
+    NullableCharField,
+    NullableGenericIPAddressField
+)
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
@@ -214,12 +217,12 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
 
 class DataCenterAsset(Asset):
 
-    rack = models.ForeignKey(Rack, null=True)
+    rack = models.ForeignKey(Rack, null=True, blank=True)
     status = TransitionField(
         default=DataCenterAssetStatus.new.id,
         choices=DataCenterAssetStatus(),
     )
-    position = models.IntegerField(null=True)
+    position = models.IntegerField(null=True, blank=True)
     orientation = models.PositiveIntegerField(
         choices=Orientation(),
         default=Orientation.front.id,
@@ -259,7 +262,7 @@ class DataCenterAsset(Asset):
 
     # Temporary solution until core functionality will not be fully migrated to
     # NG
-    management_ip = models.GenericIPAddressField(
+    management_ip = NullableGenericIPAddressField(
         verbose_name=_('Management IP address'),
         help_text=_('Presented as string.'),
         unique=True,
@@ -378,18 +381,21 @@ class DataCenterAsset(Asset):
         ]
         return chain(*assets)
 
-    @transition_action
-    def change_rack(self, **kwargs):
-        self.rack = Rack.objects.get(pk=kwargs['rack'])
-        self.position = kwargs['position']
-
-    change_rack.form_fields = {
-        'rack': forms.CharField(widget=AutocompleteWidget(
-            rel=rack.rel, admin_site=ralph_site
-        )),
-        'position': forms.IntegerField(),
-    }
-    change_rack.verbose_name = _('Change rack')
+    @classmethod
+    @transition_action(
+        verbose_name=_('Change rack'),
+        form_fields={
+            'rack': {
+                'field': forms.CharField(widget=AutocompleteWidget(
+                    rel=rack.rel, admin_site=ralph_site
+                )),
+            }
+        }
+    )
+    def change_rack(cls, instances, request, **kwargs):
+        rack = Rack.objects.get(pk=kwargs['rack'])
+        for instance in instances:
+            instance.rack = rack
 
 
 class Connection(models.Model):

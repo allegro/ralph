@@ -112,6 +112,9 @@ class RalphUser(AbstractUser, AdminAbsoluteUrlMixin):
     class Meta(AbstractUser.Meta):
         swappable = 'AUTH_USER_MODEL'
 
+    def __str__(self):
+        return self.get_full_name() or super().__str__()
+
     @property
     def api_token_key(self):
         try:
