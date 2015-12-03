@@ -13,6 +13,7 @@ def transition_action(method=None, **kwargs):
         func.form_fields = kwargs.get('form_fields', {})
         func.run_after = kwargs.get('run_after', [])
         func.help_text = kwargs.get('help_text', '')
+        func.precondition = kwargs.get('precondition', lambda instances: {})
         setattr(func, TRANSITION_ATTR_TAG, True)
 
         @wraps(func)

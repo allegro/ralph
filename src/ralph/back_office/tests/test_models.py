@@ -11,6 +11,10 @@ from ralph.assets.tests.factories import (
 )
 from ralph.back_office.models import BackOfficeAsset, BackOfficeAssetStatus
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
+from ralph.lib.transitions.models import (
+    _check_instances_for_transition,
+    TransitionNotAllowedError
+)
 from ralph.lib.transitions.tests import TransitionTestCase
 from ralph.tests import RalphTestCase
 from ralph.tests.factories import UserFactory
@@ -256,3 +260,14 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             request=self.request
         )
         self.assertEqual(self.bo_asset.hostname, current_hostname)
+
+    def test_return_report_when_user_not_assigned(self):
+        _, transition, _ = self._create_transition(
+            model=self.bo_asset,
+            name='test',
+            source=[BackOfficeAssetStatus.new.id],
+            target=BackOfficeAssetStatus.used.id,
+            actions=['return_report']
+        )
+        with self.assertRaises(TransitionNotAllowedError):
+            _check_instances_for_transition([self.bo_asset], transition)

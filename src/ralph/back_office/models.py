@@ -76,6 +76,14 @@ def get_user_iso3_country_name(user):
     return iso3_country_name
 
 
+def _check_user_assigned(instances):
+    errors = {}
+    for instance in instances:
+        if not instance.user:
+            errors[instance] = _('user not assigned')
+    return errors
+
+
 class BackOfficeAsset(Regionalizable, Asset):
     warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT)
     owner = models.ForeignKey(
@@ -387,6 +395,7 @@ class BackOfficeAsset(Regionalizable, Asset):
     @transition_action(
         return_attachment=True,
         run_before=['unassign_user', 'unassign_owner'],
+        precondition=_check_user_assigned,
     )
     def return_report(cls, instances, request, **kwargs):
         return cls._generate_report(
