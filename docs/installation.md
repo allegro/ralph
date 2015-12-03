@@ -38,10 +38,10 @@ Currently, we just read some environment variables, so just paste somewhere in y
 
 cat ~/.profile
 
-    export DB_ENV_MYSQL_DATABASE=ralph
-    export DB_ENV_MYSQL_USER=someuser
-    export DB_ENV_MYSQL_PASSWORD=somepassword
-    export DB_ENV_MYSQL_HOST=127.0.0.1
+    export DATABASE_NAME=ralph
+    export DATABASE_USER=someuser
+    export DATABASE_PASSWORD=somepassword
+    export DATABASE_HOST=127.0.0.1
     export PATH=/opt/ralph/ralph-core/bin/:$PATH
 
 ### Initialization
