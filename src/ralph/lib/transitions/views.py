@@ -127,7 +127,7 @@ class TransitionViewMixin(object):
             for obj, msgs in error.errors.items():
                 additional_error_message += '<li>'
                 additional_error_message += '<a href="{}">{}</a> - {}'.format(
-                    obj.get_absolute_url(), obj, ','.join(msgs)
+                    obj.get_absolute_url(), obj, ','.join(map(str, msgs))
                 )
                 additional_error_message += '</li>'
             additional_error_message += '</ul>'

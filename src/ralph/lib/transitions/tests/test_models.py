@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.test import RequestFactory
 
+from ralph.lib.transitions import transition_action
 from ralph.lib.transitions.exceptions import (
     TransitionModelNotFoundError,
     TransitionNotAllowedError
@@ -19,6 +20,7 @@ from ralph.lib.transitions.tests import TransitionTestCase
 from ralph.tests.models import Foo, Order, OrderStatus
 
 
+@transition_action()
 def mocked_action(*args, **kwargs):
     """
     Mark action as runned.

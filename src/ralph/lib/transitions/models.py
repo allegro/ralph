@@ -21,6 +21,7 @@ from django.db.models.signals import (
 from django.dispatch import receiver
 from django.utils.functional import curry
 from django.utils.text import slugify
+from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields.json import JSONField
 
 from ralph.admin.helpers import get_field_by_relation_path
@@ -142,7 +143,16 @@ def _check_instances_for_transition(instances, transition):
     errors = defaultdict(list)
     for instance in instances:
         if instance.status not in [int(s) for s in transition.source]:
-            errors[instance].append('wrong source status')
+            errors[instance].append(_('wrong source status'))
+
+    first_instance = instances[0]
+    for action in transition.actions.all():
+        func = getattr(first_instance, action.name)
+        error = func.precondition(instances)
+        if error:
+            for instance, error_details in error.items():
+                errors[instance].append(error_details)
+
     if errors:
         raise TransitionNotAllowedError(
             'Transition {} is not allowed for objects'.format(transition.name),
