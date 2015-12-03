@@ -173,7 +173,7 @@ class BackOfficeAsset(Regionalizable, Asset):
                 'autocomplete_field': 'user'
             }
         },
-        run_before=['release_report']
+        run_after=['release_report']
     )
     def assign_user(cls, instances, request, **kwargs):
         user = get_user_model().objects.get(pk=int(kwargs['user']))
@@ -193,7 +193,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             'hostname might be generated for asset (only for particular model '
             'categories and only if owner\'s country has changed)'
         ),
-        run_before=['release_report']
+        run_after=['release_report']
     )
     def assign_owner(cls, instances, request, **kwargs):
         owner = get_user_model().objects.get(pk=int(kwargs['owner']))
@@ -202,13 +202,17 @@ class BackOfficeAsset(Regionalizable, Asset):
             instance._try_assign_hostname(request=request)
 
     @classmethod
-    @transition_action()
+    @transition_action(
+        run_after=['loan_report', 'return_report']
+    )
     def unassign_owner(cls, instances, request, **kwargs):
         for instance in instances:
             instance.owner = None
 
     @classmethod
-    @transition_action()
+    @transition_action(
+        run_after=['loan_report', 'return_report']
+    )
     def unassign_user(cls, instances, request, **kwargs):
         for instance in instances:
             instance.user = None
@@ -223,7 +227,7 @@ class BackOfficeAsset(Regionalizable, Asset):
                 )
             }
         },
-        run_before=['loan_report']
+        run_after=['loan_report']
     )
     def assign_loan_end_date(cls, instances, request, **kwargs):
         for instance in instances:
@@ -387,7 +391,6 @@ class BackOfficeAsset(Regionalizable, Asset):
     @classmethod
     @transition_action(
         return_attachment=True,
-        run_before=['unassign_user', 'unassign_owner'],
     )
     def release_report(cls, instances, request, **kwargs):
         return cls._generate_report(
@@ -397,7 +400,6 @@ class BackOfficeAsset(Regionalizable, Asset):
     @classmethod
     @transition_action(
         return_attachment=True,
-        run_before=['unassign_user', 'unassign_owner'],
         precondition=_check_user_assigned,
     )
     def return_report(cls, instances, request, **kwargs):
@@ -408,7 +410,6 @@ class BackOfficeAsset(Regionalizable, Asset):
     @classmethod
     @transition_action(
         return_attachment=True,
-        run_before=['unassign_user', 'unassign_owner'],
     )
     def loan_report(cls, instances, request, **kwargs):
         return cls._generate_report(
