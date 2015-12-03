@@ -36,8 +36,20 @@ $font-size: rem-calc(16);
                 white-space: nowrap;
                 margin: 1px;
                 @include common-styles;
+                width: 100%;
                 .title {
                     margin-left: $item-padding;
+                    max-width: calc(100% - #{($lookup-icon-width * $icons-count) + $icons-wrapper-margin});
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    display: inline-block;
+                    line-height: normal;
+                }
+                .autocomplete-icons {
+                    float: right;
+                    display: block;
+                    width: 50px;
                 }
                 .delete {
                     padding: $item-padding 0;
