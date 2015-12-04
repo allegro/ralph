@@ -304,7 +304,7 @@ class BackOfficeAsset(Regionalizable, Asset):
     @transition_action(
         form_fields={
             'task_url': {
-                'field': forms.CharField(label=_('task_url')),
+                'field': forms.URLField(label=_('task URL')),
             }
         }
     )
