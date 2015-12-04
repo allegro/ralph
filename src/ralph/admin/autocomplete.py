@@ -1,4 +1,5 @@
 import operator
+import re
 from functools import reduce
 
 from django.conf.urls import url
@@ -13,6 +14,7 @@ from ralph.lib.permissions.models import PermissionsForObjectMixin
 
 QUERY_PARAM = 'q'
 DETAIL_PARAM = 'pk'
+QUERY_REGEX = re.compile(r'[.| ]')
 
 
 class JsonViewMixin(object):
@@ -114,6 +116,28 @@ class AutocompleteList(SuggestView):
             return HttpResponseBadRequest()
         return super().dispatch(request, *args, **kwargs)
 
+    def get_query_filters(self, queryset, query, search_fields):
+        """
+        Get query filters to Django queryset filter.
+
+        Args:
+            queryset: Django queryset
+            query: Query string
+            search_fields: List of fields
+
+        Returns:
+            Django queryset
+        """
+        for value in QUERY_REGEX.split(query):
+            if value:
+                query_filters = [
+                    Q(**{'{}__icontains'.format(field): value})
+                    for field in search_fields
+                ]
+                queryset = queryset.filter(reduce(operator.or_, query_filters))
+
+        return queryset
+
     def get_base_ids(self, model, value):
         """
         Return IDs for related models.
@@ -122,20 +146,14 @@ class AutocompleteList(SuggestView):
         if not search_fields:
             return []
 
-        query_filters = [
-            Q(**{'{}__icontains'.format(field): value})
-            for field in search_fields
-        ]
         if issubclass(model, PermissionsForObjectMixin):
             queryset = model._get_objects_for_user(
                 self.request.user, model.objects
             )
         else:
             queryset = model.objects
-
-        return queryset.filter(
-            reduce(operator.or_, query_filters)
-        )[:self.limit].values_list('pk', flat=True)
+        queryset = self.get_query_filters(queryset, value, search_fields)
+        return queryset[:self.limit].values_list('pk', flat=True)
 
     def get_queryset(self, user):
         search_fields = ralph_site._registry[self.model].search_fields
@@ -165,11 +183,9 @@ class AutocompleteList(SuggestView):
             queryset = queryset.filter(pk__in=id_list)
         else:
             if self.query:
-                qs = [
-                    Q(**{'{}__icontains'.format(field): self.query})
-                    for field in search_fields
-                ]
-                queryset = queryset.filter(reduce(operator.or_, qs))
+                queryset = self.get_query_filters(
+                    queryset, self.query, search_fields
+                )
             if issubclass(self.model, PermissionsForObjectMixin):
                 queryset = self.model._get_objects_for_user(
                     user, queryset
