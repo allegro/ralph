@@ -275,6 +275,7 @@ class RalphTemplateView(TemplateView, metaclass=PermissionViewMetaClass):
             **kwargs
         )
         context['site_header'] = settings.ADMIN_SITE_HEADER
+        context['site_title'] = settings.ADMIN_SITE_TITLE
         # checks if user is allowed to see elements in template
         context['has_permission'] = self.request.user.is_authenticated()
         return context

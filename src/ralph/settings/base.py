@@ -150,6 +150,7 @@ DEFAULT_COUNTRY_CODE = os.environ.get('DEFAULT_COUNTRY_CODE', 'POL')
 LDAP_SERVER_OBJECT_USER_CLASS = 'user'  # possible values: user, person
 
 ADMIN_SITE_HEADER = 'Ralph 3'
+ADMIN_SITE_TITLE = 'Ralph 3'
 
 LOGGING = {
     'version': 1,
@@ -255,3 +256,6 @@ RALPH_EXTERNAL_SERVICES = {
 #     {'url': 'http://....', 'name': 'Link name'},
 # ]
 MY_EQUIPMENT_LINKS = json.loads(os.environ.get('MY_EQUIPMENT_LINKS', '[]'))
+MY_EQUIPMENT_REPORT_FAILURE_URL = json.loads(
+    os.environ.get('MY_EQUIPMENT_REPORT_FAILURE_URL', '""')
+)
