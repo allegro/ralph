@@ -19,7 +19,7 @@ def ralph_item(*args, **kwargs):
 
     # create access_by_perms entries by iterating through all children
     # and extracting app and model name from it
-    # permission is created in '<app>.{add|change}_<model>' format
+    # permission is created in '<app>.{add|change|view}_<model>' format
     access_by_perms = kwargs.get('access_by_perms', [])
     if isinstance(access_by_perms, (str, int)):
         access_by_perms = [access_by_perms]
@@ -30,6 +30,7 @@ def ralph_item(*args, **kwargs):
             access_by_perms.extend([
                 '{}.add_{}'.format(app, model),
                 '{}.change_{}'.format(app, model),
+                '{}.view_{}'.format(app, model),
             ])
         elif hasattr(child, 'permissions'):
             access_by_perms.extend(child.permissions)
@@ -54,7 +55,7 @@ def section(section_name, app, model):
     item = ralph_item(
         title=section_name,
         url='admin:{}_{}_changelist'.format(app, model),
-        access_by_perms='{}.change_{}'.format(app, model),
+        access_by_perms='{}.view_{}'.format(app, model),
         children=[
             ralph_item(
                 title=_('Add'),

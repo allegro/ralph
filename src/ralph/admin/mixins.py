@@ -7,6 +7,7 @@ from django import forms
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.templatetags.admin_static import static
+from django.contrib.auth import get_permission_codename
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.http import HttpResponseRedirect
@@ -101,7 +102,6 @@ class RalphAdminMixin(RalphAutocompleteMixin):
     change_views = None
     change_list_template = 'admin/change_list.html'
     change_form_template = 'admin/change_form.html'
-
     checks_class = RalphAdminChecks
     form = RalphAdminForm
     # List of fields that are to be excluded from fillable on bulk edit
@@ -122,9 +122,26 @@ class RalphAdminMixin(RalphAutocompleteMixin):
         Form = super().get_form(request, obj, **kwargs)  # noqa
         return add_request_to_form(Form, request=request)
 
+    def has_view_permission(self, request, obj=None):
+        opts = self.opts
+        codename = get_permission_codename('view', opts)
+        return request.user.has_perm('%s.%s' % (opts.app_label, codename))
+
+    def has_change_permission(self, request, obj=None):
+        if obj:
+            return super().has_change_permission(request, obj)
+        else:
+            return self.has_view_permission(request, obj)
+
     def get_changelist(self, request, **kwargs):
         from ralph.admin.views.main import RalphChangeList
         return RalphChangeList
+
+    def get_list_display_links(self, request, list_display):
+        if super().has_change_permission(request):
+            return super().get_list_display_links(request, list_display)
+        else:
+            return None
 
     def _initialize_search_form(self, extra_context):
         search_fields = []
