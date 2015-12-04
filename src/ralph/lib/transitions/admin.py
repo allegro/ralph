@@ -95,7 +95,12 @@ class TransitionAdminMixin(object):
                 args=(transition.pk,)
             )
             ids = queryset.values_list('id', flat=True)
-            select_url = urlencode(zip(repeat('select', len(ids)), ids))
+            back_url = request.META.get('HTTP_REFERER')
+            select_url = urlencode(
+                list(zip(repeat('select', len(ids)), ids)) + [
+                    ('back_url', back_url)
+                ]
+            )
             return HttpResponseRedirect(
                 base_url + '?' + select_url
             )
