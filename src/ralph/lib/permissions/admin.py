@@ -40,7 +40,10 @@ class PermissionPerFieldAdminMixin(object):
         """Return read only fields respects user permissions."""
         can_view = self.model.allowed_fields(request.user, 'view')
         can_change = self.model.allowed_fields(request.user, 'change')
-        return can_view - can_change
+        return list(
+            (can_view - can_change) |
+            set(super().get_readonly_fields(request, obj))
+        )
 
     def get_form(self, request, obj=None, **kwargs):
         """Return form with fields which user have access."""
