@@ -101,7 +101,6 @@ class RalphAdminMixin(RalphAutocompleteMixin):
     change_views = None
     change_list_template = 'admin/change_list.html'
     change_form_template = 'admin/change_form.html'
-
     checks_class = RalphAdminChecks
     form = RalphAdminForm
     # List of fields that are to be excluded from fillable on bulk edit
