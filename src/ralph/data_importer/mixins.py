@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from import_export import widgets
 
 from ralph.data_importer.models import ImportedObjects
 
@@ -29,3 +29,20 @@ class ImportForeignKeyMixin(object):
                 old_object_pk=self.old_object_pk,
                 defaults={'object_pk': instance.pk}
             )
+
+    def export_field(self, field, obj):
+        """
+        Override export_field.
+
+        Each field which has widget: ForeignKeyWidget return in str format.
+
+        Args:
+            field: ImportExport field object
+            obj: Django model object
+
+        Returns:
+            Value to export
+        """
+        if isinstance(field.widget, widgets.ForeignKeyWidget):
+            return str(getattr(obj, self.get_field_name(field), None))
+        return super().export_field(field, obj)
