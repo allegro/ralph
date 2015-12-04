@@ -303,7 +303,11 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
         )
         widget_options = {
             'data-suggest-url': reverse(
-                'admin:{}_{}_autocomplete_suggest'.format(*model_options)
+                'autocomplete-list', kwargs={
+                    'app': self.model._meta.app_label,
+                    'model': self.model.__name__,
+                    'field': self.field.name
+                }
             ),
             'data-details-url': reverse(
                 'admin:{}_{}_autocomplete_details'.format(*model_options)

@@ -10,6 +10,7 @@ from ralph.accounts.models import Regionalizable
 from ralph.assets.models.assets import AssetHolder, BudgetInfo
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
+from ralph.lib.mixins.fields import BaseObjectForeignKey
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
 
 
@@ -78,7 +79,11 @@ class Support(
         default=None,
         null=True,
     )
-    base_objects = models.ManyToManyField(BaseObject, related_name='supports')
+    base_objects = models.ManyToManyField(
+        BaseObject,
+        related_name='supports',
+        through='BaseObjectsSupport',
+    )
 
     def __init__(self, *args, **kwargs):
         self.saving_user = None
@@ -86,3 +91,19 @@ class Support(
 
     def get_natural_end_support(self):
         return naturaltime(datetime(*(self.date_to.timetuple()[:6])))
+
+
+class BaseObjectsSupport(models.Model):
+    support = models.ForeignKey(Support, related_name='+')
+    baseobject = BaseObjectForeignKey(
+        BaseObject,
+        verbose_name=_('Asset'),
+        limit_models=[
+            'back_office.BackOfficeAsset',
+            'data_center.DataCenterAsset'
+        ]
+    )
+
+    class Meta:
+        managed = False
+        db_table = 'supports_support_base_objects'

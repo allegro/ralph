@@ -58,4 +58,14 @@ class Migration(migrations.Migration):
             name='manufacturer',
             field=models.ForeignKey(to='tests.Manufacturer'),
         ),
+        migrations.CreateModel(
+            name='BaseObjectForeignKeyModel',
+            fields=[
+                ('id', models.AutoField(auto_created=True, serialize=False, primary_key=True, verbose_name='ID')),
+                ('base_object', ralph.lib.mixins.fields.BaseObjectForeignKey(
+                    verbose_name='Asset', related_name='licences',
+                    to='assets.BaseObject')
+                )
+            ],
+        ),
     ]

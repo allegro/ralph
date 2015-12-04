@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models.loading import get_model
 
 
 class NullableCharFieldMixin(object):
@@ -30,3 +32,36 @@ class NullableGenericIPAddressField(
     models.GenericIPAddressField
 ):
     pass
+
+
+class BaseObjectForeignKey(models.ForeignKey):
+    """
+    Base object Foreign Key.
+
+    Add support for additional parameter limit_models for
+    Foreign Key field.
+
+    """
+    def __init__(self, *args, **kwargs):
+        kwargs['limit_choices_to'] = self.limit_choices
+        self.limit_models = kwargs.pop('limit_models', [])
+        super().__init__(*args, **kwargs)
+
+    def limit_choices(self):
+        """
+        Add limit_choices_to search by content_type for models
+        inherit Polymorphic
+        """
+        if self.limit_models:
+            content_types = ContentType.objects.get_for_models(
+                *[get_model(*i.split('.')) for i in self.limit_models]
+            )
+            return {'content_type__in': content_types.values()}
+
+        return {}
+
+    def get_limit_models(self):
+        """
+        Returns Model class list from limit_models.
+        """
+        return [get_model(model) for model in self.limit_models]

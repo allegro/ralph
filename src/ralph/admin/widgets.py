@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+from collections import defaultdict
 from itertools import chain, groupby
 from urllib import parse
 
@@ -8,6 +9,7 @@ from django.contrib.admin.templatetags.admin_static import static
 from django.contrib.admin.views.main import TO_FIELD_VAR
 from django.core.exceptions import FieldDoesNotExist
 from django.core.urlresolvers import reverse
+from django.db.models.loading import get_model
 from django.forms.utils import flatatt
 from django.template import loader
 from django.template.context import RenderContext
@@ -125,10 +127,11 @@ class PermissionsSelectWidget(forms.Widget):
 
 
 class AutocompleteWidget(forms.TextInput):
-    def __init__(self, rel, admin_site, attrs=None, using=None, **kwargs):
-        self.rel = rel
+    def __init__(self, field, admin_site, attrs=None, using=None, **kwargs):
+        self.field = field
+        self.rel = self.field.rel
         self.request = kwargs.get('request', None)
-        self.rel_to = kwargs.get('rel_to') or rel.to
+        self.rel_to = kwargs.get('rel_to') or field.rel.to
         self.admin_site = admin_site
         self.db = using
         super().__init__(attrs)
@@ -159,7 +162,11 @@ class AutocompleteWidget(forms.TextInput):
         )
         widget_options = {
             'data-suggest-url': reverse(
-                'admin:{}_{}_autocomplete_suggest'.format(*model_options)
+                'autocomplete-list', kwargs={
+                    'app': self.field.rel.related_model._meta.app_label,
+                    'model': self.field.rel.related_model._meta.model_name,
+                    'field': self.field.name
+                }
             ),
             'data-details-url': reverse(
                 'admin:{}_{}_autocomplete_details'.format(*model_options)
@@ -183,12 +190,46 @@ class AutocompleteWidget(forms.TextInput):
                 current_app=self.admin_site.name,
             ) + self.get_url_parameters()
             searched_fields = []
-            for field_name in admin_model.search_fields:
-                try:
-                    field = get_field_by_relation_path(self.rel_to, field_name)
-                    searched_fields.append(str(field.verbose_name))
-                except FieldDoesNotExist:
-                    pass
+            searched_fields_tooltip = defaultdict(list)
+            polymorphic_descendants = getattr(
+                self.rel_to, '_polymorphic_descendants', []
+            )
+
+            if polymorphic_descendants:
+                # Check if model after which we are looking for is polymorphic
+                # if they are also looking for the models of its dependencies
+                # or by limit_models defined in model
+                polymorphic_models = polymorphic_descendants
+                limit_models = getattr(self.field, 'limit_models', [])
+                if limit_models:
+                    polymorphic_models = [
+                        get_model(*i.split('.')) for i in limit_models
+                    ]
+
+                for related_model in polymorphic_models:
+                    for field_name in self.admin_site._registry[
+                        related_model
+                    ].search_fields:
+                        field = get_field_by_relation_path(
+                            related_model, field_name
+                        )
+                        key = str(related_model._meta.verbose_name)
+                        searched_fields_tooltip[key].append(
+                            str(field.verbose_name)
+                        )
+            else:
+                for field_name in admin_model.search_fields:
+                    try:
+                        field = get_field_by_relation_path(
+                            self.rel_to, field_name
+                        )
+                        key = str(self.rel_to._meta.verbose_name)
+                        searched_fields_tooltip[key].append(
+                            str(field.verbose_name)
+                        )
+                        searched_fields.append(str(field.verbose_name))
+                    except FieldDoesNotExist:
+                        pass
         current_object = None
         if value:
             current_object = self.rel_to._default_manager.select_related(
@@ -202,12 +243,16 @@ class AutocompleteWidget(forms.TextInput):
             ).first()
         show_tooltip = hasattr(self.rel_to, 'autocomplete_tooltip')
         context = RenderContext({
+            'model': self.rel_to,
             'current_object': current_object,
             'attrs': flatatt(widget_options),
             'related_url': related_url,
             'name': name,
             'input_field': input_field,
-            'searched_fields': ', '.join(searched_fields),
+            'searched_fields': sorted(
+                set(list(chain(*searched_fields_tooltip.values())))
+            ),
+            'searched_fields_tooltip': dict(searched_fields_tooltip),
             'show_tooltip': show_tooltip,
         })
         info = (self.rel_to._meta.app_label, self.rel_to._meta.model_name)

@@ -3,6 +3,7 @@ from functools import reduce
 
 from django.conf.urls import url
 from django.db.models import Q
+from django.db.models.loading import get_model
 from django.http import Http404, HttpResponseBadRequest, JsonResponse
 from django.views.generic import View
 
@@ -66,62 +67,6 @@ class AjaxAutocompleteMixin(object):
     def get_urls(self):
         urls = super().get_urls()
         outer_model = self.model
-        search_fields = self.search_fields
-        ordering = self.ordering or ()
-        get_autocomplete_queryset = self.get_autocomplete_queryset
-
-        class List(SuggestView):
-            limit = 10
-            model = outer_model
-
-            def dispatch(self, request, *args, **kwargs):
-                self.query = request.GET.get(QUERY_PARAM, None)
-                if not self.query:
-                    return HttpResponseBadRequest()
-                return super().dispatch(request, *args, **kwargs)
-
-            def get_base_ids(self, model, value):
-                """
-                Return IDs for related models.
-                """
-                search_fields = ralph_site._registry[model].search_fields
-                query_filters = [
-                    Q(**{'{}__icontains'.format(field): value})
-                    for field in search_fields
-                ]
-                if issubclass(model, PermissionsForObjectMixin):
-                    queryset = model._get_objects_for_user(
-                        self.request.user, model.objects
-                    )
-                else:
-                    queryset = model.objects
-                return queryset.filter(
-                    *query_filters
-                )[:self.limit].values_list('pk', flat=True)
-
-            def get_queryset(self, user):
-                queryset = get_autocomplete_queryset()
-                if getattr(self.model, '_polymorphic_descendants', []):
-                    id_list = []
-                    for related_model in self.model._polymorphic_descendants:
-                        id_list.extend(self.get_base_ids(
-                            related_model,
-                            self.query,
-                        ))
-                    queryset = queryset.filter(pk__in=id_list)
-                else:
-                    if self.query:
-                        qs = [
-                            Q(**{'{}__icontains'.format(field): self.query})
-                            for field in search_fields
-                        ]
-                        queryset = queryset.filter(reduce(operator.or_, qs))
-                    if issubclass(self.model, PermissionsForObjectMixin):
-                        queryset = self.model._get_objects_for_user(
-                            user, queryset
-                        )
-
-                return queryset.order_by(*ordering)[:self.limit]
 
         class Detail(SuggestView):
             model = outer_model
@@ -144,14 +89,89 @@ class AjaxAutocompleteMixin(object):
 
         my_urls = [
             url(
-                r'^autocomplete/suggest/$',
-                List.as_view(),
-                name='{}_{}_autocomplete_suggest'.format(*params)
-            ),
-            url(
                 r'^autocomplete/details/$',
                 Detail.as_view(),
                 name='{}_{}_autocomplete_details'.format(*params)
             ),
         ]
         return my_urls + urls
+
+
+class AutocompleteList(SuggestView):
+    limit = 10
+    model = None
+
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            model = get_model(kwargs['app'], kwargs['model'])
+        except LookupError:
+            return HttpResponseBadRequest('Model not found')
+
+        self.field = model._meta.get_field(kwargs['field'])
+        self.model = self.field.rel.to
+        self.query = request.GET.get(QUERY_PARAM, None)
+        if not self.query:
+            return HttpResponseBadRequest()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_base_ids(self, model, value):
+        """
+        Return IDs for related models.
+        """
+        search_fields = ralph_site._registry[model].search_fields
+        if not search_fields:
+            return []
+
+        query_filters = [
+            Q(**{'{}__icontains'.format(field): value})
+            for field in search_fields
+        ]
+        if issubclass(model, PermissionsForObjectMixin):
+            queryset = model._get_objects_for_user(
+                self.request.user, model.objects
+            )
+        else:
+            queryset = model.objects
+
+        return queryset.filter(
+            reduce(operator.or_, query_filters)
+        )[:self.limit].values_list('pk', flat=True)
+
+    def get_queryset(self, user):
+        search_fields = ralph_site._registry[self.model].search_fields
+        queryset = getattr(
+            self.model,
+            'get_autocomplete_queryset',
+            self.model._default_manager.all
+        )()
+        polymorphic_descendants = getattr(
+            self.model, '_polymorphic_descendants', []
+        )
+        limit_choices = self.field.get_limit_choices_to()
+        if limit_choices:
+            queryset = queryset.filter(**limit_choices)
+            try:
+                polymorphic_descendants = self.field.get_limit_models()
+            except AttributeError:
+                pass
+
+        if polymorphic_descendants:
+            id_list = []
+            for related_model in polymorphic_descendants:
+                id_list.extend(self.get_base_ids(
+                    related_model,
+                    self.query,
+                ))
+            queryset = queryset.filter(pk__in=id_list)
+        else:
+            if self.query:
+                qs = [
+                    Q(**{'{}__icontains'.format(field): self.query})
+                    for field in search_fields
+                ]
+                queryset = queryset.filter(reduce(operator.or_, qs))
+            if issubclass(self.model, PermissionsForObjectMixin):
+                queryset = self.model._get_objects_for_user(
+                    user, queryset
+                )
+        return queryset[:self.limit]

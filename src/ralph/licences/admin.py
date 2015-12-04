@@ -106,9 +106,6 @@ class LicenceAdmin(
     def get_queryset(self, *args, **kwargs):
         return Licence.objects_used_free.all()
 
-    def get_autocomplete_queryset(self):
-        return Licence.objects_used_free.all()
-
 
 @register(LicenceType)
 class LicenceTypeAdmin(

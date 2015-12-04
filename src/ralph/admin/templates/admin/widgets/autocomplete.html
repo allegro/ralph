@@ -18,8 +18,20 @@
                 </div>
             </div>
         </div>
-        <input class="input" type="text" placeholder="{% trans 'Search by' %} {{ searched_fields }}"/>
+        <input class="input" type="text" placeholder="{% trans 'Search by' %} {{ searched_fields|slice:":2"|join:", " }}"/>
         <div class='widget-icons'>
+        {% if searched_fields_tooltip|slice:":2" %}
+          <i data-tooltip class="has-tip fa fa-info-circle" title='{% trans 'Search by' %}<br />
+          {% for model, fields in searched_fields_tooltip.items %}
+            {{ model|capfirst }}:<br />
+              {% for field in fields %}
+                - {{ field }}<br />
+              {% endfor %}
+          {% endfor %}
+          '>
+          </i>
+
+        {% endif %}
           <a href="{{ related_url }}" class="related-lookup" id="lookup_id_{{ name }}">
               <i class="fa fa-search"></i>
           </a>
