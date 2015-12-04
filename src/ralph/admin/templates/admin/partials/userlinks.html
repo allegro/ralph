@@ -2,6 +2,9 @@
 <li>
   <a href="{% url 'user_profile' %}">{% trans 'My profile' %}</a>
 </li>
+<li>
+  <a href="{% url 'current_user_info' %}">{% trans 'My equipment' %}</a>
+</li>
 {% if user.has_usable_password %}
   <li>
     <a href="{% url 'admin:password_change' %}">{% trans 'Change password' %}</a>

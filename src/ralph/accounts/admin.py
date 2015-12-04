@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
 from django.contrib.auth.admin import GroupAdmin, UserAdmin
 from django.contrib.auth.models import Group
 from django.core.urlresolvers import reverse
@@ -96,6 +97,17 @@ class AssetList(Table):
             return [''.join(result)]
         else:
             return []
+
+    def report_failure(self, item):
+        url = settings.MY_EQUIPMENT_REPORT_FAILURE_URL
+        if url:
+            if self.request and 'username' not in item:
+                item['username'] = self.request.user.username
+            return '<a href="{}" target="_blank">{}</a><br />'.format(
+                url.format(**item), _('Report failure')
+            )
+        return ''
+    report_failure.title = ''
 
 
 class AssignedLicenceList(Table):

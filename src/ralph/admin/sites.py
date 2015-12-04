@@ -10,6 +10,7 @@ class RalphAdminSiteMixin(object):
 
     """Ralph admin site mixin."""
     site_header = settings.ADMIN_SITE_HEADER
+    site_title = settings.ADMIN_SITE_TITLE
     index_template = 'admin/index.html'
     app_index_template = 'admin/app_index.html'
     object_history_template = 'admin/object_history.html'

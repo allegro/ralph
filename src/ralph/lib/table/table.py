@@ -8,7 +8,10 @@ except ImportError:
 from django.core.exceptions import FieldDoesNotExist
 from django.forms.utils import flatatt
 
-from ralph.admin.helpers import get_field_by_relation_path
+from ralph.admin.helpers import (
+    get_field_by_relation_path,
+    get_field_title_by_relation_path
+)
 
 
 class Table(object):
@@ -20,7 +23,7 @@ class Table(object):
         >>> table = Table(queryset, ['id', 'name'])
         >>> table.get_table_content()
         [
-            ['id', 'name'],
+            ['id', ('name', 'My field name')],
             [
                 {'value': '1', 'html_attributes': ''},
                 {'value': 'Test', 'html_attributes': ''}
@@ -28,7 +31,9 @@ class Table(object):
         ]
     """
 
-    def __init__(self, queryset, list_display, additional_row_method=None):
+    def __init__(
+        self, queryset, list_display, additional_row_method=None, request=None
+    ):
         """
         Initialize table class
 
@@ -37,22 +42,29 @@ class Table(object):
         :param additional_row_method: list of additional method for each row
         """
         self.queryset = queryset
-        self.list_display = list_display
+        self.list_display_raw = list_display
+        self.list_display = [
+            (f[0] if isinstance(f, (tuple, list)) else f) for f in list_display
+        ]
         self.additional_row_method = additional_row_method
+        self.request = request
 
     def get_headers(self):
         """
         Return headers for table.
         """
         headers = []
-        for field in self.list_display:
-            try:
-                name = getattr(self, field).title
-            except AttributeError:
-                name = get_field_by_relation_path(
-                    self.queryset.model, field
-                ).verbose_name
-            headers.append(name)
+        for field in self.list_display_raw:
+            if isinstance(field, (list, tuple)):
+                headers.append(field[1])
+            else:
+                try:
+                    name = getattr(self, field).title
+                except AttributeError:
+                    name = get_field_title_by_relation_path(
+                        self.queryset.model, field
+                    )
+                headers.append(name)
         return headers
 
     def get_field_value(self, item, field):
@@ -94,6 +106,8 @@ class Table(object):
         list_display = [
             field for field in self.list_display if not hasattr(self, field)
         ]
+        if 'id' not in list_display:
+            list_display.append('id')
         if self.additional_row_method:
             colspan = len(self.list_display)
         for item in self.queryset.values(*list_display):

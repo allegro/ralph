@@ -25,6 +25,21 @@ def get_field_by_relation_path(model, field_path):
     return get_fields_from_path(model, field_path)[-1]
 
 
+def get_field_title_by_relation_path(model, field_path):
+    """
+    Return field verbose name
+
+    If field path is nested (using __), returned name is one before last field
+    verbose name.
+    """
+    fields = get_fields_from_path(model, field_path)
+    if len(fields) > 1:
+        field = fields[-2]
+    else:
+        field = fields[-1]
+    return field.verbose_name
+
+
 def get_value_by_relation_path(obj, field_path):
     """
     Return value of object field (which may be nested using __ notation).
