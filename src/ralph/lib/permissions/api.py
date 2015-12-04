@@ -17,7 +17,8 @@ ADD_PERM = ['%(app_label)s.add_%(model_name)s']
 CHANGE_PERM = ['%(app_label)s.change_%(model_name)s']
 DELETE_PERM = ['%(app_label)s.delete_%(model_name)s']
 # user could have any of add, change, delete permissions to view model
-VIEW_PERM = ADD_PERM + CHANGE_PERM + DELETE_PERM
+VIEW_PERM = ['%(app_label)s.view_%(model_name)s']
+VIEW_PERM += ADD_PERM + CHANGE_PERM + DELETE_PERM
 
 
 class PermissionsForObjectFilter(BaseFilterBackend):
