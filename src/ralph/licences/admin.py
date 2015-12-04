@@ -98,7 +98,8 @@ class LicenceAdmin(
             'fields': (
                 'order_no', 'invoice_no', 'price', 'invoice_date',
                 'number_bought', 'used', 'free', 'accounting_id',
-                'budget_info', 'provider', 'office_infrastructure'
+                'budget_info', 'provider', 'office_infrastructure',
+                'property_of'
             )
         }),
     )

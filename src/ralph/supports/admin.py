@@ -37,7 +37,7 @@ class SupportAdmin(PermissionAdminMixin, AttachmentsMixin, RalphAdmin):
     ]
     list_filter = [
         'contract_id', 'name', 'serial_no', 'price', 'remarks', 'description',
-        'support_type', 'budget_info', 'date_from', 'date_to'
+        'support_type', 'budget_info', 'date_from', 'date_to', 'property_of'
     ]
     date_hierarchy = 'created'
     list_display = [
@@ -59,7 +59,7 @@ class SupportAdmin(PermissionAdminMixin, AttachmentsMixin, RalphAdmin):
             'fields': (
                 'contract_id', 'contract_terms', 'sla_type', 'price',
                 'supplier', 'invoice_date', 'invoice_no', 'budget_info',
-                'period_in_months',
+                'period_in_months', 'property_of',
             )
         }),
     )

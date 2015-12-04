@@ -12,6 +12,7 @@ class NamedMixin(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ['name']
 
     def __str__(self):
         return self.name
@@ -22,6 +23,7 @@ class NamedMixin(models.Model):
 
         class Meta:
             abstract = True
+            ordering = ['name']
 
         def __str__(self):
             return self.name
