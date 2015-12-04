@@ -173,7 +173,6 @@ class BackOfficeAsset(Regionalizable, Asset):
                 'autocomplete_field': 'user'
             }
         },
-        run_after=['release_report']
     )
     def assign_user(cls, instances, request, **kwargs):
         user = get_user_model().objects.get(pk=int(kwargs['user']))
@@ -210,7 +209,6 @@ class BackOfficeAsset(Regionalizable, Asset):
             'hostname might be generated for asset (only for particular model '
             'categories and only if owner\'s country has changed)'
         ),
-        run_after=['release_report']
     )
     def assign_owner(cls, instances, request, **kwargs):
         owner = get_user_model().objects.get(pk=int(kwargs['owner']))
@@ -244,7 +242,6 @@ class BackOfficeAsset(Regionalizable, Asset):
                 )
             }
         },
-        run_after=['loan_report']
     )
     def assign_loan_end_date(cls, instances, request, **kwargs):
         for instance in instances:
@@ -408,6 +405,7 @@ class BackOfficeAsset(Regionalizable, Asset):
     @classmethod
     @transition_action(
         return_attachment=True,
+        run_after=['assign_owner', 'assign_user']
     )
     def release_report(cls, instances, request, **kwargs):
         return cls._generate_report(
@@ -427,6 +425,7 @@ class BackOfficeAsset(Regionalizable, Asset):
     @classmethod
     @transition_action(
         return_attachment=True,
+        run_after=['assign_owner', 'assign_user', 'assign_loan_end_date']
     )
     def loan_report(cls, instances, request, **kwargs):
         return cls._generate_report(
