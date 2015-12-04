@@ -22,7 +22,7 @@ from ralph.lib.external_services import ExternalService, obj_to_dict
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
 from ralph.lib.transitions import transition_action, TransitionField
-from ralph.licences.models import BaseObjectLicence
+from ralph.licences.models import BaseObjectLicence, Licence
 from ralph.reports.models import Report
 
 IMEI_UNTIL_2003 = re.compile(r'^\d{6} *\d{2} *\d{6} *\d$')
@@ -179,6 +179,23 @@ class BackOfficeAsset(Regionalizable, Asset):
         user = get_user_model().objects.get(pk=int(kwargs['user']))
         for instance in instances:
             instance.user = user
+
+    @classmethod
+    @transition_action(
+        form_fields={
+            'licence': {
+                'field': forms.CharField(label=_('Licence')),
+                'autocomplete_field': 'licence',
+                'autocomplete_model': 'licences.BaseObjectLicence'
+            }
+        }
+    )
+    def assign_licence(cls, instances, request, **kwargs):
+        for instance in instances:
+            BaseObjectLicence.objects.get_or_create(
+                base_object=instance,
+                licence=Licence.objects.get(pk=kwargs['licence'])
+            )
 
     @classmethod
     @transition_action(

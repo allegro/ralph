@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import messages
 from django.core.urlresolvers import reverse
+from django.db.models.loading import get_model
 from django.http import (
     HttpResponseBadRequest,
     HttpResponseForbidden,
@@ -49,8 +50,13 @@ class TransitionViewMixin(object):
                 condition = options.get('condition', lambda x, y: True)
                 if not condition(self.obj, self.actions):
                     continue
+                autocomplete_model = options.get('autocomplete_model', False)
+                model = self.obj
+                if autocomplete_model:
+                    model = get_model(autocomplete_model)
+
                 if options.get('autocomplete_field', False):
-                    rel = self.obj._meta.get_field(
+                    rel = model._meta.get_field(
                         options['autocomplete_field']
                     ).rel
                     options['field'].widget = AutocompleteWidget(
