@@ -56,6 +56,7 @@ def section(section_name, app, model):
         title=section_name,
         url='admin:{}_{}_changelist'.format(app, model),
         access_by_perms='{}.view_{}'.format(app, model),
+        perms_mode_all=False,
         children=[
             ralph_item(
                 title=_('Add'),
