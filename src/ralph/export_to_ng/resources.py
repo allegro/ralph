@@ -723,7 +723,6 @@ class AssetHolderResource(resources.ModelResource):
 
 class SupportResource(resources.ModelResource):
     remarks = fields.Field(column_name='additional_notes')
-    base_objects = fields.Field()
     asset_type = fields.Field()
 
     class Meta:
@@ -732,7 +731,7 @@ class SupportResource(resources.ModelResource):
             'date_to', 'escalation_path', 'contract_terms', 'remarks',
             'sla_type', 'asset_type', 'status', 'producer', 'supplier',
             'serial_no', 'invoice_no', 'invoice_date', 'period_in_months',
-            'support_type', 'base_objects', 'name', 'region', 'deleted',
+            'support_type', 'name', 'region', 'deleted',
             'property_of', 'asset_type',
         ]
         model = models_support.Support
@@ -740,14 +739,30 @@ class SupportResource(resources.ModelResource):
     def get_queryset(self):
         return models_support.Support.admin_objects.all()
 
-    def dehydrate_base_objects(self, support):
-        return ",".join(map(
-            unicode,
-            support.assets.all().values_list('id', flat=True)
-        ))
-
     def dehydrate_asset_type(self, support):
         return ASSET_TYPE_MAPPING[support.asset_type]
+
+
+class BaseObjectsSupportResource(resources.ModelResource):
+    baseobject = fields.Field()
+
+    class Meta:
+        model = models_support.Support.assets.through
+        fields = ['support', 'baseobject']
+
+    def get_queryset(self):
+        return super(BaseObjectsSupportResource, self).get_queryset().filter(
+            support__deleted=False
+        )
+
+    def dehydrate_baseobject(self, obj):
+        asset_type = models_assets.AssetType.from_id(
+            obj.asset.type
+        ).group.name
+        return "{}|{}".format(
+            asset_type,
+            obj.asset_id
+        )
 
 
 class EnvironmentResource(resources.ModelResource):
