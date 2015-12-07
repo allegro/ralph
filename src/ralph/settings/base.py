@@ -137,7 +137,7 @@ MESSAGE_TAGS = {
     messages.ERROR: 'alert',
 }
 
-DEFAULT_DEPRECIATION_RATE = int(os.environ.get('DEFAULT_DEPRECIATION_RATE', 25))
+DEFAULT_DEPRECIATION_RATE = int(os.environ.get('DEFAULT_DEPRECIATION_RATE', 25))  # noqa
 CHECK_IP_HOSTNAME_ON_SAVE = True
 ASSET_HOSTNAME_TEMPLATE = {
     'prefix': '{{ country_code|upper }}{{ code|upper }}',
@@ -256,6 +256,4 @@ RALPH_EXTERNAL_SERVICES = {
 #     {'url': 'http://....', 'name': 'Link name'},
 # ]
 MY_EQUIPMENT_LINKS = json.loads(os.environ.get('MY_EQUIPMENT_LINKS', '[]'))
-MY_EQUIPMENT_REPORT_FAILURE_URL = json.loads(
-    os.environ.get('MY_EQUIPMENT_REPORT_FAILURE_URL', '""')
-)
+MY_EQUIPMENT_REPORT_FAILURE_URL = os.environ.get('MY_EQUIPMENT_REPORT_FAILURE_URL', '')  # noqa
