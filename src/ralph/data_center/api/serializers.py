@@ -55,6 +55,12 @@ class RackSerializer(RalphAPISerializer):
         exclude = ()
 
 
+class DataCenterAssetSimpleSerializer(RalphAPISerializer):
+    class Meta:
+        model = DataCenterAsset
+        fields = ['hostname', 'tags', 'url']
+
+
 class DataCenterAssetSerializer(AssetSerializer):
     rack = SimpleRackSerializer()
 

@@ -40,6 +40,7 @@ INSTALLED_APPS = (
     'ralph.data_importer',
     'ralph.dc_view',
     'ralph.reports',
+    'ralph.virtual',
     'ralph.lib.transitions',
     'ralph.lib.permissions',
     'rest_framework',
@@ -255,7 +256,8 @@ RALPH_EXTERNAL_SERVICES = {
 # MY_EQUIPMENT_LINKS = [
 #     {'url': 'http://....', 'name': 'Link name'},
 # ]
-MY_EQUIPMENT_LINKS = json.loads(os.environ.get('MY_EQUIPMENT_LINKS', '[]'))
 MY_EQUIPMENT_REPORT_FAILURE_URL = json.loads(
     os.environ.get('MY_EQUIPMENT_REPORT_FAILURE_URL', '""')
 )
+
+OPENSTACK_INSTANCES = json.loads(os.environ.get('OPENSTACK_INSTANCES', '[]'))
