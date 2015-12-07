@@ -17,6 +17,7 @@ from mptt.fields import TreeForeignKey
 from mptt.settings import DEFAULT_LEVEL_INDICATOR
 
 from ralph.admin.autocomplete import DETAIL_PARAM, QUERY_PARAM
+from ralph.admin.helpers import get_field_by_relation_path
 
 SEARCH_SEPARATORS_REGEX = re.compile(r'[;|]')
 
@@ -301,11 +302,14 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
         model_options = (
             self.field_model._meta.app_label, self.field_model._meta.model_name
         )
+        model = get_field_by_relation_path(
+            self.model, self.field_path
+        ).model
         widget_options = {
             'data-suggest-url': reverse(
                 'autocomplete-list', kwargs={
-                    'app': self.model._meta.app_label,
-                    'model': self.model.__name__,
+                    'app': model._meta.app_label,
+                    'model': model.__name__,
                     'field': self.field.name
                 }
             ),
