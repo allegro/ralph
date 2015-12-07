@@ -65,6 +65,7 @@ DEPENDENT_MODELS = [
 MANY_TO_MANY = [
     'BaseObjectLicence',
     'LicenceUser',
+    'BaseObjectsSupport',
     'RackAccessory',
 ]
 
