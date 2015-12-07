@@ -42,7 +42,8 @@
         var keyUp = 38;
         // 13 enter key in ASCII
         var enterKey = 13;
-        var $all_elements = $('li.item:not(.template, .no-results)', that.suggestList);
+
+        var $all_elements = $('li.item:not(.template, .no-results)', that.$widget);
         $all_elements.removeClass('selected');
 
         if (code === keyDown) {
