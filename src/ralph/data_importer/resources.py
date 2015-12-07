@@ -26,7 +26,7 @@ from ralph.licences.models import (
     LicenceUser,
     Software
 )
-from ralph.supports.models import Support, SupportType
+from ralph.supports.models import BaseObjectsSupport, Support, SupportType
 
 
 class DefaultResource(ImportForeignKeyMixin, resources.ModelResource):
@@ -397,6 +397,24 @@ class LicenceUserResource(ImportForeignKeyMixin, resources.ModelResource):
 
     class Meta:
         model = LicenceUser
+
+
+class BaseObjectsSupportResource(
+    ImportForeignKeyMixin, resources.ModelResource
+):
+    support = fields.Field(
+        column_name='support',
+        attribute='support',
+        widget=ImportedForeignKeyWidget(Support),
+    )
+    baseobject = fields.Field(
+        column_name='baseobject',
+        attribute='baseobject',
+        widget=BaseObjectWidget(base.BaseObject),
+    )
+
+    class Meta:
+        model = BaseObjectsSupport
 
 
 class RackAccessoryResource(ImportForeignKeyMixin, resources.ModelResource):
