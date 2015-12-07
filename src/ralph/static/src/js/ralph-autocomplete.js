@@ -241,9 +241,13 @@
             .done(callback);
     };
     $.fn.autocomplete = function(options) {
-        return this.each(function() {
-            $.data(this, 'autocomplete', new AutocompleteWidget(this, options));
-        });
+        var instance = $.data(this, 'autocomplete');
+        if (instance === undefined) {
+            instance = this.each(function() {
+                $.data(this, 'autocomplete', new AutocompleteWidget(this, options));
+            });
+        }
+        return instance;
     };
     function updateAfterClose(id, newValue) {
         var $parent = $('#' + id).val(newValue);
