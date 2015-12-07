@@ -8,6 +8,7 @@ from django.http import (
     HttpResponseRedirect
 )
 from django.shortcuts import get_object_or_404
+from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
@@ -42,7 +43,8 @@ class TransitionViewMixin(object):
         ]
         return actions, any(return_attachment)
 
-    def get_form_fields_from_actions(self):
+    @cached_property
+    def form_fields_from_actions(self):
         fields = {}
         for action in self.actions:
             action_fields = getattr(action, 'form_fields', {})
@@ -80,6 +82,9 @@ class TransitionViewMixin(object):
             )
         ):
             return HttpResponseForbidden()
+        self.actions, self.return_attachment = self.collect_actions(self.transition)  # noqa
+        if not len(self.form_fields_from_actions):
+            return self.run_and_redirect(request, *args, **kwargs)
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -93,7 +98,7 @@ class TransitionViewMixin(object):
 
     def get_form(self):
         form_kwargs = {}
-        fields_dict = self.get_form_fields_from_actions()
+        fields_dict = self.form_fields_from_actions
         ParamsForm = type('ParamsForm', (forms.Form,), fields_dict)  # noqa
         if self.request.method == 'POST':
             form_kwargs['data'] = self.request.POST
@@ -103,12 +108,12 @@ class TransitionViewMixin(object):
         context = self.get_context_data()
         return self.render_to_response(context)
 
-    def form_valid(self, form):
+    def form_valid(self, form=None):
         status, attachment = run_field_transition(
             instances=self.objects,
             transition_obj_or_name=self.transition,
             field=self.transition.model.field_name,
-            data=form.cleaned_data,
+            data=form.cleaned_data if form else {},
             request=self.request
         )
         if status:
@@ -123,8 +128,10 @@ class TransitionViewMixin(object):
             self.request.session['attachment_to_download'] = url
         return HttpResponseRedirect(self.get_success_url())
 
-    def get(self, request, *args, **kwargs):
+    def run_and_redirect(self, request, *args, **kwargs):
+        return self.form_valid()
 
+    def get(self, request, *args, **kwargs):
         is_valid, error = self._objects_are_valid()
         if not is_valid:
             messages.info(
@@ -165,7 +172,6 @@ class RunBulkTransitionView(TransitionViewMixin, RalphTemplateView):
         ids = [int(i) for i in self.request.GET.getlist('select')]
         self.objects = self.model.objects.filter(id__in=ids)
         self.obj = self.objects[0]
-        self.actions, self.return_attachment = self.collect_actions(self.transition)  # noqa,
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
@@ -186,7 +192,6 @@ class RunTransitionView(TransitionViewMixin, RalphTemplateView):
         self.transition = get_object_or_404(Transition, pk=transition_pk)
         self.obj = get_object_or_404(model, pk=object_pk)
         self.objects = [self.obj]
-        self.actions, self.return_attachment = self.collect_actions(self.transition)  # noqa
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
