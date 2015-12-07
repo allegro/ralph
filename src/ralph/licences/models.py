@@ -3,7 +3,8 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Sum
+from django.db.models import F, Sum, Value
+from django.db.models.functions import Coalesce
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
@@ -51,9 +52,15 @@ class Software(PermByFieldMixin, NamedMixin, models.Model):
 
 class LicencesUsedFreeManager(models.Manager):
     def get_queryset(self):
+        # Coalesce is used here to provide default value for Sum (in other
+        # case None value is returned)
+        # read https://code.djangoproject.com/ticket/10929 for more info
+        # about default value for Sum
         return super().get_queryset().annotate(
-            user_count=Sum('licenceuser__quantity'),
-            baseobject_count=Sum('baseobjectlicence__quantity')
+            user_count=Coalesce(Sum('licenceuser__quantity'), Value(0)),
+            baseobject_count=Coalesce(
+                Sum('baseobjectlicence__quantity'), Value(0)
+            ),
         )
 
 
@@ -187,7 +194,9 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
 
     @classmethod
     def get_autocomplete_queryset(cls):
-        return cls.objects_used_free.all()
+        return cls.objects_used_free.filter(
+            number_bought__gt=F('user_count') + F('baseobject_count')
+        )
 
 
 class BaseObjectLicence(models.Model):
