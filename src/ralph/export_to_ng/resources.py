@@ -752,7 +752,8 @@ class BaseObjectsSupportResource(resources.ModelResource):
 
     def get_queryset(self):
         return super(BaseObjectsSupportResource, self).get_queryset().filter(
-            support__deleted=False
+            support__deleted=False,
+            asset__deleted=False,
         )
 
     def dehydrate_baseobject(self, obj):
