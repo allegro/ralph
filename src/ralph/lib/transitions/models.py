@@ -145,9 +145,7 @@ def _check_instances_for_transition(instances, transition):
         if instance.status not in [int(s) for s in transition.source]:
             errors[instance].append(_('wrong source status'))
 
-    first_instance = instances[0]
-    for action in transition.actions.all():
-        func = getattr(first_instance, action.name)
+    for func in transition.get_pure_actions(instances[0]):
         error = func.precondition(instances)
         if error:
             for instance, error_details in error.items():
@@ -161,8 +159,7 @@ def _check_instances_for_transition(instances, transition):
 
 
 def _check_action_with_instances(instances, transition):
-    for action in transition.actions.all():
-        func = getattr(instances[0], action.name)
+    for func in transition.get_pure_actions(instances[0]):
         validation_func = getattr(func, 'validation', lambda x: True)
         validation_func(instances)
 
@@ -369,6 +366,17 @@ class Transition(models.Model):
             transition for transition in transitions
             if _check_user_perm_for_transition(user, transition)
         ]
+
+    def get_pure_actions(self, instance):
+        return [
+            getattr(instance, action.name) for action in self.actions.all()
+        ]
+
+    def has_form(self, instance):
+        for action in self.get_pure_actions(instance):
+            if getattr(action, 'form_fields', None):
+                return True
+        return False
 
 
 class Action(models.Model):
