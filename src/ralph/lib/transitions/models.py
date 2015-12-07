@@ -459,8 +459,12 @@ def post_delete_transition(sender, instance, **kwargs):
 @receiver(pre_save, sender=Transition)
 def post_save_transition(sender, instance, **kwargs):
     if instance.pk:
-        old = sender.objects.get(pk=instance.pk)
-        setattr(instance, '_old_permission_info', old.permission_info)
+        try:
+            old = sender.objects.get(pk=instance.pk)
+        except sender.DoesNotExist:  # raised ex. during fixtures loading
+            pass
+        else:
+            setattr(instance, '_old_permission_info', old.permission_info)
 
 
 @receiver(post_save, sender=Transition)
