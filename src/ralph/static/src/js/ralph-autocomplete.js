@@ -70,6 +70,16 @@
                 target: $($all_elements[that.selectItem]).find('.link'),
                 preventDefault: function(){}
             });
+            var focus_input = that.$widget.closest('.filter-block').next('.filter-block').find('input, textarea, select');
+            var $is_autocomplete = focus_input.closest('.autocomplete-widget');
+            if ($is_autocomplete.length === 1) {
+                var $autocomplete_val = $is_autocomplete.find('input');
+                if ($autocomplete_val.val().length !== 0) {
+                    focus_input = $autocomplete_val.closest('.filter-block').next('.filter-block').find('input, textarea, select');
+                }
+            }
+            focus_input.focus();
+
             event.preventDefault();
             return false;
         }
