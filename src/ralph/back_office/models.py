@@ -3,6 +3,7 @@ import datetime
 import os
 import re
 import tempfile
+from functools import partial
 
 from dj.choices import Choices, Country
 from django import forms
@@ -82,6 +83,32 @@ def _check_user_assigned(instances):
         if not instance.user:
             errors[instance] = _('user not assigned')
     return errors
+
+
+def autocomplete_if_release_report(actions, objects, field_name='user'):
+    """
+    Returns value of the first item in the list objects of the field_name
+    if release_report is actions.
+
+    Args:
+        actions: Transition action list
+        objects: Django models objects
+        field_name: String of name
+
+    Returns:
+        String value from object
+    """
+    try:
+        obj = objects[0]
+    except IndexError:
+        return None
+
+    value = getattr(obj, field_name, None)
+    if value:
+        for action in actions:
+            if action.__name__ == 'release_report':
+                return str(value.pk)
+    return None
 
 
 class BackOfficeAsset(Regionalizable, Asset):
@@ -170,7 +197,10 @@ class BackOfficeAsset(Regionalizable, Asset):
         form_fields={
             'user': {
                 'field': forms.CharField(label=_('User')),
-                'autocomplete_field': 'user'
+                'autocomplete_field': 'user',
+                'default_value': partial(
+                    autocomplete_if_release_report, field_name='user'
+                )
             }
         },
     )
@@ -201,7 +231,10 @@ class BackOfficeAsset(Regionalizable, Asset):
         form_fields={
             'owner': {
                 'field': forms.CharField(label=_('Owner')),
-                'autocomplete_field': 'owner'
+                'autocomplete_field': 'owner',
+                'default_value': partial(
+                    autocomplete_if_release_report, field_name='owner'
+                )
             }
         },
         help_text=_(

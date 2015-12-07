@@ -66,6 +66,13 @@ class TransitionViewMixin(object):
                     )
                 else:
                     options['field'].widget.request = self.request
+
+                default_value = options.get(
+                    'default_value', lambda x, y: False
+                )
+                initial = default_value(self.actions, self.objects)
+                if initial:
+                    options['field'].initial = initial
                 field_key = '{}__{}'.format(action.__name__, name)
                 fields[field_key] = options['field']
         return fields
