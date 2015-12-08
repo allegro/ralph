@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-from unittest import skipIf
-
 from django.core.exceptions import ValidationError
-from django.db import connection
 
 from ralph.accounts.tests.factories import RegionFactory, UserFactory
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
@@ -42,10 +39,13 @@ class LicenceTest(RalphTestCase):
         self.bo_asset = BackOfficeAssetFactory()
 
     def test_get_autocomplete_queryset(self):
-        self.assertCountEqual(
-            Licence.get_autocomplete_queryset().values_list('pk', flat=True),
-            [self.licence_1.pk, self.licence_2.pk]
-        )
+        with self.assertNumQueries(2):
+            self.assertCountEqual(
+                Licence.get_autocomplete_queryset().values_list(
+                    'pk', flat=True
+                ),
+                [self.licence_1.pk, self.licence_2.pk]
+            )
 
     def test_get_autocomplete_queryset_all_used(self):
         BaseObjectLicence.objects.create(
@@ -54,7 +54,10 @@ class LicenceTest(RalphTestCase):
         LicenceUser.objects.create(
             user=self.user_1, licence=self.licence_1, quantity=2
         )
-        self.assertCountEqual(
-            Licence.get_autocomplete_queryset().values_list('pk', flat=True),
-            [self.licence_2.pk]
-        )
+        with self.assertNumQueries(2):
+            self.assertCountEqual(
+                Licence.get_autocomplete_queryset().values_list(
+                    'pk', flat=True
+                ),
+                [self.licence_2.pk]
+            )
