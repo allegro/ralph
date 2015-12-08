@@ -238,12 +238,12 @@ class RalphAdminMixin(RalphAutocompleteMixin):
         extra_context['in_recovery_mode'] = True
         return extra_context
 
-    def revisionform_view(
-        self, request, version, template_name, extra_context=None
+    def revision_view(
+        self, request, object_id, version_id, extra_context=None
     ):
-        return super().revisionform_view(
-            request, version, template_name,
-            self._add_recovery_to_extra_context(extra_context)
+        extra_context = self._add_recovery_to_extra_context(extra_context)
+        return super().revision_view(
+            request, object_id, version_id, extra_context
         )
 
     def get_list_display(self, request):
