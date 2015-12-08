@@ -1,15 +1,23 @@
 # -*- coding: utf-8 -*-
 from dj.choices import Country
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.dispatch import receiver
 from django.utils.encoding import force_text
-from django_auth_ldap.backend import LDAPSettings, populate_user
+from django_auth_ldap.backend import _LDAPUser, LDAPSettings, populate_user
 from django_auth_ldap.config import ActiveDirectoryGroupType
 
 # Add default value to LDAPSetting dict. It will be replaced by
 # django_auth_ldap with value in settings.py and visible for each
 # ldap_user.
 LDAPSettings.defaults['GROUP_MAPPING'] = {}
+# list of groups names mapped from LDAP
+LDAP_GROUPS_NAMES = list(
+    getattr(settings, 'AUTH_LDAP_GROUP_MAPPING', {}).values()
+) + list(
+    getattr(settings, 'AUTH_LDAP_NESTED_GROUPS', {}).keys()
+)
 
 
 @receiver(populate_user)
@@ -19,6 +27,42 @@ def staff_superuser_populate(sender, user, ldap_user, **kwargs):
     # because ralph using django admin panel
     user.is_staff = 'active' in ldap_user.group_names
     user.is_active = 'active' in ldap_user.group_names
+
+
+def mirror_groups(self):
+    """
+    Mirror groups from LDAP, but keep groups not mapped from LDAP assigned to
+    user.
+    """
+    target_group_names = frozenset(self._get_groups().get_group_names())
+    # the only difference comparing to original django_auth_ldap:
+    if getattr(settings, 'AUTH_LDAP_KEEP_NON_LDAP_GROUPS', False):
+        # include groups not mapped from LDAP into target groups names
+        non_ad_groups = list(
+            self._user.groups.exclude(name__in=LDAP_GROUPS_NAMES).values_list(
+                'name', flat=True
+            )
+        )
+        target_group_names = frozenset(list(target_group_names) + non_ad_groups)
+
+    current_group_names = frozenset(
+        self._user.groups.values_list('name', flat=True).iterator()
+    )
+    if target_group_names != current_group_names:
+        existing_groups = list(Group.objects.filter(
+            name__in=target_group_names).iterator()
+        )
+        existing_group_names = frozenset(
+            group.name for group in existing_groups
+        )
+
+        new_groups = [Group.objects.get_or_create(name=name)[0] for name
+                      in target_group_names if name not in existing_group_names]
+
+        self._user.groups = existing_groups + new_groups
+
+_LDAPUser._mirror_groups_original = _LDAPUser._mirror_groups
+_LDAPUser._mirror_groups = mirror_groups
 
 
 @receiver(populate_user)
