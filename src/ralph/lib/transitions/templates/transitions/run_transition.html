@@ -12,6 +12,7 @@
   {% if transition.description %}
     <p>{{ transition.description }}</p>
   {% endif %}
+
   <form method="POST">
     {% csrf_token %}
     {% if form.fields %}
