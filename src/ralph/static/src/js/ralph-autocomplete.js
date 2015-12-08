@@ -28,7 +28,8 @@
                 set: function(val) {
                     that.changeTargetAfterPopup(val);
                     this.setAttribute('value', val);
-                }
+                },
+                configurable: true
             });
         }
     };
