@@ -135,10 +135,7 @@ class TransitionViewMixin(object):
             self.request.session['attachment_to_download'] = url
         return HttpResponseRedirect(self.get_success_url())
 
-    def run_and_redirect(self, request, *args, **kwargs):
-        return self.form_valid()
-
-    def get(self, request, *args, **kwargs):
+    def _is_valid(self):
         is_valid, error = self._objects_are_valid()
         if not is_valid:
             messages.info(
@@ -156,7 +153,13 @@ class TransitionViewMixin(object):
                 '{}<br>{}'.format(error.message, additional_error_message)
             ))
             return HttpResponseRedirect('..')
-        return super().get(request, *args, **kwargs)
+        return None
+
+    def run_and_redirect(self, request, *args, **kwargs):
+        return self._is_valid() or self.form_valid()
+
+    def get(self, request, *args, **kwargs):
+        return self._is_valid() or super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         form = self.get_form()
