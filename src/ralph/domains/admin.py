@@ -26,10 +26,13 @@ class DomainAdmin(AttachmentsMixin, RalphAdmin):
         'name', 'parent', 'business_owner',
         'technical_owner', 'domain_holder'
     ]
+    raw_id_fields = [
+        'service_env', 'business_owner', 'technical_owner', 'domain_holder'
+    ]
     fieldsets = (
         (_('Basic info'), {
             'fields': (
-                'name', 'parent', 'remarks', 'domain_status',
+                'name', 'remarks', 'domain_status',
             )
         }),
         (_('Ownership info'), {
