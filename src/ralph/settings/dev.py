@@ -26,6 +26,6 @@ ROOT_URLCONF = 'ralph.urls.dev'
 # https://github.com/idlesign/django-sitetree/pull/157/files
 RAISE_ITEMS_ERRORS_ON_DEBUG = False
 
-
+LOGGING['handlers']['console']['level'] = 'DEBUG'
 for logger in LOGGING['loggers']:
     LOGGING['loggers'][logger]['level'] = 'DEBUG'
