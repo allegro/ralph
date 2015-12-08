@@ -3,8 +3,7 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import F, Sum, Value
-from django.db.models.functions import Coalesce
+from django.db.models import Sum
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
@@ -17,6 +16,13 @@ from ralph.lib.mixins.fields import BaseObjectForeignKey
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
 from ralph.lib.permissions import PermByFieldMixin
 from ralph.lib.polymorphic.models import PolymorphicQuerySet
+
+
+_SELECT_USED_LICENCES_QUERY = """
+    SELECT COALESCE(SUM(`{assignment_table}`.`{quantity_column}`), 0)
+    FROM {assignment_table}
+    WHERE {assignment_table}.{licence_id_column} = {licence_table}.{id_column}
+"""
 
 
 class LicenceType(PermByFieldMixin, NamedMixin, models.Model):
@@ -52,18 +58,42 @@ class Software(PermByFieldMixin, NamedMixin, models.Model):
 
 class LicencesUsedFreeManager(models.Manager):
     def get_queryset(self):
+        """
+        Use subqueries in select to calculate licences used by users and
+        base objects.
+        """
         # Coalesce is used here to provide default value for Sum (in other
         # case None value is returned)
         # read https://code.djangoproject.com/ticket/10929 for more info
         # about default value for Sum
-        # return super().get_queryset().annotate(
-        #     user_count=Coalesce(Sum('licenceuser__quantity'), Value(0)),
-        #     baseobject_count=Coalesce(
-        #         Sum('baseobjectlicence__quantity'), Value(0)
-        #     ),
-        # )
-        # temporary fix for cartesian product above
-        return super().get_queryset()
+        id_column = Licence.baseobject_ptr.field.column
+
+        user_quantity_field = Licence.users.through._meta.get_field('quantity')
+        user_licence_field = Licence.users.through._meta.get_field('licence')
+        user_count_query = _SELECT_USED_LICENCES_QUERY.format(
+            assignment_table=Licence.users.through._meta.db_table,
+            quantity_column=user_quantity_field.db_column or user_quantity_field.column,  # noqa
+            licence_id_column=user_licence_field.db_column or user_licence_field.column,  # noqa
+            licence_table=Licence._meta.db_table,
+            id_column=id_column,
+        )
+
+        base_object_quantity_field = Licence.base_objects.through._meta.get_field('quantity')  # noqa
+        base_object_licence_field = Licence.base_objects.through._meta.get_field('licence')  # noqa
+        base_object_count_query = _SELECT_USED_LICENCES_QUERY.format(
+            assignment_table=Licence.base_objects.through._meta.db_table,
+            quantity_column=base_object_quantity_field.db_column or base_object_quantity_field.column,  # noqa
+            licence_id_column=base_object_licence_field.db_column or base_object_licence_field.column,  # noqa
+            licence_table=Licence._meta.db_table,
+            id_column=id_column,
+        )
+
+        return super().get_queryset().extra(
+            select={
+                'user_count': user_count_query,
+                'baseobject_count': base_object_count_query,
+            }
+        )
 
 
 class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
@@ -200,10 +230,11 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
 
     @classmethod
     def get_autocomplete_queryset(cls):
-        # return cls.objects_used_free.filter(
-        #     number_bought__gt=F('user_count') + F('baseobject_count')
-        # )
-        return cls.objects_used_free.all()
+        # filter by ids of licences which could be assigned (are not fully
+        # used)
+        return cls.objects_used_free.filter(
+            pk__in=[l.id for l in cls.objects_used_free.all() if l.free > 0]
+        )
 
 
 class BaseObjectLicence(models.Model):
