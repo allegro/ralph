@@ -116,13 +116,19 @@ class TransitionViewMixin(object):
         return self.render_to_response(context)
 
     def form_valid(self, form=None):
-        status, attachment = run_field_transition(
-            instances=self.objects,
-            transition_obj_or_name=self.transition,
-            field=self.transition.model.field_name,
-            data=form.cleaned_data if form else {},
-            request=self.request
-        )
+        # TODO better solution for this.
+        try:
+            status, attachment = run_field_transition(
+                instances=self.objects,
+                transition_obj_or_name=self.transition,
+                field=self.transition.model.field_name,
+                data=form.cleaned_data if form else {},
+                request=self.request
+            )
+        except TransitionNotAllowedError as e:
+            self.add_error_message(e)
+            return self.form_invalid(None)
+
         if status:
             messages.success(
                 self.request, _('Transitions performed successfully')
@@ -138,23 +144,26 @@ class TransitionViewMixin(object):
     def run_and_redirect(self, request, *args, **kwargs):
         return self.form_valid()
 
+    def add_error_message(self, error):
+        additional_error_message = '<ul>'
+        for obj, msgs in error.errors.items():
+            additional_error_message += '<li>'
+            additional_error_message += '<a href="{}">{}</a> - {}'.format(
+                obj.get_absolute_url(), obj, ','.join(map(str, msgs))
+            )
+            additional_error_message += '</li>'
+        additional_error_message += '</ul>'
+        messages.error(self.request, mark_safe(
+            '{}<br>{}'.format(error.message, additional_error_message)
+        ))
+
     def get(self, request, *args, **kwargs):
         is_valid, error = self._objects_are_valid()
         if not is_valid:
             messages.info(
                 self.request, _('Some assets are not valid')
             )
-            additional_error_message = '<ul>'
-            for obj, msgs in error.errors.items():
-                additional_error_message += '<li>'
-                additional_error_message += '<a href="{}">{}</a> - {}'.format(
-                    obj.get_absolute_url(), obj, ','.join(map(str, msgs))
-                )
-                additional_error_message += '</li>'
-            additional_error_message += '</ul>'
-            messages.error(self.request, mark_safe(
-                '{}<br>{}'.format(error.message, additional_error_message)
-            ))
+            self.add_error_message(error)
             return HttpResponseRedirect('..')
         return super().get(request, *args, **kwargs)
 
