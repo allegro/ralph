@@ -56,12 +56,14 @@ class LicencesUsedFreeManager(models.Manager):
         # case None value is returned)
         # read https://code.djangoproject.com/ticket/10929 for more info
         # about default value for Sum
-        return super().get_queryset().annotate(
-            user_count=Coalesce(Sum('licenceuser__quantity'), Value(0)),
-            baseobject_count=Coalesce(
-                Sum('baseobjectlicence__quantity'), Value(0)
-            ),
-        )
+        # return super().get_queryset().annotate(
+        #     user_count=Coalesce(Sum('licenceuser__quantity'), Value(0)),
+        #     baseobject_count=Coalesce(
+        #         Sum('baseobjectlicence__quantity'), Value(0)
+        #     ),
+        # )
+        # temporary fix for cartesian product above
+        return super().get_queryset()
 
 
 class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
@@ -175,6 +177,8 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
 
     @cached_property
     def used(self):
+        if not self.pk:
+            return 0
         try:
             # try use fields from objects_used_free manager
             return (self.user_count or 0) + (self.baseobject_count or 0)
@@ -190,13 +194,16 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
 
     @cached_property
     def free(self):
+        if not self.pk:
+            return 0
         return self.number_bought - self.used
 
     @classmethod
     def get_autocomplete_queryset(cls):
-        return cls.objects_used_free.filter(
-            number_bought__gt=F('user_count') + F('baseobject_count')
-        )
+        # return cls.objects_used_free.filter(
+        #     number_bought__gt=F('user_count') + F('baseobject_count')
+        # )
+        return cls.objects_used_free.all()
 
 
 class BaseObjectLicence(models.Model):
