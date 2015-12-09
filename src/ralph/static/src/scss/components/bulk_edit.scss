@@ -7,6 +7,9 @@
         min-width:150px;
         height: 60px;
     }
+    input[type="number"] {
+        min-width:80px;
+    }
     .widget-wrapper {
         min-width: 180px;
         input {
