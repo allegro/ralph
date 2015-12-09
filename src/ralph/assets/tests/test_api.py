@@ -91,6 +91,26 @@ class ServicesEnvironmentsAPITests(RalphAPITestCase):
         self.assertIn(self.user1, service.business_owners.all())
         self.assertIn(self.user2, service.technical_owners.all())
 
+    def test_create_service_by_username(self):
+        url = reverse('service-list')
+        data = {
+            'name': 'test-service',
+            'environments': [self.envs[0].id, self.envs[1].id],
+            'business_owners': [self.user1.username],
+            'technical_owners': [self.user2.username],
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Service.objects.count(), 3)
+        service = Service.objects.get(pk=response.data['id'])
+        self.assertEqual(service.name, 'test-service')
+        self.assertCountEqual(
+            service.environments.values_list('id', flat=True),
+            data['environments']
+        )
+        self.assertIn(self.user1, service.business_owners.all())
+        self.assertIn(self.user2, service.technical_owners.all())
+
     def test_patch_service(self):
         service = self.services[1]
         url = reverse('service-detail', args=(service.id,))
