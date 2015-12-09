@@ -119,6 +119,12 @@ class Command(BaseCommand):
                             pass
 
                 history.save()
+                # update history record using update method to skip auto_now
+                # and auto_now_add fields checks
+                TransitionsHistory.objects.filter(pk=history.pk).update(
+                    created=line.get('created'),
+                    modified=line.get('modified'),
+                )
                 if new_history:
                     ImportedObjects.create(history, old_history_id)
 
