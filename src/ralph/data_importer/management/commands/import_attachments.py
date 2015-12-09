@@ -72,9 +72,12 @@ class Command(BaseCommand):
                     username=line.get('logged_user')
                 )
                 new_history = False
+                old_history_id = '{}|{}'.format(
+                    line.get('id'), line.get('asset')
+                )
                 try:
                     history = ImportedObjects.get_object_from_old_pk(
-                        TransitionsHistory, line.get('id')
+                        TransitionsHistory, old_history_id
                     )
                 except ImportedObjectDoesNotExist:
                     history = TransitionsHistory()
@@ -117,7 +120,7 @@ class Command(BaseCommand):
 
                 history.save()
                 if new_history:
-                    ImportedObjects.create(history, line.get('id'))
+                    ImportedObjects.create(history, old_history_id)
 
     def save_attachments(self, directory):
         with open(os.path.join(directory, 'attachments.csv')) as f:
