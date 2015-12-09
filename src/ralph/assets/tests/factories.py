@@ -4,9 +4,11 @@ from factory.django import DjangoModelFactory
 
 from ralph.assets.models.assets import (
     AssetModel,
+    BusinessSegment,
     Category,
     Environment,
     Manufacturer,
+    ProfitCenter,
     Service,
     ServiceEnvironment
 )
@@ -76,3 +78,20 @@ class ServiceEnvironmentFactory(DjangoModelFactory):
 
     class Meta:
         model = ServiceEnvironment
+
+
+class BusinessSegmentFactory(DjangoModelFactory):
+    name = factory.Iterator(['IT', 'Ads', 'Research'])
+
+    class Meta:
+        model = BusinessSegment
+        django_get_or_create = ['name']
+
+
+class ProfitCenterFactory(DjangoModelFactory):
+    name = factory.Iterator(['PC1', 'PC2', 'PC3'])
+    business_segment = factory.SubFactory(BusinessSegmentFactory)
+
+    class Meta:
+        model = ProfitCenter
+        django_get_or_create = ['name']
