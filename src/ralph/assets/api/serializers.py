@@ -1,3 +1,5 @@
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from rest_framework import serializers
 
@@ -41,6 +43,14 @@ class EnvironmentSerializer(RalphAPISerializer):
         model = Environment
 
 
+class UserRelatedField(serializers.PrimaryKeyRelatedField):
+    def to_internal_value(self, data):
+        try:
+            return self.get_queryset().get(username=data)
+        except ObjectDoesNotExist:
+            return super().to_internal_value(data)
+
+
 class SaveServiceSerializer(RalphAPISerializer):
     """
     Serializer to save (create or update) services. Environments should be
@@ -52,6 +62,12 @@ class SaveServiceSerializer(RalphAPISerializer):
     """
     environments = serializers.PrimaryKeyRelatedField(
         many=True, read_only=False, queryset=Environment.objects.all()
+    )
+    business_owners = UserRelatedField(
+        many=True, read_only=False, queryset=get_user_model().objects.all(),
+    )
+    technical_owners = UserRelatedField(
+        many=True, read_only=False, queryset=get_user_model().objects.all(),
     )
 
     class Meta:
