@@ -2,6 +2,7 @@
 from django.core.urlresolvers import reverse
 from rest_framework import status
 
+from ralph.accounts.tests.factories import TeamFactory
 from ralph.api.tests._base import RalphAPITestCase
 from ralph.assets.models import (
     AssetModel,
@@ -17,6 +18,7 @@ from ralph.assets.tests.factories import (
     DataCenterAssetModelFactory,
     EnvironmentFactory,
     ManufacturerFactory,
+    ProfitCenterFactory,
     ServiceFactory
 )
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
@@ -31,6 +33,8 @@ class ServicesEnvironmentsAPITests(RalphAPITestCase):
         ServiceEnvironment.objects.create(
             service=self.services[0], environment=self.envs[0]
         )
+        self.team = TeamFactory()
+        self.profit_center = ProfitCenterFactory()
 
     def test_get_environment(self):
         env = self.envs[0]
@@ -78,6 +82,8 @@ class ServicesEnvironmentsAPITests(RalphAPITestCase):
             'environments': [self.envs[0].id, self.envs[1].id],
             'business_owners': [self.user1.id],
             'technical_owners': [self.user2.id],
+            'support_team': self.team.id,
+            'profit_center': self.profit_center.id,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -90,6 +96,32 @@ class ServicesEnvironmentsAPITests(RalphAPITestCase):
         )
         self.assertIn(self.user1, service.business_owners.all())
         self.assertIn(self.user2, service.technical_owners.all())
+        self.assertEqual(service.profit_center, self.profit_center)
+        self.assertEqual(service.support_team, self.team)
+
+    def test_create_service_with_names_instead_of_ids(self):
+        url = reverse('service-list')
+        data = {
+            'name': 'test-service',
+            'environments': [self.envs[0].name, self.envs[1].name],
+            'business_owners': [self.user1.username],
+            'technical_owners': [self.user2.username],
+            'support_team': self.team.name,
+            'profit_center': self.profit_center.name,
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Service.objects.count(), 3)
+        service = Service.objects.get(pk=response.data['id'])
+        self.assertEqual(service.name, 'test-service')
+        self.assertCountEqual(
+            service.environments.values_list('name', flat=True),
+            data['environments']
+        )
+        self.assertIn(self.user1, service.business_owners.all())
+        self.assertIn(self.user2, service.technical_owners.all())
+        self.assertEqual(service.profit_center, self.profit_center)
+        self.assertEqual(service.support_team, self.team)
 
     def test_patch_service(self):
         service = self.services[1]

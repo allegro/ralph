@@ -2,13 +2,12 @@
 import factory
 from factory.django import DjangoModelFactory
 
-from ralph.accounts.models import RalphUser, Region
+from ralph.accounts.models import RalphUser, Region, Team
 
 
 class RegionFactory(DjangoModelFactory):
 
     name = factory.Iterator(['pl', 'de', 'ua'])
-
 
     class Meta:
         model = Region
@@ -22,3 +21,11 @@ class UserFactory(DjangoModelFactory):
 
     class Meta:
         model = RalphUser
+
+
+class TeamFactory(DjangoModelFactory):
+    name = factory.Iterator(['DBA', 'sysadmins', 'devops'])
+
+    class Meta:
+        model = Team
+        django_get_or_create = ['name']

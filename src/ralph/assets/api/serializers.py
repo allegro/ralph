@@ -1,8 +1,10 @@
+from django.contrib.auth import get_user_model
 from django.db import transaction
-from rest_framework import serializers
 
 from ralph.accounts.api_simple import SimpleRalphUserSerializer
+from ralph.accounts.models import Team
 from ralph.api import RalphAPISerializer
+from ralph.api.serializers import AdditionalLookupRelatedField
 from ralph.api.utils import PolymorphicSerializer
 from ralph.assets.models import (
     Asset,
@@ -50,8 +52,24 @@ class SaveServiceSerializer(RalphAPISerializer):
     (ex. `ServiceEnvironment`). We're overwriting save mechanism to handle
     this m2m relationship ourself.
     """
-    environments = serializers.PrimaryKeyRelatedField(
-        many=True, read_only=False, queryset=Environment.objects.all()
+    environments = AdditionalLookupRelatedField(
+        many=True, read_only=False, queryset=Environment.objects.all(),
+        lookup_fields=['name'],
+    )
+    business_owners = AdditionalLookupRelatedField(
+        many=True, read_only=False, queryset=get_user_model().objects.all(),
+        lookup_fields=['username'],
+    )
+    technical_owners = AdditionalLookupRelatedField(
+        many=True, read_only=False, queryset=get_user_model().objects.all(),
+        lookup_fields=['username'],
+    )
+    support_team = AdditionalLookupRelatedField(
+        read_only=False, queryset=Team.objects.all(), lookup_fields=['name'],
+    )
+    profit_center = AdditionalLookupRelatedField(
+        read_only=False, queryset=ProfitCenter.objects.all(),
+        lookup_fields=['name'],
     )
 
     class Meta:

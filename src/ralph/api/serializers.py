@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
+import operator
 from collections import OrderedDict
+from functools import reduce
 
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 from django.db.models.fields import exceptions
 from rest_framework import permissions, relations, serializers
 from taggit_serializer.serializers import (
@@ -55,6 +59,30 @@ class ReversedChoiceField(serializers.ChoiceField):
         except KeyError:
             pass
         return super(ReversedChoiceField, self).to_internal_value(data)
+
+
+class AdditionalLookupRelatedField(serializers.PrimaryKeyRelatedField):
+    """
+    Allows to lookup related field (foreign key) by fields other than pk.
+    """
+    def __init__(self, lookup_fields, *args, **kwargs):
+        self.lookup_fields = lookup_fields
+        super().__init__(*args, **kwargs)
+
+    def to_internal_value(self, data):
+        query = [Q(**{f: data}) for f in self.lookup_fields]
+        try:
+            pk = int(data)
+        except ValueError:
+            pass
+        else:
+            query.append(Q(pk=pk))
+        try:
+            return self.get_queryset().get(reduce(operator.or_, query))
+        except ObjectDoesNotExist:
+            self.fail('does_not_exist', pk_value=data)
+        except (TypeError, ValueError):
+            self.fail('incorrect_type', data_type=type(data).__name__)
 
 
 class DeclaredFieldsMetaclass(serializers.SerializerMetaclass):
