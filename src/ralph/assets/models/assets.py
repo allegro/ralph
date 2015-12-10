@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import logging
 
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
@@ -29,6 +30,8 @@ from ralph.lib.permissions import PermByFieldMixin
 ASSET_HOSTNAME_TEMPLATE = getattr(settings, 'ASSET_HOSTNAME_TEMPLATE', None)
 if not ASSET_HOSTNAME_TEMPLATE:
     raise ImproperlyConfigured('"ASSET_HOSTNAME_TEMPLATE" must be specified.')
+
+logger = logging.getLogger(__name__)
 
 
 class AssetHolder(NamedMixin.NonUnique, TimeStampMixin, models.Model):
@@ -363,6 +366,10 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
             template = Template(template)
             context = Context(template_vars or {})
             return template.render(context)
+
+        logger.warning('Generating new hostname for {} using {}'.format(
+            self, template_vars
+        ))
         prefix = render_template(
             ASSET_HOSTNAME_TEMPLATE.get('prefix', ''),
         )

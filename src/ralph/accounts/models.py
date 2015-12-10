@@ -26,6 +26,12 @@ def has_region(user):
 
 
 class Region(PermissionsForObjectMixin, NamedMixin):
+    country = models.PositiveIntegerField(
+        verbose_name=_('country'),
+        choices=Country(),
+        default=Country.pl.id,
+    )
+
     """Used for distinguishing the origin of the object by region"""
     class Permissions:
         has_access = has_region
