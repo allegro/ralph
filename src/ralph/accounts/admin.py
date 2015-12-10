@@ -11,6 +11,7 @@ from ralph.admin import RalphAdmin, register
 from ralph.admin.mixins import RalphAdminFormMixin
 from ralph.admin.views.extra import RalphDetailView
 from ralph.back_office.models import BackOfficeAsset
+from ralph.lib.permissions.admin import PermissionAdminMixin
 from ralph.lib.table import Table
 from ralph.licences.models import BaseObjectLicence, Licence
 
@@ -170,7 +171,7 @@ class UserInfoView(UserInfoMixin, RalphDetailView):
 
 
 @register(RalphUser)
-class RalphUserAdmin(UserAdmin, RalphAdmin):
+class RalphUserAdmin(PermissionAdminMixin, UserAdmin, RalphAdmin):
 
     form = RalphUserChangeForm
     change_views = [
