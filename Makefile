@@ -13,11 +13,12 @@ upload-package:
 
 install-js:
 	npm install
+	bower install
 
 js-hint:
 	find src/ralph|grep "\.js$$"|grep -v vendor|xargs ./node_modules/.bin/jshint;
 
-install:
+install: install-js
 	pip3 install -r requirements/prod.txt
 
 install-test:
