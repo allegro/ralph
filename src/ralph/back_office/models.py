@@ -24,7 +24,7 @@ from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
 from ralph.lib.transitions import transition_action, TransitionField
 from ralph.licences.models import BaseObjectLicence, Licence
-from ralph.reports.models import Report
+from ralph.reports.models import Report, ReportLanguage
 
 IMEI_UNTIL_2003 = re.compile(r'^\d{6} *\d{2} *\d{6} *\d$')
 IMEI_SINCE_2003 = re.compile(r'^\d{8} *\d{6} *\d$')
@@ -395,9 +395,12 @@ class BackOfficeAsset(Regionalizable, Asset):
             instance.location = user.location
 
     @classmethod
-    def _generate_report(cls, name, request, instances):
+    def _generate_report(cls, name, request, instances, language):
         report = Report.objects.get(name=name)
-        template = report.templates.filter(default=True).first()
+        template = report.templates.filter(language=language).first()
+        if not template:
+            template = report.templates.filter(default=True).first()
+
         template_content = ''
         with open(template.template.path, 'rb') as f:
             template_content = f.read()
@@ -437,32 +440,62 @@ class BackOfficeAsset(Regionalizable, Asset):
 
     @classmethod
     @transition_action(
+        form_fields={
+            'report_language': {
+                'field': forms.ModelChoiceField(
+                    label=_('Report language'),
+                    queryset=ReportLanguage.objects.all(),
+                    empty_label=None
+                ),
+            }
+        },
         return_attachment=True,
         run_after=['assign_owner', 'assign_user']
     )
     def release_report(cls, instances, request, **kwargs):
         return cls._generate_report(
-            instances=instances, name='release', request=request
+            instances=instances, name='release', request=request,
+            language=ReportLanguage.objects.get(pk=kwargs['report_language'])
         )
 
     @classmethod
     @transition_action(
+        form_fields={
+            'report_language': {
+                'field': forms.ModelChoiceField(
+                    label=_('Report language'),
+                    queryset=ReportLanguage.objects.all(),
+                    empty_label=None
+                ),
+            }
+        },
         return_attachment=True,
         precondition=_check_user_assigned,
     )
     def return_report(cls, instances, request, **kwargs):
         return cls._generate_report(
-            instances=instances, name='return', request=request
+            instances=instances, name='return', request=request,
+            language=ReportLanguage.objects.get(pk=kwargs['report_language'])
         )
 
     @classmethod
     @transition_action(
+        form_fields={
+            'report_language': {
+                'field': forms.ModelChoiceField(
+                    label=_('Report language'),
+                    queryset=ReportLanguage.objects.all(),
+                    empty_label=None
+                ),
+            }
+        },
         return_attachment=True,
         run_after=['assign_owner', 'assign_user', 'assign_loan_end_date']
     )
     def loan_report(cls, instances, request, **kwargs):
         return cls._generate_report(
-            name='loan', request=request, instances=instances
+            name='loan', request=request, instances=instances,
+            language=ReportLanguage.objects.get(pk=kwargs['report_language'])
         )
 
 
