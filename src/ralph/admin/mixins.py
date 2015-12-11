@@ -5,11 +5,11 @@ from copy import copy
 
 from django import forms
 from django.conf import settings
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.admin.templatetags.admin_static import static
 from django.contrib.auth import get_permission_codename
 from django.core.urlresolvers import reverse
-from django.db import models
+from django.db import IntegrityError, models
 from django.http import HttpResponseRedirect
 from django.views.generic import TemplateView
 from import_export.admin import ImportExportModelAdmin
@@ -181,9 +181,14 @@ class RalphAdminMixin(RalphAutocompleteMixin):
             request.session['bulk_back_url'] = None
 
         self._initialize_search_form(extra_context)
-        return super(RalphAdminMixin, self).changelist_view(
-            request, extra_context
-        )
+
+        try:
+            return super(RalphAdminMixin, self).changelist_view(
+                request, extra_context
+            )
+        except IntegrityError as e:
+            messages.error(request, e.args[1])
+            return HttpResponseRedirect(request.get_full_path())
 
     def get_actions(self, request):
         """Override get actions method."""

@@ -5,6 +5,8 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from taggit.managers import TaggableManager
 
+from ralph.lib.mixins.fields import NullableCharField
+
 
 class NamedMixin(models.Model):
     """Describes an abstract model with a unique ``name`` field."""
@@ -76,3 +78,18 @@ class TaggableMixin(models.Model):
 
     class Meta:
         abstract = True
+
+
+class NullableCharFieldUniqueChecksMixin(object):
+
+    """
+    Disabled checking unique field for bulk edit.
+    """
+
+    def _get_unique_checks(self, exclude=None):
+        if exclude is None:
+            exclude = []
+        for field in self._meta.fields:
+            if isinstance(field, NullableCharField):
+                exclude.append(field.name)
+        return super()._get_unique_checks(exclude)
