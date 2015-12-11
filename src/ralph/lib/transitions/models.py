@@ -74,6 +74,8 @@ def _get_history_dict(data, instance, runned_funcs):
             if key.startswith(func.__name__)
         }
         for k, v in defaults.items():
+            if func.form_fields[k].get('exclude_from_history', False):
+                continue
             value = v
             try:
                 field = get_field_by_relation_path(instance, k)
