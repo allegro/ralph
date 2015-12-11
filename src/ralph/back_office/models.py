@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import logging
 import os
 import re
 import tempfile
@@ -28,6 +29,8 @@ from ralph.reports.models import Report, ReportLanguage
 
 IMEI_UNTIL_2003 = re.compile(r'^\d{6} *\d{2} *\d{6} *\d$')
 IMEI_SINCE_2003 = re.compile(r'^\d{8} *\d{6} *\d$')
+
+logger = logging.getLogger(__name__)
 
 
 class Warehouse(NamedMixin, TimeStampMixin, models.Model):
@@ -143,10 +146,8 @@ class BackOfficeAsset(Regionalizable, Asset):
 
     @property
     def country_code(self):
-        if self.owner:
-            iso2 = Country.name_from_id(int(self.owner.country)).upper()
-            return iso2_to_iso3(iso2)
-        return settings.DEFAULT_COUNTRY_CODE
+        iso2 = Country.name_from_id(int(self.region.country)).upper()
+        return iso2_to_iso3(iso2)
 
     def __str__(self):
         return '{}'.format(self.hostname or self.barcode or self.sn)
@@ -183,14 +184,12 @@ class BackOfficeAsset(Regionalizable, Asset):
                 'code': self.model.category.code,
                 'country_code': country or self.country_code,
             }
-            if not self.hostname or force:
+            if (
+                force or
+                not self.hostname or
+                self.country_code not in self.hostname
+            ):
                 self.generate_hostname(commit, template_vars, request)
-            elif self.owner:
-                # check if owner country is different than in current hostname
-                user_country = get_user_iso3_country_name(self.owner)
-                different_country = user_country not in self.hostname
-                if different_country:
-                    self.generate_hostname(commit, template_vars, request)
 
     @classmethod
     @transition_action(
@@ -247,7 +246,6 @@ class BackOfficeAsset(Regionalizable, Asset):
         owner = get_user_model().objects.get(pk=int(kwargs['owner']))
         for instance in instances:
             instance.owner = owner
-            instance._try_assign_hostname(request=request)
 
     @classmethod
     @transition_action(
@@ -510,4 +508,8 @@ def hostname_assigning(sender, instance, raw, using, **kwargs):
                 bo_asset = BackOfficeAsset.objects.get(pk=instance.pk)
                 if bo_asset.status == BackOfficeAssetStatus.in_progress:
                     return
+            logging.info((
+                'Status of {} changed to in_progress. Trying to assign new '
+                'hostname'
+            ).format(instance))
             instance._try_assign_hostname(commit=False)

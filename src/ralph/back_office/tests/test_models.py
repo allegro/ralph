@@ -3,6 +3,7 @@ from dj.choices import Country
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.test import RequestFactory
 
+from ralph.accounts.tests.factories import RegionFactory
 from ralph.assets.country_utils import iso2_to_iso3, iso3_to_iso2
 from ralph.assets.models import AssetLastHostname
 from ralph.assets.tests.factories import (
@@ -25,9 +26,9 @@ class HostnameGeneratorTests(RalphTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user_pl = UserFactory(username='hostname_2')
-        cls.user_pl.country = Country.pl
-        cls.user_pl.save()
+        cls.region_pl = RegionFactory(name='PL', country=Country.pl)
+        cls.region_pl.country = Country.pl
+        cls.region_pl.save()
 
     def _check_hostname_not_generated(self, asset):
         asset._try_assign_hostname(True)
@@ -47,7 +48,7 @@ class HostnameGeneratorTests(RalphTestCase):
         category = CategoryFactory(code='PC')
         model = BackOfficeAssetModelFactory(category=category)
         asset = BackOfficeAssetFactory(
-            model=model, owner=self.user_pl, hostname=''
+            model=model, hostname=''
         )
         template_vars = {
             'code': asset.model.category.code,
@@ -60,9 +61,9 @@ class HostnameGeneratorTests(RalphTestCase):
         category = CategoryFactory(code='PC')
         model = BackOfficeAssetModelFactory(category=category)
         asset = BackOfficeAssetFactory(
-            model=model, owner=self.user_pl, hostname=''
+            model=model, region=self.region_pl, hostname=''
         )
-        BackOfficeAssetFactory(owner=self.user_pl, hostname='POLSW00003')
+        BackOfficeAssetFactory(region=self.region_pl, hostname='POLSW00003')
         AssetLastHostname.increment_hostname(prefix='POLPC')
         AssetLastHostname.increment_hostname(prefix='POLPC')
         template_vars = {
@@ -75,31 +76,21 @@ class HostnameGeneratorTests(RalphTestCase):
     def test_cant_generate_hostname_for_model_without_category(self):
         model = BackOfficeAssetModelFactory(category=None)
         asset = BackOfficeAssetFactory(
-            model=model, owner=self.user_pl, hostname=''
+            model=model, region=self.region_pl, hostname=''
         )
         self._check_hostname_not_generated(asset)
 
     def test_can_generate_hostname_for_model_with_hostname(self):
         category = CategoryFactory(code='PC')
         model = BackOfficeAssetModelFactory(category=category)
-        asset = BackOfficeAssetFactory(model=model, owner=self.user_pl)
+        asset = BackOfficeAssetFactory(model=model, region=self.region_pl)
         self._check_hostname_is_generated(asset)
-
-    def test_cant_generate_hostname_for_model_without_user(self):
-        model = BackOfficeAssetModelFactory()
-        asset = BackOfficeAssetFactory(model=model, owner=None, hostname='')
-        self._check_hostname_not_generated(asset)
-
-    def test_cant_generate_hostname_for_model_without_user_and_category(self):
-        model = BackOfficeAssetModelFactory(category=None)
-        asset = BackOfficeAssetFactory(model=model, owner=None, hostname='')
-        self._check_hostname_not_generated(asset)
 
     def test_generate_next_hostname_out_of_range(self):
         category = CategoryFactory(code='PC')
         model = BackOfficeAssetModelFactory(category=category)
         asset = BackOfficeAssetFactory(
-            model=model, owner=self.user_pl, hostname=''
+            model=model, region=self.region_pl, hostname=''
         )
         AssetLastHostname.objects.create(
             prefix='POLPC', counter=99999
@@ -129,8 +120,8 @@ class TestBackOfficeAsset(RalphTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user_pl = UserFactory(username='user_1', country=Country.pl)
-        cls.user_us = UserFactory(username='user_2', country=Country.us)
+        cls.region_pl = RegionFactory(name='PL', country=Country.pl)
+        cls.region_us = RegionFactory(name='US', country=Country.us)
         cls.category = CategoryFactory(code='PC')
         cls.category_without_code = CategoryFactory()
         cls.model = BackOfficeAssetModelFactory(category=cls.category)
@@ -144,7 +135,7 @@ class TestBackOfficeAsset(RalphTestCase):
         self.bo_asset = BackOfficeAssetFactory(
             model=self.model,
             hostname='abc',
-            owner=self.user_pl,
+            region=self.region_pl,
         )
 
     def test_try_assign_hostname(self):
@@ -193,9 +184,10 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user_pl = UserFactory(username='user_1', country=Country.pl)
-        cls.user_us = UserFactory(username='user_2', country=Country.us)
-        cls.user_us_2 = UserFactory(username='user_3', country=Country.us)
+        cls.user_pl = UserFactory(country=Country.pl)
+        cls.region_pl = RegionFactory(name='PL', country=Country.pl)
+        cls.region_us = RegionFactory(name='US', country=Country.us)
+        cls.region_us_2 = RegionFactory(name='US', country=Country.us)
         cls.category = CategoryFactory(code='PC')
         cls.model = BackOfficeAssetModelFactory(category=cls.category)
 
@@ -205,7 +197,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
         self.bo_asset = BackOfficeAssetFactory(
             model=self.model,
             hostname='abc',
-            owner=self.user_us,
+            region=self.region_us,
         )
         self.bo_asset._try_assign_hostname(commit=True, force=True)
         self.request = RequestFactory().get('/assets/')
@@ -243,23 +235,21 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             data={'assign_owner__owner': self.user_pl.id},
             request=self.request
         )
-        self.assertEqual(self.bo_asset.hostname, 'POLPC01001')
 
-    def test_assign_owner_when_owner_country_not_changed(self):
-        current_hostname = self.bo_asset.hostname
+    def try_change_status_to_in_progress_during_transition(self):
         _, transition, _ = self._create_transition(
             model=self.bo_asset,
             name='test',
             source=[BackOfficeAssetStatus.new.id],
-            target=BackOfficeAssetStatus.used.id,
+            target=BackOfficeAssetStatus.in_progress.id,
             actions=['assign_owner']
         )
         self.bo_asset.run_status_transition(
             transition_obj_or_name=transition,
-            data={'assign_owner__owner': self.user_us_2.id},
+            data={'assign_owner__owner': self.user_pl.id},
             request=self.request
         )
-        self.assertEqual(self.bo_asset.hostname, current_hostname)
+        self.assertEqual(self.bo_asset.hostname, 'USPC01001')
 
     def test_return_report_when_user_not_assigned(self):
         _, transition, _ = self._create_transition(
