@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import factory
+from django.core.exceptions import ValidationError
 
 from ralph.assets.models.choices import ObjectModelType
 from ralph.assets.tests.factories import (
@@ -14,6 +15,7 @@ from ralph.licences.tests.factories import (
     LicenceFactory,
     LicenceWithUserAndBaseObjectsFactory
 )
+from ralph.reports.models import ReportLanguage
 from ralph.reports.views import (
     AssetRelationsReport,
     CategoryModelReport,
@@ -226,3 +228,19 @@ class TestReportAssetAndLicence(RalphTestCase):
             ]
         ]
         self.assertEqual(report_result, result)
+
+
+class TestReportLanguage(RalphTestCase):
+
+    def test_clean_metod(self):
+        ReportLanguage.objects.create(name='pl', default=True)
+        lang_2 = ReportLanguage.objects.create(name='en', default=False)
+
+        with self.assertRaisesRegex(
+            ValidationError,
+            (
+                'Only one language can be default.'
+            )
+        ):
+            lang_2.default = True
+            lang_2.clean()
