@@ -1,4 +1,6 @@
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
 
 from ralph.attachments.helpers import get_file_path
 from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
@@ -15,7 +17,14 @@ class Report(NamedMixin, TimeStampMixin, models.Model):
 
 
 class ReportLanguage(NamedMixin, TimeStampMixin, models.Model):
-    pass
+    default = models.BooleanField()
+
+    def clean(self):
+        default_qs = self.__class__.objects.filter(default=True)
+        if self.pk:
+            default_qs = default_qs.exclude(pk=self.pk)
+        if self.default and default_qs.count() > 0:
+            raise ValidationError(_('Only one language can be default.'))
 
 
 class ReportTemplate(TimeStampMixin, models.Model):

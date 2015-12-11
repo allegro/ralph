@@ -442,7 +442,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             'report_language': {
                 'field': forms.ModelChoiceField(
                     label=_('Report language'),
-                    queryset=ReportLanguage.objects.all(),
+                    queryset=ReportLanguage.objects.all().order_by('-default'),
                     empty_label=None
                 ),
             }
@@ -453,7 +453,7 @@ class BackOfficeAsset(Regionalizable, Asset):
     def release_report(cls, instances, request, **kwargs):
         return cls._generate_report(
             instances=instances, name='release', request=request,
-            language=ReportLanguage.objects.get(pk=kwargs['report_language'])
+            language=kwargs['report_language']
         )
 
     @classmethod
@@ -462,7 +462,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             'report_language': {
                 'field': forms.ModelChoiceField(
                     label=_('Report language'),
-                    queryset=ReportLanguage.objects.all(),
+                    queryset=ReportLanguage.objects.all().order_by('-default'),
                     empty_label=None
                 ),
             }
@@ -473,7 +473,7 @@ class BackOfficeAsset(Regionalizable, Asset):
     def return_report(cls, instances, request, **kwargs):
         return cls._generate_report(
             instances=instances, name='return', request=request,
-            language=ReportLanguage.objects.get(pk=kwargs['report_language'])
+            language=kwargs['report_language']
         )
 
     @classmethod
@@ -482,7 +482,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             'report_language': {
                 'field': forms.ModelChoiceField(
                     label=_('Report language'),
-                    queryset=ReportLanguage.objects.all(),
+                    queryset=ReportLanguage.objects.all().order_by('-default'),
                     empty_label=None
                 ),
             }
@@ -493,7 +493,7 @@ class BackOfficeAsset(Regionalizable, Asset):
     def loan_report(cls, instances, request, **kwargs):
         return cls._generate_report(
             name='loan', request=request, instances=instances,
-            language=ReportLanguage.objects.get(pk=kwargs['report_language'])
+            language=kwargs['report_language']
         )
 
 

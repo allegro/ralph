@@ -11,7 +11,7 @@ class ReportTemplateInline(RalphTabularInline):
 
 @register(ReportLanguage)
 class ReportLanguage(RalphAdmin):
-    pass
+    list_display = ['name', 'default']
 
 
 @register(Report)

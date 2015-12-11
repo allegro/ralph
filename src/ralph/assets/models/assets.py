@@ -367,9 +367,11 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
             context = Context(template_vars or {})
             return template.render(context)
 
-        logger.warning('Generating new hostname for {} using {}'.format(
-            self, template_vars
-        ))
+        logger.warning(
+            'Generating new hostname for {} using {} old hostname {}'.format(
+                self, template_vars, self.hostname
+            )
+        )
         prefix = render_template(
             ASSET_HOSTNAME_TEMPLATE.get('prefix', ''),
         )
