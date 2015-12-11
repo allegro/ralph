@@ -445,6 +445,7 @@ class BackOfficeAsset(Regionalizable, Asset):
                     queryset=ReportLanguage.objects.all().order_by('-default'),
                     empty_label=None
                 ),
+                'exclude_from_history': True
             }
         },
         return_attachment=True,
@@ -465,6 +466,7 @@ class BackOfficeAsset(Regionalizable, Asset):
                     queryset=ReportLanguage.objects.all().order_by('-default'),
                     empty_label=None
                 ),
+                'exclude_from_history': True
             }
         },
         return_attachment=True,
@@ -485,6 +487,7 @@ class BackOfficeAsset(Regionalizable, Asset):
                     queryset=ReportLanguage.objects.all().order_by('-default'),
                     empty_label=None
                 ),
+                'exclude_from_history': True
             }
         },
         return_attachment=True,
