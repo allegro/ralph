@@ -262,7 +262,10 @@ class BaseObjectLicence(models.Model):
         bo_asset = getattr_dunder(
             self.base_object, 'asset__backofficeasset'
         )
-        if bo_asset and self.licence.region_id != bo_asset.region_id:
+        if (
+            bo_asset and self.licence and
+            self.licence.region_id != bo_asset.region_id
+        ):
             raise ValidationError(
                 _('Asset region is in a different region than licence.')
             )
