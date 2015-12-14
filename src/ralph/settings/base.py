@@ -4,6 +4,10 @@ import os
 
 from django.contrib.messages import constants as messages
 
+
+def os_env_true(var, default=''):
+    return os.environ.get(var, default).lower() in ('1', 'true')
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'CHANGE_ME')
@@ -239,6 +243,11 @@ REDIS_CONNECTION = {
     'DB': int(os.environ.get('REDIS_DB', 0)),
     'PASSWORD': os.environ.get('REDIS_PASSWORD', ''),
 }
+
+
+SENTRY_ENABLED = os_env_true('SENTRY_ENABLED')
+SENTRY_JS_DSN = os.environ.get('SENTRY_JS_DSN', None)
+SENTRY_JS_CONFIG = json.loads(os.environ.get('SENTRY_JS_CONFIG', '{}'))
 
 BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME = True
 
