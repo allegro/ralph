@@ -69,3 +69,4 @@ class SupportAdmin(PermissionAdminMixin, AttachmentsMixin, RalphAdmin):
 class SupportTypeAdmin(RalphAdmin):
 
     resource_class = resources.SupportTypeResource
+    search_fields = ['name']
