@@ -10,7 +10,10 @@
       <ul id="transitions_status" class="f-dropdown" data-dropdown-content aria-hidden="true" tabindex="-1">
         {% for transition in transitions %}
           <li>
-            <a href="{% url transition_url_name original.pk transition.pk %}">{{ transition.name }}</a>
+            <a href="{% url transition_url_name original.pk transition.pk %}">{{ transition.name }}
+            {% if not transition.show_form %}
+              <i data-tooltip aria-haspopup="true" class="has-tip has-tip fa fa-info-circle tip-warning" title="{% trans "This transition will be run without any confirmation." %}"></i>
+            {% endif %}</a>
           </li>
         {% endfor %}
       </ul>
