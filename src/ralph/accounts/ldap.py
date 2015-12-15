@@ -11,12 +11,6 @@ from django_auth_ldap.config import ActiveDirectoryGroupType
 # django_auth_ldap with value in settings.py and visible for each
 # ldap_user.
 LDAPSettings.defaults['GROUP_MAPPING'] = {}
-# list of groups names mapped from LDAP
-LDAP_GROUPS_NAMES = list(
-    getattr(settings, 'AUTH_LDAP_GROUP_MAPPING', {}).values()
-) + list(
-    getattr(settings, 'AUTH_LDAP_NESTED_GROUPS', {}).keys()
-)
 
 
 @receiver(populate_user)
@@ -36,6 +30,12 @@ def mirror_groups(self):
     target_group_names = frozenset(self._get_groups().get_group_names())
     # the only difference comparing to original django_auth_ldap:
     if getattr(settings, 'AUTH_LDAP_KEEP_NON_LDAP_GROUPS', False):
+        # list of groups names mapped from LDAP
+        LDAP_GROUPS_NAMES = list(
+            getattr(settings, 'AUTH_LDAP_GROUP_MAPPING', {}).values()
+        ) + list(
+            getattr(settings, 'AUTH_LDAP_NESTED_GROUPS', {}).keys()
+        )
         # include groups not mapped from LDAP into target groups names
         non_ad_groups = list(
             self._user.groups.exclude(name__in=LDAP_GROUPS_NAMES).values_list(

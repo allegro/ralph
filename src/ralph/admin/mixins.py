@@ -286,17 +286,20 @@ class RalphStackedInline(
     pass
 
 
-class RalphTemplateView(TemplateView, metaclass=PermissionViewMetaClass):
-
+class RalphBaseTemplateView(TemplateView):
     def get_context_data(self, **kwargs):
-        context = super(RalphTemplateView, self).get_context_data(
-            **kwargs
-        )
+        context = super().get_context_data(**kwargs)
         context['site_header'] = settings.ADMIN_SITE_HEADER
         context['site_title'] = settings.ADMIN_SITE_TITLE
         # checks if user is allowed to see elements in template
         context['has_permission'] = self.request.user.is_authenticated()
         return context
+
+
+class RalphTemplateView(
+    RalphBaseTemplateView, metaclass=PermissionViewMetaClass
+):
+    pass
 
 
 class RalphMPTTAdmin(MPTTModelAdmin, RalphAdmin):

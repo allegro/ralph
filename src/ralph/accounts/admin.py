@@ -4,6 +4,7 @@ from django.contrib.auth.admin import GroupAdmin, UserAdmin
 from django.contrib.auth.models import Group
 from django.core.urlresolvers import reverse
 from django.db.models import Q
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import RalphUser, Region, Team
@@ -215,6 +216,35 @@ class RalphUserAdmin(PermissionAdminMixin, UserAdmin, RalphAdmin):
 
 @register(Group)
 class RalphGroupAdmin(EditPermissionsFormMixin, GroupAdmin, RalphAdmin):
+    readonly_fields = ['ldap_mapping', 'users_list']
+    fieldsets = (
+        (None, {'fields': ['name', 'ldap_mapping', 'permissions']}),
+        ('Users', {'fields': ['users_list']}),
+    )
+
+    @cached_property
+    def _ldap_groups(self):
+        groups = {v: k for (k, v) in getattr(
+            settings, 'AUTH_LDAP_GROUP_MAPPING', {}
+        ).items()}
+        groups.update(getattr(settings, 'AUTH_LDAP_NESTED_GROUPS', {}))
+        return groups
+
+    def ldap_mapping(self, obj):
+        return self._ldap_groups.get(obj.name, '-')
+    ldap_mapping.short_description = _('LDAP mapping')
+
+    def users_list(self, obj):
+        users = []
+        for u in obj.user_set.order_by('username'):
+            users.append('<a href="{}">{}</a>'.format(
+                reverse("admin:accounts_ralphuser_change", args=(u.id,)),
+                str(u)
+            ))
+        return '<br>'.join(users)
+    users_list.short_description = _('Users list')
+    users_list.allow_tags = True
+
     def formfield_for_manytomany(self, db_field, request=None, **kwargs):
         if db_field.name == 'permissions':
             qs = kwargs.get('queryset', db_field.rel.to.objects)
