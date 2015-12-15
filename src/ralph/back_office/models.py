@@ -22,7 +22,11 @@ from ralph.assets.models.assets import Asset
 from ralph.attachments.helpers import add_attachment_from_disk
 from ralph.lib.external_services import ExternalService, obj_to_dict
 from ralph.lib.mixins.fields import NullableCharField
-from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
+from ralph.lib.mixins.models import (
+    NamedMixin,
+    NullableCharFieldUniqueChecksMixin,
+    TimeStampMixin
+)
 from ralph.lib.transitions import transition_action, TransitionField
 from ralph.licences.models import BaseObjectLicence, Licence
 from ralph.reports.models import Report, ReportLanguage
@@ -114,7 +118,11 @@ def autocomplete_if_release_report(actions, objects, field_name='user'):
     return None
 
 
-class BackOfficeAsset(Regionalizable, Asset):
+class BackOfficeAsset(
+    NullableCharFieldUniqueChecksMixin,
+    Regionalizable,
+    Asset
+):
     warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True,
