@@ -3,14 +3,14 @@ from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.admin import AssetList, AssignedLicenceList, UserInfoMixin
-from ralph.admin.mixins import RalphTemplateView
+from ralph.admin.mixins import RalphBaseTemplateView, RalphTemplateView
 
 
 class UserProfileView(RalphTemplateView):
     template_name = 'ralphuser/user_profile.html'
 
 
-class CurrentUserInfoView(UserInfoMixin, RalphTemplateView):
+class CurrentUserInfoView(UserInfoMixin, RalphBaseTemplateView):
     template_name = 'ralphuser/my_equipment.html'
 
     def get_context_data(self, **kwargs):
