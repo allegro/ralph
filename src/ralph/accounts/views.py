@@ -4,10 +4,28 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.admin import AssetList, AssignedLicenceList, UserInfoMixin
 from ralph.admin.mixins import RalphBaseTemplateView, RalphTemplateView
+from ralph.licences.models import BaseObjectLicence
 
 
 class UserProfileView(RalphTemplateView):
     template_name = 'ralphuser/user_profile.html'
+
+
+class MyEquipmentAssetList(AssetList):
+    def user_licence(self, item):
+        licences = BaseObjectLicence.objects.filter(
+            base_object=item['id']
+        ).select_related('licence', 'licence__software')
+        if licences:
+            result = [
+                '{} ({})'.format(
+                    bo_licence.licence.software.name,
+                    bo_licence.licence.niw,
+                ) for bo_licence in licences
+            ]
+            return ['<br />'.join(result)]
+        else:
+            return []
 
 
 class CurrentUserInfoView(UserInfoMixin, RalphBaseTemplateView):
@@ -24,7 +42,7 @@ class CurrentUserInfoView(UserInfoMixin, RalphBaseTemplateView):
         ]
         if settings.MY_EQUIPMENT_REPORT_FAILURE_URL:
             asset_fields += ['report_failure']
-        context['asset_list'] = AssetList(
+        context['asset_list'] = MyEquipmentAssetList(
             self.get_asset_queryset(),
             asset_fields,
             ['user_licence'],
