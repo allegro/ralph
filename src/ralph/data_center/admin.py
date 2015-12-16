@@ -120,7 +120,7 @@ class DataCenterAssetAdmin(
     one_of_mulitvalue_required = ['sn', 'barcode']
     bulk_edit_list = list_display + [
         'rack', 'orientation', 'position',
-        'slot_no'
+        'slot_no', 'price',
     ]
     bulk_edit_no_fillable = ['barcode', 'sn']
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
