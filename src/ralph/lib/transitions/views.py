@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from django import forms
 from django.contrib import messages
 from django.core.urlresolvers import reverse
@@ -48,6 +50,7 @@ class TransitionViewMixin(object):
         for action in self.actions:
             action_fields = getattr(action, 'form_fields', {})
             for name, options in action_fields.items():
+                options = deepcopy(options)
                 condition = options.get('condition', lambda x, y: True)
                 if not condition(self.obj, self.actions):
                     continue
