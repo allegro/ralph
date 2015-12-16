@@ -66,10 +66,11 @@ class SaveServiceSerializer(RalphAPISerializer):
     )
     support_team = AdditionalLookupRelatedField(
         read_only=False, queryset=Team.objects.all(), lookup_fields=['name'],
+        required=False, allow_null=True,
     )
     profit_center = AdditionalLookupRelatedField(
         read_only=False, queryset=ProfitCenter.objects.all(),
-        lookup_fields=['name'],
+        lookup_fields=['name'], required=False, allow_null=True,
     )
 
     class Meta:

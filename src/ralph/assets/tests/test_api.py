@@ -123,6 +123,52 @@ class ServicesEnvironmentsAPITests(RalphAPITestCase):
         self.assertEqual(service.profit_center, self.profit_center)
         self.assertEqual(service.support_team, self.team)
 
+    def test_create_service_with_nulls(self):
+        url = reverse('service-list')
+        data = {
+            'name': 'test-service',
+            'environments': [self.envs[0].name, self.envs[1].name],
+            'business_owners': [self.user1.username],
+            'technical_owners': [self.user2.username],
+            'support_team': None,
+            'profit_center': None,
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Service.objects.count(), 3)
+        service = Service.objects.get(pk=response.data['id'])
+        self.assertEqual(service.name, 'test-service')
+        self.assertCountEqual(
+            service.environments.values_list('name', flat=True),
+            data['environments']
+        )
+        self.assertIn(self.user1, service.business_owners.all())
+        self.assertIn(self.user2, service.technical_owners.all())
+        self.assertIsNone(service.profit_center)
+        self.assertIsNone(service.support_team, self.team)
+
+    def test_create_service_with_without_profit_center_and_support_team(self):
+        url = reverse('service-list')
+        data = {
+            'name': 'test-service',
+            'environments': [self.envs[0].name, self.envs[1].name],
+            'business_owners': [self.user1.username],
+            'technical_owners': [self.user2.username],
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Service.objects.count(), 3)
+        service = Service.objects.get(pk=response.data['id'])
+        self.assertEqual(service.name, 'test-service')
+        self.assertCountEqual(
+            service.environments.values_list('name', flat=True),
+            data['environments']
+        )
+        self.assertIn(self.user1, service.business_owners.all())
+        self.assertIn(self.user2, service.technical_owners.all())
+        self.assertIsNone(service.profit_center)
+        self.assertIsNone(service.support_team, self.team)
+
     def test_patch_service(self):
         service = self.services[1]
         url = reverse('service-detail', args=(service.id,))

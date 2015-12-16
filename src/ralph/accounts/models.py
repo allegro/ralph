@@ -123,7 +123,10 @@ class RalphUser(PermByFieldMixin, AbstractUser, AdminAbsoluteUrlMixin):
         swappable = 'AUTH_USER_MODEL'
 
     def __str__(self):
-        return self.get_full_name() or super().__str__()
+        full_name = self.get_full_name()
+        if full_name:
+            return '{} ({})'.format(full_name, self.username)
+        return super().__str__()
 
     @property
     def api_token_key(self):
