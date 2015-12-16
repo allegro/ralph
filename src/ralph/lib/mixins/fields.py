@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
+from django import forms
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models.loading import get_model
+
+
+class NullableCharFormField(forms.CharField):
+    def to_python(self, value):
+        "Returns a Unicode object."
+        if value in self.empty_values:
+            return None
+        return super().to_python(value)
 
 
 class NullableCharFieldMixin(object):
@@ -17,6 +26,11 @@ class NullableCharFieldMixin(object):
 
     def get_prep_value(self, value):
         return value or None
+
+    def formfield(self, **kwargs):
+        defaults = {'form_class': NullableCharFormField}
+        defaults.update(kwargs)
+        return super().formfield(**defaults)
 
 
 class NullableCharField(

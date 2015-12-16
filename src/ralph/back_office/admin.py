@@ -118,7 +118,7 @@ class BackOfficeAssetAdmin(
         'invoice_date', 'invoice_no', 'provider', 'task_url',
         'depreciation_rate', 'price', 'order_no', 'depreciation_end_date'
     ]
-    bulk_edit_no_fillable = ['barcode', 'sn', 'hostname']
+    bulk_edit_no_fillable = ['barcode', 'sn', 'imei', 'hostname']
     _invoice_report_name = 'invoice-back-office-asset'
     _invoice_report_item_fields = (
         AssetInvoiceReportMixin._invoice_report_item_fields + ['owner']
