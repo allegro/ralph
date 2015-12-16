@@ -116,7 +116,7 @@ class PermissionPerObjectAdminMixin(object):
 
     def has_delete_permission(self, request, obj=None):
         return (
-            super().has_change_permission(request, obj) and
+            super().has_delete_permission(request, obj) and
             self._check_obj_permission(request, obj)
         )
 
