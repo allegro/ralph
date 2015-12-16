@@ -190,7 +190,13 @@ class RalphAdminMixin(RalphAutocompleteMixin):
         if request.GET.get(BULK_EDIT_VAR, False):
             # Hide checkbox on bulk edit page
             return []
-        return super().get_actions(request)
+        actions = super().get_actions(request)
+        if (
+            not self.has_delete_permission(request) and
+            'delete_selected' in actions
+        ):
+            del actions['delete_selected']
+        return actions
 
     def changeform_view(
         self, request, object_id=None, form_url='', extra_context=None
