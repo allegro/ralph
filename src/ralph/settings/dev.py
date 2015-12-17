@@ -29,3 +29,4 @@ RAISE_ITEMS_ERRORS_ON_DEBUG = False
 LOGGING['handlers']['console']['level'] = 'DEBUG'
 for logger in LOGGING['loggers']:
     LOGGING['loggers'][logger]['level'] = 'DEBUG'
+    LOGGING['loggers'][logger]['handlers'].append('console')

@@ -31,6 +31,9 @@ def view_permission_dispatch(func):
             )
             if request.user.has_perm(perm_name):
                 return func(self, request, *args, **kwargs)
+        logger.info('{} permission not set for user {}'.format(
+            self.permision_codename, request.user
+        ))
         return HttpResponseForbidden()
     return wraps
 
@@ -57,6 +60,7 @@ def update_extra_view_permissions(**kwargs):
     Get all views that inherit the PermissionViewMetaClass and
     adding them permission.
     """
+    logger.info('Updating extra views permissions...')
     admin_classes = {}
     for model, admin_class in ralph_site._registry.items():
         for change_view in admin_class.change_views:
