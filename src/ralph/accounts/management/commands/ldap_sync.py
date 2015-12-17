@@ -100,7 +100,7 @@ class NestedGroups(object):
             if user.username in users:
                 group = self.get_group_from_db(group_name)
                 user.groups.add(group)
-                logger.info('Added', user.username, 'to', group_name)
+                logger.info('Added {} to {}'.format(user.username, group_name))
 
 
 class Command(BaseCommand):
@@ -134,9 +134,8 @@ class Command(BaseCommand):
             while True:
                 page_num += 1
                 r_type, r_data, r_msgid, serverctrls = conn.result3(msgid)
-                logger.info("Pack of %s users loaded (page %s)" % (
-                    LDAP_RESULTS_PAGE_SIZE,
-                    page_num,
+                logger.info('Pack of {} users loaded (page {})'.format(
+                    LDAP_RESULTS_PAGE_SIZE, page_num,
                 ))
                 for item in r_data:
                     yield item
@@ -154,8 +153,8 @@ class Command(BaseCommand):
                         break
                 else:
                     logger.error(
-                        'LDAP::_run_ldap_query\tQuery: %s\t'
-                        'Server ignores RFC 2696 control',
+                        'LDAP::_run_ldap_query\tQuery: Server ignores RFC 2696 '
+                        'control'
                     )
                     sys.exit(1)
 
@@ -189,24 +188,23 @@ class Command(BaseCommand):
         ]
         for option in options:
             if not hasattr(settings, option):
-                logger.error(
-                    'LDAP::check_settings_existence\tSetting %s '
-                    'is not provided.' % option
-                )
+                logger.error((
+                    'LDAP::check_settings_existence\tSetting {} is not provided'
+                ).format(option))
                 sys.exit(1)
 
     def handle(self, *args, **kwargs):
         """Load users from ldap command."""
         self.check_settings_existence()
         self._load_backend()
-        logger.info("Fetch nested groups...")
+        logger.info('Fetch nested groups...')
         self.nested_groups = NestedGroups(self.backend)
-        logger.info("Syncing...")
+        logger.info('Syncing...')
         if not ldap_module_exists:
-            logger.error("ldap module not installed")
-            raise ImportError("No module named ldap")
+            logger.error('ldap module not installed')
+            raise ImportError('No module named ldap')
         synced = self.populate_users()
-        logger.info("LDAP users synced: {}".format(synced))
+        logger.info('LDAP users synced: {}'.format(synced))
 
     def populate_users(self):
         """Load users from ldap and populate them. Returns number of users."""
