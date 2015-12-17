@@ -1,6 +1,6 @@
-from django.apps import AppConfig
+from ralph.apps import RalphAppConfig
 
 
-class BackOfficeConfig(AppConfig):
+class BackOfficeConfig(RalphAppConfig):
     name = 'ralph.back_office'
     verbose_name = 'Back Office'

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-from django.apps import AppConfig
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.apps import RalphAppConfig
 
-class AccountsConfig(AppConfig):
+
+class AccountsConfig(RalphAppConfig):
     name = 'ralph.accounts'
     verbose_name = _('Accounts')

@@ -100,7 +100,7 @@ class NestedGroups(object):
             if user.username in users:
                 group = self.get_group_from_db(group_name)
                 user.groups.add(group)
-                print('\tAdded', user.username, 'to', group_name)
+                logger.info('Added', user.username, 'to', group_name)
 
 
 class Command(BaseCommand):
@@ -134,7 +134,7 @@ class Command(BaseCommand):
             while True:
                 page_num += 1
                 r_type, r_data, r_msgid, serverctrls = conn.result3(msgid)
-                self.stdout.write("Pack of %s users loaded (page %s)" % (
+                logger.info("Pack of %s users loaded (page %s)" % (
                     LDAP_RESULTS_PAGE_SIZE,
                     page_num,
                 ))
@@ -193,21 +193,20 @@ class Command(BaseCommand):
                     'LDAP::check_settings_existence\tSetting %s '
                     'is not provided.' % option
                 )
-                self.stdout.write("Setting '%s' is not provided." % option)
                 sys.exit(1)
 
     def handle(self, *args, **kwargs):
         """Load users from ldap command."""
         self.check_settings_existence()
         self._load_backend()
-        self.stdout.write("Fetch nested groups...")
+        logger.info("Fetch nested groups...")
         self.nested_groups = NestedGroups(self.backend)
-        self.stdout.write("Syncing...")
+        logger.info("Syncing...")
         if not ldap_module_exists:
             logger.error("ldap module not installed")
             raise ImportError("No module named ldap")
         synced = self.populate_users()
-        self.stdout.write("LDAP users synced: {}".format(synced))
+        logger.info("LDAP users synced: {}".format(synced))
 
     def populate_users(self):
         """Load users from ldap and populate them. Returns number of users."""
