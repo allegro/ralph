@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django import forms
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
@@ -53,14 +54,105 @@ class BackOfficeAssetLicence(RalphDetailViewAdmin):
     inlines = [BackOfficeAssetLicenceInline]
 
 
-class BackOfficeAssetAdminForm(RalphAdmin.form):
+from ralph.admin.widgets import AutocompleteManyToManyWidget
+from ralph.admin.sites import ralph_site
+from ralph.supports.models import BaseObjectsSupport, Support
+
+
+class AutoCompleteManyToManyField(forms.Field):
+
+    def __init__(self, *args, **kwargs):
+        self.to_model = kwargs.pop('to_model')
+        self.m2m_model = kwargs.pop('m2m_model')
+        self.fk_field_from = kwargs.pop('fk_field_from')
+        self.fk_field_to = kwargs.pop('fk_field_to')
+        super().__init__(*args, **kwargs)
+        self.widget = AutocompleteManyToManyWidget(
+            field=self, admin_site=ralph_site,
+            rel_to=Support, many_to_many=True
+        )
+
+    def prepare_value(self, value):
+        if self.instance:
+            qs = self.m2m_model.objects.filter(
+                **{self.fk_field_from: self.instance}
+            )
+            return ','.join(
+                map(str, qs.values_list(self.fk_field_to, flat=True))
+            )
+
+        return value
+
+
+class ManyToManyFormMixin(object):
+
+    m2m_fields = {
+        'supports': {
+            'to_model': Support,
+            'm2m_model': BaseObjectsSupport,
+            'fk_field_from': 'baseobject',
+            'fk_field_to': 'support'
+        }
+    }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # for field, options in self.m2m_fields.items():
+        #     self.fields[field] = AutoCompleteManyToManyField(**options)
+        #     self.fields[field].widget.request = self._request
+        #     self.fields[field].instance = self.instance
+
+    def save(self, commit=True):
+        instance = super().save(commit)
+        if instance:
+            for field, options in self.m2m_fields.items():
+                value = self.cleaned_data[field]
+                field = self.fields[field]
+                old_values = field.m2m_model.objects.filter(
+                    **{field.fk_field_from: instance.pk}
+                ).values_list(field.fk_field_to, flat=True)
+                new_values = []
+                for val in value.split(','):
+                    if not val:
+                        continue
+                    new_values.append(int(val))
+                    obj, _ = field.m2m_model.objects.get_or_create(
+                        **{
+                            '{}_id'.format(field.fk_field_to): val,
+                            '{}_id'.format(field.fk_field_from): instance.pk
+                        }
+                    )
+                to_delete = list(set(old_values) - set(new_values))
+                if to_delete:
+                    field.m2m_model.objects.filter(
+                        **{
+                            field.fk_field_from: instance,
+                            '{}__in'.format(field.fk_field_to): to_delete
+                        }
+                    ).delete()
+        return instance
+
+
+class BackOfficeAssetAdminForm(ManyToManyFormMixin, RalphAdmin.form):
     """
     Service_env is not required for BackOffice assets.
     """
+    supports = AutoCompleteManyToManyField(**{
+        'to_model': Support,
+        'm2m_model': BaseObjectsSupport,
+        'fk_field_from': 'baseobject',
+        'fk_field_to': 'support',
+        'required': False
+    })
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if 'hostname' in self.fields:
             self.fields['hostname'].widget.attrs['readonly'] = True
+
+        for field, options in self.m2m_fields.items():
+            self.fields[field].widget.request = self._request
+            self.fields[field].instance = self.instance
 
 
 @register(BackOfficeAsset)
@@ -113,6 +205,7 @@ class BackOfficeAssetAdmin(
     ]
     resource_class = resources.BackOfficeAssetResource
     bulk_edit_list = [
+        'supports',
         'status', 'barcode', 'imei', 'hostname', 'model', 'purchase_order',
         'user', 'owner', 'warehouse', 'sn', 'region', 'property_of', 'remarks',
         'invoice_date', 'invoice_no', 'provider', 'task_url',
@@ -130,6 +223,7 @@ class BackOfficeAssetAdmin(
     fieldsets = (
         (_('Basic info'), {
             'fields': (
+                'supports',
                 'hostname', 'model', 'barcode', 'sn', 'imei', 'niw', 'status',
                 'warehouse', 'location', 'region', 'loan_end_date', 'remarks',
                 'tags', 'property_of', 'task_url', 'office_infrastructure'

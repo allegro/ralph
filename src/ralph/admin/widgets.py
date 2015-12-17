@@ -129,11 +129,12 @@ class PermissionsSelectWidget(forms.Widget):
 class AutocompleteWidget(forms.TextInput):
     def __init__(self, field, admin_site, attrs=None, using=None, **kwargs):
         self.field = field
-        self.rel = self.field.rel
+        self.rel = getattr(self.field, 'rel', None)
         self.request = kwargs.get('request', None)
         self.rel_to = kwargs.get('rel_to') or field.rel.to
         self.admin_site = admin_site
         self.db = using
+
         super().__init__(attrs)
 
     @property
@@ -155,12 +156,11 @@ class AutocompleteWidget(forms.TextInput):
             args=args
         )
 
-    def render(self, name, value, attrs=None):
-        admin_model = self.admin_site._registry[self.rel_to]
+    def get_widget_options(self):
         model_options = (
             self.rel_to._meta.app_label, self.rel_to._meta.model_name
         )
-        widget_options = {
+        return {
             'data-suggest-url': reverse(
                 'autocomplete-list', kwargs={
                     'app': self.field.rel.related_model._meta.app_label,
@@ -174,6 +174,21 @@ class AutocompleteWidget(forms.TextInput):
             'data-query-var': QUERY_PARAM,
             'data-detail-var': DETAIL_PARAM,
         }
+
+    def get_current_object(self, admin_model, value):
+        return self.rel_to._default_manager.select_related(
+            # https://docs.djangoproject.com/en/1.8/ref/models/querysets/#select-related
+            # we cannot pass empty list - this would select all related
+            # model - instead we pass None, which means that none of
+            # related models will be selected
+            *(admin_model.list_select_related or [None])
+        ).filter(
+            pk=value
+        ).first()
+
+    def render(self, name, value, attrs=None):
+        admin_model = self.admin_site._registry[self.rel_to]
+        widget_options = self.get_widget_options()
 
         if attrs is None:
             attrs = {}
@@ -232,15 +247,7 @@ class AutocompleteWidget(forms.TextInput):
                         pass
         current_object = None
         if value:
-            current_object = self.rel_to._default_manager.select_related(
-                # https://docs.djangoproject.com/en/1.8/ref/models/querysets/#select-related
-                # we cannot pass empty list - this would select all related
-                # model - instead we pass None, which means that none of
-                # related models will be selected
-                *(admin_model.list_select_related or [None])
-            ).filter(
-                pk=value
-            ).first()
+            current_object = self.get_current_object(admin_model, value)
         show_tooltip = hasattr(self.rel_to, 'autocomplete_tooltip')
         context = RenderContext({
             'model': self.rel_to,
@@ -273,3 +280,44 @@ class AutocompleteWidget(forms.TextInput):
             context['tooltip'] = current_object.autocomplete_tooltip
         template = loader.get_template('admin/widgets/autocomplete.html')
         return template.render(context)
+
+
+class AutocompleteManyToManyWidget(AutocompleteWidget):
+
+    def __init__(self, field, admin_site, attrs=None, using=None, **kwargs):
+        self.field = field
+        super().__init__(field, admin_site, attrs, using, **kwargs)
+
+        self.rel = None
+        self.field_var_name = 'many_to_many'
+
+    def get_url_parameters(self):
+        params = {
+            TO_FIELD_VAR: 'id',
+        }
+        return '?' + parse.urlencode(params)
+
+    def get_widget_options(self):
+        model_options = (
+            self.rel_to._meta.app_label, self.rel_to._meta.model_name
+        )
+        return {
+            'data-suggest-url': reverse(
+                'autocomplete-list', kwargs={
+                    'app': self.rel_to._meta.app_label,
+                    'model': self.rel_to._meta.model_name,
+                    'field': self.field_var_name
+                }
+            ),
+            'data-details-url': reverse(
+                'admin:{}_{}_autocomplete_details'.format(*model_options)
+            ),
+            'data-query-var': QUERY_PARAM,
+            'data-detail-var': DETAIL_PARAM,
+            'many_to_many': True,
+        }
+
+    def get_current_object(self, admin_model, value):
+        if value:
+            return self.rel_to.objects.filter(pk__in=value.split(','))
+        return None
