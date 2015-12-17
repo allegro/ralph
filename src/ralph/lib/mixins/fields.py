@@ -5,12 +5,22 @@ from django.db import models
 from django.db.models.loading import get_model
 
 
-class NullableCharFormField(forms.CharField):
+class NullableFormFieldMixin(object):
     def to_python(self, value):
         "Returns a Unicode object."
         if value in self.empty_values:
             return None
         return super().to_python(value)
+
+
+class NullableCharFormField(NullableFormFieldMixin, forms.CharField):
+    pass
+
+
+class NullableGenericIPAddressField(
+    NullableFormFieldMixin, forms.GenericIPAddressField
+):
+    pass
 
 
 class NullableCharFieldMixin(object):
@@ -21,6 +31,8 @@ class NullableCharFieldMixin(object):
     It's especially usefull when field is marked as unique and at the same time
     allows null/blank (`models.CharField(unique=True, null=True, blank=True)`)
     """
+    _formfield_class = NullableCharFormField
+
     def to_python(self, value):
         return value or ''
 
@@ -28,7 +40,9 @@ class NullableCharFieldMixin(object):
         return value or None
 
     def formfield(self, **kwargs):
-        defaults = {'form_class': NullableCharFormField}
+        defaults = {}
+        if self._formfield_class:
+            defaults['form_class'] = self._formfield_class
         defaults.update(kwargs)
         return super().formfield(**defaults)
 
@@ -45,7 +59,7 @@ class NullableGenericIPAddressField(
     NullableCharField,
     models.GenericIPAddressField
 ):
-    pass
+    _formfield_class = NullableGenericIPAddressField
 
 
 class BaseObjectForeignKey(models.ForeignKey):
