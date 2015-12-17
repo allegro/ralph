@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
@@ -166,12 +167,13 @@ class DataCenterAssetAdmin(
     )
 
     def get_multiadd_fields(self, obj=None):
-        return [
+        multiadd_fields = [
             {'field': 'sn', 'allow_duplicates': False},
             {'field': 'barcode', 'allow_duplicates': False},
-            {'field': 'niw', 'allow_duplicates': False},
-            {'field': 'position', 'allow_duplicates': True},
         ]
+        return getattr(
+            settings, 'MULTIADD_DATA_CENTER_ASSET_FIELDS', None
+        ) or multiadd_fields
 
 
 @register(ServerRoom)

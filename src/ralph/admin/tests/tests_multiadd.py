@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.core.urlresolvers import reverse
 from django.test import TestCase
+from django.test.utils import override_settings
 
 from ralph.admin.sites import ralph_site
 from ralph.back_office.admin import BackOfficeAssetAdmin
@@ -182,6 +183,12 @@ class MultiAddTest(ClientMixin, TestCase):
             ), self.dc_1.pk)
         )
 
+    @override_settings(MULTIADD_DATA_CENTER_ASSET_FIELDS=[
+        {'field': 'sn', 'allow_duplicates': False},
+        {'field': 'barcode', 'allow_duplicates': False},
+        {'field': 'position', 'allow_duplicates': True},
+        {'field': 'niw', 'allow_duplicates': False},
+    ])
     def tests_multi_add_validation_integer(self):
         post_data = {
             'sn': 'sn5',
