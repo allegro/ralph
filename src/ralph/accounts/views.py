@@ -18,7 +18,7 @@ class MyEquipmentAssetList(AssetList):
         ).select_related('licence', 'licence__software')
         if licences:
             result = [
-                '{} ({})'.format(
+                '&emsp; <i class="fa fa-chevron-right"></i> {} ({})'.format(
                     bo_licence.licence.software.name,
                     bo_licence.licence.niw,
                 ) for bo_licence in licences
