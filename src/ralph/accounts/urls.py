@@ -6,7 +6,7 @@ from ralph.accounts.views import CurrentUserInfoView, UserProfileView
 urlpatterns = [
     url(
         r'^user_profile/?$',
-        UserProfileView.as_view(),
+        login_required(UserProfileView.as_view()),
         name='user_profile'
     ),
     url(
