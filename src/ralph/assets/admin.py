@@ -29,12 +29,13 @@ class ServiceEnvironmentAdmin(RalphAdmin):
     list_select_related = ['service', 'environment']
     raw_id_fields = ['service', 'environment']
     resource_class = resources.ServiceEnvironmentResource
-    exclude = ('parent', 'service_env')
+    exclude = ('parent', 'service_env', 'content_type')
 
 
 class ServiceEnvironmentInline(RalphTabularInline):
     model = ServiceEnvironment
     raw_id_fields = ['environment']
+    fields = ('environment',)
 
 
 @register(Service)
@@ -43,6 +44,7 @@ class ServiceAdmin(RalphAdmin):
     inlines = [ServiceEnvironmentInline]
     filter_horizontal = ['business_owners', 'technical_owners']
     search_fields = ['name', 'uid']
+    raw_id_fields = ['profit_center', 'support_team']
 
 
 @register(Manufacturer)
