@@ -2,6 +2,7 @@
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.assets.invoice_report import InvoiceReportMixin
 from ralph.attachments.admin import AttachmentsMixin
@@ -49,13 +50,15 @@ class LicenceUserView(RalphDetailViewAdmin):
 
 @register(Licence)
 class LicenceAdmin(
-    PermissionAdminMixin,
     AttachmentsMixin,
+    BulkEditChangeListMixin,
+    PermissionAdminMixin,
     InvoiceReportMixin,
     RalphAdmin
 ):
 
     """Licence admin class."""
+    actions = ['bulk_edit_action']
     change_views = [
         BaseObjectLicenceView,
         LicenceUserView,
@@ -78,6 +81,12 @@ class LicenceAdmin(
     list_select_related = ['licence_type', 'software', 'region']
     raw_id_fields = [
         'software', 'manufacturer', 'budget_info', 'office_infrastructure'
+    ]
+    bulk_edit_list = [
+        'manufacturer', 'licence_type', 'property_of', 'software',
+        'number_bought', 'invoice_date', 'valid_thru', 'order_no', 'price',
+        'accounting_id', 'provider', 'niw', 'sn', 'remarks', 'budget_info',
+        'region'
     ]
     resource_class = resources.LicenceResource
     _invoice_report_name = 'invoice-licence'

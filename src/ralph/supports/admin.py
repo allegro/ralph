@@ -2,6 +2,7 @@
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer import resources
@@ -27,11 +28,17 @@ class BaseObjectSupportView(RalphDetailViewAdmin):
 
 
 @register(Support)
-class SupportAdmin(PermissionAdminMixin, AttachmentsMixin, RalphAdmin):
+class SupportAdmin(
+    AttachmentsMixin,
+    BulkEditChangeListMixin,
+    PermissionAdminMixin,
+    RalphAdmin
+):
 
     """Support model admin class."""
 
     change_views = [BaseObjectSupportView]
+    actions = ['bulk_edit_action']
     search_fields = [
         'name', 'serial_no', 'contract_id', 'description', 'remarks'
     ]
@@ -43,6 +50,13 @@ class SupportAdmin(PermissionAdminMixin, AttachmentsMixin, RalphAdmin):
     list_display = [
         'support_type', 'contract_id', 'name', 'serial_no', 'date_from',
         'date_to', 'created', 'remarks', 'description'
+    ]
+    bulk_edit_list = [
+        'status', 'asset_type', 'contract_id', 'description', 'price',
+        'date_from', 'date_to', 'escalation_path', 'contract_terms',
+        'sla_type', 'producer', 'supplier', 'serial_no', 'invoice_no',
+        'invoice_date', 'period_in_months', 'property_of', 'budget_info',
+        'support_type'
     ]
     list_select_related = ['support_type']
     resource_class = resources.SupportResource
