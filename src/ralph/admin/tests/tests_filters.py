@@ -8,6 +8,7 @@ from ralph.admin.filters import (
     ChoicesListFilter,
     date_format_to_human,
     DateListFilter,
+    LiquidatedStatusFilter,
     NumberListFilter,
     RelatedFieldListFilter,
     TextListFilter
@@ -41,7 +42,7 @@ class AdminFiltersTestCase(TestCase):
         cls.dca_2 = DataCenterAssetFactory(
             invoice_date=datetime.date(2015, 2, 1),
             barcode='barcode_two',
-            status=DataCenterAssetStatus.new,
+            status=DataCenterAssetStatus.liquidated,
         )
         cls.dca_3 = DataCenterAssetFactory(
             invoice_date=datetime.date(2015, 3, 1),
@@ -82,7 +83,7 @@ class AdminFiltersTestCase(TestCase):
         )
         queryset = choices_filter.queryset(None, DataCenterAsset.objects.all())
 
-        self.assertEqual(3, queryset.count())
+        self.assertEqual(2, queryset.count())
 
         choices_filter = ChoicesListFilter(
             field=DataCenterAsset._meta.get_field('status'),
@@ -258,3 +259,26 @@ class AdminFiltersTestCase(TestCase):
         queryset = datet_filter.queryset(None, Support.objects.all())
 
         self.assertEqual(1, queryset.count())
+
+    def test_liquidated_status_filter(self):
+        liquidated_filter = LiquidatedStatusFilter(
+            request=None,
+            params={'liquidated': '1',},
+            model=DataCenterAsset,
+            model_admin=DataCenterAssetAdmin,
+        )
+        queryset = liquidated_filter.queryset(
+            None, DataCenterAsset.objects.all()
+        )
+        self.assertEqual(4, queryset.count())
+
+        liquidated_filter = LiquidatedStatusFilter(
+            request=None,
+            params={'liquidated': None,},
+            model=DataCenterAsset,
+            model_admin=DataCenterAssetAdmin,
+        )
+        queryset = liquidated_filter.queryset(
+            None, DataCenterAsset.objects.all()
+        )
+        self.assertEqual(3, queryset.count())

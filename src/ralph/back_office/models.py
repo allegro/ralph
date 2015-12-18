@@ -192,6 +192,12 @@ class BackOfficeAsset(Regionalizable, Asset):
                 self.generate_hostname(commit, template_vars, request)
 
     @classmethod
+    def get_autocomplete_queryset(cls):
+        return cls._default_manager.exclude(
+            status=BackOfficeAssetStatus.liquidated.id
+        )
+
+    @classmethod
     @transition_action(
         form_fields={
             'user': {

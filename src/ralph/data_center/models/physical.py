@@ -382,6 +382,12 @@ class DataCenterAsset(Asset):
         return chain(*assets)
 
     @classmethod
+    def get_autocomplete_queryset(cls):
+        return cls._default_manager.exclude(
+            status=DataCenterAssetStatus.liquidated.id
+        )
+
+    @classmethod
     @transition_action(
         verbose_name=_('Change rack'),
         form_fields={

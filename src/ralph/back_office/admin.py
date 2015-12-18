@@ -2,6 +2,7 @@
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin.filters import LiquidatedStatusFilter
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
@@ -94,13 +95,13 @@ class BackOfficeAssetAdmin(
 
     list_filter = [
         'barcode', 'status', 'imei', 'sn', 'model', 'purchase_order',
-        'hostname', 'required_support', 'region',
-        'warehouse', 'task_url', 'model__category', 'loan_end_date', 'niw',
-        'model__manufacturer', 'location', 'remarks',
-        'user', 'owner', 'user__segment', 'user__company', 'user__department',
-        'user__employee_id', 'property_of', 'invoice_no', 'invoice_date',
-        'order_no', 'provider', 'budget_info',
-        'depreciation_rate', 'depreciation_end_date', 'force_depreciation'
+        'hostname', 'required_support', 'region', 'warehouse', 'task_url',
+        'model__category', 'loan_end_date', 'niw', 'model__manufacturer',
+        'location', 'remarks', 'user', 'owner', 'user__segment',
+        'user__company', 'user__department', 'user__employee_id',
+        'property_of', 'invoice_no', 'invoice_date', 'order_no', 'provider',
+        'budget_info', 'depreciation_rate', 'depreciation_end_date',
+        'force_depreciation', LiquidatedStatusFilter
     ]
     date_hierarchy = 'created'
     list_select_related = [

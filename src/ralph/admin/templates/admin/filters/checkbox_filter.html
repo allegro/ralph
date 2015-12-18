@@ -1,0 +1,5 @@
+{% extends "admin/filters/_filter_base.html" %}
+
+{% block filter_content %}
+    <input type="checkbox" name="{{ choices.0.parameter_name }}" value="1" {% if choices.0.selected %} checked{% endif %}/>
+{% endblock %}
