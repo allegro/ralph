@@ -5,7 +5,9 @@ var gulp = require('gulp'),
     bower = require('gulp-bower'),
     prefixer = require('gulp-autoprefixer'),
     sass = require('gulp-sass'),
+    gutil = require('gulp-util'),
     sourcemaps = require('gulp-sourcemaps'),
+    coffee = require('gulp-coffee'),
     qunit = require('gulp-qunit');
 
 var config = {
@@ -35,6 +37,9 @@ gulp.task('scss', function() {
         .pipe(prefixer())
         .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest(config.staticRoot + 'css/'))
+});
+gulp.task('scss:watch', function() {
+    gulp.watch(config.srcRoot + 'scss/**/*.scss', ['scss']);
 });
 
 gulp.task('css', function() { 
@@ -81,16 +86,24 @@ gulp.task('js', function(){
         .pipe(gulp.dest(config.vendorRoot + 'js'));
 });
 
+gulp.task('coffee', function() {
+  gulp.src(config.srcRoot + 'coffee/**/*.coffee')
+    .pipe(sourcemaps.init())
+    .pipe(coffee({bare: true}).on('error', gutil.log))
+    .pipe(sourcemaps.write())
+    .pipe(gulp.dest(config.staticRoot + 'js'));
+});
+
+gulp.task('coffee:watch', function() {
+    gulp.watch(config.srcRoot + 'coffee/**/*.coffee', ['coffee']);
+});
+
 gulp.task('test', function() {
     return gulp.src('./src/ralph/js_tests/*_runner.html').pipe(qunit());
 });
 
-gulp.task('watch', function() {
-    gulp.watch(config.srcRoot + 'scss/**/*.scss', ['scss']);
-});
-
 gulp.task('dev', function(callback) {
-    runSequence('bower', 'css', 'fonts', 'js', 'scss', callback);
+    runSequence('bower', 'css', 'fonts', 'js', 'scss', 'coffee', callback);
 });
 
 gulp.task('default', ['dev']);

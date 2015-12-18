@@ -70,6 +70,7 @@ site/
 bower_components/
 node_modules/
 src/ralph/static/css/
+src/ralph/static/js/
 src/ralph/static/vendor/
 src/ralph/var/
 
