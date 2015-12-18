@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from ralph.lib.transitions.models import TRANSITION_ORIGINAL_STATUS
 from ralph.lib.transitions.tests import TransitionTestCase
 from ralph.tests.models import Order, OrderStatus
 
@@ -39,9 +40,10 @@ class TransitionFormTest(TransitionTestCase):
             Order, 'test'
         )
         form = self._get_form(transition_model)(instance=transition)
+        order_status = [s.name for s in OrderStatus.__choices__]
         self.assertCountEqual(
             [x[1] for x in form.fields['target'].choices[1:]],
-            [s.name for s in OrderStatus.__choices__]
+            order_status + [TRANSITION_ORIGINAL_STATUS[1]]
         )
 
     def test_should_raise_vaild_error_when_user_checked_two_or_more_actions_with_attachment(self):  # noqa

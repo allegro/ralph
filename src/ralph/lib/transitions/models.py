@@ -39,6 +39,9 @@ _transitions_fields = {}
 logger = logging.getLogger(__name__)
 
 
+TRANSITION_ORIGINAL_STATUS = (0, 'Keep orginal status')
+
+
 class CycleError(Exception):
     pass
 
@@ -48,6 +51,20 @@ def _generate_transition_history(
 ):
     """Return history object (without saving it) based on parameters."""
     field_value = getattr(instance, field, None)
+    try:
+        target = instance._meta.get_field(
+            field
+        ).choices.from_id(int(transition.target)).name
+    except ValueError:
+        target = None
+
+    try:
+        source = instance._meta.get_field(
+            field
+        ).choices.from_id(int(field_value)).name
+    except ValueError:
+        source = None
+
     return TransitionsHistory(
         transition_name=transition.name,
         content_type=ContentType.objects.get_for_model(instance._meta.model),
@@ -56,12 +73,8 @@ def _generate_transition_history(
         attachment=attachment,
         kwargs=history_kwargs,
         actions=action_names,
-        source=instance._meta.get_field(
-            field
-        ).choices.from_id(int(field_value)).name,
-        target=instance._meta.get_field(
-            field
-        ).choices.from_id(int(transition.target)).name
+        source=source,
+        target=target
     )
 
 
@@ -262,7 +275,8 @@ def run_field_transition(
             attachment = result
     history_list = []
     for instance in instances:
-        setattr(instance, field, int(transition.target))
+        if not transition.target == TRANSITION_ORIGINAL_STATUS[0]:
+            setattr(instance, field, int(transition.target))
         history_kwargs = _get_history_dict(data, instance, runned_funcs)
         history_list.append(_generate_transition_history(
             instance=instance,
