@@ -275,7 +275,7 @@ def run_field_transition(
             attachment = result
     history_list = []
     for instance in instances:
-        if not transition.target == TRANSITION_ORIGINAL_STATUS[0]:
+        if not int(transition.target) == TRANSITION_ORIGINAL_STATUS[0]:
             setattr(instance, field, int(transition.target))
         history_kwargs = _get_history_dict(data, instance, runned_funcs)
         history_list.append(_generate_transition_history(
