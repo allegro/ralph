@@ -112,9 +112,7 @@ class LicenceAdmin(
             )
         }),
     )
-
-    def get_queryset(self, *args, **kwargs):
-        return Licence.objects_used_free.all()
+    _queryset_manager = 'objects_used_free'
 
 
 @register(LicenceType)
