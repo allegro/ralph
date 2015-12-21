@@ -14,6 +14,7 @@ from ralph.admin.views.extra import RalphDetailView
 from ralph.back_office.models import BackOfficeAsset
 from ralph.lib.permissions.admin import PermissionAdminMixin
 from ralph.lib.table import Table
+from ralph.lib.transitions.models import TransitionsHistory
 from ralph.licences.models import BaseObjectLicence, Licence
 
 # use string for whole app (app_label) or tuple (app_label, model_name) to
@@ -171,12 +172,28 @@ class UserInfoView(UserInfoMixin, RalphDetailView):
         return self.object
 
 
+class UserTransitionHistoryView(RalphDetailView):
+    icon = 'history'
+    name = 'user_transition_history'
+    label = _('Transition history')
+    url_name = 'user_transition_history'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['transitions_history'] = TransitionsHistory.objects.filter(
+            kwargs__icontains='"user": "{}"'.format(self.object)
+        ).distinct()
+        context['transition_history_in_fieldset'] = False
+        return context
+
+
 @register(RalphUser)
 class RalphUserAdmin(PermissionAdminMixin, UserAdmin, RalphAdmin):
 
     form = RalphUserChangeForm
     change_views = [
-        UserInfoView
+        UserInfoView,
+        UserTransitionHistoryView
     ]
     readonly_fields = ('api_token_key',)
     fieldsets = (
