@@ -106,6 +106,7 @@ class RalphAdminMixin(RalphAutocompleteMixin):
     form = RalphAdminForm
     # List of fields that are to be excluded from fillable on bulk edit
     bulk_edit_no_fillable = []
+    _queryset_manager = None
 
     def __init__(self, *args, **kwargs):
         self.list_views = copy(self.list_views) or []
@@ -265,6 +266,11 @@ class RalphAdminMixin(RalphAutocompleteMixin):
                 )
             ]
         return list_display
+
+    def get_queryset(self, *args, **kwargs):
+        if self._queryset_manager:
+            return getattr(self.model, self._queryset_manager).all()
+        return super().get_queryset(*args, **kwargs)
 
 
 class RalphAdmin(
