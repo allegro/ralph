@@ -118,7 +118,8 @@ def transition_history(obj):
 
     return {
         'transitions_history': history,
-        'attachment_url_name': attachment_url_name
+        'attachment_url_name': attachment_url_name,
+        'transition_history_in_fieldset': True
     }
 
 

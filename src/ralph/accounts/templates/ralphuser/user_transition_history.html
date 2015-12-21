@@ -1,0 +1,9 @@
+{% extends BASE_TEMPLATE %}
+{% load i18n table %}
+{% block view_content %}
+<div class="large-12 columns">
+  <h1>{% trans 'User transition history' %}</h1>
+  <br /> <br />
+  {% include 'admin/templatetags/transition_history.html' %}
+</div>
+{% endblock %}
