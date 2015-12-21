@@ -327,13 +327,13 @@ class AssetRelationsReport(BaseRelationsReport):
         'model__manufacturer__name', 'model__name', 'user__username',
         'user__first_name', 'user__last_name', 'owner__username',
         'owner__first_name', 'owner__last_name', 'owner__company',
-        'owner__segment', 'status', 'service_env__service__name',
+        'owner__segment', 'status', 'office_infrastructure__name',
         'property_of', 'warehouse__name', 'invoice_date', 'invoice_no',
         'region__name', 'hostname'
     ]
     bo_select_related = [
-        'model', 'model__category', 'service_env', 'service_env__service',
-        'warehouse', 'user', 'owner'
+        'model', 'model__category', 'office_infrastructure', 'warehouse',
+        'user', 'owner'
     ]
 
     def prepare(self, model, *args, **kwargs):
