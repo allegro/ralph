@@ -4,7 +4,12 @@ from django.utils.html import strip_tags
 from django.utils.text import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.lib.transitions.models import Action, Transition, TransitionModel
+from ralph.lib.transitions.models import (
+    Action,
+    Transition,
+    TRANSITION_ORIGINAL_STATUS,
+    TransitionModel
+)
 
 
 def wrap_action_name(action):
@@ -34,7 +39,9 @@ class TransitionForm(forms.ModelForm):
         choices = tuple(self.model._meta.get_field(field_name).choices)
         self.fields['source'] = forms.MultipleChoiceField(choices=choices)
         self.fields['target'] = forms.ChoiceField(
-            choices=(('', '-------'),) + choices
+            choices=(('', '-------'),) + choices + (
+                TRANSITION_ORIGINAL_STATUS,
+            )
         )
         actions_choices = [
             (i.id, wrap_action_name(getattr(self.model, i.name)))
