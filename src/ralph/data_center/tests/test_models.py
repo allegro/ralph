@@ -2,7 +2,7 @@
 from ddt import data, ddt, unpack
 from django.core.exceptions import ValidationError
 
-from ralph.data_center.models.choices import Orientation
+from ralph.data_center.models.choices import DataCenterAssetStatus, Orientation
 from ralph.data_center.models.networks import (
     get_network_tree,
     IPAddress,
@@ -152,7 +152,9 @@ class NetworkTest(RalphTestCase):
 @ddt
 class DataCenterAssetTest(RalphTestCase):
     def setUp(self):
-        self.dc_asset = DataCenterAssetFactory()
+        self.dc_asset = DataCenterAssetFactory(
+            status=DataCenterAssetStatus.liquidated.id
+        )
         self.dc_asset_2 = DataCenterAssetFactory(
             parent=self.dc_asset,
         )
@@ -266,3 +268,7 @@ class DataCenterAssetTest(RalphTestCase):
         asset = DataCenterAsset.objects.get(pk=self.dc_asset_2.pk)
 
         self.assertEquals(self.dc_asset.rack_id, asset.rack_id)
+
+    def test_get_autocomplete_queryset(self):
+        queryset = DataCenterAsset.get_autocomplete_queryset()
+        self.assertEquals(1, queryset.count())

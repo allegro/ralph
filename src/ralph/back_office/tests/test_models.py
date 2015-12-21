@@ -137,6 +137,18 @@ class TestBackOfficeAsset(RalphTestCase):
             hostname='abc',
             region=self.region_pl,
         )
+        self.bo_asset_2 = BackOfficeAssetFactory(
+            model=self.model,
+            hostname='abc2',
+            region=self.region_pl,
+            status=BackOfficeAssetStatus.liquidated.id
+        )
+        self.bo_asset_3 = BackOfficeAssetFactory(
+            model=self.model,
+            hostname='abc3',
+            region=self.region_pl,
+            status=BackOfficeAssetStatus.liquidated.id
+        )
 
     def test_try_assign_hostname(self):
         self.bo_asset._try_assign_hostname(commit=True)
@@ -178,6 +190,10 @@ class TestBackOfficeAsset(RalphTestCase):
         self.bo_asset.status = BackOfficeAssetStatus.in_progress
         self.bo_asset.save()
         self.assertEqual(self.bo_asset.hostname, 'POLPC01001')
+
+    def test_get_autocomplete_queryset(self):
+        queryset = BackOfficeAsset.get_autocomplete_queryset()
+        self.assertEquals(1, queryset.count())
 
 
 class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):

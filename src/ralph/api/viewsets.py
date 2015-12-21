@@ -41,6 +41,8 @@ class AdminSearchFieldsMixin(object):
                 else:
                     f_name = f
                 if inspect.isclass(f) and issubclass(f, SimpleListFilter):
+                    if not hasattr(f, 'field'):
+                        continue
                     f_name = f.parameter_name
                 filter_fields.append(f_name)
         setattr(self, 'filter_fields', filter_fields)

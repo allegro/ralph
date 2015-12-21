@@ -3,6 +3,7 @@ import re
 from datetime import datetime
 from functools import lru_cache
 
+from django.contrib.admin import SimpleListFilter
 from django.contrib.admin.filters import FieldListFilter
 from django.contrib.admin.utils import get_model_from_relation
 from django.core.urlresolvers import reverse
@@ -367,6 +368,37 @@ class TreeRelatedFieldListFilter(RelatedFieldListFilter):
         return mark_safe(
             level_indicator + ' ' + conditional_escape(smart_text(obj))
         )
+
+
+class LiquidatedStatusFilter(SimpleListFilter):
+
+    title = _('show liquidated')
+    parameter_name = 'liquidated'
+    template = "admin/filters/checkbox_filter.html"
+
+    def __init__(self, request, params, model, model_admin):
+        super().__init__(request, params, model, model_admin)
+        self.model = model
+
+    def lookups(self, request, model_admin):
+        return (
+            (1, _('show liquidated')),
+        )
+
+    def choices(self, cl):
+        yield {
+            'selected': self.value() or False,
+            'parameter_name': self.parameter_name,
+        }
+
+    def queryset(self, request, queryset):
+        if not self.value():
+            liquidated_status = self.model._meta.get_field(
+                'status'
+            ).choices.liquidated.id
+            queryset = queryset.exclude(status=liquidated_status)
+
+        return queryset
 
 
 def register_custom_filters():

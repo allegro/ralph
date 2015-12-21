@@ -146,12 +146,15 @@ class AutocompleteList(SuggestView):
         if not search_fields:
             return []
 
+        queryset = getattr(
+            model,
+            'get_autocomplete_queryset',
+            model._default_manager.all
+        )()
         if issubclass(model, PermissionsForObjectMixin):
             queryset = model._get_objects_for_user(
-                self.request.user, model.objects
+                self.request.user, queryset
             )
-        else:
-            queryset = model.objects
         queryset = self.get_query_filters(queryset, value, search_fields)
         return queryset[:self.limit].values_list('pk', flat=True)
 
