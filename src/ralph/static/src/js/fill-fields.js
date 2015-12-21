@@ -8,11 +8,8 @@
         $('input').attr('autocomplete', 'off');
 
         var $fill_elements = $('.bulk-edit input[type=text]:not(.no-fillable), .bulk-edit select, .bulk-edit textarea, .bulk-edit .autocomplete-widget');
-        $fill_elements.blur(function() {
-            $('#float_toolbar').hide();
-        });
 
-        var toggle_toolbar = function(element, action) {
+        var toggle_toolbar = function(element) {
             var $parent = element.closest('td');
             var $toolbar = $parent.find('.float_toolbar');
             if ($toolbar.length === 0) {
@@ -32,7 +29,8 @@
                 $parent.css('position', 'relative');
                 $toolbar.css('top', parent_height / 2 - 12 + 'px');
 
-                $toolbar.on('click', function() {
+                $toolbar.on('click', function(event) {
+                    event.preventDefault();
                     var input_id = $(this).data('input_id');
                     var from = $(this).data('from');
                     var matcher = /(.*)-([0-9]+)-(.*)/;
@@ -46,23 +44,13 @@
                             $fields.closest('td').animate({backgroundColor: 'white'});
                         }
                     }
-                    return false;
                 });
-            }
-
-            if (action == 'show') {
                 $toolbar.show();
-            } else {
-                $toolbar.hide();
             }
         };
 
         $fill_elements.each(function(i, element) {
-            $(element).parent().mouseenter(function() {
-                toggle_toolbar($(element), 'show');
-            }).mouseleave(function() {
-                toggle_toolbar($(element), 'hide');
-            });
+            toggle_toolbar($(element));
         });
     });
 })(ralph.jQuery);
