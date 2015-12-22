@@ -81,3 +81,11 @@ class PolymorphicTestCase(TestCase):
                 item.sth_related
                 if isinstance(item, PolymorphicModelTest2):
                     item.another_related
+
+    def test_polymorphic_queryset_ordering(self):
+        r = list(PolymorphicModelBaseTest.polymorphic_objects.order_by('-name'))
+        self.assertEqual(r, [self.pol_3, self.pol_2, self.pol_1])
+
+    def test_polymorphic_queryset_use_regular_iterator(self):
+        with self.assertNumQueries(1):
+            list(PolymorphicModelTest.polymorphic_objects.all())

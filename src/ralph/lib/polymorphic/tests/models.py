@@ -20,9 +20,6 @@ class PolymorphicModelBaseTest(
     name = models.CharField(max_length=50, blank=True, null=True)
     sth_related = models.ForeignKey(SomethingRelated, null=True, blank=True)
 
-    polymorphic_objects = PolymorphicQuerySet.as_manager()
-    objects = models.Manager()
-
 
 class PolymorphicModelTest(
     PolymorphicModelBaseTest,
