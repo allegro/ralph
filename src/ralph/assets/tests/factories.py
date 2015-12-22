@@ -10,7 +10,14 @@ from ralph.assets.models.assets import (
     Service,
     ServiceEnvironment
 )
+from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
+
+
+class BaseObjectFactory(DjangoModelFactory):
+
+    class Meta:
+        model = BaseObject
 
 
 class CategoryFactory(DjangoModelFactory):

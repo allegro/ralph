@@ -78,7 +78,7 @@ class RalphAPISerializerMixin(
     TaggitSerializer,
     RelatedObjectsPermissionsSerializerMixin,
     PermissionsPerFieldSerializerMixin,
-    metaclass=DeclaredFieldsMetaclass
+    metaclass=DeclaredFieldsMetaclass  # noqa
 ):
     """
     Mix used in Ralph API serializers features:
@@ -98,7 +98,7 @@ class RalphAPISerializerMixin(
         (contains url to related object). When it's not safe request (ex. POST),
         serializer expect to pass only PK for related object.
         """
-        if self.context['request'].method in permissions.SAFE_METHODS:
+        if self.context['request'] and self.context['request'].method in permissions.SAFE_METHODS:  # noqa
             return RalphHyperlinkedRelatedField
         return RalphRelatedField
 
