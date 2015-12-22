@@ -5,6 +5,7 @@ import logging
 import operator
 from collections import defaultdict, Iterable
 
+import reversion
 from django import forms
 from django.conf import settings
 from django.contrib.auth.models import Permission
@@ -287,7 +288,10 @@ def run_field_transition(
             action_names=action_names,
             field=field
         ))
-        instance.save()
+        with transaction.atomic(), reversion.create_revision():
+            instance.save()
+            reversion.set_comment('Transition {}'.format(transition))
+            reversion.set_user(kwargs['request'].user)
     if history_list:
         TransitionsHistory.objects.bulk_create(history_list)
     return True, attachment
