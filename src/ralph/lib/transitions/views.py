@@ -164,6 +164,10 @@ class TransitionViewMixin(object):
         return self._is_valid() or super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
+        not_valid = self._is_valid()
+        if not_valid:
+            return not_valid
+
         form = self.get_form()
         if form.is_valid():
             return self.form_valid(form)
