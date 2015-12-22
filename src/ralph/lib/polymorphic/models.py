@@ -29,12 +29,19 @@ class PolymorphicQuerySet(models.QuerySet):
             - For each ContentType generates additional queryset
             - Returns iterator with different models
         """
+        # if this is final-level model, don't check for descendants - just
+        # return original queryset result
+        if not getattr(self.model, '_polymorphic_descendants', []):
+            yield from super().iterator()
+            return
+
         result = []
         content_types_ids = set()
         select_related = None
         if self.query.select_related:
             select_related = self.query.select_related
             self.query.select_related = False
+        order_by = self.query.order_by
 
         for obj in super().iterator():
             content_types_ids.add(obj.content_type_id)
@@ -71,6 +78,8 @@ class PolymorphicQuerySet(models.QuerySet):
                     model_query = model_query.prefetch_related(
                         *self._polymorphic_prefetch_related[model_name]
                     )
+                if order_by:
+                    model_query = model_query.order_by(*order_by)
                 for obj in model_query:
                     yield obj
 
