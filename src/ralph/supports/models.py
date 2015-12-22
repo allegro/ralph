@@ -7,6 +7,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
+from ralph.admin.autocomplete import AutocompleteTooltipMixin
 from ralph.assets.models.assets import AssetHolder, BudgetInfo
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
@@ -29,7 +30,8 @@ class Support(
     Regionalizable,
     AdminAbsoluteUrlMixin,
     NamedMixin.NonUnique,
-    BaseObject
+    BaseObject,
+    AutocompleteTooltipMixin
 ):
     asset_type = models.PositiveSmallIntegerField(
         choices=ObjectModelType(), default=ObjectModelType.all.id,
@@ -85,12 +87,31 @@ class Support(
         through='BaseObjectsSupport',
     )
 
+    autocomplete_tooltip_fields = [
+        'date_from',
+        'date_to',
+        'asset_type',
+        'producer',
+        'supplier',
+        'serial_no',
+        'support_type'
+    ]
+
     def __init__(self, *args, **kwargs):
         self.saving_user = None
         super(Support, self).__init__(*args, **kwargs)
 
     def get_natural_end_support(self):
         return naturaltime(datetime(*(self.date_to.timetuple()[:6])))
+
+    def __str__(self):
+        return '{} ({})'.format(self.name, self.date_to)
+
+    @property
+    def autocomplete_str(self):
+        return '{} ({}, {})'.format(
+            str(self.name), self.date_to, self.supplier
+        )
 
 
 class BaseObjectsSupport(models.Model):

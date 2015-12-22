@@ -260,7 +260,12 @@ class AutocompleteWidget(forms.TextInput):
             self.request
         )
         is_polymorphic = getattr(self.rel_to, 'is_polymorphic', False)
-        if value and can_edit and not is_polymorphic:
+        if is_polymorphic and current_object:
+            info = (
+                current_object._meta.app_label,
+                current_object._meta.model_name
+            )
+        if value and can_edit:
             context['change_related_template_url'] = self.get_related_url(
                 info, 'change', value,
             )
