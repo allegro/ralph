@@ -28,6 +28,25 @@ class JsonViewMixin(object):
         return JsonResponse(context, **response_kwargs)
 
 
+class AutocompleteTooltipMixin(object):
+
+    autocomplete_tooltip_fields = []
+
+    @property
+    def autocomplete_tooltip(self):
+        empty_element = '<i class="empty">&lt;empty&gt;</i>'
+        tooltip = ''
+        for field in self.autocomplete_tooltip_fields:
+            if not hasattr(self, field):
+                continue
+            value = getattr(self, field)
+            label = str(self._meta.get_field(field).verbose_name)
+            tooltip += '<strong>{}:</strong>&nbsp;{}<br>'.format(
+                label.capitalize(), value or empty_element
+            )
+        return tooltip
+
+
 class SuggestView(JsonViewMixin, View):
     """
     Base class for list and detail view.
@@ -40,9 +59,7 @@ class SuggestView(JsonViewMixin, View):
         """
         # TODO
         # Add in the future redirected to the model that is being edited
-        can_edit = not getattr(
-            self.model, 'is_polymorphic', False
-        ) and ralph_site._registry[self.model].has_change_permission(
+        can_edit = ralph_site._registry[self.model].has_change_permission(
             self.request
         )
         results = [

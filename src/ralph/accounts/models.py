@@ -9,6 +9,7 @@ from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
 from rest_framework.authtoken.models import Token
 
+from ralph.admin.autocomplete import AutocompleteTooltipMixin
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
 from ralph.lib.permissions import (
     PermByFieldMixin,
@@ -59,7 +60,12 @@ class Team(NamedMixin):
     pass
 
 
-class RalphUser(PermByFieldMixin, AbstractUser, AdminAbsoluteUrlMixin):
+class RalphUser(
+    PermByFieldMixin,
+    AbstractUser,
+    AdminAbsoluteUrlMixin,
+    AutocompleteTooltipMixin
+):
 
     gender = models.PositiveIntegerField(
         verbose_name=_('gender'),
@@ -119,6 +125,15 @@ class RalphUser(PermByFieldMixin, AbstractUser, AdminAbsoluteUrlMixin):
     regions = models.ManyToManyField(Region, related_name='users', blank=True)
     team = models.ForeignKey(Team, null=True, blank=True)
 
+    autocomplete_tooltip_fields = [
+        'employee_id',
+        'company',
+        'department',
+        'manager',
+        'profit_center',
+        'cost_center'
+    ]
+
     class Meta(AbstractUser.Meta):
         swappable = 'AUTH_USER_MODEL'
 
@@ -161,28 +176,6 @@ class RalphUser(PermByFieldMixin, AbstractUser, AdminAbsoluteUrlMixin):
     @property
     def autocomplete_str(self):
         return '{} <i>{}</i>'.format(str(self), self.department)
-
-    @property
-    def autocomplete_tooltip(self):
-        fields = [
-            'employee_id',
-            'company',
-            'department',
-            'manager',
-            'profit_center',
-            'cost_center'
-        ]
-        empty_element = '<i class="empty">&lt;empty&gt;</i>'
-        tooltip = ''
-        for field in fields:
-            if not hasattr(self, field):
-                continue
-            value = getattr(self, field)
-            label = str(self._meta.get_field(field).verbose_name)
-            tooltip += '<strong>{}:</strong>&nbsp;{}<br>'.format(
-                label.capitalize(), value or empty_element
-            )
-        return tooltip
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
