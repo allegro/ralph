@@ -63,14 +63,16 @@ class SaveSecurityScanSerializer(RalphAPISaveSerializer):
             try:
                 ip_address = IPAddress.objects.get(address=host_ip)
             except IPAddress.DoesNotExist:
+                pass
+            else:
+                base_object = ip_address.base_object_id
+            if not base_object:
                 try:
                     base_object = DataCenterAsset.objects.get(
                         management_ip=host_ip
                     ).baseobject_ptr_id
                 except DataCenterAsset.DoesNotExist:
                     pass
-            else:
-                base_object = ip_address.base_object_id
             if not base_object:
                 errors['host_ip'] = "IP is not assigned to any host"
         else:
