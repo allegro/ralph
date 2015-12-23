@@ -53,3 +53,9 @@ class RalphChangeList(ChangeList):
                 self.get_ordering_from_related_model_admin(prefix, field)
             )
         return ordering
+
+    def get_queryset(self, request):
+        queryset = None
+        if self.is_popup:
+            queryset = getattr(self.model, 'get_autocomplete_queryset', None)
+        return queryset() if queryset else super().get_queryset(request)
