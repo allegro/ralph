@@ -93,7 +93,7 @@ class LicenceAdmin(
     _invoice_report_select_related = ['software', 'manufacturer']
     _invoice_report_item_fields = [
         'software', 'manufacturer', 'software__get_asset_type_display', 'niw',
-        'sn', 'price', 'created'
+        'sn', 'price', 'created', 'number_bought'
     ]
 
     fieldsets = (
