@@ -175,6 +175,7 @@ class UserInfoView(UserInfoMixin, RalphDetailView):
 class RalphUserAdmin(PermissionAdminMixin, UserAdmin, RalphAdmin):
 
     form = RalphUserChangeForm
+    raw_id_fields = ['groups']
     change_views = [
         UserInfoView
     ]

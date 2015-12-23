@@ -1,11 +1,18 @@
 # -*- coding: utf-8 -*-
 import re
+import json
 
 from django import forms
 from django.forms import ValidationError
 from django.forms.utils import ErrorList
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
+
+
+class ListField(forms.CharField):
+
+    def to_python(self, value):
+        return json.loads(value)
 
 
 class MultilineField(forms.CharField):

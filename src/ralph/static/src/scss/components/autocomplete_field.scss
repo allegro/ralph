@@ -75,7 +75,6 @@ $font-size: rem-calc(16);
         .input {
             @include right-lookup;
             @include common-styles;
-            display: none;
             padding-left: 4px;
             margin: 4px 0;
             border: 0;

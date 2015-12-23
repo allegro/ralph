@@ -17,6 +17,7 @@ from mptt.admin import MPTTAdminForm, MPTTModelAdmin
 from reversion import VersionAdmin
 
 from ralph.admin import widgets
+from ralph.admin.fields import ListField
 from ralph.admin.autocomplete import AjaxAutocompleteMixin
 from ralph.admin.helpers import get_field_by_relation_path
 from ralph.admin.views.main import BULK_EDIT_VAR, BULK_EDIT_VAR_IDS
@@ -59,9 +60,19 @@ class RalphAutocompleteMixin(object):
                 field=db_field, admin_site=self.admin_site,
                 using=kwargs.get('using'), request=request, **kw
             )
-            return db_field.formfield(**kwargs)
+            return ListField(**kwargs)
         else:
             return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def formfield_for_manytomany(self, db_field, request=None, **kwargs):
+        if db_field.name in self.raw_id_fields:
+            kwargs['widget'] = widgets.MultiAutocompleteWidget(
+                field=db_field, admin_site=self.admin_site,
+                using=kwargs.get('using'), request=request, **kwargs
+            )
+            return ListField(**kwargs)
+        else:
+            return super().formfield_for_manytomany(db_field, request, **kwargs)
 
 
 class RalphAdminFormMixin(PermissionsPerObjectFormMixin, RequestFormMixin):

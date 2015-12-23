@@ -1,22 +1,24 @@
 {% load i18n %}
 
-<div class="autocomplete-widget{% if not current_object %} edit{% endif %}"{{ attrs }} data-empty-value={{ empty_value }} data-is-empty={{ is_empty }}>
+<div class="autocomplete-widget{% if not current_objects %} edit{% endif %}"{{ attrs }} data-empty-value={{ empty_value }} data-is-empty={{ is_empty }} data-limit="{{ limit }}">
     <div class="widget-wrapper">
         <div class="item-wrapper">
-            <div class="item">
-                <div class="title" title="{{ current_object }}">{{ current_object }}</div>
-                {% if show_tooltip %}
-                  <i data-tooltip class="has-tip fa fa-info-circle" title="{{ tooltip }}"></i>
-                {% endif %}
-                <div class="autocomplete-icons">
-                    <a class="related-widget-wrapper-link change-related{% if not change_related_template_url %} hide{% endif %}" id="change_id_{{ name }}"
-                        href="{{ change_related_template_url }}?_popup=1"
-                        title="{% blocktrans %}Change selected {{ model }}{% endblocktrans %}">
-                        <i class="fa fa-pencil"></i>
-                    </a>
-                    <i class="fa fa-times delete"></i>
-                </div>
-            </div>
+            {% for current_object in current_objects %}
+              <div class="item">
+                  <div class="title" title="{{ current_object }}">{{ current_object }}</div>
+                  {% if show_tooltip %}
+                    <i data-tooltip class="has-tip fa fa-info-circle" title="{{ tooltip }}"></i>
+                  {% endif %}
+                  <div class="autocomplete-icons">
+                      <a class="related-widget-wrapper-link change-related{% if not current_object.change_related_template_url %} hide{% endif %}" id="change_id_{{ name }}"
+                          href="{{ current_object.change_related_template_url }}?_popup=1"
+                          title="{% blocktrans %}Change selected {{ model }}{% endblocktrans %}">
+                          <i class="fa fa-pencil"></i>
+                      </a>
+                      <i class="fa fa-times delete"></i>
+                  </div>
+              </div>
+            {% endfor %}
         </div>
         <input class="input" type="text" placeholder="{% trans 'Search by' %} {{ searched_fields|slice:":2"|join:", " }}"/>
         <div class='widget-icons'>

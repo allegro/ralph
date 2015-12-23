@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import copy
 import os
 from collections import defaultdict
 from itertools import chain, groupby
@@ -126,7 +127,9 @@ class PermissionsSelectWidget(forms.Widget):
         return rendered_options
 
 
-class AutocompleteWidget(forms.TextInput):
+class AutocompleteWidgetBase(object):
+    limit = None
+
     def __init__(self, field, admin_site, attrs=None, using=None, **kwargs):
         self.field = field
         self.rel = self.field.rel
@@ -142,6 +145,20 @@ class AutocompleteWidget(forms.TextInput):
             os.path.join('js', 'ralph-autocomplete.js')
         ])
 
+    @property
+    def admin_model(self):
+        return self.admin_site._registry[self.rel_to]
+
+    @property
+    def default_manager(self):
+        return self.rel_to._default_manager.select_related(
+            # https://docs.djangoproject.com/en/1.8/ref/models/querysets/#select-related
+            # we cannot pass empty list - this would select all related
+            # model - instead we pass None, which means that none of
+            # related models will be selected
+            *(self.admin_model.list_select_related or [None])
+        )
+
     def get_url_parameters(self):
         params = {
             TO_FIELD_VAR: self.rel.get_related_field().name,
@@ -155,8 +172,21 @@ class AutocompleteWidget(forms.TextInput):
             args=args
         )
 
+    def get_limit(self):
+        if self.limit is None:
+            raise NotImplementedError()
+        return self.limit
+
+    def get_render_context(self, **kwargs):
+        context = copy.copy(kwargs)
+        context.update({
+            'model': self.rel_to,
+            'limit': self.get_limit()
+        })
+        return RenderContext(context)
+
     def render(self, name, value, attrs=None):
-        admin_model = self.admin_site._registry[self.rel_to]
+        admin_model = self.admin_model
         model_options = (
             self.rel_to._meta.app_label, self.rel_to._meta.model_name
         )
@@ -230,21 +260,12 @@ class AutocompleteWidget(forms.TextInput):
                         searched_fields.append(str(field.verbose_name))
                     except FieldDoesNotExist:
                         pass
-        current_object = None
+        current_objects = []
         if value:
-            current_object = self.rel_to._default_manager.select_related(
-                # https://docs.djangoproject.com/en/1.8/ref/models/querysets/#select-related
-                # we cannot pass empty list - this would select all related
-                # model - instead we pass None, which means that none of
-                # related models will be selected
-                *(admin_model.list_select_related or [None])
-            ).filter(
-                pk=value
-            ).first()
+            current_objects = self.get_objects(admin_model, value)
         show_tooltip = hasattr(self.rel_to, 'autocomplete_tooltip')
-        context = RenderContext({
-            'model': self.rel_to,
-            'current_object': current_object,
+        context = self.get_render_context(**{
+            'current_objects': current_objects,
             'attrs': flatatt(widget_options),
             'related_url': related_url,
             'name': name,
@@ -260,16 +281,30 @@ class AutocompleteWidget(forms.TextInput):
             self.request
         )
         is_polymorphic = getattr(self.rel_to, 'is_polymorphic', False)
-        if value and can_edit and not is_polymorphic:
-            context['change_related_template_url'] = self.get_related_url(
-                info, 'change', value,
-            )
+        if value and can_edit and not is_polymorphic and current_objects:
+            for current_object in current_objects:
+                current_object.change_related_template_url = self.get_related_url(
+                    info, 'change', current_object.pk,
+                )
         can_add = self.admin_site._registry[self.rel_to].has_add_permission(
             self.request
         )
         if not is_polymorphic and can_add:
             context['add_related_url'] = self.get_related_url(info, 'add')
-        if show_tooltip and current_object:
-            context['tooltip'] = current_object.autocomplete_tooltip
+        if show_tooltip and current_objects:
+            context['tooltip'] = current_objects.autocomplete_tooltip
         template = loader.get_template('admin/widgets/autocomplete.html')
         return template.render(context)
+
+
+class AutocompleteWidget(AutocompleteWidgetBase, forms.TextInput):
+    limit = 1
+
+    def get_objects(self, admin_model, value):
+        return [self.default_manager.filter(pk=value).first()]
+
+class MultiAutocompleteWidget(AutocompleteWidgetBase, forms.TextInput):
+    limit = 0
+
+    def get_objects(self, admin_model, value):
+        return self.default_manager.filter(pk__in=value)
