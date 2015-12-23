@@ -1,4 +1,3 @@
-sudo: required
 language: python
 
 env:
@@ -6,8 +5,15 @@ env:
         - DATABASE_USER=travis
         - DATABASE_PASSWORD=travis
     matrix:
-        - TEST_DB_ENGINE=mysql
-        - TEST_DB_ENGINE=sqlite
+        - DJANGO_VERSION=1.8.7 TEST_DB_ENGINE=sqlite
+        - DJANGO_VERSION=1.8.7 TEST_DB_ENGINE=mysql
+        - DJANGO_VERSION=1.9 TEST_DB_ENGINE=sqlite
+        - DJANGO_VERSION=1.9 TEST_DB_ENGINE=mysql
+
+matrix:
+  allow_failures:
+    - env: DJANGO_VERSION=1.9 TEST_DB_ENGINE=mysql
+    - env: DJANGO_VERSION=1.9 TEST_DB_ENGINE=sqlite
 
 services:
     - docker
@@ -35,6 +41,7 @@ install:
     - gulp
     - make install-test
     - pip install coveralls
+    - pip install django==$DJANGO_VERSION
 
 script:
     - gulp test
