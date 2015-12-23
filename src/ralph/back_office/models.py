@@ -160,6 +160,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             IMEI_UNTIL_2003.match(self.imei)
 
     def clean(self):
+        super().clean()
         if self.imei and not self.validate_imei():
             raise ValidationError({
                 'imei': _('%(imei)s is not IMEI format') % {'imei': self.imei}
