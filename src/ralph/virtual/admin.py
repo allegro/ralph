@@ -69,11 +69,10 @@ class CloudHostAdmin(RalphAdmin):
     list_display = ['hostname', 'get_ip_addresses', 'get_hypervisor',
                     'get_cloudproject', 'get_cloudprovider',
                     'cloudflavor_name', 'host_id', 'created']
-    list_filter = ['hostname', 'ipaddress__address', 'service_env',
-                   'cloudflavor__name', 'host_id']
-    # TODO: howto cache parent__name?
-    list_select_related = ['cloudflavor__name', 'cloudprovider__name',
-                           'hypervisor__hostname']
+    list_filter = ['service_env', 'cloudflavor']
+    list_select_related = [
+        'cloudflavor', 'cloudprovider', 'hypervisor', 'parent__cloudproject'
+    ]
     readonly_fields = ['cloudflavor_name', 'created', 'hostname', 'host_id',
                        'get_cloudproject', 'get_cloudprovider',
                        'get_cpu', 'get_disk', 'get_hypervisor', 'get_memory',
@@ -94,6 +93,9 @@ class CloudHostAdmin(RalphAdmin):
             'fields': ['cloudflavor_name', 'get_cpu', 'get_memory', 'get_disk']
         }),
     )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related('ipaddress_set')
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -134,14 +136,16 @@ class CloudHostAdmin(RalphAdmin):
     cloudflavor_name.allow_tags = True
 
     def get_ip_addresses(self, obj):
-        return ', '.join(obj.ip_addresses)
+        return ', '.join([ip.address for ip in obj.ipaddress_set.all()])
     get_ip_addresses.short_description = _('IP Addresses')
 
     def get_cloudproject(self, obj):
         return '<a href="{}">{}</a>'.format(
-            reverse("admin:virtual_cloudproject_change",
-                    args=(obj.parent.id,)),
-            CloudProject.objects.get(pk=obj.parent).name
+            reverse(
+                "admin:virtual_cloudproject_change",
+                args=(obj.parent.id,)
+            ),
+            obj.parent.cloudproject.name
         )
     get_cloudproject.short_description = _('Cloud Project')
     get_cloudproject.admin_order_field = 'parent'

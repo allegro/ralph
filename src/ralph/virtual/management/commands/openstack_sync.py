@@ -146,8 +146,11 @@ class Command(BaseCommand):
                 for zone in server['_info']['addresses']:
                     for ip in server['_info']['addresses'][zone]:
                         new_server['ips'].append(ip['addr'])
-                self.openstack_projects[project_id]['servers'][
-                    host_id] = new_server
+                try:
+                    self.openstack_projects[project_id]['servers'][
+                        host_id] = new_server
+                except KeyError:
+                    logger.warning('Project {} not found'.format(project_id))
 
             for flavor in self._get_flavors_list(nt, site):
                 flavor_id = flavor['_info']['id']
@@ -213,9 +216,15 @@ class Command(BaseCommand):
 
     def _add_server(self, openstack_server, server_id, project):
         """add new server to ralph"""
-        flavor = CloudFlavor.objects.get(
-            flavor_id=openstack_server['flavor_id']
-        )
+        try:
+            flavor = CloudFlavor.objects.get(
+                flavor_id=openstack_server['flavor_id']
+            )
+        except CloudFlavor.DoesNotExist:
+            logger.warning(
+                'Flavor not found for host {}'.format(openstack_server)
+            )
+            return
         new_server = CloudHost(
             hostname=openstack_server['hostname'],
             cloudflavor=flavor,
