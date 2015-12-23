@@ -80,6 +80,10 @@ class Service(NamedMixin, TimeStampMixin, models.Model):
     def get_absolute_url(self):
         return reverse('assets:service_detail', args=(self.pk,))
 
+    @classmethod
+    def get_autocomplete_queryset(cls):
+        return cls._default_manager.filter(active=True)
+
 
 class ServiceEnvironment(BaseObject):
     service = models.ForeignKey(Service)
@@ -90,6 +94,10 @@ class ServiceEnvironment(BaseObject):
 
     class Meta:
         unique_together = ('service', 'environment')
+
+    @classmethod
+    def get_autocomplete_queryset(cls):
+        return cls._default_manager.filter(service__active=True)
 
 
 class Manufacturer(NamedMixin, TimeStampMixin, models.Model):
