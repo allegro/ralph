@@ -23,7 +23,7 @@ class CloudProvider(NamedMixin):
 
 
 class CloudFlavor(BaseObject):
-    name = models.CharField(_('name'), max_length=255, unique=True)
+    name = models.CharField(_('name'), max_length=255)
     cloudprovider = models.ForeignKey(CloudProvider)
     flavor_id = models.CharField(unique=True, max_length=100)
 
