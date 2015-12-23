@@ -179,7 +179,7 @@ class TestReportAssetAndLicence(RalphTestCase):
             ],
             [
                 self.dc_1.id, None, None, None, 'Keyboard', None, 1, None,
-                None, None, None
+                None, None, self.dc_1.hostname,
             ]
         ]
         self.assertEqual(report_result, result)

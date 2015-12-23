@@ -1,7 +1,11 @@
 import factory
 from factory.django import DjangoModelFactory
 
-from ralph.assets.tests.factories import DataCenterAssetModelFactory
+from ralph.assets.tests.factories import (
+    BaseObjectFactory,
+    DataCenterAssetModelFactory
+)
+from ralph.data_center.models.networks import IPAddress
 from ralph.data_center.models.physical import (
     Accessory,
     DataCenter,
@@ -59,6 +63,14 @@ class RackFactory(DjangoModelFactory):
 class DataCenterAssetFactory(DjangoModelFactory):
     force_depreciation = False
     model = factory.SubFactory(DataCenterAssetModelFactory)
+    hostname = factory.Sequence(lambda n: 'hostname #{}'.format(n))
 
     class Meta:
         model = DataCenterAsset
+
+
+class IPAddressFactory(DjangoModelFactory):
+    base_object = factory.SubFactory(BaseObjectFactory)
+
+    class Meta:
+        model = IPAddress
