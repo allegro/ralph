@@ -4,6 +4,7 @@ from collections import OrderedDict
 from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
+from ralph.api.serializers import RalphAPISaveSerializer
 from ralph.data_center.models.networks import IPAddress
 from ralph.security.models import SecurityScan, Vulnerability
 
@@ -27,7 +28,7 @@ class SecurityScanSerializer(RalphAPISerializer):
         model = SecurityScan
 
 
-class SaveSecurityScanSerializer(RalphAPISerializer):
+class SaveSecurityScanSerializer(RalphAPISaveSerializer):
 
     class Meta:
         model = SecurityScan
