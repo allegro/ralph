@@ -5,7 +5,7 @@ from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import RalphAPISaveSerializer
-from ralph.data_center.models.networks import IPAddress
+from ralph.data_center.models import DataCenterAsset, IPAddress
 from ralph.security.models import SecurityScan, Vulnerability
 
 
@@ -55,24 +55,31 @@ class SaveSecurityScanSerializer(RalphAPISaveSerializer):
 
         host_ip = data.get('host_ip', None)
         if host_ip:
-            ip_address = IPAddress.objects.filter(address=host_ip)
-            if ip_address.count() == 0:
-                errors['host_ip'] = "Unknown host IP"
-            msg = "IP is not assigned to any host"
+            base_object = None
+            # first try to get base object by IPAddress
+            # if not found, try by management ip
+            # TODO: management_ip is temporary solution until it will be stored
+            # properly in ipaddresses assigned to object
             try:
-                base_object = ip_address[0].base_object
-                if not base_object:
-                    errors['host_ip'] = msg
-            except AttributeError:
-                errors['host_ip'] = msg
+                ip_address = IPAddress.objects.get(address=host_ip)
+            except IPAddress.DoesNotExist:
+                try:
+                    base_object = DataCenterAsset.objects.get(
+                        management_ip=host_ip
+                    ).baseobject_ptr_id
+                except DataCenterAsset.DoesNotExist:
+                    pass
+            else:
+                base_object = ip_address.base_object_id
+            if not base_object:
+                errors['host_ip'] = "IP is not assigned to any host"
         else:
-            errors['host_ip'] = "'Host IP is required'"
+            errors['host_ip'] = "Host IP is required"
 
         if errors:
             raise serializers.ValidationError(errors)
-        data['base_object'] = ip_address[0].base_object.id
+        data['base_object'] = base_object
         result = super(SaveSecurityScanSerializer, self).to_internal_value(data)
-        result['base_object'] = base_object
         return result
 
 
