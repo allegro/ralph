@@ -8,7 +8,8 @@ from django.http import HttpResponseRedirect
 from django.utils.functional import curry
 from django.utils.http import urlencode
 
-from ralph.admin import RalphAdmin, register
+from ralph.admin.decorators import register
+from ralph.admin.mixins import RalphAdmin
 from ralph.helpers import get_model_view_url_name
 from ralph.lib.transitions.forms import TransitionForm
 from ralph.lib.transitions.models import Transition, TransitionModel

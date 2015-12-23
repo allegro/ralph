@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from django import forms
+from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models.loading import get_model
 
 
 class NullableFormFieldMixin(object):
@@ -82,7 +82,7 @@ class BaseObjectForeignKey(models.ForeignKey):
         """
         if self.limit_models:
             content_types = ContentType.objects.get_for_models(
-                *[get_model(*i.split('.')) for i in self.limit_models]
+                *[apps.get_model(*i.split('.')) for i in self.limit_models]
             )
             return {'content_type__in': content_types.values()}
 
@@ -92,4 +92,4 @@ class BaseObjectForeignKey(models.ForeignKey):
         """
         Returns Model class list from limit_models.
         """
-        return [get_model(model) for model in self.limit_models]
+        return [apps.get_model(model) for model in self.limit_models]

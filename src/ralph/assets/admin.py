@@ -2,7 +2,8 @@
 from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, RalphMPTTAdmin, RalphTabularInline, register
+from ralph.admin.decorators import register
+from ralph.admin.mixins import RalphAdmin, RalphMPTTAdmin, RalphTabularInline
 from ralph.assets.models.assets import (
     Asset,
     AssetHolder,

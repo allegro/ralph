@@ -18,8 +18,8 @@ class RalphAdminSiteMixin(object):
     def _get_views(self, admin):
         return (admin.change_views or []) + (admin.list_views or [])
 
-    def register(self, model_or_iterable, *args, **kwargs):
-        super().register(model_or_iterable, *args, **kwargs)
+    def register(self, model_or_iterable, admin_class=None, **options):
+        super().register(model_or_iterable, admin_class, **options)
         # operate on admin class instance to get processed extra views
         for model in model_or_iterable:
             if model._meta.swapped:

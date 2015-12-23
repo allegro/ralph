@@ -11,7 +11,7 @@ from rest_framework.authtoken.models import Token
 
 from ralph.admin.autocomplete import AutocompleteTooltipMixin
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
-from ralph.lib.permissions import (
+from ralph.lib.permissions.models import (
     PermByFieldMixin,
     PermissionsForObjectMixin,
     user_permission
@@ -170,7 +170,7 @@ class RalphUser(
         for field in ('gender', 'country'):
             val = getattr(self, field)
             if val is None:
-                val = self._meta.get_field_by_name(field)[0].default
+                val = self._meta.get_field(field)[0].default
                 setattr(self, field, val)
         return super().save(*args, **kwargs)
 

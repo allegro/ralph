@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from ralph.admin import RalphAdmin, register
+from ralph.admin.decorators import register
+from ralph.admin.mixins import RalphAdmin
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.tests.models import Bar, Car, Car2, Manufacturer, Order

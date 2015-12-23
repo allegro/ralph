@@ -44,5 +44,8 @@ class ImportForeignKeyMixin(object):
             Value to export
         """
         if isinstance(field.widget, widgets.ForeignKeyWidget):
-            return str(getattr(obj, self.get_field_name(field), None))
+            try:
+                return str(getattr(obj, self.get_field_name(field), ''))
+            except TypeError:
+                return None
         return super().export_field(field, obj)

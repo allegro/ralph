@@ -1,7 +1,7 @@
 from django.conf.urls import include, url
 from rest_framework.authtoken import views
 
-from ralph.admin import ralph_site as admin
+from ralph.admin.sites import ralph_site as admin
 from ralph.api import router
 
 # import custom urls from each api module

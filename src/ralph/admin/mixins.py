@@ -15,7 +15,7 @@ from django.views.generic import TemplateView
 from import_export.admin import ImportExportModelAdmin
 from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 from mptt.admin import MPTTAdminForm, MPTTModelAdmin
-from reversion import VersionAdmin
+from reversion.admin import VersionAdmin
 
 from ralph.admin import widgets
 from ralph.admin.autocomplete import AjaxAutocompleteMixin
@@ -74,11 +74,11 @@ class RalphAdminForm(RalphAdminFormMixin, forms.ModelForm):
 
 
 class RalphAdminChecks(admin.checks.ModelAdminChecks):
-    def _check_form(self, cls, model):
+    def _check_form(self, cls):
         """
         Check if form subclasses RalphAdminFormMixin
         """
-        result = super()._check_form(cls, model)
+        result = super()._check_form(cls)
         if (
             hasattr(cls, 'form') and
             not issubclass(cls.form, RalphAdminFormMixin)
@@ -261,9 +261,9 @@ class RalphAdminMixin(RalphAutocompleteMixin):
 
 
 class RalphAdmin(
-    ImportExportModelAdmin,
     AjaxAutocompleteMixin,
     RalphAdminMixin,
+    ImportExportModelAdmin,
     VersionAdmin
 ):
     @property

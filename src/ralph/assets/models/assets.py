@@ -25,7 +25,7 @@ from ralph.lib.mixins.models import (
     NamedMixin,
     TimeStampMixin
 )
-from ralph.lib.permissions import PermByFieldMixin
+from ralph.lib.permissions.models import PermByFieldMixin
 
 ASSET_HOSTNAME_TEMPLATE = getattr(settings, 'ASSET_HOSTNAME_TEMPLATE', None)
 if not ASSET_HOSTNAME_TEMPLATE:
