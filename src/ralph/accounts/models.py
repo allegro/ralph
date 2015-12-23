@@ -133,6 +133,7 @@ class RalphUser(
         'profit_center',
         'cost_center'
     ]
+    autocomplete_words_split = True
 
     class Meta(AbstractUser.Meta):
         swappable = 'AUTH_USER_MODEL'
