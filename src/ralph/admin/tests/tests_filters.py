@@ -11,6 +11,7 @@ from ralph.admin.filters import (
     LiquidatedStatusFilter,
     NumberListFilter,
     RelatedFieldListFilter,
+    TagsListFilter,
     TextListFilter
 )
 from ralph.data_center.admin import DataCenterAssetAdmin
@@ -39,16 +40,19 @@ class AdminFiltersTestCase(TestCase):
             barcode='barcode_one',
             status=DataCenterAssetStatus.new,
         )
+        cls.dca_1.tags.add('tag_1')
         cls.dca_2 = DataCenterAssetFactory(
             invoice_date=datetime.date(2015, 2, 1),
             barcode='barcode_two',
             status=DataCenterAssetStatus.liquidated,
         )
+        cls.dca_2.tags.add('tag_1')
         cls.dca_3 = DataCenterAssetFactory(
             invoice_date=datetime.date(2015, 3, 1),
             force_depreciation=True,
             status=DataCenterAssetStatus.used,
         )
+        cls.dca_3.tags.add('tag_2')
         cls.dca_4 = DataCenterAssetFactory(
             rack=RackFactory()
         )
@@ -282,3 +286,17 @@ class AdminFiltersTestCase(TestCase):
             None, DataCenterAsset.objects.all()
         )
         self.assertEqual(3, queryset.count())
+
+    def test_tags_filter(self):
+        tags_filter = TagsListFilter(
+            field=Support._meta.get_field('tags'),
+            request=None,
+            params={'tags': 'tag_1'},
+            model=DataCenterAsset,
+            model_admin=DataCenterAssetAdmin,
+            field_path='tags',
+        )
+        queryset = tags_filter.queryset(None, DataCenterAsset.objects.all())
+        self.assertEqual(queryset.count(), 2)
+        self.assertIn(self.dca_1, queryset)
+        self.assertIn(self.dca_2, queryset)

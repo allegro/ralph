@@ -16,6 +16,7 @@ from django.utils.html import conditional_escape, mark_safe
 from django.utils.translation import ugettext_lazy as _
 from mptt.fields import TreeForeignKey
 from mptt.settings import DEFAULT_LEVEL_INDICATOR
+from taggit.managers import TaggableManager
 
 from ralph.admin.autocomplete import DETAIL_PARAM, QUERY_PARAM
 from ralph.admin.helpers import get_field_by_relation_path
@@ -254,6 +255,17 @@ class TextListFilter(BaseCustomFilter):
         },)
 
 
+class TagsListFilter(TextListFilter):
+
+    """Filter by taggit tags."""
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(tags__name__in=SEARCH_SEPARATORS_REGEX.split(
+                self.value()
+            ))
+
+
 class RelatedFieldListFilter(ChoicesListFilter):
     """
     Filter for related fields (ForeignKeys) which is displayed as regular HTML
@@ -425,7 +437,7 @@ def register_custom_filters():
         ),
         (
             lambda f: (
-                isinstance(f, TreeForeignKey) and
+                isinstance(f, models.ForeignKey) and
                 not getattr(f, '_autocomplete', True)
             ),
             RelatedFieldListFilter
@@ -434,6 +446,7 @@ def register_custom_filters():
             lambda f: isinstance(f, models.ForeignKey),
             RelatedAutocompleteFieldListFilter
         ),
+        (lambda f: isinstance(f, TaggableManager), TagsListFilter),
     ]
 
     for func, filter_class in field_filter_mapper:

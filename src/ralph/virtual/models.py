@@ -128,6 +128,8 @@ class CloudHost(BaseObject):
 
     cloudflavor = models.ForeignKey(CloudFlavor, verbose_name='Instance Type')
     cloudprovider = models.ForeignKey(CloudProvider)
+    cloudprovider._autocomplete = False
+
     host_id = models.CharField(unique=True, max_length=100)
     hostname = models.CharField(max_length=100)
     hypervisor = models.ForeignKey(DataCenterAsset, blank=True, null=True)
@@ -142,7 +144,7 @@ class CloudHost(BaseObject):
 
     @property
     def ip_addresses(self):
-        return self.ipaddress_set.values_list('address', flat=True)
+        return [ip.address for ip in self.ipaddress_set.all()]
 
     @ip_addresses.setter
     def ip_addresses(self, value):
