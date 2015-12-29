@@ -46,11 +46,13 @@ class AdminFiltersTestCase(TestCase):
             barcode='barcode_one',
             status=DataCenterAssetStatus.new,
         )
+        cls.dca_1.tags.add('tag_1')
         cls.dca_2 = DataCenterAssetFactory(
             invoice_date=datetime.date(2015, 2, 1),
             barcode='barcode_two',
             status=DataCenterAssetStatus.liquidated,
         )
+        cls.dca_2.tags.add('tag_1')
         cls.dca_3 = DataCenterAssetFactory(
             invoice_date=datetime.date(2015, 3, 1),
             force_depreciation=True,
@@ -191,7 +193,6 @@ class AdminFiltersTestCase(TestCase):
 
         self.assertEqual(len(queryset), 2)
 
-
     def test_date_filter(self):
         datet_filter = DateListFilter(
             field=DataCenterAsset._meta.get_field('invoice_date'),
@@ -306,7 +307,7 @@ class AdminFiltersTestCase(TestCase):
     def test_liquidated_status_filter(self):
         liquidated_filter = LiquidatedStatusFilter(
             request=None,
-            params={'liquidated': '1',},
+            params={'liquidated': '1'},
             model=DataCenterAsset,
             model_admin=DataCenterAssetAdmin,
         )
@@ -317,7 +318,7 @@ class AdminFiltersTestCase(TestCase):
 
         liquidated_filter = LiquidatedStatusFilter(
             request=None,
-            params={'liquidated': None,},
+            params={'liquidated': None},
             model=DataCenterAsset,
             model_admin=DataCenterAssetAdmin,
         )

@@ -4,7 +4,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.data_center.models.networks import IPAddress
-from ralph.data_center.models.physical import DataCenterAsset
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -25,8 +24,7 @@ class CloudHostTabularInline(RalphTabularInline):
     fk_name = 'parent'
     fields = ['get_hostname', 'get_hypervisor', 'get_ipaddresses', 'created',
               'tags', 'remarks']
-    readonly_fields = ['created', 'get_hostname', 'get_hypervisor',
-                       'get_ipaddresses', 'host_id']
+    readonly_fields = fields
 
     def get_hostname(self, obj):
         return '<a href="{}">{}</a>'.format(
@@ -40,9 +38,11 @@ class CloudHostTabularInline(RalphTabularInline):
         if obj.hypervisor is None:
             return _('Not set')
         return '<a href="{}">{}</a>'.format(
-            reverse("admin:data_center_datacenterasset_change",
-                    args=(obj.hypervisor.id,)),
-            DataCenterAsset.objects.get(pk=obj.hypervisor).hostname
+            reverse(
+                "admin:data_center_datacenterasset_change",
+                args=(obj.hypervisor.id,)
+            ),
+            obj.hypervisor.hostname
         )
     get_hypervisor.short_description = _('Hypervisor')
     get_hypervisor.allow_tags = True
@@ -53,6 +53,13 @@ class CloudHostTabularInline(RalphTabularInline):
 
     def has_add_permission(self, request, obj=None):
         return False
+
+    def get_queryset(self, *args, **kwargs):
+        return super().get_queryset(*args, **kwargs).select_related(
+            'hypervisor',
+        ).prefetch_related(
+            'ipaddress_set', 'tags'
+        )
 
 
 class CloudNetworkInline(RalphTabularInline):
@@ -66,13 +73,13 @@ class CloudNetworkInline(RalphTabularInline):
 
 @register(CloudHost)
 class CloudHostAdmin(RalphAdmin):
-    list_display = ['hostname', 'get_ip_addresses', 'get_hypervisor',
-                    'get_cloudproject', 'get_cloudprovider',
-                    'cloudflavor_name', 'host_id', 'created', 'image_name',
-                    'get_tags']
-    list_filter = ['service_env', 'cloudflavor']
+    list_display = ['hostname', 'get_ip_addresses', 'service_env',
+                    'get_cloudproject', 'cloudflavor_name', 'host_id',
+                    'created', 'image_name', 'get_tags']
+    list_filter = ['cloudprovider', 'service_env', 'cloudflavor', 'tags']
     list_select_related = [
-        'cloudflavor', 'cloudprovider', 'hypervisor', 'parent__cloudproject'
+        'cloudflavor', 'cloudprovider', 'parent__cloudproject',
+        'service_env__service', 'service_env__environment'
     ]
     readonly_fields = ['cloudflavor_name', 'created', 'hostname', 'host_id',
                        'get_cloudproject', 'get_cloudprovider',
@@ -105,7 +112,7 @@ class CloudHostAdmin(RalphAdmin):
         return False
 
     def get_tags(self, obj):
-        return ','.join(obj.tags.names())
+        return ','.join([tag.name for tag in obj.tags.all()])
     get_tags.short_description = _('Tags')
 
     def get_cloudprovider(self, obj):
@@ -144,7 +151,7 @@ class CloudHostAdmin(RalphAdmin):
     cloudflavor_name.allow_tags = True
 
     def get_ip_addresses(self, obj):
-        return ', '.join([ip.address for ip in obj.ipaddress_set.all()])
+        return '\n'.join(obj.ip_addresses)
     get_ip_addresses.short_description = _('IP Addresses')
 
     def get_cloudproject(self, obj):
