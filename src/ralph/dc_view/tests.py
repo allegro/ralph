@@ -59,7 +59,8 @@ class TestRestAssetInfoPerRack(TestCase):
             slot_no='',
             force_depreciation=False,
             model=asset_model,
-            rack=self.rack_1
+            rack=self.rack_1,
+            management_ip=None
         )
 
         self.pdu_1 = DataCenterAssetFactory(
@@ -106,7 +107,7 @@ class TestRestAssetInfoPerRack(TestCase):
                     '_type': TYPE_ASSET,
                     'id': self.asset_1.id,
                     'hostname': self.asset_1.hostname,
-                    'category': self.asset_1.model.category,
+                    'category': self.asset_1.model.category.name,
                     'barcode': self.asset_1.barcode,
                     'sn': self.asset_1.sn,
                     'height': float(self.asset_1.model.height_of_device),
@@ -115,7 +116,7 @@ class TestRestAssetInfoPerRack(TestCase):
                     'children': [],
                     'front_layout': '',
                     'back_layout': '',
-                    'management_ip': "",
+                    'management_ip': self.asset_1.management_ip,
                     'orientation': 'front',
                     'remarks': '',
                     'service': 'Service1',

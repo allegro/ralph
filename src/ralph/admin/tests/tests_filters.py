@@ -56,6 +56,7 @@ class AdminFiltersTestCase(TestCase):
             status=DataCenterAssetStatus.used,
         )
         cls.dca_4 = DataCenterAssetFactory(
+            invoice_date=datetime.date(2014, 3, 1),
             rack=RackFactory()
         )
         cls.support_1 = SupportFactory(price=10)
@@ -207,7 +208,7 @@ class AdminFiltersTestCase(TestCase):
         )
         queryset = datet_filter.queryset(None, DataCenterAsset.objects.all())
 
-        self.assertEqual(2, queryset.count())
+        self.assertEqual(3, queryset.count())
 
     def test_related_field(self):
         related_filter = RelatedFieldListFilter(

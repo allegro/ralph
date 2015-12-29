@@ -1,4 +1,4 @@
-provisioning_command: /root/init.sh
+provisioning_command: /root/init.sh ; ralph demodata
 compose:
   db:
     image: mysql:5.6

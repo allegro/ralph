@@ -1,18 +1,45 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime, timedelta
+
 import factory
 from factory.django import DjangoModelFactory
+from factory.fuzzy import FuzzyText
 
 from ralph.accounts.tests.factories import RegionFactory
-from ralph.assets.tests.factories import BackOfficeAssetModelFactory
-from ralph.back_office.models import BackOfficeAsset, Warehouse
+from ralph.assets.tests.factories import (
+    BackOfficeAssetModelFactory,
+    BudgetInfoFactory
+)
+from ralph.back_office.models import (
+    BackOfficeAsset,
+    OfficeInfrastructure,
+    Warehouse
+)
+
+date_now = datetime.now().date()
+
+
+class OfficeInfrastructureFactory(DjangoModelFactory):
+
+    name = factory.Iterator([
+        'Office infrastructure Poland', 'Office infrastructure Germany',
+        'Office infrastructure France', 'Office infrastructure UK'
+    ])
+
+    class Meta:
+        model = OfficeInfrastructure
+        django_get_or_create = ['name']
 
 
 class WarehouseFactory(DjangoModelFactory):
 
-    name = factory.Sequence(lambda n: 'Warehouse {}'.format(n))
+    name = factory.Iterator([
+        'Warehouse 1', 'Warehouse 2', 'Warehouse 3', 'Warehouse 4'
+    ])
 
     class Meta:
         model = Warehouse
+        django_get_or_create = ['name']
 
 
 class BackOfficeAssetFactory(DjangoModelFactory):
@@ -22,6 +49,15 @@ class BackOfficeAssetFactory(DjangoModelFactory):
     model = factory.SubFactory(BackOfficeAssetModelFactory)
     warehouse = factory.SubFactory(WarehouseFactory)
     force_depreciation = False
+    office_infrastructure = factory.SubFactory(OfficeInfrastructureFactory)
+    sn = factory.Faker('ssn')
+    barcode = factory.Faker('ean8')
+    order_no = factory.Sequence(lambda n: 'Order number ' + str(n))
+    budget_info = factory.SubFactory(BudgetInfoFactory)
+    invoice_date = date_now - timedelta(days=15)
+    invoice_no = factory.Sequence(lambda n: 'Invoice number ' + str(n))
+    price = factory.fuzzy.FuzzyDecimal(10, 300)
 
     class Meta:
         model = BackOfficeAsset
+        django_get_or_create = ['sn', 'barcode']

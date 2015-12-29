@@ -346,7 +346,7 @@ class AssetRelationsReport(BaseRelationsReport):
 
         yield headers
         for asset in queryset.select_related(*select_related).values(*headers):
-            row = [asset.get(column) for column in headers]
+            row = [str(asset.get(column)) for column in headers]
             yield row
 
 
