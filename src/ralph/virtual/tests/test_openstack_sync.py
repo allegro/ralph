@@ -28,7 +28,7 @@ from ralph.virtual.tests.samples.openstack_data import (
 )
 
 
-class OpenstackSyncTestCase(RalphTestCase):
+class TestOpenstackSync(RalphTestCase):
 
     def setUp(self):
         asset_model = DataCenterAssetModelFactory()
@@ -67,10 +67,6 @@ class OpenstackSyncTestCase(RalphTestCase):
     def test_check_get_ralph_data(self):
         ralph = self.cmd.ralph_projects
         self.assertEqual(ralph['project_id1']['name'], self.cloud_project.name)
-        self.assertEqual(
-            ralph['project_id1']['cloudprovider'],
-            self.cloud_project.cloudprovider
-        )
 
     def test_check_process_servers(self):
         """Check if servers are added and modified correctly"""

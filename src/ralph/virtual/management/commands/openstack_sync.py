@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
+import re
 from collections import defaultdict
 from datetime import datetime
+from functools import lru_cache
 
 import reversion as revisions
 from django.conf import settings
@@ -27,12 +29,13 @@ except ImportError:
 
 try:
     from novaclient import client as novac
+    from novaclient.exceptions import NotFound
     nova_client_exists = True
 except ImportError:
     nova_client_exists = False
 
 
-class EmptyList(Exception):
+class EmptyListError(Exception):
     def __init___(self, value):
         self.value = value
 
@@ -67,9 +70,12 @@ class Command(BaseCommand):
         """
         servers = []
         marker = None
-
+        logger.info('Fetching servers list from {}'.format(site['tag']))
         while True:
             try:
+                logger.debug(
+                    'Fetching servers with marker {}'.format(marker)
+                )
                 servers_part = nt.servers.list(
                     search_opts={'all_tenants': True},
                     limit=1000,
@@ -82,9 +88,29 @@ class Command(BaseCommand):
 
         servers = list(map(lambda server: server.__dict__, servers))
         if len(servers) == 0:
-            raise EmptyList('Got an empty list of instances from '
-                            '{}'.format(site['auth_url']))
+            raise EmptyListError(
+                'Got an empty list of instances from {}'.format(
+                    site['auth_url']
+                )
+            )
+        logger.info('Fetched {} servers from {}'.format(
+            len(servers), site['tag']
+        ))
         return servers
+
+    @lru_cache()
+    def _get_images(self, nt):
+        logger.info('Fetching images')
+        return {img.id: img.__dict__ for img in nt.images.list()}
+
+    def _get_image_name(self, nt, image_id):
+        try:
+            return self._get_images(nt)[image_id]['name']
+        except KeyError:
+            try:
+                return nt.images.get(image_id).name
+            except NotFound:
+                return ''
 
     @staticmethod
     def _get_flavors_list(nt, site):
@@ -93,15 +119,19 @@ class Command(BaseCommand):
         :parm nt: novaclient connection
         :return: dict
         """
-        flavors = list(map(lambda flavor: flavor.__dict__, nt.flavors.list()))
-
+        logger.info('Fetching flavors list from {}'.format(site['tag']))
+        flavors = []
+        for is_public in (True, False):
+            flavors.extend(list(map(
+                lambda fl: fl.__dict__, nt.flavors.list(is_public=is_public)
+            )))
         if len(flavors) == 0:
-            raise EmptyList('Got an empty list of flavors from '
-                            '{}'.format(site['auth_url']))
+            raise EmptyListError(
+                'Got an empty list of flavors from {}'.format(site['auth_url'])
+            )
         return flavors
 
-    @staticmethod
-    def _get_projects_map(site):
+    def _update_projects(self, site):
         """
         Returns a map tenant_id->tenant_name
         :rtype: dict
@@ -113,55 +143,77 @@ class Command(BaseCommand):
             auth_url=site['auth_url'],
         )
 
-        projects = {}
         for project in keystone_client.tenants.list():
-            projects[project.id] = {
-                'name': project.name,
-                'tag':  site['tag'],
-                'servers': {},
-            }
-
-        if len(projects) == 0:
-            raise EmptyList('Got an empty list of projects from '
-                            '{}'.format(site['auth_url']))
-        return projects
+            if project.id not in self.openstack_projects:
+                self.openstack_projects[project.id] = {
+                    'name': project.name,
+                    'servers': {},
+                    'tags': []
+                }
+            self.openstack_projects[project.id]['tags'].append(site['tag'])
 
     def _process_openstack_instances(self):
         for site in settings.OPENSTACK_INSTANCES:
+            logger.info('Processing {} ({})'.format(
+                site['auth_url'], site['tag']
+            ))
             nt = self._get_novaclient_connection(site)
-            self.openstack_projects.update(self._get_projects_map(site))
+            self._update_projects(site)
 
-            for server in self._get_servers_list(nt, site):
-                project_id = server['_info']['tenant_id']
-                host_id = server['_info']['hostId']
-                new_server = {
-                    'hostname': server['_info']['name'],
-                    'flavor_id': server['_info']['flavor']['id'],
-                    'tag': site['tag'],
-                    'ips': [],
-                    'created': server['_info']['created'],
-                    'hypervisor': server['_info'][
-                        'OS-EXT-SRV-ATTR:hypervisor_hostname'],
-                }
-                for zone in server['_info']['addresses']:
-                    for ip in server['_info']['addresses'][zone]:
-                        new_server['ips'].append(ip['addr'])
-                try:
-                    self.openstack_projects[project_id]['servers'][
-                        host_id] = new_server
-                except KeyError:
-                    logger.warning('Project {} not found'.format(project_id))
-
-            for flavor in self._get_flavors_list(nt, site):
-                flavor_id = flavor['_info']['id']
+            def _add_flavor(flavor):
+                flavor_id = flavor['id']
                 new_flavor = {
-                    'name': flavor['_info']['name'],
-                    'cores': flavor['_info']['vcpus'],
-                    'memory': flavor['_info']['ram'],
-                    'disk': flavor['_info']['disk']*1024,
+                    'name': flavor['name'],
+                    'cores': flavor['vcpus'],
+                    'memory': flavor['ram'],
+                    'disk': flavor['disk'] * 1024,
                     'tag': site['tag'],
                 }
                 self.openstack_flavors[flavor_id] = new_flavor
+
+            for flavor in self._get_flavors_list(nt, site):
+                _add_flavor(flavor)
+
+            for server in self._get_servers_list(nt, site):
+                project_id = server['tenant_id']
+                host_id = server['id']
+                image_name = self._get_image_name(
+                    nt, server['image']['id']
+                ) if server['image'] else None
+                flavor_id = server['flavor']['id']
+                new_server = {
+                    'hostname': server['name'],
+                    'id': server['id'],
+                    'flavor_id': flavor_id,
+                    'tag': site['tag'],
+                    'ips': [],
+                    'created': server['created'],
+                    'hypervisor': server['OS-EXT-SRV-ATTR:hypervisor_hostname'],
+                    'image': image_name,
+                }
+                for zone in server['addresses']:
+                    if (
+                        'network_regex' in site and
+                        not re.match(site['network_regex'], zone)
+                    ):
+                        continue
+                    for ip in server['addresses'][zone]:
+                        new_server['ips'].append(ip['addr'])
+                try:
+                    self.openstack_projects[project_id]['servers'][host_id] = (
+                        new_server
+                    )
+                except KeyError:
+                    logger.error('Project {} not found for server {}'.format(
+                        project_id, host_id,
+                    ))
+
+                if flavor_id not in self.openstack_flavors:
+                    logger.warning((
+                        'Flavor {} (found in host {}) not in flavors list.'
+                        ' Fetching it'
+                    ).format(flavor_id, host_id))
+                    _add_flavor(nt.flavors.get(flavor_id).__dict__)
 
     def _get_cloud_provider(self):
         """Get or create cloud provider object"""
@@ -176,26 +228,34 @@ class Command(BaseCommand):
         """Get configuration from ralph DB"""
         self.ralph_projects = {}
         self.ralph_flavors = {}
-        for project in CloudProject.objects.filter(
+        projects = CloudProject.objects.filter(
             cloudprovider=self.cloud_provider
-        ):
+        ).prefetch_related('tags')
+        for project in projects:
             project_id = project.project_id
             self.ralph_projects[project_id] = {
                 'name': project.name,
                 'servers': {},
                 'tags': project.tags.names(),
-                'cloudprovider': project.cloudprovider,
             }
 
-            for server in project.children.all():
-                new_server = {'hostname': server.hostname,
-                              'hypervisor': server.hypervisor,
-                              'tags': server.tags.names(),
-                              'ips': server.ip_addresses,
-                              }
-                host_id = server.host_id
-                self.ralph_projects[project_id]['servers'][
-                    host_id] = new_server
+        for server in CloudHost.objects.filter(
+            parent__in=projects
+        ).select_related(
+            'hypervisor', 'parent', 'parent__cloudproject',
+        ).prefetch_related(
+            'ipaddress_set', 'tags'
+        ):
+            new_server = {
+                'hostname': server.hostname,
+                'hypervisor': server.hypervisor,
+                'tags': server.tags.names(),
+                'ips': [ip.address for ip in server.ipaddress_set.all()],
+                'host_id': server.host_id,
+            }
+            host_id = server.host_id
+            project_id = server.parent.cloudproject.project_id
+            self.ralph_projects[project_id]['servers'][host_id] = new_server
 
         for flavor in CloudFlavor.objects.filter(
             cloudprovider=self.cloud_provider
@@ -203,37 +263,45 @@ class Command(BaseCommand):
             self.ralph_flavors[flavor.flavor_id] = {'name': flavor.name}
 
     @staticmethod
-    def _get_hypervisor(host_name):
+    def _get_hypervisor(host_name, server_id):
         """get or None for CloudHost hypervisor"""
         try:
             obj = DataCenterAsset.objects.get(hostname=host_name)
             return obj
         except ObjectDoesNotExist:
-            logger.error('Hypervisor {} not found in DataCenterAssets'.format(
-                host_name
+            logger.error('Hypervisor {} not found for {}'.format(
+                host_name, server_id,
             ))
             return None
+
+    @lru_cache()
+    def _get_flavors(self):
+        return {fl.flavor_id: fl for fl in CloudFlavor.objects.all()}
 
     def _add_server(self, openstack_server, server_id, project):
         """add new server to ralph"""
         try:
-            flavor = CloudFlavor.objects.get(
-                flavor_id=openstack_server['flavor_id']
-            )
-        except CloudFlavor.DoesNotExist:
-            logger.warning(
-                'Flavor not found for host {}'.format(openstack_server)
+            flavor = self._get_flavors()[openstack_server['flavor_id']]
+        except KeyError:
+            logger.error(
+                'Flavor {} not found for host {}'.format(
+                    openstack_server['flavor_id'], openstack_server
+                )
             )
             return
+        logger.info('Creating new server {} ({})'.format(
+            server_id, openstack_server['hostname']
+        ))
         new_server = CloudHost(
             hostname=openstack_server['hostname'],
             cloudflavor=flavor,
             parent=project,
             host_id=server_id,
             hypervisor=self._get_hypervisor(
-                openstack_server['hypervisor']
+                openstack_server['hypervisor'], server_id
             ),
             cloudprovider=self.cloud_provider,
+            image_name=openstack_server['image'],
         )
 
         # workaround - created field has auto_now_add attribute
@@ -252,24 +320,49 @@ class Command(BaseCommand):
         """Compare and apply changes to a CloudHost"""
         modified = False
         obj = CloudHost.objects.get(host_id=server_id)
-        flavor = CloudFlavor.objects.get(
-            flavor_id=openstack_server['flavor_id']
-        )
+        try:
+            flavor = self._get_flavors()[openstack_server['flavor_id']]
+        except KeyError:
+            logger.error(
+                'Flavor {} not found for host {}'.format(
+                    openstack_server['flavor_id'], openstack_server
+                )
+            )
+            return
 
         if obj.hostname != openstack_server['hostname']:
+            logger.info('Updating hostname ({}) for {}'.format(
+                openstack_server['hostname'], server_id
+            ))
             obj.hostname = openstack_server['hostname']
             self._save_object(obj, 'Modify hostname')
             modified = True
 
         if obj.cloudflavor != flavor:
+            logger.info('Updating flavor ({}) for {}'.format(
+                flavor, server_id
+            ))
             obj.cloudflavor = flavor
             self._save_object(obj, 'Modify cloudflavor')
             modified = True
 
-        hypervisor = self._get_hypervisor(openstack_server['hypervisor'])
+        hypervisor = self._get_hypervisor(
+            openstack_server['hypervisor'], server_id
+        )
         if obj.hypervisor != hypervisor:
+            logger.info('Updating hypervisor ({}) for {}'.format(
+                hypervisor, server_id
+            ))
             obj.hypervisor = hypervisor
             self._save_object(obj, 'Modify hypervisor')
+            modified = True
+
+        if obj.image_name != openstack_server['image']:
+            logger.info('Updating image ({}) for {}'.format(
+                openstack_server['image'], server_id
+            ))
+            obj.image_name = openstack_server['image']
+            self._save_object(obj, 'Updated image info')
             modified = True
 
         if openstack_server['tag'] not in ralph_server['tags']:
@@ -288,20 +381,21 @@ class Command(BaseCommand):
         """Add/modify/remove servers within project"""
         for server_id, server in servers.items():
             try:
-                modified = self._update_server(
-                    server,
-                    server_id,
-                    self.ralph_projects[project.project_id]['servers'][
-                        server_id],
+                ralph_server = (
+                    self.ralph_projects[project.project_id]['servers'][server_id]  # noqa
                 )
-
-                if modified:
-                    self.summary['mod_instances'] += 1
-
             except KeyError:
                 self._add_server(server, server_id, project)
                 self.summary['new_instances'] += 1
-
+            else:
+                modified = self._update_server(
+                    server,
+                    server_id,
+                    ralph_server,
+                )
+                if modified:
+                    self.summary['mod_instances'] += 1
+            self.summary['total_instances'] += 1
         self._cleanup_servers(servers, project.project_id)
 
     def _cleanup_servers(self, servers, project_id):
@@ -320,17 +414,18 @@ class Command(BaseCommand):
         """Add/modify project in ralph"""
         if project_id in self.ralph_projects.keys():
             project = CloudProject.objects.get(project_id=project_id)
-            if (
-                self.ralph_projects[project_id]['name'] != data['name'] or
-                self.openstack_projects[project_id]['tag']
-                    not in self.ralph_projects[project_id]['tags']
-            ):
-                self.summary['mod_projects'] += 1
-                project.cloudprovider = self.cloud_provider
+            ralph_project = self.ralph_projects[project_id]
+            modified = False
+            if ralph_project['name'] != data['name']:
+                modified = True
                 project.name = data['name']
                 self._save_object(project, 'Modify name')
-                project.tags.add(data['tag'])
-
+            if not all([tag in ralph_project['tags'] for tag in data['tags']]):
+                modified = True
+                for tag in data['tags']:
+                    project.tags.add(tag)
+            if modified:
+                self.summary['mod_projects'] += 1
         else:
             self.summary['new_projects'] += 1
             project = CloudProject(
@@ -339,7 +434,9 @@ class Command(BaseCommand):
                 cloudprovider=self.cloud_provider,
             )
             self._save_object(project, 'Add project %s' % project.name)
-            project.tags.add(data['tag'])
+            for tag in data['tags']:
+                project.tags.add(tag)
+        self.summary['total_projects'] += 1
         self._process_servers(data['servers'], project)
 
     def _add_flavor(self, flavor, flavor_id):
@@ -378,10 +475,11 @@ class Command(BaseCommand):
 
             if mod:
                 self.summary['mod_flavors'] += 1
+        self.summary['total_flavors'] += 1
 
     def _update_ralph(self):
         """Update existing and add new ralph data"""
-
+        logger.info('Updating Ralph entries')
         for flavor_id in self.openstack_flavors:
             self._add_flavor(self.openstack_flavors[flavor_id], flavor_id)
 
@@ -407,6 +505,7 @@ class Command(BaseCommand):
     @staticmethod
     def _save_object(obj, comment):
         """Save an object and create revision"""
+        logger.info('Saving {} (id: {}; {})'.format(obj, obj.id, comment))
         with transaction.atomic(), revisions.create_revision():
             obj.save()
             revisions.set_comment(comment)
@@ -414,32 +513,32 @@ class Command(BaseCommand):
     @staticmethod
     def _delete_object(obj):
         """Save an object and delete revision"""
+        logger.warning('Deleting {} (id: {})'.format(obj, obj.id))
         with transaction.atomic(), revisions.create_revision():
             obj.delete()
             revisions.set_comment('openstack_sync::_delete_object')
 
     def _print_summary(self):
         """Print sync summary"""
-        self.stdout.write("Openstack projects synced")
-        self.stdout.write("New projects: {}".format(
-            self.summary['new_projects']))
-        self.stdout.write("Modified projects: {}".format(
-            self.summary['mod_projects']))
-        self.stdout.write("New instances: {}".format(
-            self.summary['new_instances']))
-        self.stdout.write("Modified instances: {}".format(
-            self.summary['mod_instances']))
-        self.stdout.write(
-            "Deleted projects: {}".format(self.summary['del_projects']))
-        self.stdout.write(
-            "Deleted instances: {}".format(self.summary['del_instances']))
-        self.stdout.write("Openstack flavors synced")
-        self.stdout.write("New flavors: {}".format(
-            self.summary['new_flavors']))
-        self.stdout.write("Modified flavors: {}".format(
-            self.summary['mod_flavors']))
-        self.stdout.write("Deleted flavors: {}".format(
-            self.summary['del_flavors']))
+        msg = """Openstack projects synced
+
+        New projects:       {new_projects}
+        Modified projects:  {mod_projects}
+        Deleted projects:   {del_projects}
+        Total projects:     {total_projects}
+
+        New instances:      {new_instances}
+        Modified instances: {mod_instances}
+        Deleted instances:  {del_instances}
+        Total instances:    {total_instances}
+
+        New flavors:        {new_flavors}
+        Modified flavors:   {mod_flavors}
+        Deleted flavors:    {del_flavors}
+        Total flavors:      {total_flavors}""".format(**self.summary)
+
+        self.stdout.write(msg)
+        logger.info(msg)
 
     def handle(self, *args, **options):
         if not nova_client_exists:

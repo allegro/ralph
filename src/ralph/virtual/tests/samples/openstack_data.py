@@ -2,7 +2,7 @@
 OPENSTACK_DATA = {
     'project_os_id1': {
         'name': 'project_os_1',
-        'tag': 'tag1',
+        'tags': ['tag1'],
         'servers': {
             'host_os_1': {
                 'hostname': 'host_os_1',
@@ -11,12 +11,13 @@ OPENSTACK_DATA = {
                 'tag': 'tag1',
                 'ips': ['10.1.0.1', '10.2.0.1'],
                 'created': '2015-09-10T06:48:00Z',
+                'image': 'Ubuntu 14.04',
             }
         }
     },
     'project_os_id2': {
         'name': 'project_os_2',
-        'tag': 'tag2',
+        'tags': ['tag2'],
         'servers': {
             'host_os_2': {
                 'hostname': 'host_os_2',
@@ -25,6 +26,7 @@ OPENSTACK_DATA = {
                 'tag': 'tag2',
                 'ips': ['10.3.0.1', '10.4.0.1'],
                 'created': '2015-09-11T06:48:00Z',
+                'image': 'Ubuntu 14.04',
             },
             'host_os_3': {
                 'hostname': 'host_os_3',
@@ -33,12 +35,13 @@ OPENSTACK_DATA = {
                 'tag': 'tag2',
                 'ips': ['10.10.10.10'],
                 'created': '2015-09-12T06:48:00Z',
-                'modified': '2015-10-12T06:48:03Z'
+                'modified': '2015-10-12T06:48:03Z',
+                'image': 'Ubuntu 15.04',
             }
         }
     },
-    'project_os_id3': {'name': 'project_os_3', 'tag': 'tag1', 'servers': {}},
-    'project_id1': {'name': 'modified1', 'tag': 'tag1', 'servers': {
+    'project_os_id3': {'name': 'project_os_3', 'tags': ['tag1'], 'servers': {}},
+    'project_id1': {'name': 'modified1', 'tags': ['tag1'], 'servers': {
             'host_id_1': {
                 'hostname': 'host_id_1',
                 'hypervisor': 'hypervisor1.dcn.net',
@@ -46,7 +49,8 @@ OPENSTACK_DATA = {
                 'tag': 'tag1',
                 'ips': ['11.11.11.11'],
                 'created': '2015-09-13T06:48:00Z',
-                'modified': '2015-10-13T06:48:03Z'
+                'modified': '2015-10-13T06:48:03Z',
+                'image': 'CoreOS',
             }
         }
     }
@@ -84,7 +88,8 @@ TEST_HOSTS = {
         'tag': 'tag2',
         'ips': ['10.10.10.10'],
         'created': '2015-09-14T06:48:00Z',
-        'modified': '2015-10-14T06:48:03Z'
+        'modified': '2015-10-14T06:48:03Z',
+        'image': 'Ubuntu 14.04',
     },
     'host_os_id2': {
         'hostname': 'host_test_2',
@@ -93,7 +98,8 @@ TEST_HOSTS = {
         'tag': 'tag3',
         'ips': ['10.10.10.11'],
         'created': '2015-09-15T06:48:00Z',
-        'modified': '2015-10-15T06:48:03Z'
+        'modified': '2015-10-15T06:48:03Z',
+        'image': 'Fedora',
     },
     'host_id1': {
         'hostname': 'host_mod_1',
@@ -102,6 +108,7 @@ TEST_HOSTS = {
         'tag': 'tag3',
         'ips': ['10.10.10.12'],
         'created': '2015-09-16T06:48:00Z',
-        'modified': '2015-10-16T06:48:03Z'
+        'modified': '2015-10-16T06:48:03Z',
+        'image': 'Ubuntu 14.04',
     },
 }
