@@ -42,6 +42,7 @@ from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
+from ralph.supports.models import BaseObjectsSupport
 
 
 @register(DataCenter)
@@ -71,7 +72,7 @@ class DataCenterAssetSupport(RalphDetailViewAdmin):
     url_name = 'data_center_asset_support'
 
     class DataCenterAssetSupportInline(RalphTabularInline):
-        model = DataCenterAsset.supports.related.through
+        model = BaseObjectsSupport
         raw_id_fields = ('support',)
         extra = 1
         verbose_name = _('Support')
