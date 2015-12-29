@@ -3,7 +3,11 @@ from django.db import transaction
 from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
-from ralph.assets.api.serializers import BaseObjectSerializer
+from ralph.api.serializers import RalphAPISaveSerializer
+from ralph.assets.api.serializers import (
+    BaseObjectSerializer,
+    ServiceEnvironmentSimpleSerializer
+)
 from ralph.data_center.api.serializers import DataCenterAssetSimpleSerializer
 from ralph.virtual.models import (
     CloudFlavor,
@@ -16,7 +20,8 @@ from ralph.virtual.models import (
 class CloudFlavorSimpleSerializer(RalphAPISerializer):
     class Meta:
         model = CloudFlavor
-        fields = ['name', 'tags', 'cores', 'memory', 'disk', 'url']
+        fields = ['name', 'cores', 'memory', 'disk', 'url']
+        _skip_tags_field = True
 
 
 class CloudHostSimpleSerializer(BaseObjectSerializer):
@@ -30,10 +35,11 @@ class CloudHostSimpleSerializer(BaseObjectSerializer):
 class CloudProjectSimpleSerializer(BaseObjectSerializer):
     class Meta:
         model = CloudProject
-        fields = ['name', 'tags', 'url']
+        fields = ['name', 'url', 'project_id']
+        _skip_tags_field = True
 
 
-class SaveCloudFlavorSerializer(RalphAPISerializer):
+class SaveCloudFlavorSerializer(RalphAPISaveSerializer):
     cores = serializers.IntegerField()
     memory = serializers.IntegerField()
     disk = serializers.IntegerField()
@@ -54,7 +60,7 @@ class SaveCloudFlavorSerializer(RalphAPISerializer):
         exclude = ['content_type']
 
 
-class SaveCloudHostSerializer(RalphAPISerializer):
+class SaveCloudHostSerializer(RalphAPISaveSerializer):
     ip_addresses = serializers.ListField()
 
     def create(self, validated_data):
@@ -83,6 +89,7 @@ class CloudHostSerializer(RalphAPISerializer):
     hypervisor = DataCenterAssetSimpleSerializer()
     parent = CloudProjectSimpleSerializer(source='cloudproject')
     cloudflavor = CloudFlavorSimpleSerializer()
+    service_env = ServiceEnvironmentSimpleSerializer()
 
     class Meta:
         model = CloudHost
@@ -108,7 +115,7 @@ class CloudFlavorViewSet(RalphAPIViewSet):
     queryset = CloudFlavor.objects.all()
     serializer_class = CloudFlavorSerializer
     save_serializer_class = SaveCloudFlavorSerializer
-    prefetch_related = ['tags']
+    prefetch_related = ['tags', 'virtualcomponent__model']
 
 
 class CloudProviderViewSet(RalphAPIViewSet):
@@ -121,12 +128,18 @@ class CloudHostViewSet(RalphAPIViewSet):
     serializer_class = CloudHostSerializer
     save_serializer_class = SaveCloudHostSerializer
     select_related = ['parent', 'service_env__service',
-                      'service_env__environment']
+                      'service_env__environment', 'hypervisor']
+    prefetch_related = [
+        'tags', 'cloudflavor__virtualcomponent__model', 'ipaddress_set',
+    ]
 
 
 class CloudProjectViewSet(RalphAPIViewSet):
     queryset = CloudProject.objects.all()
     serializer_class = CloudProjectSerializer
+    prefetch_related = [
+        'children', 'children__ipaddress_set', 'tags', 'licences',
+    ]
 
 
 router.register(r'cloud-flavors', CloudFlavorViewSet)

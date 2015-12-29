@@ -6,6 +6,7 @@ from django.db import models
 from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.admin.helpers import get_value_by_relation_path
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ComponentType
 from ralph.assets.models.components import Component, ComponentModel
@@ -25,6 +26,8 @@ class CloudProvider(NamedMixin):
 class CloudFlavor(BaseObject):
     name = models.CharField(_('name'), max_length=255)
     cloudprovider = models.ForeignKey(CloudProvider)
+    cloudprovider._autocomplete = False
+
     flavor_id = models.CharField(unique=True, max_length=100)
 
     def __str__(self):
@@ -49,12 +52,25 @@ class CloudFlavor(BaseObject):
 
             VirtualComponent(base_object=self, model=model).save()
 
+    def _get_component(self, model_type, field_path):
+        # use cached components if already prefetched (using prefetch_related)
+        # otherwise, perform regular SQL query
+        try:
+            components = self._prefetched_objects_cache['virtualcomponent']
+        except (KeyError, AttributeError):
+            return self.virtualcomponent.filter(
+                model__type=model_type
+            ).values_list(field_path, flat=True).first()
+        else:
+            for component in components:
+                if component.model.type == model_type:
+                    return get_value_by_relation_path(component, field_path)
+            return None
+
     @property
     def cores(self):
         """Number of cores"""
-        return self.virtualcomponent.filter(
-            model__type=ComponentType.processor
-        ).values_list('model__cores', flat=True).first()
+        return self._get_component(ComponentType.processor, 'model__cores')
 
     @cores.setter
     def cores(self, new_cores):
@@ -70,9 +86,7 @@ class CloudFlavor(BaseObject):
     @property
     def memory(self):
         """RAM memory size in MiB"""
-        return self.virtualcomponent.filter(
-            model__type=ComponentType.memory
-        ).values_list('model__size', flat=True).first()
+        return self._get_component(ComponentType.memory, 'model__size')
 
     @memory.setter
     def memory(self, new_memory):
@@ -87,9 +101,7 @@ class CloudFlavor(BaseObject):
     @property
     def disk(self):
         """Disk size in MiB"""
-        return self.virtualcomponent.filter(
-            model__type=ComponentType.disk
-        ).values_list('model__size', flat=True).first()
+        return self._get_component(ComponentType.disk, 'model__size')
 
     @disk.setter
     def disk(self, new_disk):
@@ -104,6 +116,8 @@ class CloudFlavor(BaseObject):
 
 class CloudProject(BaseObject):
     cloudprovider = models.ForeignKey(CloudProvider)
+    cloudprovider._autocomplete = False
+
     project_id = models.CharField(unique=True, max_length=100)
     name = models.CharField(max_length=100)
 
