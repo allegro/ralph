@@ -68,7 +68,8 @@ class CloudNetworkInline(RalphTabularInline):
 class CloudHostAdmin(RalphAdmin):
     list_display = ['hostname', 'get_ip_addresses', 'get_hypervisor',
                     'get_cloudproject', 'get_cloudprovider',
-                    'cloudflavor_name', 'host_id', 'created']
+                    'cloudflavor_name', 'host_id', 'created', 'image_name',
+                    'get_tags']
     list_filter = ['service_env', 'cloudflavor']
     list_select_related = [
         'cloudflavor', 'cloudprovider', 'hypervisor', 'parent__cloudproject'
@@ -76,7 +77,7 @@ class CloudHostAdmin(RalphAdmin):
     readonly_fields = ['cloudflavor_name', 'created', 'hostname', 'host_id',
                        'get_cloudproject', 'get_cloudprovider',
                        'get_cpu', 'get_disk', 'get_hypervisor', 'get_memory',
-                       'modified', 'parent', 'service_env']
+                       'modified', 'parent', 'service_env', 'image_name']
     search_fields = ['cloudflavor__name', 'hostname', 'host_id',
                      'ipaddress__address']
     raw_id_override_parent = {'parent': CloudProject}
@@ -90,15 +91,22 @@ class CloudHostAdmin(RalphAdmin):
             'fields': ['get_cloudproject', 'service_env'],
         }),
         ('Components', {
-            'fields': ['cloudflavor_name', 'get_cpu', 'get_memory', 'get_disk']
+            'fields': ['cloudflavor_name', 'get_cpu', 'get_memory', 'get_disk',
+                       'image_name']
         }),
     )
 
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related('ipaddress_set')
+        return super().get_queryset(request).prefetch_related(
+            'ipaddress_set', 'tags'
+        )
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def get_tags(self, obj):
+        return ','.join(obj.tags.names())
+    get_tags.short_description = _('Tags')
 
     def get_cloudprovider(self, obj):
         return obj.cloudprovider.name

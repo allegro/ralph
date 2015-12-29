@@ -131,6 +131,7 @@ class CloudHost(BaseObject):
     host_id = models.CharField(unique=True, max_length=100)
     hostname = models.CharField(max_length=100)
     hypervisor = models.ForeignKey(DataCenterAsset, blank=True, null=True)
+    image_name = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
         verbose_name = _('Cloud host')
@@ -154,8 +155,10 @@ class CloudHost(BaseObject):
                     new_ip.base_object = self
                     new_ip.save()
                 else:
-                    logger.error('Cannot assign IP: %s to %s, it is already in'
-                                 'use by another asset' % (ip, self.hostname))
+                    logger.warning((
+                        'Cannot assign IP %s to %s - it is already in use by '
+                        'another asset'
+                    ) % (ip, self.hostname))
             except ObjectDoesNotExist:
                 new_ip = IPAddress(base_object=self, address=ip)
                 new_ip.save()
