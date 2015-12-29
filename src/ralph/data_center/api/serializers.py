@@ -58,7 +58,8 @@ class RackSerializer(RalphAPISerializer):
 class DataCenterAssetSimpleSerializer(RalphAPISerializer):
     class Meta:
         model = DataCenterAsset
-        fields = ['hostname', 'tags', 'url']
+        fields = ['hostname', 'url']
+        _skip_tags_field = True
 
 
 class DataCenterAssetSerializer(AssetSerializer):

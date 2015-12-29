@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.core.urlresolvers import reverse
+from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
@@ -112,7 +113,7 @@ class CloudHostAdmin(RalphAdmin):
         return False
 
     def get_tags(self, obj):
-        return ','.join([tag.name for tag in obj.tags.all()])
+        return ', '.join([tag.name for tag in obj.tags.all()])
     get_tags.short_description = _('Tags')
 
     def get_cloudprovider(self, obj):
@@ -181,26 +182,33 @@ class CloudHostAdmin(RalphAdmin):
 
 @register(CloudFlavor)
 class CloudFlavorAdmin(RalphAdmin):
-    list_display = ['name', 'get_cloudprovider', 'flavor_id']
-    list_select_related = ['cloudprovider__name']
+    list_display = ['name', 'flavor_id', 'cores', 'memory', 'disk', 'get_tags',
+                    'instances_count']
+    search_fields = ['name']
     readonly_fields = ['name', 'cloudprovider', 'flavor_id', 'cores',
-                       'get_memory', 'get_disk']
+                       'memory', 'disk']
+    list_filter = ['cloudprovider', 'tags']
     fieldsets = (
         ('Cloud Flavor', {
-            'fields': ['name', 'cloudprovider', 'flavor_id']
+            'fields': ['name', 'cloudprovider', 'flavor_id', 'tags',
+                       'instances_count']
         }),
         ('Components', {
-            'fields': ['cores', 'get_memory', 'get_disk']
+            'fields': ['cores', 'memory', 'disk']
         }),
     )
 
     def has_delete_permission(self, request, obj=None):
         return False
 
-    def get_cloudprovider(self, obj):
-        return obj.cloudprovider.name
-    get_cloudprovider.short_description = _('Cloud provider')
-    get_cloudprovider.admin_order_field = 'cloudprovider__name'
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related(
+            'virtualcomponent__model', 'tags'
+        ).annotate(instances_count=Count('cloudhost'))
+
+    def get_tags(self, obj):
+        return ', '.join([tag.name for tag in obj.tags.all()])
+    get_tags.short_description = _('Tags')
 
     def get_cpu(self, obj):
         return obj.cores
@@ -214,27 +222,43 @@ class CloudFlavorAdmin(RalphAdmin):
         return obj.disk/1024
     get_disk.short_description = _('Disk size (GiB)')
 
+    def instances_count(self, obj):
+        return obj.instances_count
+    instances_count.short_description = _('instances count')
+    instances_count.admin_order_field = 'instances_count'
+
 
 @register(CloudProject)
 class CloudProjectAdmin(RalphAdmin):
     fields = ['name', 'project_id', 'cloudprovider', 'service_env', 'tags',
-              'remarks']
-    list_display = ['name', 'service_env', 'get_cloudprovider']
+              'remarks', 'instances_count']
+    list_display = ['name', 'service_env', 'instances_count']
     list_select_related = ['cloudprovider__name', 'service_env__environment',
                            'service_env__service']
-    list_filter = ['name', 'project_id', 'service_env', 'cloudprovider__name']
-    readonly_fields = ['name', 'project_id', 'cloudprovider', 'created']
-    search_fields = ['name', 'project_id', 'cloudprovider__name']
+    list_filter = ['service_env', 'cloudprovider', 'tags']
+    readonly_fields = ['name', 'project_id', 'cloudprovider', 'created',
+                       'instances_count']
+    search_fields = ['name', 'project_id']
     raw_id_fields = ['service_env']
     inlines = [CloudHostTabularInline]
 
     def has_delete_permission(self, request, obj=None):
         return False
 
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(
+            instances_count=Count('children')
+        )
+
     def get_cloudprovider(self, obj):
         return obj.cloudprovider.name
     get_cloudprovider.short_description = _('Cloud provider')
     get_cloudprovider.admin_order_field = 'cloudprovider__name'
+
+    def instances_count(self, obj):
+        return obj.instances_count
+    instances_count.short_description = _('instances count')
+    instances_count.admin_order_field = 'instances_count'
 
 
 @register(CloudProvider)

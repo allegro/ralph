@@ -94,7 +94,11 @@ class DeclaredFieldsMetaclass(serializers.SerializerMetaclass):
     """
     def __new__(cls, name, bases, attrs):
         model = getattr(attrs.get('Meta'), 'model', None)
-        if model and issubclass(model, TaggableMixin):
+        if (
+            model and
+            issubclass(model, TaggableMixin) and
+            not getattr(attrs.get('Meta'), '_skip_tags_field', False)
+        ):
             attrs['tags'] = TagListSerializerField(required=False)
             attrs['prefetch_related'] = (
                 list(attrs.get('prefetch_related', [])) + ['tags']

@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from rest_framework import serializers
 
 from ralph.accounts.api_simple import SimpleRalphUserSerializer
 from ralph.accounts.models import Team
@@ -123,6 +124,18 @@ class ServiceSerializer(RalphAPISerializer):
         depth = 1
 
 
+class ServiceEnvironmentSimpleSerializer(RalphAPISerializer):
+    service = serializers.CharField(source='service_name', read_only=True)
+    environment = serializers.CharField(
+        source='environment_name', read_only=True
+    )
+
+    class Meta:
+        model = ServiceEnvironment
+        fields = ('id', 'service', 'environment', 'url')
+        _skip_tags_field = True
+
+
 class ServiceEnvironmentSerializer(RalphAPISerializer):
     class Meta:
         model = ServiceEnvironment
@@ -169,7 +182,7 @@ class BaseObjectSerializer(RalphAPISerializer):
     """
     Base class for other serializers inheriting from `BaseObject`.
     """
-    service_env = ServiceEnvironmentSerializer()
+    service_env = ServiceEnvironmentSimpleSerializer()
     licences = SimpleBaseObjectLicenceSerializer(read_only=True, many=True)
 
     class Meta:
