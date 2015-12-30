@@ -186,7 +186,7 @@ class CloudFlavorAdmin(RalphAdmin):
                     'instances_count']
     search_fields = ['name']
     readonly_fields = ['name', 'cloudprovider', 'flavor_id', 'cores',
-                       'memory', 'disk']
+                       'memory', 'disk', 'instances_count']
     list_filter = ['cloudprovider', 'tags']
     fieldsets = (
         ('Cloud Flavor', {
