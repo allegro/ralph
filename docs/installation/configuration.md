@@ -121,10 +121,6 @@ To synchronize user list you must run command:
 
 During the process, script will report progress on every 100-th item loaded.
 
-# Migration from Ralph 2
-
-If you used Ralph 2 before and want to save all your data see [Migration from Ralph 2 guide](./data_migration.md#migration_ralph2)
-
 # Synchronization with OpenStack
 
 Ralph 3 supports one-way synchronization with OpenStack. It is possible to
