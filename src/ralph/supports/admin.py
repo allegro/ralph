@@ -7,7 +7,7 @@ from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
-from ralph.supports.models import Support, SupportType
+from ralph.supports.models import BaseObjectsSupport, Support, SupportType
 
 
 class BaseObjectSupportView(RalphDetailViewAdmin):
@@ -17,7 +17,7 @@ class BaseObjectSupportView(RalphDetailViewAdmin):
     url_name = 'assignments'
 
     class BaseObjectSupportInline(RalphTabularInline):
-        model = Support.base_objects.through
+        model = BaseObjectsSupport
         raw_id_fields = ('baseobject',)
         extra = 1
         verbose_name = _('assignments')

@@ -83,7 +83,7 @@ class Support(
     )
     base_objects = models.ManyToManyField(
         BaseObject,
-        related_name='supports',
+        related_name='+',
         through='BaseObjectsSupport',
     )
 
@@ -115,10 +115,11 @@ class Support(
 
 
 class BaseObjectsSupport(models.Model):
-    support = models.ForeignKey(Support, related_name='+')
+    support = models.ForeignKey(Support)
     baseobject = BaseObjectForeignKey(
         BaseObject,
         verbose_name=_('Asset'),
+        related_name='supports',
         limit_models=[
             'back_office.BackOfficeAsset',
             'data_center.DataCenterAsset'
@@ -127,4 +128,5 @@ class BaseObjectsSupport(models.Model):
 
     class Meta:
         managed = False
+        unique_together = ('support', 'baseobject')
         db_table = 'supports_support_base_objects'

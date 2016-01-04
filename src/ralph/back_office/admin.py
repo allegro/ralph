@@ -21,6 +21,7 @@ from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
+from ralph.supports.models import BaseObjectsSupport
 
 
 class BackOfficeAssetSupport(RalphDetailViewAdmin):
@@ -30,7 +31,7 @@ class BackOfficeAssetSupport(RalphDetailViewAdmin):
     url_name = 'back_office_asset_support'
 
     class BackOfficeAssetSupportInline(RalphTabularInline):
-        model = BackOfficeAsset.supports.related.through
+        model = BaseObjectsSupport
         raw_id_fields = ('support',)
         extra = 1
         verbose_name = _('Support')
