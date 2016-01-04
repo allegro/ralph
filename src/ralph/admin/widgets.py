@@ -142,7 +142,7 @@ class AutocompleteWidgetBase(object):
     @property
     def media(self):
         return forms.Media(js=[
-            os.path.join('js', 'ralph-autocomplete.js')
+            os.path.join('js', 'autocomplete.js')
         ])
 
     @property

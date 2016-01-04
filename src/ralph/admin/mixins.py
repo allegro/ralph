@@ -36,7 +36,7 @@ FORMFIELD_FOR_DBFIELD_DEFAULTS = {
 def get_inline_media():
     js = map(lambda x: os.path.join(*x), [
         ('admin', 'js', 'inlines.js'),
-        ('js', 'ralph-autocomplete.js'),
+        ('js', 'autocomplete.js'),
     ])
     return forms.Media(
         js=[static('%s' % url) for url in js],
