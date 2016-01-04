@@ -108,8 +108,14 @@ class AssetList(Table):
         if url:
             if self.request and 'username' not in item:
                 item['username'] = self.request.user.username
+
+            def escape_param(p):
+                """
+                Escape URL param and replace quotation by unicode inches sign
+                """
+                return quote(str(p).replace('"', '\u2033'))
             return '<a href="{}" target="_blank">{}</a><br />'.format(
-                url.format(**{k: quote(str(v)) for (k, v) in item.items()}),
+                url.format(**{k: escape_param(v) for (k, v) in item.items()}),
                 _('Report failure')
             )
         return ''
