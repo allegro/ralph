@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from urllib.parse import quote
+
 from django.conf import settings
 from django.contrib.auth.admin import GroupAdmin, UserAdmin
 from django.contrib.auth.models import Group
@@ -107,7 +109,8 @@ class AssetList(Table):
             if self.request and 'username' not in item:
                 item['username'] = self.request.user.username
             return '<a href="{}" target="_blank">{}</a><br />'.format(
-                url.format(**item), _('Report failure')
+                url.format(**{k: quote(str(v)) for (k, v) in item.items()}),
+                _('Report failure')
             )
         return ''
     report_failure.title = ''
