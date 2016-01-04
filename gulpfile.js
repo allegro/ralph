@@ -7,7 +7,7 @@ var gulp = require('gulp'),
     sass = require('gulp-sass'),
     gutil = require('gulp-util'),
     sourcemaps = require('gulp-sourcemaps'),
-    coffee = require('gulp-coffee'),
+    ts = require('gulp-typescript'),
     qunit = require('gulp-qunit');
 
 var config = {
@@ -86,16 +86,19 @@ gulp.task('js', function(){
         .pipe(gulp.dest(config.vendorRoot + 'js'));
 });
 
-gulp.task('coffee', function() {
-  gulp.src(config.srcRoot + 'coffee/**/*.coffee')
+gulp.task('scripts', function() {
+  gulp.src(config.srcRoot + 'ts/**/*.ts')
     .pipe(sourcemaps.init())
-    .pipe(coffee({bare: true}).on('error', gutil.log))
+    .pipe(ts({
+        declaration: true,
+        noExternalResolve: true
+    })).on('error', gutil.log)
     .pipe(sourcemaps.write())
     .pipe(gulp.dest(config.staticRoot + 'js'));
 });
 
-gulp.task('coffee:watch', function() {
-    gulp.watch(config.srcRoot + 'coffee/**/*.coffee', ['coffee']);
+gulp.task('scripts:watch', function() {
+    gulp.watch(config.srcRoot + 'ts/**/*.ts', ['scripts']);
 });
 
 gulp.task('test', function() {
