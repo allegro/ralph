@@ -35,6 +35,7 @@ class BackOfficeAssetSupport(RalphDetailViewAdmin):
         raw_id_fields = ('support',)
         extra = 1
         verbose_name = _('Support')
+        ordering = ['-support__date_to']
 
     inlines = [BackOfficeAssetSupportInline]
 
