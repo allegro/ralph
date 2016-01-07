@@ -7,6 +7,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.sites import ralph_site
@@ -190,22 +191,39 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
     def get_root_assets(self, side=None):
         filter_kwargs = {
             'rack': self,
-            'slot_no': '',
         }
         if side:
             filter_kwargs['orientation'] = side
+        else:
+            filter_kwargs['orientation__in'] = [
+                Orientation.front, Orientation.back
+            ]
         return DataCenterAsset.objects.select_related(
             'model', 'model__category'
-        ).filter(**filter_kwargs).exclude(model__has_parent=True)
+        ).filter(
+            Q(slot_no='') | Q(slot_no=None), **filter_kwargs
+        ).exclude(model__has_parent=True)
 
     def get_free_u(self):
-        dc_assets = self.get_root_assets()
-        dc_assets_height = dc_assets.aggregate(
-            sum=models.Sum('model__height_of_device'))['sum'] or 0
-        # accesory always has 1U of height
+        u_list = [True] * self.max_u_height
         accessories = RackAccessory.objects.values_list(
-            'position', flat=True).filter(rack=self)
-        return self.max_u_height - dc_assets_height - len(set(accessories))
+            'position').filter(rack=self)
+        dc_assets = self.get_root_assets().values_list(
+            'position', 'model__height_of_device'
+        )
+
+        def fill_u_list(objects, height_of_device=lambda obj: 1):
+            for obj in objects:
+                start = obj[0] - 1
+                end = min(
+                    self.max_u_height, obj[0] + int(height_of_device(obj)) - 1
+                )
+                height = end - start
+                if height:
+                    u_list[start:end] = [False] * height
+        fill_u_list(accessories)
+        fill_u_list(dc_assets, lambda obj: obj[1])
+        return sum(u_list)
 
     def get_pdus(self):
         return DataCenterAsset.objects.select_related('model').filter(

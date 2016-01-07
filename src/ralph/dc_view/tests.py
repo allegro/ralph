@@ -73,7 +73,8 @@ class TestRestAssetInfoPerRack(TestCase):
         self.rack1_accessory = RackAccessoryFactory(
             rack=self.rack_1,
             orientation=Orientation.front,
-            accessory=self.accesory_1
+            accessory=self.accesory_1,
+            position=1
         )
 
     def tearDown(self):
