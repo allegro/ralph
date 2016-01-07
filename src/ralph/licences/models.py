@@ -19,7 +19,7 @@ from ralph.lib.polymorphic.models import PolymorphicQuerySet
 
 
 _SELECT_USED_LICENCES_QUERY = """
-    SELECT COALESCE(SUM(`{assignment_table}`.`{quantity_column}`), 0)
+    SELECT COALESCE(SUM({assignment_table}.{quantity_column}), 0)
     FROM {assignment_table}
     WHERE {assignment_table}.{licence_id_column} = {licence_table}.{id_column}
 """
