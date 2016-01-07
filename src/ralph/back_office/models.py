@@ -274,7 +274,7 @@ class BackOfficeAsset(Regionalizable, Asset):
     @transition_action(
         form_fields={
             'loan_end_date': {
-                'field': forms.CharField(
+                'field': forms.DateField(
                     label=_('Loan end date'),
                     widget=forms.TextInput(attrs={'class': 'datepicker'})
                 )
