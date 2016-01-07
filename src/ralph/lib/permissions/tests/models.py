@@ -37,6 +37,14 @@ class Article(PermByFieldMixin, PermissionsForObjectMixin, models.Model):
     def __str__(self):
         return self.title
 
+    def _sample_property(self):
+        return '123'
+    _sample_property._permission_field = 'content'
+
+    @property
+    def sample_property(self):
+        return self._sample_property
+
 
 class LongArticle(Article):
     remarks = models.CharField(max_length=100)
