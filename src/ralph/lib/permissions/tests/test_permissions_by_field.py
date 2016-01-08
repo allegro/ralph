@@ -4,8 +4,6 @@ from django.test import RequestFactory, TestCase
 
 from ralph.assets.models.assets import AssetModel
 from ralph.assets.models.choices import ObjectModelType
-from ralph.data_center.models.physical import DataCenterAsset
-from ralph.lib.permissions.admin import PermissionAdminMixin
 from ralph.lib.permissions.models import get_perm_key
 
 
@@ -116,34 +114,4 @@ class PermissionsByFieldTestCase(TestCase):
         self.assertNotIn(
             'manufacturer',
             fields_list
-        )
-
-    def test_get_list_display(self):
-        """Test get list display from PermissionAdminMixin."""
-        request = self.request_factory.get('/')
-        request.user = self.user
-        permission_admin = PermissionAdminMixin()
-        permission_admin.list_display = [
-            'status', 'barcode', 'purchase_order', 'model',
-            'sn', 'hostname', 'invoice_date', 'invoice_no',
-        ]
-        # TODO Change to test models separated from ralph
-        permission_admin.model = DataCenterAsset()
-
-        self.assertListEqual(
-            ['barcode', 'sn'],
-            permission_admin.get_list_display(request),
-        )
-
-    def test_get_empty_list_display(self):
-        request = self.request_factory.get('/')
-        request.user = self.user
-        permission_admin = PermissionAdminMixin()
-
-        # TODO Change to test models separated from ralph
-        permission_admin.model = DataCenterAsset()
-        permission_admin.list_display = []
-        self.assertListEqual(
-            ['__str__'],
-            permission_admin.get_list_display(request),
         )

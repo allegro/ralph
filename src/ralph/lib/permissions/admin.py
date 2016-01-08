@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
+import logging
 from copy import deepcopy
 
 from django import forms
-from django.core.exceptions import ValidationError
+from django.core.exceptions import FieldDoesNotExist, ValidationError
 from django.db.models.query import QuerySet
 
 from ralph.lib.mixins.forms import RequestFormMixin
 from ralph.lib.permissions.models import PermissionsForObjectMixin
+
+logger = logging.getLogger(__name__)
 
 
 class PermissionPerFieldAdminMixin(object):
@@ -57,14 +60,47 @@ class PermissionPerFieldAdminMixin(object):
 
     def get_list_display(self, request):
         """Return fields with respect to user permissions."""
-        list_display = [
-            field for field in self.list_display
-            if self.model.has_access_to_field(
-                field, request.user, action='view'
-            )
-        ]
+        list_display = super().get_list_display(request)
 
-        return list_display or ['__str__']
+        def has_access_to_field(field_name):
+            """
+            Check if user has access to field
+
+            If field is regular model's field, permission to it is checked.
+            Otherwise, field is fetched from admin or model (it could be
+            property, method etc) and it's '_permission_field' attribute is
+            checked - it should point to regular field which permissions will
+            be checked. If this attribute is not defined, user has access to
+            this field.
+            """
+            try:
+                self.model._meta.get_field_by_name(field_name)
+            except FieldDoesNotExist:
+                perm_field = getattr(
+                    (
+                        getattr(self, field_name, None) or
+                        getattr(self.model, field_name, None)
+                    ),
+                    '_permission_field',
+                    None
+                )
+                if perm_field:
+                    logger.debug(
+                        'Checking permission for field {} instead of {}'.format(
+                            perm_field, field_name
+                        )
+                    )
+                    field_name = perm_field
+                else:
+                    return True
+            return self.model.has_access_to_field(
+                field_name, request.user, action='view'
+            )
+
+        list_display = [
+            field for field in list_display if has_access_to_field(field)
+        ]
+        return list_display
 
 
 class PermissionsPerObjectFormMixin(RequestFormMixin):

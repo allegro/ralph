@@ -221,12 +221,14 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
             def get_sum(qs):
                 return qs.aggregate(sum=Sum('quantity'))['sum'] or 0
             return sum(map(get_sum, [base_objects_qs, users_qs]))
+    used._permission_field = 'number_bought'
 
     @cached_property
     def free(self):
         if not self.pk:
             return 0
         return self.number_bought - self.used
+    free._permission_field = 'number_bought'
 
     @classmethod
     def get_autocomplete_queryset(cls):

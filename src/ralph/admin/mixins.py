@@ -253,20 +253,6 @@ class RalphAdminMixin(RalphAutocompleteMixin):
             request, object_id, version_id, extra_context
         )
 
-    def get_list_display(self, request):
-        """
-        Apply permissions to list columns.
-        """
-        list_display = super().get_list_display(request)
-        if isinstance(self.model, PermByFieldMixin):
-            list_display = [
-                field for field in list_display
-                if self.model.has_access_to_field(
-                    field, request.user, action='view'
-                )
-            ]
-        return list_display
-
     def get_queryset(self, *args, **kwargs):
         if self._queryset_manager:
             return getattr(self.model, self._queryset_manager).all()
