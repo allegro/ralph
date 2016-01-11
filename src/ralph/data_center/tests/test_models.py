@@ -301,6 +301,18 @@ class RackTest(RalphTestCase):
         DataCenterAssetFactory(**asset_kwargs)
         self.assertEqual(rack.get_free_u(), expected)
 
+    def test_get_free_u_for_none_position(self):
+        rack = RackFactory(max_u_height=47)
+        asset_kwargs = {
+            'rack': rack,
+            'model__height_of_device': 47,
+            'position': None,
+            'slot_no': None,
+            'orientation': Orientation.front.id,
+        }
+        DataCenterAssetFactory(**asset_kwargs)
+        self.assertEqual(rack.get_free_u(), 47)
+
     def test_get_free_u_should_respect_orientation(self):
         rack = RackFactory(max_u_height=48)
         asset_common_kwargs = {

@@ -214,6 +214,13 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
 
         def fill_u_list(objects, height_of_device=lambda obj: 1):
             for obj in objects:
+                # if position is None when objects simply does not have
+                # (assigned) position and position 0 is for some
+                # accessories (pdu) with left-right orientation and
+                # should not be included in free/filled space.
+                if obj[0] == 0 or obj[0] is None:
+                    continue
+
                 start = obj[0] - 1
                 end = min(
                     self.max_u_height, obj[0] + int(height_of_device(obj)) - 1
