@@ -214,6 +214,8 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
 
         def fill_u_list(objects, height_of_device=lambda obj: 1):
             for obj in objects:
+                if not obj[0]:
+                    continue
                 start = obj[0] - 1
                 end = min(
                     self.max_u_height, obj[0] + int(height_of_device(obj)) - 1
