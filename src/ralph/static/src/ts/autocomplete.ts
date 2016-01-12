@@ -59,13 +59,14 @@
             this.$queryInput.on('keydown', (e: KeyboardEvent) => this.keyDown(e));
 
             // TODO: scopes
+            var outer_this = this;
             if(this.config.watch) {
                 Object.defineProperty(document.querySelector(this.config.targetSelector), 'value', {
                     get: function() {
                         this.getAttribute('value');
                     },
                     set: function(val) {
-                        this.changeTargetAfterPopup(val);
+                        outer_this.changeTargetAfterPopup(val);
                         this.setAttribute('value', val)
                     },
                     configurable: true
@@ -187,7 +188,8 @@
                 (event) => $(this).addClass('selected'),
                 (event) => $(this).removeClass('selected')
             );
-            htmlItem.on('click', (event: Event) => this.itemClick(event));
+            htmlItem.on('click', (event: Event) => {this.itemClick(event) });
+            console.log(item)
             return htmlItem;
         }
 
@@ -215,7 +217,7 @@
             }
 
             this.notFromPopup = true;
-            var old_val = this.$target.val()
+            var old_val = this.$target.val() || '[]'
             old_val = JSON.parse(old_val)
             old_val.push(item.pk)
             this.$target.val(JSON.stringify(old_val)).change()
@@ -273,8 +275,7 @@
                 }
                 if (data.results.length != 0) {
                     // TODO: fixme
-                    $.each(data.results, (element) => {
-                        debugger;
+                    $.each(data.results, (idx, element) => {
                         this.addItemToList(element);
                     });
 
