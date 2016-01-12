@@ -9,21 +9,42 @@ ENV LC_ALL en_US.UTF-8
 
 # set paths
 ENV RALPH_DIR=/opt/ralph
-ENV SCRIPTS_PATH=/root
+ENV RALPH_EXEC=ralph
+ENV RALPH_LOGGING_FILE_PATH=/root/logs/runtime.log
 ENV RALPH_STATIC=/root/static
 ENV RALPH_DOCS=$RALPH_DIR/docs
-
-ENV PIP_WHEEL_DIR=/wheels
-ENV PIP_FIND_LINKS=/wheels
-
-RUN apt-get update && apt-get install -y --no-install-recommends libmysqlclient-dev
-RUN apt-get install -y --no-install-recommends wget && wget --no-check-certificate https://bootstrap.pypa.io/get-pip.py && python3 get-pip.py && rm get-pip.py && apt-get -y purge wget && apt-get -y autoremove
+ENV SCRIPTS_PATH=/root
 
 ADD docker/* $SCRIPTS_PATH/
-ADD wheels /wheels
 
+# basic provisioning
+RUN $SCRIPTS_PATH/provision.sh
+
+# npm provisioning
+ADD package.json $RALPH_DIR/package.json
+RUN $SCRIPTS_PATH/provision_js.sh
+
+# cleanup
+RUN apt-get clean
+
+# install basic requirements
 WORKDIR $RALPH_DIR
-RUN pip3 install --no-index -f $PIP_WHEEL_DIR/wheels $(ls $PIP_WHEEL_DIR/wheels/*.whl)
+ADD requirements $RALPH_DIR/requirements
+ADD Makefile $RALPH_DIR/Makefile
+# don't install ralph now - only requirements
+RUN sed -i '/\-e ./d' $RALPH_DIR/requirements/test.txt
+# temporary - change to `make install-prod` finally
+RUN make install-dev
+
+# install JS dependencies
+ADD src/ralph/static $RALPH_DIR/src/ralph/static
+ADD gulpfile.js bower.json package.json $RALPH_DIR/
+RUN $SCRIPTS_PATH/init_js.sh
+
+# install ralph
+ADD . $RALPH_DIR
+RUN pip3 install -e .
+RUN make docs
 
 VOLUME $RALPH_DOCS
 VOLUME $RALPH_STATIC
