@@ -78,6 +78,7 @@ class BackOfficeAssetAdmin(
 ):
 
     """Back Office Asset admin class."""
+    add_form_template = 'backofficeasset/add_form.html'
     form = BackOfficeAssetAdminForm
     actions = ['bulk_edit_action']
     show_transition_history = True

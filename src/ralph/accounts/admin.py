@@ -6,6 +6,7 @@ from django.contrib.auth.admin import GroupAdmin, UserAdmin
 from django.contrib.auth.models import Group
 from django.core.urlresolvers import reverse
 from django.db.models import Q
+from django.forms.models import model_to_dict
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
@@ -17,7 +18,7 @@ from ralph.back_office.models import BackOfficeAsset
 from ralph.lib.permissions.admin import PermissionAdminMixin
 from ralph.lib.table import Table
 from ralph.lib.transitions.models import TransitionsHistory
-from ralph.licences.models import BaseObjectLicence, Licence
+from ralph.licences.models import Licence
 
 # use string for whole app (app_label) or tuple (app_label, model_name) to
 # exclude particular model
@@ -79,16 +80,18 @@ class AssetList(Table):
         return '<a href="{}">{}</a>'.format(
             reverse(
                 'admin:back_office_backofficeasset_change',
-                args=(item['id'],)
+                args=(item.id,)
             ),
             _('go to asset')
         )
     url.title = _('Link')
 
+    def buyout_date(self, item):
+        return item.buyout_date
+    buyout_date.title = _('Buyout date')
+
     def user_licence(self, item):
-        licences = BaseObjectLicence.objects.filter(
-            base_object=item['id']
-        ).select_related('licence')
+        licences = item.licences.select_related('licence')
         if licences:
             result = [
                 '<a href="{}">{}</a><br />'.format(
@@ -104,6 +107,7 @@ class AssetList(Table):
             return []
 
     def report_failure(self, item):
+        item = model_to_dict(item)
         url = settings.MY_EQUIPMENT_REPORT_FAILURE_URL
         if url:
             if self.request and 'username' not in item:
@@ -128,7 +132,7 @@ class AssignedLicenceList(Table):
         return '<a href="{}">{}</a>'.format(
             reverse(
                 'admin:licences_licence_change',
-                args=(item['id'],)
+                args=(item.id,)
             ),
             _('go to licence')
         )
@@ -160,7 +164,8 @@ class UserInfoMixin(object):
             self.get_asset_queryset(),
             [
                 'id', 'model__category__name', 'model__manufacturer__name',
-                'model__name', 'sn', 'barcode', 'remarks', 'status', 'url'
+                'model__name', 'sn', 'barcode', 'remarks', 'status',
+                'buyout_date', 'url'
             ],
             ['user_licence']
         )

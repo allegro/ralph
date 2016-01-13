@@ -10,7 +10,8 @@ from django.forms.utils import flatatt
 
 from ralph.admin.helpers import (
     get_field_by_relation_path,
-    get_field_title_by_relation_path
+    get_field_title_by_relation_path,
+    getattr_dunder
 )
 
 
@@ -37,9 +38,10 @@ class Table(object):
         """
         Initialize table class
 
-        :param queryset: django queryset
-        :param list_display: field list to display
-        :param additional_row_method: list of additional method for each row
+        Args:
+            queryset: django queryset
+            list_display: field list to display
+            additional_row_method: list of additional method for each row
         """
         self.queryset = queryset
         self.list_display_raw = list_display
@@ -82,6 +84,7 @@ class Table(object):
         if hasattr(self, field):
             value = getattr(self, field)(item)
         else:
+            value = getattr_dunder(item, field)
             try:
                 choice_class = get_field_by_relation_path(
                     self.queryset.model, field
@@ -92,9 +95,7 @@ class Table(object):
                 use_choices and choice_class and
                 isinstance(choice_class, Choices)
             ):
-                value = choice_class.name_from_id(item.get(field))
-            else:
-                value = item.get(field, None)
+                value = choice_class.name_from_id(value)
         return value
 
     def get_table_content(self):
@@ -110,7 +111,8 @@ class Table(object):
             list_display.append('id')
         if self.additional_row_method:
             colspan = len(self.list_display)
-        for item in self.queryset.values(*list_display):
+
+        for item in self.queryset:
             result.append([
                 {
                     'value': self.get_field_value(item, field),

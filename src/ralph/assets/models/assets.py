@@ -186,6 +186,17 @@ class Category(MPTTModel, NamedMixin.NonUnique, TimeStampMixin, models.Model):
         db_index=True
     )
     imei_required = models.BooleanField(default=False)
+    default_depreciation_rate = models.DecimalField(
+        blank=True,
+        decimal_places=2,
+        default=settings.DEFAULT_DEPRECIATION_RATE,
+        help_text=_(
+            'This value is in percentage.'
+            ' For example value: "100" means it depreciates during a year.'
+            ' Value: "25" means it depreciates during 4 years, and so on... .'
+        ),
+        max_digits=5,
+    )
 
     class Meta:
         verbose_name = _('category')
@@ -196,6 +207,16 @@ class Category(MPTTModel, NamedMixin.NonUnique, TimeStampMixin, models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_default_depreciation_rate(self, category=None):
+        if category is None:
+            category = self
+
+        if category.default_depreciation_rate:
+            return category.default_depreciation_rate
+        elif category.parent:
+            return self.get_default_depreciation_rate(category.parent)
+        return 0
 
 
 class AssetLastHostname(models.Model):
@@ -341,7 +362,26 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
     def __str__(self):
         return self.hostname
 
-    def get_deprecation_months(self):
+    @property
+    def buyout_date(self):
+        """
+        Get buyout date.
+
+        Calculate buyout date invoice_date + depreciation_rate months
+
+        Returns:
+            Deprecation date
+        """
+        if self.depreciation_end_date:
+            return self.depreciation_end_date
+        elif self.invoice_date:
+            return self.invoice_date + relativedelta(
+                months=self.get_depreciation_months() + 1
+            )
+        else:
+            return None
+
+    def get_depreciation_months(self):
         return int(
             (1 / (self.depreciation_rate / 100) * 12)
             if self.depreciation_rate else 0
@@ -355,14 +395,14 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
             deprecation_date = self.deprecation_end_date
         else:
             deprecation_date = self.invoice_date + relativedelta(
-                months=self.get_deprecation_months(),
+                months=self.get_depreciation_months(),
             )
         return deprecation_date < date
 
     def get_depreciated_months(self):
         # DEPRECATED
         # BACKWARD_COMPATIBILITY
-        return self.get_deprecation_months()
+        return self.get_depreciation_months()
 
     def is_deprecated(self, date=None):
         # DEPRECATED
