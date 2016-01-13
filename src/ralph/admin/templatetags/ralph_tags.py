@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib.admin.templatetags.admin_modify import submit_row
 from django.contrib.admin.views.main import SEARCH_VAR
 from django.contrib.contenttypes.models import ContentType
+from django.core.urlresolvers import reverse
 from django.template import Library
 
 from ralph.admin.helpers import (
@@ -96,6 +97,28 @@ def get_verbose_name(obj, name):
     return get_field_by_relation_path(obj, name).verbose_name
 
 
+@register.simple_tag
+def history_attachment_url(history):
+    """
+    Return url for history attachment
+
+    Args:
+        history: TransitionsHistory object
+    Returns:
+        url path
+    Example:
+        <a href="{% history_attachment_url history %}">
+    """
+    attachment_url_name = get_model_view_url_name(
+        history.content_type.model_class(),
+        'attachment',
+    )
+    return reverse(
+        attachment_url_name,
+        args=[history.attachment.id, history.attachment.original_filename]
+    )
+
+
 @register.inclusion_tag('admin/templatetags/transition_history.html')
 def transition_history(obj):
     """
@@ -111,14 +134,9 @@ def transition_history(obj):
     history = TransitionsHistory.objects.filter(
         content_type=content_type, object_id=obj.pk
     ).select_related('logged_user').order_by('-created')
-    attachment_url_name = get_model_view_url_name(
-        obj._meta.model,
-        'attachment',
-    )
 
     return {
         'transitions_history': history,
-        'attachment_url_name': attachment_url_name,
         'transition_history_in_fieldset': True
     }
 

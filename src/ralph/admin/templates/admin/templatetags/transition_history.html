@@ -1,10 +1,10 @@
-{% load i18n %}
+{% load i18n ralph_tags %}
 <div class="row">
   <div class="large-12 columns">
     {% if transition_history_in_fieldset %}
       <fieldset>
         <legend>{% trans "Transition history" %}</legend>
-      {% endif %}
+    {% endif %}
     {% if transitions_history %}
     <table class="large-12 columns">
       <thead>
@@ -43,7 +43,7 @@
             </td>
             <td>
                 {% if history.attachment %}
-                  <a href="{% url attachment_url_name history.attachment.id history.attachment.original_filename %}">
+                  <a href="{% history_attachment_url history %}">
                     {{ history.attachment.original_filename }}
                   </a>
                 {% else %}

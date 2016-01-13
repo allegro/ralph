@@ -1,7 +1,6 @@
-__version__ = '3.0.0'
-
-
 from django.db.models.options import Options
+
+__version__ = '3.0.0'
 
 
 def monkey_options_init(self, meta, app_label):
