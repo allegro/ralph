@@ -365,6 +365,12 @@ class DataCenterAsset(Asset):
             )
             raise ValidationError({'position': [msg]})
 
+    def _validate_slot_no(self):
+        if self.model and self.model.has_parent and not self.slot_no:
+            raise ValidationError({
+                'slot_no': 'Slot number is required when asset is blade'
+            })
+
     def clean(self):
         # TODO: this should be default logic of clean method;
         # we could register somehow validators (or take each func with
@@ -373,7 +379,8 @@ class DataCenterAsset(Asset):
         for validator in [
             super().clean,
             self._validate_orientation,
-            self._validate_position_in_rack
+            self._validate_position_in_rack,
+            self._validate_slot_no
         ]:
             try:
                 validator()

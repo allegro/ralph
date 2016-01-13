@@ -273,6 +273,18 @@ class DataCenterAssetTest(RalphTestCase):
         queryset = DataCenterAsset.get_autocomplete_queryset()
         self.assertEquals(1, queryset.count())
 
+    def test_should_raise_validation_error_when_empty_slot_no_on_blade(self):
+        dc_asset = DataCenterAssetFactory(model__has_parent=True)
+        dc_asset.slot_no = ''
+        with self.assertRaises(ValidationError):
+            dc_asset._validate_slot_no()
+
+    def test_should_pass_when_slot_no_filled_on_blade(self):
+        dc_asset = DataCenterAssetFactory(model__has_parent=True)
+        dc_asset.slot_no = '1A'
+        dc_asset._validate_slot_no()
+
+
 @ddt
 class RackTest(RalphTestCase):
     def test_get_free_u_in_empty_rack_should_return_max_u_height(self):
