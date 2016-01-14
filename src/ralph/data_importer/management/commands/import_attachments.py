@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import csv
+import json
 import logging
 import os
 import tempfile
@@ -90,6 +91,7 @@ class Command(BaseCommand):
                 history.modified = line.get('modified')
                 history.logged_user = logged_user
                 history.transition_name = line.get('transition')
+                history.kwargs = json.loads(line.get('kwargs', {}))
                 actions = [
                     i.replace('_', ' ').capitalize()
                     for i in line.get('actions').split(',')

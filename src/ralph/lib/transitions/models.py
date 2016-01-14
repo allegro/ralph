@@ -459,8 +459,11 @@ def update_transitions_affter_migrate(**kwargs):
     TRANSITION_ATTR_TAG in any field in model.
     """
     sender_models = list(kwargs['sender'].get_models())
-    getter = lambda x: operator.itemgetter(0)(x) in sender_models
-    for model, field_names in filter(getter, _transitions_fields.items()):
+
+    for model, field_names in filter(
+        lambda x: operator.itemgetter(0)(x) in sender_models,
+        _transitions_fields.items()
+    ):
         content_type = ContentType.objects.get_for_model(model)
         for field_name in field_names:
             transition_model, _ = TransitionModel.objects.get_or_create(
