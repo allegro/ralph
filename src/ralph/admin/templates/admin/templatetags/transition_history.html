@@ -43,7 +43,7 @@
             </td>
             <td>
                 {% if history.attachment %}
-                  <a href="{% history_attachment_url history %}">
+                  <a href="{% url 'serve_attachment' history.attachment.id history.attachment.original_filename %}">
                     {{ history.attachment.original_filename }}
                   </a>
                 {% else %}

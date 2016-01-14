@@ -58,14 +58,29 @@ class TransitionForm(forms.ModelForm):
         cleaned_data = super().clean()
         actions = Action.objects.in_bulk(cleaned_data['actions'])
         attachment_counter = 0
-        for k, v in actions.items():
+        one_action = False
+        one_action_name = ''
+        actions_items = actions.items()
+        for k, v in actions_items:
             action = getattr(self.model, v.name)
             if getattr(action, 'return_attachment', False):
                 attachment_counter += 1
+            if getattr(action, 'only_one_action', False):
+                one_action = True
+                one_action_name = getattr(action, 'verbose_name', '')
+
         if attachment_counter > 1:
             msg = _(
                 'Please select at most one action which return attachment.'
             )
+            self.add_error('actions', msg)
+        if one_action and len(actions_items) > 1:
+            msg = _(
+                (
+                    'You have chosen action: %(name)s can only be selected'
+                    ' for transition'
+                )
+            ) % {'name': one_action_name}
             self.add_error('actions', msg)
         return cleaned_data
 

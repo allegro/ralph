@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.contrib.admin.utils import get_fields_from_path
+from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db.models.constants import LOOKUP_SEP
 
@@ -61,3 +62,21 @@ def getattr_dunder(obj, attr):
     if rest:
         return getattr_dunder(value, rest)
     return value
+
+
+def get_content_type_for_model(obj):
+    """
+    Return content type for object model.
+
+    If the model inherits from another model then returns the first model.
+
+    Args:
+        obj: Django object model
+    Returns:
+        Content Type for object model
+    """
+    parent_models = obj._meta.get_parent_list()
+    if parent_models:
+        obj = parent_models[-1]
+
+    return ContentType.objects.get_for_model(obj)

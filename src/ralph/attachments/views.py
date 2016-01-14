@@ -1,10 +1,15 @@
+import time
+
 from django.forms.models import modelformset_factory
-from django.http import HttpResponseRedirect
+from django.http import FileResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404
+from django.utils.http import http_date
+from django.views.generic.base import View
 
 from ralph.admin.views.extra import RalphDetailView
 from ralph.attachments.forms import AttachmentForm
 from ralph.attachments.models import Attachment, AttachmentItem
-from ralph.helpers import add_request_to_form, get_model_view_url_name
+from ralph.helpers import add_request_to_form
 
 
 class AttachmentsView(RalphDetailView):
@@ -38,20 +43,6 @@ class AttachmentsView(RalphDetailView):
         formset = self.get_formset(request)
         return self.render_to_response(self.get_context_data(formset=formset))
 
-    def get_context_data(self, *args, **kwargs):
-        """
-        Extends context by:
-        * url name for attachments for current model
-        """
-        context_data = super().get_context_data(*args, **kwargs)
-        context_data.update({
-            'attachment_url_name': get_model_view_url_name(
-                self.object._meta.model,
-                'attachment',
-            ),
-        })
-        return context_data
-
     def post(self, request, *args, **kwargs):
         """
         Valid and return response from appropriate method depending on
@@ -84,3 +75,24 @@ class AttachmentsView(RalphDetailView):
         return self.render_to_response(
             self.get_context_data(formset=formset)
         )
+
+
+class ServeAttachment(View):
+
+    def get(self, request, id, filename, *args, **kwargs):
+        """
+        All attachments are serving by this view because we need full
+        control (e.g., permissions, rename).
+        """
+        # TODO: respect permissions
+        obj = get_object_or_404(
+            Attachment,
+            id=id,
+            original_filename=filename
+        )
+        fd = open(obj.file.path, 'rb')
+        response = FileResponse(fd, content_type=obj.mime_type)
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(obj.original_filename)  # noqa
+        http_modified = http_date(time.mktime(obj.modified.timetuple()))
+        response['Last-Modified'] = http_modified
+        return response

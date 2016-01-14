@@ -10,7 +10,7 @@ from dj.choices import Choices, Country
 from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db import models
+from django.db import models, transaction
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.forms import ValidationError
@@ -19,7 +19,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
 from ralph.assets.country_utils import iso2_to_iso3
-from ralph.assets.models.assets import Asset
+from ralph.assets.models.assets import Asset, AssetModel, ServiceEnvironment
+from ralph.assets.utils import move_parents_models
 from ralph.attachments.helpers import add_attachment_from_disk
 from ralph.lib.external_services import ExternalService, obj_to_dict
 from ralph.lib.mixins.fields import NullableCharField
@@ -514,6 +515,51 @@ class BackOfficeAsset(Regionalizable, Asset):
             language=kwargs['report_language']
         )
 
+    @classmethod
+    @transition_action(
+        verbose_name=_('Convert to DataCenter Asset'),
+        disable_save_object=True,
+        only_one_action=True,
+        form_fields={
+            'rack': {
+                'field': forms.CharField(label=_('Rack')),
+                'autocomplete_field': 'rack',
+                'autocomplete_model': 'data_center.DataCenterAsset'
+            },
+            'position': {
+                'field': forms.IntegerField(label=_('Position')),
+            },
+            'model': {
+                'field': forms.CharField(label=_('Model')),
+                'autocomplete_field': 'model',
+                'autocomplete_model': 'data_center.DataCenterAsset'
+            },
+            'service_env': {
+                'field': forms.CharField(label=_('Service env')),
+                'autocomplete_field': 'service_env',
+                'autocomplete_model': 'data_center.DataCenterAsset'
+            }
+        }
+    )
+    def convert_to_data_center_asset(cls, instances, request, **kwargs):
+        from ralph.data_center.models.physical import DataCenterAsset, Rack  # noqa
+        with transaction.atomic():
+            for i, instance in enumerate(instances):
+                data_center_asset = DataCenterAsset()
+                move_parents_models(instance, data_center_asset)
+                data_center_asset.rack = Rack.objects.get(pk=kwargs['rack'])
+                data_center_asset.position = kwargs['position']
+                data_center_asset.service_env = ServiceEnvironment.objects.get(
+                    pk=kwargs['service_env']
+                )
+                data_center_asset.model = AssetModel.objects.get(
+                    pk=kwargs['model']
+                )
+                data_center_asset.save()
+                # Save new asset to list, required to redirect url.
+                # RunTransitionView.get_success_url()
+                instances[i] = data_center_asset
+
 
 @receiver(pre_save, sender=BackOfficeAsset)
 def hostname_assigning(sender, instance, raw, using, **kwargs):
@@ -523,10 +569,20 @@ def hostname_assigning(sender, instance, raw, using, **kwargs):
     if getattr(settings, 'BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME', None):
         if instance.status == BackOfficeAssetStatus.in_progress:
             if instance.pk:
-                bo_asset = BackOfficeAsset.objects.get(pk=instance.pk)
+                try:
+                    bo_asset = BackOfficeAsset.objects.get(pk=instance.pk)
+                except BackOfficeAsset.DoesNotExist:
+                    # Can not assign a new hostname, because there are
+                    # not yet saved the object.
+                    logger.info(
+                        'Back office asset does not exists for pk: {}'.format(
+                            instance.pk
+                        )
+                    )
+                    return
                 if bo_asset.status == BackOfficeAssetStatus.in_progress:
                     return
-            logging.info((
+            logger.info((
                 'Status of {} changed to in_progress. Trying to assign new '
                 'hostname'
             ).format(instance))

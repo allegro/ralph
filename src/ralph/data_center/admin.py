@@ -125,6 +125,7 @@ class DataCenterAssetAdmin(
         DataCenterAssetSupport,
         NetworkView,
     ]
+    show_transition_history = True
     resource_class = resources.DataCenterAssetResource
     list_display = [
         'status', 'barcode', 'model', 'sn', 'hostname', 'invoice_date',

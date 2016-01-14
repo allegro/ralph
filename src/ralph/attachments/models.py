@@ -9,6 +9,7 @@ from django.core.files.base import ContentFile
 from django.db import models, transaction
 from unidecode import unidecode
 
+from ralph.admin.helpers import get_content_type_for_model
 from ralph.attachments.helpers import get_file_path
 from ralph.lib.mixins.models import TimeStampMixin
 
@@ -23,7 +24,7 @@ class AttachmentManager(models.Manager):
         >>> Attachment.objects.get_attachments_for_object(obj)
         [<Attachment: document.pdf (application/pdf) uploaded by root>]
         """
-        content_type = ContentType.objects.get_for_model(obj)
+        content_type = get_content_type_for_model(obj)
         return self.get_queryset().filter(
             items__content_type=content_type,
             items__object_id=obj.id,
@@ -50,7 +51,7 @@ class AttachmentItemManager(models.Manager):
         >>> AttachmentItem.objects.get_items_for_object(obj)
         [<AttachmentItem: image/png data center asset: 2>]
         """
-        content_type = ContentType.objects.get_for_model(obj)
+        content_type = get_content_type_for_model(obj)
         return self.get_queryset().select_related('attachment').filter(
             object_id=obj.pk,
             content_type=content_type,
@@ -86,7 +87,7 @@ class AttachmentItemManager(models.Manager):
         Refresh relation between object (e.g., asset, licence) and
         attachment. It is works fine with a formset.
         """
-        content_type = ContentType.objects.get_for_model(obj)
+        content_type = get_content_type_for_model(obj)
         if new_objects:
             self.attach(obj.pk, content_type, new_objects)
         if deleted_objects:

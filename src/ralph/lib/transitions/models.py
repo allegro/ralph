@@ -3,7 +3,7 @@
 import inspect
 import logging
 import operator
-from collections import defaultdict, Iterable
+from collections import defaultdict
 
 import reversion
 from django import forms
@@ -25,7 +25,10 @@ from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields.json import JSONField
 
-from ralph.admin.helpers import get_field_by_relation_path
+from ralph.admin.helpers import (
+    get_content_type_for_model,
+    get_field_by_relation_path
+)
 from ralph.attachments.models import Attachment
 from ralph.lib.mixins.models import TimeStampMixin
 from ralph.lib.transitions.conf import TRANSITION_ATTR_TAG
@@ -68,7 +71,7 @@ def _generate_transition_history(
 
     return TransitionsHistory(
         transition_name=transition.name,
-        content_type=ContentType.objects.get_for_model(instance._meta.model),
+        content_type=get_content_type_for_model(instance._meta.model),
         object_id=instance.pk,
         logged_user=user,
         attachment=attachment,
@@ -238,10 +241,7 @@ def run_field_transition(
     """
     Execute all actions assigned to the selected transition.
     """
-    if not isinstance(instances, Iterable):
-        instances = [instances]
     first_instance = instances[0]
-
     _check_type_instances(instances)
     transition = _check_and_get_transition(
         first_instance, transition_obj_or_name, field
@@ -252,6 +252,7 @@ def run_field_transition(
     action_names = []
     runned_funcs = []
     func_history_kwargs = defaultdict(dict)
+    disable_save_object = False
     for action in _order_actions_by_requirements(
         transition.actions.all(), first_instance
     ):
@@ -259,6 +260,8 @@ def run_field_transition(
             action, transition
         ))
         func = getattr(first_instance, action.name)
+        if func.disable_save_object:
+            disable_save_object = True
         defaults = data.copy()
         defaults.update(kwargs)
         defaults.update({'history_kwargs': func_history_kwargs})
@@ -267,7 +270,12 @@ def run_field_transition(
             for key, value in data.items()
             if key.startswith(action.name)
         })
-        result = func(instances=instances, **defaults)
+        try:
+            result = func(instances=instances, **defaults)
+        except Exception as e:
+            logger.exception(e)
+            return False, None
+
         runned_funcs.append(func)
         action_names.append(str(getattr(
             func,
@@ -291,10 +299,11 @@ def run_field_transition(
             action_names=action_names,
             field=field
         ))
-        with transaction.atomic(), reversion.create_revision():
-            instance.save()
-            reversion.set_comment('Transition {}'.format(transition))
-            reversion.set_user(kwargs['request'].user)
+        if not disable_save_object:
+            with transaction.atomic(), reversion.create_revision():
+                instance.save()
+                reversion.set_comment('Transition {}'.format(transition))
+                reversion.set_user(kwargs['request'].user)
     if history_list:
         TransitionsHistory.objects.bulk_create(history_list)
     return True, attachment
@@ -336,10 +345,6 @@ class TransitionWorkflowBase(ModelBase):
         if fields:
             _transitions_fields[new_class] = fields
             for field in fields:
-                new_class.add_to_class(
-                    'run_{}_transition'.format(field),
-                    curry(run_field_transition, field=field)
-                )
                 new_class.add_to_class(
                     'get_available_transitions_for_{}'.format(field),
                     curry(get_available_transitions_for_field, field=field)
