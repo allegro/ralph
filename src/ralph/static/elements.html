@@ -4,17 +4,79 @@ hello
 
 <link rel="import" href="bower_components/polymer/polymer.html">
 
+<!-- polymer components -->
+<link rel="import" href="bower_components/polymer/polymer.html">
+
+<link rel="import" href="bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="bower_components/iron-form-element-behavior/iron-form-element-behavior.html">
+
+<link rel="import" href="bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="bower_components/paper-item/paper-item.html">
+
 
 <dom-module id='proto-element'>
-  proto-element
+<!--
+TODO::
+- add `multi` feature
+-->
+
+  <template>
+    <style>
+    </style>
+
+
+    <input id='text-getter' on-keypress='handleTyping' is="iron-input" bind-value="{{typed}}">
+    <iron-ajax
+        id='items-getter'
+        url="/data_center/datacenterasset/rack/autocomplete"
+        params=''
+        handle-as="json"
+        on-response="populateMenu"
+    ></iron-ajax>
+    <paper-menu id='picker' class="dropdown-content" selected='1'>
+      <template is="dom-repeat" items="[[menuItems]]">
+        <paper-item>[[item.__str__]]</paper-item>
+      </template>
+    </paper-menu>
+    <input hidden="true" is="iron-input" bind-value="{{picked}}" name='autocomplete'>
+
+
+  </template>
 </dom-module>
 <script>
   // register a new element called proto-element
   Polymer({
     is: "proto-element",
-    // add a callback to the element's prototype
+    properties: {
+      typed: String,
+      menuItems: {
+        type: Array,
+        //value: [1,2,3]
+        value: [{"__str__":"1"},{"__str__": "2"}]
+      }
+    },
+    //TODO:: use listeners
+    handleTyping: function(evt, obj) {
+      console.log('handleTyping');
+      // TODO:: fire only when 3 as element's property
+      // TODO:: find out why regular syntax doesn't work
+      this.$['items-getter'].params = {
+        //TODO:: handle real value
+        "q": "rack"
+      };
+      this.$['items-getter'].generateRequest();
+    },
+    populateMenu: function(evt, obj) {
+      console.log('populateMenu');
+      console.log(this.$['menuItems']);
+      this.set('menuItems', obj.xhr.response['results']);
+      console.log(this.$['menuItems']);
+
+    },
+    behaviors: [
+      Polymer.IronFormElementBehavior
+    ],
     ready: function() {
-      this.textContent = "I'm a proto-element. Check out my prototype!"
     }
   });
 </script>
