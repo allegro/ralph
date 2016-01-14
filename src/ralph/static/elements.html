@@ -33,12 +33,13 @@ TODO::
         handle-as="json"
         on-response="populateMenu"
     ></iron-ajax>
-    <paper-menu id='picker' class="dropdown-content" selected='1'>
+    <paper-menu hidden$="{{hideMenu}}" on-iron-select='elemSelected' id='picker'
+      class="dropdown-content" selected='1'>
       <template is="dom-repeat" items="[[menuItems]]">
         <paper-item>[[item.__str__]]</paper-item>
       </template>
     </paper-menu>
-    <input hidden="true" is="iron-input" bind-value="{{picked}}" name='autocomplete'>
+    <input type='text' id='selectionStorage' is="iron-input" bind-value="" name='autocomplete'>
 
 
   </template>
@@ -48,11 +49,19 @@ TODO::
   Polymer({
     is: "proto-element",
     properties: {
+      multi: {
+        type: Boolean,
+        value: false
+      },
+      hideMenu: {
+        type: Boolean,
+        value: true
+      },
       typed: String,
       menuItems: {
         type: Array,
         //value: [1,2,3]
-        value: [{"__str__":"1"},{"__str__": "2"}]
+        value: [{"__str__":"1", "id":1},{"__str__": "2", "id":2}]
       }
     },
     //TODO:: use listeners
@@ -66,12 +75,27 @@ TODO::
       };
       this.$['items-getter'].generateRequest();
     },
+    elemSelected: function(evt, obj) {
+      console.log('elemSelected');
+      var selectedItem = this.menuItems[evt.currentTarget.selected];
+      this.storeSelection(selectedItem);
+      this.hideMenu = true;
+    },
     populateMenu: function(evt, obj) {
       console.log('populateMenu');
       console.log(this.$['menuItems']);
       this.set('menuItems', obj.xhr.response['results']);
+      this.hideMenu = false;
       console.log(this.$['menuItems']);
 
+    },
+    storeSelection: function(elem) {
+      if (this.multi) {
+        //TODO:: handle multi values
+        throw Error("NotImplemented");
+      } else {
+        this.$['selectionStorage'].value = elem.pk;
+      }
     },
     behaviors: [
       Polymer.IronFormElementBehavior
