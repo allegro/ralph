@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import json
 import hashlib
 import os
 import tempfile
@@ -52,6 +53,7 @@ class TransitionsHistoryResource(resources.ModelResource):
     )
     created = fields.Field('created', column_name='created')
     modified = fields.Field('modified', column_name='modified')
+    kwargs = fields.Field('kwargs', column_name='kwargs')
 
     def dehydrate_id(self, history):
         return history.transitionshistory.pk
@@ -90,6 +92,16 @@ class TransitionsHistoryResource(resources.ModelResource):
 
     def dehydrate_asset(self, history):
         return history.asset_id
+
+    def dehydrate_kwargs(self, history):
+        kwargs = {}
+        for action in history.transitionshistory.transition.actions_names:
+            if action == 'assign_owner':
+                kwargs['owner'] = history.transitionshistory.affected_user.username  # noqa
+            if action == 'assign_user':
+                kwargs['user'] = history.transitionshistory.affected_user.username  # noqa
+
+        return json.dumps(kwargs)
 
     def dehydrate_actions(self, history):
         return ",".join(history.transitionshistory.transition.actions_names)
