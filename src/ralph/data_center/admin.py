@@ -132,6 +132,7 @@ class DataCenterAssetAdmin(
         'status', 'barcode', 'sn', 'hostname', 'invoice_no', 'invoice_date',
         'order_no', 'model__name', 'service_env', 'depreciation_end_date',
         'force_depreciation', 'remarks', 'budget_info', 'rack__name',
+        'rack__server_room', 'rack__server_room__data_center',
         'property_of', LiquidatedStatusFilter
     ]
     date_hierarchy = 'created'
