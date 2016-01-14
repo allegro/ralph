@@ -14,6 +14,50 @@ hello
 <link rel="import" href="bower_components/paper-item/paper-item.html">
 
 
+<dom-module id='badge-input'>
+  <template>
+    <style>
+      :host {
+        background-color: red;
+      }
+    </style>
+    <div>
+      <!--
+        - add pick
+        - remove pick
+        - clear pick
+      -->
+      <div id='styledPicks'>
+        <template is='dom-repeat' items="badgesData">
+          <div>[[item.title]]</div>
+          <a href='[[item.edit_url]]'><i class="fa fa-pencil"></i></a>
+          <i class="fa fa-pencil"></i>
+        </template>
+      </div>
+      <input id='text-getter' is="iron-input" bind-value="{{typed}}">
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: "badge-input",
+      properties: {
+        badgesData: {
+          type: Array,
+          value: []
+        }
+      },
+      addBadge: function(badgeObject) {
+      },
+      ready: function() {
+        debugger;
+      }
+    });
+  </script>
+</dom-module>
+
+
+
 <dom-module id='proto-element'>
 <!--
 TODO::
@@ -24,8 +68,11 @@ TODO::
     <style>
     </style>
 
+    <!--
+    badges element in future
+    -->
+    <badge-input on-keypress='handleTyping'> </badge-input>
 
-    <input id='text-getter' on-keypress='handleTyping' is="iron-input" bind-value="{{typed}}">
     <iron-ajax
         id='items-getter'
         url="/data_center/datacenterasset/rack/autocomplete"
@@ -40,6 +87,7 @@ TODO::
       </template>
     </paper-menu>
     <input type='text' id='selectionStorage' is="iron-input" bind-value="" name='autocomplete'>
+-->
 
 
   </template>
