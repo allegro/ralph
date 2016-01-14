@@ -3,10 +3,17 @@
 
 {% block extrahead %}{{ block.super }}
   <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+
+
+
+<link rel="import" href="/static/elements.html">
+
+
+
+
 {% endblock %}
 
 {% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-form{% endblock %}
-
 {% block content %}
   <div id="content-main">
     <div class="row header">
