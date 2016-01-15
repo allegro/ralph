@@ -107,7 +107,7 @@ Example:
     <!--
     badges element in future
     -->
-    <badge-input id='query-getter' on-keypress='handleTyping'> </badge-input>
+    <badge-input id='query-getter' on-keyup='handleTyping'> </badge-input>
 
     <iron-ajax
         id='by-query-ajax'
@@ -166,7 +166,6 @@ Example:
     //TODO:: use listeners
     handleTyping: function(evt, obj) {
       console.log('handleTyping', evt, obj);
-      // TODO:: fix: keypressed is late one chars because value is not yet updated
       if (evt.target.value.length < this.fireThreshold) return false;
       // TODO:: find out why regular syntax doesn't work
       this.$['by-query-ajax'].params = {
