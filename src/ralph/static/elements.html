@@ -76,12 +76,29 @@ hello
 
 
 
-<dom-module id='proto-element'>
 <!--
-TODO::
-- add `multi` feature
+Autocomplete field.
+This widget works in two mode
+
+Usage:
+------
+
+### single
+
+Example:
+
+    TODO:: add qualitative doc
+    TODO:: missing url param
+    <proto-element value="1" > </proto-element>
+
+### multi
+
+Example:
+    <proto-element value=""  multi> </proto-element>
 -->
 
+
+<dom-module id='proto-element'>
   <template>
     <style>
     </style>
@@ -89,7 +106,7 @@ TODO::
     <!--
     badges element in future
     -->
-    <badge-input id='query-getter' on-keypress='handleTyping'> </badge-input>
+    <badge-input id='query-getter' on-change='handleTyping'> </badge-input>
 
     <iron-ajax
         id='items-getter'
@@ -123,10 +140,8 @@ TODO::
         value: true
       },
       typed: String,
-      valueSeparator: {
-        type: String,
-        value: ','
-      },
+      fireTreshold: 2,
+      valueSeparator: ',',
       menuItems: {
         type: Array,
         value: []
@@ -135,11 +150,11 @@ TODO::
     //TODO:: use listeners
     handleTyping: function(evt, obj) {
       console.log('handleTyping', evt, obj);
-      // TODO:: fire only when 3 as element's property
+      // TODO:: fix: keypressed is late one chars because value is not yet updated
+      if (evt.target.value.length < this.fireThreshold) return false;
       // TODO:: find out why regular syntax doesn't work
       this.$['items-getter'].params = {
-        //TODO:: handle real value
-        "q": "rack"
+        "q": evt.target.value
       };
       this.$['items-getter'].generateRequest();
     },
