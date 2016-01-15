@@ -30,11 +30,10 @@ hello
           <div>[[item.__str__]]</div>
           <!--
           TODO:: widget look
-          TODO:: handle deleting
           TODO:: handle editing
           -->
           <a href='[[item.edit_url]]'><i class="fa fa-pencil"></i></a>
-          <i class="fa fa-times delete"></i>
+          <i on-tap="onBadgeRemove" class="fa fa-times delete"></i>
         </template>
       </div>
       <input id='text-getter' is="iron-input">
@@ -59,6 +58,14 @@ hello
         console.log('setBadges', badges);
         this.badgesData = badges;
         this.clearInput();
+      },
+      onBadgeRemove: function(evt, obj) {
+        console.log('onBadgeRemove', evt, obj);
+        this.badgesData = this.badgesData.splice(evt.model.item.index, 1)
+        this.fire('badge-remove', {
+            "index": evt.model.index,
+            "item": evt.model.item
+        });
       },
       clear: function() {
         console.log('clear');
@@ -87,8 +94,9 @@ Usage:
 
 Example:
 
+    TODO:: do not suggest picked items
     TODO:: add qualitative doc
-    TODO:: missing ajax params by-query & by-id
+    TODO:: urls should be passable to this widget, eg. urls
     <proto-element value="1" > </proto-element>
 
 ### multi
@@ -107,7 +115,7 @@ Example:
     <!--
     badges element in future
     -->
-    <badge-input id='query-getter' on-keyup='handleTyping'> </badge-input>
+    <badge-input id='query-getter' on-badge-remove="onBadgeRemove" on-keyup='handleTyping'> </badge-input>
 
     <iron-ajax
         id='by-query-ajax'
@@ -203,6 +211,12 @@ Example:
         this.$['query-getter'].setBadges([elem]);
         this.$['selectionStorage'].value = elem.pk;
       }
+    },
+    onBadgeRemove: function(evt, obj) {
+      console.log('onBadgeRemove', evt, obj);
+      var ids = this.$['selectionStorage'].value.split(this.valueSeparator)
+      ids.splice(obj.index, 1);
+      this.$['selectionStorage'].value = ids.join(this.valueSeparator);
     },
     _ids2Objs: function(newValue, oldValue) {
       console.log('_ids2Objs', newValue, oldValue);
