@@ -28,13 +28,13 @@ hello
         - clear pick
       -->
       <div id='styledPicks'>
-        <template is='dom-repeat' items="badgesData">
-          <div>[[item.title]]</div>
+        <template is='dom-repeat' items="[[badgesData]]">
+          <div>[[item.__str__]]</div>
           <a href='[[item.edit_url]]'><i class="fa fa-pencil"></i></a>
-          <i class="fa fa-pencil"></i>
+          <i class="fa fa-times delete"></i>
         </template>
       </div>
-      <input id='text-getter' is="iron-input" bind-value="{{typed}}">
+      <input id='text-getter' is="iron-input">
     </div>
   </template>
 
@@ -44,13 +44,14 @@ hello
       properties: {
         badgesData: {
           type: Array,
-          value: []
+          value: function(){return [];}
         }
       },
       addBadge: function(badgeObject) {
+        console.log('addBadge', badgeObject);
+        this.push('badgesData', badgeObject);
       },
       ready: function() {
-        debugger;
       }
     });
   </script>
@@ -71,7 +72,7 @@ TODO::
     <!--
     badges element in future
     -->
-    <badge-input on-keypress='handleTyping'> </badge-input>
+    <badge-input id='query-getter' on-keypress='handleTyping'> </badge-input>
 
     <iron-ajax
         id='items-getter'
@@ -80,14 +81,13 @@ TODO::
         handle-as="json"
         on-response="populateMenu"
     ></iron-ajax>
-    <paper-menu hidden$="{{hideMenu}}" on-iron-select='elemSelected' id='picker'
+    <paper-menu hidden$="{{hideMenu}}" on-iron-activate='elemSelected' id='picker'
       class="dropdown-content" selected='1'>
       <template is="dom-repeat" items="[[menuItems]]">
         <paper-item>[[item.__str__]]</paper-item>
       </template>
     </paper-menu>
     <input type='text' id='selectionStorage' is="iron-input" bind-value="" name='autocomplete'>
--->
 
 
   </template>
@@ -108,8 +108,7 @@ TODO::
       typed: String,
       menuItems: {
         type: Array,
-        //value: [1,2,3]
-        value: [{"__str__":"1", "id":1},{"__str__": "2", "id":2}]
+        value: []
       }
     },
     //TODO:: use listeners
@@ -124,24 +123,26 @@ TODO::
       this.$['items-getter'].generateRequest();
     },
     elemSelected: function(evt, obj) {
-      console.log('elemSelected');
-      var selectedItem = this.menuItems[evt.currentTarget.selected];
+      console.log('elemSelected', evt, obj);
+      var selectedItem = this.menuItems[obj.selected];
       this.storeSelection(selectedItem);
       this.hideMenu = true;
     },
     populateMenu: function(evt, obj) {
-      console.log('populateMenu');
-      console.log(this.$['menuItems']);
+      console.log('populateMenu', evt, obj);
+      // handle duplicates
       this.set('menuItems', obj.xhr.response['results']);
       this.hideMenu = false;
       console.log(this.$['menuItems']);
 
     },
     storeSelection: function(elem) {
+      console.log('storeSelection', elem);
       if (this.multi) {
-        //TODO:: handle multi values
+        //TODO:: handle multi here
         throw Error("NotImplemented");
       } else {
+        this.$['query-getter'].addBadge(elem);
         this.$['selectionStorage'].value = elem.pk;
       }
     },
