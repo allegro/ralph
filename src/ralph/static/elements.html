@@ -57,7 +57,7 @@ hello
       },
       setBadges: function(badges) {
         console.log('setBadges', badges);
-        this.push('badgesData', badges);
+        this.badgesData = badges;
         this.clearInput();
       },
       clear: function() {
@@ -106,10 +106,10 @@ Example:
     <!--
     badges element in future
     -->
-    <badge-input id='query-getter' on-change='handleTyping'> </badge-input>
+    <badge-input id='query-getter' on-keypress='handleTyping'> </badge-input>
 
     <iron-ajax
-        id='items-getter'
+        id='by-query-ajax'
         url="/data_center/datacenterasset/rack/autocomplete"
         params=''
         handle-as="json"
@@ -121,7 +121,14 @@ Example:
         <paper-item>[[item.__str__]]</paper-item>
       </template>
     </paper-menu>
-    <input type='text' id='selectionStorage' is="iron-input" bind-value="" name='autocomplete'>
+    <input type='text' id='selectionStorage' is="iron-input" bind-value="{{value}}" name='autocomplete'>
+    <iron-ajax
+        id='by-id-ajax'
+        url="/assets/assetmodel/autocomplete/details/"
+        params=''
+        handle-as="json"
+        on-response="updateBadges"
+    ></iron-ajax>
 
 
   </template>
@@ -131,6 +138,14 @@ Example:
   Polymer({
     is: "proto-element",
     properties: {
+      typed: String,
+      fireTreshold: 2,
+      valueSeparator: ',',
+      value: {
+        type: String,
+        value: '',
+        observer: '_ids2Objs',
+      },
       multi: {
         type: Boolean,
         value: false
@@ -139,9 +154,6 @@ Example:
         type: Boolean,
         value: true
       },
-      typed: String,
-      fireTreshold: 2,
-      valueSeparator: ',',
       menuItems: {
         type: Array,
         value: []
@@ -153,10 +165,10 @@ Example:
       // TODO:: fix: keypressed is late one chars because value is not yet updated
       if (evt.target.value.length < this.fireThreshold) return false;
       // TODO:: find out why regular syntax doesn't work
-      this.$['items-getter'].params = {
+      this.$['by-query-ajax'].params = {
         "q": evt.target.value
       };
-      this.$['items-getter'].generateRequest();
+      this.$['by-query-ajax'].generateRequest();
     },
     elemSelected: function(evt, obj) {
       console.log('elemSelected', evt, obj);
@@ -171,6 +183,10 @@ Example:
       this.hideMenu = false;
 
     },
+    updateBadges: function(evt, obj) {
+      console.log('updateBadges', evt, obj);
+      this.$['query-getter'].setBadges(obj.xhr.response['results']);
+    },
     storeSelection: function(elem) {
       console.log('storeSelection', elem);
       if (this.multi) {
@@ -184,6 +200,13 @@ Example:
         this.$['query-getter'].setBadges([elem]);
         this.$['selectionStorage'].value = elem.pk;
       }
+    },
+    _ids2Objs: function(newValue, oldValue) {
+      console.log('_ids2Objs', newValue, oldValue);
+      this.$['by-id-ajax'].params = {
+        "pk": newValue
+      }
+      this.$['by-id-ajax'].generateRequest();
     },
     behaviors: [
       Polymer.IronFormElementBehavior
