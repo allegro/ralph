@@ -44,7 +44,7 @@ hello
       properties: {
         badgesData: {
           type: Array,
-          value: function(){return [];}
+          value: []
         }
       },
       addBadge: function(badgeObject) {
@@ -113,7 +113,7 @@ TODO::
     },
     //TODO:: use listeners
     handleTyping: function(evt, obj) {
-      console.log('handleTyping');
+      console.log('handleTyping', evt, obj);
       // TODO:: fire only when 3 as element's property
       // TODO:: find out why regular syntax doesn't work
       this.$['items-getter'].params = {
@@ -133,7 +133,6 @@ TODO::
       // handle duplicates
       this.set('menuItems', obj.xhr.response['results']);
       this.hideMenu = false;
-      console.log(this.$['menuItems']);
 
     },
     storeSelection: function(elem) {
