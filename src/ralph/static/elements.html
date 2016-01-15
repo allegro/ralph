@@ -23,13 +23,16 @@ hello
     </style>
     <div>
       <!--
-        - add pick
         - remove pick
-        - clear pick
       -->
       <div id='styledPicks'>
         <template is='dom-repeat' items="[[badgesData]]">
           <div>[[item.__str__]]</div>
+          <!--
+          TODO:: widget look
+          TODO:: handle deleting
+          TODO:: handle editing
+          -->
           <a href='[[item.edit_url]]'><i class="fa fa-pencil"></i></a>
           <i class="fa fa-times delete"></i>
         </template>
@@ -50,6 +53,20 @@ hello
       addBadge: function(badgeObject) {
         console.log('addBadge', badgeObject);
         this.push('badgesData', badgeObject);
+        this.clearInput();
+      },
+      setBadges: function(badges) {
+        console.log('setBadges', badges);
+        this.push('badgesData', badges);
+        this.clearInput();
+      },
+      clear: function() {
+        console.log('clear');
+        this.set('badgesData', []);
+      },
+      clearInput: function(badgeObject) {
+        console.log('clearInput');
+        this.$['text-getter'].value = "";
       },
       ready: function() {
       }
@@ -106,6 +123,10 @@ TODO::
         value: true
       },
       typed: String,
+      valueSeparator: {
+        type: String,
+        value: ','
+      },
       menuItems: {
         type: Array,
         value: []
@@ -138,10 +159,14 @@ TODO::
     storeSelection: function(elem) {
       console.log('storeSelection', elem);
       if (this.multi) {
-        //TODO:: handle multi here
-        throw Error("NotImplemented");
-      } else {
         this.$['query-getter'].addBadge(elem);
+        if (this.$.selectionStorage.value === "") {
+          this.$['selectionStorage'].value = elem.pk;
+        } else {
+          this.$['selectionStorage'].value += this.valueSeparator + elem.pk;
+        }
+      } else {
+        this.$['query-getter'].setBadges([elem]);
         this.$['selectionStorage'].value = elem.pk;
       }
     },
