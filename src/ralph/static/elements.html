@@ -140,7 +140,10 @@ Example:
     properties: {
       typed: String,
       fireTreshold: 2,
-      valueSeparator: ',',
+      valueSeparator: {
+        type: String,
+        value: ',',
+      },
       value: {
         type: String,
         value: '',
@@ -194,7 +197,7 @@ Example:
         if (this.$.selectionStorage.value === "") {
           this.$['selectionStorage'].value = elem.pk;
         } else {
-          this.$['selectionStorage'].value += this.valueSeparator + elem.pk;
+          this.$.selectionStorage.value += this.valueSeparator + elem.pk;
         }
       } else {
         this.$['query-getter'].setBadges([elem]);
@@ -207,6 +210,7 @@ Example:
         "pk": newValue
       }
       this.$['by-id-ajax'].generateRequest();
+      this.$['selectionStorage'].value = newValue;
     },
     behaviors: [
       Polymer.IronFormElementBehavior
