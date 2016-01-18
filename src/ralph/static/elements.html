@@ -144,7 +144,7 @@ Example:
     ></iron-ajax>
     <paper-menu hidden$="{{hideMenu}}" on-iron-activate='elemSelected' id='picker'
       class="dropdown-content" selected='1'>
-      <template is="dom-repeat" items="[[menuItems]]">
+      <template is="dom-repeat" items="[[menuItems]]" filter='_isPicked'>
         <paper-item>[[item.__str__]]</paper-item>
       </template>
     </paper-menu>
@@ -236,6 +236,11 @@ Example:
       var ids = this.$['selectionStorage'].value.split(this.valueSeparator)
       ids.splice(obj.index, 1);
       this.$['selectionStorage'].value = ids.join(this.valueSeparator);
+    },
+    _isPicked: function(item) {
+      console.log('_isPicked', item);
+      var selectedIds = this.$.selectionStorage.value.split(this.separator);
+      return (item.pk in selectedIds) ? false : true;
     },
     _ids2Objs: function(newValue, oldValue) {
       console.log('_ids2Objs', newValue, oldValue);
