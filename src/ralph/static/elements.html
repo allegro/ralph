@@ -46,7 +46,7 @@ hello
       properties: {
         badgesData: {
           type: Array,
-          value: []
+          value: function(){return [];}
         }
       },
       addBadge: function(badgeObject) {
@@ -61,7 +61,7 @@ hello
       },
       onBadgeRemove: function(evt, obj) {
         console.log('onBadgeRemove', evt, obj);
-        this.badgesData = this.badgesData.splice(evt.model.item.index, 1)
+        this.splice('badgesData', evt.model.index, 1);
         this.fire('badge-remove', {
             "index": evt.model.index,
             "item": evt.model.item
@@ -168,7 +168,7 @@ Example:
       },
       menuItems: {
         type: Array,
-        value: []
+        value: function(){return [];}
       }
     },
     //TODO:: use listeners
