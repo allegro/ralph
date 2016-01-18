@@ -65,7 +65,11 @@
         {% endif %}
         <div class="row">
 
-          autocomplete<proto-element id='xxx' value="1,2" multi> </proto-element>
+          autocomplete<proto-element id='xxx' value="1,2" multi>
+            xxx<a href="/assets/manufacturer/?_to_field=id" class="related-lookup" id="lookup_xxx">
+              <i class="fa fa-search"></i>
+            </a>yyy
+          </proto-element>
 
 
           {% block field_sets %}
