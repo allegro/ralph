@@ -128,6 +128,9 @@ Example:
   <template>
     <style>
     </style>
+<a href="/assets/manufacturer/?_to_field=id" class="related-lookup" id="lookup_xxx">
+  <i class="fa fa-search"></i>
+</a>
 
     <!--
     badges element in future
@@ -155,6 +158,11 @@ Example:
         handle-as="json"
         on-response="updateBadges"
     ></iron-ajax>
+
+
+    <!--
+    <a href=''>xxx<i class="fa fa-search"></i></a>
+    -->
 
 
   </template>
@@ -197,6 +205,12 @@ Example:
         "q": evt.target.value
       };
       this.$['by-query-ajax'].generateRequest();
+    },
+    xxx: function(msg) {
+      // TODO:: rm it
+      console.log('xxx', msg);
+      alert(msg);
+      this.$['selectionStorage'].value = msg;
     },
     elemSelected: function(evt, obj) {
       console.log('elemSelected', evt, obj);
