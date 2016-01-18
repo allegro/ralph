@@ -112,7 +112,6 @@ Usage:
 
 Example:
 
-    TODO:: do not suggest picked items
     TODO:: add qualitative doc
     TODO:: urls should be passable to this widget, eg. urls
     <proto-element value="1" > </proto-element>
@@ -144,7 +143,7 @@ Example:
     ></iron-ajax>
     <paper-menu hidden$="{{hideMenu}}" on-iron-activate='elemSelected' id='picker'
       class="dropdown-content" selected='1'>
-      <template is="dom-repeat" items="[[menuItems]]" filter='_isPicked'>
+      <template is="dom-repeat" items="[[menuItems]]">
         <paper-item>[[item.__str__]]</paper-item>
       </template>
     </paper-menu>
@@ -167,7 +166,7 @@ Example:
     properties: {
       typed: String,
       fireTreshold: 2,
-      valueSeparator: {
+      separator: {
         type: String,
         value: ',',
       },
@@ -207,8 +206,16 @@ Example:
     },
     populateMenu: function(evt, obj) {
       console.log('populateMenu', evt, obj);
-      // handle duplicates
-      this.set('menuItems', obj.xhr.response['results']);
+      var foundItems = obj.xhr.response['results'];
+      var selectedIds = this.$.selectionStorage.value.split(this.separator);
+      var fileteredItems = [];
+      for(var idx=0; idx < foundItems.length; idx++) {
+        console.log('xxx', foundItems[idx].pk.toString(), selectedIds);
+        if (selectedIds.indexOf(foundItems[idx].pk.toString()) === -1) {
+          fileteredItems.push(foundItems[idx]);
+        }
+      }
+      this.set('menuItems', fileteredItems);
       this.hideMenu = false;
 
     },
@@ -223,7 +230,7 @@ Example:
         if (this.$.selectionStorage.value === "") {
           this.$['selectionStorage'].value = elem.pk;
         } else {
-          this.$.selectionStorage.value += this.valueSeparator + elem.pk;
+          this.$.selectionStorage.value += this.separator + elem.pk;
         }
       } else {
         this.$['query-getter'].setBadges([elem]);
@@ -233,14 +240,9 @@ Example:
     },
     onBadgeRemove: function(evt, obj) {
       console.log('onBadgeRemove', evt, obj);
-      var ids = this.$['selectionStorage'].value.split(this.valueSeparator)
+      var ids = this.$['selectionStorage'].value.split(this.separator)
       ids.splice(obj.index, 1);
-      this.$['selectionStorage'].value = ids.join(this.valueSeparator);
-    },
-    _isPicked: function(item) {
-      console.log('_isPicked', item);
-      var selectedIds = this.$.selectionStorage.value.split(this.separator);
-      return (item.pk in selectedIds) ? false : true;
+      this.$['selectionStorage'].value = ids.join(this.separator);
     },
     _ids2Objs: function(newValue, oldValue) {
       console.log('_ids2Objs', newValue, oldValue);
