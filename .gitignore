@@ -56,7 +56,6 @@ docs/_build/
 src/ralph_assets
 src/ralph/settings/*local.py
 src/ralph/urls/*local.py
-!/src/ralph/lib
 
 # Vagrant
 vagrant/.vagrant
@@ -74,3 +73,5 @@ src/ralph/static/vendor/
 src/ralph/var/
 
 debian/ralph-core*
+
+.idea
