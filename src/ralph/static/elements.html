@@ -18,25 +18,39 @@ hello
   <template>
     <style>
       :host {
-        background-color: red;
+      }
+      .badge {
+      }
+      .badge * {
+        float: left;
+        margin: 0 5px;
+      }
+      #text-getter{
+      }
+      .badge, #text-getter{
+        float: left;
+        width: auto;
       }
     </style>
     <div>
       <!--
         - remove pick
       -->
-      <div id='styledPicks'>
+      <div id='badgeContainer'>
         <template is='dom-repeat' items="[[badgesData]]">
-          <div>[[item.__str__]]</div>
-          <!--
-          TODO:: widget look
-          TODO:: handle editing
-          -->
-          <a href='[[item.edit_url]]'><i class="fa fa-pencil"></i></a>
-          <i on-tap="onBadgeRemove" class="fa fa-times delete"></i>
+          <div class='badge'>
+            <span>[[item.__str__]]</span>
+            <!--
+            TODO:: widget look
+            TODO:: handle editing
+            -->
+            <a href='[[item.edit_url]]'><i class="fa fa-pencil"></i></a>
+            <i on-tap="onBadgeRemove" class="fa fa-times delete"></i>
+          </div>
         </template>
       </div>
       <input id='text-getter' is="iron-input">
+      <div style="clear: both;"></div>
     </div>
   </template>
 
