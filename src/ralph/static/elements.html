@@ -81,6 +81,10 @@ hello
             "item": evt.model.item
         });
       },
+      setFocusInput: function() {
+        console.log('setFocusInput');
+        this.$['text-getter'].focus();
+      },
       clear: function() {
         console.log('clear');
         this.set('badgesData', []);
@@ -225,6 +229,7 @@ Example:
         this.$['query-getter'].setBadges([elem]);
         this.$['selectionStorage'].value = elem.pk;
       }
+      this.$['query-getter'].setFocusInput();
     },
     onBadgeRemove: function(evt, obj) {
       console.log('onBadgeRemove', evt, obj);
