@@ -135,7 +135,7 @@ Example:
 
     <iron-ajax
         id='by-query-ajax'
-        url="/data_center/datacenterasset/rack/autocomplete"
+        url="/assets/assetmodel/manufacturer/autocomplete"
         params=''
         handle-as="json"
         on-response="populateMenu"
@@ -149,19 +149,12 @@ Example:
     <input type='text' id='selectionStorage' is="iron-input" bind-value="{{value}}" name='autocomplete'>
     <iron-ajax
         id='by-id-ajax'
-        url="/assets/assetmodel/autocomplete/details/"
+        url="/assets/manufacturer/autocomplete/details/"
         params=''
         handle-as="json"
         on-response="updateBadges"
     ></iron-ajax>
     <content><content>
-
-
-    <!--
-    <a href=''>xxx<i class="fa fa-search"></i></a>
-    -->
-
-
   </template>
 </dom-module>
 <script>
@@ -170,7 +163,10 @@ Example:
     is: "proto-element",
     properties: {
       typed: String,
-      fireTreshold: 2,
+      fireThreshold: {
+        type: Number,
+        value: 3,
+      },
       separator: {
         type: String,
         value: ',',
@@ -196,18 +192,40 @@ Example:
     //TODO:: use listeners
     handleTyping: function(evt, obj) {
       console.log('handleTyping', evt, obj);
-      if (evt.target.value.length < this.fireThreshold) return false;
+      if (evt.target.value.length < this.fireThreshold) {
+        return false;
+      }
       // TODO:: find out why regular syntax doesn't work
       this.$['by-query-ajax'].params = {
         "q": evt.target.value
       };
       this.$['by-query-ajax'].generateRequest();
     },
-    xxx: function(msg) {
-      // TODO:: rm it
-      console.log('xxx', msg);
-      alert(msg);
-      this.$['selectionStorage'].value = msg;
+    _updateById: function(objId) {
+      // this generates extra request because this.value is observed
+      console.log('_updateById', objId);
+      //this.$['selectionStorage'].value = objId;
+      this.value = objId;
+    },
+    _updateMultiById: function(objId) {
+      // this generates extra request because this.value is observed
+      console.log('_updateMultiById', objId);
+      if (this.$.selectionStorage.value === "") {
+        this.value = objId
+        //this.$['selectionStorage'].value = objId;
+      } else {
+        //this.$.selectionStorage.value += this.separator + objId;
+        this.value += this.separator + objId;
+      }
+    },
+    updateById: function(objId) {
+      console.log('updateById', objId);
+      if (this.multi) {
+        this._updateMultiById(objId);
+      } else {
+        this._updateById(objId);
+      }
+      this.$['query-getter'].setFocusInput();
     },
     elemSelected: function(evt, obj) {
       console.log('elemSelected', evt, obj);
@@ -221,7 +239,6 @@ Example:
       var selectedIds = this.$.selectionStorage.value.split(this.separator);
       var fileteredItems = [];
       for(var idx=0; idx < foundItems.length; idx++) {
-        console.log('xxx', foundItems[idx].pk.toString(), selectedIds);
         if (selectedIds.indexOf(foundItems[idx].pk.toString()) === -1) {
           fileteredItems.push(foundItems[idx]);
         }
@@ -238,11 +255,7 @@ Example:
       console.log('storeSelection', elem);
       if (this.multi) {
         this.$['query-getter'].addBadge(elem);
-        if (this.$.selectionStorage.value === "") {
-          this.$['selectionStorage'].value = elem.pk;
-        } else {
-          this.$.selectionStorage.value += this.separator + elem.pk;
-        }
+        this._updateMultiById(elem.pk);
       } else {
         this.$['query-getter'].setBadges([elem]);
         this.$['selectionStorage'].value = elem.pk;

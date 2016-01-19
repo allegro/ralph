@@ -11,11 +11,8 @@ function dismissRelatedLookupPopup(win, chosenId) {
         document.getElementById(name).value = chosenId;
     }
 */
-
     console.log('name', name);
     var elem = document.querySelector('#' + name);
-    elem.xxx(chosenId);
+    elem.updateById(chosenId);
     win.close();
 }
-
-
