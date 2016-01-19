@@ -284,6 +284,11 @@ class DataCenterAssetTest(RalphTestCase):
         dc_asset.slot_no = '1A'
         dc_asset._validate_slot_no()
 
+    def test_should_pass_when_slot_not_filled_without_model(self):
+        dc_asset = DataCenterAsset()
+        dc_asset.slot_no = '1A'
+        dc_asset._validate_slot_no()
+
 
 @ddt
 class RackTest(RalphTestCase):

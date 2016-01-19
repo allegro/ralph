@@ -377,7 +377,7 @@ class DataCenterAsset(Asset):
             raise ValidationError({'position': [msg]})
 
     def _validate_slot_no(self):
-        if self.model and self.model.has_parent and not self.slot_no:
+        if self.model_id and self.model.has_parent and not self.slot_no:
             raise ValidationError({
                 'slot_no': 'Slot number is required when asset is blade'
             })
