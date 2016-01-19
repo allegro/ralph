@@ -12,6 +12,7 @@ hello
 
 <link rel="import" href="bower_components/paper-menu/paper-menu.html">
 <link rel="import" href="bower_components/paper-item/paper-item.html">
+<link rel="import" href="bower_components/iron-input/iron-input.html">
 
 
 <dom-module id='badge-input'>
@@ -146,7 +147,7 @@ Example:
         <paper-item>[[item.__str__]]</paper-item>
       </template>
     </paper-menu>
-    <input type='text' id='selectionStorage' is="iron-input" bind-value="{{value}}" name='autocomplete'>
+    <input type='text' is="iron-input" bind-value="{{value}}" name='autocomplete'>
     <iron-ajax
         id='by-id-ajax'
         url="/assets/manufacturer/autocomplete/details/"
@@ -196,25 +197,21 @@ Example:
         return false;
       }
       // TODO:: find out why regular syntax doesn't work
+      if (evt.target.value === '') return false;
       this.$['by-query-ajax'].params = {
         "q": evt.target.value
       };
       this.$['by-query-ajax'].generateRequest();
     },
     _updateById: function(objId) {
-      // this generates extra request because this.value is observed
       console.log('_updateById', objId);
-      //this.$['selectionStorage'].value = objId;
       this.value = objId;
     },
     _updateMultiById: function(objId) {
-      // this generates extra request because this.value is observed
       console.log('_updateMultiById', objId);
-      if (this.$.selectionStorage.value === "") {
+      if (this.value === "") {
         this.value = objId
-        //this.$['selectionStorage'].value = objId;
       } else {
-        //this.$.selectionStorage.value += this.separator + objId;
         this.value += this.separator + objId;
       }
     },
@@ -230,13 +227,14 @@ Example:
     elemSelected: function(evt, obj) {
       console.log('elemSelected', evt, obj);
       var selectedItem = this.menuItems[obj.selected];
-      this.storeSelection(selectedItem);
+      this.updateById(selectedItem.pk);
       this.hideMenu = true;
+      this.$['query-getter'].setFocusInput();
     },
     populateMenu: function(evt, obj) {
       console.log('populateMenu', evt, obj);
       var foundItems = obj.xhr.response['results'];
-      var selectedIds = this.$.selectionStorage.value.split(this.separator);
+      var selectedIds = this.value.split(this.separator);
       var fileteredItems = [];
       for(var idx=0; idx < foundItems.length; idx++) {
         if (selectedIds.indexOf(foundItems[idx].pk.toString()) === -1) {
@@ -250,31 +248,28 @@ Example:
     updateBadges: function(evt, obj) {
       console.log('updateBadges', evt, obj);
       this.$['query-getter'].setBadges(obj.xhr.response['results']);
-    },
-    storeSelection: function(elem) {
-      console.log('storeSelection', elem);
-      if (this.multi) {
-        this.$['query-getter'].addBadge(elem);
-        this._updateMultiById(elem.pk);
-      } else {
-        this.$['query-getter'].setBadges([elem]);
-        this.$['selectionStorage'].value = elem.pk;
+      var ids = [];
+      for(var idx=0; idx < obj.xhr.response['results'].length; idx++) {
+        ids.push(obj.xhr.response['results'][idx].pk);
       }
-      this.$['query-getter'].setFocusInput();
+      console.log('ids', ids);
+      this.value = ids.join(this.separator);
     },
     onBadgeRemove: function(evt, obj) {
       console.log('onBadgeRemove', evt, obj);
-      var ids = this.$['selectionStorage'].value.split(this.separator)
-      ids.splice(obj.index, 1);
-      this.$['selectionStorage'].value = ids.join(this.separator);
+      var ids = this.value.split(this.separator)
+      ids.splice(ids.indexOf(obj.item.pk.toString()), 1);
+      this.value = ids.join(this.separator);
     },
     _ids2Objs: function(newValue, oldValue) {
       console.log('_ids2Objs', newValue, oldValue);
+      if (newValue === "") {
+        return false;
+      }
       this.$['by-id-ajax'].params = {
         "pk": newValue
       }
       this.$['by-id-ajax'].generateRequest();
-      this.$['selectionStorage'].value = newValue;
     },
     behaviors: [
       Polymer.IronFormElementBehavior
