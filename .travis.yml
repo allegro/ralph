@@ -5,9 +5,9 @@ env:
         - DATABASE_USER=travis
         - DATABASE_PASSWORD=travis
     matrix:
-        - DJANGO_VERSION=1.8.7 TEST_DB_ENGINE=sqlite
-        - DJANGO_VERSION=1.8.7 TEST_DB_ENGINE=mysql
-        - DJANGO_VERSION=1.8.7 TEST_DB_ENGINE=psql
+        - DJANGO_VERSION=1.8.8 TEST_DB_ENGINE=sqlite
+        - DJANGO_VERSION=1.8.8 TEST_DB_ENGINE=mysql
+        - DJANGO_VERSION=1.8.8 TEST_DB_ENGINE=psql
         - DJANGO_VERSION=1.9 TEST_DB_ENGINE=sqlite
         - DJANGO_VERSION=1.9 TEST_DB_ENGINE=mysql
         - DJANGO_VERSION=1.9 TEST_DB_ENGINE=psql

@@ -14,7 +14,7 @@ class UserProfileView(RalphTemplateView):
 class MyEquipmentAssetList(AssetList):
     def user_licence(self, item):
         licences = BaseObjectLicence.objects.filter(
-            base_object=item['id']
+            base_object=item.id
         ).select_related('licence', 'licence__software')
         if licences:
             result = [
@@ -37,9 +37,11 @@ class CurrentUserInfoView(UserInfoMixin, RalphBaseTemplateView):
         asset_fields = [
             ('barcode', _('Barcode / Inventory Number')),
             'model__category__name', 'model__manufacturer__name',
-            'model__name', ('sn', _('Serial Number')), 'invoice_date',
-            'status'
+            'model__name', ('sn', _('Serial Number')), 'invoice_date', 'status'
         ]
+        if settings.MY_EQUIPMENT_SHOW_BUYOUT_DATE:
+            asset_fields += ['buyout_date']
+
         if settings.MY_EQUIPMENT_REPORT_FAILURE_URL:
             asset_fields += ['report_failure']
         context['asset_list'] = MyEquipmentAssetList(

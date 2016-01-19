@@ -1,0 +1,22 @@
+{% extends "admin/change_form.html" %}
+{% block admin_change_form_document_ready %}
+  <script type="text/javascript">
+  (function($) {
+    $(function () {
+      "use strict";
+      $('#id_model').change(function() {
+        var url = '{% url 'assetmodel-list' %}' + $(this).val();
+        $.ajax({
+          url: url,
+        }).done(function(data) {
+          if (data.category.depreciation_rate) {
+            $('#id_depreciation_rate').val(
+              data.category.depreciation_rate
+            );
+          }
+        });
+      });
+    });
+  })(ralph.jQuery);
+  </script>
+{% endblock %}

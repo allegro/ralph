@@ -1,4 +1,4 @@
-Django==1.8.7
+Django==1.8.8
 dj.choices==0.10.0
 django-extensions==1.5.9
 django-filter==0.11.0

@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from rest_framework import serializers
 
 from ralph.accounts.api_simple import SimpleRalphUserSerializer
 from ralph.accounts.models import Team
@@ -136,11 +137,19 @@ class ManufacturerSerializer(RalphAPISerializer):
 
 
 class CategorySerializer(RalphAPISerializer):
+
+    depreciation_rate = serializers.FloatField(
+        source='get_default_depreciation_rate'
+    )
+
     class Meta:
         model = Category
 
 
 class AssetModelSerializer(RalphAPISerializer):
+
+    category = CategorySerializer()
+
     class Meta:
         model = AssetModel
 
