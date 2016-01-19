@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
+from unittest.mock import patch
+
 from dj.choices import Country
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.test import RequestFactory
+from django.utils import timezone
 
 from ralph.accounts.tests.factories import RegionFactory
 from ralph.assets.country_utils import iso2_to_iso3, iso3_to_iso2
@@ -12,11 +15,13 @@ from ralph.assets.tests.factories import (
 )
 from ralph.back_office.models import BackOfficeAsset, BackOfficeAssetStatus
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
+from ralph.lib.external_services import ExternalService
 from ralph.lib.transitions.models import (
     _check_instances_for_transition,
     TransitionNotAllowedError
 )
 from ralph.lib.transitions.tests import TransitionTestCase
+from ralph.reports.factories import ReportTemplateFactory
 from ralph.tests import RalphTestCase
 from ralph.tests.factories import UserFactory
 
@@ -277,3 +282,26 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
         )
         with self.assertRaises(TransitionNotAllowedError):
             _check_instances_for_transition([self.bo_asset], transition)
+
+    @patch.object(ExternalService, "run")
+    def test_report_is_generated(self, mock_method):
+        GENERATED_FILE_CONTENT = REPORT_TEMPLATE = b'some-content'
+        mock_method.return_value = GENERATED_FILE_CONTENT
+        report_template = ReportTemplateFactory(template__data=REPORT_TEMPLATE)
+        request = RequestFactory().get('/')  # only request's user is important
+        request.user = UserFactory()
+        instances = [
+            BackOfficeAssetFactory(
+                user=UserFactory(first_name="James", last_name="Bond")
+            )
+        ]
+
+        attachment = BackOfficeAsset._generate_report(
+            report_template.name, request, instances, report_template.language)
+
+        correct_filename = '{}_{}-{}_{}.pdf'.format(
+            timezone.now().isoformat()[:10], 'james', 'bond',
+            report_template.report.name,
+        )
+        self.assertEqual(attachment.original_filename, correct_filename)
+        self.assertEqual(attachment.file.read(), GENERATED_FILE_CONTENT)
