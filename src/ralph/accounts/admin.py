@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from string import Formatter
 from urllib.parse import quote
 
 from django.conf import settings
@@ -12,6 +13,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import RalphUser, Region, Team
 from ralph.admin import RalphAdmin, register
+from ralph.admin.helpers import getattr_dunder
 from ralph.admin.mixins import RalphAdminFormMixin
 from ralph.admin.views.extra import RalphDetailView
 from ralph.back_office.models import BackOfficeAsset
@@ -107,11 +109,17 @@ class AssetList(Table):
             return []
 
     def report_failure(self, item):
-        item = model_to_dict(item)
+        item_dict = model_to_dict(item)
         url = settings.MY_EQUIPMENT_REPORT_FAILURE_URL
         if url:
-            if self.request and 'username' not in item:
-                item['username'] = self.request.user.username
+            placeholders = [
+                k[1] for k in Formatter().parse(url) if k[1] is not None
+            ]
+            item_dict.update({
+                k: getattr_dunder(item, k) for k in placeholders
+            })
+            if self.request and 'username' not in item_dict:
+                item_dict['username'] = self.request.user.username
 
             def escape_param(p):
                 """
@@ -119,7 +127,9 @@ class AssetList(Table):
                 """
                 return quote(str(p).replace('"', '\u2033'))
             return '<a href="{}" target="_blank">{}</a><br />'.format(
-                url.format(**{k: escape_param(v) for (k, v) in item.items()}),
+                url.format(
+                    **{k: escape_param(v) for (k, v) in item_dict.items()}
+                ),
                 _('Report failure')
             )
         return ''
