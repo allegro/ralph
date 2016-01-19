@@ -108,6 +108,8 @@ class DataCenter(NamedMixin, models.Model):
 
 class ServerRoom(NamedMixin.NonUnique, models.Model):
     data_center = models.ForeignKey(DataCenter, verbose_name=_("data center"))
+    data_center._autocomplete = False
+    data_center._filter_title = _('data center')
 
     def __str__(self):
         return '{} ({})'.format(self.name, self.data_center.name)
@@ -154,6 +156,8 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
         null=True,
         blank=True,
     )
+    server_room._autocomplete = False
+    server_room._filter_title = _('server room')
     description = models.CharField(
         _('description'), max_length=250, blank=True
     )

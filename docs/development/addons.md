@@ -135,3 +135,27 @@ Then simply add this class to `list_filter` attribute in your admin class defini
         list_filter = [BarcodeFilter]
 
 To use `ChoicesFilter` you need to specify one additional param: `choices_list`, which should be list of available choices to select from (`dj.choices.Choices` instance is recommended here).
+
+
+### Additional filters options:
+
+## Filter title
+
+```python3
+class ServerRoom(models.Model):
+    data_center = models.ForeignKey(DataCenter, verbose_name=_("data center"))
+    data_center._filter_title = _('data center')
+```
+
+If `_filter_title` is attached to field, filter will display the entered name on list, rather than getting it from the model's field.
+
+
+## Autocomplete
+
+```python3
+class ServerRoom(models.Model):
+    data_center = models.ForeignKey(DataCenter, verbose_name=_("data center"))
+    data_center._autocomplete = False
+```
+
+For each field ForeignKey autocomplete widget is used by default. If you want this to be a select field set _autocomplete to False.

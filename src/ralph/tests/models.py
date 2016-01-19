@@ -36,6 +36,12 @@ class Car(models.Model):
     name = models.CharField(max_length=50)
     year = models.PositiveSmallIntegerField()
     manufacturer = models.ForeignKey(Manufacturer)
+    manufacturer._autocomplete = False
+    manufacturer._filter_title = 'test'
+
+
+class Car2(models.Model):
+    manufacturer = models.ForeignKey(Manufacturer)
 
 
 class Order(
