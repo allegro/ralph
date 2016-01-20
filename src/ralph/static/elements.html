@@ -154,125 +154,124 @@ Example:
     ></iron-ajax>
     <content><content>
   </template>
-</dom-module>
-<script>
-  // register a new element called proto-element
-  Polymer({
-    is: "proto-element",
-    properties: {
-      typed: String,
-      fireThreshold: {
-        type: Number,
-        value: 3,
-      },
-      separator: {
-        type: String,
-        value: ',',
-      },
-      value: {
-        type: String,
-        value: '',
-        observer: '_ids2Objs',
-      },
-      multi: {
-        type: Boolean,
-        value: false
-      },
-      hideMenu: {
-        type: Boolean,
-        value: true
-      },
-      menuItems: {
-        type: Array,
-        value: function(){return [];}
-      }
-    },
-    //TODO:: use listeners
-    handleTyping: function(evt, obj) {
-      console.log('handleTyping', evt, obj);
-      if (evt.target.value.length < this.fireThreshold) {
-        return false;
-      }
-      // TODO:: find out why regular syntax doesn't work
-      if (evt.target.value === '') return false;
-      this.$['by-query-ajax'].params = {
-        "q": evt.target.value
-      };
-      this.$['by-query-ajax'].generateRequest();
-    },
-    _updateById: function(objId) {
-      console.log('_updateById', objId);
-      this.value = objId;
-    },
-    _updateMultiById: function(objId) {
-      console.log('_updateMultiById', objId);
-      if (this.value === "") {
-        this.value = objId
-      } else {
-        this.value += this.separator + objId;
-      }
-    },
-    updateById: function(objId) {
-      console.log('updateById', objId);
-      if (this.multi) {
-        this._updateMultiById(objId);
-      } else {
-        this._updateById(objId);
-      }
-      this.$['query-getter'].setFocusInput();
-    },
-    elemSelected: function(evt, obj) {
-      console.log('elemSelected', evt, obj);
-      var selectedItem = this.menuItems[obj.selected];
-      this.updateById(selectedItem.pk);
-      this.hideMenu = true;
-      this.$['query-getter'].setFocusInput();
-    },
-    populateMenu: function(evt, obj) {
-      console.log('populateMenu', evt, obj);
-      var foundItems = obj.xhr.response['results'];
-      var selectedIds = this.value.split(this.separator);
-      var fileteredItems = [];
-      for(var idx=0; idx < foundItems.length; idx++) {
-        if (selectedIds.indexOf(foundItems[idx].pk.toString()) === -1) {
-          fileteredItems.push(foundItems[idx]);
+  <script>
+    // register a new element called proto-element
+    Polymer({
+      is: "proto-element",
+      properties: {
+        typed: String,
+        fireThreshold: {
+          type: Number,
+          value: 3,
+        },
+        separator: {
+          type: String,
+          value: ',',
+        },
+        value: {
+          type: String,
+          value: '',
+          observer: '_ids2Objs',
+        },
+        multi: {
+          type: Boolean,
+          value: false
+        },
+        hideMenu: {
+          type: Boolean,
+          value: true
+        },
+        menuItems: {
+          type: Array,
+          value: function(){return [];}
         }
-      }
-      this.set('menuItems', fileteredItems);
-      this.hideMenu = false;
+      },
+      //TODO:: use listeners
+      handleTyping: function(evt, obj) {
+        console.log('handleTyping', evt, obj);
+        if (evt.target.value.length < this.fireThreshold) {
+          return false;
+        }
+        // TODO:: find out why regular syntax doesn't work
+        if (evt.target.value === '') return false;
+        this.$['by-query-ajax'].params = {
+          "q": evt.target.value
+        };
+        this.$['by-query-ajax'].generateRequest();
+      },
+      _updateById: function(objId) {
+        console.log('_updateById', objId);
+        this.value = objId;
+      },
+      _updateMultiById: function(objId) {
+        console.log('_updateMultiById', objId);
+        if (this.value === "") {
+          this.value = objId
+        } else {
+          this.value += this.separator + objId;
+        }
+      },
+      updateById: function(objId) {
+        console.log('updateById', objId);
+        if (this.multi) {
+          this._updateMultiById(objId);
+        } else {
+          this._updateById(objId);
+        }
+        this.$['query-getter'].setFocusInput();
+      },
+      elemSelected: function(evt, obj) {
+        console.log('elemSelected', evt, obj);
+        var selectedItem = this.menuItems[obj.selected];
+        this.updateById(selectedItem.pk);
+        this.hideMenu = true;
+        this.$['query-getter'].setFocusInput();
+      },
+      populateMenu: function(evt, obj) {
+        console.log('populateMenu', evt, obj);
+        var foundItems = obj.xhr.response['results'];
+        var selectedIds = this.value.split(this.separator);
+        var fileteredItems = [];
+        for(var idx=0; idx < foundItems.length; idx++) {
+          if (selectedIds.indexOf(foundItems[idx].pk.toString()) === -1) {
+            fileteredItems.push(foundItems[idx]);
+          }
+        }
+        this.set('menuItems', fileteredItems);
+        this.hideMenu = false;
 
-    },
-    updateBadges: function(evt, obj) {
-      console.log('updateBadges', evt, obj);
-      this.$['query-getter'].setBadges(obj.xhr.response['results']);
-      var ids = [];
-      for(var idx=0; idx < obj.xhr.response['results'].length; idx++) {
-        ids.push(obj.xhr.response['results'][idx].pk);
+      },
+      updateBadges: function(evt, obj) {
+        console.log('updateBadges', evt, obj);
+        this.$['query-getter'].setBadges(obj.xhr.response['results']);
+        var ids = [];
+        for(var idx=0; idx < obj.xhr.response['results'].length; idx++) {
+          ids.push(obj.xhr.response['results'][idx].pk);
+        }
+        console.log('ids', ids);
+        this.value = ids.join(this.separator);
+      },
+      onBadgeRemove: function(evt, obj) {
+        console.log('onBadgeRemove', evt, obj);
+        var ids = this.value.split(this.separator)
+        ids.splice(ids.indexOf(obj.item.pk.toString()), 1);
+        this.value = ids.join(this.separator);
+      },
+      _ids2Objs: function(newValue, oldValue) {
+        console.log('_ids2Objs', newValue, oldValue);
+        if (newValue === "") {
+          return false;
+        }
+        this.$['by-id-ajax'].params = {
+          "pk": newValue
+        }
+        this.$['by-id-ajax'].generateRequest();
+      },
+      behaviors: [
+        Polymer.IronFormElementBehavior
+      ],
+      ready: function() {
       }
-      console.log('ids', ids);
-      this.value = ids.join(this.separator);
-    },
-    onBadgeRemove: function(evt, obj) {
-      console.log('onBadgeRemove', evt, obj);
-      var ids = this.value.split(this.separator)
-      ids.splice(ids.indexOf(obj.item.pk.toString()), 1);
-      this.value = ids.join(this.separator);
-    },
-    _ids2Objs: function(newValue, oldValue) {
-      console.log('_ids2Objs', newValue, oldValue);
-      if (newValue === "") {
-        return false;
-      }
-      this.$['by-id-ajax'].params = {
-        "pk": newValue
-      }
-      this.$['by-id-ajax'].generateRequest();
-    },
-    behaviors: [
-      Polymer.IronFormElementBehavior
-    ],
-    ready: function() {
-    }
-  });
-</script>
-
+    });
+  </script>
+</dom-module>
