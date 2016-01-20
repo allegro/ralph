@@ -64,22 +64,6 @@
           {% errors adminform.form %}
         {% endif %}
         <div class="row">
-
-          {% comment %}
-          TODO:: rm it
-          autocomplete<proto-element id='xxx' value="1,2" multi>
-            <!--
-            missing:
-              - query url (typing)
-              - details url (magnifier)
-            -->
-            <a href="/data_center/rack/?_to_field=id" class="related-lookup" id="lookup_xxx">
-              <i class="fa fa-search"></i>
-            </a>
-          </proto-element>
-          {% endcomment %}
-
-
           {% block field_sets %}
             {% for fieldset in adminform %}
               <div class="large-6 columns" >
