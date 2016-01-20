@@ -256,6 +256,7 @@ class AutocompleteWidget(forms.TextInput):
             ),
             #x'model': self.rel_to,
             #x'current_object': current_object,
+            'name': name or "",
             'value': value or "",
             'attrs': flatatt(attrs),
             'related_url': related_url,
@@ -292,7 +293,7 @@ class AutocompleteWidget(forms.TextInput):
         from pprint import pprint
         pprint(context)
         xxx = template.render(context)
-        #if name == 'budget_info':
+        #if name == 'rack':
         #    import ipdb; ipdb.set_trace()
         pprint(xxx)
         return xxx
