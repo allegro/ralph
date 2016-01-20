@@ -171,13 +171,14 @@ class AutocompleteWidget(forms.TextInput):
             'data-details-url': reverse(
                 'admin:{}_{}_autocomplete_details'.format(*model_options)
             ),
-            'data-query-var': QUERY_PARAM,
-            'data-detail-var': DETAIL_PARAM,
+            #x'data-query-var': QUERY_PARAM,
+            #x'data-detail-var': DETAIL_PARAM,
         }
 
         if attrs is None:
             attrs = {}
-        attrs.update({'type': 'hidden'})
+        attrs['name'] = name
+        #xattrs.update({'type': 'hidden'})
         widget_options['data-target-selector'] = '#' + attrs.get('id')
         input_field = super().render(name, value, attrs)
 
@@ -243,17 +244,27 @@ class AutocompleteWidget(forms.TextInput):
             ).first()
         show_tooltip = hasattr(self.rel_to, 'autocomplete_tooltip')
         context = RenderContext({
-            'model': self.rel_to,
-            'current_object': current_object,
-            'attrs': flatatt(widget_options),
-            'related_url': related_url,
-            'name': name,
-            'input_field': input_field,
-            'searched_fields': sorted(
-                set(list(chain(*searched_fields_tooltip.values())))
+            'data_suggest_url': reverse(
+                'autocomplete-list', kwargs={
+                    'app': self.field.rel.related_model._meta.app_label,
+                    'model': self.field.rel.related_model._meta.model_name,
+                    'field': self.field.name
+                }
             ),
-            'searched_fields_tooltip': dict(searched_fields_tooltip),
-            'show_tooltip': show_tooltip,
+            'data_details_url': reverse(
+                'admin:{}_{}_autocomplete_details'.format(*model_options)
+            ),
+            #x'model': self.rel_to,
+            #x'current_object': current_object,
+            'value': value or "",
+            'attrs': flatatt(attrs),
+            'related_url': related_url,
+            #x'input_field': input_field,
+            #x'searched_fields': sorted(
+            #x    set(list(chain(*searched_fields_tooltip.values())))
+            #x),
+            #x'searched_fields_tooltip': dict(searched_fields_tooltip),
+            #x'show_tooltip': show_tooltip,
         })
         info = (self.rel_to._meta.app_label, self.rel_to._meta.model_name)
         can_edit = self.admin_site._registry[self.rel_to].has_change_permission(
@@ -277,4 +288,11 @@ class AutocompleteWidget(forms.TextInput):
         if show_tooltip and current_object:
             context['tooltip'] = current_object.autocomplete_tooltip
         template = loader.get_template('admin/widgets/autocomplete.html')
-        return template.render(context)
+
+        from pprint import pprint
+        pprint(context)
+        xxx = template.render(context)
+        #if name == 'budget_info':
+        #    import ipdb; ipdb.set_trace()
+        pprint(xxx)
+        return xxx

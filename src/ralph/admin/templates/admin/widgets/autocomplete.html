@@ -1,5 +1,19 @@
 {% load i18n %}
+autocomplete
+<!-- TODO:: should work as search-url -->
+<proto-element
+  {{ attrs }}
+  value="{{ value }}"
+  {{multi}}
+  query-ajax-url="{{ data_suggest_url }}"
+  detailsurl="{{ data_details_url }}"
+>
+  <a href="{{ data_details_url }}" class="related-lookup" id="lookup_id_{{ name }}">
+    <i class="fa fa-search"></i>
+  </a>
+</proto-element>
 
+{% comment %}
 <div class="autocomplete-widget{% if not current_object %} edit{% endif %}"{{ attrs }} data-empty-value={{ empty_value }} data-is-empty={{ is_empty }}>
     <div class="widget-wrapper">
         <div class="item-wrapper">
@@ -55,3 +69,4 @@
     </ul>
     {{ input_field }}
 </div>
+{% endcomment %}

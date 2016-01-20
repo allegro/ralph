@@ -133,7 +133,7 @@ Example:
 
     <iron-ajax
         id='by-query-ajax'
-        url="/data_center/datacenterasset/rack/autocomplete"
+        url="{{queryAjaxUrl}}"
         params=''
         handle-as="json"
         on-response="populateMenu"
@@ -144,10 +144,10 @@ Example:
         <paper-item>[[item.__str__]]</paper-item>
       </template>
     </paper-menu>
-    <input type='text' is="iron-input" bind-value="{{value}}" name='autocomplete'>
+    <input name$="[[name]]" type='text' is="iron-input" bind-value="{{value}}">
     <iron-ajax
         id='by-id-ajax'
-        url="/data_center/rack/autocomplete/details/"
+        url="{{detailsurl}}"
         params=''
         handle-as="json"
         on-response="updateBadges"
@@ -160,6 +160,14 @@ Example:
       is: "proto-element",
       properties: {
         typed: String,
+        queryAjaxUrl: {
+          type: String,
+          value: null,
+        },
+        detailsurl: {
+          type: String,
+          value: null,
+        },
         fireThreshold: {
           type: Number,
           value: 3,
@@ -259,9 +267,7 @@ Example:
       },
       _ids2Objs: function(newValue, oldValue) {
         console.log('_ids2Objs', newValue, oldValue);
-        if (newValue === "") {
-          return false;
-        }
+        if (newValue === "") { return false; }
         this.$['by-id-ajax'].params = {
           "pk": newValue
         }
