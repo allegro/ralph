@@ -10,6 +10,12 @@
   <a href="{{ related_url }}" class="related-lookup" id="lookup_id_{{ name }}">
     <i class="fa fa-search"></i>
   </a>
+  {% if add_related_url %}
+    <a class="related-widget-wrapper-link add-related" id="add_id_{{ name }}"
+      href="{{ add_related_url }}?_popup=1">
+        <i class="fa fa-plus-circle"></i>
+    </a>
+  {% endif %}
 
 </proto-element>
 
