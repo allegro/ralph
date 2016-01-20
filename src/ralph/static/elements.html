@@ -34,9 +34,6 @@ hello
       }
     </style>
     <div>
-      <!--
-        - remove pick
-      -->
       <div id='badgeContainer'>
         <template is='dom-repeat' items="[[badgesData]]">
           <div class='badge'>
@@ -136,7 +133,7 @@ Example:
 
     <iron-ajax
         id='by-query-ajax'
-        url="/assets/assetmodel/manufacturer/autocomplete"
+        url="/data_center/datacenterasset/rack/autocomplete"
         params=''
         handle-as="json"
         on-response="populateMenu"
@@ -150,7 +147,7 @@ Example:
     <input type='text' is="iron-input" bind-value="{{value}}" name='autocomplete'>
     <iron-ajax
         id='by-id-ajax'
-        url="/assets/manufacturer/autocomplete/details/"
+        url="/data_center/rack/autocomplete/details/"
         params=''
         handle-as="json"
         on-response="updateBadges"
