@@ -40,9 +40,15 @@ hello
             <span>[[item.__str__]]</span>
             <!--
             TODO:: widget look
-            TODO:: handle editing
+            TODO:: replace static change_id_rack with dynamic value
+            TODO:: pencil on window (from pencil not working)
             -->
-            <a href='[[item.edit_url]]'><i class="fa fa-pencil"></i></a>
+            <a class="related-widget-wrapper-link change-related"
+              id="change_id_rack"
+              href='[[item.edit_url]]'
+            >
+              <i class="fa fa-pencil"></i>
+            </a>
             <i on-tap="onBadgeRemove" class="fa fa-times delete"></i>
           </div>
         </template>
@@ -124,8 +130,7 @@ Example:
 
 <dom-module id='proto-element'>
   <template>
-    <style>
-    </style>
+    <style> </style>
     <!--
     badges element in future
     -->
@@ -259,6 +264,13 @@ Example:
         console.log('ids', ids);
         this.value = ids.join(this.separator);
       },
+      reloadBadges: function() {
+        console.log('reloadBadges');
+        this.$['by-id-ajax'].params = {
+          "pk": this.value
+        }
+        this.$['by-id-ajax'].generateRequest();
+      },
       onBadgeRemove: function(evt, obj) {
         console.log('onBadgeRemove', evt, obj);
         var ids = this.value.split(this.separator)
@@ -268,10 +280,8 @@ Example:
       _ids2Objs: function(newValue, oldValue) {
         console.log('_ids2Objs', newValue, oldValue);
         if (newValue === "") { return false; }
-        this.$['by-id-ajax'].params = {
-          "pk": newValue
-        }
-        this.$['by-id-ajax'].generateRequest();
+        this.value = newValue;
+        this.reloadBadges();
       },
       behaviors: [
         Polymer.IronFormElementBehavior
