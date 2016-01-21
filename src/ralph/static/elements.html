@@ -141,8 +141,8 @@ Example:
         handle-as="json"
         on-response="populateMenu"
     ></iron-ajax>
-    <paper-menu hidden$="{{hideMenu}}" on-iron-activate='elemSelected' id='picker'
-      class="dropdown-content" selected='1'>
+    <paper-menu hidden$="{{hideMenu}}" on-iron-activate='elemSelected'
+    id='suggestList' class="dropdown-content">
       <template is="dom-repeat" items="[[menuItems]]">
         <paper-item>[[item.__str__]]</paper-item>
       </template>
@@ -199,11 +199,17 @@ Example:
       },
       handleTyping: function(evt, obj) {
         console.log('handleTyping', evt, obj);
-        if (evt.target.value.length < this.fireThreshold) {
+        if (evt.keyIdentifier == "Down") {
+          ;
+        } else if (evt.keyIdentifier == "Up") {
+          ;
+        } else if (evt.keyIdentifier == "Enter") {
+          ;
+        } else if (evt.target.value.length < this.fireThreshold) {
           return false;
         }
+        if (evt.target.value === '' || evt.target.value.length < this.fireThreshold) return false;
         // TODO:: find out why regular syntax doesn't work
-        if (evt.target.value === '') return false;
         this.$['by-query-ajax'].params = {
           "q": evt.target.value
         };
