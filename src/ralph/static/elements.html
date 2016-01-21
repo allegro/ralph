@@ -40,8 +40,6 @@ hello
             <span>[[item.__str__]]</span>
             <!--
             TODO:: widget look
-            TODO:: many adds: rack+server-room+data-center
-            TODO:: pencil on window (from pencil not working)
             -->
             <!-- yea, i know multi id is stupid, but django requires it :P -->
             <a class="related-widget-wrapper-link change-related"
@@ -199,7 +197,6 @@ Example:
           value: function(){return [];}
         }
       },
-      //TODO:: use listeners
       handleTyping: function(evt, obj) {
         console.log('handleTyping', evt, obj);
         if (evt.target.value.length < this.fireThreshold) {

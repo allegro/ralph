@@ -1,6 +1,8 @@
 var ralph = ralph || {};
 ralph.jQuery = jQuery.noConflict();
 
+//TODO:: many adds: rack+server-room+data-center
+//TODO:: check if proto-element could adopt original django flow of `change`, `add`, `search`
 function getCallerNode(win) {
     console.log('getCallerNode', win);
     var name = windowname_to_id(win.name);
