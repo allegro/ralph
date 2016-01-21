@@ -12,7 +12,7 @@
   {% for fieldset in adminform %}
     {# some hack - don't display form without defined fieldsets #}
     {% if fieldset.name != '__empty__' %}
-      <div class="large-6 columns" >
+      <div class="small-12 medium-6 large-6 columns">
         {% include "admin/includes/fieldset.html" %}
       </div>
     {% endif %}

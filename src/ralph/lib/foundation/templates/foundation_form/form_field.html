@@ -7,7 +7,7 @@
         {% label field %}
       {% endif %}
     </div>
-    <div class="small-7 end columns {% if field.errors %} error{% endif %}">
+    <div class="small-9 end columns {% if field.errors %} error{% endif %}">
       {% if field.is_readonly %}
         <span class='read-only'>{{ field.contents|default:"-" }}</span>
       {% else %}
