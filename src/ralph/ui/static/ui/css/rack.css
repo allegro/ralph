@@ -884,6 +884,9 @@
 .racks .rack.front .wrapper .devices .device.rows-2.cols-6 [class*="slot-"] {
   width: 66.66666667px;
 }
+.racks .rack.front .wrapper .devices .device.rows-1.cols-14 [class*="slot-"] {
+  width: 28.57142857px;
+}
 .racks .rack.front .wrapper .devices .device.rows-2.cols-8 [class*="slot-"] {
   width: 50px;
 }
@@ -905,6 +908,9 @@
 }
 .racks .rack.back .wrapper .devices .device.rows-2.cols-6 [class*="slot-"] {
   width: 50px;
+}
+.racks .rack.back .wrapper .devices .device.rows-1.cols-14 [class*="slot-"] {
+  width: 21.42857143px;
 }
 .racks .rack.back .wrapper .devices .device.rows-2.cols-8 [class*="slot-"] {
   width: 37.5px;
@@ -938,6 +944,9 @@
   .racks .rack.front .wrapper .devices .device.rows-2.cols-6 [class*="slot-"] {
     width: 50px;
   }
+  .racks .rack.front .wrapper .devices .device.rows-1.cols-14 [class*="slot-"] {
+    width: 21.42857143px;
+  }
   .racks .rack.front .wrapper .devices .device.rows-2.cols-8 [class*="slot-"] {
     width: 37.5px;
   }
@@ -965,6 +974,9 @@
   }
   .racks .rack.back .wrapper .devices .device.rows-2.cols-6 [class*="slot-"] {
     width: 33.33333333px;
+  }
+  .racks .rack.back .wrapper .devices .device.rows-1.cols-14 [class*="slot-"] {
+    width: 14.28571429px;
   }
   .racks .rack.back .wrapper .devices .device.rows-2.cols-8 [class*="slot-"] {
     width: 25px;
