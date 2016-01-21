@@ -40,12 +40,12 @@ hello
             <span>[[item.__str__]]</span>
             <!--
             TODO:: widget look
-            TODO:: replace static change_id_rack with dynamic value
             TODO:: many adds: rack+server-room+data-center
             TODO:: pencil on window (from pencil not working)
             -->
+            <!-- yea, i know multi id is stupid, but django requires it :P -->
             <a class="related-widget-wrapper-link change-related"
-              id="change_id_rack"
+              id="[[item.edit_icon_id]]"
               href='[[item.edit_url]]'
             >
               <i class="fa fa-pencil"></i>
@@ -133,7 +133,8 @@ Example:
     <!--
     badges element in future
     -->
-    <badge-input id='query-getter' on-badge-remove="onBadgeRemove" on-keyup='handleTyping'> </badge-input>
+    <badge-input id='query-getter' on-badge-remove="onBadgeRemove"
+    on-keyup='handleTyping'> </badge-input>
 
     <iron-ajax
         id='by-query-ajax'
