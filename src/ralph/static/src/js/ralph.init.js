@@ -44,7 +44,6 @@ function dismissChangeRelatedObjectPopup(win, objId, newRepr, newId) {
 }
 
 function dismissAddRelatedObjectPopup(win, newId, newRepr) {
-    /*
     // newId and newRepr are expected to have previously been escaped by
     // django.utils.html.escape.
     newId = html_unescape(newId);
@@ -52,7 +51,13 @@ function dismissAddRelatedObjectPopup(win, newId, newRepr) {
     var name = windowname_to_id(win.name);
     var elem = document.getElementById(name);
     var o;
-    if (elem) {
+    if (elem.nodeName.toUpperCase() === 'PROTO-ELEMENT') {
+        //TODO:: change proto to something better
+        console.log('proto')
+        //elem = getCallerNode(win);
+        elem.updateById(newId);
+    } else if (elem) {
+        console.log('non-proto')
         var elemName = elem.nodeName.toUpperCase();
         if (elemName == 'SELECT') {
             o = new Option(newRepr, newId);
@@ -73,8 +78,5 @@ function dismissAddRelatedObjectPopup(win, newId, newRepr) {
         SelectBox.add_to_cache(toId, o);
         SelectBox.redisplay(toId);
     }
-    */
-    elem = getCallerNode(win);
-    elem.updateById(newId);
     win.close();
 }
