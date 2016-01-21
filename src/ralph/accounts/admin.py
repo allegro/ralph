@@ -89,7 +89,9 @@ class AssetList(Table):
     url.title = _('Link')
 
     def buyout_date(self, item):
-        return item.buyout_date
+        if item.model.category.show_buyout_date:
+            return item.buyout_date
+        return '&mdash;'
     buyout_date.title = _('Buyout date')
 
     def user_licence(self, item):

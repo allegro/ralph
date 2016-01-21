@@ -186,6 +186,7 @@ class Category(MPTTModel, NamedMixin.NonUnique, TimeStampMixin, models.Model):
         db_index=True
     )
     imei_required = models.BooleanField(default=False)
+    show_buyout_date = models.BooleanField(default=False)
     default_depreciation_rate = models.DecimalField(
         blank=True,
         decimal_places=2,
