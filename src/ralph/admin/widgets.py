@@ -156,31 +156,31 @@ class AutocompleteWidget(forms.TextInput):
         )
 
     def render(self, name, value, attrs=None):
-        admin_model = self.admin_site._registry[self.rel_to]
+        #xadmin_model = self.admin_site._registry[self.rel_to]
         model_options = (
             self.rel_to._meta.app_label, self.rel_to._meta.model_name
         )
-        widget_options = {
-            'data-suggest-url': reverse(
-                'autocomplete-list', kwargs={
-                    'app': self.field.rel.related_model._meta.app_label,
-                    'model': self.field.rel.related_model._meta.model_name,
-                    'field': self.field.name
-                }
-            ),
-            'data-details-url': reverse(
-                'admin:{}_{}_autocomplete_details'.format(*model_options)
-            ),
-            #x'data-query-var': QUERY_PARAM,
-            #x'data-detail-var': DETAIL_PARAM,
-        }
+        #xwidget_options = {
+        #x    'data-suggest-url': reverse(
+        #x        'autocomplete-list', kwargs={
+        #x            'app': self.field.rel.related_model._meta.app_label,
+        #x            'model': self.field.rel.related_model._meta.model_name,
+        #x            'field': self.field.name
+        #x        }
+        #x    ),
+        #x    'data-details-url': reverse(
+        #x        'admin:{}_{}_autocomplete_details'.format(*model_options)
+        #x    ),
+        #x    #x'data-query-var': QUERY_PARAM,
+        #x    #x'data-detail-var': DETAIL_PARAM,
+        #x}
 
         if attrs is None:
             attrs = {}
         attrs['name'] = name
         #xattrs.update({'type': 'hidden'})
-        widget_options['data-target-selector'] = '#' + attrs.get('id')
-        input_field = super().render(name, value, attrs)
+        #xwidget_options['data-target-selector'] = '#' + attrs.get('id')
+        #xinput_field = super().render(name, value, attrs)
 
         if self.rel_to in self.admin_site._registry:
             related_url = reverse(
@@ -190,58 +190,58 @@ class AutocompleteWidget(forms.TextInput):
                 ),
                 current_app=self.admin_site.name,
             ) + self.get_url_parameters()
-            searched_fields = []
-            searched_fields_tooltip = defaultdict(list)
-            polymorphic_descendants = getattr(
-                self.rel_to, '_polymorphic_descendants', []
-            )
+            #xsearched_fields = []
+            #xsearched_fields_tooltip = defaultdict(list)
+            #xpolymorphic_descendants = getattr(
+            #x    self.rel_to, '_polymorphic_descendants', []
+            #x)
 
-            if polymorphic_descendants:
-                # Check if model after which we are looking for is polymorphic
-                # if they are also looking for the models of its dependencies
-                # or by limit_models defined in model
-                polymorphic_models = polymorphic_descendants
-                limit_models = getattr(self.field, 'limit_models', [])
-                if limit_models:
-                    polymorphic_models = [
-                        get_model(*i.split('.')) for i in limit_models
-                    ]
+            #xif polymorphic_descendants:
+            #x    # Check if model after which we are looking for is polymorphic
+            #x    # if they are also looking for the models of its dependencies
+            #x    # or by limit_models defined in model
+            #x    polymorphic_models = polymorphic_descendants
+            #x    limit_models = getattr(self.field, 'limit_models', [])
+            #x    if limit_models:
+            #x        polymorphic_models = [
+            #x            get_model(*i.split('.')) for i in limit_models
+            #x        ]
 
-                for related_model in polymorphic_models:
-                    for field_name in self.admin_site._registry[
-                        related_model
-                    ].search_fields:
-                        field = get_field_by_relation_path(
-                            related_model, field_name
-                        )
-                        key = str(related_model._meta.verbose_name)
-                        searched_fields_tooltip[key].append(
-                            str(field.verbose_name)
-                        )
-            else:
-                for field_name in admin_model.search_fields:
-                    try:
-                        field = get_field_by_relation_path(
-                            self.rel_to, field_name
-                        )
-                        key = str(self.rel_to._meta.verbose_name)
-                        searched_fields_tooltip[key].append(
-                            str(field.verbose_name)
-                        )
-                        searched_fields.append(str(field.verbose_name))
-                    except FieldDoesNotExist:
-                        pass
-        current_object = None
-        if value:
-            current_object = self.rel_to._default_manager.select_related(
-                # https://docs.djangoproject.com/en/1.8/ref/models/querysets/#select-related
-                # we cannot pass empty list - this would select all related
-                # model - instead we pass None, which means that none of
-                # related models will be selected
-                *(admin_model.list_select_related or [None])
-            ).filter(
-                pk=value
-            ).first()
+            #x    for related_model in polymorphic_models:
+            #x        for field_name in self.admin_site._registry[
+            #x            related_model
+            #x        ].search_fields:
+            #x            field = get_field_by_relation_path(
+            #x                related_model, field_name
+            #x            )
+            #x            key = str(related_model._meta.verbose_name)
+            #x            searched_fields_tooltip[key].append(
+            #x                str(field.verbose_name)
+            #x            )
+            #xelse:
+            #x    for field_name in admin_model.search_fields:
+            #x        try:
+            #x            field = get_field_by_relation_path(
+            #x                self.rel_to, field_name
+            #x            )
+            #x            key = str(self.rel_to._meta.verbose_name)
+            #x            searched_fields_tooltip[key].append(
+            #x                str(field.verbose_name)
+            #x            )
+            #x            searched_fields.append(str(field.verbose_name))
+            #x        except FieldDoesNotExist:
+            #x            pass
+        #xcurrent_object = None
+        #xif value:
+        #x    current_object = self.rel_to._default_manager.select_related(
+        #x        # https://docs.djangoproject.com/en/1.8/ref/models/querysets/#select-related
+        #x        # we cannot pass empty list - this would select all related
+        #x        # model - instead we pass None, which means that none of
+        #x        # related models will be selected
+        #x        *(admin_model.list_select_related or [None])
+        #x    ).filter(
+        #x        pk=value
+        #x    ).first()
         show_tooltip = hasattr(self.rel_to, 'autocomplete_tooltip')
         context = RenderContext({
             'data_suggest_url': reverse(
@@ -265,7 +265,7 @@ class AutocompleteWidget(forms.TextInput):
             #x    set(list(chain(*searched_fields_tooltip.values())))
             #x),
             #x'searched_fields_tooltip': dict(searched_fields_tooltip),
-            #x'show_tooltip': show_tooltip,
+            'show_tooltip': show_tooltip,
         })
         info = (self.rel_to._meta.app_label, self.rel_to._meta.model_name)
         can_edit = self.admin_site._registry[self.rel_to].has_change_permission(
