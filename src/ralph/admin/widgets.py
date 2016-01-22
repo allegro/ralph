@@ -156,7 +156,7 @@ class AutocompleteWidget(forms.TextInput):
         )
 
     def render(self, name, value, attrs=None):
-        #xadmin_model = self.admin_site._registry[self.rel_to]
+        admin_model = self.admin_site._registry[self.rel_to]
         model_options = (
             self.rel_to._meta.app_label, self.rel_to._meta.model_name
         )
@@ -231,17 +231,17 @@ class AutocompleteWidget(forms.TextInput):
             #x            searched_fields.append(str(field.verbose_name))
             #x        except FieldDoesNotExist:
             #x            pass
-        #xcurrent_object = None
-        #xif value:
-        #x    current_object = self.rel_to._default_manager.select_related(
-        #x        # https://docs.djangoproject.com/en/1.8/ref/models/querysets/#select-related
-        #x        # we cannot pass empty list - this would select all related
-        #x        # model - instead we pass None, which means that none of
-        #x        # related models will be selected
-        #x        *(admin_model.list_select_related or [None])
-        #x    ).filter(
-        #x        pk=value
-        #x    ).first()
+        current_object = None
+        if value:
+            current_object = self.rel_to._default_manager.select_related(
+                # https://docs.djangoproject.com/en/1.8/ref/models/querysets/#select-related
+                # we cannot pass empty list - this would select all related
+                # model - instead we pass None, which means that none of
+                # related models will be selected
+                *(admin_model.list_select_related or [None])
+            ).filter(
+                pk=value
+            ).first()
         show_tooltip = hasattr(self.rel_to, 'autocomplete_tooltip')
         context = RenderContext({
             'data_suggest_url': reverse(
