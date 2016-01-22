@@ -3,15 +3,6 @@
 
 {% block extrahead %}{{ block.super }}
   <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
-
-
-
-<script src="/static/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
-<link rel="import" href="/static/elements.html">
-
-
-
-
 {% endblock %}
 
 {% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-form{% endblock %}

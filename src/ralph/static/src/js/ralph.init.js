@@ -2,7 +2,7 @@ var ralph = ralph || {};
 ralph.jQuery = jQuery.noConflict();
 
 //TODO:: many adds: rack+server-room+data-center
-//TODO:: check if proto-element could adopt original django flow of `change`, `add`, `search`
+//TODO:: check if auto-complete could adopt original django flow of `change`, `add`, `search`
 function getCallerNode(win) {
     console.log('getCallerNode', win);
     var name = windowname_to_id(win.name);
@@ -53,7 +53,7 @@ function dismissAddRelatedObjectPopup(win, newId, newRepr) {
     var name = windowname_to_id(win.name);
     var elem = document.getElementById(name);
     var o;
-    if (elem.nodeName.toUpperCase() === 'PROTO-ELEMENT') {
+    if (elem.nodeName.toUpperCase() === 'AUTO-COMPLETE') {
         //TODO:: change proto to something better
         console.log('proto')
         //elem = getCallerNode(win);

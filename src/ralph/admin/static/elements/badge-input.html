@@ -1,0 +1,89 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-input/iron-input.html">
+
+<dom-module id='badge-input'>
+  <template>
+    <style>
+      :host {
+      }
+      .badge {
+      }
+      .badge * {
+        float: left;
+        margin: 0 5px;
+      }
+      #text-getter{
+      }
+      .badge, #text-getter{
+        float: left;
+        width: auto;
+      }
+    </style>
+    <div>
+      <div id='badgeContainer'>
+        <template is='dom-repeat' items="[[badgesData]]">
+          <div class='badge'>
+            <span>[[item.__str__]]</span>
+            <!--
+            TODO:: widget look
+            -->
+            <!-- yea, i know multi id is stupid, but django requires it :P -->
+            <a class="related-widget-wrapper-link change-related"
+              id="[[item.edit_icon_id]]"
+              href='[[item.edit_url]]'
+            >
+              <i class="fa fa-pencil"></i>
+            </a>
+            <i on-tap="onBadgeRemove" class="fa fa-times delete"></i>
+          </div>
+        </template>
+      </div>
+      <input id='text-getter' is="iron-input">
+      <div style="clear: both;"></div>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: "badge-input",
+      properties: {
+        badgesData: {
+          type: Array,
+          value: function(){return [];}
+        }
+      },
+      addBadge: function(badgeObject) {
+        console.log('addBadge', badgeObject);
+        this.push('badgesData', badgeObject);
+        this.clearInput();
+      },
+      setBadges: function(badges) {
+        console.log('setBadges', badges);
+        this.badgesData = badges;
+        this.clearInput();
+      },
+      onBadgeRemove: function(evt, obj) {
+        console.log('onBadgeRemove', evt, obj);
+        this.splice('badgesData', evt.model.index, 1);
+        this.fire('badge-remove', {
+            "index": evt.model.index,
+            "item": evt.model.item
+        });
+      },
+      setFocusInput: function() {
+        console.log('setFocusInput');
+        this.$['text-getter'].focus();
+      },
+      clear: function() {
+        console.log('clear');
+        this.set('badgesData', []);
+      },
+      clearInput: function(badgeObject) {
+        console.log('clearInput');
+        this.$['text-getter'].value = "";
+      },
+      ready: function() {
+      }
+    });
+  </script>
+</dom-module>
