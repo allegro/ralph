@@ -130,6 +130,7 @@ class AutocompleteWidget(forms.TextInput):
     def __init__(self, field, admin_site, attrs=None, using=None, **kwargs):
         self.field = field
         self.rel = self.field.rel
+        self.multi = kwargs.get('multi', None)
         self.request = kwargs.get('request', None)
         self.rel_to = kwargs.get('rel_to') or field.rel.to
         self.admin_site = admin_site
@@ -178,6 +179,8 @@ class AutocompleteWidget(forms.TextInput):
         if attrs is None:
             attrs = {}
         attrs['name'] = name
+        if self.multi:
+            attrs['multi'] = ''
         #xattrs.update({'type': 'hidden'})
         #xwidget_options['data-target-selector'] = '#' + attrs.get('id')
         #xinput_field = super().render(name, value, attrs)

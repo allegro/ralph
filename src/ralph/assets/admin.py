@@ -49,7 +49,7 @@ class ServiceAdmin(RalphAdmin):
     def formfield_for_manytomany(self, db_field, request=None, **kwargs):
         # TODO:: make it DRY with admin/mixins.py:58
         if db_field.name in self.raw_id_fields:
-            kw = {}
+            kw = {'multi': True}
             if db_field.name in self.raw_id_override_parent:
                 kw['rel_to'] = self.raw_id_override_parent[db_field.name]
 
