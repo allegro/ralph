@@ -331,6 +331,10 @@
             .slot_no {display: inline-block;}
         }
     }
+    &.rows-2.cols-1 {
+        $cols: 1;
+        [class*="slot-"] {width: $device-width / $cols;}
+    }
     &.rows-1.cols-2,
     &.rows-2.cols-2,
     &.rows-4.cols-2 {
@@ -343,6 +347,10 @@
     }
     &.rows-2.cols-6 {
         $cols: 6;
+        [class*="slot-"] {width: $device-width / $cols;}
+    }
+    &.rows-1.cols-14 {
+        $cols: 14;
         [class*="slot-"] {width: $device-width / $cols;}
     }
     &.rows-2.cols-8 {
