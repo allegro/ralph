@@ -17,7 +17,7 @@ class NullableCharFormField(NullableFormFieldMixin, forms.CharField):
     pass
 
 
-class NullableGenericIPAddressField(
+class NullableGenericIPAddressFormField(
     NullableFormFieldMixin, forms.GenericIPAddressField
 ):
     pass
@@ -34,10 +34,10 @@ class NullableCharFieldMixin(object):
     _formfield_class = NullableCharFormField
 
     def to_python(self, value):
-        return value or ''
+        return super().to_python(value) or ''
 
     def get_prep_value(self, value):
-        return value or None
+        return super().get_prep_value(value) or None
 
     def formfield(self, **kwargs):
         defaults = {}
@@ -56,10 +56,10 @@ class NullableCharField(
 
 
 class NullableGenericIPAddressField(
-    NullableCharField,
+    NullableCharFieldMixin,
     models.GenericIPAddressField
 ):
-    _formfield_class = NullableGenericIPAddressField
+    _formfield_class = NullableGenericIPAddressFormField
 
 
 class BaseObjectForeignKey(models.ForeignKey):

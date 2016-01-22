@@ -140,6 +140,10 @@ class DataCenterAssetAdmin(
     raw_id_fields = ['model', 'rack', 'service_env', 'parent', 'budget_info']
     raw_id_override_parent = {'parent': DataCenterAsset}
     _invoice_report_name = 'invoice-data-center-asset'
+    multiadd_clear_fields = [
+        {'field': 'management_ip', 'value': None},
+        {'field': 'management_hostname', 'value': None},
+    ]
 
     fieldsets = (
         (_('Basic info'), {
