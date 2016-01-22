@@ -159,6 +159,9 @@ class DataCenterAssetTest(RalphTestCase):
             parent=self.dc_asset,
         )
 
+    # =========================================================================
+    # slot_no
+    # =========================================================================
     @unpack
     @data(
         ('1A',),
@@ -198,6 +201,31 @@ class DataCenterAssetTest(RalphTestCase):
         with self.assertRaises(ValidationError):
             slot_no_field.clean(slot_no, self.dc_asset)
 
+    def test_should_raise_validation_error_when_empty_slot_no_on_blade(self):
+        dc_asset = DataCenterAssetFactory(model__has_parent=True)
+        dc_asset.slot_no = ''
+        with self.assertRaises(ValidationError):
+            dc_asset._validate_slot_no()
+
+    def test_should_raise_validation_error_when_slot_not_filled_when_not_blade(self):  # noqa
+        dc_asset = DataCenterAssetFactory(model__has_parent=False)
+        dc_asset.slot_no = '1A'
+        with self.assertRaises(ValidationError):
+            dc_asset._validate_slot_no()
+
+    def test_should_pass_when_slot_no_filled_on_blade(self):
+        dc_asset = DataCenterAssetFactory(model__has_parent=True)
+        dc_asset.slot_no = '1A'
+        dc_asset._validate_slot_no()
+
+    def test_should_pass_when_slot_not_filled_without_model(self):
+        dc_asset = DataCenterAsset()
+        dc_asset.slot_no = '1A'
+        dc_asset._validate_slot_no()
+
+    # =========================================================================
+    # orientation
+    # =========================================================================
     @unpack
     @data(
         (None, Orientation.front),
@@ -231,6 +259,9 @@ class DataCenterAssetTest(RalphTestCase):
         with self.assertRaises(ValidationError):
             self.dc_asset._validate_orientation()
 
+    # =========================================================================
+    # position in rack
+    # =========================================================================
     @unpack
     @data(
         (None, 100),
@@ -244,7 +275,7 @@ class DataCenterAssetTest(RalphTestCase):
         self.dc_asset.rack = RackFactory(max_u_height=rack_max_height)
         self.dc_asset._validate_position_in_rack()
 
-    def test_should_pass_when_position_in_rack_is_null(self):
+    def test_should_pass_when_rack_is_null(self):
         self.dc_asset.position = 10
         self.dc_asset.rack = None
         self.dc_asset._validate_position_in_rack()
@@ -253,6 +284,7 @@ class DataCenterAssetTest(RalphTestCase):
     @data(
         (10, 9),
         (1, 0),
+        (-1, 10)
     )
     def test_should_raise_validation_error_when_position_in_rack_is_incorrect(
         self, position, rack_max_height
@@ -262,6 +294,33 @@ class DataCenterAssetTest(RalphTestCase):
         with self.assertRaises(ValidationError):
             self.dc_asset._validate_position_in_rack()
 
+    # =========================================================================
+    # position requirement
+    # =========================================================================
+    def test_should_pass_when_position_is_passed_and_rack_requires_it(self):
+        self.dc_asset.position = 10
+        self.dc_asset.rack = RackFactory(require_position=True)
+        self.dc_asset._validate_position()
+
+    def test_should_pass_when_position_is_passed_and_rack_doesnt_require_it(self):  # noqa
+        self.dc_asset.position = 10
+        self.dc_asset.rack = RackFactory(require_position=False)
+        self.dc_asset._validate_position()
+
+    def test_should_pass_when_position_is_not_passed_and_rack_doesnt_require_it(self):  # noqa
+        self.dc_asset.position = None
+        self.dc_asset.rack = RackFactory(require_position=False)
+        self.dc_asset._validate_position()
+
+    def test_should_raise_validation_error_when_position_is_not_passed_and_rack_requires_it(self):  # noqa
+        self.dc_asset.position = None
+        self.dc_asset.rack = RackFactory(require_position=True)
+        with self.assertRaises(ValidationError):
+            self.dc_asset._validate_position()
+
+    # =========================================================================
+    # other
+    # =========================================================================
     def test_change_rack_in_descendants(self):
         self.dc_asset.rack = RackFactory()
         self.dc_asset.save()
@@ -272,22 +331,6 @@ class DataCenterAssetTest(RalphTestCase):
     def test_get_autocomplete_queryset(self):
         queryset = DataCenterAsset.get_autocomplete_queryset()
         self.assertEquals(1, queryset.count())
-
-    def test_should_raise_validation_error_when_empty_slot_no_on_blade(self):
-        dc_asset = DataCenterAssetFactory(model__has_parent=True)
-        dc_asset.slot_no = ''
-        with self.assertRaises(ValidationError):
-            dc_asset._validate_slot_no()
-
-    def test_should_pass_when_slot_no_filled_on_blade(self):
-        dc_asset = DataCenterAssetFactory(model__has_parent=True)
-        dc_asset.slot_no = '1A'
-        dc_asset._validate_slot_no()
-
-    def test_should_pass_when_slot_not_filled_without_model(self):
-        dc_asset = DataCenterAsset()
-        dc_asset.slot_no = '1A'
-        dc_asset._validate_slot_no()
 
 
 @ddt

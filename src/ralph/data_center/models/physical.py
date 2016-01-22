@@ -176,6 +176,13 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
         default=0,
     )
     accessories = models.ManyToManyField(Accessory, through='RackAccessory')
+    require_position = models.BooleanField(
+        default=True,
+        help_text=_(
+            'Uncheck if position is optional for this rack (ex. when rack '
+            'has warehouse-kind role'
+        )
+    )
 
     class Meta:
         unique_together = ('name', 'server_room')
@@ -362,6 +369,18 @@ class DataCenterAsset(Asset):
             )
             raise ValidationError({'orientation': [msg]})
 
+    def _validate_position(self):
+        """
+        Validate if position not empty when rack requires it.
+        """
+        if (
+            self.rack and
+            self.position is None and
+            self.rack.require_position
+        ):
+            msg = 'Position is required for this rack'
+            raise ValidationError({'position': [msg]})
+
     def _validate_position_in_rack(self):
         """
         Validate if position is in rack height range.
@@ -375,12 +394,22 @@ class DataCenterAsset(Asset):
                 self.rack.max_u_height,
             )
             raise ValidationError({'position': [msg]})
+        if self.position is not None and self.position < 0:
+            msg = 'Position should be 0 or greater'
+            raise ValidationError({'position': msg})
 
     def _validate_slot_no(self):
-        if self.model_id and self.model.has_parent and not self.slot_no:
-            raise ValidationError({
-                'slot_no': 'Slot number is required when asset is blade'
-            })
+        if self.model_id:
+            if self.model.has_parent and not self.slot_no:
+                raise ValidationError({
+                    'slot_no': 'Slot number is required when asset is blade'
+                })
+            if not self.model.has_parent and self.slot_no:
+                raise ValidationError({
+                    'slot_no': (
+                        'Slot number cannot be filled when asset is not blade'
+                    )
+                })
 
     def clean(self):
         # TODO: this should be default logic of clean method;
@@ -390,6 +419,7 @@ class DataCenterAsset(Asset):
         for validator in [
             super().clean,
             self._validate_orientation,
+            self._validate_position,
             self._validate_position_in_rack,
             self._validate_slot_no
         ]:
