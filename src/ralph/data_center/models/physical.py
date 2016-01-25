@@ -31,6 +31,10 @@ from ralph.lib.transitions.fields import TransitionField
 # i.e. number in range 1-16 and optional postfix 'A' or 'B'
 VALID_SLOT_NUMBER_FORMAT = re.compile('^([1-9][A,B]?|1[0-6][A,B]?)$')
 
+ACCESSORY_DATA = [
+    'brush', 'patch_panel_fc', 'patch_panel_utp', 'organizer', 'power_socket'
+]
+
 
 class Gap(object):
     """A placeholder that represents a gap in a blade chassis"""

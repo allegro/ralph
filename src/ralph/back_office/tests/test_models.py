@@ -148,7 +148,7 @@ class TestBackOfficeAsset(RalphTestCase):
             hostname='abc2',
             region=self.region_pl,
             status=BackOfficeAssetStatus.liquidated.id,
-
+            invoice_date=None
         )
         self.bo_asset_3 = BackOfficeAssetFactory(
             model=self.model,

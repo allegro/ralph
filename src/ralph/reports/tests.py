@@ -5,7 +5,8 @@ from django.core.exceptions import ValidationError
 from ralph.assets.models.choices import ObjectModelType
 from ralph.assets.tests.factories import (
     CategoryFactory,
-    DataCenterAssetModelFactory
+    DataCenterAssetModelFactory,
+    ManufacturerFactory
 )
 from ralph.back_office.models import BackOfficeAsset
 from ralph.data_center.models.physical import DataCenterAsset
@@ -152,10 +153,11 @@ class TestReportAssetAndLicence(RalphTestCase):
             category=CategoryFactory(name="Keyboard"),
             type=ObjectModelType.data_center,
             name='Keyboard1',
+            manufacturer=ManufacturerFactory(name='M1')
         )
         self.dc_1 = DataCenterAssetFactory(
             force_depreciation=False,
-            model=self.model
+            model=self.model,
         )
         self.licence = LicenceFactory(
             number_bought=1,
@@ -178,8 +180,9 @@ class TestReportAssetAndLicence(RalphTestCase):
                 'hostname'
             ],
             [
-                self.dc_1.id, None, None, None, 'Keyboard', None, 1, None,
-                None, None, None
+                str(self.dc_1.id), 'None', self.dc_1.barcode, self.dc_1.sn,
+                'Keyboard', 'M1', '1', 'None', str(self.dc_1.invoice_date),
+                str(self.dc_1.invoice_no), self.dc_1.hostname
             ]
         ]
         self.assertEqual(report_result, result)
@@ -218,15 +221,19 @@ class TestReportAssetAndLicence(RalphTestCase):
                 'user__first_name', 'user__last_name', 'single_cost'
             ],
             [
-                'N/A', 'Project Info', '1', '0.00', 'None', 'None', '', '',
-                '', '', '', '', '', '', '', '', '', '', '', ''
+                'N/A', 'Project Info', '1', '0.00',
+                str(self.licence.invoice_date), str(self.licence.invoice_no),
+                '', '', '', '', '', '', '', '', '', '', '', '', '', ''
             ],
             [
-                'N/A', 'Project Info', '1', '0.00', 'None', 'None',
-                str(self.dc_1.id), '', '', 'None', 'None', 'None', 'None',
-                'None', 'None', 'None', '', '', '', ''
+                'N/A', 'Project Info', '1', '0.00',
+                str(self.licence.invoice_date), str(self.licence.invoice_no),
+                str(self.dc_1.id), self.dc_1.asset.barcode,
+                '', 'None', 'None', 'None', 'None', 'None', 'None', 'None',
+                '', '', '', ''
             ]
         ]
+
         self.assertEqual(report_result, result)
 
 

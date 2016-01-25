@@ -1,15 +1,25 @@
+from datetime import datetime, timedelta
+
 import factory
 from factory.django import DjangoModelFactory
 
-from ralph.assets.tests.factories import DataCenterAssetModelFactory
+from ralph.assets.models.choices import AssetSource
+from ralph.assets.tests.factories import (
+    AssetHolderFactory,
+    BudgetInfoFactory,
+    DataCenterAssetModelFactory
+)
 from ralph.data_center.models.physical import (
     Accessory,
+    ACCESSORY_DATA,
     DataCenter,
     DataCenterAsset,
     Rack,
     RackAccessory,
     ServerRoom
 )
+
+date_now = datetime.now().date()
 
 
 class DataCenterFactory(DjangoModelFactory):
@@ -24,7 +34,7 @@ class DataCenterFactory(DjangoModelFactory):
 class ServerRoomFactory(DjangoModelFactory):
 
     name = factory.Iterator([
-        'Server Room A', 'Server Room B', 'Server Room C'
+        'Server Room A', 'Server Room B', 'Server Room C', 'Server Room D'
     ])
     data_center = factory.SubFactory(DataCenterFactory)
 
@@ -35,10 +45,11 @@ class ServerRoomFactory(DjangoModelFactory):
 
 class AccessoryFactory(DjangoModelFactory):
 
-    name = factory.Sequence(lambda n: 'Accesory #{}'.format(n))
+    name = factory.Iterator(ACCESSORY_DATA)
 
     class Meta:
         model = Accessory
+        django_get_or_create = ['name']
 
 
 class RackAccessoryFactory(DjangoModelFactory):
@@ -59,6 +70,25 @@ class RackFactory(DjangoModelFactory):
 class DataCenterAssetFactory(DjangoModelFactory):
     force_depreciation = False
     model = factory.SubFactory(DataCenterAssetModelFactory)
+    sn = factory.Faker('ssn')
+    barcode = factory.Faker('ean8')
+    hostname = factory.Sequence(lambda n: 'ralph{}.allegro.pl'.format(n))
+    order_no = factory.Sequence(lambda n: 'Order number ' + str(n))
+    budget_info = factory.SubFactory(BudgetInfoFactory)
+    invoice_date = date_now - timedelta(days=15)
+    invoice_no = factory.Sequence(lambda n: 'Invoice number ' + str(n))
+    property_of = factory.SubFactory(AssetHolderFactory)
+    provider = factory.Iterator([
+        'Komputronik', 'Dell Poland', 'Oracle Poland'
+    ])
+    source = factory.Iterator([
+        AssetSource.shipment.id, AssetSource.salvaged.id
+    ])
+    price = factory.fuzzy.FuzzyDecimal(10, 300)
+    management_ip = factory.Faker('ipv4')
+    management_hostname = factory.fuzzy.FuzzyText(
+        prefix='ralph.', suffix='.allegro.pl', length=40
+    )
 
     class Meta:
         model = DataCenterAsset
