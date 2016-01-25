@@ -14,6 +14,7 @@ from django.forms.utils import flatatt
 from django.template import loader
 from django.template.context import RenderContext
 from django.template.defaultfilters import slugify, title
+from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
@@ -156,6 +157,18 @@ class AutocompleteWidget(forms.TextInput):
             args=args
         )
 
+    def value_from_datadict(self, data, files, name):
+        value = data.get(name)
+        #if name == 'business_owners':
+        #    import ipdb; ipdb.set_trace()
+        if getattr(self, 'multi', False) == True:
+            print('name', name)
+            if value:
+                value = value.split(',')
+            else:
+                value = []
+        return value
+
     def render(self, name, value, attrs=None):
         admin_model = self.admin_site._registry[self.rel_to]
         model_options = (
@@ -180,7 +193,13 @@ class AutocompleteWidget(forms.TextInput):
             attrs = {}
         attrs['name'] = name
         if self.multi:
-            attrs['multi'] = ''
+            attrs['multi'] = ''  # only key is requied
+            value = ','.join(force_text(v) for v in value)
+        else:
+            value = value or ""
+
+
+
         #xattrs.update({'type': 'hidden'})
         #xwidget_options['data-target-selector'] = '#' + attrs.get('id')
         #xinput_field = super().render(name, value, attrs)
@@ -235,16 +254,20 @@ class AutocompleteWidget(forms.TextInput):
             #x        except FieldDoesNotExist:
             #x            pass
         current_object = None
-        if value:
-            current_object = self.rel_to._default_manager.select_related(
-                # https://docs.djangoproject.com/en/1.8/ref/models/querysets/#select-related
-                # we cannot pass empty list - this would select all related
-                # model - instead we pass None, which means that none of
-                # related models will be selected
-                *(admin_model.list_select_related or [None])
-            ).filter(
-                pk=value
-            ).first()
+        #TOOD:: uncomment it ?
+        #if value:
+        #    import ipdb; ipdb.set_trace()
+        #    # TODO:: is it necessery
+        #    current_object = self.rel_to._default_manager.select_related(
+        #        # https://docs.djangoproject.com/en/1.8/ref/models/querysets/#select-related
+        #        # we cannot pass empty list - this would select all related
+        #        # model - instead we pass None, which means that none of
+        #        # related models will be selected
+        #        *(admin_model.list_select_related or [None])
+        #    ).filter(
+        #        pk__in=value
+        #    ).first()
+
         show_tooltip = hasattr(self.rel_to, 'autocomplete_tooltip')
         context = RenderContext({
             'data_suggest_url': reverse(
@@ -260,7 +283,7 @@ class AutocompleteWidget(forms.TextInput):
             #x'model': self.rel_to,
             #x'current_object': current_object,
             'name': name or "",
-            'value': value or "",
+            'value': value,
             'attrs': flatatt(attrs),
             'related_url': related_url,
             #x'input_field': input_field,
@@ -280,10 +303,10 @@ class AutocompleteWidget(forms.TextInput):
                 current_object._meta.app_label,
                 current_object._meta.model_name
             )
-        if value and can_edit:
-            context['change_related_template_url'] = self.get_related_url(
-                info, 'change', value,
-            )
+        #xif value and can_edit:
+        #x    context['change_related_template_url'] = self.get_related_url(
+        #x        info, 'change', value,
+        #x    )
         can_add = self.admin_site._registry[self.rel_to].has_add_permission(
             self.request
         )
@@ -294,9 +317,9 @@ class AutocompleteWidget(forms.TextInput):
         template = loader.get_template('admin/widgets/autocomplete.html')
 
         from pprint import pprint
-        pprint(context)
+        #pprint(context)
         xxx = template.render(context)
         #if name == 'rack':
         #    import ipdb; ipdb.set_trace()
-        pprint(xxx)
+        #pprint(xxx)
         return xxx
