@@ -175,6 +175,13 @@ Example:
         this.updateById(selectedItem.pk);
         this.hideMenu = true;
         this.$['query-getter'].setFocusInput();
+        //TODO:: prevent (bo scoll storny)
+        //TODO:: blur na menu
+        //TODO:: bug z edit
+        // spinner
+        // error handling for ajax
+        // backspace
+        // no founds msg
       },
       populateMenu: function(evt, obj) {
         console.log('populateMenu', evt, obj);
