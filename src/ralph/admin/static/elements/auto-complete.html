@@ -26,7 +26,22 @@ Example:
 
 <dom-module id='auto-complete'>
   <template>
-    <style> </style>
+    <style>
+    :host {
+      display: block;
+      height: 30px;
+      border: solid gray 1px;
+      background: #fff;
+    }
+    paper-menu {
+      z-index: 100;
+      display: inline;
+    }
+    paper-item {
+      background: #fff;
+      z-index: 100;
+    }
+    </style>
     <!--
     badges element in future
     -->
@@ -46,7 +61,7 @@ Example:
         <paper-item>[[item.__str__]]</paper-item>
       </template>
     </paper-menu>
-    <input name$="[[name]]" type='text' is="iron-input" bind-value="{{value}}">
+    <input id='values-input' name$="[[name]]" type='hidden' is="iron-input" bind-value="{{value}}">
     <iron-ajax
         id='by-id-ajax'
         url="{{detailsurl}}"
