@@ -122,18 +122,15 @@ class AssetModel(
     )
     power_consumption = models.PositiveIntegerField(
         verbose_name=_("Power consumption"),
-        blank=True,
         default=0,
     )
     height_of_device = models.FloatField(
         verbose_name=_("Height of device"),
-        blank=True,
         default=0,
         validators=[MinValueValidator(0)],
     )
     cores_count = models.PositiveIntegerField(
         verbose_name=_("Cores count"),
-        blank=True,
         default=0,
     )
     visualization_layout_front = models.PositiveIntegerField(
