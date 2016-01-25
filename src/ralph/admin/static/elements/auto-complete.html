@@ -3,6 +3,8 @@
 <link rel="import" href="../bower_components/paper-menu/paper-menu.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 
+<link rel="import" href="../bower_components/iron-a11y-keys/iron-a11y-keys.html">
+
 <!--
 Autocomplete field.
 This widget works in two mode
@@ -37,6 +39,8 @@ Example:
       z-index: 100;
       display: inline;
     }
+    #query-getter {
+    }
     paper-item {
       background: #fff;
       z-index: 100;
@@ -55,8 +59,19 @@ Example:
         handle-as="json"
         on-response="populateMenu"
     ></iron-ajax>
+
+    <iron-a11y-keys target="[[targetInput]]" keys="down up"
+    on-keys-pressed="focusToMenu"></iron-a11y-keys>
+
     <paper-menu hidden$="{{hideMenu}}" on-iron-activate='elemSelected'
-    id='suggestList' class="dropdown-content">
+    id='suggestList' class="dropdown-content" on-keyup='focusToInput'>
+
+    <!--
+    TODO:: rm it
+    <iron-a11y-keys target="[[targetMenu]]" keys="a-z 0-90wk"
+    on-keys-pressed="focusToInput"></iron-a11y-keys>
+    -->
+
       <template is="dom-repeat" items="[[menuItems]]">
         <paper-item>[[item.__str__]]</paper-item>
       </template>
@@ -77,6 +92,19 @@ Example:
       is: "auto-complete",
       properties: {
         typed: String,
+        targetInput: {
+          type: Object,
+          value: function() {
+            return this.$['query-getter'];
+          }
+        },
+        targetMenu: {
+        //TODO:: rm it
+          type: Object,
+          value: function() {
+            return this.$.suggestList;
+          }
+        },
         queryAjaxUrl: {
           type: String,
           value: null,
@@ -113,15 +141,6 @@ Example:
       },
       handleTyping: function(evt, obj) {
         console.log('handleTyping', evt, obj);
-        if (evt.keyIdentifier == "Down") {
-          ;
-        } else if (evt.keyIdentifier == "Up") {
-          ;
-        } else if (evt.keyIdentifier == "Enter") {
-          ;
-        } else if (evt.target.value.length < this.fireThreshold) {
-          return false;
-        }
         if (evt.target.value === '' || evt.target.value.length < this.fireThreshold) return false;
         // TODO:: find out why regular syntax doesn't work
         this.$['by-query-ajax'].params = {
@@ -193,6 +212,30 @@ Example:
         var ids = this.value.split(this.separator)
         ids.splice(ids.indexOf(obj.item.pk.toString()), 1);
         this.value = ids.join(this.separator);
+      },
+      focusToMenu: function(evt, obj) {
+        console.log('focusToMenu', evt, obj);
+        if (!this.hideMenu) {
+          this.$.suggestList.focus();
+        }
+      },
+      focusToInput: function(evt, obj) {
+        console.log('focusToInput', evt, obj);
+        if (evt.keyIdentifier == "Down" || evt.keyIdentifier == "Up") {
+          return false;
+        }
+        var key = String.fromCharCode(evt.keyCode);
+
+        this.$['query-getter'].appendToInput(key);
+        this.$['query-getter'].setFocusInput();
+
+        // TODO:: auto trigger it when focus lost
+        this.hideMenu = true;
+
+        this.$['by-query-ajax'].params = {
+          "q": this.$['query-getter'].getValue()
+        };
+        this.$['by-query-ajax'].generateRequest();
       },
       _ids2Objs: function(newValue, oldValue) {
         console.log('_ids2Objs', newValue, oldValue);

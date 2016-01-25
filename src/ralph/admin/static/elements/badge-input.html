@@ -78,13 +78,18 @@
         console.log('setFocusInput');
         this.$['text-getter'].focus();
       },
+      // Down from here could be replaced if value attrib. is exposed
       clear: function() {
         console.log('clear');
         this.set('badgesData', []);
       },
-      clearInput: function(badgeObject) {
-        console.log('clearInput');
-        this.$['text-getter'].value = "";
+      getValue: function(text) {
+        console.log('getValue', text);
+        return this.$['text-getter'].value;
+      },
+      appendToInput: function(text) {
+        console.log('appendToInput', text);
+        this.$['text-getter'].value = this.$['text-getter'].value + text;
       },
       ready: function() {
       }
