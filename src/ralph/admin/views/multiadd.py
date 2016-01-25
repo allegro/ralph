@@ -36,6 +36,7 @@ class MultiAddView(RalphTemplateView):
         self.info_fields = admin_model.multiadd_info_fields
         self.obj = get_object_or_404(model, pk=object_pk)
         self.fields = admin_model.get_multiadd_fields(obj=self.obj)
+        self.clear_fields = admin_model.get_multiadd_clear_fields(obj=self.obj)
         self.one_of_mulitval_required = admin_model.one_of_mulitvalue_required
         return super().dispatch(request, *args, **kwargs)
 
@@ -116,6 +117,9 @@ class MultiAddView(RalphTemplateView):
                 setattr(self.obj, field, None)
             self.obj.id = self.obj.pk = None
 
+            for field in self.clear_fields:
+                setattr(self.obj, field['field'], field['value'])
+
             for i, field in enumerate(self.fields):
                 setattr(self.obj, field['field'], data[i])
 
@@ -162,6 +166,7 @@ class MulitiAddAdminMixin(object):
 
     view = MultiAddView
     one_of_mulitvalue_required = []
+    multiadd_clear_fields = []
 
     @property
     def multiadd_info_fields(self):
@@ -169,6 +174,9 @@ class MulitiAddAdminMixin(object):
 
     def get_multiadd_fields(self, obj=None):
         raise NotImplementedError()
+
+    def get_multiadd_clear_fields(self, obj=None):
+        return self.multiadd_clear_fields
 
     def get_url_name(self, with_namespace=True):
         return get_model_view_url_name(self.model, 'multiadd', with_namespace)
