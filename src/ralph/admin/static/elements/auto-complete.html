@@ -48,7 +48,7 @@ Example:
     </style>
     <div>
       <badge-input id='query-getter' on-badge-remove="onBadgeRemove"
-      on-keyup='handleTyping'> </badge-input>
+      on-keyup='handleTyping' odd-name='[[name]]'> </badge-input>
       <div id='icons'>
         <i hidden$='{{hiddenSpinner}}' class="loader fa fa-refresh fa-spin"></i>
         <i hidden$='{{hiddenAjaxError}}' class="has-tip fail fa
@@ -189,9 +189,7 @@ Example:
         this.updateById(selectedItem.pk);
         this.hideMenu = true;
         this.$['query-getter'].setFocusInput();
-        //TODO:: bug z edit
         //TODO:: tooltip na userze
-        //TODO:: add a11y to bower
 
         //TODO:: prevent (bo scoll storny)
         //TODO:: blur na menu

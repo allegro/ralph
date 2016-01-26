@@ -70,8 +70,7 @@ class SuggestView(JsonViewMixin, View):
                 'edit_url': '{}?_popup=1'.format(
                     get_admin_url(obj, 'change')
                 ) if can_edit else None,
-                'tooltip': getattr(obj, 'autocomplete_tooltip', None),
-                'edit_icon_id': 'change_id_' + self.model._meta.model_name,
+                'tooltip': getattr(obj, 'autocomplete_tooltip', None)
             } for obj in self.get_queryset(request.user)
         ]
         print(results)

@@ -37,7 +37,7 @@
             <div class='flexchild'>[[item.__str__]]</div>
             <!-- yea, i know multi id is stupid, but django requires it :P -->
             <a class="related-widget-wrapper-link change-related"
-              id="[[item.edit_icon_id]]"
+              id="change_id_{{ oddName }}"
               href='[[item.edit_url]]'
             >
               <i class="fa fa-pencil"></i>
@@ -61,6 +61,11 @@
     Polymer({
       is: "badge-input",
       properties: {
+        oddName: {
+          // you won't use that
+          type: String,
+          value: ""
+        },
         badgesData: {
           type: Array,
           value: function(){return [];}
