@@ -2,8 +2,8 @@
 <link rel="import" href="../bower_components/iron-input/iron-input.html">
 <link rel="import" href="../bower_components/paper-menu/paper-menu.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
-
 <link rel="import" href="../bower_components/iron-a11y-keys/iron-a11y-keys.html">
+<link rel="import" href="badge-input.html">
 
 <!--
 Autocomplete field.
@@ -32,25 +32,58 @@ Example:
     :host {
       display: block;
       height: 30px;
-      border: solid gray 1px;
+      width: 100%;
+      border: solid purple 1px;
       background: #fff;
     }
+    /*
+    #query-getter {
+      display: block;
+      border: solid 1px red;
+      width: 90% !important;
+    }
+    */
+    #icons {
+      border: solid 1px yellow;
+      width: 40% !important;
+    }
+    /*
     paper-menu {
       z-index: 100;
       display: inline;
     }
     #query-getter {
+      border:solid 1px red;
+      width: 50% !important;
+      background-color:red;
     }
     paper-item {
       background: #fff;
       z-index: 100;
     }
+    #icons {
+    }
+    */
     </style>
-    <!--
-    badges element in future
-    -->
-    <badge-input id='query-getter' on-badge-remove="onBadgeRemove"
-    on-keyup='handleTyping'> </badge-input>
+
+    <div>
+      <!--
+      <badge-input id='query-getter' on-badge-remove="onBadgeRemove"
+      on-keyup='handleTyping'> </badge-input>
+      -->
+      <badge-input id='query-getter' on-badge-remove="onBadgeRemove"
+      on-keyup='handleTyping'> </badge-input>
+      <!--
+      <div id='query-getter' >xxx</div>
+      -->
+      <div id='icons'>
+        a<i hidden$='{{hiddenAjaxError}}' class="loader fa fa-refresh fa-spin"></i>a
+        b<i hidden$='{{hiddenSpinner}}'  data-tooltip class="has-tip fail fa fa-exclamation" title="{% trans
+          'Something goes wrong...' %}"></i>b
+        <content><content>
+      </div>
+    <div>
+
 
     <iron-ajax
         id='by-query-ajax'
@@ -84,8 +117,9 @@ Example:
         handle-as="json"
         on-response="updateBadges"
     ></iron-ajax>
-    <content><content>
+
   </template>
+
   <script>
     // register a new element called auto-complete
     Polymer({
@@ -134,6 +168,14 @@ Example:
           type: Boolean,
           value: true
         },
+        hiddenAjaxError: {
+          type: Boolean,
+          value: true
+        },
+        hiddenSpinner: {
+          type: Boolean,
+          value: true
+        },
         menuItems: {
           type: Array,
           value: function(){return [];}
@@ -147,6 +189,7 @@ Example:
           "q": evt.target.value
         };
         this.$['by-query-ajax'].generateRequest();
+        //this.hiddenSpinner = true;
       },
       _updateById: function(objId) {
         console.log('_updateById', objId);
@@ -175,16 +218,22 @@ Example:
         this.updateById(selectedItem.pk);
         this.hideMenu = true;
         this.$['query-getter'].setFocusInput();
+        //TODO:: spinner
+        //TODO:: error handling for ajax
+        //TODO:: no founds msg
+        //TODO:: tooltip na userze
+        //TODO:: add a11y to bower
+        //TODO:: look
+        //TODO:: bug z edit
+
         //TODO:: prevent (bo scoll storny)
         //TODO:: blur na menu
-        //TODO:: bug z edit
-        // spinner
-        // error handling for ajax
-        // backspace
-        // no founds msg
+
+        //TODO::backspace
       },
       populateMenu: function(evt, obj) {
         console.log('populateMenu', evt, obj);
+        this.hiddenSpinner = true;
         var foundItems = obj.xhr.response['results'];
         var selectedIds = this.value.split(this.separator);
         var fileteredItems = [];
@@ -199,6 +248,7 @@ Example:
       },
       updateBadges: function(evt, obj) {
         console.log('updateBadges', evt, obj);
+        //this.hiddenSpinner = false;
         this.$['query-getter'].setBadges(obj.xhr.response['results']);
         var ids = [];
         for(var idx=0; idx < obj.xhr.response['results'].length; idx++) {
@@ -213,6 +263,7 @@ Example:
           "pk": this.value
         }
         this.$['by-id-ajax'].generateRequest();
+        this.hiddenSpinner = false;
       },
       onBadgeRemove: function(evt, obj) {
         console.log('onBadgeRemove', evt, obj);
@@ -243,6 +294,7 @@ Example:
           "q": this.$['query-getter'].getValue()
         };
         this.$['by-query-ajax'].generateRequest();
+        //this.hiddenSpinner = true;
       },
       _ids2Objs: function(newValue, oldValue) {
         console.log('_ids2Objs', newValue, oldValue);
@@ -254,6 +306,8 @@ Example:
         Polymer.IronFormElementBehavior
       ],
       ready: function() {
+        //console.log('error', this.hiddenAjaxError);
+        //console.log('spinner', this.hiddenSpinner);
       }
     });
   </script>

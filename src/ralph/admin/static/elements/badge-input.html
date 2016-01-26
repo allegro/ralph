@@ -1,9 +1,29 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+
 
 <dom-module id='badge-input'>
   <template>
     <style>
+    :host > div {
+        border: solid blue 1px;
+      @apply(--layout-horizontal);
+      @apply(--layout-wrap);
+    }
+    #badgeContainer {
+      border: solid black 1px;
+      @apply(--layout-horizontal);
+      @apply(--layout-wrap);
+    }
+    .container {
+      @apply(--layout-horizontal);
+      @apply(--layout-wrap);
+    }
+    #input-wrapper {
+      border: solid yellow 1px;
+
+/*
       :host {
       }
       .badge {
@@ -22,8 +42,10 @@
         float: left;
         width: auto;
       }
+      */
     </style>
-    <div>
+
+    <div id='xxx'>
       <div id='badgeContainer'>
         <template is='dom-repeat' items="[[badgesData]]">
           <div class='badge'>
@@ -42,9 +64,12 @@
           </div>
         </template>
       </div>
-      <input id='text-getter' is="iron-input">
-      <div style="clear: both;"></div>
-    </div>
+      <div id='input-wrapper'>
+        <input id='text-getter' is="iron-input">
+      </div>
+    <div>
+    <div style="clear: both;"></div>
+
   </template>
 
   <script>
