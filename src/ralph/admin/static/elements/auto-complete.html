@@ -49,8 +49,8 @@ Example:
       <badge-input id='query-getter' on-badge-remove="onBadgeRemove"
       on-keyup='handleTyping'> </badge-input>
       <div id='icons'>
-        a<i hidden$='{{hiddenAjaxError}}' class="loader fa fa-refresh fa-spin"></i>a
-        b<i hidden$='{{hiddenSpinner}}'  data-tooltip class="has-tip fail fa fa-exclamation" title="{% trans
+        <i hidden$='{{hiddenSpinner}}' class="loader fa fa-refresh fa-spin"></i>
+        b<i hidden$='{{hiddenAjaxError}}'  data-tooltip class="has-tip fail fa fa-exclamation" title="{% trans
           'Something goes wrong...' %}"></i>b
         <content><content>
       </div>
@@ -161,7 +161,7 @@ Example:
           "q": evt.target.value
         };
         this.$['by-query-ajax'].generateRequest();
-        //this.hiddenSpinner = true;
+        this.hiddenSpinner = false;
       },
       _updateById: function(objId) {
         console.log('_updateById', objId);
@@ -220,7 +220,7 @@ Example:
       },
       updateBadges: function(evt, obj) {
         console.log('updateBadges', evt, obj);
-        //this.hiddenSpinner = false;
+        this.hiddenSpinner = true;
         this.$['query-getter'].setBadges(obj.xhr.response['results']);
         var ids = [];
         for(var idx=0; idx < obj.xhr.response['results'].length; idx++) {
@@ -266,7 +266,7 @@ Example:
           "q": this.$['query-getter'].getValue()
         };
         this.$['by-query-ajax'].generateRequest();
-        //this.hiddenSpinner = true;
+        this.hiddenSpinner = false;
       },
       _ids2Objs: function(newValue, oldValue) {
         console.log('_ids2Objs', newValue, oldValue);
