@@ -29,7 +29,8 @@
     "paper-menu": "PolymerElements/paper-menu#~1.2.2",
     "polymer": "Polymer/polymer#^1.2.0",
     "raven-js": "~1.3.0",
-    "iron-flex-layout": "PolymerElements/iron-flex-layout#~1.2.2"
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#~1.2.2",
+    "iron-a11y-keys": "PolymerElements/iron-a11y-keys#~1.0.4"
   },
   "devDependencies": {
     "qunit": "~1.18.0",
