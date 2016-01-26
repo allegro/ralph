@@ -72,14 +72,7 @@ Example:
     on-keys-pressed="focusToMenu"></iron-a11y-keys>
 
     <paper-menu hidden$="{{hideMenu}}" on-iron-activate='elemSelected'
-      id='suggestList' class="dropdown-content" on-keyup='focusToInput'>
-
-    <!--
-    TODO:: rm it
-    <iron-a11y-keys target="[[targetMenu]]" keys="a-z 0-90"
-    on-keys-pressed="focusToInput"></iron-a11y-keys>
-    -->
-
+    id='suggestList' class="dropdown-content" on-keyup='focusToInput'>
       <template is="dom-repeat" items="[[menuItems]]">
         <paper-item>[[item.__str__]]</paper-item>
       </template>
@@ -108,13 +101,6 @@ Example:
           type: Object,
           value: function() {
             return this.$['query-getter'];
-          }
-        },
-        targetMenu: {
-        //TODO:: rm it
-          type: Object,
-          value: function() {
-            return this.$.suggestList;
           }
         },
         queryAjaxUrl: {
@@ -276,7 +262,6 @@ Example:
           return false;
         }
         var key = String.fromCharCode(evt.keyCode);
-
         this.$['query-getter'].appendToInput(key);
         this.$['query-getter'].setFocusInput();
 
