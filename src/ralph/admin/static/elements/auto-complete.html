@@ -72,11 +72,11 @@ Example:
     on-keys-pressed="focusToMenu"></iron-a11y-keys>
 
     <paper-menu hidden$="{{hideMenu}}" on-iron-activate='elemSelected'
-    id='suggestList' class="dropdown-content" on-keyup='focusToInput'>
+      id='suggestList' class="dropdown-content" on-keyup='focusToInput'>
 
     <!--
     TODO:: rm it
-    <iron-a11y-keys target="[[targetMenu]]" keys="a-z 0-90wk"
+    <iron-a11y-keys target="[[targetMenu]]" keys="a-z 0-90"
     on-keys-pressed="focusToInput"></iron-a11y-keys>
     -->
 
@@ -84,6 +84,8 @@ Example:
         <paper-item>[[item.__str__]]</paper-item>
       </template>
     </paper-menu>
+    <paper-item hidden$='{{hideNoResults}}' id='empty-list'>No results</paper-item>
+
     <input id='values-input' name$="[[name]]" type='hidden' is="iron-input" bind-value="{{value}}">
     <iron-ajax
         id='by-id-ajax'
@@ -152,6 +154,10 @@ Example:
           type: Boolean,
           value: true
         },
+        hideNoResults: {
+          type: Boolean,
+          value: true
+        },
         menuItems: {
           type: Array,
           value: function(){return [];}
@@ -165,6 +171,7 @@ Example:
           "q": evt.target.value
         };
         this.$['by-query-ajax'].generateRequest();
+        this.hideNoResults = true;
         this.hiddenAjaxError = true;
         this.hiddenSpinner = false;
       },
@@ -192,14 +199,14 @@ Example:
       elemSelected: function(evt, obj) {
         console.log('elemSelected', evt, obj);
         var selectedItem = this.menuItems[obj.selected];
+        this.hideNoResults = true;
         this.updateById(selectedItem.pk);
         this.hideMenu = true;
         this.$['query-getter'].setFocusInput();
-        //TODO:: no founds msg
         //TODO:: tooltip na userze
+        //TODO:: bug z edit
         //TODO:: add a11y to bower
         //TODO:: look
-        //TODO:: bug z edit
 
         //TODO:: prevent (bo scoll storny)
         //TODO:: blur na menu
@@ -208,17 +215,23 @@ Example:
       },
       populateMenu: function(evt, obj) {
         console.log('populateMenu', evt, obj);
+        this.menuItems = [];
         this.hiddenSpinner = true;
         var foundItems = obj.xhr.response['results'];
-        var selectedIds = this.value.split(this.separator);
-        var fileteredItems = [];
-        for(var idx=0; idx < foundItems.length; idx++) {
-          if (selectedIds.indexOf(foundItems[idx].pk.toString()) === -1) {
-            fileteredItems.push(foundItems[idx]);
+        if (foundItems.length === 0) {
+          this.hideNoResults = false;
+        } else {
+          this.hideNoResults = true;
+          var selectedIds = this.value.split(this.separator);
+          var fileteredItems = [];
+          for(var idx=0; idx < foundItems.length; idx++) {
+            if (selectedIds.indexOf(foundItems[idx].pk.toString()) === -1) {
+              fileteredItems.push(foundItems[idx]);
+            }
           }
+          this.set('menuItems', fileteredItems);
+          this.hideMenu = false;
         }
-        this.set('menuItems', fileteredItems);
-        this.hideMenu = false;
 
       },
       updateBadges: function(evt, obj) {
