@@ -31,51 +31,23 @@ Example:
     <style>
     :host {
       display: block;
-      height: 30px;
+      height: auto;
       width: 100%;
-      border: solid purple 1px;
       background: #fff;
     }
-    /*
     #query-getter {
       display: block;
-      border: solid 1px red;
-      width: 90% !important;
-    }
-    */
-    #icons {
-      border: solid 1px yellow;
-      width: 40% !important;
-    }
-    /*
-    paper-menu {
-      z-index: 100;
-      display: inline;
-    }
-    #query-getter {
-      border:solid 1px red;
-      width: 50% !important;
-      background-color:red;
-    }
-    paper-item {
-      background: #fff;
-      z-index: 100;
+      width: 96%;
+      float: left;
     }
     #icons {
+      float: left;
+      width: 4%;
     }
-    */
     </style>
-
     <div>
-      <!--
       <badge-input id='query-getter' on-badge-remove="onBadgeRemove"
       on-keyup='handleTyping'> </badge-input>
-      -->
-      <badge-input id='query-getter' on-badge-remove="onBadgeRemove"
-      on-keyup='handleTyping'> </badge-input>
-      <!--
-      <div id='query-getter' >xxx</div>
-      -->
       <div id='icons'>
         a<i hidden$='{{hiddenAjaxError}}' class="loader fa fa-refresh fa-spin"></i>a
         b<i hidden$='{{hiddenSpinner}}'  data-tooltip class="has-tip fail fa fa-exclamation" title="{% trans

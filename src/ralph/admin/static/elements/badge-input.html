@@ -6,53 +6,35 @@
 <dom-module id='badge-input'>
   <template>
     <style>
-    :host > div {
-        border: solid blue 1px;
-      @apply(--layout-horizontal);
-      @apply(--layout-wrap);
+    :host {
     }
-    #badgeContainer {
-      border: solid black 1px;
+    .badge {
       @apply(--layout-horizontal);
-      @apply(--layout-wrap);
+      background-color: #ededed;
     }
-    .container {
-      @apply(--layout-horizontal);
-      @apply(--layout-wrap);
+    .badge {
+      margin: 2px 0;
     }
-    #input-wrapper {
-      border: solid yellow 1px;
-
-/*
-      :host {
-      }
-      .badge {
-        background-color: #ededed;
-      }
-      .badge * {
-        float: left;
-        margin: 0 5px;
-      }
-      #text-getter{
-        height: 28px;
-        border: 0;
-        background: #fff;
-      }
-      .badge, #text-getter{
-        float: left;
-        width: auto;
-      }
-      */
+    .flexchild {
+      @apply(--layout-flex);
+    }
+    #text-getter{
+      border: 0;
+      margin-bottom: 0;
+      background: #fff;
+    }
+    .badge a, .badge i {
+      float: left;
+      margin: 0 5px;
+    }
     </style>
 
-    <div id='xxx'>
+    <div>
       <div id='badgeContainer'>
+
         <template is='dom-repeat' items="[[badgesData]]">
           <div class='badge'>
-            <span>[[item.__str__]]</span>
-            <!--
-            TODO:: widget look
-            -->
+            <div class='flexchild'>[[item.__str__]]</div>
             <!-- yea, i know multi id is stupid, but django requires it :P -->
             <a class="related-widget-wrapper-link change-related"
               id="[[item.edit_icon_id]]"
@@ -62,7 +44,10 @@
             </a>
             <i on-tap="onBadgeRemove" class="fa fa-times delete"></i>
           </div>
+
+
         </template>
+
       </div>
       <div id='input-wrapper'>
         <input id='text-getter' is="iron-input">
