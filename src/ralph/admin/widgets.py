@@ -243,7 +243,7 @@ class AutocompleteWidget(forms.TextInput):
             ).first()
         show_tooltip = hasattr(self.rel_to, 'autocomplete_tooltip')
         context = RenderContext({
-            'model': self.rel_to,
+            'model': str(self.rel_to._meta.verbose_name),
             'current_object': current_object,
             'attrs': flatatt(widget_options),
             'related_url': related_url,

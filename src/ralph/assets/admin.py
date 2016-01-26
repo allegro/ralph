@@ -115,12 +115,12 @@ class CategoryAdmin(RalphMPTTAdmin):
 
 @register(ComponentModel)
 class ComponentModelAdmin(RalphAdmin):
-    pass
+    search_fields = ['name']
 
 
 @register(GenericComponent)
 class GenericComponentAdmin(RalphAdmin):
-    pass
+    search_fields = ['name']
 
 
 @register(Asset)

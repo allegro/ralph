@@ -2,13 +2,14 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.admin.autocomplete import AutocompleteTooltipMixin
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ComponentType
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import NamedMixin
 
 
-class ComponentModel(NamedMixin, models.Model):
+class ComponentModel(AutocompleteTooltipMixin, NamedMixin, models.Model):
     speed = models.PositiveIntegerField(
         verbose_name=_('speed (MHz)'),
         default=0,
@@ -30,6 +31,14 @@ class ComponentModel(NamedMixin, models.Model):
         default=ComponentType.unknown.id,
     )
     family = models.CharField(blank=True, default='', max_length=128)
+
+    autocomplete_tooltip_fields = [
+        'speed',
+        'cores',
+        'size',
+        'type',
+        'family',
+    ]
 
     class Meta:
         unique_together = ('speed', 'cores', 'size', 'type', 'family')

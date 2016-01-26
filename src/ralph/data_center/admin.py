@@ -8,6 +8,7 @@ from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.assets.invoice_report import AssetInvoiceReportMixin
+from ralph.assets.models.components import GenericComponent as AssetComponent
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_center.forms.network import NetworkInlineFormset
 from ralph.data_center.models.components import DiskShare, DiskShareMount
@@ -33,11 +34,7 @@ from ralph.data_center.models.virtual import (
     VIP,
     VirtualServer
 )
-from ralph.data_center.views.ui import (
-    DataCenterAssetComponents,
-    DataCenterAssetSecurityInfo,
-    DataCenterAssetSoftware
-)
+from ralph.data_center.views.ui import DataCenterAssetSecurityInfo
 from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
@@ -95,6 +92,20 @@ class DataCenterAssetLicence(RalphDetailViewAdmin):
     inlines = [DataCenterAssetLicenceInline]
 
 
+class DataCenterAssetComponents(RalphDetailViewAdmin):
+    icon = 'folder'
+    name = 'dc_components'
+    label = _('Components')
+    url_name = 'datacenter_asset_components'
+
+    class DataCenterComponentsInline(RalphTabularInline):
+        model = AssetComponent
+        raw_id_fields = ('model',)
+        extra = 1
+
+    inlines = [DataCenterComponentsInline]
+
+
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(
     MulitiAddAdminMixin,
@@ -109,7 +120,6 @@ class DataCenterAssetAdmin(
     actions = ['bulk_edit_action']
     change_views = [
         DataCenterAssetComponents,
-        DataCenterAssetSoftware,
         DataCenterAssetSecurityInfo,
         DataCenterAssetLicence,
         DataCenterAssetSupport,
