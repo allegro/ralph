@@ -51,8 +51,8 @@ Example:
       on-keyup='handleTyping'> </badge-input>
       <div id='icons'>
         <i hidden$='{{hiddenSpinner}}' class="loader fa fa-refresh fa-spin"></i>
-        b<i hidden$='{{hiddenAjaxError}}'  data-tooltip class="has-tip fail fa fa-exclamation" title="{% trans
-          'Something goes wrong...' %}"></i>b
+        <i hidden$='{{hiddenAjaxError}}' class="has-tip fail fa
+          fa-exclamation" title="Something goes wrong..."></i>
         <content><content>
       </div>
       <div style="clear: both;"></div>
@@ -65,6 +65,7 @@ Example:
         params=''
         handle-as="json"
         on-response="populateMenu"
+        on-error="errorHandler"
     ></iron-ajax>
 
     <iron-a11y-keys target="[[targetInput]]" keys="down up"
@@ -90,6 +91,7 @@ Example:
         params=''
         handle-as="json"
         on-response="updateBadges"
+        on-error="errorHandler"
     ></iron-ajax>
 
   </template>
@@ -163,6 +165,7 @@ Example:
           "q": evt.target.value
         };
         this.$['by-query-ajax'].generateRequest();
+        this.hiddenAjaxError = true;
         this.hiddenSpinner = false;
       },
       _updateById: function(objId) {
@@ -192,8 +195,6 @@ Example:
         this.updateById(selectedItem.pk);
         this.hideMenu = true;
         this.$['query-getter'].setFocusInput();
-        //TODO:: spinner
-        //TODO:: error handling for ajax
         //TODO:: no founds msg
         //TODO:: tooltip na userze
         //TODO:: add a11y to bower
@@ -237,6 +238,7 @@ Example:
           "pk": this.value
         }
         this.$['by-id-ajax'].generateRequest();
+        this.hiddenAjaxError = true;
         this.hiddenSpinner = false;
       },
       onBadgeRemove: function(evt, obj) {
@@ -244,6 +246,11 @@ Example:
         var ids = this.value.split(this.separator)
         ids.splice(ids.indexOf(obj.item.pk.toString()), 1);
         this.value = ids.join(this.separator);
+      },
+      errorHandler: function(request, bubbles) {
+        console.log('errorHandler', request, bubbles);
+        this.hiddenSpinner = true;
+        this.hiddenAjaxError = false;
       },
       focusToMenu: function(evt, obj) {
         console.log('focusToMenu', evt, obj);
