@@ -5,6 +5,7 @@
         .module('rack.controllers', [
                 'rack.services',
                 'rack.directives',
+                'common.directives',
             ]
         )
         .controller('RackController', ['$scope', 'rack', 'data_center', function ($scope, rack, data_center) {

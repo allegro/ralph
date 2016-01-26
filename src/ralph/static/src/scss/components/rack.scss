@@ -236,7 +236,26 @@
                         }
                     }
                     @include generate-u($max-u);
-                    &.height-u-0 .sn, &.height-u-1 .sn {display: none;}
+                    &.height-u-0 .sn, &.height-u-1 .sn, &.height-u-2 .sn,
+                    &.height-u-0 .barcode, &.height-u-1 .barcode, &.height-u-2 .barcode
+                    {
+                        display: none;
+                    }
+                    &.height-u-2 .children {
+                        top: 1rem;
+                        bottom: 0;
+                        [class*="slot-"] {
+                            .slot_no {
+                                padding: 0;
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                            }
+                        }
+                    }
+                    &.height-u-4 .children {
+                        top: 1rem;
+                    }
                     &.position-u-1 .info .barcode, &.position-u-1 .info .asset-description {top:0;}
                     .info {
                         display: block;

@@ -5,9 +5,19 @@
     ng-if="device.children.length || side == device.orientation"
 >
     <div class="info">
-        <span class="asset-description">{{ device.service }}: {{ device.hostname }}</span>
-        <div class="barcode">{{ device.barcode }}</div>
-        <div class="sn">{{ device.sn }}</div>
+        <span class="asset-description">
+            {{ device.service }}: {{ device.hostname }}
+            <span class="tip" ng-if="device.height <= 2">
+                <tooltip>
+                    <div>Barcode: {{ device.barcode }}</div>
+                    <div>SN: {{ device.sn }}</div>
+                </tooltip>
+            </span>
+        </span>
+        <span ng-if="device.height > 2">
+            <div class="barcode">{{ device.barcode }}</div>
+            <div class="sn">{{ device.sn }}</div>
+        </span>
     </div>
     <div class="children">
         <div
@@ -16,9 +26,14 @@
             ng-click="setActiveSlot(child)"
             style="order: {{ child.slot_no | remove_alfa }};"
         >
-            <span class="slot_no">{{ child.slot_no }}</span>
-            <span class="barcode">
-                <span class="inner">{{ child.barcode }}</span>
+            <span ng-if="device.height <= 2">
+                <span class="slot_no">{{ child.barcode }}</span>
+            </span>
+            <span ng-if="device.height > 2">
+                <span class="slot_no">{{ child.slot_no }}</span>
+                <span class="barcode">
+                    <span class="inner">{{ child.barcode }}</span>
+                </span>
             </span>
         </div>
     </div>

@@ -12,17 +12,21 @@
   </head>
   <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}">
     {% if not is_popup %}
-      <nav class="top-bar" data-topbar="">
+      <nav class="top-bar" data-topbar>
+        <ul class="title-area">
+          <li class="name">
+            {% block branding %}{{ site_header }}{% endblock %}
+          </li>
+          <li class="toggle-topbar menu-icon">
+            <a href="#"><span>Menu</span></a>
+          </li>
+        </ul>
         <section class="top-bar-section">
-          <ul class="title-area">
-            <li class="name">
-              {% block branding %}{{ site_header }}{% endblock %}
-            </li>
-            <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
-          </ul>
            {% sitetree_menu from "ralph_admin" include "trunk" template "admin/menu_admin.html" %}
           <ul class="right">
-            <li class="has-form"> {% contextual_search_form search_url search_fields %} </li>
+            <li class="has-form">
+              {% contextual_search_form search_url search_fields %}
+            </li>
             {% block usertools %}
               {% if has_permission %}
                 {% block welcome-msg %}
