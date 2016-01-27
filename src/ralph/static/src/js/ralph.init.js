@@ -82,3 +82,15 @@ function dismissAddRelatedObjectPopup(win, newId, newRepr) {
     }
     win.close();
 }
+
+function hideSuggestions(evt, obj) {
+    var elems = document.querySelectorAll('auto-complete');
+    if (!evt.target.classList.contains("auto-complete")) {
+        // clicked outside auto-complete -> hide suggestions
+        for(i=0; i<elems.length; i++) {
+            console.log(elems[i]);
+            elems[i].hideMenu = true;
+        }
+    }
+}
+window.addEventListener("click", hideSuggestions);

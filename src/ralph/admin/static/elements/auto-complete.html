@@ -152,6 +152,10 @@ Example:
       handleTyping: function(evt, obj) {
         console.log('handleTyping', evt, obj);
         if (evt.target.value === '' || evt.target.value.length < this.fireThreshold) return false;
+        if (evt.keyCode === 27) {  // esc-key
+          this.hideMenu = true;
+          return false;
+        }
         // TODO:: find out why regular syntax doesn't work
         this.$['by-query-ajax'].params = {
           "q": evt.target.value
@@ -189,12 +193,17 @@ Example:
         this.updateById(selectedItem.pk);
         this.hideMenu = true;
         this.$['query-getter'].setFocusInput();
+        //TODO:: blur na menu po esc
+        //TODO::sortowanie nowo dodanych
+        //TODO:: popup on edit
         //TODO:: tooltip na userze
+        //TODO:: user search on http://localhost:8010/back_office/backofficeasset/
 
-        //TODO:: prevent (bo scoll storny)
-        //TODO:: blur na menu
-
+        //TODO::single: hide input when picked
+        //TODO::icons obok inputa
         //TODO::backspace
+        //TODO:: hide suggest on click
+        //TODO:: prevent (bo scoll storny)
       },
       populateMenu: function(evt, obj) {
         console.log('populateMenu', evt, obj);
@@ -256,7 +265,7 @@ Example:
       },
       focusToInput: function(evt, obj) {
         console.log('focusToInput', evt, obj);
-        if (evt.keyIdentifier == "Down" || evt.keyIdentifier == "Up") {
+        if (evt.keyIdentifier === "Down" || evt.keyIdentifier === "Up") {
           return false;
         }
         var key = String.fromCharCode(evt.keyCode);
