@@ -1,0 +1,309 @@
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/iron-a11y-keys/iron-a11y-keys.html">
+<link rel="import" href="badge-input.html">
+
+<!--
+Autocomplete field.
+This widget works in two mode
+
+Usage:
+------
+
+### single
+
+Example:
+
+    TODO:: add qualitative doc
+    <auto-complete value="1" > </auto-complete>
+
+### multi
+
+Example:
+    <auto-complete value=""  multi> </auto-complete>
+-->
+
+
+<dom-module id='auto-complete'>
+  <template>
+    <style>
+    :host {
+      display: block;
+      height: auto;
+      width: 100%;
+      background: #fff;
+      border: solid 1px #ccc;
+    }
+    #query-getter {
+      display: block;
+      width: 96%;
+      float: left;
+    }
+    #icons {
+      float: left;
+      width: 4%;
+    }
+    </style>
+    <div>
+      <badge-input id='query-getter' on-badge-remove="onBadgeRemove"
+      on-keyup='handleTyping' odd-name='[[name]]'> </badge-input>
+      <div id='icons'>
+        <i hidden$='{{hiddenSpinner}}' class="loader fa fa-refresh fa-spin"></i>
+        <i hidden$='{{hiddenAjaxError}}' class="has-tip fail fa
+          fa-exclamation" title="Something goes wrong..."></i>
+        <content><content>
+      </div>
+      <div style="clear: both;"></div>
+    <div>
+
+
+    <iron-ajax
+        id='by-query-ajax'
+        url="{{queryAjaxUrl}}"
+        params=''
+        handle-as="json"
+        on-response="populateMenu"
+        on-error="errorHandler"
+    ></iron-ajax>
+
+    <iron-a11y-keys target="[[targetInput]]" keys="down up"
+    on-keys-pressed="focusToMenu"></iron-a11y-keys>
+
+    <paper-menu hidden$="{{hideMenu}}" on-iron-activate='elemSelected'
+      id='suggestList' class="dropdown-content"
+      on-keyup='focusToInput'
+      on-keydown='hideSuggestionsOnEsc'
+    >
+      <template is="dom-repeat" items="[[menuItems]]">
+        <paper-item>[[item.__str__]]</paper-item>
+      </template>
+    </paper-menu>
+    <paper-item hidden$='{{hideNoResults}}' id='empty-list'>No results</paper-item>
+
+    <input id='values-input' name$="[[name]]" type='hidden' is="iron-input" bind-value="{{value}}">
+    <iron-ajax
+        id='by-id-ajax'
+        url="{{detailsurl}}"
+        params=''
+        handle-as="json"
+        on-response="updateBadges"
+        on-error="errorHandler"
+    ></iron-ajax>
+
+  </template>
+
+  <script>
+    // register a new element called auto-complete
+    Polymer({
+      is: "auto-complete",
+      properties: {
+        typed: String,
+        targetInput: {
+          type: Object,
+          value: function() {
+            return this.$['query-getter'];
+          }
+        },
+        queryAjaxUrl: {
+          type: String,
+          value: null,
+        },
+        detailsurl: {
+          type: String,
+          value: null,
+        },
+        fireThreshold: {
+          type: Number,
+          value: 3,
+        },
+        separator: {
+          type: String,
+          value: ',',
+        },
+        value: {
+          type: String,
+          value: '',
+          observer: '_ids2Objs',
+        },
+        multi: {
+          type: Boolean,
+          value: false
+        },
+        hideMenu: {
+          type: Boolean,
+          value: true
+        },
+        hiddenAjaxError: {
+          type: Boolean,
+          value: true
+        },
+        hiddenSpinner: {
+          type: Boolean,
+          value: true
+        },
+        hideNoResults: {
+          type: Boolean,
+          value: true
+        },
+        menuItems: {
+          type: Array,
+          value: function(){return [];}
+        }
+      },
+      handleTyping: function(evt, obj) {
+        console.log('handleTyping', evt, obj);
+        if (evt.target.value === '' || evt.target.value.length < this.fireThreshold) return false;
+        if (evt.keyCode === 27) {  // esc-key
+          this.hideMenu = true;
+          return false;
+        }
+        // TODO:: find out why regular syntax doesn't work
+        this.$['by-query-ajax'].params = {
+          "q": evt.target.value
+        };
+        this.$['by-query-ajax'].generateRequest();
+        this.hideNoResults = true;
+        this.hiddenAjaxError = true;
+        this.hiddenSpinner = false;
+      },
+      _updateById: function(objId) {
+        console.log('_updateById', objId);
+        this.value = objId;
+      },
+      _updateMultiById: function(objId) {
+        console.log('_updateMultiById', objId);
+        if (this.value === "") {
+          this.value = objId
+        } else {
+          this.value += this.separator + objId;
+        }
+      },
+      updateById: function(objId) {
+        console.log('updateById', objId);
+        if (this.multi) {
+          this._updateMultiById(objId);
+        } else {
+          this._updateById(objId);
+        }
+        this.$['query-getter'].setFocusInput();
+      },
+      elemSelected: function(evt, obj) {
+        console.log('elemSelected', evt, obj);
+        var selectedItem = this.menuItems[obj.selected];
+        this.hideNoResults = true;
+        this.updateById(selectedItem.pk);
+        this.hideMenu = true;
+        this.$['query-getter'].setFocusInput();
+        //TODO:: blur na menu po esc
+        //TODO:: hide suggest on click
+        //TODO::sortowanie nowo dodanych
+        //TODO:: popup on edit
+        //TODO:: tooltip na userze
+        //TODO:: user search on http://localhost:8010/back_office/backofficeasset/
+
+        //TODO::single: hide input when picked
+        //TODO::icons obok inputa
+        //TODO::backspace
+        //TODO:: prevent (bo scoll storny)
+      },
+      populateMenu: function(evt, obj) {
+        console.log('populateMenu', evt, obj);
+        this.menuItems = [];
+        this.hiddenSpinner = true;
+        var foundItems = obj.xhr.response['results'];
+        if (foundItems.length === 0) {
+          this.hideNoResults = false;
+        } else {
+          this.hideNoResults = true;
+          var selectedIds = this.value.split(this.separator);
+          var fileteredItems = [];
+          for(var idx=0; idx < foundItems.length; idx++) {
+            if (selectedIds.indexOf(foundItems[idx].pk.toString()) === -1) {
+              fileteredItems.push(foundItems[idx]);
+            }
+          }
+          this.set('menuItems', fileteredItems);
+          this.hideMenu = false;
+        }
+
+      },
+      updateBadges: function(evt, obj) {
+        console.log('updateBadges', evt, obj);
+        this.hiddenSpinner = true;
+        this.$['query-getter'].setBadges(obj.xhr.response['results']);
+        var ids = [];
+        for(var idx=0; idx < obj.xhr.response['results'].length; idx++) {
+          ids.push(obj.xhr.response['results'][idx].pk);
+        }
+        this.value = ids.join(this.separator);
+      },
+      reloadBadges: function() {
+        console.log('reloadBadges');
+        this.$['by-id-ajax'].params = {
+          "pk": this.value
+        }
+        this.$['by-id-ajax'].generateRequest();
+        this.hiddenAjaxError = true;
+        this.hiddenSpinner = false;
+      },
+      onBadgeRemove: function(evt, obj) {
+        console.log('onBadgeRemove', evt, obj);
+        var ids = this.value.split(this.separator)
+        ids.splice(ids.indexOf(obj.item.pk.toString()), 1);
+        this.value = ids.join(this.separator);
+      },
+      errorHandler: function(request, bubbles) {
+        console.log('errorHandler', request, bubbles);
+        this.hiddenSpinner = true;
+        this.hiddenAjaxError = false;
+      },
+      focusToMenu: function(evt, obj) {
+        console.log('focusToMenu', evt, obj);
+        if (!this.hideMenu) {
+          this.$.suggestList.focus();
+        }
+      },
+      focusToInput: function(evt, obj) {
+        console.log('focusToInput', evt, obj);
+        if (evt.keyIdentifier === "Down" || evt.keyIdentifier === "Up") {
+          return false;
+        }
+        var key = String.fromCharCode(evt.keyCode);
+        this.$['query-getter'].appendToInput(key);
+        this.$['query-getter'].setFocusInput();
+
+        // TODO:: auto trigger it when focus lost
+        this.hideMenu = true;
+
+        this.$['by-query-ajax'].params = {
+          "q": this.$['query-getter'].getValue()
+        };
+        this.$['by-query-ajax'].generateRequest();
+        this.hiddenSpinner = false;
+      },
+      _ids2Objs: function(newValue, oldValue) {
+        if (newValue === oldValue) return;
+        console.log('_ids2Objs', newValue, oldValue);
+        if (newValue === "") { return false; }
+        this.value = newValue;
+        this.reloadBadges();
+      },
+      hideSuggestionsOnEsc: function(evt, obj) {
+        console.log('hideSuggestionsOnEsc', evt, obj);
+        if (evt.keyCode === 27) {  // esc-key
+          this.hideMenu = true;
+          this.$['query-getter'].setFocusInput();
+        }
+      },
+      behaviors: [
+        Polymer.IronFormElementBehavior
+      ],
+      ready: function() {
+        //console.log('error', this.hiddenAjaxError);
+        //console.log('spinner', this.hiddenSpinner);
+      }
+    });
+  </script>
+</dom-module>

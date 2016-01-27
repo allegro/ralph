@@ -1,0 +1,117 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+
+<dom-module id='badge-input'>
+  <template>
+    <style>
+    :host {
+    }
+    .badge {
+      @apply(--layout-horizontal);
+      background-color: #ededed;
+    }
+    .badge {
+      margin: 2px 0;
+    }
+    .flexchild {
+      @apply(--layout-flex);
+    }
+    #text-getter{
+      border: 0;
+      margin-bottom: 0;
+      background: #fff;
+    }
+    .badge a, .badge i {
+      float: left;
+      margin: 0 5px;
+    }
+    </style>
+
+    <div>
+      <div id='badgeContainer'>
+
+        <template is='dom-repeat' items="[[badgesData]]">
+          <div class='badge'>
+            <div class='flexchild'>[[item.__str__]]</div>
+            <!-- yea, i know multi id is stupid, but django requires it :P -->
+            <a class="related-widget-wrapper-link change-related"
+              id="change_id_{{ oddName }}"
+              href='[[item.edit_url]]'
+            >
+              <i class="fa fa-pencil"></i>
+            </a>
+            <i on-tap="onBadgeRemove" class="fa fa-times delete"></i>
+          </div>
+
+
+        </template>
+
+      </div>
+      <div id='input-wrapper'>
+        <input id='text-getter' is="iron-input">
+      </div>
+    <div>
+    <div style="clear: both;"></div>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: "badge-input",
+      properties: {
+        oddName: {
+          // you won't use that
+          type: String,
+          value: ""
+        },
+        badgesData: {
+          type: Array,
+          value: function(){return [];}
+        }
+      },
+      addBadge: function(badgeObject) {
+        console.log('addBadge', badgeObject);
+        this.push('badgesData', badgeObject);
+        this.clearInput();
+      },
+      setBadges: function(badges) {
+        console.log('setBadges', badges);
+        this.badgesData = badges;
+        this.clearInput();
+      },
+      onBadgeRemove: function(evt, obj) {
+        console.log('onBadgeRemove', evt, obj);
+        this.splice('badgesData', evt.model.index, 1);
+        this.fire('badge-remove', {
+            "index": evt.model.index,
+            "item": evt.model.item
+        });
+      },
+      setFocusInput: function() {
+        console.log('setFocusInput');
+        this.$['text-getter'].focus();
+      },
+      clear: function() {
+        console.log('clear');
+        this.set('badgesData', []);
+      },
+      // Down from here could be replaced if value attrib. is exposed
+      clearInput: function() {
+        console.log('clearInput');
+        this.$['text-getter'].value = '';
+      },
+      getValue: function(text) {
+        console.log('getValue', text);
+        return this.$['text-getter'].value;
+      },
+      appendToInput: function(text) {
+        console.log('appendToInput', text);
+        this.$['text-getter'].value = this.$['text-getter'].value + text;
+      },
+      ready: function() {
+      }
+    });
+  </script>
+</dom-module>

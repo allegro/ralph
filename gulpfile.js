@@ -9,10 +9,10 @@ var gulp = require('gulp'),
     qunit = require('gulp-qunit');
 
 var config = {
-     bowerDir: './bower_components/',
+    bowerDir: './bower_components/',
     srcRoot: 'src/ralph/static/src/',
     staticRoot: 'src/ralph/static/',
-     vendorRoot: 'src/ralph/static/vendor/'
+    vendorRoot: 'src/ralph/static/vendor/'
 }
 
 var sass_config = {
@@ -79,6 +79,31 @@ gulp.task('js', function(){
     ]
     gulp.src(angularFiles)
         .pipe(gulp.dest(config.vendorRoot + 'js'));
+
+
+    gulp.src([
+        "./bower_components/font-roboto/**/*",
+        "./bower_components/iron-a11y-keys-behavior/**/*",
+        "./bower_components/iron-ajax/**/*",
+        "./bower_components/iron-autogrow-textarea/**/*",
+        "./bower_components/iron-behaviors/**/*",
+        "./bower_components/iron-collapse/**/*",
+        "./bower_components/iron-flex-layout/**/*",
+        "./bower_components/iron-form-element-behavior/**/*",
+        "./bower_components/iron-input/**/*",
+        "./bower_components/iron-menu-behavior/**/*",
+        "./bower_components/iron-meta/**/*",
+        "./bower_components/iron-selector/**/*",
+        "./bower_components/iron-validatable-behavior/**/*",
+        "./bower_components/paper-input/**/*",
+        "./bower_components/paper-item/**/*",
+        "./bower_components/paper-menu/**/*",
+        "./bower_components/paper-styles/**/*",
+        "./bower_components/polymer/**/*",
+        "./bower_components/promise-polyfill/**/*",
+        "./bower_components/webcomponentsjs/**/*",
+    ], {base:"."})
+        .pipe(gulp.dest("src/ralph/admin/static/"));
 });
 
 gulp.task('test', function() {

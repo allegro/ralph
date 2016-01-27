@@ -1,5 +1,27 @@
 {% load i18n %}
+<auto-complete
+  {{ attrs }}
+  value="{{ value }}"
+  {{multi}}
+  query-ajax-url="{{ data_suggest_url }}"
+  detailsurl="{{ data_details_url }}"
+> <!-- TODO:: `detailsurl` should work as search-url -->
+  <a href="{{ related_url }}" class="related-lookup" id="lookup_id_{{ name }}">
+    <i class="fa fa-search"></i>
+  </a>
+  {% if add_related_url %}
+    <a class="related-widget-wrapper-link add-related" id="add_id_{{ name }}"
+      href="{{ add_related_url }}?_popup=1">
+        <i class="fa fa-plus-circle"></i>
+    </a>
+  {% endif %}
+  {% if show_tooltip %}
+    <i data-tooltip class="has-tip fa fa-info-circle" title="{{ tooltip }}"></i>
+  {% endif %}
 
+</auto-complete>
+
+{% comment %}
 <div class="autocomplete-widget{% if not current_object %} edit{% endif %}"{{ attrs }} data-empty-value={{ empty_value }} data-is-empty={{ is_empty }}>
     <div class="widget-wrapper">
         <div class="item-wrapper">
@@ -55,3 +77,4 @@
     </ul>
     {{ input_field }}
 </div>
+{% endcomment %}
