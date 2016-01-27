@@ -72,7 +72,10 @@ Example:
     on-keys-pressed="focusToMenu"></iron-a11y-keys>
 
     <paper-menu hidden$="{{hideMenu}}" on-iron-activate='elemSelected'
-    id='suggestList' class="dropdown-content" on-keyup='focusToInput'>
+      id='suggestList' class="dropdown-content"
+      on-keyup='focusToInput'
+      on-keydown='hideSuggestionsOnEsc'
+    >
       <template is="dom-repeat" items="[[menuItems]]">
         <paper-item>[[item.__str__]]</paper-item>
       </template>
@@ -194,6 +197,7 @@ Example:
         this.hideMenu = true;
         this.$['query-getter'].setFocusInput();
         //TODO:: blur na menu po esc
+        //TODO:: hide suggest on click
         //TODO::sortowanie nowo dodanych
         //TODO:: popup on edit
         //TODO:: tooltip na userze
@@ -202,7 +206,6 @@ Example:
         //TODO::single: hide input when picked
         //TODO::icons obok inputa
         //TODO::backspace
-        //TODO:: hide suggest on click
         //TODO:: prevent (bo scoll storny)
       },
       populateMenu: function(evt, obj) {
@@ -234,7 +237,6 @@ Example:
         for(var idx=0; idx < obj.xhr.response['results'].length; idx++) {
           ids.push(obj.xhr.response['results'][idx].pk);
         }
-        console.log('ids', ids);
         this.value = ids.join(this.separator);
       },
       reloadBadges: function() {
@@ -282,10 +284,18 @@ Example:
         this.hiddenSpinner = false;
       },
       _ids2Objs: function(newValue, oldValue) {
+        if (newValue === oldValue) return;
         console.log('_ids2Objs', newValue, oldValue);
         if (newValue === "") { return false; }
         this.value = newValue;
         this.reloadBadges();
+      },
+      hideSuggestionsOnEsc: function(evt, obj) {
+        console.log('hideSuggestionsOnEsc', evt, obj);
+        if (evt.keyCode === 27) {  // esc-key
+          this.hideMenu = true;
+          this.$['query-getter'].setFocusInput();
+        }
       },
       behaviors: [
         Polymer.IronFormElementBehavior
