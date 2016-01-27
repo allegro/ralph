@@ -10,8 +10,8 @@ layout: default
         <div class="span8">
             <ul>
               {% for post in site.posts %}
-                <li>
-                  <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a>
+                <li class='post-item'>
+                  {{ post.date|date_to_long_string}} <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a>
                 </li>
               {% endfor %}
             </ul>

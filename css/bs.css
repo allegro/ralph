@@ -97,7 +97,8 @@ h1,h2,h3,h4 {
 }
 
 .hero-unit {
-    background: url(../img/data-center-from-wiki.jpg);
+    background: url(../img/screen-rack.png);
+    background-size: 1100px 500px;
     background-repeat: repeat-x;
 }
 
@@ -202,4 +203,8 @@ h1,h2,h3,h4 {
 
 .promo-story-2 .img {
     border: solid #ccc 3px;
+}
+
+li.post-item {
+    padding: 15px;
 }
