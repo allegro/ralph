@@ -2,26 +2,8 @@
 <link rel="import" href="../bower_components/iron-input/iron-input.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 
-<dom-module id='tool-tip'>
-  <template>
-  <i id='dupa' data-tooltip class="has-tip fa fa-info-circle" title="{{ title }}"></i>
+<link rel="import" href="tool-tip.html">
 
-  </template>
-  <script>
-    Polymer({
-      is: "tool-tip",
-      properties: {
-        'title': {
-          type: String,
-          value: ''
-        }
-      },
-      ready() {
-        $(this).foundation("tooltip");
-      }
-    });
-  </script>
-<dom-module>
 
 <dom-module id='badge-input'>
   <template>
