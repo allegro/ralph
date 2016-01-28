@@ -188,7 +188,6 @@ Example:
         this.updateById(selectedItem.pk);
         this.hideMenu = true;
         this.$['query-getter'].setFocusInput();
-        //TODO::sortowanie nowo dodanych
         //TODO:: popup on edit
         //TODO:: tooltip na userze
         //TODO:: user search on http://localhost:8010/back_office/backofficeasset/
@@ -223,12 +222,16 @@ Example:
       updateBadges: function(evt, obj) {
         console.log('updateBadges', evt, obj);
         this.hiddenSpinner = true;
-        this.$['query-getter'].setBadges(obj.xhr.response['results']);
-        var ids = [];
-        for(var idx=0; idx < obj.xhr.response['results'].length; idx++) {
-          ids.push(obj.xhr.response['results'][idx].pk);
+        var ids = this.value.split(this.separator)
+        var badgesData = []
+        for (var idx = 0; idx < obj.xhr.response['results'].length; idx++) {
+          badgesData.push(null);
         }
-        this.value = ids.join(this.separator);
+        for(idx=0; idx < obj.xhr.response['results'].length; idx++) {
+          var item = obj.xhr.response['results'][idx];
+          badgesData.splice(ids.indexOf(item.pk.toString()), 1, item);
+        }
+        this.$['query-getter'].setBadges(badgesData);
       },
       reloadBadges: function() {
         console.log('reloadBadges');
@@ -257,8 +260,8 @@ Example:
         }
       },
       _ids2Objs: function(newValue, oldValue) {
-        if (newValue === oldValue) return;
         console.log('_ids2Objs', newValue, oldValue);
+        if (newValue === oldValue) return;
         if (newValue === "") { return false; }
         this.value = newValue;
         this.reloadBadges();
