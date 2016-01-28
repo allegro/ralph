@@ -334,15 +334,29 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
                 except self.field_model.DoesNotExist:
                     pass
 
+
+        # TODO::
+        if False: #or self.multi:
+            #attrs['multi'] = ''  # only key is requied
+            value = ','.join(force_text(v) for v in self.value())
+        else:
+            value = str(self.value() or "")
+        print('dd', repr(value))
         return ({
-            'current_value': self.value(),
+            'value': value,
             'parameter_name': self.field_path,
             'searched_fields': [self.title],
+            #TODO:: multi
+            #TODO:: data_suggest_url
+            #TODO:: data_details_url
+            'data_suggest_url': reverse( 'autocomplete-list', kwargs={ 'app': model._meta.app_label, 'model': model.__name__, 'field': self.field.name }),
+            'data_details_url': reverse( 'admin:{}_{}_autocomplete_details'.format(*model_options)),
+
             'related_url': self.get_related_url(),
             'name': self.field_path,
             'attrs': flatatt(widget_options),
-            'current_object': current_object,
-            'empty_value': self.empty_value,
+            #'current_object': current_object,
+            #'empty_value': self.empty_value,
             'is_empty': True
         },)
 
