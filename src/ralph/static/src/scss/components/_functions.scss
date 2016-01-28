@@ -59,3 +59,17 @@
         }
     }
 }
+
+@mixin rotate($rotation) {
+    -webkit-transform: rotate($rotation);
+    -moz-transform: rotate($rotation);
+    -ms-transform: rotate($rotation);
+    -o-transform: rotate($rotation);
+    transform: rotate($rotation);
+}
+
+@mixin box-sizing($box-sizing) {
+    -webkit-box-sizing: $box-sizing;
+    -moz-box-sizing: $box-sizing;
+    box-sizing: $box-sizing;
+}

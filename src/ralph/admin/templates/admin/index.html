@@ -1,0 +1,53 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_static dashboard_tags cache log %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="small-8 large-8 columns">
+            {% cache 60 summary %}
+                {% ralph_summary %}
+            {% endcache %}
+            <div class="capacities module">
+                {% cache 60 dc_capacity %}
+                    {% dc_capacity data_centers %}
+                {% endcache %}
+            </div>
+        </div>
+        <div class="small-4 large-4 separator columns">
+            <div class="module recent-actions">
+            <h2>{% trans 'Recent Actions' %}</h2>
+            {% get_admin_log 20 as admin_log for_user user %}
+            {% if not admin_log %}
+                <div class="alert-box info radius">
+                    {% trans 'None available' %}
+                </div>
+            {% else %}
+                <ul class="actionlist reset">
+                    {% for entry in admin_log %}
+                        <li class="action {% if entry.is_addition %}add{% endif %}{% if entry.is_change %}change{% endif %}{% if entry.is_deletion %}delete{% endif %}">
+                            {% if entry.is_deletion or not entry.get_admin_url %}
+                                {{ entry.object_repr }}
+                            {% else %}
+                                <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+                            {% endif %}
+                            {% if entry.content_type %}
+                                <span class="mini">{% filter capfirst %}{{ entry.content_type }}{% endfilter %}</span>
+                            {% else %}
+                                <span class="mini">{% trans 'Unknown content' %}</span>
+                            {% endif %}
+                            <span class="timesince">
+                                {{ entry.action_time|timesince }} ago
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+

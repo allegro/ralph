@@ -19,6 +19,16 @@ body {
     }
 }
 
+ul.reset {
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+}
+
+.columns.separator {
+    border-left: 1px solid #ddd;
+}
+
 .action-counter {
     margin-left: 5px;
 }

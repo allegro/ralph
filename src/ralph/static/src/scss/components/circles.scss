@@ -1,0 +1,155 @@
+@import 'variables';
+@import 'functions';
+@import '../colors';
+
+$circle-width: 0.15em;
+
+$color-collection: (
+  ('green', $mdc-green-500),
+  ('blue', $mdc-blue-500),
+  ('purple', $mdc-purple-500),
+  ('orange', $mdc-orange-500),
+  ('red', $mdc-red-500),
+);
+
+$default-size: 120px;
+$small-size: 80px;
+$big-size: 180px;
+$huge-size: 240px;
+
+.rect-auto {
+    clip: rect(auto, auto, auto, auto);
+}
+.capacity-info {
+  margin: 10px;
+  float: left;
+  overflow: hidden;
+  width: $default-size;
+  font-size: $default-size;
+  &.small {
+    width: $small-size;
+    font-size: $small-size;
+    .title {font-size: $small-size / 6;}
+  }
+  &.big {
+    width: $big-size;
+    font-size: $big-size;
+    .title {font-size: $big-size / 6;}
+  }
+  &.huge {
+    width: $huge-size;
+    font-size: $huge-size;
+    .title {font-size: $huge-size / 6;}
+  }
+  .title {
+    color: #777;
+    text-align: center;
+    font-size: $default-size / 6;
+  }
+}
+.pie {
+    position: absolute;
+    border: $circle-width solid $primary-color;
+    width: 1 - (2 * $circle-width);
+    height: 1 - (2 * $circle-width);
+    clip: rect(0em, 0.5em, 1em, 0em);
+    border-radius: 50%;
+    @include rotate(0deg);
+}
+.pie-fill {
+    @include rotate(180deg);
+}
+.c100 {
+
+    *, *:before, *:after {
+        @include box-sizing(content-box);
+    }
+    position: relative;
+    width: 1em;
+    height: 1em;
+    border-radius: 50%;
+    float: left;
+    margin: 0 0.1em 0.1em 0;
+    background-color: $iron;
+    &.center{
+        float: none;
+        margin: 0 auto;
+    }
+    & > span {
+        position: absolute;
+        width: 100%;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 5em;
+        line-height: 5em;
+        font-size: 0.2em;
+        color: $iron;
+        display: block;
+        text-align: center;
+        white-space: nowrap;
+    }
+    &:after{
+        position: absolute;
+        top: $circle-width;
+        left: $circle-width;
+        display: block;
+        content: " ";
+        border-radius: 50%;
+        background-color: $white-smoke;
+        width: 1 - (2 * $circle-width);
+        height: 1 - (2 * $circle-width);
+    }
+    @mixin generate-slices() {
+        @for $i from 0 through 100 {
+            &.start-#{$i} {
+                $degs: (360/100*$i);
+                transform: rotate(#{$degs}deg);
+            }
+        }
+    }
+    .slice {
+        position: absolute;
+        width: 1em;
+        height: 1em;
+        clip: rect(0em, 1em, 1em, 0.5em);
+        @include generate-slices();
+    }
+    .bar {
+        @extend .pie;
+    }
+    @mixin generate-elements($n, $from) {
+        @for $i from $from through $n {
+            &.p#{$i} {
+                & .slice {
+                    @extend .rect-auto;
+                }
+                & .bar:after{
+                    @extend .pie-fill;
+                }
+                & .fill{
+                    @extend .pie;
+                    @extend .pie-fill;
+                }
+            }
+        }
+    }
+    @mixin generate-rotation($n, $from) {
+        @for $i from $from through $n {
+            &.p#{$i} .bar {
+                $degs: (360/100*$i);
+                @include rotate(#{$degs}deg);
+            }
+        }
+    }
+    @include generate-elements(100, 51);
+    @include generate-rotation(100, 1);
+    @each $label, $color in $color-collection {
+      &.#{$label}{
+        .bar, .fill { border-color: $color !important;}
+        &:hover {
+            & > span { color: $color;}
+        }
+      }
+    }
+}

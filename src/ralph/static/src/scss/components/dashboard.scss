@@ -1,0 +1,131 @@
+@import '../colors';
+
+.dashboard {
+    & > .row {
+        margin-top: 10px;
+    }
+    .module {
+        h2 {
+            color: #555;
+            font-size: 1.5rem;
+        }
+    }
+    .capacities {
+        border-bottom: 1px solid #ddd;
+    }
+    .recent-actions {
+        .actionlist {
+            .action {
+                padding: 5px;
+                .mini {
+                    color: #555;
+                }
+                &:before {
+                    font: normal normal normal 14px/1 FontAwesome;
+                    padding-right: .5em;
+                }
+                &.add {
+                    &:before {
+                        content: $fa-var-plus;
+                        color: $mdc-green-600;
+                    }
+                }
+                &.change {
+                    &:before {
+                        content: $fa-var-pencil;
+                        color: $mdc-yellow-600;
+                    }
+                }
+                &.delete {
+                    text-decoration: line-through;
+                    .timesince {
+                        text-decoration: line-through;
+                    }
+                    &:before {
+                        content: $fa-var-trash;
+                        color: $mdc-red-600;
+                    }
+                }
+                .timesince {
+                    color: #777;
+                    float: right;
+                }
+            }
+        }
+    }
+    .categories {
+        display: table;
+        padding-bottom: 10px;
+        table-layout: fixed;
+        color: #fff;
+        width: 100%;
+        .category {
+            display: table-cell;
+            opacity: 0.9;
+            &.active,
+            &:hover {
+                opacity: 1;
+            }
+            &:last-child .wrapper {
+                margin-right: 0;
+            }
+            &.data-center-assets .wrapper {
+                background: $mdc-green-500;
+                .icon:before {content: $fa-var-server;}
+            }
+            &.back-office-assets .wrapper {
+                background: $mdc-purple-500;
+                .icon:before {content: $fa-var-laptop;}
+            }
+            &.licences .wrapper {
+                background: $mdc-blue-500;
+                .icon:before {content: $fa-var-key;}
+            }
+            &.supports .wrapper {
+                background: $mdc-red-500;
+                .icon:before {content: $fa-var-heartbeat;}
+            }
+            &.domains .wrapper {
+                background: $mdc-pink-500;
+                .icon:before {content: $fa-var-map;}
+            }
+            &.users .wrapper {
+                background: $mdc-indigo-500;
+                .icon:before {content: $fa-var-users;}
+            }
+            .wrapper{
+                margin-right: 10px;
+                position: relative;
+                .name {
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    padding: 10px 10px 0 10px;
+                    font-size: 25px;
+                }
+                .value {
+                    padding: 0 10px 0 0;
+                    text-align: right;
+                    font-size: 30px;
+                }
+                .link {
+                    color: #fff;
+                    text-align: center;
+                    padding: 5px;
+                    background: rgba(0, 0, 0, 0.1);
+                    display: block;
+                    &:hover {
+                        background: rgba(0, 0, 0, 0.2);
+                    }
+                }
+                .icon {
+                    position: absolute;
+                    font-size: 75px;
+                    top: 10px;
+                    right: 45px;
+                    color: rgba(255, 255, 255, 0.2);
+                }
+            }
+        }
+    }
+}

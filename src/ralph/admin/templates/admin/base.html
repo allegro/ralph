@@ -47,7 +47,9 @@
           </ul>
         </section>
       </nav>
-      {% sitetree_breadcrumbs from "ralph_admin" template "admin/breadcrumbs_foundation.html" %}
+      {% block breadcrumbs %}
+        {% sitetree_breadcrumbs from "ralph_admin" template "admin/breadcrumbs_foundation.html" %}
+      {% endblock %}
     {% endif %}
     {% if messages %}
       <div class="row">

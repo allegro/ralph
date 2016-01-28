@@ -67,6 +67,13 @@ class RalphAdminSiteMixin(object):
                 items[name].append(get_item(model, view, True))
         return items
 
+    def index(self, request, extra_context=None):
+        from ralph.data_center.models import DataCenter
+        if extra_context is None:
+            extra_context = {}
+        extra_context['data_centers'] = DataCenter.objects.all()
+        return super().index(request, extra_context)
+
 
 class RalphAdminSite(RalphAdminSiteMixin, AdminSite):
     pass
