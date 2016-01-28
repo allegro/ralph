@@ -39,6 +39,7 @@
             <a class="related-widget-wrapper-link change-related"
               id="change_id_{{ oddName }}"
               href='[[item.edit_url]]'
+              on-click='showRelatedObjectPopup'
             >
               <i class="fa fa-pencil"></i>
             </a>
@@ -70,6 +71,15 @@
           type: Array,
           value: function(){return [];}
         }
+      },
+      showRelatedObjectPopup: function (evt) {
+        //TODO:: clean it
+        var name = evt.currentTarget.id.replace(/^(change|add|delete)_/, '');
+        var href = evt.currentTarget.href
+        var win = window.open(href, name, 'height=500,width=800,resizable=yes,scrollbars=yes');
+        win.focus();
+        evt.preventDefault();
+        return false;
       },
       addBadge: function(badgeObject) {
         console.log('addBadge', badgeObject);

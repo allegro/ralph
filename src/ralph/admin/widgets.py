@@ -140,9 +140,12 @@ class AutocompleteWidget(forms.TextInput):
 
     @property
     def media(self):
-        return forms.Media(js=[
-            os.path.join('src', 'js', 'ralph-autocomplete.js')
+        res = forms.Media(js=[
+            os.path.join('src', 'js', 'ralph-autocomplete.js'),
+            'admin/js/core.js',
         ])
+        print(res.render())
+        return res
 
     def get_url_parameters(self):
         params = {
