@@ -11,7 +11,7 @@ $body-bg: #fff;
 $global-radius: 0;
 
 // $primary-color: #EF6C00;
-$primary-color: $mdc-blue-600;
+$primary-color: red;
 
 $success-color: #43A047;
 
@@ -47,7 +47,7 @@ $fieldset-bg-color: rgb(246, 246, 246);
 $fieldset-margin: rem-calc(20 0);
 
 
-$topbar-bg-color: #1775c8;
+$topbar-bg-color: orange;
 $topbar-bg: $topbar-bg-color;
 $topbar-dropdown-bg: $topbar-bg-color;
 $topbar-dropdown-bg: $topbar-bg-color;
@@ -57,9 +57,9 @@ $topbar-dropdown-link-bg: $topbar-bg-color;
 $topbar-height: rem-calc(40);
 $topbar-margin-bottom: 0;
 $topbar-link-color-hover: #fff;
-$topbar-link-bg-hover: $primary-color;
+$topbar-link-bg-hover: red;
 $topbar-dropdown-link-color: #fff;
-$topbar-dropdown-link-bg-hover: $primary-color;
+$topbar-dropdown-link-bg-hover: red;
 $topbar-dropdown-label-color: #fff;
 $topbar-menu-link-color-toggled: rgba(255,255,255,0.6);
 $topbar-menu-icon-color-toggled: $topbar-menu-link-color-toggled;
