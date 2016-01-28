@@ -1,17 +1,20 @@
 site_name: Ralph 3
 repo_url: https://github.com/allegro/ralph/
 pages:
-  - User guide:
-      - Welcome: index.md
-      - Installation: installation.md
+  - Welcome: index.md
+  - Installation guide:
+      - Installation: installation/installation.md
       - Configuration: installation/configuration.md
-      - Migration from Ralph 2.x: data_migration.md
-      - Domains management: domains/overview.md
-      - Transitions: transitions.md
-      - API: api.md
+      - 'Migration from Ralph 2.x': installation/data_migration.md
+  - User guide:
+      - Quickstart: user/quickstart.md
+      - Advanced guide: user/guide.md
+      - Domains management: user/domains.md
+      - API: user/api.md
   - Developer guide:
       - Before you start: CONTRIBUTING.md
       - Architecture: development/overview.md
+      - Transitions: development/transitions.md
       - Addons : development/addons.md
       - Packaging: development/packaging.md
       - FAQ: development/faq.md
