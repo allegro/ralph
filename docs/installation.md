@@ -2,6 +2,7 @@
 
 For production, we provide both deb package and  docker(compose) image.
 We only support Ubuntu 14.04 Trusty distribution.
+Take care that only 64 bits version is available for deb packages.
 
 On the other hand, if you are developer, we strongly suggest using our `Vagrant` inside the `vagrant` directory
 with many development *bells and whistles* included.
@@ -14,6 +15,9 @@ First, add our official ralph repository:
 
     sudo apt-key adv --keyserver  hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
     sudo sh -c "echo 'deb https://dl.bintray.com/vi4m/ralph wheezy main' >  /etc/apt/sources.list.d/vi4m_ralph.list"
+
+After, install the secure transport for accessing repository :
+    sudo apt-get install apt-transport-https
 
 Then, just install ralph the traditional way:
 
