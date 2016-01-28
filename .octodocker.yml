@@ -1,4 +1,5 @@
 provisioning_command: /bin/bash -c "/root/init.sh ; ralph demodata"
+provisioning_service: web
 compose:
   db:
     image: mysql:5.6

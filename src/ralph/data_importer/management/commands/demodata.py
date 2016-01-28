@@ -323,7 +323,6 @@ class Command(BaseCommand):
             'can_view_extra_datacenterassetcomponents',
             'can_view_extra_datacenterassetlicence',
             'can_view_extra_datacenterassetsecurityinfo',
-            'can_view_extra_datacenterassetsoftware',
             'can_view_extra_datacenterassetsupport',
             'can_view_extra_networkview',
             'change_datacenterasset',
