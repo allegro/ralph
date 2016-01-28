@@ -35,7 +35,7 @@ class SupportAutocompleteTest(TestCase, ClientMixin):
         expected_html = (
             '<strong>Date from:</strong>&nbsp;{date_from}<br>'
             '<strong>Date to:</strong>&nbsp;{date_to}<br>'
-            '<strong>Asset type:</strong>&nbsp;4<br>'
+            '<strong>Asset type:</strong>&nbsp;all<br>'
             '<strong>Producer:</strong>&nbsp;{producer}<br>'
             '<strong>Supplier:</strong>&nbsp;supplier1<br>'
             '<strong>Serial no:</strong>&nbsp;{serial_no}<br>'

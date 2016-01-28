@@ -2,6 +2,7 @@ import operator
 import re
 from functools import reduce
 
+from dj.choices import Choices
 from django.conf.urls import url
 from django.db.models import Q
 from django.db.models.loading import get_model
@@ -39,7 +40,10 @@ class AutocompleteTooltipMixin(object):
         for field in self.autocomplete_tooltip_fields:
             if not hasattr(self, field):
                 continue
+            model_field = self._meta.get_field(field)
             value = getattr(self, field)
+            if isinstance(model_field.choices, Choices):
+                value = model_field.choices.name_from_id(value)
             label = str(self._meta.get_field(field).verbose_name)
             tooltip += '<strong>{}:</strong>&nbsp;{}<br>'.format(
                 label.capitalize(), value or empty_element
