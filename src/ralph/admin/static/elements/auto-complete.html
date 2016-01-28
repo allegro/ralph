@@ -2,7 +2,6 @@
 <link rel="import" href="../bower_components/iron-input/iron-input.html">
 <link rel="import" href="../bower_components/paper-menu/paper-menu.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
-<link rel="import" href="../bower_components/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="badge-input.html">
 
 <!--
@@ -48,7 +47,8 @@ Example:
     </style>
     <div>
       <badge-input id='query-getter' on-badge-remove="onBadgeRemove"
-      on-keyup='handleTyping' odd-name='[[name]]'> </badge-input>
+      on-keypress='handleTyping'
+      odd-name='[[name]]'> </badge-input>
       <div id='icons'>
         <i hidden$='{{hiddenSpinner}}' class="loader fa fa-refresh fa-spin"></i>
         <i hidden$='{{hiddenAjaxError}}' class="has-tip fail fa
@@ -68,13 +68,9 @@ Example:
         on-error="errorHandler"
     ></iron-ajax>
 
-    <iron-a11y-keys target="[[targetInput]]" keys="down up"
-    on-keys-pressed="focusToMenu"></iron-a11y-keys>
 
     <paper-menu hidden$="{{hideMenu}}" on-iron-activate='elemSelected'
       id='suggestList' class="dropdown-content"
-      on-keyup='focusToInput'
-      on-keydown='hideSuggestionsOnEsc'
     >
       <template is="dom-repeat" items="[[menuItems]]">
         <paper-item>[[item.__str__]]</paper-item>
@@ -155,10 +151,6 @@ Example:
       handleTyping: function(evt, obj) {
         console.log('handleTyping', evt, obj);
         if (evt.target.value === '' || evt.target.value.length < this.fireThreshold) return false;
-        if (evt.keyCode === 27) {  // esc-key
-          this.hideMenu = true;
-          return false;
-        }
         // TODO:: find out why regular syntax doesn't work
         this.$['by-query-ajax'].params = {
           "q": evt.target.value
@@ -196,14 +188,13 @@ Example:
         this.updateById(selectedItem.pk);
         this.hideMenu = true;
         this.$['query-getter'].setFocusInput();
-        //TODO:: blur na menu po esc
-        //TODO:: hide suggest on click
         //TODO::sortowanie nowo dodanych
         //TODO:: popup on edit
         //TODO:: tooltip na userze
         //TODO:: user search on http://localhost:8010/back_office/backofficeasset/
 
         //TODO::single: hide input when picked
+        //TODO:: blur na menu po esc
         //TODO::icons obok inputa
         //TODO::backspace
         //TODO:: prevent (bo scoll storny)
@@ -265,37 +256,12 @@ Example:
           this.$.suggestList.focus();
         }
       },
-      focusToInput: function(evt, obj) {
-        console.log('focusToInput', evt, obj);
-        if (evt.keyIdentifier === "Down" || evt.keyIdentifier === "Up") {
-          return false;
-        }
-        var key = String.fromCharCode(evt.keyCode);
-        this.$['query-getter'].appendToInput(key);
-        this.$['query-getter'].setFocusInput();
-
-        // TODO:: auto trigger it when focus lost
-        this.hideMenu = true;
-
-        this.$['by-query-ajax'].params = {
-          "q": this.$['query-getter'].getValue()
-        };
-        this.$['by-query-ajax'].generateRequest();
-        this.hiddenSpinner = false;
-      },
       _ids2Objs: function(newValue, oldValue) {
         if (newValue === oldValue) return;
         console.log('_ids2Objs', newValue, oldValue);
         if (newValue === "") { return false; }
         this.value = newValue;
         this.reloadBadges();
-      },
-      hideSuggestionsOnEsc: function(evt, obj) {
-        console.log('hideSuggestionsOnEsc', evt, obj);
-        if (evt.keyCode === 27) {  // esc-key
-          this.hideMenu = true;
-          this.$['query-getter'].setFocusInput();
-        }
       },
       behaviors: [
         Polymer.IronFormElementBehavior
