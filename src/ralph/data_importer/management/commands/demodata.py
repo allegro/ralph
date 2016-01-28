@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 import random
-from datetime import datetime
 from itertools import cycle
 
 from django.conf import settings
@@ -88,7 +87,6 @@ class Command(BaseCommand):
     def generate_data_center(self):
         self.stdout.write('Generating Data Center assets')
         data_center_status = DataCenterAssetStatus()
-        status_count = len(data_center_status)
         parent_category = DataCenterCategoryFactory(
             name='DATA CENTER',
             imei_required=False
@@ -113,72 +111,54 @@ class Command(BaseCommand):
 
                 accessory = AccessoryFactory()
                 RackAccessoryFactory(rack=rack, accessory=accessory)
+                position = 1
                 for status_id, name in data_center_status:
-                    position = 1
-                    per_page = rack.max_u_height / status_count
-                    for i in range(int(per_page)):
+                    for i in range(2):
+                        asset_model = DataCenterAssetModelFactory(
+                            category=DataCenterCategoryFactory(
+                                parent=parent_category
+                            )
+                        )
                         DataCenterAssetFactory(
                             rack=rack,
                             status=status_id,
                             position=position,
                             slot_no='',
                             service_env=ServiceEnvironmentFactory(),
-                            model=DataCenterAssetModelFactory(
-                                category=DataCenterCategoryFactory(
-                                    parent=parent_category
-                                )
-                            )
+                            model=asset_model
                         )
-                        position += 1
+                        position += asset_model.height_of_device
                         if position > rack.max_u_height:
                             position = 1
 
-            blade = DataCenterAssetFactory(
+            chassis = DataCenterAssetFactory(
                 rack=rack,
                 status=DataCenterAssetStatus.used.id,
-                position=position,
-                slot_no=2,
+                position=38,
+                slot_no=None,
                 service_env=ServiceEnvironmentFactory(),
                 model=DataCenterAssetModelFactory(
-                    category=DataCenterCategoryFactory(parent=parent_category)
+                    name='Chassis',
+                    category=DataCenterCategoryFactory(parent=parent_category),
+                    height_of_device=5
                 )
             )
-            DataCenterAssetFactory(
-                rack=rack,
-                status=DataCenterAssetStatus.used.id,
-                position=position,
-                slot_no='',
-                service_env=ServiceEnvironmentFactory(),
-                parent=blade,
-                model=DataCenterAssetModelFactory(
-                    has_parent=True,
-                    category=DataCenterCategoryFactory(parent=parent_category)
+            for i in range(5):
+                DataCenterAssetFactory(
+                    rack=rack,
+                    status=DataCenterAssetStatus.used.id,
+                    position=None,
+                    service_env=ServiceEnvironmentFactory(),
+                    slot_no=i,
+                    parent=chassis,
+                    model=DataCenterAssetModelFactory(
+                        name='Blade',
+                        has_parent=True,
+                        category=DataCenterCategoryFactory(
+                            parent=parent_category
+                        )
+                    )
                 )
-            )
-            blade = DataCenterAssetFactory(
-                rack=rack,
-                status=DataCenterAssetStatus.used.id,
-                position=position + 4,
-                slot_no='2A',
-                service_env=ServiceEnvironmentFactory(),
-                model=DataCenterAssetModelFactory(
-                    category=DataCenterCategoryFactory(parent=parent_category)
-                )
-            )
-            DataCenterAssetFactory(
-                rack=rack,
-                status=DataCenterAssetStatus.used.id,
-                position=position + 4,
-                slot_no='',
-                service_env=ServiceEnvironmentFactory(),
-                parent=blade,
-                model=DataCenterAssetModelFactory(
-                    has_parent=True,
-                    category=DataCenterCategoryFactory(parent=parent_category)
-                ),
-                force_depreciation=True,
-                depreciation_end_date=datetime.now().date()
-            )
 
     def generate_back_office(self):
         self.stdout.write('Generating Back Office assets')
