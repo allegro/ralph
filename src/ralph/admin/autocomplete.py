@@ -130,8 +130,11 @@ class AutocompleteList(SuggestView):
         except LookupError:
             return HttpResponseBadRequest('Model not found')
 
-        self.field = model._meta.get_field(kwargs['field'])
-        self.model = self.field.rel.to
+        if kwargs['field'] == 'many_to_many':
+            self.model = model
+        else:
+            self.field = model._meta.get_field(kwargs['field'])
+            self.model = self.field.rel.to
         self.query = request.GET.get(QUERY_PARAM, None)
         if not self.query:
             return HttpResponseBadRequest()
@@ -198,7 +201,10 @@ class AutocompleteList(SuggestView):
         polymorphic_descendants = getattr(
             self.model, '_polymorphic_descendants', []
         )
-        limit_choices = self.field.get_limit_choices_to()
+        if getattr(self, 'field', None):
+            limit_choices = self.field.get_limit_choices_to()
+        else:
+            limit_choices = []
         if limit_choices:
             queryset = queryset.filter(**limit_choices)
             try:
