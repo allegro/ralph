@@ -8,8 +8,6 @@
 <dom-module id='badge-input'>
   <template>
     <style>
-    :host {
-    }
     .badge {
       @apply(--layout-horizontal);
       background-color: #ededed;
@@ -24,6 +22,7 @@
       @apply(--layout-flex);
     }
     #text-getter{
+      width: 100%;
       border: 0;
       margin-bottom: 0;
       background: #fff;
@@ -35,8 +34,7 @@
     </style>
 
     <div>
-      <div id='badgeContainer'>
-
+      <div>
         <template is='dom-repeat' items="[[badgesData]]">
           <div class='badge'>
             <div class='flexchild'>[[item.__str__]]</div>
@@ -51,15 +49,12 @@
             </a>
             <i on-tap="onBadgeRemove" class="fa fa-times delete"></i>
           </div>
-
-
         </template>
-
       </div>
       <div id='input-wrapper'>
         <input id='text-getter' is="iron-input">
       </div>
-    <div>
+    </div>
     <div style="clear: both;"></div>
 
   </template>

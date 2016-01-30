@@ -1,4 +1,5 @@
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-input/iron-input.html">
 <link rel="import" href="../bower_components/paper-menu/paper-menu.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
@@ -35,17 +36,15 @@ Example:
       background: #fff;
       border: solid 1px #ccc;
     }
-    #query-getter {
-      display: block;
-      width: 96%;
-      float: left;
+    .horizontal-layout {
+      @apply(--layout-horizontal);
     }
-    #icons {
-      float: left;
-      width: 4%;
+    #query-getter {
+      display:block;
+      @apply(--layout-flex);
     }
     </style>
-    <div>
+    <div class='horizontal-layout'>
       <badge-input id='query-getter' on-badge-remove="onBadgeRemove"
       on-keypress='handleTyping'
       odd-name='[[name]]'> </badge-input>
@@ -55,8 +54,7 @@ Example:
           fa-exclamation" title="Something goes wrong..."></i>
         <content><content>
       </div>
-      <div style="clear: both;"></div>
-    <div>
+    </div>
 
 
     <iron-ajax
@@ -210,11 +208,11 @@ Example:
         this.updateById(selectedItem.pk);
         this.hideMenu = true;
         this.$['query-getter'].setFocusInput();
-        //TODO::single: hide input when picked
-        //TODO::icons obok inputa
+        //TODO:: icons obok inputa
+        //TODO:: down up enter esc
+        //TODO:: backspace deletes badge
         //TODO:: user search on http://localhost:8010/back_office/backofficeasset/
         //TODO:: prevent (bo scoll storny)
-        //TODO::backspace deletes badge
         //TODO:: blur na menu po esc
       },
       populateMenu: function(evt, obj) {
