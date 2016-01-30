@@ -14,6 +14,9 @@
       @apply(--layout-horizontal);
       background-color: #ededed;
     }
+    .hidden {
+      display: none;
+    }
     .badge {
       margin: 2px 0;
     }
@@ -101,6 +104,14 @@
             "index": evt.model.index,
             "item": evt.model.item
         });
+      },
+      hideInput: function() {
+        console.log('hideInput');
+        this.$['text-getter'].classList.add('hidden');
+      },
+      showInput: function() {
+        console.log('showInput');
+        this.$['text-getter'].classList.remove('hidden');
       },
       setFocusInput: function() {
         console.log('setFocusInput');

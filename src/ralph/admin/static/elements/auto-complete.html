@@ -163,6 +163,9 @@ Example:
       _setIds: function(ids) {
         console.log('_setIds');
         this.value = ids.join(this.separator);
+        if (!this.hasAttribute('multi')) {
+          this.$['query-getter'].hideInput();
+        }
       },
       _getIds: function() {
         console.log('_getIds');
@@ -173,17 +176,20 @@ Example:
         } else {
           ids = [this.value];
         }
-        ids = [].map(parseInt, ids);
+        for(var idx=0; idx<ids.length; idx++) {
+          ids[idx] = parseInt(ids[idx], 10);
+        }
         return ids;
       },
       _updateById: function(objId) {
         console.log('_updateById', objId);
         this.value = objId;
+        this.$['query-getter'].hideInput();
       },
       _updateMultiById: function(objId) {
         console.log('_updateMultiById', objId);
         if (this.value === "") {
-          this.value = objId
+          this.value = objId.toString();
         } else {
           this.value += this.separator + objId;
         }
@@ -223,7 +229,7 @@ Example:
           var selectedIds = this._getIds();
           var fileteredItems = [];
           for(var idx=0; idx < foundItems.length; idx++) {
-            if (selectedIds.indexOf(foundItems[idx].pk.toString()) === -1) {
+            if (selectedIds.indexOf(foundItems[idx].pk) === -1) {
               fileteredItems.push(foundItems[idx]);
             }
           }
@@ -243,7 +249,7 @@ Example:
         }
         for(idx=0; idx < obj.xhr.response['results'].length; idx++) {
           var item = obj.xhr.response['results'][idx];
-          badgesData.splice(ids.indexOf(item.pk.toString()), 1, item);
+          badgesData.splice(ids.indexOf(item.pk), 1, item);
         }
         this.$['query-getter'].setBadges(badgesData);
       },
@@ -259,8 +265,11 @@ Example:
       onBadgeRemove: function(evt, obj) {
         console.log('onBadgeRemove', evt, obj);
         var ids = this._getIds();
-        ids.splice(ids.indexOf(obj.item.pk.toString()), 1);
+        ids.splice(ids.indexOf(obj.item.pk), 1);
         this._setIds(ids);
+        if (!this.hasAttribute('multi')) {
+          this.$['query-getter'].showInput();
+        }
       },
       errorHandler: function(request, bubbles) {
         console.log('errorHandler', request, bubbles);
@@ -278,6 +287,9 @@ Example:
         if (newValue === oldValue) return;
         if (newValue === "") { return false; }
         this.value = newValue;
+        if (!this.hasAttribute('multi')) {
+          this.$['query-getter'].hideInput();
+        }
         this.reloadBadges();
       },
       behaviors: [
