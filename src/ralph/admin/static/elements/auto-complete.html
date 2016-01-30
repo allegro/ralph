@@ -1,3 +1,4 @@
+<link rel="import" href="../bower_components/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-input/iron-input.html">
@@ -56,6 +57,9 @@ Example:
       </div>
     </div>
 
+    <iron-a11y-keys target="[[inputTarget]]"
+    keys="up down enter esc backspace" on-keys-pressed='_handleKeys'>
+    </iron-a11y-keys>
 
     <iron-ajax
         id='by-query-ajax'
@@ -158,6 +162,23 @@ Example:
         this.hiddenAjaxError = true;
         this.hiddenSpinner = false;
       },
+      _handleKeys: function(evt, obj) {
+        console.log('_handleTyping', evt, obj);
+        console.log(obj.keyboardEvent.code);
+        if (obj.keyboardEvent.code === 'Escape') {
+          if (this.hideMenu === false) {
+            this.hideMenu = true;
+          }
+        } else if (obj.keyboardEvent.code === 'ArrowDown') {
+          console.log('down');
+        } else if (obj.keyboardEvent.code === 'ArrowUp') {
+          console.log('up');
+        } else if (obj.keyboardEvent.code === 'Enter') {
+          console.log('enter');
+        } else if (obj.keyboardEvent.code === 'Backspace') {
+          console.log('backspace');
+        }
+      },
       _setIds: function(ids) {
         console.log('_setIds');
         this.value = ids.join(this.separator);
@@ -208,7 +229,6 @@ Example:
         this.updateById(selectedItem.pk);
         this.hideMenu = true;
         this.$['query-getter'].setFocusInput();
-        //TODO:: icons obok inputa
         //TODO:: down up enter esc
         //TODO:: backspace deletes badge
         //TODO:: user search on http://localhost:8010/back_office/backofficeasset/
