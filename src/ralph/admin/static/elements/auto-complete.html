@@ -58,7 +58,7 @@ Example:
     </div>
 
     <iron-a11y-keys target="[[inputTarget]]"
-    keys="up down enter esc backspace" on-keys-pressed='_handleKeys'>
+    keys="up down esc escape backspace" on-keys-pressed='_handleKeys'>
     </iron-a11y-keys>
 
     <iron-ajax
@@ -163,18 +163,15 @@ Example:
         this.hiddenSpinner = false;
       },
       _handleKeys: function(evt, obj) {
-        console.log('_handleTyping', evt, obj);
-        console.log(obj.keyboardEvent.code);
+        console.log('_handleKeys', evt, obj, obj.keyboardEvent.code);
         if (obj.keyboardEvent.code === 'Escape') {
           if (this.hideMenu === false) {
             this.hideMenu = true;
           }
         } else if (obj.keyboardEvent.code === 'ArrowDown') {
-          console.log('down');
+          this.$.suggestList._focusNext();
         } else if (obj.keyboardEvent.code === 'ArrowUp') {
-          console.log('up');
-        } else if (obj.keyboardEvent.code === 'Enter') {
-          console.log('enter');
+          this.$.suggestList._focusPrevious();
         } else if (obj.keyboardEvent.code === 'Backspace') {
           console.log('backspace');
         }
@@ -229,11 +226,10 @@ Example:
         this.updateById(selectedItem.pk);
         this.hideMenu = true;
         this.$['query-getter'].setFocusInput();
-        //TODO:: down up enter esc
-        //TODO:: backspace deletes badge
         //TODO:: user search on http://localhost:8010/back_office/backofficeasset/
+        //TODO:: backspace deletes badge
         //TODO:: prevent (bo scoll storny)
-        //TODO:: blur na menu po esc
+        //TODO:: blur na menu po esc dla FF
       },
       populateMenu: function(evt, obj) {
         console.log('populateMenu', evt, obj);
