@@ -15,7 +15,7 @@ from import_export import resources
 
 from ralph.data_importer import resources as ralph_resources
 from ralph.data_importer.models import ImportedObjects
-from ralph.data_importer.resources import DefaultResource
+from ralph.data_importer.resources import RalphModelResource
 
 APP_MODELS = {model._meta.model_name: model for model in apps.get_models()}
 logger = logging.getLogger(__name__)
@@ -29,7 +29,7 @@ def get_resource(model_name):
         model_class = APP_MODELS[model_name.lower()]
         resource = resources.modelresource_factory(
             model=model_class,
-            resource_class=DefaultResource
+            resource_class=RalphModelResource
         )
     return resource()
 
@@ -70,6 +70,13 @@ class Command(BaseCommand):
             dest='encoding',
             default='utf-8',
             help="Output encoding",
+        )
+        parser.add_argument(
+            '--map-imported-id-to-new-id',
+            dest='map_imported_id_to_new_id',
+            default=False,
+            action='store_true',
+            help="Use it when importing data from Ralph 2.",
         )
 
     def from_zip(self, options):
@@ -170,6 +177,8 @@ class Command(BaseCommand):
             self.stdout.write('Done\n')
 
     def handle(self, *args, **options):
+        if options.get('map_imported_id_to_new_id'):
+            settings.MAP_IMPORTED_ID_TO_NEW_ID = True
         settings.CHECK_IP_HOSTNAME_ON_SAVE = False
         if options.get('type') == 'dir':
             self.from_dir(options)

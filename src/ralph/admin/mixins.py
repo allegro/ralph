@@ -286,6 +286,16 @@ class RalphAdmin(
             queryset = queryset.prefetch_related(*m2m_fields)
         return queryset
 
+    def get_export_resource_class(self):
+        """
+        Returns ResourceClass to use for export.
+        """
+        resource_class = self.get_resource_class()
+        export_class = getattr(resource_class, 'export_class', None)
+        if export_class:
+            return export_class
+        return resource_class
+
 
 class RalphTabularInline(
     RalphAutocompleteMixin,

@@ -94,6 +94,7 @@ class DataImporterTestCase(TestCase):
             warehouse_csv,
             type='file',
             model_name='Warehouse',
+            map_imported_id_to_new_id=True
         )
         self.assertTrue(Warehouse.objects.filter(
             name="Poznań"
@@ -110,6 +111,7 @@ class DataImporterTestCase(TestCase):
             back_office_csv,
             type='file',
             model_name='BackOfficeAsset',
+            map_imported_id_to_new_id=True
         )
         self.assertTrue(BackOfficeAsset.objects.filter(
             sn="bo_asset_sn"
@@ -140,6 +142,7 @@ class DataImporterTestCase(TestCase):
             regions_csv,
             type='file',
             model_name='Region',
+            map_imported_id_to_new_id=True
         )
         self.assertEqual(Region.objects.count(), old_regions_count + 2)
         region_1 = Region.objects.get(name='USA')
@@ -162,6 +165,7 @@ class DataImporterTestCase(TestCase):
             type='file',
             model_name='Warehouse',
             delimiter='\t',
+            map_imported_id_to_new_id=True
         )
         self.assertTrue(Warehouse.objects.filter(
             name="Barcelona"
@@ -182,6 +186,7 @@ class DataImporterTestCase(TestCase):
             type='file',
             model_name='Warehouse',
             delimiter=',',
+            map_imported_id_to_new_id=True
         )
         warehouse = Warehouse.objects.filter(name="Cupertino").first()
         self.assertNotEqual(warehouse.pk, 200)
@@ -207,6 +212,7 @@ class DataImporterTestCase(TestCase):
             type='file',
             model_name='Warehouse',
             delimiter=';',
+            map_imported_id_to_new_id=True
         )
         self.assertTrue(Warehouse.objects.filter(
             name="Berlin"
@@ -237,6 +243,7 @@ class DataImporterTestCase(TestCase):
             type='file',
             model_name='ServerRoom',
             delimiter=',',
+            map_imported_id_to_new_id=True
         )
 
         content_type = ContentType.objects.get_for_model(ServerRoom)
@@ -252,6 +259,7 @@ class DataImporterTestCase(TestCase):
             type='file',
             model_name='Rack',
             delimiter=',',
+            map_imported_id_to_new_id=True
         )
         self.assertTrue(Rack.objects.filter(
             name="Rack_csv_test"
@@ -266,6 +274,7 @@ class DataImporterTestCase(TestCase):
             'importer',
             warehouse_dir,
             type='dir',
+            map_imported_id_to_new_id=True
         )
 
         self.assertTrue(Warehouse.objects.filter(
@@ -284,6 +293,7 @@ class DataImporterTestCase(TestCase):
             'importer',
             warehouse_zip,
             type='zip',
+            map_imported_id_to_new_id=True
         )
 
         self.assertTrue(Warehouse.objects.filter(
