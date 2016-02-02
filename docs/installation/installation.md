@@ -36,6 +36,7 @@ Create the database.
 We are working on some sane configuration management files.
 Currently, we just read some environment variables, so just paste somewhere in your ~/.profile following environment variables customizing it to your needs.
 
+
 cat ~/.profile
 
     export DATABASE_NAME=ralph
@@ -45,10 +46,10 @@ cat ~/.profile
     export PATH=/opt/ralph/ralph-core/bin/:$PATH
 
 ### Initialization
-
-1. Type `ralph migrate` to create tables in your database.
-2. Type `ralph sitetree_resync_apps` to reload menu.
-3. Type `ralph createsuperuser` to add new user.
+1. edit: `/opt/ralph/ralph-core/lib/python3.4/site-packages/ralph/settings/prod.py` and set: `DEBUG = True`
+2. Type `ralph migrate` to create tables in your database.
+3. Type `ralph sitetree_resync_apps` to reload menu.
+4. Type `ralph createsuperuser` to add new user.
 
 Run your ralph instance with `ralph runserver 0.0.0.0:8000`
 
