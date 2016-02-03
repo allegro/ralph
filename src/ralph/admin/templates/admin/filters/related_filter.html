@@ -1,10 +1,10 @@
 {% extends "admin/filters/_filter_base.html" %}
 
 {% block filter_choices %}
-    {% include 'admin/widgets/autocomplete.html' with attrs=i.attrs value=i.value multi=i.multi data_suggest_url=i.data_suggest_url data_details_url=i.data_details_url related_url=i.related_url name=i.name tooltip=i.tooltip add_related_url=i.add_related_url %}
+    {% include 'admin/widgets/autocomplete.html' with name=i.name value=i.value attrs=i.attrs multi=i.multi data_suggest_url=i.data_suggest_url data_details_url=i.data_details_url related_url=i.related_url tooltip=i.tooltip add_related_url=i.add_related_url %}
 
     {% comment %}
     {% include 'admin/widgets/autocomplete.html' with searched_fields=i.searched_fields related_url=i.related_url name=i.name attrs=i.attrs current_object=i.current_object is_empty=i.is_empty empty_value=i.empty_value %}
-    {% endcomment %}
     <input type="hidden" name="{{ i.parameter_name }}" value="{{ i.current_value|default_if_none:"" }}" id="id_{{ i.parameter_name }}" />
+    {% endcomment %}
 {% endblock %}

@@ -341,7 +341,8 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
             value = ','.join(force_text(v) for v in self.value())
         else:
             value = str(self.value() or "")
-        print('dd', repr(value))
+        print('value', repr(value))
+        print('name', repr(self.field_path))
         return ({
             'value': value,
             'parameter_name': self.field_path,
