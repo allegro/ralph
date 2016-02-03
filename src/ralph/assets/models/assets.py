@@ -358,7 +358,7 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
     )
 
     def __str__(self):
-        return self.hostname
+        return self.hostname or ''
 
     @property
     def buyout_date(self):
