@@ -7,7 +7,7 @@
         // Disable autocomplete without cluttering html attributes
         $('input').attr('autocomplete', 'off');
 
-        var $fill_elements = $('.bulk-edit input[type=text]:not(.no-fillable), .bulk-edit select, .bulk-edit textarea, .bulk-edit .autocomplete-widget');
+        var $fill_elements = $('.bulk-edit input[type=text]:not(.no-fillable), .bulk-edit select, .bulk-edit textarea, .bulk-edit input[type=number]:not(.no-fillable), .bulk-edit .autocomplete-widget');
 
         var toggle_toolbar = function(element) {
             var $parent = element.closest('td');
