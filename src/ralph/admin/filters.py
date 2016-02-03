@@ -307,6 +307,7 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
             self.model, self.field_path
         ).model
         widget_options = {
+            'id': 'id_{}'.format(self.field_path),
             'data-suggest-url': reverse(
                 'autocomplete-list', kwargs={
                     'app': model._meta.app_label,

@@ -10,17 +10,15 @@ function getCallerNode(win) {
     return elem;
 }
 function dismissRelatedLookupPopup(win, chosenId) {
-/*
     var name = windowname_to_id(win.name);
     var elem = document.getElementById(name);
     if (elem.className.indexOf('vManyToManyRawIdAdminField') != -1 && elem.value) {
         elem.value += ',' + chosenId;
+    } else if (elem.nodeName.toUpperCase() === 'AUTO-COMPLETE') {
+        elem.updateById(chosenId);
     } else {
         document.getElementById(name).value = chosenId;
     }
-*/
-    elem = getCallerNode(win);
-    elem.updateById(chosenId);
     win.close();
 }
 
