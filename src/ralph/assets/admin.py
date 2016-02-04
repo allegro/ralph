@@ -41,10 +41,10 @@ class ServiceEnvironmentInline(RalphTabularInline):
 @register(Service)
 class ServiceAdmin(RalphAdmin):
     exclude = ['environments']
-    inlines = [ServiceEnvironmentInline]
+    #inlines = [ServiceEnvironmentInline]
     filter_horizontal = ['business_owners', 'technical_owners']
     search_fields = ['name', 'uid']
-    raw_id_fields = ['profit_center', 'support_team']
+    raw_id_fields = ['profit_center', 'support_team', 'business_owners']
 
     def formfield_for_manytomany(self, db_field, request=None, **kwargs):
         if db_field.name in self.raw_id_fields:
