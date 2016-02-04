@@ -2,7 +2,7 @@
 from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, RalphMPTTAdmin, RalphTabularInline, register
+from ralph.admin import RalphAdmin, RalphMPTTAdmin, RalphTabularInline, register, widgets
 from ralph.assets.models.assets import (
     Asset,
     AssetHolder,
@@ -46,6 +46,19 @@ class ServiceAdmin(RalphAdmin):
     search_fields = ['name', 'uid']
     raw_id_fields = ['profit_center', 'support_team']
 
+    def formfield_for_manytomany(self, db_field, request=None, **kwargs):
+        if db_field.name in self.raw_id_fields:
+            kw = {'multi': True}
+            if db_field.name in self.raw_id_override_parent:
+                kw['rel_to'] = self.raw_id_override_parent[db_field.name]
+
+            kwargs['widget'] = widgets.AutocompleteWidget(
+                field=db_field, admin_site=self.admin_site,
+                using=kwargs.get('using'), request=request, **kw
+            )
+            return db_field.formfield(**kwargs)
+        else:
+            return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 @register(Manufacturer)
 class ManufacturerAdmin(RalphAdmin):

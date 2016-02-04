@@ -98,10 +98,11 @@ class AjaxAutocompleteMixin(object):
                 self.pk = request.GET.get(DETAIL_PARAM, None)
                 if not self.pk:
                     return HttpResponseBadRequest()
+                self.pks = self.pk.split(',')
                 return super().dispatch(request, *args, **kwargs)
 
             def get_queryset(self, user):
-                queryset = self.model._default_manager.filter(pk=int(self.pk))
+                queryset = self.model._default_manager.filter(pk__in=self.pks)
                 if issubclass(self.model, PermissionsForObjectMixin):
                     queryset = self.model._get_objects_for_user(user, queryset)
                 if not queryset.exists():
