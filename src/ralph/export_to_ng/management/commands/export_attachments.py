@@ -11,17 +11,19 @@ import os
 import tempfile
 from zipfile import ZipFile
 
-from django.core.management.base import BaseCommand
 from django.conf import settings
+from django.core.management.base import BaseCommand
 from import_export import fields, resources
+from ralph_assets.licences.models import Licence
+from ralph_assets.models_assets import Asset, AssetType, Attachment
 from ralph_assets.models_transition import TransitionsHistory
-from ralph_assets.models_assets import Attachment, AssetType
+from ralph_assets.models_support import Support
 
 
 related_name_objects = {
-    'Asset': ['parents', 'parents'],
-    'Support': ['support', 'support_set'],
-    'Licence': ['licence', 'licence_set'],
+    'Asset': ['parents', Asset],
+    'Support': ['support', Support],
+    'Licence': ['licence', Licence],
 }
 
 
@@ -31,7 +33,8 @@ def get_query_set(obj):
     """
     qs = []
     for related in related_name_objects.values():
-        qs = getattr(obj, related[1]).all()
+        # _base_manager because objects and admin_objects used regionalized
+        qs = related[1]._base_manager.filter(attachments=obj)
         if qs:
             break
     return qs
