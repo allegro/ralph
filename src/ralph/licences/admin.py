@@ -74,11 +74,11 @@ class LicenceAdmin(
     date_hierarchy = 'created'
     list_display = [
         'niw', 'licence_type', 'software', 'invoice_date', 'invoice_no',
-        'valid_thru', 'created', 'region', 'number_bought', 'used',
-        'free'
+        'valid_thru', 'created', 'region', 'property_of', 'number_bought',
+        'used', 'free'
     ]
     readonly_fields = ['used', 'free']
-    list_select_related = ['licence_type', 'software', 'region']
+    list_select_related = ['licence_type', 'software', 'region', 'property_of']
     raw_id_fields = [
         'software', 'manufacturer', 'budget_info', 'office_infrastructure'
     ]
