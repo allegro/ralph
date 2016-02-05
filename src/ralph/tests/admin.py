@@ -2,13 +2,18 @@
 from ralph.admin import RalphAdmin, register
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
-from ralph.tests.models import Car, Car2, Manufacturer, Order
+from ralph.tests.models import Bar, Car, Car2, Manufacturer, Order
 
 
 @register(Car)
 class CarAdmin(RalphAdmin):
     ordering = ['name']
     list_filter = ['year']
+
+
+@register(Bar)
+class BarAdmin(RalphAdmin):
+    list_filter = ['date', 'name', 'created', 'price', 'count']
 
 
 @register(Car2)

@@ -3,9 +3,11 @@ import inspect
 
 from django.contrib.admin import SimpleListFilter
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Q
+from django.core.exceptions import FieldDoesNotExist
+from django.db import models
 from rest_framework import filters, permissions, relations, viewsets
 
+from ralph.admin.helpers import get_field_by_relation_path
 from ralph.admin.sites import ralph_site
 from ralph.api.serializers import RalphAPISaveSerializer, ReversedChoiceField
 from ralph.api.utils import QuerysetRelatedMixin
@@ -122,6 +124,22 @@ class RalphAPIViewSet(
     metaclass=RalphAPIViewSetMetaclass
 ):
     extend_filter_fields = None
+    allow_lookups = {
+        models.IntegerField: {
+            'lte', 'gte', 'lt', 'gt', 'exact', 'in', 'range', 'isnull'
+        },
+        models.CharField: {
+            'startswith', 'istartswith', 'endswith', 'icontains', 'contains',
+            'in', 'iendswith', 'isnull', 'regex', 'iregex'
+        },
+        models.DateField: {
+            'year', 'month', 'day', 'week_day', 'range', 'isnull'
+        },
+        models.DateTimeField: {'hour', 'minute', 'second'},
+        models.DecimalField: {
+            'lte', 'gte', 'lt', 'gt', 'exact', 'in', 'range', 'isnull'
+        }
+    }
 
     def __init__(self, *args, **kwargs):
         if self.extend_filter_fields is None:
@@ -150,8 +168,25 @@ class RalphAPIViewSet(
         for field, field_filters in self.extend_filter_fields.items():
             value = self.request.query_params.get(field, None)
             if value:
-                q_param = Q()
+                q_param = models.Q()
                 for field_name in field_filters:
-                    q_param |= Q(**{field_name: value})
+                    q_param |= models.Q(**{field_name: value})
                 queryset = queryset.filter(q_param)
+
+        for field_name, value in self.request.query_params.items():
+            model_field_name, _, lookup = field_name.rpartition('__')
+            try:
+                model_field = get_field_by_relation_path(
+                    queryset.model, model_field_name
+                )
+            except FieldDoesNotExist:
+                continue
+
+            lookups = set()
+            for cl in inspect.getmro(model_field.__class__):
+                lookups |= self.allow_lookups.get(cl, set())
+
+            if lookup in lookups and model_field_name in self.filter_fields:
+                queryset = queryset.filter(models.Q(**{field_name: value}))
+
         return queryset
