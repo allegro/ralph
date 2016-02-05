@@ -90,7 +90,7 @@ class BackOfficeAssetAdmin(
     ]
     list_display = [
         'status', 'barcode', 'purchase_order', 'model', 'user', 'warehouse',
-        'sn', 'hostname', 'invoice_date', 'invoice_no', 'region',
+        'sn', 'hostname', 'invoice_date', 'invoice_no', 'region', 'property_of'
     ]
     multiadd_info_fields = list_display
 
@@ -109,7 +109,7 @@ class BackOfficeAssetAdmin(
     date_hierarchy = 'created'
     list_select_related = [
         'model', 'user', 'warehouse', 'model__manufacturer', 'region',
-        'model__category'
+        'model__category', 'property_of'
     ]
     raw_id_fields = [
         'model', 'user', 'owner', 'region', 'warehouse',
