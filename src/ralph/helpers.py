@@ -32,3 +32,17 @@ def generate_pdf_response(pdf_data, file_name):
         file_name,
     )
     return response
+
+
+def dict_diff(current_dict, past_dict):
+    current_dict, past_dict = current_dict, past_dict
+    set_current = set(current_dict.keys())
+    set_past = set(past_dict.keys())
+    intersect = set_current.intersection(set_past)
+
+    for change in intersect:
+        past_value = past_dict[change]
+        current_value = current_dict[change]
+        exclude_key = ['_state', '_cache']
+        if change not in exclude_key and str(past_value) != str(current_value):
+            yield change
