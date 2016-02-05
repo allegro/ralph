@@ -4,6 +4,7 @@ import inspect
 import logging
 import operator
 from collections import defaultdict, Iterable
+from copy import deepcopy
 
 import reversion
 from django import forms
@@ -27,6 +28,7 @@ from django_extensions.db.fields.json import JSONField
 
 from ralph.admin.helpers import get_field_by_relation_path
 from ralph.attachments.models import Attachment
+from ralph.helpers import dict_diff
 from ralph.lib.mixins.models import TimeStampMixin
 from ralph.lib.transitions.conf import TRANSITION_ATTR_TAG
 from ralph.lib.transitions.exceptions import (
@@ -48,7 +50,8 @@ class CycleError(Exception):
 
 
 def _generate_transition_history(
-    instance, transition, user, attachment, history_kwargs, action_names, field
+    instance, transition, user, attachment, history_kwargs, action_names,
+    field, diff
 ):
     """Return history object (without saving it) based on parameters."""
     field_value = getattr(instance, field, None)
@@ -75,11 +78,12 @@ def _generate_transition_history(
         kwargs=history_kwargs,
         actions=action_names,
         source=source,
-        target=target
+        target=target,
+        diff=diff
     )
 
 
-def _get_history_dict(data, instance, runned_funcs):
+def _get_history_dict(data, instance, runned_funcs, old_instances):
     history = {}
     for func in runned_funcs:
         defaults = {
@@ -231,6 +235,26 @@ def _order_actions_by_requirements(actions, instance):
         yield actions_by_name[action]
 
 
+def get_history_diff(instance, old_instances):
+    old_instance = old_instances.get(instance.pk, None)
+    if old_instances is None:
+        return {}
+
+    diff = dict_diff(
+        old_instance.__dict__,
+        instance.__dict__
+    )
+    history = {}
+    for item in diff:
+        if item.endswith('_id'):
+            attr = item.rpartition('_id')[0]
+            history[attr] = str(getattr(old_instance, attr, ''))
+        else:
+            history[item] = str(getattr(old_instance, item, ''))
+
+    return history
+
+
 @transaction.atomic
 def run_field_transition(
     instances, transition_obj_or_name, field, data={}, **kwargs
@@ -241,6 +265,7 @@ def run_field_transition(
     if not isinstance(instances, Iterable):
         instances = [instances]
     first_instance = instances[0]
+    old_instances = {i.id: deepcopy(i) for i in instances}
 
     _check_type_instances(instances)
     transition = _check_and_get_transition(
@@ -278,7 +303,12 @@ def run_field_transition(
     for instance in instances:
         if not int(transition.target) == TRANSITION_ORIGINAL_STATUS[0]:
             setattr(instance, field, int(transition.target))
-        history_kwargs = _get_history_dict(data, instance, runned_funcs)
+        history_kwargs = _get_history_dict(
+            data, instance, runned_funcs, old_instances
+        )
+
+        diff = get_history_diff(instance, old_instances)
+
         history_list.append(_generate_transition_history(
             instance=instance,
             transition=transition,
@@ -286,7 +316,8 @@ def run_field_transition(
             attachment=attachment,
             history_kwargs=history_kwargs,
             action_names=action_names,
-            field=field
+            field=field,
+            diff=diff
         ))
         with transaction.atomic(), reversion.create_revision():
             instance.save()
@@ -427,6 +458,7 @@ class TransitionsHistory(TimeStampMixin):
     attachment = models.ForeignKey(Attachment, blank=True, null=True)
     kwargs = JSONField()
     actions = JSONField()
+    diff = JSONField(blank=True, null=True)
 
     class Meta:
         app_label = 'transitions'

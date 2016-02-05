@@ -208,6 +208,7 @@ class UserTransitionHistoryView(RalphDetailView):
         context = super().get_context_data(**kwargs)
         context['transitions_history'] = TransitionsHistory.objects.filter(
             Q(kwargs__icontains=self.object.username) |
+            Q(diff__icontains=self.object.username) |
             Q(kwargs__icontains=self.object.get_full_name())
         ).distinct()
         context['transition_history_in_fieldset'] = False
