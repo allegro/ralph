@@ -56,3 +56,14 @@ Allowed params for field::
     ``condition`` - function wich accept one parameter and return boolean, when condition have be met the field will be shown.
 
 Set ``return_attachment`` to ``True`` if action return attachment (e.g.: PDF document).
+
+If you want to add additional information to the transition history, you need to add to the dictionary history_kwargs in your action:
+
+```django
+    def unassign_user(cls, instances, request, **kwargs):
+        for instance in instances:
+            kwargs['history_kwargs'][instance.pk][
+                'affected_user'
+            ] = str(instance.user)
+            instance.user = None
+```

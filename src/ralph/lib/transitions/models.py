@@ -251,6 +251,7 @@ def run_field_transition(
     attachment = None
     action_names = []
     runned_funcs = []
+    func_history_kwargs = defaultdict(dict)
     for action in _order_actions_by_requirements(
         transition.actions.all(), first_instance
     ):
@@ -260,6 +261,7 @@ def run_field_transition(
         func = getattr(first_instance, action.name)
         defaults = data.copy()
         defaults.update(kwargs)
+        defaults.update({'history_kwargs': func_history_kwargs})
         defaults.update({
             key.split('__')[1]: value
             for key, value in data.items()
@@ -279,6 +281,7 @@ def run_field_transition(
         if not int(transition.target) == TRANSITION_ORIGINAL_STATUS[0]:
             setattr(instance, field, int(transition.target))
         history_kwargs = _get_history_dict(data, instance, runned_funcs)
+        history_kwargs.update(func_history_kwargs[instance.pk])
         history_list.append(_generate_transition_history(
             instance=instance,
             transition=transition,
