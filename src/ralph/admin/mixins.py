@@ -13,6 +13,7 @@ from django.db import models
 from django.http import HttpResponseRedirect
 from django.views.generic import TemplateView
 from import_export.admin import ImportExportModelAdmin
+from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 from mptt.admin import MPTTAdminForm, MPTTModelAdmin
 from reversion import VersionAdmin
 
@@ -268,6 +269,22 @@ class RalphAdmin(
     @property
     def media(self):
         return forms.Media()
+
+    def get_export_queryset(self, request):
+        queryset = super().get_export_queryset(request)
+        fields = self.get_export_resource_class().fields
+        fk_fields = []
+        m2m_fields = []
+        for name, field in fields.items():
+            if isinstance(field.widget, ForeignKeyWidget):
+                fk_fields.append(field.attribute)
+            if isinstance(field.widget, ManyToManyWidget):
+                m2m_fields.append(field.attribute)
+        if fk_fields:
+            queryset = queryset.select_related(*fk_fields)
+        if m2m_fields:
+            queryset = queryset.prefetch_related(*m2m_fields)
+        return queryset
 
 
 class RalphTabularInline(
