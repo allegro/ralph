@@ -261,6 +261,9 @@ class BackOfficeAsset(Regionalizable, Asset):
     )
     def unassign_owner(cls, instances, request, **kwargs):
         for instance in instances:
+            kwargs['history_kwargs'][instance.pk][
+                'affected_owner'
+            ] = str(instance.owner)
             instance.owner = None
 
     @classmethod
@@ -269,6 +272,9 @@ class BackOfficeAsset(Regionalizable, Asset):
     )
     def unassign_user(cls, instances, request, **kwargs):
         for instance in instances:
+            kwargs['history_kwargs'][instance.pk][
+                'affected_user'
+            ] = str(instance.user)
             instance.user = None
 
     @classmethod
