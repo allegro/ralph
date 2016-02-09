@@ -44,6 +44,13 @@ Example:
       display:block;
       @apply(--layout-flex);
     }
+    paper-item {
+      background-color: white;
+    }
+    .float-z {
+      position: absolute;
+      z-index: 999;
+    }
     </style>
     <div class='horizontal-layout'>
       <badge-input id='query-getter' on-badge-remove="onBadgeRemove"
@@ -71,14 +78,14 @@ Example:
     ></iron-ajax>
 
 
-    <paper-menu hidden$="{{hideMenu}}" on-iron-activate='elemSelected'
+    <paper-menu class='float-z' hidden$="{{hideMenu}}" on-iron-activate='elemSelected'
       id='suggestList' class="dropdown-content"
     >
       <template is="dom-repeat" items="[[menuItems]]">
         <paper-item>[[item.__str__]]</paper-item>
       </template>
     </paper-menu>
-    <paper-item hidden$='{{hideNoResults}}' id='empty-list'>No results</paper-item>
+    <paper-item hidden$='{{hideNoResults}}' class='float-z' id='empty-list'>No results</paper-item>
 
     <input id='values-input' name$="[[name]]" type='hidden' is="iron-input" bind-value="{{value}}">
     <iron-ajax
