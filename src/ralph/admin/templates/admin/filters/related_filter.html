@@ -1,6 +1,5 @@
 {% extends "admin/filters/_filter_base.html" %}
 
 {% block filter_choices %}
-    {% include 'admin/widgets/autocomplete.html' with searched_fields=i.searched_fields related_url=i.related_url name=i.name attrs=i.attrs current_object=i.current_object is_empty=i.is_empty empty_value=i.empty_value %}
-    <input type="hidden" name="{{ i.parameter_name }}" value="{{ i.current_value|default_if_none:"" }}" id="id_{{ i.parameter_name }}" />
+    {% include 'admin/widgets/autocomplete.html' with name=i.name value=i.value attrs=i.attrs searched_fields_info=i.searched_fields_info related_url=i.related_url %}
 {% endblock %}

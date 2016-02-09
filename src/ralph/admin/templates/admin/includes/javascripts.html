@@ -42,7 +42,7 @@
                   $(item).val($original_selects.eq(index).val());
                 });
                 $clone.appendTo($form);
-                $form.submit();
+                $form[0].submit();
             });
 
             // If you press "enter" in the filter form field

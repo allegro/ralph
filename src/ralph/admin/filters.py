@@ -310,43 +310,32 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
             self.model, self.field_path
         ).model
         widget_options = {
-            'data-suggest-url': reverse(
+            'id': 'id_{}'.format(self.field_path),
+            'query-ajax-url': reverse(
                 'autocomplete-list', kwargs={
                     'app': model._meta.app_label,
                     'model': model.__name__,
                     'field': self.field.name
                 }
             ),
-            'data-details-url': reverse(
+            'detailsurl': reverse(
                 'admin:{}_{}_autocomplete_details'.format(*model_options)
             ),
-            'data-query-var': QUERY_PARAM,
-            'data-detail-var': DETAIL_PARAM,
-            'data-target-selector': '#id_{}'.format(self.field_path)
         }
-        value = self.value()
-        current_object = None
-        if value:
-            if value == self.empty_value:
-                current_object = '<empty>'
-            else:
-                try:
-                    current_object = self.field_model.objects.get(
-                        pk=int(value)
-                    )
-                except self.field_model.DoesNotExist:
-                    pass
-
+        # TODO: current_object = '<empty>'
+        # TODO: self.multi = False
+        multi = getattr(self, 'multi', '')
+        if multi:
+            value = ','.join(force_text(v) for v in self.value())
+        else:
+            value = str(self.value() or "")
         return ({
-            'current_value': self.value(),
-            'parameter_name': self.field_path,
-            'searched_fields': [self.title],
-            'related_url': self.get_related_url(),
-            'name': self.field_path,
+            'multi': multi,
+            'value': value,
             'attrs': flatatt(widget_options),
-            'current_object': current_object,
-            'empty_value': self.empty_value,
-            'is_empty': True
+            'name': self.field_path,
+            'related_url': self.get_related_url(),
+            'searched_fields_info': "Search by: {}".format(self.title),
         },)
 
 
