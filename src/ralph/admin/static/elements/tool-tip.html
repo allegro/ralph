@@ -1,0 +1,20 @@
+<dom-module id='tool-tip'>
+  <template>
+    <i data-tooltip class="has-tip fa fa-info-circle" title="{{ title }}"></i>
+
+  </template>
+  <script>
+    Polymer({
+      is: "tool-tip",
+      properties: {
+        'title': {
+          type: String,
+          value: ''
+        }
+      },
+      ready() {
+        $(this).foundation("tooltip");
+      }
+    });
+  </script>
+<dom-module>
