@@ -180,7 +180,7 @@ class TestReportAssetAndLicence(RalphTestCase):
                 'hostname'
             ],
             [
-                str(self.dc_1.id), 'None', self.dc_1.barcode, self.dc_1.sn,
+                str(self.dc_1.id), '', self.dc_1.barcode, self.dc_1.sn,
                 'Keyboard', 'M1', '1', 'None', str(self.dc_1.invoice_date),
                 str(self.dc_1.invoice_no), self.dc_1.hostname
             ]
