@@ -86,7 +86,8 @@ Example:
     </paper-menu>
     <paper-item hidden$='{{hideNoResults}}' class='float-z' id='empty-list'>No results</paper-item>
 
-    <input id='values-input' name$="[[name]]" type='hidden' is="iron-input" bind-value="{{value}}">
+    <input id='values-input' name$="[[name]]" type='hidden' is="iron-input"
+      bind-value="{{value}}" autocomplete="off">
     <iron-ajax
         id='by-id-ajax'
         url="{{detailsurl}}"
