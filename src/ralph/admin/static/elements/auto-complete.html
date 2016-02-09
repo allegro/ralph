@@ -54,8 +54,7 @@ Example:
     </style>
     <div class='horizontal-layout'>
       <badge-input id='query-getter' on-badge-remove="onBadgeRemove"
-      on-keypress='handleTyping'
-      odd-name='[[name]]'> </badge-input>
+      on-input='sendQueryRequest' odd-name='[[name]]'> </badge-input>
       <div id='icons'>
         <i hidden$='{{hiddenSpinner}}' class="loader fa fa-refresh fa-spin"></i>
         <i hidden$='{{hiddenAjaxError}}' class="has-tip fail fa
@@ -158,9 +157,12 @@ Example:
           value: function(){return [];}
         }
       },
-      handleTyping: function(evt, obj) {
-        console.log('handleTyping', evt, obj);
-        if (evt.target.value === '' || evt.target.value.length < this.fireThreshold) return false;
+      sendQueryRequest: function(evt, obj) {
+        console.log('sendQueryRequest', evt, obj);
+        if (
+            evt.target.value === '' ||
+            evt.currentTarget.getValue().length < this.fireThreshold
+        ) return false;
         // TODO: find out why regular syntax doesn't work
         this.$['by-query-ajax'].params = {
           "q": evt.target.value
@@ -169,6 +171,7 @@ Example:
         this.hideNoResults = true;
         this.hiddenAjaxError = true;
         this.hiddenSpinner = false;
+        this.hideNoResults = true;
       },
       _handleKeys: function(evt, obj) {
         console.log('_handleKeys', evt, obj, obj.keyboardEvent.keyCode);
