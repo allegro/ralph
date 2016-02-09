@@ -329,7 +329,7 @@ class AssetRelationsReport(BaseRelationsReport):
         'owner__first_name', 'owner__last_name', 'owner__company',
         'owner__segment', 'status', 'office_infrastructure__name',
         'property_of', 'warehouse__name', 'invoice_date', 'invoice_no',
-        'region__name', 'hostname'
+        'region__name', 'hostname', 'depreciation_rate', 'buyout_date'
     ]
     bo_select_related = [
         'model', 'model__category', 'office_infrastructure', 'warehouse',
@@ -345,8 +345,8 @@ class AssetRelationsReport(BaseRelationsReport):
             select_related = self.dc_select_related
 
         yield headers
-        for asset in queryset.select_related(*select_related).values(*headers):
-            row = [str(asset.get(column)) for column in headers]
+        for asset in queryset.select_related(*select_related):
+            row = [str(getattr_dunder(asset, column)) for column in headers]
             yield row
 
 
