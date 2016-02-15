@@ -17,7 +17,9 @@ from django.utils.translation import ugettext_lazy as _
 from mptt.fields import TreeForeignKey
 from mptt.settings import DEFAULT_LEVEL_INDICATOR
 
-from ralph.admin.autocomplete import DETAIL_PARAM, QUERY_PARAM
+from ralph.admin.autocomplete import (
+    AUTOCOMPLETE_EMPTY_VALUE, DETAIL_PARAM, QUERY_PARAM,
+)
 from ralph.admin.helpers import get_field_by_relation_path
 
 SEARCH_SEPARATORS_REGEX = re.compile(r'[;|]')
@@ -277,7 +279,7 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
     """Filter for Foregin key field."""
 
     template = "admin/filters/related_filter.html"
-    empty_value = 0
+    empty_value = AUTOCOMPLETE_EMPTY_VALUE
 
     def __init__(self, field, request, params, model, model_admin, field_path):
         super().__init__(field, request, params, model, model_admin, field_path)

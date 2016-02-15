@@ -13,6 +13,7 @@ from ralph.admin.helpers import get_admin_url
 from ralph.admin.sites import ralph_site
 from ralph.lib.permissions.models import PermissionsForObjectMixin
 
+AUTOCOMPLETE_EMPTY_VALUE = 0
 QUERY_PARAM = 'q'
 DETAIL_PARAM = 'pk'
 QUERY_REGEX = re.compile(r'[.| ]')
@@ -56,7 +57,6 @@ class SuggestView(JsonViewMixin, View):
     Base class for list and detail view.
     """
     http_method_names = ['get']
-    empty_value = 0
 
     def get(self, request, *args, **kwargs):
         """
@@ -83,6 +83,7 @@ class AjaxAutocompleteMixin(object):
         outer_model = self.model
 
         class Detail(SuggestView):
+            empty_value = AUTOCOMPLETE_EMPTY_VALUE
             model = outer_model
 
             def dispatch(self, request, *args, **kwargs):
@@ -132,6 +133,7 @@ class AjaxAutocompleteMixin(object):
 
 
 class AutocompleteList(SuggestView):
+    empty_value = AUTOCOMPLETE_EMPTY_VALUE
     limit = 10
     model = None
 
