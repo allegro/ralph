@@ -38,15 +38,19 @@
         <template is='dom-repeat' items="[[badgesData]]">
           <div class='badge'>
             <div class='flexchild'>[[item.__str__]]</div>
-            <!-- yea, i know multi id is stupid, but django requires it :P -->
-            <tool-tip title='{{ item.tooltip }}'> </tool-tip>
-            <a class="related-widget-wrapper-link change-related"
-              id="change_id_{{ oddName }}"
-              href='[[item.edit_url]]'
-              on-click='showRelatedObjectPopup'
-            >
-              <i class="fa fa-pencil"></i>
-            </a>
+            <template is="dom-if" if="{{item.tooltip}}">
+              <!-- yea, i know multi id is stupid, but django requires it :P -->
+              <tool-tip title='{{ item.tooltip }}'> </tool-tip>
+            </template>
+            <template is="dom-if" if="{{item.edit_url}}">
+              <a class="related-widget-wrapper-link change-related"
+                id="change_id_{{ oddName }}"
+                href='[[item.edit_url]]'
+                on-click='showRelatedObjectPopup'
+              >
+                <i class="fa fa-pencil"></i>
+              </a>
+            </template>
             <i on-tap="onBadgeRemove" class="fa fa-times delete"></i>
           </div>
         </template>
