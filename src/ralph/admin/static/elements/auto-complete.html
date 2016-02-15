@@ -78,7 +78,7 @@ Example:
 
 
     <paper-menu class='float-z' hidden$="{{hideMenu}}" on-iron-activate='elemSelected'
-      id='suggestList' class="dropdown-content"
+      id='suggestList' class="dropdown-content" on-keydown='_preventSubmit'
     >
       <template is="dom-repeat" items="[[menuItems]]">
         <paper-item>[[item.__str__]]</paper-item>
@@ -297,6 +297,25 @@ Example:
         this.hiddenSpinner = true;
         this.hiddenAjaxError = false;
       },
+      _preventSubmit: function(evt, obj) {
+        console.log('_preventSubmit', evt, obj);
+        if (evt.keyCode == 13) {
+          evt.preventDefault();
+          evt.stopPropagation();
+        }
+        if (evt.keyCode == 38) {
+          // this if is until: https://github.com/PolymerElements/paper-menu/issues/79
+          this.$.suggestList._focusPrevious();
+          evt.preventDefault();
+          evt.stopPropagation();
+        }
+        if (evt.keyCode == 40) {
+          // this if is until: https://github.com/PolymerElements/paper-menu/issues/79
+          this.$.suggestList._focusNext();
+          evt.preventDefault();
+          evt.stopPropagation();
+        }
+      },
       focusToMenu: function(evt, obj) {
         console.log('focusToMenu', evt, obj);
         if (!this.hideMenu) {
@@ -312,10 +331,7 @@ Example:
           this.$['query-getter'].hideInput();
         }
         this.reloadBadges();
-      },
-      behaviors: [
-        Polymer.IronFormElementBehavior
-      ]
+      }
     });
   </script>
 </dom-module>
