@@ -211,7 +211,7 @@ class AutocompleteList(SuggestView):
                 'tooltip': getattr(obj, 'autocomplete_tooltip', None)
             } for obj in self.get_queryset(user)
         ]
-        if self.request.GET.get('prependEmpty', 'false') == 'true':
+        if self.request.GET.get('prepend-empty', 'false') == 'true':
             results.insert(0, {
                 'pk': self.empty_value,
                 '__str__': '<empty>',

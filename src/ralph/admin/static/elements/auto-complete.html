@@ -149,10 +149,6 @@ Example:
           type: Boolean,
           value: true
         },
-        prependEmpty: {
-          type: Boolean,
-          value: false
-        },
         hideNoResults: {
           type: Boolean,
           value: true
@@ -170,8 +166,7 @@ Example:
         ) return false;
         // TODO: find out why regular syntax doesn't work
         this.$['by-query-ajax'].params = {
-          "q": evt.target.value,
-          "prependEmpty": this.prependEmpty
+          "q": evt.target.value
         };
         this.$['by-query-ajax'].generateRequest();
         this.hiddenAjaxError = true;

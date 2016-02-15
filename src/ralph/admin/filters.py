@@ -324,8 +324,7 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
                     'model': model.__name__,
                     'field': self.field.name
                 }
-            ),
-            'prepend-empty': True,
+            ) + '?prepend-empty=true',
             'multi': True,
             'detailsurl': reverse(
                 'admin:{}_{}_autocomplete_details'.format(*model_options)
