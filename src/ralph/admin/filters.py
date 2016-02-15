@@ -277,21 +277,28 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
     """Filter for Foregin key field."""
 
     template = "admin/filters/related_filter.html"
-    empty_value = '##@_empty_@##'
+    empty_value = '0'
 
     def __init__(self, field, request, params, model, model_admin, field_path):
         super().__init__(field, request, params, model, model_admin, field_path)
         self.field_model = get_model_from_relation(self.field)
 
+    def value(self):
+        value = super().value()
+        return value or ''
+
     def queryset(self, request, queryset):
         value = self.value()
-        if value:
-            if value == self.empty_value:
-                queryset = queryset.filter(
-                    **{'{}__isnull'.format(self.field_path): True}
-                )
-            else:
-                queryset = queryset.filter(**{self.field_path: value})
+        if not value:
+            ids = []
+        else:
+            ids = value.split(',')
+        q_param = models.Q()
+        for id_ in ids:
+            if id_ == self.empty_value:
+                q_param |= Q(**{'{}__isnull'.format(self.field_path): True})
+            q_param |= Q(**{self.field_path: id_})
+        queryset = queryset.filter(q_param)
         return queryset
 
     def get_related_url(self):
@@ -318,20 +325,14 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
                     'field': self.field.name
                 }
             ),
+            'prepend-empty': True,
+            'multi': True,
             'detailsurl': reverse(
                 'admin:{}_{}_autocomplete_details'.format(*model_options)
             ),
         }
-        # TODO: current_object = '<empty>'
-        # TODO: self.multi = False
-        multi = getattr(self, 'multi', '')
-        if multi:
-            value = ','.join(force_text(v) for v in self.value())
-        else:
-            value = str(self.value() or "")
         return ({
-            'multi': multi,
-            'value': value,
+            'value': self.value(),
             'attrs': flatatt(widget_options),
             'name': self.field_path,
             'related_url': self.get_related_url(),

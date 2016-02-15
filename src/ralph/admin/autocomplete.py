@@ -56,6 +56,7 @@ class SuggestView(JsonViewMixin, View):
     Base class for list and detail view.
     """
     http_method_names = ['get']
+    empty_value = 0
 
     def get(self, request, *args, **kwargs):
         """
@@ -77,6 +78,20 @@ class SuggestView(JsonViewMixin, View):
                 'tooltip': getattr(obj, 'autocomplete_tooltip', None)
             } for obj in self.get_queryset(request.user)
         ]
+
+        if self.request.GET.get('prependEmpty', 'false') == 'true':
+            results.insert(0, {
+                'pk': self.empty_value,
+                '__str__': '<empty>',
+            })
+        if hasattr(self, 'pks') and self.empty_value in self.pks:
+            idx = self.pks.index(self.empty_value)
+            results.insert(idx, {
+                'pk': self.empty_value,
+                '__str__': '<empty>',
+            })
+        print(results)
+
         return self.render_to_json_response({'results': results})
 
 
@@ -98,19 +113,19 @@ class AjaxAutocompleteMixin(object):
                 self.pk = request.GET.get(DETAIL_PARAM, None)
                 if not self.pk:
                     return HttpResponseBadRequest()
-                self.pks = self.pk.split(',')
+                self.pks = list(map(int, self.pk.split(',')))
                 return super().dispatch(request, *args, **kwargs)
 
             def get_queryset(self, user):
                 queryset = self.model._default_manager.filter(pk__in=self.pks)
                 if issubclass(self.model, PermissionsForObjectMixin):
                     queryset = self.model._get_objects_for_user(user, queryset)
-                if not queryset.exists():
+                # TODO:: clean it
+                if self.pks != [0] and not queryset.exists():
                     raise Http404
                 return queryset
 
         params = outer_model._meta.app_label, outer_model._meta.model_name
-
         my_urls = [
             url(
                 r'^autocomplete/details/$',
