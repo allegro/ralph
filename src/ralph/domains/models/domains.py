@@ -12,7 +12,7 @@ from ralph.lib.mixins.models import (
     NamedMixin,
     TimeStampMixin
 )
-from ralph.lib.permissions import PermByFieldMixin
+from ralph.lib.permissions.models import PermByFieldMixin
 
 
 class DomainRegistrant(

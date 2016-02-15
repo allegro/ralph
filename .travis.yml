@@ -5,18 +5,9 @@ env:
         - DATABASE_USER=travis
         - DATABASE_PASSWORD=travis
     matrix:
-        - DJANGO_VERSION=1.8.8 TEST_DB_ENGINE=sqlite
-        - DJANGO_VERSION=1.8.8 TEST_DB_ENGINE=mysql
-        - DJANGO_VERSION=1.8.8 TEST_DB_ENGINE=psql
-        - DJANGO_VERSION=1.9 TEST_DB_ENGINE=sqlite
-        - DJANGO_VERSION=1.9 TEST_DB_ENGINE=mysql
-        - DJANGO_VERSION=1.9 TEST_DB_ENGINE=psql
-
-matrix:
-  allow_failures:
-    - env: DJANGO_VERSION=1.9 TEST_DB_ENGINE=mysql
-    - env: DJANGO_VERSION=1.9 TEST_DB_ENGINE=sqlite
-    - env: DJANGO_VERSION=1.9 TEST_DB_ENGINE=psql
+        - TEST_DB_ENGINE=sqlite
+        - TEST_DB_ENGINE=mysql
+        - TEST_DB_ENGINE=psql
 
 services:
     - docker
@@ -49,7 +40,6 @@ install:
     - gulp
     - make install-test
     - pip install coveralls
-    - pip install django==$DJANGO_VERSION
 
 script:
     - gulp test

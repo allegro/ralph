@@ -3,7 +3,7 @@ import os
 import string
 
 from django.conf import settings
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import ContentFile
 from django.db import models, transaction
@@ -166,7 +166,7 @@ class AttachmentItem(models.Model):
     attachment = models.ForeignKey(Attachment, related_name='items')
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    content_object = GenericForeignKey('content_type', 'object_id')
 
     objects = AttachmentItemManager()
 

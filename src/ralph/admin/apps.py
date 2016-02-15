@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.apps import AppConfig
 
-from ralph.admin.filters import register_custom_filters
-
 
 class RalphAdminConfig(AppConfig):
     name = 'ralph.admin'
@@ -10,4 +8,5 @@ class RalphAdminConfig(AppConfig):
     verbose_name = 'Ralph Admin'
 
     def ready(self):
+        from ralph.admin.filters import register_custom_filters
         register_custom_filters()

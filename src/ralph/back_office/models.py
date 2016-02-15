@@ -24,7 +24,8 @@ from ralph.attachments.helpers import add_attachment_from_disk
 from ralph.lib.external_services import ExternalService, obj_to_dict
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
-from ralph.lib.transitions import transition_action, TransitionField
+from ralph.lib.transitions.decorators import transition_action
+from ralph.lib.transitions.fields import TransitionField
 from ralph.licences.models import BaseObjectLicence, Licence
 from ralph.reports.models import Report, ReportLanguage
 

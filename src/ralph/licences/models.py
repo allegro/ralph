@@ -14,7 +14,7 @@ from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
 from ralph.lib.mixins.fields import BaseObjectForeignKey
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
-from ralph.lib.permissions import PermByFieldMixin
+from ralph.lib.permissions.models import PermByFieldMixin
 from ralph.lib.polymorphic.models import PolymorphicQuerySet
 
 

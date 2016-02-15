@@ -8,11 +8,9 @@ from ralph.assets.models.base import BaseObject
 from ralph.attachments.helpers import add_attachment_from_disk
 from ralph.lib.mixins.fields import BaseObjectForeignKey
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
-from ralph.lib.transitions import (
-    transition_action,
-    TransitionField,
-    TransitionWorkflowBase
-)
+from ralph.lib.transitions.decorators import transition_action
+from ralph.lib.transitions.fields import TransitionField
+from ralph.lib.transitions.models import TransitionWorkflowBase
 
 
 class OrderStatus(Choices):

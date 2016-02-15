@@ -178,7 +178,7 @@ class DataCenterAssetTest(RalphTestCase):
         ('16',),
     )
     def test_should_pass_when_slot_no_is_correct(self, slot_no):
-        slot_no_field = self.dc_asset._meta.get_field_by_name('slot_no')[0]
+        slot_no_field = self.dc_asset._meta.get_field('slot_no')
         slot_no_field.clean(slot_no, self.dc_asset)
 
     @unpack
@@ -197,7 +197,7 @@ class DataCenterAssetTest(RalphTestCase):
     def test_should_raise_validation_error_when_slot_no_is_incorrect(
         self, slot_no
     ):
-        slot_no_field = self.dc_asset._meta.get_field_by_name('slot_no')[0]
+        slot_no_field = self.dc_asset._meta.get_field('slot_no')
         with self.assertRaises(ValidationError):
             slot_no_field.clean(slot_no, self.dc_asset)
 

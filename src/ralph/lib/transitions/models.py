@@ -5,7 +5,6 @@ import logging
 import operator
 from collections import defaultdict, Iterable
 
-import reversion
 from django import forms
 from django.conf import settings
 from django.contrib.auth.models import Permission
@@ -24,6 +23,7 @@ from django.utils.functional import curry
 from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields.json import JSONField
+from reversion import revisions as reversion
 
 from ralph.admin.helpers import get_field_by_relation_path
 from ralph.attachments.models import Attachment
