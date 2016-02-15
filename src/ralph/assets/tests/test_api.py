@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from urllib.parse import urlencode
+
 from django.core.urlresolvers import reverse
 from rest_framework import status
 
@@ -421,8 +423,12 @@ class AssetModelAPITests(RalphAPITestCase):
 class BaseObjectAPITests(RalphAPITestCase):
     def setUp(self):
         super().setUp()
-        self.bo_asset = BackOfficeAssetFactory(barcode='12345')
-        self.dc_asset = DataCenterAssetFactory(barcode='54321')
+        self.bo_asset = BackOfficeAssetFactory(
+            barcode='12345', hostname='host1'
+        )
+        self.dc_asset = DataCenterAssetFactory(
+            barcode='54321', price='10.00'
+        )
 
     def test_get_base_objects_list(self):
         url = reverse('baseobject-list')
@@ -437,3 +443,21 @@ class BaseObjectAPITests(RalphAPITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['barcode'], '12345')
+
+    def test_icontains_polymorphic(self):
+        url = '{}?{}'.format(
+            reverse('baseobject-list'), urlencode(
+                {'hostname__icontains': 'host'}
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 1)
+
+    def test_lte_polymorphic(self):
+        url = '{}?{}'.format(
+            reverse('baseobject-list'), urlencode(
+                {'price__lte': '1'}
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 2)

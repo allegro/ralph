@@ -146,6 +146,47 @@ class RalphAPIViewSet(
             self.extend_filter_fields = {}
         super().__init__(*args, **kwargs)
 
+    def get_polymorphic_ids(self, polymorphic_models):
+        ids = set()
+        for model in polymorphic_models:
+            filter_fields = []
+            model_viewset = self._viewsets_registry.get(model)
+            if model_viewset:
+                filter_fields = getattr(model_viewset, 'filter_fields', [])
+
+            if not filter_fields:
+                # if not filter_fields from API viewset get fields
+                # from django model admin
+                filter_fields = ralph_site._registry[model].search_fields
+
+            lookups = self.get_lookups(model, filter_fields)
+            if lookups:
+                ids |= set(model.objects.filter(
+                    **lookups
+                ).values_list('pk', flat=True))
+        return ids
+
+    def get_lookups(self, model, filter_fields=None):
+        if filter_fields is None:
+            filter_fields = self.filter_fields
+        result = {}
+        for field_name, value in self.request.query_params.items():
+            model_field_name, _, lookup = field_name.rpartition('__')
+            try:
+                model_field = get_field_by_relation_path(
+                    model, model_field_name
+                )
+            except FieldDoesNotExist:
+                continue
+
+            lookups = set()
+            for cl in inspect.getmro(model_field.__class__):
+                lookups |= self.allow_lookups.get(cl, set())
+
+            if lookup in lookups and model_field_name in filter_fields:
+                result.update({field_name: value})
+        return result
+
     def get_queryset(self):
         queryset = super().get_queryset()
         # filter by imported object id
@@ -173,20 +214,16 @@ class RalphAPIViewSet(
                     q_param |= models.Q(**{field_name: value})
                 queryset = queryset.filter(q_param)
 
-        for field_name, value in self.request.query_params.items():
-            model_field_name, _, lookup = field_name.rpartition('__')
-            try:
-                model_field = get_field_by_relation_path(
-                    queryset.model, model_field_name
-                )
-            except FieldDoesNotExist:
-                continue
+        polymorphic_descendants = getattr(
+            queryset.model, '_polymorphic_descendants', []
+        )
+        if polymorphic_descendants:
+            ids = self.get_polymorphic_ids(polymorphic_descendants)
+            if ids:
+                queryset = queryset.filter(pk__in=list(ids))
 
-            lookups = set()
-            for cl in inspect.getmro(model_field.__class__):
-                lookups |= self.allow_lookups.get(cl, set())
-
-            if lookup in lookups and model_field_name in self.filter_fields:
-                queryset = queryset.filter(models.Q(**{field_name: value}))
+        lookups = self.get_lookups(queryset.model)
+        if lookups:
+            queryset = queryset.filter(**lookups)
 
         return queryset
