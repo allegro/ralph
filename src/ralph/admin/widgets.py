@@ -122,10 +122,11 @@ class PermissionsSelectWidget(forms.Widget):
 
 
 class AutocompleteWidget(forms.TextInput):
+    separator = ','
     def __init__(self, field, admin_site, attrs=None, using=None, **kwargs):
         self.field = field
         self.rel = self.field.rel
-        self.multi = kwargs.get('multi', None)
+        self.multi = kwargs.get('multi', False)
         self.request = kwargs.get('request', None)
         self.rel_to = kwargs.get('rel_to') or field.rel.to
         self.admin_site = admin_site
@@ -138,7 +139,6 @@ class AutocompleteWidget(forms.TextInput):
             os.path.join('src', 'js', 'ralph-autocomplete.js'),
             'admin/js/core.js',
         ])
-        print(res.render())
         return res
 
     def get_url_parameters(self):
@@ -156,10 +156,9 @@ class AutocompleteWidget(forms.TextInput):
 
     def value_from_datadict(self, data, files, name):
         value = data.get(name)
-        if getattr(self, 'multi', False) is True:
-            print('name', name)
+        if self.multi:
             if value:
-                value = value.split(',')
+                value = value.split(self.separator)
             else:
                 value = []
         return value
@@ -172,8 +171,8 @@ class AutocompleteWidget(forms.TextInput):
             attrs = {}
         attrs['name'] = name
         if self.multi:
-            attrs['multi'] = ''  # only key is requied
-            value = ','.join(force_text(v) for v in value)
+            attrs['multi'] = 'true'
+            value = self.separator.join(force_text(v) for v in value)
         else:
             value = value or ""
 
