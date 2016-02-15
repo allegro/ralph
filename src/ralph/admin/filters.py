@@ -277,7 +277,7 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
     """Filter for Foregin key field."""
 
     template = "admin/filters/related_filter.html"
-    empty_value = '0'
+    empty_value = 0
 
     def __init__(self, field, request, params, model, model_admin, field_path):
         super().__init__(field, request, params, model, model_admin, field_path)
@@ -292,7 +292,7 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
         if not value:
             ids = []
         else:
-            ids = value.split(',')
+            ids = map(int, value.split(','))
         q_param = models.Q()
         for id_ in ids:
             if id_ == self.empty_value:

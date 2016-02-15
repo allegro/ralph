@@ -67,31 +67,7 @@ class SuggestView(JsonViewMixin, View):
         can_edit = ralph_site._registry[self.model].has_change_permission(
             self.request
         )
-        results = [
-            {
-                'pk': obj.pk,
-                '__str__': str(obj),
-                'label': getattr(obj, 'autocomplete_str', None),
-                'edit_url': '{}?_popup=1'.format(
-                    get_admin_url(obj, 'change')
-                ) if can_edit else None,
-                'tooltip': getattr(obj, 'autocomplete_tooltip', None)
-            } for obj in self.get_queryset(request.user)
-        ]
-
-        if self.request.GET.get('prependEmpty', 'false') == 'true':
-            results.insert(0, {
-                'pk': self.empty_value,
-                '__str__': '<empty>',
-            })
-        if hasattr(self, 'pks') and self.empty_value in self.pks:
-            idx = self.pks.index(self.empty_value)
-            results.insert(idx, {
-                'pk': self.empty_value,
-                '__str__': '<empty>',
-            })
-        print(results)
-
+        results = self.get_results(request.user, can_edit)
         return self.render_to_json_response({'results': results})
 
 
@@ -113,15 +89,34 @@ class AjaxAutocompleteMixin(object):
                 self.pk = request.GET.get(DETAIL_PARAM, None)
                 if not self.pk:
                     return HttpResponseBadRequest()
-                self.pks = list(map(int, self.pk.split(',')))
+                self.values = list(map(int, self.pk.split(',')))
                 return super().dispatch(request, *args, **kwargs)
 
+            def get_results(self, user, can_edit):
+                results = [
+                    {
+                        'pk': obj.pk,
+                        '__str__': str(obj),
+                        'label': getattr(obj, 'autocomplete_str', None),
+                        'edit_url': '{}?_popup=1'.format(
+                            get_admin_url(obj, 'change')
+                        ) if can_edit else None,
+                        'tooltip': getattr(obj, 'autocomplete_tooltip', None)
+                    } for obj in self.get_queryset(user)
+                ]
+                if self.empty_value in self.values:
+                    idx = self.values.index(self.empty_value)
+                    results.insert(idx, {
+                        'pk': self.empty_value,
+                        '__str__': '<empty>',
+                    })
+                return results
+
             def get_queryset(self, user):
-                queryset = self.model._default_manager.filter(pk__in=self.pks)
+                queryset = self.model._default_manager.filter(pk__in=self.values)
                 if issubclass(self.model, PermissionsForObjectMixin):
                     queryset = self.model._get_objects_for_user(user, queryset)
-                # TODO:: clean it
-                if self.pks != [0] and not queryset.exists():
+                if self.values != [self.empty_value] and not queryset.exists():
                     raise Http404
                 return queryset
 
@@ -203,6 +198,25 @@ class AutocompleteList(SuggestView):
             )
         queryset = self.get_query_filters(queryset, value, search_fields)
         return queryset[:self.limit].values_list('pk', flat=True)
+
+    def get_results(self, user, can_edit):
+        results = [
+            {
+                'pk': obj.pk,
+                '__str__': str(obj),
+                'label': getattr(obj, 'autocomplete_str', None),
+                'edit_url': '{}?_popup=1'.format(
+                    get_admin_url(obj, 'change')
+                ) if can_edit else None,
+                'tooltip': getattr(obj, 'autocomplete_tooltip', None)
+            } for obj in self.get_queryset(user)
+        ]
+        if self.request.GET.get('prependEmpty', 'false') == 'true':
+            results.insert(0, {
+                'pk': self.empty_value,
+                '__str__': '<empty>',
+            })
+        return results
 
     def get_queryset(self, user):
         search_fields = ralph_site._registry[self.model].search_fields
