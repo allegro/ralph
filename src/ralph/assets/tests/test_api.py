@@ -426,9 +426,11 @@ class BaseObjectAPITests(RalphAPITestCase):
         self.bo_asset = BackOfficeAssetFactory(
             barcode='12345', hostname='host1'
         )
+        self.bo_asset.tags.add('tag1')
         self.dc_asset = DataCenterAssetFactory(
             barcode='54321', price='10.00'
         )
+        self.dc_asset.tags.add('tag2')
 
     def test_get_base_objects_list(self):
         url = reverse('baseobject-list')
@@ -461,3 +463,20 @@ class BaseObjectAPITests(RalphAPITestCase):
         )
         response = self.client.get(url, format='json')
         self.assertEqual(len(response.data['results']), 2)
+
+    def test_tags(self):
+        url = '{}?{}'.format(
+            reverse('baseobject-list'), urlencode(
+                [
+                    ('tag', 'tag1'), ('tag', 'tag2')
+                ]
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 0)
+
+        url = '{}?{}'.format(
+            reverse('baseobject-list'), urlencode([('tag', 'tag1')])
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 1)

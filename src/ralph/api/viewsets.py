@@ -12,6 +12,7 @@ from ralph.admin.sites import ralph_site
 from ralph.api.serializers import RalphAPISaveSerializer, ReversedChoiceField
 from ralph.api.utils import QuerysetRelatedMixin
 from ralph.data_importer.models import ImportedObjects
+from ralph.lib.mixins.models import TaggableMixin
 from ralph.lib.permissions.api import (
     PermissionsForObjectFilter,
     RalphPermission
@@ -225,5 +226,12 @@ class RalphAPIViewSet(
         lookups = self.get_lookups(queryset.model)
         if lookups:
             queryset = queryset.filter(**lookups)
+
+        tags = self.request.query_params.getlist('tag')
+        if tags and issubclass(queryset.model, TaggableMixin):
+            query = models.Q()
+            for tag in tags:
+                query &= models.Q(tags__name=tag)
+            queryset = queryset.filter(query)
 
         return queryset

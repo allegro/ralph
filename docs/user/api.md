@@ -126,6 +126,12 @@ results in:
 
 Part of response was skipped for readability.
 
+## You can search records by tags:
+
+`curl https://<YOUR-RALPH-URL>/api/data-center-assets/?tag=tag1&tag=tag2 | python -m json.tool`
+
+You will find all records that contain all of the specified tags.
+
 ## Save sample resource
 
 PATCH data center asset with data:
