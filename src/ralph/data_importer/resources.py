@@ -109,6 +109,10 @@ class BackOfficeAssetResource(ImportForeignKeyMixin, resources.ModelResource):
 
     class Meta:
         model = BackOfficeAsset
+        prefetch_related = (
+            'tags',
+        )
+        exclude = ('content_type', 'asset_ptr', 'baseobject_ptr',)
 
     def dehydrate_price(self, bo_asset):
         return str(bo_asset.price)
@@ -212,6 +216,14 @@ class DataCenterAssetResource(ImportForeignKeyMixin, resources.ModelResource):
 
     class Meta:
         model = physical.DataCenterAsset
+        select_related = (
+            'service_env__service', 'service_env__environment',
+            'rack__server_room__data_center',
+        )
+        prefetch_related = (
+            'tags',
+        )
+        exclude = ('content_type', 'asset_ptr', 'baseobject_ptr', 'connections')
 
     def dehydrate_price(self, dc_asset):
         return str(dc_asset.price)
@@ -265,6 +277,11 @@ class LicenceResource(ImportForeignKeyMixin, resources.ModelResource):
 
     class Meta:
         model = Licence
+        prefetch_related = (
+            'tags', 'users', 'licenceuser_set__user',
+            'baseobjectlicence_set__base_object'
+        )
+        exclude = ('content_type', 'baseobject_ptr', )
 
     def dehydrate_price(self, licence):
         return str(licence.price)
