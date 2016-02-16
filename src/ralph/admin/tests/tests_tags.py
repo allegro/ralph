@@ -6,7 +6,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 
 from ralph.accounts.tests.factories import UserFactory
-from ralph.admin.templatetags.ralph_tags import history_attachment_url
 from ralph.attachments.models import Attachment
 from ralph.back_office.models import BackOfficeAsset
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
@@ -33,12 +32,4 @@ class RalphTagsTest(TestCase):
             object_id=back_office.pk,
             logged_user=user,
             attachment=attachment
-        )
-
-    def test_attachment_url(self):
-        result = history_attachment_url(self.history)
-        self.assertEqual(
-            result, '/back_office/backofficeasset/attachment/{}-test'.format(
-                self.history.attachment_id
-            )
         )

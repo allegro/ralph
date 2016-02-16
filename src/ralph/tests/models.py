@@ -81,6 +81,13 @@ class Order(
     def go_to_post_office(cls, instances, **kwargs):
         pass
 
+    @classmethod
+    @transition_action(
+        return_attachment=False,
+    )
+    def generate_exception(cls, instances, request, **kwargs):
+        raise Exception('exception')
+
 
 class TestAsset(models.Model):
     hostname = models.CharField(max_length=50)

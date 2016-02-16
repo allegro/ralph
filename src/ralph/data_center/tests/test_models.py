@@ -2,6 +2,9 @@
 from ddt import data, ddt, unpack
 from django.core.exceptions import ValidationError
 
+from ralph.accounts.tests.factories import RegionFactory
+from ralph.back_office.models import BackOfficeAsset
+from ralph.back_office.tests.factories import WarehouseFactory
 from ralph.data_center.models.choices import DataCenterAssetStatus, Orientation
 from ralph.data_center.models.networks import (
     get_network_tree,
@@ -159,9 +162,25 @@ class DataCenterAssetTest(RalphTestCase):
             parent=self.dc_asset,
         )
 
+    def test_convert_to_backoffice_asset(self):
+        dc_asset = DataCenterAssetFactory()
+        dc_asset_pk = dc_asset.pk
+        hostname = dc_asset.hostname
+        DataCenterAsset.convert_to_backoffice_asset(
+            instances=[dc_asset],
+            region=RegionFactory().id,
+            warehouse=WarehouseFactory().id,
+            request=None
+        )
+        bo_asset = BackOfficeAsset.objects.get(pk=dc_asset_pk)
+        self.assertFalse(
+            DataCenterAsset.objects.filter(pk=dc_asset_pk).exists()
+        )
+        self.assertEqual(bo_asset.hostname, hostname)
+
     # =========================================================================
     # slot_no
-    # =========================================================================
+    #  =========================================================================
     @unpack
     @data(
         ('1A',),

@@ -6,14 +6,17 @@ from itertools import chain
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.accounts.models import Region
 from ralph.admin.sites import ralph_site
 from ralph.admin.widgets import AutocompleteWidget
 from ralph.assets.models.assets import Asset, NamedMixin
 from ralph.assets.models.choices import AssetSource
+from ralph.assets.utils import move_parents_models
+from ralph.back_office.models import BackOfficeAsset, Warehouse
 from ralph.data_center.models.choices import (
     ConnectionType,
     DataCenterAssetStatus,
@@ -472,6 +475,40 @@ class DataCenterAsset(Asset):
         rack = Rack.objects.get(pk=kwargs['rack'])
         for instance in instances:
             instance.rack = rack
+
+    @classmethod
+    @transition_action(
+        verbose_name=_('Convert to BackOffice Asset'),
+        disable_save_object=True,
+        only_one_action=True,
+        form_fields={
+            'warehouse': {
+                'field': forms.CharField(label=_('Warehouse')),
+                'autocomplete_field': 'warehouse',
+                'autocomplete_model': 'back_office.BackOfficeAsset'
+            },
+            'region': {
+                'field': forms.CharField(label=_('Region')),
+                'autocomplete_field': 'region',
+                'autocomplete_model': 'back_office.BackOfficeAsset'
+            }
+        }
+    )
+    def convert_to_backoffice_asset(cls, instances, request, **kwargs):
+        with transaction.atomic():
+            for i, instance in enumerate(instances):
+                back_office_asset = BackOfficeAsset()
+
+                back_office_asset.region = Region.objects.get(
+                    pk=kwargs['region']
+                )
+                back_office_asset.warehouse = Warehouse.objects.get(
+                    pk=kwargs['warehouse']
+                )
+                move_parents_models(instance, back_office_asset)
+                # Save new asset to list, required to redirect url.
+                # RunTransitionView.get_success_url()
+                instances[i] = back_office_asset
 
 
 class Connection(models.Model):

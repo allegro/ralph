@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
+from ddt import data, ddt, unpack
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldDoesNotExist
 from django.test import TestCase
 
-from ralph.admin.helpers import get_field_by_relation_path, getattr_dunder
+from ralph.admin.helpers import (
+    get_content_type_for_model,
+    get_field_by_relation_path,
+    getattr_dunder
+)
 from ralph.assets.models.assets import Asset, Manufacturer
+from ralph.assets.models.base import BaseObject
 
 
+@ddt
 class ModelFieldsTestCase(TestCase):
     def test_return_ok_when_simply_field(self):
         field_name = 'barcode'
@@ -31,3 +39,14 @@ class ModelFieldsTestCase(TestCase):
         a.b = A()
         a.b.name = 'spam'
         self.assertEqual(getattr_dunder(a, 'b__name'), 'spam')
+
+    @unpack
+    @data(
+        (BaseObject, Asset),
+        (Manufacturer, Manufacturer)
+    )
+    def test_get_content_type_for_model(self, expected_model, model):
+        self.assertEqual(
+            ContentType.objects.get_for_model(expected_model),
+            get_content_type_for_model(model)
+        )

@@ -14,6 +14,7 @@ from ralph.lib.transitions.models import (
     _sort_graph_topologically,
     Action,
     CycleError,
+    run_field_transition,
     Transition
 )
 from ralph.lib.transitions.tests import TransitionTestCase
@@ -81,10 +82,13 @@ class TransitionsTest(TransitionTestCase):
         _, transition, _ = self._create_transition(
             model=order, name='prepare',
             source=[OrderStatus.new.id], target=OrderStatus.to_send.id,
+            actions=['go_to_post_office']
         )
 
         self.assertEqual(order.status, OrderStatus.new.id)
-        order.run_status_transition(transition, request=self.request)
+        run_field_transition(
+            [order], transition, request=self.request, field='status'
+        )
         self.assertEqual(order.status, OrderStatus.to_send.id)
 
     def test_run_action_during_transition(self):
@@ -92,10 +96,12 @@ class TransitionsTest(TransitionTestCase):
         _, transition, actions = self._create_transition(
             model=order, name='send',
             source=[OrderStatus.to_send.id], target=OrderStatus.sended.id,
+            actions=['go_to_post_office']
         )
-        transition.actions.add(Action.objects.get(name='go_to_post_office'))
         order.__class__.go_to_post_office = mocked_action
-        order.run_status_transition(transition, request=self.request)
+        run_field_transition(
+            [order], transition, request=self.request, field='status'
+        )
         self.assertTrue(order.go_to_post_office.runned)
 
     def test_run_transition_from_string(self):
@@ -108,14 +114,18 @@ class TransitionsTest(TransitionTestCase):
             target=OrderStatus.sended.id,
         )
         self.assertTrue(
-            order.run_status_transition(transition_name, request=self.request)
+            run_field_transition(
+                [order], transition_name, request=self.request, field='status'
+            )
         )
 
     def test_run_non_existent_transition(self):
         transition_name = 'non_existent_transition'
         order = Order.objects.create()
         with self.assertRaises(Transition.DoesNotExist):
-            order.run_status_transition(transition_name, request=self.request)
+            run_field_transition(
+                [order], transition_name, request=self.request, field='status'
+            )
 
     def test_available_transitions(self):
         order = Order.objects.create()
@@ -135,6 +145,19 @@ class TransitionsTest(TransitionTestCase):
             list(order.get_available_transitions_for_status()), []
         )
 
+    def test_transition_exception(self):
+        order = Order.objects.create()
+        _, transition, actions = self._create_transition(
+            model=order, name='generate_exception',
+            source=[OrderStatus.new.id], target=OrderStatus.sended.id,
+            actions=['generate_exception']
+        )
+
+        result, _ = run_field_transition(
+            [order], transition, request=self.request, field='status'
+        )
+        self.assertFalse(result)
+
     def test_forbidden_transition(self):
         order = Order.objects.create()
         transition = Transition.objects.create(
@@ -148,7 +171,9 @@ class TransitionsTest(TransitionTestCase):
             list(order.get_available_transitions_for_status()), []
         )
         with self.assertRaises(TransitionNotAllowedError):
-            order.run_status_transition(transition, request=self.request)
+            run_field_transition(
+                [order], transition, request=self.request, field='status'
+            )
 
     def test_create_graph_from_actions(self):
         order = Order.objects.create()

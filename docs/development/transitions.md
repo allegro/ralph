@@ -55,6 +55,8 @@ Allowed params for field::
     ``field`` - standard form field, e.g. from ``django.forms``,
     ``condition`` - function wich accept one parameter and return boolean, when condition have be met the field will be shown.
 
+Set ``only_one_action`` to ``True`` if the transition is to be only one action requirements.
+
 Set ``return_attachment`` to ``True`` if action return attachment (e.g.: PDF document).
 
 If you want to add additional information to the transition history, you need to add to the dictionary history_kwargs in your action:

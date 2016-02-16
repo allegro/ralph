@@ -16,7 +16,6 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.admin.mixins import RalphTemplateView
 from ralph.admin.sites import ralph_site
 from ralph.admin.widgets import AutocompleteWidget
-from ralph.helpers import get_model_view_url_name
 from ralph.lib.transitions.exceptions import TransitionNotAllowedError
 from ralph.lib.transitions.models import (
     _check_instances_for_transition,
@@ -129,9 +128,18 @@ class TransitionViewMixin(object):
             messages.success(
                 self.request, _('Transitions performed successfully')
             )
+        else:
+            messages.error(
+                self.request, _((
+                    'Something went wrong while displaying this transition. '
+                    'To continue, reload or go to another transition.'
+                ))
+            )
+            return self.form_invalid(form)
+
         if attachment:
             url = reverse(
-                get_model_view_url_name(self.model, 'attachment'),
+                'serve_attachment',
                 args=(attachment.id, attachment.original_filename)
             )
             self.request.session['attachment_to_download'] = url
@@ -186,7 +194,7 @@ class RunBulkTransitionView(TransitionViewMixin, RalphTemplateView):
         self.model = model
         self.transition = get_object_or_404(Transition, pk=transition_pk)
         ids = [int(i) for i in self.request.GET.getlist('select')]
-        self.objects = self.model.objects.filter(id__in=ids)
+        self.objects = list(self.model.objects.filter(id__in=ids))
         self.obj = self.objects[0]
         return super().dispatch(request, *args, **kwargs)
 
@@ -211,4 +219,4 @@ class RunTransitionView(TransitionViewMixin, RalphTemplateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
-        return self.obj.get_absolute_url()
+        return self.objects[0].get_absolute_url()

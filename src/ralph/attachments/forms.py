@@ -1,6 +1,6 @@
 from django import forms
-from django.contrib.contenttypes.models import ContentType
 
+from ralph.admin.helpers import get_content_type_for_model
 from ralph.attachments.models import Attachment, AttachmentItem
 from ralph.lib.mixins.forms import RequestModelForm
 
@@ -37,7 +37,7 @@ class AttachmentForm(RequestModelForm):
         # _parent_object is set in attachment.views.AttachmentsView
         #  get_formset method.
         if attachment:
-            content_type = ContentType.objects.get_for_model(
+            content_type = get_content_type_for_model(
                 self._parent_object._meta.model
             )
             if not AttachmentItem.objects.filter(
