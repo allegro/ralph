@@ -294,12 +294,13 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
         if not value:
             ids = []
         else:
-            ids = map(int, value.split(','))
+            ids = value.split(',')
         q_param = models.Q()
         for id_ in ids:
             if id_ == self.empty_value:
                 q_param |= Q(**{'{}__isnull'.format(self.field_path): True})
-            q_param |= Q(**{self.field_path: id_})
+            else:
+                q_param |= Q(**{self.field_path: id_})
         queryset = queryset.filter(q_param)
         return queryset
 
