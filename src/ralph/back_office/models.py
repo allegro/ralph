@@ -546,7 +546,6 @@ class BackOfficeAsset(Regionalizable, Asset):
         with transaction.atomic():
             for i, instance in enumerate(instances):
                 data_center_asset = DataCenterAsset()
-                move_parents_models(instance, data_center_asset)
                 data_center_asset.rack = Rack.objects.get(pk=kwargs['rack'])
                 data_center_asset.position = kwargs['position']
                 data_center_asset.service_env = ServiceEnvironment.objects.get(
@@ -554,6 +553,12 @@ class BackOfficeAsset(Regionalizable, Asset):
                 )
                 data_center_asset.model = AssetModel.objects.get(
                     pk=kwargs['model']
+                )
+                move_parents_models(
+                    instance, data_center_asset,
+                    exclude_copy_fields=[
+                        'rack', 'model', 'service_env'
+                    ]
                 )
                 data_center_asset.save()
                 # Save new asset to list, required to redirect url.
