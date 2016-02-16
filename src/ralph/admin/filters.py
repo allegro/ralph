@@ -17,7 +17,9 @@ from django.utils.translation import ugettext_lazy as _
 from mptt.fields import TreeForeignKey
 from mptt.settings import DEFAULT_LEVEL_INDICATOR
 
-from ralph.admin.autocomplete import DETAIL_PARAM, QUERY_PARAM
+from ralph.admin.autocomplete import (
+    AUTOCOMPLETE_EMPTY_VALUE, DETAIL_PARAM, QUERY_PARAM,
+)
 from ralph.admin.helpers import get_field_by_relation_path
 
 SEARCH_SEPARATORS_REGEX = re.compile(r'[;|]')
@@ -277,21 +279,29 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
     """Filter for Foregin key field."""
 
     template = "admin/filters/related_filter.html"
-    empty_value = '##@_empty_@##'
+    empty_value = AUTOCOMPLETE_EMPTY_VALUE
 
     def __init__(self, field, request, params, model, model_admin, field_path):
         super().__init__(field, request, params, model, model_admin, field_path)
         self.field_model = get_model_from_relation(self.field)
 
+    def value(self):
+        value = super().value()
+        return value or ''
+
     def queryset(self, request, queryset):
         value = self.value()
-        if value:
-            if value == self.empty_value:
-                queryset = queryset.filter(
-                    **{'{}__isnull'.format(self.field_path): True}
-                )
+        if not value:
+            ids = []
+        else:
+            ids = value.split(',')
+        q_param = models.Q()
+        for id_ in ids:
+            if id_ == self.empty_value:
+                q_param |= Q(**{'{}__isnull'.format(self.field_path): True})
             else:
-                queryset = queryset.filter(**{self.field_path: value})
+                q_param |= Q(**{self.field_path: id_})
+        queryset = queryset.filter(q_param)
         return queryset
 
     def get_related_url(self):
@@ -317,21 +327,14 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
                     'model': model.__name__,
                     'field': self.field.name
                 }
-            ),
+            ) + '?prepend-empty=true',
+            'multi': True,
             'detailsurl': reverse(
                 'admin:{}_{}_autocomplete_details'.format(*model_options)
             ),
         }
-        # TODO: current_object = '<empty>'
-        # TODO: self.multi = False
-        multi = getattr(self, 'multi', '')
-        if multi:
-            value = ','.join(force_text(v) for v in self.value())
-        else:
-            value = str(self.value() or "")
         return ({
-            'multi': multi,
-            'value': value,
+            'value': self.value(),
             'attrs': flatatt(widget_options),
             'name': self.field_path,
             'related_url': self.get_related_url(),
