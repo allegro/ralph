@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from datetime import date, datetime
 from decimal import Decimal
+from urllib.parse import urlencode
 
 from django.contrib.auth import get_user_model
+from django.http import QueryDict
 from rest_framework import relations
 from rest_framework.test import APIClient, APIRequestFactory
 
@@ -106,72 +108,78 @@ class TestRalphViewset(RalphTestCase):
 
     def test_extend_filter_fields(self):
         request = self.request_factory.get('/')
-        request.query_params = {'name': 'test'}
+        request.query_params = QueryDict(urlencode({'name': 'test'}))
         mvs = ManufacturerViewSet()
         mvs.request = request
         self.assertEqual(len(mvs.get_queryset()), 2)
 
-        request.query_params = {'name': 'test2'}
+        request.query_params = QueryDict(urlencode({'name': 'test2'}))
         mvs.request = request
         self.assertEqual(len(mvs.get_queryset()), 1)
 
     def test_query_filters_charfield(self):
         request = self.request_factory.get('/api/bar')
         bvs = BarViewSet()
-        request.query_params = {'name__icontains': 'bar1'}
+        request.query_params = QueryDict(
+            urlencode({'name__icontains': 'bar1'})
+        )
         bvs.request = request
         self.assertEqual(len(bvs.get_queryset()), 1)
 
         # Failed filter
-        request.query_params = {'name__range': 10}
+        request.query_params = QueryDict(urlencode({'name__range': 10}))
         self.assertEqual(len(bvs.get_queryset()), 3)
 
     def test_query_filters_decimalfield(self):
         request = self.request_factory.get('/api/bar')
         bvs = BarViewSet()
-        request.query_params = {'price__gte': 20}
+        request.query_params = QueryDict(urlencode({'price__gte': 20}))
         bvs.request = request
         self.assertEqual(len(bvs.get_queryset()), 2)
 
         # Failed filter
-        request.query_params = {'price__istartswith': 10}
+        request.query_params = QueryDict(urlencode({'price__istartswith': 10}))
         self.assertEqual(len(bvs.get_queryset()), 3)
 
     def test_query_filters_integerfield(self):
         request = self.request_factory.get('/api/bar')
         bvs = BarViewSet()
-        request.query_params = {'count__gte': 2}
+        request.query_params = QueryDict(urlencode({'count__gte': 2}))
         bvs.request = request
         self.assertEqual(len(bvs.get_queryset()), 2)
 
         # Failed filter
-        request.query_params = {'count__istartswith': 10}
+        request.query_params = QueryDict(urlencode({'count__istartswith': 10}))
         self.assertEqual(len(bvs.get_queryset()), 3)
 
     def test_query_filters_datefield(self):
         request = self.request_factory.get('/api/bar')
         bvs = BarViewSet()
-        request.query_params = {'date__year': 2015}
+        request.query_params = QueryDict(urlencode({'date__year': 2015}))
         bvs.request = request
         self.assertEqual(len(bvs.get_queryset()), 1)
 
         # Failed filter
-        request.query_params = {'date__istartswith': 10}
+        request.query_params = QueryDict(urlencode({'date__istartswith': 10}))
         self.assertEqual(len(bvs.get_queryset()), 3)
 
     def test_query_filters_datetimefield(self):
         request = self.request_factory.get('/api/bar')
         bvs = BarViewSet()
-        request.query_params = {'created__year': 2015}
+        request.query_params = QueryDict(urlencode({'created__year': 2015}))
         bvs.request = request
         self.assertEqual(len(bvs.get_queryset()), 1)
 
-        request.query_params = {'created__year': 2015, 'created__month': 3}
+        request.query_params = QueryDict(
+            urlencode({'created__year': 2015, 'created__month': 3})
+        )
         bvs.request = request
         self.assertEqual(len(bvs.get_queryset()), 1)
 
         # Failed filter
-        request.query_params = {'created__istartswith': 10}
+        request.query_params = QueryDict(
+            urlencode({'created__istartswith': 10})
+        )
         self.assertEqual(len(bvs.get_queryset()), 3)
 
     def test_options_filtering(self):
