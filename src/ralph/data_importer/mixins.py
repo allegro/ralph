@@ -1,10 +1,57 @@
 # -*- coding: utf-8 -*-
+from collections import OrderedDict
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from import_export import widgets
+from import_export import fields, widgets
 
 from ralph.data_importer.models import ImportedObjects
+from ralph.data_importer.widgets import (
+    ExportForeignKeyStrWidget,
+    ExportManyToManyStrWidget
+)
+
+
+class ImportForeignKeyMeta(type):
+    def __new__(cls, name, bases, attrs):
+        """
+        Add additional fields to the export_class.fields with *_str
+        for display ForeignKey fields.
+        """
+        new_class = super().__new__(cls, name, bases, attrs)
+        # Generate second class only for export which has added
+        # additional *_str fields
+        export_class = super().__new__(
+            cls, '{}Exporter'.format(name), bases, attrs
+        )
+        update_fields = []
+        for name, field in new_class.fields.items():
+            update_fields.append((name, field))
+            if isinstance(field.widget, widgets.ForeignKeyWidget):
+                update_fields.append((
+                    '{}_str'.format(name),
+                    fields.Field(
+                        column_name='{}_str'.format(field.column_name),
+                        attribute=field.attribute,
+                        widget=ExportForeignKeyStrWidget(),
+                        readonly=True
+                    )
+                ))
+            elif isinstance(field.widget, widgets.ManyToManyWidget):
+                update_fields.append((
+                    '{}_str'.format(name),
+                    fields.Field(
+                        column_name='{}_str'.format(field.column_name),
+                        attribute=field.attribute,
+                        widget=ExportManyToManyStrWidget(
+                            model=field.widget.model
+                        ),
+                        readonly=True
+                    )
+                ))
+        export_class.fields = OrderedDict(update_fields)
+        new_class.export_class = export_class
+        return new_class
 
 
 class ImportForeignKeyMixin(object):
@@ -29,20 +76,3 @@ class ImportForeignKeyMixin(object):
                 old_object_pk=self.old_object_pk,
                 defaults={'object_pk': instance.pk}
             )
-
-    def export_field(self, field, obj):
-        """
-        Override export_field.
-
-        Each field which has widget: ForeignKeyWidget return in str format.
-
-        Args:
-            field: ImportExport field object
-            obj: Django model object
-
-        Returns:
-            Value to export
-        """
-        if isinstance(field.widget, widgets.ForeignKeyWidget):
-            return str(getattr(obj, self.get_field_name(field), None))
-        return super().export_field(field, obj)

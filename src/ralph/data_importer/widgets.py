@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from import_export import widgets
@@ -58,6 +59,11 @@ class UserWidget(widgets.ForeignKeyWidget):
                 )
         return result
 
+    def render(self, value):
+        if value:
+            return value.username
+        return ''
+
 
 class UserManyToManyWidget(widgets.ManyToManyWidget):
 
@@ -68,6 +74,21 @@ class UserManyToManyWidget(widgets.ManyToManyWidget):
             return get_user_model().objects.none()
         usernames = value.split(self.separator)
         return get_user_model().objects.filter(username__in=usernames)
+
+    def render(self, value):
+        return self.separator.join([obj.username for obj in value.all()])
+
+
+class ExportForeignKeyStrWidget(widgets.Widget):
+
+    def render(self, value):
+        return str(value)
+
+
+class ExportManyToManyStrWidget(widgets.ManyToManyWidget):
+
+    def render(self, value):
+        return self.separator.join([str(obj) for obj in value.all()])
 
 
 class BaseObjectManyToManyWidget(widgets.ManyToManyWidget):
@@ -120,7 +141,7 @@ class BaseObjectWidget(widgets.ForeignKeyWidget):
 
         if imported_obj:
             result = model.objects.filter(
-                pk=int(imported_obj.object_pk)
+                pk=imported_obj.object_pk
             ).first()
 
         if result:
@@ -135,11 +156,13 @@ class ImportedForeignKeyWidget(widgets.ForeignKeyWidget):
     def clean(self, value):
         result = None
         if value:
-            content_type, imported_obj = get_imported_obj(self.model, value)
-            if imported_obj:
-                result = self.model.objects.filter(
-                    pk=int(imported_obj.object_pk)
-                ).first()
+            if settings.MAP_IMPORTED_ID_TO_NEW_ID:
+                content_type, imported_obj = get_imported_obj(
+                    self.model, value
+                )
+                if imported_obj:
+                    value = imported_obj.object_pk
+            result = self.model.objects.filter(pk=value).first()
         return result
 
 

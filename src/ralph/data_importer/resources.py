@@ -9,7 +9,10 @@ from ralph.back_office.models import (
     Warehouse
 )
 from ralph.data_center.models import networks, physical
-from ralph.data_importer.mixins import ImportForeignKeyMixin
+from ralph.data_importer.mixins import (
+    ImportForeignKeyMeta,
+    ImportForeignKeyMixin
+)
 from ralph.data_importer.widgets import (
     AssetServiceEnvWidget,
     BaseObjectManyToManyWidget,
@@ -28,12 +31,26 @@ from ralph.licences.models import (
 )
 from ralph.supports.models import BaseObjectsSupport, Support, SupportType
 
+RalphResourceMeta = type(
+    'RalphResourceMeta',
+    (
+        ImportForeignKeyMeta,
+        resources.ModelDeclarativeMetaclass,
+        resources.Resource
+    ),
+    {}
+)
 
-class DefaultResource(ImportForeignKeyMixin, resources.ModelResource):
+
+class RalphModelResource(
+    ImportForeignKeyMixin,
+    resources.ModelResource,
+    metaclass=RalphResourceMeta
+):
     pass
 
 
-class AssetModelResource(ImportForeignKeyMixin, resources.ModelResource):
+class AssetModelResource(RalphModelResource):
     manufacturer = fields.Field(
         column_name='manufacturer',
         attribute='manufacturer',
@@ -49,7 +66,7 @@ class AssetModelResource(ImportForeignKeyMixin, resources.ModelResource):
         model = assets.AssetModel
 
 
-class CategoryResource(ImportForeignKeyMixin, resources.ModelResource):
+class CategoryResource(RalphModelResource):
     parent = fields.Field(
         column_name='parent',
         attribute='parent',
@@ -60,7 +77,7 @@ class CategoryResource(ImportForeignKeyMixin, resources.ModelResource):
         model = assets.Category
 
 
-class BackOfficeAssetResource(ImportForeignKeyMixin, resources.ModelResource):
+class BackOfficeAssetResource(RalphModelResource):
     parent = fields.Field(
         column_name='parent',
         attribute='parent',
@@ -121,7 +138,7 @@ class BackOfficeAssetResource(ImportForeignKeyMixin, resources.ModelResource):
         return str(bo_asset.depreciation_rate)
 
 
-class ServerRoomResource(ImportForeignKeyMixin, resources.ModelResource):
+class ServerRoomResource(RalphModelResource):
     data_center = fields.Field(
         column_name='data_center',
         attribute='data_center',
@@ -132,7 +149,7 @@ class ServerRoomResource(ImportForeignKeyMixin, resources.ModelResource):
         model = physical.ServerRoom
 
 
-class RackResource(ImportForeignKeyMixin, resources.ModelResource):
+class RackResource(RalphModelResource):
     server_room = fields.Field(
         column_name='server_room',
         attribute='server_room',
@@ -143,7 +160,7 @@ class RackResource(ImportForeignKeyMixin, resources.ModelResource):
         model = physical.Rack
 
 
-class NetworkResource(ImportForeignKeyMixin, resources.ModelResource):
+class NetworkResource(RalphModelResource):
     data_center = fields.Field(
         column_name='data_center',
         attribute='data_center',
@@ -164,7 +181,7 @@ class NetworkResource(ImportForeignKeyMixin, resources.ModelResource):
         model = networks.Network
 
 
-class IPAddressResource(ImportForeignKeyMixin, resources.ModelResource):
+class IPAddressResource(RalphModelResource):
 
     base_object = fields.Field(
         column_name='asset',
@@ -182,7 +199,7 @@ class IPAddressResource(ImportForeignKeyMixin, resources.ModelResource):
         model = networks.IPAddress
 
 
-class DataCenterAssetResource(ImportForeignKeyMixin, resources.ModelResource):
+class DataCenterAssetResource(RalphModelResource):
     parent = fields.Field(
         column_name='parent',
         attribute='parent',
@@ -232,7 +249,7 @@ class DataCenterAssetResource(ImportForeignKeyMixin, resources.ModelResource):
         return str(dc_asset.depreciation_rate)
 
 
-class ConnectionResource(ImportForeignKeyMixin, resources.ModelResource):
+class ConnectionResource(RalphModelResource):
     outbound = fields.Field(
         column_name='outbound',
         attribute='outbound',
@@ -248,7 +265,7 @@ class ConnectionResource(ImportForeignKeyMixin, resources.ModelResource):
         model = physical.Connection
 
 
-class LicenceResource(ImportForeignKeyMixin, resources.ModelResource):
+class LicenceResource(RalphModelResource):
     manufacturer = fields.Field(
         column_name='manufacturer',
         attribute='manufacturer',
@@ -287,13 +304,13 @@ class LicenceResource(ImportForeignKeyMixin, resources.ModelResource):
         return str(licence.price)
 
 
-class SupportTypeResource(ImportForeignKeyMixin, resources.ModelResource):
+class SupportTypeResource(RalphModelResource):
 
     class Meta:
         model = SupportType
 
 
-class SupportResource(ImportForeignKeyMixin, resources.ModelResource):
+class SupportResource(RalphModelResource):
     support_type = fields.Field(
         column_name='support_type',
         attribute='support_type',
@@ -327,9 +344,7 @@ class SupportResource(ImportForeignKeyMixin, resources.ModelResource):
         return str(support.price)
 
 
-class ProfitCenterResource(
-    ImportForeignKeyMixin, resources.ModelResource
-):
+class ProfitCenterResource(RalphModelResource):
     business_segment = fields.Field(
         column_name='business_segment',
         attribute='business_segment',
@@ -340,9 +355,7 @@ class ProfitCenterResource(
         model = assets.ProfitCenter
 
 
-class ServiceResource(
-    ImportForeignKeyMixin, resources.ModelResource
-):
+class ServiceResource(RalphModelResource):
     profit_center = fields.Field(
         column_name='profit_center',
         attribute='profit_center',
@@ -363,9 +376,7 @@ class ServiceResource(
         model = assets.Service
 
 
-class ServiceEnvironmentResource(
-    ImportForeignKeyMixin, resources.ModelResource
-):
+class ServiceEnvironmentResource(RalphModelResource):
     service = fields.Field(
         column_name='service',
         attribute='service',
@@ -381,10 +392,7 @@ class ServiceEnvironmentResource(
         model = assets.ServiceEnvironment
 
 
-class BaseObjectLicenceResource(
-    ImportForeignKeyMixin,
-    resources.ModelResource,
-):
+class BaseObjectLicenceResource(RalphModelResource):
     licence = fields.Field(
         column_name='licence',
         attribute='licence',
@@ -400,7 +408,7 @@ class BaseObjectLicenceResource(
         model = BaseObjectLicence
 
 
-class LicenceUserResource(ImportForeignKeyMixin, resources.ModelResource):
+class LicenceUserResource(RalphModelResource):
     licence = fields.Field(
         column_name='licence',
         attribute='licence',
@@ -416,9 +424,7 @@ class LicenceUserResource(ImportForeignKeyMixin, resources.ModelResource):
         model = LicenceUser
 
 
-class BaseObjectsSupportResource(
-    ImportForeignKeyMixin, resources.ModelResource
-):
+class BaseObjectsSupportResource(RalphModelResource):
     support = fields.Field(
         column_name='support',
         attribute='support',
@@ -434,7 +440,7 @@ class BaseObjectsSupportResource(
         model = BaseObjectsSupport
 
 
-class RackAccessoryResource(ImportForeignKeyMixin, resources.ModelResource):
+class RackAccessoryResource(RalphModelResource):
     accessory = fields.Field(
         column_name='accessory',
         attribute='accessory',
@@ -450,7 +456,7 @@ class RackAccessoryResource(ImportForeignKeyMixin, resources.ModelResource):
         model = physical.RackAccessory
 
 
-class RegionResource(ImportForeignKeyMixin, resources.ModelResource):
+class RegionResource(RalphModelResource):
     users = fields.Field(
         column_name='users',
         attribute='users',
@@ -461,21 +467,19 @@ class RegionResource(ImportForeignKeyMixin, resources.ModelResource):
         model = Region
 
 
-class AssetHolderResource(ImportForeignKeyMixin, resources.ModelResource):
+class AssetHolderResource(RalphModelResource):
 
     class Meta:
         model = assets.AssetHolder
 
 
-class OfficeInfrastructureResource(
-    ImportForeignKeyMixin, resources.ModelResource
-):
+class OfficeInfrastructureResource(RalphModelResource):
 
     class Meta:
         model = OfficeInfrastructure
 
 
-class BudgetInfoResource(ImportForeignKeyMixin, resources.ModelResource):
+class BudgetInfoResource(RalphModelResource):
 
     class Meta:
         model = assets.BudgetInfo
