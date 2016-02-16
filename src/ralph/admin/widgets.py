@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 import os
+from collections import defaultdict
 from itertools import chain, groupby
 from urllib import parse
 
 from django import forms
 from django.contrib.admin.templatetags.admin_static import static
 from django.contrib.admin.views.main import TO_FIELD_VAR
+from django.core.exceptions import FieldDoesNotExist
 from django.core.urlresolvers import reverse
+from django.db.models.loading import get_model
 from django.forms.utils import flatatt
 from django.template import loader
 from django.template.context import RenderContext
@@ -14,6 +17,8 @@ from django.template.defaultfilters import slugify, title
 from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
+
+from ralph.admin.helpers import get_field_by_relation_path
 
 ReadOnlyWidget = forms.TextInput(attrs={'readonly': 'readonly'})
 
@@ -163,6 +168,56 @@ class AutocompleteWidget(forms.TextInput):
                 value = []
         return value
 
+    def get_search_fields(self):
+        searched_fields_tooltip = defaultdict(list)
+        polymorphic_descendants = getattr(
+            self.rel_to, '_polymorphic_descendants', []
+        )
+
+        if polymorphic_descendants:
+            # Check if model after which we are looking for is polymorphic
+            # if they are also looking for the models of its dependencies
+            # or by limit_models defined in model
+            polymorphic_models = polymorphic_descendants
+            limit_models = getattr(self.field, 'limit_models', [])
+            if limit_models:
+                polymorphic_models = [
+                    get_model(*i.split('.')) for i in limit_models
+                ]
+
+            for related_model in polymorphic_models:
+                for field_name in self.admin_site._registry[
+                    related_model
+                ].search_fields:
+                    field = get_field_by_relation_path(
+                        related_model, field_name
+                    )
+                    key = str(related_model._meta.verbose_name)
+                    searched_fields_tooltip[key].append(
+                        str(field.verbose_name)
+                    )
+        else:
+            for field_name in self.admin_site._registry[self.rel_to].search_fields:
+                try:
+                    field = get_field_by_relation_path(
+                        self.rel_to, field_name
+                    )
+                    key = str(self.rel_to._meta.verbose_name)
+                    searched_fields_tooltip[key].append(
+                        str(field.verbose_name)
+                    )
+                except FieldDoesNotExist:
+                    pass
+        return searched_fields_tooltip
+
+    def render_search_fields_info(self, searched_fields):
+        rows = ['Search by:<br>']
+        for model, fields in searched_fields.items():
+            rows.append("{}:<br>".format(model.capitalize()))
+            for field in fields:
+                rows.append("- {}<br>".format(field))
+        return ''.join(rows)
+
     def render(self, name, value, attrs=None):
         model_options = (
             self.rel_to._meta.app_label, self.rel_to._meta.model_name
@@ -176,9 +231,8 @@ class AutocompleteWidget(forms.TextInput):
         else:
             value = value or ""
 
-        searched_fields = self.admin_site._registry[self.rel_to].search_fields
-        searched_fields_text = ', '.join(sorted(searched_fields))
-        searched_fields_info = "Search by: {}".format(searched_fields_text)
+        searched_fields = self.get_search_fields()
+        searched_fields_info = self.render_search_fields_info(dict(searched_fields))
 
         if self.rel_to in self.admin_site._registry:
             related_url = reverse(
