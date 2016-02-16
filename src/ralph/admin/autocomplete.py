@@ -13,7 +13,7 @@ from ralph.admin.helpers import get_admin_url
 from ralph.admin.sites import ralph_site
 from ralph.lib.permissions.models import PermissionsForObjectMixin
 
-AUTOCOMPLETE_EMPTY_VALUE = 0
+AUTOCOMPLETE_EMPTY_VALUE = '0'
 QUERY_PARAM = 'q'
 DETAIL_PARAM = 'pk'
 QUERY_REGEX = re.compile(r'[.| ]')
@@ -58,6 +58,19 @@ class SuggestView(JsonViewMixin, View):
     """
     http_method_names = ['get']
 
+    def get_results(self, user, can_edit):
+        return [
+            {
+                'pk': obj.pk,
+                '__str__': str(obj),
+                'label': getattr(obj, 'autocomplete_str', None),
+                'edit_url': '{}?_popup=1'.format(
+                    get_admin_url(obj, 'change')
+                ) if can_edit else None,
+                'tooltip': getattr(obj, 'autocomplete_tooltip', None)
+            } for obj in self.get_queryset(user)
+        ]
+
     def get(self, request, *args, **kwargs):
         """
         Returns serialized dict as JSON object.
@@ -90,21 +103,11 @@ class AjaxAutocompleteMixin(object):
                 self.pk = request.GET.get(DETAIL_PARAM, None)
                 if not self.pk:
                     return HttpResponseBadRequest()
-                self.values = list(map(int, self.pk.split(',')))
+                self.values = self.pk.split(',')
                 return super().dispatch(request, *args, **kwargs)
 
             def get_results(self, user, can_edit):
-                results = [
-                    {
-                        'pk': obj.pk,
-                        '__str__': str(obj),
-                        'label': getattr(obj, 'autocomplete_str', None),
-                        'edit_url': '{}?_popup=1'.format(
-                            get_admin_url(obj, 'change')
-                        ) if can_edit else None,
-                        'tooltip': getattr(obj, 'autocomplete_tooltip', None)
-                    } for obj in self.get_queryset(user)
-                ]
+                results = super().get_results(user, can_edit)
                 if self.empty_value in self.values:
                     idx = self.values.index(self.empty_value)
                     results.insert(idx, {
@@ -202,17 +205,7 @@ class AutocompleteList(SuggestView):
         return queryset[:self.limit].values_list('pk', flat=True)
 
     def get_results(self, user, can_edit):
-        results = [
-            {
-                'pk': obj.pk,
-                '__str__': str(obj),
-                'label': getattr(obj, 'autocomplete_str', None),
-                'edit_url': '{}?_popup=1'.format(
-                    get_admin_url(obj, 'change')
-                ) if can_edit else None,
-                'tooltip': getattr(obj, 'autocomplete_tooltip', None)
-            } for obj in self.get_queryset(user)
-        ]
+        results = super().get_results(user, can_edit)
         if self.request.GET.get('prepend-empty', 'false') == 'true':
             results.insert(0, {
                 'pk': self.empty_value,
