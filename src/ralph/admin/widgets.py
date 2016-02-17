@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
+import logging
 import os
+from collections import defaultdict
 from itertools import chain, groupby
 from urllib import parse
 
 from django import forms
 from django.contrib.admin.templatetags.admin_static import static
 from django.contrib.admin.views.main import TO_FIELD_VAR
+from django.core.exceptions import FieldDoesNotExist
 from django.core.urlresolvers import reverse
+from django.db.models.loading import get_model
 from django.forms.utils import flatatt
 from django.template import loader
 from django.template.context import RenderContext
@@ -15,7 +19,11 @@ from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
+from ralph.admin.helpers import get_field_by_relation_path
+
 ReadOnlyWidget = forms.TextInput(attrs={'readonly': 'readonly'})
+
+logger = logging.getLogger(__name__)
 
 
 class AdminDateWidget(forms.DateInput):
@@ -122,10 +130,11 @@ class PermissionsSelectWidget(forms.Widget):
 
 
 class AutocompleteWidget(forms.TextInput):
+    multivalue_separator = ','
     def __init__(self, field, admin_site, attrs=None, using=None, **kwargs):
         self.field = field
         self.rel = self.field.rel
-        self.multi = kwargs.get('multi', None)
+        self.multi = kwargs.get('multi', False)
         self.request = kwargs.get('request', None)
         self.rel_to = kwargs.get('rel_to') or field.rel.to
         self.admin_site = admin_site
@@ -138,7 +147,6 @@ class AutocompleteWidget(forms.TextInput):
             os.path.join('src', 'js', 'ralph-autocomplete.js'),
             'admin/js/core.js',
         ])
-        print(res.render())
         return res
 
     def get_url_parameters(self):
@@ -156,13 +164,61 @@ class AutocompleteWidget(forms.TextInput):
 
     def value_from_datadict(self, data, files, name):
         value = data.get(name)
-        if getattr(self, 'multi', False) is True:
-            print('name', name)
+        if self.multi:
             if value:
-                value = value.split(',')
+                value = value.split(self.multivalue_separator)
             else:
                 value = []
         return value
+
+    def _get_model_search_fields(self, model):
+        """Gets `model`'s search fields."""
+        search_fields_tooltip = defaultdict(list)
+        for field_name in self.admin_site._registry[model].search_fields:
+            try:
+                field = get_field_by_relation_path(model, field_name)
+                key = str(model._meta.verbose_name)
+                search_fields_tooltip[key].append(
+                    str(field.verbose_name)
+                )
+            except FieldDoesNotExist as e:
+                logger.error(e)
+        return search_fields_tooltip
+
+    def get_search_fields(self):
+        polymorphic_descendants = getattr(
+            self.rel_to, '_polymorphic_descendants', []
+        )
+
+        if polymorphic_descendants:
+            # Check if model after which we are looking for is polymorphic
+            # if they are also looking for the models of its dependencies
+            # or by limit_models defined in model
+            polymorphic_models = polymorphic_descendants
+            limit_models = getattr(self.field, 'limit_models', [])
+            if limit_models:
+                polymorphic_models = [
+                    get_model(*i.split('.')) for i in limit_models
+                ]
+
+            search_fields_tooltip = defaultdict(list)
+            for related_model in polymorphic_models:
+                found = self._get_model_search_fields(related_model)
+                search_fields_tooltip.update(found)
+
+        else:
+            search_fields_tooltip = self._get_model_search_fields(
+                self.rel_to
+            )
+        return search_fields_tooltip
+
+    def render_search_fields_info(self, search_fields):
+        rows = ['Search by:<br>']
+        for model, fields in search_fields.items():
+            rows.append("{}:<br>".format(model.capitalize()))
+            for field in fields:
+                rows.append("- {}<br>".format(field))
+        return ''.join(rows)
 
     def render(self, name, value, attrs=None):
         model_options = (
@@ -172,14 +228,17 @@ class AutocompleteWidget(forms.TextInput):
             attrs = {}
         attrs['name'] = name
         if self.multi:
-            attrs['multi'] = ''  # only key is requied
-            value = ','.join(force_text(v) for v in value)
+            attrs['multi'] = 'true'
+            value = self.multivalue_separator.join(
+                force_text(v) for v in value
+            )
         else:
             value = value or ""
 
-        searched_fields = self.admin_site._registry[self.rel_to].search_fields
-        searched_fields_text = ', '.join(sorted(searched_fields))
-        searched_fields_info = "Search by: {}".format(searched_fields_text)
+        search_fields = self.get_search_fields()
+        search_fields_info = self.render_search_fields_info(
+            dict(search_fields)
+        )
 
         if self.rel_to in self.admin_site._registry:
             related_url = reverse(
@@ -206,7 +265,7 @@ class AutocompleteWidget(forms.TextInput):
             'value': value,
             'attrs': flatatt(attrs),
             'related_url': related_url,
-            'searched_fields_info': searched_fields_info,
+            'search_fields_info': search_fields_info,
         })
 
         info = (self.rel_to._meta.app_label, self.rel_to._meta.model_name)

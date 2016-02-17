@@ -23,12 +23,13 @@
     "foundation": "~5.5.2",
     "foundation-datepicker": "~1.3.0",
     "angular-loading-bar": "~0.8.0",
+    "raven-js": "~1.3.0",
+    // auto-complete dependencies
     "iron-ajax": "PolymerElements/iron-ajax#~1.1.1",
     "paper-input": "PolymerElements/paper-input#~1.1.4",
     "paper-item": "PolymerElements/paper-item#~1.1.3",
     "paper-menu": "PolymerElements/paper-menu#~1.2.2",
     "polymer": "Polymer/polymer#^1.2.0",
-    "raven-js": "~1.3.0",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#~1.2.2",
     "iron-a11y-keys": "PolymerElements/iron-a11y-keys#~1.0.4",
     "iron-form": "PolymerElements/iron-form#~1.0.13"
