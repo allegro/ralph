@@ -5,7 +5,6 @@ function getCallerNode(win) {
 }
 
 function dismissRelatedLookupPopup(win, chosenId) {
-    debugger;
     var name = windowname_to_id(win.name);
     var elem = document.getElementById(name);
     if (elem.className.indexOf('vManyToManyRawIdAdminField') != -1 && elem.value) {
@@ -19,14 +18,12 @@ function dismissRelatedLookupPopup(win, chosenId) {
 }
 
 function dismissChangeRelatedObjectPopup(win, objId, newRepr, newId) {
-    debugger;
     elem = getCallerNode(win);
     elem.reloadBadges();
     win.close();
 }
 
 function dismissAddRelatedObjectPopup(win, newId, newRepr) {
-    debugger;
     // newId and newRepr are expected to have previously been escaped by
     // django.utils.html.escape.
     newId = html_unescape(newId);

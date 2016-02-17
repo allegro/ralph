@@ -66,9 +66,31 @@ class BaseObjectForeignKey(models.ForeignKey):
     """
     Base object Foreign Key.
 
-    Add support for additional parameter limit_models for
+    Add support for additional parameter `limit_models` for
     Foreign Key field.
+    This gives option to limit referenced models (by the BaseObject) to
+    models defined by `limit_models`.
+    For example, let's say we have BaseObjectLicence which should only pointed
+    to:
+        - BackOfficeAsset
+        - DataCenterAsset
 
+    we could define it like here:
+        ```
+        class BaseObjectLicence(models.Model):
+            licence = models.ForeignKey(Licence)
+            base_object = BaseObjectForeignKey(
+                BaseObject,
+                related_name='licences',
+                verbose_name=_('Asset'),
+                limit_models=[
+                    'back_office.BackOfficeAsset',
+                    'data_center.DataCenterAsset'
+                ]
+            )
+        ```
+    and from now `BaseObjectLicence.base_object` only gets `BackOfficeAsset` and
+    `DataCenterAsset` (and not other models inherited from `BaseObject`).
     """
     def __init__(self, *args, **kwargs):
         kwargs['limit_choices_to'] = self.limit_choices

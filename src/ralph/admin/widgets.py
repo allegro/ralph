@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import os
 from collections import defaultdict
 from itertools import chain, groupby
@@ -21,6 +22,8 @@ from django.utils.translation import ugettext as _
 from ralph.admin.helpers import get_field_by_relation_path
 
 ReadOnlyWidget = forms.TextInput(attrs={'readonly': 'readonly'})
+
+logger = logging.getLogger(__name__)
 
 
 class AdminDateWidget(forms.DateInput):
@@ -127,7 +130,7 @@ class PermissionsSelectWidget(forms.Widget):
 
 
 class AutocompleteWidget(forms.TextInput):
-    separator = ','
+    multivalue_separator = ','
     def __init__(self, field, admin_site, attrs=None, using=None, **kwargs):
         self.field = field
         self.rel = self.field.rel
@@ -163,13 +166,26 @@ class AutocompleteWidget(forms.TextInput):
         value = data.get(name)
         if self.multi:
             if value:
-                value = value.split(self.separator)
+                value = value.split(self.multivalue_separator)
             else:
                 value = []
         return value
 
+    def _get_model_search_fields(self, model):
+        """Gets `model`'s search fields."""
+        search_fields_tooltip = defaultdict(list)
+        for field_name in self.admin_site._registry[model].search_fields:
+            try:
+                field = get_field_by_relation_path(model, field_name)
+                key = str(model._meta.verbose_name)
+                search_fields_tooltip[key].append(
+                    str(field.verbose_name)
+                )
+            except FieldDoesNotExist as e:
+                logger.error(e)
+        return search_fields_tooltip
+
     def get_search_fields(self):
-        searched_fields_tooltip = defaultdict(list)
         polymorphic_descendants = getattr(
             self.rel_to, '_polymorphic_descendants', []
         )
@@ -185,34 +201,20 @@ class AutocompleteWidget(forms.TextInput):
                     get_model(*i.split('.')) for i in limit_models
                 ]
 
+            search_fields_tooltip = defaultdict(list)
             for related_model in polymorphic_models:
-                for field_name in self.admin_site._registry[
-                    related_model
-                ].search_fields:
-                    field = get_field_by_relation_path(
-                        related_model, field_name
-                    )
-                    key = str(related_model._meta.verbose_name)
-                    searched_fields_tooltip[key].append(
-                        str(field.verbose_name)
-                    )
-        else:
-            for field_name in self.admin_site._registry[self.rel_to].search_fields:
-                try:
-                    field = get_field_by_relation_path(
-                        self.rel_to, field_name
-                    )
-                    key = str(self.rel_to._meta.verbose_name)
-                    searched_fields_tooltip[key].append(
-                        str(field.verbose_name)
-                    )
-                except FieldDoesNotExist:
-                    pass
-        return searched_fields_tooltip
+                found = self._get_model_search_fields(related_model)
+                search_fields_tooltip.update(found)
 
-    def render_search_fields_info(self, searched_fields):
+        else:
+            search_fields_tooltip = self._get_model_search_fields(
+                self.rel_to
+            )
+        return search_fields_tooltip
+
+    def render_search_fields_info(self, search_fields):
         rows = ['Search by:<br>']
-        for model, fields in searched_fields.items():
+        for model, fields in search_fields.items():
             rows.append("{}:<br>".format(model.capitalize()))
             for field in fields:
                 rows.append("- {}<br>".format(field))
@@ -227,12 +229,16 @@ class AutocompleteWidget(forms.TextInput):
         attrs['name'] = name
         if self.multi:
             attrs['multi'] = 'true'
-            value = self.separator.join(force_text(v) for v in value)
+            value = self.multivalue_separator.join(
+                force_text(v) for v in value
+            )
         else:
             value = value or ""
 
-        searched_fields = self.get_search_fields()
-        searched_fields_info = self.render_search_fields_info(dict(searched_fields))
+        search_fields = self.get_search_fields()
+        search_fields_info = self.render_search_fields_info(
+            dict(search_fields)
+        )
 
         if self.rel_to in self.admin_site._registry:
             related_url = reverse(
@@ -259,7 +265,7 @@ class AutocompleteWidget(forms.TextInput):
             'value': value,
             'attrs': flatatt(attrs),
             'related_url': related_url,
-            'searched_fields_info': searched_fields_info,
+            'search_fields_info': search_fields_info,
         })
 
         info = (self.rel_to._meta.app_label, self.rel_to._meta.model_name)

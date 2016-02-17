@@ -338,7 +338,7 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
             'attrs': flatatt(widget_options),
             'name': self.field_path,
             'related_url': self.get_related_url(),
-            'searched_fields_info': "Search by: {}".format(self.title),
+            'search_fields_info': "Search by: {}".format(self.title),
         },)
 
 
