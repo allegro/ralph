@@ -14,11 +14,12 @@
       properties: {
         'title': {
           type: String,
+          observer: '_reinitTooltip',
           value: ''
         }
       },
-      ready() {
-        $(this).foundation("tooltip");
+      _reinitTooltip: function(newValue, oldValue) {
+        $(this).foundation("tooltip", 'reflow');
       }
     });
   </script>
