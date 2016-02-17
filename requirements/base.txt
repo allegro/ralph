@@ -17,5 +17,5 @@ rq==0.5.6
 six>=1.9.0
 sqlparse==0.1.16
 Unidecode==0.04.18
-git+https://github.com/kennethreitz/tablib.git@develop#egg=tablib
+tablib==0.11.2
 git+http://github.com/idlesign/django-sitetree.git@a626559c39ff1e865cde3441c44f42864c648dfb
