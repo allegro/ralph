@@ -44,8 +44,22 @@ Example:
       display:block;
       @apply(--layout-flex);
     }
+    paper-menu {
+      --paper-menu-selected-item: {
+        font-weight: normal;
+      };
+    }
     paper-item {
-      background-color: white;
+      --paper-item: {
+        background-color: white;
+        min-height: 30px;
+        padding: 5px;
+        height: 19px;
+        cursor: pointer;
+      };
+    }
+    paper-item:hover {
+      background-color: #d8d9da;
     }
     .float-z {
       position: absolute;
