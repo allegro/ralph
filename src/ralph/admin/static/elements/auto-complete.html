@@ -1,3 +1,4 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
@@ -65,6 +66,15 @@ Example:
       position: absolute;
       z-index: 999;
     }
+    #icons {
+      margin-top: 5px;
+    }
+    #icons i {
+      font-size: 1.3rem;
+    }
+    #icons ::content a {
+      font-size: 1.3rem;
+    }
     </style>
     <div class='horizontal-layout'>
       <badge-input id='query-getter' on-badge-remove="onBadgeRemove"
@@ -73,7 +83,7 @@ Example:
         <i hidden$='{{hiddenSpinner}}' class="loader fa fa-refresh fa-spin"></i>
         <i hidden$='{{hiddenAjaxError}}' class="has-tip fail fa
           fa-exclamation" title="Something goes wrong..."></i>
-        <content><content>
+        <content></content>
       </div>
     </div>
 
