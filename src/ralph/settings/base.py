@@ -11,6 +11,7 @@ def os_env_true(var, default=''):
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'CHANGE_ME')
+LOG_FILEPATH = os.environ.get('LOG_FILEPATH', '/tmp/ralph.log')
 
 DEBUG = False
 
@@ -183,7 +184,7 @@ LOGGING = {
             'maxBytes': 1024 * 1024 * 100,  # 100 MB
             'backupCount': 10,
             'filename': os.environ.get(
-                'LOG_FILEPATH', os.path.join(BASE_DIR, 'runtime.log')
+                'LOG_FILEPATH', LOG_FILEPATH
             ),
             'formatter': 'verbose',
         },
