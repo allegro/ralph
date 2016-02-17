@@ -16,10 +16,24 @@
       display: none;
     }
     .badge {
-      margin: 2px 0;
+      height: 30px;
+      line-height: 1rem;
+      display: inline-block;
+      background: #ededed;
+      border: 1px solid #cacaca;
+      white-space: nowrap;
+      margin: 1px;
+      padding: 0.25rem 0;
+      font-size: 1.16667rem;
     }
     .flexchild {
       @apply(--layout-flex);
+      padding: 3px 1px;
+      margin: 1px;
+    }
+    .badge-icons {
+      padding: 3px 1px;
+      margin: 1px;
     }
     #text-getter{
       width: 100%;
@@ -37,21 +51,24 @@
       <div>
         <template is='dom-repeat' items="[[badgesData]]">
           <div class='badge'>
-            <div class='flexchild'>[[item.__str__]]</div>
-            <template is="dom-if" if="{{item.tooltip}}">
-              <!-- yea, i know multi id is stupid, but django requires it :P -->
-              <tool-tip title='{{ item.tooltip }}'> </tool-tip>
-            </template>
-            <template is="dom-if" if="{{item.edit_url}}">
-              <a class="related-widget-wrapper-link change-related"
-                id="change_id_{{ oddName }}"
-                href='[[item.edit_url]]'
-                on-click='showRelatedObjectPopup'
-              >
-                <i class="fa fa-pencil"></i>
-              </a>
-            </template>
-            <i on-tap="onBadgeRemove" class="fa fa-times delete"></i>
+            <div class='flexchild'>
+              [[item.__str__]]
+              <template is="dom-if" if="{{item.tooltip}}">
+                <tool-tip title='{{ item.tooltip }}'> </tool-tip>
+              </template>
+            </div>
+            <div class='badge-icons'>
+              <template is="dom-if" if="{{item.edit_url}}">
+                <a class="related-widget-wrapper-link change-related"
+                  id="change_id_{{ oddName }}"
+                  href='[[item.edit_url]]'
+                  on-click='showRelatedObjectPopup'
+                >
+                  <i class="fa fa-pencil"></i>
+                </a>
+              </template>
+              <i on-tap="onBadgeRemove" class="fa fa-times delete"></i>
+            </div>
           </div>
         </template>
       </div>
