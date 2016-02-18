@@ -242,7 +242,10 @@ Example:
         if (this.value === "") {
           this.value = objId.toString();
         } else {
-          this.value += this.separator + objId;
+          var currentIds = this._getIds();
+          if (currentIds.indexOf(parseInt(objId, 10) === -1)) {
+            this.value += this.separator + objId;
+          }
         }
       },
       updateById: function(objId) {
