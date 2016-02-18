@@ -24,7 +24,6 @@
     "foundation-datepicker": "~1.3.0",
     "angular-loading-bar": "~0.8.0",
     "raven-js": "~1.3.0",
-    // auto-complete dependencies
     "iron-ajax": "PolymerElements/iron-ajax#~1.1.1",
     "paper-input": "PolymerElements/paper-input#~1.1.4",
     "paper-item": "PolymerElements/paper-item#~1.1.3",
