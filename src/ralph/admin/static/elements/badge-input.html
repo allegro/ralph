@@ -44,6 +44,7 @@
     .badge a, .badge i {
       float: left;
       margin: 0 5px;
+      cursor: pointer;
     }
     </style>
 
@@ -112,13 +113,19 @@
         this.badgesData = badges;
         this.clearInput();
       },
+      _deleteClicked: function() {
+        this.splice('badgesData', this._deleteIndex, 1);
+        this.fire('badge-remove', {
+          "index": this._deletedItemIndex,
+          "item": this._deletedItem
+        });
+      },
       onBadgeRemove: function(evt, obj) {
         console.log('onBadgeRemove', evt, obj);
-        this.splice('badgesData', evt.model.index, 1);
-        this.fire('badge-remove', {
-            "index": evt.model.index,
-            "item": evt.model.item
-        });
+        this._deletedItemIndex = evt.model.index
+        this._deletedItem = evt.model.item
+        // this should be called without async with jquery>2.2
+        this.async(this._deleteClicked, 50);
       },
       hideInput: function() {
         console.log('hideInput');
