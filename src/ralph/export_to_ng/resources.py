@@ -469,7 +469,9 @@ class IPAddressResource(resources.ModelResource):
 
     def dehydrate_asset(self, ip_address):
         try:
-            asset_id = ip_address.device.get_asset().id or ''
+            asset_id = (
+                ip_address.device.get_asset(manager='_base_manager').id or ''
+            )
         except AttributeError:
             asset_id = ''
         return asset_id
