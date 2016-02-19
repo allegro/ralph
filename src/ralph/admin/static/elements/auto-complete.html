@@ -145,7 +145,7 @@ Example:
         },
         fireThreshold: {
           type: Number,
-          value: 3,
+          value: 2,
         },
         separator: {
           type: String,
@@ -258,7 +258,6 @@ Example:
         console.log('elemSelected', evt, obj);
         var selectedItem = this.menuItems[obj.selected];
         this.hideNoResults = true;
-        console.log('zzz', selectedItem.pk);
         this.updateById(selectedItem.pk);
         this.hideMenu = true;
         this.$['query-getter'].setFocusInput();
