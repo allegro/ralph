@@ -258,6 +258,7 @@ Example:
         console.log('elemSelected', evt, obj);
         var selectedItem = this.menuItems[obj.selected];
         this.hideNoResults = true;
+        console.log('zzz', selectedItem.pk);
         this.updateById(selectedItem.pk);
         this.hideMenu = true;
         this.$['query-getter'].setFocusInput();
@@ -272,13 +273,14 @@ Example:
         } else {
           this.hideNoResults = true;
           var selectedIds = this._getIds();
-          var fileteredItems = [];
+          var filteredItems = [];
           for(var idx=0; idx < foundItems.length; idx++) {
-            if (selectedIds.indexOf(foundItems[idx].pk) === -1) {
-              fileteredItems.push(foundItems[idx]);
+            var pk = foundItems[idx].pk.toString();
+            if (selectedIds.indexOf(pk) === -1) {
+              filteredItems.push(foundItems[idx]);
             }
           }
-          this.set('menuItems', fileteredItems);
+          this.set('menuItems', filteredItems);
           this.hideMenu = false;
         }
 
