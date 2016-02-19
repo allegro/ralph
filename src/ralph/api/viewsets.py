@@ -149,6 +149,7 @@ class RalphAPIViewSet(
 
     def get_polymorphic_ids(self, polymorphic_models):
         ids = set()
+        is_lookup_used = False
         for model in polymorphic_models:
             filter_fields = []
             model_viewset = self._viewsets_registry.get(model)
@@ -162,10 +163,11 @@ class RalphAPIViewSet(
 
             lookups = self.get_lookups(model, filter_fields)
             if lookups:
+                is_lookup_used = True
                 ids |= set(model.objects.filter(
                     **lookups
                 ).values_list('pk', flat=True))
-        return ids
+        return ids, is_lookup_used
 
     def get_lookups(self, model, filter_fields=None):
         if filter_fields is None:
@@ -219,8 +221,10 @@ class RalphAPIViewSet(
             queryset.model, '_polymorphic_descendants', []
         )
         if polymorphic_descendants:
-            ids = self.get_polymorphic_ids(polymorphic_descendants)
-            if ids:
+            ids, is_lookup_used = self.get_polymorphic_ids(
+                polymorphic_descendants
+            )
+            if is_lookup_used:
                 queryset = queryset.filter(pk__in=list(ids))
 
         lookups = self.get_lookups(queryset.model)

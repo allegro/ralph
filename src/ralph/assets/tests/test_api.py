@@ -464,6 +464,15 @@ class BaseObjectAPITests(RalphAPITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(len(response.data['results']), 2)
 
+    def test_is_lookup_used(self):
+        url = '{}?{}'.format(
+            reverse('baseobject-list'), urlencode(
+                {'hostname__icontains': 'no_exists_host'}
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 0)
+
     def test_tags(self):
         url = '{}?{}'.format(
             reverse('baseobject-list'), urlencode(
