@@ -4,6 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.attachments.admin import AttachmentsMixin
+from ralph.data_importer.resources import DomainResource
 from ralph.domains.models.domains import (
     Domain,
     DomainContract,
@@ -18,6 +19,7 @@ class DomainContractInline(RalphTabularInline):
 
 @register(Domain)
 class DomainAdmin(AttachmentsMixin, RalphAdmin):
+    resource_class = DomainResource
     list_select_related = ['technical_owner', 'business_owner', 'domain_holder']
     list_filter = [
         'name', 'service_env',
