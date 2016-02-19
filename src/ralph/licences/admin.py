@@ -2,6 +2,7 @@
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin.filters import TagsListFilter
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.assets.invoice_report import InvoiceReportMixin
@@ -69,7 +70,8 @@ class LicenceAdmin(
     list_filter = [
         'niw', 'sn', 'remarks', 'software', 'property_of',
         'licence_type', 'valid_thru', 'order_no', 'invoice_no', 'invoice_date',
-        'budget_info', 'manufacturer', 'region', 'office_infrastructure'
+        'budget_info', 'manufacturer', 'region', 'office_infrastructure',
+        ('tags', TagsListFilter)
     ]
     date_hierarchy = 'created'
     list_display = [

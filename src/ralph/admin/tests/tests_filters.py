@@ -14,6 +14,7 @@ from ralph.admin.filters import (
     NumberListFilter,
     RelatedAutocompleteFieldListFilter,
     RelatedFieldListFilter,
+    TagsListFilter,
     TextListFilter
 )
 from ralph.admin.sites import ralph_site
@@ -55,10 +56,13 @@ class AdminFiltersTestCase(TestCase):
             force_depreciation=True,
             status=DataCenterAssetStatus.used,
         )
+        cls.dca_3.tags.add('tag1')
+        cls.dca_3.tags.add('tag2')
         cls.dca_4 = DataCenterAssetFactory(
             invoice_date=datetime.date(2014, 3, 1),
             rack=RackFactory()
         )
+        cls.dca_4.tags.add('tag1')
         cls.support_1 = SupportFactory(price=10)
         cls.support_2 = SupportFactory(price=100)
 
@@ -161,6 +165,32 @@ class AdminFiltersTestCase(TestCase):
         queryset = text_filter.queryset(None, DataCenterAsset.objects.all())
 
         self.assertEqual(self.dca_1.pk, queryset.first().pk)
+
+    def test_tags_filter(self):
+        tags_filter = TagsListFilter(
+            field=DataCenterAsset._meta.get_field('tags'),
+            request=None,
+            params={'tags': 'tag1 & tag2'},
+            model=DataCenterAsset,
+            model_admin=DataCenterAssetAdmin,
+            field_path='tags'
+        )
+        queryset = tags_filter.queryset(None, DataCenterAsset.objects.all())
+
+        self.assertEqual(len(queryset), 1)
+
+        tags_filter = TagsListFilter(
+            field=DataCenterAsset._meta.get_field('tags'),
+            request=None,
+            params={'tags': 'tag1'},
+            model=DataCenterAsset,
+            model_admin=DataCenterAssetAdmin,
+            field_path='tags'
+        )
+        queryset = tags_filter.queryset(None, DataCenterAsset.objects.all())
+
+        self.assertEqual(len(queryset), 2)
+
 
     def test_date_filter(self):
         datet_filter = DateListFilter(

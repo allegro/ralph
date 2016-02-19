@@ -20,7 +20,8 @@ from mptt.settings import DEFAULT_LEVEL_INDICATOR
 from ralph.admin.autocomplete import DETAIL_PARAM, QUERY_PARAM
 from ralph.admin.helpers import get_field_by_relation_path
 
-SEARCH_SEPARATORS_REGEX = re.compile(r'[;|]')
+SEARCH_OR_SEPARATORS_REGEX = re.compile(r'[;|]')
+SEARCH_AND_SEPARATORS_REGEX = re.compile(r'[&]')
 
 
 @lru_cache()
@@ -240,11 +241,13 @@ class TextListFilter(BaseCustomFilter):
     """Renders filter form with char field."""
 
     template = "admin/filters/text_filter.html"
+    separators = " or ".join(list(SEARCH_OR_SEPARATORS_REGEX.pattern[1:-1]))
+    multiple = True
 
     def queryset(self, request, queryset):
         if self.value():
             query = Q()
-            for value in SEARCH_SEPARATORS_REGEX.split(self.value()):
+            for value in SEARCH_OR_SEPARATORS_REGEX.split(self.value()):
                 query |= Q(
                     **{'{}__icontains'.format(self.field_path): value.strip()}
                 )
@@ -253,8 +256,21 @@ class TextListFilter(BaseCustomFilter):
     def choices(self, cl):
         return ({
             'current_value': self.value(),
-            'parameter_name': self.field_path
+            'parameter_name': self.field_path,
+            'separators': self.separators,
+            'multiple': self.multiple
         },)
+
+
+class TagsListFilter(TextListFilter):
+    separators = " and ".join(list(SEARCH_AND_SEPARATORS_REGEX.pattern[1:-1]))
+    multiple = False
+
+    def queryset(self, request, queryset):
+        if self.value():
+            for value in SEARCH_AND_SEPARATORS_REGEX.split(self.value()):
+                queryset = queryset.filter(tags__name=value.strip())
+        return queryset
 
 
 class RelatedFieldListFilter(ChoicesListFilter):

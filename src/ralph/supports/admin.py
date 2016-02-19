@@ -2,6 +2,7 @@
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin.filters import TagsListFilter
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.attachments.admin import AttachmentsMixin
@@ -44,7 +45,8 @@ class SupportAdmin(
     ]
     list_filter = [
         'contract_id', 'name', 'serial_no', 'price', 'remarks', 'description',
-        'support_type', 'budget_info', 'date_from', 'date_to', 'property_of'
+        'support_type', 'budget_info', 'date_from', 'date_to', 'property_of',
+        ('tags', TagsListFilter)
     ]
     date_hierarchy = 'created'
     list_display = [

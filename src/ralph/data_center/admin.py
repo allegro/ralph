@@ -3,7 +3,11 @@ from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
-from ralph.admin.filters import LiquidatedStatusFilter, TextListFilter
+from ralph.admin.filters import (
+    LiquidatedStatusFilter,
+    TagsListFilter,
+    TextListFilter
+)
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
@@ -146,7 +150,7 @@ class DataCenterAssetAdmin(
         'rack__server_room', 'rack__server_room__data_center',
         'property_of', LiquidatedStatusFilter,
         ('management_ip', TextListFilter),
-        'management_hostname'
+        'management_hostname', ('tags', TagsListFilter)
     ]
     date_hierarchy = 'created'
     list_select_related = ['model', 'model__manufacturer', 'model__category']
