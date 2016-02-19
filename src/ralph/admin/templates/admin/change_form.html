@@ -84,6 +84,11 @@
     </form>
   </div>
 {% endblock %}
-
-{% block admin_change_form_document_ready %}
+{% block extra_scripts %}
+  {{ block.super }}
+  <script type="text/javascript">
+    (function($) {
+      $('form#{{ opts.model_name }}_form :input:visible:enabled:first').focus();
+    })(ralph.jQuery);
+  </script>
 {% endblock %}
