@@ -333,18 +333,6 @@ Example:
           evt.preventDefault();
           evt.stopPropagation();
         }
-        if (evt.keyCode == 38) {
-          // this if is until: https://github.com/PolymerElements/paper-menu/issues/79
-          this.$.suggestList._focusPrevious();
-          evt.preventDefault();
-          evt.stopPropagation();
-        }
-        if (evt.keyCode == 40) {
-          // this if is until: https://github.com/PolymerElements/paper-menu/issues/79
-          this.$.suggestList._focusNext();
-          evt.preventDefault();
-          evt.stopPropagation();
-        }
       },
       focusToMenu: function(evt, obj) {
         console.log('focusToMenu', evt, obj);
