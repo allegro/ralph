@@ -314,7 +314,7 @@ def get_available_transitions_for_field(instance, field, user=None):
     Returns list of all available transitions for field.
     """
     if not hasattr(instance, 'transition_models'):
-        return
+        return []
     transitions = Transition.objects.filter(
         model=instance.transition_models[field],
     )

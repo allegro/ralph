@@ -9,7 +9,7 @@ register = template.Library()
 def available_transitions(context, obj, field):
     """Render available transitions for instance."""
     get_available_transitions = getattr(
-        obj, 'get_available_transitions_for_{}'.format(field), None
+        obj, 'get_available_transitions_for_{}'.format(field), lambda user: []
     )
     if get_available_transitions:
         transitions = []
