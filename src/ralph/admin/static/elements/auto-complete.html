@@ -32,20 +32,28 @@ Example:
   <template>
     <style>
     :host {
+      position: relative;
+
       display: block;
       height: auto;
       width: 100%;
       background: #fff;
-      border: solid 1px #ccc;
+      border: none;
     }
     .horizontal-layout {
       @apply(--layout-horizontal);
+      border: 1px solid #ccc;
     }
     #query-getter {
       display:block;
       @apply(--layout-flex);
     }
     paper-menu {
+      position: absolute;
+      z-index: 999;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-top: none;
       --paper-menu-selected-item: {
         font-weight: normal;
       };
@@ -61,10 +69,6 @@ Example:
     }
     paper-item:hover {
       background-color: #d8d9da;
-    }
-    .float-z {
-      position: absolute;
-      z-index: 999;
     }
     #icons {
       margin-top: 5px;
@@ -101,14 +105,16 @@ Example:
     ></iron-ajax>
 
 
-    <paper-menu class='float-z' hidden$="{{hideMenu}}" on-iron-activate='elemSelected'
+    <paper-menu hidden$="{{hideMenu}}" on-iron-activate='elemSelected'
       id='suggestList' class="dropdown-content" on-keydown='_preventSubmit'
     >
       <template is="dom-repeat" items="[[menuItems]]">
         <paper-item>[[item.__str__]]</paper-item>
       </template>
     </paper-menu>
-    <paper-item hidden$='{{hideNoResults}}' class='float-z' id='empty-list'>No results</paper-item>
+    <paper-menu hidden$='{{hideNoResults}}' >
+      <paper-item>No results</paper-item>
+    </paper-menu>
 
     <input id='values-input' name$="[[name]]" type='hidden' is="iron-input"
       bind-value="{{value}}" autocomplete="off">
