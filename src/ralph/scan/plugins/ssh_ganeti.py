@@ -95,6 +95,10 @@ def scan_address(ip_address, **kwargs):
     snmp_name = kwargs.get('snmp_name', '') or ''
     if 'nx-os' in snmp_name.lower():
         raise NoMatchError("Incompatible nexus found")
+    http_family = kwargs.get('http_family')
+    # for ganeti servers, we don't know http_family
+    if http_family != 'Unspecified':
+        raise NoMatchError('It is not Ganeti.')
     device = run_ssh_ganeti(ip_address)
     ret = {
         'status': 'success',
