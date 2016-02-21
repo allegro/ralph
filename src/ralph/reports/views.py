@@ -320,7 +320,8 @@ class AssetRelationsReport(BaseRelationsReport):
         'invoice_date', 'invoice_no', 'hostname'
     ]
     dc_select_related = [
-        'model', 'model__category', 'service_env', 'service_env__service'
+        'model', 'model__category', 'service_env', 'service_env__service',
+        'model__manufacturer'
     ]
     bo_headers = [
         'id', 'niw', 'barcode', 'sn', 'model__category__name',
@@ -333,7 +334,7 @@ class AssetRelationsReport(BaseRelationsReport):
     ]
     bo_select_related = [
         'model', 'model__category', 'office_infrastructure', 'warehouse',
-        'user', 'owner'
+        'user', 'owner', 'model__manufacturer', 'region'
     ]
 
     def prepare(self, model, *args, **kwargs):
