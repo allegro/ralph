@@ -970,12 +970,13 @@ class Device(
             else:
                 pv.delete()
 
-    def get_asset(self):
+    def get_asset(self, manager=None):
         asset = None
         if self.id and 'ralph_assets' in settings.INSTALLED_APPS:
             from ralph_assets.models import Asset
             try:
-                asset = Asset.objects.get(
+                asset_manager = getattr(Asset, manager or '', Asset.objects)
+                asset = asset_manager.get(
                     device_info__ralph_device_id=self.id,
                 )
             except Asset.DoesNotExist:
