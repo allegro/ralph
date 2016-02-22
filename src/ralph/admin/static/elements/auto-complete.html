@@ -32,20 +32,28 @@ Example:
   <template>
     <style>
     :host {
+      position: relative;
+
       display: block;
       height: auto;
       width: 100%;
       background: #fff;
-      border: solid 1px #ccc;
+      border: none;
     }
     .horizontal-layout {
       @apply(--layout-horizontal);
+      border: 1px solid #ccc;
     }
     #query-getter {
       display:block;
       @apply(--layout-flex);
     }
     paper-menu {
+      position: absolute;
+      z-index: 999;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-top: none;
       --paper-menu-selected-item: {
         font-weight: normal;
       };
@@ -61,10 +69,6 @@ Example:
     }
     paper-item:hover {
       background-color: #d8d9da;
-    }
-    .float-z {
-      position: absolute;
-      z-index: 999;
     }
     #icons {
       margin-top: 5px;
@@ -101,14 +105,16 @@ Example:
     ></iron-ajax>
 
 
-    <paper-menu class='float-z' hidden$="{{hideMenu}}" on-iron-activate='elemSelected'
+    <paper-menu hidden$="{{hideMenu}}" on-iron-activate='elemSelected'
       id='suggestList' class="dropdown-content" on-keydown='_preventSubmit'
     >
       <template is="dom-repeat" items="[[menuItems]]">
         <paper-item>[[item.__str__]]</paper-item>
       </template>
     </paper-menu>
-    <paper-item hidden$='{{hideNoResults}}' class='float-z' id='empty-list'>No results</paper-item>
+    <paper-menu hidden$='{{hideNoResults}}' >
+      <paper-item>No results</paper-item>
+    </paper-menu>
 
     <input id='values-input' name$="[[name]]" type='hidden' is="iron-input"
       bind-value="{{value}}" autocomplete="off">
@@ -145,7 +151,7 @@ Example:
         },
         fireThreshold: {
           type: Number,
-          value: 3,
+          value: 2,
         },
         separator: {
           type: String,
@@ -240,7 +246,7 @@ Example:
           this.value = objId.toString();
         } else {
           var currentIds = this._getIds();
-          if (currentIds.indexOf(objId === -1)) {
+          if (currentIds.indexOf(objId) === -1) {
             this.value += this.separator + objId;
           }
         }
@@ -272,13 +278,14 @@ Example:
         } else {
           this.hideNoResults = true;
           var selectedIds = this._getIds();
-          var fileteredItems = [];
+          var filteredItems = [];
           for(var idx=0; idx < foundItems.length; idx++) {
-            if (selectedIds.indexOf(foundItems[idx].pk) === -1) {
-              fileteredItems.push(foundItems[idx]);
+            var pk = foundItems[idx].pk.toString();
+            if (selectedIds.indexOf(pk) === -1) {
+              filteredItems.push(foundItems[idx]);
             }
           }
-          this.set('menuItems', fileteredItems);
+          this.set('menuItems', filteredItems);
           this.hideMenu = false;
         }
 
@@ -323,18 +330,6 @@ Example:
       _preventSubmit: function(evt, obj) {
         console.log('_preventSubmit', evt, obj);
         if (evt.keyCode == 13) {
-          evt.preventDefault();
-          evt.stopPropagation();
-        }
-        if (evt.keyCode == 38) {
-          // this if is until: https://github.com/PolymerElements/paper-menu/issues/79
-          this.$.suggestList._focusPrevious();
-          evt.preventDefault();
-          evt.stopPropagation();
-        }
-        if (evt.keyCode == 40) {
-          // this if is until: https://github.com/PolymerElements/paper-menu/issues/79
-          this.$.suggestList._focusNext();
           evt.preventDefault();
           evt.stopPropagation();
         }
