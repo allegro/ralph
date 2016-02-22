@@ -1,5 +1,4 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-input/iron-input.html">
@@ -82,7 +81,9 @@ Example:
     </style>
     <div class='horizontal-layout'>
       <badge-input id='query-getter' on-badge-remove="onBadgeRemove"
-      on-input='sendQueryRequest' odd-name='[[name]]'> </badge-input>
+      on-input='sendQueryRequest' odd-name='[[name]]'
+      on-keydown='_handleKeys'
+      > </badge-input>
       <div id='icons'>
         <i hidden$='{{hiddenSpinner}}' class="loader fa fa-refresh fa-spin"></i>
         <i hidden$='{{hiddenAjaxError}}' class="has-tip fail fa
@@ -90,10 +91,6 @@ Example:
         <content></content>
       </div>
     </div>
-
-    <iron-a11y-keys target="[[inputTarget]]"
-    keys="up down esc escape backspace" on-keys-pressed='_handleKeys'>
-    </iron-a11y-keys>
 
     <iron-ajax
         id='by-query-ajax'
@@ -204,16 +201,20 @@ Example:
         this.hideNoResults = true;
       },
       _handleKeys: function(evt, obj) {
-        console.log('_handleKeys', evt, obj, obj.keyboardEvent.keyCode);
-        if (obj.keyboardEvent.keyCode === 27) {  // 'Escape'
+        console.log('_handleKeys', evt, obj);
+        if (evt.keyCode === 27) {  // 'Escape'
           if (this.hideMenu === false) {
             this.hideMenu = true;
           }
-        } else if (obj.keyboardEvent.keyCode === 40) {  // 'ArrowDown'
+        } else if (evt.keyCode === 40) {  // 'ArrowDown'
           this.$.suggestList._focusNext();
-        } else if (obj.keyboardEvent.keyCode === 38) {  // 'ArrowUp'
+          evt.preventDefault();
+          evt.stopPropagation();
+        } else if (evt.keyCode === 38) {  // 'ArrowUp'
           this.$.suggestList._focusPrevious();
-        } else if (obj.keyboardEvent.keyCode === 8) {  // 'Backspace'
+          evt.preventDefault();
+          evt.stopPropagation();
+        } else if (evt.keyCode === 8) {  // 'Backspace'
           console.log('backspace');
         }
       },
