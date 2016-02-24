@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from import_export import fields, resources
+from import_export import fields, resources, widgets
 
 from ralph.accounts.models import Region
 from ralph.assets.models import assets, base
@@ -22,6 +22,7 @@ from ralph.data_importer.widgets import (
     UserManyToManyWidget,
     UserWidget
 )
+from ralph.domains.models.domains import Domain
 from ralph.licences.models import (
     BaseObjectLicence,
     Licence,
@@ -483,3 +484,34 @@ class BudgetInfoResource(RalphModelResource):
 
     class Meta:
         model = assets.BudgetInfo
+
+
+class DomainResource(RalphModelResource):
+    business_segment = fields.Field(
+        column_name='business_segment',
+        attribute='business_segment',
+        widget=widgets.ForeignKeyWidget(assets.BusinessSegment),
+    )
+    business_owner = fields.Field(
+        column_name='business_owner',
+        attribute='business_owner',
+        widget=UserWidget(get_user_model()),
+    )
+    technical_owner = fields.Field(
+        column_name='technical_owner',
+        attribute='technical_owner',
+        widget=UserWidget(get_user_model()),
+    )
+    domain_holder = fields.Field(
+        column_name='domain_holder',
+        attribute='domain_holder',
+        widget=widgets.ForeignKeyWidget(assets.AssetHolder),
+    )
+    service_env = fields.Field(
+        column_name='service_env',
+        attribute='service_env',
+        widget=AssetServiceEnvWidget(assets.ServiceEnvironment),
+    )
+
+    class Meta:
+        model = Domain

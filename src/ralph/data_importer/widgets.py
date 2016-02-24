@@ -182,12 +182,15 @@ class AssetServiceEnvWidget(widgets.ForeignKeyWidget):
         if not value:
             return None
         try:
-            value = value.split("|")  # service, enviroment
-            value = ServiceEnvironment.objects.get(
-                service__name=value[0],
-                environment__name=value[1]
-            )
-        except ServiceEnvironment.DoesNotExist:
+            if value.isdigit():
+                value = ServiceEnvironment.objects.get(pk=value)
+            else:
+                service, enviroment = value.split("|")
+                value = ServiceEnvironment.objects.get(
+                    service__name=service,
+                    environment__name=enviroment
+                )
+        except (ValueError, ServiceEnvironment.DoesNotExist):
             value = None
         return value
 
