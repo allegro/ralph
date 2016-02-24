@@ -39,6 +39,10 @@ class Car(models.Model):
     manufacturer._autocomplete = False
     manufacturer._filter_title = 'test'
 
+    @classmethod
+    def get_autocomplete_queryset(cls):
+        return cls.objects.filter(year=2015)
+
 
 class Car2(models.Model):
     manufacturer = models.ForeignKey(Manufacturer)

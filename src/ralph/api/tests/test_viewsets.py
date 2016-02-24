@@ -191,5 +191,5 @@ class TestAdminSearchFieldsMixin(RalphTestCase):
     def test_get_filter_fields_from_admin(self):
         cvs = CarViewSet()
         self.assertEqual(
-            cvs.filter_fields, ['manufacturer__name', 'year']
+            cvs.filter_fields, ['manufacturer__name', 'name', 'year']
         )

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from ddt import data, ddt, unpack
+from django.contrib.admin.options import IS_POPUP_VAR
+from django.contrib.admin.views.main import SEARCH_VAR
 from django.core.urlresolvers import reverse
 from django.test import RequestFactory, TestCase
 from django.views.generic import View
@@ -9,9 +11,9 @@ from ralph.admin.decorators import register_extra_view
 from ralph.admin.sites import ralph_site
 from ralph.admin.views.extra import RalphDetailView, RalphListView
 from ralph.admin.views.main import RalphChangeList
-from ralph.tests.admin import CarAdmin
+from ralph.tests.admin import CarAdmin, ManufacturerAdmin
 from ralph.tests.mixins import ClientMixin, ReloadUrlsMixin
-from ralph.tests.models import Car, Foo
+from ralph.tests.models import Car, Foo, Manufacturer
 
 
 class ExtraListView(RalphListView, View):
@@ -211,6 +213,31 @@ class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
 
 @ddt
 class ChangeListTest(TestCase):
+
+    def setUp(self):
+        super().setUp()
+        manufacturer = Manufacturer.objects.create(
+            name='test', country='pl'
+        )
+        Manufacturer.objects.create(
+            name='test2', country='pl2'
+        )
+        Car.objects.create(
+            year=2015,
+            name='test',
+            manufacturer=manufacturer
+        )
+        Car.objects.create(
+            year=2014,
+            name='AutotompleteTest 2',
+            manufacturer=manufacturer
+        )
+        Car.objects.create(
+            year=2015,
+            name='AutotompleteTest',
+            manufacturer=manufacturer
+        )
+
     def _change_list_factory(
         self, model, model_admin, request, list_display=None
     ):
@@ -225,7 +252,7 @@ class ChangeListTest(TestCase):
             list_select_related=model_admin.list_select_related,
             search_fields=model_admin.search_fields,
             model=model,
-            model_admin=model_admin(Car, ralph_site),
+            model_admin=model_admin(model, ralph_site),
             request=request,
         )
 
@@ -307,3 +334,38 @@ class ChangeListTest(TestCase):
             Car, CarAdmin, ordering_params, list_display,
         )
         self.assertEqual(expected_ordering, ordering)
+
+    def test_get_queryset_autocomplete(self):
+        request = RequestFactory().get('/car', data={IS_POPUP_VAR: 1})
+        change_list = self._change_list_factory(
+            model=Car,
+            model_admin=CarAdmin,
+            request=request,
+            list_display=['id']
+        )
+        resutlt = change_list.get_queryset(request)
+        self.assertEqual(len(resutlt), 2)
+
+    def test_get_queryset_aucotomplete_search(self):
+        request = RequestFactory().get('/car', data={
+            IS_POPUP_VAR: 1, SEARCH_VAR: 'autotompletetest'}
+        )
+        change_list = self._change_list_factory(
+            model=Car,
+            model_admin=CarAdmin,
+            request=request,
+            list_display=['id']
+        )
+        resutlt = change_list.get_queryset(request)
+        self.assertEqual(len(resutlt), 1)
+
+    def test_get_queryset(self):
+        request = RequestFactory().get('/manufacturer', data={IS_POPUP_VAR: 1})
+        change_list = self._change_list_factory(
+            model=Manufacturer,
+            model_admin=ManufacturerAdmin,
+            request=request,
+            list_display=['id']
+        )
+        resutlt = change_list.get_queryset(request)
+        self.assertEqual(len(resutlt), 2)
