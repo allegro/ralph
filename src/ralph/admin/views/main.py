@@ -55,7 +55,13 @@ class RalphChangeList(ChangeList):
         return ordering
 
     def get_queryset(self, request):
-        queryset = None
+        queryset = super().get_queryset(request)
         if self.is_popup:
-            queryset = getattr(self.model, 'get_autocomplete_queryset', None)
-        return queryset() if queryset else super().get_queryset(request)
+            # For popup window we limit display of records to the same as
+            # we have in the autocomplete widget.
+            autocomplete_queryset = getattr(
+                self.model, 'get_autocomplete_queryset', None
+            )
+            if autocomplete_queryset:
+                queryset = queryset & autocomplete_queryset()
+        return queryset

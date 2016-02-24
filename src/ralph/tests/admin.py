@@ -9,6 +9,7 @@ from ralph.tests.models import Bar, Car, Car2, Manufacturer, Order
 class CarAdmin(RalphAdmin):
     ordering = ['name']
     list_filter = ['year']
+    search_fields = ['name']
 
 
 @register(Bar)
