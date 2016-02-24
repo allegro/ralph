@@ -8,6 +8,12 @@
 <dom-module id='badge-input'>
   <template>
     <style>
+    :host {
+      white-space: nowrap;
+      width: 100%;
+      overflow: hidden;  /* "overflow" value must be different from "visible" */
+      text-overflow: ellipsis;
+    }
     .badge {
       @apply(--layout-horizontal);
       background-color: #ededed;
