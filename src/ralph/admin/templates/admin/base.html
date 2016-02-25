@@ -9,6 +9,9 @@
     {{ media.css }}
     <link rel="stylesheet" type="text/css" href="{% static "vendor/css/foundation-datepicker.css" %}">
     <link rel="stylesheet" type="text/css" href="{% static "css/ralph.css" %}" />
+    <script type="text/javascript" src="{% static "admin/js/core.js" %}"></script>
+    <script src="{% static "bower_components/webcomponentsjs/webcomponents-lite.js" %}"></script>
+    <link rel="import" href="{% static "elements/elements.html" %}">
   </head>
   <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}">
     {% if not is_popup %}
@@ -74,30 +77,6 @@
       {{ media.js }}
       <!-- extra media -->
       {% block extra_scripts %}{% endblock %}
-      <script type="text/javascript">
-        (function($) {
-            $(document).ready(function() {
-              /*
-               * When "Add another Assignments" click event
-               * autocomplete is not working
-               * Add event handler for "add-row a" and initialize autocomplete.
-               */
-              $('.add-row a').bind('click', function() {
-                var $inline = $(this).closest('table').find(
-                  '.form-row:not(.empty-form) .autocomplete-widget'
-                ).last();
-                var $inline_tr = $inline.closest('tr')
-                var element_id = $inline_tr.attr('id').match(/\d+/)[0];
-                var target = $inline.data('target-selector');
-                $inline.data(
-                  'target-selector',
-                  target.replace('__prefix__', element_id)
-                );
-                $inline.autocomplete();
-              });
-            });
-          })(ralph.jQuery);
-      </script>
       {% block admin_change_form_document_ready %}
         <script type="text/javascript">
           (function($) {
