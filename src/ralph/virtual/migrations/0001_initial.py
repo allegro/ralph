@@ -8,17 +8,17 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assets', '0004_auto_20151204_0758'),
-        ('data_center', '0005_auto_20151204_1714'),
+        ('assets', '0008_auto_20160122_1429'),
+        ('data_center', '0007_auto_20160225_1818'),
     ]
 
     operations = [
         migrations.CreateModel(
             name='CloudFlavor',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='assets.BaseObject')),
-                ('name', models.CharField(max_length=255, verbose_name='name', unique=True)),
-                ('flavor_id', models.CharField(max_length=100, unique=True)),
+                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', serialize=False, parent_link=True, auto_created=True)),
+                ('name', models.CharField(verbose_name='name', max_length=255)),
+                ('flavor_id', models.CharField(unique=True, max_length=100)),
             ],
             options={
                 'abstract': False,
@@ -28,9 +28,10 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='CloudHost',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='assets.BaseObject')),
-                ('host_id', models.CharField(max_length=100, unique=True)),
+                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', serialize=False, parent_link=True, auto_created=True)),
+                ('host_id', models.CharField(unique=True, max_length=100)),
                 ('hostname', models.CharField(max_length=100)),
+                ('image_name', models.CharField(max_length=255, null=True, blank=True)),
                 ('cloudflavor', models.ForeignKey(verbose_name='Instance Type', to='virtual.CloudFlavor')),
             ],
             options={
@@ -42,8 +43,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='CloudProject',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='assets.BaseObject')),
-                ('project_id', models.CharField(max_length=100, unique=True)),
+                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', serialize=False, parent_link=True, auto_created=True)),
+                ('project_id', models.CharField(unique=True, max_length=100)),
                 ('name', models.CharField(max_length=100)),
             ],
             options={
@@ -54,8 +55,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='CloudProvider',
             fields=[
-                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
-                ('name', models.CharField(max_length=255, verbose_name='name', unique=True)),
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', auto_created=True, serialize=False)),
+                ('name', models.CharField(verbose_name='name', unique=True, max_length=255)),
             ],
             options={
                 'verbose_name': 'Cloud provider',
@@ -65,7 +66,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='VirtualComponent',
             fields=[
-                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', auto_created=True, serialize=False)),
             ],
             options={
                 'abstract': False,
@@ -74,7 +75,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='VirtualServer',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='assets.BaseObject')),
+                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', serialize=False, parent_link=True, auto_created=True)),
             ],
             options={
                 'verbose_name': 'Virtual server (VM)',
@@ -85,12 +86,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='virtualcomponent',
             name='base_object',
-            field=models.ForeignKey(related_name='virtualcomponent', to='assets.BaseObject'),
+            field=models.ForeignKey(to='assets.BaseObject', related_name='virtualcomponent'),
         ),
         migrations.AddField(
             model_name='virtualcomponent',
             name='model',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, verbose_name='model', null=True, to='assets.ComponentModel', blank=True, default=None),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, to='assets.ComponentModel', null=True, verbose_name='model', default=None, blank=True),
         ),
         migrations.AddField(
             model_name='cloudproject',
@@ -105,7 +106,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='cloudhost',
             name='hypervisor',
-            field=models.ForeignKey(null=True, to='data_center.DataCenterAsset', blank=True),
+            field=models.ForeignKey(to='data_center.DataCenterAsset', null=True, blank=True),
         ),
         migrations.AddField(
             model_name='cloudflavor',
