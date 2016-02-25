@@ -25,6 +25,7 @@ from ralph.data_center.models.networks import (
     NetworkTerminator
 )
 from ralph.data_center.models.physical import (
+    Accessory,
     Connection,
     DataCenter,
     DataCenterAsset,
@@ -44,6 +45,12 @@ from ralph.lib.permissions.admin import PermissionAdminMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
 from ralph.supports.models import BaseObjectsSupport
+
+
+@register(Accessory)
+class AccessoryAdmin(RalphAdmin):
+
+    search_fields = ['name']
 
 
 @register(DataCenter)

@@ -93,6 +93,7 @@ sitetrees = [
                 section(_('Data Centers'), 'data_center', 'DataCenter'),
                 section(_('Databases'), 'data_center', 'Database'),
                 section(_('Disk Shares'), 'data_center', 'DiskShare'),
+                section(_('Accessories'), 'data_center', 'Accessory'),
                 section(_('Rack Accessories'), 'data_center', 'RackAccessory'),
                 section(_('Server Rooms'), 'data_center', 'ServerRoom'),
                 section(_('VIPs'), 'data_center', 'VIP'),
