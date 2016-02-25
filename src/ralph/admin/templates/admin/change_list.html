@@ -16,7 +16,7 @@
     {% contextual_search_form search_url search_fields %}
   {% endif %}
   <div id="content-main">
-    <form method="get" id="filter-form" class="hide"></form>
+    <form method="get" action="" id="filter-form" class="hide"></form>
     <form id="changelist-form" action="" method="post"{% if cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>{% csrf_token %}
       <div class="row header">
         <div class="large-2 small-6 columns">
@@ -121,6 +121,8 @@
   </div>
 {% endblock %}
 {% block extra_scripts %}
+
+
   {{ block.super }}
   {% if not bulk_edit %}
     <script type="text/javascript" src="{% static 'src/js/ralph-autocomplete.js' %}"></script>

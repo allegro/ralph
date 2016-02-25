@@ -44,7 +44,7 @@ class ServiceAdmin(RalphAdmin):
     inlines = [ServiceEnvironmentInline]
     filter_horizontal = ['business_owners', 'technical_owners']
     search_fields = ['name', 'uid']
-    raw_id_fields = ['profit_center', 'support_team']
+    raw_id_fields = ['profit_center', 'support_team', 'business_owners']
 
 
 @register(Manufacturer)

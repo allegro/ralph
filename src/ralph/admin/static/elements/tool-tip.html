@@ -1,0 +1,28 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<dom-module id='tool-tip'>
+  <style>
+    i {
+      font-size: 1.3rem;
+    }
+  </style>
+  <template>
+    <i data-tooltip class="has-tip fa fa-info-circle" title="{{ title }}"></i>
+
+  </template>
+  <script>
+    Polymer({
+      is: "tool-tip",
+      properties: {
+        'title': {
+          type: String,
+          observer: '_reinitTooltip',
+          value: ''
+        }
+      },
+      _reinitTooltip: function(newValue, oldValue) {
+        $(this).foundation("tooltip");
+      }
+    });
+  </script>
+<dom-module>
