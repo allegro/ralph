@@ -36,11 +36,6 @@
                 $form.empty();
                 var $orginal = $('.filter-container');
                 var $clone = $orginal.clone();
-                // jquery can't handle nested elements, it duplicates inputs
-                $clone.find('auto-complete').each(function(index, item) {
-                  var inputSelector = '[name=' + item.name + ']';
-                  $(item).find(inputSelector).last().remove();
-                });
 
                 var $original_selects = $orginal.find('select');
                 // We have to select the <select> because jQuery.clone() does not copy it.
