@@ -1,0 +1,356 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="badge-input.html">
+
+<!--
+Autocomplete field.
+This widget works in two mode
+
+Usage:
+------
+
+### single
+
+Example:
+
+    TODO: add qualitative doc
+    <auto-complete value="1" > </auto-complete>
+
+### multi
+
+Example:
+    <auto-complete value=""  multi> </auto-complete>
+-->
+
+
+<dom-module id='auto-complete'>
+  <template>
+    <style>
+    :host {
+      position: relative;
+
+      display: block;
+      height: auto;
+      width: 100%;
+      background: #fff;
+      border: none;
+    }
+    .horizontal-layout {
+      @apply(--layout-horizontal);
+      border: 1px solid #ccc;
+    }
+    #query-getter {
+      display:block;
+      @apply(--layout-flex);
+    }
+    paper-menu {
+      position: absolute;
+      z-index: 999;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-top: none;
+      --paper-menu-selected-item: {
+        font-weight: normal;
+      };
+    }
+    paper-item {
+      --paper-item: {
+        background-color: white;
+        min-height: 30px;
+        padding: 5px;
+        height: 19px;
+        cursor: pointer;
+      };
+    }
+    paper-item:hover {
+      background-color: #d8d9da;
+    }
+    #icons {
+      margin-top: 5px;
+    }
+    #icons i {
+      font-size: 1.3rem;
+    }
+    #icons ::content a, #icons ::content i {
+      font-size: 1.3rem;
+    }
+    </style>
+    <div class='horizontal-layout'>
+      <badge-input id='query-getter' on-badge-remove="onBadgeRemove"
+      on-input='sendQueryRequest' odd-name='[[name]]'
+      on-keydown='_handleKeys'
+      > </badge-input>
+      <div id='icons'>
+        <i hidden$='{{hiddenSpinner}}' class="loader fa fa-refresh fa-spin"></i>
+        <i hidden$='{{hiddenAjaxError}}' class="has-tip fail fa
+          fa-exclamation" title="Something goes wrong..."></i>
+        <content></content>
+      </div>
+    </div>
+
+    <iron-ajax
+        id='by-query-ajax'
+        url="{{queryAjaxUrl}}"
+        params=''
+        handle-as="json"
+        on-response="populateMenu"
+        on-error="errorHandler"
+    ></iron-ajax>
+
+
+    <paper-menu hidden$="{{hideMenu}}" on-iron-activate='elemSelected'
+      id='suggestList' class="dropdown-content" on-keydown='_preventSubmit'
+    >
+      <template is="dom-repeat" items="[[menuItems]]">
+        <paper-item>[[item.__str__]]</paper-item>
+      </template>
+    </paper-menu>
+    <paper-menu hidden$='{{hideNoResults}}' >
+      <paper-item>No results</paper-item>
+    </paper-menu>
+
+    <input id='values-input' name$="[[name]]" type='hidden' is="iron-input"
+      bind-value="{{value}}" autocomplete="off">
+    <iron-ajax
+        id='by-id-ajax'
+        url="{{detailsurl}}"
+        params=''
+        handle-as="json"
+        on-response="updateBadges"
+        on-error="errorHandler"
+    ></iron-ajax>
+
+  </template>
+
+  <script>
+    // register a new element called auto-complete
+    Polymer({
+      is: "auto-complete",
+      properties: {
+        typed: String,
+        targetInput: {
+          type: Object,
+          value: function() {
+            return this.$['query-getter'];
+          }
+        },
+        queryAjaxUrl: {
+          type: String,
+          value: null,
+        },
+        detailsurl: {
+          type: String,
+          value: null,
+        },
+        fireThreshold: {
+          type: Number,
+          value: 2,
+        },
+        separator: {
+          type: String,
+          value: ',',
+        },
+        value: {
+          type: String,
+          reflectToAttribute: true,
+          value: '',
+          observer: '_ids2Objs',
+        },
+        multi: {
+          type: Boolean,
+          value: false
+        },
+        hideMenu: {
+          type: Boolean,
+          value: true
+        },
+        hiddenAjaxError: {
+          type: Boolean,
+          value: true
+        },
+        hiddenSpinner: {
+          type: Boolean,
+          value: true
+        },
+        hideNoResults: {
+          type: Boolean,
+          value: true
+        },
+        menuItems: {
+          type: Array,
+          value: function(){return [];}
+        }
+      },
+      sendQueryRequest: function(evt, obj) {
+        console.log('sendQueryRequest', evt, obj);
+        if (
+            evt.target.value === '' ||
+            evt.currentTarget.getValue().length < this.fireThreshold
+        ) return false;
+        // TODO: find out why regular syntax doesn't work
+        this.$['by-query-ajax'].params = {
+          "q": evt.target.value
+        };
+        this.$['by-query-ajax'].generateRequest();
+        this.hiddenAjaxError = true;
+        this.hiddenSpinner = false;
+        this.hideNoResults = true;
+      },
+      _handleKeys: function(evt, obj) {
+        console.log('_handleKeys', evt, obj);
+        if (evt.keyCode === 27) {  // 'Escape'
+          if (this.hideMenu === false) {
+            this.hideMenu = true;
+          }
+        } else if (evt.keyCode === 40) {  // 'ArrowDown'
+          this.$.suggestList._focusNext();
+          evt.preventDefault();
+          evt.stopPropagation();
+        } else if (evt.keyCode === 38) {  // 'ArrowUp'
+          this.$.suggestList._focusPrevious();
+          evt.preventDefault();
+          evt.stopPropagation();
+        } else if (evt.keyCode === 8) {  // 'Backspace'
+          console.log('backspace');
+        }
+      },
+      _setIds: function(ids) {
+        console.log('_setIds');
+        this.value = ids.join(this.separator);
+        if (!this.hasAttribute('multi')) {
+          this.$['query-getter'].hideInput();
+        }
+      },
+      _getIds: function() {
+        console.log('_getIds');
+        var ids;
+        if (this.value === "") return [];
+        if (this.multi) {
+          ids = this.value.split(this.separator);
+        } else {
+          ids = [this.value];
+        }
+        return ids;
+      },
+      _updateById: function(objId) {
+        console.log('_updateById', objId);
+        this.value = objId;
+        this.$['query-getter'].hideInput();
+      },
+      _updateMultiById: function(objId) {
+        console.log('_updateMultiById', objId);
+        if (this.value === "") {
+          this.value = objId.toString();
+        } else {
+          var currentIds = this._getIds();
+          if (currentIds.indexOf(objId) === -1) {
+            this.value += this.separator + objId;
+          }
+        }
+      },
+      updateById: function(objId) {
+        console.log('updateById', objId);
+        if (this.multi) {
+          this._updateMultiById(objId);
+        } else {
+          this._updateById(objId);
+        }
+        this.$['query-getter'].setFocusInput();
+      },
+      elemSelected: function(evt, obj) {
+        console.log('elemSelected', evt, obj);
+        var selectedItem = this.menuItems[obj.selected];
+        this.hideNoResults = true;
+        this.updateById(selectedItem.pk);
+        this.hideMenu = true;
+        this.$['query-getter'].setFocusInput();
+      },
+      populateMenu: function(evt, obj) {
+        console.log('populateMenu', evt, obj);
+        this.menuItems = [];
+        this.hiddenSpinner = true;
+        var foundItems = obj.xhr.response['results'];
+        if (foundItems.length === 0) {
+          this.hideNoResults = false;
+        } else {
+          this.hideNoResults = true;
+          var selectedIds = this._getIds();
+          var filteredItems = [];
+          for(var idx=0; idx < foundItems.length; idx++) {
+            var pk = foundItems[idx].pk.toString();
+            if (selectedIds.indexOf(pk) === -1) {
+              filteredItems.push(foundItems[idx]);
+            }
+          }
+          this.set('menuItems', filteredItems);
+          this.hideMenu = false;
+        }
+
+      },
+      updateBadges: function(evt, obj) {
+        console.log('updateBadges', evt, obj);
+        this.hiddenSpinner = true;
+        var ids = this._getIds();
+        var badgesData = []
+        for (var idx = 0; idx < obj.xhr.response['results'].length; idx++) {
+          badgesData.push(null);
+        }
+        for(idx=0; idx < obj.xhr.response['results'].length; idx++) {
+          var item = obj.xhr.response['results'][idx];
+          badgesData.splice(ids.indexOf(item.pk.toString()), 1, item);
+        }
+        this.$['query-getter'].setBadges(badgesData);
+      },
+      reloadBadges: function() {
+        console.log('reloadBadges');
+        this.$['by-id-ajax'].params = {
+          "pk": this.value
+        }
+        this.$['by-id-ajax'].generateRequest();
+        this.hiddenAjaxError = true;
+        this.hiddenSpinner = false;
+      },
+      onBadgeRemove: function(evt, obj) {
+        console.log('onBadgeRemove', evt, obj);
+        var ids = this._getIds();
+        ids.splice(ids.indexOf(obj.item.pk), 1);
+        this._setIds(ids);
+        if (!this.hasAttribute('multi')) {
+          this.$['query-getter'].showInput();
+        }
+      },
+      errorHandler: function(request, bubbles) {
+        console.log('errorHandler', request, bubbles);
+        this.hiddenSpinner = true;
+        this.hiddenAjaxError = false;
+      },
+      _preventSubmit: function(evt, obj) {
+        console.log('_preventSubmit', evt, obj);
+        if (evt.keyCode == 13) {
+          evt.preventDefault();
+          evt.stopPropagation();
+        }
+      },
+      focusToMenu: function(evt, obj) {
+        console.log('focusToMenu', evt, obj);
+        if (!this.hideMenu) {
+          this.$.suggestList.focus();
+        }
+      },
+      _ids2Objs: function(newValue, oldValue) {
+        console.log('_ids2Objs', newValue, oldValue);
+        if (newValue === oldValue) return;
+        if (newValue === "") { return false; }
+        this.value = newValue;
+        if (!this.hasAttribute('multi')) {
+          this.$['query-getter'].hideInput();
+        }
+        this.reloadBadges();
+      }
+    });
+  </script>
+</dom-module>

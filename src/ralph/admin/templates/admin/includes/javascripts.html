@@ -12,6 +12,7 @@
 
 <script type="text/javascript" src="{% static 'vendor/js/jquery.js' %}"></script>
 <script type="text/javascript" src="{% static 'src/js/ralph.init.js' %}"></script>
+<script type="text/javascript" src="{% static "auto-complete-helpers.js" %}"></script>
 <script type="text/javascript" src="{% static 'vendor/js/foundation.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'vendor/js/modernizr.js' %}"></script>
 <script type="text/javascript" src="{% static 'src/js/fill-fields.js' %}"></script>
@@ -35,14 +36,19 @@
                 $form.empty();
                 var $orginal = $('.filter-container');
                 var $clone = $orginal.clone();
-                var $original_selects = $orginal.find('select');
+                // jquery can't handle nested elements, it duplicates inputs
+                $clone.find('auto-complete').each(function(index, item) {
+                  var inputSelector = '[name=' + item.name + ']';
+                  $(item).find(inputSelector).last().remove();
+                });
 
+                var $original_selects = $orginal.find('select');
                 // We have to select the <select> because jQuery.clone() does not copy it.
                 $clone.find('select').each(function(index, item) {
                   $(item).val($original_selects.eq(index).val());
                 });
                 $clone.appendTo($form);
-                $form.submit();
+                $form[0].submit();
             });
 
             // If you press "enter" in the filter form field

@@ -17,7 +17,9 @@ from django.utils.translation import ugettext_lazy as _
 from mptt.fields import TreeForeignKey
 from mptt.settings import DEFAULT_LEVEL_INDICATOR
 
-from ralph.admin.autocomplete import DETAIL_PARAM, QUERY_PARAM
+from ralph.admin.autocomplete import (
+    AUTOCOMPLETE_EMPTY_VALUE, DETAIL_PARAM, QUERY_PARAM,
+)
 from ralph.admin.helpers import get_field_by_relation_path
 
 SEARCH_OR_SEPARATORS_REGEX = re.compile(r'[;|]')
@@ -293,21 +295,29 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
     """Filter for Foregin key field."""
 
     template = "admin/filters/related_filter.html"
-    empty_value = '##@_empty_@##'
+    empty_value = AUTOCOMPLETE_EMPTY_VALUE
 
     def __init__(self, field, request, params, model, model_admin, field_path):
         super().__init__(field, request, params, model, model_admin, field_path)
         self.field_model = get_model_from_relation(self.field)
 
+    def value(self):
+        value = super().value()
+        return value or ''
+
     def queryset(self, request, queryset):
         value = self.value()
-        if value:
-            if value == self.empty_value:
-                queryset = queryset.filter(
-                    **{'{}__isnull'.format(self.field_path): True}
-                )
+        if not value:
+            ids = []
+        else:
+            ids = value.split(',')
+        q_param = models.Q()
+        for id_ in ids:
+            if id_ == self.empty_value:
+                q_param |= Q(**{'{}__isnull'.format(self.field_path): True})
             else:
-                queryset = queryset.filter(**{self.field_path: value})
+                q_param |= Q(**{self.field_path: id_})
+        queryset = queryset.filter(q_param)
         return queryset
 
     def get_related_url(self):
@@ -326,43 +336,25 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
             self.model, self.field_path
         ).model
         widget_options = {
-            'data-suggest-url': reverse(
+            'id': 'id_{}'.format(self.field_path),
+            'query-ajax-url': reverse(
                 'autocomplete-list', kwargs={
                     'app': model._meta.app_label,
                     'model': model.__name__,
                     'field': self.field.name
                 }
-            ),
-            'data-details-url': reverse(
+            ) + '?prepend-empty=true',
+            'multi': True,
+            'detailsurl': reverse(
                 'admin:{}_{}_autocomplete_details'.format(*model_options)
             ),
-            'data-query-var': QUERY_PARAM,
-            'data-detail-var': DETAIL_PARAM,
-            'data-target-selector': '#id_{}'.format(self.field_path)
         }
-        value = self.value()
-        current_object = None
-        if value:
-            if value == self.empty_value:
-                current_object = '<empty>'
-            else:
-                try:
-                    current_object = self.field_model.objects.get(
-                        pk=int(value)
-                    )
-                except self.field_model.DoesNotExist:
-                    pass
-
         return ({
-            'current_value': self.value(),
-            'parameter_name': self.field_path,
-            'searched_fields': [self.title],
-            'related_url': self.get_related_url(),
-            'name': self.field_path,
+            'value': self.value(),
             'attrs': flatatt(widget_options),
-            'current_object': current_object,
-            'empty_value': self.empty_value,
-            'is_empty': True
+            'name': self.field_path,
+            'related_url': self.get_related_url(),
+            'search_fields_info': "Search by: {}".format(self.title),
         },)
 
 
