@@ -77,30 +77,6 @@
       {{ media.js }}
       <!-- extra media -->
       {% block extra_scripts %}{% endblock %}
-      <script type="text/javascript">
-        (function($) {
-            $(document).ready(function() {
-              /*
-               * When "Add another Assignments" click event
-               * autocomplete is not working
-               * Add event handler for "add-row a" and initialize autocomplete.
-               */
-              $('.add-row a').bind('click', function() {
-                var $inline = $(this).closest('table').find(
-                  '.form-row:not(.empty-form) .autocomplete-widget'
-                ).last();
-                var $inline_tr = $inline.closest('tr')
-                var element_id = $inline_tr.attr('id').match(/\d+/)[0];
-                var target = $inline.data('target-selector');
-                $inline.data(
-                  'target-selector',
-                  target.replace('__prefix__', element_id)
-                );
-                $inline.autocomplete();
-              });
-            });
-          })(ralph.jQuery);
-      </script>
       {% block admin_change_form_document_ready %}
         <script type="text/javascript">
           (function($) {

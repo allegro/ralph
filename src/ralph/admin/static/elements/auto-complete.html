@@ -5,6 +5,7 @@
 <link rel="import" href="../bower_components/paper-menu/paper-menu.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="badge-input.html">
+<link rel="import" href="tool-tip.html">
 
 <!--
 Autocomplete field.
@@ -75,10 +76,8 @@ Example:
     #icons i {
       font-size: 1.3rem;
     }
-    #icons ::content a, #icons ::content i {
-      font-size: 1.3rem;
-    }
     </style>
+
     <div class='horizontal-layout'>
       <badge-input id='query-getter' on-badge-remove="onBadgeRemove"
       on-input='sendQueryRequest' odd-name='[[name]]'
@@ -88,7 +87,13 @@ Example:
         <i hidden$='{{hiddenSpinner}}' class="loader fa fa-refresh fa-spin"></i>
         <i hidden$='{{hiddenAjaxError}}' class="has-tip fail fa
           fa-exclamation" title="Something goes wrong..."></i>
-        <content></content>
+        <a on-tap='showAdminPopup' href="[[relatedUrl]]" id="lookup_id_[[name]]">
+          <i class="fa fa-search"></i>
+        </a>
+        <a hidden="{{!addRelatedUrl}}" on-tap='showAdminPopup' id="add_id_[[name]]" href="[[addRelatedUrl]]">
+          <i class="fa fa-plus-circle"></i>
+        </a>
+        <i data-tooltip class="has-tip fa fa-info-circle" title="[[searchTooltip]]"></i>
       </div>
     </div>
 
@@ -334,6 +339,20 @@ Example:
           evt.preventDefault();
           evt.stopPropagation();
         }
+      },
+      showAdminPopup: function(evt, obj) {
+        var name = evt.currentTarget.id.replace(/^(lookup|change|add|delete)_/, '');
+        var href = evt.currentTarget.href
+        if (href.indexOf('?') == -1) {
+            href += '?_popup=1';
+        } else {
+            href  += '&_popup=1';
+        }
+        var win = window.open(href, name, 'height=500,width=800,resizable=yes,scrollbars=yes');
+        win.focus();
+        evt.preventDefault();
+        evt.stopPropagation();
+        return false;
       },
       focusToMenu: function(evt, obj) {
         console.log('focusToMenu', evt, obj);

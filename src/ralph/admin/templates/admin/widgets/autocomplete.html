@@ -6,15 +6,8 @@
   {{multi}}
   query-ajax-url="{{ data_suggest_url }}"
   detailsurl="{{ data_details_url }}"
-> <!-- TODO: `detailsurl` should work as search-url -->
-  <a href="{{ related_url }}" class="related-lookup" id="lookup_id_{{ name }}">
-    <i class="fa fa-search"></i>
-  </a>
-  {% if add_related_url %}
-    <a class="related-widget-wrapper-link add-related" id="add_id_{{ name }}"
-      href="{{ add_related_url }}?_popup=1">
-        <i class="fa fa-plus-circle"></i>
-    </a>
-  {% endif %}
-  <i data-tooltip class="has-tip fa fa-info-circle" title="{{ search_fields_info }}"></i>
+  related-url="{{ related_url }}"
+  add-related-url="{{ add_related_url }}"
+  search-tooltip="{{ search_fields_info }}"
+>
 </auto-complete>
