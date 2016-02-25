@@ -1,0 +1,174 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<link rel="import" href="tool-tip.html">
+
+
+<dom-module id='badge-input'>
+  <template>
+    <style>
+    :host {
+      white-space: nowrap;
+      width: 100%;
+      overflow: hidden;  /* "overflow" value must be different from "visible" */
+      text-overflow: ellipsis;
+    }
+    .badge {
+      @apply(--layout-horizontal);
+      background-color: #ededed;
+    }
+    .hidden {
+      display: none;
+    }
+    .badge {
+      height: 30px;
+      line-height: 1rem;
+      display: inline-block;
+      background: #ededed;
+      border: 1px solid #cacaca;
+      white-space: nowrap;
+      margin: 1px;
+      padding: 0.25rem 0;
+      font-size: 1.16667rem;
+    }
+    .flexchild {
+      @apply(--layout-flex);
+      padding: 3px 1px;
+      margin: 1px;
+      display:inline-block;
+      white-space: nowrap;
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .badge-icons {
+      padding: 3px 1px;
+      margin: 1px;
+    }
+    #text-getter{
+      width: 100%;
+      border: 0;
+      margin-bottom: 0;
+      background: #fff;
+    }
+    .badge a, .badge i {
+      float: left;
+      margin: 0 5px;
+      cursor: pointer;
+    }
+    </style>
+
+    <div>
+      <div>
+        <template is='dom-repeat' items="[[badgesData]]">
+          <div class='badge'>
+            <div class='flexchild'>
+              [[item.__str__]]
+              <template is="dom-if" if="{{item.tooltip}}">
+                <tool-tip title='{{ item.tooltip }}'> </tool-tip>
+              </template>
+            </div>
+            <div class='badge-icons'>
+              <template is="dom-if" if="{{item.edit_url}}">
+                <a class="related-widget-wrapper-link change-related"
+                  id="change_id_{{ oddName }}"
+                  href='[[item.edit_url]]'
+                  on-click='showRelatedObjectPopup'
+                >
+                  <i class="fa fa-pencil"></i>
+                </a>
+              </template>
+              <i on-tap="onBadgeRemove" class="fa fa-times delete"></i>
+            </div>
+          </div>
+        </template>
+      </div>
+      <div id='input-wrapper'>
+        <input id='text-getter' is="iron-input">
+      </div>
+    </div>
+    <div style="clear: both;"></div>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: "badge-input",
+      properties: {
+        oddName: {
+          // you won't use that
+          type: String,
+          value: ""
+        },
+        badgesData: {
+          type: Array,
+          value: function(){return [];}
+        }
+      },
+      showRelatedObjectPopup: function (evt) {
+        var name = evt.currentTarget.id.replace(/^(change|add|delete)_/, '');
+        var href = evt.currentTarget.href
+        var win = window.open(href, name, 'height=500,width=800,resizable=yes,scrollbars=yes');
+        win.focus();
+        evt.preventDefault();
+        return false;
+      },
+      addBadge: function(badgeObject) {
+        console.log('addBadge', badgeObject);
+        this.push('badgesData', badgeObject);
+        this.clearInput();
+      },
+      setBadges: function(badges) {
+        console.log('setBadges', badges);
+        this.badgesData = badges;
+        this.clearInput();
+      },
+      _deleteClicked: function() {
+        this.splice('badgesData', this._deleteIndex, 1);
+        this.fire('badge-remove', {
+          "index": this._deletedItemIndex,
+          "item": this._deletedItem
+        });
+      },
+      onBadgeRemove: function(evt, obj) {
+        console.log('onBadgeRemove', evt, obj);
+        this._deletedItemIndex = evt.model.index
+        this._deletedItem = evt.model.item
+        // this should be called without async with jquery>2.2
+        this.async(this._deleteClicked, 50);
+      },
+      hideInput: function() {
+        console.log('hideInput');
+        this.$['text-getter'].classList.add('hidden');
+      },
+      showInput: function() {
+        console.log('showInput');
+        this.$['text-getter'].classList.remove('hidden');
+      },
+      setFocusInput: function() {
+        console.log('setFocusInput');
+        this.$['text-getter'].focus();
+      },
+      clear: function() {
+        console.log('clear');
+        this.set('badgesData', []);
+      },
+      // Down from here could be replaced if value attrib. is exposed
+      clearInput: function() {
+        console.log('clearInput');
+        this.$['text-getter'].value = '';
+      },
+      getValue: function(text) {
+        console.log('getValue', text);
+        return this.$['text-getter'].value;
+      },
+      appendToInput: function(text) {
+        console.log('appendToInput', text);
+        this.$['text-getter'].value = this.$['text-getter'].value + text;
+      },
+      ready: function() {
+      }
+    });
+  </script>
+</dom-module>
