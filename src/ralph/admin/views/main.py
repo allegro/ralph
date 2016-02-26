@@ -63,5 +63,18 @@ class RalphChangeList(ChangeList):
                 self.model, 'get_autocomplete_queryset', None
             )
             if autocomplete_queryset:
-                queryset = queryset & autocomplete_queryset()
+                autocomplete_queryset = autocomplete_queryset()
+                # #2248 - cannot combine unique (distinct) and non-unique query
+                # if one of the queries is distinct, make sure all are distinct
+                if (
+                    queryset.query.distinct and
+                    not autocomplete_queryset.query.distinct
+                ):
+                    autocomplete_queryset = autocomplete_queryset.distinct()
+                if (
+                    not queryset.query.distinct and
+                    autocomplete_queryset.query.distinct
+                ):
+                    queryset = queryset.distinct()
+                queryset = queryset & autocomplete_queryset
         return queryset

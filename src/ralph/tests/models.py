@@ -38,6 +38,7 @@ class Car(models.Model):
     manufacturer = models.ForeignKey(Manufacturer)
     manufacturer._autocomplete = False
     manufacturer._filter_title = 'test'
+    foos = models.ManyToManyField(Foo)
 
     @classmethod
     def get_autocomplete_queryset(cls):
