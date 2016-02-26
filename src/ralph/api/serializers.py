@@ -94,7 +94,11 @@ class DeclaredFieldsMetaclass(serializers.SerializerMetaclass):
     """
     def __new__(cls, name, bases, attrs):
         model = getattr(attrs.get('Meta'), 'model', None)
-        if model and issubclass(model, TaggableMixin):
+        if (
+            model and
+            issubclass(model, TaggableMixin) and
+            not getattr(attrs.get('Meta'), '_skip_tags_field', False)
+        ):
             attrs['tags'] = TagListSerializerField(required=False)
             attrs['prefetch_related'] = (
                 list(attrs.get('prefetch_related', [])) + ['tags']
@@ -106,7 +110,7 @@ class RalphAPISerializerMixin(
     TaggitSerializer,
     RelatedObjectsPermissionsSerializerMixin,
     PermissionsPerFieldSerializerMixin,
-    metaclass=DeclaredFieldsMetaclass
+    metaclass=DeclaredFieldsMetaclass  # noqa
 ):
     """
     Mix used in Ralph API serializers features:
@@ -126,7 +130,7 @@ class RalphAPISerializerMixin(
         (contains url to related object). When it's not safe request (ex. POST),
         serializer expect to pass only PK for related object.
         """
-        if self.context['request'].method in permissions.SAFE_METHODS:
+        if self.context['request'] and self.context['request'].method in permissions.SAFE_METHODS:  # noqa
             return RalphHyperlinkedRelatedField
         return RalphRelatedField
 

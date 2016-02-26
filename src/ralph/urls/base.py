@@ -14,6 +14,8 @@ api_urls = list(map(lambda u: url(r'^', include(u)), [
     'ralph.data_center.api.routers',
     'ralph.dc_view.urls.api',
     'ralph.supports.api',
+    'ralph.security.api',
+    'ralph.virtual.api',
 ]))
 # include router urls
 # because we're using single router instance and urls are cached inside this

@@ -95,6 +95,14 @@ class ServiceEnvironment(BaseObject):
     class Meta:
         unique_together = ('service', 'environment')
 
+    @property
+    def service_name(self):
+        return self.service.name
+
+    @property
+    def environment_name(self):
+        return self.environment.name
+
     @classmethod
     def get_autocomplete_queryset(cls):
         return cls._default_manager.filter(service__active=True)

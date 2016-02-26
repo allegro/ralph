@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from ralph.admin.views.extra import RalphDetailView
+from ralph.security.models import SecurityScan
 
 
 class DataCenterAssetSecurityInfo(
@@ -15,31 +16,6 @@ class DataCenterAssetSecurityInfo(
         context = super(DataCenterAssetSecurityInfo, self).get_context_data(
             **kwargs
         )
-        context['data_classification'] = [
-            {'label': 'Availability', 'value': 'A3'},
-            {'label': 'Confidentiality', 'value': 'C2'},
-            {'label': 'Integrity', 'value': 'I4'},
-        ]
-        context['logs'] = [
-            '/var/log',
-        ]
-        context['critical_pathes'] = [
-            {
-                'label': 'Critical Patch Update - April 2015',
-                'value': 'Rev 3, 28 April 2015',
-            },
-            {
-                'label': 'Critical Patch Update - January 2015',
-                'value': 'Rev 2, 10 March 2015',
-            },
-            {
-                'label': 'Critical Patch Update - October 2014',
-                'value': 'Rev 5, 21 November 2014',
-            },
-            {
-                'label': 'Critical Patch Update - July 2014',
-                'value': 'Rev 2, 24 July 2014',
-            },
-
-        ]
+        context['security_scan'] = SecurityScan.objects.filter(
+            base_object=self.object).last()
         return context
