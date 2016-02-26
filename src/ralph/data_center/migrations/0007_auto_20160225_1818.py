@@ -13,19 +13,20 @@ class Migration(migrations.Migration):
         ('data_center', '0006_rack_require_position'),
     ]
 
+    # move models to virtual app
+    database_operations = [
+        migrations.AlterModelTable('VirtualServer', 'virtual_virtualserver'),
+        migrations.AlterModelTable('CloudProject', 'virtual_cloudproject'),
+    ]
+
+    state_operations = [
+        migrations.DeleteModel('VirtualServer'),
+        migrations.DeleteModel('CloudProject'),
+    ]
+
     operations = [
-        migrations.RemoveField(
-            model_name='cloudproject',
-            name='baseobject_ptr',
-        ),
-        migrations.RemoveField(
-            model_name='virtualserver',
-            name='baseobject_ptr',
-        ),
-        migrations.DeleteModel(
-            name='CloudProject',
-        ),
-        migrations.DeleteModel(
-            name='VirtualServer',
-        ),
+        migrations.SeparateDatabaseAndState(
+            database_operations=database_operations,
+            state_operations=state_operations
+        )
     ]
