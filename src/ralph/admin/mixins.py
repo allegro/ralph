@@ -87,6 +87,10 @@ class RalphAdminForm(RalphAdminFormMixin, forms.ModelForm):
     pass
 
 
+class RalphMPTTAdminForm(RalphAdminFormMixin, MPTTAdminForm):
+    pass
+
+
 class RalphAdminChecks(admin.checks.ModelAdminChecks):
     def _check_form(self, cls, model):
         """
@@ -104,10 +108,6 @@ class RalphAdminChecks(admin.checks.ModelAdminChecks):
                 id='admin.E016'
             )
         return result
-
-
-class RalphMPTTAdminForm(RalphAdminFormMixin, MPTTAdminForm):
-    pass
 
 
 class RalphAdminMixin(RalphAutocompleteMixin):
@@ -319,6 +319,10 @@ class RalphAdmin(
         return resource_class
 
 
+class RalphMPTTAdmin(MPTTModelAdmin, RalphAdmin):
+    form = RalphMPTTAdminForm
+
+
 class RalphTabularInline(
     RalphAutocompleteMixin,
     admin.TabularInline
@@ -347,10 +351,6 @@ class RalphTemplateView(
     RalphBaseTemplateView, metaclass=PermissionViewMetaClass
 ):
     pass
-
-
-class RalphMPTTAdmin(MPTTModelAdmin, RalphAdmin):
-    form = RalphMPTTAdminForm
 
 
 class BulkEditChangeListMixin(object):

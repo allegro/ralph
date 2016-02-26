@@ -1,0 +1,25 @@
+{% load i18n ralph_tags %}
+{% if summary_fields %}
+  <div class="row">
+    <div class="summary-table large-12 columns">
+      <table class="full">
+        <thead>
+          {% for field in summary_fields %}
+            <th>
+              {{ object|get_verbose_name:field }}
+            </th>
+          {% endfor %}
+        </thead>
+        <tbody>
+          <tr>
+            {% for field in summary_fields %}
+              <td>
+                {{ object|get_attr:field }}
+              </td>
+            {% endfor %}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}

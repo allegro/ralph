@@ -51,10 +51,11 @@ class Car2(models.Model):
 
 class Bar(models.Model):
     name = models.CharField(max_length=255)
-    created = models.DateTimeField()
+    created = models.DateTimeField(auto_now_add=True)
     date = models.DateField()
     price = models.DecimalField(max_digits=5, decimal_places=2)
     count = models.IntegerField(default=0)
+    foos = models.ManyToManyField(Foo, related_name='bars', blank=True)
 
 
 class Order(

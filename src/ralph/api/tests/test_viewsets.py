@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
 from urllib.parse import urlencode
 
@@ -21,7 +21,6 @@ from ralph.api.tests.api import (
 from ralph.api.viewsets import RalphAPIViewSet
 from ralph.tests import RalphTestCase
 from ralph.tests.factories import ManufacturerFactory
-from ralph.tests.models import Bar
 
 
 class ViewsetWithoutRalphPermission(RalphAPIViewSet):
@@ -50,21 +49,18 @@ class TestRalphViewset(RalphTestCase):
 
         Bar.objects.create(
             name='Bar11',
-            created=datetime(2015, 3, 1, 4, 30, 30),
             date=date(2015, 3, 1),
             price=Decimal('21.4'),
             count=1
         )
         Bar.objects.create(
             name='Bar22',
-            created=datetime(2014, 4, 1, 4, 30, 30),
             date=date(2014, 4, 1),
             price=Decimal('11.4'),
             count=2
         )
         Bar.objects.create(
             name='Bar33',
-            created=datetime(2013, 5, 1, 4, 30, 30),
             date=date(2013, 5, 1),
             price=Decimal('31.4'),
             count=3
@@ -166,12 +162,17 @@ class TestRalphViewset(RalphTestCase):
     def test_query_filters_datetimefield(self):
         request = self.request_factory.get('/api/bar')
         bvs = BarViewSet()
-        request.query_params = QueryDict(urlencode({'created__year': 2015}))
+        request.query_params = QueryDict(urlencode(
+            {'created__year': date.today().year})
+        )
         bvs.request = request
-        self.assertEqual(len(bvs.get_queryset()), 1)
+        self.assertEqual(len(bvs.get_queryset()), 3)
 
         request.query_params = QueryDict(
-            urlencode({'created__year': 2015, 'created__month': 3})
+            urlencode({
+                'date__year': 2014,
+                'created__month': date.today().month
+            })
         )
         bvs.request = request
         self.assertEqual(len(bvs.get_queryset()), 1)

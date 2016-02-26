@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
@@ -39,6 +40,7 @@ from ralph.data_importer import resources
 from ralph.lib.permissions.admin import PermissionAdminMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
+from ralph.operations.views import OperationViewReadOnlyForExisiting
 from ralph.supports.models import BaseObjectsSupport
 
 
@@ -112,6 +114,12 @@ class DataCenterAssetComponents(RalphDetailViewAdmin):
     inlines = [DataCenterComponentsInline]
 
 
+class DataCenterAssetOperation(OperationViewReadOnlyForExisiting):
+    name = 'dc_asset_operations'
+    url_name = 'data_center_asset_operations'
+    inlines = OperationViewReadOnlyForExisiting.admin_class.inlines
+
+
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(
     MulitiAddAdminMixin,
@@ -129,6 +137,7 @@ class DataCenterAssetAdmin(
         DataCenterAssetSecurityInfo,
         DataCenterAssetLicence,
         DataCenterAssetSupport,
+        DataCenterAssetOperation,
         NetworkView,
     ]
     show_transition_history = True
@@ -137,7 +146,7 @@ class DataCenterAssetAdmin(
         'status', 'barcode', 'model', 'sn', 'hostname', 'invoice_date',
         'invoice_no',
     ]
-    multiadd_info_fields = list_display + ['rack']
+    multiadd_summary_fields = list_display + ['rack']
     one_of_mulitvalue_required = ['sn', 'barcode']
     bulk_edit_list = list_display + [
         'rack', 'orientation', 'position',
