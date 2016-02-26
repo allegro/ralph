@@ -64,6 +64,20 @@ class RalphAutocompleteMixin(object):
         else:
             return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+    def formfield_for_manytomany(self, db_field, request=None, **kwargs):
+        if db_field.name in self.raw_id_fields:
+            kw = {'multi': True}
+            if db_field.name in self.raw_id_override_parent:
+                kw['rel_to'] = self.raw_id_override_parent[db_field.name]
+
+            kwargs['widget'] = widgets.AutocompleteWidget(
+                field=db_field, admin_site=self.admin_site,
+                using=kwargs.get('using'), request=request, **kw
+            )
+            return db_field.formfield(**kwargs)
+        else:
+            return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 
 class RalphAdminFormMixin(PermissionsPerObjectFormMixin, RequestFormMixin):
     pass

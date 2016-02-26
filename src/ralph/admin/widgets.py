@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import os
 from collections import defaultdict
 from itertools import chain, groupby
@@ -14,13 +15,15 @@ from django.forms.utils import flatatt
 from django.template import loader
 from django.template.context import RenderContext
 from django.template.defaultfilters import slugify, title
+from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
-from ralph.admin.autocomplete import DETAIL_PARAM, QUERY_PARAM
 from ralph.admin.helpers import get_field_by_relation_path
 
 ReadOnlyWidget = forms.TextInput(attrs={'readonly': 'readonly'})
+
+logger = logging.getLogger(__name__)
 
 
 class AdminDateWidget(forms.DateInput):
@@ -127,9 +130,12 @@ class PermissionsSelectWidget(forms.Widget):
 
 
 class AutocompleteWidget(forms.TextInput):
+    multivalue_separator = ','
+
     def __init__(self, field, admin_site, attrs=None, using=None, **kwargs):
         self.field = field
         self.rel = self.field.rel
+        self.multi = kwargs.get('multi', False)
         self.request = kwargs.get('request', None)
         self.rel_to = kwargs.get('rel_to') or field.rel.to
         self.admin_site = admin_site
@@ -138,9 +144,11 @@ class AutocompleteWidget(forms.TextInput):
 
     @property
     def media(self):
-        return forms.Media(js=[
-            os.path.join('src', 'js', 'ralph-autocomplete.js')
+        res = forms.Media(js=[
+            os.path.join('src', 'js', 'ralph-autocomplete.js'),
+            'admin/js/core.js',
         ])
+        return res
 
     def get_url_parameters(self):
         params = {
@@ -155,31 +163,83 @@ class AutocompleteWidget(forms.TextInput):
             args=args
         )
 
+    def value_from_datadict(self, data, files, name):
+        value = data.get(name)
+        if self.multi:
+            if value:
+                value = value.split(self.multivalue_separator)
+            else:
+                value = []
+        return value
+
+    def _get_model_search_fields(self, model):
+        """Gets `model`'s search fields."""
+        search_fields_tooltip = defaultdict(list)
+        for field_name in self.admin_site._registry[model].search_fields:
+            try:
+                field = get_field_by_relation_path(model, field_name)
+                key = str(model._meta.verbose_name)
+                search_fields_tooltip[key].append(
+                    str(field.verbose_name)
+                )
+            except FieldDoesNotExist as e:
+                logger.error(e)
+        return search_fields_tooltip
+
+    def get_search_fields(self):
+        polymorphic_descendants = getattr(
+            self.rel_to, '_polymorphic_descendants', []
+        )
+
+        if polymorphic_descendants:
+            # Check if model after which we are looking for is polymorphic
+            # if they are also looking for the models of its dependencies
+            # or by limit_models defined in model
+            polymorphic_models = polymorphic_descendants
+            limit_models = getattr(self.field, 'limit_models', [])
+            if limit_models:
+                polymorphic_models = [
+                    get_model(*i.split('.')) for i in limit_models
+                ]
+
+            search_fields_tooltip = defaultdict(list)
+            for related_model in polymorphic_models:
+                found = self._get_model_search_fields(related_model)
+                search_fields_tooltip.update(found)
+
+        else:
+            search_fields_tooltip = self._get_model_search_fields(
+                self.rel_to
+            )
+        return search_fields_tooltip
+
+    def render_search_fields_info(self, search_fields):
+        rows = ['Search by:<br>']
+        for model, fields in search_fields.items():
+            rows.append("{}:<br>".format(model.capitalize()))
+            for field in fields:
+                rows.append("- {}<br>".format(field))
+        return ''.join(rows)
+
     def render(self, name, value, attrs=None):
-        admin_model = self.admin_site._registry[self.rel_to]
         model_options = (
             self.rel_to._meta.app_label, self.rel_to._meta.model_name
         )
-        widget_options = {
-            'data-suggest-url': reverse(
-                'autocomplete-list', kwargs={
-                    'app': self.field.rel.related_model._meta.app_label,
-                    'model': self.field.rel.related_model._meta.model_name,
-                    'field': self.field.name
-                }
-            ),
-            'data-details-url': reverse(
-                'admin:{}_{}_autocomplete_details'.format(*model_options)
-            ),
-            'data-query-var': QUERY_PARAM,
-            'data-detail-var': DETAIL_PARAM,
-        }
-
         if attrs is None:
             attrs = {}
-        attrs.update({'type': 'hidden'})
-        widget_options['data-target-selector'] = '#' + attrs.get('id')
-        input_field = super().render(name, value, attrs)
+        attrs['name'] = name
+        if self.multi:
+            attrs['multi'] = 'true'
+            value = self.multivalue_separator.join(
+                force_text(v) for v in value
+            )
+        else:
+            value = value or ""
+
+        search_fields = self.get_search_fields()
+        search_fields_info = self.render_search_fields_info(
+            dict(search_fields)
+        )
 
         if self.rel_to in self.admin_site._registry:
             related_url = reverse(
@@ -189,92 +249,32 @@ class AutocompleteWidget(forms.TextInput):
                 ),
                 current_app=self.admin_site.name,
             ) + self.get_url_parameters()
-            searched_fields = []
-            searched_fields_tooltip = defaultdict(list)
-            polymorphic_descendants = getattr(
-                self.rel_to, '_polymorphic_descendants', []
-            )
 
-            if polymorphic_descendants:
-                # Check if model after which we are looking for is polymorphic
-                # if they are also looking for the models of its dependencies
-                # or by limit_models defined in model
-                polymorphic_models = polymorphic_descendants
-                limit_models = getattr(self.field, 'limit_models', [])
-                if limit_models:
-                    polymorphic_models = [
-                        get_model(*i.split('.')) for i in limit_models
-                    ]
-
-                for related_model in polymorphic_models:
-                    for field_name in self.admin_site._registry[
-                        related_model
-                    ].search_fields:
-                        field = get_field_by_relation_path(
-                            related_model, field_name
-                        )
-                        key = str(related_model._meta.verbose_name)
-                        searched_fields_tooltip[key].append(
-                            str(field.verbose_name)
-                        )
-            else:
-                for field_name in admin_model.search_fields:
-                    try:
-                        field = get_field_by_relation_path(
-                            self.rel_to, field_name
-                        )
-                        key = str(self.rel_to._meta.verbose_name)
-                        searched_fields_tooltip[key].append(
-                            str(field.verbose_name)
-                        )
-                        searched_fields.append(str(field.verbose_name))
-                    except FieldDoesNotExist:
-                        pass
-        current_object = None
-        if value:
-            current_object = self.rel_to._default_manager.select_related(
-                # https://docs.djangoproject.com/en/1.8/ref/models/querysets/#select-related
-                # we cannot pass empty list - this would select all related
-                # model - instead we pass None, which means that none of
-                # related models will be selected
-                *(admin_model.list_select_related or [None])
-            ).filter(
-                pk=value
-            ).first()
-        show_tooltip = hasattr(self.rel_to, 'autocomplete_tooltip')
         context = RenderContext({
             'model': str(self.rel_to._meta.verbose_name),
-            'current_object': current_object,
-            'attrs': flatatt(widget_options),
-            'related_url': related_url,
-            'name': name,
-            'input_field': input_field,
-            'searched_fields': sorted(
-                set(list(chain(*searched_fields_tooltip.values())))
+            'data_suggest_url': reverse(
+                'autocomplete-list', kwargs={
+                    'app': self.field.rel.related_model._meta.app_label,
+                    'model': self.field.rel.related_model._meta.model_name,
+                    'field': self.field.name
+                }
             ),
-            'searched_fields_tooltip': dict(searched_fields_tooltip),
-            'show_tooltip': show_tooltip,
+            'data_details_url': reverse(
+                'admin:{}_{}_autocomplete_details'.format(*model_options)
+            ),
+            'name': name or "",
+            'value': value,
+            'attrs': flatatt(attrs),
+            'related_url': related_url,
+            'search_fields_info': search_fields_info,
         })
+
         info = (self.rel_to._meta.app_label, self.rel_to._meta.model_name)
-        can_edit = self.admin_site._registry[self.rel_to].has_change_permission(
-            self.request
-        )
         is_polymorphic = getattr(self.rel_to, 'is_polymorphic', False)
-        if is_polymorphic and current_object:
-            info = (
-                current_object._meta.app_label,
-                current_object._meta.model_name
-            )
-        if value and can_edit:
-            context['change_related_template_url'] = self.get_related_url(
-                info, 'change', value,
-            )
         can_add = self.admin_site._registry[self.rel_to].has_add_permission(
             self.request
         )
         if not is_polymorphic and can_add:
             context['add_related_url'] = self.get_related_url(info, 'add')
-        if show_tooltip and current_object:
-            context['tooltip'] = current_object.autocomplete_tooltip
         template = loader.get_template('admin/widgets/autocomplete.html')
         return template.render(context)
