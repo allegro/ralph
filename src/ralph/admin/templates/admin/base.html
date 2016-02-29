@@ -77,26 +77,7 @@
       {{ media.js }}
       <!-- extra media -->
       {% block extra_scripts %}{% endblock %}
-      {% block admin_change_form_document_ready %}
-        <script type="text/javascript">
-          (function($) {
-            $(document).ready(function() {
-              $('.add-related').click(function(e) {
-                e.preventDefault();
-                showAddAnotherPopup(this);
-              });
-              $('.related-lookup').click(function(e) {
-                e.preventDefault();
-                showRelatedObjectLookupPopup(this);
-              });
-              $('.change-related').click(function(e) {
-                e.preventDefault();
-                showRelatedObjectPopup(this);
-              });
-            });
-          })(django.jQuery);
-        </script>
-      {% endblock %}
+      {% block admin_change_form_document_ready %}{% endblock %}
     {% endblock %}
     {% download_attachment %}
   </body>

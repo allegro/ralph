@@ -323,7 +323,13 @@ class RalphMPTTAdmin(MPTTModelAdmin, RalphAdmin):
     form = RalphMPTTAdminForm
 
 
+class RalphInlineMixin(object):
+    # display change link for inline row in popup
+    change_link_url_params = '_popup=1'
+
+
 class RalphTabularInline(
+    RalphInlineMixin,
     RalphAutocompleteMixin,
     admin.TabularInline
 ):
@@ -331,6 +337,7 @@ class RalphTabularInline(
 
 
 class RalphStackedInline(
+    RalphInlineMixin,
     RalphAutocompleteMixin,
     admin.StackedInline
 ):

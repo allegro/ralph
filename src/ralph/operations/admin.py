@@ -2,7 +2,8 @@
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, RalphMPTTAdmin, RalphTabularInline, register
+from ralph.admin import RalphAdmin, RalphMPTTAdmin, register
+from ralph.admin.mixins import RalphAdminForm
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer import resources
 from ralph.operations.models import (
@@ -26,10 +27,15 @@ class OperationTypeAdmin(RalphMPTTAdmin):
         return False
 
 
-class OperationObjects(RalphTabularInline):
-        model = Operation.base_objects.through
-        raw_id_fields = ('baseobject',)
-        extra = 1
+class OperationAdminForm(RalphAdminForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _operation_type_subtree = self.instance._operation_type_subtree
+        if _operation_type_subtree:
+            root = OperationType.objects.get(pk=_operation_type_subtree)
+            self.fields['type'].queryset = self.fields['type'].queryset.filter(
+                pk__in=root.get_descendants(include_self=True)
+            )
 
 
 @register(Operation)
@@ -37,11 +43,23 @@ class OperationAdmin(AttachmentsMixin, RalphAdmin):
     search_fields = ['title', 'description', 'ticket_id']
     list_filter = ['type', 'status']
     list_display = ['title', 'type', 'status', 'asignee', 'issue_url']
-    # TODO: waiting for m2m widget with base_objects
-    raw_id_fields = ['asignee']
-    exclude = ['base_objects']
-    inlines = [OperationObjects]
+    raw_id_fields = ['asignee', 'base_objects']
     resource_class = resources.OperationResource
+    form = OperationAdminForm
+
+    fieldsets = (
+        (_('Basic info'), {
+            'fields': (
+                'type', 'title', 'status', 'asignee', 'description',
+                'ticket_id', 'created_date', 'update_date', 'resolved_date',
+            )
+        }),
+        (_('Objects'), {
+            'fields': (
+                'base_objects',
+            )
+        }),
+    )
 
     def issue_url(self, obj):
         return '<a href="{issue_tracker}{issue_id}" target="_blank">{issue_id}</a>'.format(  # noqa

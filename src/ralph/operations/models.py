@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
+from django.forms import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
@@ -90,8 +91,24 @@ class Operation(AdminAbsoluteUrlMixin, TaggableMixin, models.Model):
         blank=True,
     )
 
+    _operation_type_subtree = None
+
     def __str__(self):
         return self.title
+
+    def clean(self):
+        super().clean()
+        # check if operation type is in valid subtree
+        if self._operation_type_subtree and self.type:
+            type_root = OperationType.objects.get(
+                pk=self._operation_type_subtree
+            )
+            if not self.type.is_descendant_of(type_root):
+                raise ValidationError(
+                    'Invalid Operation type. Choose descendant of {}'.format(
+                        self._operation_type_subtree
+                    )
+                )
 
 
 class OperationDescendantManager(models.Manager):
@@ -110,6 +127,7 @@ class OperationDescendantManager(models.Manager):
 
 class Change(Operation):
     objects = OperationDescendantManager(OperationType.choices.change)
+    _operation_type_subtree = OperationType.choices.change
 
     class Meta:
         proxy = True
@@ -117,6 +135,7 @@ class Change(Operation):
 
 class Incident(Operation):
     objects = OperationDescendantManager(OperationType.choices.incident)
+    _operation_type_subtree = OperationType.choices.incident
 
     class Meta:
         proxy = True
@@ -124,6 +143,7 @@ class Incident(Operation):
 
 class Problem(Operation):
     objects = OperationDescendantManager(OperationType.choices.problem)
+    _operation_type_subtree = OperationType.choices.problem
 
     class Meta:
         proxy = True
@@ -131,6 +151,7 @@ class Problem(Operation):
 
 class Failure(Operation):
     objects = OperationDescendantManager(OperationType.choices.failure)
+    _operation_type_subtree = OperationType.choices.failure
 
     class Meta:
         proxy = True
