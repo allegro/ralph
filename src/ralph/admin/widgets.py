@@ -228,7 +228,7 @@ class AutocompleteWidget(forms.TextInput):
         if attrs is None:
             attrs = {}
         attrs['name'] = name
-        if self.multi:
+        if self.multi and value:
             attrs['multi'] = 'true'
             value = self.multivalue_separator.join(
                 force_text(v) for v in value
