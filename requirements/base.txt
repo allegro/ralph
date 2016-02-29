@@ -1,3 +1,4 @@
+-r openstack.txt
 Django==1.8.9
 dj.choices==0.10.0
 django-extensions==1.5.9
