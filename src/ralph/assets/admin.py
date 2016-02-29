@@ -45,6 +45,7 @@ class ServiceAdmin(RalphAdmin):
     filter_horizontal = ['business_owners', 'technical_owners']
     search_fields = ['name', 'uid']
     raw_id_fields = ['profit_center', 'support_team', 'business_owners']
+    resource_class = resources.ServiceResource
 
 
 @register(Manufacturer)
