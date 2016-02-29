@@ -11,3 +11,6 @@ ignore-paths:
     - docs
 ignore-patterns:
     - (^|/)docs(/|$)
+pylint:
+    disable:
+        - E1002
