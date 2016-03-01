@@ -220,19 +220,22 @@ class BackOfficeAsset(Regionalizable, Asset):
     @classmethod
     @transition_action(
         form_fields={
-            'licence': {
-                'field': forms.CharField(label=_('Licence')),
+            'licences': {
+                'field': forms.ModelMultipleChoiceField(
+                    queryset=Licence.objects.all(), label=_('Licence')
+                ),
                 'autocomplete_field': 'licence',
-                'autocomplete_model': 'licences.BaseObjectLicence'
+                'autocomplete_model': 'licences.BaseObjectLicence',
+                'widget_options': {'multi': True},
             }
         }
     )
     def assign_licence(cls, instances, request, **kwargs):
         for instance in instances:
-            BaseObjectLicence.objects.get_or_create(
-                base_object=instance,
-                licence=Licence.objects.get(pk=kwargs['licence'])
-            )
+            for obj in kwargs['licences']:
+                BaseObjectLicence.objects.get_or_create(
+                    base_object=instance, licence_id=obj.id,
+                )
 
     @classmethod
     @transition_action(

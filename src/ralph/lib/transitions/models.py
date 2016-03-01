@@ -96,9 +96,14 @@ def _get_history_dict(data, instance, runned_funcs):
             value = v
             try:
                 field = get_field_by_relation_path(instance, k)
-                field_name = field.verbose_name
-                if field.rel:
+                if isinstance(field, models.ForeignKey):
                     value = str(field.rel.to.objects.get(pk=v))
+                    field_name = field.verbose_name
+                elif isinstance(field, models.ManyToOneRel):
+                    value = ', '.join(map(str, v))
+                    field_name = v.model._meta.verbose_name_plural
+                else:
+                    field_name = field.verbose_name
             except FieldDoesNotExist:
                 field = func.form_fields[k]['field']
                 if isinstance(field, forms.ChoiceField):
