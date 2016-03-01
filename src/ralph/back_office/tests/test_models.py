@@ -27,6 +27,7 @@ from ralph.lib.transitions.models import (
     TransitionNotAllowedError
 )
 from ralph.lib.transitions.tests import TransitionTestCase
+from ralph.licences.tests.factories import LicenceFactory
 from ralph.reports.factories import ReportTemplateFactory
 from ralph.tests import RalphTestCase
 from ralph.tests.factories import UserFactory
@@ -295,6 +296,20 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             BackOfficeAsset.objects.filter(pk=bo_asset_pk).exists()
         )
         self.assertEqual(dc_asset.hostname, hostname)
+
+    def test_assign_many_licences(self):
+        asset = BackOfficeAssetFactory()
+        licences = [LicenceFactory() for i in range(2)]
+        self.assertFalse(asset.licences.all())
+
+        BackOfficeAsset.assign_licence(
+            instances=[asset], request=None, licences=licences,
+        )
+
+        self.assertCountEqual(
+            [base_obj_lic.licence.id for base_obj_lic in asset.licences.all()],
+            [licence.id for licence in licences],
+        )
 
     def test_change_hostname(self):
         _, transition, _ = self._create_transition(

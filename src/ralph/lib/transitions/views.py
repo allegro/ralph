@@ -66,6 +66,7 @@ class TransitionViewMixin(object):
                         field=field,
                         admin_site=ralph_site,
                         request=self.request,
+                        **options.get('widget_options', {})
                     )
                 else:
                     options['field'].widget.request = self.request

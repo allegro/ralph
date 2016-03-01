@@ -229,6 +229,7 @@ class AutocompleteWidget(forms.TextInput):
             attrs = {}
         attrs['name'] = name
         if self.multi:
+            value = value or []
             attrs['multi'] = 'true'
             value = self.multivalue_separator.join(
                 force_text(v) for v in value
