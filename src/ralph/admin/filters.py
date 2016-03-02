@@ -3,8 +3,10 @@ import re
 from datetime import datetime
 from functools import lru_cache
 
+from django.contrib import messages
 from django.contrib.admin import SimpleListFilter
 from django.contrib.admin.filters import FieldListFilter
+from django.contrib.admin.options import IncorrectLookupParameters
 from django.contrib.admin.utils import get_model_from_relation
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -317,7 +319,16 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
                 q_param |= Q(**{'{}__isnull'.format(self.field_path): True})
             else:
                 q_param |= Q(**{self.field_path: id_})
-        queryset = queryset.filter(q_param)
+        try:
+            queryset = queryset.filter(q_param)
+        except ValueError:
+            messages.warning(
+                request, _('Incorrect value in "%(field_name)s" filter') % {
+                    'field_name': self.title
+                }
+            )
+            raise IncorrectLookupParameters()
+
         return queryset
 
     def get_related_url(self):

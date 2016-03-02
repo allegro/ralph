@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import datetime
 
+from django.contrib.admin.options import IncorrectLookupParameters
+from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.test import RequestFactory, TestCase
 
@@ -364,3 +366,23 @@ class AdminFiltersTestCase(TestCase):
         self.assertTrue(isinstance(
             filters[0][0], RelatedAutocompleteFieldListFilter)
         )
+
+    def test_incorrect_value_related(self):
+        request = RequestFactory().get('/')
+        # ugly hack from https://code.djangoproject.com/ticket/17971
+        setattr(request, 'session', 'session')
+        messages = FallbackStorage(request)
+        setattr(request, '_messages', messages)
+
+        related_filter = RelatedAutocompleteFieldListFilter(
+            field=Car._meta.get_field('manufacturer'),
+            request=request,
+            params={
+                'manufacturer': 'string',
+            },
+            model=Car,
+            model_admin=CarAdmin,
+            field_path='manufacturer'
+        )
+        with self.assertRaises(IncorrectLookupParameters):
+            related_filter.queryset(request, Car.objects.all())
