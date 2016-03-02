@@ -4,19 +4,21 @@ env:
     global:
         - DATABASE_USER=travis
         - DATABASE_PASSWORD=travis
+        - DJANGO_CURRENT_VERSION=1.8.10
     matrix:
-        - DJANGO_VERSION=1.8.8 TEST_DB_ENGINE=sqlite
-        - DJANGO_VERSION=1.8.8 TEST_DB_ENGINE=mysql
-        - DJANGO_VERSION=1.8.8 TEST_DB_ENGINE=psql
-        - DJANGO_VERSION=1.9 TEST_DB_ENGINE=sqlite
-        - DJANGO_VERSION=1.9 TEST_DB_ENGINE=mysql
-        - DJANGO_VERSION=1.9 TEST_DB_ENGINE=psql
+        - DJANGO_VERSION=1.8.10 TEST_DB_ENGINE=sqlite
+        - DJANGO_VERSION=1.8.10 TEST_DB_ENGINE=mysql
+        - DJANGO_VERSION=1.8.10 TEST_DB_ENGINE=psql
+        # Django 1.9 build will not pass until #2132 will be merged
+        # - DJANGO_VERSION=1.9 TEST_DB_ENGINE=sqlite
+        # - DJANGO_VERSION=1.9 TEST_DB_ENGINE=mysql
+        # - DJANGO_VERSION=1.9 TEST_DB_ENGINE=psql
 
-matrix:
-  allow_failures:
-    - env: DJANGO_VERSION=1.9 TEST_DB_ENGINE=mysql
-    - env: DJANGO_VERSION=1.9 TEST_DB_ENGINE=sqlite
-    - env: DJANGO_VERSION=1.9 TEST_DB_ENGINE=psql
+# matrix:
+#   allow_failures:
+#     - env: DJANGO_VERSION=1.9 TEST_DB_ENGINE=mysql
+#     - env: DJANGO_VERSION=1.9 TEST_DB_ENGINE=sqlite
+#     - env: DJANGO_VERSION=1.9 TEST_DB_ENGINE=psql
 
 services:
     - docker
@@ -28,7 +30,7 @@ cache:
 
 python:
     - "3.4"
-    - "3.5"
+    # - "3.5"  # temporary removed to speedup biuld (python3.4 should be now used on production)
 
 before_install:
     - pip install flake8 isort
@@ -70,13 +72,13 @@ deploy:
         on:
             branch: ng
             python: 3.4
-            condition: $TEST_DB_ENGINE = mysql
+            condition: $TEST_DB_ENGINE = mysql && $DJANGO_VERSION = $DJANGO_CURRENT_VERSION
     -   provider: script
         script: scripts/travis_deploy_bintray.sh
         on:
             branch: ng
             python: 3.4
-            condition: $TEST_DB_ENGINE = mysql
+            condition: $TEST_DB_ENGINE = mysql && $DJANGO_VERSION = $DJANGO_CURRENT_VERSION
 
 notifications:
   webhooks:

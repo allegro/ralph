@@ -13,12 +13,10 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 SRC_DIR="$DIR/.."
 
 # run this only for main build
-if [[ "${TRAVIS_JOB_NUMBER: -1}" == "1" ]]; then
-    echo "deploying docker image"
-    docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
-    docker build -t $DOCKER_IMAGE:$NEW_TAG .
-    docker tag $DOCKER_IMAGE:$NEW_TAG $DOCKER_IMAGE:snapshot_latest
-    echo "pushing docker images: $DOCKER_IMAGE:$NEW_TAG and $DOCKER_IMAGE:snapshot_latest"
-    docker push $DOCKER_IMAGE:$NEW_TAG
-    docker push $DOCKER_IMAGE:snapshot_latest
-fi
+echo "deploying docker image"
+docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+docker build -t $DOCKER_IMAGE:$NEW_TAG .
+docker tag $DOCKER_IMAGE:$NEW_TAG $DOCKER_IMAGE:snapshot_latest
+echo "pushing docker images: $DOCKER_IMAGE:$NEW_TAG and $DOCKER_IMAGE:snapshot_latest"
+docker push $DOCKER_IMAGE:$NEW_TAG
+docker push $DOCKER_IMAGE:snapshot_latest
