@@ -3,7 +3,9 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-from taggit.managers import TaggableManager
+from taggit.managers import TaggableManager as TaggableManagerOriginal
+
+from ralph.lib.mixins.fields import TaggitTagField
 
 
 class NamedMixin(models.Model):
@@ -69,6 +71,21 @@ class AdminAbsoluteUrlMixin(object):
                 self._meta.app_label, self._meta.model_name
             ), args=(self.pk,)
         )
+
+
+class TaggableManager(TaggableManagerOriginal):
+    def value_from_object(self, instance):
+        """
+        Fix to work properly with reversion (or more generally, with
+        `django.forms.models.model_to_dict` - TaggableManager is not
+        ManyToManyField instance, so this result of this method is dumped
+        directly to resulting dict.
+        """
+        qs = super().value_from_object(instance)
+        return list(qs.values_list('tag__name', flat=True))
+
+    def formfield(self, form_class=TaggitTagField, **kwargs):
+        return super().formfield(form_class, **kwargs)
 
 
 class TaggableMixin(models.Model):
