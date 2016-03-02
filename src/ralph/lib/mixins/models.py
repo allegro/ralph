@@ -4,6 +4,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from taggit.managers import TaggableManager
+from taggit.forms import TagField
 
 
 class NamedMixin(models.Model):
@@ -71,8 +72,25 @@ class AdminAbsoluteUrlMixin(object):
         )
 
 
+class TaggitTagField(TagField):
+    def has_changed(self, initial, data):
+        if initial and data:
+            initial = set(initial.values_list('tag__name', flat=True))
+            data = set([i.strip() for i in data.split(',')])
+            compare = len(initial) == len(data) and initial - data
+
+            return compare
+        return False
+
+
+class TaggitTaggableManager(TaggableManager):
+
+    def formfield(self, form_class=TaggitTagField, **kwargs):
+        return super().formfield(form_class, **kwargs)
+
+
 class TaggableMixin(models.Model):
-    tags = TaggableManager(blank=True)
+    tags = TaggitTaggableManager(blank=True)
 
     class Meta:
         abstract = True
