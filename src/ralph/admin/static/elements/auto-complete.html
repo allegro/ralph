@@ -199,10 +199,15 @@ Example:
             evt.currentTarget.getValue().length < this.fireThreshold
         ) return false;
         // TODO: find out why regular syntax doesn't work
-        this.$['by-query-ajax'].params = {
-          "q": evt.target.value
-        };
-        this.$['by-query-ajax'].generateRequest();
+        if (typeof this._lastQuery !== "undefined") {
+          this.cancelAsync(this._lastQuery);
+        }
+        this._lastQuery = this.async(function() {
+          this.$['by-query-ajax'].params = {
+            "q": evt.target.value
+          };
+          this.$['by-query-ajax'].generateRequest();
+        }, 500);
         this.hiddenAjaxError = true;
         this.hiddenSpinner = false;
         this.hideNoResults = true;
@@ -270,6 +275,7 @@ Example:
         this.$['query-getter'].setFocusInput();
       },
       populateMenu: function(evt, obj) {
+        this.$.suggestList._setFocusedItem(0);
         this.menuItems = [];
         this.hiddenSpinner = true;
         var foundItems = obj.xhr.response['results'];
@@ -356,6 +362,7 @@ Example:
           this.$['query-getter'].hideInput();
         }
         this.reloadBadges();
+        this.fire('autocomplete-update', {"value": this.value});
       }
     });
   </script>

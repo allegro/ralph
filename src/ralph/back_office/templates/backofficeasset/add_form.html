@@ -4,7 +4,7 @@
   (function($) {
     $(function () {
       "use strict";
-      $('#id_model').change(function() {
+      $('#id_model').bind("autocomplete-update", function(evt) {
         var url = '{% url 'assetmodel-list' %}' + $(this).val();
         $.ajax({
           url: url,
