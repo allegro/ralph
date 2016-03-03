@@ -22,6 +22,7 @@ from ralph.admin.autocomplete import AjaxAutocompleteMixin
 from ralph.admin.helpers import get_field_by_relation_path
 from ralph.admin.views.main import BULK_EDIT_VAR, BULK_EDIT_VAR_IDS
 from ralph.helpers import add_request_to_form
+from ralph.lib.mixins.fields import TicketIdField, TicketIdFieldWidget
 from ralph.lib.mixins.forms import RequestFormMixin
 from ralph.lib.permissions.admin import PermissionsPerObjectFormMixin
 from ralph.lib.permissions.models import PermByFieldMixin
@@ -30,6 +31,7 @@ from ralph.lib.permissions.views import PermissionViewMetaClass
 FORMFIELD_FOR_DBFIELD_DEFAULTS = {
     models.DateField: {'widget': widgets.AdminDateWidget},
     models.DateTimeField: {'widget': widgets.ReadOnlyWidget},
+    TicketIdField: {'widget': TicketIdFieldWidget},
 }
 
 

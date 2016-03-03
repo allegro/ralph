@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 from django import forms
+from django.conf import settings
+from django.contrib.admin.widgets import AdminTextInputWidget
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models.loading import get_model
+from django.forms.utils import flatatt
+from django.utils.html import format_html, smart_urlquote
+from django.utils.translation import ugettext_lazy as _
 
 
 class NullableFormFieldMixin(object):
@@ -60,6 +65,55 @@ class NullableGenericIPAddressField(
     models.GenericIPAddressField
 ):
     _formfield_class = NullableGenericIPAddressFormField
+
+
+class TicketIdField(NullableCharField):
+    def __init__(
+        self,
+        verbose_name=_('ticket ID'),
+        help_text=_('External system ticket identifier'),
+        null=True,
+        blank=True,
+        max_length=200,
+        *args, **kwargs
+    ):
+        super().__init__(
+            verbose_name=verbose_name,
+            help_text=help_text,
+            null=null,
+            blank=blank,
+            max_length=max_length,
+            *args, **kwargs
+        )
+
+    def _strip_issue_tracker_url(self, value):
+        """
+        Strip (generic) issue tracker url from the beggining if url is
+        passed into ticket_id
+        """
+        if (
+            value and
+            value.startswith(settings.ISSUE_TRACKER_URL)
+        ):
+            value = value[len(settings.ISSUE_TRACKER_URL):]
+        return value.strip()
+
+    def clean(self, value, model_instance):
+        value = self._strip_issue_tracker_url(value)
+        return super().clean(value, model_instance)
+
+
+class TicketIdFieldWidget(AdminTextInputWidget):
+    def render(self, name, value, attrs=None):
+        html = super().render(name, value, attrs)
+        if value:
+            url = '{}{}'.format(settings.ISSUE_TRACKER_URL, value)
+            final_attrs = {'href': smart_urlquote(url), 'target': '_blank'}
+            html = format_html(
+                '<div class="ticket-url">{}<a{}>{}</a></div>',
+                html, flatatt(final_attrs), url,
+            )
+        return html
 
 
 class BaseObjectForeignKey(models.ForeignKey):

@@ -535,6 +535,17 @@ class OperationResource(RalphModelResource):
         attribute='type',
         widget=ImportedForeignKeyWidget(OperationType),
     )
+    base_objects = fields.Field(
+        column_name='base_objects',
+        attribute='base_objects',
+        widget=widgets.ManyToManyWidget(base.BaseObject),
+        default=[],
+    )
+    asignee = fields.Field(
+        column_name='asignee',
+        attribute='asignee',
+        widget=UserWidget(get_user_model()),
+    )
 
     class Meta:
         model = Operation

@@ -11,6 +11,7 @@ from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Region
+from ralph.admin.autocomplete import AutocompleteTooltipMixin
 from ralph.admin.sites import ralph_site
 from ralph.admin.widgets import AutocompleteWidget
 from ralph.assets.models.assets import Asset, NamedMixin
@@ -258,7 +259,7 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
         )
 
 
-class DataCenterAsset(Asset):
+class DataCenterAsset(AutocompleteTooltipMixin, Asset):
 
     rack = models.ForeignKey(Rack, null=True, blank=True)
     status = TransitionField(
@@ -324,6 +325,12 @@ class DataCenterAsset(Asset):
     #         is_management=True
     #     ).order_by('-address').first()
     #     return management_ip.address if management_ip else ''
+
+    autocomplete_tooltip_fields = [
+        'rack',
+        'barcode',
+        'sn',
+    ]
 
     class Meta:
         verbose_name = _('data center asset')
