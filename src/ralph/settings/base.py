@@ -277,5 +277,5 @@ MAP_IMPORTED_ID_TO_NEW_ID = False
 
 OPENSTACK_INSTANCES = json.loads(os.environ.get('OPENSTACK_INSTANCES', '[]'))
 
-# issue tracker url for Operations urls (issues ids)
-ISSUE_TRACKER_URL = ''
+# issue tracker url for Operations urls (issues ids) - should end with /
+ISSUE_TRACKER_URL = os.environ.get('ISSUE_TRACKER_URL', '')

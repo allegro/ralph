@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphMPTTAdmin, register
@@ -42,7 +41,7 @@ class OperationAdminForm(RalphAdminForm):
 class OperationAdmin(AttachmentsMixin, RalphAdmin):
     search_fields = ['title', 'description', 'ticket_id']
     list_filter = ['type', 'status']
-    list_display = ['title', 'type', 'status', 'asignee', 'issue_url']
+    list_display = ['title', 'type', 'status', 'asignee', 'get_ticket_url']
     raw_id_fields = ['asignee', 'base_objects']
     resource_class = resources.OperationResource
     form = OperationAdminForm
@@ -61,13 +60,13 @@ class OperationAdmin(AttachmentsMixin, RalphAdmin):
         }),
     )
 
-    def issue_url(self, obj):
-        return '<a href="{issue_tracker}{issue_id}" target="_blank">{issue_id}</a>'.format(  # noqa
-            issue_tracker=settings.ISSUE_TRACKER_URL,
-            issue_id=obj.ticket_id
+    def get_ticket_url(self, obj):
+        return '<a href="{ticket_url}" target="_blank">{ticket_id}</a>'.format(
+            ticket_url=obj.ticket_url,
+            ticket_id=obj.ticket_id
         )
-    issue_url.allow_tags = True
-    issue_url.short_description = _('Issue')
+    get_ticket_url.allow_tags = True
+    get_ticket_url.short_description = _('ticket ID')
 
 
 @register(Change)
@@ -87,4 +86,6 @@ class ProblemAdmin(OperationAdmin):
 
 @register(Failure)
 class FailureAdmin(OperationAdmin):
-    pass
+    list_filter = OperationAdmin.list_filter + [
+        'base_objects__asset__model__manufacturer'
+    ]
