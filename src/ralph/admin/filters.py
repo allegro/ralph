@@ -391,6 +391,28 @@ class TreeRelatedFieldListFilter(RelatedFieldListFilter):
             level_indicator + ' ' + conditional_escape(smart_text(obj))
         )
 
+    def queryset(self, request, queryset):
+        """
+        Filter in whole subtree of TreeForeignKey
+        """
+        if self.value():
+            try:
+                root = self.field.rel.to.objects.get(pk=self.value())
+            except self.field.rel.to.DoesNotExist:
+                messages.warning(
+                    request, _('Incorrect value in "%(field_name)s" filter') % {
+                        'field_name': self.title
+                    }
+                )
+                raise IncorrectLookupParameters()
+            else:
+                queryset = queryset.filter(**{
+                    self.field_path + '__in': root.get_descendants(
+                        include_self=True
+                    )
+                })
+        return queryset
+
 
 class LiquidatedStatusFilter(SimpleListFilter):
 
