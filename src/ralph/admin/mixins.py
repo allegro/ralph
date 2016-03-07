@@ -24,7 +24,10 @@ from ralph.admin.views.main import BULK_EDIT_VAR, BULK_EDIT_VAR_IDS
 from ralph.helpers import add_request_to_form
 from ralph.lib.mixins.fields import TicketIdField, TicketIdFieldWidget
 from ralph.lib.mixins.forms import RequestFormMixin
-from ralph.lib.permissions.admin import PermissionsPerObjectFormMixin
+from ralph.lib.permissions.admin import (
+    PermissionAdminMixin,
+    PermissionsPerObjectFormMixin
+)
 from ralph.lib.permissions.models import PermByFieldMixin
 from ralph.lib.permissions.views import PermissionViewMetaClass
 
@@ -277,6 +280,7 @@ class RalphAdminMixin(RalphAutocompleteMixin):
 
 
 class RalphAdmin(
+    PermissionAdminMixin,
     ImportExportModelAdmin,
     AjaxAutocompleteMixin,
     RalphAdminMixin,

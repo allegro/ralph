@@ -37,7 +37,6 @@ from ralph.data_center.models.physical import (
 from ralph.data_center.models.virtual import Database, VIP
 from ralph.data_center.views.ui import DataCenterAssetSecurityInfo
 from ralph.data_importer import resources
-from ralph.lib.permissions.admin import PermissionAdminMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
 from ralph.operations.views import OperationViewReadOnlyForExisiting
@@ -125,7 +124,6 @@ class DataCenterAssetAdmin(
     MulitiAddAdminMixin,
     TransitionAdminMixin,
     BulkEditChangeListMixin,
-    PermissionAdminMixin,
     AttachmentsMixin,
     AssetInvoiceReportMixin,
     RalphAdmin,

@@ -7,7 +7,6 @@ from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer import resources
-from ralph.lib.permissions.admin import PermissionAdminMixin
 from ralph.supports.models import BaseObjectsSupport, Support, SupportType
 
 
@@ -32,7 +31,6 @@ class BaseObjectSupportView(RalphDetailViewAdmin):
 class SupportAdmin(
     AttachmentsMixin,
     BulkEditChangeListMixin,
-    PermissionAdminMixin,
     RalphAdmin
 ):
 

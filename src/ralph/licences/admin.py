@@ -8,7 +8,6 @@ from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.assets.invoice_report import InvoiceReportMixin
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer import resources
-from ralph.lib.permissions.admin import PermissionAdminMixin
 from ralph.licences.models import (
     BaseObjectLicence,
     Licence,
@@ -53,7 +52,6 @@ class LicenceUserView(RalphDetailViewAdmin):
 class LicenceAdmin(
     AttachmentsMixin,
     BulkEditChangeListMixin,
-    PermissionAdminMixin,
     InvoiceReportMixin,
     RalphAdmin
 ):
@@ -118,18 +116,12 @@ class LicenceAdmin(
 
 
 @register(LicenceType)
-class LicenceTypeAdmin(
-    PermissionAdminMixin,
-    RalphAdmin
-):
+class LicenceTypeAdmin(RalphAdmin):
 
     search_fields = ['name']
 
 
 @register(Software)
-class Software(
-    PermissionAdminMixin,
-    RalphAdmin
-):
+class Software(RalphAdmin):
 
     search_fields = ['name']
