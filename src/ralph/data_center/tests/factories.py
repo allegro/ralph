@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 import factory
 from factory.django import DjangoModelFactory
+from factory.fuzzy import FuzzyDecimal, FuzzyText
 
 from ralph.assets.models.choices import AssetSource
 from ralph.assets.tests.factories import (
@@ -86,9 +87,9 @@ class DataCenterAssetFactory(DjangoModelFactory):
     source = factory.Iterator([
         AssetSource.shipment.id, AssetSource.salvaged.id
     ])
-    price = factory.fuzzy.FuzzyDecimal(10, 300)
+    price = FuzzyDecimal(10, 300)
     management_ip = factory.Faker('ipv4')
-    management_hostname = factory.fuzzy.FuzzyText(
+    management_hostname = FuzzyText(
         prefix='ralph.', suffix='.allegro.pl', length=40
     )
 
