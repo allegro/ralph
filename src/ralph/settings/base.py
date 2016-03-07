@@ -249,6 +249,8 @@ REDIS_CONNECTION = {
     'PASSWORD': os.environ.get('REDIS_PASSWORD', ''),
 }
 
+# set to False to turn off cache decorator
+USE_CACHE = os_env_true('USE_CACHE', 'True')
 
 SENTRY_ENABLED = os_env_true('SENTRY_ENABLED')
 SENTRY_JS_DSN = os.environ.get('SENTRY_JS_DSN', None)

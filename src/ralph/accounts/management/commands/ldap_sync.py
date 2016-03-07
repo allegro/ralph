@@ -2,6 +2,7 @@
 import logging
 import sys
 import textwrap
+from collections import defaultdict
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -9,6 +10,8 @@ from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand
 from django.utils.lru_cache import lru_cache
 from ldap.controls import SimplePagedResultsControl
+
+from ralph.helpers import cache
 
 logger = logging.getLogger(__name__)
 LDAP_RESULTS_PAGE_SIZE = 100
@@ -49,40 +52,55 @@ class LDAPConnectionManager(object):
         self.conn.unbind_s()
 
 
+@cache(seconds=600)
+def get_nested_groups():
+    """
+    Fetching users in nested group based on custom LDAP filter
+    (AUTH_LDAP_NESTED_FILTER) e.g. (memberOf:{}). AUTH_LDAP_NESTED_FILTER
+    is a simple dictonary where key is the name of group in DB, the value
+    contains DN for nested group.
+    """
+    # mapping from django group name to set of users (usernames) belonging to it
+    group_users = {}
+    # mapping from user (username) to set of groups DNs to which he belongs to
+    users_groups = defaultdict(set)
+    nested_groups = getattr(settings, 'AUTH_LDAP_NESTED_GROUPS', None)
+    if not nested_groups:
+        return
+    nested_filter = getattr(
+        settings, 'AUTH_LDAP_NESTED_FILTER', '(memberOf:{})'
+    )
+    logger.info('Fetching nested groups from LDAP')
+    with LDAPConnectionManager() as conn:
+        for ldap_group_name, ralph_group_name in nested_groups.items():
+            ldap_filter = nested_filter.format(ldap_group_name)
+            logger.info('Fetching {}'.format(ralph_group_name))
+            users = conn.search_s(
+                settings.AUTH_LDAP_USER_SEARCH_BASE,
+                ldap.SCOPE_SUBTREE,
+                '(&(objectClass={}){})'.format(
+                    settings.LDAP_SERVER_OBJECT_USER_CLASS, ldap_filter
+                )
+            )
+            logger.info('{} fetched'.format(ralph_group_name))
+            group_users[ralph_group_name] = set([
+                u[1][settings.AUTH_LDAP_USER_USERNAME_ATTR][0].decode('utf-8')  # noqa
+                for u in users
+            ])
+            for username in group_users[ralph_group_name]:
+                # notice group DN here, not Django group name!
+                users_groups[username].add(ldap_group_name)
+    return group_users, users_groups
+
+
 class NestedGroups(object):
     """
     Class fetch nested groups and mapping them to standard Django's
     group (get or create). django_auth_ldap and their class for nested
     group (NestedGroupOfNamesType) are inefficient.
     """
-    def __init__(self, backend):
-        """
-        Fetching users in nested group based on custom LDAP filter
-        (AUTH_LDAP_NESTED_FILTER) e.g. (memberOf:{}). AUTH_LDAP_NESTED_FILTER
-        is a simple dictonary where key is the name of group in DB, the value
-        contains DN for nested group.
-        """
-        self.group_users = {}
-        nested_groups = getattr(settings, 'AUTH_LDAP_NESTED_GROUPS', None)
-        if not nested_groups:
-            return
-        nested_filter = getattr(
-            settings, 'AUTH_LDAP_NESTED_FILTER', '(memberOf:{})'
-        )
-        with LDAPConnectionManager() as conn:
-            for group_name, value in nested_groups.items():
-                ldap_filter = nested_filter.format(value)
-                users = conn.search_s(
-                    settings.AUTH_LDAP_USER_SEARCH_BASE,
-                    ldap.SCOPE_SUBTREE,
-                    '(&(objectClass={}){})'.format(
-                        settings.LDAP_SERVER_OBJECT_USER_CLASS, ldap_filter
-                    )
-                )
-                self.group_users[group_name] = [
-                    u[1][settings.AUTH_LDAP_USER_USERNAME_ATTR][0].decode('utf-8')  # noqa
-                    for u in users
-                ]
+    def __init__(self):
+        self.group_users, self.users_groups = get_nested_groups()
 
     @lru_cache()
     def get_group_from_db(self, name):
@@ -198,7 +216,7 @@ class Command(BaseCommand):
         self.check_settings_existence()
         self._load_backend()
         logger.info('Fetch nested groups...')
-        self.nested_groups = NestedGroups(self.backend)
+        self.nested_groups = NestedGroups()
         logger.info('Syncing...')
         if not ldap_module_exists:
             logger.error('ldap module not installed')

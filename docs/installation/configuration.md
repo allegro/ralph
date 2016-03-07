@@ -89,6 +89,15 @@ AUTH_LDAP_GROUP_SEARCH = LDAPSearch("DC=organization,DC=internal",
     ldap.SCOPE_SUBTREE, '(objectClass=group)')
 ```
 
+If you nest one LDAP group in another and want to use such (parent) group
+in Ralph, you have to define this mapping in ``AUTH_LDAP_NESTED_GROUPS``:
+
+```python3
+AUTH_LDAP_NESTED_GROUPS = {
+  'CN=_gr_ralph_users,OU=Other,DC=mygroups,DC=domain': "staff",  # _gr_ralph_users contains other LDAP groups inside
+}
+```
+
 Note: For OpenDJ implementation ``AUTH_LDAP_GROUP_MAPPING`` is not obligatory. ``AUTH_LDAP_GROUP_TYPE`` and ``AUTH_LDAP_GROUP_SEARCH`` should be set as follows:
 
 ```python3
@@ -101,7 +110,7 @@ AUTH_LDAP_GROUP_SEARCH = LDAPSearch("DC=organization,DC=internal",
 If you want to define ldap groups with names identical to ralph roles, you
 shouldn't declare mapping ``AUTH_LDAP_GROUP_MAPPING``. If there are any one
 mapping defined another groups will be filtered. Some groups have
-special meanings. For example users need to be in ``staff`` to log in,
+special meanings. For example users need to be in ``active`` to log in,
 ``superuser`` gives superuser privileges. You can read more info
 in :ref:`groups`.
 

@@ -30,8 +30,8 @@ INSTALLED_APPS += (
     'ralph.lib.polymorphic.tests',
 )
 
+USE_CACHE = False
 PASSWORD_HASHERS = ('django_plainpasswordhasher.PlainPasswordHasher',)
-
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 ROOT_URLCONF = 'ralph.urls.test'
