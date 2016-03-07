@@ -80,21 +80,7 @@ class UserManyToManyWidget(widgets.ManyToManyWidget):
         return self.separator.join([obj.username for obj in value.all()])
 
 
-class LicenceUserWidget(widgets.ManyToManyWidget):
-
-    def clean(self, value):
-        if not value:
-            return get_user_model().objects.none()
-        usernames = value.split(self.separator)
-        return get_user_model().objects.filter(username__in=usernames)
-
-    def render(self, value):
-        return self.separator.join(
-            [obj.username for obj in value.all()]
-        )
-
-
-class BaseObjectLicenceWidget(widgets.ManyToManyWidget):
+class BaseObjectThroughWidget(widgets.ManyToManyWidget):
 
     def clean(self, value):
         if not value:

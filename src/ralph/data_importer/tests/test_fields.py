@@ -4,7 +4,7 @@ from django.test import TestCase
 from ralph.accounts.tests.factories import UserFactory
 from ralph.data_importer.fields import ThroughField
 from ralph.data_importer.resources import LicenceResource
-from ralph.data_importer.widgets import LicenceUserWidget
+from ralph.data_importer.widgets import UserManyToManyWidget
 from ralph.licences.models import Licence, LicenceUser
 from ralph.licences.tests.factories import LicenceFactory
 
@@ -28,7 +28,7 @@ class DataImporterFieldsTestCase(TestCase):
             through_to_field_name='user',
             attribute='users',
             column_name='users',
-            widget=LicenceUserWidget(model=get_user_model())
+            widget=UserManyToManyWidget(model=get_user_model())
         )
 
         self.assertEqual(self.licence.users.all().count(), 3)
