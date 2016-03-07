@@ -7,7 +7,10 @@ from django.core.exceptions import FieldDoesNotExist, ValidationError
 from django.db.models.query import QuerySet
 
 from ralph.lib.mixins.forms import RequestFormMixin
-from ralph.lib.permissions.models import PermissionsForObjectMixin
+from ralph.lib.permissions.models import (
+    PermByFieldMixin,
+    PermissionsForObjectMixin
+)
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +22,8 @@ class PermissionPerFieldAdminMixin(object):
         fieldsets = super().get_fieldsets(
             request, obj
         )
+        if not issubclass(self.model, PermByFieldMixin):
+            return fieldsets
 
         def condition(field):
             can_view = self.model.has_access_to_field(
@@ -41,6 +46,9 @@ class PermissionPerFieldAdminMixin(object):
 
     def get_readonly_fields(self, request, obj=None):
         """Return read only fields respects user permissions."""
+        if not issubclass(self.model, PermByFieldMixin):
+            return super().get_readonly_fields(request, obj)
+
         can_view = self.model.allowed_fields(request.user, 'view')
         can_change = self.model.allowed_fields(request.user, 'change')
         return list(
@@ -51,6 +59,9 @@ class PermissionPerFieldAdminMixin(object):
     def get_form(self, request, obj=None, **kwargs):
         """Return form with fields which user have access."""
         form = super().get_form(request, obj, **kwargs)
+        if not issubclass(self.model, PermByFieldMixin):
+            return form
+
         user_allowed_fields = self.model.allowed_fields(request.user)
         forbidden_fields = set(form._meta.fields or []) - user_allowed_fields
         if forbidden_fields:
@@ -61,6 +72,9 @@ class PermissionPerFieldAdminMixin(object):
     def get_list_display(self, request):
         """Return fields with respect to user permissions."""
         list_display = super().get_list_display(request)
+
+        if not issubclass(self.model, PermByFieldMixin):
+            return list_display
 
         def has_access_to_field(field_name):
             """

@@ -19,7 +19,6 @@ from ralph.assets.models.assets import (
 )
 from ralph.assets.models.components import ComponentModel, GenericComponent
 from ralph.data_importer import resources
-from ralph.lib.permissions.admin import PermissionAdminMixin
 
 
 @register(ServiceEnvironment)
@@ -78,7 +77,7 @@ class ProfitCenterAdmin(RalphAdmin):
 
 
 @register(AssetModel)
-class AssetModelAdmin(PermissionAdminMixin, RalphAdmin):
+class AssetModelAdmin(RalphAdmin):
 
     resource_class = resources.AssetModelResource
     list_select_related = ['manufacturer', 'category']

@@ -17,7 +17,6 @@ from ralph.admin.helpers import getattr_dunder
 from ralph.admin.mixins import RalphAdminFormMixin
 from ralph.admin.views.extra import RalphDetailView
 from ralph.back_office.models import BackOfficeAsset
-from ralph.lib.permissions.admin import PermissionAdminMixin
 from ralph.lib.table import Table
 from ralph.lib.transitions.models import TransitionsHistory
 from ralph.licences.models import Licence
@@ -215,7 +214,7 @@ class UserTransitionHistoryView(RalphDetailView):
 
 
 @register(RalphUser)
-class RalphUserAdmin(PermissionAdminMixin, UserAdmin, RalphAdmin):
+class RalphUserAdmin(UserAdmin, RalphAdmin):
 
     form = RalphUserChangeForm
     change_views = [
