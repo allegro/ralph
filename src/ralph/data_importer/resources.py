@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db.models import Count
 from import_export import fields, resources, widgets
 
 from ralph.accounts.models import Region
@@ -63,9 +64,20 @@ class AssetModelResource(RalphModelResource):
         attribute='category',
         widget=ImportedForeignKeyWidget(assets.Category),
     )
+    assets_count = fields.Field(
+        readonly=True,
+        column_name='assets_count',
+        attribute='assets_count',
+    )
 
     class Meta:
         model = assets.AssetModel
+
+    def get_queryset(self):
+        return assets.AssetModel.objects.annotate(assets_count=Count('assets'))
+
+    def dehydrate_assets_count(self, model):
+        return model.assets_count
 
 
 class CategoryResource(RalphModelResource):
