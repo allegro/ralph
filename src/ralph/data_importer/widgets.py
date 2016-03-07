@@ -6,6 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from import_export import widgets
 
 from ralph.assets.models.assets import ServiceEnvironment
+from ralph.assets.models.base import BaseObject
 from ralph.back_office.models import BackOfficeAsset
 from ralph.data_center.models.physical import DataCenterAsset
 from ralph.data_importer.models import ImportedObjects
@@ -77,6 +78,35 @@ class UserManyToManyWidget(widgets.ManyToManyWidget):
 
     def render(self, value):
         return self.separator.join([obj.username for obj in value.all()])
+
+
+class LicenceUserWidget(widgets.ManyToManyWidget):
+
+    def clean(self, value):
+        if not value:
+            return get_user_model().objects.none()
+        usernames = value.split(self.separator)
+        return get_user_model().objects.filter(username__in=usernames)
+
+    def render(self, value):
+        return self.separator.join(
+            [obj.username for obj in value.all()]
+        )
+
+
+class BaseObjectLicenceWidget(widgets.ManyToManyWidget):
+
+    def clean(self, value):
+        if not value:
+            return BaseObject.objects.none()
+        return BaseObject.objects.filter(
+            pk__in=value.split(self.separator)
+        )
+
+    def render(self, value):
+        return self.separator.join(
+            [str(obj.pk) for obj in value.all()]
+        )
 
 
 class ExportForeignKeyStrWidget(widgets.Widget):

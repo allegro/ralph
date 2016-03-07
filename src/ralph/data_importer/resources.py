@@ -10,15 +10,18 @@ from ralph.back_office.models import (
     Warehouse
 )
 from ralph.data_center.models import networks, physical
+from ralph.data_importer.fields import ThroughField
 from ralph.data_importer.mixins import (
     ImportForeignKeyMeta,
     ImportForeignKeyMixin
 )
 from ralph.data_importer.widgets import (
     AssetServiceEnvWidget,
+    BaseObjectLicenceWidget,
     BaseObjectManyToManyWidget,
     BaseObjectWidget,
     ImportedForeignKeyWidget,
+    LicenceUserWidget,
     NullStringWidget,
     UserManyToManyWidget,
     UserWidget
@@ -305,6 +308,22 @@ class LicenceResource(RalphModelResource):
         attribute='office_infrastructure',
         widget=ImportedForeignKeyWidget(OfficeInfrastructure),
     )
+    users = ThroughField(
+        column_name='users',
+        attribute='users',
+        widget=LicenceUserWidget(model=LicenceUser),
+        through_model=LicenceUser,
+        through_from_field_name='licence',
+        through_to_field_name='user'
+    )
+    base_objects = ThroughField(
+        column_name='base_objects',
+        attribute='base_objects',
+        widget=BaseObjectLicenceWidget(model=base.BaseObject),
+        through_model=BaseObjectLicence,
+        through_from_field_name='licence',
+        through_to_field_name='base_object'
+    )
 
     class Meta:
         model = Licence
@@ -384,6 +403,14 @@ class ServiceResource(RalphModelResource):
         column_name='technical_owners',
         attribute='technical_owners',
         widget=UserManyToManyWidget(get_user_model()),
+    )
+    environments = ThroughField(
+        column_name='environments',
+        attribute='environments',
+        widget=widgets.ManyToManyWidget(model=assets.Environment),
+        through_model=assets.ServiceEnvironment,
+        through_from_field_name='service',
+        through_to_field_name='environment'
     )
 
     class Meta:
