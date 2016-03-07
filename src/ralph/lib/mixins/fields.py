@@ -6,8 +6,10 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models.loading import get_model
 from django.forms.utils import flatatt
+from django.utils import six
 from django.utils.html import format_html, smart_urlquote
 from django.utils.translation import ugettext_lazy as _
+from taggit.forms import TagField
 
 
 class NullableFormFieldMixin(object):
@@ -169,3 +171,38 @@ class BaseObjectForeignKey(models.ForeignKey):
         Returns Model class list from limit_models.
         """
         return [get_model(model) for model in self.limit_models]
+
+
+class TagWidget(forms.TextInput):
+    def render(self, name, value, attrs=None):
+        if value is not None and not isinstance(value, six.string_types):
+            value = ', '.join(sorted([
+                (t if ',' not in t else '"%s"' % t) for t in value
+            ]))
+        return super(TagWidget, self).render(name, value, attrs)
+
+
+class TaggitTagField(TagField):
+    widget = TagWidget
+
+    def has_changed(self, initial, data):
+        """
+        Args:
+            initial: list of original tags
+            data: string with comma-separated tags from form
+        Examples:
+
+        >>> has_changed(['a', 'b'], 'a, b')
+        False
+        >>> has_changed(['a', 'b'], 'a, b, c')
+        True
+        >>> has_changed(['a', 'b'], 'a')
+        True
+        >>> has_changed(['a', 'b'], 'b, a')
+        False
+        """
+        if initial and data:
+            data = [i.strip() for i in data.split(',') if i.strip()]
+            changed = len(initial) != len(data) or set(initial) - set(data)
+            return changed
+        return False
