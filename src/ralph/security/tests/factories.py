@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import factory
+from django.utils import timezone as dj_timezone
 from factory.django import DjangoModelFactory
 
 from ralph.assets.tests.factories import BaseObjectFactory
@@ -13,9 +14,9 @@ class SecurityScanFactory(DjangoModelFactory):
     class Meta:
         model = SecurityScan
 
-    last_scan_date = datetime(2015, 1, 1)
+    last_scan_date = datetime(2015, 1, 1, tzinfo=timezone.utc)
     scan_status = ScanStatus.ok
-    next_scan_date = datetime(2016, 1, 1)
+    next_scan_date = datetime(2016, 1, 1, tzinfo=timezone.utc)
     details_url = 'https://www.example.com/details'
     rescan_url = 'https://www.example.com/rescan'
     base_object = factory.SubFactory(BaseObjectFactory)
@@ -39,7 +40,7 @@ class VulnerabilityFactory(DjangoModelFactory):
 
     name = factory.Sequence(lambda n: 'vulnserability %d' % n)
     patch_deadline = factory.LazyAttribute(
-        lambda o: datetime.now() + timedelta(days=10)
+        lambda o: dj_timezone.now() + timedelta(days=10)
     )
     risk = Risk.low
     external_vulnerability_id = factory.Sequence(lambda n: n)
