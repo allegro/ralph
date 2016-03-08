@@ -3,6 +3,7 @@ from datetime import date, datetime, timedelta
 
 import factory
 from factory.django import DjangoModelFactory
+from factory.fuzzy import FuzzyText
 
 from ralph.accounts.tests.factories import RegionFactory
 from ralph.assets.tests.factories import AssetHolderFactory, BudgetInfoFactory
@@ -47,7 +48,7 @@ class SupportFactory(DjangoModelFactory):
             '2hp', 'ironport', 'microsoft', 'oracle', '3par', 'tk'
         ]
     )
-    serial_no = factory.fuzzy.FuzzyText()
+    serial_no = FuzzyText()
     invoice_no = factory.Sequence(lambda n: 'Invoice number ' + str(n))
     invoice_date = date_now - timedelta(days=15)
     budget_info = factory.SubFactory(BudgetInfoFactory)

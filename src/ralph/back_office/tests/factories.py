@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 import factory
 from factory.django import DjangoModelFactory
-from factory.fuzzy import FuzzyText
+from factory.fuzzy import FuzzyDecimal
 
 from ralph.accounts.tests.factories import RegionFactory
 from ralph.assets.tests.factories import (
@@ -56,7 +56,7 @@ class BackOfficeAssetFactory(DjangoModelFactory):
     budget_info = factory.SubFactory(BudgetInfoFactory)
     invoice_date = date_now - timedelta(days=15)
     invoice_no = factory.Sequence(lambda n: 'Invoice number ' + str(n))
-    price = factory.fuzzy.FuzzyDecimal(10, 300)
+    price = FuzzyDecimal(10, 300)
 
     class Meta:
         model = BackOfficeAsset
