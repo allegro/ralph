@@ -8,7 +8,7 @@ from import_export import widgets
 from ralph.assets.models.assets import ServiceEnvironment
 from ralph.assets.models.base import BaseObject
 from ralph.back_office.models import BackOfficeAsset
-from ralph.data_center.models.physical import DataCenterAsset
+from ralph.data_center.models.physical import DataCenterAsset, Rack
 from ralph.data_importer.models import ImportedObjects
 
 logger = logging.getLogger(__name__)
@@ -217,3 +217,29 @@ class AssetServiceEnvWidget(widgets.ForeignKeyWidget):
             value.service.name,
             value.environment.name
         )
+
+
+class RackWidget(widgets.ForeignKeyWidget):
+    """Widget for Rack Foreign Key field.
+
+    CSV field format Rack.name
+    """
+    def clean(self, value):
+        if not value:
+            return None
+        else:
+            try:
+                racks = Rack.objects.all()
+                data = ({'id': rack.id, '__str__': str(rack)} for rack in racks)
+                for datum in data:
+                    if datum['__str__'] == value:
+                        value = Rack.objects.get(id=datum['id'])
+                        break
+            except (ValueError, Rack.DoesNotExist):
+                value = None
+            return value
+
+    def render(self, value):
+        if value is None:
+            return ""
+        return str(value)
