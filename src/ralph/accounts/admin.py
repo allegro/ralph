@@ -270,7 +270,9 @@ class RalphGroupAdmin(EditPermissionsFormMixin, GroupAdmin, RalphAdmin):
         groups = {v: k for (k, v) in getattr(
             settings, 'AUTH_LDAP_GROUP_MAPPING', {}
         ).items()}
-        groups.update(getattr(settings, 'AUTH_LDAP_NESTED_GROUPS', {}))
+        groups.update({v: k for (k, v) in getattr(
+            settings, 'AUTH_LDAP_NESTED_GROUPS', {}
+        ).items()})
         return groups
 
     def ldap_mapping(self, obj):
