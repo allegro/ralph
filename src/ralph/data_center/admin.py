@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
-
+from django import forms
 from django.conf import settings
+from django.core.urlresolvers import reverse
+from django.forms import ModelForm
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
+from mptt.utils import drilldown_tree_for_node
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import (
@@ -9,7 +13,11 @@ from ralph.admin.filters import (
     TagsListFilter,
     TextListFilter
 )
-from ralph.admin.mixins import BulkEditChangeListMixin
+from ralph.admin.mixins import (
+    BulkEditChangeListMixin,
+    RalphAdminFormMixin,
+    RalphMPTTAdmin
+)
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.assets.invoice_report import AssetInvoiceReportMixin
@@ -37,10 +45,55 @@ from ralph.data_center.models.physical import (
 from ralph.data_center.models.virtual import Database, VIP
 from ralph.data_center.views.ui import DataCenterAssetSecurityInfo
 from ralph.data_importer import resources
+from ralph.lib.mixins.admin import MemorizeBeforeStateMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
 from ralph.operations.views import OperationViewReadOnlyForExisiting
 from ralph.supports.models import BaseObjectsSupport
+
+
+class ParentChangeMixin(MemorizeBeforeStateMixin):
+    add_message = None
+    change_message = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.parent_attr = self.model._parent_attr
+
+    def get_add_message(self):
+        return self.add_message
+
+    def get_change_message(self):
+        return self.change_message
+
+    def response_add(self, request, obj, post_url_continue=None):
+        parent = getattr(obj, self.parent_attr)
+        if parent:
+            message = None
+            if obj:
+                message = self.get_add_message().format(
+                    parent.get_absolute_url(), parent
+                )
+                self.message_user(request, mark_safe(message))
+        return super().response_add(request, obj, post_url_continue)
+
+    def response_change(self, request, obj):
+        parent = getattr(obj, self.parent_attr)
+        message = None
+        old_parent = getattr(obj._before_state, self.parent_attr)
+        if parent and old_parent != parent:
+            # TODO: parent as None
+            old_url = old_parent and old_parent.get_absolute_url() or '#'
+            parent_url = parent and parent.get_absolute_url() or '#'
+            message = self.get_change_message().format(
+                old_url,
+                old_parent,
+                parent_url,
+                parent
+            )
+        if message:
+            self.message_user(request, mark_safe(message))
+        return super().response_change(request, obj)
 
 
 @register(Accessory)
@@ -129,6 +182,7 @@ class DataCenterAssetAdmin(
     RalphAdmin,
 ):
     """Data Center Asset admin class."""
+
     actions = ['bulk_edit_action']
     change_views = [
         DataCenterAssetComponents,
@@ -290,12 +344,6 @@ class DiskShareMountAdmin(RalphAdmin):
     pass
 
 
-@register(Network)
-class NetworkAdmin(RalphAdmin):
-
-    resource_class = resources.NetworkResource
-
-
 @register(NetworkEnvironment)
 class NetworkEnvironmentAdmin(RalphAdmin):
     pass
@@ -316,12 +364,113 @@ class DiscoveryQueueAdmin(RalphAdmin):
     pass
 
 
-@register(IPAddress)
-class IPAddressAdmin(RalphAdmin):
+class AddNetworkForm(RalphAdminFormMixin, ModelForm):
+    top_margin = forms.IntegerField()
+    bottom_margin = forms.IntegerField()
 
+    class Meta:
+        model = Network
+        exclude = ('parent',)
+
+
+@register(Network)
+class NetworkAdmin(RalphMPTTAdmin):
+    change_form_template = 'admin/data_center/network/change_form.html'
+    search_fields = ['address', 'remarks']
+    list_display = ['name', 'address', 'kind', 'vlan']
+    list_filter = ['kind', 'dhcp_broadcast']  # noqa add rack when multi widget will be available
+    raw_id_fields = ['racks']
+    resource_class = resources.NetworkResource
+    # TODO: adapt form to handle change action
+    add_form = AddNetworkForm
+
+    add_message = _('Network added to <a href="{}" _target="blank">{}</a>')
+    change_message = _('Network reassigned from network <a href="{}" target="_blank">{}</a> to <a href="{}" target="_blank">{}</a>')  # noqa
+
+    def changeform_view(
+        self, request, object_id=None, form_url='', extra_context=None
+    ):
+        if not extra_context:
+            extra_context = {}
+        obj = self.get_object(request, object_id)
+        if obj:
+            extra_context['next_free_ip'] = obj.get_first_free_ip()
+        return super().changeform_view(
+            request, object_id, form_url, extra_context
+        )
+
+    def get_form(self, request, obj=None, **kwargs):
+        """
+        Use special form during user creation
+        """
+        defaults = {}
+        if obj is None:
+            defaults['form'] = self.add_form
+        defaults.update(kwargs)
+        return super().get_form(request, obj, **defaults)
+
+    def save_model(self, request, obj, form, change):
+        """
+        Given a model instance save it to the database.
+        """
+        bottom_margin = form.cleaned_data.get('bottom_margin', None)
+        top_margin = form.cleaned_data.get('top_margin', None)
+        if all([bottom_margin, top_margin]):
+            obj.reserve_margin_addresses(
+                bottom_count=form.cleaned_data['bottom_margin'],
+                top_count=form.cleaned_data['top_margin'],
+            )
+        obj.save()
+
+
+@register(IPAddress)
+class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
     search_fields = ['address']
     list_filter = ['is_public', 'is_management']
-    list_display = ['address', 'base_object', 'is_public']
+    list_display = ['address', 'hostname', 'base_object_link', 'is_gateway']
+    readonly_fields = ['get_network_path', 'is_public']
     list_select_related = ['base_object']
     raw_id_fields = ['base_object']
     resource_class = resources.IPAddressResource
+    list_select_related = ['base_object__content_type']
+
+    fieldsets = (
+        (_('Basic info'), {
+            'fields': [
+                'address', 'get_network_path', 'base_object',
+            ]
+        }),
+        (_('Additional info'), {
+            'fields': [
+                'hostname', 'is_management', 'is_public'
+            ]
+        }),
+    )
+
+    add_message = _('IP added to <a href="{}" _target="blank">{}</a>')
+    change_message = _('IP reassigned from network <a href="{}" target="_blank">{}</a> to <a href="{}" target="_blank">{}</a>')  # noqa
+
+    def get_network_path(self, obj):
+        if not obj.network:
+            return None
+        nodes = obj.network.get_ancestors(include_self=True)
+        nodes_link = []
+        for node in nodes:
+            nodes_link.append('<a href="{}" target="blank">{}</a>'.format(
+                node.get_absolute_url(), node
+            ))
+        return ' > '.join(nodes_link)
+    get_network_path.short_description = _('Network')
+    get_network_path.allow_tags = True
+
+    def base_object_link(self, obj):
+        if not obj.base_object:
+            return '&ndash;'
+        ct = obj.base_object.content_type
+        return '<a href="{}" target="_blank">{} ({})</a>'.format(
+            reverse('admin:view_on_site', args=(ct.id, obj.base_object.id)),
+            ct.model_class()._meta.verbose_name.capitalize(),
+            obj.base_object.id,
+        )
+    base_object_link.short_description = _('Linked object')
+    base_object_link.allow_tags = True

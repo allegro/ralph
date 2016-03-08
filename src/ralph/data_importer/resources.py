@@ -196,6 +196,7 @@ class NetworkResource(RalphModelResource):
 
     class Meta:
         model = networks.Network
+        exclude = ('gateway_as_int', 'min_ip', 'max_ip')
 
 
 class IPAddressResource(RalphModelResource):
@@ -576,8 +577,8 @@ class OperationResource(RalphModelResource):
     )
     base_objects = fields.Field(
         column_name='base_objects',
-        attribute='base_objects',
-        widget=widgets.ManyToManyWidget(base.BaseObject),
+        attribute='asset',
+        widget=widgets.ManyToManyWidget(physical.DataCenterAsset),
         default=[],
     )
     asignee = fields.Field(
