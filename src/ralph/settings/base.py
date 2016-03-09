@@ -281,3 +281,6 @@ OPENSTACK_INSTANCES = json.loads(os.environ.get('OPENSTACK_INSTANCES', '[]'))
 
 # issue tracker url for Operations urls (issues ids) - should end with /
 ISSUE_TRACKER_URL = os.environ.get('ISSUE_TRACKER_URL', '')
+
+DNSAAS_URL = os.environ.get('DNSAAS_URL', '')
+DNSAAS_TOKEN = os.environ.get('DNSAAS_TOKEN', '')
