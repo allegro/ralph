@@ -17,11 +17,9 @@ from ralph.data_importer.mixins import (
 )
 from ralph.data_importer.widgets import (
     AssetServiceEnvWidget,
-    BaseObjectLicenceWidget,
-    BaseObjectManyToManyWidget,
+    BaseObjectThroughWidget,
     BaseObjectWidget,
     ImportedForeignKeyWidget,
-    LicenceUserWidget,
     NullStringWidget,
     UserManyToManyWidget,
     UserWidget
@@ -311,7 +309,7 @@ class LicenceResource(RalphModelResource):
     users = ThroughField(
         column_name='users',
         attribute='users',
-        widget=LicenceUserWidget(model=LicenceUser),
+        widget=UserManyToManyWidget(model=LicenceUser),
         through_model=LicenceUser,
         through_from_field_name='licence',
         through_to_field_name='user'
@@ -319,7 +317,7 @@ class LicenceResource(RalphModelResource):
     base_objects = ThroughField(
         column_name='base_objects',
         attribute='base_objects',
-        widget=BaseObjectLicenceWidget(model=base.BaseObject),
+        widget=BaseObjectThroughWidget(model=base.BaseObject),
         through_model=BaseObjectLicence,
         through_from_field_name='licence',
         through_to_field_name='base_object'
@@ -349,10 +347,13 @@ class SupportResource(RalphModelResource):
         attribute='support_type',
         widget=ImportedForeignKeyWidget(SupportType),
     )
-    base_objects = fields.Field(
+    base_objects = ThroughField(
         column_name='base_objects',
         attribute='base_objects',
-        widget=BaseObjectManyToManyWidget(base.BaseObject),
+        widget=BaseObjectThroughWidget(model=base.BaseObject),
+        through_model=BaseObjectsSupport,
+        through_from_field_name='support',
+        through_to_field_name='baseobject'
     )
     region = fields.Field(
         column_name='region',
@@ -372,6 +373,7 @@ class SupportResource(RalphModelResource):
 
     class Meta:
         model = Support
+        exclude = ('content_type', 'baseobject_ptr',)
 
     def dehydrate_price(self, support):
         return str(support.price)
