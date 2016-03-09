@@ -2,7 +2,6 @@
 import logging
 import re
 from collections import defaultdict
-from datetime import datetime
 from functools import lru_cache
 
 import reversion as revisions

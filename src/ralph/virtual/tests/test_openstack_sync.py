@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 
+from dateutil import parser
 from django.core.exceptions import ObjectDoesNotExist
 
-from dateutil import parser
 from ralph.assets.models.components import ComponentModel
 from ralph.assets.tests.factories import DataCenterAssetModelFactory
 from ralph.data_center.models.networks import IPAddress
