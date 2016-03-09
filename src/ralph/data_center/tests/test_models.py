@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
+from ipaddress import ip_address, ip_network
+
 from ddt import data, ddt, unpack
 from django.core.exceptions import ValidationError
 
 from ralph.accounts.tests.factories import RegionFactory
 from ralph.back_office.models import BackOfficeAsset
 from ralph.back_office.tests.factories import WarehouseFactory
-from ralph.data_center.models.choices import DataCenterAssetStatus, Orientation
-from ralph.data_center.models.networks import (
-    get_network_tree,
-    IPAddress,
-    Network
+from ralph.data_center.models.choices import (
+    DataCenterAssetStatus,
+    IPAddressStatus,
+    Orientation
 )
+from ralph.data_center.models.networks import IPAddress, Network
 from ralph.data_center.models.physical import DataCenterAsset
 from ralph.data_center.tests.factories import (
     DataCenterAssetFactory,
@@ -19,137 +21,210 @@ from ralph.data_center.tests.factories import (
 from ralph.tests import RalphTestCase
 
 
+@ddt
 class NetworkTest(RalphTestCase):
     def setUp(self):
         self.net1 = Network.objects.create(
-            name="test1",
-            address="192.168.0.0/16",
+            name='net1',
+            address='192.168.0.0/16',
         )
         self.net2 = Network.objects.create(
-            name="test2",
-            address="192.168.0.0/17",
+            parent=self.net1,
+            name='net2',
+            address='192.168.0.0/17',
         )
         self.net3 = Network.objects.create(
-            name="test3",
-            address="192.168.128.0/17",
-            reserved=5,
-            reserved_top_margin=5,
+            parent=self.net2,
+            name='net3',
+            address='192.168.128.0/17',
         )
         self.net4 = Network.objects.create(
-            name="test4",
-            address="192.168.133.0/24",
+            parent=self.net3,
+            name='net4',
+            address='192.168.133.0/24',
         )
         self.net5 = Network.objects.create(
-            name="test5",
-            address="192.169.133.0/24",
+            name='net5',
+            address='192.169.133.0/24',
         )
 
-        self.ip1 = IPAddress(address="192.168.128.10")
+        self.ip1 = IPAddress(address='192.168.128.10')
         self.ip1.save()
-        self.ip2 = IPAddress(address="192.168.133.10")
+        self.ip2 = IPAddress(address='192.168.133.10')
         self.ip2.save()
-        self.ip3 = IPAddress(address="192.168.128.11")
+        self.ip3 = IPAddress(address='192.168.128.11')
         self.ip3.save()
 
-    def test_get_netmask(self):
-        self.assertEquals(self.net1.get_netmask(), 16)
-        self.assertEquals(self.net2.get_netmask(), 17)
+    @unpack
+    @data(
+        ('net1', 16),
+        ('net2', 17),
+    )
+    def test_get_netmask(self, net, netmask):
+        self.assertEquals(getattr(self, net).netmask, netmask)
 
-    def test_get_subnetworks(self):
-        res = self.net1.get_subnetworks()
-        correct = [self.net2, self.net3, self.net4]
-        self.assertEquals(res, correct)
+    @unpack
+    @data(
+        ('net1', ['net2', 'net3', 'net4']),
+        ('net3', ['net4']),
+    )
+    def test_get_subnetworks(self, net, correct):
+        net_obj = getattr(self, net)
+        res = net_obj.get_subnetworks()
+        self.assertEquals(list(res), list(Network.objects.filter(name__in=correct)))
 
-        res = self.net3.get_subnetworks()
-        correct = [self.net4]
-        self.assertEquals(res, correct)
+    @unpack
+    @data(
+        ('92.143.123.123', True),
+        ('10.168.123.123', False),
+    )
+    def test_ip_is_public_or_no(self, ip, is_public):
+        new_ip_address = IPAddress(address=ip)
+        new_ip_address.save()
+        self.assertEquals(new_ip_address.is_public, is_public)
 
-    def test_get_address_summary(self):
-        ret = self.net3.get_total_ips()
-        self.assertEquals(ret, 32767)
-        ret = self.net3.get_free_ips()
-        self.assertEquals(ret, 32500)
-        ret = self.net3.get_ip_usage_range()
-        correct_range = [self.ip1, self.ip3, self.net4]
-        self.assertEquals(ret, correct_range)
+    @unpack
+    @data(
+        ('::/128',),
+        ('::1/128',),
+        ('::/96',),
+        ('::ffff:0:0/64',),
+        ('2001:7f8::/32',),
+        ('2001:db8::/32',),
+        ('2002::/24',),
+        ('3ffe::/16',),
+        ('fd00::/7',),
+        ('fe80::/10',),
+        ('fec0::/10',),
+        ('ff00::/8',),
+    )
+    def test_network_should_support_ipv6(self, net):
+        network = Network(
+            name='ipv6 ready',
+            address=net,
+        )
+        self.assertEqual(network.network, ip_network(net, strict=False))
 
-    def test_get_ip_usage_aggregated(self):
-        ret = self.net3.get_ip_usage_aggregated()
-        correct = [
-            {
-                'amount': 10,
-                'range_end': u'192.168.128.9',
-                'range_start': u'192.168.128.0',
-                'type': 'free',
-            },
-            {
-                'amount': 2,
-                'range_end': u'192.168.128.11',
-                'range_start': u'192.168.128.10',
-                'type': 'addr',
-            },
-            {
-                'amount': 1268,
-                'range_end': u'192.168.132.255',
-                'range_start': u'192.168.128.12',
-                'type': 'free',
-            },
-            {
-                'amount': 257,
-                'range_end': u'192.168.134.0',
-                'range_start': u'192.168.133.0',
-                'type': self.net4,
-            },
-            {
-                'amount': 31232,
-                'range_end': '192.169.0.0',
-                'range_start': '192.168.134.1',
-                'type': 'free',
-            },
-        ]
-        self.assertEquals(ret, correct)
+    @unpack
+    @data(
+        ('192.168.100.0/24', '192.168.100.1', True),
+        ('10.1.1.0/24', '10.1.1.1', True),
+        ('10.1.1.0/24', '10.1.1.2', True),
+        ('10.1.1.0/31', '10.1.1.2', False),
+        ('10.1.1.0/31', '10.1.1.1', True),
+        ('10.1.1.0/31', '10.1.1.0', True),
+    )
+    def test_ip_address_should_return_network(self, network, ip, should_return):
+        net = Network.objects.create(
+            name='ip_address_should_return_network',
+            address=network,
+        )
+        assigned_network = None
+        ip = IPAddress.objects.create(address=ip)
+        result = ip.get_network()
+        if should_return:
+            self.assertEqual(net, result)
+        else:
+            self.assertEqual(None, result)
 
-    def test_get_network_tree(self):
-        res = get_network_tree()
-        correct = [
-            {
-                'network': self.net1,
-                'subnetworks': [
-                    {
-                        'network': self.net2,
-                        'subnetworks': [],
-                    },
-                    {
-                        'network': self.net3,
-                        'subnetworks': [
-                            {
-                                'network': self.net4,
-                                'subnetworks': [],
-                            }
-                        ]
-                    },
-                    {
-                        'network': self.net4,
-                        'subnetworks': [],
-                    }
-                ]
-            },
-            {
-                'network': self.net5,
-                'subnetworks': [],
-            }
-        ]
-        self.assertEquals(res, correct)
+    @unpack
+    @data(
+        ('10.1.1.0/24', '10.1.0.255'),
+        ('10.1.1.0/24', '10.1.2.0'),
+    )
+    def test_ip_address_should_not_return_network(self, network, ip):
+        net = Network.objects.create(
+            name='ip_address_should_return_network',
+            address=network,
+        )
+        ip = IPAddress.objects.create(address=ip, network=None)
+        result = ip.get_network()
+        self.assertEqual(None, result)
 
-    def test_ip_is_public_or_no(self):
-        ip_list = [
-            ('92.143.123.123', True),
-            ('10.168.123.123', False),
-        ]
-        for ip, is_public in ip_list:
-            new_ip_address = IPAddress(address=ip)
-            new_ip_address.save()
-            self.assertEquals(new_ip_address.is_public, is_public)
+    def test_network_should_return_gateway(self):
+        net = Network.objects.create(
+            name='ip_address_should_return_gateway',
+            address='10.1.1.0/24',
+        )
+        net.save()
+        ip = IPAddress.objects.create(
+            address='10.1.1.2',
+            is_gateway=True,
+            network=net
+        )
+        self.assertEqual(net.gateway, ip.ip)
+
+    def test_reserve_margin_addresses_should_reserve_free_addresses(self):
+        net = Network.objects.create(
+            name='ip_address_should_return_network',
+            address='10.1.1.0/24',
+        )
+        ip1 = IPAddress.objects.create(address='10.1.1.1')
+        ip2 = IPAddress.objects.create(address='10.1.1.254')
+        result = net.reserve_margin_addresses(bottom_count=10, top_count=10)
+        self.assertEqual(17, net.ips.filter(status=IPAddressStatus.reserved).count())  # noqa
+        self.assertEqual(17, result[0])
+        self.assertEqual(set([ip1.number, ip2.number]), result[1])
+
+    def test_create_ip_address(self):
+        net = Network.objects.create(
+            name='test_create_ip_address',
+            address='10.1.1.0/24',
+        )
+        ip = IPAddress.objects.create(address='10.1.1.0')
+
+    @unpack
+    @data(
+        ('192.168.1.0/24', 254),
+        ('192.168.1.0/30', 2),
+        ('192.168.1.0/31', 2),
+    )
+    def test_net_size(self, addr, size):
+        net = Network.objects.create(address=addr)
+        self.assertEqual(net.size, size)
+
+    @unpack
+    @data(
+        ('192.168.1.0/29', ip_address('192.168.1.1'), []),
+        ('192.168.1.0/31', ip_address('192.168.1.0'), []),
+        ('192.168.1.0/31', ip_address('192.168.1.1'), ['192.168.1.0']),
+        ('192.168.1.0/31', None, ['192.168.1.0', '192.168.1.1']),
+    )
+    def test_get_first_free_ip(self, network_addr, first_free, used):
+        net = Network.objects.create(address=network_addr)
+        ips = []
+        for ip in used:
+            IPAddress.objects.create(address=ip, network=net)
+        if ips:
+            IPAddress.object.bulk_create(ips)
+        self.assertEqual(net.get_first_free_ip(), first_free)
+
+    def test_sub_network_should_assign_automatically(self):
+        net = Network.objects.create(
+            name='net', address='192.168.5.0/24'
+        )
+        subnet = Network.objects.create(
+            name='subnet', address='192.168.5.0/25'
+        )
+        self.assertEqual(net, subnet.parent)
+
+    def test_sub_network_should_reassign_ip(self):
+        ip = IPAddress.objects.create(address='192.169.58.1')
+        self.assertEqual(ip.network, None)
+        net = Network.objects.create(
+            name='net', address='192.169.58.0/24'
+        )
+        ip.refresh_from_db()
+        self.assertEqual(ip.network, net)
+
+    def test_delete_network_shouldnt_delete_related_ip(self):
+        net = Network.objects.create(
+            name='net', address='192.169.58.0/24'
+        )
+        ip = IPAddress.objects.create(address='192.169.58.1', network=net)
+        net.delete()
+        ip.refresh_from_db()
+        self.assertTrue(ip)
 
 
 @ddt

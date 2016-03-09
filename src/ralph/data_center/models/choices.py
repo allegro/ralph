@@ -54,3 +54,10 @@ class ConnectionType(Choices):
     _ = Choices.Choice
 
     network = _("network connection")
+
+
+class IPAddressStatus(Choices):
+    _ = Choices.Choice
+
+    used = _('DHCP (used)')
+    reserved = _('reserved').extra(help_text=_('Exclude from DHCP'))
