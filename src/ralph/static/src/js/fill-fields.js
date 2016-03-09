@@ -7,7 +7,7 @@
         // Disable autocomplete without cluttering html attributes
         $('input').attr('autocomplete', 'off');
 
-        var $fill_elements = $('.bulk-edit input[type=text]:not(.no-fillable), .bulk-edit select, .bulk-edit textarea, .bulk-edit input[type=number]:not(.no-fillable), .bulk-edit .autocomplete-widget');
+        var $fill_elements = $('.bulk-edit input[type=text]:not(.no-fillable), .bulk-edit select, .bulk-edit textarea, .bulk-edit input[type=number]:not(.no-fillable), .bulk-edit auto-complete:not(.no-fillable)');
 
         var toggle_toolbar = function(element) {
             var $parent = element.closest('td');
@@ -16,10 +16,10 @@
                 var parent_height = $parent.height();
                 $toolbar = $('#float_toolbar').clone();
                 $toolbar.removeAttr('id');
-                if ($(element).hasClass('autocomplete-widget')) {
+                if (element[0].tagName === 'AUTO-COMPLETE') {
                     $toolbar.data(
                         'input_id',
-                        $(element).data('target-selector').substr(1)
+                        $parent.find('auto-complete')[0].id
                     );
                 } else {
                     var $input = $parent.find('input, select, textarea');
@@ -32,17 +32,14 @@
                 $toolbar.on('click', function(event) {
                     event.preventDefault();
                     var input_id = $(this).data('input_id');
-                    var from = $(this).data('from');
                     var matcher = /(.*)-([0-9]+)-(.*)/;
                     var results = matcher.exec(input_id);
                     if (results) {
                         var $fields = $('[id^=' + results[1] + '-][id$=-' + results[3] + ']');
                         var value = $('#' + input_id).val();
-                        if (value) {
-                            $fields.val(value);
-                            $fields.closest('td').addClass('fill-changed');
-                            $fields.closest('td').animate({backgroundColor: 'white'});
-                        }
+                        $fields.val(value);
+                        $fields.closest('td').addClass('fill-changed');
+                        $fields.closest('td').animate({backgroundColor: 'white'});
                     }
                 });
                 $toolbar.show();

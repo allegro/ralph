@@ -33,10 +33,10 @@ Example:
     <style>
     :host {
       position: relative;
-
       display: block;
       height: auto;
       width: 100%;
+      min-width: 120px;
       background: #fff;
       border: none;
     }
@@ -356,7 +356,11 @@ Example:
       },
       _ids2Objs: function(newValue, oldValue) {
         if (newValue === oldValue) return;
-        if (newValue === "") { return false; }
+        if (newValue === "") {
+          this.value = newValue;
+          this.$['query-getter'].clear();
+          return false;
+        }
         this.value = newValue;
         if (!this.hasAttribute('multi')) {
           this.$['query-getter'].hideInput();
