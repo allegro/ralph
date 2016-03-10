@@ -19,7 +19,6 @@ oslo.utils==3.7.0
 pbr==1.8.1
 positional==1.0.1
 prettytable==0.7.2
-requests==2.9.1
 simplejson==3.8.2
 stevedore==1.12.0
 wrapt==1.10.6

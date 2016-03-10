@@ -41,7 +41,7 @@ from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
 from ralph.operations.views import OperationViewReadOnlyForExisiting
 from ralph.supports.models import BaseObjectsSupport
-if 'ralph.dns' in settings.INSTALLED_APPS:
+if settings.ENABLE_DNSAAS_INTEGRATION:
     from ralph.dns.views import DNSView
 
 
@@ -140,7 +140,7 @@ class DataCenterAssetAdmin(
         DataCenterAssetOperation,
         NetworkView,
     ]
-    if 'ralph.dns' in settings.INSTALLED_APPS:
+    if settings.ENABLE_DNSAAS_INTEGRATION:
         change_views += [DNSView]
     show_transition_history = True
     resource_class = resources.DataCenterAssetResource
