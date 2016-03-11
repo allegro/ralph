@@ -55,7 +55,7 @@ def get_used_space_in_data_centers(data_centers):
 @register.inclusion_tag('admin/templatetags/dc_capacity.html')
 def dc_capacity(data_centers=None, size='big'):
     color = cycle(COLORS)
-    if data_centers is None:
+    if not data_centers:
         data_centers = DataCenter.objects.all()
     if not isinstance(data_centers, Iterable):
         data_centers = [data_centers]

@@ -90,6 +90,7 @@ class Gap(object):
 
 
 class DataCenter(NamedMixin, models.Model):
+    _allow_in_dashboard = True
 
     visualization_cols_num = models.PositiveIntegerField(
         verbose_name=_('visualization grid columns number'),
@@ -115,6 +116,8 @@ class DataCenter(NamedMixin, models.Model):
 
 
 class ServerRoom(NamedMixin.NonUnique, models.Model):
+    _allow_in_dashboard = True
+
     data_center = models.ForeignKey(DataCenter, verbose_name=_("data center"))
     data_center._autocomplete = False
     data_center._filter_title = _('data center')
@@ -159,6 +162,8 @@ class RackAccessory(AdminAbsoluteUrlMixin, models.Model):
 
 
 class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
+    _allow_in_dashboard = True
+
     server_room = models.ForeignKey(
         ServerRoom, verbose_name=_('server room'),
         null=True,
@@ -260,6 +265,7 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
 
 
 class DataCenterAsset(AutocompleteTooltipMixin, Asset):
+    _allow_in_dashboard = True
 
     rack = models.ForeignKey(Rack, null=True, blank=True)
     status = TransitionField(

@@ -1,0 +1,24 @@
+{% load graph_tags staticfiles %}
+
+<html>
+  <head>
+    <script type="text/javascript" src="{% static 'vendor/js/chartist.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/chartist-plugin-barlabels.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static "css/ralph.css" %}" />
+    <title>{{ name }}</title>
+    {% if interval %}
+      <meta http-equiv="refresh" content="{{ interval }}">
+    {% endif %}
+  </head>
+
+</html>
+
+<body>
+  <div class="dashboard_graphs">
+    <h1>{{ name }}</h1>
+    {% if description %}<h2>{{ description }}</h2>{% endif %}
+    <div class="graphs">
+      {{ rendered_graphs|safe }}
+    </div>
+  </div>
+</body>

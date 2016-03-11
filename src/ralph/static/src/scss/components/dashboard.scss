@@ -1,6 +1,38 @@
 @import '../colors';
 
-.dashboard {
+.dashboard_graphs {
+    h1, h2 {
+        display: block;
+        text-align: center;
+    }
+    h2 {
+        color: #aaa;
+        font-size: 1rem;
+    }
+    .graphs {
+        .graph {
+            h3, .description {
+                text-align: center;
+            }
+            h3 {
+                display: block;
+                font-size: 1.4rem;
+            }
+            .description {
+                color: #aaa;
+            }
+            .render {}
+            margin: 10px;
+            min-height: 300px;
+            max-height: 300px;
+            width: calc(50% - 20px);
+            float: left;
+            .ct-label {
+                fill: #333;
+                color: #333;
+            }
+        }
+    }
     & > .row {
         margin-top: 10px;
     }

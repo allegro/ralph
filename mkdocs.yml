@@ -10,6 +10,7 @@ pages:
       - Quickstart: user/quickstart.md
       - Advanced guide: user/guide.md
       - Domains management: user/domains.md
+      - Dashboards: user/dashboards.md
       - API: user/api.md
   - Developer guide:
       - Before you start: CONTRIBUTING.md

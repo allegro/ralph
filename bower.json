@@ -30,7 +30,8 @@
     "paper-menu": "PolymerElements/paper-menu#~1.2.2",
     "polymer": "Polymer/polymer#~1.2.0",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#~1.2.2",
-    "iron-form": "PolymerElements/iron-form#~1.0.13"
+    "iron-form": "PolymerElements/iron-form#~1.0.13",
+    "chartist": "~0.9.5"
   },
   "devDependencies": {
     "qunit": "~1.18.0",
