@@ -152,7 +152,9 @@ class BackOfficeAsset(Regionalizable, Asset):
         return iso2_to_iso3(iso2)
 
     def __str__(self):
-        return '{}'.format(self.hostname or self.barcode or self.sn)
+        return '{} (BC: {} / SN: {})'.format(
+            self.hostname or '-', self.barcode or '-', self.sn or '-'
+        )
 
     def __repr__(self):
         return '<BackOfficeAsset: {}>'.format(self.id)
