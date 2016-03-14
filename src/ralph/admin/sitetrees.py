@@ -228,6 +228,16 @@ sitetrees = [
             ]
         ),
         ralph_item(
+            title=_('Dashboards'),
+            url='#',
+            url_as_pattern=False,
+            perms_mode_all=False,
+            children=[
+                section(_('Dashboards'), 'dashboards', 'Dashboard'),
+                section(_('Graphs'), 'dashboards', 'Graph'),
+            ]
+        ),
+        ralph_item(
             title=_('Settings'),
             url='#',
             url_as_pattern=False,

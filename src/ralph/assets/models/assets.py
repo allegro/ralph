@@ -53,6 +53,8 @@ class Environment(NamedMixin, TimeStampMixin, models.Model):
 
 class Service(NamedMixin, TimeStampMixin, models.Model):
     # Fixme: let's do service catalog replacement from that
+    _allow_in_dashboard = True
+
     active = models.BooleanField(default=True)
     uid = NullableCharField(max_length=40, unique=True, blank=True, null=True)
     profit_center = models.ForeignKey(ProfitCenter, null=True, blank=True)
@@ -109,7 +111,7 @@ class ServiceEnvironment(BaseObject):
 
 
 class Manufacturer(NamedMixin, TimeStampMixin, models.Model):
-    pass
+    _allow_in_dashboard = True
 
 
 class AssetModel(
@@ -119,6 +121,8 @@ class AssetModel(
     models.Model
 ):
     # TODO: should type be determined based on category?
+    _allow_in_dashboard = True
+
     type = models.PositiveIntegerField(
         verbose_name=_('type'), choices=ObjectModelType(),
     )
@@ -182,6 +186,8 @@ class AssetModel(
 
 
 class Category(MPTTModel, NamedMixin.NonUnique, TimeStampMixin, models.Model):
+    _allow_in_dashboard = True
+
     code = models.CharField(max_length=4, blank=True, default='')
     parent = TreeForeignKey(
         'self',

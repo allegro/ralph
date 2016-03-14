@@ -33,6 +33,8 @@ class Support(
     BaseObject,
     AutocompleteTooltipMixin
 ):
+    _allow_in_dashboard = True
+
     asset_type = models.PositiveSmallIntegerField(
         choices=ObjectModelType(), default=ObjectModelType.all.id,
     )

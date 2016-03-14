@@ -1,0 +1,15 @@
+<div class="graph">
+  <h3>{{ graph.name }}</h3>
+  <div class="description">{{ graph.description }}</div>
+  <div class="render" id="{{ name }}"></div>
+</div>
+
+<script>
+  var graph = new Chartist.{{ func | title }}('#{{ name }}', {
+    labels: {{ labels | safe }},
+    series: {% if not options_raw.distributeSeries %}[{% endif %}{{ series | safe }}{% if not options_raw.distributeSeries %}]{% endif %}
+    }, {{ options | safe }});
+  {% for plugin, options in plugins.items %}
+    Chartist.plugins.{{ plugin }}({{ options }})(graph);
+  {% endfor %}
+</script>

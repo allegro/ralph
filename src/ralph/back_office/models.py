@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 
 class Warehouse(NamedMixin, TimeStampMixin, models.Model):
-    pass
+    _allow_in_dashboard = True
 
 
 class BackOfficeAssetStatus(Choices):
@@ -117,6 +117,8 @@ def autocomplete_if_release_report(actions, objects, field_name='user'):
 
 
 class BackOfficeAsset(Regionalizable, Asset):
+    _allow_in_dashboard = True
+
     warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True,

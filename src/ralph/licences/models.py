@@ -37,6 +37,7 @@ class LicenceType(PermByFieldMixin, NamedMixin, models.Model):
 class Software(PermByFieldMixin, NamedMixin, models.Model):
 
     """The category of the licensed software"""
+    _allow_in_dashboard = True
 
     asset_type = models.PositiveSmallIntegerField(
         choices=ObjectModelType(), default=ObjectModelType.all.id
@@ -99,6 +100,7 @@ class LicencesUsedFreeManager(models.Manager):
 class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
 
     """A set of licences for a single software with a single expiration date"""
+    _allow_in_dashboard = True
 
     manufacturer = models.ForeignKey(
         Manufacturer,
