@@ -36,7 +36,7 @@ class GraphForm(RalphAdminForm):
         params = self.cleaned_data.get('params', '{}')
         try:
             params_dict = json.loads(params)
-        except json.decoder.JSONDecodeError as e:
+        except ValueError as e:
             raise forms.ValidationError(e.msg)
         if not params_dict.get('labels', None):
             raise forms.ValidationError('Please specify `labels` key')

@@ -22,7 +22,7 @@ class FilterParser(object):
                 filter_func = getattr(self, 'filter_' + params[1], None)
                 if not filter_func:
                     continue
-                parsed_filters[key] = filter_func(value)
+                parsed_filters[params[0]] = filter_func(value)
         return self.queryset.filter(**parsed_filters)
 
     def filter_from_now(self, value):
