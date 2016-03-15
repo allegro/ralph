@@ -1,4 +1,8 @@
+import logging
+
 from import_export import fields
+
+logger = logging.getLogger(__name__)
 
 
 class ThroughField(fields.Field):
@@ -41,9 +45,12 @@ class ThroughField(fields.Field):
         if not self.readonly:
             value = data.get(self.column_name)
             current = set(self.widget.clean(value))
+            # filter old assignments to obj by through_model
             old_objs = set([
                 getattr(i, self.through_to_field_name) for i in
-                self.through_model.objects.all().select_related(
+                self.through_model.objects.filter(
+                    **{self.through_from_field_name: obj}
+                ).select_related(
                     self.through_to_field_name
                 )
             ])
@@ -53,6 +60,9 @@ class ThroughField(fields.Field):
 
             to_add_list = []
             for i in to_add:
+                logger.info('Adding {} to {}/{} assignments'.format(
+                    i.pk, self.through_model, obj.pk
+                ))
                 to_add_list.append(self.through_model(
                     **{
                         self.through_from_field_name: obj,
@@ -63,6 +73,12 @@ class ThroughField(fields.Field):
             if to_add_list:
                 self.through_model.objects.bulk_create(to_add_list)
             if to_remove:
+                logger.warning('Removing assignments from {}/{}: {}'.format(
+                    self.through_model, obj.pk, [i.pk for i in to_remove]
+                ))
                 self.through_model.objects.filter(
-                    **{'{}__in'.format(self.through_to_field_name): to_remove}
+                    **{
+                        self.through_from_field_name: obj,
+                        '{}__in'.format(self.through_to_field_name): to_remove
+                    }
                 ).delete()
