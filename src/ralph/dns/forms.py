@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
+from dj.choices import Choices
 from django import forms
 from django.utils.translation import ugettext_lazy as _
-from dj.choices import Choices
 
 
 class RecordType(Choices):
@@ -16,7 +16,8 @@ class DNSRecordForm(forms.Form):
 
     pk = forms.IntegerField(
         label='',
-        widget=forms.HiddenInput()
+        widget=forms.HiddenInput(),
+        required=False
     )
     name = forms.CharField(
         label=_('Name'),
