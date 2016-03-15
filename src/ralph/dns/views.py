@@ -15,10 +15,6 @@ from ralph.dns.forms import DNSRecordForm, RecordType
 logger = logging.getLogger(__name__)
 
 
-DNS_AUTO_PTR_ALWAYS = 2
-DNS_AUTO_PTR_NEVER = 1
-
-
 def get_api_kwargs(url, data=None, headers=None):
     if headers is None:
         headers = {}
@@ -73,8 +69,9 @@ def update_dns_records(records):
             'type': RecordType.raw_from_id(int(item['type'])),
             'content': item['content'],
             'auto_ptr': (
-                DNS_AUTO_PTR_ALWAYS if item['ptr'] and
-                item['type'] == RecordType.a.id else DNS_AUTO_PTR_NEVER
+                settings.DNS_AUTO_PTR_ALWAYS if item['ptr'] and
+                item['type'] == RecordType.a.id
+                else settings.DNS_AUTO_PTR_NEVER
             )
         }
         request = requests.patch(**get_api_kwargs(url, data=data))
