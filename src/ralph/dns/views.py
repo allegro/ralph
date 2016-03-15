@@ -78,9 +78,8 @@ class DNSView(RalphDetailView):
             )
         )
         return FormSet(
+            data=self.request.POST or None,
             initial=initial,
-            # initial=initial if not self.request.POST else {},
-            data=self.request.POST or None
         )
 
     def get(self, request, *args, **kwargs):
