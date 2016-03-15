@@ -20,6 +20,7 @@ var sass_config = {
     includePaths: [
         config.bowerDir + 'foundation/scss',
         config.bowerDir + 'fontawesome/scss',
+        config.bowerDir + 'chartist/dist/scss',
     ]
 }
 
@@ -62,6 +63,7 @@ gulp.task('js', function(){
         './bower_components/foundation-datepicker/js/foundation-datepicker.js',
         './bower_components/angular-loading-bar/build/loading-bar.min.js',
         './bower_components/raven-js/dist/raven.min.js',
+        './bower_components/chartist/dist/chartist.js',
     ];
     gulp.src(vendorFiles)
         .pipe(gulp.dest(config.vendorRoot + 'js/'));
