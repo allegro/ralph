@@ -5,7 +5,8 @@ from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import RalphAPISaveSerializer
-from ralph.data_center.models import DataCenterAsset, IPAddress
+from ralph.data_center.models import DataCenterAsset
+from ralph.networks.models.networks import IPAddress
 from ralph.security.models import SecurityScan, Vulnerability
 
 

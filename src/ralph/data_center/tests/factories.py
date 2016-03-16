@@ -7,11 +7,9 @@ from factory.fuzzy import FuzzyDecimal, FuzzyText
 from ralph.assets.models.choices import AssetSource
 from ralph.assets.tests.factories import (
     AssetHolderFactory,
-    BaseObjectFactory,
     BudgetInfoFactory,
     DataCenterAssetModelFactory
 )
-from ralph.data_center.models.networks import IPAddress
 from ralph.data_center.models.physical import (
     Accessory,
     ACCESSORY_DATA,
@@ -95,10 +93,3 @@ class DataCenterAssetFactory(DjangoModelFactory):
 
     class Meta:
         model = DataCenterAsset
-
-
-class IPAddressFactory(DjangoModelFactory):
-    base_object = factory.SubFactory(BaseObjectFactory)
-
-    class Meta:
-        model = IPAddress

@@ -4,7 +4,7 @@ from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
-from ralph.data_center.models.networks import IPAddress
+from ralph.networks.models.networks import IPAddress
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -176,7 +176,7 @@ class CloudHostAdmin(RalphAdmin):
     get_memory.short_description = _('RAM size (MiB)')
 
     def get_disk(self, obj):
-        return obj.cloudflavor.disk/1024
+        return obj.cloudflavor.disk / 1024
     get_disk.short_description = _('Disk size (GiB)')
 
 
@@ -219,7 +219,7 @@ class CloudFlavorAdmin(RalphAdmin):
     get_memory.short_description = _('RAM size (MiB)')
 
     def get_disk(self, obj):
-        return obj.disk/1024
+        return obj.disk / 1024
     get_disk.short_description = _('Disk size (GiB)')
 
     def instances_count(self, obj):
