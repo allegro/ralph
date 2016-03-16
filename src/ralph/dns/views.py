@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urljoin
 
 import requests
 from django.conf import settings
@@ -63,7 +63,9 @@ def get_dns_records(ipaddresses):
 def update_dns_records(records):
     error = False
     for item in records:
-        url = '/'.join([settings.DNSAAS_URL, 'api/records', str(item['pk'])])
+        url = urljoin(
+            settings.DNSAAS_URL, 'api/records/{}/'.format(item['pk'])
+        )
         data = {
             'name': item['name'],
             'type': RecordType.raw_from_id(int(item['type'])),
@@ -87,7 +89,9 @@ def update_dns_records(records):
 def delete_dns_records(record_ids):
     error = False
     for record_id in record_ids:
-        url = '/'.join([settings.DNSAAS_URL, 'api/records', str(record_id)])
+        url = urljoin(
+            settings.DNSAAS_URL, 'api/records/{}/'.format(record_id)
+        )
         request = requests.delete(**get_api_kwargs(url))
         if request.status_code != 204:
             error = True
