@@ -287,11 +287,11 @@ ISSUE_TRACKER_URL = os.environ.get('ISSUE_TRACKER_URL', '')
 # enable integration with DNSaaS, for details see
 # https://github.com/allegro/django-powerdns-dnssec
 ENABLE_DNSAAS_INTEGRATION = os.environ.get('ENABLE_DNSAAS_INTEGRATION', False)
+DNSAAS_URL = os.environ.get('DNSAAS_URL', '')
+DNSAAS_TOKEN = os.environ.get('DNSAAS_TOKEN', '')
+DNSAAS_AUTO_PTR_ALWAYS = os.environ.get('DNSAAS_AUTO_PTR_ALWAYS', 2)
+DNSAAS_AUTO_PTR_NEVER = os.environ.get('DNSAAS_AUTO_PTR_NEVER', 1)
 if ENABLE_DNSAAS_INTEGRATION:
     INSTALLED_APPS += (
         'ralph.dns',
     )
-    DNSAAS_URL = os.environ.get('DNSAAS_URL', '')
-    DNSAAS_TOKEN = os.environ.get('DNSAAS_TOKEN', '')
-    DNSAAS_AUTO_PTR_ALWAYS = os.environ.get('DNSAAS_AUTO_PTR_ALWAYS', 2)
-    DNSAAS_AUTO_PTR_NEVER = os.environ.get('DNSAAS_AUTO_PTR_NEVER', 1)
