@@ -71,9 +71,9 @@ def update_dns_records(records):
             'type': RecordType.raw_from_id(int(item['type'])),
             'content': item['content'],
             'auto_ptr': (
-                settings.DNS_AUTO_PTR_ALWAYS if item['ptr'] and
+                settings.DNSAAS_AUTO_PTR_ALWAYS if item['ptr'] and
                 item['type'] == RecordType.a.id
-                else settings.DNS_AUTO_PTR_NEVER
+                else settings.DNSAAS_AUTO_PTR_NEVER
             )
         }
         request = requests.patch(**get_api_kwargs(url, data=data))
