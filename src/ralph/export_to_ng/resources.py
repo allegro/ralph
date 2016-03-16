@@ -472,6 +472,8 @@ class IPAddressResource(resources.ModelResource):
             asset_id = (
                 ip_address.device.get_asset(manager='_base_manager').id or ''
             )
+            if asset_id:
+                asset_id = 'DC|{}'.format(asset_id)
         except AttributeError:
             asset_id = ''
         return asset_id
