@@ -20,13 +20,16 @@ class DNSView(RalphDetailView):
     url_name = 'dns_edit'
     template_name = 'dns/dns_edit.html'
 
+    def __init__(self, *args, **kwargs):
+        self.dnsaas = DNSaaS()
+        return super().__init__(*args, **kwargs)
+
     def get_formset(self):
         FormSet = formset_factory(  # noqa
             DNSRecordForm, formset=BaseFormSet, extra=2,
             can_delete=True
         )
-        dnsaas = DNSaaS()
-        initial = dnsaas.get_dns_records(
+        initial = self.dnsaas.get_dns_records(
             self.object.ipaddress_set.all().values_list(
                 'address', flat=True
             )
@@ -51,12 +54,11 @@ class DNSView(RalphDetailView):
                 elif form.has_changed():
                     to_update.append(form.cleaned_data)
 
-            dnsaas = DNSaaS()
-            if to_delete and dnsaas.delete_dns_records(to_delete):
+            if to_delete and self.dnsaas.delete_dns_records(to_delete):
                 messages.error(
                     request, _('An error occurred while deleting a record')
                 )
-            if to_update and dnsaas.update_dns_records(to_update):
+            if to_update and self.dnsaas.update_dns_records(to_update):
                 messages.error(
                     request, _('An error occurred while updating a record')
                 )
