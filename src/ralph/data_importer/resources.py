@@ -370,10 +370,23 @@ class SupportResource(RalphModelResource):
         attribute='property_of',
         widget=ImportedForeignKeyWidget(assets.AssetHolder),
     )
+    assigned_objects_count = fields.Field(
+        readonly=True,
+        column_name='assigned_objects_count',
+        attribute='assigned_objects_count',
+    )
 
     class Meta:
         model = Support
         exclude = ('content_type', 'baseobject_ptr',)
+
+    def get_queryset(self):
+        return Support.objects.annotate(
+            assigned_objects_count=Count('base_objects')
+        )
+
+    def dehydrate_assigned_objects_count(self, support):
+        return support.assigned_objects_count
 
     def dehydrate_price(self, support):
         return str(support.price)
