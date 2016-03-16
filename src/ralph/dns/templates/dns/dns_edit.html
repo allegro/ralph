@@ -23,7 +23,9 @@
             {% endfor %}
         </table>
         <br />
-        <input type="submit" class="button" value="{% trans "Save" %}" />
+        {% with show_save=True %}
+          {% include 'admin/submit_line.html' %}
+        {% endwith %}
       </form>
     </div>
   </div>
