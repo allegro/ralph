@@ -7,11 +7,7 @@ from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.views.extra import RalphDetailView
-from ralph.dns.dnsaas import (
-    delete_dns_records,
-    get_dns_records,
-    update_dns_records,
-)
+from ralph.dns.dnsaas import DNSaaS
 from ralph.dns.forms import DNSRecordForm
 
 logger = logging.getLogger(__name__)
@@ -29,7 +25,8 @@ class DNSView(RalphDetailView):
             DNSRecordForm, formset=BaseFormSet, extra=2,
             can_delete=True
         )
-        initial = get_dns_records(
+        dnsaas = DNSaaS()
+        initial = dnsaas.get_dns_records(
             self.object.ipaddress_set.all().values_list(
                 'address', flat=True
             )
@@ -54,11 +51,12 @@ class DNSView(RalphDetailView):
                 elif form.has_changed():
                     to_update.append(form.cleaned_data)
 
-            if to_delete and delete_dns_records(to_delete):
+            dnsaas = DNSaaS()
+            if to_delete and dnsaas.delete_dns_records(to_delete):
                 messages.error(
                     request, _('An error occurred while deleting a record')
                 )
-            if to_update and update_dns_records(to_update):
+            if to_update and dnsaas.update_dns_records(to_update):
                 messages.error(
                     request, _('An error occurred while updating a record')
                 )
