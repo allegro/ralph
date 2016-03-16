@@ -52,6 +52,3 @@ if SKIP_MIGRATIONS:
             return "notmigrations"
 
     MIGRATION_MODULES = DisableMigrations()
-
-DNSAAS_URL = ''
-DNSAAS_TOKEN = ''
