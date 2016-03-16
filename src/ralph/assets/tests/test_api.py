@@ -428,7 +428,7 @@ class BaseObjectAPITests(RalphAPITestCase):
         )
         self.bo_asset.tags.add('tag1')
         self.dc_asset = DataCenterAssetFactory(
-            barcode='54321', price='10.00'
+            barcode='12543', price='10.00'
         )
         self.dc_asset.tags.add('tag2')
 
@@ -438,7 +438,7 @@ class BaseObjectAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 2)
         barcodes = [item['barcode'] for item in response.data['results']]
-        self.assertCountEqual(barcodes, set(['12345', '54321']))
+        self.assertCountEqual(barcodes, set(['12345', '12543']))
 
     def test_get_asset_model_details(self):
         url = reverse('baseobject-detail', args=(self.bo_asset.id,))
@@ -454,6 +454,24 @@ class BaseObjectAPITests(RalphAPITestCase):
         )
         response = self.client.get(url, format='json')
         self.assertEqual(len(response.data['results']), 1)
+
+    def test_icontains_polymorphic_with_extended_filters(self):
+        url = '{}?{}'.format(
+            reverse('baseobject-list'), urlencode(
+                {'name__startswith': 'host'}
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 1)
+
+    def test_startswith_polymorphic_different_types(self):
+        url = '{}?{}'.format(
+            reverse('baseobject-list'), urlencode(
+                {'barcode__startswith': '12'}
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 2)
 
     def test_lte_polymorphic(self):
         url = '{}?{}'.format(

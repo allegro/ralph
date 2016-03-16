@@ -43,3 +43,14 @@ router.register(r'foos', FooViewSet)
 * include `ralph.api.utils.QuerysetRelatedMixin` which can easily handle select_related and prefetch_related on queryset. By default select_related is fill with related admin site list_select_related value.
 * include `ralph.api.viewsets.AdminSearchFieldsMixin` thanks to which search fields will be by default taken from related admin site.
 * include `ralph.api.permissions.RalphPermission`, which check if user is properly authenticated (through `IsAuthenticated`), user has access to object (through `ObjectPermissionsMixin`) and user has proper Django admin permissions (`add_*`, `change_*`, `delete_*`) requested model.
+
+#### Filter backends
+By default `RalphAPIViewSet` use the following filter backends:
+* `rest_framework.filters.DjangoFilterBackend` - provides basic filtering for Django model - in `RalphAPIViewSet` (through `AdminSearchFieldsMixin`) filter fields are associated with model's admin.
+* `ralph.lib.permissions.api.PermissionsForObjectFilter` - limit result only to object for which user has permission at least to view.
+* `rest_framework.filters.OrderingFilter` - order queryset using `order` url param.
+* `ralph.api.filters.ExtendedFiltersBackend` - allows to filter for multiple fields using single query param - it's usefull especially for polymorphic models. To use extended filters define `extended_filter_fields` in your view, ex. `extended_filter_fields = {'name': ['asset__hostname', ip__address', 'cloudhost__hostname']` - this filter will allow you to search using `name` query param and it will be resolved to compound search (using OR operator) for fields `asset__hostname`, `ip__address` or `cloudhost__hostname` (ex. `<URL>?name=abc` will result in search `Q(asset__hostname=abc) | Q(ip__address=abc) | Q(cloudhost__hostname=abc)`).
+* `ralph.api.filters.LookupFilterBackend` - filter by lookups (using Django's `__` convention) in query params, ex. `<URL>?barcode__startswit=123` or `<URL>?invoice_date__lte=2015-01-01`.
+* `ralph.api.filters.TagsFilterBackend` - Filter queryset by tags. Multiple tags could be specified in url query: `<URL>?tag=abc&tag=def&tag=123`.
+
+> Note that polymorphic models (api resources) by default support lookup filters and extended filters, so you could call compound query on your polymorphic-root model, ex. `<URL>/base-objects/?name__startswith=abc`, which will be resolved to query, checking if one of fields defined in `extended_filter_fields` (in above example `asset__hostname`, `ip__address` or `cloudhost__hostname`) startswith `abc`.

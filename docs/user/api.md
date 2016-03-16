@@ -148,3 +148,16 @@ Notice in this example that:
 * to set related object (not-simple, like string or number) just pass it's ID (see service_env)
 * to set many of related objects, pass IDs of them in list (see licences)
 * you could pass text value for choice fields (status), even if it's stored as number
+
+## Filtering
+
+Ralph API supports multiple query filers:
+
+> You could check possible fields to filter by sending `OPTIONS` request to particular resource (look at `filtering` item).
+
+* filter by (exact) field value (ex. `<URL>?hostname=s1234.local`)
+* lookup filters using Django's `__` convention (check [Django Field lookups documentation](https://docs.djangoproject.com/en/1.8/ref/models/querysets/#field-lookups) for details), ex. `<URL>?hostname__startswith=s123` or `<URL>?invoice_date__lte=2015-01-01`
+* extended filters - allows to filter for multiple fields using single query param - it's usefull especially for polymorphic models (like `BaseObject`) - for example filtering by `name` param, you'll filter by `DataCenterAsset` hostname, `BackOfficeAssetHostname` etc. Example: `<URL>/base-objects/?name=s1234.local`
+* filter by tags using `tag` query param. Multiple tags could be specified in url query. Example: `<URL>?tag=abc&tag=def&tag=123`
+
+> Fields lookups work with extended filters in `BaseObject` too, ex. `<URL>/base-objects/?name__startswith=s123`

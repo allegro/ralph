@@ -10,7 +10,7 @@ class RalphApiMetadata(SimpleMetadata):
         data = super().determine_metadata(request, view)
         filtering = getattr(view, 'filter_fields', [])[:]
         filtering.extend(
-            getattr(view, 'extend_filter_fields', {}).keys()
+            getattr(view, 'extended_filter_fields', {}).keys()
         )
         data['filtering'] = list(set(filtering))
         return data
