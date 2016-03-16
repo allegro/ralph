@@ -1,0 +1,32 @@
+{% extends BASE_TEMPLATE %}
+{% load i18n %}
+
+{% block view_content %}
+  <div class="row">
+    <div class="large-12 columns">
+      <h1>DNS edit</h1>
+      <form method="post" action="">
+        {% csrf_token %}
+        {{ formset.management_form }}
+        <table>
+            <thead>
+              {% for name, field in formset.0.fields.items %}
+                <th>{{ field.label }}</th>
+              {% endfor %}
+            </thead>
+            {% for form in formset %}
+            <tr>
+              {% for field in form %}
+                <td>{{ field }} {{ field.errors }}</td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+        <br />
+        {% with show_save=True %}
+          {% include 'admin/submit_line.html' %}
+        {% endwith %}
+      </form>
+    </div>
+  </div>
+{% endblock %}
