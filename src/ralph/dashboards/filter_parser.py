@@ -14,7 +14,7 @@ class FilterParser(object):
     def __init__(self, queryset, filters_dict, exclude_mode=False):
         self.filters = filters_dict
         if exclude_mode:
-            self.queryset_func = queryset.exclude_mode
+            self.queryset_func = queryset.exclude
         else:
             self.queryset_func = queryset.filter
 

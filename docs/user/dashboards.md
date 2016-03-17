@@ -72,3 +72,4 @@ The filter above limit query to objects which created from one year ago to now. 
 
   - free assets aggregate by model name with invoice date from 2 years ago
   - from GET params to dashboard
+  - len(params) > 3
