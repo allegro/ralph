@@ -4,9 +4,9 @@ from urllib.parse import urlencode, urljoin
 
 import requests
 from django.conf import settings
-from django.utils.lru_cache import lru_cache
 
 from ralph.dns.forms import RecordType
+from ralph.helpers import cache
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +64,7 @@ class DNSaaS:
                     'name': item['name'],
                     'type': RecordType.from_name(item['type'].lower()).id,
                     'content': item['content'],
-                    'ptr': item['name'] in ptr_list,
+                    'ptr': item['name'] in ptr_list and item['type'] == 'A',
                     'owner': settings.DNSAAS_OWNER
                 })
         return dns_records
@@ -98,7 +98,7 @@ class DNSaaS:
             return False
         return True
 
-    @lru_cache()
+    @cache()
     def get_domain(self, record):
         """
         Return domain URL base on record name.
