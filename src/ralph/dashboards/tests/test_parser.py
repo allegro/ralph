@@ -2,15 +2,18 @@ import datetime
 
 from dateutil.relativedelta import relativedelta
 from ddt import data, ddt, unpack
+from django.db.models import Q
 from django.test import SimpleTestCase
 
 from ralph.dashboards.filter_parser import FilterParser
+from ralph.tests.models import Bar
 
+ARGS, KWARGS = (0, 1)
 
 @ddt
 class ParserFiltersTest(SimpleTestCase):
     def setUp(self):
-        self.parser = FilterParser(None, None)
+        self.parser = FilterParser(Bar.objects.all(), None)
 
     @unpack
     @data(
@@ -22,6 +25,27 @@ class ParserFiltersTest(SimpleTestCase):
         ('-55d', relativedelta(days=-55)),
     )
     def test_filter_from_now(self, filter_str, expect):
-        result = self.parser.filter_from_now(filter_str)
+        key = 'foo'
+        result = self.parser.filter_from_now(key, filter_str)
         pp = datetime.date.today() + expect
-        self.assertEqual(pp.strftime('%Y-%m-%d'), result)
+        self.assertEqual(
+            result[KWARGS], {key: pp.strftime('%Y-%m-%d')}
+        )
+
+    @unpack
+    @data(
+        ('1', Q(key='1')),
+        ('1,2', Q(key='1') | Q(key='2')),
+    )
+    def test_process_value(self, value, expect):
+        result = self.parser.filter_or('key', value)
+        self.assertEqual(str(result[ARGS][0]), str(expect))
+
+    @unpack
+    @data(
+        (['1'], Q(key='1')),
+        (['1', '2'], Q(key='1') & Q(key='2')),
+    )
+    def test_process_value(self, value, expect):
+        result = self.parser.filter_and('key', value)
+        self.assertEqual(str(result[ARGS][0]), str(expect))

@@ -45,8 +45,13 @@ class Graph(NamedMixin, TimeStampMixin, models.Model):
         aggregate_type = AggregateType.from_id(self.aggregate_type)
         queryset = model_manager.all()
         filters = self.params.get('filters', None)
+        excludes = self.params.get('excludes', None)
         if filters:
             queryset = FilterParser(queryset, filters).get_queryset()
+        if excludes:
+            queryset = FilterParser(
+                queryset, excludes, exclude_mode=True
+            ).get_queryset()
         aggregate_func = aggregate_type.aggregate_func
         queryset = queryset.values(
             self.params['labels']
