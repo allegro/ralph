@@ -4,6 +4,7 @@ from urllib.parse import urlencode, urljoin
 
 import requests
 from django.conf import settings
+from django.utils.lru_cache import lru_cache
 
 from ralph.dns.forms import RecordType
 
@@ -22,6 +23,15 @@ class DNSaaS:
         self.session.headers.update(_headers)
 
     def get_api_result(self, url):
+        """
+        Returns 'results' from DNSAAS API.
+
+        Args:
+            url: Url to API
+
+        Returns:
+            list of records
+        """
         request = self.session.get(url)
         json_data = request.json()
         api_results = json_data.get('results', [])
@@ -34,13 +44,14 @@ class DNSaaS:
         """Gets DNS Records for `ipaddresses` by API call"""
         dns_records = []
         ipaddresses = [('ip', i) for i in ipaddresses]
-        url = '{}/{}/?{}'.format(
+        url = urljoin(
             settings.DNSAAS_URL,
-            'api/records',
-            urlencode([
-                ('limit', 100),
-                ('offset', 0)
-            ] + ipaddresses)
+            'api/records/?{}'.format(
+                urlencode([
+                    ('limit', 100),
+                    ('offset', 0)
+                ] + ipaddresses)
+            )
         )
         api_results = self.get_api_result(url)
         ptr_list = set(
@@ -53,46 +64,115 @@ class DNSaaS:
                     'name': item['name'],
                     'type': RecordType.from_name(item['type'].lower()).id,
                     'content': item['content'],
-                    'ptr': item['name'] in ptr_list
+                    'ptr': item['name'] in ptr_list,
+                    'owner': settings.DNSAAS_OWNER
                 })
         return dns_records
 
-    def update_dns_records(self, records):
-        error = False
-        for item in records:
-            url = urljoin(
-                settings.DNSAAS_URL, 'api/records/{}/'.format(item['pk'])
+    def update_dns_records(self, record):
+        """
+        Update DNS Record in DNSAAS
+
+        Args:
+            record: record cleaned data
+
+        Returns:
+            True or False if an error from api
+        """
+        url = urljoin(
+            settings.DNSAAS_URL, 'api/records/{}/'.format(record['pk'])
+        )
+        data = {
+            'name': record['name'],
+            'type': RecordType.raw_from_id(int(record['type'])),
+            'content': record['content'],
+            'auto_ptr': (
+                settings.DNSAAS_AUTO_PTR_ALWAYS if record['ptr'] and
+                record['type'] == str(RecordType.a.id)
+                else settings.DNSAAS_AUTO_PTR_NEVER
+            ),
+            'owner': settings.DNSAAS_OWNER
+        }
+        request = self.session.patch(url, data=data)
+        if request.status_code != 200:
+            return False
+        return True
+
+    @lru_cache()
+    def get_domain(self, record):
+        """
+        Return domain URL base on record name.
+
+        Args:
+            record: Cleaned data from formset
+
+        Return:
+            Domain URL from API or False if not exists
+        """
+        domain_name = record['name'].split('.', 1)
+        url = urljoin(
+            settings.DNSAAS_URL, 'api/domains/?'.format(
+                urlencode([('name', domain_name[-1])])
             )
-            data = {
-                'name': item['name'],
-                'type': RecordType.raw_from_id(int(item['type'])),
-                'content': item['content'],
-                'auto_ptr': (
-                    settings.DNSAAS_AUTO_PTR_ALWAYS if item['ptr'] and
-                    item['type'] == RecordType.a.id
-                    else settings.DNSAAS_AUTO_PTR_NEVER
-                )
-            }
-            request = self.session.patch(url, data=data)
-            if request.status_code != 200:
-                logger.error(
-                    'Error from DNS API {}: {}'.format(url, request.json())
-                )
-                error = True
+        )
+        result = self.get_api_result(url)
+        if result:
+            return result[0]['url']
 
-        return error
+        return False
 
-    def delete_dns_records(self, record_ids):
-        error = False
-        for record_id in record_ids:
-            url = urljoin(
-                settings.DNSAAS_URL, 'api/records/{}/'.format(record_id)
+    def create_dns_records(self, record):
+        """
+        Create new DNS record.
+
+        Args:
+            records: Record cleaned data
+
+        Returns:
+            True or False if an error from api
+        """
+
+        url = urljoin(settings.DNSAAS_URL, 'api/records/')
+        domain = self.get_domain(record)
+        if not domain:
+            logger.error(
+                'Domain not found for record {}'.format(record)
             )
-            request = self.session.delete(url)
-            if request.status_code != 204:
-                error = True
-                logger.error(
-                    'Error from DNS API {}: {}'.format(url, request.json())
-                )
+            return False
 
-        return error
+        data = {
+            'name': record['name'],
+            'type': RecordType.raw_from_id(int(record['type'])),
+            'content': record['content'],
+            'auto_ptr': (
+                settings.DNSAAS_AUTO_PTR_ALWAYS if record['ptr'] and
+                record['type'] == RecordType.a.id
+                else settings.DNSAAS_AUTO_PTR_NEVER
+            ),
+            'domain': domain,
+            'owner': settings.DNSAAS_OWNER
+        }
+        request = self.session.post(url, data=data)
+        if request.status_code != 201:
+            return False
+
+        return True
+
+    def delete_dns_records(self, record_id):
+        """
+        Delete rcords in DNSAAS
+
+        Args:
+            record_ids: ID's to delete
+
+        Returns:
+            True or False if an error from api
+        """
+        url = urljoin(
+            settings.DNSAAS_URL, 'api/records/{}/'.format(record_id)
+        )
+        request = self.session.delete(url)
+        if request.status_code != 204:
+            return False
+
+        return True

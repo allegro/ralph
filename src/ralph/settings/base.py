@@ -291,6 +291,8 @@ DNSAAS_URL = os.environ.get('DNSAAS_URL', '')
 DNSAAS_TOKEN = os.environ.get('DNSAAS_TOKEN', '')
 DNSAAS_AUTO_PTR_ALWAYS = os.environ.get('DNSAAS_AUTO_PTR_ALWAYS', 2)
 DNSAAS_AUTO_PTR_NEVER = os.environ.get('DNSAAS_AUTO_PTR_NEVER', 1)
+DNSAAS_OWNER = os.environ.get('DNSAAS_OWNER', 'ralph')
+
 if ENABLE_DNSAAS_INTEGRATION:
     INSTALLED_APPS += (
         'ralph.dns',

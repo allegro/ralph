@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from django.contrib import messages
 from django.forms import BaseFormSet, formset_factory
 from django.http import HttpResponseRedirect
-from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.views.extra import RalphDetailView
 from ralph.dns.dnsaas import DNSaaS
@@ -46,23 +44,14 @@ class DNSView(RalphDetailView):
     def post(self, request, *args, **kwargs):
         formset = self.get_formset()
         if formset.is_valid():
-            to_delete = []
-            to_update = []
-            for form in formset.forms:
+            for i, form in enumerate(formset.forms):
                 if form.cleaned_data.get('DELETE'):
-                    to_delete.append(form.cleaned_data['pk'])
+                    self.dnsaas.delete_dns_records(form.cleaned_data['pk'])
                 elif form.has_changed():
-                    to_update.append(form.cleaned_data)
-
-            if to_delete and self.dnsaas.delete_dns_records(to_delete):
-                messages.error(
-                    request, _('An error occurred while deleting a record')
-                )
-            if to_update and self.dnsaas.update_dns_records(to_update):
-                messages.error(
-                    request, _('An error occurred while updating a record')
-                )
-
+                    if form.cleaned_data['pk']:
+                        self.dnsaas.update_dns_records(form.cleaned_data)
+                    else:
+                        self.dnsaas.create_dns_records(form.cleaned_data)
             return HttpResponseRedirect('.')
 
         kwargs['formset'] = formset
