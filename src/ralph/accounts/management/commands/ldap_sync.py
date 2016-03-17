@@ -66,7 +66,7 @@ def get_nested_groups():
     users_groups = defaultdict(set)
     nested_groups = getattr(settings, 'AUTH_LDAP_NESTED_GROUPS', None)
     if not nested_groups:
-        return
+        return group_users, users_groups
     nested_filter = getattr(
         settings, 'AUTH_LDAP_NESTED_FILTER', '(memberOf:{})'
     )
