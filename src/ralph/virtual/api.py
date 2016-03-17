@@ -13,11 +13,12 @@ from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
     CloudProject,
-    CloudProvider
+    CloudProvider,
+    VirtualServer
 )
 
 
-class CloudFlavorSimpleSerializer(RalphAPISerializer):
+class CloudFlavorSimpleSerializer(BaseObjectSerializer):
     class Meta:
         model = CloudFlavor
         fields = ['name', 'cores', 'memory', 'disk', 'url']
@@ -74,33 +75,32 @@ class SaveCloudHostSerializer(RalphAPISaveSerializer):
         exclude = ['content_type']
 
 
-class CloudFlavorSerializer(RalphAPISerializer):
+class CloudFlavorSerializer(BaseObjectSerializer):
     cores = serializers.IntegerField()
     memory = serializers.IntegerField()
     disk = serializers.IntegerField()
 
-    class Meta:
+    class Meta(BaseObjectSerializer.Meta):
         model = CloudFlavor
         exclude = ['content_type', 'service_env', 'parent']
 
 
-class CloudHostSerializer(RalphAPISerializer):
+class CloudHostSerializer(BaseObjectSerializer):
     ip_addresses = serializers.ListField()
     hypervisor = DataCenterAssetSimpleSerializer()
     parent = CloudProjectSimpleSerializer(source='cloudproject')
     cloudflavor = CloudFlavorSimpleSerializer()
     service_env = ServiceEnvironmentSimpleSerializer()
 
-    class Meta:
+    class Meta(BaseObjectSerializer.Meta):
         model = CloudHost
         depth = 1
-        exclude = ['content_type']
 
 
 class CloudProjectSerializer(BaseObjectSerializer):
     cloud_hosts = CloudHostSimpleSerializer(many=True, source='children')
 
-    class Meta:
+    class Meta(BaseObjectSerializer.Meta):
         model = CloudProject
         depth = 2
         exclude = ['content_type', 'parent']
@@ -109,6 +109,11 @@ class CloudProjectSerializer(BaseObjectSerializer):
 class CloudProviderSerializer(RalphAPISerializer):
     class Meta:
         model = CloudProvider
+
+
+class VirtualServerSerializer(BaseObjectSerializer):
+    class Meta(BaseObjectSerializer.Meta):
+        model = VirtualServer
 
 
 class CloudFlavorViewSet(RalphAPIViewSet):
@@ -142,8 +147,14 @@ class CloudProjectViewSet(RalphAPIViewSet):
     ]
 
 
+class VirtualServerViewSet(RalphAPIViewSet):
+    queryset = VirtualServer.objects.all()
+    serializer_class = VirtualServerSerializer
+
+
 router.register(r'cloud-flavors', CloudFlavorViewSet)
 router.register(r'cloud-hosts', CloudHostViewSet)
 router.register(r'cloud-projects', CloudProjectViewSet)
 router.register(r'cloud-providers', CloudProviderViewSet)
+router.register(r'virtual-servers', VirtualServerViewSet)
 urlpatterns = []

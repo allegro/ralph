@@ -8,6 +8,7 @@ from ralph.accounts.tests.factories import TeamFactory
 from ralph.api.tests._base import RalphAPITestCase
 from ralph.assets.models import (
     AssetModel,
+    BaseObject,
     Category,
     Environment,
     Manufacturer,
@@ -21,10 +22,35 @@ from ralph.assets.tests.factories import (
     EnvironmentFactory,
     ManufacturerFactory,
     ProfitCenterFactory,
+    ServiceEnvironmentFactory,
     ServiceFactory
 )
+from ralph.back_office.models import BackOfficeAsset
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
-from ralph.data_center.tests.factories import DataCenterAssetFactory
+from ralph.data_center.models import Database, DataCenterAsset, VIP
+from ralph.data_center.tests.factories import (
+    DatabaseFactory,
+    DataCenterAssetFactory,
+    VIPFactory
+)
+from ralph.domains.models import Domain
+from ralph.domains.tests.factories import DomainFactory
+from ralph.licences.models import Licence
+from ralph.licences.tests.factories import LicenceFactory
+from ralph.supports.models import Support
+from ralph.supports.tests.factories import SupportFactory
+from ralph.virtual.models import (
+    CloudFlavor,
+    CloudHost,
+    CloudProject,
+    VirtualServer
+)
+from ralph.virtual.tests.factories import (
+    CloudFlavorFactory,
+    CloudHostFactory,
+    CloudProjectFactory,
+    VirtualServerFactory
+)
 
 
 class ServicesEnvironmentsAPITests(RalphAPITestCase):
@@ -420,6 +446,22 @@ class AssetModelAPITests(RalphAPITestCase):
         self.assertEqual(self.asset_model.name, 'Iphone 6')
 
 
+BASE_OBJECTS_FACTORIES = {
+        BackOfficeAsset: BackOfficeAssetFactory,
+        CloudFlavor: CloudFlavorFactory,
+        CloudHost: CloudHostFactory,
+        CloudProject: CloudProjectFactory,
+        Database: DatabaseFactory,
+        DataCenterAsset: DataCenterAssetFactory,
+        Domain: DomainFactory,
+        Licence: LicenceFactory,
+        ServiceEnvironment: ServiceEnvironmentFactory,
+        Support: SupportFactory,
+        VIP: VIPFactory,
+        VirtualServer: VirtualServerFactory,
+}
+
+
 class BaseObjectAPITests(RalphAPITestCase):
     def setUp(self):
         super().setUp()
@@ -489,3 +531,21 @@ class BaseObjectAPITests(RalphAPITestCase):
         )
         response = self.client.get(url, format='json')
         self.assertEqual(len(response.data['results']), 1)
+
+    def test_str_field(self):
+        count = 0
+        for descendant in BaseObject._polymorphic_descendants:
+            if not descendant._polymorphic_descendants:
+                count += 1
+                obj = BASE_OBJECTS_FACTORIES[descendant]()
+                url = reverse('baseobject-detail', args=(obj.id,))
+                response = self.client.get(url, format='json')
+                self.assertEqual(response.status_code, status.HTTP_200_OK)
+                self.assertEqual(
+                    response.data.get('__str__'),
+                    '{}: {}'.format(obj._meta.verbose_name, str(obj)),
+                    msg='__str__ not found (or different) for {}'.format(
+                        descendant
+                    )
+                )
+        self.assertEqual(count, len(BASE_OBJECTS_FACTORIES))

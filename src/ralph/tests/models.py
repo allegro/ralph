@@ -26,6 +26,9 @@ class OrderStatus(Choices):
 class Foo(AdminAbsoluteUrlMixin, models.Model):
     bar = models.CharField('bar', max_length=50)
 
+    def __str__(self):
+        return 'Foo: {} / {}'.format(self.id, self.bar)
+
 
 class Manufacturer(models.Model):
     name = models.CharField(max_length=50)

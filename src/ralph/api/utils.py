@@ -1,7 +1,11 @@
+import logging
+
 from django.db import models
 from rest_framework import serializers
 
 from ralph.admin.sites import ralph_site
+
+logger = logging.getLogger('__name__')
 
 
 class QuerysetRelatedMixin(object):
@@ -69,7 +73,9 @@ class PolymorphicViewSetMixin(QuerysetRelatedMixin):
                     args[0].__class__
                 ]
             except KeyError:
-                pass
+                logger.warning('Dedicated serializer not found for {}'.format(
+                    args[0].__class__
+                ))
         return serializer_class(*args, **kwargs)
 
 
