@@ -23,7 +23,8 @@ Below short description of these fields:
 
   - ``labels`` - which field in model are string representation,
   - ``series`` - aggregate by this field,
-  - ``filters`` - Django ORM-like lookup (visit [Django documentation](https://docs.djangoproject.com/en/1.8/ref/models/querysets/#id4)).
+  - ``filters`` - filter query by conditions, Django ORM-like lookup (visit [Django documentation](https://docs.djangoproject.com/en/1.8/ref/models/querysets/#id4) for more information),
+  - ``excludes`` - excludes items from results - opposite to ``filters``.
 
 OK, after save go our new dashboard object. Now we can see item (``DC Capacity``) in ``Graphs`` fields - select them. After save go to ``Dashboards > Dashboards`` in list view click ``Link``.
 ![link-to-dashboard](/img/dashboard-link.png "Link")
@@ -34,6 +35,19 @@ Final result:
 
 ## Special filters
 Special filters are some helpers to
+
+### or, and
+``or``, ``and`` extend query about extra condition, e.g.:
+```json
+{
+    "labels": "name",
+    "series": "serverroom__rack",
+    "excludes": {
+        "name__exact|or": [null, ''],
+    },
+}
+```
+Filters accept as a argument list of elements.
 
 ### from_now
 ``from_now`` works only with date and date-time fields in ``filters`` section, e.g.:

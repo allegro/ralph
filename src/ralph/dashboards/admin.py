@@ -28,6 +28,8 @@ class GraphForm(RalphAdminForm):
             for k, g in groupby(data, keyfunc)
         ))
 
+        self.initial['params'] = json.dumps(self.initial['params'], indent=4)
+
     def clean_model(self):
         ct_id = self.cleaned_data.get('model')
         return ContentType.objects.get(pk=ct_id)
