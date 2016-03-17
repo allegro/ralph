@@ -11,6 +11,7 @@ class ChartistGraphRenderer(object):
     template_name = 'dashboard/templatetags/chartist_render_graph.html'
     _default_options = {
         'distributeSeries': False,
+        'chartPadding': 20,
     }
     plugins = {'ctBarLabels': {}}
 
