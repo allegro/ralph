@@ -76,7 +76,7 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
         )),
     ]
     filter_fields = ['id']
-    extend_filter_fields = {
+    extended_filter_fields = {
         'name': ['asset__hostname'],
         'sn': ['asset__sn'],
         'barcode': ['asset__barcode'],

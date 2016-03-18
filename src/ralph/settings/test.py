@@ -39,6 +39,8 @@ ROOT_URLCONF = 'ralph.urls.test'
 # see `ralph.tests.mixins.ReloadUrlsMixin` for details
 URLCONF_MODULES = ['ralph.urls.base', ROOT_URLCONF]
 
+LOGGING['loggers']['ralph'].update({'level': 'DEBUG', 'handlers': ['console']})
+
 SKIP_MIGRATIONS = os.environ.get('SKIP_MIGRATIONS', None)
 if SKIP_MIGRATIONS:
     print('skipping migrations')

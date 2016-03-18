@@ -126,6 +126,7 @@ class GenericComponentAdmin(RalphAdmin):
 @register(Asset)
 class AssetAdmin(RalphAdmin):
     raw_id_fields = ['parent', 'service_env', 'model']
+    search_fields = ['hostname', 'sn', 'barcode']
 
 
 @register(BaseObject)

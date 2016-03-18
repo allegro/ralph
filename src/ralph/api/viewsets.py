@@ -2,17 +2,18 @@
 import inspect
 
 from django.contrib.admin import SimpleListFilter
-from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import FieldDoesNotExist
-from django.db import models
 from rest_framework import filters, permissions, relations, viewsets
 
-from ralph.admin.helpers import get_field_by_relation_path
 from ralph.admin.sites import ralph_site
+from ralph.api.filters import (
+    ExtendedFiltersBackend,
+    ImportedIdFilterBackend,
+    LookupFilterBackend,
+    PolymorphicDescendantsFilterBackend,
+    TagsFilterBackend
+)
 from ralph.api.serializers import RalphAPISaveSerializer, ReversedChoiceField
 from ralph.api.utils import QuerysetRelatedMixin
-from ralph.data_importer.models import ImportedObjects
-from ralph.lib.mixins.models import TaggableMixin
 from ralph.lib.permissions.api import (
     PermissionsForObjectFilter,
     RalphPermission
@@ -58,12 +59,23 @@ class RalphAPIViewSetMixin(QuerysetRelatedMixin, AdminSearchFieldsMixin):
     """
     filter_backends = AdminSearchFieldsMixin.filter_backends + [
         PermissionsForObjectFilter, filters.OrderingFilter,
-        filters.DjangoFilterBackend, filters.SearchFilter
+        ExtendedFiltersBackend, LookupFilterBackend,
+        PolymorphicDescendantsFilterBackend, TagsFilterBackend,
+        ImportedIdFilterBackend,
     ]
     permission_classes = [RalphPermission]
     save_serializer_class = None
+    # define dict of extended filters by single field name (usefull for
+    # polymorphic models)
+    # example:
+    # extended_filter_fields = {
+    #    'name': ['asset__hostname', 'service_environment__name', 'ip__address']
+    # }
+    extended_filter_fields = None
 
     def __init__(self, *args, **kwargs):
+        if self.extended_filter_fields is None:
+            self.extended_filter_fields = {}
         super().__init__(*args, **kwargs)
         # check if required permissions and filters classes are present
         if RalphPermission not in self.permission_classes:
@@ -124,118 +136,4 @@ class RalphAPIViewSet(
     viewsets.ModelViewSet,
     metaclass=RalphAPIViewSetMetaclass
 ):
-    extend_filter_fields = None
-    allow_lookups = {
-        models.IntegerField: {
-            'lte', 'gte', 'lt', 'gt', 'exact', 'in', 'range', 'isnull'
-        },
-        models.CharField: {
-            'startswith', 'istartswith', 'endswith', 'icontains', 'contains',
-            'in', 'iendswith', 'isnull', 'regex', 'iregex'
-        },
-        models.DateField: {
-            'year', 'month', 'day', 'week_day', 'range', 'isnull'
-        },
-        models.DateTimeField: {'hour', 'minute', 'second'},
-        models.DecimalField: {
-            'lte', 'gte', 'lt', 'gt', 'exact', 'in', 'range', 'isnull'
-        }
-    }
-
-    def __init__(self, *args, **kwargs):
-        if self.extend_filter_fields is None:
-            self.extend_filter_fields = {}
-        super().__init__(*args, **kwargs)
-
-    def get_polymorphic_ids(self, polymorphic_models):
-        ids = set()
-        is_lookup_used = False
-        for model in polymorphic_models:
-            filter_fields = []
-            model_viewset = self._viewsets_registry.get(model)
-            if model_viewset:
-                filter_fields = getattr(model_viewset, 'filter_fields', [])
-
-            if not filter_fields:
-                # if not filter_fields from API viewset get fields
-                # from django model admin
-                filter_fields = ralph_site._registry[model].search_fields
-
-            lookups = self.get_lookups(model, filter_fields)
-            if lookups:
-                is_lookup_used = True
-                ids |= set(model.objects.filter(
-                    **lookups
-                ).values_list('pk', flat=True))
-        return ids, is_lookup_used
-
-    def get_lookups(self, model, filter_fields=None):
-        if filter_fields is None:
-            filter_fields = self.filter_fields
-        result = {}
-        for field_name, value in self.request.query_params.items():
-            model_field_name, _, lookup = field_name.rpartition('__')
-            try:
-                model_field = get_field_by_relation_path(
-                    model, model_field_name
-                )
-            except FieldDoesNotExist:
-                continue
-
-            lookups = set()
-            for cl in inspect.getmro(model_field.__class__):
-                lookups |= self.allow_lookups.get(cl, set())
-
-            if lookup in lookups and model_field_name in filter_fields:
-                result.update({field_name: value})
-        return result
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        # filter by imported object id
-        imported_object_id = self.request.query_params.get(
-            '_imported_object_id'
-        )
-        if imported_object_id:
-            try:
-                imported_obj = ImportedObjects.objects.get(
-                    content_type=ContentType.objects.get_for_model(
-                        queryset.model
-                    ),
-                    old_object_pk=imported_object_id,
-                )
-            except ImportedObjects.DoesNotExist:
-                return queryset.model.objects.none()
-            else:
-                queryset = queryset.filter(pk=imported_obj.object_pk)
-        # filter by extended filters (usefull in Polymorphic objects)
-        for field, field_filters in self.extend_filter_fields.items():
-            value = self.request.query_params.get(field, None)
-            if value:
-                q_param = models.Q()
-                for field_name in field_filters:
-                    q_param |= models.Q(**{field_name: value})
-                queryset = queryset.filter(q_param)
-
-        polymorphic_descendants = getattr(
-            queryset.model, '_polymorphic_descendants', []
-        )
-        if polymorphic_descendants:
-            ids, is_lookup_used = self.get_polymorphic_ids(
-                polymorphic_descendants
-            )
-            if is_lookup_used:
-                queryset = queryset.filter(pk__in=list(ids))
-
-        lookups = self.get_lookups(queryset.model)
-        if lookups:
-            queryset = queryset.filter(**lookups)
-
-        tags = self.request.query_params.getlist('tag')
-        if tags and issubclass(queryset.model, TaggableMixin):
-            query = models.Q()
-            for tag in tags:
-                query &= models.Q(tags__name=tag)
-            queryset = queryset.filter(query)
-
-        return queryset
+    pass
