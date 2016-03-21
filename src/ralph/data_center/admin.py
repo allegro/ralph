@@ -1,30 +1,16 @@
 # -*- coding: utf-8 -*-
-
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
-from ralph.admin.filters import (
-    LiquidatedStatusFilter,
-    TagsListFilter,
-    TextListFilter
-)
+from ralph.admin.filters import LiquidatedStatusFilter, TagsListFilter
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.assets.invoice_report import AssetInvoiceReportMixin
 from ralph.assets.models.components import GenericComponent as AssetComponent
 from ralph.attachments.admin import AttachmentsMixin
-from ralph.data_center.forms.network import NetworkInlineFormset
 from ralph.data_center.models.components import DiskShare, DiskShareMount
-from ralph.data_center.models.networks import (
-    DiscoveryQueue,
-    IPAddress,
-    Network,
-    NetworkEnvironment,
-    NetworkKind,
-    NetworkTerminator
-)
 from ralph.data_center.models.physical import (
     Accessory,
     Connection,
@@ -39,6 +25,8 @@ from ralph.data_center.views.ui import DataCenterAssetSecurityInfo
 from ralph.data_importer import resources
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
+from ralph.networks.forms import NetworkInlineFormset
+from ralph.networks.models.networks import IPAddress
 from ralph.operations.views import OperationViewReadOnlyForExisiting
 from ralph.supports.models import BaseObjectsSupport
 
@@ -129,6 +117,7 @@ class DataCenterAssetAdmin(
     RalphAdmin,
 ):
     """Data Center Asset admin class."""
+
     actions = ['bulk_edit_action']
     change_views = [
         DataCenterAssetComponents,
@@ -157,19 +146,14 @@ class DataCenterAssetAdmin(
         'order_no', 'model__name', 'service_env', 'depreciation_end_date',
         'force_depreciation', 'remarks', 'budget_info', 'rack__name',
         'rack__server_room', 'rack__server_room__data_center',
-        'property_of', LiquidatedStatusFilter,
-        ('management_ip', TextListFilter),
-        'management_hostname', ('tags', TagsListFilter)
+        'property_of', LiquidatedStatusFilter, ('tags', TagsListFilter)
     ]
     date_hierarchy = 'created'
     list_select_related = ['model', 'model__manufacturer', 'model__category']
     raw_id_fields = ['model', 'rack', 'service_env', 'parent', 'budget_info']
     raw_id_override_parent = {'parent': DataCenterAsset}
     _invoice_report_name = 'invoice-data-center-asset'
-    multiadd_clear_fields = [
-        {'field': 'management_ip', 'value': None},
-        {'field': 'management_hostname', 'value': None},
-    ]
+    readonly_fields = ('management_ip', 'management_hostname')
 
     fieldsets = (
         (_('Basic info'), {
@@ -288,40 +272,3 @@ class DiskShareAdmin(RalphAdmin):
 @register(DiskShareMount)
 class DiskShareMountAdmin(RalphAdmin):
     pass
-
-
-@register(Network)
-class NetworkAdmin(RalphAdmin):
-
-    resource_class = resources.NetworkResource
-
-
-@register(NetworkEnvironment)
-class NetworkEnvironmentAdmin(RalphAdmin):
-    pass
-
-
-@register(NetworkKind)
-class NetworkKindAdmin(RalphAdmin):
-    pass
-
-
-@register(NetworkTerminator)
-class NetworkTerminatorAdmin(RalphAdmin):
-    pass
-
-
-@register(DiscoveryQueue)
-class DiscoveryQueueAdmin(RalphAdmin):
-    pass
-
-
-@register(IPAddress)
-class IPAddressAdmin(RalphAdmin):
-
-    search_fields = ['address']
-    list_filter = ['is_public', 'is_management']
-    list_display = ['address', 'base_object', 'is_public']
-    list_select_related = ['base_object']
-    raw_id_fields = ['base_object']
-    resource_class = resources.IPAddressResource

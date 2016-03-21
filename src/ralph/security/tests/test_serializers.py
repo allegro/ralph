@@ -3,7 +3,7 @@ from django.http.request import QueryDict
 from rest_framework import serializers
 
 from ralph.api.tests._base import RalphAPITestCase
-from ralph.data_center.tests.factories import IPAddressFactory
+from ralph.networks.tests.factories import IPAddressFactory
 from ralph.security.api import SaveSecurityScanSerializer
 from ralph.security.tests.factories import (
     SecurityScanFactory,

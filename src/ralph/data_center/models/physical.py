@@ -24,10 +24,6 @@ from ralph.data_center.models.choices import (
     Orientation,
     RackOrientation
 )
-from ralph.lib.mixins.fields import (
-    NullableCharField,
-    NullableGenericIPAddressField
-)
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
@@ -310,28 +306,6 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
     production_year = models.PositiveSmallIntegerField(null=True, blank=True)
     production_use_date = models.DateField(null=True, blank=True)
 
-    # Temporary solution until core functionality will not be fully migrated to
-    # NG
-    management_ip = NullableGenericIPAddressField(
-        verbose_name=_('Management IP address'),
-        help_text=_('Presented as string.'),
-        unique=True,
-        blank=True,
-        null=True,
-        default=None,
-    )
-    management_hostname = NullableCharField(
-        max_length=100, unique=True, null=True, blank=True
-    )
-
-    # @property
-    # def management_ip(self):
-    #     """A property that gets management IP of a asset."""
-    #     management_ip = self.ipaddress_set.filter(
-    #         is_management=True
-    #     ).order_by('-address').first()
-    #     return management_ip.address if management_ip else ''
-
     autocomplete_tooltip_fields = [
         'rack',
         'barcode',
@@ -369,6 +343,23 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
         """Returns cores count assigned to device in Ralph"""
         asset_cores_count = self.model.cores_count if self.model else 0
         return asset_cores_count
+
+    def _get_management_ip(self):
+        return self.ipaddress_set.filter(is_management=True).first()
+
+    @property
+    def management_ip(self):
+        ip = self._get_management_ip()
+        if ip:
+            return ip.address
+        return ''
+
+    @property
+    def management_hostname(self):
+        ip = self._get_management_ip()
+        if ip:
+            return ip.hostname
+        return ''
 
     def _validate_orientation(self):
         """

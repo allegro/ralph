@@ -99,7 +99,6 @@ sitetrees = [
                 section(_('Server Rooms'), 'data_center', 'ServerRoom'),
                 section(_('VIPs'), 'data_center', 'VIP'),
                 section(_('Virtual Servers'), 'virtual', 'VirtualServer'),
-                section(_('IP Addresses'), 'data_center', 'ipaddress'),
             ],
         ),
         ralph_item(
@@ -120,6 +119,16 @@ sitetrees = [
                     'back_office',
                     'officeinfrastructure'
                 ),
+            ]
+        ),
+        ralph_item(
+            title=_('Networks'),
+            url='#',
+            url_as_pattern=False,
+            perms_mode_all=False,
+            children=[
+                section(_('Networks'), 'networks', 'network'),
+                section(_('IP Addresses'), 'networks', 'ipaddress'),
             ]
         ),
         ralph_item(
