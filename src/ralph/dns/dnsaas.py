@@ -99,20 +99,19 @@ class DNSaaS:
         return True
 
     @cache()
-    def get_domain(self, record):
+    def get_domain(self, domain_name):
         """
         Return domain URL base on record name.
 
         Args:
-            record: Cleaned data from formset
+            domain_name: Domain name
 
         Return:
             Domain URL from API or False if not exists
         """
-        domain_name = record['name'].split('.', 1)
         url = urljoin(
             settings.DNSAAS_URL, 'api/domains/?'.format(
-                urlencode([('name', domain_name[-1])])
+                urlencode([('name', domain_name)])
             )
         )
         result = self.get_api_result(url)
@@ -133,7 +132,8 @@ class DNSaaS:
         """
 
         url = urljoin(settings.DNSAAS_URL, 'api/records/')
-        domain = self.get_domain(record)
+        domain_name = record['name'].split('.', 1)
+        domain = self.get_domain(domain_name[-1])
         if not domain:
             logger.error(
                 'Domain not found for record {}'.format(record)
