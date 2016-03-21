@@ -29,7 +29,7 @@ class GraphForm(RalphAdminForm):
         ))
 
         self.initial['params'] = json.dumps(
-            self.initial.get('params', '{}'),
+            self.initial.get('params', {}),
             indent=4
         )
 
