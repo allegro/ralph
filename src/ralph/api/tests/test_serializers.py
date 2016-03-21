@@ -1,16 +1,12 @@
 # -*- coding: utf-8 -*-
-from collections import OrderedDict
 
 from dj.choices import Choices
-from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIRequestFactory
 
 from ralph.api.relations import RalphHyperlinkedRelatedField, RalphRelatedField
-from ralph.api.serializers import ReversedChoiceField
 from ralph.api.tests._base import RalphAPITestCase
-from ralph.api.tests.api import CarSerializer, CarSerializer2
-from ralph.tests import RalphTestCase
-from ralph.tests.models import Car, Manufacturer
+from ralph.api.tests.api import CarSerializer, CarSerializer2, FooSerializer
+from ralph.tests.models import Car, Foo, Manufacturer
 
 
 class TestChoices(Choices):
@@ -20,34 +16,23 @@ class TestChoices(Choices):
     bar = _('bar22')
 
 
-class TestReversedChoiceField(RalphTestCase):
+class TestStrSerialization(RalphAPITestCase):
     def setUp(self):
-        self.reversed_choice_field = ReversedChoiceField(TestChoices())
+        self.foo = Foo(bar='abc')
+        self.request_factory = APIRequestFactory()
 
-    def test_reversed_choices(self):
+    def test_str_field(self):
+        request = self.request_factory.get('/api/foos')
+        serializer = FooSerializer(self.foo,  context={'request': request})
+        self.assertEqual(serializer.data['__str__'], str(self.foo))
+
+    def test_str_field_with_type(self):
+        request = self.request_factory.get('/api/foos')
+        serializer = FooSerializer(self.foo,  context={'request': request})
         self.assertEqual(
-            self.reversed_choice_field.reversed_choices,
-            OrderedDict([
-                ('foo11', TestChoices.foo.id),
-                ('bar22', TestChoices.bar.id)
-            ])
+            serializer.data['str_with_type'],
+            '{}: {}'.format(Foo._meta.model_name, str(self.foo))
         )
-
-    def test_to_representation_should_return_choice_text(self):
-        self.assertEqual(
-            self.reversed_choice_field.to_representation(TestChoices.foo.id),
-            'foo11'
-        )
-
-    def test_to_internal_value_should_map_choice_text_to_id(self):
-        self.assertEqual(
-            self.reversed_choice_field.to_internal_value('foo11'),
-            TestChoices.foo.id,
-        )
-
-    def test_to_internal_value_with_choice_not_found_should_raise_validation_error(self):  # noqa
-        with self.assertRaises(ValidationError):
-            self.reversed_choice_field.to_internal_value('foo33')
 
 
 class TestRalphSerializer(RalphAPITestCase):

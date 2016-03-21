@@ -2,11 +2,15 @@
 from django.conf.urls import include, url
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet
+from ralph.api.fields import StrField
 from ralph.api.routers import RalphRouter
 from ralph.tests.models import Bar, Car, Foo, Manufacturer
 
 
 class FooSerializer(RalphAPISerializer):
+    __str__ = StrField()
+    str_with_type = StrField(show_type=True, label='__str2__')
+
     class Meta:
         model = Foo
         # include view namespace for hyperlinked field

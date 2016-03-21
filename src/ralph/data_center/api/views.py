@@ -5,19 +5,23 @@ from ralph.assets.api.views import BaseObjectViewSet
 from ralph.data_center.admin import DataCenterAssetAdmin
 from ralph.data_center.api.serializers import (
     AccessorySerializer,
+    DatabaseSerializer,
     DataCenterAssetSerializer,
     DataCenterSerializer,
     RackAccessorySerializer,
     RackSerializer,
-    ServerRoomSerializer
+    ServerRoomSerializer,
+    VIPSerializer
 )
-from ralph.data_center.models.physical import (
+from ralph.data_center.models import (
     Accessory,
+    Database,
     DataCenter,
     DataCenterAsset,
     Rack,
     RackAccessory,
-    ServerRoom
+    ServerRoom,
+    VIP
 )
 
 
@@ -66,3 +70,13 @@ class ServerRoomViewSet(RalphAPIViewSet):
 class DataCenterViewSet(RalphAPIViewSet):
     queryset = DataCenter.objects.all()
     serializer_class = DataCenterSerializer
+
+
+class DatabaseViewSet(RalphAPIViewSet):
+    queryset = Database.objects.all()
+    serializer_class = DatabaseSerializer
+
+
+class VIPViewSet(RalphAPIViewSet):
+    queryset = VIP.objects.all()
+    serializer_class = VIPSerializer

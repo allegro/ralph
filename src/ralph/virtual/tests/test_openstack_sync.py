@@ -33,7 +33,7 @@ class TestOpenstackSync(RalphTestCase):
     def setUp(self):
         asset_model = DataCenterAssetModelFactory()
         self.cloud_provider = CloudProviderFactory(name='openstack')
-        self.cloud_flavor = CloudFlavorFactory.create_batch(2)
+        self.cloud_flavor = CloudFlavorFactory.create_batch(3)
         self.test_model = ComponentModel(name='delete_test')
         VirtualComponent(
             model=self.test_model,
