@@ -1,17 +1,13 @@
 # -*- coding: utf-8 -*-
 from datetime import date
 from decimal import Decimal
-from urllib.parse import urlencode
 
 from django.contrib.auth import get_user_model
-from django.http import QueryDict
 from rest_framework import relations
 from rest_framework.test import APIClient, APIRequestFactory
 
 from ralph.api.serializers import ReversedChoiceField
 from ralph.api.tests.api import (
-    Bar,
-    BarViewSet,
     Car,
     CarSerializer,
     CarViewSet,
@@ -46,25 +42,6 @@ class TestRalphViewset(RalphTestCase):
         )
         self.client = APIClient()
         self.client.login(username='test', password='test')
-
-        Bar.objects.create(
-            name='Bar11',
-            date=date(2015, 3, 1),
-            price=Decimal('21.4'),
-            count=1
-        )
-        Bar.objects.create(
-            name='Bar22',
-            date=date(2014, 4, 1),
-            price=Decimal('11.4'),
-            count=2
-        )
-        Bar.objects.create(
-            name='Bar33',
-            date=date(2013, 5, 1),
-            price=Decimal('31.4'),
-            count=3
-        )
 
     def test_should_raise_attributeerror_when_ralph_permission_missing(self):
         with self.assertRaises(AttributeError):
@@ -101,87 +78,6 @@ class TestRalphViewset(RalphTestCase):
         mvs = ManufacturerViewSet()
         mvs.request = request
         self.assertEqual(mvs.get_serializer_class(), ManufacturerSerializer2)
-
-    def test_extend_filter_fields(self):
-        request = self.request_factory.get('/')
-        request.query_params = QueryDict(urlencode({'name': 'test'}))
-        mvs = ManufacturerViewSet()
-        mvs.request = request
-        self.assertEqual(len(mvs.get_queryset()), 2)
-
-        request.query_params = QueryDict(urlencode({'name': 'test2'}))
-        mvs.request = request
-        self.assertEqual(len(mvs.get_queryset()), 1)
-
-    def test_query_filters_charfield(self):
-        request = self.request_factory.get('/api/bar')
-        bvs = BarViewSet()
-        request.query_params = QueryDict(
-            urlencode({'name__icontains': 'bar1'})
-        )
-        bvs.request = request
-        self.assertEqual(len(bvs.get_queryset()), 1)
-
-        # Failed filter
-        request.query_params = QueryDict(urlencode({'name__range': 10}))
-        self.assertEqual(len(bvs.get_queryset()), 3)
-
-    def test_query_filters_decimalfield(self):
-        request = self.request_factory.get('/api/bar')
-        bvs = BarViewSet()
-        request.query_params = QueryDict(urlencode({'price__gte': 20}))
-        bvs.request = request
-        self.assertEqual(len(bvs.get_queryset()), 2)
-
-        # Failed filter
-        request.query_params = QueryDict(urlencode({'price__istartswith': 10}))
-        self.assertEqual(len(bvs.get_queryset()), 3)
-
-    def test_query_filters_integerfield(self):
-        request = self.request_factory.get('/api/bar')
-        bvs = BarViewSet()
-        request.query_params = QueryDict(urlencode({'count__gte': 2}))
-        bvs.request = request
-        self.assertEqual(len(bvs.get_queryset()), 2)
-
-        # Failed filter
-        request.query_params = QueryDict(urlencode({'count__istartswith': 10}))
-        self.assertEqual(len(bvs.get_queryset()), 3)
-
-    def test_query_filters_datefield(self):
-        request = self.request_factory.get('/api/bar')
-        bvs = BarViewSet()
-        request.query_params = QueryDict(urlencode({'date__year': 2015}))
-        bvs.request = request
-        self.assertEqual(len(bvs.get_queryset()), 1)
-
-        # Failed filter
-        request.query_params = QueryDict(urlencode({'date__istartswith': 10}))
-        self.assertEqual(len(bvs.get_queryset()), 3)
-
-    def test_query_filters_datetimefield(self):
-        request = self.request_factory.get('/api/bar')
-        bvs = BarViewSet()
-        request.query_params = QueryDict(urlencode(
-            {'created__year': date.today().year})
-        )
-        bvs.request = request
-        self.assertEqual(len(bvs.get_queryset()), 3)
-
-        request.query_params = QueryDict(
-            urlencode({
-                'date__year': 2014,
-                'created__month': date.today().month
-            })
-        )
-        bvs.request = request
-        self.assertEqual(len(bvs.get_queryset()), 1)
-
-        # Failed filter
-        request.query_params = QueryDict(
-            urlencode({'created__istartswith': 10})
-        )
-        self.assertEqual(len(bvs.get_queryset()), 3)
 
     def test_options_filtering(self):
         response = self.client.options('/api/manufacturers/')

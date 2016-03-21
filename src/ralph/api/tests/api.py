@@ -63,8 +63,8 @@ class ManufacturerViewSet(RalphAPIViewSet):
     queryset = Manufacturer.objects.all()
     serializer_class = ManufacturerSerializer
     save_serializer_class = ManufacturerSerializer2
-    extend_filter_fields = {
-        'name': ['name', 'country'],
+    extended_filter_fields = {
+        'some_field': ['name', 'country'],
     }
 
 

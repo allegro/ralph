@@ -19,12 +19,16 @@
                 font-size: 1.4rem;
             }
             .description {
+                height: 1rem;
                 color: #aaa;
             }
-            .render {}
+            .wrapper {
+                .render {
+                    min-height: 350px;
+                    max-height: 350px;
+                }
+            }
             margin: 10px;
-            min-height: 300px;
-            max-height: 300px;
             width: calc(50% - 20px);
             float: left;
             .ct-label {
