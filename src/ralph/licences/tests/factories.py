@@ -88,7 +88,11 @@ class BaseObjectLicenceFactory(DjangoModelFactory):
         model = BaseObjectLicence
 
 
-class BaseObjectDataCenterLicenceFactory(DjangoModelFactory):
+class BackOfficeAssetLicenceFactory(BaseObjectLicenceFactory):
+    pass
+
+
+class DataCenterAssetLicenceFactory(DjangoModelFactory):
     licence = factory.SubFactory(LicenceFactory)
     base_object = factory.SubFactory(DataCenterAssetFactory)
 

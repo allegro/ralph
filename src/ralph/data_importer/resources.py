@@ -329,7 +329,7 @@ class LicenceResource(RalphModelResource):
 
     class Meta:
         model = Licence
-        prefetch_related = ('tags')
+        prefetch_related = ('tags',)
         exclude = ('content_type', 'baseobject_ptr', )
 
     def get_queryset(self):

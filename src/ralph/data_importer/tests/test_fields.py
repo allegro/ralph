@@ -6,7 +6,7 @@ from ralph.assets.models import BaseObject
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
 from ralph.data_importer.fields import ThroughField
 from ralph.data_importer.widgets import (
-    BaseObjectThroughWidget,
+    ManyToManyThroughWidget,
     UserManyToManyWidget
 )
 from ralph.licences.models import BaseObjectLicence, LicenceUser
@@ -108,18 +108,22 @@ class DataImporterFieldsTestCase(TestCase):
         # Make sure it doesn't touch other licences
         self.assertEqual(self.licence2.users.all().count(), 3)
 
-    def _get_base_objects_field(self):
+    def _get_base_objects_through_field(self):
         return ThroughField(
             column_name='base_objects',
             attribute='base_objects',
-            widget=BaseObjectThroughWidget(model=BaseObject),
+            widget=ManyToManyThroughWidget(
+                model=BaseObjectLicence,
+                related_model=BaseObject,
+                through_field='base_object',
+            ),
             through_model=BaseObjectLicence,
             through_from_field_name='licence',
             through_to_field_name='base_object'
         )
 
     def test_through_field_only_add(self):
-        field = self._get_base_objects_field()
+        field = self._get_base_objects_through_field()
         self.assertEqual(self.licence.base_objects.all().count(), 2)
         ids = [i.pk for i in self.back_office_assets]
         with self.assertNumQueries(3):
@@ -136,7 +140,7 @@ class DataImporterFieldsTestCase(TestCase):
         self.assertEqual(self.licence2.base_objects.all().count(), 2)
 
     def test_through_field_only_remove(self):
-        field = self._get_base_objects_field()
+        field = self._get_base_objects_through_field()
         self.assertEqual(self.licence.base_objects.all().count(), 2)
         ids = [self.back_office_assets[0].pk]
         with self.assertNumQueries(3):
@@ -153,7 +157,7 @@ class DataImporterFieldsTestCase(TestCase):
         self.assertEqual(self.licence2.base_objects.all().count(), 2)
 
     def test_through_field_add_and_remove(self):
-        field = self._get_base_objects_field()
+        field = self._get_base_objects_through_field()
         self.assertEqual(self.licence.base_objects.all().count(), 2)
         ids = [
             self.back_office_assets[1].pk,

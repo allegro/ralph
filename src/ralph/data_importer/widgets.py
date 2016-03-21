@@ -82,9 +82,17 @@ class UserManyToManyWidget(widgets.ManyToManyWidget):
 class ManyToManyThroughWidget(widgets.ManyToManyWidget):
     """
     Widget for many-to-many relations with through table. This widget accept
-    or return list of related models pks (other-end of through table).
+    or return list of related models PKs (other-end of through table).
     """
     def __init__(self, through_field, related_model, *args, **kwargs):
+        """
+        Args:
+            model: Django's through model
+            related_model: the-other-end model of m2m relation
+            through_field: name of field in through model pointing to
+                `related_model` (when used together with `ThroughField`, it
+                should be the same as `through_to_field_name`)
+        """
         self.through_field = through_field
         self.related_model = related_model
         super().__init__(*args, **kwargs)
