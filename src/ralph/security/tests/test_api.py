@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 from rest_framework import status
 
 from ralph.api.tests._base import RalphAPITestCase
-from ralph.data_center.tests.factories import IPAddressFactory
+from ralph.networks.tests.factories import IPAddressFactory
 from ralph.security.models import Risk, ScanStatus, SecurityScan, Vulnerability
 from ralph.security.tests.factories import (
     SecurityScanFactory,

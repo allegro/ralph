@@ -10,9 +10,9 @@ from ralph.admin.helpers import get_value_by_relation_path
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ComponentType
 from ralph.assets.models.components import Component, ComponentModel
-from ralph.data_center.models.networks import IPAddress
 from ralph.data_center.models.physical import DataCenterAsset
-from ralph.lib.mixins.models import NamedMixin
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
+from ralph.networks.models.networks import IPAddress
 
 logger = logging.getLogger(__name__)
 
@@ -132,7 +132,7 @@ def update_service_env_on_cloudproject_save(sender, instance, **kwargs):
         instance.children.all().update(service_env=instance.service_env)
 
 
-class CloudHost(BaseObject):
+class CloudHost(AdminAbsoluteUrlMixin, BaseObject):
     def save(self, *args, **kwargs):
         try:
             self.service_env = self.parent.service_env

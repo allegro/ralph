@@ -28,7 +28,6 @@ def get_imported_obj(model, old_pk):
         content_type=content_type,
         old_object_pk=str(old_pk)
     ).first()
-
     if not imported_obj:
         msg = (
             "Record with pk {pk} not found for model {model} "
