@@ -5,28 +5,45 @@
   <div class="row">
     <div class="large-12 columns">
       <h1>DNS edit</h1>
-      <form method="post" action="">
-        {% csrf_token %}
-        {{ formset.management_form }}
         <table>
-            <thead>
-              {% for name, field in formset.0.fields.items %}
-                <th>{{ field.label }}</th>
-              {% endfor %}
+          <thead>
+            {% for name, field in forms.0.fields.items %}
+              <th>{{ field.label }}</th>
+            {% endfor %}
+              <th></th>
+              <th></th>
             </thead>
-            {% for form in formset %}
+            {% for form in forms %}
+            {% if form.non_field_errors %}
+              <tr class="field-row error">
+                <td colspan="{{ forms.0.fields.items|length|add:2 }}" class="error">
+                <ul class="errorlist">
+                {% for error in form.non_field_errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+                </ul>
+                </td>
+              </tr>
+            {% endif %}
             <tr>
-              {% for field in form %}
-                <td>{{ field }} {{ field.errors }}</td>
-              {% endfor %}
-            </tr>
+              <form method="post" action="">
+              {% csrf_token %}
+                {% for field in form %}
+                  <td>{{ field }} {{ field.errors }}</td>
+                {% endfor %}
+                <td>
+                  <input type="submit" class="button" value="{% trans 'Save' %}" />
+                </td>
+                <td>
+                  {% if form.pk.value %}
+                    <input type="submit" name="delete" class="button small alert" value="{% trans 'Delete' %}" onclick="return confirm('{% trans 'dwqdqwdwq' %}');" />
+                  {% endif %}
+                </td>
+              </form>
+              </tr>
             {% endfor %}
         </table>
         <br />
-        {% with show_save=True %}
-          {% include 'admin/submit_line.html' %}
-        {% endwith %}
-      </form>
     </div>
   </div>
 {% endblock %}
