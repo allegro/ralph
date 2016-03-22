@@ -30,7 +30,7 @@ class DNSRecordForm(forms.Form):
     )
     type = forms.ChoiceField(
         label=_("Record type"),
-        choices=[('', '-')] + RecordType(),
+        choices=RecordType(),
     )
     content = forms.CharField(
         label=_('Content'),

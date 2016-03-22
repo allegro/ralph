@@ -4,6 +4,7 @@ from urllib.parse import urlencode, urljoin
 
 import requests
 from django.conf import settings
+from django.utils.translation import ugettext_lazy as _
 
 from ralph.dns.forms import RecordType
 from ralph.helpers import cache
@@ -67,7 +68,7 @@ class DNSaaS:
                     'ptr': item['name'] in ptr_list and item['type'] == 'A',
                     'owner': settings.DNSAAS_OWNER
                 })
-        return dns_records
+        return sorted(dns_records, key=lambda x: x['type'])
 
     def update_dns_records(self, record):
         """
@@ -95,8 +96,7 @@ class DNSaaS:
         }
         request = self.session.patch(url, data=data)
         if request.status_code != 200:
-            return False
-        return True
+            return request.json()
 
     @cache()
     def get_domain(self, domain_name):
@@ -118,8 +118,6 @@ class DNSaaS:
         if result:
             return result[0]['url']
 
-        return False
-
     def create_dns_records(self, record):
         """
         Create new DNS record.
@@ -138,7 +136,7 @@ class DNSaaS:
             logger.error(
                 'Domain not found for record {}'.format(record)
             )
-            return False
+            return {'name': [_('Domain not found.')]}
 
         data = {
             'name': record['name'],
@@ -154,9 +152,7 @@ class DNSaaS:
         }
         request = self.session.post(url, data=data)
         if request.status_code != 201:
-            return False
-
-        return True
+            return request.json()
 
     def delete_dns_records(self, record_id):
         """
@@ -173,6 +169,4 @@ class DNSaaS:
         )
         request = self.session.delete(url)
         if request.status_code != 204:
-            return False
-
-        return True
+            return request.json()
