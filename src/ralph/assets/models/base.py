@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 from ralph.lib.mixins.models import TaggableMixin, TimeStampMixin
@@ -32,3 +33,10 @@ class BaseObject(
     )
     remarks = models.TextField(blank=True)
     service_env = models.ForeignKey('ServiceEnvironment', null=True)
+
+    @property
+    def _str_with_type(self):
+        return '{}: {}'.format(
+            ContentType.objects.get_for_id(self.content_type_id),
+            str(self)
+        )

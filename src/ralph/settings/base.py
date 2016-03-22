@@ -283,3 +283,6 @@ OPENSTACK_INSTANCES = json.loads(os.environ.get('OPENSTACK_INSTANCES', '[]'))
 
 # issue tracker url for Operations urls (issues ids) - should end with /
 ISSUE_TRACKER_URL = os.environ.get('ISSUE_TRACKER_URL', '')
+
+# Networks
+DEFAULT_NETWORK_MARGIN = int(os.environ.get('DEFAULT_NETWORK_MARGIN', 10))
