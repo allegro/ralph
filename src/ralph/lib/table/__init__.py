@@ -1,3 +1,3 @@
-from ralph.lib.table.table import Table
+from ralph.lib.table.table import Table, TableWithUrl
 
-__all__ = ['Table']
+__all__ = ['Table', 'TableWithUrl']
