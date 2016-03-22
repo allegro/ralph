@@ -1,10 +1,12 @@
+from urllib.parse import urlencode
+
 from django import forms
 from django.core.urlresolvers import reverse
 from django.forms.models import ModelForm
 from django.utils.translation import ugettext_lazy as _
-
 from ralph.admin import RalphAdmin, register
-from ralph.admin.mixins import RalphAdminFormMixin, RalphMPTTAdmin
+from ralph.admin.filters import RelatedAutocompleteFieldListFilter
+from ralph.admin.mixins import RalphAdminFormMixin
 from ralph.data_importer import resources
 from ralph.lib.mixins.admin import ParentChangeMixin
 from ralph.networks.models.networks import (
@@ -41,11 +43,36 @@ class AddNetworkForm(RalphAdminFormMixin, ModelForm):
 
 
 @register(Network)
-class NetworkAdmin(RalphMPTTAdmin):
+class NetworkAdmin(RalphAdmin):
+
+    def subnetwork(self, obj):
+        return '<a href="{}?{}">{} ({})</a>'.format(
+            reverse('admin:networks_network_changelist'),
+            urlencode({'parent': obj.pk}),
+            _('Show'),
+            obj.get_descendant_count()
+        )
+
+    subnetwork.short_description = 'Subnetwork'
+    subnetwork.allow_tags = True
+
+    def name(self, obj):
+        return obj.name
+    name.short_description = _('Name')
+    name.admin_order_field = ['name']
+
+    def address(self, obj):
+        return obj.address
+    address.short_description = _('Network address')
+    address.admin_order_field = ['min_ip']
+
+    change_list_template = 'networks/network_change_list.html'
     change_form_template = 'admin/data_center/network/change_form.html'
     search_fields = ['address', 'remarks']
-    list_display = ['name', 'address', 'kind', 'vlan']
-    list_filter = ['kind', 'dhcp_broadcast']  # noqa add rack when multi widget will be available
+    list_display = ['name', 'subnetwork', 'address', 'kind', 'vlan']
+    list_filter = ['kind', 'dhcp_broadcast',
+        ('parent', RelatedAutocompleteFieldListFilter)
+    ]  # noqa add rack when multi widget will be available
     raw_id_fields = ['racks', 'terminators']
     resource_class = resources.NetworkResource
     # TODO: adapt form to handle change action
@@ -53,6 +80,8 @@ class NetworkAdmin(RalphMPTTAdmin):
 
     add_message = _('Network added to <a href="{}" _target="blank">{}</a>')
     change_message = _('Network reassigned from network <a href="{}" target="_blank">{}</a> to <a href="{}" target="_blank">{}</a>')  # noqa
+
+    # address.admin_order_field = 'number'
 
     def changeform_view(
         self, request, object_id=None, form_url='', extra_context=None
@@ -65,6 +94,16 @@ class NetworkAdmin(RalphMPTTAdmin):
         return super().changeform_view(
             request, object_id, form_url, extra_context
         )
+
+    def changelist_view(self, request, extra_context=None):
+        if extra_context is None:
+            extra_context = {}
+        parent = request.GET.get('parent', None)
+        if parent:
+            parent = Network.objects.get(pk=parent)
+            extra_context.update({'parent': parent})
+
+        return super().changelist_view(request, extra_context)
 
     def get_form(self, request, obj=None, **kwargs):
         """
@@ -82,12 +121,18 @@ class NetworkAdmin(RalphMPTTAdmin):
         """
         bottom_margin = form.cleaned_data.get('bottom_margin', None)
         top_margin = form.cleaned_data.get('top_margin', None)
+        obj.save()
         if bottom_margin and top_margin:
             obj.reserve_margin_addresses(
                 bottom_count=form.cleaned_data['bottom_margin'],
                 top_count=form.cleaned_data['top_margin'],
             )
-        obj.save()
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        parent = request.GET.get('parent', None)
+        queryset = queryset.filter(parent=parent)
+        return queryset
 
 
 @register(IPAddress)

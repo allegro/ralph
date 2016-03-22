@@ -1,0 +1,9 @@
+{% extends 'admin/change_list.html' %}
+{% block breadcrumbs %}
+<ul class="breadcrumbs">
+  <li><a href="{% url 'admin:networks_network_changelist' %}">Network</a></li>
+  <li class="current">
+    <a href="#">{{ parent.get_siblings }}</a>
+  </li>
+</ul>
+{% endblock %}
