@@ -275,6 +275,7 @@ class Network(
                 status=IPAddressStatus.reserved
             ))
         IPAddress.objects.bulk_create(ips)
+        # TODO: handle decreasing count
         return len(to_create), existing_ips - to_create
 
     def get_first_free_ip(self):

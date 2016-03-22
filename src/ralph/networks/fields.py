@@ -27,7 +27,14 @@ class IPNetwork(Field):
             return value
         if value is None:
             return value
-        return ipaddress.ip_network(value)
+        try:
+            return ipaddress.ip_network(value)
+        except ValueError as exc:
+            raise ValidationError(
+                str(exc),
+                code='invalid',
+                params={'value': value},
+            )
 
     def from_db_value(self, value, expression, connection, context):
         if value is None:

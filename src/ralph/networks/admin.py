@@ -10,6 +10,7 @@ from ralph.admin.mixins import RalphAdminFormMixin, RalphMPTTAdmin
 from ralph.assets.models import BaseObject
 from ralph.data_importer import resources
 from ralph.lib.mixins.admin import ParentChangeMixin
+from ralph.lib.table import TableWithUrl
 from ralph.networks.models.networks import (
     DiscoveryQueue,
     IPAddress,
@@ -34,7 +35,7 @@ class DiscoveryQueueAdmin(RalphAdmin):
     pass
 
 
-class AddNetworkForm(RalphAdminFormMixin, ModelForm):
+class NetworkForm(RalphAdminFormMixin, ModelForm):
     top_margin = forms.IntegerField(initial=settings.DEFAULT_NETWORK_MARGIN)
     bottom_margin = forms.IntegerField(initial=settings.DEFAULT_NETWORK_MARGIN)
 
@@ -52,11 +53,30 @@ class NetworkAdmin(RalphMPTTAdmin):
     list_select_related = ['kind']
     raw_id_fields = ['racks', 'terminators']
     resource_class = resources.NetworkResource
+    readonly_fields = [
+        'show_subnetworks', 'show_addresses', 'show_parent_networks'
+    ]
     # TODO: adapt form to handle change action
-    add_form = AddNetworkForm
+    form = NetworkForm
 
     add_message = _('Network added to <a href="{}" _target="blank">{}</a>')
     change_message = _('Network reassigned from network <a href="{}" target="_blank">{}</a> to <a href="{}" target="_blank">{}</a>')  # noqa
+
+    fieldsets = (
+        (_('Basic info'), {
+            'fields': [
+                'name', 'address', 'remarks', 'terminators', 'vlan', 'racks',
+                'network_environment', 'kind', 'dhcp_broadcast', 'top_margin',
+                'bottom_margin'
+            ]
+        }),
+        (_('Relations'), {
+            'fields': [
+                'show_parent_networks', 'show_subnetworks', 'show_addresses'
+            ]
+        })
+
+    )
 
     def changeform_view(
         self, request, object_id=None, form_url='', extra_context=None
@@ -70,16 +90,6 @@ class NetworkAdmin(RalphMPTTAdmin):
             request, object_id, form_url, extra_context
         )
 
-    def get_form(self, request, obj=None, **kwargs):
-        """
-        Use special form during user creation
-        """
-        defaults = {}
-        if obj is None:
-            defaults['form'] = self.add_form
-        defaults.update(kwargs)
-        return super().get_form(request, obj, **defaults)
-
     def save_model(self, request, obj, form, change):
         """
         Given a model instance save it to the database.
@@ -92,6 +102,38 @@ class NetworkAdmin(RalphMPTTAdmin):
                 bottom_count=form.cleaned_data['bottom_margin'],
                 top_count=form.cleaned_data['top_margin'],
             )
+
+    def show_parent_networks(self, network):
+        if not network or not network.pk:
+            return '&ndash;'
+        nodes = network.get_ancestors(include_self=False)
+        nodes_link = []
+        for node in nodes:
+            nodes_link.append('<a href="{}" target="blank">{}</a>'.format(
+                node.get_absolute_url(), node
+            ))
+        return ' > '.join(nodes_link)
+    show_parent_networks.short_description = _('Parent networks')
+    show_parent_networks.allow_tags = True
+
+    def show_subnetworks(self, network):
+        if not network or not network.pk:
+            return '&ndash;'
+        return TableWithUrl(
+            network.get_subnetworks().order_by('min_ip'), ['name', 'address']
+        ).render()
+    show_subnetworks.allow_tags = True
+    show_subnetworks.short_description = _('Subnetworks')
+
+    def show_addresses(self, network):
+        if not network or not network.pk:
+            return '&ndash;'
+        return TableWithUrl(
+            IPAddress.objects.filter(network=network).order_by('number'),
+            ['address', 'hostname']
+        ).render()
+    show_addresses.allow_tags = True
+    show_addresses.short_description = _('Addresses')
 
 
 @register(IPAddress)
