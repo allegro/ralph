@@ -10,18 +10,18 @@
             {% for name, field in forms.0.fields.items %}
               <th>{{ field.label }}</th>
             {% endfor %}
-              <th></th>
-              <th></th>
-            </thead>
-            {% for form in forms %}
+            <th></th>
+            <th></th>
+          </thead>
+          {% for form in forms %}
             {% if form.non_field_errors %}
               <tr class="field-row error">
                 <td colspan="{{ forms.0.fields.items|length|add:2 }}" class="error">
-                <ul class="errorlist">
-                {% for error in form.non_field_errors %}
-                  <li>{{ error }}</li>
-                {% endfor %}
-                </ul>
+                  <ul class="errorlist">
+                    {% for error in form.non_field_errors %}
+                      <li>{{ error }}</li>
+                    {% endfor %}
+                  </ul>
                 </td>
               </tr>
             {% endif %}
@@ -36,12 +36,12 @@
                 </td>
                 <td>
                   {% if form.pk.value %}
-                    <input type="submit" name="delete" class="button small alert" value="{% trans 'Delete' %}" onclick="return confirm('{% trans 'dwqdqwdwq' %}');" />
+                    <input type="submit" name="delete" class="button small alert" value="{% trans 'Delete' %}" onclick="return confirm('{% trans 'Are you sure to delete?' %}');" />
                   {% endif %}
                 </td>
               </form>
-              </tr>
-            {% endfor %}
+            </tr>
+          {% endfor %}
         </table>
         <br />
     </div>

@@ -85,7 +85,6 @@ class DNSaaS:
         )
         data = {
             'name': record['name'],
-            'type': 'jakis',
             'type': RecordType.raw_from_id(int(record['type'])),
             'content': record['content'],
             'auto_ptr': (
@@ -97,10 +96,7 @@ class DNSaaS:
         }
         request = self.session.patch(url, data=data)
         if request.status_code != 200:
-            errors = request.json()
-            # {'type': ['"jakis" is not a valid choice.']}
-
-            return errors
+            return request.json()
 
     @cache()
     def get_domain(self, domain_name):
@@ -140,7 +136,7 @@ class DNSaaS:
             logger.error(
                 'Domain not found for record {}'.format(record)
             )
-            return _('Domain not found.')
+            return {'name': [_('Domain not found.')]}
 
         data = {
             'name': record['name'],
@@ -156,7 +152,7 @@ class DNSaaS:
         }
         request = self.session.post(url, data=data)
         if request.status_code != 201:
-            return _('Cannot add new record')
+            return request.json()
 
     def delete_dns_records(self, record_id):
         """
@@ -173,4 +169,4 @@ class DNSaaS:
         )
         request = self.session.delete(url)
         if request.status_code != 204:
-            return _('Cannot delete record')
+            return request.json()

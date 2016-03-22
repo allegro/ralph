@@ -40,31 +40,31 @@ class DNSView(RalphDetailView):
 
     def post(self, request, *args, **kwargs):
         forms = self.get_forms()
-        current_form = DNSRecordForm(request.POST)
+        posted_form = DNSRecordForm(request.POST)
         for i, form in enumerate(forms):
             if (
                 str(form.data.get('pk', '')) ==
-                str(current_form.data.get('pk', ''))
+                str(posted_form.data.get('pk', ''))
             ):
-                forms[i] = current_form
+                forms[i] = posted_form
                 break
 
-        if current_form.is_valid():
-            if current_form.data.get('delete'):
+        if posted_form.is_valid():
+            if posted_form.data.get('delete'):
                 errors = self.dnsaas.delete_dns_records(form.data['pk'])
-            elif current_form.cleaned_data.get('pk'):
+            elif posted_form.cleaned_data.get('pk'):
                 errors = self.dnsaas.update_dns_records(
-                    current_form.cleaned_data
+                    posted_form.cleaned_data
                 )
             else:
                 errors = self.dnsaas.create_dns_records(
-                    current_form.cleaned_data
+                    posted_form.cleaned_data
                 )
 
             if errors:
-                for k, v in errors.items():
-                    for er in v:
-                        current_form.add_error(k, er)
+                for field_name, field_errors in errors.items():
+                    for field_error in field_errors:
+                        posted_form.add_error(field_name, field_error)
             else:
                 return HttpResponseRedirect('.')
 
