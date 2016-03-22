@@ -475,7 +475,9 @@ def register_custom_filters():
             RelatedFieldListFilter
         ),
         (
-            lambda f: isinstance(f, models.ForeignKey),
+            lambda f: isinstance(f, (
+                models.ForeignKey, models.ManyToManyField
+            )),
             RelatedAutocompleteFieldListFilter
         ),
         (lambda f: isinstance(f, TaggableManager), TagsListFilter),
