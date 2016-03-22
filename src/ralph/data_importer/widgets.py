@@ -6,7 +6,6 @@ from django.contrib.contenttypes.models import ContentType
 from import_export import widgets
 
 from ralph.assets.models.assets import ServiceEnvironment
-from ralph.assets.models.base import BaseObject
 from ralph.back_office.models import BackOfficeAsset
 from ralph.data_center.models.physical import DataCenterAsset
 from ralph.data_importer.models import ImportedObjects
@@ -80,18 +79,34 @@ class UserManyToManyWidget(widgets.ManyToManyWidget):
         return self.separator.join([obj.username for obj in value.all()])
 
 
-class BaseObjectThroughWidget(widgets.ManyToManyWidget):
+class ManyToManyThroughWidget(widgets.ManyToManyWidget):
+    """
+    Widget for many-to-many relations with through table. This widget accept
+    or return list of related models PKs (other-end of through table).
+    """
+    def __init__(self, through_field, related_model, *args, **kwargs):
+        """
+        Args:
+            model: Django's through model
+            related_model: the-other-end model of m2m relation
+            through_field: name of field in through model pointing to
+                `related_model` (when used together with `ThroughField`, it
+                should be the same as `through_to_field_name`)
+        """
+        self.through_field = through_field
+        self.related_model = related_model
+        super().__init__(*args, **kwargs)
 
     def clean(self, value):
         if not value:
-            return BaseObject.objects.none()
-        return BaseObject.objects.filter(
+            return self.related_model.objects.none()
+        return self.related_model.objects.filter(
             pk__in=value.split(self.separator)
         )
 
     def render(self, value):
         return self.separator.join(
-            [str(obj.pk) for obj in value.all()]
+            [str(getattr(obj, self.through_field).pk) for obj in value.all()]
         )
 
 
@@ -107,6 +122,17 @@ class ExportManyToManyStrWidget(widgets.ManyToManyWidget):
         return self.separator.join([str(obj) for obj in value.all()])
 
 
+class ExportManyToManyStrTroughWidget(ManyToManyThroughWidget):
+    """
+    Exporter-equivalent of `ManyToManyThroughWidget` - return str of whole
+    object instead of pk.
+    """
+    def render(self, value):
+        return self.separator.join(
+            [str(getattr(obj, self.through_field)) for obj in value.all()]
+        )
+
+
 class BaseObjectManyToManyWidget(widgets.ManyToManyWidget):
 
     """Widget for BO/DC base objects."""
@@ -118,6 +144,7 @@ class BaseObjectManyToManyWidget(widgets.ManyToManyWidget):
         content_types = ContentType.objects.get_for_models(
             BackOfficeAsset,
             DataCenterAsset,
+            # TODO: more types
         )
         imported_obj_ids = ImportedObjects.objects.filter(
             content_type__in=content_types.values(),

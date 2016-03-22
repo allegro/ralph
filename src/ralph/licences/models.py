@@ -3,7 +3,7 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Sum
+from django.db.models import Prefetch, Sum
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
@@ -95,6 +95,35 @@ class LicencesUsedFreeManager(models.Manager):
                 'baseobject_count': base_object_count_query,
             }
         )
+
+LICENCES_RELATED_OBJECTS_PREFETCH_RELATED = [
+    'users',
+    # prefetch all baseobjects related with licence; this allows to call
+    # [bol.base_object for bol in licence.baseobjectlicence_set.all()]
+    # without additional queries
+    Prefetch(
+        'baseobjectlicence_set__base_object',
+        # polymorphic manager is used to get final instance of the object
+        # (ex. DataCenterAsset)
+        queryset=BaseObject.polymorphic_objects.all()
+    )
+]
+
+
+class LicencesRelatedObjectsManager(models.Manager):
+    """
+    Prefetch related objects by-default
+    """
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related(
+            *LICENCES_RELATED_OBJECTS_PREFETCH_RELATED
+        )
+
+
+class LicencesUsedFreeRelatedObjectsManager(
+    LicencesUsedFreeManager, LicencesRelatedObjectsManager
+):
+    pass
 
 
 class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
@@ -197,6 +226,8 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
 
     polymorphic_objects = PolymorphicQuerySet.as_manager()
     objects_used_free = LicencesUsedFreeManager()
+    objects_with_related = LicencesRelatedObjectsManager()
+    objects_used_free_with_related = LicencesUsedFreeRelatedObjectsManager()
 
     def __str__(self):
         return "{} ({} free) x {} - {} ({})".format(

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import os
 import urllib
 from copy import copy
@@ -30,6 +31,8 @@ from ralph.lib.permissions.admin import (
 )
 from ralph.lib.permissions.models import PermByFieldMixin
 from ralph.lib.permissions.views import PermissionViewMetaClass
+
+logger = logging.getLogger(__name__)
 
 FORMFIELD_FOR_DBFIELD_DEFAULTS = {
     models.DateField: {'widget': widgets.AdminDateWidget},
@@ -279,18 +282,12 @@ class RalphAdminMixin(RalphAutocompleteMixin):
         return super().get_queryset(*args, **kwargs)
 
 
-class RalphAdmin(
-    PermissionAdminMixin,
-    ImportExportModelAdmin,
-    AjaxAutocompleteMixin,
-    RalphAdminMixin,
-    VersionAdmin
-):
-    @property
-    def media(self):
-        return forms.Media()
+class RalphAdminImportExportMixin(ImportExportModelAdmin):
+    _export_queryset_manager = None
 
     def get_export_queryset(self, request):
+        # mark request as "exporter" request
+        request._is_export = True
         queryset = super().get_export_queryset(request)
         resource = self.get_export_resource_class()
         fk_fields = []
@@ -316,13 +313,35 @@ class RalphAdmin(
 
     def get_export_resource_class(self):
         """
-        Returns ResourceClass to use for export.
+        If `export_class` is defined in Admin, use it.
         """
         resource_class = self.get_resource_class()
         export_class = getattr(resource_class, 'export_class', None)
         if export_class:
             return export_class
         return resource_class
+
+    def get_queryset(self, request):
+        # if it is "exporter" request, try to use `_export_queryset_manager`
+        # manager defined in admin
+        if hasattr(request, '_is_export') and self._export_queryset_manager:
+            logger.info('Using {} manager for export'.format(
+                self._export_queryset_manager
+            ))
+            return getattr(self.model, self._export_queryset_manager).all()
+        return super().get_queryset(request)
+
+
+class RalphAdmin(
+    PermissionAdminMixin,
+    RalphAdminImportExportMixin,
+    AjaxAutocompleteMixin,
+    RalphAdminMixin,
+    VersionAdmin
+):
+    @property
+    def media(self):
+        return forms.Media()
 
 
 class RalphMPTTAdmin(MPTTModelAdmin, RalphAdmin):

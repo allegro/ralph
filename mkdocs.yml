@@ -15,6 +15,7 @@ pages:
   - Developer guide:
       - Before you start: CONTRIBUTING.md
       - Architecture: development/overview.md
+      - RalphAdmin: development/admin.md
       - Transitions: development/transitions.md
       - Addons : development/addons.md
       - Packaging: development/packaging.md

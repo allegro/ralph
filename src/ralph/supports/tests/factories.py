@@ -8,6 +8,7 @@ from factory.fuzzy import FuzzyText
 from ralph.accounts.tests.factories import RegionFactory
 from ralph.assets.tests.factories import AssetHolderFactory, BudgetInfoFactory
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
+from ralph.data_center.tests.factories import DataCenterAssetFactory
 from ralph.supports.models import (
     BaseObjectsSupport,
     Support,
@@ -65,3 +66,11 @@ class BaseObjectsSupportFactory(DjangoModelFactory):
 
     class Meta:
         model = BaseObjectsSupport
+
+
+class BackOfficeAssetSupportFactory(BaseObjectsSupportFactory):
+    pass
+
+
+class DataCenterAssetSupportFactory(BaseObjectsSupportFactory):
+    baseobject = factory.SubFactory(DataCenterAssetFactory)

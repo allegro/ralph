@@ -13,6 +13,7 @@ from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
 from ralph.lib.mixins.fields import BaseObjectForeignKey
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
+from ralph.lib.polymorphic.models import PolymorphicQuerySet
 
 
 class SupportType(NamedMixin, models.Model):
@@ -24,6 +25,36 @@ class SupportStatus(Choices):
 
     SUPPORT = Choices.Group(0)
     new = _("new")
+
+
+SUPPORTS_RELATED_OBJECTS_PREFETCH_RELATED = [
+    # prefetch all baseobjects related with support; this allows to call
+    # [bos.base_object for bos in support.baseobjectssupport_set.all()]
+    # without additional queries
+    models.Prefetch(
+        'baseobjectssupport_set__baseobject',
+        # polymorphic manager is used to get final instance of the object
+        # (ex. DataCenterAsset)
+        queryset=BaseObject.polymorphic_objects.all()
+    )
+]
+
+
+class AssignedObjectsCountManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().annotate(
+            assigned_objects_count=models.Count('base_objects')
+        )
+
+
+class SupportsRelatedObjectsManager(AssignedObjectsCountManager):
+    """
+    Prefetch related objects by-default
+    """
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related(
+            *SUPPORTS_RELATED_OBJECTS_PREFETCH_RELATED
+        )
 
 
 class Support(
@@ -98,6 +129,10 @@ class Support(
         'serial_no',
         'support_type'
     ]
+
+    polymorphic_objects = PolymorphicQuerySet.as_manager()
+    # automatically prefetch related objects
+    objects_with_related = SupportsRelatedObjectsManager()
 
     def __init__(self, *args, **kwargs):
         self.saving_user = None
