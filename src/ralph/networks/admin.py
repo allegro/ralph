@@ -1,5 +1,3 @@
-from urllib.parse import urlencode
-
 from django import forms
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -9,11 +7,13 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, register
 from ralph.admin.filters import RelatedAutocompleteFieldListFilter
-from ralph.admin.mixins import RalphAdminFormMixin
+from ralph.admin.mixins import RalphAdminFormMixin, RalphMPTTAdmin
+from ralph.admin.views.main import RalphChangeList
 from ralph.assets.models import BaseObject
 from ralph.data_importer import resources
 from ralph.lib.mixins.admin import ParentChangeMixin
 from ralph.lib.table import TableWithUrl
+from ralph.networks.filters import IPRangeFilter, NetworkRangeFilter
 from ralph.networks.models.networks import (
     DiscoveryQueue,
     IPAddress,
@@ -47,17 +47,59 @@ class NetworkForm(RalphAdminFormMixin, ModelForm):
         exclude = ('parent',)
 
 
+def ip_address_base_object_link(obj):
+    if not obj.base_object:
+        return '&ndash;'
+    return '<a href="{}" target="_blank">{}</a>'.format(
+        reverse('admin:view_on_site', args=(
+            obj.base_object.content_type_id,
+            obj.base_object_id
+        )),
+        obj.base_object._str_with_type,
+    )
+
+
+class LinkedObjectTable(TableWithUrl):
+
+    def linked_object(self, item):
+        return ip_address_base_object_link(item)
+
+    linked_object.title = _('Linked object')
+
+
+class NetworkRalphChangeList(RalphChangeList):
+    def get_queryset(self, request):
+        """
+        Check if it has been used any filter,
+        if yes change mptt_indent_field value in model_admin to '0'
+        so as not to generate a tree list
+
+        Args:
+            request: Django Request object
+
+        Returns:
+            Django queryset
+        """
+        queryset = super().get_queryset(request)
+        filter_params = self.get_filters_params()
+        if filter_params:
+            self.model_admin.mptt_indent_field = 10
+        else:
+            self.model_admin.mptt_indent_field = 0
+        return queryset
+
+
 @register(Network)
-class NetworkAdmin(RalphAdmin):
-    change_list_template = 'networks/network_change_list.html'
+class NetworkAdmin(RalphMPTTAdmin):
     change_form_template = 'admin/data_center/network/change_form.html'
     search_fields = ['address', 'remarks']
     list_display = [
-        'name', 'subnetwork', 'address', 'kind', 'vlan', 'network_environment'
+        'name', 'address', 'kind', 'vlan', 'network_environment'
     ]
     list_filter = [
         'kind', 'dhcp_broadcast', 'racks', 'terminators', 'service_env',
-        ('parent', RelatedAutocompleteFieldListFilter)
+        ('parent', RelatedAutocompleteFieldListFilter),
+        ('min_ip', NetworkRangeFilter)
     ]
     list_select_related = ['kind']
     raw_id_fields = ['racks', 'terminators']
@@ -84,8 +126,10 @@ class NetworkAdmin(RalphAdmin):
                 'show_parent_networks', 'show_subnetworks', 'show_addresses'
             ]
         })
-
     )
+
+    def get_changelist(self, request, **kwargs):
+        return NetworkRalphChangeList
 
     def changeform_view(
         self, request, object_id=None, form_url='', extra_context=None
@@ -99,18 +143,6 @@ class NetworkAdmin(RalphAdmin):
             request, object_id, form_url, extra_context
         )
 
-    def changelist_view(self, request, extra_context=None):
-        if extra_context is None:
-            extra_context = {}
-        parent = request.GET.get('parent', None)
-        if parent:
-            parent = Network.objects.get(pk=parent)
-            extra_context.update(
-                {'parents_network': parent.get_ancestors(include_self=True)}
-            )
-
-        return super().changelist_view(request, extra_context)
-
     def save_model(self, request, obj, form, change):
         """
         Given a model instance save it to the database.
@@ -123,20 +155,6 @@ class NetworkAdmin(RalphAdmin):
                 bottom_count=form.cleaned_data['bottom_margin'],
                 top_count=form.cleaned_data['top_margin'],
             )
-
-    def subnetwork(self, obj):
-        count = obj.get_descendant_count()
-        if count:
-            return '<a href="{}?{}">{} ({})</a>'.format(
-                reverse('admin:networks_network_changelist'),
-                urlencode({'parent': obj.pk}),
-                _('Show'),
-                count
-            )
-        return ''
-
-    subnetwork.short_description = 'Subnetwork'
-    subnetwork.allow_tags = True
 
     def address(self, obj):
         return obj.address
@@ -152,15 +170,18 @@ class NetworkAdmin(RalphAdmin):
             nodes_link.append('<a href="{}" target="blank">{}</a>'.format(
                 node.get_absolute_url(), node
             ))
-        return ' > '.join(nodes_link)
+        return ' <br /> '.join(nodes_link)
     show_parent_networks.short_description = _('Parent networks')
     show_parent_networks.allow_tags = True
 
     def show_subnetworks(self, network):
         if not network or not network.pk:
             return '&ndash;'
+
         return TableWithUrl(
-            network.get_subnetworks().order_by('min_ip'), ['name', 'address']
+            network.get_subnetworks().order_by('min_ip'),
+            ['name', 'address'],
+            url_field='name'
         ).render()
     show_subnetworks.allow_tags = True
     show_subnetworks.short_description = _('Subnetworks')
@@ -168,26 +189,34 @@ class NetworkAdmin(RalphAdmin):
     def show_addresses(self, network):
         if not network or not network.pk:
             return '&ndash;'
-        return TableWithUrl(
+
+        return LinkedObjectTable(
             IPAddress.objects.filter(network=network).order_by('number'),
-            ['address', 'hostname']
+            ['address', 'linked_object'],
+            url_field='address'
         ).render()
     show_addresses.allow_tags = True
     show_addresses.short_description = _('Addresses')
 
-    def get_queryset(self, request):
-        queryset = super().get_queryset(request)
-        parent = request.GET.get('parent', None)
-        queryset = queryset.filter(parent=parent)
-        return queryset
+    def get_paginator(
+        self, request, queryset, per_page, orphans=0,
+        allow_empty_first_page=True
+    ):
+        # Return all count found records because we want
+        # display the tree mptt correctly for all networks.
+        per_page = queryset.count()
+        return self.paginator(
+            queryset, per_page, orphans, allow_empty_first_page
+        )
 
 
 @register(IPAddress)
 class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
     search_fields = ['address']
-    list_filter = ['is_public', 'is_management']
+    list_filter = ['is_public', 'is_management', ('address', IPRangeFilter)]
     list_display = [
-        'address', 'hostname', 'base_object_link', 'is_gateway', 'is_public'
+        'ip_address', 'hostname', 'base_object_link', 'is_gateway',
+        'is_public'
     ]
     readonly_fields = ['get_network_path', 'is_public', 'is_gateway']
     raw_id_fields = ['base_object']
@@ -230,15 +259,16 @@ class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
             queryset=BaseObject.polymorphic_objects.all())
         )
 
-    def base_object_link(self, obj):
-        if not obj.base_object:
-            return '&ndash;'
-        return '<a href="{}" target="_blank">{}</a>'.format(
-            reverse('admin:view_on_site', args=(
-                obj.base_object.content_type_id,
-                obj.base_object_id
-            )),
-            obj.base_object._str_with_type,
+    def ip_address(self, obj):
+        return '<a href="{}" target="blank">{}</a>'.format(
+            obj.get_absolute_url(), obj.address
         )
+
+    ip_address.short_description = _('IP address')
+    ip_address.admin_order_field = 'number'
+    ip_address.allow_tags = True
+
+    def base_object_link(self, obj):
+        return ip_address_base_object_link(obj)
     base_object_link.short_description = _('Linked object')
     base_object_link.allow_tags = True
