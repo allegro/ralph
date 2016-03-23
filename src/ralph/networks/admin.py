@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 from django import forms
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -6,7 +8,8 @@ from django.forms.models import ModelForm
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, register
-from ralph.admin.mixins import RalphAdminFormMixin, RalphMPTTAdmin
+from ralph.admin.filters import RelatedAutocompleteFieldListFilter
+from ralph.admin.mixins import RalphAdminFormMixin
 from ralph.assets.models import BaseObject
 from ralph.data_importer import resources
 from ralph.lib.mixins.admin import ParentChangeMixin
@@ -45,11 +48,17 @@ class NetworkForm(RalphAdminFormMixin, ModelForm):
 
 
 @register(Network)
-class NetworkAdmin(RalphMPTTAdmin):
+class NetworkAdmin(RalphAdmin):
+    change_list_template = 'networks/network_change_list.html'
     change_form_template = 'admin/data_center/network/change_form.html'
     search_fields = ['address', 'remarks']
-    list_display = ['name', 'address', 'kind', 'vlan', 'network_environment']
-    list_filter = ['kind', 'dhcp_broadcast', 'racks', 'terminators']
+    list_display = [
+        'name', 'subnetwork', 'address', 'kind', 'vlan', 'network_environment'
+    ]
+    list_filter = [
+        'kind', 'dhcp_broadcast', 'racks', 'terminators',
+        ('parent', RelatedAutocompleteFieldListFilter)
+    ]
     list_select_related = ['kind']
     raw_id_fields = ['racks', 'terminators']
     resource_class = resources.NetworkResource
@@ -90,6 +99,18 @@ class NetworkAdmin(RalphMPTTAdmin):
             request, object_id, form_url, extra_context
         )
 
+    def changelist_view(self, request, extra_context=None):
+        if extra_context is None:
+            extra_context = {}
+        parent = request.GET.get('parent', None)
+        if parent:
+            parent = Network.objects.get(pk=parent)
+            extra_context.update(
+                {'parents_network': parent.get_ancestors(include_self=True)}
+            )
+
+        return super().changelist_view(request, extra_context)
+
     def save_model(self, request, obj, form, change):
         """
         Given a model instance save it to the database.
@@ -102,6 +123,25 @@ class NetworkAdmin(RalphMPTTAdmin):
                 bottom_count=form.cleaned_data['bottom_margin'],
                 top_count=form.cleaned_data['top_margin'],
             )
+
+    def subnetwork(self, obj):
+        count = obj.get_descendant_count()
+        if count:
+            return '<a href="{}?{}">{} ({})</a>'.format(
+                reverse('admin:networks_network_changelist'),
+                urlencode({'parent': obj.pk}),
+                _('Show'),
+                count
+            )
+        return ''
+
+    subnetwork.short_description = 'Subnetwork'
+    subnetwork.allow_tags = True
+
+    def address(self, obj):
+        return obj.address
+    address.short_description = _('Network address')
+    address.admin_order_field = ['min_ip']
 
     def show_parent_networks(self, network):
         if not network or not network.pk:
@@ -134,6 +174,12 @@ class NetworkAdmin(RalphMPTTAdmin):
         ).render()
     show_addresses.allow_tags = True
     show_addresses.short_description = _('Addresses')
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        parent = request.GET.get('parent', None)
+        queryset = queryset.filter(parent=parent)
+        return queryset
 
 
 @register(IPAddress)
