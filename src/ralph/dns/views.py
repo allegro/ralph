@@ -35,12 +35,14 @@ class DNSView(RalphDetailView):
         return forms
 
     def get(self, request, *args, **kwargs):
-        kwargs['forms'] = self.get_forms()
+        if 'forms' not in kwargs:
+            kwargs['forms'] = self.get_forms()
         return super().get(request, *kwargs, **kwargs)
 
     def post(self, request, *args, **kwargs):
         forms = self.get_forms()
         posted_form = DNSRecordForm(request.POST)
+        # Find form which request's data belongs to
         for i, form in enumerate(forms):
             if (
                 str(form.data.get('pk', '')) ==
@@ -69,4 +71,4 @@ class DNSView(RalphDetailView):
                 return HttpResponseRedirect('.')
 
         kwargs['forms'] = forms
-        return super().get(request, *args, **kwargs)
+        return self.get(request, *args, **kwargs)

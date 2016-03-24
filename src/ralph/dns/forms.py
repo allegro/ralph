@@ -45,3 +45,11 @@ class DNSRecordForm(forms.Form):
         initial=False,
         required=False
     )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if (
+            cleaned_data.get('ptr', False) and
+            cleaned_data.get('type', None) != str(RecordType.a.id)
+        ):
+            raise forms.ValidationError(_('Only A type record can be PTR'))

@@ -55,8 +55,7 @@ class DNSaaS:
             )
         )
         api_results = self.get_api_result(url)
-        ptr_list = set(
-            [i['content'] for i in api_results if i['type'] == 'PTR'])
+        ptrs = set([i['content'] for i in api_results if i['type'] == 'PTR'])
 
         for item in api_results:
             if item['type'] in {'A', 'CNAME', 'TXT'}:
@@ -65,7 +64,7 @@ class DNSaaS:
                     'name': item['name'],
                     'type': RecordType.from_name(item['type'].lower()).id,
                     'content': item['content'],
-                    'ptr': item['name'] in ptr_list and item['type'] == 'A',
+                    'ptr': item['name'] in ptrs and item['type'] == 'A',
                     'owner': settings.DNSAAS_OWNER
                 })
         return sorted(dns_records, key=lambda x: x['type'])
@@ -78,7 +77,7 @@ class DNSaaS:
             record: record cleaned data
 
         Returns:
-            True or False if an error from api
+            Validation error from API or None if update correct
         """
         url = urljoin(
             settings.DNSAAS_URL, 'api/records/{}/'.format(record['pk'])
@@ -126,7 +125,7 @@ class DNSaaS:
             records: Record cleaned data
 
         Returns:
-            True or False if an error from api
+            Validation error from API or None if create correct
         """
 
         url = urljoin(settings.DNSAAS_URL, 'api/records/')
@@ -162,7 +161,7 @@ class DNSaaS:
             record_ids: ID's to delete
 
         Returns:
-            True or False if an error from api
+            Validation error from API or None if delete correct
         """
         url = urljoin(
             settings.DNSAAS_URL, 'api/records/{}/'.format(record_id)

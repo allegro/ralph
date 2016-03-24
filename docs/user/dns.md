@@ -15,6 +15,3 @@ Ralph integrated with DNSAAS [PowerDNS](https://github.com/allegro/django-powerd
 
 On the edit page of DataCenterAsset will appear a new tab DNS Edit.
 DNS records are matched using DataCenterAssets IP
-
-
-> "DNS edit is not transaction-safe, since it's communicating with external system through the api."
