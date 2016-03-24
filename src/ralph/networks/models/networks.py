@@ -175,6 +175,10 @@ class Network(
         default=True,
         db_index=True,
     )
+    service_env = models.ForeignKey(
+        'assets.ServiceEnvironment', related_name='networks', null=True,
+        default=None, blank=True,
+    )
 
     @cached_property
     def network(self):
