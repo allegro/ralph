@@ -56,7 +56,7 @@ class NetworkAdmin(RalphAdmin):
         'name', 'subnetwork', 'address', 'kind', 'vlan', 'network_environment'
     ]
     list_filter = [
-        'kind', 'dhcp_broadcast', 'racks', 'terminators',
+        'kind', 'dhcp_broadcast', 'racks', 'terminators', 'service_env',
         ('parent', RelatedAutocompleteFieldListFilter)
     ]
     list_select_related = ['kind']
@@ -75,8 +75,8 @@ class NetworkAdmin(RalphAdmin):
         (_('Basic info'), {
             'fields': [
                 'name', 'address', 'remarks', 'terminators', 'vlan', 'racks',
-                'network_environment', 'kind', 'dhcp_broadcast', 'top_margin',
-                'bottom_margin'
+                'network_environment', 'kind', 'service_env', 'dhcp_broadcast',
+                'top_margin', 'bottom_margin'
             ]
         }),
         (_('Relations'), {
