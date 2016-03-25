@@ -33,8 +33,20 @@ Final result:
 ![link-dashboard-final](/img/dashboard-final-dc.png "Final dashboard")
 
 
-## Special filters
+## Special filters and fields
 Special filters are some helpers to
+
+### series
+``series`` is special field which contains all annotated values and can be filtering like other fileds:
+```json
+{
+    "labels": "name",
+    "series": "serverroom__rack",
+    "filters": {
+        "series__lt": 5
+    },
+}
+```
 
 ### or, and
 ``or``, ``and`` extend query about extra condition, e.g.:
