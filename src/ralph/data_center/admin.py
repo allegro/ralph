@@ -42,6 +42,9 @@ from ralph.licences.models import BaseObjectLicence
 from ralph.operations.views import OperationViewReadOnlyForExisiting
 from ralph.supports.models import BaseObjectsSupport
 
+if settings.ENABLE_DNSAAS_INTEGRATION:
+    from ralph.dns.views import DNSView
+
 
 @register(Accessory)
 class AccessoryAdmin(RalphAdmin):
@@ -138,6 +141,8 @@ class DataCenterAssetAdmin(
         DataCenterAssetOperation,
         NetworkView,
     ]
+    if settings.ENABLE_DNSAAS_INTEGRATION:
+        change_views += [DNSView]
     show_transition_history = True
     resource_class = resources.DataCenterAssetResource
     list_display = [
