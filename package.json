@@ -14,7 +14,6 @@
     "run-sequence": "~1.1.0"
   },
   "devDependencies": {
-    "gulp-watch": "~4.2.4",
-    "gulp-qunit": "~1.2.1"
+    "gulp-watch": "~4.2.4"
   }
 }
