@@ -60,7 +60,7 @@ class Graph(NamedMixin, TimeStampMixin, models.Model):
         )
         return {
             'labels': [q[self.params['labels']] for q in queryset],
-            'series': [q['series'] for q in queryset],
+            'series': [int(q['series']) for q in queryset],
         }
 
     def render(self, **context):
