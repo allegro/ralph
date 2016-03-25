@@ -5,8 +5,7 @@ var gulp = require('gulp'),
     bower = require('gulp-bower'),
     prefixer = require('gulp-autoprefixer'),
     sass = require('gulp-sass'),
-    sourcemaps = require('gulp-sourcemaps'),
-    qunit = require('gulp-qunit');
+    sourcemaps = require('gulp-sourcemaps');
 
 var config = {
     bowerDir: './bower_components/',
@@ -108,10 +107,6 @@ gulp.task('js', function(){
         "./bower_components/webcomponentsjs/**/*",
     ], {base:"."})
         .pipe(gulp.dest("src/ralph/admin/static/"));
-});
-
-gulp.task('test', function() {
-    return gulp.src('./src/ralph/js_tests/*_runner.html').pipe(qunit());
 });
 
 gulp.task('watch', function() {
