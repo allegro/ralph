@@ -30,7 +30,8 @@ class GraphForm(RalphAdminForm):
 
         self.initial['params'] = json.dumps(
             self.initial.get('params', {}),
-            indent=4
+            indent=4,
+            sort_keys=True
         )
 
     def clean_model(self):
