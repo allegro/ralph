@@ -28,6 +28,16 @@ from ralph.lib.transitions.models import (
 )
 
 
+def collect_actions(obj, transition):
+    names = transition.actions.values_list('name', flat=True).all()
+    actions = [getattr(obj, name) for name in names]
+    return_attachment = [
+        getattr(action, 'return_attachment', False)
+        for action in actions
+    ]
+    return actions, any(return_attachment)
+
+
 class TransitionViewMixin(object):
     template_name = 'transitions/run_transition.html'
 
@@ -37,15 +47,6 @@ class TransitionViewMixin(object):
         except TransitionNotAllowedError as e:
             return False, e
         return True, None
-
-    def collect_actions(self, transition):
-        names = transition.actions.values_list('name', flat=True).all()
-        actions = [getattr(self.obj, name) for name in names]
-        return_attachment = [
-            getattr(action, 'return_attachment', False)
-            for action in actions
-        ]
-        return actions, any(return_attachment)
 
     @property
     def form_fields_from_actions(self):
@@ -95,7 +96,9 @@ class TransitionViewMixin(object):
             )
         ):
             return HttpResponseForbidden()
-        self.actions, self.return_attachment = self.collect_actions(self.transition)  # noqa
+        self.actions, self.return_attachment = collect_actions(
+            self.obj, self.transition
+        )
         if not len(self.form_fields_from_actions):
             return self.run_and_redirect(request, *args, **kwargs)
         return super().dispatch(request, *args, **kwargs)
