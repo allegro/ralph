@@ -144,7 +144,7 @@ def _perform_async_transition(transition_job):
 
     # save obj and history
     _post_transition_instance_processing(
-        obj, transition, transition_job.params, func_history_kwargs,
+        obj, transition, transition_job.params['data'], func_history_kwargs,
         user=transition_job.user, attachment=attachment,
     )
     transition_job.success()
