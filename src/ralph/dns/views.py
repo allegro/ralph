@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from django.conf import settings
 from django.http import HttpResponseRedirect
 
 from ralph.admin.views.extra import RalphDetailView
@@ -8,6 +9,10 @@ from ralph.dns.dnsaas import DNSaaS
 from ralph.dns.forms import DNSRecordForm
 
 logger = logging.getLogger(__name__)
+
+
+class DNSaaSIntegrationNotEnabledError(Exception):
+    pass
 
 
 class DNSView(RalphDetailView):
@@ -18,6 +23,8 @@ class DNSView(RalphDetailView):
     template_name = 'dns/dns_edit.html'
 
     def __init__(self, *args, **kwargs):
+        if not settings.ENABLE_DNSAAS_INTEGRATION:
+            raise DNSaaSIntegrationNotEnabledError()
         self.dnsaas = DNSaaS()
         return super().__init__(*args, **kwargs)
 

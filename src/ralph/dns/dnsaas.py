@@ -97,7 +97,7 @@ class DNSaaS:
         if request.status_code != 200:
             return request.json()
 
-    @cache()
+    @cache(skip_first=True)
     def get_domain(self, domain_name):
         """
         Return domain URL base on record name.
