@@ -69,7 +69,7 @@ class DNSaaS:
                 })
         return sorted(dns_records, key=lambda x: x['type'])
 
-    def update_dns_records(self, record):
+    def update_dns_record(self, record):
         """
         Update DNS Record in DNSAAS
 
@@ -117,7 +117,7 @@ class DNSaaS:
         if result:
             return result[0]['url']
 
-    def create_dns_records(self, record):
+    def create_dns_record(self, record):
         """
         Create new DNS record.
 
@@ -153,9 +153,9 @@ class DNSaaS:
         if request.status_code != 201:
             return request.json()
 
-    def delete_dns_records(self, record_id):
+    def delete_dns_record(self, record_id):
         """
-        Delete rcords in DNSAAS
+        Delete record in DNSAAS
 
         Args:
             record_ids: ID's to delete
