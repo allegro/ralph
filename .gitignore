@@ -75,3 +75,4 @@ src/ralph/var/
 debian/ralph-core*
 
 .idea
+!src/ralph/lib

@@ -3,15 +3,22 @@ from itertools import repeat
 
 from django.conf.urls import url
 from django.contrib.admin import TabularInline
+from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.utils.functional import curry
 from django.utils.http import urlencode
 
 from ralph.admin import RalphAdmin, register
+from ralph.admin.views.extra import RalphDetailView
 from ralph.helpers import get_model_view_url_name
+from ralph.lib.external_services.models import JobStatus
 from ralph.lib.transitions.forms import TransitionForm
-from ralph.lib.transitions.models import Transition, TransitionModel
+from ralph.lib.transitions.models import (
+    Transition,
+    TransitionJob,
+    TransitionModel
+)
 from ralph.lib.transitions.views import RunBulkTransitionView, RunTransitionView
 
 
@@ -37,9 +44,39 @@ class TransitionModelAdmin(RalphAdmin):
         return False
 
 
+class CurrentTransitionsView(RalphDetailView):
+    icon = 'code-fork'
+    name = 'current_transitions'
+    label = 'Current transitions'
+    url_name = 'current_transitions'
+    template_name = 'transitions/current_transitions.html'
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        jobs = TransitionJob.objects.filter(
+            content_type=ContentType.objects.get_for_model(self.object),
+            object_id=self.object.pk,
+        ).exclude(status__in=[JobStatus.FAILED, JobStatus.FINISHED])
+        context['jobs'] = jobs
+        context['are_jobs_running'] = any([j.is_running for j in jobs])
+        return context
+
+
 class TransitionAdminMixin(object):
     transition_view = RunTransitionView
     bulk_transition_view = RunBulkTransitionView
+    _show_current_async_transitions_tab = True
+
+    def __init__(self, *args, **kwargs):
+        if self.change_views is None:
+            self.change_views = []
+        if self._show_current_async_transitions_tab:
+            self.change_views.append(type(
+                '{}CurrentTransitionsView'.format(self.__class__.__name__),
+                (CurrentTransitionsView,),
+                {}
+            ))
+        super().__init__(*args, **kwargs)
 
     def get_transition_url_name(self, with_namespace=True):
         return get_model_view_url_name(

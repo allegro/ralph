@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.test import RequestFactory
 
-from ralph.lib.transitions import transition_action
+from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.exceptions import (
     TransitionModelNotFoundError,
     TransitionNotAllowedError
@@ -12,7 +12,6 @@ from ralph.lib.transitions.models import (
     _check_and_get_transition,
     _create_graph_from_actions,
     _sort_graph_topologically,
-    Action,
     CycleError,
     run_field_transition,
     Transition

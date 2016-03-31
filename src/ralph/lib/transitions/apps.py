@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 from django.apps import AppConfig
 
-from ralph.lib.transitions.models import update_models_attrs
-
 
 class TransitionAppConfig(AppConfig):
     name = 'ralph.lib.transitions'
     verbose_name = 'Transitions'
 
     def ready(self):
+        from ralph.lib.transitions.models import update_models_attrs
         try:
             # RuntimeError raised when database is empty (e.g. after tests).
             # The best solution would be run update_models_attrs after loaded
