@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 from unittest.mock import patch
 
-from django.test import TestCase
+from django.test import override_settings, TestCase
 
 from ralph.dns.dnsaas import DNSaaS
 from ralph.dns.forms import RecordType
+from ralph.dns.views import DNSaaSIntegrationNotEnabledError, DNSView
 
 
 class TestGetDnsRecords(TestCase):
@@ -32,3 +33,15 @@ class TestGetDnsRecords(TestCase):
         self.assertEqual(found_dns[0]['content'], data['content'])
         self.assertEqual(found_dns[0]['name'], data['name'])
         self.assertEqual(found_dns[0]['type'], RecordType.a)
+
+
+class TestDNSView(TestCase):
+    @override_settings(ENABLE_DNSAAS_INTEGRATION=False)
+    def test_dnsaasintegration_disabled(self):
+        with self.assertRaises(DNSaaSIntegrationNotEnabledError):
+            DNSView()
+
+    @override_settings(ENABLE_DNSAAS_INTEGRATION=True)
+    def test_dnsaasintegration_enabled(self):
+        # should not raise exception
+        DNSView()
