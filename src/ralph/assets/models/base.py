@@ -5,7 +5,7 @@ from ralph.lib.mixins.models import TaggableMixin, TimeStampMixin
 from ralph.lib.permissions import PermByFieldMixin
 from ralph.lib.permissions.models import PermissionsBase
 from ralph.lib.polymorphic.models import Polymorphic, PolymorphicBase
-from ralph.lib.transitions import TransitionWorkflowBase
+from ralph.lib.transitions.models import TransitionWorkflowBase
 
 BaseObjectMeta = type(
     'BaseObjectMeta', (

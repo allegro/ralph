@@ -41,6 +41,17 @@ URLCONF_MODULES = ['ralph.urls.base', ROOT_URLCONF]
 
 LOGGING['loggers']['ralph'].update({'level': 'DEBUG', 'handlers': ['console']})
 
+
+RQ_QUEUES['ralph_job_test'] = dict(ASYNC=False, **REDIS_CONNECTION)
+RQ_QUEUES['ralph_async_transitions']['ASYNC'] = False
+RALPH_INTERNAL_SERVICES.update({
+    'JOB_TEST': {
+        'queue_name': 'ralph_job_test',
+        'method': 'ralph.lib.external_services.tests.test_job_func',
+    }
+})
+
+
 SKIP_MIGRATIONS = os.environ.get('SKIP_MIGRATIONS', None)
 if SKIP_MIGRATIONS:
     print('skipping migrations')
