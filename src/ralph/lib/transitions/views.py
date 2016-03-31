@@ -5,11 +5,14 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.db.models.loading import get_model
 from django.http import (
+    Http404,
     HttpResponseBadRequest,
     HttpResponseForbidden,
     HttpResponseRedirect
 )
 from django.shortcuts import get_object_or_404
+from django.utils.datastructures import MultiValueDict
+from django.utils.http import urlencode
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
@@ -19,8 +22,9 @@ from ralph.admin.widgets import AutocompleteWidget
 from ralph.lib.transitions.exceptions import TransitionNotAllowedError
 from ralph.lib.transitions.models import (
     _check_instances_for_transition,
-    run_field_transition,
-    Transition
+    run_transition,
+    Transition,
+    TransitionJob
 )
 
 
@@ -118,7 +122,25 @@ class TransitionViewMixin(object):
         return self.render_to_response(context)
 
     def form_valid(self, form=None):
-        status, attachment = run_field_transition(
+        if self.transition.is_async:
+            return self._run_async_transition(form)
+        else:
+            return self._run_synchronous_transition(form)
+
+    def _run_async_transition(self, form):
+        job_ids = run_transition(
+            instances=self.objects,
+            transition_obj_or_name=self.transition,
+            field=self.transition.model.field_name,
+            data=form.cleaned_data if form else {},
+            request=self.request
+        )
+        return HttpResponseRedirect(
+            self.get_async_transitions_awaiter_url(job_ids)
+        )
+
+    def _run_synchronous_transition(self, form):
+        status, attachment = run_transition(
             instances=self.objects,
             transition_obj_or_name=self.transition,
             field=self.transition.model.field_name,
@@ -183,6 +205,12 @@ class TransitionViewMixin(object):
         else:
             return self.form_invalid(form)
 
+    def get_async_transitions_awaiter_url(self, job_ids):
+        return '{}?{}'.format(
+            reverse('async_transitions_awaiter'),
+            urlencode(MultiValueDict({'jobid': job_ids}))
+        )
+
     def get_success_url(self):
         raise NotImplementedError()
 
@@ -196,6 +224,7 @@ class RunBulkTransitionView(TransitionViewMixin, RalphTemplateView):
         self.transition = get_object_or_404(Transition, pk=transition_pk)
         ids = [int(i) for i in self.request.GET.getlist('select')]
         self.objects = list(self.model.objects.filter(id__in=ids))
+        # TODO: self.obj is unnecessary - self.model is enough
         self.obj = self.objects[0]
         return super().dispatch(request, *args, **kwargs)
 
@@ -221,3 +250,22 @@ class RunTransitionView(TransitionViewMixin, RalphTemplateView):
 
     def get_success_url(self):
         return self.objects[0].get_absolute_url()
+
+
+class AsyncBulkTransitionsAwaiterView(RalphTemplateView):
+    template_name = 'transitions/async_transitions_awaiter.html'
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        job_ids = self.request.GET.getlist('jobid')
+        try:
+            jobs = list(TransitionJob.objects.filter(pk__in=job_ids))
+            if len(jobs) != len(job_ids):
+                raise ValueError()
+        except ValueError:
+            raise Http404()  # ?
+        else:
+            context['jobs'] = jobs
+            context['are_jobs_running'] = any([j.is_running for j in jobs])
+            context['for_many_objects'] = True
+        return context

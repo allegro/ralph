@@ -16,6 +16,7 @@ def transition_action(method=None, **kwargs):
         func.precondition = kwargs.get('precondition', lambda instances: {})
         func.disable_save_object = kwargs.get('disable_save_object', False)
         func.only_one_action = kwargs.get('only_one_action', False)
+        func.is_async = kwargs.get('is_async', False)
         setattr(func, TRANSITION_ATTR_TAG, True)
 
         @wraps(func)

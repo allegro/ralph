@@ -34,4 +34,5 @@ urlpatterns = [
     url(r'^', include('ralph.accounts.urls')),
     url(r'^', include('ralph.reports.urls')),
     url(r'^', include('ralph.admin.autocomplete_urls')),
+    url(r'^', include('ralph.lib.transitions.urls')),
 ]
