@@ -48,16 +48,23 @@ def _cache_key_hash(func, *args, **kwargs):
     return pickle.dumps((func.__module__, func.__name__, args, kwargs))
 
 
-def cache(seconds=300, cache_name=DEFAULT_CACHE_ALIAS):
+def cache(seconds=300, cache_name=DEFAULT_CACHE_ALIAS, skip_first=False):
     """
     Cache the result of a function call with particular parameters for specified
     number of seconds.
+
+    Args:
+        * skip_first - set to True if first argument should not be considered
+          when calculating hash of arguments (useful when first argument
+          is instance of a class (self)).
     """
     def _cache(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
             cache_proxy = caches[cache_name]
-            key = _cache_key_hash(func, *args, **kwargs)
+            key = _cache_key_hash(
+                func, *(args[1:] if skip_first else args), **kwargs
+            )
             result = cache_proxy.get(key, default=CACHE_DEFAULT)
             if result is CACHE_DEFAULT:
                 logger.debug('Recalculating result of {}'.format(func.__name__))
