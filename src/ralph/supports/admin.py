@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
@@ -79,10 +78,7 @@ class SupportAdmin(
         }),
     )
 
-    def get_queryset(self, request):
-        return Support.objects.annotate(
-            assigned_objects_count=Count('base_objects')
-        )
+    _export_queryset_manager = 'objects_with_related'
 
 
 @register(SupportType)

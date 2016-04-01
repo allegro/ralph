@@ -1,3 +1,4 @@
+import copy
 import datetime
 
 from dateutil.relativedelta import relativedelta
@@ -6,6 +7,7 @@ from django.db.models import Q
 from django.test import SimpleTestCase
 
 from ralph.dashboards.filter_parser import FilterParser
+from ralph.dashboards.models import Graph
 from ralph.tests.models import Bar
 
 ARGS, KWARGS = (0, 1)
@@ -49,3 +51,20 @@ class ParserFiltersTest(SimpleTestCase):
     def test_process_value(self, value, expect):
         result = self.parser.filter_and('key', value)
         self.assertEqual(str(result[ARGS][0]), str(expect))
+
+@ddt
+class GraphModelTest(SimpleTestCase):
+    @unpack
+    @data(
+        ({}, 0),
+        ({'series__lte': 3}, 1),
+        ({'series__lte': 5, 'series__qte': 3}, 2),
+    )
+    def test_annotate_fitler_should_pop_from_filters(
+        self, orig_filters, length
+    ):
+        graph = Graph()
+        filters = copy.deepcopy(orig_filters)
+        result = graph.pop_annotate_filters(filters)
+        self.assertEqual(len(result), length)
+        self.assertEqual(len(orig_filters) - length, len(filters))

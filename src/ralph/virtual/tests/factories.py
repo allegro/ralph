@@ -1,11 +1,13 @@
 import factory
 from factory.django import DjangoModelFactory
 
+from ralph.assets.tests.factories import ServiceEnvironmentFactory
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
     CloudProject,
-    CloudProvider
+    CloudProvider,
+    VirtualServer
 )
 
 
@@ -59,3 +61,11 @@ class CloudHostFactory(DjangoModelFactory):
     class Meta:
         model = CloudHost
         django_get_or_create = ['host_id']
+
+
+class VirtualServerFactory(DjangoModelFactory):
+
+    service_env = factory.SubFactory(ServiceEnvironmentFactory)
+
+    class Meta:
+        model = VirtualServer

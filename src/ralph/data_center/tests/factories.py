@@ -8,7 +8,8 @@ from ralph.assets.models.choices import AssetSource
 from ralph.assets.tests.factories import (
     AssetHolderFactory,
     BudgetInfoFactory,
-    DataCenterAssetModelFactory
+    DataCenterAssetModelFactory,
+    ServiceEnvironmentFactory
 )
 from ralph.data_center.models.physical import (
     Accessory,
@@ -19,6 +20,7 @@ from ralph.data_center.models.physical import (
     RackAccessory,
     ServerRoom
 )
+from ralph.data_center.models.virtual import Database, VIP
 
 date_now = datetime.now().date()
 
@@ -93,3 +95,24 @@ class DataCenterAssetFactory(DjangoModelFactory):
 
     class Meta:
         model = DataCenterAsset
+
+
+class IPAddressFactory(DjangoModelFactory):
+    base_object = factory.SubFactory(BaseObjectFactory)
+
+    class Meta:
+        model = IPAddress
+
+
+class DatabaseFactory(DjangoModelFactory):
+    service_env = factory.SubFactory(ServiceEnvironmentFactory)
+
+    class Meta:
+        model = Database
+
+
+class VIPFactory(DjangoModelFactory):
+    service_env = factory.SubFactory(ServiceEnvironmentFactory)
+
+    class Meta:
+        model = VIP

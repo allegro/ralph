@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 import operator
-from collections import OrderedDict
 from functools import reduce
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -13,6 +12,7 @@ from taggit_serializer.serializers import (
     TagListSerializerField
 )
 
+from ralph.api.fields import ReversedChoiceField
 from ralph.api.relations import RalphHyperlinkedRelatedField, RalphRelatedField
 from ralph.lib.mixins.models import TaggableMixin
 from ralph.lib.permissions.api import (
@@ -23,42 +23,6 @@ from ralph.lib.permissions.api import (
 logger = logging.getLogger(__name__)
 
 NESTED_SERIALIZER_FIELDS_BLACKLIST = ['content_type', 'password']
-
-
-class ReversedChoiceField(serializers.ChoiceField):
-    """
-    Choice field serializer which allow to pass value by name instead of key.
-    Additionally it present value in user-friendly format by-name.
-
-    Notice that requirement for this field to work properly is uniqueness of
-    choice values.
-
-    This field works perfectly with `dj.choices.Choices`.
-    """
-    def __init__(self, choices, **kwargs):
-        super(ReversedChoiceField, self).__init__(choices, **kwargs)
-        # mapping by value
-        self.reversed_choices = OrderedDict([(v, k) for (k, v) in choices])
-
-    def to_representation(self, obj):
-        """
-        Return choice name (value) instead of default key.
-        """
-        try:
-            return self.choices[obj]
-        except KeyError:
-            return super().to_representation(obj)
-
-    def to_internal_value(self, data):
-        """
-        Try to get choice by value first. If it doesn't succeed fallback to
-        default action (get by key).
-        """
-        try:
-            return self.reversed_choices[data]
-        except KeyError:
-            pass
-        return super(ReversedChoiceField, self).to_internal_value(data)
 
 
 class AdditionalLookupRelatedField(serializers.PrimaryKeyRelatedField):
@@ -93,7 +57,8 @@ class DeclaredFieldsMetaclass(serializers.SerializerMetaclass):
     `ralph.lib.mixins.models.TaggableMixin`, tags field is attached.
     """
     def __new__(cls, name, bases, attrs):
-        model = getattr(attrs.get('Meta'), 'model', None)
+        meta = attrs.get('Meta')
+        model = getattr(meta, 'model', None)
         if (
             model and
             issubclass(model, TaggableMixin) and
@@ -130,7 +95,7 @@ class RalphAPISerializerMixin(
         (contains url to related object). When it's not safe request (ex. POST),
         serializer expect to pass only PK for related object.
         """
-        if self.context['request'] and self.context['request'].method in permissions.SAFE_METHODS:  # noqa
+        if self.context.get('request') and self.context['request'].method in permissions.SAFE_METHODS:  # noqa
             return RalphHyperlinkedRelatedField
         return RalphRelatedField
 

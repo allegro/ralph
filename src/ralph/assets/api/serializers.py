@@ -5,6 +5,7 @@ from rest_framework import serializers
 from ralph.accounts.api_simple import SimpleRalphUserSerializer
 from ralph.accounts.models import Team
 from ralph.api import RalphAPISerializer
+from ralph.api.fields import StrField
 from ralph.api.serializers import AdditionalLookupRelatedField
 from ralph.api.utils import PolymorphicSerializer
 from ralph.assets.models import (
@@ -137,6 +138,8 @@ class ServiceEnvironmentSimpleSerializer(RalphAPISerializer):
 
 
 class ServiceEnvironmentSerializer(RalphAPISerializer):
+    __str__ = StrField(show_type=True)
+
     class Meta:
         model = ServiceEnvironment
         depth = 1
@@ -192,6 +195,7 @@ class BaseObjectSerializer(RalphAPISerializer):
     """
     service_env = ServiceEnvironmentSimpleSerializer()
     licences = SimpleBaseObjectLicenceSerializer(read_only=True, many=True)
+    __str__ = StrField(show_type=True)
 
     class Meta:
         model = BaseObject

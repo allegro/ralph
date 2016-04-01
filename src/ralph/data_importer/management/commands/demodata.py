@@ -38,8 +38,8 @@ from ralph.data_center.tests.factories import (
 from ralph.lib.transitions.models import Action, Transition, TransitionModel
 from ralph.licences.models import LicenceUser
 from ralph.licences.tests.factories import (
-    BaseObjectDataCenterLicenceFactory,
     BaseObjectLicenceFactory,
+    DataCenterAssetLicenceFactory,
     LicenceFactory
 )
 from ralph.reports.models import Report, ReportLanguage, ReportTemplate
@@ -1049,7 +1049,7 @@ class Command(BaseCommand):
                 user=self.get_user()
             )
             for j in range(3):
-                BaseObjectDataCenterLicenceFactory(
+                DataCenterAssetLicenceFactory(
                     licence=licence
                 )
 

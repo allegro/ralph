@@ -41,21 +41,24 @@ class PolymorphicQuerySet(models.QuerySet):
         if self.query.select_related:
             select_related = self.query.select_related
             self.query.select_related = False
-        order_by = self.query.order_by
 
         for obj in super().iterator():
             content_types_ids.add(obj.content_type_id)
             result.append((
                 obj.content_type_id, obj.pk)
             )
-        result = groupby(result, lambda x: x[0])
+        # store original order of items by PK
+        pks_order = [r[1] for r in result]
+        # WARNING! sorting result (by content type) breaks original order of
+        # items - we need to restore it at the end of this function
+        result = groupby(sorted(result), lambda x: x[0])
 
         content_type_model_map = {
             ct.id: ct.model_class() for ct in ContentType.objects.filter(
                 pk__in=list(content_types_ids)
             )
         }
-        # result_query = []
+        result_mapping = {}
         for k, v in result:
             model = content_type_model_map[k]
             polymorphic_models = getattr(model, '_polymorphic_models', [])
@@ -78,10 +81,11 @@ class PolymorphicQuerySet(models.QuerySet):
                     model_query = model_query.prefetch_related(
                         *self._polymorphic_prefetch_related[model_name]
                     )
-                if order_by:
-                    model_query = model_query.order_by(*order_by)
                 for obj in model_query:
-                    yield obj
+                    result_mapping[obj.pk] = obj
+        # yield objects in original order
+        for pk in pks_order:
+            yield result_mapping[pk]
 
     def _clone(self, *args, **kwargs):
         clone = super()._clone(*args, **kwargs)

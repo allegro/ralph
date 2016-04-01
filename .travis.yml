@@ -54,7 +54,6 @@ install:
     - pip install django==$DJANGO_VERSION
 
 script:
-    - gulp test
     - make coveralls
 
 after_success:

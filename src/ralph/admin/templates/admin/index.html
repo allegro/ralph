@@ -19,7 +19,7 @@
         </div>
         <div class="small-4 large-4 separator columns">
             <div class="module recent-actions">
-            <h2>{% trans 'Recent Actions' %}</h2>
+            <h2>{% trans 'My Recent Actions' %}</h2>
             {% get_admin_log 20 as admin_log for_user user %}
             {% if not admin_log %}
                 <div class="alert-box info radius">

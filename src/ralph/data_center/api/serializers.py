@@ -2,14 +2,16 @@
 from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer
-from ralph.assets.api.serializers import AssetSerializer
-from ralph.data_center.models.physical import (
+from ralph.assets.api.serializers import AssetSerializer, BaseObjectSerializer
+from ralph.data_center.models import (
     Accessory,
+    Database,
     DataCenter,
     DataCenterAsset,
     Rack,
     RackAccessory,
-    ServerRoom
+    ServerRoom,
+    VIP
 )
 
 
@@ -67,4 +69,16 @@ class DataCenterAssetSerializer(AssetSerializer):
 
     class Meta(AssetSerializer.Meta):
         model = DataCenterAsset
+        depth = 1
+
+
+class DatabaseSerializer(BaseObjectSerializer):
+    class Meta(BaseObjectSerializer.Meta):
+        model = Database
+        depth = 1
+
+
+class VIPSerializer(BaseObjectSerializer):
+    class Meta(BaseObjectSerializer.Meta):
+        model = VIP
         depth = 1

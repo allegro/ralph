@@ -8,7 +8,9 @@ from import_export import fields, widgets
 from ralph.data_importer.models import ImportedObjects
 from ralph.data_importer.widgets import (
     ExportForeignKeyStrWidget,
-    ExportManyToManyStrWidget
+    ExportManyToManyStrTroughWidget,
+    ExportManyToManyStrWidget,
+    ManyToManyThroughWidget
 )
 
 
@@ -27,28 +29,27 @@ class ImportForeignKeyMeta(type):
         update_fields = []
         for name, field in new_class.fields.items():
             update_fields.append((name, field))
+            field_name = '{}_str'.format(name)
+            field_params = dict(
+                column_name='{}_str'.format(field.column_name),
+                attribute=field.attribute,
+                readonly=True
+            )
             if isinstance(field.widget, widgets.ForeignKeyWidget):
-                update_fields.append((
-                    '{}_str'.format(name),
-                    fields.Field(
-                        column_name='{}_str'.format(field.column_name),
-                        attribute=field.attribute,
-                        widget=ExportForeignKeyStrWidget(),
-                        readonly=True
-                    )
-                ))
+                field_params['widget'] = ExportForeignKeyStrWidget()
+            elif isinstance(field.widget, ManyToManyThroughWidget):
+                field_params['widget'] = ExportManyToManyStrTroughWidget(
+                    model=field.widget.model,
+                    related_model=field.widget.related_model,
+                    through_field=field.widget.through_field,
+                )
             elif isinstance(field.widget, widgets.ManyToManyWidget):
-                update_fields.append((
-                    '{}_str'.format(name),
-                    fields.Field(
-                        column_name='{}_str'.format(field.column_name),
-                        attribute=field.attribute,
-                        widget=ExportManyToManyStrWidget(
-                            model=field.widget.model
-                        ),
-                        readonly=True
-                    )
-                ))
+                field_params['widget'] = ExportManyToManyStrWidget(
+                    model=field.widget.model
+                )
+            else:
+                continue
+            update_fields.append((field_name, fields.Field(**field_params)))
         export_class.fields = OrderedDict(update_fields)
         new_class.export_class = export_class
         return new_class

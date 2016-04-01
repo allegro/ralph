@@ -39,6 +39,13 @@ class Graph(NamedMixin, TimeStampMixin, models.Model):
     params = JSONField(blank=True)
     active = models.BooleanField(default=True)
 
+    def pop_annotate_filters(self, filters):
+        annotate_filters = {}
+        for key in list(filters.keys()):
+            if key.startswith('series'):
+                annotate_filters.update({key: filters.pop(key)})
+        return annotate_filters
+
     def get_data(self):
         model = self.model.model_class()
         model_manager = model._default_manager
@@ -46,7 +53,9 @@ class Graph(NamedMixin, TimeStampMixin, models.Model):
         queryset = model_manager.all()
         filters = self.params.get('filters', None)
         excludes = self.params.get('excludes', None)
+        annotate_filters = {}
         if filters:
+            annotate_filters = self.pop_annotate_filters(filters)
             queryset = FilterParser(queryset, filters).get_queryset()
         if excludes:
             queryset = FilterParser(
@@ -58,9 +67,11 @@ class Graph(NamedMixin, TimeStampMixin, models.Model):
         ).annotate(
             series=aggregate_func(self.params['series'])
         )
+        if annotate_filters:
+            queryset = queryset.filter(**annotate_filters)
         return {
             'labels': [q[self.params['labels']] for q in queryset],
-            'series': [q['series'] for q in queryset],
+            'series': [int(q['series']) for q in queryset],
         }
 
     def render(self, **context):

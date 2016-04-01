@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
+from django import forms
+from django.db.models.loading import get_model
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import LiquidatedStatusFilter, TagsListFilter
 from ralph.admin.mixins import BulkEditChangeListMixin
+from ralph.admin.sites import ralph_site
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
+from ralph.admin.widgets import AutocompleteWidget
 from ralph.assets.invoice_report import AssetInvoiceReportMixin
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.back_office.models import (
@@ -19,7 +23,7 @@ from ralph.back_office.views import (
 )
 from ralph.data_importer import resources
 from ralph.lib.transitions.admin import TransitionAdminMixin
-from ralph.licences.models import BaseObjectLicence
+from ralph.licences.models import BaseObjectLicence, Licence
 from ralph.supports.models import BaseObjectsSupport
 
 
@@ -115,10 +119,11 @@ class BackOfficeAssetAdmin(
     ]
     resource_class = resources.BackOfficeAssetResource
     bulk_edit_list = [
-        'status', 'barcode', 'imei', 'hostname', 'model', 'purchase_order',
-        'user', 'owner', 'warehouse', 'sn', 'region', 'property_of', 'remarks',
-        'invoice_date', 'invoice_no', 'provider', 'task_url',
-        'depreciation_rate', 'price', 'order_no', 'depreciation_end_date'
+        'licences', 'status', 'barcode', 'imei', 'hostname', 'model',
+        'purchase_order', 'user', 'owner', 'warehouse', 'sn', 'region',
+        'property_of', 'remarks', 'invoice_date', 'invoice_no', 'provider',
+        'task_url', 'depreciation_rate', 'price', 'order_no',
+        'depreciation_end_date'
     ]
     bulk_edit_no_fillable = ['barcode', 'sn', 'imei', 'hostname']
     _invoice_report_name = 'invoice-back-office-asset'
@@ -150,6 +155,75 @@ class BackOfficeAssetAdmin(
             )
         }),
     )
+
+    def licences(self, obj):
+        return ''
+    licences.short_description = 'licences'
+
+    def get_changelist_form(self, request, **kwargs):
+        """
+        Returns a Form class for use in the Formset on the changelist page.
+        """
+        Form = super().get_changelist_form(request, **kwargs)
+
+        class BackOfficeAssetBulkForm(Form):
+            """
+            Adds Licence field in bulk form.
+
+            Because of models (licence is many-to-many with base-object)
+            editing licence on asset form is impossible with regular
+            Django-Admin features. This solves that.
+            """
+            licences = forms.ModelMultipleChoiceField(
+                queryset=Licence.objects.all(), label=_('licences'),
+                required=False,
+                widget=AutocompleteWidget(
+                    field=get_model(
+                        'licences.BaseObjectLicence'
+                    )._meta.get_field('licence'),
+                    admin_site=ralph_site,
+                    request=request,
+                    multi=True,
+                ),
+            )
+
+            def __init__(self, *args, **kwargs):
+                initial = kwargs.get('initial', {})
+                initial['licences'] = [
+                    # TODO: permissions handling: now this field is only visible
+                    # to superusers
+                    str(_id) for _id in
+                    kwargs['instance'].licences.values_list(
+                        'licence__id', flat=True
+                    )
+                ]
+                kwargs['initial'] = initial
+                super().__init__(*args, **kwargs)
+
+            def save_m2m(self):
+                form_licences = self.cleaned_data['licences']
+
+                form_licences_ids = [licence.id for licence in form_licences]
+                asset_licences_ids = self.instance.licences.values_list(
+                    'licence__id', flat=True)
+
+                to_add = set(form_licences_ids) - set(asset_licences_ids)
+                to_remove = set(asset_licences_ids) - set(form_licences_ids)
+                for licence in form_licences:
+                    if licence.id not in to_add:
+                        continue
+                    BaseObjectLicence.objects.get_or_create(
+                        base_object=self.instance, licence_id=licence.id,
+                    )
+                self.instance.licences.filter(licence_id__in=to_remove).delete()
+                return self.instance
+
+            def save(self, commit=True):
+                # commit=True else save_m2m (from this form) won't be called
+                instance = super().save(commit=True)
+                return instance
+
+        return BackOfficeAssetBulkForm
 
     def get_multiadd_fields(self, obj=None):
         multi_add_fields = [

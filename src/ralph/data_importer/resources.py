@@ -18,9 +18,9 @@ from ralph.data_importer.mixins import (
 )
 from ralph.data_importer.widgets import (
     AssetServiceEnvWidget,
-    BaseObjectThroughWidget,
     BaseObjectWidget,
     ImportedForeignKeyWidget,
+    ManyToManyThroughWidget,
     NullStringWidget,
     UserManyToManyWidget,
     UserWidget
@@ -334,8 +334,12 @@ class LicenceResource(RalphModelResource):
     )
     base_objects = ThroughField(
         column_name='base_objects',
-        attribute='base_objects',
-        widget=BaseObjectThroughWidget(model=base.BaseObject),
+        attribute='baseobjectlicence_set',
+        widget=ManyToManyThroughWidget(
+            model=BaseObjectLicence,
+            related_model=base.BaseObject,
+            through_field='base_object'
+        ),
         through_model=BaseObjectLicence,
         through_from_field_name='licence',
         through_to_field_name='base_object'
@@ -343,11 +347,11 @@ class LicenceResource(RalphModelResource):
 
     class Meta:
         model = Licence
-        prefetch_related = (
-            'tags', 'users', 'licenceuser_set__user',
-            'baseobjectlicence_set__base_object'
-        )
+        prefetch_related = ('tags',)
         exclude = ('content_type', 'baseobject_ptr', )
+
+    def get_queryset(self):
+        return Licence.objects_used_free_with_related.all()
 
     def dehydrate_price(self, licence):
         return str(licence.price)
@@ -367,8 +371,12 @@ class SupportResource(RalphModelResource):
     )
     base_objects = ThroughField(
         column_name='base_objects',
-        attribute='base_objects',
-        widget=BaseObjectThroughWidget(model=base.BaseObject),
+        attribute='baseobjectssupport_set',
+        widget=ManyToManyThroughWidget(
+            model=BaseObjectsSupport,
+            related_model=base.BaseObject,
+            through_field='baseobject'
+        ),
         through_model=BaseObjectsSupport,
         through_from_field_name='support',
         through_to_field_name='baseobject'
@@ -397,11 +405,10 @@ class SupportResource(RalphModelResource):
     class Meta:
         model = Support
         exclude = ('content_type', 'baseobject_ptr',)
+        prefetch_related = ('tags',)
 
     def get_queryset(self):
-        return Support.objects.annotate(
-            assigned_objects_count=Count('base_objects')
-        )
+        return Support.objects_with_related.all()
 
     def dehydrate_assigned_objects_count(self, support):
         return support.assigned_objects_count
