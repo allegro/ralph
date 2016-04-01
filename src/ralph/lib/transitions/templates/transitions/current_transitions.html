@@ -1,5 +1,19 @@
 {% extends BASE_TEMPLATE %}
 {% load i18n transitions_tags %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {% if are_jobs_running %}
+        <meta http-equiv="refresh" content="5">
+    {% endif %}
+{% endblock %}
+
 {% block view_content %}
-  {% include "transitions/_transition_jobs_table.html" %}
+    <h1>{% trans "Current transitions" %}</h1>
+    {% include "transitions/_transition_jobs_table.html" with jobs=job_in_progress %}
+
+    <h1>{% trans "Finished transitions" %}</h1>
+    {# TODO: add pagination etc #}
+    {% include "transitions/_transition_jobs_table.html" with jobs=jobs_ended %}
+
 {% endblock %}
