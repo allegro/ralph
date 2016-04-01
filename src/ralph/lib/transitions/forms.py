@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django import forms
+from django.conf import settings
 from django.utils.html import strip_tags
 from django.utils.text import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -13,6 +14,9 @@ from ralph.lib.transitions.models import (
 
 
 def wrap_action_name(action):
+    """
+    Add additional information to action name (infotip, async icon).
+    """
     verbose_name = action.verbose_name
     help_text = action.help_text
     if help_text:
@@ -24,6 +28,13 @@ def wrap_action_name(action):
         """.format(
             txt=strip_tags(str(help_text)),
         )
+    if action.is_async:
+        verbose_name = verbose_name + """
+        &nbsp;<i
+        data-tooltip
+        class="has-tip async fa fa-hourglass-half"
+        title='Asynchronous'></i>
+        """
     return mark_safe(verbose_name)
 
 
@@ -43,6 +54,13 @@ class TransitionForm(forms.ModelForm):
                 TRANSITION_ORIGINAL_STATUS,
             )
         )
+        async_services = list(settings.RALPH_INTERNAL_SERVICES.keys())
+        self.fields['async_service_name'] = forms.ChoiceField(
+            choices=(
+                (('', '-------'),) + tuple(zip(async_services, async_services))
+            ),
+            required=False,
+        )
         actions_choices = [
             (i.id, wrap_action_name(getattr(self.model, i.name)))
             for i in Action.objects.filter(
@@ -60,6 +78,7 @@ class TransitionForm(forms.ModelForm):
         attachment_counter = 0
         one_action = False
         one_action_name = ''
+        any_async_action = False
         actions_items = actions.items()
         for k, v in actions_items:
             action = getattr(self.model, v.name)
@@ -68,6 +87,7 @@ class TransitionForm(forms.ModelForm):
             if getattr(action, 'only_one_action', False):
                 one_action = True
                 one_action_name = getattr(action, 'verbose_name', '')
+            any_async_action |= action.is_async
 
         if attachment_counter > 1:
             msg = _(
@@ -82,8 +102,27 @@ class TransitionForm(forms.ModelForm):
                 )
             ) % {'name': one_action_name}
             self.add_error('actions', msg)
+        # check async options
+        if any_async_action and not cleaned_data['run_asynchronously']:
+            cleaned_data['run_asynchronously'] = True
+        if (
+            cleaned_data['run_asynchronously'] and
+            not cleaned_data.get('async_service_name')
+        ):
+            msg = _(
+                'Please provide async service name for asynchronous transition'
+            )
+            if any_async_action:
+                msg = '{}{}'.format(
+                    msg, _(' (At least one of chosen actions is asynchronous)')
+                )
+            self.add_error('async_service_name', msg)
+
         return cleaned_data
 
     class Meta:
         model = Transition
-        fields = ['name', 'source', 'target', 'actions']
+        fields = [
+            'name', 'source', 'target', 'run_asynchronously',
+            'async_service_name', 'actions',
+        ]

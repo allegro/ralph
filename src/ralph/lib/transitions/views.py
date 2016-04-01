@@ -16,6 +16,7 @@ from django.utils.http import urlencode
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.admin.helpers import get_admin_url
 from ralph.admin.mixins import RalphTemplateView
 from ralph.admin.sites import ralph_site
 from ralph.admin.widgets import AutocompleteWidget
@@ -207,7 +208,7 @@ class TransitionViewMixin(object):
 
     def get_async_transitions_awaiter_url(self, job_ids):
         return '{}?{}'.format(
-            reverse('async_transitions_awaiter'),
+            reverse('async_bulk_transitions_awaiter'),
             urlencode(MultiValueDict({'jobid': job_ids}))
         )
 
@@ -250,6 +251,9 @@ class RunTransitionView(TransitionViewMixin, RalphTemplateView):
 
     def get_success_url(self):
         return self.objects[0].get_absolute_url()
+
+    def get_async_transitions_awaiter_url(self, job_ids):
+        return get_admin_url(self.objects[0], 'current_transitions')
 
 
 class AsyncBulkTransitionsAwaiterView(RalphTemplateView):

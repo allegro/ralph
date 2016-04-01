@@ -411,7 +411,21 @@ class TransitionModel(models.Model):
 class Transition(models.Model):
     name = models.CharField(max_length=50)
     model = models.ForeignKey(TransitionModel)
-    async_service_name = models.CharField(max_length=100, blank=True, null=True)
+    run_asynchronously = models.BooleanField(
+        default=False,
+        help_text=_(
+            'Run this transition in the background (this could be enforced if '
+            'you choose at least one asynchronous action)'
+        )
+    )
+    async_service_name = models.CharField(
+        max_length=100, blank=True, null=True,
+        default=DEFAULT_ASYNC_TRANSITION_SERVICE_NAME, help_text=_(
+            'Name of asynchronous (internal) service to run this transition. '
+            'Fill this field only if you want to run this transition in the '
+            'background.'
+        )
+    )
     source = JSONField()
     target = models.CharField(max_length=50)
     actions = models.ManyToManyField('Action')
@@ -437,7 +451,10 @@ class Transition(models.Model):
 
     @property
     def is_async(self):
-        return any([func.is_async for func in self.get_pure_actions()])
+        return (
+            self.run_asynchronously or
+            any([func.is_async for func in self.get_pure_actions()])
+        )
 
     @classmethod
     def transitions_for_model(cls, model, user=None):

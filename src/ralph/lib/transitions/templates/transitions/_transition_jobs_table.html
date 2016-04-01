@@ -4,6 +4,7 @@
 <thead>
     <tr>
         <th>{% trans "Job" %}</th>
+        <th>{% trans "User" %}</th>
         {% if for_many_objects %}
             <th>{% trans "Object" %}</th>
         {% endif %}
@@ -14,7 +15,8 @@
 <tbody>
     {% for job in jobs %}
         <tr>
-            <td>{{ job.transition.name }} [{{ job }}]</td>
+            <td>{{ job.transition.name }}</td>
+            <td>{{ job.user }}</td>
             {% if for_many_objects %}
                 <td><a href="{{ job.obj.get_absolute_url }}">{{ job.obj }}</a></td>
             {% endif %}
