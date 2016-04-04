@@ -7,6 +7,7 @@ from factory.fuzzy import FuzzyDecimal, FuzzyText
 from ralph.assets.models.choices import AssetSource
 from ralph.assets.tests.factories import (
     AssetHolderFactory,
+    BaseObjectFactory,
     BudgetInfoFactory,
     DataCenterAssetModelFactory,
     ServiceEnvironmentFactory
