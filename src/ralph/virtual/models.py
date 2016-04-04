@@ -154,7 +154,7 @@ class CloudHost(AdminAbsoluteUrlMixin, BaseObject):
         verbose_name_plural = _('Cloud hosts')
 
     def __str__(self):
-        return 'Cloud Host: {}'.format(self.hostname)
+        return self.hostname
 
     @property
     def ip_addresses(self):

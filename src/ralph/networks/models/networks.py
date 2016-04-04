@@ -12,7 +12,7 @@ from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
 from ralph.lib import network as network_tools
-from ralph.lib.mixins.fields import NullableCharField
+from ralph.lib.mixins.fields import BaseObjectForeignKey, NullableCharField
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     LastSeenMixin,
@@ -175,6 +175,10 @@ class Network(
         default=True,
         db_index=True,
     )
+    service_env = models.ForeignKey(
+        'assets.ServiceEnvironment', related_name='networks', null=True,
+        default=None, blank=True,
+    )
 
     @cached_property
     def network(self):
@@ -275,6 +279,7 @@ class Network(
                 status=IPAddressStatus.reserved
             ))
         IPAddress.objects.bulk_create(ips)
+        # TODO: handle decreasing count
         return len(to_create), existing_ips - to_create
 
     def get_first_free_ip(self):
@@ -316,13 +321,21 @@ class DiscoveryQueue(NamedMixin, models.Model):
 class IPAddress(LastSeenMixin, TimeStampMixin, NetworkMixin, models.Model):
     _parent_attr = 'network'
 
-    base_object = models.ForeignKey(
+    base_object = BaseObjectForeignKey(
         'assets.BaseObject',
         verbose_name=_('Base object'),
         null=True,
         blank=True,
         default=None,
         on_delete=models.SET_NULL,
+        limit_models=[
+            'data_center.Database',
+            'data_center.DataCenterAsset',
+            'data_center.VIP',
+            'virtual.CloudHost',
+            'virtual.VirtualServer',
+
+        ]
     )
     network = models.ForeignKey(
         Network,
