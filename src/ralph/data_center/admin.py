@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
@@ -147,7 +148,7 @@ class DataCenterAssetAdmin(
     resource_class = resources.DataCenterAssetResource
     list_display = [
         'status', 'barcode', 'model', 'sn', 'hostname', 'invoice_date',
-        'invoice_no',
+        'localization',
     ]
     multiadd_summary_fields = list_display + ['rack']
     one_of_mulitvalue_required = ['sn', 'barcode']
@@ -160,14 +161,17 @@ class DataCenterAssetAdmin(
     list_filter = [
         'status', 'barcode', 'sn', 'hostname', 'invoice_no', 'invoice_date',
         'order_no', 'model__name', 'service_env', 'depreciation_end_date',
-        'force_depreciation', 'remarks', 'budget_info', 'rack__name',
+        'force_depreciation', 'remarks', 'budget_info', 'rack',
         'rack__server_room', 'rack__server_room__data_center',
         'property_of', LiquidatedStatusFilter,
         ('management_ip', TextListFilter),
         'management_hostname', ('tags', TagsListFilter)
     ]
     date_hierarchy = 'created'
-    list_select_related = ['model', 'model__manufacturer', 'model__category']
+    list_select_related = [
+        'model', 'model__manufacturer', 'model__category', 'rack',
+        'rack__server_room', 'rack__server_room__data_center'
+    ]
     raw_id_fields = ['model', 'rack', 'service_env', 'parent', 'budget_info']
     raw_id_override_parent = {'parent': DataCenterAsset}
     _invoice_report_name = 'invoice-data-center-asset'
@@ -213,6 +217,29 @@ class DataCenterAssetAdmin(
         return getattr(
             settings, 'MULTIADD_DATA_CENTER_ASSET_FIELDS', None
         ) or multiadd_fields
+
+    def localization(self, obj):
+        base_url = reverse('admin:data_center_datacenterasset_changelist')
+        return (
+            '<a href="{}">{}</a>/<a href="{}">{}</a>/<a href="{}">{}</a>'
+            '/<strong>{}</strong>'
+        ).format(
+            '{}?rack__server_room__data_center={}'.format(
+                base_url, obj.rack.server_room.data_center_id
+            ),
+            obj.rack.server_room.data_center.name,
+            '{}?rack__server_room={}'.format(
+                base_url, obj.rack.server_room_id
+            ),
+            obj.rack.server_room.name,
+            '{}?rack={}'.format(
+                base_url, obj.rack_id
+            ),
+            obj.rack.name,
+            obj.position or ''
+        ) if obj.rack else '&mdash;'
+    localization.short_description = _('Localization')
+    localization.allow_tags = True
 
 
 @register(ServerRoom)

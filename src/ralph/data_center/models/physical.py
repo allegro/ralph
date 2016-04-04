@@ -89,7 +89,7 @@ class Gap(object):
         return items
 
 
-class DataCenter(NamedMixin, models.Model):
+class DataCenter(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
     _allow_in_dashboard = True
 
     visualization_cols_num = models.PositiveIntegerField(
