@@ -44,6 +44,7 @@ INSTALLED_APPS = (
     'ralph.security',
     'ralph.lib.foundation',
     'ralph.lib.table',
+    'ralph.networks',
     'ralph.data_importer',
     'ralph.dc_view',
     'ralph.reports',
@@ -283,6 +284,8 @@ OPENSTACK_INSTANCES = json.loads(os.environ.get('OPENSTACK_INSTANCES', '[]'))
 # issue tracker url for Operations urls (issues ids) - should end with /
 ISSUE_TRACKER_URL = os.environ.get('ISSUE_TRACKER_URL', '')
 
+# Networks
+DEFAULT_NETWORK_MARGIN = int(os.environ.get('DEFAULT_NETWORK_MARGIN', 10))
 
 # enable integration with DNSaaS, for details see
 # https://github.com/allegro/django-powerdns-dnssec
