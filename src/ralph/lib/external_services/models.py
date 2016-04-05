@@ -3,6 +3,7 @@ import logging
 import uuid
 
 from dj.choices import Choices
+from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -31,7 +32,7 @@ class JobStatus(Choices):
 
 class Job(TimeStampMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = NullableCharField(max_length=200, null=True, blank=True)
+    username = NullableCharField(max_length=200, null=True, blank=True)
     service_name = models.CharField(max_length=200, null=False, blank=False)
     _dumped_params = JSONField()
     status = models.PositiveIntegerField(
@@ -46,6 +47,20 @@ class Job(TimeStampMixin):
 
     def __str__(self):
         return '{} ({})'.format(self.service_name, self.id)
+
+    @property
+    def user(self):
+        try:
+            return self.params['_request__user']
+        except KeyError:
+            if self.username:
+                try:
+                    return get_user_model()._default_manager.get(
+                        username=self.username
+                    )
+                except get_user_model().DoesNotExist:
+                    pass
+        return None
 
     @property
     def is_running(self):
@@ -95,8 +110,9 @@ class Job(TimeStampMixin):
         request = kwargs.pop('request', None)
         result = cls.dump_obj_to_jsonable(kwargs)
         user = _get_user_from_request(request)
-        if user:
-            result['_request__user'] = cls.dump_obj_to_jsonable(user)
+        result['_request__user'] = (
+            cls.dump_obj_to_jsonable(user) if user else None
+        )
         return result
 
     @classmethod
@@ -108,7 +124,7 @@ class Job(TimeStampMixin):
         user = _get_user_from_request(kwargs.get('request'))
         obj = cls._default_manager.create(
             service_name=service_name,
-            user=user.username if user else None,
+            username=user.username if user else None,
             _dumped_params=cls.prepare_params(**kwargs),
             **(defaults or {})
         )

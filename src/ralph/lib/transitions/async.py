@@ -2,13 +2,16 @@
 Asynchronous runner for transitions
 """
 import logging
+from collections import defaultdict
 
 from django.db import transaction
 
+from ralph.attachments.models import Attachment
 from ralph.lib.transitions.models import (
     _check_action_with_instances,
     _check_instances_for_transition,
     _order_actions_by_requirements,
+    _post_transition_instance_processing,
     _prepare_action_data,
     TransitionJob,
     TransitionJobAction,
@@ -62,6 +65,7 @@ def run_async_transition(job_id):
         transition_job.fail(str(e))
 
 
+# TODO: unify this function with `ralph.lib.transitions.models.run_field_transition`  # noqa
 def _perform_async_transition(transition_job):
     transition = transition_job.transition
     obj = transition_job.obj
@@ -85,6 +89,8 @@ def _perform_async_transition(transition_job):
         tja.action_name for tja in executed_actions
         if tja.status != TransitionJobActionStatus.STARTED
     ])
+    attachment = None
+    func_history_kwargs = defaultdict(dict)
     # TODO: move this to transition (sth like
     # `for action in transition.get_actions(obj)`)
     for action in _order_actions_by_requirements(transition.actions.all(), obj):
@@ -99,7 +105,11 @@ def _perform_async_transition(transition_job):
         func = getattr(obj, action.name)
         # TODO: disable save object ?
         # data should be in transition_job.params dict
-        defaults = _prepare_action_data(action, **transition_job.params)
+        defaults = _prepare_action_data(
+            action=action,
+            func_history_kwargs=func_history_kwargs,
+            **transition_job.params
+        )
         tja = TransitionJobAction.objects.get_or_create(
             transition_job=transition_job,
             action_name=action.name,
@@ -113,12 +123,15 @@ def _perform_async_transition(transition_job):
             # action in transaction instead
             with transaction.atomic():
                 try:
-                    func(instances=[obj], **defaults)
+                    result = func(instances=[obj], **defaults)
                 except RescheduleAsyncTransitionActionLater as e:
                     # action is not ready - reschedule this job later and
                     # continue when you left off
                     transition_job.reschedule()
                     return
+                else:
+                    if isinstance(result, Attachment):
+                        attachment = result
         except Exception as e:
             logger.exception(e)
             tja.status = TransitionJobActionStatus.FAILED
@@ -129,5 +142,9 @@ def _perform_async_transition(transition_job):
             tja.save()
         completed_actions_names.add(action.name)
 
-    # TODO: history
+    # save obj and history
+    _post_transition_instance_processing(
+        obj, transition, transition_job.params, func_history_kwargs,
+        user=transition_job.user, attachment=attachment,
+    )
     transition_job.success()
