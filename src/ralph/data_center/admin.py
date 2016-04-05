@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
-from ralph.admin.filters import LiquidatedStatusFilter, TagsListFilter
+from ralph.admin.filters import (
+    LiquidatedStatusFilter,
+    TagsListFilter,
+    TextListFilter
+)
+from ralph.admin.helpers import generate_html_link
 from ralph.admin.m2m import RalphTabularM2MInline
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
@@ -154,7 +160,7 @@ class DataCenterAssetAdmin(
     resource_class = resources.DataCenterAssetResource
     list_display = [
         'status', 'barcode', 'model', 'sn', 'hostname', 'invoice_date',
-        'invoice_no',
+        'localization',
     ]
     multiadd_summary_fields = list_display + ['rack']
     one_of_mulitvalue_required = ['sn', 'barcode']
@@ -167,12 +173,17 @@ class DataCenterAssetAdmin(
     list_filter = [
         'status', 'barcode', 'sn', 'hostname', 'invoice_no', 'invoice_date',
         'order_no', 'model__name', 'service_env', 'depreciation_end_date',
-        'force_depreciation', 'remarks', 'budget_info', 'rack__name',
-        'rack__server_room', 'rack__server_room__data_center',
-        'property_of', LiquidatedStatusFilter, ('tags', TagsListFilter)
+        'force_depreciation', 'remarks', 'budget_info', 'rack',
+        'rack__server_room', 'rack__server_room__data_center', 'position',
+        'property_of', LiquidatedStatusFilter,
+        ('management_ip', TextListFilter),
+        'management_hostname', ('tags', TagsListFilter)
     ]
     date_hierarchy = 'created'
-    list_select_related = ['model', 'model__manufacturer', 'model__category']
+    list_select_related = [
+        'model', 'model__manufacturer', 'model__category', 'rack',
+        'rack__server_room', 'rack__server_room__data_center'
+    ]
     raw_id_fields = ['model', 'rack', 'service_env', 'parent', 'budget_info']
     raw_id_override_parent = {'parent': DataCenterAsset}
     _invoice_report_name = 'invoice-data-center-asset'
@@ -215,6 +226,51 @@ class DataCenterAssetAdmin(
         return getattr(
             settings, 'MULTIADD_DATA_CENTER_ASSET_FIELDS', None
         ) or multiadd_fields
+
+    def localization(self, obj):
+        """
+        Additional column 'localization' display filter by:
+        data center, server_room, rack, position (if is blade)
+        """
+        base_url = reverse('admin:data_center_datacenterasset_changelist')
+        position = '<strong>{}</strong>'.format(obj.position)
+        if obj.is_blade:
+            position = generate_html_link(
+                base_url,
+                {
+                    'rack': obj.rack_id,
+                    'position__start': obj.position,
+                    'position__end': obj.position
+                },
+                position
+            )
+
+        return (
+            '{data_center}/{server_room}/{rack}/{position}'
+        ).format(
+            data_center=generate_html_link(
+                base_url,
+                {
+                    'rack__server_room__data_center':
+                        obj.rack.server_room.data_center_id
+                },
+                obj.rack.server_room.data_center.name
+            ),
+            server_room=generate_html_link(
+                base_url,
+                {'rack__server_room': obj.rack.server_room_id},
+                obj.rack.server_room.name
+            ),
+            rack=generate_html_link(
+                base_url,
+                {'rack': obj.rack_id},
+                obj.rack.name
+            ),
+            position=position if obj.position else ''
+        ) if obj.rack else '&mdash;'
+
+    localization.short_description = _('Localization')
+    localization.allow_tags = True
 
 
 @register(ServerRoom)

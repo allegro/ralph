@@ -5,6 +5,7 @@ from django.core.exceptions import FieldDoesNotExist
 from django.test import TestCase
 
 from ralph.admin.helpers import (
+    generate_html_link,
     get_content_type_for_model,
     get_field_by_relation_path,
     getattr_dunder
@@ -49,4 +50,18 @@ class ModelFieldsTestCase(TestCase):
         self.assertEqual(
             ContentType.objects.get_for_model(expected_model),
             get_content_type_for_model(model)
+        )
+
+
+class GenerateLinkTest(TestCase):
+
+    def test_generate_html_link(self):
+        url = generate_html_link(
+            'http://test.com/',
+            {'param': 1},
+            'Name'
+        )
+        self.assertEqual(
+            url,
+            '<a href="http://test.com/?param=1">Name</a>'
         )

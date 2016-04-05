@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from urllib.parse import urlencode
+
 from django.contrib.admin.utils import get_fields_from_path
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
@@ -54,8 +56,10 @@ def get_value_by_relation_path(obj, field_path):
 
 
 def getattr_dunder(obj, attr):
-    """Gets attribute of object. Works recursively
-    if attr contains double underscores."""
+    """
+    Gets attribute of object. Works recursively
+    if attr contains double underscores.
+    """
 
     first, dunder, rest = attr.partition('__')
     value = getattr(obj, first, None)
@@ -80,3 +84,29 @@ def get_content_type_for_model(obj):
         obj = parent_models[-1]
 
     return ContentType.objects.get_for_model(obj)
+
+
+def generate_html_link(base_url, params, label):
+    """
+    Generate html link.
+
+    Args:
+        base_url: Url
+        params: dict of params
+        label: Label in link
+
+    Returns:
+        string html
+
+    Example:
+        >>> generate_html_link(
+            'http://ralph.com/', {'param': 'value'}, 'Ralph'
+        )
+        >>> <a href="http://ralph.com/?param=value">Ralph</a>
+    """
+
+    return '<a href="{base_url}?{params}">{label}</a>'.format(
+        base_url=base_url,
+        params=urlencode(params),
+        label=label
+    )

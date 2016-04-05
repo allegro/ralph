@@ -85,7 +85,7 @@ class Gap(object):
         return items
 
 
-class DataCenter(NamedMixin, models.Model):
+class DataCenter(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
     _allow_in_dashboard = True
 
     visualization_cols_num = models.PositiveIntegerField(
@@ -337,6 +337,12 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
 
     def get_orientation_desc(self):
         return Orientation.name_from_id(self.orientation)
+
+    @property
+    def is_blade(self):
+        if self.model_id and self.model.has_parent:
+            return True
+        return False
 
     @property
     def cores_count(self):
