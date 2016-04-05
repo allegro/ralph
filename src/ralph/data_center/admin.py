@@ -10,6 +10,7 @@ from ralph.admin.filters import (
     TagsListFilter,
     TextListFilter
 )
+from ralph.admin.helpers import generate_html_link
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
@@ -162,7 +163,7 @@ class DataCenterAssetAdmin(
         'status', 'barcode', 'sn', 'hostname', 'invoice_no', 'invoice_date',
         'order_no', 'model__name', 'service_env', 'depreciation_end_date',
         'force_depreciation', 'remarks', 'budget_info', 'rack',
-        'rack__server_room', 'rack__server_room__data_center',
+        'rack__server_room', 'rack__server_room__data_center', 'position',
         'property_of', LiquidatedStatusFilter,
         ('management_ip', TextListFilter),
         'management_hostname', ('tags', TagsListFilter)
@@ -219,25 +220,47 @@ class DataCenterAssetAdmin(
         ) or multiadd_fields
 
     def localization(self, obj):
+        """
+        Additional column 'localization' display filter by:
+        data center, server_room, rack, position (if is blade)
+        """
         base_url = reverse('admin:data_center_datacenterasset_changelist')
+        position = '<strong>{}</strong>'.format(obj.position)
+        if obj.is_blade:
+            position = generate_html_link(
+                base_url,
+                {
+                    'rack': obj.rack_id,
+                    'position__start': obj.position,
+                    'position__end': obj.position
+                },
+                position
+            )
+
         return (
-            '<a href="{}">{}</a>/<a href="{}">{}</a>/<a href="{}">{}</a>'
-            '/<strong>{}</strong>'
+            '{data_center}/{server_room}/{rack}/{position}'
         ).format(
-            '{}?rack__server_room__data_center={}'.format(
-                base_url, obj.rack.server_room.data_center_id
+            data_center=generate_html_link(
+                base_url,
+                {
+                    'rack__server_room__data_center':
+                        obj.rack.server_room.data_center_id
+                },
+                obj.rack.server_room.data_center.name
             ),
-            obj.rack.server_room.data_center.name,
-            '{}?rack__server_room={}'.format(
-                base_url, obj.rack.server_room_id
+            server_room=generate_html_link(
+                base_url,
+                {'rack__server_room': obj.rack.server_room_id},
+                obj.rack.server_room.name
             ),
-            obj.rack.server_room.name,
-            '{}?rack={}'.format(
-                base_url, obj.rack_id
+            rack=generate_html_link(
+                base_url,
+                {'rack': obj.rack_id},
+                obj.rack.name
             ),
-            obj.rack.name,
-            obj.position or ''
+            position=position if obj.position else ''
         ) if obj.rack else '&mdash;'
+
     localization.short_description = _('Localization')
     localization.allow_tags = True
 
