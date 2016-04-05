@@ -3,6 +3,7 @@ from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphMPTTAdmin, RalphTabularInline, register
+from ralph.admin.views.extra import RalphDetailView
 from ralph.assets.models.assets import (
     Asset,
     AssetHolder,
@@ -19,6 +20,7 @@ from ralph.assets.models.assets import (
 )
 from ralph.assets.models.components import ComponentModel, GenericComponent
 from ralph.data_importer import resources
+from ralph.lib.table import Table
 
 
 @register(ServiceEnvironment)
@@ -37,14 +39,52 @@ class ServiceEnvironmentInline(RalphTabularInline):
     fields = ('environment',)
 
 
+class BaseObjectsList(Table):
+    def url(self, item):
+        return '<a href="{}">{}</a>'.format(
+            item.get_absolute_url(),
+            _('Go to object')
+        )
+    url.title = _('Link')
+
+    def _str(self, item):
+        return str(item)
+    _str.title = _('object')
+
+
+class ServiceBaseObjects(RalphDetailView):
+    icon = 'bookmark'
+    name = 'service_base_objects'
+    label = _('Objects')
+    url_name = 'service_base_objects'
+
+    def get_service_base_objects_queryset(self):
+        return BaseObject.polymorphic_objects.filter(
+            service_env__service=self.object
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['base_objects_list'] = BaseObjectsList(
+            self.get_service_base_objects_queryset(),
+            [
+                'id', ('content_type', _('type')),
+                ('service_env__environment', _('environment')), '_str', 'url',
+            ]
+        )
+        return context
+
+
 @register(Service)
 class ServiceAdmin(RalphAdmin):
     exclude = ['environments']
     inlines = [ServiceEnvironmentInline]
-    filter_horizontal = ['business_owners', 'technical_owners']
     search_fields = ['name', 'uid']
-    raw_id_fields = ['profit_center', 'support_team', 'business_owners']
+    raw_id_fields = [
+        'profit_center', 'support_team', 'business_owners', 'technical_owners'
+    ]
     resource_class = resources.ServiceResource
+    change_views = [ServiceBaseObjects]
 
 
 @register(Manufacturer)
