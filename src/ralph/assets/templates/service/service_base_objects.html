@@ -1,0 +1,7 @@
+{% extends BASE_TEMPLATE %}
+{% load i18n table %}
+{% block view_content %}
+<div class="large-12 columns">
+  {% table base_objects_list.get_table_content %}
+</div>
+{% endblock %}

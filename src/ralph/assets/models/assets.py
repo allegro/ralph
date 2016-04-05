@@ -6,7 +6,6 @@ from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.contrib import messages
 from django.core.exceptions import ImproperlyConfigured, ValidationError
-from django.core.urlresolvers import reverse
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.template import Context, Template
@@ -51,7 +50,7 @@ class Environment(NamedMixin, TimeStampMixin, models.Model):
     pass
 
 
-class Service(NamedMixin, TimeStampMixin, models.Model):
+class Service(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
     # Fixme: let's do service catalog replacement from that
     _allow_in_dashboard = True
 
@@ -78,9 +77,6 @@ class Service(NamedMixin, TimeStampMixin, models.Model):
 
     def __str__(self):
         return '{}'.format(self.name)
-
-    def get_absolute_url(self):
-        return reverse('assets:service_detail', args=(self.pk,))
 
     @classmethod
     def get_autocomplete_queryset(cls):
