@@ -365,6 +365,12 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
         return Orientation.name_from_id(self.orientation)
 
     @property
+    def is_blade(self):
+        if self.model_id and self.model.has_parent:
+            return True
+        return False
+
+    @property
     def cores_count(self):
         """Returns cores count assigned to device in Ralph"""
         asset_cores_count = self.model.cores_count if self.model else 0
