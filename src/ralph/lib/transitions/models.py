@@ -283,6 +283,54 @@ def _prepare_action_data(action, data, func_history_kwargs=None, **kwargs):
     return defaults
 
 
+def _save_instance_after_transition(instance, transition, user=None):
+    # don't save object if any of actions have `disable_save_object` flag set
+    if not any([a.disable_save_object for a in transition.get_pure_actions()]):
+        with transaction.atomic(), reversion.create_revision():
+            instance.save()
+            reversion.set_comment('Transition {}'.format(transition))
+            if user:
+                reversion.set_user(user)
+
+
+def _create_instance_history_entry(
+    instance, transition, data, func_history_kwargs, user=None, attachment=None
+):
+    funcs = transition.get_pure_actions()
+    action_names = [str(getattr(
+        func,
+        'verbose_name',
+        func.__name__.replace('_', ' ').capitalize()
+    )) for func in funcs]
+    history_kwargs = _get_history_dict(data, instance, funcs)
+    history_kwargs.update(func_history_kwargs[instance.pk])
+    transition_history = _generate_transition_history(
+        instance=instance,
+        transition=transition,
+        user=user,
+        attachment=attachment,
+        history_kwargs=history_kwargs,
+        action_names=action_names,
+        field=transition.model.field_name
+    )
+    transition_history.save()
+
+
+def _post_transition_instance_processing(
+    instance, transition, data, func_history_kwargs, user=None, attachment=None
+):
+    # change transition field (ex. status) if not keeping orignial
+    if not int(transition.target) == TRANSITION_ORIGINAL_STATUS[0]:
+        setattr(instance, transition.model.field_name, int(transition.target))
+    _create_instance_history_entry(
+        instance, transition, data, func_history_kwargs,
+        user=user, attachment=attachment
+    )
+    _save_instance_after_transition(
+        instance, transition, user
+    )
+
+
 @transaction.atomic
 def run_field_transition(
     instances, transition_obj_or_name, field, data={}, **kwargs
@@ -298,10 +346,7 @@ def run_field_transition(
     _check_instances_for_transition(instances, transition)
     _check_action_with_instances(instances, transition)
     attachment = None
-    action_names = []
-    runned_funcs = []
     func_history_kwargs = defaultdict(dict)
-    disable_save_object = False
     for action in _order_actions_by_requirements(
         transition.actions.all(), first_instance
     ):
@@ -309,8 +354,6 @@ def run_field_transition(
             action, transition
         ))
         func = getattr(first_instance, action.name)
-        if func.disable_save_object:
-            disable_save_object = True
         defaults = _prepare_action_data(
             action, data, func_history_kwargs, **kwargs
         )
@@ -320,36 +363,13 @@ def run_field_transition(
             logger.exception(e)
             return False, None
 
-        runned_funcs.append(func)
-        action_names.append(str(getattr(
-            func,
-            'verbose_name',
-            func.__name__.replace('_', ' ').capitalize()
-        )))
         if isinstance(result, Attachment):
             attachment = result
-    history_list = []
     for instance in instances:
-        if not int(transition.target) == TRANSITION_ORIGINAL_STATUS[0]:
-            setattr(instance, field, int(transition.target))
-        history_kwargs = _get_history_dict(data, instance, runned_funcs)
-        history_kwargs.update(func_history_kwargs[instance.pk])
-        history_list.append(_generate_transition_history(
-            instance=instance,
-            transition=transition,
-            user=kwargs['request'].user,
-            attachment=attachment,
-            history_kwargs=history_kwargs,
-            action_names=action_names,
-            field=field
-        ))
-        if not disable_save_object:
-            with transaction.atomic(), reversion.create_revision():
-                instance.save()
-                reversion.set_comment('Transition {}'.format(transition))
-                reversion.set_user(kwargs['request'].user)
-    if history_list:
-        TransitionsHistory.objects.bulk_create(history_list)
+        _post_transition_instance_processing(
+            instance, transition, data, func_history_kwargs,
+            user=kwargs['request'].user, attachment=attachment,
+        )
     return True, attachment
 
 
