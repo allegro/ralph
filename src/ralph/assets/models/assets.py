@@ -50,7 +50,13 @@ class Environment(NamedMixin, TimeStampMixin, models.Model):
     pass
 
 
-class Service(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
+class Service(
+    PermByFieldMixin,
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    TimeStampMixin,
+    models.Model
+):
     # Fixme: let's do service catalog replacement from that
     _allow_in_dashboard = True
 

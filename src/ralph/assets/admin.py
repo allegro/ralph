@@ -61,7 +61,7 @@ class ServiceBaseObjects(RalphDetailView):
     def get_service_base_objects_queryset(self):
         return BaseObject.polymorphic_objects.filter(
             service_env__service=self.object
-        )
+        ).select_related('service_env__environment', 'content_type')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -77,7 +77,10 @@ class ServiceBaseObjects(RalphDetailView):
 
 @register(Service)
 class ServiceAdmin(RalphAdmin):
-    exclude = ['environments']
+    fields = (
+        'name', 'uid', 'active', 'profit_center', 'cost_center',
+        'technical_owners', 'business_owners', 'support_team',
+    )
     inlines = [ServiceEnvironmentInline]
     search_fields = ['name', 'uid']
     raw_id_fields = [
