@@ -414,6 +414,29 @@ class TreeRelatedFieldListFilter(RelatedFieldListFilter):
         return queryset
 
 
+class IPFilter(SimpleListFilter):
+
+    title = _('IP')
+    parameter_name = 'ip'
+    template = "admin/filters/text_filter.html"
+
+    def lookups(self, request, model_admin):
+        return (
+            (1, _('IP')),
+        )
+
+    def choices(self, cl):
+        yield {
+            'selected': self.value() or False,
+            'parameter_name': self.parameter_name,
+        }
+
+    def queryset(self, request, queryset):
+        if self.value():
+            queryset = queryset.filter(ipaddress__address=self.value())
+        return queryset
+
+
 class LiquidatedStatusFilter(SimpleListFilter):
 
     title = _('show liquidated')
