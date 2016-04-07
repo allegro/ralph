@@ -108,5 +108,5 @@ def generate_html_link(base_url, params, label):
     return '<a href="{base_url}?{params}">{label}</a>'.format(
         base_url=base_url,
         params=urlencode(params),
-        label=label
+        label=str(label).replace(' ', '&nbsp;')
     )

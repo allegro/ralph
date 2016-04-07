@@ -164,9 +164,10 @@ class DataCenterAssetAdmin(
     ]
     multiadd_summary_fields = list_display + ['rack']
     one_of_mulitvalue_required = ['sn', 'barcode']
-    bulk_edit_list = list_display + [
-        'rack', 'orientation', 'position',
-        'slot_no', 'price', 'provider', 'service_env'
+    bulk_edit_list = [
+        'status', 'barcode', 'model', 'sn', 'hostname', 'invoice_date',
+        'rack', 'orientation', 'position', 'slot_no', 'price', 'provider',
+        'service_env'
     ]
     bulk_edit_no_fillable = ['barcode', 'sn']
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
@@ -233,7 +234,7 @@ class DataCenterAssetAdmin(
         data center, server_room, rack, position (if is blade)
         """
         base_url = reverse('admin:data_center_datacenterasset_changelist')
-        position = '<strong>{}</strong>'.format(obj.position)
+        position = obj.position
         if obj.is_blade:
             position = generate_html_link(
                 base_url,
@@ -242,13 +243,11 @@ class DataCenterAssetAdmin(
                     'position__start': obj.position,
                     'position__end': obj.position
                 },
-                position
+                position,
             )
 
-        return (
-            '{data_center}/{server_room}/{rack}/{position}'
-        ).format(
-            data_center=generate_html_link(
+        result = [
+            generate_html_link(
                 base_url,
                 {
                     'rack__server_room__data_center':
@@ -256,18 +255,24 @@ class DataCenterAssetAdmin(
                 },
                 obj.rack.server_room.data_center.name
             ),
-            server_room=generate_html_link(
+            generate_html_link(
                 base_url,
                 {'rack__server_room': obj.rack.server_room_id},
                 obj.rack.server_room.name
             ),
-            rack=generate_html_link(
+            generate_html_link(
                 base_url,
                 {'rack': obj.rack_id},
                 obj.rack.name
-            ),
-            position=position if obj.position else ''
-        ) if obj.rack else '&mdash;'
+            )
+        ] if obj.rack else []
+
+        if obj.position:
+            result.append(str(position))
+        if obj.slot_no:
+            result.append(str(obj.slot_no))
+
+        return '&nbsp;/&nbsp;'.join(result) if obj.rack else '&mdash;'
 
     localization.short_description = _('Localization')
     localization.allow_tags = True
