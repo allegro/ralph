@@ -101,7 +101,7 @@ class NetworkAdmin(RalphMPTTAdmin):
         ('parent', RelatedAutocompleteFieldListFilter),
         ('min_ip', NetworkRangeFilter)
     ]
-    list_select_related = ['kind']
+    list_select_related = ['kind', 'network_environment']
     raw_id_fields = ['racks', 'terminators', 'service_env']
     resource_class = resources.NetworkResource
     readonly_fields = [
