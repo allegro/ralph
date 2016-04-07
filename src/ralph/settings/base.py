@@ -28,6 +28,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_rq',
     'import_export',
     'mptt',
     'reversion',
@@ -50,6 +51,7 @@ INSTALLED_APPS = (
     'ralph.reports',
     'ralph.virtual',
     'ralph.operations',
+    'ralph.lib.external_services',
     'ralph.lib.transitions',
     'ralph.lib.permissions',
     'rest_framework',
@@ -262,10 +264,29 @@ BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME = True
 
 TAGGIT_CASE_INSENSITIVE = True  # case insensitive tags
 
+RQ_QUEUES = {
+    'default': dict(
+        **REDIS_CONNECTION
+    )
+}
+for queue_name in [
+    'ralph_ext_pdf',
+    'ralph_async_transitions'
+]:
+    RQ_QUEUES[queue_name] = RQ_QUEUES['default'].copy()
+
+
 RALPH_EXTERNAL_SERVICES = {
     'PDF': {
-        'name': 'ralph_ext_pdf',
+        'queue_name': 'ralph_ext_pdf',
         'method': 'inkpy_jinja.pdf',
+    },
+}
+
+RALPH_INTERNAL_SERVICES = {
+    'ASYNC_TRANSITIONS': {
+        'queue_name': 'ralph_async_transitions',
+        'method': 'ralph.lib.transitions.async.run_async_transition'
     }
 }
 

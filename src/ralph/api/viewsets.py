@@ -137,3 +137,11 @@ class RalphAPIViewSet(
     metaclass=RalphAPIViewSetMetaclass
 ):
     pass
+
+
+class RalphReadOnlyAPIViewSet(
+    RalphAPIViewSetMixin,
+    viewsets.ReadOnlyModelViewSet,
+    metaclass=RalphAPIViewSetMetaclass
+):
+    pass

@@ -17,6 +17,7 @@ api_urls = list(map(lambda u: url(r'^', include(u)), [
     'ralph.supports.api',
     'ralph.security.api',
     'ralph.virtual.api',
+    'ralph.lib.transitions.api.routers'
 ]))
 # include router urls
 # because we're using single router instance and urls are cached inside this
@@ -34,4 +35,5 @@ urlpatterns = [
     url(r'^', include('ralph.accounts.urls')),
     url(r'^', include('ralph.reports.urls')),
     url(r'^', include('ralph.admin.autocomplete_urls')),
+    url(r'^', include('ralph.lib.transitions.urls')),
 ]

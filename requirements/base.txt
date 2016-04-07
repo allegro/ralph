@@ -6,6 +6,7 @@ django-filter==0.11.0
 django-import-export==0.4.2
 django-mptt==0.7.4
 django-reversion==1.8.6
+django-rq==0.9.0
 django-taggit==0.17.1
 django-taggit-serializer==0.1.5
 djangorestframework==3.2.2
