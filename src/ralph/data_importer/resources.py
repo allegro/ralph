@@ -18,6 +18,7 @@ from ralph.data_importer.mixins import (
 )
 from ralph.data_importer.widgets import (
     AssetServiceEnvWidget,
+    BaseObjectManyToManyWidget,
     BaseObjectWidget,
     ImportedForeignKeyWidget,
     ManyToManyThroughWidget,
@@ -182,6 +183,20 @@ class RackResource(RalphModelResource):
         model = physical.Rack
 
 
+class DiscoveryDataCenterResource(RalphModelResource):
+    """
+    Imports datacenters from Discovery.DataCenter (Ralph2).
+
+    In Ralph2 data centers was in two tables:
+        - Assets data centers
+        - Discovery data centers
+    Ralph3 stores all data centers in one table (physical.DataCenter), so this
+    resource allows to import discovery data centers from Ralph2.
+    """
+    class Meta:
+        model = physical.DataCenter
+
+
 class NetworkResource(RalphModelResource):
     data_center = fields.Field(
         column_name='data_center',
@@ -197,6 +212,11 @@ class NetworkResource(RalphModelResource):
         column_name='kind',
         attribute='kind',
         widget=ImportedForeignKeyWidget(networks.NetworkKind),
+    )
+    terminators = fields.Field(
+        column_name='terminators',
+        attribute='terminators',
+        widget=BaseObjectManyToManyWidget(model=assets.BaseObject),
     )
 
     class Meta:

@@ -60,7 +60,7 @@ class NetworkAdmin(RalphAdmin):
         ('parent', RelatedAutocompleteFieldListFilter)
     ]
     list_select_related = ['kind']
-    raw_id_fields = ['racks', 'terminators']
+    raw_id_fields = ['racks', 'terminators', 'service_env']
     resource_class = resources.NetworkResource
     readonly_fields = [
         'show_subnetworks', 'show_addresses', 'show_parent_networks'

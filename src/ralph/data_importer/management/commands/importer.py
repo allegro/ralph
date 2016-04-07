@@ -144,7 +144,7 @@ class Command(BaseCommand):
             csv_data = list(reader)
             headers, csv_body = csv_data[0], csv_data[1:]
             model_resource = get_resource(options.get('model_name'))
-            current_count = model_resource._meta.model.objects.count()
+            before_import = model_resource._meta.model.objects.count()
             dataset = tablib.Dataset(*csv_body, headers=headers)
             objs_delete = [
                 obj.get('id', None) for obj in dataset.dict
@@ -166,12 +166,19 @@ class Command(BaseCommand):
                     if row.errors:
                         break
             after_import_count = model_resource._meta.model.objects.count()
-            if len(csv_body) != after_import_count - current_count:
-                self.stderr.write('Some of records were not imported')
-            else:
-                self.stdout.write(
-                    '{} rows were imported'.format(len(csv_body))
+
+            self.stderr.write(
+                'Imported records: {}'.format(
+                    after_import_count - before_import
                 )
+            )
+            if (len(csv_body) - after_import_count - before_import >= 0):
+                self.stderr.write(
+                    'Skipped records: {}'.format(
+                        len(csv_body) - after_import_count - before_import
+                    )
+                )
+
             deleted = self.delete_objs(objs_delete, model_resource._meta.model)
             self.stdout.write('{} deleted\n'.format(deleted))
             self.stdout.write('Done\n')
