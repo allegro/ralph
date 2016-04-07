@@ -794,4 +794,9 @@ NG_EXPORTER = {
     # if you have racks (probabbly you don't) where assets can't have parent
     # (e.g.: chassis) put theirs ids here
     'rack_ids_where_parents_are_disallowed': [],
+    # there are two datacenter models in ralph2, one in models_network and one
+    # in ralph_assets. those table goes to one table `datacenter` in ralph_ng.
+    # so we should merge those two tables into one and keep theirs ids
+    # non-conflicting. this is achieved by adding below constant
+    'discovery_datacenter_constant': 1000,
 }

@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
+import sys
 import tempfile
 from optparse import make_option
 from zipfile import ZipFile
@@ -14,6 +15,7 @@ from zipfile import ZipFile
 from django.core.management.base import BaseCommand
 from django.db.models import get_models
 from import_export import resources
+from ipaddr import AddressValueError, IPv4Network
 
 import ralph_assets
 from ralph.discovery import models_device
@@ -33,6 +35,7 @@ SIMPLE_MODELS = [
     # mainly trash data: 'ComponentModel',
     'Warehouse',
     'DataCenter',
+    'DiscoveryDataCenter',
     'Accessory',
     # TODO: 'CloudProject',
     'LicenceType',
@@ -43,6 +46,7 @@ SIMPLE_MODELS = [
     # TODO: VIP
     # TODO: VirtualServer
     'NetworkKind',
+    'NetworkEnvironment',
     'SupportType',
     'Region',
 ]
@@ -125,7 +129,31 @@ class Command(BaseCommand):
             action="append",
             type="str"
         ),
+        make_option(
+            '--exclude-network',
+            action="append",
+            help='Excludes network from address, eg.: --exclude-network=10.20.30.00/24',  # noqa
+            type="str"
+        ),
     )
+
+    def set_options_on_resource(self, model, options, model_resource):
+        """Injects command line options to resources"""
+        if model == 'Network' and options.get('exclude_network', None):
+            excluded_networks = []
+            for network in options['exclude_network']:
+                try:
+                    IPv4Network(network)
+                except AddressValueError:
+                    self.stdout.write(
+                        "Value '{}' for '--exclude-network' is not CIDR format".format(  # noqa
+                            network
+                        )
+                    )
+                    sys.exit()
+                excluded_networks.append(network)
+            model_resource.excluded_networks = excluded_networks
+        return model_resource
 
     def handle(self, *args, **options):
         models = args
@@ -143,10 +171,14 @@ class Command(BaseCommand):
                 self.stdout.write('Processing model {}\n'.format(model))
 
                 model_resource = get_resource(model)
+                model_resource = self.set_options_on_resource(
+                    model, options, model_resource
+                )
                 dataset = model_resource.export()
                 output_filename = "{}_{}.{}".format(
                     idx * NAMESPACE_SIZE, model, 'csv'
                 )
                 with open(output_filename, 'wb') as output_file:
                     output_file.write(dataset.csv)
+                self.stdout.write('exported: {}\n'.format(len(dataset)))
                 zipped.write(output_filename.encode('utf8'))
