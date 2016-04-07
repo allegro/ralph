@@ -318,7 +318,13 @@ class DiscoveryQueue(NamedMixin, models.Model):
         ordering = ('name',)
 
 
-class IPAddress(LastSeenMixin, TimeStampMixin, NetworkMixin, models.Model):
+class IPAddress(
+    AdminAbsoluteUrlMixin,
+    LastSeenMixin,
+    TimeStampMixin,
+    NetworkMixin,
+    models.Model
+):
     _parent_attr = 'network'
 
     base_object = BaseObjectForeignKey(
@@ -369,16 +375,16 @@ class IPAddress(LastSeenMixin, TimeStampMixin, NetworkMixin, models.Model):
         default=None,
     )
     is_management = models.BooleanField(
-        verbose_name=_('This is a management address'),
+        verbose_name=_('Is management address'),
         default=False,
     )
     is_public = models.BooleanField(
-        verbose_name=_('This is a public address'),
+        verbose_name=_('Is public address'),
         default=False,
         editable=False,
     )
     is_gateway = models.BooleanField(
-        verbose_name=_('This is a gateway address'),
+        verbose_name=_('Is gateway address'),
         default=False,
         editable=False,
     )
