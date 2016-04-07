@@ -28,6 +28,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_rq',
     'import_export',
     'mptt',
     'reversion',
@@ -44,11 +45,13 @@ INSTALLED_APPS = (
     'ralph.security',
     'ralph.lib.foundation',
     'ralph.lib.table',
+    'ralph.networks',
     'ralph.data_importer',
     'ralph.dc_view',
     'ralph.reports',
     'ralph.virtual',
     'ralph.operations',
+    'ralph.lib.external_services',
     'ralph.lib.transitions',
     'ralph.lib.permissions',
     'rest_framework',
@@ -261,10 +264,29 @@ BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME = True
 
 TAGGIT_CASE_INSENSITIVE = True  # case insensitive tags
 
+RQ_QUEUES = {
+    'default': dict(
+        **REDIS_CONNECTION
+    )
+}
+for queue_name in [
+    'ralph_ext_pdf',
+    'ralph_async_transitions'
+]:
+    RQ_QUEUES[queue_name] = RQ_QUEUES['default'].copy()
+
+
 RALPH_EXTERNAL_SERVICES = {
     'PDF': {
-        'name': 'ralph_ext_pdf',
+        'queue_name': 'ralph_ext_pdf',
         'method': 'inkpy_jinja.pdf',
+    },
+}
+
+RALPH_INTERNAL_SERVICES = {
+    'ASYNC_TRANSITIONS': {
+        'queue_name': 'ralph_async_transitions',
+        'method': 'ralph.lib.transitions.async.run_async_transition'
     }
 }
 
@@ -283,6 +305,8 @@ OPENSTACK_INSTANCES = json.loads(os.environ.get('OPENSTACK_INSTANCES', '[]'))
 # issue tracker url for Operations urls (issues ids) - should end with /
 ISSUE_TRACKER_URL = os.environ.get('ISSUE_TRACKER_URL', '')
 
+# Networks
+DEFAULT_NETWORK_MARGIN = int(os.environ.get('DEFAULT_NETWORK_MARGIN', 10))
 
 # enable integration with DNSaaS, for details see
 # https://github.com/allegro/django-powerdns-dnssec

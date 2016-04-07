@@ -5,8 +5,11 @@ except ImportError:
     Choices = None
     use_choices = False
 
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldDoesNotExist
+from django.core.urlresolvers import reverse
 from django.forms.utils import flatatt
+from django.template.loader import render_to_string
 
 from ralph.admin.helpers import (
     get_field_by_relation_path,
@@ -31,6 +34,7 @@ class Table(object):
             ],
         ]
     """
+    template_name = 'table.html'
 
     def __init__(
         self, queryset, list_display, additional_row_method=None, request=None
@@ -129,3 +133,35 @@ class Table(object):
                     if additional_data:
                         result.append(additional_data)
         return result
+
+    def render(self, request=None):
+        content = self.get_table_content()
+        return render_to_string(
+            self.template_name,
+            context={'headers': content[0], 'rows': content[1:]},
+            request=request,
+        )
+
+
+class TableWithUrl(Table):
+    """
+    Table with built-in url column.
+    """
+
+    def get_field_value(self, item, field):
+        value = super().get_field_value(item, field)
+        if field == self.url_field:
+            return '<a href="{}">{}</a>'.format(
+                reverse(
+                    'admin:view_on_site',
+                    args=(ContentType.objects.get_for_model(item).id, item.id,)
+                ),
+                value
+            )
+        return value
+
+    def __init__(self, queryset, list_display, *args, **kwargs):
+        self.url_field = kwargs.pop('url_field', None)
+        super().__init__(
+            queryset=queryset, list_display=list_display, *args, **kwargs
+        )

@@ -5,8 +5,8 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from ralph.assets.models.components import ComponentModel
 from ralph.assets.tests.factories import DataCenterAssetModelFactory
-from ralph.data_center.models.networks import IPAddress
 from ralph.data_center.models.physical import DataCenterAsset
+from ralph.networks.models.networks import IPAddress
 from ralph.tests import RalphTestCase
 from ralph.virtual.management.commands.openstack_sync import Command
 from ralph.virtual.models import (

@@ -7,14 +7,6 @@ from ralph.data_center.models.components import (
     DiskShare,
     DiskShareMount,
 )
-from ralph.data_center.models.networks import (
-    DiscoveryQueue,
-    IPAddress,
-    Network,
-    NetworkEnvironment,
-    NetworkKind,
-    NetworkTerminator,
-)
 from ralph.data_center.models.physical import (
     Accessory,
     Connection,
@@ -37,15 +29,9 @@ __all__ = [
     'Database',
     'DataCenter',
     'DataCenterAsset',
-    'DiscoveryQueue',
     'DiskShare',
     'DiskShareMount',
     'Gap',
-    'IPAddress',
-    'Network',
-    'NetworkEnvironment',
-    'NetworkKind',
-    'NetworkTerminator',
     'Orientation',
     'Rack',
     'RackAccessory',

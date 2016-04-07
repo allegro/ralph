@@ -10,9 +10,9 @@ from ralph.admin.helpers import get_value_by_relation_path
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ComponentType
 from ralph.assets.models.components import Component, ComponentModel
-from ralph.data_center.models.networks import IPAddress
 from ralph.data_center.models.physical import DataCenterAsset
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
+from ralph.networks.models.networks import IPAddress
 
 logger = logging.getLogger(__name__)
 
@@ -154,7 +154,7 @@ class CloudHost(AdminAbsoluteUrlMixin, BaseObject):
         verbose_name_plural = _('Cloud hosts')
 
     def __str__(self):
-        return 'Cloud Host: {}'.format(self.hostname)
+        return self.hostname
 
     @property
     def ip_addresses(self):

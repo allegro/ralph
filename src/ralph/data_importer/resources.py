@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db.models import Count
 from import_export import fields, resources, widgets
@@ -9,7 +10,7 @@ from ralph.back_office.models import (
     OfficeInfrastructure,
     Warehouse
 )
-from ralph.data_center.models import networks, physical
+from ralph.data_center.models import physical
 from ralph.data_importer.fields import ThroughField
 from ralph.data_importer.mixins import (
     ImportForeignKeyMeta,
@@ -17,6 +18,7 @@ from ralph.data_importer.mixins import (
 )
 from ralph.data_importer.widgets import (
     AssetServiceEnvWidget,
+    BaseObjectManyToManyWidget,
     BaseObjectWidget,
     ImportedForeignKeyWidget,
     ManyToManyThroughWidget,
@@ -32,8 +34,14 @@ from ralph.licences.models import (
     LicenceUser,
     Software
 )
+from ralph.networks.models import networks
 from ralph.operations.models import Operation, OperationType
 from ralph.supports.models import BaseObjectsSupport, Support, SupportType
+
+MAP_IMPORTED_ID_TO_NEW_ID = getattr(
+    settings, 'MAP_IMPORTED_ID_TO_NEW_ID', True
+)
+
 
 RalphResourceMeta = type(
     'RalphResourceMeta',
@@ -175,6 +183,20 @@ class RackResource(RalphModelResource):
         model = physical.Rack
 
 
+class DiscoveryDataCenterResource(RalphModelResource):
+    """
+    Imports datacenters from Discovery.DataCenter (Ralph2).
+
+    In Ralph2 data centers was in two tables:
+        - Assets data centers
+        - Discovery data centers
+    Ralph3 stores all data centers in one table (physical.DataCenter), so this
+    resource allows to import discovery data centers from Ralph2.
+    """
+    class Meta:
+        model = physical.DataCenter
+
+
 class NetworkResource(RalphModelResource):
     data_center = fields.Field(
         column_name='data_center',
@@ -191,17 +213,23 @@ class NetworkResource(RalphModelResource):
         attribute='kind',
         widget=ImportedForeignKeyWidget(networks.NetworkKind),
     )
+    terminators = fields.Field(
+        column_name='terminators',
+        attribute='terminators',
+        widget=BaseObjectManyToManyWidget(model=assets.BaseObject),
+    )
 
     class Meta:
         model = networks.Network
+        exclude = ('gateway_as_int', 'min_ip', 'max_ip')
 
 
 class IPAddressResource(RalphModelResource):
 
     base_object = fields.Field(
         column_name='asset',
-        attribute='asset',
-        widget=ImportedForeignKeyWidget(assets.BaseObject),
+        attribute='base_object',
+        widget=BaseObjectWidget(assets.BaseObject),
     )
 
     network = fields.Field(
@@ -212,6 +240,16 @@ class IPAddressResource(RalphModelResource):
 
     class Meta:
         model = networks.IPAddress
+
+    def skip_row(self, instance, original):
+        if MAP_IMPORTED_ID_TO_NEW_ID:
+            try:
+                networks.IPAddress.objects.get(address=instance.address)
+            except networks.IPAddress.DoesNotExist:
+                pass
+            else:
+                return True
+        return False
 
 
 class DataCenterAssetResource(RalphModelResource):

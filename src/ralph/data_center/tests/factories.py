@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import factory
 from factory.django import DjangoModelFactory
-from factory.fuzzy import FuzzyDecimal, FuzzyText
+from factory.fuzzy import FuzzyDecimal
 
 from ralph.assets.models.choices import AssetSource
 from ralph.assets.tests.factories import (
@@ -12,7 +12,6 @@ from ralph.assets.tests.factories import (
     DataCenterAssetModelFactory,
     ServiceEnvironmentFactory
 )
-from ralph.data_center.models.networks import IPAddress
 from ralph.data_center.models.physical import (
     Accessory,
     ACCESSORY_DATA,
@@ -90,20 +89,9 @@ class DataCenterAssetFactory(DjangoModelFactory):
         AssetSource.shipment.id, AssetSource.salvaged.id
     ])
     price = FuzzyDecimal(10, 300)
-    management_ip = factory.Faker('ipv4')
-    management_hostname = FuzzyText(
-        prefix='ralph.', suffix='.allegro.pl', length=40
-    )
 
     class Meta:
         model = DataCenterAsset
-
-
-class IPAddressFactory(DjangoModelFactory):
-    base_object = factory.SubFactory(BaseObjectFactory)
-
-    class Meta:
-        model = IPAddress
 
 
 class DatabaseFactory(DjangoModelFactory):

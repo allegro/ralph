@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.forms import ValidationError
 
-from ralph.data_center.forms.network import validate_is_management
+from ralph.networks.forms import validate_is_management
 from ralph.tests import RalphTestCase
 
 

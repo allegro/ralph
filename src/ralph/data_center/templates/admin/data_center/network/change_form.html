@@ -1,0 +1,12 @@
+{% extends "admin/change_form.html" %}
+
+{% load i18n %}
+
+{% block content %}
+  {{ block.super }}
+  {% if next_free_ip %}
+    <a href="{% url 'admin:networks_ipaddress_add' %}?address={{ next_free_ip }}">
+      {% blocktrans %}Add next IP ({{ next_free_ip }}){% endblocktrans %}
+    </a>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'admin/base_site.html' %}
+
+{% load i18n transitions_tags %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {% if are_jobs_running %}
+        <meta http-equiv="refresh" content="5">
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <h1>Async Transitions Awaiter</h1>
+    {% include "transitions/_transition_jobs_table.html" %}
+{% endblock %}
