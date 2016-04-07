@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 import logging
 import uuid
+from datetime import date
 
+from dateutil.parser import parse
 from dj.choices import Choices
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models.query import QuerySet
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields.json import JSONField
 
@@ -137,8 +140,21 @@ class Job(TimeStampMixin):
         Dump obj to JSON-acceptable format
         """
         result = obj
-        if isinstance(obj, (list, tuple)):
+        if isinstance(obj, (list, tuple, set)):
             result = [cls.dump_obj_to_jsonable(p) for p in obj]
+        elif isinstance(obj, QuerySet):
+            result = {
+                '__django_queryset': True,
+                'value': [i.pk for i in obj],
+                'content_type_id': ContentType.objects.get_for_model(
+                    obj.model
+                ).pk
+            }
+        elif isinstance(obj, date):
+            result = {
+                '__date': True,
+                'value': str(obj)
+            }
         elif isinstance(obj, dict):
             result = {}
             for k, v in obj.items():
@@ -161,7 +177,14 @@ class Job(TimeStampMixin):
         if isinstance(obj, (list, tuple)):
             result = [cls._restore_django_models(p) for p in obj]
         elif isinstance(obj, dict):
-            if obj.get('__django_model') is True:
+            if obj.get('__date') is True:
+                result = parse(obj.get('value')).date()
+            elif obj.get('__django_queryset') is True:
+                ct = ContentType.objects.get_for_id(obj['content_type_id'])
+                result = ct.model_class().objects.filter(
+                    pk__in=obj.get('value')
+                )
+            elif obj.get('__django_model') is True:
                 ct = ContentType.objects.get_for_id(obj['content_type_id'])
                 result = ct.get_object_for_this_type(pk=obj['object_pk'])
             else:

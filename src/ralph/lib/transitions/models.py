@@ -162,7 +162,7 @@ def _check_instances_for_transition(instances, transition):
 
     Args:
         instances: Objects to checks.
-        transition: The transition object or a string.
+        transition: The transition object.
 
     Raises:
         TransitionNotAllowedError: An error ocurred when one or more of
