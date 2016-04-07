@@ -30,9 +30,27 @@ from ralph_assets.licences.models import (
     LicenceUser,
     SoftwareCategory,
 )
+from ralph_assets.models_dc_assets import DataCenter
+from ralph_assets.models_dc_assets import Rack as AssetRack
 
 
 logger = logging.getLogger(__name__)
+
+
+def get_data_center_id(network_datacenter):
+    """
+    Gets data center id for `network_datacenter`.
+    """
+    try:
+        data_center_id = DataCenter.objects.get(
+            name__iexact=network_datacenter.name
+        ).id
+    except DataCenter.DoesNotExist:
+        data_center_id = (
+            network_datacenter.id +
+            settings.NG_EXPORTER['discovery_datacenter_constant']
+        )
+    return data_center_id
 
 
 class AssetResource(resources.ModelResource):
@@ -427,8 +445,72 @@ class DataCenterAssetResource(AssetResource):
         return list(chain(parents, children))
 
 
+class NetworkKindResource(resources.ModelResource):
+    class Meta:
+        fields = ('id', 'name',)
+        model = models_network.NetworkKind
+
+
+class DiscoveryDataCenterResource(resources.ModelResource):
+    def get_queryset(self):
+        """
+        This exports only data centers not included in:
+            `ralph_assets.models_dc_assets.DataCenter`
+        """
+        q = Q()
+        for dc_name in DataCenter.objects.values_list('name', flat=True):
+            q |= Q(name__iexact=dc_name)
+        queryset = self._meta.model.objects.exclude(q)
+        return queryset
+
+    def dehydrate_id(self, data_center):
+        """
+        Id has to be increased by `discovery_datacenter_constant`, see
+        ralph.settings file for details.
+        """
+        return get_data_center_id(data_center)
+
+    class Meta:
+        model = models_network.DataCenter
+
+
 class NetworkResource(resources.ModelResource):
+    excluded_networks = []
     kind = fields.Field('kind', column_name='kind')
+    network_environment = fields.Field(
+        'network_environment', column_name='network_environment')
+    terminators = fields.Field()
+    racks = fields.Field()
+
+    def get_queryset(self):
+        queryset = super(NetworkResource, self).get_queryset()
+        q = Q()
+        for network in self.excluded_networks:
+            q |= Q(address=network)
+        queryset = queryset.exclude(q)
+        return queryset
+
+    def dehydrate_terminators(self, network):
+        terminator_names = network.terminators.values_list('name', flat=True)
+        device_ids = models_device.Device.objects.filter(
+            name__in=terminator_names).values_list('id', flat=True)
+        assets_ids = models_assets.Asset.admin_objects_dc.filter(
+            device_info__ralph_device_id__in=device_ids
+        ).values_list('id', flat=True)
+        return ','.join([str(id_) for id_ in assets_ids])
+
+    def dehydrate_racks(self, network):
+        rack_ids = []
+        for device in network.racks.all():
+            try:
+                asset_rack = models_dc_assets.Rack.objects.get(
+                    deprecated_ralph_rack_id=device.id
+                )
+            except AssetRack.DoesNotExist:
+                logger.warning("rack {} doesn't not exist".format(device.id))
+                continue
+            rack_ids.append(str(asset_rack.id))
+        return ','.join(rack_ids)
 
     def dehydrate_kind(self, network):
         return network.kind_id or ''
@@ -458,6 +540,7 @@ class NetworkResource(resources.ModelResource):
             'ignore_addresses',
             'dhcp_broadcast',
             'dhcp_config',
+            'network_environment',
             'kind',
         )
         model = models_network.Network
@@ -768,6 +851,20 @@ class BaseObjectsSupportResource(resources.ModelResource):
             asset_type,
             obj.asset_id
         )
+
+
+class NetworkEnvironmentResource(resources.ModelResource):
+    dhcp_next_server = fields.Field()
+
+    def dehydrate_dhcp_next_server(self, network_env):
+        return network_env.next_server
+
+    def dehydrate_data_center(self, network_env):
+        return get_data_center_id(network_env.data_center)
+
+    class Meta:
+        exclude = ('queue',)
+        model = models_network.Environment
 
 
 class EnvironmentResource(resources.ModelResource):
