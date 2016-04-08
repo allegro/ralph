@@ -4,7 +4,6 @@ from django.contrib.auth.models import Permission
 from django.test import RequestFactory
 
 from ralph.lib.transitions.decorators import transition_action
-#from ralph.lib.transitions.decorators import transition_action, transition_action2
 from ralph.lib.transitions.exceptions import (
     TransitionModelNotFoundError,
     TransitionNotAllowedError
@@ -99,7 +98,6 @@ class TransitionsTest(TransitionTestCase):
             actions=['go_to_post_office']
         )
         order.__class__.go_to_post_office = mocked_action
-        import ipdb; ipdb.set_trace()
         run_field_transition(
             [order], transition, request=self.request, field='status'
         )
