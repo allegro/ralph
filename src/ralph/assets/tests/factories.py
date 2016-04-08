@@ -15,7 +15,20 @@ from ralph.assets.models.assets import (
     ServiceEnvironment
 )
 from ralph.assets.models.base import BaseObject
-from ralph.assets.models.choices import ObjectModelType
+from ralph.assets.models.choices import ComponentType, ObjectModelType
+from ralph.assets.models.components import Ethernet
+
+
+def next_mac(n):
+    mac = [
+        0x00,
+        0x16,
+        0x3e,
+        n >> 16 & 0xff,
+        n >> 8 & 0xff,
+        n & 0xff
+    ]
+    return ':'.join(map(lambda x: '%02x' % x, mac))
 
 
 class BaseObjectFactory(DjangoModelFactory):
@@ -155,3 +168,13 @@ class ProfitCenterFactory(DjangoModelFactory):
     class Meta:
         model = ProfitCenter
         django_get_or_create = ['name']
+
+
+class EthernetFactory(DjangoModelFactory):
+    base_object = factory.SubFactory(BaseObjectFactory)
+    label = factory.Sequence(lambda n: 'ETH#{}'.format(n))
+    mac = factory.Sequence(next_mac)
+
+    class Meta:
+        model = Ethernet
+        django_get_or_create = ['label']

@@ -45,3 +45,6 @@ fi
 
 # install LibreOffice and dependencies
 ./vagrant/provisioning_scripts/libre_office.sh
+
+# install DHCP server
+./vagrant/provisioning_scripts/dhcp.sh

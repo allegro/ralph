@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import ipaddress
+import socket
+import struct
 from itertools import chain
 
 from django.conf import settings
@@ -11,6 +13,7 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
+from ralph.assets.models.components import Ethernet
 from ralph.lib import network as network_tools
 from ralph.lib.mixins.fields import BaseObjectForeignKey, NullableCharField
 from ralph.lib.mixins.models import (
@@ -179,6 +182,11 @@ class Network(
         'assets.ServiceEnvironment', related_name='networks', null=True,
         default=None, blank=True,
     )
+    dns_servers = models.ManyToManyField(
+        'dhcp.DNSServer',
+        verbose_name=_('DNS servers'),
+        blank=True,
+    )
 
     @cached_property
     def network(self):
@@ -197,9 +205,21 @@ class Network(
         return self.network.prefixlen
 
     @property
+    def netmask_dot_decimal(self):
+        """Returns netmask in dot-decimal notaion (e.g. 255.255.255.0)."""
+        return socket.inet_ntoa(
+            struct.pack('>I', (0xffffffff << (32 - self.netmask)) & 0xffffffff)
+        )
+
+    @property
     def gateway(self):
         ip = self.ips.filter(is_gateway=True).first()
         return ip.ip if ip else None
+
+    @property
+    def domain(self):
+        net_env = self.network_environment
+        return net_env.domain if net_env else None
 
     @property
     def data_center(self):
@@ -343,6 +363,13 @@ class IPAddress(
 
         ]
     )
+    ethernet = models.OneToOneField(
+        Ethernet,
+        null=True,
+        default=None,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
     network = models.ForeignKey(
         Network,
         null=True,
@@ -386,7 +413,6 @@ class IPAddress(
     is_gateway = models.BooleanField(
         verbose_name=_('Is gateway address'),
         default=False,
-        editable=False,
     )
     status = models.PositiveSmallIntegerField(
         default=IPAddressStatus.used.id,

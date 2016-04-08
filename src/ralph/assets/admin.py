@@ -18,7 +18,11 @@ from ralph.assets.models.assets import (
     Service,
     ServiceEnvironment
 )
-from ralph.assets.models.components import ComponentModel, GenericComponent
+from ralph.assets.models.components import (
+    ComponentModel,
+    Ethernet,
+    GenericComponent
+)
 from ralph.data_importer import resources
 from ralph.lib.table import Table
 
@@ -164,6 +168,11 @@ class ComponentModelAdmin(RalphAdmin):
 @register(GenericComponent)
 class GenericComponentAdmin(RalphAdmin):
     search_fields = ['name']
+
+
+@register(Ethernet)
+class EthernetAdmin(RalphAdmin):
+    search_fields = ['label', 'mac']
 
 
 @register(Asset)

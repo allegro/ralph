@@ -38,7 +38,6 @@ from ralph.networks.models import networks
 from ralph.operations.models import Operation, OperationType
 from ralph.supports.models import BaseObjectsSupport, Support, SupportType
 
-
 RalphResourceMeta = type(
     'RalphResourceMeta',
     (

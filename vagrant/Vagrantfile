@@ -7,6 +7,7 @@ Vagrant.configure(2) do |config|
   config.vm.provision :shell, path: "provision.sh", privileged: false
   config.vm.network "forwarded_port", guest: 8000, host: 8000
   config.vm.network "forwarded_port", guest: 19360, host: 1936  # for Sublime Text Anaconda plugin
+  config.vm.network "private_network", ip: "192.168.1.100"  # for DHCP server
   config.vm.provider :virtualbox do |vb|
     vb.name = "ralph_ng"
     vb.memory = 2048

@@ -117,8 +117,8 @@ class NetworkAdmin(RalphMPTTAdmin):
         (_('Basic info'), {
             'fields': [
                 'name', 'address', 'remarks', 'terminators', 'vlan', 'racks',
-                'network_environment', 'kind', 'service_env', 'dhcp_broadcast',
-                'top_margin', 'bottom_margin'
+                'network_environment', 'dns_servers', 'kind', 'service_env',
+                'dhcp_broadcast', 'top_margin', 'bottom_margin'
             ]
         }),
         (_('Relations'), {
@@ -219,7 +219,7 @@ class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
         'is_public'
     ]
     readonly_fields = ['get_network_path', 'is_public', 'is_gateway']
-    raw_id_fields = ['base_object']
+    raw_id_fields = ['base_object', 'ethernet']
     resource_class = resources.IPAddressResource
 
     fieldsets = (
