@@ -38,10 +38,6 @@ from ralph.networks.models import networks
 from ralph.operations.models import Operation, OperationType
 from ralph.supports.models import BaseObjectsSupport, Support, SupportType
 
-MAP_IMPORTED_ID_TO_NEW_ID = getattr(
-    settings, 'MAP_IMPORTED_ID_TO_NEW_ID', True
-)
-
 
 RalphResourceMeta = type(
     'RalphResourceMeta',
@@ -242,7 +238,7 @@ class IPAddressResource(RalphModelResource):
         model = networks.IPAddress
 
     def skip_row(self, instance, original):
-        if MAP_IMPORTED_ID_TO_NEW_ID:
+        if settings.MAP_IMPORTED_ID_TO_NEW_ID:
             try:
                 networks.IPAddress.objects.get(address=instance.address)
             except networks.IPAddress.DoesNotExist:
