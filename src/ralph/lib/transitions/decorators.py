@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 from functools import wraps
 
+from django.contrib.contenttypes.models import ContentType
+
 from ralph.lib.transitions.conf import TRANSITION_ATTR_TAG
+from ralph.lib.transitions.models import Action
 
 
 def transition_action(method=None, **kwargs):
@@ -25,9 +28,6 @@ def transition_action(method=None, **kwargs):
 
         if 'model' in kwargs:
             setattr(kwargs['model'], func.__name__, wrapper)
-
-            from django.contrib.contenttypes.models import ContentType
-            from ralph.lib.transitions.models import Action
             action, _ = Action.objects.get_or_create(name=func.__name__)
             content_type = ContentType.objects.get_for_model(kwargs['model'])
             action.content_type.add(content_type)

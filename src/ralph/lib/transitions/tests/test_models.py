@@ -103,11 +103,18 @@ class TransitionsTest(TransitionTestCase):
         )
         self.assertTrue(order.go_to_post_office.runned)
 
+    def test_action_is_added_to_model_when_registered_on_model(self):
+        @transition_action(model=OrderStatus)
+        def example_action(cls, *args, **kwargs):
+            pass
+        self.assertTrue(hasattr(OrderStatus, 'example_action'))
+
     def test_transition_runs_action_registered_on_model(self):
         @transition_action(model=Order)
         def action_registered_on_model(cls, *args, **kwargs):
             for instance in kwargs['instances']:
                 instance.remarks = 'done'
+
         order = Order.objects.create()
         _, transition, _ = self._create_transition(
             model=order, name='action_name',
@@ -238,11 +245,3 @@ class TransitionsTest(TransitionTestCase):
         }
         with self.assertRaises(CycleError):
             [a for a in _sort_graph_topologically(graph)]
-
-
-class APITest(TransitionTestCase):
-    def test_action_is_added_to_model_when_model_specified(self):
-        @transition_action(model=OrderStatus)
-        def example_action(cls, *args, **kwargs):
-            pass
-        self.assertTrue(hasattr(OrderStatus, 'example_action'))
