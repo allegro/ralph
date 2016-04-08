@@ -220,3 +220,14 @@ class TransitionsTest(TransitionTestCase):
         }
         with self.assertRaises(CycleError):
             [a for a in _sort_graph_topologically(graph)]
+
+
+
+class APITest(TransitionTestCase):
+    def test_xxx(self):
+        @transition_action(model=OrderStatus)
+        def example_action(*args, **kwargs):
+            pass
+        import ipdb; ipdb.set_trace()
+
+
