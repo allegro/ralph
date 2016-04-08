@@ -103,6 +103,24 @@ class TransitionsTest(TransitionTestCase):
         )
         self.assertTrue(order.go_to_post_office.runned)
 
+    def test_transition_runs_action_registered_on_model(self):
+        @transition_action(model=Order)
+        def action_registered_on_model(cls, *args, **kwargs):
+            for instance in kwargs['instances']:
+                instance.remarks = 'done'
+        order = Order.objects.create()
+        _, transition, _ = self._create_transition(
+            model=order, name='action_name',
+            source=[OrderStatus.new.id], target=OrderStatus.to_send.id,
+            actions=['action_registered_on_model']
+        )
+
+        self.assertNotEqual(order.remarks, 'done')
+        run_field_transition(
+            [order], transition, request=self.request, field='status'
+        )
+        self.assertEqual(order.remarks, 'done')
+
     def test_run_transition_from_string(self):
         transition_name = 'send'
         order = Order.objects.create(status=OrderStatus.to_send.id)
@@ -228,9 +246,3 @@ class APITest(TransitionTestCase):
         def example_action(cls, *args, **kwargs):
             pass
         self.assertTrue(hasattr(OrderStatus, 'example_action'))
-
-    def test_action_is_not_added_to_model_when_model_specified(self):
-        @transition_action
-        def example_action2(cls, *args, **kwargs):
-            pass
-        self.assertFalse(hasattr(OrderStatus, 'example_action2'))

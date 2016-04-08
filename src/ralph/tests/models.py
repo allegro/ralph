@@ -70,6 +70,7 @@ class Order(
         default=OrderStatus.new.id,
         choices=OrderStatus(),
     )
+    remarks = models.CharField(max_length=255, blank=True, default='')
 
     @classmethod
     @transition_action(return_attachment=True)

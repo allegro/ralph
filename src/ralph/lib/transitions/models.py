@@ -611,6 +611,8 @@ def update_transitions_affter_migrate(**kwargs):
         lambda x: operator.itemgetter(0)(x) in sender_models,
         _transitions_fields.items()
     ):
+        #TODO:xxx
+        #    import ipdb; ipdb.set_trace()
         content_type = ContentType.objects.get_for_model(model)
         for field_name in field_names:
             transition_model, _ = TransitionModel.objects.get_or_create(
