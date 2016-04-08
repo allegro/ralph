@@ -68,6 +68,9 @@ class LinkedObjectTable(TableWithUrl):
 
 
 class NetworkRalphChangeList(RalphChangeList):
+
+    is_cacheable = True
+
     def get_queryset(self, request):
         """
         Check if it has been used any filter,
