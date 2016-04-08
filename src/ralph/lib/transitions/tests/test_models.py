@@ -4,6 +4,7 @@ from django.contrib.auth.models import Permission
 from django.test import RequestFactory
 
 from ralph.lib.transitions.decorators import transition_action
+#from ralph.lib.transitions.decorators import transition_action, transition_action2
 from ralph.lib.transitions.exceptions import (
     TransitionModelNotFoundError,
     TransitionNotAllowedError
@@ -98,6 +99,7 @@ class TransitionsTest(TransitionTestCase):
             actions=['go_to_post_office']
         )
         order.__class__.go_to_post_office = mocked_action
+        import ipdb; ipdb.set_trace()
         run_field_transition(
             [order], transition, request=self.request, field='status'
         )
@@ -222,12 +224,15 @@ class TransitionsTest(TransitionTestCase):
             [a for a in _sort_graph_topologically(graph)]
 
 
-
 class APITest(TransitionTestCase):
-    def test_xxx(self):
+    def test_action_is_added_to_model_when_model_specified(self):
         @transition_action(model=OrderStatus)
         def example_action(cls, *args, **kwargs):
             pass
         self.assertTrue(hasattr(OrderStatus, 'example_action'))
 
-
+    def test_action_is_not_added_to_model_when_model_specified(self):
+        @transition_action
+        def example_action2(cls, *args, **kwargs):
+            pass
+        self.assertFalse(hasattr(OrderStatus, 'example_action2'))
