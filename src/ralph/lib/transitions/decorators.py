@@ -5,7 +5,6 @@ from ralph.lib.transitions.conf import TRANSITION_ATTR_TAG
 
 
 def transition_action(method=None, **kwargs):
-    print(method, kwargs)
     def decorator(func):
         func.verbose_name = kwargs.get(
             'verbose_name', func.__name__.replace('_', ' ').capitalize()
@@ -27,4 +26,9 @@ def transition_action(method=None, **kwargs):
 
     if callable(method):
         return decorator(method)
+
+    print(method, kwargs)
+    if 'model' in kwargs:
+        setattr(kwargs['model'], ??, decorator)
+
     return decorator

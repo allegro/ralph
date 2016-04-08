@@ -226,8 +226,8 @@ class TransitionsTest(TransitionTestCase):
 class APITest(TransitionTestCase):
     def test_xxx(self):
         @transition_action(model=OrderStatus)
-        def example_action(*args, **kwargs):
+        def example_action(cls, *args, **kwargs):
             pass
-        import ipdb; ipdb.set_trace()
+        self.assertTrue(hasattr(OrderStatus, 'example_action'))
 
 
