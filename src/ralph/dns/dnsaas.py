@@ -94,7 +94,11 @@ class DNSaaS:
             'owner': settings.DNSAAS_OWNER
         }
         request = self.session.patch(url, data=data)
-        if request.status_code != 200:
+        if request.status_code == 500:
+            return {
+                'non_field_errors': [_('Internal Server Error from DNSAAS')]
+            }
+        elif request.status_code != 200:
             return request.json()
 
     @cache(skip_first=True)
@@ -150,7 +154,11 @@ class DNSaaS:
             'owner': settings.DNSAAS_OWNER
         }
         request = self.session.post(url, data=data)
-        if request.status_code != 201:
+        if request.status_code == 500:
+            return {
+                'non_field_errors': [_('Internal Server Error from DNSAAS')]
+            }
+        elif request.status_code != 201:
             return request.json()
 
     def delete_dns_record(self, record_id):
@@ -167,5 +175,9 @@ class DNSaaS:
             settings.DNSAAS_URL, 'api/records/{}/'.format(record_id)
         )
         request = self.session.delete(url)
-        if request.status_code != 204:
+        if request.status_code == 500:
+            return {
+                'non_field_errors': [_('Internal Server Error from DNSAAS')]
+            }
+        elif request.status_code != 204:
             return request.json()
