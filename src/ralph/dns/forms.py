@@ -26,7 +26,7 @@ class DNSRecordForm(forms.Form):
             'Actual name of a record. Must not end in a \'.\' and be'
             ' fully qualified - it is not relative to the name of the'
             ' domain!'
-        ),
+        )
     )
     type = forms.ChoiceField(
         label=_("Record type"),
@@ -39,6 +39,7 @@ class DNSRecordForm(forms.Form):
             'The \'right hand side\' of a DNS record. For an A'
             ' record, this is the IP address'
         ),
+        widget=forms.TextInput(attrs={'style': 'width:300px;'})
     )
     ptr = forms.BooleanField(
         label=_('PTR'),
