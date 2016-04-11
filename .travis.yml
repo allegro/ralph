@@ -4,11 +4,11 @@ env:
     global:
         - DATABASE_USER=travis
         - DATABASE_PASSWORD=travis
-        - DJANGO_CURRENT_VERSION=1.8.10
+        - DJANGO_CURRENT_VERSION=1.8.12
     matrix:
-        - DJANGO_VERSION=1.8.10 TEST_DB_ENGINE=sqlite
-        - DJANGO_VERSION=1.8.10 TEST_DB_ENGINE=mysql
-        - DJANGO_VERSION=1.8.10 TEST_DB_ENGINE=psql
+        - DJANGO_VERSION=1.8.12 TEST_DB_ENGINE=sqlite
+        - DJANGO_VERSION=1.8.12 TEST_DB_ENGINE=mysql
+        - DJANGO_VERSION=1.8.12 TEST_DB_ENGINE=psql
         # Django 1.9 build will not pass until #2132 will be merged
         # - DJANGO_VERSION=1.9 TEST_DB_ENGINE=sqlite
         # - DJANGO_VERSION=1.9 TEST_DB_ENGINE=mysql

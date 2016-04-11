@@ -156,14 +156,14 @@ class DataCenterAssetAdmin(
     resource_class = resources.DataCenterAssetResource
     list_display = [
         'status', 'barcode', 'model', 'sn', 'hostname', 'invoice_date',
-        'localization',
+        'invoice_no', 'location',
     ]
     multiadd_summary_fields = list_display + ['rack']
     one_of_mulitvalue_required = ['sn', 'barcode']
     bulk_edit_list = [
         'status', 'barcode', 'model', 'sn', 'hostname', 'invoice_date',
-        'rack', 'orientation', 'position', 'slot_no', 'price', 'provider',
-        'service_env'
+        'invoice_no', 'rack', 'orientation', 'position', 'slot_no', 'price',
+        'provider', 'service_env'
     ]
     bulk_edit_no_fillable = ['barcode', 'sn']
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
@@ -223,9 +223,9 @@ class DataCenterAssetAdmin(
             settings, 'MULTIADD_DATA_CENTER_ASSET_FIELDS', None
         ) or multiadd_fields
 
-    def localization(self, obj):
+    def location(self, obj):
         """
-        Additional column 'localization' display filter by:
+        Additional column 'location' display filter by:
         data center, server_room, rack, position (if is blade)
         """
         base_url = reverse('admin:data_center_datacenterasset_changelist')
@@ -269,8 +269,8 @@ class DataCenterAssetAdmin(
 
         return '&nbsp;/&nbsp;'.join(result) if obj.rack else '&mdash;'
 
-    localization.short_description = _('Localization')
-    localization.allow_tags = True
+    location.short_description = _('Location')
+    location.allow_tags = True
 
 
 @register(ServerRoom)

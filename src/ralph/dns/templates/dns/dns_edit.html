@@ -1,49 +1,55 @@
 {% extends BASE_TEMPLATE %}
-{% load i18n %}
+{% load i18n foundation_alert %}
 
 {% block view_content %}
   <div class="row">
     <div class="large-12 columns">
       <h1>{% trans 'DNS edit' %}</h1>
-        <table>
-          <thead>
-            {% for name, field in forms.0.fields.items %}
-              <th>{{ field.label }}</th>
-            {% endfor %}
-            <th></th>
-            <th></th>
-          </thead>
-          {% for form in forms %}
-            {% if form.non_field_errors %}
-              <tr class="field-row error">
-                <td colspan="{{ forms.0.fields.items|length|add:2 }}" class="error">
-                  <ul class="errorlist">
-                    {% for error in form.non_field_errors %}
-                      <li>{{ error }}</li>
-                    {% endfor %}
-                  </ul>
-                </td>
+        {% if forms %}
+          <table>
+            <thead>
+              {% for name, field in forms.0.fields.items %}
+                <th>{{ field.label }}</th>
+              {% endfor %}
+              <th></th>
+              <th></th>
+            </thead>
+            {% for form in forms %}
+              {% if form.non_field_errors %}
+                <tr class="field-row error">
+                  <td colspan="{{ forms.0.fields.items|length|add:2 }}" class="error">
+                    <ul class="errorlist">
+                      {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                      {% endfor %}
+                    </ul>
+                  </td>
+                </tr>
+              {% endif %}
+              <tr>
+                <form method="post" action="">
+                {% csrf_token %}
+                  {% for field in form %}
+                    <td>{{ field }} {{ field.errors }}</td>
+                  {% endfor %}
+                  <td>
+                    <input type="submit" class="button" value="{% trans 'Save' %}" />
+                  </td>
+                  <td>
+                    {% if form.pk.value %}
+                      <input type="submit" name="delete" class="button small alert" value="{% trans 'Delete' %}" onclick="return confirm('{% trans 'Are you sure to delete?' %}');" />
+                    {% endif %}
+                  </td>
+                </form>
               </tr>
-            {% endif %}
-            <tr>
-              <form method="post" action="">
-              {% csrf_token %}
-                {% for field in form %}
-                  <td>{{ field }} {{ field.errors }}</td>
-                {% endfor %}
-                <td>
-                  <input type="submit" class="button" value="{% trans 'Save' %}" />
-                </td>
-                <td>
-                  {% if form.pk.value %}
-                    <input type="submit" name="delete" class="button small alert" value="{% trans 'Delete' %}" onclick="return confirm('{% trans 'Are you sure to delete?' %}');" />
-                  {% endif %}
-                </td>
-              </form>
-            </tr>
-          {% endfor %}
-        </table>
-        <br />
+            {% endfor %}
+          </table>
+          <br />
+        {% else %}
+          <br />
+          {% trans "You do not have added any IP address." as message %}
+          {% alert message 'warning' %}
+        {% endif %}
     </div>
   </div>
 {% endblock %}

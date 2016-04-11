@@ -98,7 +98,7 @@
             .device {width: $devices-width-front;}
         }
         &.front .wrapper .listing-u {
-            z-index: 1000;
+            z-index: 50;
             &.left {box-shadow: 1px 0 1px rgba(0, 0, 0, 0.6);}
             &.right {box-shadow: -1px 0 1px rgba(0, 0, 0, 0.6);}
         }
@@ -141,7 +141,7 @@
                 height: 100%;
                 width: $pdu-width;
                 float: left !important;
-                z-index: 1000;
+                z-index: 50;
                 display: -webkit-box;
                 display: -moz-box;
                 display: -ms-flexbox;

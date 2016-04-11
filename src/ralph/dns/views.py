@@ -30,11 +30,16 @@ class DNSView(RalphDetailView):
 
     def get_forms(self):
         forms = []
-        initial = self.dnsaas.get_dns_records(
-            self.object.ipaddress_set.all().values_list(
-                'address', flat=True
-            )
+        ipaddresses = self.object.ipaddress_set.all().values_list(
+            'address', flat=True
         )
+        if not ipaddresses:
+            # If ipaddresses is empty return empty form list because we can not
+            # identify the records do not have any IP address
+            return forms
+
+        initial = self.dnsaas.get_dns_records(ipaddresses)
+
         for item in initial:
             forms.append(DNSRecordForm(item))
 
@@ -60,19 +65,21 @@ class DNSView(RalphDetailView):
 
         if posted_form.is_valid():
             if posted_form.data.get('delete'):
-                errors = self.dnsaas.delete_dns_records(form.data['pk'])
+                errors = self.dnsaas.delete_dns_record(form.data['pk'])
             elif posted_form.cleaned_data.get('pk'):
-                errors = self.dnsaas.update_dns_records(
+                errors = self.dnsaas.update_dns_record(
                     posted_form.cleaned_data
                 )
             else:
-                errors = self.dnsaas.create_dns_records(
+                errors = self.dnsaas.create_dns_record(
                     posted_form.cleaned_data
                 )
 
             if errors:
                 for field_name, field_errors in errors.items():
                     for field_error in field_errors:
+                        if field_name == 'non_field_errors':
+                            field_name = None
                         posted_form.add_error(field_name, field_error)
             else:
                 return HttpResponseRedirect('.')
