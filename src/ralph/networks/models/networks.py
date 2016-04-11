@@ -151,6 +151,7 @@ class Network(
         blank=True,
         on_delete=models.SET_NULL,
     )
+    network_environment._autocomplete = False
     min_ip = models.DecimalField(
         verbose_name=_('smallest IP number'),
         editable=False,

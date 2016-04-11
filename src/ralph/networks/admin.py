@@ -1,5 +1,6 @@
 from django import forms
 from django.conf import settings
+from django.contrib.admin.views.main import SEARCH_VAR
 from django.core.urlresolvers import reverse
 from django.db.models import Prefetch
 from django.forms.models import ModelForm
@@ -81,8 +82,8 @@ class NetworkRalphChangeList(RalphChangeList):
             Django queryset
         """
         queryset = super().get_queryset(request)
-        filter_params = self.get_filters_params()
-        if filter_params:
+        any_params = self.get_filters_params() or self.params.get(SEARCH_VAR)
+        if any_params:
             self.model_admin.mptt_indent_field = 10
         else:
             self.model_admin.mptt_indent_field = 0
@@ -92,13 +93,13 @@ class NetworkRalphChangeList(RalphChangeList):
 @register(Network)
 class NetworkAdmin(RalphMPTTAdmin):
     change_form_template = 'admin/data_center/network/change_form.html'
-    search_fields = ['address', 'remarks']
+    search_fields = ['name', 'address', 'remarks']
     list_display = [
         'name', 'address', 'kind', 'vlan', 'network_environment'
     ]
     list_filter = [
-        'kind', 'dhcp_broadcast', 'racks', 'terminators', 'service_env',
-        ('parent', RelatedAutocompleteFieldListFilter),
+        'network_environment', 'kind', 'dhcp_broadcast', 'racks', 'terminators',
+        'service_env', ('parent', RelatedAutocompleteFieldListFilter),
         ('min_ip', NetworkRangeFilter)
     ]
     list_select_related = ['kind', 'network_environment']
