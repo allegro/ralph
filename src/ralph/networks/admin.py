@@ -191,7 +191,16 @@ class NetworkAdmin(RalphMPTTAdmin):
             return '&ndash;'
 
         return LinkedObjectTable(
-            IPAddress.objects.filter(network=network).order_by('number'),
+            IPAddress.objects.filter(
+                network=network
+            ).order_by(
+                'number'
+            ).prefetch_related(
+                Prefetch(
+                    'base_object',
+                    queryset=BaseObject.polymorphic_objects.all()
+                )
+            ),
             ['address', 'linked_object'],
             url_field='address'
         ).render()
