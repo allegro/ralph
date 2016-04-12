@@ -85,9 +85,7 @@ class NetworkMixin(object):
     _parent_attr = None
 
     def _assign_parent(self):
-        parent = getattr(self, self._parent_attr)
-        if not parent or self.pk:
-            setattr(self, self._parent_attr, self.get_network())
+        setattr(self, self._parent_attr, self.get_network())
 
     def search_networks(self):
         raise NotImplementedError()
@@ -257,11 +255,26 @@ class Network(
             >>> network.min_ip, network.max_ip, network.gateway
             (3232235776, 3232236031, None)
         """
+        enable_save_descendants = kwargs.pop('enable_save_descendants', True)
         self.min_ip = int(self.network_address)
         self.max_ip = int(self.broadcast_address)
         self._assign_parent()
         super(Network, self).save(*args, **kwargs)
         self._assign_ips_to_network()
+        if enable_save_descendants:
+            self._update_subnetworks_parent()
+
+    def delete(self):
+        # Save fake address so that all children of network changed its
+        # parent, only then network is removed.
+        with transaction.atomic():
+            self.address = '0.0.0.0/32'
+            self.save()
+            super().delete()
+
+    def _update_subnetworks_parent(self):
+        for network in self.__class__.objects.all():
+            network.save(enable_save_descendants=False)
 
     def _assign_ips_to_network(self):
         self, IPAddress.objects.exclude(
@@ -404,12 +417,12 @@ class IPAddress(
         default=False,
     )
     is_public = models.BooleanField(
-        verbose_name=_('Is public address'),
+        verbose_name=_('Is public'),
         default=False,
         editable=False,
     )
     is_gateway = models.BooleanField(
-        verbose_name=_('Is gateway address'),
+        verbose_name=_('Is gateway'),
         default=False,
     )
     status = models.PositiveSmallIntegerField(

@@ -56,7 +56,7 @@ class SimpleNetworkTest(RalphTestCase):
     )
     def test_get_subnetworks(self, net, correct):
         net_obj = getattr(self, net)
-        res = net_obj.get_subnetworks()
+        res = Network.objects.get(pk=net_obj.pk).get_subnetworks()
         self.assertEquals(
             list(res), list(Network.objects.filter(name__in=correct))
         )
@@ -196,6 +196,44 @@ class NetworkTest(RalphTestCase):
             name='subnet', address='192.168.5.0/25'
         )
         self.assertEqual(net, subnet.parent)
+
+    def test_sub_network_should_change_automatically(self):
+        net1 = Network.objects.create(
+            name='net', address='10.20.30.0/24'
+        )
+        net2 = Network.objects.create(
+            name='net2', address='10.20.30.240/28'
+        )
+
+        self.assertEqual(net1, net2.parent)
+
+        net3 = Network.objects.create(
+            name='net3', address='10.20.30.128/25'
+        )
+
+        self.refresh_objects_from_db(net2)
+        self.assertEqual(net2.parent, net3)
+
+        self.assertEqual(net3.parent, net1)
+
+        net4 = Network.objects.create(
+            name='net4', address='10.20.40.128/28'
+        )
+        net5 = Network.objects.create(
+            name='net5', address='10.20.40.0/24'
+        )
+        net3.address = '10.20.40.128/25'
+        net3.save()
+
+        self.refresh_objects_from_db(net1, net2, net3, net4, net5)
+
+        self.assertEqual(net3.parent, net5)
+        self.assertEqual(net4.parent, net3)
+        self.assertEqual(net2.parent, net1)
+
+        net3.delete()
+        self.refresh_objects_from_db(net4, net5)
+        self.assertEqual(net4.parent, net5)
 
     def test_sub_network_should_reassign_ip(self):
         ip = IPAddress.objects.create(address='192.169.58.1')
