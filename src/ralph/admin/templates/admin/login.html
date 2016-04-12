@@ -6,6 +6,8 @@
   {{ form.media }}
 {% endblock %}
 
+{% block main_nav %}{% endblock %}
+
 {% block bodyclass %}{{ block.super }} login{% endblock %}
 
 {% block usertools %}{% endblock %}
@@ -35,25 +37,18 @@
 
   <div id="content-main">
     <div class="row">
-      <div class="large-3 medium-3 small-5 small-centered columns">
+      <div class="large-3 medium-6 small-12 small-centered columns">
         <div class="row">
           <div class="small-centered columns login-header">
-            <h1>Ralph</h1>
-            <p>DCIM&amp;Asset Management System</p>
+            <h1>Ralph <strong>3</strong></h1>
+            <p class="slogan">DCIM &amp; Asset Management System</p>
           </div>
         </div>
         <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
           <fieldset>
-            <legend>Please login</legend>
-              {{ form.username.errors }}
-            <label>{{ form.username.label }}
-              {{ form.username }}
-            </label>
-            {{ form.password.errors }}
-            <label>{{ form.password.label }}
-              {{ form.password }}
-            </label>
-            <button>{% trans 'Log in' %}</button>
+            <legend>{% trans 'Please login' %}</legend>
+            {{form}}
+            <button class="login right">{% trans 'Log in' %}</button>
           </fieldset>
           <input type="hidden" name="next" value="{{ next }}" />
           <div class="password-reset-link">
