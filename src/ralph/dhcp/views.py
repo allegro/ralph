@@ -13,7 +13,11 @@ from django.views.generic.base import TemplateView, View
 from ralph.admin.helpers import get_client_ip
 from ralph.assets.models.components import Ethernet
 from ralph.dhcp.models import DHCPEntry, DHCPServer
-from ralph.networks.models.networks import Network, NetworkEnvironment
+from ralph.networks.models.networks import (
+    IPAddress,
+    Network,
+    NetworkEnvironment
+)
 
 logger = logging.getLogger(__name__)
 
@@ -116,8 +120,8 @@ class DHCPEntriesView(DHCPConfigMixin, LastModifiedMixin, TemplateView):
         last(Ethernet.objects, filter_dict={
             'ipaddress__network__in': networks
         })
-        last(Ethernet.objects, filter_dict={
-            'base_object__ipaddress__network__in': networks
+        last(IPAddress.objects, filter_dict={
+            'network__in': networks
         })
         if not last_items:
             return None

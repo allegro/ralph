@@ -87,10 +87,12 @@ class GenericComponent(Component):
 
 
 class Ethernet(Component):
-    label = models.CharField(verbose_name=_('name'), max_length=255)
+    label = NullableCharField(
+        verbose_name=_('name'), max_length=255, blank=True, null=True
+    )
     mac = models.CharField(
         verbose_name=_('MAC address'), unique=True,
-        validators=[mac_validator], max_length=24
+        validators=[mac_validator], max_length=24, null=True, blank=True
     )
     speed = models.PositiveIntegerField(
         verbose_name=_('speed'), choices=EthernetSpeed(),

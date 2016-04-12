@@ -66,7 +66,7 @@ class SaveSecurityScanSerializer(RalphAPISaveSerializer):
             except IPAddress.DoesNotExist:
                 pass
             else:
-                base_object = ip_address.base_object_id
+                base_object = ip_address.base_object.id
             if not base_object:
                 try:
                     base_object = DataCenterAsset.objects.get(

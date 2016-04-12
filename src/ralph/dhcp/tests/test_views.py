@@ -76,8 +76,11 @@ class DHCPEntriesViewTest(TestCase):
     def test_get_last_modified_should_return_assets_ethernet_modified(self):
         network = NetworkFactory(address='192.168.1.0/24')
         asset = DataCenterAssetFactory()
-        ip = IPAddressFactory(address='192.168.1.2', base_object=asset)
         ethernet = EthernetFactory(base_object=asset)
+        ethernet.save()
+        ip = IPAddressFactory(
+            address='192.168.1.2', base_object=asset, ethernet=ethernet
+        )
         ethernet.save()
         returned = self.view.get_last_modified(
             Network.objects.filter(id__in=[network.id])

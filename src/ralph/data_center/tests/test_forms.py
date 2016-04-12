@@ -30,20 +30,3 @@ class NetworkLineFormsetTest(RalphTestCase):
             )
         ):
             validate_is_management([form_1, form_2])
-
-    def test_validate_not_management(self):
-        form_1 = EmptyForm()
-        form_1.cleaned_data = {
-            'DELETE': False,
-            'is_management': False,
-        }
-        form_2 = EmptyForm()
-        form_2.cleaned_data = {
-            'DELETE': False,
-            'is_management': False,
-        }
-        with self.assertRaisesRegex(
-            ValidationError,
-            'One IP address must be management',
-        ):
-            validate_is_management([form_1, form_2])

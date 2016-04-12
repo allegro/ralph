@@ -12,7 +12,9 @@ from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.assets.invoice_report import AssetInvoiceReportMixin
 from ralph.assets.models.components import GenericComponent as AssetComponent
+from ralph.assets.models.components import Ethernet
 from ralph.attachments.admin import AttachmentsMixin
+from ralph.data_center.forms import DataCenterAssetForm
 from ralph.data_center.models.components import DiskShare, DiskShareMount
 from ralph.data_center.models.physical import (
     Accessory,
@@ -28,8 +30,8 @@ from ralph.data_center.views.ui import DataCenterAssetSecurityInfo
 from ralph.data_importer import resources
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
-from ralph.networks.forms import NetworkInlineFormset
-from ralph.networks.models.networks import IPAddress, Network
+from ralph.networks.forms import NetworkForm, NetworkInlineFormset
+from ralph.networks.models.networks import Network
 from ralph.operations.views import OperationViewReadOnlyForExisiting
 from ralph.supports.models import BaseObjectsSupport
 
@@ -50,9 +52,10 @@ class DataCenterAdmin(RalphAdmin):
 
 
 class NetworkInline(RalphTabularInline):
+    form = NetworkForm
     formset = NetworkInlineFormset
-    model = IPAddress
-    exclude = ['status']
+    model = Ethernet
+    exclude = ['model']
 
 
 class NetworkTerminatorReadOnlyInline(RalphTabularM2MInline):
@@ -77,7 +80,10 @@ class NetworkView(RalphDetailViewAdmin):
     label = 'Network'
     url_name = 'network'
 
-    inlines = [NetworkInline, NetworkTerminatorReadOnlyInline]
+    inlines = [
+        NetworkInline,
+        NetworkTerminatorReadOnlyInline
+    ]
 
 
 class DataCenterAssetSupport(RalphDetailViewAdmin):
@@ -150,6 +156,7 @@ class DataCenterAssetAdmin(
         DataCenterAssetOperation,
         NetworkView,
     ]
+    form = DataCenterAssetForm
     if settings.ENABLE_DNSAAS_INTEGRATION:
         change_views += [DNSView]
     show_transition_history = True
@@ -183,7 +190,6 @@ class DataCenterAssetAdmin(
     raw_id_fields = ['model', 'rack', 'service_env', 'parent', 'budget_info']
     raw_id_override_parent = {'parent': DataCenterAsset}
     _invoice_report_name = 'invoice-data-center-asset'
-    readonly_fields = ('management_ip', 'management_hostname')
 
     fieldsets = (
         (_('Basic info'), {

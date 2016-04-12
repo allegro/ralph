@@ -27,6 +27,7 @@ from ralph.data_center.models.choices import (
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
+from ralph.networks.models.networks import IPAddress
 
 # i.e. number in range 1-16 and optional postfix 'A' or 'B'
 VALID_SLOT_NUMBER_FORMAT = re.compile('^([1-9][A,B]?|1[0-6][A,B]?)$')
@@ -351,7 +352,12 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
         return asset_cores_count
 
     def _get_management_ip(self):
-        return self.ipaddress_set.filter(is_management=True).first()
+        eth = self.ethernet.select_related('ipaddress').filter(
+            ipaddress__is_management=True
+        ).first()
+        if eth:
+            return eth.ipaddress
+        return None
 
     @property
     def management_ip(self):
@@ -360,12 +366,40 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
             return ip.address
         return ''
 
+    @management_ip.setter
+    def management_ip(self, value):
+        ip = self._get_management_ip()
+        if ip is None:
+            return
+        if ip:
+            ip.address = value
+            ip.save()
+        else:
+            IPAddress.objects.create(
+                address=value,
+                is_management=True,
+            )
+
     @property
     def management_hostname(self):
         ip = self._get_management_ip()
         if ip:
             return ip.hostname
         return ''
+
+    @management_hostname.setter
+    def management_hostname(self, value):
+        ip = self._get_management_ip()
+        if ip is None:
+            return
+        if ip:
+            ip.hostname = value
+            ip.save()
+        else:
+            IPAddress.objects.create(
+                hostname=value,
+                is_management=True,
+            )
 
     def _validate_orientation(self):
         """

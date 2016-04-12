@@ -9,7 +9,7 @@ class DHCPEntryManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().select_related('ethernet').exclude(
             hostname=None,
-            base_object=None,
+            ethernet__base_object=None,
             ethernet=None,
             status=IPAddressStatus.reserved.id
         )
@@ -27,7 +27,9 @@ class DHCPEntry(IPAddress):
 
 
 class DHCPServer(models.Model):
-    ip = models.IPAddressField(verbose_name=_('IP address'), unique=True)
+    ip = models.GenericIPAddressField(
+        verbose_name=_('IP address'), unique=True
+    )
     last_synchronized = models.DateTimeField(null=True)
 
     class Meta:
@@ -42,7 +44,7 @@ class DHCPServer(models.Model):
 
 
 class DNSServer(models.Model):
-    ip_address = models.IPAddressField(
+    ip_address = models.GenericIPAddressField(
         verbose_name=_('IP address'),
         unique=True,
     )
