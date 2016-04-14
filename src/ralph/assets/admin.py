@@ -18,7 +18,12 @@ from ralph.assets.models.assets import (
     Service,
     ServiceEnvironment
 )
-from ralph.assets.models.components import ComponentModel, GenericComponent
+from ralph.assets.models.components import (
+    ComponentModel,
+    DiskShareComponent,
+    DiskShareMountComponent,
+    GenericComponent
+)
 from ralph.data_importer import resources
 from ralph.lib.table import Table
 
@@ -163,7 +168,7 @@ class ComponentModelAdmin(RalphAdmin):
 
 @register(GenericComponent)
 class GenericComponentAdmin(RalphAdmin):
-    search_fields = ['name']
+    search_fields = ['label']
 
 
 @register(Asset)
@@ -187,3 +192,14 @@ class BaseObjectAdmin(RalphAdmin):
 class AssetHolderAdmin(RalphAdmin):
 
     search_fields = ['name']
+
+
+@register(DiskShareComponent)
+class DiskShareComponentAdmin(RalphAdmin):
+
+    raw_id_fields = ['base_object']
+
+
+@register(DiskShareMountComponent)
+class DiskShareMountComponentAdmin(RalphAdmin):
+    pass

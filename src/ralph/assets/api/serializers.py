@@ -16,6 +16,7 @@ from ralph.assets.models import (
     BudgetInfo,
     BusinessSegment,
     Category,
+    components,
     Environment,
     Manufacturer,
     ProfitCenter,
@@ -205,3 +206,64 @@ class BaseObjectSerializer(RalphAPISerializer):
 class AssetSerializer(BaseObjectSerializer):
     class Meta(BaseObjectSerializer.Meta):
         model = Asset
+
+
+class ComponentModelSerializer(RalphAPISerializer):
+    class Meta:
+        model = components.ComponentModel
+
+
+class ComponentSerializerMixin(RalphAPISerializer):
+
+    base_object = BaseObjectPolymorphicSerializer()
+    model = ComponentModelSerializer()
+
+
+class GenericComponentSerializer(ComponentSerializerMixin):
+
+    class Meta:
+        model = components.GenericComponent
+
+
+class DiskShareComponentSerializer(ComponentSerializerMixin):
+    class Meta:
+        model = components.DiskShareComponent
+
+
+class DiskShareMountComponentSerializer(RalphAPISerializer):
+
+    share = DiskShareComponentSerializer()
+
+    class Meta:
+        model = components.DiskShareMountComponent
+        exclude = ('asset',)
+
+
+class ProcessorComponentSerializer(ComponentSerializerMixin):
+
+    class Meta:
+        model = components.ProcessorComponent
+
+
+class MemoryComponentSerializer(ComponentSerializerMixin):
+
+    class Meta:
+        model = components.MemoryComponent
+
+
+class FibreChannelComponentSerializer(ComponentSerializerMixin):
+
+    class Meta:
+        model = components.FibreChannelComponent
+
+
+class SoftwareComponentSerializer(ComponentSerializerMixin):
+
+    class Meta:
+        model = components.SoftwareComponent
+
+
+class OperatingSystemComponentSerializer(ComponentSerializerMixin):
+
+    class Meta:
+        model = components.OperatingSystemComponent

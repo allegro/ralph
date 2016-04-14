@@ -10,14 +10,27 @@ from ralph.assets.models import (
     AssetModel,
     BaseObject,
     Category,
+    ComponentModel,
     Environment,
+    GenericComponent,
     Manufacturer,
     ObjectModelType,
     Service,
     ServiceEnvironment
 )
+from ralph.assets.models.choices import ComponentType
+from ralph.assets.models.components import (
+    DiskShareComponent,
+    DiskShareMountComponent,
+    FibreChannelComponent,
+    MemoryComponent,
+    OperatingSystemComponent,
+    ProcessorComponent,
+    SoftwareComponent
+)
 from ralph.assets.tests.factories import (
     CategoryFactory,
+    ComponentModelFactory,
     DataCenterAssetModelFactory,
     EnvironmentFactory,
     ManufacturerFactory,
@@ -567,3 +580,154 @@ class BaseObjectAPITests(RalphAPITestCase):
                     )
                 )
         self.assertEqual(count, len(BASE_OBJECTS_FACTORIES))
+
+
+class ComponenetsAPITests(RalphAPITestCase):
+    def setUp(self):
+        super().setUp()
+        self.dc = DataCenterAssetFactory()
+        self.model = ComponentModelFactory()
+
+    def get_component_data(self):
+        return  {
+            'base_object': self.dc.id,
+            'model': self.model.id,
+        }
+
+    def test_component_model(self):
+        url = reverse('componentmodel-list')
+        data = {
+            'name': 'CPU Xeon 2570MHz, 4-core',
+            'speed': '2670',
+            'cores': '4',
+            'size': '0',
+            'type': ComponentType.processor.id,
+            'family': 'Intel(R) Xeon(R) CPU X5650 @ 2.67GHz',
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        component_model = ComponentModel.objects.get(pk=response.data['id'])
+        self.assertEqual(component_model.cores, 4)
+
+    def test_generic_component(self):
+        url = reverse('genericcomponent-list')
+        data = self.get_component_data()
+        data.update({
+            'label': 'Memory',
+            'sn': '123456'
+        })
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        generic_component = GenericComponent.objects.get(
+            pk=response.data['id']
+        )
+        self.assertEqual(generic_component.sn, '123456')
+
+    def test_diskshare(self):
+        url = reverse('disksharecomponent-list')
+        data = {
+            'base_object': self.dc.id,
+            'share_id': '1',
+            'label': 'label_name',
+            'size': 1000,
+            'snapshot_size': 10,
+            'wwn': '1',
+            'full': '1'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        disk_share = DiskShareComponent.objects.get(pk=response.data['id'])
+        self.assertEqual(disk_share.label, 'label_name')
+
+        url = reverse('disksharemountcomponent-list')
+        data = {
+            'share': disk_share.pk,
+            'asset': '',
+            'volume': 10,
+            'size': 100
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        disk_share_mount = DiskShareMountComponent.objects.get(
+            pk=response.data['id']
+        )
+        self.assertEqual(disk_share_mount.size, 100)
+
+    def test_processor_component(self):
+        url = reverse('processorcomponent-list')
+        data = self.get_component_data()
+        data.update({
+            'model': ComponentModelFactory(cores=4).id,
+            'label': 'Intel',
+            'speed': '2670',
+            'cores': 4,
+            'index': 0
+        })
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        processor_component = ProcessorComponent.objects.get(
+            pk=response.data['id']
+        )
+        self.assertEqual(processor_component.get_cores(), 4)
+
+    def test_memory_component(self):
+        url = reverse('memorycomponent-list')
+        data = self.get_component_data()
+        data.update({
+            'label': 'Kingston',
+            'speed': '1600',
+            'size': 2048,
+            'index': 0
+        })
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        memory_component = MemoryComponent.objects.get(
+            pk=response.data['id']
+        )
+        self.assertEqual(memory_component.size, 2048)
+
+
+    def test_fibrechannel_component(self):
+        url = reverse('fibrechannelcomponent-list')
+        data = self.get_component_data()
+        data.update({
+            'label': 'Saturn-X: LightPulse Fibre Channel Host Adapter',
+            'physical_id': 6
+        })
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        fibrechannel_component = FibreChannelComponent.objects.get(
+            pk=response.data['id']
+        )
+        self.assertEqual(fibrechannel_component.physical_id, '6')
+
+    def test_software_component(self):
+        url = reverse('softwarecomponent-list')
+        data = self.get_component_data()
+        data.update({
+            'label': 'Ralph',
+            'path': '/home/ralph/',
+            'sn': 'ralph_sn',
+            'version': '3'
+        })
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        software_component = SoftwareComponent.objects.get(
+            pk=response.data['id']
+        )
+        self.assertEqual(software_component.sn, 'ralph_sn')
+
+    def test_operatingsystem_component(self):
+        url = reverse('operatingsystemcomponent-list')
+        data = self.get_component_data()
+        data.update({
+            'label': 'AIX',
+            'memory': 1024,
+            'storage': 1014
+        })
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        operatingsystem_component = OperatingSystemComponent.objects.get(
+            pk=response.data['id']
+        )
+        self.assertEqual(operatingsystem_component.label, 'AIX')
