@@ -14,7 +14,7 @@ from taggit.forms import TagField
 
 class NullableFormFieldMixin(object):
     def to_python(self, value):
-        "Returns a Unicode object."
+        """Returns a Unicode object."""
         if value in self.empty_values:
             return None
         return super().to_python(value)
@@ -179,6 +179,9 @@ class TagWidget(forms.TextInput):
             value = ', '.join(sorted([
                 (t if ',' not in t else '"%s"' % t) for t in value
             ]))
+        if attrs is None:
+            attrs = {}
+        attrs['class'] = 'vTextField'
         return super(TagWidget, self).render(name, value, attrs)
 
 
@@ -205,4 +208,4 @@ class TaggitTagField(TagField):
             data = [i.strip() for i in data.split(',') if i.strip()]
             changed = len(initial) != len(data) or set(initial) - set(data)
             return changed
-        return False
+        return initial or data
