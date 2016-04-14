@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.contrib.admin.views.main import ChangeList
+from django.contrib.admin.views.main import ChangeList, SEARCH_VAR
 
 SEARCH_SCOPE_VAR = 'search-scope'
 BULK_EDIT_VAR = 'bulk_edit'
@@ -18,7 +18,11 @@ class RalphChangeList(ChangeList):
         for field in IGNORED_FIELDS:
             if field in result:
                 del result[field]
-        return result
+        return {key: value for key, value in result.items() if value != ''}
+
+    @property
+    def any_filters(self):
+        return self.get_filters_params() or self.params.get(SEARCH_VAR)
 
     def get_ordering_from_related_model_admin(self, prefix, field_name):
         """

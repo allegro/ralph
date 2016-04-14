@@ -1,0 +1,10 @@
+@import 'foundation/components/forms';
+
+label.required {
+    font-weight: bold;
+    &:before {
+        font-weight: bold;
+        color: $mdc-red-500;
+        content: "* ";
+    }
+}

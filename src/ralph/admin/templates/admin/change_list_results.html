@@ -1,4 +1,4 @@
-{% load i18n admin_static %}
+{% load i18n admin_static admin_urls %}
 
 {% if result_hidden_fields %}
   <div class="hiddenfields">
@@ -55,5 +55,17 @@
         {% endfor %}
       </tbody>
     </table>
+  </div>
+{% else %}
+  <div data-alert class="alert-box info">
+  {% with cl.any_filters as any_filters %}
+    {% url cl.opts|admin_urlname:'add' as add_url %}
+    {% trans 'Nothing to display.' %}
+    {% if not any_filters %}
+      {% blocktrans with cl.opts.verbose_name as name %}
+        You can <a href="{{ add_url }}">add first {{ name }}</a>.
+      {% endblocktrans %}
+    {% endif %}
+  {% endwith %}
   </div>
 {% endif %}
