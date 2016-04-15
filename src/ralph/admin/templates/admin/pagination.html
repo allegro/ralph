@@ -1,16 +1,18 @@
 {% load admin_change_list i18n %}
 <div class="admin-bottom pagination">
-  <div class="row">
-    <div class="small-12 columns pagination-centered">
-      <ul class="pagination">
-      {% if pagination_required %}
-          {% for i in page_range %}
-           {% admin_paginator_number cl i %}
-          {% endfor %}
-        {% endif %}
-      </ul>
+  {% if page_range %}
+    <div class="row">
+      <div class="small-12 columns pagination-centered">
+        <ul class="pagination">
+        {% if pagination_required %}
+            {% for i in page_range %}
+             {% admin_paginator_number cl i %}
+            {% endfor %}
+          {% endif %}
+        </ul>
+      </div>
     </div>
-  </div>
+  {% endif %}
   <div class="row">
     <div class="small-{% if cl.formset %}6{% else %}12{% endif %} columns text-center">
       {{ cl.result_count }}

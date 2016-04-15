@@ -13,7 +13,7 @@
     display: block;
     margin: 0;
     padding: 1rem;
-    background-color: $panel-bg;
+    background-color: $admin-bottom-bg;
     &.bottom {
         @include admin-bottom-bottom();
     }
