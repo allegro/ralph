@@ -71,7 +71,9 @@ class RalphAdminSiteMixin(object):
         from ralph.data_center.models import DataCenter
         if extra_context is None:
             extra_context = {}
-        extra_context['data_centers'] = DataCenter.objects.all()
+        extra_context['data_centers'] = DataCenter.objects.filter(
+            show_on_dashboard=True
+        )
         return super().index(request, extra_context)
 
 

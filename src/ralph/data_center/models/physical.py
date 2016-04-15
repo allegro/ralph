@@ -100,6 +100,7 @@ class DataCenter(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
         verbose_name=_('visualization grid rows number'),
         default=20,
     )
+    show_on_dashboard = models.BooleanField(default=True)
 
     @property
     def rack_set(self):
