@@ -27,4 +27,35 @@
             line-height: 2.5rem;
         }
     }
+    .sidebar.actions-and-filters {
+        border-right: 1px solid darken($tabs-content-bg-color, 15%);
+        .filters, .actions {
+            border-bottom: 1px solid darken($tabs-content-bg-color, 15%);
+            padding-bottom: 2rem;
+            margin-bottom: 2rem;
+            h4 {
+                margin-top: 0;
+                font-size: 1.75rem;
+            }
+            h6 {
+                display: block-inline;
+                float: left;
+                margin: 0 0 0.25rem 0;
+                &:first-letter {
+                    text-transform: uppercase;
+                }
+            }
+            .has-tip {
+                margin-left: 0.5rem;
+                float: left;
+                line-height: 1.4;
+            }
+            .filter-row {
+                margin-bottom: 1rem;
+                select, #{text-inputs(all, 'input')} {
+                    margin: 0;
+                }
+            }
+        }
+    }
 }

@@ -81,9 +81,9 @@
         {% if not bulk_edit %}
           {% block filters %}
             {% if cl.has_filters %}
-              <div class="small-2 columns">
+              <div class="small-2 columns sidebar actions-and-filters">
                 {% admin_actions %}
-                <div class="panel">
+                <div class="filters">
                   <h4>Filters</h4>
                   <div class="filter-container">
                     {% if is_popup %}
