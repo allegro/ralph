@@ -1,10 +1,26 @@
 @import 'foundation/components/forms';
 
-label.required {
-    font-weight: bold;
-    &:before {
+form {
+    label.required {
         font-weight: bold;
-        color: $mdc-red-500;
-        content: "* ";
+        &:before {
+            font-weight: bold;
+            color: $mdc-red-500;
+            content: "* ";
+        }
+    }
+
+    .row label {
+        padding: 0.5rem 0;
+    }
+
+
+    select, #{text-inputs(all, 'input')} {
+        padding: 0.5rem $form-spacing / 2;
+    }
+
+    input[type="checkbox"],
+    input[type="radio"] {
+        margin-top: 0.5rem;
     }
 }

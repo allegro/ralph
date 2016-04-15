@@ -17,11 +17,6 @@ table {
     &.full {
         width: 100%;
     }
-    td, th {
-        input[type="checkbox"] {
-            margin: 0;
-        }
-    }
     thead {
         tr {
             line-height: 2.5rem;
@@ -29,6 +24,11 @@ table {
                 @include cell-border();
                 background: $thead-bg-color;
                 padding: 0 5px;
+                text-align: left;
+                &.action-checkbox-column {
+                    text-align: center;
+                    padding-top: .5rem;
+                }
                 .text {
                     .sort-icon {
                         color: $mdc-black-dark;
@@ -70,6 +70,13 @@ table {
                 text-align: left;
                 @include cell-border();
                 padding: 0 5px;
+                &.action-checkbox {
+                    padding-top: 0.5rem;
+                    input[type="checkbox"],
+                    input[type="radio"]  {
+                        margin: 0;
+                    }
+                }
             }
         }
     }

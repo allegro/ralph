@@ -76,14 +76,6 @@ select {
     background-color: #fff;
 }
 
-label, label.inline {
-    padding: $input-padding / 2 0;
-}
-select, #{text-inputs(all, 'input')} {
-    padding: $input-padding;
-    height: auto;
-    margin: $form-spacing / 2 0;
-}
 
 button.button.search {
     background-color: #5B5B5B;
