@@ -20,7 +20,7 @@
     "angular-route": "~1.4.0",
     "angular-ui-router": "~0.2.15",
     "angular-breadcrumb": "~0.4.0",
-    "foundation": "~5.5.2",
+    "foundation": "~5.5.3",
     "foundation-datepicker": "~1.3.0",
     "angular-loading-bar": "~0.8.0",
     "raven-js": "~1.3.0",
