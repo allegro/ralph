@@ -1,0 +1,27 @@
+@import 'admin-bottom';
+
+.change-list {
+    #content-main {
+        padding-bottom: 1rem;
+        .row.content {
+            border-bottom: 0;
+        }
+        .admin-bottom {
+            margin-top: 0;
+            border: 1px solid #ccc;
+        }
+    }
+    &.bulk-edit {
+        #content-main {
+            .row.content {
+                border-bottom: 1px solid #ccc;
+            }
+        }
+        .admin-bottom {
+            @include admin-bottom-bottom();
+        }
+        .pagination-centered {
+            display: none;
+        }
+    }
+}

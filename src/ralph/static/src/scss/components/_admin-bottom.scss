@@ -1,0 +1,25 @@
+.row .admin-bottom .row {
+    max-width: 100%;
+    margin: 0;
+}
+@mixin admin-bottom-bottom() {
+    box-shadow: inset 0 .1rem .2rem rgba(0,0,0,.1);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+.admin-bottom {
+    display: block;
+    margin: 0;
+    padding: 1rem;
+    background-color: $panel-bg;
+    &.bottom {
+        @include admin-bottom-bottom();
+    }
+    &.pagination {
+        margin-top: 10px;
+        position: relative;
+    }
+
+}

@@ -1,7 +1,7 @@
 {% load admin_change_list i18n %}
-<div class="panel admin_bottom">
+<div class="admin-bottom pagination">
   <div class="row">
-    <div class="small-4 columns">
+    <div class="small-12 columns pagination-centered">
       <ul class="pagination">
       {% if pagination_required %}
           {% for i in page_range %}
@@ -10,17 +10,19 @@
         {% endif %}
       </ul>
     </div>
-    <div class="small-4 columns text-center">
+  </div>
+  <div class="row">
+    <div class="small-{% if cl.formset %}6{% else %}12{% endif %} columns text-center">
       {{ cl.result_count }}
       {% ifequal cl.result_count 1 %}{{ cl.opts.verbose_name }}{% else %}{{ cl.opts.verbose_name_plural }}{% endifequal %}
       {% if show_all_url %}
           &nbsp;&nbsp;<a href="{{ show_all_url }}" class="showall">{% trans 'Show all' %}</a>
       {% endif %}
     </div>
-    <div class="small-4 columns right_section">
-      {% if cl.formset and cl.result_count %}
-          <input type="submit" name="_save" class="default button success small right radius" value="{% trans 'Save' %}"/>
-      {% endif %}
-   </div>
+    {% if cl.formset and cl.result_count %}
+      <div class="small-6 columns right_section">
+            <input type="submit" name="_save" class="default button success small right radius" value="{% trans 'Save' %}"/>
+     </div>
+    {% endif %}
   </div>
 </div>
