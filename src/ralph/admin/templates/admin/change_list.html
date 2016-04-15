@@ -13,7 +13,7 @@
 
 {% block content %}
   {% if is_popup and cl %}
-    {% contextual_search_form search_url search_fields %}
+    {% contextual_search_form search_url search_fields cl.opts.verbose_name  %}
   {% endif %}
   <div id="content-main">
     <form method="get" action="" id="filter-form" class="hide"></form>
