@@ -99,6 +99,12 @@ class Order(
         raise Exception('exception')
 
 
+@transition_action(model=Order)
+def action_registered_on_model(cls, *args, **kwargs):
+    for instance in kwargs['instances']:
+        instance.remarks = 'done'
+
+
 class AsyncOrder(
     AdminAbsoluteUrlMixin, models.Model, metaclass=TransitionWorkflowBase
 ):

@@ -104,17 +104,11 @@ class TransitionsTest(TransitionTestCase):
         self.assertTrue(order.go_to_post_office.runned)
 
     def test_action_is_added_to_model_when_registered_on_model(self):
-        @transition_action(model=Order)
-        def example_action(cls, *args, **kwargs):
-            pass
-        self.assertTrue(hasattr(Order, 'example_action'))
+        # action is registered in tests/models.py
+        self.assertTrue(hasattr(Order, 'action_registered_on_model'))
 
     def test_transition_runs_action_registered_on_model(self):
-        @transition_action(model=Order)
-        def action_registered_on_model(cls, *args, **kwargs):
-            for instance in kwargs['instances']:
-                instance.remarks = 'done'
-
+        # action is registered in tests/models.py
         order = Order.objects.create()
         _, transition, _ = self._create_transition(
             model=order, name='action_name',

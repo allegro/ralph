@@ -2,7 +2,6 @@
 
 import inspect
 import logging
-import operator
 from collections import defaultdict
 
 import reversion
