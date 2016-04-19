@@ -58,7 +58,7 @@ gulp.task('js', function(){
         './bower_components/jquery.cookie/jquery.cookie.js',
         './bower_components/jquery/dist/jquery.js',
         './bower_components/modernizr/modernizr.js',
-        './bower_components/foundation/js/foundation.min.js',
+        './bower_components/foundation/js/foundation.js',
         './bower_components/foundation-datepicker/js/foundation-datepicker.js',
         './bower_components/angular-loading-bar/build/loading-bar.min.js',
         './bower_components/raven-js/dist/raven.min.js',
