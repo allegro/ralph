@@ -1,6 +1,12 @@
 {% extends "admin/filters/_filter_base.html" %}
 
 {% block filter_choices %}
-    <input type="text" name="{{ i.parameter_name_start }}" placeholder="Start {{ i.date_format }}" class="datepicker" value="{{ i.date_start }}" />
-    <input type="text" name="{{ i.parameter_name_end }}" placeholder="End {{ i.date_format }}" class="datepicker" value="{{ i.date_end }}" />
+  <div class="date-filter">
+    <div class="start">
+      <input type="text" name="{{ i.parameter_name_start }}" placeholder="Start {{ i.date_format }}" class="datepicker" value="{{ i.date_start }}" />
+    </div>
+    <div class="end">
+      <input type="text" name="{{ i.parameter_name_end }}" placeholder="End {{ i.date_format }}" class="datepicker" value="{{ i.date_end }}" />
+    </div>
+  </div>
 {% endblock %}

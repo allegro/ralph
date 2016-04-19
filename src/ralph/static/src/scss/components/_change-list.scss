@@ -45,21 +45,34 @@
             }
             h6 {
                 display: block-inline;
-                float: left;
                 margin: 0 0 0.25rem 0;
                 &:first-letter {
                     text-transform: uppercase;
                 }
-            }
-            .has-tip {
-                margin-left: 0.5rem;
-                float: left;
-                line-height: 1.4;
+                .has-tip {
+                    margin-left: 0.2rem;
+                    line-height: 1.4;
+                }
             }
             .filter-row {
                 margin-bottom: 1rem;
-                select, #{text-inputs(all, 'input')} {
-                    margin: 0;
+                .wrapper {
+                    display: block;
+                    select, #{text-inputs(all, 'input')} {
+                        margin: 0;
+                    }
+                    .date-filter {
+                        overflow: hidden;
+                        .start, .end {
+                            float: left;
+                            width: calc(50% - 5px);
+                            input {
+                                width: 100%;
+                            }
+                        }
+                        .start {margin-right: 5px;}
+                        .end {margin-left: 5px;}
+                    }
                 }
             }
         }
