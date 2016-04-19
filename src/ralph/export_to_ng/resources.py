@@ -4,7 +4,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import ipaddr
 import logging
 import os
 from collections import Counter
