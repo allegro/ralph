@@ -550,6 +550,9 @@ class IPAddressResource(resources.ModelResource):
     asset = fields.Field('asset', column_name='asset')
     network = fields.Field('network', column_name='network')
 
+    def get_queryset(self):
+        return self._meta.model.objects.exclude(device=None)
+
     def dehydrate_asset(self, ip_address):
         try:
             asset_id = (
