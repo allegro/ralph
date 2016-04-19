@@ -8,6 +8,8 @@ from ralph.assets.tests.factories import (
     ServiceEnvironmentFactory
 )
 from ralph.data_center.models import (
+    BaseObjectCluster,
+    Cluster,
     DataCenterAsset,
     Orientation,
     Rack,
@@ -16,6 +18,8 @@ from ralph.data_center.models import (
 )
 from ralph.data_center.tests.factories import (
     AccessoryFactory,
+    ClusterFactory,
+    ClusterTypeFactory,
     DataCenterAssetFactory,
     RackAccessoryFactory,
     RackFactory,
@@ -249,3 +253,39 @@ class RackAccessoryAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.rack_accessory.refresh_from_db()
         self.assertEqual(self.rack_accessory.remarks, 'qwerty')
+
+
+class ClusterAPITests(RalphAPITestCase):
+    def setUp(self):
+        super().setUp()
+        self.cluster_type = ClusterTypeFactory()
+        self.service_env = ServiceEnvironmentFactory()
+        self.cluster_1 = ClusterFactory()
+        BaseObjectCluster.objects.create(
+            cluster=self.cluster_1, base_object=DataCenterAssetFactory()
+        )
+        BaseObjectCluster.objects.create(
+            cluster=self.cluster_1, base_object=DataCenterAssetFactory()
+        )
+        self.cluster_2 = ClusterFactory()
+
+    def test_create_cluster(self):
+        url = reverse('cluster-list')
+        data = {
+            'type': self.cluster_type.id,
+            'service_env': self.service_env.id,
+            'name': 'Test cluster'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        cluster = Cluster.objects.get(pk=response.data['id'])
+        self.assertEqual(cluster.name, 'Test cluster')
+
+    def test_list_cluster(self):
+        url = reverse('cluster-list')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 2)
+        for item in response.data['results']:
+            if item['id'] == self.cluster_1.id:
+                self.assertEqual(len(item['base_objects']), 2)

@@ -100,6 +100,7 @@ sitetrees = [
                 section(_('VIPs'), 'data_center', 'VIP'),
                 section(_('Virtual Servers'), 'virtual', 'VirtualServer'),
                 section(_('IP Addresses'), 'data_center', 'ipaddress'),
+                section(_('Clusters'), 'data_center', 'cluster'),
             ],
         ),
         ralph_item(
