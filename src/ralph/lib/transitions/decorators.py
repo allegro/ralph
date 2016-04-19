@@ -22,6 +22,10 @@ def transition_action(method=None, **kwargs):
         @wraps(func)
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
+
+        if 'model' in kwargs:
+            setattr(kwargs['model'], func.__name__, wrapper)
+
         return wrapper
 
     if callable(method):

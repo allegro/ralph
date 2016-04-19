@@ -70,6 +70,7 @@ class Order(
         default=OrderStatus.new.id,
         choices=OrderStatus(),
     )
+    remarks = models.CharField(max_length=255, blank=True, default='')
 
     @classmethod
     @transition_action(return_attachment=True)
@@ -96,6 +97,12 @@ class Order(
     )
     def generate_exception(cls, instances, request, **kwargs):
         raise Exception('exception')
+
+
+@transition_action(model=Order)
+def action_registered_on_model(cls, *args, **kwargs):
+    for instance in kwargs['instances']:
+        instance.remarks = 'done'
 
 
 class AsyncOrder(

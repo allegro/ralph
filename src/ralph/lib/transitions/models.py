@@ -2,7 +2,6 @@
 
 import inspect
 import logging
-import operator
 from collections import defaultdict
 
 import reversion
@@ -600,17 +599,16 @@ def update_models_attrs():
         setattr(model, 'transition_models', transition_models)
 
 
-def update_transitions_affter_migrate(**kwargs):
+def update_transitions_after_migrate(**kwargs):
     """
     Create or update transition for models which detetected
     TRANSITION_ATTR_TAG in any field in model.
     """
     sender_models = list(kwargs['sender'].get_models())
 
-    for model, field_names in filter(
-        lambda x: operator.itemgetter(0)(x) in sender_models,
-        _transitions_fields.items()
-    ):
+    for model, field_names in _transitions_fields.items():
+        if model not in sender_models:
+            continue
         content_type = ContentType.objects.get_for_model(model)
         for field_name in field_names:
             transition_model, _ = TransitionModel.objects.get_or_create(
@@ -626,7 +624,7 @@ def update_transitions_affter_migrate(**kwargs):
                 )
                 action.content_type.add(content_type)
 
-post_migrate.connect(update_transitions_affter_migrate)
+post_migrate.connect(update_transitions_after_migrate)
 
 
 @receiver(post_delete, sender=Transition)
