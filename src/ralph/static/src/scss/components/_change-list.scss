@@ -1,0 +1,80 @@
+@import 'admin-bottom';
+
+.change-list {
+    #content-main {
+        padding-bottom: 1rem;
+        .row.content {
+            border-bottom: 0;
+        }
+        .admin-bottom {
+            margin-top: 0;
+            border: 1px solid #ccc;
+        }
+        .count-info {
+            text-align: center;
+        }
+    }
+    &.bulk-edit {
+        #content-main {
+            .row.content {
+                border-bottom: 1px solid #ccc;
+            }
+        }
+        .admin-bottom {
+            @include admin-bottom-bottom();
+        }
+        .pagination-centered {
+            display: none;
+        }
+        .text-center {
+            line-height: 2.5rem;
+        }
+        .count-info {
+            text-align: left;
+        }
+    }
+    .sidebar.actions-and-filters {
+        border-right: 1px solid darken($tabs-content-bg-color, 15%);
+        .filters, .actions {
+            border-bottom: 1px solid darken($tabs-content-bg-color, 15%);
+            padding-bottom: 2rem;
+            margin-bottom: 2rem;
+            h4 {
+                margin-top: 0;
+                font-size: 1.75rem;
+            }
+            h6 {
+                display: block-inline;
+                margin: 0 0 0.25rem 0;
+                &:first-letter {
+                    text-transform: uppercase;
+                }
+                .has-tip {
+                    margin-left: 0.2rem;
+                    line-height: 1.4;
+                }
+            }
+            .filter-row {
+                margin-bottom: 1rem;
+                .wrapper {
+                    display: block;
+                    select, #{text-inputs(all, 'input')} {
+                        margin: 0;
+                    }
+                    .date-filter {
+                        overflow: hidden;
+                        .start, .end {
+                            float: left;
+                            width: calc(50% - 5px);
+                            input {
+                                width: 100%;
+                            }
+                        }
+                        .start {margin-right: 5px;}
+                        .end {margin-left: 5px;}
+                    }
+                }
+            }
+        }
+    }
+}
