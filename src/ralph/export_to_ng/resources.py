@@ -10,6 +10,7 @@ import os
 from collections import Counter
 from itertools import chain
 
+import ipaddr
 from django.conf import settings
 from django.db.models import Q
 from import_export import fields
@@ -486,7 +487,12 @@ class NetworkResource(resources.ModelResource):
         queryset = super(NetworkResource, self).get_queryset()
         q = Q()
         for network in self.excluded_networks:
-            q |= Q(address=network)
+            net = ipaddr.IPNetwork(network)
+            q |= Q(
+                Q(min_ip__gte=int(net.network)) &
+                Q(max_ip__lte=int(net.broadcast))
+            )
+
         queryset = queryset.exclude(q)
         return queryset
 
