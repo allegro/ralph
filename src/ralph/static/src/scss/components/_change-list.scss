@@ -10,6 +10,9 @@
             margin-top: 0;
             border: 1px solid #ccc;
         }
+        .count-info {
+            text-align: center;
+        }
     }
     &.bulk-edit {
         #content-main {
@@ -25,6 +28,9 @@
         }
         .text-center {
             line-height: 2.5rem;
+        }
+        .count-info {
+            text-align: left;
         }
     }
     .sidebar.actions-and-filters {

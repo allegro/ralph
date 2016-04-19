@@ -14,7 +14,7 @@
     </div>
   {% endif %}
   <div class="row">
-    <div class="small-{% if cl.formset %}6{% else %}12{% endif %} columns text-center">
+    <div class="small-{% if cl.formset %}6{% else %}12{% endif %} columns count-info">
       {{ cl.result_count }}
       {% ifequal cl.result_count 1 %}{{ cl.opts.verbose_name }}{% else %}{{ cl.opts.verbose_name_plural }}{% endifequal %}
       {% if show_all_url %}
