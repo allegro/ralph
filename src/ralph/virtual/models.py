@@ -9,7 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.admin.helpers import get_value_by_relation_path
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ComponentType
-from ralph.assets.models.components import Component, ComponentModel
+from ralph.assets.models.components import Component, ComponentModel, Ethernet
 from ralph.data_center.models.physical import DataCenterAsset
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
 from ralph.networks.models.networks import IPAddress
@@ -158,13 +158,15 @@ class CloudHost(AdminAbsoluteUrlMixin, BaseObject):
 
     @property
     def ip_addresses(self):
-        return [ip.address for ip in self.ipaddress_set.all()]
+        return self.ethernet.select_related('ipaddress').values_list(
+            'ipaddress__address', flat=True
+        )
 
     @ip_addresses.setter
     def ip_addresses(self, value):
         if set(self.ip_addresses) == set(value):
             return
-        for ip in set(value)-set(self.ip_addresses):
+        for ip in set(value) - set(self.ip_addresses):
             try:
                 new_ip = IPAddress.objects.get(address=ip)
                 if new_ip.base_object is None:
@@ -176,13 +178,16 @@ class CloudHost(AdminAbsoluteUrlMixin, BaseObject):
                         'another asset'
                     ) % (ip, self.hostname))
             except ObjectDoesNotExist:
-                new_ip = IPAddress(base_object=self, address=ip)
+                new_ip = IPAddress(
+                    ethernet=Ethernet.objects.create(base_object=self),
+                    address=ip
+                )
                 new_ip.save()
 
-        for ip in set(self.ip_addresses) - set(value):
-            release_ip = IPAddress.objects.get(base_object=self, address=ip)
-            release_ip.base_object = None
-            release_ip.save()
+        to_delete = set(self.ip_addresses) - set(value)
+        Ethernet.objects.filter(
+            base_object=self, ipaddress__address__in=to_delete
+        ).delete()
 
     @property
     def cloudproject(self):

@@ -54,7 +54,7 @@ def ip_address_base_object_link(obj):
     return '<a href="{}" target="_blank">{}</a>'.format(
         reverse('admin:view_on_site', args=(
             obj.base_object.content_type_id,
-            obj.base_object_id
+            obj.base_object.id
         )),
         obj.base_object._str_with_type,
     )
@@ -118,8 +118,8 @@ class NetworkAdmin(RalphMPTTAdmin):
         (_('Basic info'), {
             'fields': [
                 'name', 'address', 'remarks', 'terminators', 'vlan', 'racks',
-                'network_environment', 'kind', 'service_env', 'dhcp_broadcast',
-                'top_margin', 'bottom_margin'
+                'network_environment', 'dns_servers', 'kind', 'service_env',
+                'dhcp_broadcast', 'top_margin', 'bottom_margin'
             ]
         }),
         (_('Relations'), {
@@ -229,13 +229,13 @@ class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
         'is_public'
     ]
     readonly_fields = ['get_network_path', 'is_public', 'is_gateway']
-    raw_id_fields = ['base_object']
+    raw_id_fields = ['ethernet']
     resource_class = resources.IPAddressResource
 
     fieldsets = (
         (_('Basic info'), {
             'fields': [
-                'address', 'get_network_path', 'status', 'base_object',
+                'address', 'get_network_path', 'status', 'ethernet'
             ]
         }),
         (_('Additional info'), {
@@ -265,7 +265,7 @@ class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
         # use Prefetch like select-related to get base_objects with custom
         # queryset (to get final model, not only BaseObject)
         return super().get_queryset(request).prefetch_related(Prefetch(
-            'base_object',
+            'ethernet__base_object',
             queryset=BaseObject.polymorphic_objects.all())
         )
 
@@ -273,7 +273,6 @@ class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
         return '<a href="{}" target="blank">{}</a>'.format(
             obj.get_absolute_url(), obj.address
         )
-
     ip_address.short_description = _('IP address')
     ip_address.admin_order_field = 'number'
     ip_address.allow_tags = True

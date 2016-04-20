@@ -128,7 +128,13 @@ sitetrees = [
             perms_mode_all=False,
             children=[
                 section(_('Networks'), 'networks', 'network'),
+                section(
+                    _('Network environments'), 'networks', 'networkenvironment'
+                ),
+                section(_('Network kind'), 'networks', 'networkkind'),
                 section(_('IP Addresses'), 'networks', 'ipaddress'),
+                section(_('DHCP Servers'), 'dhcp', 'DHCPServer'),
+                section(_('DNS Servers'), 'dhcp', 'DNSServer'),
             ]
         ),
         ralph_item(

@@ -23,7 +23,7 @@ class CloudHostTabularInline(RalphTabularInline):
     can_delete = False
     model = CloudHost
     fk_name = 'parent'
-    fields = ['get_hostname', 'get_hypervisor', 'get_ipaddresses', 'created',
+    fields = ['get_hostname', 'get_hypervisor', 'get_ip_addresses', 'created',
               'tags', 'remarks']
     readonly_fields = fields
 
@@ -48,9 +48,15 @@ class CloudHostTabularInline(RalphTabularInline):
     get_hypervisor.short_description = _('Hypervisor')
     get_hypervisor.allow_tags = True
 
-    def get_ipaddresses(self, obj):
-        return '\n'.join(obj.ip_addresses)
-    get_ipaddresses.short_description = _('IP Addresses')
+    def get_ip_addresses(self, obj):
+        ips = obj.ethernet.values_list(
+            'ipaddress', flat=True
+        ).select_related('ipaddress').all()
+        if not ips:
+            return '&ndash;'
+        return '\n'.join(ips)
+    get_ip_addresses.short_description = _('IP Addresses')
+    get_ip_addresses.allow_tags = True
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -58,9 +64,7 @@ class CloudHostTabularInline(RalphTabularInline):
     def get_queryset(self, *args, **kwargs):
         return super().get_queryset(*args, **kwargs).select_related(
             'hypervisor',
-        ).prefetch_related(
-            'ipaddress_set', 'tags'
-        )
+        ).prefetch_related('tags')
 
 
 class CloudNetworkInline(RalphTabularInline):
@@ -86,10 +90,10 @@ class CloudHostAdmin(RalphAdmin):
                        'get_cloudproject', 'get_cloudprovider',
                        'get_cpu', 'get_disk', 'get_hypervisor', 'get_memory',
                        'modified', 'parent', 'service_env', 'image_name']
-    search_fields = ['cloudflavor__name', 'hostname', 'host_id',
-                     'ipaddress__address']
+    search_fields = ['cloudflavor__name', 'hostname', 'host_id']
     raw_id_override_parent = {'parent': CloudProject}
-    inlines = [CloudNetworkInline]
+    # TODO
+    # inlines = [CloudNetworkInline]
     fieldsets = (
         (None, {
             'fields': ['hostname', 'get_hypervisor', 'host_id', 'created',
@@ -105,9 +109,7 @@ class CloudHostAdmin(RalphAdmin):
     )
 
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related(
-            'ipaddress_set', 'tags'
-        )
+        return super().get_queryset(request).prefetch_related('tags')
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -152,8 +154,14 @@ class CloudHostAdmin(RalphAdmin):
     cloudflavor_name.allow_tags = True
 
     def get_ip_addresses(self, obj):
-        return '\n'.join(obj.ip_addresses)
+        ips = obj.ethernet.values_list(
+            'ipaddress__address', flat=True
+        ).select_related('ipaddress').all()
+        if not ips:
+            return '&ndash;'
+        return '\n'.join(ips)
     get_ip_addresses.short_description = _('IP Addresses')
+    get_ip_addresses.allow_tags = True
 
     def get_cloudproject(self, obj):
         return '<a href="{}">{}</a>'.format(

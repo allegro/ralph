@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 import ipaddress
+import socket
+import struct
 from itertools import chain
 
 from django.conf import settings
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Q
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
@@ -11,8 +13,9 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
+from ralph.assets.models.components import Ethernet
 from ralph.lib import network as network_tools
-from ralph.lib.mixins.fields import BaseObjectForeignKey, NullableCharField
+from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     LastSeenMixin,
@@ -180,6 +183,11 @@ class Network(
         'assets.ServiceEnvironment', related_name='networks', null=True,
         default=None, blank=True,
     )
+    dns_servers = models.ManyToManyField(
+        'dhcp.DNSServer',
+        verbose_name=_('DNS servers'),
+        blank=True,
+    )
 
     @cached_property
     def network(self):
@@ -198,9 +206,21 @@ class Network(
         return self.network.prefixlen
 
     @property
+    def netmask_dot_decimal(self):
+        """Returns netmask in dot-decimal notaion (e.g. 255.255.255.0)."""
+        return socket.inet_ntoa(
+            struct.pack('>I', (0xffffffff << (32 - self.netmask)) & 0xffffffff)
+        )
+
+    @property
     def gateway(self):
         ip = self.ips.filter(is_gateway=True).first()
         return ip.ip if ip else None
+
+    @property
+    def domain(self):
+        net_env = self.network_environment
+        return net_env.domain if net_env else None
 
     @property
     def data_center(self):
@@ -319,6 +339,19 @@ class DiscoveryQueue(NamedMixin, models.Model):
         ordering = ('name',)
 
 
+class IPAddressQuerySet(models.QuerySet):
+    def create(self, base_object=None, mac=None, label=None, **kwargs):
+        with transaction.atomic():
+            eth = kwargs.pop('ethernet', None)
+            if base_object and not eth:
+                eth = Ethernet.objects.create(
+                    base_object=base_object, mac=mac, label=label
+                )
+            ip = self.model(ethernet=eth, **kwargs)
+            ip.save(force_insert=True)
+        return ip
+
+
 class IPAddress(
     AdminAbsoluteUrlMixin,
     LastSeenMixin,
@@ -328,21 +361,12 @@ class IPAddress(
 ):
     _parent_attr = 'network'
 
-    base_object = BaseObjectForeignKey(
-        'assets.BaseObject',
-        verbose_name=_('Base object'),
+    ethernet = models.OneToOneField(
+        Ethernet,
         null=True,
-        blank=True,
         default=None,
-        on_delete=models.SET_NULL,
-        limit_models=[
-            'data_center.Database',
-            'data_center.DataCenterAsset',
-            'data_center.VIP',
-            'virtual.CloudHost',
-            'virtual.VirtualServer',
-
-        ]
+        blank=True,
+        on_delete=models.CASCADE,
     )
     network = models.ForeignKey(
         Network,
@@ -387,12 +411,12 @@ class IPAddress(
     is_gateway = models.BooleanField(
         verbose_name=_('Is gateway address'),
         default=False,
-        editable=False,
     )
     status = models.PositiveSmallIntegerField(
         default=IPAddressStatus.used.id,
         choices=IPAddressStatus(),
     )
+    objects = IPAddressQuerySet.as_manager()
 
     class Meta:
         verbose_name = _('IP address')
@@ -412,15 +436,30 @@ class IPAddress(
         if self.number and not self.address:
             self.address = ipaddress.ip_address(self.number)
         else:
-            self.number = int(ipaddress.ip_address(self.address))
-        ip = ipaddress.ip_address(self.address)
+            self.number = int(ipaddress.ip_address(self.address or 0))
         self._assign_parent()
-        self.is_public = not ip.is_private
+        self.is_public = not self.ip.is_private
         super(IPAddress, self).save(*args, **kwargs)
 
     @property
     def ip(self):
         return ipaddress.ip_address(self.address)
+
+    @property
+    def base_object(self):
+        if not self.ethernet:
+            return None
+        return self.ethernet.base_object
+
+    @base_object.setter
+    def base_object(self, value):
+        if self.ethernet:
+            self.ethernet.base_object = value
+            self.ethernet.save()
+        else:
+            eth = Ethernet.objects.create(base_object=value)
+            self.ethernet = eth
+            self.save()
 
     def search_networks(self):
         """

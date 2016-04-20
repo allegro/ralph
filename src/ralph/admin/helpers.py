@@ -110,3 +110,21 @@ def generate_html_link(base_url, params, label):
         params=urlencode(params),
         label=str(label).replace(' ', '&nbsp;')
     )
+
+
+def get_client_ip(request):
+    """
+    Return client's IP.
+
+    Args:
+        request: Django's request object
+
+    Returns:
+        IP as a string
+    """
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip

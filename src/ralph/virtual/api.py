@@ -135,7 +135,7 @@ class CloudHostViewSet(RalphAPIViewSet):
     select_related = ['parent', 'service_env__service',
                       'service_env__environment', 'hypervisor']
     prefetch_related = [
-        'tags', 'cloudflavor__virtualcomponent__model', 'ipaddress_set',
+        'tags', 'cloudflavor__virtualcomponent__model'
     ]
 
 
@@ -143,7 +143,7 @@ class CloudProjectViewSet(RalphAPIViewSet):
     queryset = CloudProject.objects.all()
     serializer_class = CloudProjectSerializer
     prefetch_related = [
-        'children', 'children__ipaddress_set', 'tags', 'licences',
+        'children', 'tags', 'licences',
     ]
 
 

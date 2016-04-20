@@ -3,7 +3,28 @@ from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyText
 
 from ralph.assets.tests.factories import BaseObjectFactory
-from ralph.networks.models.networks import IPAddress
+from ralph.data_center.tests.factories import DataCenterFactory
+from ralph.networks.models.networks import (
+    IPAddress,
+    Network,
+    NetworkEnvironment
+)
+
+
+class NetworkEnvironmentFactory(DjangoModelFactory):
+    name = factory.Iterator(['DC1', 'DC2', 'Warehouse'])
+    data_center = factory.SubFactory(DataCenterFactory)
+
+    class Meta:
+        model = NetworkEnvironment
+        django_get_or_create = ['name']
+
+
+class NetworkFactory(DjangoModelFactory):
+    network_environment = factory.SubFactory(NetworkEnvironmentFactory)
+
+    class Meta:
+        model = Network
 
 
 class IPAddressFactory(DjangoModelFactory):

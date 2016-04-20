@@ -6,4 +6,8 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
 
 # copy libreoffice service's conf
 sudo cp /home/vagrant/src/ralph/vagrant/upstart/soffice.conf /etc/init/soffice.conf
+
 sudo start soffice
+if [[ $? != 0 ]]; then
+    sudo restart soffice
+fi
