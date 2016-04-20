@@ -46,7 +46,6 @@ class EmptyListError(Exception):
 class Command(BaseCommand):
     def __init__(self):
         super().__init__()
-        self.DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
         self.summary = defaultdict(int)
         self.openstack_projects = {}
         self.openstack_flavors = {}
