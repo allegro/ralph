@@ -22,9 +22,28 @@ from ralph.data_center.models.physical import (
     RackAccessory,
     ServerRoom
 )
-from ralph.data_center.models.virtual import Database, VIP
+from ralph.data_center.models.virtual import Cluster, ClusterType, Database, VIP
 
 date_now = datetime.now().date()
+
+
+class ClusterTypeFactory(DjangoModelFactory):
+
+    name = factory.Iterator(['Application', 'Partitional'])
+
+    class Meta:
+        model = ClusterType
+        django_get_or_create = ['name']
+
+
+class ClusterFactory(DjangoModelFactory):
+
+    name = factory.Iterator(['Databases', 'Applications'])
+    type = factory.SubFactory(ClusterTypeFactory)
+
+    class Meta:
+        model = Cluster
+        django_get_or_create = ['name']
 
 
 class DataCenterFactory(DjangoModelFactory):

@@ -5,6 +5,8 @@ from ralph.assets.api.views import BaseObjectViewSet
 from ralph.data_center.admin import DataCenterAssetAdmin
 from ralph.data_center.api.serializers import (
     AccessorySerializer,
+    ClusterSerializer,
+    ClusterTypeSerializer,
     DatabaseSerializer,
     DataCenterAssetSerializer,
     DataCenterSerializer,
@@ -15,6 +17,8 @@ from ralph.data_center.api.serializers import (
 )
 from ralph.data_center.models import (
     Accessory,
+    Cluster,
+    ClusterType,
     Database,
     DataCenter,
     DataCenterAsset,
@@ -80,3 +84,18 @@ class DatabaseViewSet(RalphAPIViewSet):
 class VIPViewSet(RalphAPIViewSet):
     queryset = VIP.objects.all()
     serializer_class = VIPSerializer
+
+
+class ClusterTypeViewSet(RalphAPIViewSet):
+    queryset = ClusterType.objects.all()
+    serializer_class = ClusterTypeSerializer
+
+
+class ClusterViewSet(RalphAPIViewSet):
+    queryset = Cluster.objects.all()
+    serializer_class = ClusterSerializer
+    select_related = [
+        'type', 'parent', 'service_env', 'service_env__service',
+        'service_env__environment',
+    ]
+    prefetch_related = ['tags', 'baseobjectcluster_set']
