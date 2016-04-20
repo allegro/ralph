@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta
 
 from django.core.urlresolvers import reverse
+from django.utils import timezone
 from rest_framework import status
 
 from ralph.api.tests._base import RalphAPITestCase
@@ -34,7 +35,8 @@ class SecurityScanAPITests(RalphAPITestCase):
         for field in ['last_scan_date', 'next_scan_date']:
             self.assertEqual(
                 response.data[field],
-                getattr(self.security_scan, field).isoformat(),
+                getattr(self.security_scan, field).isoformat().replace(
+                    '+00:00', 'Z'),
             )
         for field in ['details_url', 'rescan_url']:
             self.assertEqual(
@@ -60,9 +62,9 @@ class SecurityScanAPITests(RalphAPITestCase):
         ip = IPAddressFactory(address="192.168.128.10")
         vulnerability = VulnerabilityFactory()
         data = {
-            'last_scan_date': '2015-01-01T00:00:00',
+            'last_scan_date': '2014-12-31T23:00:00+00:00',
             'scan_status': ScanStatus.ok.name,
-            'next_scan_date': '2016-01-01T00:00:00',
+            'next_scan_date': '2015-12-31T23:00:00+00:00',
             'details_url': 'https://example.com/scan-deatils',
             'rescan_url': 'https://example.com/rescan-url',
             'host_ip': ip.address,
@@ -92,9 +94,9 @@ class SecurityScanAPITests(RalphAPITestCase):
         url = reverse('securityscan-detail', args=(self.security_scan.id,))
         vulnerability = VulnerabilityFactory()
         data = {
-            'last_scan_date': (datetime.now() + timedelta(days=10)).isoformat(),
+            'last_scan_date': (timezone.now() + timedelta(days=10)).isoformat(),
             'scan_status': ScanStatus.error.name,
-            'next_scan_date': (datetime.now() + timedelta(days=15)).isoformat(),
+            'next_scan_date': (timezone.now() + timedelta(days=15)).isoformat(),
             'details_url': self.security_scan.details_url + '-new',
             'rescan_url': self.security_scan.rescan_url + '-new',
             'host_ip': ip.address,
@@ -144,7 +146,8 @@ class VulnerabilityAPITests(RalphAPITestCase):
         self.assertEqual(response.data['name'], self.vulnerability.name)
         self.assertEqual(
             response.data['patch_deadline'],
-            self.vulnerability.patch_deadline.isoformat(),
+            self.vulnerability.patch_deadline.isoformat().replace('+00:00',
+                                                                  'Z'),
         )
         self.assertEqual(response.data['risk'], Risk.low.name)
         self.assertEqual(
@@ -156,7 +159,7 @@ class VulnerabilityAPITests(RalphAPITestCase):
         url = reverse('vulnerability-list')
         data = {
             'name': "vulnerability name",
-            'patch_deadline': (datetime.now() + timedelta(days=10)).isoformat(),
+            'patch_deadline': (timezone.now() + timedelta(days=10)).isoformat(),
             'risk': Risk.low.name,
             'external_vulnerability_id': 100,
         }
@@ -182,7 +185,7 @@ class VulnerabilityAPITests(RalphAPITestCase):
                 self.vulnerability.patch_deadline + timedelta(days=3)
             ).isoformat(),
             'risk': Risk.high.name,
-            'external_vulnerability_id': self.vulnerability.external_vulnerability_id + 10  # noqa
+            'external_vulnerability_id': self.vulnerability.external_vulnerability_id + 10 # noqa
         }
         response = self.client.patch(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
