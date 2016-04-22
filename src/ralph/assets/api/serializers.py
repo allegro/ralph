@@ -6,7 +6,10 @@ from ralph.accounts.api_simple import SimpleRalphUserSerializer
 from ralph.accounts.models import Team
 from ralph.api import RalphAPISerializer
 from ralph.api.fields import StrField
-from ralph.api.serializers import AdditionalLookupRelatedField
+from ralph.api.serializers import (
+    AdditionalLookupRelatedField,
+    ReversionHistoryAPISerializerMixin
+)
 from ralph.api.utils import PolymorphicSerializer
 from ralph.assets.models import (
     Asset,
@@ -45,7 +48,10 @@ class EnvironmentSerializer(RalphAPISerializer):
         model = Environment
 
 
-class SaveServiceSerializer(RalphAPISerializer):
+class SaveServiceSerializer(
+    ReversionHistoryAPISerializerMixin,
+    RalphAPISerializer
+):
     """
     Serializer to save (create or update) services. Environments should be
     passed as a list of ids.
