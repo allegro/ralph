@@ -60,7 +60,7 @@ gulp.task('js', function(){
         './bower_components/jquery.cookie/jquery.cookie.js',
         './bower_components/jquery/dist/jquery.js',
         './bower_components/modernizr/modernizr.js',
-        './bower_components/foundation/js/foundation.js',
+        './bower_components/foundation/js/foundation.min.js',
         './bower_components/foundation-datepicker/js/foundation-datepicker.js',
         './bower_components/angular-loading-bar/build/loading-bar.min.js',
         './bower_components/raven-js/dist/raven.min.js',
@@ -112,7 +112,7 @@ gulp.task('polymer-dev', function() {
         .pipe(gulp.dest("src/ralph/admin/static/"));
 });
 gulp.task('polymer-prod', function(callback) {
-    runSequence('polymer-dev', 'vulcanize', 'clean:components', callback);
+    runSequence('vulcanize', 'clean:components', callback);
 });
 
 
@@ -124,6 +124,10 @@ gulp.task('watch', function() {
 
 gulp.task('dev', function(callback) {
     runSequence('bower', 'css', 'fonts', 'js', 'scss', 'polymer-dev', callback);
+});
+
+gulp.task('build', function(callback) {
+    runSequence('dev', 'polymer-prod', callback);
 });
 
 gulp.task('default', ['dev']);
