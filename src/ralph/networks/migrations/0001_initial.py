@@ -12,7 +12,7 @@ import ralph.networks.models.networks
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data_center', '0009_auto_20160310_0957'),
+        ('data_center', '0010_auto_20160310_0957'),
         ('assets', '0009_auto_20160307_1138'),
     ]
 

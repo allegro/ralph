@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data_center', '0008_auto_20160308_0842'),
+        ('data_center', '0009_datacenter_show_on_dashboard'),
     ]
 
     database_operations = [
