@@ -65,7 +65,7 @@ class NetworkForm(forms.ModelForm):
         return address
 
     def save(self, commit=True):
-        obj = super().save(commit)
+        obj = super().save(commit=True)
         ip_values = {
             key: value
             for key, value in self.cleaned_data.items()

@@ -382,6 +382,10 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
             )
 
     @property
+    def ipaddresses(self):
+        return IPAddress.objects.filter(ethernet__base_object=self)
+
+    @property
     def management_hostname(self):
         ip = self._get_management_ip()
         if ip:
