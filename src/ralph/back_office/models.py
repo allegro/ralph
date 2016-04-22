@@ -226,7 +226,8 @@ class BackOfficeAsset(Regionalizable, Asset):
         form_fields={
             'licences': {
                 'field': forms.ModelMultipleChoiceField(
-                    queryset=Licence.objects.all(), label=_('Licence')
+                    queryset=Licence.objects.all(), label=_('Licence'),
+                    required=False,
                 ),
                 'autocomplete_field': 'licence',
                 'autocomplete_model': 'licences.BaseObjectLicence',

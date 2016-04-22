@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-from django.apps import AppConfig
-
 from ralph.admin.filters import register_custom_filters
+from ralph.apps import RalphAppConfig
 
 
-class RalphAdminConfig(AppConfig):
+class RalphAdminConfig(RalphAppConfig):
     name = 'ralph.admin'
     label = 'ralph_admin'
     verbose_name = 'Ralph Admin'
 
     def ready(self):
         register_custom_filters()
+        super().ready()

@@ -10,7 +10,7 @@
   <div id="content-main">
     <div class="row header">
       <div class="large-2 small-2 columns">
-        <h1 class="ellipsis-hidden">{% block title_head %}{% if original %}{{ original }}{% else %}{% trans 'Add' %}{% endif %}{% endblock %}</h1>
+        <h1 class="ellipsis-hidden">{% block title_head %}{% if original %}{{ original }}{% else %}{% trans 'Add' %} {{ opts.verbose_name|lower }}{% endif %}{% endblock %}</h1>
       </div>
       {% if not in_recovery_mode %}
         <div class="large-8 small-8 columns">

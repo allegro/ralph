@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.apps import apps
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import activate
@@ -51,6 +52,7 @@ def get_menu_items_for_admin(name, perm):
 
 def section(section_name, app, model):
     app, model = map(str.lower, [app, model])
+    model_class = apps.get_model(app, model)
     change_perm = '{}.change_{}'.format(app, model)
     item = ralph_item(
         title=section_name,
@@ -59,7 +61,9 @@ def section(section_name, app, model):
         perms_mode_all=False,
         children=[
             ralph_item(
-                title=_('Add'),
+                title=_('Add {}'.format(
+                    model_class._meta.verbose_name.lower()
+                )),
                 url='admin:{}_{}_add'.format(app, model),
                 access_by_perms='{}.add_{}'.format(app, model),
             ),
@@ -100,6 +104,7 @@ sitetrees = [
                 section(_('VIPs'), 'data_center', 'VIP'),
                 section(_('Virtual Servers'), 'virtual', 'VirtualServer'),
                 section(_('IP Addresses'), 'data_center', 'ipaddress'),
+                section(_('Clusters'), 'data_center', 'cluster'),
             ],
         ),
         ralph_item(

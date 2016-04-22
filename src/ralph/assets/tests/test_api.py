@@ -27,8 +27,9 @@ from ralph.assets.tests.factories import (
 )
 from ralph.back_office.models import BackOfficeAsset
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
-from ralph.data_center.models import Database, DataCenterAsset, VIP
+from ralph.data_center.models import Cluster, Database, DataCenterAsset, VIP
 from ralph.data_center.tests.factories import (
+    ClusterFactory,
     DatabaseFactory,
     DataCenterAssetFactory,
     VIPFactory
@@ -459,6 +460,7 @@ BASE_OBJECTS_FACTORIES = {
         Support: SupportFactory,
         VIP: VIPFactory,
         VirtualServer: VirtualServerFactory,
+        Cluster: ClusterFactory
 }
 
 

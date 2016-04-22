@@ -1,18 +1,23 @@
 {% load i18n %}
+
 {% block filter_header %}
-    <div class="filter-header">
-      <h6>
-        {% blocktrans with filter_title=title %}
-          {{ filter_title }}
-        {% endblocktrans %}
-      </h6>
+<div class="filter-row">
+  <div class="filter-header">
+    <h6>
+      {% blocktrans with filter_title=title %}
+        {{ filter_title }}
+      {% endblocktrans %}
       {% with choices.0 as i %}
         {% block filter_after_header %}{% endblock %}
       {% endwith %}
-    </div>
-{% endblock %}
-{% block filter_content %}
-    {% with choices.0 as i %}
+    </h6>
+  </div>
+  <div class="wrapper">
+    {% block filter_content %}
+      {% with choices.0 as i %}
         {% block filter_choices %}{% endblock %}
-    {% endwith %}
+      {% endwith %}
+    {% endblock %}
+  </div>
+</div>
 {% endblock %}

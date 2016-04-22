@@ -8,12 +8,12 @@
     </style>
   {% endif %}
 {% endblock %}
-{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-list{% endblock %}
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-list{% if bulk_edit %} bulk-edit{% endif %}{% endblock %}
 {% block coltype %}flex{% endblock %}
 
 {% block content %}
   {% if is_popup and cl %}
-    {% contextual_search_form search_url search_fields %}
+    {% contextual_search_form search_url search_fields cl.opts.verbose_name  %}
   {% endif %}
   <div id="content-main">
     <form method="get" action="" id="filter-form" class="hide"></form>
@@ -81,9 +81,9 @@
         {% if not bulk_edit %}
           {% block filters %}
             {% if cl.has_filters %}
-              <div class="small-2 columns">
+              <div class="small-2 columns sidebar actions-and-filters">
                 {% admin_actions %}
-                <div class="panel">
+                <div class="filters">
                   <h4>Filters</h4>
                   <div class="filter-container">
                     {% if is_popup %}

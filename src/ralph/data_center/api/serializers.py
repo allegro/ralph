@@ -5,6 +5,8 @@ from ralph.api import RalphAPISerializer
 from ralph.assets.api.serializers import AssetSerializer, BaseObjectSerializer
 from ralph.data_center.models import (
     Accessory,
+    Cluster,
+    ClusterType,
     Database,
     DataCenter,
     DataCenterAsset,
@@ -13,6 +15,23 @@ from ralph.data_center.models import (
     ServerRoom,
     VIP
 )
+
+
+class ClusterTypeSerializer(RalphAPISerializer):
+    class Meta:
+        model = ClusterType
+        depth = 1
+
+
+class ClusterSerializer(BaseObjectSerializer):
+    base_objects = serializers.HyperlinkedRelatedField(
+        many=True, view_name='baseobject-detail', read_only=True
+    )
+
+    class Meta(BaseObjectSerializer.Meta):
+        model = Cluster
+        exclude = ('content_type',)
+        depth = 1
 
 
 class DataCenterSerializer(RalphAPISerializer):
