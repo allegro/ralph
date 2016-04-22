@@ -28,6 +28,7 @@
     "paper-input": "PolymerElements/paper-input#1.1.x",
     "paper-item": "PolymerElements/paper-item#1.1.x",
     "paper-menu": "PolymerElements/paper-menu#1.2.x",
+    "paper-tooltip": "PolymerElements/paper-tooltip#1.1.x",
     "polymer": "Polymer/polymer#1.2.x",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#1.2.x",
     "iron-form": "PolymerElements/iron-form#1.0.x",

@@ -1,4 +1,5 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
 
 <dom-module id='tool-tip'>
   <style>
@@ -7,21 +8,21 @@
     }
   </style>
   <template>
-    <i data-tooltip class="has-tip fa fa-info-circle" title="{{ title }}"></i>
-
+    <i id="icon" class="fa fa-info-circle"></i>
+    <paper-tooltip id='tooltip' animation-delay="0" for="icon"></paper-tooltip>
   </template>
   <script>
     Polymer({
       is: "tool-tip",
       properties: {
-        'title': {
+        'tip': {
           type: String,
           observer: '_reinitTooltip',
           value: ''
         }
       },
       _reinitTooltip: function(newValue, oldValue) {
-        $(this).foundation("tooltip");
+        Polymer.dom(this.$$('#tooltip')).innerHTML = this.tip;
       }
     });
   </script>
