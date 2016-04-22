@@ -6,7 +6,7 @@ from django.apps import AppConfig
 
 class RalphAppConfig(AppConfig):
     def get_load_modules_when_ready(self):
-        return ['subscribers']
+        return ['subscribers', 'views']
 
     def ready(self):
         """
