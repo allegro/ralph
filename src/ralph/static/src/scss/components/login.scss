@@ -1,3 +1,44 @@
-.login-header {
-	text-align: center;
+.login {
+    fieldset {
+        background:  $fieldset-bg-color;
+        margin-top: 0px;
+        position: relative;
+        padding-top: 4rem;
+        legend {
+            padding: 0.5rem;
+            top: 0;
+            left: 2px;
+            right: -1px;
+            position: absolute;
+            background: $primary-color;
+            color: #fff;
+        }
+    }
+    .login-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        h1 {
+            margin-top: 2rem;
+            font-size: 3rem;
+            strong {
+                color: $primary-color;
+                font-weight: normal;
+            }
+        }
+        .slogan {}
+    }
+    .row label {
+        text-align: left;
+    }
+    .required {
+        font-weight: normal; // TODO: change in global scope
+    }
+    button.login {
+        margin-top: 1rem;
+        &:after {
+            @include fa-icon();
+            margin-left: 0.5rem;
+            content: $fa-var-sign-in;
+        }
+    }
 }

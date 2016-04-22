@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect
 
 from ralph.admin.views.extra import RalphDetailView
 from ralph.dns.dnsaas import DNSaaS
-from ralph.dns.forms import DNSRecordForm
+from ralph.dns.forms import DNSRecordForm, RecordType
 
 logger = logging.getLogger(__name__)
 
@@ -39,11 +39,16 @@ class DNSView(RalphDetailView):
             return forms
 
         initial = self.dnsaas.get_dns_records(ipaddresses)
-
         for item in initial:
             forms.append(DNSRecordForm(item))
 
-        forms.append(DNSRecordForm())
+        if initial and initial[0]['type'] == RecordType.a.id:
+            # from API "A" record is always first
+            empty_form = DNSRecordForm(initial={'name': initial[0]['name']})
+        else:
+            empty_form = DNSRecordForm()
+
+        forms.append(empty_form)
         return forms
 
     def get(self, request, *args, **kwargs):

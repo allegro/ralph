@@ -4,7 +4,7 @@
   <div class="contextual_search">
     <form id="changelist-search" action="{{ search_url }}" method="get" class="row collapse">
       <div class="small-10 columns">
-        <input type="text" size="40" name="{{ search_var }}" value="{{ cl.query }}" id="searchbar" placeholder="{% trans "Search by" %} {{ search_fields|join:", " }}" />
+        <input type="text" size="40" name="{{ search_var }}" value="{{ cl.query }}" id="searchbar" placeholder="{% blocktrans %}Search {{ verbose_name }} by{% endblocktrans %} {{ search_fields|join:", " }}" />
       </div>
       <div class="small-2 columns">
         <button type="submit" class="button expand search">

@@ -25,7 +25,13 @@ from ralph.data_center.models.physical import (
     RackAccessory,
     ServerRoom
 )
-from ralph.data_center.models.virtual import Database, VIP
+from ralph.data_center.models.virtual import (
+    BaseObjectCluster,
+    Cluster,
+    ClusterType,
+    Database,
+    VIP
+)
 from ralph.data_center.views.ui import DataCenterAssetSecurityInfo
 from ralph.data_importer import resources
 from ralph.lib.transitions.admin import TransitionAdminMixin
@@ -43,6 +49,37 @@ if settings.ENABLE_DNSAAS_INTEGRATION:
 class AccessoryAdmin(RalphAdmin):
 
     search_fields = ['name']
+
+
+@register(ClusterType)
+class ClusterTypeAdmin(RalphAdmin):
+
+    search_fields = ['name']
+
+
+@register(Cluster)
+class ClusterAdmin(RalphAdmin):
+
+    search_fields = ['name']
+    fieldsets = (
+        (_('Basic info'), {
+            'fields': ('name', 'type', 'parent', 'remarks', 'service_env')
+        }),
+    )
+    raw_id_fields = ['parent', 'service_env']
+    raw_id_override_parent = {'parent': Cluster}
+    list_display = ['name', 'type']
+    list_select_related = ['type']
+    list_filter = ['name', 'type', 'parent', 'service_env']
+
+    class ClusterBaseObjectInline(RalphTabularInline):
+        model = BaseObjectCluster
+        fk_name = 'cluster'
+        raw_id_fields = ('base_object',)
+        extra = 1
+        verbose_name = _('Base Object')
+
+    inlines = [ClusterBaseObjectInline]
 
 
 @register(DataCenter)
@@ -170,7 +207,7 @@ class DataCenterAssetAdmin(
     bulk_edit_list = [
         'status', 'barcode', 'model', 'sn', 'hostname', 'invoice_date',
         'invoice_no', 'rack', 'orientation', 'position', 'slot_no', 'price',
-        'provider', 'service_env'
+        'provider', 'service_env', 'tags'
     ]
     bulk_edit_no_fillable = ['barcode', 'sn']
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']

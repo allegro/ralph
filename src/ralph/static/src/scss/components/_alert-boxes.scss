@@ -1,0 +1,9 @@
+@import 'foundation/components/alert-boxes';
+
+.alert-box.info:before {
+    @include fa-icon();
+    font-size: 1.5rem;
+    content: $fa-var-info;
+    vertical-align: middle;
+    margin: 0.5rem;
+}

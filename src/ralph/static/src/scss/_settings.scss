@@ -1,6 +1,8 @@
 @import 'foundation/functions';
 @import 'colors';
-// @import 'foundation/settings';
+@import 'foundation/settings';
+
+$namespace: false;
 
 $fa-font-path: '../vendor/fonts';
 
@@ -36,6 +38,10 @@ $button-font-med: rem-calc(13);
 $button-font-lrg: rem-calc(14);
 $button-margin-bottom: 0;
 $button-radius: 0;
+$button-function-factor: -20%;
+$info-button-bg-color: #a0d3e8;
+$info-button-bg-hover: scale-color($info-button-bg-color, $lightness: $button-function-factor);
+$info-button-border-color: $info-button-bg-hover;
 
 $form-spacing: rem-calc(12);
 $form-label-font-size: rem-calc(12);
@@ -86,3 +92,10 @@ $tooltip-font-size: rem-calc(12);
 $has-tip-border-bottom: none;
 $has-tip-font-weight: normal;
 $has-tip-border-bottom-hover: none;
+
+$alert-function-factor: -40%;
+$info-color: #F7F48A;
+
+$pagination-height: 0;
+
+$admin-bottom-bg: $tabs-content-bg-color !default;

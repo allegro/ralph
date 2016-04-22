@@ -1,4 +1,5 @@
 -r openstack.txt
+-r hermes.txt
 Django==1.8.12
 dj.choices==0.10.0
 django-extensions==1.5.9

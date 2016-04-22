@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.conf.urls import include, url
 from rest_framework.authtoken import views
 
@@ -38,3 +39,6 @@ urlpatterns = [
     url(r'^dhcp/', include('ralph.dhcp.urls')),
     url(r'^', include('ralph.lib.transitions.urls')),
 ]
+
+if getattr(settings, 'ENABLE_HERMES_INTEGRATION', False):
+    urlpatterns += url(r'^hermes/', include('pyhermes.apps.django.urls')),

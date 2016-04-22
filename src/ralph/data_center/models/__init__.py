@@ -18,14 +18,20 @@ from ralph.data_center.models.physical import (
     ServerRoom,
 )
 from ralph.data_center.models.virtual import (
+    BaseObjectCluster,
+    Cluster,
+    ClusterType,
     Database,
     VIP,
 )
 
 __all__ = [
     'Accessory',
+    'BaseObjectCluster',
     'Connection',
     'ConnectionType',
+    'Cluster',
+    'ClusterType',
     'Database',
     'DataCenter',
     'DataCenterAsset',

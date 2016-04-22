@@ -74,6 +74,11 @@ class AdminAbsoluteUrlMixin(object):
 
 
 class TaggableManager(TaggableManagerOriginal):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.manager.name = 'tags'
+
     def value_from_object(self, instance):
         """
         Fix to work properly with reversion (or more generally, with
