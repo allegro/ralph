@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db.models import Prefetch
+from rest_framework import viewsets
 
 from ralph.api import RalphAPIViewSet
 from ralph.api.utils import PolymorphicViewSetMixin
@@ -7,6 +8,8 @@ from ralph.assets import models
 from ralph.assets.api import serializers
 from ralph.licences.api import BaseObjectLicenceViewSet
 from ralph.licences.models import BaseObjectLicence
+
+from ralph.lib.custom_fields.api import ObjectCustomFieldsViewSet
 
 
 class BusinessSegmentViewSet(RalphAPIViewSet):
@@ -65,6 +68,10 @@ class CategoryViewSet(RalphAPIViewSet):
 class AssetModelViewSet(RalphAPIViewSet):
     queryset = models.AssetModel.objects.all()
     serializer_class = serializers.AssetModelSerializer
+
+
+class AssetModelCustomFieldsViewSet(ObjectCustomFieldsViewSet):
+    related_model = models.AssetModel
 
 
 class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
