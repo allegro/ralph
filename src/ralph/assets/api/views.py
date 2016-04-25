@@ -86,3 +86,13 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
 class AssetHolderViewSet(RalphAPIViewSet):
     queryset = models.AssetHolder.objects.all()
     serializer_class = serializers.AssetHolderSerializer
+
+
+
+
+
+class EthernetViewSet(RalphAPIViewSet):
+    queryset = models.Ethernet.objects.all()
+    serializer_class = serializers.EthernetSerializer
+
+    prefetch_related = ['model', 'base_object', 'base_object__tags',]

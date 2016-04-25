@@ -211,3 +211,11 @@ class BaseObjectSerializer(RalphAPISerializer):
 class AssetSerializer(BaseObjectSerializer):
     class Meta(BaseObjectSerializer.Meta):
         model = Asset
+
+
+
+from ralph.assets.models.components import Ethernet
+class EthernetSerializer(RalphAPISerializer):
+    class Meta:
+        model = Ethernet
+        depth = 1
