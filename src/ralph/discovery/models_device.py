@@ -801,6 +801,8 @@ class Device(
     @management_ip.setter
     def management_ip(self, value):
         del self.management_ip
+        if not value:
+            return
         if isinstance(value, IPAddress):
             ipaddr = value
         elif isinstance(value, basestring):
