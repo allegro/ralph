@@ -1,4 +1,5 @@
 from ddt import data, ddt, unpack
+from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils.http import http_date
@@ -13,12 +14,24 @@ from ralph.networks.tests.factories import IPAddressFactory, NetworkFactory
 @ddt
 class DHCPConfigTest(TestCase):
     def test_config_endpoint_should_return_200(self):
+        get_user_model().objects.create_superuser(
+            'test', 'test@test.test', 'test'
+        )
+        self.client.login(username='test', password='test')
         network = NetworkFactory(address='192.168.1.0/24')
         url = '{}?env={}'.format(
             reverse('dhcp_config_entries'), network.network_environment
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+
+    def test_config_endpoint_should_return_401_when_user_is_anon(self):
+        network = NetworkFactory(address='192.168.1.0/24')
+        url = '{}?env={}'.format(
+            reverse('dhcp_config_entries'), network.network_environment
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 401)
 
     def test_config_endpoint_should_return_304(self):
         network = NetworkFactory(address='192.168.1.0/24')
@@ -33,6 +46,7 @@ class DHCPConfigTest(TestCase):
     @unpack
     @data(
         ('dc=foo&env=bar', 'Only DC or ENV mode available.'),
+        ('', 'Please specify DC or ENV.'),
     )
     def test_view_should_return_400(self, params, message):
         url = '{}?{}'.format(

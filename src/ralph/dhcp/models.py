@@ -30,7 +30,7 @@ class DHCPServer(models.Model):
     ip = models.GenericIPAddressField(
         verbose_name=_('IP address'), unique=True
     )
-    last_synchronized = models.DateTimeField(null=True)
+    last_synchronized = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = _('DHCP Server')
