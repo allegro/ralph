@@ -11,12 +11,15 @@
     <link rel="stylesheet" type="text/css" href="{% static "css/ralph.css" %}" />
     <script type="text/javascript" src="{% static "admin/js/core.js" %}"></script>
     <script src="{% static "vendor/js/webcomponents-lite.js" %}"></script>
+    {% if DEBUG %}
     <link rel="import" href="{% static "elements/elements.html" %}">
+    {% else %}
+    <link rel="import" href="{% static "elements/elements-min.html" %}">
+    {% endif %}
   </head>
   <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}">
     {% if not is_popup %}
       {% block main_nav %}
-
         <nav class="top-bar" data-topbar>
           <ul class="title-area">
             <li class="name">
