@@ -26,6 +26,10 @@ from ralph.assets.models.components import (
     GenericComponent,
     Ethernet
 )
+from ralph.assets.models.configuration import (
+    ConfigurationClass,
+    ConfigurationModule
+)
 
 __all__ = [
     'Asset',
@@ -41,6 +45,8 @@ __all__ = [
     'Component',
     'ComponentModel',
     'ComponentType',
+    'ConfigurationClass',
+    'ConfigurationModule',
     'Environment',
     'GenericComponent',
     'Manufacturer',

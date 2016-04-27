@@ -33,16 +33,20 @@ class VirtualServerAdmin(RalphAdmin):
     form = VirtualServerForm
     search_fields = ['hostname', 'sn']
     list_filter = [
-        'sn', 'hostname', 'service_env', IPFilter, 'parent', 'cluster',
-        ('tags', TagsListFilter)
+        'sn', 'hostname', 'service_env', 'configuration_path', IPFilter,
+        'parent', 'cluster', ('tags', TagsListFilter)
     ]
-    list_display = ['hostname', 'type', 'sn', 'service_env']
-    raw_id_fields = ['parent', 'cluster', 'service_env', ]
+    list_display = [
+        'hostname', 'type', 'sn', 'service_env', 'configuration_path'
+    ]
+    raw_id_fields = ['parent', 'cluster', 'service_env', 'configuration_path']
     fields = [
-        'hostname', 'type', 'sn', 'service_env', 'parent', 'cluster', 'tags'
+        'hostname', 'type', 'sn', 'service_env', 'configuration_path',
+        'parent', 'cluster', 'tags'
     ]
     list_select_related = [
-        'service_env__service', 'service_env__environment', 'type'
+        'service_env__service', 'service_env__environment', 'type',
+        'configuration_path'
     ]
     # TODO: add the same tabs as in DCAsset
 

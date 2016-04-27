@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
-from ralph.assets.api.serializers import BaseObjectSerializer
+from ralph.assets.api.serializers import BaseObjectSimpleSerializer
 from ralph.supports.models import Support, SupportType
 
 
@@ -14,7 +14,7 @@ class SupportTypeViewSet(RalphAPIViewSet):
     serializer_class = SupportTypeSerializer
 
 
-class SupportSerializer(BaseObjectSerializer):
+class SupportSerializer(BaseObjectSimpleSerializer):
     class Meta:
         model = Support
         depth = 1

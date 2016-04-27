@@ -35,7 +35,7 @@ class AdminSearchFieldsMixin(object):
 
     def _set_admin_search_fields(self):
         admin_site = ralph_site._registry.get(self.queryset.model)
-        filter_fields = getattr(self, 'filter_fields', None) or []
+        filter_fields = list(getattr(self, 'filter_fields', None) or [])
         if admin_site and not self._skip_admin_search_fields:
             filter_fields.extend(admin_site.search_fields or [])
         if admin_site and not self._skip_admin_list_filter:
