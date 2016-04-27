@@ -11,12 +11,13 @@ from itertools import chain
 
 import ipaddr
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Count, Q
 from import_export import fields
 from import_export import resources
 from lck.django.choices import Choices
 
 from ralph.account.models import Region
+from ralph.business import models as models_business
 from ralph.cmdb import models_ci
 from ralph.discovery import models_component
 from ralph.discovery import models_device
@@ -994,3 +995,49 @@ class BudgetInfoResource(resources.ModelResource):
     class Meta:
         model = models_assets.BudgetInfo
         fields = ['id', 'name', 'created', 'modified']
+
+
+class ConfigurationModuleResource(resources.ModelResource):
+    skip_empty = False
+
+    class Meta:
+        model = models_business.Venture
+        fields = ['id', 'name', 'parent']
+
+    def dehydrate_name(self, venture):
+        return venture.symbol
+
+    def get_queryset(self):
+        qs = super(ConfigurationModuleResource, self).get_queryset().filter(
+
+        )
+        if self.skip_empty:
+            valid_ventures = {}
+            for v in qs:
+                dev_count = models_device.Device.admin_objects.filter(
+                    venture__in=v.find_descendant_ids()
+                ).count()
+                if dev_count > 0:
+                    valid_ventures[v] = dev_count
+            # sort by number of assigned devices to properly handle parent-child
+            # relation
+            return [k for k, v in sorted(valid_ventures.items(), key=lambda x: -x[1])]
+        return qs
+
+
+class ConfigurationClassResource(resources.ModelResource):
+    module = fields.Field()
+    skip_empty = False
+
+    class Meta:
+        model = models_business.VentureRole
+        fields = ['id', 'module', 'name']
+
+    def dehydrate_module(self, role):
+        return role.venture_id
+
+    def get_queryset(self):
+        qs = super(ConfigurationClassResource, self).get_queryset()
+        if self.skip_empty:
+            qs = qs.annotate(count=Count('device')).filter(count__gt=0)
+        return qs
