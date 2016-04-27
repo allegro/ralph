@@ -211,7 +211,10 @@ class DataCenterAssetAdmin(
         'model', 'model__manufacturer', 'model__category', 'rack',
         'rack__server_room', 'rack__server_room__data_center'
     ]
-    raw_id_fields = ['model', 'rack', 'service_env', 'parent', 'budget_info']
+    raw_id_fields = [
+        'model', 'rack', 'service_env', 'parent', 'budget_info',
+        'configuration_path',
+    ]
     raw_id_override_parent = {'parent': DataCenterAsset}
     _invoice_report_name = 'invoice-data-center-asset'
     multiadd_clear_fields = [
@@ -234,7 +237,7 @@ class DataCenterAssetAdmin(
         }),
         (_('Usage info'), {
             'fields': (
-                'service_env', 'production_year',
+                'service_env', 'configuration_path', 'production_year',
                 'production_use_date',
             )
         }),
