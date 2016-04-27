@@ -86,9 +86,7 @@ gulp.task('js', function(){
 });
 
 
-
-
-gulp.task('clean:components', function () {
+gulp.task('clean:elements', function () {
   return del([
     'src/ralph/admin/static/bower_components/',
   ]);
@@ -103,7 +101,8 @@ gulp.task('vulcanize', function () {
             inlineCss: true,
             inlineScripts: true
         }))
-        .pipe(gulp.dest('src/ralph/admin/static/elements'));
+        .pipe(rename('src/ralph/admin/static/elements/elements-min.html'))
+        .pipe(gulp.dest('.'));
 });
 gulp.task('polymer-dev', function() {
     return gulp.src([
@@ -112,10 +111,8 @@ gulp.task('polymer-dev', function() {
         .pipe(gulp.dest("src/ralph/admin/static/"));
 });
 gulp.task('polymer-prod', function(callback) {
-    runSequence('vulcanize', 'clean:components', callback);
+    runSequence('vulcanize', 'clean:elements', callback);
 });
-
-
 
 
 gulp.task('watch', function() {
