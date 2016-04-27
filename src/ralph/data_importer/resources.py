@@ -3,7 +3,7 @@ from django.db.models import Count
 from import_export import fields, resources, widgets
 
 from ralph.accounts.models import Region
-from ralph.assets.models import assets, base
+from ralph.assets.models import assets, base, configuration
 from ralph.back_office.models import (
     BackOfficeAsset,
     OfficeInfrastructure,
@@ -610,3 +610,25 @@ class OperationResource(RalphModelResource):
 
     class Meta:
         model = Operation
+
+
+class ConfigurationModuleResource(RalphModelResource):
+    parent = fields.Field(
+        column_name='parent',
+        attribute='parent',
+        widget=ImportedForeignKeyWidget(configuration.ConfigurationModule),
+    )
+
+    class Meta:
+        model = configuration.ConfigurationModule
+
+
+class ConfigurationClassResource(RalphModelResource):
+    module = fields.Field(
+        column_name='module',
+        attribute='module',
+        widget=ImportedForeignKeyWidget(configuration.ConfigurationModule),
+    )
+
+    class Meta:
+        model = configuration.ConfigurationClass

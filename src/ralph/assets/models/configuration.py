@@ -24,7 +24,7 @@ class ConfigurationModule(MPTTModel, TimeStampMixin, models.Model):
         null=True,
         blank=True,
         default=None,
-        related_name='child_set',
+        related_name='children_modules',
     )
     path = models.TextField(
         verbose_name=_('path'),
@@ -58,7 +58,7 @@ class ConfigurationModule(MPTTModel, TimeStampMixin, models.Model):
             self.path = self.name
         super().save(*args, **kwargs)
         # update children paths
-        for child in self.child_set.all():
+        for child in self.children_modules.all():
             child.save()
         # update children classes
         for cls in self.configuration_classes.all():

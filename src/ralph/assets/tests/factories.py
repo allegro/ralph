@@ -16,6 +16,10 @@ from ralph.assets.models.assets import (
 )
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
+from ralph.assets.models.configuration import (
+    ConfigurationClass,
+    ConfigurationModule
+)
 
 
 class BaseObjectFactory(DjangoModelFactory):
@@ -154,4 +158,21 @@ class ProfitCenterFactory(DjangoModelFactory):
 
     class Meta:
         model = ProfitCenter
+        django_get_or_create = ['name']
+
+
+class ConfigurationModuleFactory(DjangoModelFactory):
+    name = factory.Iterator(['ralph', 'allegro', 'auth', 'order'])
+
+    class Meta:
+        model = ConfigurationModule
+        django_get_or_create = ['name']
+
+
+class ConfigurationClassFactory(DjangoModelFactory):
+    name = factory.Iterator(['www', 'db', 'worker', 'cache'])
+    module = factory.SubFactory(ConfigurationModuleFactory)
+
+    class Meta:
+        model = ConfigurationClass
         django_get_or_create = ['name']
