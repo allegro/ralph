@@ -186,7 +186,7 @@ class DHCPConfigManager(object):
         self, logger, host, key, dc=None, net_env=None, mode=MODE_ALL,
         verbose=False, restart=False, proto=PROTO_HTTPS,
         dhcp_config_entries='', dhcp_config_networks='',
-        dhcp_service_name='isc-dhcp-server', **kwargs
+        dhcp_service_name=DEFAULT_DHCP_SERVICE_NAME, **kwargs
     ):
         self.load_config()
         self.logger = logger

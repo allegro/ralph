@@ -78,6 +78,6 @@ class DHCPAgentTest(LiveServerTestCase):
             ip='127.0.0.1', last_synchronized=None
         )
         manager = DHCPConfigManager(logger, **self.default_params)
-        manager._send_confirm()
+        manager._send_confirmation()
         dhcp_server.refresh_from_db()
         self.assertTrue(dhcp_server.last_synchronized)
