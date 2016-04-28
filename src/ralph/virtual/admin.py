@@ -25,6 +25,7 @@ class VirtualServerForm(RalphAdminForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['parent'].label = _('Hypervisor')
+        self.fields['parent'].required = True
 
 
 @register(VirtualServer)
@@ -35,9 +36,15 @@ class VirtualServerAdmin(RalphAdmin):
         'sn', 'hostname', 'service_env', IPFilter, 'parent', 'cluster',
         ('tags', TagsListFilter)
     ]
-    list_display = ['hostname', 'service_env', 'sn', ]
+    list_display = ['hostname', 'type', 'sn', 'service_env']
     raw_id_fields = ['parent', 'cluster', 'service_env', ]
-    fields = ['hostname', 'type', 'sn', 'service_env', 'parent', 'cluster']
+    fields = [
+        'hostname', 'type', 'sn', 'service_env', 'parent', 'cluster', 'tags'
+    ]
+    list_select_related = [
+        'service_env__service', 'service_env__environment', 'type'
+    ]
+    # TODO: add the same tabs as in DCAsset
 
 
 class CloudHostTabularInline(RalphTabularInline):

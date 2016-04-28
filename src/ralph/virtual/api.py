@@ -6,6 +6,7 @@ from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import RalphAPISaveSerializer
 from ralph.assets.api.serializers import (
     BaseObjectSerializer,
+    BaseObjectPolymorphicSerializer,
     ServiceEnvironmentSimpleSerializer
 )
 from ralph.data_center.api.serializers import DataCenterAssetSimpleSerializer
@@ -14,7 +15,8 @@ from ralph.virtual.models import (
     CloudHost,
     CloudProject,
     CloudProvider,
-    VirtualServer
+    VirtualServer,
+    VirtualServerType
 )
 
 
@@ -111,7 +113,15 @@ class CloudProviderSerializer(RalphAPISerializer):
         model = CloudProvider
 
 
+class VirtualServerTypeSerializer(RalphAPISerializer):
+    class Meta:
+        model = VirtualServerType
+
+
 class VirtualServerSerializer(BaseObjectSerializer):
+    type = VirtualServerTypeSerializer()
+    parent = BaseObjectPolymorphicSerializer()
+
     class Meta(BaseObjectSerializer.Meta):
         model = VirtualServer
 
@@ -147,6 +157,11 @@ class CloudProjectViewSet(RalphAPIViewSet):
     ]
 
 
+class VirtualServerTypeViewSet(RalphAPIViewSet):
+    queryset = VirtualServerType.objects.all()
+    serializer_class = VirtualServerTypeSerializer
+
+
 class VirtualServerViewSet(RalphAPIViewSet):
     queryset = VirtualServer.objects.all()
     serializer_class = VirtualServerSerializer
@@ -157,4 +172,5 @@ router.register(r'cloud-hosts', CloudHostViewSet)
 router.register(r'cloud-projects', CloudProjectViewSet)
 router.register(r'cloud-providers', CloudProviderViewSet)
 router.register(r'virtual-servers', VirtualServerViewSet)
+router.register(r'virtual-server-types', VirtualServerTypeViewSet)
 urlpatterns = []
