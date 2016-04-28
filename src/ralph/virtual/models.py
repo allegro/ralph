@@ -11,7 +11,13 @@ from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ComponentType
 from ralph.assets.models.components import Component, ComponentModel, Ethernet
 from ralph.data_center.models.physical import DataCenterAsset
-from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
+from ralph.data_center.models.virtual import Cluster
+from ralph.lib.mixins.fields import NullableCharField
+from ralph.lib.mixins.models import (
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    TimeStampMixin
+)
 from ralph.networks.models.networks import IPAddress
 
 logger = logging.getLogger(__name__)
@@ -202,11 +208,35 @@ class VirtualComponent(Component):
     pass
 
 
+class VirtualServerType(
+    NamedMixin.NonUnique,
+    TimeStampMixin,
+    models.Model
+):
+    pass
+
+
 class VirtualServer(BaseObject):
-    # TODO This model has to be developed, eg. add hostanme, hypervisior e.t.c.
+    # parent field for VirtualServer is hypervisor!
+    type = models.ForeignKey(VirtualServerType, related_name='virtual_servers')
+    hostname = NullableCharField(
+        blank=True,
+        default=None,
+        max_length=255,
+        null=True,
+        verbose_name=_('hostname'),
+        unique=True,
+    )
+    sn = models.CharField(
+        max_length=200,
+        verbose_name=_('SN'),
+        unique=True,
+    )
+    cluster = models.ForeignKey(Cluster, blank=True, null=True)
+
     class Meta:
         verbose_name = _('Virtual server (VM)')
         verbose_name_plural = _('Virtual servers (VM)')
 
     def __str__(self):
-        return 'VirtualServer: {}'.format(self.service_env)
+        return 'VirtualServer: {} ({})'.format(self.hostname, self.sn)

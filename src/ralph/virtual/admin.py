@@ -3,20 +3,41 @@ from django.core.urlresolvers import reverse
 from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin import RalphAdmin, RalphAdminForm, RalphTabularInline, register
+from ralph.admin.filters import IPFilter, TagsListFilter
 from ralph.networks.models.networks import IPAddress
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
     CloudProject,
     CloudProvider,
-    VirtualServer
+    VirtualServer,
+    VirtualServerType
 )
+
+
+@register(VirtualServerType)
+class VirtualServerTypeForm(RalphAdmin):
+    pass
+
+
+class VirtualServerForm(RalphAdminForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['parent'].label = _('Hypervisor')
 
 
 @register(VirtualServer)
 class VirtualServerAdmin(RalphAdmin):
-    pass
+    form = VirtualServerForm
+    search_fields = ['hostname', 'sn']
+    list_filter = [
+        'sn', 'hostname', 'service_env', IPFilter, 'parent', 'cluster',
+        ('tags', TagsListFilter)
+    ]
+    list_display = ['hostname', 'service_env', 'sn', ]
+    raw_id_fields = ['parent', 'cluster', 'service_env', ]
+    fields = ['hostname', 'type', 'sn', 'service_env', 'parent', 'cluster']
 
 
 class CloudHostTabularInline(RalphTabularInline):
