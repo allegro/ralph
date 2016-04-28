@@ -25,6 +25,7 @@ class Migration(migrations.Migration):
                 ('path', models.TextField(help_text='path is constructed from names of modules in hierarchy', default='', editable=False, verbose_name='path', blank=True)),
             ],
             options={
+                'ordering': ('path',),
                 'verbose_name': 'configuration class',
             },
         ),
@@ -40,7 +41,7 @@ class Migration(migrations.Migration):
                 ('rght', models.PositiveIntegerField(editable=False, db_index=True)),
                 ('tree_id', models.PositiveIntegerField(editable=False, db_index=True)),
                 ('level', models.PositiveIntegerField(editable=False, db_index=True)),
-                ('parent', mptt.fields.TreeForeignKey(default=None, to='assets.ConfigurationModule', verbose_name='parent venture', blank=True, null=True, related_name='child_set')),
+                ('parent', mptt.fields.TreeForeignKey(verbose_name='parent venture', to='assets.ConfigurationModule', blank=True, related_name='children_modules', default=None, null=True)),
                 ('support_team', models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, default=None, to='accounts.Team', verbose_name='team', blank=True, null=True)),
             ],
             options={

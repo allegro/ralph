@@ -48,6 +48,9 @@ class ConfigurationModule(MPTTModel, TimeStampMixin, models.Model):
         unique_together = ('parent', 'name')
         ordering = ('parent__name', 'name')
 
+    class MPTTMeta:
+        order_insertion_by = ['name']
+
     def __str__(self):
         return self.path
 
@@ -87,6 +90,7 @@ class ConfigurationClass(TimeStampMixin, models.Model):
     class Meta:
         verbose_name = _('configuration class')
         unique_together = ('module', 'name')
+        ordering = ('path',)
 
     def __str__(self):
         return self.path
