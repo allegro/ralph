@@ -26,7 +26,26 @@ from ralph.networks.models.networks import (
 
 @register(NetworkEnvironment)
 class NetworkEnvironmentAdmin(RalphAdmin):
-    pass
+    list_display = ['name', 'data_center']
+    fieldsets = (
+        (_('Basic info'), {
+            'fields': ['name', 'data_center', 'domain', 'remarks'],
+        }),
+        (_('Hostnames'), {
+            'fields': [
+                'hostname_template_counter_length',
+                'hostname_template_prefix',
+                'hostname_template_postfix',
+                'next_free_hostname',
+            ],
+        }),
+        (_('DHCP'), {
+            'fields': ['dhcp_next_server']
+        })
+    )
+    readonly_fields = ['next_free_hostname']
+    search_fields = ['name']
+    list_filter = ['data_center']
 
 
 @register(NetworkKind)

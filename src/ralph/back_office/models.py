@@ -9,17 +9,25 @@ from functools import partial
 from dj.choices import Choices, Country
 from django import forms
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ImproperlyConfigured
 from django.db import models, transaction
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.forms import ValidationError
+from django.template import Context, Template
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
 from ralph.assets.country_utils import iso2_to_iso3
-from ralph.assets.models.assets import Asset, AssetModel, ServiceEnvironment
+from ralph.assets.models.assets import (
+    Asset,
+    AssetLastHostname,
+    AssetModel,
+    ServiceEnvironment
+)
 from ralph.assets.utils import move_parents_models
 from ralph.attachments.helpers import add_attachment_from_disk
 from ralph.lib.external_services import ExternalService, obj_to_dict
@@ -32,6 +40,9 @@ from ralph.reports.models import Report, ReportLanguage
 
 IMEI_UNTIL_2003 = re.compile(r'^\d{6} *\d{2} *\d{6} *\d$')
 IMEI_SINCE_2003 = re.compile(r'^\d{8} *\d{6} *\d$')
+ASSET_HOSTNAME_TEMPLATE = getattr(settings, 'ASSET_HOSTNAME_TEMPLATE', None)
+if not ASSET_HOSTNAME_TEMPLATE:
+    raise ImproperlyConfigured('"ASSET_HOSTNAME_TEMPLATE" must be specified.')
 
 logger = logging.getLogger(__name__)
 
@@ -183,6 +194,33 @@ class BackOfficeAsset(Regionalizable, Asset):
         ):
             return True
         return False
+
+    def generate_hostname(self, commit=True, template_vars=None, request=None):
+        def render_template(template):
+            template = Template(template)
+            context = Context(template_vars or {})
+            return template.render(context)
+
+        logger.warning(
+            'Generating new hostname for {} using {} old hostname {}'.format(
+                self, template_vars, self.hostname
+            )
+        )
+        prefix = render_template(
+            ASSET_HOSTNAME_TEMPLATE.get('prefix', ''),
+        )
+        postfix = render_template(
+            ASSET_HOSTNAME_TEMPLATE.get('postfix', ''),
+        )
+        counter_length = ASSET_HOSTNAME_TEMPLATE.get('counter_length', 5)
+        last_hostname = AssetLastHostname.increment_hostname(prefix, postfix)
+        self.hostname = last_hostname.formatted_hostname(fill=counter_length)
+        if commit:
+            self.save()
+        if request:
+            messages.info(
+                request, 'Hostname changed to {}'.format(self.hostname)
+            )
 
     def _try_assign_hostname(
         self, commit=False, country=None, force=False, request=None

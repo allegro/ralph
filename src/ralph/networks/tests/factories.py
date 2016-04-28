@@ -14,6 +14,8 @@ from ralph.networks.models.networks import (
 class NetworkEnvironmentFactory(DjangoModelFactory):
     name = factory.Iterator(['DC1', 'DC2', 'Warehouse'])
     data_center = factory.SubFactory(DataCenterFactory)
+    hostname_template_prefix = 's1'
+    hostname_template_postfix = '.mydc.net'
 
     class Meta:
         model = NetworkEnvironment
@@ -21,6 +23,7 @@ class NetworkEnvironmentFactory(DjangoModelFactory):
 
 
 class NetworkFactory(DjangoModelFactory):
+    name = factory.Sequence(lambda n: 'Network #' + str(n))
     network_environment = factory.SubFactory(NetworkEnvironmentFactory)
 
     class Meta:
