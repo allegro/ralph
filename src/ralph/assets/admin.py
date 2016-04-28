@@ -19,8 +19,69 @@ from ralph.assets.models.assets import (
     ServiceEnvironment
 )
 from ralph.assets.models.components import ComponentModel, GenericComponent
+from ralph.assets.models.configuration import (
+    ConfigurationClass,
+    ConfigurationModule
+)
 from ralph.data_importer import resources
 from ralph.lib.table import Table
+
+
+@register(ConfigurationClass)
+class ConfigurationClassAdmin(RalphAdmin):
+    fields = ['name', 'module', 'path']
+    readonly_fields = ['path']
+    raw_id_fields = ['module']
+    search_fields = [
+        'path',
+    ]
+
+
+@register(ConfigurationModule)
+class ConfigurationModuleAdmin(RalphMPTTAdmin):
+    list_display = ['name', 'path']
+    search_fields = [
+        'path',
+    ]
+    readonly_fields = [
+        'path',
+        #  'show_children_modules', 'show_children_classes'
+    ]
+    raw_id_fields = ['parent']
+    fieldsets = (
+        (_('Basic info'), {
+            'fields': [
+                'name', 'parent', 'path', 'support_team'
+            ]
+        }),
+        # (_('Relations'), {
+        #     'fields': [
+        #         'show_children_modules', 'show_children_classes'
+        #     ]
+        # })
+    )
+    # waiting for #2336
+    # def show_children_modules(self, module):
+    #     if not module or not module.pk:
+    #         return '&ndash;'
+    #     return Table(
+    #         module.child_set.all(),
+    #         ['path'],
+    #         url_field='path'
+    #     ).render()
+    # show_children_modules.allow_tags = True
+    # show_children_modules.short_description = _('Children modules')
+
+    # def show_children_classes(self, module):
+    #     if not module or not module.pk:
+    #         return '&ndash;'
+    #     return Table(
+    #         module.configuration_classes.all(),
+    #         ['path'],
+    #         url_field='path'
+    #     ).render()
+    # show_children_classes.allow_tags = True
+    # show_children_classes.short_description = _('Children classes')
 
 
 @register(ServiceEnvironment)

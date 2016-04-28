@@ -259,6 +259,8 @@ sitetrees = [
                 section(
                     _('Service Environment'), 'assets', 'ServiceEnvironment'
                 ),
+                section(_('Conf modules'), 'assets', 'ConfigurationModule'),
+                section(_('Conf classes'), 'assets', 'ConfigurationClass'),
                 section(_('Asset holder'), 'assets', 'AssetHolder'),
                 section(_('Users list'), 'accounts', 'RalphUser'),
                 section(_('Groups list'), 'auth', 'Group'),

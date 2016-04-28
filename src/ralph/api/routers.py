@@ -34,7 +34,7 @@ class RalphRouter(routers.DefaultRouter):
             def get(self, request, *args, **kwargs):
                 ret = OrderedDict()
                 namespace = request.resolver_match.namespace
-                for key, (url_name, viewset) in api_root_dict.items():
+                for key, (url_name, viewset) in sorted(api_root_dict.items()):
                     if not self._check_viewset_permissions(request, viewset):
                         continue
                     if namespace:

@@ -10,6 +10,8 @@ from ralph.assets.models import (
     AssetModel,
     BaseObject,
     Category,
+    ConfigurationClass,
+    ConfigurationModule,
     Environment,
     Manufacturer,
     ObjectModelType,
@@ -18,6 +20,8 @@ from ralph.assets.models import (
 )
 from ralph.assets.tests.factories import (
     CategoryFactory,
+    ConfigurationClassFactory,
+    ConfigurationModuleFactory,
     DataCenterAssetModelFactory,
     EnvironmentFactory,
     ManufacturerFactory,
@@ -448,19 +452,19 @@ class AssetModelAPITests(RalphAPITestCase):
 
 
 BASE_OBJECTS_FACTORIES = {
-        BackOfficeAsset: BackOfficeAssetFactory,
-        CloudFlavor: CloudFlavorFactory,
-        CloudHost: CloudHostFactory,
-        CloudProject: CloudProjectFactory,
-        Database: DatabaseFactory,
-        DataCenterAsset: DataCenterAssetFactory,
-        Domain: DomainFactory,
-        Licence: LicenceFactory,
-        ServiceEnvironment: ServiceEnvironmentFactory,
-        Support: SupportFactory,
-        VIP: VIPFactory,
-        VirtualServer: VirtualServerFactory,
-        Cluster: ClusterFactory
+    BackOfficeAsset: BackOfficeAssetFactory,
+    CloudFlavor: CloudFlavorFactory,
+    CloudHost: CloudHostFactory,
+    CloudProject: CloudProjectFactory,
+    Database: DatabaseFactory,
+    DataCenterAsset: DataCenterAssetFactory,
+    Domain: DomainFactory,
+    Licence: LicenceFactory,
+    ServiceEnvironment: ServiceEnvironmentFactory,
+    Support: SupportFactory,
+    VIP: VIPFactory,
+    VirtualServer: VirtualServerFactory,
+    Cluster: ClusterFactory
 }
 
 
@@ -569,3 +573,131 @@ class BaseObjectAPITests(RalphAPITestCase):
                     )
                 )
         self.assertEqual(count, len(BASE_OBJECTS_FACTORIES))
+
+
+class ConfigurationModuleAPITests(RalphAPITestCase):
+    def setUp(self):
+        super().setUp()
+        self.conf_module_1 = ConfigurationModuleFactory()
+        self.conf_module_2 = ConfigurationModuleFactory(
+            parent=self.conf_module_1
+        )
+
+    def test_get_configuration_modules_list(self):
+        url = reverse('configurationmodule-list')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+        self.assertEqual(
+            response.data['results'][0]['name'], self.conf_module_1.name
+        )
+        self.assertEqual(
+            response.data['results'][0]['path'], self.conf_module_1.path
+        )
+
+    def test_get_configuration_module_details(self):
+        url = reverse('configurationmodule-detail', args=(self.conf_module_1.id,))
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], self.conf_module_1.name)
+        self.assertEqual(response.data['path'], self.conf_module_1.path)
+        self.assertTrue(
+            response.data['children_modules'][0].endswith(
+                reverse('configurationmodule-detail', args=(self.conf_module_2.id,))
+            )
+        )
+
+    def test_get_configuration_module_details_with_parent(self):
+        url = reverse('configurationmodule-detail', args=(self.conf_module_2.id,))
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(
+            response.data['parent'].endswith(
+                reverse('configurationmodule-detail', args=(self.conf_module_1.id,))
+            )
+        )
+
+    def test_create_configuration_module(self):
+        url = reverse('configurationmodule-list')
+        data = {
+            'name': 'test_1',
+            'parent': self.conf_module_2.pk,
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(ConfigurationModule.objects.count(), 3)
+        conf_module = ConfigurationModule.objects.get(pk=response.data['id'])
+        self.assertEqual(conf_module.name, 'test_1')
+        self.assertEqual(conf_module.parent, self.conf_module_2)
+
+    def test_patch_configuration_module(self):
+        url = reverse('configurationmodule-detail', args=(self.conf_module_2.id,))
+        data = {
+            'name': 'test_2'
+        }
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.conf_module_2.refresh_from_db()
+        self.assertEqual(self.conf_module_2.name, 'test_2')
+        self.assertTrue(self.conf_module_2.path.endswith('test_2'))
+
+
+class ConfigurationClassAPITests(RalphAPITestCase):
+    def setUp(self):
+        super().setUp()
+        self.conf_module_1 = ConfigurationModuleFactory()
+        self.conf_module_2 = ConfigurationModuleFactory(
+            parent=self.conf_module_1
+        )
+        self.conf_class_1 = ConfigurationClassFactory(module=self.conf_module_2)
+
+    def test_get_configuration_classes_list(self):
+        url = reverse('configurationclass-list')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(
+            response.data['results'][0]['name'], self.conf_class_1.name
+        )
+        self.assertEqual(
+            response.data['results'][0]['module']['id'],
+            self.conf_module_2.id
+        )
+        self.assertEqual(
+            response.data['results'][0]['path'], self.conf_class_1.path
+        )
+
+    def test_get_configuration_class_details(self):
+        url = reverse('configurationclass-detail', args=(self.conf_class_1.id,))
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], self.conf_class_1.name)
+        self.assertEqual(response.data['path'], self.conf_class_1.path)
+        self.assertTrue(
+            response.data['module']['url'].endswith(
+                reverse('configurationmodule-detail', args=(self.conf_module_2.id,))
+            )
+        )
+
+    def test_create_configuration_class(self):
+        url = reverse('configurationclass-list')
+        data = {
+            'name': 'test_1',
+            'module': self.conf_module_2.pk,
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(ConfigurationClass.objects.count(), 2)
+        conf_class = ConfigurationClass.objects.get(pk=response.data['id'])
+        self.assertEqual(conf_class.name, 'test_1')
+        self.assertEqual(conf_class.module, self.conf_module_2)
+
+    def test_patch_configuration_class(self):
+        url = reverse('configurationclass-detail', args=(self.conf_class_1.id,))
+        data = {
+            'name': 'test_2'
+        }
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.conf_class_1.refresh_from_db()
+        self.assertEqual(self.conf_class_1.name, 'test_2')
