@@ -131,11 +131,11 @@ def _remove_apication_lock(lockfile, logger):
 
 
 def _set_script_lock(logger):
-    lockfile = '/tmp/%s.lock' % os.path.split(sys.argv[0])[1]
+    lockfile = '/tmp/{}.lock'.format(os.path.split(sys.argv[0])[1])
     f = os.open(lockfile, os.O_TRUNC | os.O_CREAT | os.O_RDWR)
     try:
         fcntl.lockf(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        os.write(f, b'%d' % os.getpid())
+        os.write(f, '{}'.format(os.getpid()))
         atexit.register(_remove_apication_lock, lockfile, logger)
     except IOError as e:
         if e.errno == errno.EAGAIN:
@@ -295,11 +295,8 @@ class DHCPConfigManager(object):
         config_path = getattr(self, 'dhcp_{}_config_path'.format(mode))
         try:
             if config_path:
-                f = open(config_path, 'w')
-                try:
+                with open(config_path, 'w') as f:
                     f.write(config)
-                finally:
-                    f.close()
                 self.logger.info(
                     'Configuration written to {}'.format(config_path)
                 )
@@ -310,7 +307,7 @@ class DHCPConfigManager(object):
         except IOError as e:
             self.logger.error(
                 'Could not write new DHCP configuration. Error '
-                'message: %s' % e,
+                'message: {}'.format(e),
             )
             return False
 
@@ -329,11 +326,13 @@ class DHCPConfigManager(object):
         restart_successful = proc.returncode == 0
         if restart_successful:
             self.logger.info(
-                'Service %s successfully restarted.' % self.dhcp_service_name,
+                'Service {} successfully restarted.'.format(
+                    self.dhcp_service_name
+                )
             )
         else:
             self.logger.error(
-                'Failed to restart service %s.' % self.dhcp_service_name,
+                'Failed to restart service {}.'.format(self.dhcp_service_name)
             )
         return restart_successful
 
