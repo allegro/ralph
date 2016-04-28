@@ -60,7 +60,7 @@ class DHCPConfigMixin(object):
     content_type = 'text/plain'
 
     @staticmethod
-    def check_existence(model_class, names):
+    def check_objects_existence_by_names(model_class, names):
         found = model_class.objects.filter(name__in=names)
         not_found = set(names) - set([obj.name for obj in found])
         return found, not_found
@@ -81,7 +81,9 @@ class DHCPConfigMixin(object):
             )
 
         if dc_names:
-            found, not_found = self.check_existence(DataCenter, dc_names)
+            found, not_found = self.check_objects_existence_by_names(
+                DataCenter, dc_names
+            )
             if not_found:
                 return HttpResponseNotFound(
                     'DC: {} doesn\'t exists.'.format(', '.join(not_found)),
@@ -92,7 +94,7 @@ class DHCPConfigMixin(object):
                 data_center__in=found
             )
         elif env_names:
-            found, not_found = self.check_existence(
+            found, not_found = self.check_objects_existence_by_names(
                 NetworkEnvironment, env_names
             )
             if not_found:

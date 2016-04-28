@@ -9,6 +9,7 @@ import logging
 import os
 import subprocess
 import sys
+import tempfile
 from optparse import OptionParser
 from logging import handlers as logging_handlers
 
@@ -26,11 +27,13 @@ else:
 
 MODES = ('all', 'networks', 'entries')
 MODE_ALL, MODE_NETWORKS, MODE_ENTRIES = MODES
+MODES_EXCLUDE_ALL = set(MODES) - set([MODE_ALL])
 
 PROTOS = ('http', 'https')
 PROTO_HTTP, PROTO_HTTPS = PROTOS
 
 CONFIG_HTTP_LAST_MODIFIED = 'http-last-modified'
+DEFAULT_DHCP_SERVICE_NAME = 'isc-dhcp-server'
 
 
 def _get_cmd_parser():
@@ -74,7 +77,7 @@ def _get_cmd_parser():
     parser.add_option(
         '-e',
         '--net-env',
-        help='Only get config for the specified environment.',
+        help='Only get config for the specified network environment.',
     )
     parser.add_option(
         '-d',
@@ -98,7 +101,7 @@ def _get_cmd_parser():
         '-s',
         '--dhcp-service-name',
         help='Name of the service to restart.',
-        default='isc-dhcp-server'
+        default=DEFAULT_DHCP_SERVICE_NAME
     )
     return parser
 
@@ -131,11 +134,13 @@ def _remove_apication_lock(lockfile, logger):
 
 
 def _set_script_lock(logger):
-    lockfile = '/tmp/{}.lock'.format(os.path.split(sys.argv[0])[1])
+    lockfile = '{}.lock'.format(
+        os.path.join(tempfile.gettempdir(), os.path.split(sys.argv[0])[1])
+    )
     f = os.open(lockfile, os.O_TRUNC | os.O_CREAT | os.O_RDWR)
     try:
         fcntl.lockf(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        os.write(f, '{}'.format(os.getpid()))
+        os.write(f, '{}'.format(os.getpid()).encode())
         atexit.register(_remove_apication_lock, lockfile, logger)
     except IOError as e:
         if e.errno == errno.EAGAIN:
@@ -144,22 +149,36 @@ def _set_script_lock(logger):
         raise
 
 
-def _check_and_return_params(parser):
+def _get_cmd_params_from_parser(parser):
+    """The wrapper to parser which returned dict instead of tuple.
+
+    Returns:
+        dict: The dictonary contains pairs - option and option's value.
+    """
+    return vars(parser.parse_args()[0])
+
+
+def _check_params(params, error_callback):
+    """
+    Returns:
+        bool: True if all conditions are
+    """
     required_params = {'host', 'key'}
-    params = parser.parse_args()[0]
-    diff = required_params - {k for k, v in params.__dict__.items() if v}
+    diff = required_params - {k for k, v in params.items() if v}
     if diff:
-        parser.error('ERROR: {} are required.'.format(
+        error_callback('ERROR: {} are required.'.format(
             ', '.join(['--{}'.format(d) for d in diff]))
         )
+        return False
     if (
-        (params.dc and params.net_env) or
-        (not params.dc and not params.net_env)
+        (params['dc'] and params['net_env']) or
+        (not params['dc'] and not params['net_env'])
     ):
-        parser.error(
+        error_callback(
             'ERROR: Only DC or ENV mode available.',
         )
-    return params.__dict__
+        return False
+    return True
 
 
 class DHCPConfigManager(object):
@@ -174,7 +193,7 @@ class DHCPConfigManager(object):
         self.host = host
         self.key = key
         self.proto = proto
-        self.restart = restart
+        self.can_restart_dhcp_server = restart
         self.dhcp_service_name = dhcp_service_name
         self.dhcp_entries_config_path = dhcp_config_entries
         self.dhcp_networks_config_path = dhcp_config_networks
@@ -184,12 +203,22 @@ class DHCPConfigManager(object):
 
     def run(self):
         request_params = self.get_request_params(self.dcs, self.envs)
+        should_restart_dhcp_server = False
         if self.mode == MODE_ALL:
-            for m in set(MODES) - set([MODE_ALL]):
-                self.fetch_and_reload(m, request_params)
+            fetch_statuses = []
+            for m in MODES_EXCLUDE_ALL:
+                fetch_statuses.append(self.fetch_configuration(
+                    m, request_params
+                ))
+            should_restart_dhcp_server = all(fetch_statuses)
         else:
-            self.fetch_and_reload(self.mode, request_params)
-        self._send_confirm()
+            should_restart_dhcp_server = self.fetch_configuration(
+                self.mode, request_params
+            )
+
+        if self.can_restart_dhcp_server and should_restart_dhcp_server:
+            self._restart_dhcp_server()
+        self._send_confirmation()
         self.save_config()
 
     def make_request(self, url, data=None):
@@ -206,10 +235,10 @@ class DHCPConfigManager(object):
         if not os.path.exists(config_dir):
             os.makedirs(config_dir)
         config_file = os.path.join(config_dir, 'config.db')
-        self.config = gdbm.open(config_file, 'c')
+        self._config = gdbm.open(config_file, 'c')
 
     def save_config(self):
-        self.config.close()
+        self._config.close()
 
     def get_url_hash(self, url):
         hash_url = hashlib.md5()
@@ -219,20 +248,23 @@ class DHCPConfigManager(object):
     def get_last_modified(self, url):
         h = self.get_url_hash(url)
         try:
-            last = self.config[CONFIG_HTTP_LAST_MODIFIED + h]
+            last = self._config[CONFIG_HTTP_LAST_MODIFIED + h]
         except KeyError:
             last = None
         return last
 
     def set_last_modified(self, url, value):
         h = self.get_url_hash(url)
-        self.config[CONFIG_HTTP_LAST_MODIFIED + h] = value
+        self._config[CONFIG_HTTP_LAST_MODIFIED + h] = value
 
-    def fetch_and_reload(self, mode, request_params):
+    def fetch_configuration(self, mode, request_params):
+        is_saved = False
         dhcp_config = self._get_configuration(mode, request_params)
         if dhcp_config:
-            self._set_new_configuration(dhcp_config, mode)
-            self._restart_dhcp_server()
+            is_saved = self._set_new_configuration(
+                dhcp_config, mode
+            )
+        return all([dhcp_config, is_saved])
 
     def get_request_params(self, dcs, envs):
         request_params = []
@@ -250,7 +282,7 @@ class DHCPConfigManager(object):
             mode,
             urlencode(params)
         )
-        data = None
+        configuration = None
 
         self.logger.info('Sending request to {}'.format(url))
         try:
@@ -262,18 +294,22 @@ class DHCPConfigManager(object):
                         e.code, e.fp.read().decode()
                     )
                 )
-                return False
             else:
                 self.logger.info(
                     'Server return status 304 NOT MODIFIED. Nothing to do.'
                 )
-                return
+            return False
         else:
-            data = response.read()
+            configuration = response.read()
             self.set_last_modified(url, response.headers.get('Last-Modified'))
-        return data
+        return configuration
 
-    def _send_confirm(self):
+    def _send_confirmation(self):
+        """The method sending confirmation to Ralph.
+
+        Returns:
+            bool: True if server returns 200 status code, otherwise False
+        """
         url = '{}://{}/dhcp/synch/'.format(
             self.proto,
             self.host,
@@ -292,6 +328,16 @@ class DHCPConfigManager(object):
         return True
 
     def _set_new_configuration(self, config, mode):
+        """The method writing (or printing) config file.
+
+        Args:
+            config (string): The plain text contains raw configuration
+                for DHCP server,
+            mode (string): The choice from MODES_EXCLUDE_ALL.
+
+        Returns:
+            bool: True if config saved successfully, otherwise False
+        """
         config_path = getattr(self, 'dhcp_{}_config_path'.format(mode))
         try:
             if config_path:
@@ -312,11 +358,6 @@ class DHCPConfigManager(object):
             return False
 
     def _restart_dhcp_server(self):
-        if not self.restart:
-            self.logger.info('Without restarting {}.'.format(
-                self.dhcp_service_name)
-            )
-            return
         self.logger.info('Restarting {}...'.format(self.dhcp_service_name))
         command = ['service', self.dhcp_service_name, 'restart']
         proc = subprocess.Popen(
@@ -339,7 +380,9 @@ class DHCPConfigManager(object):
 
 def main():
     parser = _get_cmd_parser()
-    params = _check_and_return_params(parser)
+    params = _get_cmd_params_from_parser(parser)
+    _check_params(params, parser.error)
+
     logger = _setup_logging(params['log_path'], params['verbose'])
     _set_script_lock(logger)
     dhcp_manager = DHCPConfigManager(logger=logger, **params)
