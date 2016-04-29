@@ -597,6 +597,7 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
             # TODO: next free by default
             'hostname': {
                 'field': forms.CharField(label=_('Hostname')),
+                'default_value': autocomplete_service_env_pk
             },
             # TODO: deployment models
             'preboot': {
