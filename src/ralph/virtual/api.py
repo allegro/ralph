@@ -8,11 +8,11 @@ from ralph.assets.api.serializers import (
     BaseObjectSerializer,
     ServiceEnvironmentSimpleSerializer
 )
-from ralph.data_center.models import DataCenterAsset
 from ralph.data_center.api.serializers import (
     ClusterSimpleSerializer,
     DataCenterAssetSimpleSerializer
 )
+from ralph.data_center.models import DataCenterAsset
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
