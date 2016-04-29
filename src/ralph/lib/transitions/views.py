@@ -12,6 +12,7 @@ from django.http import (
 )
 from django.shortcuts import get_object_or_404
 from django.utils.datastructures import MultiValueDict
+from django.utils.functional import cached_property
 from django.utils.http import urlencode
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -49,7 +50,7 @@ class TransitionViewMixin(object):
             return False, e
         return True, None
 
-    @property
+    @cached_property
     def form_fields_from_actions(self):
         fields = {}
         for action in self.actions:

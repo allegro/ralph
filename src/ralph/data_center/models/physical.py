@@ -43,6 +43,21 @@ ACCESSORY_DATA = [
 ]
 
 
+def autocomplete_service_env_pk(actions, objects):
+    """Function used as a callback for default_value.
+
+    Args:
+        actions: Transition action list
+        objects: Django models objects
+
+    Returns:
+        int object's pk
+    """
+    if len(objects) == 1:
+        return objects[0].service_env.pk
+    return False
+
+
 class Gap(object):
     """A placeholder that represents a gap in a blade chassis"""
 
@@ -664,7 +679,9 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
         disable_save_object=True,
         form_fields={
             'service_env': {
-                'field': forms.CharField(label=_('Service and env')),
+                'field': forms.CharField(label=_('Service and environment')),
+                'autocomplete_field': 'service_env',
+                'default_value': autocomplete_service_env_pk
             },
             # TODO: depends on https://github.com/allegro/ralph/pull/2407
             'venture_role': {
