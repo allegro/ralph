@@ -218,7 +218,7 @@ class DHCPConfigManager(object):
 
         if self.can_restart_dhcp_server and should_restart_dhcp_server:
             self._restart_dhcp_server()
-        self._send_sync_confirmation()
+        self._send_synch_confirmation()
         self.save_config()
 
     def make_request(self, url, data=None):
@@ -304,8 +304,9 @@ class DHCPConfigManager(object):
             self.set_last_modified(url, response.headers.get('Last-Modified'))
         return configuration
 
-    def _send_sync_confirmation(self):
-        """The method sending confirmation to Ralph.
+    def _send_synch_confirmation(self):
+        """This method notify Ralph about restarting DHCP server with
+        new configuration.
 
         Returns:
             bool: True if server returns 200 status code, otherwise False
