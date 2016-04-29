@@ -49,7 +49,7 @@ class TestDHCPConfigManager(unittest.TestCase):
 
     def test_request(self):
         manager = DHCPConfigManager(logger, **default_params)
-        manager.run()
+        manager.download_and_apply_configuration()
 
 
 if __name__ == '__main__':
