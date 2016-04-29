@@ -657,6 +657,39 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
                 # RunTransitionView.get_success_url()
                 instances[i] = back_office_asset
 
+    # TODO: async
+    @classmethod
+    @transition_action(
+        verbose_name=_('Deploy asset'),
+        disable_save_object=True,
+        form_fields={
+            'service_env': {
+                'field': forms.CharField(label=_('Service and env')),
+            },
+            # TODO: depends on https://github.com/allegro/ralph/pull/2407
+            'venture_role': {
+                'field': forms.CharField(label=_('Venture and role')),
+            },
+            'mac': {
+                'field': forms.CharField(label=_('MAC addr')),
+            },
+            # TODO: next free by default
+            'ip_or_network': {
+                'field': forms.CharField(label=_('IP or network')),
+            },
+            # TODO: next free by default
+            'hostname': {
+                'field': forms.CharField(label=_('Hostname')),
+            },
+            # TODO: deployment models
+            'preboot': {
+                'field': forms.CharField(label=_('Preboot')),
+            }
+        }
+    )
+    def deploy(cls, instances, request, **kwargs):
+        pass
+
 
 class Connection(models.Model):
     outbound = models.ForeignKey(
