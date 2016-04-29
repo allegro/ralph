@@ -218,6 +218,7 @@ class VirtualServerType(
 
 class VirtualServer(BaseObject):
     # parent field for VirtualServer is hypervisor!
+    # TODO: limit parent to DataCenterAsset
     type = models.ForeignKey(VirtualServerType, related_name='virtual_servers')
     hostname = NullableCharField(
         blank=True,

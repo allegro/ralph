@@ -7,18 +7,26 @@ from ralph.assets.models.assets import ServiceEnvironment
 from ralph.assets.models.choices import ComponentType
 from ralph.assets.models.components import ComponentModel
 from ralph.assets.tests.factories import EnvironmentFactory, ServiceFactory
+from ralph.data_center.tests.factories import (
+    ClusterFactory,
+    DataCenterAssetFactory
+)
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
     CloudProject,
     CloudProvider,
-    VirtualComponent
+    VirtualComponent,
+    VirtualServer,
+    VirtualServerType
 )
 from ralph.virtual.tests.factories import (
     CloudFlavorFactory,
     CloudHostFactory,
     CloudProjectFactory,
-    CloudProviderFactory
+    CloudProviderFactory,
+    VirtualServerFactory,
+    VirtualServerTypeFactory
 )
 
 
@@ -76,7 +84,7 @@ class OpenstackModelsTestCase(RalphAPITestCase):
 
     @data('cloudflavor', 'cloudhost', 'cloudproject', 'cloudprovider')
     def test_get_list(self, field):
-        url = reverse(field+'-list')
+        url = reverse(field + '-list')
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -278,3 +286,67 @@ class OpenstackModelsTestCase(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         host = CloudHost.objects.get(host_id=self.cloud_host.host_id)
         self.assertEqual(host.service_env, self.service_env[1])
+
+
+class VirtualServerAPITestCase(RalphAPITestCase):
+    def setUp(self):
+        super().setUp()
+        self.hypervisor = DataCenterAssetFactory()
+        self.cluster = ClusterFactory()
+        self.type = VirtualServerType.objects.create(name='XEN')
+        self.virtual_server = VirtualServerFactory(cluster=self.cluster)
+
+    def test_get_virtual_server_list(self):
+        url = reverse('virtualserver-list')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(
+            response.data['results'][0]['hostname'],
+            self.virtual_server.hostname
+        )
+        self.assertEqual(
+            response.data['results'][0]['cluster']['id'],
+            self.cluster.id
+        )
+
+    def test_get_virtual_server_details(self):
+        url = reverse('virtualserver-detail', args=(self.virtual_server.id,))
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['hostname'],
+            self.virtual_server.hostname
+        )
+        self.assertEqual(
+            response.data['cluster']['id'],
+            self.cluster.id
+        )
+
+    def test_create_virtual_server(self):
+        url = reverse('virtualserver-list')
+        data = {
+            'hostname': 's1234.local',
+            'type': self.type.id,
+            'sn': '143ed36a-3e86-457d-9e19-3dcfe4d5ed26',
+            'hypervisor': self.hypervisor.id,
+            'cluster': self.cluster.id,
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(VirtualServer.objects.count(), 2)
+        virtual_server = VirtualServer.objects.get(pk=response.data['id'])
+        self.assertEqual(virtual_server.hostname, data['hostname'])
+        self.assertEqual(virtual_server.parent.id, self.hypervisor.id)
+        self.assertEqual(virtual_server.sn, data['sn'])
+        self.assertEqual(virtual_server.cluster, self.cluster)
+
+    def test_patch_virtual_server(self):
+        url = reverse('virtualserver-detail', args=(self.virtual_server.id,))
+        data = {
+            'hostname': 's111111.local'
+        }
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.virtual_server.refresh_from_db()
+        self.assertEqual(self.virtual_server.hostname, 's111111.local')

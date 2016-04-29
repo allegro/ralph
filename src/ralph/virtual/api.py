@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 from django.db import transaction
-from rest_framework import serializers
+from rest_framework import relations, serializers
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import RalphAPISaveSerializer
 from ralph.assets.api.serializers import (
     BaseObjectSerializer,
-    BaseObjectPolymorphicSerializer,
     ServiceEnvironmentSimpleSerializer
 )
-from ralph.data_center.api.serializers import DataCenterAssetSimpleSerializer
+from ralph.data_center.models import DataCenterAsset
+from ralph.data_center.api.serializers import (
+    ClusterSimpleSerializer,
+    DataCenterAssetSimpleSerializer
+)
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -120,10 +123,22 @@ class VirtualServerTypeSerializer(RalphAPISerializer):
 
 class VirtualServerSerializer(BaseObjectSerializer):
     type = VirtualServerTypeSerializer()
-    parent = BaseObjectPolymorphicSerializer()
+    # TODO: cast BaseObject to DataCenterAsset for hypervisor field
+    hypervisor = DataCenterAssetSimpleSerializer(source='parent')
+    cluster = ClusterSimpleSerializer()
 
     class Meta(BaseObjectSerializer.Meta):
         model = VirtualServer
+
+
+class VirtualServerSaveSerializer(RalphAPISaveSerializer):
+    hypervisor = relations.PrimaryKeyRelatedField(
+        source='parent', queryset=DataCenterAsset.objects.all(),
+    )
+
+    class Meta:
+        model = VirtualServer
+        exclude = ('parent',)
 
 
 class CloudFlavorViewSet(RalphAPIViewSet):
@@ -165,6 +180,11 @@ class VirtualServerTypeViewSet(RalphAPIViewSet):
 class VirtualServerViewSet(RalphAPIViewSet):
     queryset = VirtualServer.objects.all()
     serializer_class = VirtualServerSerializer
+    save_serializer_class = VirtualServerSaveSerializer
+    select_related = [
+        'parent', 'service_env__service', 'service_env__environment', 'cluster'
+    ]
+    prefetch_related = ['tags', 'licences']
 
 
 router.register(r'cloud-flavors', CloudFlavorViewSet)
