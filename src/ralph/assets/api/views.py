@@ -40,9 +40,10 @@ class ServiceViewSet(RalphAPIViewSet):
 class ServiceEnvironmentViewSet(RalphAPIViewSet):
     queryset = models.ServiceEnvironment.objects.all()
     serializer_class = serializers.ServiceEnvironmentSerializer
+    select_related = ['service', 'environment']
     # allow to only add environments through service resource
     http_method_names = ['get', 'delete']
-    prefetch_related = [
+    prefetch_related = ['tags'] + [
         'service__{}'.format(pr) for pr in ServiceViewSet.prefetch_related
     ]
     filter_fields = [
@@ -75,7 +76,9 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
             *BaseObjectLicenceViewSet.select_related
         )),
     ]
-    filter_fields = ['id', 'service_env', 'service_env__service__uid']
+    filter_fields = [
+        'id', 'service_env', 'service_env__service__uid', 'content_type'
+    ]
     extended_filter_fields = {
         'name': ['asset__hostname'],
         'sn': ['asset__sn'],

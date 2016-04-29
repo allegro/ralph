@@ -81,7 +81,10 @@ class LicenceTypeViewSet(RalphAPIViewSet):
 class LicenceViewSet(RalphAPIViewSet):
     queryset = Licence.objects.all()
     serializer_class = LicenceSerializer
-    select_related = ['region', 'manufacturer', 'office_infrastructure']
+    select_related = [
+        'region', 'manufacturer', 'office_infrastructure', 'licence_type',
+        'software'
+    ]
     prefetch_related = [
         'tags', 'users', 'licenceuser_set__user',
         'baseobjectlicence_set__base_object',

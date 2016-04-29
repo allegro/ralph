@@ -31,6 +31,13 @@ class OfficeInfrastructureViewSet(RalphAPIViewSet):
     serializer_class = OfficeInfrastructureSerializer
 
 
+class BackOfficeAssetSimpleSerializer(AssetSerializer):
+    class Meta(AssetSerializer.Meta):
+        model = BackOfficeAsset
+        exclude = AssetSerializer.Meta.exclude + ('licences', )
+        depth = 0
+
+
 class BackOfficeAssetSerializer(AssetSerializer):
     user = SimpleRalphUserSerializer()
     owner = SimpleRalphUserSerializer()
