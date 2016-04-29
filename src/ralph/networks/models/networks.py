@@ -13,7 +13,7 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
-from ralph.assets.models.components import Ethernet
+from ralph.assets.models import AssetLastHostname, Ethernet
 from ralph.lib import network as network_tools
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
@@ -45,14 +45,24 @@ class NetworkEnvironment(NamedMixin):
         blank=True,
         on_delete=models.SET_NULL,
     )
-    # TODO: convert it to use AssetLastHostname
-    hosts_naming_template = models.CharField(
-        verbose_name=_('hosts naming template'),
+    hostname_template_counter_length = models.PositiveIntegerField(
+        verbose_name=_('hostname template counter length'),
+        default=4,
+    )
+    hostname_template_prefix = models.CharField(
+        verbose_name=_('hostname template prefix'),
+        max_length=30,
+    )
+    hostname_template_postfix = models.CharField(
+        verbose_name=_('hostname template prefix'),
         max_length=30,
         help_text=_(
-            'E.g. h<200,299>.dc|h<400,499>.dc will produce: h200.dc '
-            'h201.dc ... h299.dc h400.dc h401.dc'
-        ),
+            'This value will be used as a postfix when generating new hostname '
+            'in this network environment. For example, when prefix is "s1", '
+            'postfix is ".mydc.net" and counter length is 4, following '
+            ' hostnames will be generated: s10000.mydc.net, s10001.mydc.net, ..'
+            ', s19999.mydc.net.'
+        )
     )
     dhcp_next_server = models.CharField(
         verbose_name=_('next server'),
@@ -79,6 +89,26 @@ class NetworkEnvironment(NamedMixin):
 
     class Meta:
         ordering = ('name',)
+
+    @property
+    def next_free_hostname(self):
+        """
+        Retrieve next free hostname
+        """
+        return AssetLastHostname.get_next_free_hostname(
+            self.hostname_template_prefix,
+            self.hostname_template_postfix,
+            self.hostname_template_counter_length
+        )
+
+    def issue_next_free_hostname(self):
+        """
+        Retrieve and reserve next free hostname
+        """
+        return AssetLastHostname.increment_hostname(
+            self.hostname_template_prefix,
+            self.hostname_template_postfix,
+        ).formatted_hostname(self.hostname_template_counter_length)
 
 
 class NetworkMixin(object):

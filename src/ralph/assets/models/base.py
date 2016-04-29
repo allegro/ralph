@@ -27,7 +27,7 @@ class BaseObject(
 ):
 
     """Base object mixin."""
-
+    # TODO: dynamically limit parent basing on model
     parent = models.ForeignKey(
         'self', null=True, blank=True, related_name='children'
     )

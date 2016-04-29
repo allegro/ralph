@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import re
 from collections import namedtuple
 from itertools import chain
@@ -8,6 +9,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models, transaction
 from django.db.models import Q
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Region
@@ -27,7 +29,9 @@ from ralph.data_center.models.choices import (
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
-from ralph.networks.models.networks import IPAddress
+from ralph.networks.models import IPAddress, NetworkEnvironment
+
+logger = logging.getLogger(__name__)
 
 # i.e. number in range 1-16 and optional postfix 'A' or 'B'
 VALID_SLOT_NUMBER_FORMAT = re.compile('^([1-9][A,B]?|1[0-6][A,B]?)$')
@@ -417,6 +421,24 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
                 is_management=True,
             )
 
+    @cached_property
+    def network_environment(self):
+        """
+        Return first found network environment for this `DataCenterAsset` based
+        on assigned rack.
+
+        Full algorithm:
+            * find networks which are "connected" to rack assigned to me
+            * find all (distinct) network environments assigned to these
+              networks
+            * return first founded network environment if there is any,
+              otherwise return `None`
+        """
+        if self.rack_id:
+            return NetworkEnvironment.objects.filter(
+                network__racks=self.rack
+            ).distinct().first()
+
     def _validate_orientation(self):
         """
         Validate if orientation is valid for given position.
@@ -515,6 +537,26 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
             Gap.generate_gaps(assets) for assets in assets_by_orientation
         ]
         return chain(*assets)
+
+    def get_next_free_hostname(self):
+        """
+        Returns next free hostname for this asset based on Rack's network
+        environment (hostnaming template).
+        """
+        if self.network_environment:
+            return self.network_environment.next_free_hostname
+        logger.warning('Network-environment not provided for {}'.format(self))
+        return ''
+
+    def issue_next_free_hostname(self):
+        """
+        Reserve next (currently) free hostname and return it. You should assign
+        this hostname to asset manually (or do with it whatever you like).
+        """
+        if self.network_environment:
+            return self.network_environment.issue_next_free_hostname()
+        logger.warning('Network-environment not provided for {}'.format(self))
+        return ''
 
     @classmethod
     def get_autocomplete_queryset(cls):

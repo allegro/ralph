@@ -33,11 +33,11 @@ class AttachmentManager(models.Manager):
     def create_from_file_path(self, file_path, uploaded_by):
         attachment = self.model()
         attachment.uploaded_by = uploaded_by
+        filename = os.path.basename(file_path)
+        attachment.original_filename = filename
         with open(file_path, 'rb') as f:
             content = ContentFile(f.read())
-            filename = os.path.basename(file_path)
             attachment.file.save(filename, content, save=True)
-        attachment.original_filename = os.path.basename(file_path)
         return attachment
 
 
@@ -136,12 +136,14 @@ class Attachment(TimeStampMixin, models.Model):
 
     def save(self, *args, **kwargs):
         """
-        Overrided standard save method. If object is saved first time then
-        its file name is saved in database as original name.
+        Overrided standard save method. File name is saved in database
+        as original name.
         """
         if not self.pk:
-            self.md5 = self.get_md5_sum(self.file)
-            self.original_filename = self._safe_filename(self.file.name)
+            self.original_filename = self._safe_filename(
+                self.original_filename or self.file.name
+            )
+        self.md5 = self.get_md5_sum(self.file)
         super().save(*args, **kwargs)
 
     @staticmethod
