@@ -201,7 +201,7 @@ class DHCPConfigManager(object):
         self.dcs = dc.split(',') if dc else []
         self.mode = mode
 
-    def run(self):
+    def download_and_apply_configuration(self):
         request_params = self.get_request_params(self.dcs, self.envs)
         should_restart_dhcp_server = False
         if self.mode == MODE_ALL:
@@ -210,7 +210,7 @@ class DHCPConfigManager(object):
                 fetch_statuses.append(self.fetch_configuration(
                     m, request_params
                 ))
-            should_restart_dhcp_server = all(fetch_statuses)
+            should_restart_dhcp_server = any(fetch_statuses)
         else:
             should_restart_dhcp_server = self.fetch_configuration(
                 self.mode, request_params
@@ -218,7 +218,7 @@ class DHCPConfigManager(object):
 
         if self.can_restart_dhcp_server and should_restart_dhcp_server:
             self._restart_dhcp_server()
-        self._send_confirmation()
+        self._send_sync_confirmation()
         self.save_config()
 
     def make_request(self, url, data=None):
@@ -304,7 +304,7 @@ class DHCPConfigManager(object):
             self.set_last_modified(url, response.headers.get('Last-Modified'))
         return configuration
 
-    def _send_confirmation(self):
+    def _send_sync_confirmation(self):
         """The method sending confirmation to Ralph.
 
         Returns:
@@ -358,6 +358,11 @@ class DHCPConfigManager(object):
             return False
 
     def _restart_dhcp_server(self):
+        """The method restarting DHCP server.
+
+        Returns:
+            bool: True if DHCP server restarted successfully, otherwise False
+        """
         self.logger.info('Restarting {}...'.format(self.dhcp_service_name))
         command = ['service', self.dhcp_service_name, 'restart']
         proc = subprocess.Popen(
@@ -386,7 +391,7 @@ def main():
     logger = _setup_logging(params['log_path'], params['verbose'])
     _set_script_lock(logger)
     dhcp_manager = DHCPConfigManager(logger=logger, **params)
-    dhcp_manager.run()
+    dhcp_manager.download_and_apply_configuration()
 
 
 if __name__ == '__main__':
