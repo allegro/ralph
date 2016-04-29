@@ -88,7 +88,7 @@ class DataCenterAssetSerializer(AssetSerializer):
 
     class Meta(AssetSerializer.Meta):
         model = DataCenterAsset
-        depth = 1
+        depth = 2
 
 
 class DatabaseSerializer(BaseObjectSerializer):
