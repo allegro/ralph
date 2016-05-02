@@ -73,6 +73,7 @@ class SimpleNetworkForm(forms.ModelForm):
         }
         if self.ip:
             self.ip.__dict__.update(ip_values)
+            self.ip.save()
         else:
             IPAddress.objects.create(ethernet=obj, **ip_values)
         return obj
