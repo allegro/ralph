@@ -32,7 +32,7 @@ def validate_is_management(forms):
 class NetworkForm(forms.ModelForm):
     hostname = forms.CharField(label='Hostname')
     address = forms.IPAddressField(label='IP address')
-    is_management = forms.BooleanField(label='Is managment')
+    is_management = forms.BooleanField(label='Is managment', required=False)
 
     ip_fields = ['hostname', 'address', 'is_management']
 
@@ -65,7 +65,7 @@ class NetworkForm(forms.ModelForm):
         return address
 
     def save(self, commit=True):
-        obj = super().save(commit)
+        obj = super().save()
         ip_values = {
             key: value
             for key, value in self.cleaned_data.items()

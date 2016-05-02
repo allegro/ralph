@@ -56,6 +56,7 @@ def autocomplete_service_env_pk(actions, objects):
             return objects[0].service_env.pk
     return False
 
+
 def autocomplete_next_free_hostname(actions, objects):
     """Function used as a callback for default_value.
 
@@ -69,6 +70,20 @@ def autocomplete_next_free_hostname(actions, objects):
     if len(objects) == 1:
         return objects[0].get_next_free_hostname()
     return ''
+
+
+def mac_choices_for_objects(actions, objects):
+    """Function used as a callback for choices.
+    Args:
+        actions: Transition action list
+        objects: Django models objects
+
+    Returns:
+        list tuple pairs (value, label)
+    """
+    if len(objects) == 1:
+        return [(eth.id, eth.mac) for eth in objects[0].ethernet.all()]
+    return [('0', _('use first'))]
 
 
 class Gap(object):
@@ -642,14 +657,18 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
             },
             # TODO: depends on https://github.com/allegro/ralph/pull/2407
             'configuration_path': {
-                'field': forms.CharField(label=_('Venture and role')),
+                'field': forms.CharField(label=_('Configuration path')),
             },
             'mac': {
-                'field': forms.CharField(label=_('MAC addr')),
+                'choices': mac_choices_for_objects
             },
             # TODO: deployment models
             'preboot': {
-                'field': forms.CharField(label=_('Preboot')),
+                'choices': [
+                    (1, 'Ubuntu 14.04'),
+                    (2, 'Ubuntu 14.10'),
+                    (3, 'Ubuntu 15.04'),
+                ],
             }
         }
     )
