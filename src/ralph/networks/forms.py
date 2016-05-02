@@ -32,6 +32,7 @@ def validate_is_management(forms):
 class SimpleNetworkForm(forms.ModelForm):
     hostname = forms.CharField(label='Hostname')
     address = forms.IPAddressField(label='IP address')
+    is_management = forms.BooleanField(label='Is managment', required=False)
 
     ip_fields = ['hostname', 'address']
 
