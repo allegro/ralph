@@ -52,8 +52,23 @@ def autocomplete_service_env_pk(actions, objects):
         int object's pk
     """
     if len(objects) == 1:
-        return objects[0].service_env.pk
+        if objects[0].service_env:
+            return objects[0].service_env.pk
     return False
+
+def autocomplete_next_free_hostname(actions, objects):
+    """Function used as a callback for default_value.
+
+    Args:
+        actions: Transition action list
+        objects: Django models objects
+
+    Returns:
+        string next free hostname based on network environment
+    """
+    if len(objects) == 1:
+        return objects[0].get_next_free_hostname()
+    return ''
 
 
 class Gap(object):
@@ -626,20 +641,11 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
                 'default_value': autocomplete_service_env_pk
             },
             # TODO: depends on https://github.com/allegro/ralph/pull/2407
-            'venture_role': {
+            'configuration_path': {
                 'field': forms.CharField(label=_('Venture and role')),
             },
             'mac': {
                 'field': forms.CharField(label=_('MAC addr')),
-            },
-            # TODO: next free by default
-            'ip_or_network': {
-                'field': forms.CharField(label=_('IP or network')),
-            },
-            # TODO: next free by default
-            'hostname': {
-                'field': forms.CharField(label=_('Hostname')),
-                'default_value': autocomplete_service_env_pk
             },
             # TODO: deployment models
             'preboot': {
@@ -648,6 +654,33 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
         }
     )
     def deploy(cls, instances, request, **kwargs):
+        pass
+
+    @classmethod
+    @transition_action(
+        verbose_name=_('Change DNS entries'),
+        disable_save_object=True,
+        form_fields={
+            'hostname': {
+                'field': forms.CharField(label=_('Hostname')),
+                'default_value': autocomplete_next_free_hostname
+            },
+        }
+    )
+    def change_dns(cls, instances, request, **kwargs):
+        pass
+
+    @classmethod
+    @transition_action(
+        verbose_name=_('Change DHCP configuration'),
+        disable_save_object=True,
+        form_fields={
+            'ip_or_network': {
+                'field': forms.CharField(label=_('IP or network')),
+            },
+        }
+    )
+    def change_ip_network(cls, instances, request, **kwargs):
         pass
 
 
