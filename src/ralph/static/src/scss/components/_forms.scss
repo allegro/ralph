@@ -30,6 +30,12 @@ form {
 
     table tbody tr th,
     table tbody tr td {
+        &[class^=field-is], &.delete {
+            text-align: center;
+        }
+        &.delete {
+            width: 4rem;
+        }
         padding: 5px;
         select, #{text-inputs(all, 'input')}, auto-complete {
             margin: 0;
