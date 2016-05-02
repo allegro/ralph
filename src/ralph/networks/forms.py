@@ -35,7 +35,6 @@ def validate_is_management(forms):
 
 
 class SimpleNetworkForm(forms.ModelForm):
-<<<<<<< 5c52a812e3ca710eab055e8f8e3c9d2ac6170229
     """
     This form handles both Ethernet and IPAddress models.
 
@@ -57,11 +56,6 @@ class SimpleNetworkForm(forms.ModelForm):
     """
     hostname = forms.CharField(label='Hostname', required=False)
     address = forms.IPAddressField(label='IP address', required=False)
-=======
-    hostname = forms.CharField(label='Hostname')
-    address = forms.IPAddressField(label='IP address')
-    is_management = forms.BooleanField(label='Is managment', required=False)
->>>>>>> MAC and mock for preboot
 
     ip_fields = ['hostname', 'address']
 
