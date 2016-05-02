@@ -2,6 +2,8 @@
 
 {% load i18n staticfiles %}
 
+{% block bodyclass %}{{ block.super }} run-transition{% endblock %}
+
 {% block content %}
   <h1>{% trans 'Tranisition' %}&nbsp;{{ transition.name|lower }} for {{ verbose_name }}: </h1>
   <ul>

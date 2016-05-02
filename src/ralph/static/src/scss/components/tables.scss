@@ -13,9 +13,10 @@ $row-odd-bg-color: #fff;
     text-align:center;
 }
 
-table {
-    margin: 0.5rem;
+fieldset.module table {width: 100%;}
 
+table {
+    margin-bottom: 1rem;
     &.full {
         width: 100%;
     }
@@ -76,11 +77,22 @@ table {
                     width: 3rem;
                     padding-top: 0.5rem;
                     input[type="checkbox"],
-                    input[type="radio"]  {
+                    input[type="radio"] {
+                        margin: 0;
+                    }
+                }
+                select[multiple] {
+                    height: 100%;
+                }
+                ul {
+                    margin: 0;
+                    li label input[type="checkbox"] {
                         margin: 0;
                     }
                 }
             }
+            td {vertical-align: top;}
+            th {vertical-align: middle;}
         }
     }
 }
