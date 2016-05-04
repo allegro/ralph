@@ -54,7 +54,7 @@ class NetworkEnvironment(NamedMixin):
         max_length=30,
     )
     hostname_template_postfix = models.CharField(
-        verbose_name=_('hostname template prefix'),
+        verbose_name=_('hostname template postfix'),
         max_length=30,
         help_text=_(
             'This value will be used as a postfix when generating new hostname '
