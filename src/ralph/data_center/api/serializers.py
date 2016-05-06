@@ -78,7 +78,7 @@ class EthernetSerializer(RalphAPISerializer):
 
 
 class ComponentSerializerMixin(serializers.Serializer):
-    ethernets = EthernetSerializer()
+    # ethernets = EthernetSerializer()
     # disk_shares = ..
     # ipaddresses = SimpleIPAddressesSerializer()
     # mac_addresses = SimpleRackSerializer()
