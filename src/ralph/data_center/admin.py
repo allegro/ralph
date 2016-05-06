@@ -200,7 +200,7 @@ class DataCenterAssetAdmin(
     resource_class = resources.DataCenterAssetResource
     list_display = [
         'status', 'barcode', 'model', 'sn', 'hostname', 'invoice_date',
-        'invoice_no', 'location',
+        'invoice_no', 'location', 'service_env', 'configuration_path'
     ]
     multiadd_summary_fields = list_display + ['rack']
     one_of_mulitvalue_required = ['sn', 'barcode']
@@ -213,18 +213,22 @@ class DataCenterAssetAdmin(
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
     list_filter = [
         'status', 'barcode', 'sn', 'hostname', 'invoice_no', 'invoice_date',
-        'order_no', 'model__name', 'service_env', 'depreciation_end_date',
-        'force_depreciation', 'remarks', 'budget_info', 'rack',
-        'rack__server_room', 'rack__server_room__data_center', 'position',
-        'property_of', LiquidatedStatusFilter, IPFilter,
+        'order_no', 'model__name', 'service_env', 'configuration_path',
+        'depreciation_end_date', 'force_depreciation', 'remarks', 'budget_info',
+        'rack', 'rack__server_room', 'rack__server_room__data_center',
+        'position', 'property_of', LiquidatedStatusFilter, IPFilter,
         ('tags', TagsListFilter)
     ]
     date_hierarchy = 'created'
     list_select_related = [
         'model', 'model__manufacturer', 'model__category', 'rack',
-        'rack__server_room', 'rack__server_room__data_center'
+        'rack__server_room', 'rack__server_room__data_center', 'service_env',
+        'service_env__service', 'service_env__environment', 'configuration_path'
     ]
-    raw_id_fields = ['model', 'rack', 'service_env', 'parent', 'budget_info']
+    raw_id_fields = [
+        'model', 'rack', 'service_env', 'parent', 'budget_info',
+        'configuration_path',
+    ]
     raw_id_override_parent = {'parent': DataCenterAsset}
     _invoice_report_name = 'invoice-data-center-asset'
 
@@ -243,7 +247,7 @@ class DataCenterAssetAdmin(
         }),
         (_('Usage info'), {
             'fields': (
-                'service_env', 'production_year',
+                'service_env', 'configuration_path', 'production_year',
                 'production_use_date',
             )
         }),

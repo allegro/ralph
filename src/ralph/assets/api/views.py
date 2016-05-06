@@ -86,3 +86,16 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
 class AssetHolderViewSet(RalphAPIViewSet):
     queryset = models.AssetHolder.objects.all()
     serializer_class = serializers.AssetHolderSerializer
+
+
+class ConfigurationModuleViewSet(RalphAPIViewSet):
+    queryset = models.ConfigurationModule.objects.all()
+    serializer_class = serializers.ConfigurationModuleSerializer
+    save_serializer_class = serializers.ConfigurationModuleSimpleSerializer
+    filter_fields = ('parent', 'name')
+
+
+class ConfigurationClassViewSet(RalphAPIViewSet):
+    queryset = models.ConfigurationClass.objects.all()
+    serializer_class = serializers.ConfigurationClassSerializer
+    filter_fields = ('module', 'module__path', 'name')
