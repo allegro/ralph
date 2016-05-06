@@ -1,8 +1,8 @@
 from django import forms
 from django.conf import settings
-from django.contrib.admin.views.main import SEARCH_VAR
+from django.contrib.admin.views.main import ORDER_VAR, SEARCH_VAR
 from django.core.urlresolvers import reverse
-from django.db.models import Prefetch
+from django.db.models import Count, Prefetch
 from django.forms.models import ModelForm
 from django.utils.translation import ugettext_lazy as _
 
@@ -26,7 +26,26 @@ from ralph.networks.models.networks import (
 
 @register(NetworkEnvironment)
 class NetworkEnvironmentAdmin(RalphAdmin):
-    pass
+    list_display = ['name', 'data_center']
+    fieldsets = (
+        (_('Basic info'), {
+            'fields': ['name', 'data_center', 'domain', 'remarks'],
+        }),
+        (_('Hostnames'), {
+            'fields': [
+                'hostname_template_counter_length',
+                'hostname_template_prefix',
+                'hostname_template_postfix',
+                'next_free_hostname',
+            ],
+        }),
+        (_('DHCP'), {
+            'fields': ['dhcp_next_server']
+        })
+    )
+    readonly_fields = ['next_free_hostname']
+    search_fields = ['name']
+    list_filter = ['data_center']
 
 
 @register(NetworkKind)
@@ -82,7 +101,11 @@ class NetworkRalphChangeList(RalphChangeList):
             Django queryset
         """
         queryset = super().get_queryset(request)
-        any_params = self.get_filters_params() or self.params.get(SEARCH_VAR)
+        any_params = (
+            self.get_filters_params() or
+            self.params.get(SEARCH_VAR) or
+            self.params.get(ORDER_VAR)
+        )
         if any_params:
             self.model_admin.mptt_indent_field = 10
         else:
@@ -92,10 +115,12 @@ class NetworkRalphChangeList(RalphChangeList):
 
 @register(Network)
 class NetworkAdmin(RalphMPTTAdmin):
+    ordering = ['min_ip', '-max_ip']
     change_form_template = 'admin/data_center/network/change_form.html'
     search_fields = ['name', 'address', 'remarks']
     list_display = [
-        'name', 'address', 'kind', 'vlan', 'network_environment'
+        'name', 'address', 'kind', 'vlan', 'network_environment',
+        'subnetworks_count', 'ipaddresses_count'
     ]
     list_filter = [
         'network_environment', 'kind', 'dhcp_broadcast', 'racks', 'terminators',
@@ -160,7 +185,17 @@ class NetworkAdmin(RalphMPTTAdmin):
     def address(self, obj):
         return obj.address
     address.short_description = _('Network address')
-    address.admin_order_field = ['min_ip']
+    address.admin_order_field = ['min_ip', '-max_ip']
+
+    def subnetworks_count(self, obj):
+        return obj.get_descendant_count()
+    subnetworks_count.short_description = _('Subnetworks count')
+    subnetworks_count.admin_order_field = 'subnetworks_count'
+
+    def ipaddresses_count(self, obj):
+        return obj.ipaddress_count
+    ipaddresses_count.short_description = _('IPAddress count')
+    ipaddresses_count.admin_order_field = 'ipaddress_count'
 
     def show_parent_networks(self, network):
         if not network or not network.pk:
@@ -208,6 +243,14 @@ class NetworkAdmin(RalphMPTTAdmin):
     show_addresses.allow_tags = True
     show_addresses.short_description = _('Addresses')
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs = qs.annotate(ipaddress_count=Count('ips'))
+        # Getting subnetwork counts, used for column ordering
+        # https://github.com/django-mptt/django-mptt/blob/master/mptt/models.py#L594  # noqa
+        qs = qs.extra(select={'subnetworks_count': 'rght - lft'})
+        return qs
+
     def get_paginator(
         self, request, queryset, per_page, orphans=0,
         allow_empty_first_page=True
@@ -223,6 +266,7 @@ class NetworkAdmin(RalphMPTTAdmin):
 @register(IPAddress)
 class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
     search_fields = ['address']
+    ordering = ['number']
     list_filter = ['is_public', 'is_management', ('address', IPRangeFilter)]
     list_display = [
         'ip_address', 'hostname', 'base_object_link', 'is_gateway',
@@ -270,7 +314,7 @@ class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
         )
 
     def ip_address(self, obj):
-        return '<a href="{}" target="blank">{}</a>'.format(
+        return '<a href="{}">{}</a>'.format(
             obj.get_absolute_url(), obj.address
         )
     ip_address.short_description = _('IP address')

@@ -15,13 +15,14 @@ class RalphRouter(routers.DefaultRouter):
     Viewsets for which user doesn't have permissions are hidden in root view.
     """
     def get_api_root_view(self):
-        api_root_dict = OrderedDict()
+        api_root_dict = {}
         list_name = self.routes[0].name
         for prefix, viewset, basename in self.registry:
             api_root_dict[prefix] = (
                 list_name.format(basename=basename), viewset
             )
-
+        # present resources in alphabetical order (sort by key, which is url)
+        api_root_dict = OrderedDict(sorted(api_root_dict.items()))
         from rest_framework import views
 
         class APIRoot(views.APIView):

@@ -14,7 +14,7 @@ def move_from_base_object_to_ethernet(apps, schema_editor):
         if not ip.ethernet:
             ip.ethernet = Ethernet.objects.create(base_object=ip.base_object)
         else:
-            ip.ethernet.base_object = ip.base_object
+            ip.ethernet.base_object_id = ip.base_object_id
         ip.ethernet.save()
         ip.save()
 

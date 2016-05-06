@@ -11,6 +11,11 @@ from ralph.data_center.tests.factories import (
     DataCenterAssetFactory,
     RackFactory
 )
+from ralph.networks.models import NetworkEnvironment
+from ralph.networks.tests.factories import (
+    NetworkEnvironmentFactory,
+    NetworkFactory
+)
 from ralph.tests import RalphTestCase
 
 
@@ -200,6 +205,71 @@ class DataCenterAssetTest(RalphTestCase):
             self.dc_asset._validate_position()
 
     # =========================================================================
+    # network environment
+    # =========================================================================
+    def _prepare_rack(self, dc_asset, network_address, rack=None):
+        self.rack = rack or RackFactory()
+        self.net_env = NetworkEnvironmentFactory(
+            hostname_template_prefix='server_1',
+            hostname_template_postfix='.mydc.net',
+        )
+        self.net = NetworkFactory(
+            network_environment=self.net_env,
+            address=network_address,
+        )
+        self.net.racks.add(self.rack)
+        dc_asset.rack = self.rack
+        dc_asset.save()
+
+    def test_network_environment(self):
+        self._prepare_rack(self.dc_asset, '192.168.1.0/24')
+        self.assertEqual(self.dc_asset.network_environment, self.net_env)
+
+    def test_network_environment_many_options(self):
+        self._prepare_rack(self.dc_asset, '192.168.1.0/24')
+        proper_net_env = self.net_env
+        self._prepare_rack(self.dc_asset, '192.168.2.0/24', rack=self.rack)
+        self.assertGreater(
+            NetworkEnvironment.objects.filter(network__racks=self.rack).count(),
+            1
+        )
+        self.assertEqual(self.dc_asset.network_environment, proper_net_env)
+        self.assertNotEqual(self.dc_asset.network_environment, self.net_env)
+
+    # =========================================================================
+    # next free hostname
+    # =========================================================================
+    def test_get_next_free_hostname(self):
+        self._prepare_rack(self.dc_asset, '192.168.1.0/24')
+        self.assertEqual(
+            self.dc_asset.get_next_free_hostname(),
+            'server_10001.mydc.net'
+        )
+        # running it again shouldn't change next hostname
+        self.assertEqual(
+            self.dc_asset.get_next_free_hostname(),
+            'server_10001.mydc.net'
+        )
+
+    def test_get_next_free_hostname_without_network_env(self):
+        self.assertEqual(self.dc_asset.get_next_free_hostname(), '')
+
+    def test_issue_next_free_hostname(self):
+        self._prepare_rack(self.dc_asset, '192.168.1.0/24')
+        self.assertEqual(
+            self.dc_asset.issue_next_free_hostname(),
+            'server_10001.mydc.net'
+        )
+        # running it again should change next hostname
+        self.assertEqual(
+            self.dc_asset.issue_next_free_hostname(),
+            'server_10002.mydc.net'
+        )
+
+    def test_issue_next_free_hostname_without_network_env(self):
+        self.assertEqual(self.dc_asset.issue_next_free_hostname(), '')
+
+    # =========================================================================
     # other
     # =========================================================================
     def test_change_rack_in_descendants(self):
@@ -263,7 +333,7 @@ class RackTest(RalphTestCase):
             'slot_no': None
         }
         DataCenterAssetFactory(
-             orientation=Orientation.front.id, **asset_common_kwargs
+            orientation=Orientation.front.id, **asset_common_kwargs
         )
         DataCenterAssetFactory(
             orientation=Orientation.back.id, **asset_common_kwargs

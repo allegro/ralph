@@ -14,6 +14,7 @@ server {
 
     location /media {
        alias /opt/media;
+       add_header Content-disposition "attachment";
     }
 
     location / {

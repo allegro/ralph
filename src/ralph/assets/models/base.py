@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
 
+from ralph.assets.models.configuration import ConfigurationClass
 from ralph.lib.mixins.models import TaggableMixin, TimeStampMixin
 from ralph.lib.permissions import PermByFieldMixin
 from ralph.lib.permissions.models import PermissionsBase
@@ -27,7 +29,7 @@ class BaseObject(
 ):
 
     """Base object mixin."""
-
+    # TODO: dynamically limit parent basing on model
     parent = models.ForeignKey(
         'self', null=True, blank=True, related_name='children'
     )
@@ -40,3 +42,14 @@ class BaseObject(
             ContentType.objects.get_for_id(self.content_type_id),
             str(self)
         )
+
+    configuration_path = models.ForeignKey(
+        ConfigurationClass,
+        null=True,
+        blank=True,
+        verbose_name=_('configuration path'),
+        help_text=_(
+            'path to configuration for this object, for example path to puppet '
+            'class'
+        )
+    )

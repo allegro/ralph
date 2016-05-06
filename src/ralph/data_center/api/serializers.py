@@ -24,15 +24,20 @@ class ClusterTypeSerializer(RalphAPISerializer):
         depth = 1
 
 
-class ClusterSerializer(BaseObjectSerializer):
-    base_objects = serializers.HyperlinkedRelatedField(
-        many=True, view_name='baseobject-detail', read_only=True
-    )
-
+class ClusterSimpleSerializer(BaseObjectSerializer):
     class Meta(BaseObjectSerializer.Meta):
         model = Cluster
         exclude = ('content_type',)
         depth = 1
+
+
+class ClusterSerializer(ClusterSimpleSerializer):
+    base_objects = serializers.HyperlinkedRelatedField(
+        many=True, view_name='baseobject-detail', read_only=True
+    )
+
+    class Meta(ClusterSimpleSerializer.Meta):
+        pass
 
 
 class DataCenterSerializer(RalphAPISerializer):

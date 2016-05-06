@@ -93,3 +93,16 @@ class EthernetViewSet(RalphAPIViewSet):
     serializer_class = serializers.EthernetSerializer
 
     prefetch_related = ['model', 'base_object', 'base_object__tags']
+
+
+class ConfigurationModuleViewSet(RalphAPIViewSet):
+    queryset = models.ConfigurationModule.objects.all()
+    serializer_class = serializers.ConfigurationModuleSerializer
+    save_serializer_class = serializers.ConfigurationModuleSimpleSerializer
+    filter_fields = ('parent', 'name')
+
+
+class ConfigurationClassViewSet(RalphAPIViewSet):
+    queryset = models.ConfigurationClass.objects.all()
+    serializer_class = serializers.ConfigurationClassSerializer
+    filter_fields = ('module', 'module__path', 'name')

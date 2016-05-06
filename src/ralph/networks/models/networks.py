@@ -13,7 +13,7 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
-from ralph.assets.models.components import Ethernet
+from ralph.assets.models import AssetLastHostname, Ethernet
 from ralph.lib import network as network_tools
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
@@ -45,14 +45,24 @@ class NetworkEnvironment(NamedMixin):
         blank=True,
         on_delete=models.SET_NULL,
     )
-    # TODO: convert it to use AssetLastHostname
-    hosts_naming_template = models.CharField(
-        verbose_name=_('hosts naming template'),
+    hostname_template_counter_length = models.PositiveIntegerField(
+        verbose_name=_('hostname template counter length'),
+        default=4,
+    )
+    hostname_template_prefix = models.CharField(
+        verbose_name=_('hostname template prefix'),
+        max_length=30,
+    )
+    hostname_template_postfix = models.CharField(
+        verbose_name=_('hostname template prefix'),
         max_length=30,
         help_text=_(
-            'E.g. h<200,299>.dc|h<400,499>.dc will produce: h200.dc '
-            'h201.dc ... h299.dc h400.dc h401.dc'
-        ),
+            'This value will be used as a postfix when generating new hostname '
+            'in this network environment. For example, when prefix is "s1", '
+            'postfix is ".mydc.net" and counter length is 4, following '
+            ' hostnames will be generated: s10000.mydc.net, s10001.mydc.net, ..'
+            ', s19999.mydc.net.'
+        )
     )
     dhcp_next_server = models.CharField(
         verbose_name=_('next server'),
@@ -80,14 +90,32 @@ class NetworkEnvironment(NamedMixin):
     class Meta:
         ordering = ('name',)
 
+    @property
+    def next_free_hostname(self):
+        """
+        Retrieve next free hostname
+        """
+        return AssetLastHostname.get_next_free_hostname(
+            self.hostname_template_prefix,
+            self.hostname_template_postfix,
+            self.hostname_template_counter_length
+        )
+
+    def issue_next_free_hostname(self):
+        """
+        Retrieve and reserve next free hostname
+        """
+        return AssetLastHostname.increment_hostname(
+            self.hostname_template_prefix,
+            self.hostname_template_postfix,
+        ).formatted_hostname(self.hostname_template_counter_length)
+
 
 class NetworkMixin(object):
     _parent_attr = None
 
     def _assign_parent(self):
-        parent = getattr(self, self._parent_attr)
-        if not parent or self.pk:
-            setattr(self, self._parent_attr, self.get_network())
+        setattr(self, self._parent_attr, self.get_network())
 
     def search_networks(self):
         raise NotImplementedError()
@@ -257,11 +285,26 @@ class Network(
             >>> network.min_ip, network.max_ip, network.gateway
             (3232235776, 3232236031, None)
         """
+        enable_save_descendants = kwargs.pop('enable_save_descendants', True)
         self.min_ip = int(self.network_address)
         self.max_ip = int(self.broadcast_address)
         self._assign_parent()
         super(Network, self).save(*args, **kwargs)
         self._assign_ips_to_network()
+        if enable_save_descendants:
+            self._update_subnetworks_parent()
+
+    def delete(self):
+        # Save fake address so that all children of network changed its
+        # parent, only then network is removed.
+        with transaction.atomic():
+            self.address = '0.0.0.0/32'
+            self.save()
+            super().delete()
+
+    def _update_subnetworks_parent(self):
+        for network in self.__class__.objects.all():
+            network.save(enable_save_descendants=False)
 
     def _assign_ips_to_network(self):
         self, IPAddress.objects.exclude(
@@ -404,12 +447,12 @@ class IPAddress(
         default=False,
     )
     is_public = models.BooleanField(
-        verbose_name=_('Is public address'),
+        verbose_name=_('Is public'),
         default=False,
         editable=False,
     )
     is_gateway = models.BooleanField(
-        verbose_name=_('Is gateway address'),
+        verbose_name=_('Is gateway'),
         default=False,
     )
     status = models.PositiveSmallIntegerField(

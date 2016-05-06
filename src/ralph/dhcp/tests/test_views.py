@@ -52,7 +52,10 @@ class DHCPEntriesViewTest(TestCase):
         returned = self.view.get_last_modified(
             Network.objects.filter(id__in=[network.id])
         )
-        self.assertEqual(returned, ip.modified)
+        self.assertEqual(
+            returned.strftime("%Y-%m-%d %H:%M:%S"),
+            ip.modified.strftime("%Y-%m-%d %H:%M:%S")
+        )
 
     def test_get_last_modified_should_return_network_modified(self):
         network = NetworkFactory(address='192.168.1.0/24')
@@ -61,7 +64,10 @@ class DHCPEntriesViewTest(TestCase):
         returned = self.view.get_last_modified(
             Network.objects.filter(id__in=[network.id])
         )
-        self.assertEqual(returned, network.modified)
+        self.assertEqual(
+            returned.strftime("%Y-%m-%d %H:%M:%S"),
+            network.modified.strftime("%Y-%m-%d %H:%M:%S")
+        )
 
     def test_get_last_modified_should_return_ethernet_modified(self):
         network = NetworkFactory(address='192.168.1.0/24')
@@ -71,7 +77,10 @@ class DHCPEntriesViewTest(TestCase):
         returned = self.view.get_last_modified(
             Network.objects.filter(id__in=[network.id])
         )
-        self.assertEqual(returned, ethernet.modified)
+        self.assertEqual(
+            returned.strftime("%Y-%m-%d %H:%M:%S"),
+            ethernet.modified.strftime("%Y-%m-%d %H:%M:%S")
+        )
 
     def test_get_last_modified_should_return_assets_ethernet_modified(self):
         network = NetworkFactory(address='192.168.1.0/24')
@@ -85,7 +94,10 @@ class DHCPEntriesViewTest(TestCase):
         returned = self.view.get_last_modified(
             Network.objects.filter(id__in=[network.id])
         )
-        self.assertEqual(returned, ethernet.modified)
+        self.assertEqual(
+            returned.strftime("%Y-%m-%d %H:%M:%S"),
+            ethernet.modified.strftime("%Y-%m-%d %H:%M:%S")
+        )
 
     def test_get_last_modified_should_run_4_queries(self):
         network = NetworkFactory(address='192.168.1.0/24')

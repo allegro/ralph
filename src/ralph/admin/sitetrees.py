@@ -103,7 +103,6 @@ sitetrees = [
                 section(_('Server Rooms'), 'data_center', 'ServerRoom'),
                 section(_('VIPs'), 'data_center', 'VIP'),
                 section(_('Virtual Servers'), 'virtual', 'VirtualServer'),
-                section(_('IP Addresses'), 'data_center', 'ipaddress'),
                 section(_('Clusters'), 'data_center', 'cluster'),
             ],
         ),
@@ -274,6 +273,12 @@ sitetrees = [
                 section(_('Budget info'), 'assets', 'BudgetInfo'),
                 section(
                     _('Service Environment'), 'assets', 'ServiceEnvironment'
+                ),
+                section(
+                    _('Configuration modules'), 'assets', 'ConfigurationModule'
+                ),
+                section(
+                    _('Configuration classes'), 'assets', 'ConfigurationClass'
                 ),
                 section(_('Asset holder'), 'assets', 'AssetHolder'),
                 section(_('Users list'), 'accounts', 'RalphUser'),

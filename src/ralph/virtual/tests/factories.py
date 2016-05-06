@@ -2,12 +2,14 @@ import factory
 from factory.django import DjangoModelFactory
 
 from ralph.assets.tests.factories import ServiceEnvironmentFactory
+from ralph.data_center.tests.factories import DataCenterAssetFactory
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
     CloudProject,
     CloudProvider,
-    VirtualServer
+    VirtualServer,
+    VirtualServerType
 )
 
 
@@ -63,9 +65,22 @@ class CloudHostFactory(DjangoModelFactory):
         django_get_or_create = ['host_id']
 
 
-class VirtualServerFactory(DjangoModelFactory):
+class VirtualServerTypeFactory(DjangoModelFactory):
+    name = factory.Iterator(
+        ['XEN', 'VMWare', 'Hyper-V', 'Proxmox', 'VirtualBox']
+    )
 
+    class Meta:
+        model = VirtualServerType
+        django_get_or_create = ['name']
+
+
+class VirtualServerFactory(DjangoModelFactory):
     service_env = factory.SubFactory(ServiceEnvironmentFactory)
+    hostname = factory.Sequence(lambda n: 's{0:03d}.local'.format(n))
+    type = factory.SubFactory(VirtualServerTypeFactory)
+    sn = factory.Faker('ssn')
+    parent = factory.SubFactory(DataCenterAssetFactory)
 
     class Meta:
         model = VirtualServer

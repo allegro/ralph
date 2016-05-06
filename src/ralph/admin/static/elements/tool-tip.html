@@ -13,22 +13,16 @@
   <script>
     Polymer({
       is: "tool-tip",
-      created: function() {
-        Foundation.init($(this), 'tooltip');
-        // Foundation.libs.tooltip.events($(this));
-        // console.log(Foundation.libs.tooltip.getTip($(this)));
-        // $(this).foundation('tooltip');
-      },
       properties: {
         'title': {
           type: String,
-          // observer: '_reinitTooltip',
+          observer: '_reinitTooltip',
           value: ''
         }
       },
-      // _reinitTooltip: function(newValue, oldValue) {
-        // tip.html('dsfsdf');
-      // }
+      _reinitTooltip: function(newValue, oldValue) {
+        $(this).foundation("tooltip");
+      }
     });
   </script>
 <dom-module>

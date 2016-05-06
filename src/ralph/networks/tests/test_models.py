@@ -2,8 +2,10 @@ from ipaddress import ip_address, ip_network
 
 from ddt import data, ddt, unpack
 
+from ralph.assets.models import AssetLastHostname
 from ralph.networks.models.choices import IPAddressStatus
 from ralph.networks.models.networks import IPAddress, Network
+from ralph.networks.tests.factories import NetworkEnvironmentFactory
 from ralph.tests import RalphTestCase
 
 
@@ -56,10 +58,11 @@ class SimpleNetworkTest(RalphTestCase):
     )
     def test_get_subnetworks(self, net, correct):
         net_obj = getattr(self, net)
-        res = net_obj.get_subnetworks()
+        res = Network.objects.get(pk=net_obj.pk).get_subnetworks()
         self.assertEquals(
             list(res), list(Network.objects.filter(name__in=correct))
         )
+
 
 @ddt
 class NetworkTest(RalphTestCase):
@@ -197,6 +200,44 @@ class NetworkTest(RalphTestCase):
         )
         self.assertEqual(net, subnet.parent)
 
+    def test_sub_network_should_change_automatically(self):
+        net1 = Network.objects.create(
+            name='net', address='10.20.30.0/24'
+        )
+        net2 = Network.objects.create(
+            name='net2', address='10.20.30.240/28'
+        )
+
+        self.assertEqual(net1, net2.parent)
+
+        net3 = Network.objects.create(
+            name='net3', address='10.20.30.128/25'
+        )
+
+        self.refresh_objects_from_db(net2)
+        self.assertEqual(net2.parent, net3)
+
+        self.assertEqual(net3.parent, net1)
+
+        net4 = Network.objects.create(
+            name='net4', address='10.20.40.128/28'
+        )
+        net5 = Network.objects.create(
+            name='net5', address='10.20.40.0/24'
+        )
+        net3.address = '10.20.40.128/25'
+        net3.save()
+
+        self.refresh_objects_from_db(net1, net2, net3, net4, net5)
+
+        self.assertEqual(net3.parent, net5)
+        self.assertEqual(net4.parent, net3)
+        self.assertEqual(net2.parent, net1)
+
+        net3.delete()
+        self.refresh_objects_from_db(net4, net5)
+        self.assertEqual(net4.parent, net5)
+
     def test_sub_network_should_reassign_ip(self):
         ip = IPAddress.objects.create(address='192.169.58.1')
         self.assertEqual(ip.network, None)
@@ -222,3 +263,54 @@ class NetworkTest(RalphTestCase):
         net.delete()
         ip.refresh_from_db()
         self.assertTrue(ip)
+
+
+class NetworkEnvironmentTest(RalphTestCase):
+    def test_issue_next_hostname(self):
+        ne = NetworkEnvironmentFactory(
+            hostname_template_prefix='s123',
+            hostname_template_postfix='.dc.local',
+            hostname_template_counter_length=5,
+        )
+        ne2 = NetworkEnvironmentFactory(
+            # same params as ne
+            hostname_template_prefix='s123',
+            hostname_template_postfix='.dc.local',
+            hostname_template_counter_length=5,
+        )
+        ne3 = NetworkEnvironmentFactory(
+            # other params comparing to ne
+            hostname_template_prefix='s1',
+            hostname_template_postfix='.dc.local',
+            hostname_template_counter_length=5,
+        )
+        self.assertEqual(ne.issue_next_free_hostname(), 's12300001.dc.local')
+        self.assertEqual(ne.issue_next_free_hostname(), 's12300002.dc.local')
+        self.assertEqual(ne.issue_next_free_hostname(), 's12300003.dc.local')
+        self.assertEqual(ne2.issue_next_free_hostname(), 's12300004.dc.local')
+        self.assertEqual(ne.issue_next_free_hostname(), 's12300005.dc.local')
+        self.assertEqual(ne3.issue_next_free_hostname(), 's100001.dc.local')
+
+    def test_issue_next_hostname_overflow(self):
+        alhg = AssetLastHostname.objects.create(
+            prefix='s123',
+            postfix='.dc.local',
+            counter=99998,
+        )
+        ne = NetworkEnvironmentFactory(
+            hostname_template_prefix='s123',
+            hostname_template_postfix='.dc.local',
+            hostname_template_counter_length=5,
+        )
+        self.assertEqual(ne.issue_next_free_hostname(), 's12399999.dc.local')
+        self.assertEqual(ne.issue_next_free_hostname(), 's123100000.dc.local')
+
+    def test_get_next_hostname(self):
+        ne = NetworkEnvironmentFactory(
+            hostname_template_prefix='s123',
+            hostname_template_postfix='.dc.local',
+            hostname_template_counter_length=5,
+        )
+        # check if hostname is not increased
+        self.assertEqual(ne.next_free_hostname, 's12300001.dc.local')
+        self.assertEqual(ne.next_free_hostname, 's12300001.dc.local')
