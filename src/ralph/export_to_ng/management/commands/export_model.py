@@ -49,6 +49,8 @@ SIMPLE_MODELS = [
     'NetworkEnvironment',
     'SupportType',
     'Region',
+    'ConfigurationModule',
+    'ConfigurationClass',
 ]
 DEPENDENT_MODELS = [
     'ServiceEnvironment',
@@ -135,6 +137,11 @@ class Command(BaseCommand):
             help='Excludes network from address, eg.: --exclude-network=10.20.30.00/24',  # noqa
             type="str"
         ),
+        make_option(
+            '--exclude-empty-venture-role',
+            action="store_true",
+            help='Excludes ventures/roles without assigned devices',
+        ),
     )
 
     def set_options_on_resource(self, model, options, model_resource):
@@ -153,6 +160,11 @@ class Command(BaseCommand):
                     sys.exit()
                 excluded_networks.append(network)
             model_resource.excluded_networks = excluded_networks
+        if (
+            model in ('ConfigurationClass', 'ConfigurationModule') and
+            options.get('exclude_empty_venture_role', False)
+        ):
+            model_resource.skip_empty = True
         return model_resource
 
     def handle(self, *args, **options):
