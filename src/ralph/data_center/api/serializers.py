@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer
 from ralph.assets.api.serializers import AssetSerializer, BaseObjectSerializer
+from ralph.assets.models.components import Ethernet
 from ralph.data_center.models import (
     Accessory,
     Cluster,
@@ -15,7 +16,6 @@ from ralph.data_center.models import (
     ServerRoom,
     VIP
 )
-from ralph.assets.models.components import Ethernet
 
 
 class ClusterTypeSerializer(RalphAPISerializer):

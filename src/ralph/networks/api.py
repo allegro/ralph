@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
-from ralph.api import (
-    RalphAPISerializer,
-    RalphAPIViewSet,
-    router,
-)
-from ralph.networks.models import IPAddress
+from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.assets.api.serializers import EthernetSerializer
+from ralph.networks.models import IPAddress
 
 
 class IPAddressSerializer(RalphAPISerializer):
