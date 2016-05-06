@@ -170,10 +170,10 @@ def _check_params(params, error_callback):
             ', '.join(['--{}'.format(d) for d in diff]))
         )
         return False
-    if (
-        (params['dc'] and params['net_env']) or
-        (not params['dc'] and not params['net_env'])
-    ):
+
+    dc = params.get('dc')
+    net_env = params.get('net_env')
+    if (dc and net_env) or (not dc and not net_env):
         error_callback(
             'ERROR: Only DC or ENV mode available.',
         )

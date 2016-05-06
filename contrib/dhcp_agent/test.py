@@ -1,22 +1,28 @@
-import os
 import unittest
 import logging
 from mock import patch, MagicMock
 from optparse import Values
 
-from dhcp_agent import _check_and_return_params, DHCPConfigManager
+from dhcp_agent import (
+    _check_params,
+    _get_cmd_params_from_parser,
+    DHCPConfigManager
+)
 
 logger = logging.getLogger(__file__)
-
-RALPH_KEY = os.getenv('RALPH_KEY', 'testkey')
-RALPH_HOST = os.getenv('RALPH_HOST', '127.0.0.1:8000')
-
 mocked_parser = MagicMock()
 
 
+def mocked_urlopen(*args):
+    attrs = {
+        'read': lambda: '',
+        'headers': {'Last-Modified': ''}
+    }
+    return type('response', (object,), attrs)
+
 def mocked_error(msg):
     raise Exception(msg)
-mocked_parser.error.side_effect = mocked_error
+mocked_parser.error = mocked_error
 
 default_params = {
     'dhcp_config_entries': None,
@@ -25,31 +31,63 @@ default_params = {
     'log_path': 'STDOUT',
     'restart': None,
     'dc': 'DC2',
-    'host': RALPH_HOST,
+    'host': '127.0.0.1:8000',
     'dhcp_config_networks': None,
     'mode': 'entries',
-    'key': RALPH_KEY,
+    'key': '123',
     'dhcp_service_name': 'isc-dhcp-server',
     'net_env': None
 }
 
 
 class TestDHCPConfigManager(unittest.TestCase):
-    @patch('optparse.OptionParser', mocked_parser)
-    def test_required_params(self):
-        mocked_parser.parse_args.return_value = (
-            Values({
-                'host': RALPH_HOST,
-                'key': RALPH_KEY,
-                'dc': 'DC1',
-                'net_env': None,
-            }), None
-        )
-        _check_and_return_params(mocked_parser)
 
-    def test_request(self):
-        manager = DHCPConfigManager(logger, **default_params)
-        manager.download_and_apply_configuration()
+    @patch('optparse.OptionParser', mocked_parser)
+    def test_get_cmd_params_from_parser_should_return_dict(self):
+        mocked_parser.parse_args.return_value = (
+            Values(default_params), None
+        )
+        returned_params = _get_cmd_params_from_parser(mocked_parser)
+        self.assertEqual(type(returned_params), dict)
+
+    @patch('optparse.OptionParser', mocked_parser)
+    def test_empty_params_should_raise_exception(self):
+        with self.assertRaises(Exception):
+            _check_params({}, mocked_parser.error)
+
+    @patch('optparse.OptionParser', mocked_parser)
+    def test_env_end_dc_in_params_should_raise_exception(self):
+        with self.assertRaises(Exception):
+            _check_params(
+                {
+                    'key': 123,
+                    'host': '127.0.0.1:8000',
+                    'dc': 'DC1',
+                    'net_env': 'test'
+                }, mocked_parser.error
+            )
+
+    @patch('optparse.OptionParser', mocked_parser)
+    def test_minmal_params(self):
+        self.assertTrue(_check_params(
+            {
+                'key': 123,
+                'host': '127.0.0.1:8000',
+                'net_env': 'test'
+            }, mocked_parser.error
+        ))
+        self.assertTrue(_check_params(
+            {
+                'key': 123,
+                'host': '127.0.0.1:8000',
+                'dc': 'TEST'
+            }, mocked_parser.error
+        ))
+
+    @patch('dhcp_agent.urlopen', mocked_urlopen)
+    def test_main_command(self):
+        dhcp_manager = DHCPConfigManager(logger=logger, **default_params)
+        dhcp_manager.download_and_apply_configuration()
 
 
 if __name__ == '__main__':
