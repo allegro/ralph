@@ -1,18 +1,21 @@
 # -*- coding: utf-8 -*-
-from ralph.api import RalphAPIViewSet, router
-from ralph.assets.api.serializers import BaseObjectSerializer
+from ralph.api import (
+    RalphAPISerializer,
+    RalphAPIViewSet,
+    router,
+)
 from ralph.networks.models import IPAddress
-
-
-from ralph.api import RalphAPISerializer
 from ralph.assets.api.serializers import EthernetSerializer
+
+
 class IPAddressSerializer(RalphAPISerializer):
     ethernet = EthernetSerializer()
+
     class Meta:
         model = IPAddress
         depth = 1
         exclude = (
-            #'ethernet',
+            # 'ethernet',
         )
 
 
