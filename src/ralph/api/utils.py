@@ -55,12 +55,20 @@ class PolymorphicViewSetMixin(QuerysetRelatedMixin):
     def get_queryset(self):
         queryset = super().get_queryset()
         polymorphic_select_related = {}
+        polymorphic_prefetch_related = {}
         for model, view in self._viewsets_registry.items():
             if model in queryset.model._polymorphic_descendants:
                 polymorphic_select_related[model._meta.object_name] = (
                     view.select_related
                 )
-        return queryset.polymorphic_select_related(**polymorphic_select_related)
+                polymorphic_prefetch_related[model._meta.object_name] = (
+                    view.prefetch_related
+                )
+        return queryset.polymorphic_select_related(
+            **polymorphic_select_related
+        ).polymorphic_prefetch_related(
+            **polymorphic_prefetch_related
+        )
 
     def get_serializer(self, *args, **kwargs):
         serializer_class = self.get_serializer_class()

@@ -132,10 +132,13 @@ class CloudHostViewSet(RalphAPIViewSet):
     queryset = CloudHost.objects.all()
     serializer_class = CloudHostSerializer
     save_serializer_class = SaveCloudHostSerializer
-    select_related = ['parent', 'service_env__service',
-                      'service_env__environment', 'hypervisor']
+    select_related = [
+        'parent', 'parent__cloudproject', 'cloudprovider', 'hypervisor',
+        'service_env__service', 'service_env__environment',
+    ]
     prefetch_related = [
         'tags', 'cloudflavor__virtualcomponent__model', 'ipaddress_set',
+        'licences'
     ]
 
 
@@ -144,6 +147,7 @@ class CloudProjectViewSet(RalphAPIViewSet):
     serializer_class = CloudProjectSerializer
     prefetch_related = [
         'children', 'children__ipaddress_set', 'tags', 'licences',
+        'cloudprovider',
     ]
 
 
