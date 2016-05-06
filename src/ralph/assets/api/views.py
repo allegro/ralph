@@ -88,6 +88,13 @@ class AssetHolderViewSet(RalphAPIViewSet):
     serializer_class = serializers.AssetHolderSerializer
 
 
+class EthernetViewSet(RalphAPIViewSet):
+    queryset = models.Ethernet.objects.all()
+    serializer_class = serializers.EthernetSerializer
+
+    prefetch_related = ['model', 'base_object', 'base_object__tags']
+
+
 class ConfigurationModuleViewSet(RalphAPIViewSet):
     queryset = models.ConfigurationModule.objects.all()
     serializer_class = serializers.ConfigurationModuleSerializer

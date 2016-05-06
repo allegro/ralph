@@ -9,6 +9,7 @@ from ralph.assets.api.views import (
     ConfigurationClassViewSet,
     ConfigurationModuleViewSet,
     EnvironmentViewSet,
+    EthernetViewSet,
     ManufacturerViewSet,
     ProfitCenterViewSet,
     ServiceEnvironmentViewSet,
@@ -24,6 +25,7 @@ router.register(r'categories', CategoryViewSet)
 router.register(r'configuration-modules', ConfigurationModuleViewSet)
 router.register(r'configuration-classes', ConfigurationClassViewSet)
 router.register(r'environments', EnvironmentViewSet)
+router.register(r'ethernets', EthernetViewSet)
 router.register(r'manufacturers', ManufacturerViewSet)
 router.register(r'profit-centers', ProfitCenterViewSet)
 router.register(r'services-environments', ServiceEnvironmentViewSet)

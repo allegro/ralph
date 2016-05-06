@@ -27,6 +27,7 @@ from ralph.assets.models import (
     Service,
     ServiceEnvironment
 )
+from ralph.assets.models.components import Ethernet
 from ralph.licences.api_simple import SimpleBaseObjectLicenceSerializer
 
 
@@ -247,3 +248,9 @@ class BaseObjectSerializer(BaseObjectSimpleSerializer):
 class AssetSerializer(BaseObjectSerializer):
     class Meta(BaseObjectSerializer.Meta):
         model = Asset
+
+
+class EthernetSerializer(RalphAPISerializer):
+    class Meta:
+        model = Ethernet
+        depth = 1
