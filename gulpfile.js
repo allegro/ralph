@@ -111,9 +111,6 @@ gulp.task('polymer-dev', function() {
     ], {base:"."})
         .pipe(gulp.dest("src/ralph/admin/static/"));
 });
-gulp.task('polymer-prod', function(callback) {
-    runSequence('vulcanize', 'clean:elements', callback);
-});
 
 
 gulp.task('watch', function() {
@@ -123,11 +120,11 @@ gulp.task('watch', function() {
 });
 
 gulp.task('dev', function(callback) {
-    runSequence('bower', 'css', 'fonts', 'js', 'scss', 'polymer-dev', callback);
+    runSequence('bower', 'css', 'fonts', 'js', 'scss', 'polymer-dev', 'vulcanize', callback);
 });
 
 gulp.task('build', function(callback) {
-    runSequence('dev', 'polymer-prod', callback);
+    runSequence('dev', 'clean:elements', callback);
 });
 
 gulp.task('default', ['dev']);
