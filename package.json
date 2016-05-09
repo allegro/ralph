@@ -11,7 +11,8 @@
     "gulp-sass": "~2.2.0",
     "gulp-sourcemaps": "^1.6.0",
     "jshint": "~2.8.0",
-    "run-sequence": "~1.1.0"
+    "run-sequence": "~1.1.0",
+    "gulp-watch-sequence": "~1.0.0"
   },
   "devDependencies": {
     "gulp-watch": "~4.2.4",

@@ -7,6 +7,7 @@ var gulp = require('gulp'),
     sass = require('gulp-sass'),
     del = require('del'),
     vulcanize = require('gulp-vulcanize'),
+    sequence = require('gulp-watch-sequence'),
     sourcemaps = require('gulp-sourcemaps');
 
 var config = {
@@ -116,7 +117,9 @@ gulp.task('polymer-prod', function(callback) {
 
 
 gulp.task('watch', function() {
+    // run "gulp dev" before
     gulp.watch(config.srcRoot + 'scss/**/*.scss', ['scss']);
+    gulp.watch('src/ralph/admin/static/elements/elements.html', ['vulcanize']);
 });
 
 gulp.task('dev', function(callback) {
