@@ -17,6 +17,7 @@ from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.assets.invoice_report import AssetInvoiceReportMixin
 from ralph.assets.models.components import GenericComponent as AssetComponent
 from ralph.attachments.admin import AttachmentsMixin
+from ralph.data_center.forms import DataCenterAssetForm
 from ralph.data_center.forms.network import NetworkInlineFormset
 from ralph.data_center.models.components import DiskShare, DiskShareMount
 from ralph.data_center.models.networks import (
@@ -180,12 +181,13 @@ class DataCenterAssetAdmin(
         DataCenterAssetOperation,
         NetworkView,
     ]
+    form = DataCenterAssetForm
     if settings.ENABLE_DNSAAS_INTEGRATION:
         change_views += [DNSView]
     show_transition_history = True
     resource_class = resources.DataCenterAssetResource
     list_display = [
-        'status', 'barcode', 'model', 'sn', 'hostname', 'invoice_date',
+        'hostname', 'status', 'barcode', 'model', 'sn', 'invoice_date',
         'invoice_no', 'location',
     ]
     multiadd_summary_fields = list_display + ['rack']

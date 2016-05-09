@@ -91,8 +91,9 @@ class BackOfficeAssetAdmin(
         BackOfficeAssetSoftware,
     ]
     list_display = [
-        'status', 'barcode', 'purchase_order', 'model', 'user', 'warehouse',
-        'sn', 'hostname', 'invoice_date', 'invoice_no', 'region', 'property_of'
+        'hostname', 'status', 'barcode', 'purchase_order', 'model', 'user',
+        'warehouse', 'sn', 'invoice_date', 'invoice_no', 'region',
+        'property_of'
     ]
     multiadd_summary_fields = list_display
 
