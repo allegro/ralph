@@ -414,6 +414,54 @@ class TreeRelatedFieldListFilter(RelatedFieldListFilter):
         return queryset
 
 
+class TreeRelatedAutocompleteFilterWithDescendants(
+    RelatedAutocompleteFieldListFilter
+):
+    """
+    Autocomplete filter for ForeignKeys to `mptt.models.MPTTModel` with
+    filtering by object and all its descendants.
+    """
+    def _get_descendants(self, request, root_id):
+        """
+        Return descendants of root object.
+        """
+        try:
+            root = self.field.rel.to.objects.get(pk=root_id)
+        except self.field.rel.to.DoesNotExist:
+            messages.warning(
+                request, _('Incorrect value in "%(field_name)s" filter') % {
+                    'field_name': self.title
+                }
+            )
+            raise IncorrectLookupParameters()
+        return root.get_descendants(include_self=True)
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if not value:
+            ids = []
+        else:
+            ids = value.split(',')
+        q_param = Q()
+        for id_ in ids:
+            if id_ == self.empty_value:
+                q_param |= Q(**{'{}__isnull'.format(self.field_path): True})
+            else:
+                q_param |= Q(**{self.field_path + '__in': self._get_descendants(
+                    request, id_
+                )})
+        try:
+            queryset = queryset.filter(q_param)
+        except ValueError:
+            messages.warning(
+                request, _('Incorrect value in "%(field_name)s" filter') % {
+                    'field_name': self.title
+                }
+            )
+            raise IncorrectLookupParameters()
+        return queryset
+
+
 class IPFilter(SimpleListFilter):
 
     title = _('IP')

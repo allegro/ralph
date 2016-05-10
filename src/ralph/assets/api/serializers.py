@@ -209,7 +209,7 @@ class BaseObjectSimpleSerializer(RalphAPISerializer):
 class ConfigurationModuleSimpleSerializer(RalphAPISerializer):
     class Meta:
         model = ConfigurationModule
-        fields = ('id', 'url', 'name', 'path', 'parent', 'support_team')
+        fields = ('id', 'url', 'name', 'parent', 'support_team')
 
 
 class ConfigurationModuleSerializer(ConfigurationModuleSimpleSerializer):

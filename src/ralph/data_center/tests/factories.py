@@ -8,6 +8,7 @@ from ralph.assets.models.choices import AssetSource
 from ralph.assets.tests.factories import (
     AssetHolderFactory,
     BudgetInfoFactory,
+    ConfigurationClassFactory,
     DataCenterAssetModelFactory,
     ServiceEnvironmentFactory
 )
@@ -107,6 +108,8 @@ class DataCenterAssetFactory(DjangoModelFactory):
         AssetSource.shipment.id, AssetSource.salvaged.id
     ])
     price = FuzzyDecimal(10, 300)
+    service_env = factory.SubFactory(ServiceEnvironmentFactory)
+    configuration_path = factory.SubFactory(ConfigurationClassFactory)
 
     class Meta:
         model = DataCenterAsset

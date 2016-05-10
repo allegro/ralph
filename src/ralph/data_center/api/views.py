@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import django_filters
 
 from ralph.api import RalphAPIViewSet
 from ralph.assets.api.views import BaseObjectViewSet
@@ -29,6 +30,23 @@ from ralph.data_center.models import (
 )
 
 
+class DataCenterAssetFilterSet(django_filters.FilterSet):
+    configuration_path = django_filters.CharFilter(
+        name='configuration_path__path'
+    )
+
+    class Meta:
+        model = DataCenterAsset
+        fields = [
+            'service_env__service__uid',
+            'service_env__service__name',
+            'service_env__service__id',
+            'configuration_path__path',
+            'configuration_path__module__name',
+            'configuration_path',
+        ]
+
+
 class DataCenterAssetViewSet(RalphAPIViewSet):
     queryset = DataCenterAsset.objects.all()
     serializer_class = DataCenterAssetSerializer
@@ -43,11 +61,7 @@ class DataCenterAssetViewSet(RalphAPIViewSet):
         'connections',
         'tags',
     ]
-    filter_fields = [
-        'service_env__service__uid',
-        'service_env__service__name',
-        'service_env__service__id'
-    ]
+    filter_class = DataCenterAssetFilterSet
 
 
 class AccessoryViewSet(RalphAPIViewSet):

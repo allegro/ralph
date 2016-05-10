@@ -5,13 +5,15 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
-from ralph.lib.mixins.models import TimeStampMixin
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 
 
 dir_file_name_validator = RegexValidator(regex='\w+')
 
 
-class ConfigurationModule(MPTTModel, TimeStampMixin, models.Model):
+class ConfigurationModule(
+    AdminAbsoluteUrlMixin, MPTTModel, TimeStampMixin, models.Model
+):
     name = models.CharField(
         verbose_name=_('name'),
         max_length=255,
@@ -25,13 +27,6 @@ class ConfigurationModule(MPTTModel, TimeStampMixin, models.Model):
         blank=True,
         default=None,
         related_name='children_modules',
-    )
-    path = models.TextField(
-        verbose_name=_('path'),
-        blank=True,
-        default='',
-        editable=False,
-        help_text=_('path is constructed from names of modules in hierarchy')
     )
     # TODO: is this necessary?
     support_team = models.ForeignKey(
@@ -52,27 +47,20 @@ class ConfigurationModule(MPTTModel, TimeStampMixin, models.Model):
         order_insertion_by = ['name']
 
     def __str__(self):
-        return self.path
+        return self.name
 
     def save(self, *args, **kwargs):
-        if self.parent:
-            self.path = self.parent.path + '/' + self.name
-        else:
-            self.path = self.name
         super().save(*args, **kwargs)
-        # update children paths
-        for child in self.children_modules.all():
-            child.save()
         # update children classes
         for cls in self.configuration_classes.all():
             cls.save()
 
 
-class ConfigurationClass(TimeStampMixin, models.Model):
-    name = models.CharField(
-        verbose_name=_('name'),
+class ConfigurationClass(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
+    class_name = models.CharField(
+        verbose_name=_('class name'),
         max_length=255,
-        help_text=_('class name (ex. file name in puppet)'),
+        help_text=_('ex. puppet class'),
         validators=[dir_file_name_validator],
     )
     path = models.TextField(
@@ -80,7 +68,7 @@ class ConfigurationClass(TimeStampMixin, models.Model):
         blank=True,
         default='',
         editable=False,
-        help_text=_('path is constructed from names of modules in hierarchy')
+        help_text=_('path is constructed from name of module and name of class')
     )
     module = models.ForeignKey(
         ConfigurationModule,
@@ -91,12 +79,12 @@ class ConfigurationClass(TimeStampMixin, models.Model):
 
     class Meta:
         verbose_name = _('configuration class')
-        unique_together = ('module', 'name')
+        unique_together = ('module', 'class_name')
         ordering = ('path',)
 
     def __str__(self):
         return self.path
 
     def save(self, *args, **kwargs):
-        self.path = self.module.path + '/' + self.name
+        self.path = self.module.name + '/' + self.class_name
         super().save(*args, **kwargs)

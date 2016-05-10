@@ -33,15 +33,15 @@ from ralph.lib.table import Table, TableWithUrl
 
 @register(ConfigurationClass)
 class ConfigurationClassAdmin(RalphAdmin):
-    fields = ['name', 'module', 'path']
+    fields = ['class_name', 'module', 'path']
     readonly_fields = ['path']
     raw_id_fields = ['module']
     search_fields = [
         'path',
     ]
-    list_display = ['name', 'module', 'path', 'objects_count']
+    list_display = ['class_name', 'module', 'path', 'objects_count']
     list_select_related = ['module']
-    list_filter = ['name', 'module']
+    list_filter = ['class_name', 'module']
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -56,18 +56,16 @@ class ConfigurationClassAdmin(RalphAdmin):
 
 @register(ConfigurationModule)
 class ConfigurationModuleAdmin(RalphMPTTAdmin):
-    list_display = ['name', 'path']
-    search_fields = [
-        'path',
-    ]
+    list_display = ['name']
+    search_fields = ['name']
     readonly_fields = [
-        'path', 'show_children_modules', 'show_children_classes'
+        'show_children_modules', 'show_children_classes'
     ]
     raw_id_fields = ['parent']
     fieldsets = (
         (_('Basic info'), {
             'fields': [
-                'name', 'parent', 'path', 'support_team'
+                'name', 'parent', 'support_team'
             ]
         }),
         (_('Relations'), {
@@ -82,8 +80,8 @@ class ConfigurationModuleAdmin(RalphMPTTAdmin):
             return '&ndash;'
         return TableWithUrl(
             module.children_modules.all(),
-            ['path'],
-            url_field='path'
+            ['name'],
+            url_field='name'
         ).render()
     show_children_modules.allow_tags = True
     show_children_modules.short_description = _('Children modules')
@@ -93,8 +91,8 @@ class ConfigurationModuleAdmin(RalphMPTTAdmin):
             return '&ndash;'
         return TableWithUrl(
             module.configuration_classes.all(),
-            ['path'],
-            url_field='path'
+            ['name'],
+            url_field='name'
         ).render()
     show_children_classes.allow_tags = True
     show_children_classes.short_description = _('Children classes')

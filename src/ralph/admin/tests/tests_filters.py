@@ -17,14 +17,18 @@ from ralph.admin.filters import (
     RelatedAutocompleteFieldListFilter,
     RelatedFieldListFilter,
     TagsListFilter,
-    TextListFilter
+    TextListFilter,
+    TreeRelatedAutocompleteFilterWithDescendants
 )
 from ralph.admin.sites import ralph_site
-from ralph.data_center.admin import DataCenterAssetAdmin, ServerRoomAdmin
+from ralph.assets.tests.factories import (
+    ConfigurationClassFactory,
+    ConfigurationModuleFactory
+)
+from ralph.data_center.admin import DataCenterAssetAdmin
 from ralph.data_center.models.physical import (
     DataCenterAsset,
-    DataCenterAssetStatus,
-    Rack
+    DataCenterAssetStatus
 )
 from ralph.data_center.tests.factories import (
     DataCenterAssetFactory,
@@ -43,6 +47,9 @@ class AdminFiltersTestCase(TestCase):
     def setUpClass(cls):
         super().setUpClass()
 
+        cls.conf_module1 = ConfigurationModuleFactory(name='abc')
+        cls.conf_module2 = ConfigurationModuleFactory(parent=cls.conf_module1)
+        cls.conf_class = ConfigurationClassFactory(module=cls.conf_module2)
         cls.dca_1 = DataCenterAssetFactory(
             invoice_date=datetime.date(2015, 1, 1),
             barcode='barcode_one',
@@ -64,7 +71,8 @@ class AdminFiltersTestCase(TestCase):
         cls.dca_3.tags.add('tag2')
         cls.dca_4 = DataCenterAssetFactory(
             invoice_date=datetime.date(2014, 3, 1),
-            rack=RackFactory()
+            rack=RackFactory(),
+            configuration_path=cls.conf_class,
         )
         cls.dca_4.tags.add('tag1')
         cls.support_1 = SupportFactory(price=10)
@@ -253,6 +261,25 @@ class AdminFiltersTestCase(TestCase):
             model=DataCenterAsset,
             model_admin=DataCenterAssetAdmin,
             field_path='rack'
+        )
+        queryset = related_filter.queryset(None, DataCenterAsset.objects.all())
+
+        self.assertEqual(1, queryset.count())
+
+    def test_tree_related_field_with_descendants(self):
+        related_filter = TreeRelatedAutocompleteFilterWithDescendants(
+            field=(
+                DataCenterAsset._meta.get_field(
+                    'configuration_path'
+                ).rel.to._meta.get_field('module')
+            ),
+            request=None,
+            params={
+                'configuration_path__module': str(self.conf_module1.id),
+            },
+            model=DataCenterAsset,
+            model_admin=DataCenterAssetAdmin,
+            field_path='configuration_path__module'
         )
         queryset = related_filter.queryset(None, DataCenterAsset.objects.all())
 
