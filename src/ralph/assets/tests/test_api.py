@@ -476,7 +476,7 @@ class BaseObjectAPITests(RalphAPITestCase):
         )
         self.bo_asset.tags.add('tag1')
         self.dc_asset = DataCenterAssetFactory(
-            barcode='12543', price='10.00'
+            barcode='12543', price='9.00'
         )
         self.dc_asset.tags.add('tag2')
 
@@ -528,7 +528,7 @@ class BaseObjectAPITests(RalphAPITestCase):
     def test_lte_polymorphic(self):
         url = '{}?{}'.format(
             reverse('baseobject-list'), urlencode(
-                {'price__lte': '20'}
+                {'price__lte': '9'}
             )
         )
         response = self.client.get(url, format='json')
