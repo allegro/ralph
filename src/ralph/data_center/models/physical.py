@@ -6,6 +6,7 @@ from itertools import chain
 
 from django import forms
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 from django.core.validators import RegexValidator
 from django.db import models, transaction
 from django.db.models import Q
@@ -14,6 +15,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Region
 from ralph.admin.autocomplete import AutocompleteTooltipMixin
+from ralph.admin.helpers import generate_html_link
 from ralph.admin.sites import ralph_site
 from ralph.admin.widgets import AutocompleteWidget
 from ralph.assets.models.assets import Asset, NamedMixin
@@ -317,6 +319,11 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
         'barcode',
         'sn',
     ]
+    _summary_fields = [
+        ('hostname', 'Hostname'),
+        ('location', 'Location'),
+        ('model__name', 'Model'),
+    ]
 
     class Meta:
         verbose_name = _('data center asset')
@@ -427,6 +434,53 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
             return NetworkEnvironment.objects.filter(
                 network__racks=self.rack
             ).distinct().first()
+
+    @cached_property
+    def location(self):
+        """
+        Additional column 'location' display filter by:
+        data center, server_room, rack, position (if is blade)
+        """
+        base_url = reverse('admin:data_center_datacenterasset_changelist')
+        position = self.position
+        if self.is_blade:
+            position = generate_html_link(
+                base_url,
+                {
+                    'rack': self.rack_id,
+                    'position__start': self.position,
+                    'position__end': self.position
+                },
+                position,
+            )
+
+        result = [
+            generate_html_link(
+                base_url,
+                {
+                    'rack__server_room__data_center':
+                        self.rack.server_room.data_center_id
+                },
+                self.rack.server_room.data_center.name
+            ),
+            generate_html_link(
+                base_url,
+                {'rack__server_room': self.rack.server_room_id},
+                self.rack.server_room.name
+            ),
+            generate_html_link(
+                base_url,
+                {'rack': self.rack_id},
+                self.rack.name
+            )
+        ] if self.rack else []
+
+        if self.position:
+            result.append(str(position))
+        if self.slot_no:
+            result.append(str(self.slot_no))
+
+        return '&nbsp;/&nbsp;'.join(result) if self.rack else '&mdash;'
 
     def _validate_orientation(self):
         """

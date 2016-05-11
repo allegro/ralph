@@ -271,11 +271,12 @@ class ClusterAPITests(RalphAPITestCase):
         self.cluster_type = ClusterTypeFactory()
         self.service_env = ServiceEnvironmentFactory()
         self.cluster_1 = ClusterFactory()
-        BaseObjectCluster.objects.create(
+        self.boc_1 = BaseObjectCluster.objects.create(
             cluster=self.cluster_1, base_object=DataCenterAssetFactory()
         )
-        BaseObjectCluster.objects.create(
-            cluster=self.cluster_1, base_object=DataCenterAssetFactory()
+        self.boc_2 = BaseObjectCluster.objects.create(
+            cluster=self.cluster_1, base_object=DataCenterAssetFactory(),
+            is_master=True
         )
         self.cluster_2 = ClusterFactory()
 
@@ -291,6 +292,32 @@ class ClusterAPITests(RalphAPITestCase):
         cluster = Cluster.objects.get(pk=response.data['id'])
         self.assertEqual(cluster.name, 'Test cluster')
 
+    def test_create_cluster_with_hostname(self):
+        url = reverse('cluster-list')
+        data = {
+            'type': self.cluster_type.id,
+            'service_env': self.service_env.id,
+            'hostname': 'cluster1.mydc.net'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        cluster = Cluster.objects.get(pk=response.data['id'])
+        self.assertEqual(cluster.hostname, data['hostname'])
+
+    # TODO: waiting for #2423
+    # def test_create_cluster_without_hostname_or_name(self):
+    #     url = reverse('cluster-list')
+    #     data = {
+    #         'type': self.cluster_type.id,
+    #         'service_env': self.service_env.id,
+    #     }
+    #     response = self.client.post(url, data, format='json')
+    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    #     self.assertEqual(response.data, {
+    #         'name': ['At least one of name or hostname is required'],
+    #         'hostname': ['At least one of name or hostname is required'],
+    #     })
+
     def test_list_cluster(self):
         url = reverse('cluster-list')
         response = self.client.get(url, format='json')
@@ -299,3 +326,37 @@ class ClusterAPITests(RalphAPITestCase):
         for item in response.data['results']:
             if item['id'] == self.cluster_1.id:
                 self.assertEqual(len(item['base_objects']), 2)
+
+    def test_get_cluster_details(self):
+        url = reverse('cluster-detail', args=(self.cluster_1.id,))
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], self.cluster_1.name)
+        self.assertEqual(response.data['hostname'], self.cluster_1.hostname)
+        self.assertEqual(len(response.data['base_objects']), 2)
+        self.assertCountEqual(response.data['base_objects'], [
+            {
+                'id': self.boc_1.id,
+                'url': self.get_full_url(
+                    reverse('baseobjectcluster-detail', args=(self.boc_1.id,))
+                ),
+                'base_object': self.get_full_url(
+                    reverse(
+                        'baseobject-detail', args=(self.boc_1.base_object.id,)
+                    )
+                ),
+                'is_master': self.boc_1.is_master,
+                'cluster': self.get_full_url(url),
+            },
+            {
+                'id': self.boc_2.id,
+                'url': self.get_full_url(
+                    reverse('baseobjectcluster-detail', args=(self.boc_2.id,))
+                ),
+                'base_object': self.get_full_url(reverse(
+                    'baseobject-detail', args=(self.boc_2.base_object.id,)
+                )),
+                'is_master': self.boc_2.is_master,
+                'cluster': self.get_full_url(url),
+            }
+        ])

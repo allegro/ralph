@@ -13,17 +13,34 @@ class TableRenderTestCase(TestCase):
         super().setUpClass()
         cls.foo_1 = Foo.objects.create(bar='Test1')
 
+    def assertTablesEqual(self, table1, table2):
+        """
+        Compare content of the rows (without checking row type (list vs tuple))
+        """
+        self.assertEqual(len(table1), len(table2))
+        for row1, row2 in zip(table1, table2):
+            self.assertSequenceEqual(row1, row2)
+
     def test_queryset_render(self):
         """Test get_perm_key function."""
         table = Table(Foo.objects.all(), ['id', 'bar'])
         result = [
-            ['ID', 'bar'],
+            [{'value': 'ID'}, {'value': 'bar'}],
             [
                 {'value': self.foo_1.id, 'html_attributes': ''},
                 {'value': 'Test1', 'html_attributes': ''}
             ]
         ]
-        self.assertListEqual(table.get_table_content(), result)
+        self.assertTablesEqual(table.get_table_content(), result)
+
+    def test_queryset_render_transposed(self):
+        """Test get_perm_key function."""
+        table = Table(Foo.objects.all(), ['id', 'bar'], transpose=True)
+        result = [
+            [{'value': 'ID'}, {'value': self.foo_1.id, 'html_attributes': ''}],
+            [{'value': 'bar'}, {'value': 'Test1', 'html_attributes': ''}]
+        ]
+        self.assertTablesEqual(table.get_table_content(), result)
 
     def test_custom_field(self):
         class CustomTable(Table):
@@ -33,14 +50,14 @@ class TableRenderTestCase(TestCase):
 
         table = CustomTable(Foo.objects.all(), ['id', 'bar', 'url'])
         result = [
-            ['ID', 'bar', 'custom_title'],
+            [{'value': 'ID'}, {'value': 'bar'}, {'value': 'custom_title'}],
             [
                 {'value': self.foo_1.id, 'html_attributes': ''},
                 {'value': 'Test1', 'html_attributes': ''},
                 {'value': 'custom_value', 'html_attributes': ''}
             ]
         ]
-        self.assertListEqual(table.get_table_content(), result)
+        self.assertTablesEqual(table.get_table_content(), result)
 
     def test_additional_row_method(self):
         class CustomTable(Table):
@@ -48,7 +65,7 @@ class TableRenderTestCase(TestCase):
                 return ['custom_bar']
         table = CustomTable(Foo.objects.all(), ['id', 'bar'], ['bar_url'])
         result = [
-            ['ID', 'bar'],
+            [{'value': 'ID'}, {'value': 'bar'}],
             [
                 {'value': self.foo_1.id, 'html_attributes': ''},
                 {'value': 'Test1', 'html_attributes': ''},
@@ -57,4 +74,4 @@ class TableRenderTestCase(TestCase):
                 {'value': 'custom_bar', 'html_attributes': ' colspan="2"'}
             ]
         ]
-        self.assertListEqual(table.get_table_content(), result)
+        self.assertTablesEqual(table.get_table_content(), result)

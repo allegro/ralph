@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
+from dj.choices import Choices
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.base import BaseObject
-from ralph.lib.mixins.fields import BaseObjectForeignKey
+from ralph.lib.mixins.fields import BaseObjectForeignKey, NullableCharField
 from ralph.lib.mixins.models import NamedMixin
+from ralph.lib.transitions.fields import TransitionField
 
 
 class Database(BaseObject):
@@ -26,11 +30,31 @@ class VIP(BaseObject):
 
 
 class ClusterType(NamedMixin, models.Model):
-    pass
+    show_master_summary = models.BooleanField(
+        default=False,
+        help_text=_(
+            'show master information on cluster page, ex. hostname, model, '
+            'location etc.'
+        )
+    )
 
 
-class Cluster(BaseObject, NamedMixin, models.Model):
+class ClusterStatus(Choices):
+    _ = Choices.Choice
 
+    in_use = _('in use')
+    for_deploy = _('for deploy')
+
+
+class Cluster(BaseObject, models.Model):
+    name = models.CharField(_('name'), max_length=255, blank=True, null=True)
+    hostname = NullableCharField(
+        unique=True,
+        null=True,
+        blank=True,
+        max_length=255,
+        verbose_name=_('hostname')
+    )
     type = models.ForeignKey(ClusterType)
     base_objects = models.ManyToManyField(
         BaseObject,
@@ -38,6 +62,41 @@ class Cluster(BaseObject, NamedMixin, models.Model):
         through='BaseObjectCluster',
         related_name='+',
     )
+    status = TransitionField(
+        default=ClusterStatus.in_use.id,
+        choices=ClusterStatus(),
+    )
+
+    def __str__(self):
+        return '{} ({})'.format(self.name or self.hostname, self.type)
+
+    @cached_property
+    def masters(self):
+        return BaseObject.polymorphic_objects.filter(
+            pk__in=self.baseobjectcluster_set.filter(
+                is_master=True
+            ).values_list('base_object_id', flat=True)
+        )
+
+    def _validate_name_hostname(self):
+        if not self.name and not self.hostname:
+            error_message = [_('At least one of name or hostname is required')]
+            raise ValidationError(
+                {'name': error_message, 'hostname': error_message}
+            )
+
+    def clean(self):
+        errors = {}
+        for validator in [
+            super().clean,
+            self._validate_name_hostname,
+        ]:
+            try:
+                validator()
+            except ValidationError as e:
+                e.update_error_dict(errors)
+        if errors:
+            raise ValidationError(errors)
 
 
 class BaseObjectCluster(models.Model):

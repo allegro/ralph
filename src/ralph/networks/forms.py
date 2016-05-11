@@ -29,12 +29,11 @@ def validate_is_management(forms):
         ))
 
 
-class NetworkForm(forms.ModelForm):
+class SimpleNetworkForm(forms.ModelForm):
     hostname = forms.CharField(label='Hostname')
     address = forms.IPAddressField(label='IP address')
-    is_management = forms.BooleanField(label='Is managment')
 
-    ip_fields = ['hostname', 'address', 'is_management']
+    ip_fields = ['hostname', 'address']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -49,7 +48,7 @@ class NetworkForm(forms.ModelForm):
     class Meta:
         model = Ethernet
         fields = [
-            'hostname', 'address', 'mac', 'is_management', 'label', 'speed'
+            'hostname', 'address', 'mac',
         ]
 
     def clean_address(self):
@@ -76,6 +75,18 @@ class NetworkForm(forms.ModelForm):
         else:
             IPAddress.objects.create(ethernet=obj, **ip_values)
         return obj
+
+
+class NetworkForm(SimpleNetworkForm):
+    is_management = forms.BooleanField(label='Is managment', required=False)
+
+    ip_fields = ['hostname', 'address', 'is_management']
+
+    class Meta:
+        model = Ethernet
+        fields = [
+            'hostname', 'address', 'mac', 'is_management', 'label', 'speed'
+        ]
 
 
 class NetworkInlineFormset(BaseInlineFormSet):
