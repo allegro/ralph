@@ -193,9 +193,9 @@ class ConfigurationModuleFactory(DjangoModelFactory):
 
 
 class ConfigurationClassFactory(DjangoModelFactory):
-    name = factory.Iterator(['www', 'db', 'worker', 'cache'])
+    class_name = factory.Iterator(['www', 'db', 'worker', 'cache'])
     module = factory.SubFactory(ConfigurationModuleFactory)
 
     class Meta:
         model = ConfigurationClass
-        django_get_or_create = ['name']
+        django_get_or_create = ['class_name']

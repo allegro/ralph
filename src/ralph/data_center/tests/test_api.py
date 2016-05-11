@@ -107,6 +107,16 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         self.assertTrue(self.dc_asset.force_depreciation)
         self.assertEqual(self.dc_asset.tags.count(), 1)
 
+    def test_filter_by_configuration_path(self):
+        url = reverse('datacenterasset-list') + '?configuration_path={}'.format(
+            self.dc_asset.configuration_path.path,
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['count'], 1
+        )
+
 
 class RackAPITests(RalphAPITestCase):
     def setUp(self):

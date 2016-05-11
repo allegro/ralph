@@ -476,7 +476,7 @@ class BaseObjectAPITests(RalphAPITestCase):
         )
         self.bo_asset.tags.add('tag1')
         self.dc_asset = DataCenterAssetFactory(
-            barcode='12543', price='10.00'
+            barcode='12543', price='9.00'
         )
         self.dc_asset.tags.add('tag2')
 
@@ -484,8 +484,12 @@ class BaseObjectAPITests(RalphAPITestCase):
         url = reverse('baseobject-list')
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 2)
-        barcodes = [item['barcode'] for item in response.data['results']]
+        self.assertEqual(response.data['count'], BaseObject.objects.count())
+        barcodes = [
+            item['barcode']
+            for item in response.data['results']
+            if 'barcode' in item
+        ]
         self.assertCountEqual(barcodes, set(['12345', '12543']))
 
     def test_get_asset_model_details(self):
@@ -524,11 +528,11 @@ class BaseObjectAPITests(RalphAPITestCase):
     def test_lte_polymorphic(self):
         url = '{}?{}'.format(
             reverse('baseobject-list'), urlencode(
-                {'price__lte': '1'}
+                {'price__lte': '9'}
             )
         )
         response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_is_lookup_used(self):
         url = '{}?{}'.format(
@@ -591,16 +595,12 @@ class ConfigurationModuleAPITests(RalphAPITestCase):
         self.assertEqual(
             response.data['results'][0]['name'], self.conf_module_1.name
         )
-        self.assertEqual(
-            response.data['results'][0]['path'], self.conf_module_1.path
-        )
 
     def test_get_configuration_module_details(self):
         url = reverse('configurationmodule-detail', args=(self.conf_module_1.id,))
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], self.conf_module_1.name)
-        self.assertEqual(response.data['path'], self.conf_module_1.path)
         self.assertTrue(
             response.data['children_modules'][0].endswith(
                 reverse('configurationmodule-detail', args=(self.conf_module_2.id,))
@@ -639,7 +639,6 @@ class ConfigurationModuleAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.conf_module_2.refresh_from_db()
         self.assertEqual(self.conf_module_2.name, 'test_2')
-        self.assertTrue(self.conf_module_2.path.endswith('test_2'))
 
 
 class ConfigurationClassAPITests(RalphAPITestCase):
@@ -657,7 +656,8 @@ class ConfigurationClassAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(
-            response.data['results'][0]['name'], self.conf_class_1.name
+            response.data['results'][0]['class_name'],
+            self.conf_class_1.class_name
         )
         self.assertEqual(
             response.data['results'][0]['module']['id'],
@@ -671,7 +671,10 @@ class ConfigurationClassAPITests(RalphAPITestCase):
         url = reverse('configurationclass-detail', args=(self.conf_class_1.id,))
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], self.conf_class_1.name)
+        self.assertEqual(
+            response.data['class_name'],
+            self.conf_class_1.class_name
+        )
         self.assertEqual(response.data['path'], self.conf_class_1.path)
         self.assertTrue(
             response.data['module']['url'].endswith(
@@ -682,22 +685,22 @@ class ConfigurationClassAPITests(RalphAPITestCase):
     def test_create_configuration_class(self):
         url = reverse('configurationclass-list')
         data = {
-            'name': 'test_1',
+            'class_name': 'test_1',
             'module': self.conf_module_2.pk,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(ConfigurationClass.objects.count(), 2)
         conf_class = ConfigurationClass.objects.get(pk=response.data['id'])
-        self.assertEqual(conf_class.name, 'test_1')
+        self.assertEqual(conf_class.class_name, 'test_1')
         self.assertEqual(conf_class.module, self.conf_module_2)
 
     def test_patch_configuration_class(self):
         url = reverse('configurationclass-detail', args=(self.conf_class_1.id,))
         data = {
-            'name': 'test_2'
+            'class_name': 'test_2'
         }
         response = self.client.patch(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.conf_class_1.refresh_from_db()
-        self.assertEqual(self.conf_class_1.name, 'test_2')
+        self.assertEqual(self.conf_class_1.class_name, 'test_2')
