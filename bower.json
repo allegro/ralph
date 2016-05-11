@@ -12,7 +12,7 @@
     "fontawesome": "~4.5.0",
     "fastclick": "~1.0.6",
     "jquery.cookie": "~1.4.1",
-    "jquery": "~2.1.4",
+    "jquery": "~2.2.3",
     "modernizr": "~2.8.3",
     "angular-cookies": "~1.4.0",
     "angular-latest": "~1.4.0",
