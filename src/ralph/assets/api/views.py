@@ -80,6 +80,7 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
         'name': ['asset__hostname'],
         'sn': ['asset__sn'],
         'barcode': ['asset__barcode'],
+        'price': ['asset__price'],
     }
 
 
@@ -105,4 +106,4 @@ class ConfigurationModuleViewSet(RalphAPIViewSet):
 class ConfigurationClassViewSet(RalphAPIViewSet):
     queryset = models.ConfigurationClass.objects.all()
     serializer_class = serializers.ConfigurationClassSerializer
-    filter_fields = ('module', 'module__path', 'name')
+    filter_fields = ('module', 'module__name', 'class_name', 'path')

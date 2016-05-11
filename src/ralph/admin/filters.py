@@ -422,9 +422,6 @@ class TreeRelatedAutocompleteFilterWithDescendants(
     filtering by object and all its descendants.
     """
     def _get_descendants(self, request, root_id):
-        """
-        Return descendants of root object.
-        """
         try:
             root = self.field.rel.to.objects.get(pk=root_id)
         except self.field.rel.to.DoesNotExist:
@@ -447,9 +444,11 @@ class TreeRelatedAutocompleteFilterWithDescendants(
             if id_ == self.empty_value:
                 q_param |= Q(**{'{}__isnull'.format(self.field_path): True})
             else:
-                q_param |= Q(**{self.field_path + '__in': self._get_descendants(
-                    request, id_
-                )})
+                q_param |= Q(**{
+                    '{}__in'.format(self.field_path): self._get_descendants(
+                        request, id_
+                    )
+                })
         try:
             queryset = queryset.filter(q_param)
         except ValueError:
