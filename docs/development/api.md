@@ -36,7 +36,7 @@ router.register(r'foos', FooViewSet)
 * use `ralph.api.serializers.ReversedChoiceField` for all choice fields - this serializer allow to pass value by name instead of key. Additionally it present value in user-friendly format by-name. This field works perfectly with `dj.choices.Choices`.
 * include permissions per field checking using `ralph.lib.permissions.api.PermissionsPerFieldSerializerMixin` - only fields to which user has access will be returned. This field also handle view-only permission as read-only field.
 * include permission validation on object level for related fields - if related field model use permissions for object, then only objects to which user has access could be selected/displayed in related field.
-
+* validate data using model's clean validation (set `_validate_using_model_clean` to `False` in your save seriazlier to turn this off)
 
 ### `RalphAPIViewSet`
 * default serializer for save actions (POST, PUT, PATCH) in which every relation will be serialized using `rest_framework.serializers.PrimaryKeyRelatedField` (so user should specify object PK in relation field). This serializer could be overwritten using `save_serializer_class` attribute in `RalphAPIViewSet`.

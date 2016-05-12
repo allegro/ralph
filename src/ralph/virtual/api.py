@@ -41,6 +41,7 @@ class CloudProjectSimpleSerializer(BaseObjectSerializer):
 
 
 class SaveCloudFlavorSerializer(RalphAPISaveSerializer):
+    _validate_using_model_clean = False
     cores = serializers.IntegerField()
     memory = serializers.IntegerField()
     disk = serializers.IntegerField()
@@ -62,6 +63,7 @@ class SaveCloudFlavorSerializer(RalphAPISaveSerializer):
 
 
 class SaveCloudHostSerializer(RalphAPISaveSerializer):
+    _validate_using_model_clean = False
     ip_addresses = serializers.ListField()
 
     def create(self, validated_data):
