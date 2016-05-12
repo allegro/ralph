@@ -40,13 +40,13 @@
                             controller: ['$scope', '$filter', '$state', 'data_center', function($scope, $filter, $state, data_center){
                                 $scope.data_center = data_center;
                                 $scope.submit_search = function() {
-                                    var first_rack = $filter('filter')($scope.data_center.rack_set, $scope.rack_filter)[0];
-                                    if(first_rack !== undefined) {
+                                    var filtered_racks = $filter('filter')($scope.data_center.rack_set, $scope.rack_filter);
+                                    if(filtered_racks !== undefined && filtered_racks.length == 1) {
                                         $state.go(
                                             'data_center.detail.rack',
                                             {
-                                                dcId:$scope.data_center.id,
-                                                rackId:first_rack.id
+                                                dcId: $scope.data_center.id,
+                                                rackId: filtered_racks[0].id
                                             }
                                         );
                                     }
