@@ -33,7 +33,7 @@ class NetworkKind(NamedMixin, models.Model):
         ordering = ('name',)
 
 
-class NetworkEnvironment(NamedMixin):
+class NetworkEnvironment(TimeStampMixin, NamedMixin, models.Model):
     data_center = models.ForeignKey(
         'data_center.DataCenter',
         verbose_name=_('data center')
@@ -64,18 +64,12 @@ class NetworkEnvironment(NamedMixin):
             ', s19999.mydc.net.'
         )
     )
-    dhcp_next_server = models.CharField(
-        verbose_name=_('next server'),
-        max_length=32,
-        blank=True,
-        default='',
-        help_text=_('The address for a TFTP server for DHCP.'),
-    )
     domain = NullableCharField(
         verbose_name=_('domain'),
         max_length=255,
         blank=True,
         null=True,
+        help_text=_('Used in DHCP configuration.'),
     )
     remarks = models.TextField(
         verbose_name=_('remarks'),

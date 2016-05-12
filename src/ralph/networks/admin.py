@@ -39,9 +39,6 @@ class NetworkEnvironmentAdmin(RalphAdmin):
                 'next_free_hostname',
             ],
         }),
-        (_('DHCP'), {
-            'fields': ['dhcp_next_server']
-        })
     )
     readonly_fields = ['next_free_hostname']
     search_fields = ['name']
@@ -272,7 +269,7 @@ class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
         'ip_address', 'hostname', 'base_object_link', 'is_gateway',
         'is_public'
     ]
-    readonly_fields = ['get_network_path', 'is_public', 'is_gateway']
+    readonly_fields = ['get_network_path', 'is_public']
     raw_id_fields = ['ethernet']
     resource_class = resources.IPAddressResource
 

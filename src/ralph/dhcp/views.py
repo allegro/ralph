@@ -1,5 +1,4 @@
 import logging
-from functools import partial
 
 from django.http import (
     HttpResponse,
@@ -8,10 +7,12 @@ from django.http import (
     HttpResponseNotModified
 )
 from django.utils.http import http_date, parse_http_date_safe
-from django.views.generic.base import TemplateView, View
+from django.views.generic.base import TemplateView
+from rest_framework.views import APIView
 
 from ralph.admin.helpers import get_client_ip
 from ralph.assets.models.components import Ethernet
+from ralph.data_center.models import DataCenter
 from ralph.dhcp.models import DHCPEntry, DHCPServer
 from ralph.networks.models.networks import (
     IPAddress,
@@ -22,18 +23,18 @@ from ralph.networks.models.networks import (
 logger = logging.getLogger(__name__)
 
 
+def last_modified_date(qs, filter_dict=None):
+    last_date = None
+    if filter_dict is None:
+        filter_dict = {}
+    obj = qs.filter(**filter_dict).order_by('-modified').first()
+    if obj:
+        last_date = obj.modified
+    return last_date
+
+
 class LastModifiedMixin(object):
     """Add last modified to HTTP response if last_modified attr is exist."""
-
-    @classmethod
-    def last(cls, qs, last_items=None, filter_dict=None):
-        if filter_dict is None:
-            filter_dict = {}
-        item = qs.filter(**filter_dict).order_by('-modified').first()
-        if last_items is None:
-            return item.modified if item else None
-        if item:
-            last_items.append(item.modified)
 
     @property
     def last_timestamp(self):
@@ -57,6 +58,12 @@ class LastModifiedMixin(object):
 class DHCPConfigMixin(object):
     content_type = 'text/plain'
 
+    @staticmethod
+    def check_objects_existence_by_names(model_class, names):
+        found = model_class.objects.filter(name__in=names)
+        not_found = set(names) - set([obj.name for obj in found])
+        return found, not_found
+
     def dispatch(self, request, *args, **kwargs):
         dc_names = request.GET.getlist('dc', None)
         env_names = request.GET.getlist('env', None)
@@ -66,20 +73,35 @@ class DHCPConfigMixin(object):
                 content_type=self.content_type
             )
 
-        # TODO: case senisitve
-        # TODO: 404 if not found
-        environment_filters = {}
+        if not (dc_names or env_names):
+            return HttpResponseBadRequest(
+                'Please specify DC or ENV.',
+                content_type=self.content_type
+            )
+
         if dc_names:
-            environment_filters.update({
-                'data_center__name__in': dc_names
-            })
+            found, not_found = self.check_objects_existence_by_names(
+                DataCenter, dc_names
+            )
+            if not_found:
+                return HttpResponseNotFound(
+                    'DC: {} doesn\'t exists.'.format(', '.join(not_found)),
+                    content_type='text/plain'
+                )
+
+            environments = NetworkEnvironment.objects.filter(
+                data_center__in=found
+            )
         elif env_names:
-            environment_filters.update({
-                'name__in': env_names
-            })
-        environments = NetworkEnvironment.objects.filter(
-            **environment_filters
-        )
+            found, not_found = self.check_objects_existence_by_names(
+                NetworkEnvironment, env_names
+            )
+            if not_found:
+                return HttpResponseNotFound(
+                    'ENV: {} doesn\'t exists.'.format(', '.join(not_found)),
+                    content_type='text/plain'
+                )
+            environments = found
         self.networks = Network.objects.select_related(
             'network_environment'
         ).filter(
@@ -90,7 +112,7 @@ class DHCPConfigMixin(object):
         return super().dispatch(request, *args, **kwargs)
 
 
-class DHCPSyncView(View):
+class DHCPSyncView(APIView):
     def get(self, request, *args, **kwargs):
         ip = get_client_ip(request)
         logger.info('Sync request DHCP server with IP: %s', ip)
@@ -101,7 +123,9 @@ class DHCPSyncView(View):
         return HttpResponse('OK', content_type='text/plain')
 
 
-class DHCPEntriesView(DHCPConfigMixin, LastModifiedMixin, TemplateView):
+class DHCPEntriesView(
+    DHCPConfigMixin, LastModifiedMixin, TemplateView, APIView
+):
     http_method_names = ['get']
     template_name = 'dhcp/entries.conf'
 
@@ -111,18 +135,23 @@ class DHCPEntriesView(DHCPConfigMixin, LastModifiedMixin, TemplateView):
         IP (DHCP entry), ethernet.
         """
         last_items = []
-        last = partial(self.last, last_items=last_items)
-
-        last(networks)
-        last(DHCPEntry.objects, filter_dict={
-            'network__in': networks
-        })
-        last(Ethernet.objects, filter_dict={
-            'ipaddress__network__in': networks
-        })
-        last(IPAddress.objects, filter_dict={
-            'network__in': networks
-        })
+        last_items.append(last_modified_date(networks))
+        last_items.append(
+            last_modified_date(DHCPEntry.objects, filter_dict={
+                'network__in': networks
+            })
+        )
+        last_items.append(
+            last_modified_date(Ethernet.objects, filter_dict={
+                'ipaddress__network__in': networks
+            })
+        )
+        last_items.append(
+            last_modified_date(IPAddress.objects, filter_dict={
+                'network__in': networks
+            })
+        )
+        last_items = [item for item in last_items if item is not None]
         if not last_items:
             return None
         return max(last_items)
@@ -136,11 +165,29 @@ class DHCPEntriesView(DHCPConfigMixin, LastModifiedMixin, TemplateView):
         return context
 
 
-class DHCPNetworksView(DHCPConfigMixin, LastModifiedMixin, TemplateView):
+class DHCPNetworksView(
+    DHCPConfigMixin, LastModifiedMixin, TemplateView, APIView
+):
     template_name = 'dhcp/networks.conf'
 
     def get_last_modified(self, networks):
-        return self.last(networks)
+        last_items = []
+        last_items.append(last_modified_date(networks))
+        last_items.append(
+            last_modified_date(NetworkEnvironment.objects, filter_dict={
+                'network__in': networks
+            })
+        )
+        last_items.append(
+            last_modified_date(IPAddress.objects, filter_dict={
+                'network__in': networks,
+                'is_gateway': True
+            })
+        )
+        last_items = [item for item in last_items if item is not None]
+        if not last_items:
+            return None
+        return max(last_items)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

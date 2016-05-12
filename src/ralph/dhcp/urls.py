@@ -4,7 +4,7 @@ from ralph.dhcp.views import DHCPEntriesView, DHCPNetworksView, DHCPSyncView
 
 urlpatterns = [
     url(
-        r'^synch/?$',
+        r'^sync/?$',
         DHCPSyncView.as_view(),
         name='dhcp_config_sync'
     ),
