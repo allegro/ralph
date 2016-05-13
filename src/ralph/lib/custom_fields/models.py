@@ -29,9 +29,6 @@ URL_CHOICE = Choices.Choice('url').extra(
 CHOICE_CHOICE = Choices.Choice('choice list').extra(
     form_field=forms.ChoiceField,
 )
-MULTI_CHOICE_CHOICE = Choices.Choice('multi-choice list').extra(
-    form_field=forms.MultipleChoiceField,
-)
 
 
 class CustomFieldTypes(Choices):
@@ -43,7 +40,6 @@ class CustomFieldTypes(Choices):
     BOOLEAN = BOOLEAN_CHOICE
     URL = URL_CHOICE
     CHOICE = CHOICE_CHOICE
-    MULTI_CHOICE = MULTI_CHOICE_CHOICE
 
 
 class CustomField(TimeStampMixin, models.Model):
@@ -76,7 +72,7 @@ class CustomField(TimeStampMixin, models.Model):
 
     def _get_choices(self):
         assert self.type in (
-            CustomFieldTypes.CHOICE, CustomFieldTypes.MULTI_CHOICE
+            CustomFieldTypes.CHOICE,
         )
         return self.choices.split('|')
 
@@ -109,14 +105,22 @@ class CustomFieldValue(TimeStampMixin, models.Model):
     def __str__(self):
         return '{} ({}): {}'.format(self.custom_field, self.object, self.value)
 
+    # TODO: fix unique constraint error (bug in Django?)
+    # https://code.djangoproject.com/ticket/12028
+    # https://code.djangoproject.com/ticket/13091
+    # def validate_unique(self, exclude=None):
+    #     if exclude:
+    #         for k in ['content_type', 'object_id']:
+    #             try:
+    #                 exclude.remove(k)
+    #             except ValueError:
+    #                 pass
+    #     return super().validate_unique(exclude=exclude)
+
     def clean(self):
         if self.custom_field_id:
             self.custom_field.get_form_field().clean(self.value)
         super().clean()
-
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        super().save(*args, **kwargs)
 
 
 class WithCustomFieldsMixin(models.Model):

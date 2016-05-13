@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from django.db.models import Prefetch
-from rest_framework import viewsets
 
 from ralph.api import RalphAPIViewSet
 from ralph.api.utils import PolymorphicViewSetMixin
