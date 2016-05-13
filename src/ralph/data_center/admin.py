@@ -186,7 +186,7 @@ class DataCenterAssetAdmin(
     resource_class = resources.DataCenterAssetResource
     list_display = [
         'status', 'barcode', 'model', 'sn', 'hostname', 'invoice_date',
-        'invoice_no', 'location',
+        'invoice_no', 'location', 'service_env',
     ]
     multiadd_summary_fields = list_display + ['rack']
     one_of_mulitvalue_required = ['sn', 'barcode']
@@ -209,7 +209,8 @@ class DataCenterAssetAdmin(
     date_hierarchy = 'created'
     list_select_related = [
         'model', 'model__manufacturer', 'model__category', 'rack',
-        'rack__server_room', 'rack__server_room__data_center'
+        'rack__server_room', 'rack__server_room__data_center',
+        'service_env__service', 'service_env__environment',
     ]
     raw_id_fields = ['model', 'rack', 'service_env', 'parent', 'budget_info']
     raw_id_override_parent = {'parent': DataCenterAsset}
