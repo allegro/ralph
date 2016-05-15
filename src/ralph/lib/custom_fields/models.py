@@ -1,10 +1,13 @@
+import six
+
 from dj.choices import Choices
 from django import forms
 from django.db import models
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
-from django.utils.text import slugify
+from django.core.exceptions import ValidationError
+from django.utils.text import capfirst, slugify
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.lib.mixins.models import TimeStampMixin
@@ -60,6 +63,9 @@ class CustomField(TimeStampMixin, models.Model):
     default_value = models.CharField(
         max_length=CUSTOM_FIELD_VALUE_MAX_LENGTH,
         help_text=_('for boolean use "true" or "false"'),
+        null=True,
+        blank=True,
+        default='',
     )
     # TODO: when required, custom validator (regex?), is_unique
 
@@ -103,19 +109,43 @@ class CustomFieldValue(TimeStampMixin, models.Model):
         unique_together = ('custom_field', 'content_type', 'object_id')
 
     def __str__(self):
-        return '{} ({}): {}'.format(self.custom_field, self.object, self.value)
+        return '{} ({}): {}'.format(
+            self.custom_field if self.custom_field_id else None,
+            self.object,
+            self.value
+        )
 
-    # TODO: fix unique constraint error (bug in Django?)
-    # https://code.djangoproject.com/ticket/12028
-    # https://code.djangoproject.com/ticket/13091
-    # def validate_unique(self, exclude=None):
-    #     if exclude:
-    #         for k in ['content_type', 'object_id']:
-    #             try:
-    #                 exclude.remove(k)
-    #             except ValueError:
-    #                 pass
-    #     return super().validate_unique(exclude=exclude)
+    def _get_unique_checks(self, exclude=None):
+        if exclude:
+            for k in ['content_type', 'object_id']:
+                try:
+                    exclude.remove(k)
+                except ValueError:
+                    pass
+        return super()._get_unique_checks()
+
+    def unique_error_message(self, model_class, unique_check):
+        """
+        Return better unique validation message than standard Django message.
+        """
+        opts = model_class._meta
+
+        params = {
+            'model': self,
+            'model_class': model_class,
+            'model_name': six.text_type(capfirst(opts.verbose_name)),
+            'unique_check': unique_check,
+        }
+
+        if len(unique_check) > 1:
+            return ValidationError(
+                message=_(
+                    "Custom field of the same type already exists for this object."  # noqa
+                ),
+                code='unique_together',
+                params=params,
+            )
+        return super().unique_error_message(self, model_class, unique_check)
 
     def clean(self):
         if self.custom_field_id:

@@ -3,7 +3,10 @@ from django.conf.urls import url
 
 from ralph.admin import RalphAdmin, register
 from ralph.admin.mixins import RalphGenericTabularInline
-from ralph.lib.custom_fields.forms import CustomFieldValueForm
+from ralph.lib.custom_fields.forms import (
+    CustomFieldValueForm,
+    CustomFieldValueFormSet
+)
 from ralph.lib.custom_fields.models import CustomField, CustomFieldValue
 from ralph.lib.custom_fields.views import CustomFieldFormfieldView
 
@@ -32,6 +35,7 @@ class CustomFieldAdmin(RalphAdmin):
 class CustomFieldValueInline(RalphGenericTabularInline):
     model = CustomFieldValue
     form = CustomFieldValueForm
+    formset = CustomFieldValueFormSet
     raw_id_fields = ['custom_field']
     template = 'custom_fields/edit_inline/tabular.html'
 

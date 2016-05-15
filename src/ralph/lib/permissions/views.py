@@ -55,12 +55,12 @@ class PermissionViewMetaClass(type):
         return new_class
 
 
-def update_extra_view_permissions(**kwargs):
+def _update_extra_view_permissions(**kwargs):
     """
     Get all views that inherit the PermissionViewMetaClass and
     adding them permission.
     """
-    logger.info('Updating extra views permissions...')
+    logger.debug('Updating extra views permissions...')
     admin_classes = {}
     for model, admin_class in ralph_site._registry.items():
         for change_view in admin_class.change_views:
@@ -93,3 +93,13 @@ def update_extra_view_permissions(**kwargs):
             ))
         )
         Permission.objects.filter(id__in=permission_ids).delete()
+
+_update_extra_view_permissions.executed = False
+
+
+def update_extra_view_permissions(**kwargs):
+    # during single execution, updating extra views permissions has to be
+    # called exactly once
+    if not _update_extra_view_permissions.executed:
+        _update_extra_view_permissions(**kwargs)
+        _update_extra_view_permissions.executed = True
