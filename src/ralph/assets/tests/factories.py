@@ -15,13 +15,37 @@ from ralph.assets.models.assets import (
     ServiceEnvironment
 )
 from ralph.assets.models.base import BaseObject
-from ralph.assets.models.choices import ObjectModelType
+from ralph.assets.models.choices import ComponentType, ObjectModelType
+from ralph.assets.models.components import ComponentModel
 
 
 class BaseObjectFactory(DjangoModelFactory):
 
     class Meta:
         model = BaseObject
+
+
+class ComponentModelFactory(DjangoModelFactory):
+
+    name = factory.Iterator([
+        'Intel(R) Xeon(R) CPU X5650 @ 2.67GHz', 'XEN Virtual', 'ATA',
+        'RAM 43008MiB', 'RAM 4085MiB'
+    ])
+    speed = factory.Iterator(['0', '2760', '3500'])
+    cores = factory.Iterator(['0', '2', '4', '6', '8'])
+    size = factory.Iterator(['0', '4', '4085', '40708'])
+    type = factory.Iterator([
+        ComponentType.processor.id, ComponentType.disk.id,
+        ComponentType.memory.id, ComponentType.software.id
+    ])
+    family = factory.Iterator([
+        'Xeon', 'Other', 'ATA', 'xtrabackup', 'Python Software Foundation'
+    ])
+
+    class Meta:
+        model = ComponentModel
+        django_get_or_create = ['name']
+
 
 
 class CategoryFactory(DjangoModelFactory):

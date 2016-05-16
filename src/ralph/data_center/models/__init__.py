@@ -3,10 +3,6 @@ from ralph.data_center.models.choices import (
     Orientation,
     RackOrientation,
 )
-from ralph.data_center.models.components import (
-    DiskShare,
-    DiskShareMount,
-)
 from ralph.data_center.models.networks import (
     DiscoveryQueue,
     IPAddress,
@@ -44,8 +40,6 @@ __all__ = [
     'DataCenter',
     'DataCenterAsset',
     'DiscoveryQueue',
-    'DiskShare',
-    'DiskShareMount',
     'Gap',
     'IPAddress',
     'Network',

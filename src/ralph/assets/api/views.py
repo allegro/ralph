@@ -5,8 +5,58 @@ from ralph.api import RalphAPIViewSet
 from ralph.api.utils import PolymorphicViewSetMixin
 from ralph.assets import models
 from ralph.assets.api import serializers
+from ralph.assets.models import components
 from ralph.licences.api import BaseObjectLicenceViewSet
 from ralph.licences.models import BaseObjectLicence
+
+
+class DiskShareComponentViewSet(RalphAPIViewSet):
+    queryset = components.DiskShareComponent.objects.all()
+    serializer_class = serializers.DiskShareComponentSerializer
+
+
+class DiskShareMountComponentViewSet(RalphAPIViewSet):
+    queryset = components.DiskShareMountComponent.objects.all()
+    serializer_class = serializers.DiskShareMountComponentSerializer
+    select_related = ['share']
+
+
+class ProcessorComponentViewSet(RalphAPIViewSet):
+    queryset = components.ProcessorComponent.objects.all()
+    serializer_class = serializers.ProcessorComponentSerializer
+
+
+class MemoryComponentViewSet(RalphAPIViewSet):
+    queryset = components.MemoryComponent.objects.all()
+    serializer_class = serializers.MemoryComponentSerializer
+
+
+class FibreChannelComponentViewSet(RalphAPIViewSet):
+    queryset = components.FibreChannelComponent.objects.all()
+    serializer_class = serializers.FibreChannelComponentSerializer
+
+
+class SoftwareComponentViewSet(RalphAPIViewSet):
+    queryset = components.SoftwareComponent.objects.all()
+    serializer_class = serializers.SoftwareComponentSerializer
+
+
+class OperatingSystemComponentViewSet(RalphAPIViewSet):
+    queryset = components.OperatingSystemComponent.objects.all()
+    serializer_class = serializers.OperatingSystemComponentSerializer
+
+
+class ComponentModelViewset(RalphAPIViewSet):
+    queryset = components.ComponentModel.objects.all()
+    serializer_class = serializers.ComponentModelSerializer
+
+
+class GenericComponentViewset(RalphAPIViewSet):
+    queryset = components.GenericComponent.objects.all()
+    serializer_class = serializers.GenericComponentSerializer
+    select_related = ['base_object', 'model']
+    prefetch_related = ['base_object__tags']
+    filter_fields = ['id', 'sn', 'label']
 
 
 class BusinessSegmentViewSet(RalphAPIViewSet):

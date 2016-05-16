@@ -23,6 +23,8 @@ from ralph.assets.models.choices import (
 from ralph.assets.models.components import (
     ComponentModel,
     Component,
+    DiskShareComponent,
+    DiskShareMountComponent,
     GenericComponent
 )
 
@@ -40,6 +42,8 @@ __all__ = [
     'Component',
     'ComponentModel',
     'ComponentType',
+    'DiskShareComponent',
+    'DiskShareMountComponent',
     'Environment',
     'GenericComponent',
     'Manufacturer',

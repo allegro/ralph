@@ -18,7 +18,6 @@ from ralph.assets.invoice_report import AssetInvoiceReportMixin
 from ralph.assets.models.components import GenericComponent as AssetComponent
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_center.forms.network import NetworkInlineFormset
-from ralph.data_center.models.components import DiskShare, DiskShareMount
 from ralph.data_center.models.networks import (
     DiscoveryQueue,
     IPAddress,
@@ -376,16 +375,6 @@ class VIPAdmin(RalphAdmin):
 class ConnectionAdmin(RalphAdmin):
 
     resource_class = resources.ConnectionResource
-
-
-@register(DiskShare)
-class DiskShareAdmin(RalphAdmin):
-    pass
-
-
-@register(DiskShareMount)
-class DiskShareMountAdmin(RalphAdmin):
-    pass
 
 
 @register(Network)
