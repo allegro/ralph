@@ -8,7 +8,7 @@ from ralph.assets.api import serializers
 from ralph.licences.api import BaseObjectLicenceViewSet
 from ralph.licences.models import BaseObjectLicence
 
-from ralph.lib.custom_fields.api import ObjectCustomFieldsViewSet
+# from ralph.lib.custom_fields.api import ObjectCustomFieldsViewSet
 
 
 class BusinessSegmentViewSet(RalphAPIViewSet):
@@ -69,8 +69,8 @@ class AssetModelViewSet(RalphAPIViewSet):
     serializer_class = serializers.AssetModelSerializer
 
 
-class AssetModelCustomFieldsViewSet(ObjectCustomFieldsViewSet):
-    related_model = models.AssetModel
+# class AssetModelCustomFieldsViewSet(ObjectCustomFieldsViewSet):
+#     related_model = models.AssetModel
 
 
 class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):

@@ -26,7 +26,7 @@ from ralph.assets.models import (
     ServiceEnvironment
 )
 from ralph.licences.api_simple import SimpleBaseObjectLicenceSerializer
-from ralph.lib.custom_fields.api import CustomFieldsSerializerMixin
+from ralph.lib.custom_fields.api_helpers import CustomFieldsSerializerMixin
 
 
 class BusinessSegmentSerializer(RalphAPISerializer):

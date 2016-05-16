@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
 
+
 from django.core.urlresolvers import NoReverseMatch
 from rest_framework import routers
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
+
 from ralph.lib.permissions.api import RalphPermission
+from ralph.lib.custom_fields.api_helpers import NestedCustomFieldsRouter
 
 
-class RalphRouter(routers.DefaultRouter):
+class RalphRouter(NestedCustomFieldsRouter, routers.DefaultRouter):
     """
     Acts like DefaultRouter + checks if user has permissions to see viewset.
     Viewsets for which user doesn't have permissions are hidden in root view.
