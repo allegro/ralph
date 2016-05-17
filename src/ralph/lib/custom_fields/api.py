@@ -28,17 +28,30 @@ class CustomFieldValueHyperlinkedIdentityField(serializers.HyperlinkedIdentityFi
         return self.reverse(view_name, kwargs=kwargs, request=request, format=format)
 
 
-class CustomFieldValueSerializer(RalphAPISerializer):
-    custom_field = CustomFieldSerializer()
-    # url = CustomFieldValueHyperlinkedIdentityField()
+class CustomFieldValueSaveSerializer(RalphAPISerializer):
+
+    class Meta:
+        model = CustomFieldValue
+        fields = ('id', 'custom_field', 'value')
 
     def __init__(self, *args, **kwargs):
         self.related_model = kwargs.pop('related_model')
         super().__init__(*args, **kwargs)
 
-    class Meta:
-        model = CustomFieldValue
-        fields = ('custom_field', 'value', 'url')
+    def to_internal_value(self, data):
+        result = super().to_internal_value(data)
+        for key in ['content_type_id', 'object_id']:
+            if key in data:
+                result[key] = data[key]
+        return result
+
+
+class CustomFieldValueSerializer(CustomFieldValueSaveSerializer):
+    custom_field = CustomFieldSerializer()
+    # url = CustomFieldValueHyperlinkedIdentityField()
+
+    class Meta(CustomFieldValueSaveSerializer.Meta):
+        fields = ('id', 'custom_field', 'value', 'url')
 
     def build_url_field(self, field_name, model_class):
         """
