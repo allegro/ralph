@@ -25,7 +25,7 @@ from ralph.assets.models import (
     Service,
     ServiceEnvironment
 )
-from ralph.lib.custom_fields.api_helpers import CustomFieldsSerializerMixin
+from ralph.lib.custom_fields.api import WithCustomFieldsSerializerMixin
 from ralph.licences.api_simple import SimpleBaseObjectLicenceSerializer
 
 
@@ -168,7 +168,7 @@ class CategorySerializer(RalphAPISerializer):
         model = Category
 
 
-class AssetModelSerializer(CustomFieldsSerializerMixin, RalphAPISerializer):
+class AssetModelSerializer(WithCustomFieldsSerializerMixin, RalphAPISerializer):
 
     category = CategorySerializer()
 

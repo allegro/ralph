@@ -15,6 +15,9 @@ from ralph.lib.custom_fields.views import CustomFieldFormfieldView
 class CustomFieldAdmin(RalphAdmin):
     list_display = ['name', 'attribute_name', 'type', 'default_value']
     search_fields = ['name', 'attribute_name']
+    list_filter = ['type']
+    fields = ['name', 'attribute_name', 'type', 'choices', 'default_value']
+    readonly_fields = ['attribute_name']
 
     def get_urls(self):
         """

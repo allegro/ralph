@@ -23,9 +23,6 @@ INTEGER_CHOICE = Choices.Choice('integer').extra(
 DATE_CHOICE = Choices.Choice('date').extra(
     form_field=forms.DateField,
 )
-BOOLEAN_CHOICE = Choices.Choice('boolean').extra(
-    form_field=forms.BooleanField,
-)
 URL_CHOICE = Choices.Choice('url').extra(
     form_field=forms.URLField,
 )
@@ -40,7 +37,6 @@ class CustomFieldTypes(Choices):
     STRING = STRING_CHOICE
     INTEGER = INTEGER_CHOICE
     DATE = DATE_CHOICE
-    BOOLEAN = BOOLEAN_CHOICE
     URL = URL_CHOICE
     CHOICE = CHOICE_CHOICE
 
@@ -48,7 +44,8 @@ class CustomFieldTypes(Choices):
 class CustomField(TimeStampMixin, models.Model):
     name = models.CharField(max_length=255, unique=True)
     attribute_name = models.SlugField(
-        max_length=255, editable=False, unique=True
+        max_length=255, editable=False, unique=True,
+        help_text=_("field name used in API. It's slugged name of the field"),
     )
     type = models.PositiveIntegerField(
         choices=CustomFieldTypes(), default=CustomFieldTypes.STRING.id

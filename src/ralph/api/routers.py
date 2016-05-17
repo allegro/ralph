@@ -6,7 +6,7 @@ from rest_framework import routers
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-from ralph.lib.custom_fields.api_helpers import NestedCustomFieldsRouter
+from ralph.lib.custom_fields.api import NestedCustomFieldsRouter
 from ralph.lib.permissions.api import RalphPermission
 
 
