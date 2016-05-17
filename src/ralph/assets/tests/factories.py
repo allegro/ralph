@@ -141,6 +141,7 @@ class EnvironmentFactory(DjangoModelFactory):
 class ServiceFactory(DjangoModelFactory):
 
     name = factory.Iterator(['Backup systems', 'load_balancing', 'databases'])
+    uid = factory.Sequence(lambda n: 'sc-{}'.format(n))
 
     class Meta:
         model = Service
