@@ -4,4 +4,4 @@ Werkzeug
 pudb
 ipython
 ipdb
-isort==4.2.2
+isort==4.2.5
