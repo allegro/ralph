@@ -56,6 +56,7 @@ class BackOfficeAssetAPITests(RalphAPITestCase):
         url = reverse('backofficeasset-list')
         data = {
             'hostname': '12345',
+            'barcode': '12345',
             'user': self.user1.id,
             'owner': self.superuser.id,
             'region': region.id,
@@ -73,6 +74,26 @@ class BackOfficeAssetAPITests(RalphAPITestCase):
         self.assertEqual(bo_asset.region, region)
         self.assertEqual(bo_asset.warehouse, self.warehouse)
         self.assertEqual(bo_asset.service_env, self.service_env)
+
+    def test_create_back_office_asset_without_barcode_sn(self):
+        region = Region.objects.create(name='EU')
+        url = reverse('backofficeasset-list')
+        data = {
+            'hostname': '12345',
+            'user': self.user1.id,
+            'owner': self.superuser.id,
+            'region': region.id,
+            'warehouse': self.warehouse.id,
+            'model': self.model.id,
+            'service_env': self.service_env.id,
+            'force_depreciation': False,
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {
+            'sn': ['SN or BARCODE field is required'],
+            'barcode': ['SN or BARCODE field is required'],
+        })
 
     def test_patch_back_office_asset(self):
         url = reverse('backofficeasset-detail', args=(self.bo_asset.id,))
