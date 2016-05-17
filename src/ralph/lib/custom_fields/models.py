@@ -2,11 +2,11 @@ import six
 
 from dj.choices import Choices
 from django import forms
-from django.db import models
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.db import models
 from django.utils.text import capfirst, slugify
 from django.utils.translation import ugettext_lazy as _
 

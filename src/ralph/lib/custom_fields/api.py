@@ -3,10 +3,10 @@ from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers, viewsets
 from rest_framework_nested.routers import NestedSimpleRouter
 
+from .models import CustomField, CustomFieldValue
 from ralph.api import RalphAPISerializer
 from ralph.api.serializers import RalphAPISaveSerializer
 from ralph.api.viewsets import RalphAPIViewSet
-from .models import CustomField, CustomFieldValue
 
 
 class CustomFieldSerializer(RalphAPISerializer):

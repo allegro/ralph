@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from .models import SomeModel
 from ..admin import CustomFieldValueAdminMaxin
+from .models import SomeModel
 
 site = admin.AdminSite(name="cf_admin")
 

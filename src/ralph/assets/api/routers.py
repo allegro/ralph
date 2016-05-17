@@ -1,6 +1,3 @@
-# from django.conf.urls import include, url
-# from rest_framework_nested import routers
-
 from ralph.api import router
 from ralph.assets.api.views import (
     AssetHolderViewSet,
@@ -28,5 +25,4 @@ router.register(r'profit-centers', ProfitCenterViewSet)
 router.register(r'services-environments', ServiceEnvironmentViewSet)
 router.register(r'services', ServiceViewSet)
 
-urlpatterns = [
-]
+urlpatterns = []

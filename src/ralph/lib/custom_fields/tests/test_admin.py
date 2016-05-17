@@ -3,8 +3,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.test import RequestFactory, TestCase
 
-from .models import SomeModel
 from ..models import CustomField, CustomFieldTypes, CustomFieldValue
+from .models import SomeModel
 
 
 class CustomFieldValueAdminMaxinTestCase(TestCase):

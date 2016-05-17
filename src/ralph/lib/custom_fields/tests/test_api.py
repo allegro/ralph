@@ -4,8 +4,8 @@ from django.core.urlresolvers import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from .models import SomeModel
 from ..models import CustomField, CustomFieldTypes, CustomFieldValue
+from .models import SomeModel
 
 
 class CustomFieldsAPITests(APITestCase):
