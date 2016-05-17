@@ -69,10 +69,6 @@ class AssetModelViewSet(RalphAPIViewSet):
     serializer_class = serializers.AssetModelSerializer
 
 
-# class AssetModelCustomFieldsViewSet(ObjectCustomFieldsViewSet):
-#     related_model = models.AssetModel
-
-
 class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
     queryset = models.BaseObject.polymorphic_objects.all()
     serializer_class = serializers.BaseObjectPolymorphicSerializer

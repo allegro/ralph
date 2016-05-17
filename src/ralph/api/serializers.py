@@ -233,7 +233,7 @@ class RalphAPISaveSerializer(
         for k, v in data.items():
             setattr(instance, k, v)
         try:
-            instance.clean()
+            instance.full_clean()
         except DjangoValidationError as e:
             # convert Django ValidationError to rest framework
             # ValidationError to display errors per field

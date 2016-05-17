@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
-from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -24,16 +22,6 @@ class CustomFieldsAPITests(APITestCase):
             name='test_choice', type=CustomFieldTypes.CHOICE,
             choices='qwerty|asdfgh|zxcvbn', default_value='zxcvbn'
         )
-        cls.cfv1 = CustomFieldValue.objects.create(
-            object=cls.sm1,
-            custom_field=cls.custom_field_str,
-            value='sample_value',
-        )
-        cls.cfv2 = CustomFieldValue.objects.create(
-            object=cls.sm2,
-            custom_field=cls.custom_field_choices,
-            value='qwerty',
-        )
 
         cls.user = get_user_model().objects.create_superuser(
             username='root',
@@ -49,6 +37,21 @@ class CustomFieldsAPITests(APITestCase):
 
     def setUp(self):
         self.client.force_authenticate(self.user)
+        self.cfv1 = CustomFieldValue.objects.create(
+            object=self.sm1,
+            custom_field=self.custom_field_str,
+            value='sample_value',
+        )
+        self.cfv2 = CustomFieldValue.objects.create(
+            object=self.sm2,
+            custom_field=self.custom_field_choices,
+            value='qwerty',
+        )
+        self.cfv3 = CustomFieldValue.objects.create(
+            object=self.sm2,
+            custom_field=self.custom_field_str,
+            value='sample_value2',
+        )
 
     def test_get_customfields_for_single_object(self):
         url = reverse(self.list_view_name, args=(self.sm1.id,))
@@ -127,4 +130,94 @@ class CustomFieldsAPITests(APITestCase):
         }
         response = self.client.post(url, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        import ipdb; ipdb.set_trace()
+        self.assertIn(
+            'Custom field of the same type already exists for this object.',
+            response.data['__all__']
+        )
+
+    def test_add_new_customfield_value_with_invalid_value_should_not_pass(self):
+        url = reverse(self.list_view_name, args=(self.sm1.id,))
+        data = {
+            'value': 'invalid!',
+            'custom_field': self.custom_field_choices.id,
+        }
+        response = self.client.post(url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            'Select a valid choice. invalid! is not one of the available choices.',  # noqa
+            response.data['__all__']
+        )
+
+    def test_update_customfield_value_should_pass(self):
+        url = reverse(
+            self.detail_view_name,
+            kwargs={'pk': self.cfv1.pk, 'object_pk': self.cfv1.object_id}
+        )
+        data = {
+            'value': 'ytrewq',
+            'custom_field': self.custom_field_str.id,
+        }
+        response = self.client.put(url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.cfv1.refresh_from_db()
+        self.assertEqual(self.cfv1.object, self.sm1)
+        self.assertEqual(self.cfv1.custom_field, self.custom_field_str)
+        self.assertEqual(self.cfv1.value, 'ytrewq')
+
+    def test_update_customfield_value_with_duplicated_customfield_should_not_pass(self):  # noqa
+        url = reverse(
+            self.detail_view_name,
+            kwargs={'pk': self.cfv2.pk, 'object_pk': self.cfv2.object_id}
+        )
+        data = {
+            'value': 'duplicate!',
+            'custom_field': self.custom_field_str.id,
+        }
+        response = self.client.put(url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            'Custom field of the same type already exists for this object.',
+            response.data['__all__']
+        )
+
+    def test_update_customfield_value_invalid_value_should_not_pass(self):
+        url = reverse(
+            self.detail_view_name,
+            kwargs={'pk': self.cfv2.pk, 'object_pk': self.cfv2.object_id}
+        )
+        data = {
+            'value': 'invalid!',
+            'custom_field': self.custom_field_choices.id,
+        }
+        response = self.client.put(url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            'Select a valid choice. invalid! is not one of the available choices.',  # noqa
+            response.data['__all__']
+        )
+
+    def test_partial_update_value_should_pass(self):
+        url = reverse(
+            self.detail_view_name,
+            kwargs={'pk': self.cfv1.pk, 'object_pk': self.cfv1.object_id}
+        )
+        data = {
+            'value': 'ytrewq',
+        }
+        response = self.client.patch(url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.cfv1.refresh_from_db()
+        self.assertEqual(self.cfv1.object, self.sm1)
+        self.assertEqual(self.cfv1.custom_field, self.custom_field_str)
+        self.assertEqual(self.cfv1.value, 'ytrewq')
+
+    def test_delete_custom_field_value(self):
+        url = reverse(
+            self.detail_view_name,
+            kwargs={'pk': self.cfv1.pk, 'object_pk': self.cfv1.object_id}
+        )
+        response = self.client.delete(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(
+            CustomFieldValue.objects.filter(pk=self.cfv1.pk).count(), 0
+        )

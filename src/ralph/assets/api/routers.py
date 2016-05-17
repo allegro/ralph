@@ -5,7 +5,6 @@ from ralph.api import router
 from ralph.assets.api.views import (
     AssetHolderViewSet,
     AssetModelViewSet,
-    # AssetModelCustomFieldsViewSet,
     BaseObjectViewSet,
     BudgetInfoViewSet,
     BusinessSegmentViewSet,
@@ -29,10 +28,5 @@ router.register(r'profit-centers', ProfitCenterViewSet)
 router.register(r'services-environments', ServiceEnvironmentViewSet)
 router.register(r'services', ServiceViewSet)
 
-# # TODO: simplify it
-# nested_router = routers.NestedSimpleRouter(router, r'assetmodels', lookup='object')
-# nested_router.register(r'customfields', AssetModelCustomFieldsViewSet)
-
 urlpatterns = [
-    # url(r'^', include(nested_router.urls)),
 ]
