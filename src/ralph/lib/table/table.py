@@ -19,7 +19,6 @@ from ralph.admin.helpers import (
 
 
 class Table(object):
-
     """
     Generating contents for table based on predefined columns and queryset.
 
@@ -33,6 +32,8 @@ class Table(object):
                 {'value': 'Test', 'html_attributes': ''}
             ],
         ]
+
+    See __init__'s docstring for additional info about Table params.
     """
     template_name = 'table.html'
 
