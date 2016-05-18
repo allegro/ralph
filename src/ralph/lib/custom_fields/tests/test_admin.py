@@ -218,7 +218,7 @@ class CustomFieldValueAdminMaxinTestCase(TestCase):
         }
         data.update(self._prepare_inline_data(data_custom_fields))
         response = self.client.post(SomeModel.get_add_url(), data)
-        self.assertEqual(response.status_code, 200)  # TODO
+        self.assertEqual(response.status_code, 200)
         self.assertIn(
             'Please correct the duplicate data for custom fields (only one '
             'value for particular custom field is possible).',

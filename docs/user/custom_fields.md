@@ -1,6 +1,7 @@
 # Custom fields
 
 Ralph's custom fields features:
+
 * it could be attached to any model
 * field could have limitation on value type (ex. have to be int, string, url, bool)
 * field could have limitation on possible choices (like html's select field)
@@ -10,14 +11,15 @@ Ralph's custom fields features:
 To define your own custom fields, go to `http://<YOUR-RALPH-URL>/custom_fields/customfield/` or select it in menu under `Settings > Custom fields`.
 
 Possible options:
+
 * `name` - name of your custom field
 * `attribute name` - this is slugged name of the custom field. It's used as a key in API.
 * `type` - custom field type. Possible choices here are:
-  * `string`
-  * `integer`
-  * `date`
-  * `url`
-  * `choice list`
+    * `string`
+    * `integer`
+    * `date`
+    * `url`
+    * `choice list`
 * `choices` - fill it if you've chosen `choices` type. This is list of possible choices for your custom field. Separate choices by `|`, ex. `abc|def|ghi`.
 * `default value` - if you fill it, this value will be used as a default for your custom field,
 

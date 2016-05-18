@@ -46,6 +46,7 @@ class CustomField(TimeStampMixin, models.Model):
     attribute_name = models.SlugField(
         max_length=255, editable=False, unique=True,
         help_text=_("field name used in API. It's slugged name of the field"),
+        db_index=True,
     )
     type = models.PositiveIntegerField(
         choices=CustomFieldTypes(), default=CustomFieldTypes.STRING.id
@@ -93,7 +94,9 @@ class CustomField(TimeStampMixin, models.Model):
 
 
 class CustomFieldValue(TimeStampMixin, models.Model):
-    custom_field = models.ForeignKey(CustomField, verbose_name=_('key'))
+    custom_field = models.ForeignKey(
+        CustomField, verbose_name=_('key'), on_delete=models.PROTECT
+    )
     # value is stored in charfield on purpose - ralph's custom field mechanism
     # is by-design simple, so it, for example, don't allow to filter by range
     # of integers or other Django filters like gte, lte.
@@ -151,6 +154,7 @@ class CustomFieldValue(TimeStampMixin, models.Model):
 
 
 class WithCustomFieldsMixin(models.Model):
+    # TODO: handle polymorphic in filters
     custom_fields = GenericRelation(CustomFieldValue)
 
     class Meta:

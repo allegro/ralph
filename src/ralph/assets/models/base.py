@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.db import models
 
+from ralph.lib.custom_fields.models import WithCustomFieldsMixin
 from ralph.lib.mixins.models import TaggableMixin, TimeStampMixin
 from ralph.lib.permissions import PermByFieldMixin
 from ralph.lib.permissions.models import PermissionsBase
@@ -21,6 +22,7 @@ class BaseObject(
     TaggableMixin,
     PermByFieldMixin,
     TimeStampMixin,
+    WithCustomFieldsMixin,
     models.Model,
     metaclass=BaseObjectMeta
 ):

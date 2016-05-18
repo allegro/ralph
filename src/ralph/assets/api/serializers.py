@@ -196,7 +196,10 @@ class AssetHolderSerializer(RalphAPISerializer):
         model = AssetHolder
 
 
-class BaseObjectSerializer(RalphAPISerializer):
+class BaseObjectSerializer(
+    WithCustomFieldsSerializerMixin,
+    RalphAPISerializer
+):
     """
     Base class for other serializers inheriting from `BaseObject`.
     """

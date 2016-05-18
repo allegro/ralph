@@ -16,10 +16,10 @@ class CustomFieldsAPITests(APITestCase):
         cls.sm2 = SomeModel.objects.create(name='def')
 
         cls.custom_field_str = CustomField.objects.create(
-            name='test_str', type=CustomFieldTypes.STRING, default_value='xyz'
+            name='test str', type=CustomFieldTypes.STRING, default_value='xyz'
         )
         cls.custom_field_choices = CustomField.objects.create(
-            name='test_choice', type=CustomFieldTypes.CHOICE,
+            name='test choice', type=CustomFieldTypes.CHOICE,
             choices='qwerty|asdfgh|zxcvbn', default_value='zxcvbn'
         )
 
@@ -57,7 +57,6 @@ class CustomFieldsAPITests(APITestCase):
         url = reverse(self.list_view_name, args=(self.sm1.id,))
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # TODO: fix
         self.assertEqual(response.data['count'], 1)
         cfv = response.data['results'][0]
         self.assertEqual(
@@ -221,3 +220,12 @@ class CustomFieldsAPITests(APITestCase):
         self.assertEqual(
             CustomFieldValue.objects.filter(pk=self.cfv1.pk).count(), 0
         )
+
+    def test_filter_by_custom_field(self):
+        url = '{}?{}'.format(
+            reverse('{}-list'.format(SomeModel._meta.model_name)),
+            'customfield__test_str=sample_value'
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)

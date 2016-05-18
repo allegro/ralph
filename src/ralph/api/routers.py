@@ -6,11 +6,11 @@ from rest_framework import routers
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-from ralph.lib.custom_fields.api import NestedCustomFieldsRouter
+from ralph.lib.custom_fields.api.routers import NestedCustomFieldsRouterMixin
 from ralph.lib.permissions.api import RalphPermission
 
 
-class RalphRouter(NestedCustomFieldsRouter, routers.DefaultRouter):
+class RalphRouter(NestedCustomFieldsRouterMixin, routers.DefaultRouter):
     """
     Acts like DefaultRouter + checks if user has permissions to see viewset.
     Viewsets for which user doesn't have permissions are hidden in root view.
