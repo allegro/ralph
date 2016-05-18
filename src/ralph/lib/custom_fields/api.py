@@ -1,5 +1,6 @@
 from django.conf.urls import include, url
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers, viewsets
 from rest_framework_nested.routers import NestedSimpleRouter
 
@@ -67,10 +68,22 @@ class CustomFieldValueSaveSerializer(
 ):
     def to_internal_value(self, data):
         result = super().to_internal_value(data)
+        # rewrite content type id and object id (grabbed from url) to validated
+        # data
         for key in ['content_type_id', 'object_id']:
             if key in data:
                 result[key] = data[key]
         return result
+
+    def _extra_instance_validation(self, instance):
+        super()._extra_instance_validation(instance)
+        # run extra uniqueness validation - since content_type and object_id
+        # fields are not exposed through API (we're using nested resources),
+        # DRF does not handle this validation automatically
+        try:
+            instance.validate_unique()
+        except DjangoValidationError as e:
+            raise self._django_validation_error_to_drf_validation_error(e)
 
 
 class CustomFieldValueSerializer(
@@ -83,11 +96,17 @@ class CustomFieldValueSerializer(
         fields = ('id', 'custom_field', 'value', 'url')
 
 
-# helpers
+# =============================================================================
+# helpers for other resoruces (should not be used directly)
+# =============================================================================
 class WithCustomFieldsSerializerMixin(serializers.Serializer):
     custom_fields = serializers.SerializerMethodField()
 
     def get_custom_fields(self, obj):
+        """
+        Return custom fields for single object as a dictionary, where key is
+        attribute_name of custom_field and value is value of custom field.
+        """
         return {
             cfv.custom_field.attribute_name: cfv.value
             for cfv in obj.custom_fields.all()

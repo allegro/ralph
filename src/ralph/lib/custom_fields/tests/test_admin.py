@@ -63,25 +63,6 @@ class CustomFieldValueAdminMaxinTestCase(TestCase):
             '<input name="__empty__" type="text" value="xyz" />'
         )
 
-    def test_get_modeladmin(self):
-        CustomFieldValue.objects.create(
-            object=self.sm1,
-            custom_field=self.custom_field_choices,
-            value='asdfgh',
-        )
-        response = self.client.get(self.sm1.get_absolute_url())
-        # check if form field is properly handled
-        self.assertContains(
-            response,
-            '<select id="id_custom_fields-customfieldvalue-content_type-'
-            'object_id-1-value" name="custom_fields-customfieldvalue-'
-            'content_type-object_id-1-value">'
-        )
-        self.assertContains(
-            response,
-            '<option value="asdfgh" selected="selected">asdfgh</option>'
-        )
-
     def test_add_new_custom_field_value_for_existing_object(self):
         data = {
             'id': self.sm1.id,

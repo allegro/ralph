@@ -5,7 +5,7 @@ from functools import reduce
 
 import reversion
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import NON_FIELD_ERRORS, ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Q
 from django.db.models.fields import exceptions
@@ -233,16 +233,25 @@ class RalphAPISaveSerializer(
         for k, v in data.items():
             setattr(instance, k, v)
         try:
-            instance.full_clean()
+            instance.clean()
         except DjangoValidationError as e:
-            # convert Django ValidationError to rest framework
-            # ValidationError to display errors per field
-            # (the standard behaviour of DRF is to dump all Django
-            # ValidationErrors into "non_field_errors" result field)
-            raise RestFrameworkValidationError(detail=dict([
-                (key, value if isinstance(value, list) else [value])
-                for key, value in e.message_dict.items()
+            raise self._django_validation_error_to_drf_validation_error(e)
+        self._extra_instance_validation(instance)
+
+    def _django_validation_error_to_drf_validation_error(self, exc):
+        # convert Django ValidationError to rest framework
+        # ValidationError to display errors per field
+        # (the standard behaviour of DRF is to dump all Django
+        # ValidationErrors into "non_field_errors" result field)
+        if hasattr(exc, 'error_dict'):
+            return RestFrameworkValidationError(detail=dict(list(exc)))
+        else:
+            return RestFrameworkValidationError(detail=dict([
+                (NON_FIELD_ERRORS, [value]) for value in exc
             ]))
+
+    def _extra_instance_validation(self, instance):
+        pass
 
     def validate(self, attrs):
         attrs = super().validate(attrs)

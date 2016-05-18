@@ -6,7 +6,7 @@ from .models import SomeModel
 site = admin.AdminSite(name="cf_admin")
 
 
-# @admin.register(SomeModel)
+@admin.register(SomeModel)
 class SomeModelAdmin(CustomFieldValueAdminMaxin, admin.ModelAdmin):
     pass
 
