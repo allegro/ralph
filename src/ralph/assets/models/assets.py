@@ -19,8 +19,6 @@ from ralph.assets.models.choices import (
     ObjectModelType
 )
 from ralph.lib.custom_fields.models import WithCustomFieldsMixin
-# from django.contrib.contenttypes.fields import GenericRelation
-# from ralph.lib.custom_fields.models import CustomFieldValue
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
@@ -128,7 +126,7 @@ class AssetModel(
 ):
     # TODO: should type be determined based on category?
     _allow_in_dashboard = True
-    # custom_fields = GenericRelation(CustomFieldValue)
+
     type = models.PositiveIntegerField(
         verbose_name=_('type'), choices=ObjectModelType(),
     )

@@ -1,11 +1,13 @@
 from django.conf.urls import include, url
 from rest_framework import routers, serializers, viewsets
 
-from ..api_helpers import CustomFieldsSerializerMixin, NestedCustomFieldsRouter
+from ..api import NestedCustomFieldsRouter, WithCustomFieldsSerializerMixin
 from .models import SomeModel
 
 
-class SomeModelSerializer(CustomFieldsSerializerMixin, serializers.Serializer):
+class SomeModelSerializer(
+    WithCustomFieldsSerializerMixin, serializers.Serializer
+):
     class Meta:
         model = SomeModel
 
@@ -15,7 +17,9 @@ class SomeModelViewset(viewsets.ViewSet):
     serializer_class = SomeModelSerializer
 
 
-class CustomFieldsAPITestsRouter(NestedCustomFieldsRouter, routers.DefaultRouter):
+class CustomFieldsAPITestsRouter(
+    NestedCustomFieldsRouter, routers.DefaultRouter
+):
     pass
 
 

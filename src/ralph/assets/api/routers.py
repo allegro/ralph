@@ -24,5 +24,4 @@ router.register(r'manufacturers', ManufacturerViewSet)
 router.register(r'profit-centers', ProfitCenterViewSet)
 router.register(r'services-environments', ServiceEnvironmentViewSet)
 router.register(r'services', ServiceViewSet)
-
 urlpatterns = []

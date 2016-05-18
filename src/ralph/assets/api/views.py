@@ -8,8 +8,6 @@ from ralph.assets.api import serializers
 from ralph.licences.api import BaseObjectLicenceViewSet
 from ralph.licences.models import BaseObjectLicence
 
-# from ralph.lib.custom_fields.api import ObjectCustomFieldsViewSet
-
 
 class BusinessSegmentViewSet(RalphAPIViewSet):
     queryset = models.BusinessSegment.objects.all()

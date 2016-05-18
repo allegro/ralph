@@ -1,6 +1,6 @@
 from ralph.settings import *  # noqa
 
-DEBUG = True
+DEBUG = False
 
 TEST_DB_ENGINE = os.environ.get('TEST_DB_ENGINE', 'sqlite')
 
@@ -25,7 +25,7 @@ else:  # use sqlite as default
 
 INSTALLED_APPS += (
     'ralph.lib.mixins',
-    # 'ralph.tests',
+    'ralph.tests',
     'ralph.lib.custom_fields.tests',
     'ralph.lib.permissions.tests',
     'ralph.lib.polymorphic.tests',
