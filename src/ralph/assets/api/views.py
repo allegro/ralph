@@ -81,6 +81,8 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
         'sn': ['asset__sn'],
         'barcode': ['asset__barcode'],
         'price': ['asset__price'],
+        'ip': ['ethernet__ipaddress__address'],
+        'service': ['service_env__service__uid', 'service_env__service__name'],
     }
 
 
@@ -92,7 +94,7 @@ class AssetHolderViewSet(RalphAPIViewSet):
 class EthernetViewSet(RalphAPIViewSet):
     queryset = models.Ethernet.objects.all()
     serializer_class = serializers.EthernetSerializer
-
+    filter_fields = ['base_object']
     prefetch_related = ['model', 'base_object', 'base_object__tags']
 
 

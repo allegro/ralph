@@ -2,7 +2,7 @@ import factory
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyText
 
-from ralph.assets.tests.factories import BaseObjectFactory
+from ralph.assets.tests.factories import EthernetFactory
 from ralph.data_center.tests.factories import DataCenterFactory
 from ralph.networks.models.networks import (
     IPAddress,
@@ -35,7 +35,7 @@ class IPAddressFactory(DjangoModelFactory):
     hostname = FuzzyText(
         prefix='ralph.', suffix='.allegro.pl', length=40
     )
-    base_object = factory.SubFactory(BaseObjectFactory)
+    ethernet = factory.SubFactory(EthernetFactory)
 
     class Meta:
         model = IPAddress

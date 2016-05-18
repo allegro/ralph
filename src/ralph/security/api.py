@@ -5,7 +5,6 @@ from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import RalphAPISaveSerializer
-from ralph.data_center.models import DataCenterAsset
 from ralph.networks.models.networks import IPAddress
 from ralph.security.models import SecurityScan, Vulnerability
 
@@ -57,23 +56,13 @@ class SaveSecurityScanSerializer(RalphAPISaveSerializer):
         host_ip = data.get('host_ip', None)
         if host_ip:
             base_object = None
-            # first try to get base object by IPAddress
-            # if not found, try by management ip
-            # TODO: management_ip is temporary solution until it will be stored
-            # properly in ipaddresses assigned to object
+            # try to get base object by IPAddress
             try:
                 ip_address = IPAddress.objects.get(address=host_ip)
             except IPAddress.DoesNotExist:
                 pass
             else:
-                base_object = ip_address.base_object.id
-            if not base_object:
-                try:
-                    base_object = DataCenterAsset.objects.get(
-                        management_ip=host_ip
-                    ).baseobject_ptr_id
-                except DataCenterAsset.DoesNotExist:
-                    pass
+                base_object = ip_address.base_object
             if not base_object:
                 errors['host_ip'] = "IP is not assigned to any host"
         else:
@@ -81,7 +70,7 @@ class SaveSecurityScanSerializer(RalphAPISaveSerializer):
 
         if errors:
             raise serializers.ValidationError(errors)
-        data['base_object'] = base_object
+        data['base_object'] = base_object.pk
         result = super(SaveSecurityScanSerializer, self).to_internal_value(data)
         return result
 

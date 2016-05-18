@@ -24,6 +24,7 @@ from ralph.assets.tests.factories import (
     ConfigurationModuleFactory,
     DataCenterAssetModelFactory,
     EnvironmentFactory,
+    EthernetFactory,
     ManufacturerFactory,
     ProfitCenterFactory,
     ServiceEnvironmentFactory,
@@ -42,6 +43,7 @@ from ralph.domains.models import Domain
 from ralph.domains.tests.factories import DomainFactory
 from ralph.licences.models import Licence
 from ralph.licences.tests.factories import LicenceFactory
+from ralph.networks.tests.factories import IPAddressFactory
 from ralph.supports.models import Support
 from ralph.supports.tests.factories import SupportFactory
 from ralph.virtual.models import (
@@ -479,6 +481,9 @@ class BaseObjectAPITests(RalphAPITestCase):
             barcode='12543', price='9.00'
         )
         self.dc_asset.tags.add('tag2')
+        self.ip = IPAddressFactory(
+            ethernet=EthernetFactory(base_object=self.dc_asset)
+        )
 
     def test_get_base_objects_list(self):
         url = reverse('baseobject-list')
@@ -542,6 +547,33 @@ class BaseObjectAPITests(RalphAPITestCase):
         )
         response = self.client.get(url, format='json')
         self.assertEqual(len(response.data['results']), 0)
+
+    def test_filter_by_ip(self):
+        url = '{}?{}'.format(
+            reverse('baseobject-list'), urlencode(
+                {'ip': self.ip.address}
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 1)
+
+    def test_filter_by_service_uid(self):
+        url = '{}?{}'.format(
+            reverse('baseobject-list'), urlencode(
+                {'service': self.dc_asset.service_env.service.uid}
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 1)
+
+    def test_filter_by_service_name(self):
+        url = '{}?{}'.format(
+            reverse('baseobject-list'), urlencode(
+                {'service': self.dc_asset.service_env.service.name}
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_tags(self):
         url = '{}?{}'.format(
