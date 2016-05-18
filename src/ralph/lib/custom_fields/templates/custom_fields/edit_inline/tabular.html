@@ -1,0 +1,45 @@
+{% extends "admin/edit_inline/tabular.html" %}
+{% load i18n %}
+
+{% block extra_scripts %}
+    {{ block.super }}
+    <script type="text/javascript">
+    // replace value field with the proper one for particular custom field
+    // (ex. select field)
+    // i don't have better idea right now how to use $ (ralph.jQuery) in this
+    // template (it's loaded at the end of the body)
+    document.addEventListener("DOMContentLoaded", function(event) {
+        (function($) {
+            $(function () {
+                "use strict";
+                function updateValueField($customField){
+                    var customFieldId = $customField.attr('value'),
+                        $td = $customField.closest('tr').find('td.field-value'),
+                        propertiesToRewrite = ['id', 'name'];
+                    $.ajax({
+                      url: "{% url 'admin:customfield_formfield' '__empty__' %}".replace('__empty__', customFieldId),
+                    }).done(function(html) {
+                        var $html = $(html),
+                            $elemToReplace = $td.find('input,select');
+                        $.each(propertiesToRewrite, function(i, property){
+                            $html.attr(property, $elemToReplace.attr(property));
+                        });
+                        if($elemToReplace.val()){
+                            $html.val($elemToReplace.val());
+                        }
+                        $elemToReplace.replaceWith($html);
+                    });
+                }
+
+                $("auto-complete[name^='custom_fields-customfieldvalue-content_type-object_id-']").bind(
+                    "autocomplete-update",
+                    function(evt) {
+                        updateValueField($(evt.target));
+                    }
+                );
+                // TODO: handle new inline rows (added dynamically)
+            });
+        })(ralph.jQuery);
+    });
+    </script>
+{% endblock %}

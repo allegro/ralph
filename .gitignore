@@ -71,7 +71,9 @@ node_modules/
 src/ralph/static/css/
 src/ralph/static/vendor/
 src/ralph/var/
+src/ralph/admin/static/elements/elements-min.html
 
 debian/ralph-core*
 
 .idea
+!src/ralph/lib
