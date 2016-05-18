@@ -7,6 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import (
     LiquidatedStatusFilter,
+    RelatedAutocompleteFieldListFilter,
     TagsListFilter,
     TextListFilter
 )
@@ -199,12 +200,14 @@ class DataCenterAssetAdmin(
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
     list_filter = [
         'status', 'barcode', 'sn', 'hostname', 'invoice_no', 'invoice_date',
-        'order_no', 'model__name', 'service_env', 'depreciation_end_date',
-        'force_depreciation', 'remarks', 'budget_info', 'rack',
-        'rack__server_room', 'rack__server_room__data_center', 'position',
-        'property_of', LiquidatedStatusFilter,
+        'order_no', 'model__name',
+        ('model__category', RelatedAutocompleteFieldListFilter),
+        'service_env', 'depreciation_end_date', 'force_depreciation', 'remarks',
+        'budget_info', 'rack', 'rack__server_room',
+        'rack__server_room__data_center', 'position', 'property_of',
+        LiquidatedStatusFilter,
         ('management_ip', TextListFilter),
-        'management_hostname', ('tags', TagsListFilter)
+        'management_hostname', ('tags', TagsListFilter),
     ]
     date_hierarchy = 'created'
     list_select_related = [
