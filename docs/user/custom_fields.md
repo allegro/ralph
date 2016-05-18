@@ -65,6 +65,10 @@ Example:
 }
 ```
 
+## Filtering
+
+You could easily filter objects by value of custom field of your choice. Preprend `attribute_name` by `customfield__` in URL of list of objects to select only matching to custom field of your choice, for example: `http://<YOUR-RALPH-URL>/api/data-center-assets/?customfield__docker_version=1.10`.
+
 
 ## Changing custom fields
 
