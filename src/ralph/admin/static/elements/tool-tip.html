@@ -8,8 +8,7 @@
     }
   </style>
   <template>
-    <i id="icon" class="fa fa-info-circle"></i>
-    <paper-tooltip id='tooltip' animation-delay="0" for="icon"></paper-tooltip>
+    <i id="icon" title="[[tip]]" class="fa fa-info-circle"></i>
   </template>
   <script>
     Polymer({
@@ -17,12 +16,8 @@
       properties: {
         'tip': {
           type: String,
-          observer: '_reinitTooltip',
           value: ''
         }
-      },
-      _reinitTooltip: function(newValue, oldValue) {
-        Polymer.dom(this.$$('#tooltip')).innerHTML = this.tip;
       }
     });
   </script>
