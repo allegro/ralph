@@ -3,9 +3,9 @@ from rest_framework import routers, serializers, viewsets
 
 from ..api import (
     CustomFieldsFilterBackend,
+    NestedCustomFieldsRouterMixin,
     WithCustomFieldsSerializerMixin
 )
-from ..api.routers import NestedCustomFieldsRouterMixin
 from .models import SomeModel
 
 
