@@ -45,8 +45,12 @@ class Table(object):
 
         Args:
             queryset: django queryset
-            list_display: field list to display
+            list_display: field list to display; a value on the list could be
+                plain string (name of model's field - verbose name of field
+                will be used here) or tuple (field_name, verbose_name)
             additional_row_method: list of additional method for each row
+            transpose: set to True if table should be transposed (rows swapped
+                with columns)
         """
         self.queryset = queryset
         self.list_display_raw = list_display
