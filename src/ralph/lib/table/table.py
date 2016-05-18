@@ -19,33 +19,39 @@ from ralph.admin.helpers import (
 
 
 class Table(object):
-
     """
     Generating contents for table based on predefined columns and queryset.
 
     Example:
-        >>> table = Table(queryset, ['id', 'name'])
+        >>> table = Table(queryset, ['id', ('name', 'My field name')])
         >>> table.get_table_content()
         [
-            ['id', ('name', 'My field name')],
+            [{'value': id'}, {'value': 'My field name'}],
             [
                 {'value': '1', 'html_attributes': ''},
                 {'value': 'Test', 'html_attributes': ''}
             ],
         ]
+
+    See __init__'s docstring for additional info about Table params.
     """
     template_name = 'table.html'
 
     def __init__(
-        self, queryset, list_display, additional_row_method=None, request=None
+        self, queryset, list_display, additional_row_method=None, request=None,
+        transpose=False,
     ):
         """
         Initialize table class
 
         Args:
             queryset: django queryset
-            list_display: field list to display
+            list_display: field list to display; a value on the list could be
+                plain string (name of model's field - verbose name of field
+                will be used here) or tuple (field_name, verbose_name)
             additional_row_method: list of additional method for each row
+            transpose: set to True if table should be transposed (rows swapped
+                with columns)
         """
         self.queryset = queryset
         self.list_display_raw = list_display
@@ -54,6 +60,7 @@ class Table(object):
         ]
         self.additional_row_method = additional_row_method
         self.request = request
+        self.transpose = transpose
 
     def get_headers(self):
         """
@@ -62,7 +69,7 @@ class Table(object):
         headers = []
         for field in self.list_display_raw:
             if isinstance(field, (list, tuple)):
-                headers.append(field[1])
+                headers.append({'value': field[1]})
             else:
                 try:
                     name = getattr(self, field).title
@@ -70,7 +77,7 @@ class Table(object):
                     name = get_field_title_by_relation_path(
                         self.queryset.model, field
                     )
-                headers.append(name)
+                headers.append({'value': name})
         return headers
 
     def get_field_value(self, item, field):
@@ -91,7 +98,7 @@ class Table(object):
             value = getattr_dunder(item, field)
             try:
                 choice_class = get_field_by_relation_path(
-                    self.queryset.model, field
+                    item._meta.model, field
                 ).choices
             except FieldDoesNotExist:
                 choice_class = None
@@ -132,13 +139,20 @@ class Table(object):
                     ]
                     if additional_data:
                         result.append(additional_data)
+        if self.transpose:
+            result = list(zip(*result))
         return result
 
     def render(self, request=None):
         content = self.get_table_content()
+        context = {'show_header': self.transpose}
+        if self.transpose:
+            context.update({'rows': content})
+        else:
+            context.update({'headers': content[0], 'rows': content[1:]})
         return render_to_string(
             self.template_name,
-            context={'headers': content[0], 'rows': content[1:]},
+            context=context,
             request=request,
         )
 

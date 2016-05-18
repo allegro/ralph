@@ -2,6 +2,7 @@
 from ralph.api import router
 from ralph.data_center.api.views import (
     AccessoryViewSet,
+    BaseObjectClusterViewSet,
     ClusterTypeViewSet,
     ClusterViewSet,
     DatabaseViewSet,
@@ -23,4 +24,5 @@ router.register(r'server-rooms', ServerRoomViewSet)
 router.register(r'vips', VIPViewSet)
 router.register(r'clusters', ClusterViewSet)
 router.register(r'cluster-types', ClusterTypeViewSet)
+router.register(r'base-object-clusters', BaseObjectClusterViewSet)
 urlpatterns = []

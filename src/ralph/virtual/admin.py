@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphAdminForm, RalphTabularInline, register
 from ralph.admin.filters import IPFilter, TagsListFilter
+from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.networks.models.networks import IPAddress
 from ralph.virtual.models import (
     CloudFlavor,
@@ -34,21 +35,30 @@ class VirtualServerAdmin(RalphAdmin):
     search_fields = ['hostname', 'sn']
     list_filter = [
         'sn', 'hostname', 'service_env', 'configuration_path', IPFilter,
-        'parent', 'cluster', ('tags', TagsListFilter)
+        'parent', ('tags', TagsListFilter)
     ]
     list_display = [
         'hostname', 'type', 'sn', 'service_env', 'configuration_path'
     ]
-    raw_id_fields = ['parent', 'cluster', 'service_env', 'configuration_path']
+    raw_id_fields = ['parent', 'service_env', 'configuration_path']
     fields = [
         'hostname', 'type', 'sn', 'service_env', 'configuration_path',
-        'parent', 'cluster', 'tags'
+        'parent', 'tags'
     ]
     list_select_related = [
         'service_env__service', 'service_env__environment', 'type',
         'configuration_path'
     ]
+
     # TODO: add the same tabs as in DCAsset
+    class ClusterBaseObjectInline(RalphTabularInline):
+        model = BaseObjectCluster
+        fk_name = 'base_object'
+        raw_id_fields = ('cluster',)
+        extra = 1
+        verbose_name = _('Base Object')
+
+    inlines = [ClusterBaseObjectInline]
 
 
 class CloudHostTabularInline(RalphTabularInline):

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
@@ -10,7 +9,6 @@ from ralph.admin.filters import (
     TagsListFilter,
     TreeRelatedAutocompleteFilterWithDescendants
 )
-from ralph.admin.helpers import generate_html_link
 from ralph.admin.m2m import RalphTabularM2MInline
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
@@ -39,9 +37,14 @@ from ralph.data_center.models.virtual import (
 )
 from ralph.data_center.views.ui import DataCenterAssetSecurityInfo
 from ralph.data_importer import resources
+from ralph.lib.table import Table
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
-from ralph.networks.forms import NetworkForm, NetworkInlineFormset
+from ralph.networks.forms import (
+    NetworkForm,
+    NetworkInlineFormset,
+    SimpleNetworkForm
+)
 from ralph.networks.models.networks import Network
 from ralph.operations.views import OperationViewReadOnlyForExisiting
 from ralph.supports.models import BaseObjectsSupport
@@ -56,6 +59,12 @@ class AccessoryAdmin(RalphAdmin):
     search_fields = ['name']
 
 
+class ClusterNetworkInline(RalphTabularInline):
+    form = SimpleNetworkForm
+    model = Ethernet
+    exclude = ['model']
+
+
 @register(ClusterType)
 class ClusterTypeAdmin(RalphAdmin):
 
@@ -65,17 +74,23 @@ class ClusterTypeAdmin(RalphAdmin):
 @register(Cluster)
 class ClusterAdmin(RalphAdmin):
 
-    search_fields = ['name']
+    search_fields = ['name', 'hostname']
     fieldsets = (
         (_('Basic info'), {
-            'fields': ('name', 'type', 'parent', 'remarks', 'service_env')
+            'fields': (
+                'name', 'hostname', 'type', 'status', 'remarks', 'service_env',
+                'configuration_path',
+                'tags'
+            )
         }),
     )
-    raw_id_fields = ['parent', 'service_env']
-    raw_id_override_parent = {'parent': Cluster}
-    list_display = ['name', 'type']
+    raw_id_fields = ['service_env', 'configuration_path']
+    readonly_fields = ['get_masters_summary']
+    list_display = ['id', 'name', 'hostname', 'type']
     list_select_related = ['type']
-    list_filter = ['name', 'type', 'parent', 'service_env']
+    list_filter = [
+        'name', 'type', 'service_env', 'configuration_path', 'status'
+    ]
 
     class ClusterBaseObjectInline(RalphTabularInline):
         model = BaseObjectCluster
@@ -84,7 +99,35 @@ class ClusterAdmin(RalphAdmin):
         extra = 1
         verbose_name = _('Base Object')
 
-    inlines = [ClusterBaseObjectInline]
+    inlines = [ClusterBaseObjectInline, ClusterNetworkInline]
+
+    def get_fieldsets(self, request, obj=None):
+        """
+        Attach master info fieldset only if show_master_summary option checked
+        for cluster type.
+        """
+        fieldsets = super().get_fieldsets(request, obj)
+        if obj and obj.pk and obj.type.show_master_summary:
+            fieldsets += ((
+                _('Master Info'), {
+                    'fields': (
+                        'get_masters_summary',
+                    )
+                }
+            ),)
+        return fieldsets
+
+    def get_masters_summary(self, obj):
+        masters = obj.masters
+        if not masters:
+            return '-'
+        return Table(
+            masters,
+            getattr(masters[0], '_summary_fields', []),
+            transpose=True,
+        ).render()
+    get_masters_summary.allow_tags = True
+    get_masters_summary.short_description = _('Master info')
 
 
 @register(DataCenter)
@@ -205,7 +248,7 @@ class DataCenterAssetAdmin(
     resource_class = resources.DataCenterAssetResource
     list_display = [
         'status', 'barcode', 'model', 'sn', 'hostname', 'invoice_date',
-        'invoice_no', 'location', 'service_env', 'configuration_path'
+        'invoice_no', 'show_location', 'service_env', 'configuration_path'
     ]
     multiadd_summary_fields = list_display + ['rack']
     one_of_mulitvalue_required = ['sn', 'barcode']
@@ -276,54 +319,10 @@ class DataCenterAssetAdmin(
             settings, 'MULTIADD_DATA_CENTER_ASSET_FIELDS', None
         ) or multiadd_fields
 
-    def location(self, obj):
-        """
-        Additional column 'location' display filter by:
-        data center, server_room, rack, position (if is blade)
-        """
-        base_url = reverse('admin:data_center_datacenterasset_changelist')
-        position = obj.position
-        if obj.is_blade:
-            position = generate_html_link(
-                base_url,
-                {
-                    'rack': obj.rack_id,
-                    'position__start': obj.position,
-                    'position__end': obj.position
-                },
-                position,
-            )
-
-        result = [
-            generate_html_link(
-                base_url,
-                {
-                    'rack__server_room__data_center':
-                        obj.rack.server_room.data_center_id
-                },
-                obj.rack.server_room.data_center.name
-            ),
-            generate_html_link(
-                base_url,
-                {'rack__server_room': obj.rack.server_room_id},
-                obj.rack.server_room.name
-            ),
-            generate_html_link(
-                base_url,
-                {'rack': obj.rack_id},
-                obj.rack.name
-            )
-        ] if obj.rack else []
-
-        if obj.position:
-            result.append(str(position))
-        if obj.slot_no:
-            result.append(str(obj.slot_no))
-
-        return '&nbsp;/&nbsp;'.join(result) if obj.rack else '&mdash;'
-
-    location.short_description = _('Location')
-    location.allow_tags = True
+    def show_location(self, obj):
+        return obj.location
+    show_location.short_description = _('Location')
+    show_location.allow_tags = True
 
 
 @register(ServerRoom)

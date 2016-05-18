@@ -6,6 +6,7 @@ from ralph.assets.api.serializers import AssetSerializer, BaseObjectSerializer
 from ralph.assets.models.components import Ethernet
 from ralph.data_center.models import (
     Accessory,
+    BaseObjectCluster,
     Cluster,
     ClusterType,
     Database,
@@ -31,13 +32,22 @@ class ClusterSimpleSerializer(BaseObjectSerializer):
         depth = 1
 
 
+class BaseObjectClusterSerializer(RalphAPISerializer):
+    class Meta:
+        model = BaseObjectCluster
+        fields = ('id', 'url', 'base_object', 'is_master', 'cluster')
+
+
 class ClusterSerializer(ClusterSimpleSerializer):
-    base_objects = serializers.HyperlinkedRelatedField(
+    base_objects = BaseObjectClusterSerializer(
+        many=True, read_only=True, source='baseobjectcluster_set'
+    )
+    masters = serializers.HyperlinkedRelatedField(
         many=True, view_name='baseobject-detail', read_only=True
     )
 
     class Meta(ClusterSimpleSerializer.Meta):
-        pass
+        exclude = ('parent', 'content_type',)
 
 
 class DataCenterSerializer(RalphAPISerializer):
