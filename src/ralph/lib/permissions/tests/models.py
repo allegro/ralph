@@ -37,13 +37,20 @@ class Article(PermByFieldMixin, PermissionsForObjectMixin, models.Model):
     def __str__(self):
         return self.title
 
-    def _sample_property(self):
+    def sample_non_model_field(self):
         return '123'
-    _sample_property._permission_field = 'content'
+
+    def sample_non_model_field_with_permissions(self):
+        return '321'
+    sample_non_model_field_with_permissions._permission_field = 'content'
 
     @property
     def sample_property(self):
-        return self._sample_property
+        return 'xyz'
+
+    @property
+    def sample_property_with_permissions(self):
+        return 'zyx'
 
 
 class LongArticle(Article):
