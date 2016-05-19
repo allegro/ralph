@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-import django_filters
+
 
 from ralph.api import RalphAPIViewSet
-from ralph.assets.api.views import BaseObjectViewSet
+from ralph.assets.api.filters import NetworkableObjectFilters
+from ralph.assets.api.views import BaseObjectViewSet, BaseObjectViewSetMixin
 from ralph.data_center.admin import DataCenterAssetAdmin
 from ralph.data_center.api.serializers import (
     AccessorySerializer,
@@ -32,24 +33,12 @@ from ralph.data_center.models import (
 )
 
 
-class DataCenterAssetFilterSet(django_filters.FilterSet):
-    configuration_path = django_filters.CharFilter(
-        name='configuration_path__path'
-    )
-
-    class Meta:
+class DataCenterAssetFilterSet(NetworkableObjectFilters):
+    class Meta(NetworkableObjectFilters.Meta):
         model = DataCenterAsset
-        fields = [
-            'service_env__service__uid',
-            'service_env__service__name',
-            'service_env__service__id',
-            'configuration_path__path',
-            'configuration_path__module__name',
-            'configuration_path',
-        ]
 
 
-class DataCenterAssetViewSet(RalphAPIViewSet):
+class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     queryset = DataCenterAsset.objects.all()
     serializer_class = DataCenterAssetSerializer
     select_related = DataCenterAssetAdmin.list_select_related + [
@@ -64,7 +53,7 @@ class DataCenterAssetViewSet(RalphAPIViewSet):
         'connections',
         'tags',
     ]
-    filter_class = DataCenterAssetFilterSet
+    additional_filter_class = DataCenterAssetFilterSet
 
 
 class AccessoryViewSet(RalphAPIViewSet):
