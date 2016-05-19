@@ -2,11 +2,11 @@
     'use strict';
 
     angular
-        .module('data_center.directives', ['rack.services'])
+        .module('server_room.directives', ['rack.services'])
         .directive('rackTop', ['$document', 'RackModel', function ($document, RackModel) {
             return {
                 restrict: 'E',
-                templateUrl: '/static/partials/data_center/rack.html',
+                templateUrl: '/static/partials/server_room/rack.html',
                 scope: {
                     rack: '=',
                     mode: '=',

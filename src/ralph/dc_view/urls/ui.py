@@ -1,11 +1,11 @@
 from django.conf.urls import url
 
-from ralph.dc_view.views.ui import DataCenterView
+from ralph.dc_view.views.ui import ServerRoomView
 
 urlpatterns = [
     url(
         r'^dc_view/?$',
-        DataCenterView.as_view(),
+        ServerRoomView.as_view(),
         name='dc_view'
     ),
 ]

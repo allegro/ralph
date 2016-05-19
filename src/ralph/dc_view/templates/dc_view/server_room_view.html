@@ -18,16 +18,16 @@
 {% block content %}
 <br />
 <div id="content-main" class="row">
-    <div class="large-12 columns" ng-app="dataCenterVisualizationApp">
+    <div class="large-12 columns" ng-app="serverRoomVisualizationApp">
         <div class="row visualization">
             <div class="large-2 small-3 columns">
               <div class="panel">
-                <h5>{% trans "Data centers" %}</h5>
+                <h5>{% trans "Server rooms" %}</h5>
                 <ul class="side-nav">
-                    {% for data_center in data_centers %}
+                    {% for server_room in server_rooms %}
                       <li ui-sref-active="active">
-                        <a ui-sref="data_center.detail({dcId:{{ data_center.id }}})">
-                          {{ data_center }}
+                        <a ui-sref="server_room.detail({srId:{{ server_room.id }}})">
+                          {{ server_room }}
                         </a>
                       </li>
                     {% endfor %}

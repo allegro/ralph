@@ -2,19 +2,19 @@
     'use strict';
 
     angular
-        .module('data_center.controllers', [
-                'data_center.services',
-                'data_center.directives',
+        .module('server_room.controllers', [
+                'server_room.services',
+                'server_room.directives',
                 'rack.services'
             ]
         )
-        .controller('DataCenterController', ['$scope', '$stateParams', 'data_center', 'RackModel', function ($scope, $stateParams, data_center, RackModel) {
+        .controller('ServerRoomController', ['$scope', '$stateParams', 'server_room', 'RackModel', function ($scope, $stateParams, server_room, RackModel) {
             var gridSize = 40;
 
             $scope.forms = {
                 edit_form: {}
             };
-            $scope.data_center = data_center;
+            $scope.server_room = server_room;
 
             $scope.setInfo = function(item) {
                 $scope.info = item;
@@ -25,10 +25,10 @@
                 rack.visualization_col = x;
                 rack.visualization_row = y;
                 rack.orientation = 'top';
-                rack.server_room = '';
+                rack.server_room = server_room.id;
                 rack.name = 'New rack';
                 rack.new = true;
-                data_center.rack_set.push(rack);
+                server_room.rack_set.push(rack);
                 $scope.$emit('edit_rack', rack);
             };
 
@@ -47,7 +47,6 @@
                 var rack_model = new RackModel(rack);
                 var rack_promise = null;
                 var success_msg = '';
-
                 if (typeof(rack.id) !== 'undefined') {
                     rack_promise = rack_model.$update();
                     success_msg = 'updated';
@@ -72,7 +71,7 @@
             };
 
             $scope.$on('edit_rack', function (event, rack) {
-                $scope.data_center.rack_set.forEach(function(rack) {
+                $scope.server_room.rack_set.forEach(function(rack) {
                     rack.active = false;
                 });
                 rack.active = true;

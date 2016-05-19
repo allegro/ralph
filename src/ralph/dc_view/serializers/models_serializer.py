@@ -5,7 +5,6 @@ from rest_framework import serializers
 
 from ralph.data_center.models.choices import RackOrientation
 from ralph.data_center.models.physical import (
-    DataCenter,
     DataCenterAsset,
     Rack,
     RackAccessory,
@@ -164,15 +163,14 @@ class RackSerializer(AdminLinkMixin, RackBaseSerializer):
         fields = RackBaseSerializer.Meta.fields + ('rack_admin_url',)
 
 
-class DCSerializer(AdminLinkMixin, serializers.ModelSerializer):
+class SRSerializer(AdminLinkMixin, serializers.ModelSerializer):
     rack_set = RackSerializer(many=True)
     admin_link = serializers.SerializerMethodField('admin_link')
-    server_rooms = ServerRoomtSerializer(many=True)
 
     class Meta:
-        model = DataCenter
+        model = ServerRoom
         fields = (
-            'id', 'name', 'visualization_cols_num', 'server_rooms',
+            'id', 'name', 'visualization_cols_num',
             'visualization_rows_num', 'rack_set', 'admin_link'
         )
         depth = 1

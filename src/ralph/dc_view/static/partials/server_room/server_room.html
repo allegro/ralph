@@ -46,19 +46,6 @@
                   </div>
                 </div>
                 <div class="row">
-                  <div class="large-12 columns" ng-class="{'error': forms.edit_form.server_room.$invalid}">
-                      <label for="id_name">Server room
-                        <select name="server_room" ng-model="rack.server_room" required>
-                          <option value="">----</option>
-                          <option value="{{ room.id }}" ng-repeat="room in data_center.server_rooms">
-                            {{ room.name }}
-                          </option>
-                        </select>
-                        <span class="help-inline" ng-show="forms.edit_form.server_room.$error.required">Select server room.</span>
-                      </label>
-                  </div>
-                </div>
-                <div class="row">
                   <div class="large-12 columns">
                       <label for="id_name">Description
                           <textarea ng-model="rack.description"></textarea>
@@ -71,16 +58,16 @@
     </div>
 </div>
 <div class="data-center">
-    <div class="grid rows-{{ data_center.visualization_rows_num }} cols-{{ data_center.visualization_cols_num }} {{ mode }}">
+    <div class="grid rows-{{ server_room.visualization_rows_num }} cols-{{ server_room.visualization_cols_num }} {{ mode }}">
         <div class="grid_wrapper" ng-mousemove="updatePosition($event)">
             <div class="rack add x-{{ actualX }} y-{{ actualY }}" ng-show="mode == 'edit'" ng-click="newRack(actualX, actualY)">+</div>
             <rack-top
                 ng-mouseleave="setInfo(null)"
                 ng-mouseover="setInfo(rack)"
-                ng-repeat="rack in data_center.rack_set"
+                ng-repeat="rack in server_room.rack_set"
                 rack="rack"
                 mode="mode"
-                dc="data_center"
+                dc="server_room"
             ></rack-top>
         </div>
     </div>
