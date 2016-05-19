@@ -37,8 +37,20 @@
                         },
                         'rack-list@': {
                             templateUrl: '/static/partials/data_center/rack_list.html',
-                            controller: ['$scope', 'data_center', function($scope, data_center){
+                            controller: ['$scope', '$filter', '$state', 'data_center', function($scope, $filter, $state, data_center){
                                 $scope.data_center = data_center;
+                                $scope.submit_search = function() {
+                                    var filtered_racks = $filter('filter')($scope.data_center.rack_set, $scope.rack_filter);
+                                    if(filtered_racks !== undefined && filtered_racks.length == 1) {
+                                        $state.go(
+                                            'data_center.detail.rack',
+                                            {
+                                                dcId: $scope.data_center.id,
+                                                rackId: filtered_racks[0].id
+                                            }
+                                        );
+                                    }
+                                };
                             }],
                         }
                     },

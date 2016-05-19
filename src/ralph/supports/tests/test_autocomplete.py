@@ -4,10 +4,8 @@ import json
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
-from ralph.accounts.tests.factories import UserFactory
 from ralph.admin.autocomplete import QUERY_PARAM
 from ralph.supports.tests.factories import SupportFactory, SupportTypeFactory
-from ralph.tests import RalphTestCase
 from ralph.tests.mixins import ClientMixin
 
 
@@ -33,13 +31,13 @@ class SupportAutocompleteTest(TestCase, ClientMixin):
         response = self.client.get(client_url, {QUERY_PARAM: 'test1'})
 
         expected_html = (
-            '<strong>Date from:</strong>&nbsp;{date_from}<br>'
-            '<strong>Date to:</strong>&nbsp;{date_to}<br>'
-            '<strong>Asset type:</strong>&nbsp;all<br>'
-            '<strong>Producer:</strong>&nbsp;{producer}<br>'
-            '<strong>Supplier:</strong>&nbsp;supplier1<br>'
-            '<strong>Serial no:</strong>&nbsp;{serial_no}<br>'
-            '<strong>Support type:</strong>&nbsp;type1<br>'
+            'Date from: {date_from}\n'
+            'Date to: {date_to}\n'
+            'Asset type: all\n'
+            'Producer: {producer}\n'
+            'Supplier: supplier1\n'
+            'Serial no: {serial_no}\n'
+            'Support type: type1\n'
         ).format(
             date_to=self.support.date_to,
             producer=self.support.producer,
@@ -47,7 +45,6 @@ class SupportAutocompleteTest(TestCase, ClientMixin):
             serial_no=self.support.serial_no
         )
         data = json.loads(str(response.content, 'utf-8'))['results'][0]
-
 
         self.assertEqual(
             data['label'], '{} ({}, {})'.format(

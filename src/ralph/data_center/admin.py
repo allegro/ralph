@@ -6,6 +6,7 @@ from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import (
     IPFilter,
     LiquidatedStatusFilter,
+    RelatedAutocompleteFieldListFilter,
     TagsListFilter,
     TreeRelatedAutocompleteFilterWithDescendants
 )
@@ -261,7 +262,8 @@ class DataCenterAssetAdmin(
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
     list_filter = [
         'status', 'barcode', 'sn', 'hostname', 'invoice_no', 'invoice_date',
-        'order_no', 'model__name', 'service_env',
+        'order_no', 'model__name',
+        ('model__category', RelatedAutocompleteFieldListFilter), 'service_env',
         ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
         'depreciation_end_date', 'force_depreciation', 'remarks', 'budget_info',
         'rack', 'rack__server_room', 'rack__server_room__data_center',

@@ -46,6 +46,7 @@ class CloudProjectSimpleSerializer(BaseObjectSerializer):
 
 
 class SaveCloudFlavorSerializer(RalphAPISaveSerializer):
+    _validate_using_model_clean = False
     cores = serializers.IntegerField()
     memory = serializers.IntegerField()
     disk = serializers.IntegerField()
@@ -67,6 +68,7 @@ class SaveCloudFlavorSerializer(RalphAPISaveSerializer):
 
 
 class SaveCloudHostSerializer(RalphAPISaveSerializer):
+    _validate_using_model_clean = False
     ip_addresses = serializers.ListField()
 
     def create(self, validated_data):
@@ -157,10 +159,12 @@ class CloudHostViewSet(RalphAPIViewSet):
     queryset = CloudHost.objects.all()
     serializer_class = CloudHostSerializer
     save_serializer_class = SaveCloudHostSerializer
-    select_related = ['parent', 'service_env__service',
-                      'service_env__environment', 'hypervisor']
+    select_related = [
+        'parent', 'parent__cloudproject', 'cloudprovider', 'hypervisor',
+        'service_env__service', 'service_env__environment',
+    ]
     prefetch_related = [
-        'tags', 'cloudflavor__virtualcomponent__model'
+        'tags', 'cloudflavor__virtualcomponent__model', 'licences'
     ]
 
 
@@ -168,7 +172,7 @@ class CloudProjectViewSet(RalphAPIViewSet):
     queryset = CloudProject.objects.all()
     serializer_class = CloudProjectSerializer
     prefetch_related = [
-        'children', 'tags', 'licences',
+        'children', 'tags', 'licences', 'cloudprovider',
     ]
 
 

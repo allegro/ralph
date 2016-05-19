@@ -55,6 +55,7 @@ class DataCenterAssetViewSet(RalphAPIViewSet):
     select_related = DataCenterAssetAdmin.list_select_related + [
         'service_env', 'service_env__service', 'service_env__environment',
         'rack', 'rack__server_room', 'rack__server_room__data_center',
+        'property_of', 'budget_info'
     ]
     prefetch_related = BaseObjectViewSet.prefetch_related + [
         'service_env__service__environments',

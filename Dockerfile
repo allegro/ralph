@@ -37,6 +37,7 @@ RUN sed -i '/\-e ./d' $RALPH_DIR/requirements/test.txt
 RUN make install-dev
 
 # install JS dependencies
+ADD src/ralph/admin/static $RALPH_DIR/src/ralph/admin/static
 ADD src/ralph/static $RALPH_DIR/src/ralph/static
 ADD gulpfile.js bower.json package.json $RALPH_DIR/
 RUN $SCRIPTS_PATH/init_js.sh

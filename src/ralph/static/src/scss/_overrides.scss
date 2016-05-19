@@ -43,21 +43,6 @@ select {
     }
 }
 
-.inline-group {
-    margin: 0 rem-calc(5);
-    .tabular tr {
-        &.has_original td {
-            padding-top: 0;
-        }
-        td {
-            padding: 0 rem-calc(5);
-            #{text-inputs(all, 'input')}, select{
-                margin: 0;
-            }
-        }
-    }
-}
-
 .field-row.error {
     background-color: $fieldset-bg-color;
 }

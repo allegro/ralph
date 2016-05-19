@@ -35,6 +35,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         self.rack = RackFactory()
         self.dc_asset = DataCenterAssetFactory(
             rack=self.rack,
+            position=10,
             model=self.model,
         )
         self.dc_asset.tags.add('db', 'test')
@@ -63,8 +64,10 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         url = reverse('datacenterasset-list')
         data = {
             'hostname': '12345',
+            'barcode': '12345',
             'model': self.model.id,
             'rack': self.rack.id,
+            'position': 12,
             'service_env': self.service_env.id,
             'force_depreciation': False,
         }
@@ -79,8 +82,10 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         url = reverse('datacenterasset-list')
         data = {
             'hostname': '12345',
+            'barcode': '12345',
             'model': self.model.id,
             'rack': self.rack.id,
+            'position': 12,
             'service_env': self.service_env.id,
             'force_depreciation': False,
             'tags': ['prod', 'db']
@@ -92,6 +97,24 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         self.assertEqual(dc_asset.service_env, self.service_env)
         self.assertEqual(dc_asset.rack, self.rack)
         self.assertEqual(dc_asset.tags.count(), 2)
+
+    def test_create_data_center_without_barcode_and_sn(self):
+        url = reverse('datacenterasset-list')
+        data = {
+            'hostname': '12345',
+            'model': self.model.id,
+            'rack': self.rack.id,
+            'position': 12,
+            'service_env': self.service_env.id,
+            'force_depreciation': False,
+            'tags': ['prod', 'db']
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {
+            'sn': ['SN or BARCODE field is required'],
+            'barcode': ['SN or BARCODE field is required'],
+        })
 
     def test_patch_data_center_asset(self):
         url = reverse('datacenterasset-detail', args=(self.dc_asset.id,))

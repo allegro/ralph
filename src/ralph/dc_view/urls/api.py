@@ -4,10 +4,6 @@ from ralph.dc_view.views.api import DCAssetsView, DCRacksAPIView
 
 urlpatterns = [
     url(
-        r'^rack/?$',
-        DCAssetsView.as_view(),
-    ),
-    url(
         r'^rack/(?P<rack_id>\d+)/?$',
         DCAssetsView.as_view(),
     ),

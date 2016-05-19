@@ -10,6 +10,13 @@ fieldset {
         color: $charcoal;
         font-size: 1.2rem;
     }
+    &.module {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        background-color: transparent;
+        margin-bottom: 1rem;
+    }
 }
 
 

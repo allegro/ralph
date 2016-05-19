@@ -73,7 +73,7 @@ Example:
       color: #43A047;
     }
     #icons {
-      margin-top: 5px;
+      margin: 5px 5px 0 5px;
     }
     #icons i {
       font-size: 1.3rem;
@@ -84,7 +84,7 @@ Example:
       <badge-input id='query-getter' on-badge-remove="onBadgeRemove"
       on-input='sendQueryRequest' odd-name='[[name]]'
       on-keydown='_handleKeys'
-      > </badge-input>
+      ></badge-input>
       <div id='icons'>
         <i hidden$='{{hiddenSpinner}}' class="loader fa fa-refresh fa-spin"></i>
         <i hidden$='{{hiddenAjaxError}}' class="has-tip fail fa
@@ -95,7 +95,7 @@ Example:
         <a hidden="{{!addRelatedUrl}}" on-tap='showAdminPopup' id="add_id_[[name]]" href="[[addRelatedUrl]]">
           <i class="fa fa-plus-circle"></i>
         </a>
-        <i data-tooltip class="has-tip fa fa-info-circle" title="[[searchTooltip]]"></i>
+        <tool-tip tip='[[searchTooltip]]'></tool-tip>
       </div>
     </div>
 

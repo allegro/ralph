@@ -214,11 +214,11 @@ class AutocompleteWidget(forms.TextInput):
         return search_fields_tooltip
 
     def render_search_fields_info(self, search_fields):
-        rows = ['Search by:<br>']
+        rows = ['Search by:\n']
         for model, fields in search_fields.items():
-            rows.append("{}:<br>".format(model.capitalize()))
+            rows.append("{}:\n".format(model.capitalize()))
             for field in fields:
-                rows.append("- {}<br>".format(field))
+                rows.append("- {}\n".format(field))
         return ''.join(rows)
 
     def render(self, name, value, attrs=None):

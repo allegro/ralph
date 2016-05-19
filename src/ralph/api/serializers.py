@@ -4,11 +4,15 @@ import operator
 from functools import reduce
 
 import reversion
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Q
 from django.db.models.fields import exceptions
 from rest_framework import permissions, relations, serializers
+from rest_framework.exceptions import \
+    ValidationError as RestFrameworkValidationError
+from rest_framework.utils import model_meta
 from taggit_serializer.serializers import (
     TaggitSerializer,
     TagListSerializerField
@@ -191,6 +195,10 @@ class RalphAPISaveSerializer(
     serializer_choice_field = ReversedChoiceField
     serializer_related_field = relations.PrimaryKeyRelatedField
 
+    # set this to False if you don't want to run model's clean method validation
+    # this could be useful if you have custom `create` method in serializer
+    _validate_using_model_clean = True
+
     def build_field(self, *args, **kwargs):
         field_class, field_kwargs = super().build_field(*args, **kwargs)
         # replace choice field by basic input
@@ -202,6 +210,45 @@ class RalphAPISaveSerializer(
         if issubclass(field_class, relations.RelatedField):
             field_kwargs.setdefault('style', {})['base_template'] = 'input.html'
         return field_class, field_kwargs
+
+    def _validate_model_clean(self, attrs):
+        """
+        Run validation using model's clean method.
+        """
+        data = attrs.copy()
+        ModelClass = self.Meta.model
+        # Remove many-to-many relationships from validated_data.
+        # They are not valid arguments to the model initializer.
+        info = model_meta.get_field_info(ModelClass)
+        for field_name, relation_info in info.relations.items():
+            if relation_info.to_many and (field_name in data):
+                data.pop(field_name)
+
+        # remove tags field
+        self._pop_tags(data)
+
+        # self.instance is set in case of update (PATCH/PUT) call
+        # otherwise create new model instance
+        instance = self.instance or ModelClass()
+        for k, v in data.items():
+            setattr(instance, k, v)
+        try:
+            instance.clean()
+        except DjangoValidationError as e:
+            # convert Django ValidationError to rest framework
+            # ValidationError to display errors per field
+            # (the standard behaviour of DRF is to dump all Django
+            # ValidationErrors into "non_field_errors" result field)
+            raise RestFrameworkValidationError(detail=dict([
+                (key, value if isinstance(value, list) else [value])
+                for key, value in e.message_dict.items()
+            ]))
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if self._validate_using_model_clean:
+            self._validate_model_clean(attrs)
+        return attrs
 
 
 serializers_registry = {}

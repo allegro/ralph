@@ -8,7 +8,7 @@ every topic related to it should work in Ralph API as well.
 
 Each user has auto-generated personal token for API authentication. You could obtain your token either by visiting your profile page or by sending request to `api-token-auth` enpoint:
 
-    curl -X  POST https://<YOUR-RALPH-URL>/api-token-auth/ -d '{"username": "<YOUR-USERNAME>", "password": "<YOUR-PASSWORD>"}'
+    curl -H "Content-Type: application/json" -X POST https://<YOUR-RALPH-URL>/api-token-auth/ -d '{"username": "<YOUR-USERNAME>", "password": "<YOUR-PASSWORD>"}'
     {"token":"79ee13720dbf474399dde532daad558aaeb131c3"}
 
 If you don't have API token assigned, send request to as above - it'll generate you API token automatically.

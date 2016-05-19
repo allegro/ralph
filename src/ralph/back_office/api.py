@@ -31,19 +31,27 @@ class OfficeInfrastructureViewSet(RalphAPIViewSet):
     serializer_class = OfficeInfrastructureSerializer
 
 
+class BackOfficeAssetSimpleSerializer(AssetSerializer):
+    class Meta(AssetSerializer.Meta):
+        model = BackOfficeAsset
+        exclude = AssetSerializer.Meta.exclude + ('licences', )
+        depth = 0
+
+
 class BackOfficeAssetSerializer(AssetSerializer):
     user = SimpleRalphUserSerializer()
     owner = SimpleRalphUserSerializer()
 
     class Meta(AssetSerializer.Meta):
         model = BackOfficeAsset
-        depth = 1
+        depth = 2
 
 
 class BackOfficeAssetViewSet(RalphAPIViewSet):
     select_related = BackOfficeAssetAdmin.list_select_related + [
         'service_env', 'service_env__service', 'service_env__environment',
         'user', 'owner', 'property_of', 'office_infrastructure',
+        'budget_info'
     ]
     prefetch_related = BaseObjectViewSet.prefetch_related + [
         'user__groups', 'user__user_permissions',

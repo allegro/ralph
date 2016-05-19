@@ -315,6 +315,7 @@ class AssetRelationsReport(BaseRelationsReport):
     name = _('Asset - relations')
     description = _('Asset list of information about the user, owner, model.')
     filename = 'asset_relations.csv'
+    extra_headers = ['tags']
     dc_headers = [
         'id', 'niw', 'barcode', 'sn', 'model__category__name',
         'model__manufacturer__name', 'status', 'service_env__service__name',
@@ -331,25 +332,38 @@ class AssetRelationsReport(BaseRelationsReport):
         'owner__first_name', 'owner__last_name', 'owner__company',
         'owner__segment', 'status', 'office_infrastructure__name',
         'property_of', 'warehouse__name', 'invoice_date', 'invoice_no',
-        'region__name', 'hostname', 'depreciation_rate', 'buyout_date'
+        'region__name', 'hostname', 'depreciation_rate', 'buyout_date',
     ]
     bo_select_related = [
         'model', 'model__category', 'office_infrastructure', 'warehouse',
-        'user', 'owner', 'model__manufacturer', 'region'
+        'user', 'owner', 'model__manufacturer', 'region', 'property_of'
     ]
 
     def prepare(self, model, *args, **kwargs):
-        queryset = model.objects.all()
+        queryset = model.objects.prefetch_related('tags')
         headers = self.bo_headers
         select_related = self.bo_select_related
         if model._meta.object_name == 'DataCenterAsset':
             headers = self.dc_headers
             select_related = self.dc_select_related
 
-        yield headers
+        yield headers + self.extra_headers
         for asset in queryset.select_related(*select_related):
             row = [str(getattr_dunder(asset, column)) for column in headers]
+            row += self.get_extra_columns(asset)
             yield row
+
+    def get_extra_columns(self, obj):
+        """
+        Call extra methods for object.
+        """
+        return [self._get_tags(obj)]
+
+    def _get_tags(self, obj):
+        """
+        Return comma-separated list of tags for object
+        """
+        return ','.join(sorted(map(str, obj.tags.all())))
 
 
 class LicenceRelationsReport(BaseRelationsReport):

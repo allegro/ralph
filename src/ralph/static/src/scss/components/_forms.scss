@@ -27,4 +27,12 @@ form {
     auto-complete {
         margin-bottom: 1rem;
     }
+
+    table tbody tr th,
+    table tbody tr td {
+        padding: 5px;
+        select, #{text-inputs(all, 'input')}, auto-complete {
+            margin: 0;
+        }
+    }
 }

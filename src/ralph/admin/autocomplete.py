@@ -36,7 +36,7 @@ class AutocompleteTooltipMixin(object):
 
     @property
     def autocomplete_tooltip(self):
-        empty_element = '<i class="empty">&lt;empty&gt;</i>'
+        empty_element = '<empty>'
         tooltip = ''
         for field in self.autocomplete_tooltip_fields:
             if not hasattr(self, field):
@@ -46,7 +46,7 @@ class AutocompleteTooltipMixin(object):
             if isinstance(model_field.choices, Choices):
                 value = model_field.choices.name_from_id(value)
             label = str(self._meta.get_field(field).verbose_name)
-            tooltip += '<strong>{}:</strong>&nbsp;{}<br>'.format(
+            tooltip += '{}: {}\n'.format(
                 label.capitalize(), value or empty_element
             )
         return tooltip

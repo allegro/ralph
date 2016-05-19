@@ -44,7 +44,7 @@
     }
     .badge-icons {
       padding: 3px 1px;
-      margin: 1px;
+      margin: 1px 1px 1px 5px;
     }
     #text-getter{
       width: 100%;
@@ -54,7 +54,7 @@
     }
     .badge a, .badge i {
       float: left;
-      margin: 0 5px;
+      margin-right: 5px;
       cursor: pointer;
     }
     </style>
@@ -66,7 +66,7 @@
             <div class='flexchild'>
               [[item.__str__]]
               <template is="dom-if" if="{{item.tooltip}}">
-                <tool-tip title='{{ item.tooltip }}'> </tool-tip>
+                <tool-tip tip='[[item.tooltip]]'></tool-tip>
               </template>
             </div>
             <div class='badge-icons'>
