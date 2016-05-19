@@ -6,6 +6,7 @@ from rest_framework import filters, permissions, relations, viewsets
 
 from ralph.admin.sites import ralph_site
 from ralph.api.filters import (
+    AdditionalDjangoFilterBackend,
     ExtendedFiltersBackend,
     ImportedIdFilterBackend,
     LookupFilterBackend,
@@ -61,7 +62,7 @@ class RalphAPIViewSetMixin(QuerysetRelatedMixin, AdminSearchFieldsMixin):
         PermissionsForObjectFilter, filters.OrderingFilter,
         ExtendedFiltersBackend, LookupFilterBackend,
         PolymorphicDescendantsFilterBackend, TagsFilterBackend,
-        ImportedIdFilterBackend,
+        ImportedIdFilterBackend, AdditionalDjangoFilterBackend
     ]
     permission_classes = [RalphPermission]
     save_serializer_class = None
@@ -128,6 +129,10 @@ class RalphAPIViewSetMetaclass(type):
         queryset = getattr(new_cls, 'queryset', None)
         if queryset is not None:  # don't evaluate queryset
             _viewsets_registry[queryset.model] = new_cls
+        # filter_class should not be overwrited for RalphViewSet
+        # use dedicated filter backend if you have specific needs
+        if 'filter_class' in attrs:
+            raise TypeError('Cannot define filter_class for RalphAPIViewSet')
         return new_cls
 
 

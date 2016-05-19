@@ -77,7 +77,7 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
         )),
     ]
     filter_fields = [
-        'id', 'service_env', 'service_env__service__uid', 'content_type'
+        'id', 'service_env', 'service_env', 'content_type'
     ]
     extended_filter_fields = {
         'name': ['asset__hostname'],
@@ -112,3 +112,12 @@ class ConfigurationClassViewSet(RalphAPIViewSet):
     queryset = models.ConfigurationClass.objects.all()
     serializer_class = serializers.ConfigurationClassSerializer
     filter_fields = ('module', 'module__name', 'class_name', 'path')
+
+
+class BaseObjectViewSetMixin(object):
+    """
+    Base class for viewsets that inherits from BaseObject
+    """
+    extended_filter_fields = {
+        'service': ['service_env__service__uid', 'service_env__service__name']
+    }

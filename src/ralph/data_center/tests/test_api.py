@@ -5,6 +5,7 @@ from rest_framework import status
 from ralph.api.tests._base import RalphAPITestCase
 from ralph.assets.tests.factories import (
     DataCenterAssetModelFactory,
+    EthernetFactory,
     ServiceEnvironmentFactory
 )
 from ralph.data_center.models import (
@@ -25,6 +26,7 @@ from ralph.data_center.tests.factories import (
     RackFactory,
     ServerRoomFactory
 )
+from ralph.networks.tests.factories import IPAddressFactory
 
 
 class DataCenterAssetAPITests(RalphAPITestCase):
@@ -38,7 +40,11 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             position=10,
             model=self.model,
         )
+        self.ip = IPAddressFactory(
+            ethernet=EthernetFactory(base_object=self.dc_asset)
+        )
         self.dc_asset.tags.add('db', 'test')
+        self.dc_asset_2 = DataCenterAssetFactory()
 
     def test_get_data_center_assets_list(self):
         url = reverse('datacenterasset-list')
@@ -133,6 +139,46 @@ class DataCenterAssetAPITests(RalphAPITestCase):
     def test_filter_by_configuration_path(self):
         url = reverse('datacenterasset-list') + '?configuration_path={}'.format(
             self.dc_asset.configuration_path.path,
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['count'], 1
+        )
+
+    def test_filter_by_hostname(self):
+        url = reverse('datacenterasset-list') + '?hostname={}'.format(
+            self.dc_asset.hostname,
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['count'], 1
+        )
+
+    def test_filter_by_ip_address(self):
+        url = reverse('datacenterasset-list') + '?ip={}'.format(
+            self.ip.address,
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['count'], 1
+        )
+
+    def test_filter_by_service_uid(self):
+        url = reverse('datacenterasset-list') + '?service={}'.format(
+            self.dc_asset.service_env.service.uid,
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['count'], 1
+        )
+
+    def test_filter_by_service_name(self):
+        url = reverse('datacenterasset-list') + '?service={}'.format(
+            self.dc_asset.service_env.service.name,
         )
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
