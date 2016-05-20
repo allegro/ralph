@@ -266,7 +266,7 @@ class Network(
         unique_together = ('min_ip', 'max_ip')
 
     def __str__(self):
-        return '{} ({})'.format(self.name, self.address)
+        return '{} ({} | VLAN: {})'.format(self.name, self.address, self.vlan)
 
     def save(self, *args, **kwargs):
         """

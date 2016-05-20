@@ -23,8 +23,13 @@ def transition_action(method=None, **kwargs):
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
 
+        models = []
         if 'model' in kwargs:
-            setattr(kwargs['model'], func.__name__, wrapper)
+            models = [kwargs['model']]
+        elif 'models' in kwargs:
+            models = kwargs['models']
+        for model in models:
+            setattr(model, func.__name__, wrapper)
 
         return wrapper
 
