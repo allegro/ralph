@@ -30,8 +30,8 @@ def validate_is_management(forms):
 
 
 class SimpleNetworkForm(forms.ModelForm):
-    hostname = forms.CharField(label='Hostname')
-    address = forms.IPAddressField(label='IP address')
+    hostname = forms.CharField(label='Hostname', required=False)
+    address = forms.IPAddressField(label='IP address', required=False)
     is_management = forms.BooleanField(label='Is managment', required=False)
 
     ip_fields = ['hostname', 'address']
@@ -74,7 +74,7 @@ class SimpleNetworkForm(forms.ModelForm):
         if self.ip:
             self.ip.__dict__.update(ip_values)
             self.ip.save()
-        else:
+        elif ip_values['address']:
             IPAddress.objects.create(ethernet=obj, **ip_values)
         return obj
 

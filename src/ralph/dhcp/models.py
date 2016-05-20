@@ -60,3 +60,7 @@ class DNSServer(models.Model):
 
     def __str__(self):
         return '{}'.format(self.ip_address)
+
+
+class Preboot(models.Model):
+    pass

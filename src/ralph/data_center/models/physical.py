@@ -31,7 +31,7 @@ from ralph.data_center.models.choices import (
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
-from ralph.networks.models import IPAddress, NetworkEnvironment
+from ralph.networks.models import IPAddress, Network, NetworkEnvironment
 
 logger = logging.getLogger(__name__)
 
@@ -41,51 +41,6 @@ VALID_SLOT_NUMBER_FORMAT = re.compile('^([1-9][A,B]?|1[0-6][A,B]?)$')
 ACCESSORY_DATA = [
     'brush', 'patch_panel_fc', 'patch_panel_utp', 'organizer', 'power_socket'
 ]
-
-
-def autocomplete_service_env_pk(actions, objects):
-    """Function used as a callback for default_value.
-
-    Args:
-        actions: Transition action list
-        objects: Django models objects
-
-    Returns:
-        int object's pk
-    """
-    if len(objects) == 1:
-        if objects[0].service_env:
-            return objects[0].service_env.pk
-    return False
-
-
-def autocomplete_next_free_hostname(actions, objects):
-    """Function used as a callback for default_value.
-
-    Args:
-        actions: Transition action list
-        objects: Django models objects
-
-    Returns:
-        string next free hostname based on network environment
-    """
-    if len(objects) == 1:
-        return objects[0].get_next_free_hostname()
-    return ''
-
-
-def mac_choices_for_objects(actions, objects):
-    """Function used as a callback for choices.
-    Args:
-        actions: Transition action list
-        objects: Django models objects
-
-    Returns:
-        list tuple pairs (value, label)
-    """
-    if len(objects) == 1:
-        return [(eth.id, eth.mac) for eth in objects[0].ethernet.all()]
-    return [('0', _('use first'))]
 
 
 class Gap(object):
@@ -527,6 +482,16 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
 
         return '&nbsp;/&nbsp;'.join(result) if self.rack else '&mdash;'
 
+    def _get_available_network_environments(self):
+        return list(NetworkEnvironment.objects.filter(
+            network__racks=self.rack_id
+        ).distinct())
+
+    def _get_available_networks(self):
+        return list(Network.objects.filter(
+            racks=self.rack_id
+        ).distinct())
+
     def _validate_orientation(self):
         """
         Validate if orientation is valid for given position.
@@ -701,64 +666,6 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
                 # Save new asset to list, required to redirect url.
                 # RunTransitionView.get_success_url()
                 instances[i] = back_office_asset
-
-    # TODO: async
-    @classmethod
-    @transition_action(
-        verbose_name=_('Deploy asset'),
-        disable_save_object=True,
-        form_fields={
-            'service_env': {
-                'field': forms.CharField(label=_('Service and environment')),
-                'autocomplete_field': 'service_env',
-                'default_value': autocomplete_service_env_pk
-            },
-            # TODO: depends on https://github.com/allegro/ralph/pull/2407
-            'configuration_path': {
-                'field': forms.CharField(label=_('Configuration path')),
-            },
-            'mac': {
-                'choices': mac_choices_for_objects
-            },
-            # TODO: deployment models
-            'preboot': {
-                'choices': [
-                    (1, 'Ubuntu 14.04'),
-                    (2, 'Ubuntu 14.10'),
-                    (3, 'Ubuntu 15.04'),
-                ],
-            }
-        }
-    )
-    def deploy(cls, instances, request, **kwargs):
-        pass
-
-    @classmethod
-    @transition_action(
-        verbose_name=_('Change DNS entries'),
-        disable_save_object=True,
-        form_fields={
-            'hostname': {
-                'field': forms.CharField(label=_('Hostname')),
-                'default_value': autocomplete_next_free_hostname
-            },
-        }
-    )
-    def change_dns(cls, instances, request, **kwargs):
-        pass
-
-    @classmethod
-    @transition_action(
-        verbose_name=_('Change DHCP configuration'),
-        disable_save_object=True,
-        form_fields={
-            'ip_or_network': {
-                'field': forms.CharField(label=_('IP or network')),
-            },
-        }
-    )
-    def change_ip_network(cls, instances, request, **kwargs):
-        pass
 
 
 class Connection(models.Model):

@@ -605,7 +605,7 @@ def update_transitions_after_migrate(**kwargs):
     TRANSITION_ATTR_TAG in any field in model.
     """
     sender_models = list(kwargs['sender'].get_models())
-
+    action_ids = set()
     for model, field_names in _transitions_fields.items():
         if model not in sender_models:
             continue
@@ -623,6 +623,12 @@ def update_transitions_after_migrate(**kwargs):
                     name=name,
                 )
                 action.content_type.add(content_type)
+                action_ids.add(action.id)
+        to_delete = Action.objects.filter(content_type=content_type).exclude(
+            id__in=action_ids
+        )
+        logger.warning('Deleting actions: {}'.format(list(to_delete)))
+        to_delete.delete()
 
 post_migrate.connect(update_transitions_after_migrate)
 

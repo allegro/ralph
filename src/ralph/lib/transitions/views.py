@@ -76,22 +76,28 @@ class TransitionViewMixin(object):
                         **options.get('widget_options', {})
                     )
 
-                default_value = options.get(
-                    'default_value', lambda x, y: False
-                )
-                initial = default_value(self.actions, self.objects)
-                if not field and choices:
+                if choices:
                     if callable(choices):
                         list_of_choices = choices(self.actions, self.objects)
                     else:
                         list_of_choices = choices.copy()
-                    options['field'] = forms.ChoiceField(
-                        choices=list_of_choices
-                    )
+                    if field:
+                        field.choices = list_of_choices
+                    else:
+                        options['field'] = forms.ChoiceField(
+                            choices=list_of_choices
+                        )
+
+                default_value = options.get(
+                    'default_value', lambda x, y: False
+                )
+                initial = default_value(self.actions, self.objects)
                 if initial:
                     options['field'].initial = initial
+
                 if not autocomplete_field:
                     options['field'].widget.request = self.request
+
                 field_key = '{}__{}'.format(action.__name__, name)
                 fields[field_key] = options['field']
         return fields
