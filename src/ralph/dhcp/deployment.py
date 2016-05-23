@@ -23,12 +23,17 @@ import logging
 from functools import partial
 
 from django import forms
+from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.virtual.models import VirtualServer
 from ralph.data_center.models import DataCenterAsset
 from ralph.lib.transitions.decorators import transition_action
-from ralph.lib.mixins.forms import ChoiceFieldWithOtherOption
+from ralph.lib.mixins.forms import ChoiceFieldWithOtherOption, OTHER
+from ralph.dns.views import DNSaaSIntegrationNotEnabledError
+from ralph.dns.dnsaas import DNSaaS
+from ralph.networks.models import NetworkEnvironment
+from ralph.assets.models import ConfigurationClass
 
 logger = logging.getLogger(__name__)
 
@@ -41,48 +46,54 @@ deployment_action = partial(transition_action, models=DEPLOYMENT_MODELS)
 
 
 def autocomplete_service_env(actions, objects):
-    """Function used as a callback for default_value.
+    """
+    Returns current service_env for object. Used as a callback for
+    `default_value`.
 
     Args:
         actions: Transition action list
         objects: Django models objects
 
     Returns:
-        int object's pk
+        service_env id
     """
     service_envs = [obj.service_env_id for obj in objects]
     # if service-env for all objects are the same
     if len(set(service_envs)) == 1:
         return service_envs[0]
-    return False  # TODO: improve
+    return None
 
 
 def autocomplete_configuration_path(actions, objects):
-    """Function used as a callback for default_value.
+    """
+    Returns current configuration_path for object. Used as a callback for
+    `default_value`.
 
     Args:
         actions: Transition action list
         objects: Django models objects
 
     Returns:
-        int object's pk
+        configuration_path id
     """
     configuration_paths = [obj.configuration_path_id for obj in objects]
     # if configuration paths for all objects are the same
     if len(set(configuration_paths)) == 1:
         return configuration_paths[0]
-    return False  # TODO: improve
+    return None
 
 
 def next_free_hostname_choices(actions, objects):
-    """Function used as a callback for default_value.
+    """
+    Generate choices with next free hostname for each network environment
+    common for every object.
 
     Args:
         actions: Transition action list
         objects: Django models objects
 
     Returns:
-        string next free hostname based on network environment
+        list of tuples with next free hostname choices
     """
     network_environments = []
     for obj in objects:
@@ -100,27 +111,48 @@ def next_free_hostname_choices(actions, objects):
 
 
 def next_free_ip_choices(actions, objects):
+    """
+    Generate choices with next free IP for each network common for every object.
+    If there is only one object in this transition, custom IP address could be
+    passed (OTHER opiton).
+
+    Args:
+        actions: Transition action list
+        objects: Django models objects
+
+    Returns:
+        list of tuples with next free IP choices
+    """
     networks = []
     for obj in objects:
         networks.append(set(obj._get_available_networks()))
     networks = set.intersection(*networks)
-    return [
+    ips = [
         (
             '{}{}'.format(NEXT_FREE_IP, network.id),
             '{} ({})'.format(NEXT_FREE, network)
         )
         for network in networks
     ]
+    if len(objects) == 1:
+        ips += [(OTHER, _('Other'))]
+    return ips
 
 
 def mac_choices_for_objects(actions, objects):
-    """Function used as a callback for choices.
+    """
+    Generate choices with MAC addresses.
+
+    If there is only object in `objects`, returns list of it's MAC addresses.
+    If there is more than one object, return one-elem list with special value
+    'use first'.
+
     Args:
         actions: Transition action list
         objects: Django models objects
 
     Returns:
-        list tuple pairs (value, label)
+        list of tuples with MAC addresses
     """
     if len(objects) == 1:
         return [(eth.id, eth.mac) for eth in objects[0].ethernet.all()]
@@ -131,7 +163,11 @@ def mac_choices_for_objects(actions, objects):
     verbose_name=_('Clean hostname'),
 )
 def clean_hostname(cls, instances, **kwargs):
-    pass  # TODO
+    for instance in instances:
+        logger.warning('Clearing {} hostname ({})'.format(
+            instance, instance.hostname
+        ))
+        instance.hostname = None  # TODO: hostname nullable?
 
 
 @deployment_action(
@@ -140,7 +176,22 @@ def clean_hostname(cls, instances, **kwargs):
     is_async=True,
 )
 def clean_dns(cls, instances, **kwargs):
-    pass  # TODO
+    if not settings.ENABLE_DNSAAS_INTEGRATION:
+        raise DNSaaSIntegrationNotEnabledError()
+    dnsaas = DNSaaS()
+    # TODO: transaction?
+    for instance in instances:
+        records = dnsaas.get_dns_records(instance.ipaddresses.all().values_list(
+            'address', flat=True
+        ))
+        for record in records:
+            logger.warning(
+                'Deleting {pk} ({type} / {name} / {content}) DNS record'.format(
+                    **record
+                )
+            )
+            if dnsaas.delete_dns_record(record['pk']):
+                raise Exception()  # TODO
 
 
 @deployment_action(
@@ -148,7 +199,10 @@ def clean_dns(cls, instances, **kwargs):
     run_after=['clean_dns'],
 )
 def clean_ipaddresses(cls, instances, **kwargs):
-    pass  # TODO
+    for instance in instances:
+        for ip in instance.ipaddresses.all():
+            logger.warning('Deleting {} IP address'.format(ip))
+            ip.delete()
 
 
 @deployment_action(
@@ -156,7 +210,7 @@ def clean_ipaddresses(cls, instances, **kwargs):
     run_after=['clean_dns', 'clean_ipaddresses'],
 )
 def clean_dhcp(cls, instances, **kwargs):
-    pass  # TODO
+    pass  # TODO when DHCPEntry model will not be proxy to IPAddress
 
 
 @deployment_action(
@@ -170,8 +224,13 @@ def clean_dhcp(cls, instances, **kwargs):
     },
     run_after=['clean_dns', 'clean_dhcp'],
 )
-def assign_new_hostname(cls, instances, **kwargs):
-    pass  # TODO
+def assign_new_hostname(cls, instances, hostname, **kwargs):
+    net_env_id = hostname[len(NEXT_FREE_HOSTNAME):]
+    net_env = NetworkEnvironment.objects.get(pk=net_env_id)
+    for instance in instances:
+        new_hostname = net_env.issue_next_free_hostname()
+        logger.info('Assigning {} to {}'.format(new_hostname, instance))
+        instance.hostname = hostname
 
 
 @deployment_action(
@@ -182,13 +241,22 @@ def assign_new_hostname(cls, instances, **kwargs):
             'field': ChoiceFieldWithOtherOption(
                 label=_('IP Address'),
                 other_field=forms.GenericIPAddressField(),
+                auto_other_choice=False,
             ),
             'choices': next_free_ip_choices
         },
+        'mac': {
+            'field': forms.ChoiceField(label=_('MAC Address')),
+            'choices': mac_choices_for_objects
+        },
     },
 )
-def assign_ip(cls, instances, **kwargs):
-    pass  # TODO
+def assign_ip(cls, instances, ip_or_network, mac, **kwargs):
+    if ip_or_network['value' == OTHER]:
+        fixed_ip = ip_or_network[OTHER]
+    else:
+        fixed_ip = None
+    # TODO: finish
 
 
 @deployment_action(
@@ -220,6 +288,10 @@ def assign_service_env(cls, instances, service_env, **kwargs):
 )
 def assign_configuration_path(cls, instances, configuration_path, **kwargs):
     for instance in instances:
+        logger.info('Assinging {} configuration path to {}'.format(
+            ConfigurationClass.objects.get(pk=configuration_path),
+            instance
+        ))
         instance.configuration_path_id = configuration_path
 
 
@@ -227,10 +299,6 @@ def assign_configuration_path(cls, instances, configuration_path, **kwargs):
     verbose_name=_('Create DHCP entries'),
     disable_save_object=True,
     form_fields={
-        'mac': {
-            'field': forms.ChoiceField(label=_('MAC Address')),
-            'choices': mac_choices_for_objects
-        },
         # TODO: deployment models
         'preboot': {
             'field': forms.ChoiceField(label=_('Preboot')),

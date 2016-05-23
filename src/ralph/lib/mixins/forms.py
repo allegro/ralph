@@ -59,8 +59,15 @@ class ChoiceFieldWithOtherOption(forms.ChoiceField):
     other_field = forms.CharField()
 
     def __init__(
-        self, other_option_label=None, other_field=None, *args, **kwargs
+        self, other_option_label=None, other_field=None, auto_other_choice=True,
+        *args, **kwargs
     ):
+        """
+        Args:
+            auto_other_choice: pass True if 'OTHER' choice should be
+                automatically added at the end of choices
+        """
+        self.auto_other_choice = auto_other_choice
         super().__init__(*args, **kwargs)
         self.other_option_label = other_option_label or self.other_option_label
         self.other_field = other_field or self.other_field
@@ -69,7 +76,9 @@ class ChoiceFieldWithOtherOption(forms.ChoiceField):
         return super()._get_choices()
 
     def _set_choices(self, value):
-        value = list(value) + [(OTHER, self.other_option_label)]
+        value = list(value)
+        if self.auto_other_choice:
+            value += [(OTHER, self.other_option_label)]
         self._choices = self.widget.choices = value
 
     choices = property(_get_choices, _set_choices)
