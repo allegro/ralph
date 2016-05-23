@@ -10,17 +10,16 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libmysqlclient-dev \
     libmysqld-dev \
     libsasl2-dev \
+    make \
     mysql-server-5.6 \
     python3.4 \
     python3.4-dev \
     python3.4-venv \
+    python3-pip \
     redis-server
 
-# INSTALL Ralph in virtualenv
-# create virtualenv without pip - ubuntu 14.04 comes with broken Python3.4's pip
-# see http://askubuntu.com/questions/488529/pyvenv-3-4-error-returned-non-zero-exit-status-1
-# and https://bugs.launchpad.net/ubuntu/+source/python3.4/+bug/1290847
-pyvenv-3.4 --without-pip .
+pip3 install virtualenv
+virtualenv .
 . bin/activate
 
 curl https://bootstrap.pypa.io/get-pip.py | python
@@ -28,11 +27,11 @@ curl https://bootstrap.pypa.io/get-pip.py | python
 cd src/ralph/
 make install-dev
 
-cat /home/vagrant/src/ralph/vagrant/provisioning_scripts/profile_extensions >> /home/vagrant/.profile
-source /home/vagrant/.profile
+cat ~/src/ralph/vagrant/provisioning_scripts/profile_extensions >> ~/.profile
+source ~/.profile
 
 # create local settings file
-SETTINGS_LOCAL_PATH=/home/vagrant/src/ralph/src/ralph/settings/local.py
+SETTINGS_LOCAL_PATH=~/src/ralph/src/ralph/settings/local.py
 if [ ! -f $SETTINGS_LOCAL_PATH ]; then
     echo "from ralph.settings.dev import *  # noqa" > $SETTINGS_LOCAL_PATH
 fi
