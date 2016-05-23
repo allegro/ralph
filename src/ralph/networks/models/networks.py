@@ -355,6 +355,11 @@ class Network(
             if ip_as_int and not last else None
         )
 
+    def issue_next_free_ip(self):
+        # TODO: exception when any free IP found
+        ip_address = self.get_first_free_ip()
+        return IPAddress.objects.create(address=ip_address)
+
     def search_networks(self):
         """
         Search networks (ancestors) order first by min_ip descending,
