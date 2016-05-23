@@ -26,14 +26,14 @@ from django import forms
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.virtual.models import VirtualServer
+from ralph.assets.models import Ethernet, ConfigurationClass
 from ralph.data_center.models import DataCenterAsset
-from ralph.lib.transitions.decorators import transition_action
-from ralph.lib.mixins.forms import ChoiceFieldWithOtherOption, OTHER
 from ralph.dns.views import DNSaaSIntegrationNotEnabledError
 from ralph.dns.dnsaas import DNSaaS
-from ralph.networks.models import NetworkEnvironment
-from ralph.assets.models import ConfigurationClass
+from ralph.lib.transitions.decorators import transition_action
+from ralph.lib.mixins.forms import ChoiceFieldWithOtherOption, OTHER
+from ralph.networks.models import IPAddress, Network, NetworkEnvironment
+from ralph.virtual.models import VirtualServer
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +43,11 @@ NEXT_FREE_HOSTNAME = 'next_free__network_environment_'
 NEXT_FREE_IP = 'next_free__network_'
 DEPLOYMENT_MODELS = [DataCenterAsset, VirtualServer]
 deployment_action = partial(transition_action, models=DEPLOYMENT_MODELS)
+
+
+# =============================================================================
+# helpers
+# =============================================================================
 
 
 def autocomplete_service_env(actions, objects):
@@ -155,10 +160,35 @@ def mac_choices_for_objects(actions, objects):
         list of tuples with MAC addresses
     """
     if len(objects) == 1:
-        return [(eth.id, eth.mac) for eth in objects[0].ethernet.all()]
+        return [(eth.id, eth.mac) for eth in objects[0].ethernet.filter(
+            mac__isnull=False
+        )]
     return [('0', _('use first'))]
 
 
+def _get_non_mgmt_ethernets(instance):
+    """
+    Returns ethernets of instance which is not used for management IP
+    or None if not found.
+    """
+    return instance.ethernet.filter(
+        mac__isnull=False
+    ).exclude(
+        ipaddress__is_management=True
+    ).order_by('mac').first()
+
+
+def check_mac_address(instances):
+    errors = {}
+    for instance in instances:
+        if not _get_non_mgmt_ethernets(instance):
+            errors[instance] = _('Non-management MAC address not found')
+    return errors
+
+
+# =============================================================================
+# transition actions
+# =============================================================================
 @deployment_action(
     verbose_name=_('Clean hostname'),
 )
@@ -210,7 +240,14 @@ def clean_ipaddresses(cls, instances, **kwargs):
     run_after=['clean_dns', 'clean_ipaddresses'],
 )
 def clean_dhcp(cls, instances, **kwargs):
-    pass  # TODO when DHCPEntry model will not be proxy to IPAddress
+    for instance in instances:
+        mac_addresses = _get_non_mgmt_ethernets(instance).values_list(
+            'mac', flat=True
+        )
+        # TODO when DHCPEntry model will not be proxy to ipaddresse
+        # for dhcp_entry in DHCPEntry.objects.filter(mac__in=mac_addresses):
+        #     logger.warning('Removing {} DHCP entry')
+        #     dhcp_entry.delete()
 
 
 @deployment_action(
@@ -234,7 +271,7 @@ def assign_new_hostname(cls, instances, hostname, **kwargs):
 
 
 @deployment_action(
-    verbose_name=_('Assign new IP address'),
+    verbose_name=_('Assign new IP address and create DHCP entries'),
     disable_save_object=True,
     form_fields={
         'ip_or_network': {
@@ -244,19 +281,47 @@ def assign_new_hostname(cls, instances, hostname, **kwargs):
                 auto_other_choice=False,
             ),
             'choices': next_free_ip_choices
+            # TODO: validation for IP address (in other field) if not used
         },
-        'mac': {
+        'ethernet': {
             'field': forms.ChoiceField(label=_('MAC Address')),
             'choices': mac_choices_for_objects
         },
     },
+    precondition=check_mac_address
 )
-def assign_ip(cls, instances, ip_or_network, mac, **kwargs):
-    if ip_or_network['value' == OTHER]:
-        fixed_ip = ip_or_network[OTHER]
+def create_dhcp_entries(cls, instances, ip_or_network, ethernet, **kwargs):
+    if len(instances) == 1:
+        _create_dhcp_entries_for_single_instance(ip_or_network, ethernet)
     else:
-        fixed_ip = None
-    # TODO: finish
+        _create_dhcp_entries_for_many_instances(ip_or_network,)
+
+
+def _create_dhcp_entries_for_single_instance(instance, ip_or_network, ethernet_id):
+    if ip_or_network['value'] == OTHER:
+        ip_address = ip_or_network[OTHER]
+        ip = IPAddress.objects.create(address=ip_address)
+    else:
+        network = Network.objects.get(pk=ip_or_network[len(NEXT_FREE_IP):])
+        ip = network.issue_next_free_ip()
+    ethernet = Ethernet.objects.get(pk=ethernet_id)
+    ip.ethernet = ethernet
+    ip.save()
+
+    # TODO when DHCPEntry model will not be proxy to IPAddress
+    # DHCPEntry.objects.create(mac=ethernet.mac, ip=ip.address)
+
+
+def _create_dhcp_entries_for_many_instances(instances, ip_or_network):
+    for instance in instances:
+        # when IP is assigned to many instances, mac is not provided through
+        # form and first non-mgmt mac should be used
+        ethernet = _get_non_mgmt_ethernets(instance).values_list(
+            'id', flat=True
+        ).first()
+        _create_dhcp_entries_for_single_instance(
+            instance, ip_or_network, ethernet
+        )
 
 
 @deployment_action(
@@ -296,7 +361,7 @@ def assign_configuration_path(cls, instances, configuration_path, **kwargs):
 
 
 @deployment_action(
-    verbose_name=_('Create DHCP entries'),
+    verbose_name=_('Apply preboot'),
     disable_save_object=True,
     form_fields={
         # TODO: deployment models
@@ -310,7 +375,7 @@ def assign_configuration_path(cls, instances, configuration_path, **kwargs):
         }
     }
 )
-def create_dhcp_entries(cls, instances, **kwargs):
+def apply_preboot(cls, instances, **kwargs):
     pass  # TODO
 
 
