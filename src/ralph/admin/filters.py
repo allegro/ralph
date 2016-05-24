@@ -480,7 +480,9 @@ class IPFilter(SimpleListFilter):
 
     def queryset(self, request, queryset):
         if self.value():
-            queryset = queryset.filter(ipaddress__address=self.value())
+            queryset = queryset.filter(
+                ethernet__ipaddress__address=self.value()
+            )
         return queryset
 
 
