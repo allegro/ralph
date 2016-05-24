@@ -16,6 +16,17 @@ class DHCPEntryManager(models.Manager):
 
 
 class DHCPEntry(IPAddress):
+    # mac = models.CharField(
+    #     verbose_name=_('MAC address'), unique=True,
+    #     validators=[mac_validator], max_length=24, null=False, blank=False
+    # )
+    # ip_address = models.GenericIPAddressField(
+    #     verbose_name=_('IP address'),
+    #     help_text=_('Presented as string.'),
+    #     unique=True,
+    #     blank=False,
+    #     default=None,
+    # )
     objects = DHCPEntryManager()
 
     @property
@@ -60,7 +71,3 @@ class DNSServer(models.Model):
 
     def __str__(self):
         return '{}'.format(self.ip_address)
-
-
-class Preboot(models.Model):
-    pass

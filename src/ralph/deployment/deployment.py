@@ -28,6 +28,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import Ethernet, ConfigurationClass
 from ralph.data_center.models import DataCenterAsset
+from ralph.deployment.models import Preboot
 from ralph.dns.views import DNSaaSIntegrationNotEnabledError
 from ralph.dns.dnsaas import DNSaaS
 from ralph.lib.transitions.decorators import transition_action
@@ -254,20 +255,20 @@ def clean_dhcp(cls, instances, **kwargs):
     verbose_name=_('Assign new hostname'),
     disable_save_object=True,
     form_fields={
-        'hostname': {
-            'field': forms.ChoiceField(label=_('Hostname')),
+        'network_environment': {
+            'field': forms.ChoiceField(label=_('Network environment (for hostname)')),
             'choices': next_free_hostname_choices
         },
     },
     run_after=['clean_dns', 'clean_dhcp'],
 )
-def assign_new_hostname(cls, instances, hostname, **kwargs):
-    net_env_id = hostname[len(NEXT_FREE_HOSTNAME):]
+def assign_new_hostname(cls, instances, network_environment, **kwargs):
+    net_env_id = network_environment[len(NEXT_FREE_HOSTNAME):]
     net_env = NetworkEnvironment.objects.get(pk=net_env_id)
     for instance in instances:
         new_hostname = net_env.issue_next_free_hostname()
         logger.info('Assigning {} to {}'.format(new_hostname, instance))
-        instance.hostname = hostname
+        instance.hostname = new_hostname
 
 
 @deployment_action(
@@ -364,14 +365,12 @@ def assign_configuration_path(cls, instances, configuration_path, **kwargs):
     verbose_name=_('Apply preboot'),
     disable_save_object=True,
     form_fields={
-        # TODO: deployment models
         'preboot': {
-            'field': forms.ChoiceField(label=_('Preboot')),
-            'choices': [
-                (1, 'Ubuntu 14.04'),
-                (2, 'Ubuntu 14.10'),
-                (3, 'Ubuntu 15.04'),
-            ],
+            'field': forms.ModelChoiceField(
+                label=_('Preboot'),
+                queryset=Preboot.objects.all(),
+                empty_label=None
+            ),
         }
     }
 )
