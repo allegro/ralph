@@ -50,6 +50,14 @@ def date_format_to_human(value):
     return value
 
 
+def _add_incorrect_value_message(request, label):
+    messages.warning(
+        request, _('Incorrect value in "%(field_name)s" filter') % {
+            'field_name': label
+        }
+    )
+
+
 class BaseCustomFilter(FieldListFilter):
 
     """Base class for custom filters."""
@@ -323,11 +331,7 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
         try:
             queryset = queryset.filter(q_param)
         except ValueError:
-            messages.warning(
-                request, _('Incorrect value in "%(field_name)s" filter') % {
-                    'field_name': self.title
-                }
-            )
+            _add_incorrect_value_message(request, self.title)
             raise IncorrectLookupParameters()
 
         return queryset
@@ -400,11 +404,7 @@ class TreeRelatedFieldListFilter(RelatedFieldListFilter):
             try:
                 root = self.field.rel.to.objects.get(pk=self.value())
             except self.field.rel.to.DoesNotExist:
-                messages.warning(
-                    request, _('Incorrect value in "%(field_name)s" filter') % {
-                        'field_name': self.title
-                    }
-                )
+                _add_incorrect_value_message(request, self.title)
                 raise IncorrectLookupParameters()
             else:
                 queryset = queryset.filter(**{
@@ -426,11 +426,7 @@ class TreeRelatedAutocompleteFilterWithDescendants(
         try:
             root = self.field.rel.to.objects.get(pk=root_id)
         except self.field.rel.to.DoesNotExist:
-            messages.warning(
-                request, _('Incorrect value in "%(field_name)s" filter') % {
-                    'field_name': self.title
-                }
-            )
+            _add_incorrect_value_message(request, self.title)
             raise IncorrectLookupParameters()
         return root.get_descendants(include_self=True)
 
@@ -484,6 +480,7 @@ class IPFilter(SimpleListFilter):
             try:
                 ipaddress.ip_address(self.value())
             except ValueError:
+                _add_incorrect_value_message(request, self.title)
                 raise IncorrectLookupParameters()
             else:
                 queryset = queryset.filter(
