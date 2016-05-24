@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
+from django.db.models import Prefetch
+from rest_framework import serializers
+
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
-from ralph.assets.api.serializers import BaseObjectSerializer
-from ralph.supports.models import Support, SupportType
+from ralph.assets.api.serializers import StrField
+from ralph.assets.models import BaseObject
+from ralph.supports.models import BaseObjectsSupport, Support, SupportType
 
 
 class SupportTypeSerializer(RalphAPISerializer):
@@ -14,23 +18,54 @@ class SupportTypeViewSet(RalphAPIViewSet):
     serializer_class = SupportTypeSerializer
 
 
-class SupportSerializer(BaseObjectSerializer):
+class SupportSimpleSerializer(RalphAPISerializer):
+    class Meta:
+        model = Support
+        fields = [
+            'support_type', 'contract_id', 'name', 'serial_no', 'date_from',
+            'date_to', 'created', 'remarks', 'description', 'url'
+        ]
+        _skip_tags_field = True
+
+
+class SupportSerializer(RalphAPISerializer):
+    __str__ = StrField(show_type=True)
+    base_objects = serializers.HyperlinkedRelatedField(
+        many=True, view_name='baseobject-detail', read_only=True
+    )
+
     class Meta:
         model = Support
         depth = 1
-        # temporary - waiting for Polymorphic
-        # (https://github.com/allegro/ralph/pull/1725)
-        # we should create serializer for this field which will call
-        # proper serializer for each type returned by Polymorphic or try to
-        # use generic nested serializer for concrete type
-        exclude = ('base_objects', 'content_type')
+        exclude = ('content_type', 'service_env')
 
 
 class SupportViewSet(RalphAPIViewSet):
     queryset = Support.objects.all()
     serializer_class = SupportSerializer
+    select_related = ['region', 'budget_info', 'support_type', 'property_of']
+    prefetch_related = ['tags', Prefetch(
+        'base_objects', queryset=BaseObject.objects.all()
+    )]
 
 
+class BaseObjectsSupportSerializer(RalphAPISerializer):
+    support = SupportSimpleSerializer()
+    baseobject = serializers.HyperlinkedRelatedField(
+        view_name='baseobject-detail', read_only=True
+    )
+
+    class Meta:
+        model = BaseObjectsSupport
+
+
+class BaseObjectSupportViewSet(RalphAPIViewSet):
+    queryset = BaseObjectsSupport.objects.all()
+    serializer_class = BaseObjectsSupportSerializer
+    select_related = ['baseobject', 'support']
+
+
+router.register(r'base-objects-supports', BaseObjectSupportViewSet)
 router.register(r'supports', SupportViewSet)
 router.register(r'support-types', SupportTypeViewSet)
 urlpatterns = []
