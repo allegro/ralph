@@ -241,7 +241,7 @@ class PermByFieldMixin(models.Model, metaclass=PermissionsBase):
         :return: List of field names
         :rtype: list
         """
-        result = []
+        result = set()
         blacklist = cls._permissions.blacklist
 
         for field in (cls._meta.fields + cls._meta.many_to_many):
@@ -249,9 +249,12 @@ class PermByFieldMixin(models.Model, metaclass=PermissionsBase):
                 field.name not in blacklist and
                 cls.has_access_to_field(field.name, user, action)
             ):
-                result.append(field.name)
-
-        return set(result)
+                result.add(field.name)
+        # If the user does not have rights to view,
+        # but has the right to change he can view the field
+        if action == 'view':
+            result |= cls.allowed_fields(user, 'change')
+        return result
 
     class Meta:
         abstract = True
