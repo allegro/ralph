@@ -1,5 +1,5 @@
 from ralph.admin.mixins import RalphTemplateView
-from ralph.data_center.models.physical import ServerRoom
+from ralph.data_center.models.physical import DataCenter
 
 
 class ServerRoomView(RalphTemplateView):
@@ -7,6 +7,6 @@ class ServerRoomView(RalphTemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['server_rooms'] = ServerRoom.objects.all()
+        context['data_centers'] = DataCenter.objects.all()
         context['site_header'] = "Ralph 3"
         return context

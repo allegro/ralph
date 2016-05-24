@@ -7,7 +7,7 @@
 
 {% block extrahead %}
   {{ block.super }}
-  <link rel="stylesheet" type="text/css" href="{% static "vendor/css/loading-bar.min.css" %}" />
+  <link rel="stylesheet" type="text/css" href="{% static 'vendor/css/loading-bar.min.css' %}" />
 {% endblock %}
 
 {% block extra_scripts %}
@@ -24,11 +24,19 @@
               <div class="panel">
                 <h5>{% trans "Server rooms" %}</h5>
                 <ul class="side-nav">
-                    {% for server_room in server_rooms %}
+                    {% for data_center in data_centers %}
                       <li ui-sref-active="active">
-                        <a ui-sref="server_room.detail({srId:{{ server_room.id }}})">
-                          {{ server_room }}
-                        </a>
+                        {{ data_center }}
+                        {% for server_room in data_center.server_rooms.all %}
+                          <ul>
+                            <li>
+                              <a ui-sref="server_room.detail({srId:{{ server_room.id }}})">
+                               {{ server_room }}
+                              </a>
+                            </li>
+                          </ul>
+                          {% endfor%}
+
                       </li>
                     {% endfor %}
                 </ul>
