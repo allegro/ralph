@@ -104,6 +104,7 @@ sitetrees = [
                 section(_('VIPs'), 'data_center', 'VIP'),
                 section(_('Virtual Servers'), 'virtual', 'VirtualServer'),
                 section(_('Clusters'), 'data_center', 'cluster'),
+                section(_('Preboots'), 'deployment', 'Preboot'),
             ],
         ),
         ralph_item(
