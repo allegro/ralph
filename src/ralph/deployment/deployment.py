@@ -176,7 +176,7 @@ def _get_non_mgmt_ethernets(instance):
         mac__isnull=False
     ).exclude(
         ipaddress__is_management=True
-    ).order_by('mac').first()
+    ).order_by('mac')
 
 
 def check_mac_address(instances):
@@ -232,8 +232,10 @@ def clean_dns(cls, instances, **kwargs):
 def clean_ipaddresses(cls, instances, **kwargs):
     for instance in instances:
         for ip in instance.ipaddresses.all():
+            # TODO: skip mgmt
             logger.warning('Deleting {} IP address'.format(ip))
             ip.delete()
+            # TODO: if there is no mac etc, remove ethernet (overwrite IP delete)
 
 
 @deployment_action(
@@ -253,11 +255,11 @@ def clean_dhcp(cls, instances, **kwargs):
 
 @deployment_action(
     verbose_name=_('Assign new hostname'),
-    disable_save_object=True,
     form_fields={
         'network_environment': {
             'field': forms.ChoiceField(label=_('Network environment (for hostname)')),
-            'choices': next_free_hostname_choices
+            'choices': next_free_hostname_choices,
+            'exclude_from_history': True,  # TODO: history
         },
     },
     run_after=['clean_dns', 'clean_dhcp'],
@@ -269,11 +271,14 @@ def assign_new_hostname(cls, instances, network_environment, **kwargs):
         new_hostname = net_env.issue_next_free_hostname()
         logger.info('Assigning {} to {}'.format(new_hostname, instance))
         instance.hostname = new_hostname
+        instance.save()
+        kwargs['history_kwargs'][instance.pk]['hostname'] = (
+            '{} (from {})'.format(new_hostname, net_env)
+        )
 
 
 @deployment_action(
     verbose_name=_('Assign new IP address and create DHCP entries'),
-    disable_save_object=True,
     form_fields={
         'ip_or_network': {
             'field': ChoiceFieldWithOtherOption(
@@ -281,21 +286,38 @@ def assign_new_hostname(cls, instances, network_environment, **kwargs):
                 other_field=forms.GenericIPAddressField(),
                 auto_other_choice=False,
             ),
-            'choices': next_free_ip_choices
+            'choices': next_free_ip_choices,
+            'exclude_from_history': True,  # TODO: history
             # TODO: validation for IP address (in other field) if not used
         },
         'ethernet': {
             'field': forms.ChoiceField(label=_('MAC Address')),
-            'choices': mac_choices_for_objects
+            'choices': mac_choices_for_objects,
+            'exclude_from_history': True,  # TODO: history
         },
     },
+    run_after=['assign_new_hostname'],
     precondition=check_mac_address
 )
 def create_dhcp_entries(cls, instances, ip_or_network, ethernet, **kwargs):
+    def _store_history(instance, ip, etherhet):
+        kwargs['history_kwargs'][instance.pk].update({
+            'ip': ip.address,
+            'mac': etherhet.mac,
+        })
     if len(instances) == 1:
-        _create_dhcp_entries_for_single_instance(ip_or_network, ethernet)
+        ip, ethernet = _create_dhcp_entries_for_single_instance(
+            instances[0], ip_or_network, ethernet
+        )
+        _store_history(instances[0], ip, ethernet)
     else:
-        _create_dhcp_entries_for_many_instances(ip_or_network,)
+        for instance, (ip, ethernet) in zip(
+            _create_dhcp_entries_for_many_instances(
+                instances, ip_or_network
+            ),
+            instances
+        ):
+            _store_history(instance, ip, ethernet)
 
 
 def _create_dhcp_entries_for_single_instance(instance, ip_or_network, ethernet_id):
@@ -303,14 +325,16 @@ def _create_dhcp_entries_for_single_instance(instance, ip_or_network, ethernet_i
         ip_address = ip_or_network[OTHER]
         ip = IPAddress.objects.create(address=ip_address)
     else:
-        network = Network.objects.get(pk=ip_or_network[len(NEXT_FREE_IP):])
+        network = Network.objects.get(
+            pk=ip_or_network['value'][len(NEXT_FREE_IP):]
+        )
         ip = network.issue_next_free_ip()
     ethernet = Ethernet.objects.get(pk=ethernet_id)
     ip.ethernet = ethernet
     ip.save()
-
     # TODO when DHCPEntry model will not be proxy to IPAddress
     # DHCPEntry.objects.create(mac=ethernet.mac, ip=ip.address)
+    return ip, ethernet
 
 
 def _create_dhcp_entries_for_many_instances(instances, ip_or_network):
@@ -320,7 +344,7 @@ def _create_dhcp_entries_for_many_instances(instances, ip_or_network):
         ethernet = _get_non_mgmt_ethernets(instance).values_list(
             'id', flat=True
         ).first()
-        _create_dhcp_entries_for_single_instance(
+        yield _create_dhcp_entries_for_single_instance(
             instance, ip_or_network, ethernet
         )
 
@@ -339,6 +363,7 @@ def _create_dhcp_entries_for_many_instances(instances, ip_or_network):
 def assign_service_env(cls, instances, service_env, **kwargs):
     for instance in instances:
         instance.service_env_id = service_env
+        instance.save()
 
 
 @deployment_action(
@@ -359,11 +384,11 @@ def assign_configuration_path(cls, instances, configuration_path, **kwargs):
             instance
         ))
         instance.configuration_path_id = configuration_path
+        instance.save()
 
 
 @deployment_action(
     verbose_name=_('Apply preboot'),
-    disable_save_object=True,
     form_fields={
         'preboot': {
             'field': forms.ModelChoiceField(
@@ -372,16 +397,21 @@ def assign_configuration_path(cls, instances, configuration_path, **kwargs):
                 empty_label=None
             ),
         }
-    }
+    },
+    is_async=True,
+    run_after=['assign_new_hostname', 'create_dhcp_entries'],
 )
-def apply_preboot(cls, instances, **kwargs):
-    pass  # TODO
+def deploy(cls, instances, **kwargs):
+    """
+    This function just indicates that it's deployment transition.
+    """
+    pass
 
 
 @deployment_action(
     verbose_name=_('Wait for ping'),
-    disable_save_object=True,
     is_async=True,
+    run_after=['deploy'],
 )
 def wait_for_ping(cls, instances, **kwargs):
     pass  # TODO
