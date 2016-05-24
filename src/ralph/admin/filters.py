@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import ipaddress
 import re
 from datetime import datetime
 from functools import lru_cache
@@ -480,9 +481,14 @@ class IPFilter(SimpleListFilter):
 
     def queryset(self, request, queryset):
         if self.value():
-            queryset = queryset.filter(
-                ethernet__ipaddress__address=self.value()
-            )
+            try:
+                ipaddress.ip_address(self.value())
+            except ValueError:
+                raise IncorrectLookupParameters()
+            else:
+                queryset = queryset.filter(
+                    ethernet__ipaddress__address=self.value()
+                )
         return queryset
 
 
