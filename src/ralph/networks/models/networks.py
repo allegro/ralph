@@ -359,7 +359,7 @@ class Network(
     def issue_next_free_ip(self):
         # TODO: exception when any free IP found
         ip_address = self.get_first_free_ip()
-        return IPAddress.objects.create(address=ip_address)
+        return IPAddress.objects.create(address=str(ip_address))
 
     def search_networks(self):
         """
