@@ -29,7 +29,7 @@ def transition_action(method=None, **kwargs):
         elif 'models' in kwargs:
             models = kwargs['models']
         for model in models:
-            setattr(model, func.__name__, wrapper)
+            setattr(model, func.__name__, classmethod(wrapper))
 
         return wrapper
 
