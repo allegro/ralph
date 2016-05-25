@@ -90,7 +90,7 @@ class Ethernet(Component):
     label = NullableCharField(
         verbose_name=_('name'), max_length=255, blank=True, null=True
     )
-    mac = models.CharField(
+    mac = NullableCharField(
         verbose_name=_('MAC address'), unique=True,
         validators=[mac_validator], max_length=24, null=True, blank=True
     )

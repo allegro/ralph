@@ -7,7 +7,9 @@ from ralph.networks.models.networks import IPAddress, IPAddressStatus
 
 class DHCPEntryManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().select_related('ethernet').exclude(
+        return super().get_queryset().select_related('ethernet').filter(
+            dhcp_expose=True,
+        ).exclude(
             hostname=None,
             ethernet__base_object=None,
             ethernet=None,

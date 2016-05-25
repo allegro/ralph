@@ -282,12 +282,14 @@ class BudgetInfo(NamedMixin, TimeStampMixin, models.Model):
 
 class Asset(AdminAbsoluteUrlMixin, BaseObject):
     model = models.ForeignKey(AssetModel, related_name='assets')
-    hostname = models.CharField(
+    # TODO: unify hostname for DCA, VirtualServer, Cluster and CloudHost
+    # (use another model?)
+    hostname = NullableCharField(
         blank=True,
         default=None,
         max_length=255,
         null=True,
-        verbose_name=_('hostname'),
+        verbose_name=_('hostname'),  # TODO: unique
     )
     sn = NullableCharField(
         blank=True,

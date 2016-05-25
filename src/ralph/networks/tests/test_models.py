@@ -5,7 +5,10 @@ from ddt import data, ddt, unpack
 from ralph.assets.models import AssetLastHostname
 from ralph.networks.models.choices import IPAddressStatus
 from ralph.networks.models.networks import IPAddress, Network
-from ralph.networks.tests.factories import NetworkEnvironmentFactory
+from ralph.networks.tests.factories import (
+    IPAddressFactory,
+    NetworkEnvironmentFactory
+)
 from ralph.tests import RalphTestCase
 
 
@@ -314,3 +317,20 @@ class NetworkEnvironmentTest(RalphTestCase):
         # check if hostname is not increased
         self.assertEqual(ne.next_free_hostname, 's12300001.dc.local')
         self.assertEqual(ne.next_free_hostname, 's12300001.dc.local')
+
+
+class IPAddressTest(RalphTestCase):
+    def setUp(self):
+        self.ip = IPAddressFactory()
+
+    def test_delete_ethernet_should_delete_related_ip(self):
+        ip = IPAddressFactory()
+        ip.ethernet.delete()
+        with self.assertRaises(IPAddress.DoesNotExist):
+            ip.refresh_from_db()
+
+    def test_delete_ip_should_not_delete_ethernet(self):
+        ip = IPAddressFactory()
+        eth = ip.ethernet
+        ip.delete()
+        eth.refresh_from_db()

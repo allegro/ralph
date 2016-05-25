@@ -5,6 +5,7 @@ import struct
 from itertools import chain
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.db.models import Q
 from django.db.models.signals import post_migrate
@@ -426,6 +427,7 @@ class IPAddress(
         null=True,
         blank=True,
         default=None,
+        # TODO: unique
     )
     number = models.DecimalField(
         verbose_name=_('IP address'),
@@ -453,6 +455,10 @@ class IPAddress(
         default=IPAddressStatus.used.id,
         choices=IPAddressStatus(),
     )
+    dhcp_expose = models.BooleanField(
+        default=False,
+        verbose_name=_('Expose in DHCP'),
+    )
     objects = IPAddressQuerySet.as_manager()
 
     class Meta:
@@ -461,6 +467,39 @@ class IPAddress(
 
     def __str__(self):
         return self.address
+
+    def _validate_expose_in_dhcp_and_mac(self):
+        if (
+            (not self.ethernet_id or (self.ethernet and not self.ethernet.mac)) and  # noqa
+            self.dhcp_expose
+        ):
+            raise ValidationError({
+                'dhcp_expose': (
+                    'Cannot expose in DHCP without MAC address'
+                )
+            })
+
+    def _validate_expose_in_dhcp_and_hostname(self):
+        if not self.hostname and self.dhcp_expose:
+            raise ValidationError({
+                'hostname': (
+                    'Cannot expose in DHCP without hostname'
+                )
+            })
+
+    def clean(self):
+        errors = {}
+        for validator in [
+            super().clean,
+            self._validate_expose_in_dhcp_and_mac,
+            self._validate_expose_in_dhcp_and_hostname,
+        ]:
+            try:
+                validator()
+            except ValidationError as e:
+                e.update_error_dict(errors)
+        if errors:
+            raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
         if settings.CHECK_IP_HOSTNAME_ON_SAVE:
@@ -476,6 +515,7 @@ class IPAddress(
             self.number = int(ipaddress.ip_address(self.address or 0))
         self._assign_parent()
         self.is_public = not self.ip.is_private
+        # TODO: if not reserved, check for ethernet
         super(IPAddress, self).save(*args, **kwargs)
 
     @property
