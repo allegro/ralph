@@ -268,7 +268,56 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
         )
 
 
-class DataCenterAsset(AutocompleteTooltipMixin, Asset):
+class NetworkableBaseObject(models.Model):
+    # TODO: hostname field and not-abstract cls
+
+    @cached_property
+    def network_environment(self):
+        """
+        Return first found network environment for this `DataCenterAsset` based
+        on assigned rack.
+
+        Full algorithm:
+            * find networks which are "connected" to rack assigned to me
+            * find all (distinct) network environments assigned to these
+              networks
+            * return first founded network environment if there is any,
+              otherwise return `None`
+        """
+        if self.rack_id:
+            return NetworkEnvironment.objects.filter(
+                network__racks=self.rack
+            ).distinct().first()
+
+    @property
+    def ipaddresses(self):
+        return IPAddress.objects.filter(ethernet__base_object=self)
+
+    def get_next_free_hostname(self):
+        """
+        Returns next free hostname for this asset based on Rack's network
+        environment (hostnaming template).
+        """
+        if self.network_environment:
+            return self.network_environment.next_free_hostname
+        logger.warning('Network-environment not provided for {}'.format(self))
+        return ''
+
+    def issue_next_free_hostname(self):
+        """
+        Reserve next (currently) free hostname and return it. You should assign
+        this hostname to asset manually (or do with it whatever you like).
+        """
+        if self.network_environment:
+            return self.network_environment.issue_next_free_hostname()
+        logger.warning('Network-environment not provided for {}'.format(self))
+        return ''
+
+    class Meta:
+        abstract = True
+
+
+class DataCenterAsset(NetworkableBaseObject, AutocompleteTooltipMixin, Asset):
     _allow_in_dashboard = True
 
     rack = models.ForeignKey(Rack, null=True, blank=True)
@@ -393,10 +442,6 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
             )
 
     @property
-    def ipaddresses(self):
-        return IPAddress.objects.filter(ethernet__base_object=self)
-
-    @property
     def management_hostname(self):
         ip = self._get_management_ip()
         if ip:
@@ -416,24 +461,6 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
                 hostname=value,
                 is_management=True,
             )
-
-    @cached_property
-    def network_environment(self):
-        """
-        Return first found network environment for this `DataCenterAsset` based
-        on assigned rack.
-
-        Full algorithm:
-            * find networks which are "connected" to rack assigned to me
-            * find all (distinct) network environments assigned to these
-              networks
-            * return first founded network environment if there is any,
-              otherwise return `None`
-        """
-        if self.rack_id:
-            return NetworkEnvironment.objects.filter(
-                network__racks=self.rack
-            ).distinct().first()
 
     @cached_property
     def location(self):
@@ -590,26 +617,6 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
             Gap.generate_gaps(assets) for assets in assets_by_orientation
         ]
         return chain(*assets)
-
-    def get_next_free_hostname(self):
-        """
-        Returns next free hostname for this asset based on Rack's network
-        environment (hostnaming template).
-        """
-        if self.network_environment:
-            return self.network_environment.next_free_hostname
-        logger.warning('Network-environment not provided for {}'.format(self))
-        return ''
-
-    def issue_next_free_hostname(self):
-        """
-        Reserve next (currently) free hostname and return it. You should assign
-        this hostname to asset manually (or do with it whatever you like).
-        """
-        if self.network_environment:
-            return self.network_environment.issue_next_free_hostname()
-        logger.warning('Network-environment not provided for {}'.format(self))
-        return ''
 
     @classmethod
     def get_autocomplete_queryset(cls):

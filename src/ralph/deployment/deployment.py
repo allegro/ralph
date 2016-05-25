@@ -16,7 +16,6 @@ Deployment order:
 * Make DNS records
 * Make DHCP entries
 * Wait for ping
-* Reboot ?
 
 """
 import logging
@@ -40,8 +39,6 @@ logger = logging.getLogger(__name__)
 
 
 NEXT_FREE = _('<NEXT FREE>')
-NEXT_FREE_HOSTNAME = 'next_free__network_environment_'
-NEXT_FREE_IP = 'next_free__network_'
 DEPLOYMENT_MODELS = [DataCenterAsset, VirtualServer]
 deployment_action = partial(transition_action, models=DEPLOYMENT_MODELS)
 
@@ -49,8 +46,6 @@ deployment_action = partial(transition_action, models=DEPLOYMENT_MODELS)
 # =============================================================================
 # helpers
 # =============================================================================
-
-
 def autocomplete_service_env(actions, objects):
     """
     Returns current service_env for object. Used as a callback for
@@ -106,10 +101,11 @@ def next_free_hostname_choices(actions, objects):
         network_environments.append(
             set(obj._get_available_network_environments())
         )
+    # get common part
     network_environments = set.intersection(*network_environments)
     return [
         (
-            '{}{}'.format(NEXT_FREE_HOSTNAME, net_env.id),
+            str(net_env.id),
             '{} ({})'.format(NEXT_FREE, net_env)
         )
         for net_env in network_environments
@@ -132,14 +128,16 @@ def next_free_ip_choices(actions, objects):
     networks = []
     for obj in objects:
         networks.append(set(obj._get_available_networks()))
+    # get common part
     networks = set.intersection(*networks)
     ips = [
         (
-            '{}{}'.format(NEXT_FREE_IP, network.id),
+            str(network.id),
             '{} ({})'.format(NEXT_FREE, network)
         )
         for network in networks
     ]
+    # if there is only one object, allow for Other option typed by user
     if len(objects) == 1:
         ips += [(OTHER, _('Other'))]
     return ips
@@ -162,24 +160,32 @@ def mac_choices_for_objects(actions, objects):
     """
     if len(objects) == 1:
         return [(eth.id, eth.mac) for eth in objects[0].ethernet.filter(
-            mac__isnull=False
+            mac__isnull=False,
+            ipaddress__is_management=False,
         )]
+    # TODO: when some object has more than one Ethernets (non-mgmt), should
+    # raise exception?
     return [('0', _('use first'))]
 
 
 def _get_non_mgmt_ethernets(instance):
     """
-    Returns ethernets of instance which is not used for management IP
-    or None if not found.
+    Returns ethernets of instance which is not used for management IP.
+
+    Args:
+        instance: BaseObject instance
     """
     return instance.ethernet.filter(
         mac__isnull=False
     ).exclude(
         ipaddress__is_management=True
-    ).order_by('mac').first()
+    ).order_by('mac')
 
 
 def check_mac_address(instances):
+    """
+    Verify, that each instance has at least one non-management MAC.
+    """
     errors = {}
     for instance in instances:
         if not _get_non_mgmt_ethernets(instance):
@@ -194,6 +200,9 @@ def check_mac_address(instances):
     verbose_name=_('Clean hostname'),
 )
 def clean_hostname(cls, instances, **kwargs):
+    """
+    Clear hostname for each instance
+    """
     for instance in instances:
         logger.warning('Clearing {} hostname ({})'.format(
             instance, instance.hostname
@@ -207,6 +216,9 @@ def clean_hostname(cls, instances, **kwargs):
     is_async=True,
 )
 def clean_dns(cls, instances, **kwargs):
+    """
+    Clean DNS entries for each instance if DNSaaS integration is enabled.
+    """
     if not settings.ENABLE_DNSAAS_INTEGRATION:
         raise DNSaaSIntegrationNotEnabledError()
     dnsaas = DNSaaS()
@@ -230,10 +242,17 @@ def clean_dns(cls, instances, **kwargs):
     run_after=['clean_dns'],
 )
 def clean_ipaddresses(cls, instances, **kwargs):
+    """
+    Clean IP addresses (non-management) for each instance.
+    """
     for instance in instances:
-        for ip in instance.ipaddresses.all():
+        for ip in instance.ipaddresses.exclude(is_management=True):
             logger.warning('Deleting {} IP address'.format(ip))
+            eth = ip.ethernet
             ip.delete()
+            if not any([eth.mac, eth.label]):
+                logger.warning('Deleting {} ({}) ethernet'.format(eth, eth.id))
+                eth.delete()
 
 
 @deployment_action(
@@ -241,6 +260,9 @@ def clean_ipaddresses(cls, instances, **kwargs):
     run_after=['clean_dns', 'clean_ipaddresses'],
 )
 def clean_dhcp(cls, instances, **kwargs):
+    """
+    Clean DHCP entries for each instance.
+    """
     for instance in instances:
         mac_addresses = _get_non_mgmt_ethernets(instance).values_list(
             'mac', flat=True
@@ -253,27 +275,34 @@ def clean_dhcp(cls, instances, **kwargs):
 
 @deployment_action(
     verbose_name=_('Assign new hostname'),
-    disable_save_object=True,
     form_fields={
         'network_environment': {
-            'field': forms.ChoiceField(label=_('Network environment (for hostname)')),
-            'choices': next_free_hostname_choices
+            'field': forms.ChoiceField(
+                label=_('Network environment (for hostname)')
+            ),
+            'choices': next_free_hostname_choices,
+            'exclude_from_history': True,
         },
     },
     run_after=['clean_dns', 'clean_dhcp'],
 )
 def assign_new_hostname(cls, instances, network_environment, **kwargs):
-    net_env_id = network_environment[len(NEXT_FREE_HOSTNAME):]
-    net_env = NetworkEnvironment.objects.get(pk=net_env_id)
+    """
+    Assign new hostname for each instance based on selected network environment.
+    """
+    net_env = NetworkEnvironment.objects.get(pk=network_environment)
     for instance in instances:
         new_hostname = net_env.issue_next_free_hostname()
         logger.info('Assigning {} to {}'.format(new_hostname, instance))
         instance.hostname = new_hostname
+        instance.save()
+        kwargs['history_kwargs'][instance.pk]['hostname'] = (
+            '{} (from {})'.format(new_hostname, net_env)
+        )
 
 
 @deployment_action(
     verbose_name=_('Assign new IP address and create DHCP entries'),
-    disable_save_object=True,
     form_fields={
         'ip_or_network': {
             'field': ChoiceFieldWithOtherOption(
@@ -281,46 +310,86 @@ def assign_new_hostname(cls, instances, network_environment, **kwargs):
                 other_field=forms.GenericIPAddressField(),
                 auto_other_choice=False,
             ),
-            'choices': next_free_ip_choices
+            'choices': next_free_ip_choices,
+            'exclude_from_history': True,
             # TODO: validation for IP address (in other field) if not used
+            # by other object
         },
         'ethernet': {
             'field': forms.ChoiceField(label=_('MAC Address')),
-            'choices': mac_choices_for_objects
+            'choices': mac_choices_for_objects,
+            'exclude_from_history': True,  # TODO: history
         },
     },
+    run_after=['assign_new_hostname'],
     precondition=check_mac_address
 )
 def create_dhcp_entries(cls, instances, ip_or_network, ethernet, **kwargs):
+    """
+    Assign next free IP to each instance and create DHCP entries for it.
+    """
+    def _store_history(instance, ip, etherhet):
+        kwargs['history_kwargs'][instance.pk].update({
+            'ip': ip.address,
+            'mac': etherhet.mac,
+        })
     if len(instances) == 1:
-        _create_dhcp_entries_for_single_instance(ip_or_network, ethernet)
+        ip, ethernet = _create_dhcp_entries_for_single_instance(
+            instances[0], ip_or_network, ethernet
+        )
+        _store_history(instances[0], ip, ethernet)
     else:
-        _create_dhcp_entries_for_many_instances(ip_or_network,)
+        for instance, (ip, ethernet) in zip(
+            _create_dhcp_entries_for_many_instances(
+                instances, ip_or_network
+            ),
+            instances
+        ):
+            _store_history(instance, ip, ethernet)
 
 
-def _create_dhcp_entries_for_single_instance(instance, ip_or_network, ethernet_id):
+def _create_dhcp_entries_for_single_instance(
+    instance, ip_or_network, ethernet_id
+):
+    """
+    Assign IP and create DHCP entries for single instance.
+
+    Args:
+        instance: BaseObject instance
+        ip_or_network: value from ChoiceFieldWithOtherOption (network or custom
+            IP address)
+        ethernet_id: id of Ethernet component.
+
+    Returns:
+        tuple with (new IP, ethernet component)
+    """
     if ip_or_network['value'] == OTHER:
         ip_address = ip_or_network[OTHER]
         ip = IPAddress.objects.create(address=ip_address)
     else:
-        network = Network.objects.get(pk=ip_or_network[len(NEXT_FREE_IP):])
+        network = Network.objects.get(
+            pk=ip_or_network['value']
+        )
         ip = network.issue_next_free_ip()
     ethernet = Ethernet.objects.get(pk=ethernet_id)
     ip.ethernet = ethernet
     ip.save()
-
     # TODO when DHCPEntry model will not be proxy to IPAddress
     # DHCPEntry.objects.create(mac=ethernet.mac, ip=ip.address)
+    return ip, ethernet
 
 
 def _create_dhcp_entries_for_many_instances(instances, ip_or_network):
+    """
+    Assign IP and create DHCP entries for multiple instances.
+    """
     for instance in instances:
         # when IP is assigned to many instances, mac is not provided through
         # form and first non-mgmt mac should be used
         ethernet = _get_non_mgmt_ethernets(instance).values_list(
             'id', flat=True
-        ).first()
-        _create_dhcp_entries_for_single_instance(
+        ).first()  # TODO: is first the best choice here?
+        yield _create_dhcp_entries_for_single_instance(
             instance, ip_or_network, ethernet
         )
 
@@ -337,8 +406,12 @@ def _create_dhcp_entries_for_many_instances(instances, ip_or_network):
     run_after=['clean_dns', 'clean_dhcp'],
 )
 def assign_service_env(cls, instances, service_env, **kwargs):
+    """
+    Assign service-env to each instance.
+    """
     for instance in instances:
         instance.service_env_id = service_env
+        instance.save()
 
 
 @deployment_action(
@@ -353,17 +426,20 @@ def assign_service_env(cls, instances, service_env, **kwargs):
     run_after=['clean_dns', 'clean_dhcp'],
 )
 def assign_configuration_path(cls, instances, configuration_path, **kwargs):
+    """
+    Assign configuration path to each instance.
+    """
     for instance in instances:
         logger.info('Assinging {} configuration path to {}'.format(
             ConfigurationClass.objects.get(pk=configuration_path),
             instance
         ))
         instance.configuration_path_id = configuration_path
+        instance.save()
 
 
 @deployment_action(
     verbose_name=_('Apply preboot'),
-    disable_save_object=True,
     form_fields={
         'preboot': {
             'field': forms.ModelChoiceField(
@@ -372,16 +448,24 @@ def assign_configuration_path(cls, instances, configuration_path, **kwargs):
                 empty_label=None
             ),
         }
-    }
+    },
+    is_async=True,
+    run_after=['assign_new_hostname', 'create_dhcp_entries'],
 )
-def apply_preboot(cls, instances, **kwargs):
-    pass  # TODO
+def deploy(cls, instances, **kwargs):
+    """
+    This function just indicates that it's deployment transition.
+    """
+    pass
 
 
 @deployment_action(
     verbose_name=_('Wait for ping'),
-    disable_save_object=True,
     is_async=True,
+    run_after=['deploy'],
 )
 def wait_for_ping(cls, instances, **kwargs):
+    """
+    Wait until server ping to Ralph that is has properly deployed.
+    """
     pass  # TODO

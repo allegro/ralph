@@ -109,7 +109,9 @@ def _get_history_dict(data, instance, runned_funcs):
                     field_name = field.verbose_name
             except FieldDoesNotExist:
                 field = func.form_fields[k]['field']
-                if isinstance(field, forms.ChoiceField):
+                if isinstance(field, forms.ModelChoiceField):
+                    value = str(v)
+                elif isinstance(field, forms.ChoiceField):
                     value = dict(field.choices).get(int(v))
                 field_name = field.label
             history[str(field_name)] = value

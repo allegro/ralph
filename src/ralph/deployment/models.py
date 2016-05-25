@@ -3,6 +3,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.lib.mixins.models import NamedMixin
+from ralph.lib.transitions.models import TransitionJob
 
 
 class PrebootFileType(Choices):
@@ -62,3 +63,23 @@ class Preboot(NamedMixin):
         verbose_name = _('preboot')
         verbose_name_plural = _('preboots')
         ordering = ('name',)
+
+
+class DeploymentManager(models.Manager):
+    def get_queryset(self):
+        from ralph.deployment.deployment import deploy
+        # TODO: test it
+        return super().get_queryset().filter(
+            transition__actions__name=deploy.__name__
+        )
+
+
+class Deployment(TransitionJob):
+    objects = DeploymentManager()
+
+    class Meta:
+        proxy = True
+
+    @property
+    def preboot(self):
+        return self.params['data']['deploy__preboot']
