@@ -7,6 +7,7 @@ from ralph.networks.models.networks import IPAddress, IPAddressStatus
 
 class DHCPEntryManager(models.Manager):
     def get_queryset(self):
+        # TODO: add deployment id (job id)
         return super().get_queryset().select_related('ethernet').exclude(
             hostname=None,
             ethernet__base_object=None,
@@ -14,6 +15,12 @@ class DHCPEntryManager(models.Manager):
             status=IPAddressStatus.reserved.id
         )
 
+    def entries(self, networks):
+        qs = self.get_queryset().filter(network__in=networks)
+        ids = qs.values_list('id', flat=True)
+        import ipdb; ipdb.set_trace()
+
+        return qs
 
 class DHCPEntry(IPAddress):
     # mac = models.CharField(
@@ -32,6 +39,10 @@ class DHCPEntry(IPAddress):
     @property
     def mac(self):
         return self.ethernet and self.ethernet.mac
+
+    @property
+    def deployment(self):
+        return 1
 
     class Meta:
         proxy = True
