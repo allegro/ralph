@@ -23,13 +23,15 @@ from functools import partial
 
 from django import forms
 from django.conf import settings
+from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import Ethernet, ConfigurationClass
 from ralph.data_center.models import DataCenterAsset
 from ralph.deployment.models import Preboot
-from ralph.dns.views import DNSaaSIntegrationNotEnabledError
 from ralph.dns.dnsaas import DNSaaS
+from ralph.dns.forms import RecordType
+from ralph.dns.views import DNSaaSIntegrationNotEnabledError
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.mixins.forms import ChoiceFieldWithOtherOption, OTHER
 from ralph.networks.models import IPAddress, Network, NetworkEnvironment
@@ -160,8 +162,8 @@ def mac_choices_for_objects(actions, objects):
     """
     if len(objects) == 1:
         return [(eth.id, eth.mac) for eth in objects[0].ethernet.filter(
+            Q(ipaddress__is_management=False) | Q(ipaddress__isnull=True),
             mac__isnull=False,
-            ipaddress__is_management=False,
         )]
     # TODO: when some object has more than one Ethernets (non-mgmt), should
     # raise exception?
@@ -392,6 +394,27 @@ def _create_dhcp_entries_for_many_instances(instances, ip_or_network):
         yield _create_dhcp_entries_for_single_instance(
             instance, ip_or_network, ethernet
         )
+
+
+@deployment_action(
+    verbose_name=_('Create DNS entries'),
+    run_after=[
+        'assign_new_hostname', 'create_dhcp_entries'
+    ],
+)
+def create_dns_entries(cls, instances, **kwargs):
+    if not settings.ENABLE_DNSAAS_INTEGRATION:
+        raise DNSaaSIntegrationNotEnabledError()
+    dnsaas = DNSaaS()
+    # TODO: transaction?
+    for instance in instances:
+        # TODO: use dedicated param instead of history_kwargs
+        ip = kwargs['history_kwargs'][instance.pk]['ip']
+        dnsaas.create_dns_record({
+            'name': instance.hostname,
+            'type': RecordType.a.id,
+            'content': ip,
+        })
 
 
 @deployment_action(
