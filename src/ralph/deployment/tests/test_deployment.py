@@ -64,15 +64,23 @@ class _BaseTestDeploymentActionsTestCase(object):
             address='10.20.30.0/24',
         )
         self.net.racks.add(self.rack)
+        return self.net_env
 
     def test_assign_new_hostname(self):
-        net_env = NetworkEnvironmentFactory()
-        net_env.racks.add(self.instance.rack)
+        self._prepare_rack()
         next_free_hostname = self.instance.get_next_free_hostname()
+        history = {self.instance.pk: {}}
         self.instance.__class__.assign_new_hostname(
-            [self.instance], net_env.id
+            [self.instance], self.net_env.id, history_kwargs=history
         )
         self.assertEqual(self.instance.hostname, next_free_hostname)
+        self.assertEqual(history, {
+            self.instance.pk: {
+                'hostname': '{} (from {})'.format(
+                    next_free_hostname, self.net_env
+                )
+            }
+        })
 
 
 class DataCenterAssetDeploymentActionsTestCase(
@@ -81,9 +89,19 @@ class DataCenterAssetDeploymentActionsTestCase(
     def setUp(self):
         self.instance = DataCenterAssetFactory()
 
+    def _prepare_rack(self):
+        super()._prepare_rack()
+        self.instance.rack = self.rack
+        self.instance.save()
+
 
 class VirtualServerDeploymentActionsTestCase(
     _BaseTestDeploymentActionsTestCase, TestCase
 ):
     def setUp(self):
         self.instance = VirtualServerFactory()
+
+    def _prepare_rack(self):
+        super()._prepare_rack()
+        self.instance.parent.rack = self.rack
+        self.instance.parent.save()
