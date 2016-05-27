@@ -41,11 +41,7 @@ from ralph.data_importer import resources
 from ralph.lib.table import Table
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
-from ralph.networks.forms import (
-    NetworkForm,
-    NetworkInlineFormset,
-    SimpleNetworkForm
-)
+from ralph.networks.forms import NetworkInline, SimpleNetworkForm
 from ralph.networks.models.networks import Network
 from ralph.operations.views import OperationViewReadOnlyForExisiting
 from ralph.supports.models import BaseObjectsSupport
@@ -135,13 +131,6 @@ class ClusterAdmin(RalphAdmin):
 class DataCenterAdmin(RalphAdmin):
 
     search_fields = ['name']
-
-
-class NetworkInline(RalphTabularInline):
-    form = NetworkForm
-    formset = NetworkInlineFormset
-    model = Ethernet
-    exclude = ['model']
 
 
 class NetworkTerminatorReadOnlyInline(RalphTabularM2MInline):

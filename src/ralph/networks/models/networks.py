@@ -419,7 +419,7 @@ class IPAddress(
         help_text=_('Presented as string.'),
         unique=True,
         blank=False,
-        default=None,
+        null=False,
     )
     hostname = NullableCharField(
         verbose_name=_('Hostname'),

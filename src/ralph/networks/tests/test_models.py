@@ -1,6 +1,7 @@
 from ipaddress import ip_address, ip_network
 
 from ddt import data, ddt, unpack
+from django.core.exceptions import ValidationError
 
 from ralph.assets.models import AssetLastHostname
 from ralph.networks.models.choices import IPAddressStatus
@@ -334,3 +335,44 @@ class IPAddressTest(RalphTestCase):
         eth = ip.ethernet
         ip.delete()
         eth.refresh_from_db()
+
+    def test_clear_hostname_should_pass(self):
+        self.ip.hostname = None
+        self.ip.clean()
+        self.ip.save()
+
+    def test_clear_hostname_with_dhcp_exposition_should_not_pass(self):
+        self.ip.dhcp_expose = True
+        self.ip.save()
+        self.ip.hostname = None
+        with self.assertRaises(
+            ValidationError,
+            msg='Cannot expose in DHCP without hostname'
+        ):
+            self.ip.clean()
+
+    def test_clear_mac_address_without_dhcp_exposition_should_pass(self):
+        self.ip.ethernet.mac = None
+        self.ip.ethernet.save()
+        self.ip.clean()
+        self.ip.save()
+
+    def test_clear_mac_address_with_ip_with_dhcp_exposition_should_not_pass(self):  # noqa
+        self.ip.ethernet.mac = None
+        self.ip.ethernet.save()
+        self.ip.dhcp_expose = True
+        with self.assertRaises(
+            ValidationError,
+            msg='Cannot expose in DHCP without MAC address'
+        ):
+            self.ip.clean()
+
+    def test_detach_ethernet_with_dhcp_exposition_should_not_pass(self):  # noqa
+        self.ip.ethernet = None
+        self.ip.save()
+        self.ip.dhcp_expose = True
+        with self.assertRaises(
+            ValidationError,
+            msg='Cannot expose in DHCP without MAC address'
+        ):
+            self.ip.clean()

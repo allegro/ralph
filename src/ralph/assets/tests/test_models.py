@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
+from django.core.exceptions import ValidationError
+
 from ralph.assets.tests.factories import (
     ConfigurationClassFactory,
-    ConfigurationModuleFactory
+    ConfigurationModuleFactory,
+    EthernetFactory,
 )
+from ralph.networks.tests.factories import IPAddressFactory
 from ralph.tests import RalphTestCase
 
 
@@ -33,3 +37,29 @@ class ConfigurationTest(RalphTestCase):
         self.conf_class_1.save()
         self.conf_class_1.refresh_from_db()
         self.assertTrue(self.conf_class_1.path.endswith('updated_name'))
+
+
+class EthernetTest(RalphTestCase):
+    def setUp(self):
+        self.ip1 = IPAddressFactory()
+        self.eth1 = EthernetFactory()
+
+    def test_clear_mac_address_without_ip_should_pass(self):
+        self.eth1.mac = None
+        self.eth1.clean()
+        self.eth1.save()
+
+    def test_clear_mac_address_with_ip_without_dhcp_exposition_should_pass(self):  # noqa
+        self.ip1.ethernet.mac = None
+        self.ip1.ethernet.clean()
+        self.ip1.ethernet.save()
+
+    def test_clear_mac_address_with_ip_with_dhcp_exposition_should_not_pass(self):  # noqa
+        self.ip1.dhcp_expose = True
+        self.ip1.save()
+        self.ip1.ethernet.mac = None
+        with self.assertRaises(
+            ValidationError,
+            msg='MAC cannot be empty if record is exposed in DHCP'
+        ):
+            self.ip1.ethernet.clean()

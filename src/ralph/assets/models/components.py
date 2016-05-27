@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import re
 
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
+
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -106,3 +108,13 @@ class Ethernet(Component):
 
     def __str__(self):
         return '{} ({})'.format(self.label, self.mac)
+
+    def clean(self):
+        from ralph.networks.models import IPAddress
+        try:
+            if not self.mac and self.ipaddress.dhcp_expose:
+                raise ValidationError(
+                    _('MAC cannot be empty if record is exposed in DHCP')
+                )
+        except IPAddress.DoesNotExist:
+            pass
