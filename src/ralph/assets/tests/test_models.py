@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from ralph.assets.tests.factories import (
     ConfigurationClassFactory,
     ConfigurationModuleFactory,
-    EthernetFactory,
+    EthernetFactory
 )
 from ralph.networks.tests.factories import IPAddressFactory
 from ralph.tests import RalphTestCase
