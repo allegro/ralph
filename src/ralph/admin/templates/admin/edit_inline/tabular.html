@@ -55,7 +55,7 @@
                     {% endfor %}
                   {% endfor %}
                     <td class="delete">
-                      {% if inline_admin_formset.formset.can_delete %}
+                      {% if inline_admin_formset.formset.can_delete and not inline_admin_form.forbid_delete %}
                         {% if inline_admin_form.original %}
                           {{ inline_admin_form.deletion_field.field }}
                         {% endif %}

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django import forms
 from django.forms import ValidationError
+from django.forms.formsets import DELETION_FIELD_NAME
 from django.forms.models import BaseInlineFormSet
 from django.utils.translation import ugettext_lazy as _
 
@@ -124,6 +125,29 @@ class NetworkForm(SimpleNetworkForm):
 
 
 class NetworkInlineFormset(BaseInlineFormSet):
+    # def add_fields(self, form, index):
+    #     super().add_fields(form, index)
+    #     if self.can_delete and form.ip and form.ip.dhcp_expose:
+    #         # del form.fields[DELETION_FIELD_NAME]
+    #         form.forbid_delete = True
 
     def clean(self):
+        result = super().clean()
         validate_is_management(self.forms)
+        self._validate_can_delete()
+        return result
+
+    def _validate_can_delete(self):
+        for form in self.forms:
+            if not hasattr(form, 'cleaned_data'):
+                continue
+
+            data = form.cleaned_data
+            curr_instance = form.instance
+            if (
+                data.get('DELETE') and
+                curr_instance and
+                curr_instance.ipaddress and
+                curr_instance.ipaddress.dhcp_expose
+            ):
+                raise ValidationError("Cannot delete entry if its exposed in DHCP")
