@@ -14,6 +14,7 @@ from ralph.admin.helpers import get_client_ip
 from ralph.assets.models.components import Ethernet
 from ralph.data_center.models import DataCenter
 from ralph.dhcp.models import DHCPEntry, DHCPServer
+from ralph.deployment.models import Deployment
 from ralph.networks.models.networks import (
     IPAddress,
     Network,
@@ -136,15 +137,7 @@ class DHCPEntriesView(
         """
         last_items = []
 
-        assets_in_deployment = [
-            obj for obj in DHCPEntry.objects.entries(
-                networks=self.networks, only_active=False
-            )
-            if obj.deployment
-        ]
-        if assets_in_deployment:
-            last_items.append(assets_in_deployment[0].deployment.modified)
-
+        last_items.append(Deployment.objects.latest('modified').modified)
         last_items.append(last_modified_date(networks))
         last_items.append(
             last_modified_date(DHCPEntry.objects, filter_dict={
@@ -164,12 +157,12 @@ class DHCPEntriesView(
         last_items = [item for item in last_items if item is not None]
         if not last_items:
             return None
-        print(max(last_items))
         return max(last_items)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
+            'ralph_instance_ip': '192.168.200.1:8000',  # TODO
             'last_modified': self.last_modified,
             'entries': DHCPEntry.objects.entries(networks=self.networks),
         })

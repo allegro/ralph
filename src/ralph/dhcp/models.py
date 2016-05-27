@@ -19,11 +19,9 @@ class DHCPEntryManager(models.Manager):
             status=IPAddressStatus.reserved.id
         )
 
-    def entries(self, networks, only_active=True):
+    def entries(self, networks):
         queryset = self.get_queryset().filter(network__in=networks)
         deployment_queryset = Deployment.objects.active()
-        if not only_active:
-            deployment_queryset = Deployment.objects.all()
         entries_ids = queryset.values_list(
             'ethernet__base_object_id', flat=True
         )
@@ -36,11 +34,11 @@ class DHCPEntryManager(models.Manager):
             obj.object_id: obj
             for obj in Deployment.objects.filter(
                 id__in=deployment_ids
-            ).order_by('modified')
+            )
         }
         for obj in queryset:
             obj.deployment = deployments_mapper.get(
-                str(obj.ethernet.base_object_id), False
+                str(obj.ethernet.base_object_id), None
             )
             yield obj
 
