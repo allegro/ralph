@@ -18,7 +18,9 @@ Deployment order:
 * Wait for ping
 
 """
+import time
 import logging
+from datetime import datetime
 from functools import partial
 
 from django import forms
@@ -28,8 +30,9 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.assets.models import Ethernet, ConfigurationClass
 from ralph.data_center.models import DataCenterAsset
 from ralph.deployment.models import Preboot
-from ralph.dns.views import DNSaaSIntegrationNotEnabledError
+from ralph.dhcp.models import DHCPServer
 from ralph.dns.dnsaas import DNSaaS
+from ralph.dns.views import DNSaaSIntegrationNotEnabledError
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.mixins.forms import ChoiceFieldWithOtherOption, OTHER
 from ralph.networks.models import IPAddress, Network, NetworkEnvironment
@@ -161,7 +164,7 @@ def mac_choices_for_objects(actions, objects):
     if len(objects) == 1:
         return [(eth.id, eth.mac) for eth in objects[0].ethernet.filter(
             mac__isnull=False,
-            ipaddress__is_management=False,
+            # ipaddress__is_management=False,
         )]
     # TODO: when some object has more than one Ethernets (non-mgmt), should
     # raise exception?
@@ -346,6 +349,8 @@ def create_dhcp_entries(cls, instances, ip_or_network, ethernet, **kwargs):
             instances
         ):
             _store_history(instance, ip, ethernet)
+    # TODO: use dedicated key
+    kwargs['history_kwargs']['dhcp_entry_created_date'] = datetime.now()
 
 
 def _create_dhcp_entries_for_single_instance(
@@ -372,6 +377,7 @@ def _create_dhcp_entries_for_single_instance(
         )
         ip = network.issue_next_free_ip()
     ethernet = Ethernet.objects.get(pk=ethernet_id)
+    ip.hostname = instance.hostname
     ip.ethernet = ethernet
     ip.save()
     # TODO when DHCPEntry model will not be proxy to IPAddress
@@ -392,6 +398,27 @@ def _create_dhcp_entries_for_many_instances(instances, ip_or_network):
         yield _create_dhcp_entries_for_single_instance(
             instance, ip_or_network, ethernet
         )
+
+
+@deployment_action(
+    verbose_name=_('Wait for DHCP servers'),
+    is_async=True,
+    run_after=['create_dhcp_entries'],
+)
+def wait_for_dhcp_servers(cls, instances, **kwargs):
+    """
+    Wait until DHCP servers ping to Ralph.
+    """
+    created = kwargs['history_kwargs']['dhcp_entry_created_date']
+    # TODO: rescheduler instead of while
+    while True:
+        servers_sync_date = DHCPServer.objects.values_list(
+            'last_synchronized', flat=True
+        ).all()
+        for server_sync_date in servers_sync_date:
+            if created < server_sync_date:
+                return
+        time.sleep(1)
 
 
 @deployment_action(
@@ -456,6 +483,7 @@ def deploy(cls, instances, **kwargs):
     """
     This function just indicates that it's deployment transition.
     """
+    # TODO: invalid http cache for dhcp
     pass
 
 

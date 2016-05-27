@@ -135,6 +135,16 @@ class DHCPEntriesView(
         IP (DHCP entry), ethernet.
         """
         last_items = []
+
+        assets_in_deployment = [
+            obj for obj in DHCPEntry.objects.entries(
+                networks=self.networks, only_active=False
+            )
+            if obj.deployment
+        ]
+        if assets_in_deployment:
+            last_items.append(assets_in_deployment[0].deployment.modified)
+
         last_items.append(last_modified_date(networks))
         last_items.append(
             last_modified_date(DHCPEntry.objects, filter_dict={
@@ -154,6 +164,7 @@ class DHCPEntriesView(
         last_items = [item for item in last_items if item is not None]
         if not last_items:
             return None
+        print(max(last_items))
         return max(last_items)
 
     def get_context_data(self, **kwargs):

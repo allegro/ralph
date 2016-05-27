@@ -4,6 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.lib.mixins.models import NamedMixin
 from ralph.lib.transitions.models import TransitionJob
+from ralph.lib.external_services.models import JobManager
 
 
 class PrebootFileType(Choices):
@@ -65,7 +66,7 @@ class Preboot(NamedMixin):
         ordering = ('name',)
 
 
-class DeploymentManager(models.Manager):
+class DeploymentManager(JobManager):
     def get_queryset(self):
         from ralph.deployment.deployment import deploy
         # TODO: test it

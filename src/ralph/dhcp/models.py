@@ -1,48 +1,56 @@
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.data_center.models import DataCenterAsset
 from ralph.networks.models.networks import IPAddress, IPAddressStatus
+from ralph.deployment.models import Deployment
 
 
 class DHCPEntryManager(models.Manager):
     def get_queryset(self):
-        # TODO: add deployment id (job id)
-        return super().get_queryset().select_related('ethernet').exclude(
+        return super().get_queryset().select_related(
+            'ethernet', 'ethernet__base_object'
+        ).exclude(
             hostname=None,
             ethernet__base_object=None,
             ethernet=None,
             status=IPAddressStatus.reserved.id
         )
 
-    def entries(self, networks):
-        qs = self.get_queryset().filter(network__in=networks)
-        ids = qs.values_list('id', flat=True)
-        import ipdb; ipdb.set_trace()
+    def entries(self, networks, only_active=True):
+        queryset = self.get_queryset().filter(network__in=networks)
+        deployment_queryset = Deployment.objects.active()
+        if not only_active:
+            deployment_queryset = Deployment.objects.all()
+        entries_ids = queryset.values_list(
+            'ethernet__base_object_id', flat=True
+        )
+        dca_content_type = ContentType.objects.get_for_model(DataCenterAsset)
+        deployment_ids = deployment_queryset.filter(
+            object_id__in=[str(i) for i in entries_ids],
+            content_type=dca_content_type
+        )
+        deployments_mapper = {
+            obj.object_id: obj
+            for obj in Deployment.objects.filter(
+                id__in=deployment_ids
+            ).order_by('modified')
+        }
+        for obj in queryset:
+            obj.deployment = deployments_mapper.get(
+                str(obj.ethernet.base_object_id), False
+            )
+            yield obj
 
-        return qs
 
 class DHCPEntry(IPAddress):
-    # mac = models.CharField(
-    #     verbose_name=_('MAC address'), unique=True,
-    #     validators=[mac_validator], max_length=24, null=False, blank=False
-    # )
-    # ip_address = models.GenericIPAddressField(
-    #     verbose_name=_('IP address'),
-    #     help_text=_('Presented as string.'),
-    #     unique=True,
-    #     blank=False,
-    #     default=None,
-    # )
     objects = DHCPEntryManager()
 
     @property
     def mac(self):
         return self.ethernet and self.ethernet.mac
-
-    @property
-    def deployment(self):
-        return 1
 
     class Meta:
         proxy = True

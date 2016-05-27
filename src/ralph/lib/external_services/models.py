@@ -8,6 +8,7 @@ from dj.choices import Choices
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields.json import JSONField
@@ -33,6 +34,13 @@ class JobStatus(Choices):
     STARTED = _('started')
 
 
+class JobManager(models.Manager):
+    def active(self):
+        return super().get_queryset().filter(
+            Q(status=JobStatus.STARTED.id) | Q(status=JobStatus.QUEUED.id)
+        )
+
+
 class Job(TimeStampMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = NullableCharField(max_length=200, null=True, blank=True)
@@ -44,6 +52,7 @@ class Job(TimeStampMixin):
         default=JobStatus.QUEUED.id,
     )
     _params = None
+    objects = JobManager()
 
     class Meta:
         app_label = 'external_services'
