@@ -108,3 +108,12 @@ class IPAddressAPITests(RalphAPITestCase):
             'Cannot remove entry from DHCP. Use transition to do this.',
             response.data['dhcp_expose']
         )
+
+    def test_delete_when_exposing_in_dhcp_should_not_pass(self):
+        url = reverse('ipaddress-detail', args=(self.ip_with_dhcp.id,))
+        response = self.client.delete(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            'Could not delete IPAddress when it is exposed in DHCP',
+            response.data
+        )

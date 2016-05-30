@@ -110,6 +110,9 @@ class Ethernet(Component):
         return '{} ({})'.format(self.label, self.mac)
 
     def _validate_expose_in_dhcp_and_mac(self):
+        """
+        Check if mac is not empty when exposing in DHCP.
+        """
         from ralph.networks.models import IPAddress
         try:
             if not self.mac and self.ipaddress.dhcp_expose:
@@ -121,7 +124,7 @@ class Ethernet(Component):
 
     def _validate_change_when_exposing_in_dhcp(self):
         """
-        Check if mas had changed when entry is exposed in DHCP.
+        Check if mas has changed when entry is exposed in DHCP.
         """
         if self.pk and settings.DHCP_ENTRY_FORBID_CHANGE:
             from ralph.networks.models import IPAddress

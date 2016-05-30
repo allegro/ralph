@@ -2,7 +2,7 @@
 from django import forms
 from django.conf import settings
 from django.forms import ValidationError
-# from django.forms.formsets import DELETION_FIELD_NAME
+from django.forms.formsets import DELETION_FIELD_NAME
 from django.forms.models import BaseInlineFormSet
 from django.utils.translation import ugettext_lazy as _
 
@@ -217,6 +217,14 @@ class NetworkForm(SimpleNetworkForm):
 
 
 class NetworkInlineFormset(BaseInlineFormSet):
+    def add_fields(self, form, index):
+        super().add_fields(form, index)
+        if self.can_delete and form._dhcp_expose_should_lock_fields:
+            # many other places in Django code depends on DELETE field
+            # so instead of deleting it here, we're just hiding it and validate
+            # if it's not used
+            form.fields[DELETION_FIELD_NAME].widget.attrs['hidden'] = True
+
     def clean(self):
         result = super().clean()
         validate_is_management(self.forms)

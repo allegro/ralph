@@ -83,6 +83,14 @@ class IPAddressViewSet(RalphAPIViewSet):
         'status', 'is_public', 'is_management', 'dhcp_expose'
     ]
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance and instance.dhcp_expose:
+            raise ValidationError(
+                'Could not delete IPAddress when it is exposed in DHCP'
+            )
+        return super().destroy(request, *args, **kwargs)
+
 
 class NetworkViewSet(RalphAPIViewSet):
     queryset = Network.objects.all()

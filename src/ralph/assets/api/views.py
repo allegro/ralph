@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db.models import Prefetch
+from rest_framework.exceptions import ValidationError
 
 from ralph.api import RalphAPIViewSet
 from ralph.api.utils import PolymorphicViewSetMixin
@@ -7,6 +8,7 @@ from ralph.assets import models
 from ralph.assets.api import serializers
 from ralph.licences.api import BaseObjectLicenceViewSet
 from ralph.licences.models import BaseObjectLicence
+from ralph.networks.models import IPAddress
 
 
 class BusinessSegmentViewSet(RalphAPIViewSet):
@@ -99,6 +101,17 @@ class EthernetViewSet(RalphAPIViewSet):
     serializer_class = serializers.EthernetSerializer
     filter_fields = ['base_object']
     prefetch_related = ['model', 'base_object', 'base_object__tags']
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        try:
+            if instance and instance.ipaddress.dhcp_expose:
+                raise ValidationError(
+                    'Could not delete Ethernet when it is exposed in DHCP'
+                )
+        except IPAddress.DoesNotExist:
+            pass
+        return super().destroy(request, *args, **kwargs)
 
 
 class ConfigurationModuleViewSet(RalphAPIViewSet):

@@ -741,3 +741,19 @@ class ConfigurationClassAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.conf_class_1.refresh_from_db()
         self.assertEqual(self.conf_class_1.class_name, 'test_2')
+
+
+class EthernetAPITests(RalphAPITestCase):
+    def setUp(self):
+        super().setUp()
+        self.ip = IPAddressFactory(dhcp_expose=True)
+        self.eth = self.ip.ethernet
+
+    def test_cannot_delete_when_exposed_in_dhcp(self):
+        url = reverse('ethernet-detail', args=(self.eth.id,))
+        response = self.client.delete(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            'Could not delete Ethernet when it is exposed in DHCP',
+            response.data
+        )
