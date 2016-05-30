@@ -121,13 +121,13 @@ class SimpleNetworkForm(forms.ModelForm):
 
     def clean_mac(self):
         if self._dhcp_expose_should_lock_fields:
-            # if mac is locked, just return current address
+            # if mac is locked, just return current mac
             return self.instance.mac
         return self.cleaned_data['mac']
 
     def clean_hostname(self):
         if self._dhcp_expose_should_lock_fields:
-            # if mac is locked, just return current address
+            # if mac is locked, just return current hostname
             return self.ip.hostname
         return self.cleaned_data['hostname']
 

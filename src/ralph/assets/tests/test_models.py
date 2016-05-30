@@ -63,3 +63,13 @@ class EthernetTest(RalphTestCase):
             msg='MAC cannot be empty if record is exposed in DHCP'
         ):
             self.ip1.ethernet.clean()
+
+    def test_change_mac_address_with_ip_with_dhcp_exposition_should_not_pass(self):  # noqa
+        self.ip1.dhcp_expose = True
+        self.ip1.save()
+        self.ip1.ethernet.mac = '11:12:13:14:15:16'
+        with self.assertRaises(
+            ValidationError,
+            msg='Cannot change MAC when exposing in DHCP'
+        ):
+            self.ip1.ethernet.clean()

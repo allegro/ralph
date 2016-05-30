@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
+from rest_framework.exceptions import ValidationError
+
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import RalphAPISaveSerializer
 from ralph.assets.api.serializers import EthernetSerializer
@@ -50,6 +53,21 @@ class IPAddressSerializer(RalphAPISerializer):
 class IPAddressSaveSerializer(RalphAPISaveSerializer):
     class Meta:
         model = IPAddress
+
+    def validate_dhcp_expose(self, value):
+        """
+        Check if dhcp_expose value has changed from True to False.
+        """
+        if (
+            settings.DHCP_ENTRY_FORBID_CHANGE and
+            self.instance and
+            self.instance.dhcp_expose and
+            not value
+        ):
+            raise ValidationError(
+                'Cannot remove entry from DHCP. Use transition to do this.'
+            )
+        return value
 
 
 class IPAddressViewSet(RalphAPIViewSet):

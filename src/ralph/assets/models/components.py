@@ -4,6 +4,7 @@ import re
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 
+from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -109,7 +110,7 @@ class Ethernet(Component):
     def __str__(self):
         return '{} ({})'.format(self.label, self.mac)
 
-    def clean(self):
+    def _validate_expose_in_dhcp_and_mac(self):
         from ralph.networks.models import IPAddress
         try:
             if not self.mac and self.ipaddress.dhcp_expose:
@@ -118,3 +119,33 @@ class Ethernet(Component):
                 )
         except IPAddress.DoesNotExist:
             pass
+
+    def _validate_change_when_exposing_in_dhcp(self):
+        """
+        Check if mas had changed when entry is exposed in DHCP.
+        """
+        if self.pk and settings.DHCP_ENTRY_FORBID_CHANGE:
+            from ralph.networks.models import IPAddress
+            old_obj = self.__class__._default_manager.get(pk=self.pk)
+            try:
+                if old_obj.ipaddress.dhcp_expose:
+                    if old_obj.mac != self.mac:
+                        raise ValidationError(
+                            'Cannot change MAC when exposing in DHCP'
+                        )
+            except IPAddress.DoesNotExist:
+                pass
+
+    def clean(self):
+        errors = {}
+        for validator in [
+            super().clean,
+            self._validate_expose_in_dhcp_and_mac,
+            self._validate_change_when_exposing_in_dhcp
+        ]:
+            try:
+                validator()
+            except ValidationError as e:
+                e.update_error_dict(errors)
+        if errors:
+            raise ValidationError(errors)

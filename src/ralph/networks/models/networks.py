@@ -487,12 +487,33 @@ class IPAddress(
                 )
             })
 
+    def _validate_change_when_exposing_in_dhcp(self):
+        """
+        Check if one of hostname, address or ethernet is changed
+        when entry is exposed in DHCP.
+        """
+        if self.pk and settings.DHCP_ENTRY_FORBID_CHANGE:
+            old_obj = self.__class__._default_manager.get(pk=self.pk)
+            if old_obj.dhcp_expose:
+                for attr_name, field_name in [
+                    ('hostname', 'hostname'),
+                    ('address', 'address'),
+                    ('ethernet_id', 'ethernet'),
+                ]:
+                    if getattr(old_obj, attr_name) != getattr(self, attr_name):
+                        raise ValidationError(
+                            'Cannot change {} when exposing in DHCP'.format(
+                                field_name
+                            )
+                        )
+
     def clean(self):
         errors = {}
         for validator in [
             super().clean,
             self._validate_expose_in_dhcp_and_mac,
             self._validate_expose_in_dhcp_and_hostname,
+            self._validate_change_when_exposing_in_dhcp,
         ]:
             try:
                 validator()

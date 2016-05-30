@@ -46,6 +46,8 @@ from ralph.licences.tests.factories import LicenceFactory
 from ralph.networks.tests.factories import IPAddressFactory
 from ralph.supports.models import Support
 from ralph.supports.tests.factories import SupportFactory
+from ralph.tests.models import PolymorphicTestModel
+from ralph.tests.factories import PolymorphicTestModelFactory
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -466,7 +468,7 @@ BASE_OBJECTS_FACTORIES = {
     Support: SupportFactory,
     VIP: VIPFactory,
     VirtualServer: VirtualServerFactory,
-    Cluster: ClusterFactory
+    Cluster: ClusterFactory,
 }
 
 
@@ -595,6 +597,10 @@ class BaseObjectAPITests(RalphAPITestCase):
     def test_str_field(self):
         count = 0
         for descendant in BaseObject._polymorphic_descendants:
+            if descendant in [
+                PolymorphicTestModel
+            ]:
+                continue
             if not descendant._polymorphic_descendants:
                 count += 1
                 obj = BASE_OBJECTS_FACTORIES[descendant]()

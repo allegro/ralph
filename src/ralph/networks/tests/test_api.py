@@ -74,15 +74,37 @@ class IPAddressAPITests(RalphAPITestCase):
         url = reverse('ipaddress-detail', args=(self.ip_with_dhcp.id,))
         response = self.client.patch(url, format='json', data=data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            'Cannot change address when exposing in DHCP',
+            response.data['__all__']
+        )
 
     def test_change_ip_hostname_with_dhcp_exposition_should_not_pass(self):
         data = {'hostname': 'some-hostname'}
         url = reverse('ipaddress-detail', args=(self.ip_with_dhcp.id,))
         response = self.client.patch(url, format='json', data=data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            'Cannot change hostname when exposing in DHCP',
+            response.data['__all__']
+        )
 
     def test_change_ip_ethernet_with_dhcp_exposition_should_not_pass(self):
         data = {'ethernet': self.eth.id}
         url = reverse('ipaddress-detail', args=(self.ip_with_dhcp.id,))
         response = self.client.patch(url, format='json', data=data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            'Cannot change ethernet when exposing in DHCP',
+            response.data['__all__']
+        )
+
+    def test_change_ip_dhcp_expose_with_dhcp_exposition_should_not_pass(self):
+        data = {'dhcp_expose': False}
+        url = reverse('ipaddress-detail', args=(self.ip_with_dhcp.id,))
+        response = self.client.patch(url, format='json', data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            'Cannot remove entry from DHCP. Use transition to do this.',
+            response.data['dhcp_expose']
+        )
