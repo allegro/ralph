@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
+from ralph.api.serializers import RalphAPISaveSerializer
 from ralph.assets.api.serializers import EthernetSerializer
 from ralph.networks.models import (
     IPAddress,
@@ -43,17 +44,25 @@ class IPAddressSerializer(RalphAPISerializer):
     class Meta:
         model = IPAddress
         depth = 1
-        exclude = (
-            # 'ethernet',
-        )
+        exclude = ('number',)
+
+
+class IPAddressSaveSerializer(RalphAPISaveSerializer):
+    class Meta:
+        model = IPAddress
 
 
 class IPAddressViewSet(RalphAPIViewSet):
     queryset = IPAddress.objects.all()
     serializer_class = IPAddressSerializer
+    save_serializer_class = IPAddressSaveSerializer
     prefetch_related = [
         'ethernet', 'ethernet__base_object', 'ethernet__base_object__tags',
         'network',
+    ]
+    filter_fields = [
+        'hostname', 'ethernet__base_object', 'network', 'network__address',
+        'status', 'is_public', 'is_management', 'dhcp_expose'
     ]
 
 
