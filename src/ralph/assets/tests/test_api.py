@@ -47,7 +47,6 @@ from ralph.networks.tests.factories import IPAddressFactory
 from ralph.supports.models import Support
 from ralph.supports.tests.factories import SupportFactory
 from ralph.tests.models import PolymorphicTestModel
-from ralph.tests.factories import PolymorphicTestModelFactory
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,

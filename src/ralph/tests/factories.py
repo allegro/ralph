@@ -1,7 +1,7 @@
 import factory
 from django.contrib.auth import get_user_model
 
-from ralph.tests.models import Manufacturer, PolymorphicTestModel
+from ralph.tests.models import Manufacturer
 
 
 class UserFactory(factory.Factory):
@@ -43,10 +43,3 @@ class ManufacturerFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Manufacturer
         django_get_or_create = ['name', 'country']
-
-
-class PolymorphicTestModelFactory(factory.django.DjangoModelFactory):
-    hostname = factory.Sequence(lambda n: 'h{}'.format(n))
-
-    class Meta:
-        model = PolymorphicTestModel
