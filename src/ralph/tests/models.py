@@ -190,3 +190,7 @@ class BaseObjectForeignKeyModel(models.Model):
             'data_center.DataCenterAsset'
         ]
     )
+
+
+class PolymorphicTestModel(AdminAbsoluteUrlMixin, BaseObject):
+    hostname = models.CharField(max_length=50)

@@ -309,6 +309,9 @@ ISSUE_TRACKER_URL = os.environ.get('ISSUE_TRACKER_URL', '')
 
 # Networks
 DEFAULT_NETWORK_MARGIN = int(os.environ.get('DEFAULT_NETWORK_MARGIN', 10))
+# when set to True, network records (IP/Ethernet) can't be modified until
+# 'expose in DHCP' is selected
+DHCP_ENTRY_FORBID_CHANGE = os_env_true('DHCP_ENTRY_FORBID_CHANGE', 'True')
 
 # enable integration with DNSaaS, for details see
 # https://github.com/allegro/django-powerdns-dnssec

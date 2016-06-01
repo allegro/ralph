@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import re
 
+from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -90,7 +92,7 @@ class Ethernet(Component):
     label = NullableCharField(
         verbose_name=_('name'), max_length=255, blank=True, null=True
     )
-    mac = models.CharField(
+    mac = NullableCharField(
         verbose_name=_('MAC address'), unique=True,
         validators=[mac_validator], max_length=24, null=True, blank=True
     )
@@ -106,3 +108,46 @@ class Ethernet(Component):
 
     def __str__(self):
         return '{} ({})'.format(self.label, self.mac)
+
+    def _validate_expose_in_dhcp_and_mac(self):
+        """
+        Check if mac is not empty when exposing in DHCP.
+        """
+        from ralph.networks.models import IPAddress
+        try:
+            if not self.mac and self.ipaddress.dhcp_expose:
+                raise ValidationError(
+                    _('MAC cannot be empty if record is exposed in DHCP')
+                )
+        except IPAddress.DoesNotExist:
+            pass
+
+    def _validate_change_when_exposing_in_dhcp(self):
+        """
+        Check if mas has changed when entry is exposed in DHCP.
+        """
+        if self.pk and settings.DHCP_ENTRY_FORBID_CHANGE:
+            from ralph.networks.models import IPAddress
+            old_obj = self.__class__._default_manager.get(pk=self.pk)
+            try:
+                if old_obj.ipaddress.dhcp_expose:
+                    if old_obj.mac != self.mac:
+                        raise ValidationError(
+                            'Cannot change MAC when exposing in DHCP'
+                        )
+            except IPAddress.DoesNotExist:
+                pass
+
+    def clean(self):
+        errors = {}
+        for validator in [
+            super().clean,
+            self._validate_expose_in_dhcp_and_mac,
+            self._validate_change_when_exposing_in_dhcp
+        ]:
+            try:
+                validator()
+            except ValidationError as e:
+                e.update_error_dict(errors)
+        if errors:
+            raise ValidationError(errors)

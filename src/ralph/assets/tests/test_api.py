@@ -46,6 +46,7 @@ from ralph.licences.tests.factories import LicenceFactory
 from ralph.networks.tests.factories import IPAddressFactory
 from ralph.supports.models import Support
 from ralph.supports.tests.factories import SupportFactory
+from ralph.tests.models import PolymorphicTestModel
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -466,7 +467,7 @@ BASE_OBJECTS_FACTORIES = {
     Support: SupportFactory,
     VIP: VIPFactory,
     VirtualServer: VirtualServerFactory,
-    Cluster: ClusterFactory
+    Cluster: ClusterFactory,
 }
 
 
@@ -595,6 +596,10 @@ class BaseObjectAPITests(RalphAPITestCase):
     def test_str_field(self):
         count = 0
         for descendant in BaseObject._polymorphic_descendants:
+            if descendant in [
+                PolymorphicTestModel
+            ]:
+                continue
             if not descendant._polymorphic_descendants:
                 count += 1
                 obj = BASE_OBJECTS_FACTORIES[descendant]()
@@ -736,3 +741,19 @@ class ConfigurationClassAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.conf_class_1.refresh_from_db()
         self.assertEqual(self.conf_class_1.class_name, 'test_2')
+
+
+class EthernetAPITests(RalphAPITestCase):
+    def setUp(self):
+        super().setUp()
+        self.ip = IPAddressFactory(dhcp_expose=True)
+        self.eth = self.ip.ethernet
+
+    def test_cannot_delete_when_exposed_in_dhcp(self):
+        url = reverse('ethernet-detail', args=(self.eth.id,))
+        response = self.client.delete(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            'Could not delete Ethernet when it is exposed in DHCP',
+            response.data
+        )

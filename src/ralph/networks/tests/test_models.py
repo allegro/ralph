@@ -1,11 +1,16 @@
 from ipaddress import ip_address, ip_network
 
 from ddt import data, ddt, unpack
+from django.core.exceptions import ValidationError
 
 from ralph.assets.models import AssetLastHostname
+from ralph.assets.tests.factories import EthernetFactory
 from ralph.networks.models.choices import IPAddressStatus
 from ralph.networks.models.networks import IPAddress, Network
-from ralph.networks.tests.factories import NetworkEnvironmentFactory
+from ralph.networks.tests.factories import (
+    IPAddressFactory,
+    NetworkEnvironmentFactory
+)
 from ralph.tests import RalphTestCase
 
 
@@ -314,3 +319,92 @@ class NetworkEnvironmentTest(RalphTestCase):
         # check if hostname is not increased
         self.assertEqual(ne.next_free_hostname, 's12300001.dc.local')
         self.assertEqual(ne.next_free_hostname, 's12300001.dc.local')
+
+
+class IPAddressTest(RalphTestCase):
+    def setUp(self):
+        self.ip = IPAddressFactory()
+
+    def test_delete_ethernet_should_delete_related_ip(self):
+        ip = IPAddressFactory()
+        ip.ethernet.delete()
+        with self.assertRaises(IPAddress.DoesNotExist):
+            ip.refresh_from_db()
+
+    def test_delete_ip_should_not_delete_ethernet(self):
+        ip = IPAddressFactory()
+        eth = ip.ethernet
+        ip.delete()
+        eth.refresh_from_db()
+
+    def test_clear_hostname_should_pass(self):
+        self.ip.hostname = None
+        self.ip.clean()
+        self.ip.save()
+
+    def test_clear_hostname_with_dhcp_exposition_should_not_pass(self):
+        self.ip.dhcp_expose = True
+        self.ip.save()
+        self.ip.hostname = None
+        with self.assertRaises(
+            ValidationError,
+            msg='Cannot expose in DHCP without hostname'
+        ):
+            self.ip.clean()
+
+    def test_clear_mac_address_without_dhcp_exposition_should_pass(self):
+        self.ip.ethernet.mac = None
+        self.ip.ethernet.save()
+        self.ip.clean()
+        self.ip.save()
+
+    def test_clear_mac_address_with_ip_with_dhcp_exposition_should_not_pass(self):  # noqa
+        self.ip.ethernet.mac = None
+        self.ip.ethernet.save()
+        self.ip.dhcp_expose = True
+        with self.assertRaises(
+            ValidationError,
+            msg='Cannot expose in DHCP without MAC address'
+        ):
+            self.ip.clean()
+
+    def test_detach_ethernet_with_dhcp_exposition_should_not_pass(self):  # noqa
+        self.ip.ethernet = None
+        self.ip.save()
+        self.ip.dhcp_expose = True
+        with self.assertRaises(
+            ValidationError,
+            msg='Cannot expose in DHCP without MAC address'
+        ):
+            self.ip.clean()
+
+    def test_change_hostname_with_dhcp_exposition_should_not_pass(self):  # noqa
+        self.ip.dhcp_expose = True
+        self.ip.save()
+        self.ip.hostname = 'another-hostname'
+        with self.assertRaises(
+            ValidationError,
+            msg='Cannot change hostname when exposing in DHCP'
+        ):
+            self.ip.clean()
+
+    def test_change_address_with_dhcp_exposition_should_not_pass(self):  # noqa
+        self.ip.dhcp_expose = True
+        self.ip.save()
+        self.ip.address = '127.0.0.2'
+        with self.assertRaises(
+            ValidationError,
+            msg='Cannot change address when exposing in DHCP'
+        ):
+            self.ip.clean()
+
+    def test_change_ethernet_with_dhcp_exposition_should_not_pass(self):  # noqa
+        eth = EthernetFactory()
+        self.ip.dhcp_expose = True
+        self.ip.save()
+        self.ip.ethernet = eth
+        with self.assertRaises(
+            ValidationError,
+            msg='Cannot change ethernet when exposing in DHCP'
+        ):
+            self.ip.clean()

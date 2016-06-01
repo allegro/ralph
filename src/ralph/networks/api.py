@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
+from rest_framework.exceptions import ValidationError
+
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
+from ralph.api.serializers import RalphAPISaveSerializer
 from ralph.assets.api.serializers import EthernetSerializer
 from ralph.networks.models import (
     IPAddress,
@@ -43,18 +47,49 @@ class IPAddressSerializer(RalphAPISerializer):
     class Meta:
         model = IPAddress
         depth = 1
-        exclude = (
-            # 'ethernet',
-        )
+        exclude = ('number',)
+
+
+class IPAddressSaveSerializer(RalphAPISaveSerializer):
+    class Meta:
+        model = IPAddress
+
+    def validate_dhcp_expose(self, value):
+        """
+        Check if dhcp_expose value has changed from True to False.
+        """
+        if (
+            settings.DHCP_ENTRY_FORBID_CHANGE and
+            self.instance and
+            self.instance.dhcp_expose and
+            not value
+        ):
+            raise ValidationError(
+                'Cannot remove entry from DHCP. Use transition to do this.'
+            )
+        return value
 
 
 class IPAddressViewSet(RalphAPIViewSet):
     queryset = IPAddress.objects.all()
     serializer_class = IPAddressSerializer
+    save_serializer_class = IPAddressSaveSerializer
     prefetch_related = [
         'ethernet', 'ethernet__base_object', 'ethernet__base_object__tags',
         'network',
     ]
+    filter_fields = [
+        'hostname', 'ethernet__base_object', 'network', 'network__address',
+        'status', 'is_public', 'is_management', 'dhcp_expose'
+    ]
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance and instance.dhcp_expose:
+            raise ValidationError(
+                'Could not delete IPAddress when it is exposed in DHCP'
+            )
+        return super().destroy(request, *args, **kwargs)
 
 
 class NetworkViewSet(RalphAPIViewSet):
