@@ -71,6 +71,7 @@ node_modules/
 src/ralph/static/css/
 src/ralph/static/vendor/
 src/ralph/var/
+src/ralph/admin/static/elements/elements-min.html
 
 # TODO: move to src/ralph/static
 src/ralph/admin/static/elements/elements-min.html
@@ -78,3 +79,4 @@ src/ralph/admin/static/elements/elements-min.html
 debian/ralph-core*
 
 .idea
+!src/ralph/lib

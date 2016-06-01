@@ -18,6 +18,7 @@ from ralph.assets.models.choices import (
     ModelVisualizationLayout,
     ObjectModelType
 )
+from ralph.lib.custom_fields.models import WithCustomFieldsMixin
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
@@ -120,6 +121,7 @@ class AssetModel(
     PermByFieldMixin,
     NamedMixin.NonUnique,
     TimeStampMixin,
+    WithCustomFieldsMixin,
     models.Model
 ):
     # TODO: should type be determined based on category?

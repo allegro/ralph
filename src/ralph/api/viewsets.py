@@ -14,6 +14,7 @@ from ralph.api.filters import (
 )
 from ralph.api.serializers import RalphAPISaveSerializer, ReversedChoiceField
 from ralph.api.utils import QuerysetRelatedMixin
+from ralph.lib.custom_fields.api import CustomFieldsFilterBackend
 from ralph.lib.permissions.api import (
     PermissionsForObjectFilter,
     RalphPermission
@@ -61,7 +62,7 @@ class RalphAPIViewSetMixin(QuerysetRelatedMixin, AdminSearchFieldsMixin):
         PermissionsForObjectFilter, filters.OrderingFilter,
         ExtendedFiltersBackend, LookupFilterBackend,
         PolymorphicDescendantsFilterBackend, TagsFilterBackend,
-        ImportedIdFilterBackend,
+        ImportedIdFilterBackend, CustomFieldsFilterBackend
     ]
     permission_classes = [RalphPermission]
     save_serializer_class = None
