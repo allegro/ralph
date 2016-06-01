@@ -43,7 +43,7 @@ class CustomFieldValueInline(RalphGenericTabularInline):
     template = 'custom_fields/edit_inline/tabular.html'
 
 
-class CustomFieldValueAdminMaxin(object):
+class CustomFieldValueAdminMixin(object):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.inlines = list(self.inlines) + [CustomFieldValueInline]

@@ -98,7 +98,7 @@ class CustomFieldValue(TimeStampMixin, models.Model):
         CustomField, verbose_name=_('key'), on_delete=models.PROTECT
     )
     # value is stored in charfield on purpose - ralph's custom field mechanism
-    # is by-design simple, so it, for example, don't allow to filter by range
+    # is by-design simple, so it, for example, doesn't allow to filter by range
     # of integers or other Django filters like gte, lte.
     value = models.CharField(max_length=CUSTOM_FIELD_VALUE_MAX_LENGTH)
     content_type = models.ForeignKey(ContentType)

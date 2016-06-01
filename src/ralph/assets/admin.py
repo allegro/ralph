@@ -20,7 +20,7 @@ from ralph.assets.models.assets import (
 )
 from ralph.assets.models.components import ComponentModel, GenericComponent
 from ralph.data_importer import resources
-from ralph.lib.custom_fields.admin import CustomFieldValueAdminMaxin
+from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.table import Table
 
 
@@ -122,7 +122,7 @@ class ProfitCenterAdmin(RalphAdmin):
 
 
 @register(AssetModel)
-class AssetModelAdmin(CustomFieldValueAdminMaxin, RalphAdmin):
+class AssetModelAdmin(CustomFieldValueAdminMixin, RalphAdmin):
 
     resource_class = resources.AssetModelResource
     list_select_related = ['manufacturer', 'category']

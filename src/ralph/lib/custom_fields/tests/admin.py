@@ -1,13 +1,13 @@
 from django.contrib import admin
 
-from ..admin import CustomFieldValueAdminMaxin
+from ..admin import CustomFieldValueAdminMixin
 from .models import SomeModel
 
 site = admin.AdminSite(name="cf_admin")
 
 
 @admin.register(SomeModel)
-class SomeModelAdmin(CustomFieldValueAdminMaxin, admin.ModelAdmin):
+class SomeModelAdmin(CustomFieldValueAdminMixin, admin.ModelAdmin):
     pass
 
 

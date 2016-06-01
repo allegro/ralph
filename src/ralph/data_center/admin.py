@@ -45,7 +45,7 @@ from ralph.data_center.models.virtual import (
 )
 from ralph.data_center.views.ui import DataCenterAssetSecurityInfo
 from ralph.data_importer import resources
-from ralph.lib.custom_fields.admin import CustomFieldValueAdminMaxin
+from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
 from ralph.operations.views import OperationViewReadOnlyForExisiting
@@ -169,7 +169,7 @@ class DataCenterAssetAdmin(
     BulkEditChangeListMixin,
     AttachmentsMixin,
     AssetInvoiceReportMixin,
-    CustomFieldValueAdminMaxin,
+    CustomFieldValueAdminMixin,
     RalphAdmin,
 ):
     """Data Center Asset admin class."""
