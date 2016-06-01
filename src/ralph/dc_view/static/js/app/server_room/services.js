@@ -2,14 +2,14 @@
     'use strict';
 
     angular
-        .module('data_center.services', [
+        .module('server_room.services', [
                 'ngResource'
             ]
         )
-        .factory('DataCenterModel', ['$resource', function($resource){
+        .factory('ServerRoomModel', ['$resource', function($resource){
             return $resource(
-                '/api/data_center/:dcId/',
-                {dcId: '@id'},
+                '/api/server_room/:srId/',
+                {srId: '@id'},
                 {
                     addRack: {method: 'POST', params: {}}
                 }

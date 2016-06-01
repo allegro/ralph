@@ -7,7 +7,7 @@
 
 {% block extrahead %}
   {{ block.super }}
-  <link rel="stylesheet" type="text/css" href="{% static "vendor/css/loading-bar.min.css" %}" />
+  <link rel="stylesheet" type="text/css" href="{% static 'vendor/css/loading-bar.min.css' %}" />
 {% endblock %}
 
 {% block extra_scripts %}
@@ -18,17 +18,25 @@
 {% block content %}
 <br />
 <div id="content-main" class="row">
-    <div class="large-12 columns" ng-app="dataCenterVisualizationApp">
+    <div class="large-12 columns" ng-app="serverRoomVisualizationApp">
         <div class="row visualization">
             <div class="large-2 small-3 columns">
               <div class="panel">
-                <h5>{% trans "Data centers" %}</h5>
+                <h5>{% trans "Server rooms" %}</h5>
                 <ul class="side-nav">
                     {% for data_center in data_centers %}
                       <li ui-sref-active="active">
-                        <a ui-sref="data_center.detail({dcId:{{ data_center.id }}})">
-                          {{ data_center }}
-                        </a>
+                        {{ data_center }}
+                        {% for server_room in data_center.server_rooms.all %}
+                          <ul>
+                            <li>
+                              <a ui-sref="server_room.detail({srId:{{ server_room.id }}})">
+                               {{ server_room.name }}
+                              </a>
+                            </li>
+                          </ul>
+                          {% endfor%}
+
                       </li>
                     {% endfor %}
                 </ul>

@@ -1,6 +1,6 @@
 from django.conf.urls import url
 
-from ralph.dc_view.views.api import DCAssetsView, DCRacksAPIView
+from ralph.dc_view.views.api import DCAssetsView, SRRacksAPIView
 
 urlpatterns = [
     url(
@@ -8,7 +8,7 @@ urlpatterns = [
         DCAssetsView.as_view(),
     ),
     url(
-        r'^data_center/(?P<data_center_id>\d+)/?$',
-        DCRacksAPIView.as_view(),
+        r'^server_room/(?P<server_room_id>\d+)/?$',
+        SRRacksAPIView.as_view(),
     ),
 ]

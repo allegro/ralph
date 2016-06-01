@@ -1,23 +1,23 @@
-var serviceLocator = angular.injector(['ng', 'dataCenterVisualizationApp']);
+var serviceLocator = angular.injector(['ng', 'serverRoomVisualizationApp']);
 var $controllers = serviceLocator.get('$controller');
 var scope = {};
-var dataCenterMock = {
+var serverRoomMock = {
     rack_set: []
 };
 var rackModel;
 
-QUnit.module('Data Center controllers', {
+QUnit.module('Server Room controllers', {
     setup: function () {
         scope = serviceLocator.get('$rootScope').$new();
         rackModel = serviceLocator.get('RackModel');
-        $controllers('DataCenterController', {$scope: scope, data_center: dataCenterMock, RackModel: rackModel});
+        $controllers('ServerRoomController', {$scope: scope, server_room: serverRoomMock, RackModel: rackModel});
     }
 });
 
 test('newRack should add rack to rack_set', function(){
-    ok(scope.data_center.rack_set.length === 0);
+    ok(scope.server_room.rack_set.length === 0);
     scope.newRack(1, 1);
-    ok(scope.data_center.rack_set.length === 1);
+    ok(scope.server_room.rack_set.length === 1);
 });
 
 test('updatePosition should not update variables actualX and actualY when target is not equal currentTarget', function() {

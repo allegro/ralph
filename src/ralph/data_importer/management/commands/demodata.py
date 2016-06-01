@@ -104,7 +104,7 @@ class Command(BaseCommand):
                 visualization_row += 1
                 if (
                     visualization_row >
-                    server_room.data_center.visualization_rows_num
+                    server_room.visualization_rows_num
                 ):
                     visualization_row = 1
                     visualization_col += 1
