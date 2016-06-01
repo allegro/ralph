@@ -88,8 +88,6 @@ class NetworkInlineTestCase(RalphTestCase):
             '0-is_management': 'on',
 
             '1-base_object': self.obj1.id,
-            # '1-hostname': 'def',
-            # '1-address': '127.0.0.2',
             '1-mac': '10:20:30:40:50:60',
             '1-label': 'eth1',
             '1-speed': EthernetSpeed.s100gbit.id,
@@ -102,10 +100,6 @@ class NetworkInlineTestCase(RalphTestCase):
         response = self.client.post(self.obj1.get_absolute_url(), data)
         self.assertEqual(response.status_code, 302)
         eth = Ethernet.objects.get(mac='10:20:30:40:50:60')
-        # ip = IPAddress.objects.get(address='127.0.0.2')
-        # self.assertEqual(ip.hostname, 'def')
-        # self.assertFalse(ip.is_management)
-        # self.assertFalse(ip.dhcp_expose)
         self.assertEqual(eth.speed, EthernetSpeed.s100gbit.id)
         self.assertEqual(eth.label, 'eth1')
         self.assertEqual(eth.base_object.pk, self.obj1.pk)
@@ -129,8 +123,6 @@ class NetworkInlineTestCase(RalphTestCase):
             '1-base_object': self.obj1.id,
             '1-hostname': 'def',
             '1-address': '127.0.0.2',
-            # '1-mac': '10:20:30:40:50:60',
-            # '1-label': 'eth1',
             '1-speed': EthernetSpeed.unknown.id,
         }
         data = {
