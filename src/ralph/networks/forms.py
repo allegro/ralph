@@ -40,7 +40,7 @@ class SimpleNetworkForm(forms.ModelForm):
 
     Validations and checks:
     * at least one of MAC and IP address is required
-    * when address is empty, none of ip fields (is_management_, hostname etc)
+    * when address is empty, none of ip fields (is_management, hostname etc)
         could be filled
 
     Notes:
