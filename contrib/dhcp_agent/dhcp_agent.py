@@ -40,7 +40,7 @@ DEFAULT_DHCP_SERVICE_NAME = 'isc-dhcp-server'
 @contextlib.contextmanager
 def open_file_or_stdout_to_writing(filename=None):
     """Context manager opens file or stdout and returns its handle."""
-    if filename and filename in ['-', None]:
+    if filename in ['-', None]:
         handler = sys.stdout
     else:
         handler = open(filename, 'w')

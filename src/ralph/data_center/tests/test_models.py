@@ -3,14 +3,10 @@ from ddt import data, ddt, unpack
 from django.core.exceptions import ValidationError
 
 from ralph.accounts.tests.factories import RegionFactory
-from ralph.assets.tests.factories import ServiceEnvironmentFactory
 from ralph.back_office.models import BackOfficeAsset
 from ralph.back_office.tests.factories import WarehouseFactory
 from ralph.data_center.models.choices import DataCenterAssetStatus, Orientation
-from ralph.data_center.models.physical import (
-    autocomplete_service_env_pk,
-    DataCenterAsset
-)
+from ralph.data_center.models.physical import DataCenterAsset
 from ralph.data_center.tests.factories import (
     DataCenterAssetFactory,
     RackFactory
@@ -286,20 +282,6 @@ class DataCenterAssetTest(RalphTestCase):
     def test_get_autocomplete_queryset(self):
         queryset = DataCenterAsset.get_autocomplete_queryset()
         self.assertEquals(1, queryset.count())
-
-    @unpack
-    @data(
-        ([],),
-        ([DataCenterAssetFactory(), DataCenterAssetFactory()],)
-    )
-    def test_autocomplete_service_env_pk_should_return_false(self, objects):
-        self.assertFalse(autocomplete_service_env_pk([], objects))
-
-    def test_autocomplete_service_env_pk_should_return_pk(self):
-        asset = DataCenterAssetFactory(service_env=ServiceEnvironmentFactory())
-        self.assertEqual(
-            asset.service_env.pk, autocomplete_service_env_pk([], [asset])
-        )
 
 
 @ddt
