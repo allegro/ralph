@@ -79,7 +79,10 @@ class Job(TimeStampMixin):
         job.
         """
         if self._params is None:
-            self._params = self._restore_django_models(self._dumped_params)
+            self._params = self._restore_params(self._dumped_params)
+            logger.debug('{} restored into {}'.format(
+                self._dumped_params, self._params
+            ))
         return self._params
 
     def reschedule(self):
@@ -87,6 +90,12 @@ class Job(TimeStampMixin):
         Reschedule the same job again.
         """
         # TODO: use rq scheduler
+        # re-save job to store updated params in DB
+        self._dumped_params = self.prepare_params(**self.params)
+        logger.debug('Updating _dumped_params to {}'.format(
+            self._dumped_params
+        ))
+        self.save()
         logger.info('Rescheduling {}'.format(self))
         service = InternalService(self.service_name)
         job = service.run_async(job_id=self.id)
@@ -114,8 +123,10 @@ class Job(TimeStampMixin):
         result = cls.dump_obj_to_jsonable(kwargs)
         user = _get_user_from_request(request)
         result['_request__user'] = (
-            cls.dump_obj_to_jsonable(user) if user else None
+            result.get('_request__user') or
+            (cls.dump_obj_to_jsonable(user) if user else None)
         )
+        logger.debug('{} prepared into {}'.format(kwargs, result))
         return result
 
     @classmethod
@@ -167,6 +178,10 @@ class Job(TimeStampMixin):
                 'object_pk': obj.pk,
             }
         return result
+
+    @classmethod
+    def _restore_params(cls, obj):
+        return cls._restore_django_models(obj)
 
     @classmethod
     def _restore_django_models(cls, obj):

@@ -7,6 +7,12 @@ from collections import defaultdict
 from django.db import transaction
 
 from ralph.attachments.models import Attachment
+from ralph.lib.transitions.exceptions import (
+    AsyncTransitionError,
+    FailedActionError,
+    MoreThanOneStartedActionError,
+    RescheduleAsyncTransitionActionLater
+)
 from ralph.lib.transitions.models import (
     _check_action_with_instances,
     _check_instances_for_transition,
@@ -19,22 +25,6 @@ from ralph.lib.transitions.models import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-class RescheduleAsyncTransitionActionLater(Exception):
-    pass
-
-
-class AsyncTransitionError(Exception):
-    pass
-
-
-class MoreThanOneStartedActionError(AsyncTransitionError):
-    pass
-
-
-class FailedActionError(AsyncTransitionError):
-    pass
 
 
 def _check_previous_actions(job, executed_actions):
@@ -90,7 +80,6 @@ def _perform_async_transition(transition_job):
         if tja.status != TransitionJobActionStatus.STARTED
     ])
     attachment = None
-    func_history_kwargs = defaultdict(dict)
     # TODO: move this to transition (sth like
     # `for action in transition.get_actions(obj)`)
     for action in _order_actions_by_requirements(transition.actions.all(), obj):
@@ -107,7 +96,6 @@ def _perform_async_transition(transition_job):
         # data should be in transition_job.params dict
         defaults = _prepare_action_data(
             action=action,
-            func_history_kwargs=func_history_kwargs,
             **transition_job.params
         )
         tja = TransitionJobAction.objects.get_or_create(
@@ -144,7 +132,8 @@ def _perform_async_transition(transition_job):
 
     # save obj and history
     _post_transition_instance_processing(
-        obj, transition, transition_job.params['data'], func_history_kwargs,
+        obj, transition, transition_job.params['data'],
+        history_kwargs=transition_job.params['history_kwargs'],
         user=transition_job.user, attachment=attachment,
     )
     transition_job.success()

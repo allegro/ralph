@@ -31,6 +31,7 @@ from ralph.data_center.models.choices import (
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
+from ralph.lib.transitions.exceptions import RescheduleAsyncTransitionActionLater
 from ralph.networks.models import IPAddress, NetworkEnvironment
 
 logger = logging.getLogger(__name__)
@@ -656,6 +657,31 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
                 # Save new asset to list, required to redirect url.
                 # RunTransitionView.get_success_url()
                 instances[i] = back_office_asset
+
+    @classmethod
+    @transition_action(
+        # is_async=True,
+        verbose_name='test_reschedule'
+    )
+    def test_reschedule(cls, instances, **kwargs):
+        reschedule = False
+        print(kwargs)
+        for instance in instances:
+            if not kwargs['shared_params'][instance.pk]:
+                reschedule = True
+            kwargs['shared_params'][instance.pk]['test'] = 1
+            kwargs['history_kwargs'][instance.pk]['test'] = 22
+        if reschedule:
+            raise RescheduleAsyncTransitionActionLater()
+
+    @classmethod
+    @transition_action(
+        # is_async=True,
+        verbose_name='test_reschedule22',
+        run_after=['test_reschedule']
+    )
+    def test_reschedule2(cls, instances, **kwargs):
+        print(kwargs)
 
 
 class Connection(models.Model):

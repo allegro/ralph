@@ -212,7 +212,7 @@ class TransitionViewMixin(object):
     def get_async_transitions_awaiter_url(self, job_ids):
         return '{}?{}'.format(
             reverse('async_bulk_transitions_awaiter'),
-            urlencode(MultiValueDict({'jobid': job_ids}))
+            urlencode(MultiValueDict([('jobid', job_id) for job_id in job_ids]))
         )
 
     def get_success_url(self):
