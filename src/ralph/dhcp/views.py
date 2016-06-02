@@ -165,7 +165,6 @@ class DHCPEntriesView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            'ralph_instance_ip': '192.168.200.1:8000',  # TODO
             'last_modified': self.last_modified,
             'entries': DHCPEntry.objects.filter(network__in=self.networks),
         })
