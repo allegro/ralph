@@ -4,10 +4,10 @@ from ddt import data, ddt, unpack
 from django.contrib.auth import get_user_model
 from django.test import LiveServerTestCase
 
-from dhcp_agent import Cache, convert_to_request_params, DHCPConfigManager
-
 from ralph.data_center.tests.factories import DataCenterFactory
 from ralph.dhcp.models import DHCPServer
+
+from dhcp_agent import Cache, convert_to_request_params, DHCPConfigManager
 
 logger = logging.getLogger(__file__)
 
