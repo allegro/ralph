@@ -3,7 +3,7 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 
 <link rel="import" href="tool-tip.html">
-
+<link rel="import" href="html-echo.html">
 
 <dom-module id='badge-input'>
   <template>
@@ -64,7 +64,7 @@
         <template is='dom-repeat' items="[[badgesData]]">
           <div class='badge'>
             <div class='flexchild'>
-              [[item.__str__]]
+              <html-echo html="item.__str__"></html-echo>
               <template is="dom-if" if="{{item.tooltip}}">
                 <tool-tip tip='[[item.tooltip]]'></tool-tip>
               </template>
@@ -101,7 +101,7 @@
           type: String,
           value: ""
         },
-        badgesData: {
+          : {
           type: Array,
           value: function(){return [];}
         }

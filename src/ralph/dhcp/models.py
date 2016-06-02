@@ -4,8 +4,8 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.data_center.models import DataCenterAsset
-from ralph.networks.models.networks import IPAddress, IPAddressStatus
 from ralph.deployment.models import Deployment
+from ralph.networks.models.networks import IPAddress, IPAddressStatus
 
 
 class DHCPEntryManager(models.Manager):
@@ -19,6 +19,7 @@ class DHCPEntryManager(models.Manager):
             status=IPAddressStatus.reserved.id
         )
 
+    # TODO: delete this
     def entries(self, networks):
         queryset = self.get_queryset().filter(network__in=networks)
         deployment_queryset = Deployment.objects.active()

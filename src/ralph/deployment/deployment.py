@@ -18,8 +18,8 @@ Deployment order:
 * Wait for ping
 
 """
-import time
 import logging
+import time
 from datetime import datetime
 from functools import partial
 
@@ -27,14 +27,15 @@ from django import forms
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.assets.models import Ethernet, ConfigurationClass
+from ralph.assets.models import ConfigurationClass, Ethernet
 from ralph.data_center.models import DataCenterAsset
 from ralph.deployment.models import Preboot
 from ralph.dhcp.models import DHCPServer
 from ralph.dns.dnsaas import DNSaaS
 from ralph.dns.views import DNSaaSIntegrationNotEnabledError
-from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.mixins.forms import ChoiceFieldWithOtherOption, OTHER
+from ralph.lib.transitions.decorators import transition_action
+from ralph.lib.transitions.models import TransitionJobActionStatus
 from ralph.networks.models import IPAddress, Network, NetworkEnvironment
 from ralph.virtual.models import VirtualServer
 
@@ -109,7 +110,7 @@ def next_free_hostname_choices(actions, objects):
     return [
         (
             str(net_env.id),
-            '{} ({})'.format(NEXT_FREE, net_env)
+            '{} ({})'.format(net_env.next_free_hostname, net_env)
         )
         for net_env in network_environments
     ]
@@ -136,7 +137,7 @@ def next_free_ip_choices(actions, objects):
     ips = [
         (
             str(network.id),
-            '{} ({})'.format(NEXT_FREE, network)
+            '{} ({})'.format(network.get_first_free_ip(), network)
         )
         for network in networks
     ]
@@ -267,9 +268,7 @@ def clean_dhcp(cls, instances, **kwargs):
     Clean DHCP entries for each instance.
     """
     for instance in instances:
-        mac_addresses = _get_non_mgmt_ethernets(instance).values_list(
-            'mac', flat=True
-        )
+        _get_non_mgmt_ethernets(instance).values_list('mac', flat=True)
         # TODO when DHCPEntry model will not be proxy to ipaddresse
         # for dhcp_entry in DHCPEntry.objects.filter(mac__in=mac_addresses):
         #     logger.warning('Removing {} DHCP entry')
@@ -483,7 +482,6 @@ def deploy(cls, instances, **kwargs):
     """
     This function just indicates that it's deployment transition.
     """
-    # TODO: invalid http cache for dhcp
     pass
 
 
@@ -492,8 +490,10 @@ def deploy(cls, instances, **kwargs):
     is_async=True,
     run_after=['deploy'],
 )
-def wait_for_ping(cls, instances, **kwargs):
+def wait_for_ping(cls, instances, tja, **kwargs):
     """
     Wait until server ping to Ralph that is has properly deployed.
     """
-    pass  # TODO
+    while tja.status == TransitionJobActionStatus.STARTED:
+        tja.refresh_from_db()
+        time.sleep(1)
