@@ -588,6 +588,7 @@ class TransitionJobAction(TimeStampMixin):
         choices=TransitionJobActionStatus(),
         default=TransitionJobActionStatus.STARTED.id,
     )
+    # TODO: add retries field and max retries param for async action
 
 
 def update_models_attrs():
