@@ -85,17 +85,20 @@ class Job(TimeStampMixin):
             ))
         return self._params
 
-    def reschedule(self):
-        """
-        Reschedule the same job again.
-        """
-        # TODO: use rq scheduler
+    def _resave_params(self):
         # re-save job to store updated params in DB
         self._dumped_params = self.prepare_params(**self.params)
         logger.debug('Updating _dumped_params to {}'.format(
             self._dumped_params
         ))
         self.save()
+
+    def reschedule(self):
+        """
+        Reschedule the same job again.
+        """
+        # TODO: use rq scheduler
+        self._resave_params()
         logger.info('Rescheduling {}'.format(self))
         service = InternalService(self.service_name)
         job = service.run_async(job_id=self.id)
@@ -105,6 +108,7 @@ class Job(TimeStampMixin):
         """
         Mark job as failed.
         """
+        self._resave_params()
         logger.info('Job {} has failed. Reason: {}'.format(self, reason))
         self.status = JobStatus.FAILED
         self.save()
@@ -113,6 +117,7 @@ class Job(TimeStampMixin):
         """
         Mark job as successfuly ended.
         """
+        self._resave_params()
         logger.info('Job {} has succeeded'.format(self))
         self.status = JobStatus.FINISHED
         self.save()

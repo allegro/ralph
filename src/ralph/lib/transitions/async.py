@@ -2,7 +2,6 @@
 Asynchronous runner for transitions
 """
 import logging
-from collections import defaultdict
 
 from django.db import transaction
 

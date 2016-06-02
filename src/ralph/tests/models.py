@@ -149,6 +149,8 @@ class AsyncOrder(
         instance = instances[0]  # only one instance in asyc action
         instance.counter += 1
         instance.save()
+        kwargs['shared_params'][instance.pk]['counter'] = instance.counter
+        kwargs['history_kwargs'][instance.pk]['hist_counter'] = instance.counter
         if instance.counter < 5:
             raise RescheduleAsyncTransitionActionLater()
         instance.foo = kwargs['foo']
@@ -171,6 +173,7 @@ class AsyncOrder(
         is_async=True,
     )
     def failing_action(cls, instances, **kwargs):
+        kwargs['shared_params'][instances[0].pk]['test'] = 'failing'
         raise ValueError()
 
 

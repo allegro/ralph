@@ -5,7 +5,11 @@ from django.contrib.auth import get_user_model
 from django.test import RequestFactory
 
 from ralph.lib.external_services.models import JobStatus
-from ralph.lib.transitions.models import run_transition, TransitionJob
+from ralph.lib.transitions.models import (
+    run_transition,
+    TransitionJob,
+    TransitionsHistory
+)
 from ralph.lib.transitions.tests import TransitionTestCase
 from ralph.tests.models import AsyncOrder, Foo, OrderStatus
 
@@ -72,6 +76,26 @@ class AsyncTransitionsTest(TransitionTestCase):
             self.assertEqual(async_order.counter, 5)
             self.assertEqual(async_order.name, 'def')
             self.assertEqual(async_order.username, 'test1')
+            # check if shared params and history kwargs are properly stored
+            # during rescheduling
+            self.assertEqual(
+                job.params['shared_params'][async_order.pk]['counter'], 5
+            )
+            self.assertEqual(
+                job.params['history_kwargs'][async_order.pk]['hist_counter'], 5
+            )
+            # check history entries
+            th = TransitionsHistory.objects.get(object_id=async_order.id)
+            self.assertEqual(th.kwargs, {'hist_counter': 5})
+            self.assertEqual(th.logged_user_id, self.request.user.pk)
+            self.assertCountEqual(
+                th.actions,
+                [
+                    "Assign user",
+                    "Long runnign action",
+                    "Another long runnign action"
+                ]
+            )
 
     def test_run_failing_async_transition(self):
         async_order = AsyncOrder.objects.create(name='test')
@@ -89,6 +113,12 @@ class AsyncTransitionsTest(TransitionTestCase):
             field='status',
             data={'name': 'def', 'foo': self.foo}
         )
-        for job_id in job_ids:
+        for job_id, order in zip(job_ids, [async_order, async_order2]):
             job = TransitionJob.objects.get(pk=job_id)
             self.assertEqual(job.status, JobStatus.FAILED.id)
+            self.assertEqual(
+                job.params['shared_params'][order.pk]['test'],
+                'failing'
+            )
+            with self.assertRaises(TransitionsHistory.DoesNotExist):
+                TransitionsHistory.objects.get(object_id=async_order.id)
