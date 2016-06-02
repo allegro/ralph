@@ -2,16 +2,20 @@
 
 <dom-module id='html-echo'>
   <script>
-    Polymer('html-echo', {
+    Polymer({
+      is: 'html-echo',
       properties: {
         'html': {
           type: String,
-          value: ''
-          htmlChanged: function() {
-            debugger;
-            this.innerHTML = this.html;
-          }
+          value: '',
+          observer: '_changed'
         }
+      },
+      ready: function() {
+          this.innerHTML = this.html;
+      },
+      _changed: function() {
+        this.innerHTML = this.html;
       }
     });
   </script>

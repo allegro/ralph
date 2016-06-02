@@ -64,7 +64,7 @@
         <template is='dom-repeat' items="[[badgesData]]">
           <div class='badge'>
             <div class='flexchild'>
-              <html-echo html="item.__str__"></html-echo>
+              <html-echo html="{{item.__str__}}"></html-echo>
               <template is="dom-if" if="{{item.tooltip}}">
                 <tool-tip tip='[[item.tooltip]]'></tool-tip>
               </template>
@@ -101,10 +101,6 @@
           type: String,
           value: ""
         },
-          : {
-          type: Array,
-          value: function(){return [];}
-        }
       },
       showRelatedObjectPopup: function (evt) {
         var name = evt.currentTarget.id.replace(/^(change|add|delete)_/, '');
