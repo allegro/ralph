@@ -226,7 +226,6 @@ def run_transition(instances, transition_obj_or_name, field, data={}, **kwargs):
                 instance,
                 transition=transition,
                 data=data,
-                # shared_params={instance.pk: {}},
                 **kwargs
             )
             job_ids.append(job_id)
@@ -553,7 +552,8 @@ class TransitionJob(Job):
             kwargs['data'] = {}
         for p in ['history_kwargs', 'shared_params']:
             if p not in kwargs:
-                # obj.pk will be casted to str when dumping json!
+                # obj.pk will be casted to str when dumping to json!
+                # (json needs str as the key of an object)
                 # we need to restore it in `_restore_params`
                 kwargs[p] = {obj.pk: {}}
         return super().run(service_name, defaults, request=request, **kwargs)
