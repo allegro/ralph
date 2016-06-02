@@ -53,10 +53,5 @@ class SupportAutocompleteTest(TestCase, ClientMixin):
                 self.support.supplier
             )
         )
-        self.assertEqual(
-            data['__str__'], '{} ({})'.format(
-                self.support.name, self.support.date_to
-            )
-        )
 
         self.assertHTMLEqual(data['tooltip'], expected_html)
