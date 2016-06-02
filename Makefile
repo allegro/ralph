@@ -31,7 +31,7 @@ install-docs:
 	pip3 install -r requirements/docs.txt
 
 isort:
-	isort --diff --recursive --check-only --quiet src
+	isort --diff --recursive --check-only src
 
 test: clean
 	test_ralph test $(TEST)
