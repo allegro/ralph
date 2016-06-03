@@ -281,7 +281,7 @@ class BudgetInfo(NamedMixin, TimeStampMixin, models.Model):
 
 class Asset(AdminAbsoluteUrlMixin, BaseObject):
     model = models.ForeignKey(AssetModel, related_name='assets')
-    hostname = models.CharField(
+    hostname = NullableCharField(
         blank=True,
         default=None,
         max_length=255,
