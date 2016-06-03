@@ -40,9 +40,6 @@ class NullableCharFieldMixin(object):
     """
     _formfield_class = NullableCharFormField
 
-    def to_python(self, value):
-        return super().to_python(value) or ''
-
     def get_prep_value(self, value):
         return super().get_prep_value(value) or None
 

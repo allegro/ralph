@@ -181,7 +181,7 @@ class TestReportAssetAndLicence(RalphTestCase):
                 'hostname', 'tags'
             ],
             [
-                str(self.dc_1.id), '', self.dc_1.barcode, self.dc_1.sn,
+                str(self.dc_1.id), 'None', self.dc_1.barcode, self.dc_1.sn,
                 'Keyboard', 'M1', '1', 'None', str(self.dc_1.invoice_date),
                 str(self.dc_1.invoice_no), self.dc_1.hostname, 'tag1,tag2'
             ]
@@ -230,7 +230,7 @@ class TestReportAssetAndLicence(RalphTestCase):
                 'N/A', 'Project Info', '1', '0.00',
                 str(self.licence.invoice_date), str(self.licence.invoice_no),
                 str(self.dc_1.id), self.dc_1.asset.barcode,
-                '', 'None', 'None', 'None', 'None', 'None', 'None', 'None',
+                'None', 'None', 'None', 'None', 'None', 'None', 'None', 'None',
                 '', '', '', ''
             ]
         ]
