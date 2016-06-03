@@ -1,10 +1,7 @@
-from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.data_center.models import DataCenterAsset
-from ralph.deployment.models import Deployment
 from ralph.networks.models.networks import IPAddress, IPAddressStatus
 
 

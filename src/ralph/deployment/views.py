@@ -52,7 +52,7 @@ def _render_configuration(configuration, deployment):
     return template.render(context)
 
 
-def ipxe(request):
+def ipxe(request, deployment_id=None):
     """View returns boot's config for iPXE depends on client IP.
 
     Args:
@@ -65,8 +65,12 @@ def ipxe(request):
         Http404: if deployment with specified UUID doesn't exist
     """
     ip = get_client_ip(request)
-    deployment = Deployment.get_deployment_for_ip(ip)
-    if not deployment:
+    try:
+        if deployment_id:
+            deployment = Deployment.objects.get(id=deployment_id)
+        else:
+            deployment = Deployment.get_deployment_for_ip(ip)
+    except Deployment.DoesNotExist:
         raise Http404
     configuration = _render_configuration(
         deployment.preboot.get_configuration('ipxe'), deployment
