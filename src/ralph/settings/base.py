@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import os
+from collections import ChainMap
 
 from django.contrib.messages import constants as messages
 
@@ -16,6 +17,8 @@ LOG_FILEPATH = os.environ.get('LOG_FILEPATH', '/tmp/ralph.log')
 DEBUG = False
 
 ALLOWED_HOSTS = ['*']
+
+RALPH_INSTANCE = 'http://127.0.0.1:8000'
 
 # Application definition
 
@@ -272,11 +275,14 @@ RQ_QUEUES = {
         **REDIS_CONNECTION
     )
 }
-for queue_name in [
-    'ralph_ext_pdf',
-    'ralph_async_transitions'
-]:
-    RQ_QUEUES[queue_name] = RQ_QUEUES['default'].copy()
+RALPH_QUEUES = {
+    'ralph_ext_pdf': {},
+    'ralph_async_transitions': {
+        'DEFAULT_TIMEOUT': 3600,
+    },
+}
+for queue_name, options in RALPH_QUEUES.items():
+    RQ_QUEUES[queue_name] = ChainMap(RQ_QUEUES['default'], options)
 
 
 RALPH_EXTERNAL_SERVICES = {

@@ -116,10 +116,12 @@ class AutocompleteFunctionsTestCase(TestCase):
     @unpack
     @data(
         ([],),
-        ([DataCenterAssetFactory(), DataCenterAssetFactory()],)
+        ([DataCenterAssetFactory, DataCenterAssetFactory],)
     )
-    def test_autocomplete_service_env_should_return_false(self, objects):
-        self.assertFalse(autocomplete_service_env([], objects))
+    def test_autocomplete_service_env_should_return_false(self, factories):
+        self.assertFalse(
+            autocomplete_service_env([], [factory() for factory in factories])
+        )
 
     def test_autocomplete_service_env_should_return_pk(self):
         asset = DataCenterAssetFactory(service_env=ServiceEnvironmentFactory())

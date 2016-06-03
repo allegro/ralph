@@ -12,36 +12,15 @@ class DHCPEntryManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().select_related(
             'ethernet', 'ethernet__base_object'
+        ).filter(
+            hostname__isnull=False,
+            ethernet__base_object__isnull=False,
+            ethernet__isnull=False,
+            ethernet__mac__isnull=False,
+            ethernet__ipaddress__isnull=False,
         ).exclude(
-            hostname=None,
-            ethernet__base_object=None,
-            ethernet=None,
             status=IPAddressStatus.reserved.id
         )
-
-    # TODO: delete this
-    def entries(self, networks):
-        queryset = self.get_queryset().filter(network__in=networks)
-        deployment_queryset = Deployment.objects.active()
-        entries_ids = queryset.values_list(
-            'ethernet__base_object_id', flat=True
-        )
-        dca_content_type = ContentType.objects.get_for_model(DataCenterAsset)
-        deployment_ids = deployment_queryset.filter(
-            object_id__in=[str(i) for i in entries_ids],
-            content_type=dca_content_type
-        )
-        deployments_mapper = {
-            obj.object_id: obj
-            for obj in Deployment.objects.filter(
-                id__in=deployment_ids
-            )
-        }
-        for obj in queryset:
-            obj.deployment = deployments_mapper.get(
-                str(obj.ethernet.base_object_id), None
-            )
-            yield obj
 
 
 class DHCPEntry(IPAddress):

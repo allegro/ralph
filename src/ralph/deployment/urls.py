@@ -9,6 +9,11 @@ urlpatterns = [
         name='deployment_ipxe'
     ),
     url(
+        r'^(?P<deployment_id>[-\w]+)/boot.ipxe$',
+        ipxe,
+        name='deployment_ipxe'
+    ),
+    url(
         r'^(?P<deployment_id>[-\w]+)/kickstart$',
         kickstart,
         name='deployment_kickstart'

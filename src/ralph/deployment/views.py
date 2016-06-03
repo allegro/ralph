@@ -11,9 +11,6 @@ from ralph.deployment.models import Deployment
 
 logger = logging.getLogger(__name__)
 
-# TODO: find better solution
-RALPH_INSTANCE = getattr(settings, 'RALPH_INSTANCE', 'http://127.0.0.1:8000')
-
 
 def _get_preboot(deployment_id):
     preboot = None
@@ -32,22 +29,23 @@ def _get_preboot(deployment_id):
 
 def _render_configuration(configuration, deployment):
     template = Template(configuration)
+    ralph_instance = settings.RALPH_INSTANCE
     context = Context({
-        'ralph_instance': RALPH_INSTANCE,
+        'ralph_instance': ralph_instance,
         'deployment_id': deployment.id,
-        'kickstart': RALPH_INSTANCE + reverse('deployment_kickstart', kwargs={
+        'kickstart': ralph_instance + reverse('deployment_kickstart', kwargs={
             'deployment_id': deployment.id,
         }),
-        'initrd': RALPH_INSTANCE + reverse('deployment_files', kwargs={
+        'initrd': ralph_instance + reverse('deployment_files', kwargs={
             'deployment_id': deployment.id,
             'file_type': 'initrd'
         }),
-        'kernel': RALPH_INSTANCE + reverse('deployment_files', kwargs={
+        'kernel': ralph_instance + reverse('deployment_files', kwargs={
             'deployment_id': deployment.id,
             'file_type': 'kernel'
         }),
         'dc': deployment.obj.rack.server_room.data_center,
-        'done_url': RALPH_INSTANCE + reverse('deployment_done', kwargs={
+        'done_url': ralph_instance + reverse('deployment_done', kwargs={
             'deployment_id': deployment.id,
         })
     })
