@@ -57,6 +57,9 @@ class TransitionViewMixin(object):
             for name, options in action_fields.items():
                 options = deepcopy(options)
                 condition = options.get('condition', lambda x, y: True)
+                choices = options.get('choices')
+                field = options.get('field')
+                autocomplete_field = options.get('autocomplete_field', False)
                 if not condition(self.obj, self.actions):
                     continue
                 autocomplete_model = options.get('autocomplete_model', False)
@@ -64,18 +67,26 @@ class TransitionViewMixin(object):
                 if autocomplete_model:
                     model = get_model(autocomplete_model)
 
-                if options.get('autocomplete_field', False):
-                    field = model._meta.get_field(
-                        options['autocomplete_field']
-                    )
+                if autocomplete_field:
+                    field = model._meta.get_field(autocomplete_field)
                     options['field'].widget = AutocompleteWidget(
                         field=field,
                         admin_site=ralph_site,
                         request=self.request,
                         **options.get('widget_options', {})
                     )
-                else:
-                    options['field'].widget.request = self.request
+
+                if choices:
+                    if callable(choices):
+                        list_of_choices = choices(self.actions, self.objects)
+                    else:
+                        list_of_choices = choices.copy()
+                    if field:
+                        field.choices = list_of_choices
+                    else:
+                        options['field'] = forms.ChoiceField(
+                            choices=list_of_choices
+                        )
 
                 default_value = options.get(
                     'default_value', lambda x, y: False
@@ -83,6 +94,10 @@ class TransitionViewMixin(object):
                 initial = default_value(self.actions, self.objects)
                 if initial:
                     options['field'].initial = initial
+
+                if not autocomplete_field:
+                    options['field'].widget.request = self.request
+
                 field_key = '{}__{}'.format(action.__name__, name)
                 fields[field_key] = options['field']
         return fields

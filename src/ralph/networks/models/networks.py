@@ -55,7 +55,7 @@ class NetworkEnvironment(TimeStampMixin, NamedMixin, models.Model):
         max_length=30,
     )
     hostname_template_postfix = models.CharField(
-        verbose_name=_('hostname template prefix'),
+        verbose_name=_('hostname template postfix'),
         max_length=30,
         help_text=_(
             'This value will be used as a postfix when generating new hostname '
@@ -266,7 +266,7 @@ class Network(
         unique_together = ('min_ip', 'max_ip')
 
     def __str__(self):
-        return '{} ({})'.format(self.name, self.address)
+        return '{} ({} | VLAN: {})'.format(self.name, self.address, self.vlan)
 
     def save(self, *args, **kwargs):
         """
@@ -355,6 +355,11 @@ class Network(
             ipaddress.ip_address(ip_as_int)
             if ip_as_int and not last else None
         )
+
+    def issue_next_free_ip(self):
+        # TODO: exception when any free IP found
+        ip_address = self.get_first_free_ip()
+        return IPAddress.objects.create(address=str(ip_address))
 
     def search_networks(self):
         """

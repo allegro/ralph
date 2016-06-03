@@ -7,12 +7,15 @@ from ralph.networks.models.networks import IPAddress, IPAddressStatus
 
 class DHCPEntryManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().select_related('ethernet').filter(
-            dhcp_expose=True,
+        return super().get_queryset().select_related(
+            'ethernet', 'ethernet__base_object'
+        ).filter(
+            hostname__isnull=False,
+            ethernet__base_object__isnull=False,
+            ethernet__isnull=False,
+            ethernet__mac__isnull=False,
+            ethernet__ipaddress__isnull=False,
         ).exclude(
-            hostname=None,
-            ethernet__base_object=None,
-            ethernet=None,
             status=IPAddressStatus.reserved.id
         )
 

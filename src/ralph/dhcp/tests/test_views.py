@@ -113,9 +113,9 @@ class DHCPEntriesViewTest(TestCase):
             ethernet.modified.strftime("%Y-%m-%d %H:%M:%S")
         )
 
-    def test_get_last_modified_should_run_4_queries(self):
+    def test_get_last_modified_should_run_5_queries(self):
         network = NetworkFactory(address='192.168.1.0/24')
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(5):
             self.view.get_last_modified(
                Network.objects.filter(id__in=[network.id])
             )
