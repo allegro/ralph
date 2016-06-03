@@ -4,13 +4,17 @@ import logging
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.dispatch import receiver
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.helpers import get_value_by_relation_path
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ComponentType
 from ralph.assets.models.components import Component, ComponentModel, Ethernet
-from ralph.data_center.models.physical import DataCenterAsset
+from ralph.data_center.models.physical import (
+    DataCenterAsset,
+    NetworkableBaseObject
+)
 from ralph.data_center.models.virtual import Cluster
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
@@ -216,7 +220,7 @@ class VirtualServerType(
     pass
 
 
-class VirtualServer(BaseObject):
+class VirtualServer(NetworkableBaseObject, BaseObject):
     # parent field for VirtualServer is hypervisor!
     # TODO: limit parent to DataCenterAsset
     type = models.ForeignKey(VirtualServerType, related_name='virtual_servers')
@@ -234,6 +238,18 @@ class VirtualServer(BaseObject):
         unique=True,
     )
     cluster = models.ForeignKey(Cluster, blank=True, null=True)
+
+    @cached_property
+    def rack_id(self):
+        return self.rack.id if self.rack else None
+
+    @cached_property
+    def rack(self):
+        return (
+            self.parent.rack
+            if self.parent_id and isinstance(self.parent, DataCenterAsset)
+            else None
+        )
 
     class Meta:
         verbose_name = _('Virtual server (VM)')

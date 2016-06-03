@@ -40,6 +40,7 @@ INSTALLED_APPS = (
     'ralph.dashboards',
     'ralph.data_center',
     'ralph.dhcp',
+    'ralph.deployment',
     'ralph.licences',
     'ralph.domains',
     'ralph.supports',
