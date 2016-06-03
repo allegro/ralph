@@ -197,16 +197,14 @@ class ImportedForeignKeyWidget(widgets.ForeignKeyWidget):
     """Widget for ForeignKey fields for which can not define unique."""
 
     def clean(self, value):
-        result = None
-        if value:
-            if settings.MAP_IMPORTED_ID_TO_NEW_ID:
+        if settings.MAP_IMPORTED_ID_TO_NEW_ID:
+            if value:
                 content_type, imported_obj = get_imported_obj(
                     self.model, value
                 )
                 if imported_obj:
                     value = imported_obj.object_pk
-            result = self.model.objects.filter(pk=value).first()
-        return result
+        return super().clean(value)
 
 
 class NullStringWidget(widgets.CharWidget):
