@@ -10,7 +10,7 @@
 
 {% block view_content %}
     <h1>{% trans "Current transitions" %}</h1>
-    {% include "transitions/_transition_jobs_table.html" with jobs=job_in_progress %}
+    {% include "transitions/_transition_jobs_table.html" with jobs=jobs_in_progress %}
 
     <h1>{% trans "Finished transitions" %}</h1>
     {# TODO: add pagination etc #}

@@ -33,24 +33,24 @@ from ralph.admin.helpers import (
 from ralph.attachments.models import Attachment
 from ralph.lib.external_services.models import Job
 from ralph.lib.mixins.models import TimeStampMixin
-from ralph.lib.transitions.conf import TRANSITION_ATTR_TAG
+from ralph.lib.transitions.conf import (
+    DEFAULT_ASYNC_TRANSITION_SERVICE_NAME,
+    TRANSITION_ATTR_TAG,
+    TRANSITION_ORIGINAL_STATUS
+)
 from ralph.lib.transitions.exceptions import (
     TransitionModelNotFoundError,
     TransitionNotAllowedError
 )
 from ralph.lib.transitions.fields import TransitionField
+from ralph.lib.transitions.utils import (
+    _compare_instances_types,
+    _sort_graph_topologically
+)
 
 _transitions_fields = {}
 
 logger = logging.getLogger(__name__)
-
-
-TRANSITION_ORIGINAL_STATUS = (0, 'Keep orginal status')
-DEFAULT_ASYNC_TRANSITION_SERVICE_NAME = 'ASYNC_TRANSITIONS'
-
-
-class CycleError(Exception):
-    pass
 
 
 def _generate_transition_history(
@@ -116,17 +116,6 @@ def _get_history_dict(data, instance, runned_funcs):
                 field_name = field.label
             history[str(field_name)] = value
     return history
-
-
-def _check_type_instances(instances):
-    """Function check type of instances.
-    Conditions:
-        - transition can run only objects with the same type.
-    """
-    if not all(
-        map(lambda x: isinstance(instances[0], x.__class__), instances)
-    ):
-        raise NotImplementedError()
 
 
 def _check_and_get_transition(obj, transition, field):
@@ -214,29 +203,6 @@ def _create_graph_from_actions(actions, instance):
     return {k: v for (k, v) in graph.items() if k in actions_set}
 
 
-def _sort_graph_topologically(graph):
-    # calculate input degree (number of nodes pointing to particular node)
-    indeg = {k: 0 for k in graph}
-    for node, edges in graph.items():
-        for edge in edges:
-            indeg[edge] += 1
-    # sort graph topologically
-    # return nodes which input degree is 0
-    no_requirements = set([a for a in indeg if indeg.get(a, 0) == 0])
-    while no_requirements:
-        action_name = no_requirements.pop()
-        # for each node to which this one is pointing - decrease input degree
-        for dependency in graph[action_name]:
-            indeg[dependency] -= 1
-            # add to set of nodes ready to be returned (without nodes pointing
-            # to it)
-            if indeg[dependency] == 0:
-                no_requirements.add(dependency)
-        yield action_name
-    if any(indeg.values()):
-        raise CycleError("Cycle detected during topological sort")
-
-
 def _order_actions_by_requirements(actions, instance):
     graph = _create_graph_from_actions(actions, instance)
     actions_by_name = {a.name: a for a in actions}
@@ -260,7 +226,6 @@ def run_transition(instances, transition_obj_or_name, field, data={}, **kwargs):
                 instance,
                 transition=transition,
                 data=data,
-                history={instance.pk: {}},
                 **kwargs
             )
             job_ids.append(job_id)
@@ -271,11 +236,26 @@ def run_transition(instances, transition_obj_or_name, field, data={}, **kwargs):
         )
 
 
-def _prepare_action_data(action, data, func_history_kwargs=None, **kwargs):
+def _prepare_action_data(
+    action, data, history_kwargs=None, shared_params=None, **kwargs
+):
+    """
+    Prepare data for single transition action
+
+    Args:
+        action: Action instance
+        data: dict with
+    """
     defaults = data.copy()
     defaults.update(kwargs)
-    if func_history_kwargs is not None:
-        defaults.update({'history_kwargs': func_history_kwargs})
+    if history_kwargs is not None:
+        defaults.update({'history_kwargs': history_kwargs})
+    if shared_params is not None:
+        defaults.update({'shared_params': shared_params})
+    # for current action, strip action name from param
+    # for example if current action is `test`, and it has param `abc`,
+    # `test__abc` is stored in and additional param `abc` will be passed to
+    # this action
     defaults.update({
         key.split('__')[1]: value
         for key, value in data.items()
@@ -289,13 +269,14 @@ def _save_instance_after_transition(instance, transition, user=None):
     if not any([a.disable_save_object for a in transition.get_pure_actions()]):
         with transaction.atomic(), reversion.create_revision():
             instance.save()
+            # TODO: store changed fields
             reversion.set_comment('Transition {}'.format(transition))
             if user:
                 reversion.set_user(user)
 
 
 def _create_instance_history_entry(
-    instance, transition, data, func_history_kwargs, user=None, attachment=None
+    instance, transition, data, history_kwargs, user=None, attachment=None
 ):
     funcs = transition.get_pure_actions()
     action_names = [str(getattr(
@@ -303,14 +284,14 @@ def _create_instance_history_entry(
         'verbose_name',
         func.__name__.replace('_', ' ').capitalize()
     )) for func in funcs]
-    history_kwargs = _get_history_dict(data, instance, funcs)
-    history_kwargs.update(func_history_kwargs[instance.pk])
+    history = _get_history_dict(data, instance, funcs)
+    history.update(history_kwargs.get(instance.pk, {}))
     transition_history = _generate_transition_history(
         instance=instance,
         transition=transition,
         user=user,
         attachment=attachment,
-        history_kwargs=history_kwargs,
+        history_kwargs=history,
         action_names=action_names,
         field=transition.model.field_name
     )
@@ -318,13 +299,13 @@ def _create_instance_history_entry(
 
 
 def _post_transition_instance_processing(
-    instance, transition, data, func_history_kwargs, user=None, attachment=None
+    instance, transition, data, history_kwargs, user=None, attachment=None
 ):
     # change transition field (ex. status) if not keeping orignial
     if not int(transition.target) == TRANSITION_ORIGINAL_STATUS[0]:
         setattr(instance, transition.model.field_name, int(transition.target))
     _create_instance_history_entry(
-        instance, transition, data, func_history_kwargs,
+        instance, transition, data, history_kwargs,
         user=user, attachment=attachment
     )
     _save_instance_after_transition(
@@ -340,14 +321,15 @@ def run_field_transition(
     Execute all actions assigned to the selected transition.
     """
     first_instance = instances[0]
-    _check_type_instances(instances)
+    _compare_instances_types(instances)
     transition = _check_and_get_transition(
         first_instance, transition_obj_or_name, field
     )
     _check_instances_for_transition(instances, transition)
     _check_action_with_instances(instances, transition)
     attachment = None
-    func_history_kwargs = defaultdict(dict)
+    history_kwargs = defaultdict(dict)
+    shared_params = defaultdict(dict)
     for action in _order_actions_by_requirements(
         transition.actions.all(), first_instance
     ):
@@ -356,7 +338,11 @@ def run_field_transition(
         ))
         func = getattr(first_instance, action.name)
         defaults = _prepare_action_data(
-            action, data, func_history_kwargs, **kwargs
+            action,
+            data,
+            history_kwargs=history_kwargs,
+            shared_params=shared_params,
+            **kwargs
         )
         try:
             result = func(instances=instances, **defaults)
@@ -368,7 +354,7 @@ def run_field_transition(
             attachment = result
     for instance in instances:
         _post_transition_instance_processing(
-            instance, transition, data, func_history_kwargs,
+            instance, transition, data, history_kwargs=history_kwargs,
             user=kwargs['request'].user, attachment=attachment,
         )
     return True, attachment
@@ -564,9 +550,30 @@ class TransitionJob(Job):
         )
         if 'data' not in kwargs:
             kwargs['data'] = {}
-        if 'history_kwargs' not in kwargs:
-            kwargs['history_kwargs'] = {obj.pk: {}}
+        for p in ['history_kwargs', 'shared_params']:
+            if p not in kwargs:
+                # obj.pk will be casted to str when dumping to json!
+                # (json needs str as the key of an object)
+                # we need to restore it in `_restore_params`
+                kwargs[p] = {obj.pk: {}}
         return super().run(service_name, defaults, request=request, **kwargs)
+
+    @classmethod
+    def _restore_params(cls, obj):
+        params = super()._restore_params(obj)
+        # fix history_kwargs and shared_params key (from str to int)
+        for param_name in ['history_kwargs', 'shared_params']:
+            param = params.get(param_name, {}).copy()
+            new_param = defaultdict(dict)
+            for k, v in param.items():
+                try:
+                    k = int(k)
+                except ValueError:
+                    # pk is not int (ex. uid)
+                    pass
+                new_param[k] = v
+            params[param_name] = new_param
+        return params
 
 
 class TransitionJobAction(TimeStampMixin):
@@ -581,6 +588,7 @@ class TransitionJobAction(TimeStampMixin):
         choices=TransitionJobActionStatus(),
         default=TransitionJobActionStatus.STARTED.id,
     )
+    # TODO: add retries field and max retries param for async action
 
 
 def update_models_attrs():
