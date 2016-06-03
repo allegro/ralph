@@ -3,6 +3,7 @@ import os
 from dj.choices import Choices
 from django.db import models
 from django.db.models import F
+from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import Ethernet
@@ -37,7 +38,9 @@ def get_choices_from_group(choices_group):
 
 
 def preboot_file_name(instance, filename):
-    return os.sep.join(('pxe', instance.get_type_display(), instance.name))
+    return os.sep.join(
+        ('pxe', instance.get_type_display(), slugify(instance.name))
+    )
 
 
 class PrebootItem(NamedMixin, Polymorphic, metaclass=PolymorphicBase):
@@ -162,15 +165,10 @@ class Deployment(TransitionJob):
     @classmethod
     def get_deployment_for_ip(cls, ip):
         base_object = Ethernet.objects.get(ipaddress__address=ip).base_object
-        deployment = None
-        try:
-            deployment = cls.objects.active().get(
-                content_type_id=base_object.content_type_id,
-                object_id=base_object.id
-            )
-        except cls.DoesNotExist:
-            pass
-        return deployment
+        return cls.objects.active().get(
+            content_type_id=base_object.content_type_id,
+            object_id=base_object.id
+        )
 
     @property
     def preboot(self):

@@ -44,7 +44,7 @@ class ExternalService(object):
         return job.result
 
     def run_async(self, **kwargs):
-        job = self.queue.enqueue(self.method, kwargs=kwargs, timeout=6000)
+        job = self.queue.enqueue(self.method, kwargs=kwargs)
         return job
 
 

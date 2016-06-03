@@ -12,19 +12,30 @@ from ralph.deployment.models import Deployment
 logger = logging.getLogger(__name__)
 
 
-def _get_preboot(deployment_id):
-    preboot = None
+DEPLOYMENT_404_MSG = 'Deployment {} doesn\'t exist'
+
+
+def get_object_or_404_with_message(model, msg, **kwargs):
     try:
-        preboot = Deployment.objects.get(id=deployment_id).preboot
+        return model.objects.get(**kwargs)
+    except model.DoesNotExist:
+        logger.error(msg)
+        raise Http404(msg)
+
+
+def _get_preboot(deployment_id):
+    error_msg = 'Deployment with UUID: {} doesn\'t exist' .format(
+        deployment_id
+    )
+    try:
+        return get_object_or_404_with_message(
+            model=Deployment,
+            msg=error_msg,
+            id=deployment_id
+        ).preboot
     except ValueError:
         logger.warning('Incorrect UUID: {}'.format(deployment_id))
         raise SuspiciousOperation('Malformed UUID')
-    except Deployment.DoesNotExist:
-        logger.warning('Deployment with UUID: {} doesn\'t exist' .format(
-            deployment_id
-        ))
-        raise Http404
-    return preboot
 
 
 def _render_configuration(configuration, deployment):
@@ -71,6 +82,7 @@ def ipxe(request, deployment_id=None):
         else:
             deployment = Deployment.get_deployment_for_ip(ip)
     except Deployment.DoesNotExist:
+        logger.warning(DEPLOYMENT_404_MSG.format(deployment_id))
         raise Http404
     configuration = _render_configuration(
         deployment.preboot.get_configuration('ipxe'), deployment
@@ -93,10 +105,16 @@ def kickstart(request, deployment_id):
     preboot = _get_preboot(deployment_id)
     configuration = preboot.get_configuration('kickstart')
     if configuration is None:
+        logger.warning('Kickstart for deployment {} doesn\'t exist'.format(
+            deployment_id
+        ))
         raise Http404
-    configuration = _render_configuration(
-        configuration, Deployment.objects.get(id=deployment_id)
+    deployment = get_object_or_404_with_message(
+        model=Deployment,
+        msg=DEPLOYMENT_404_MSG.format(deployment_id),
+        id=deployment_id
     )
+    configuration = _render_configuration(configuration, deployment)
     return HttpResponse(
         configuration.replace('\r\n', '\n').replace('\r', '\n'),
         content_type='text/plain'
@@ -120,6 +138,9 @@ def files(request, file_type, deployment_id):
     preboot = _get_preboot(deployment_id)
     file_url = preboot.get_file_url(file_type)
     if file_url is None:
+        logger.warning('File {} for deployment {} doesn\'t exist'.format(
+            file_type, deployment_id
+        ))
         raise Http404
     return HttpResponseRedirect(file_url)
 
