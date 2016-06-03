@@ -43,7 +43,7 @@ before_install:
         docker run -d -p "$DATABASE_PORT:5432" -e "POSTGRES_USER=travis" -e "POSTGRES_PASSWORD=travis" -e "POSTGRES_DB=ralph_ng" postgres:9.4;
         pip install psycopg2;
         fi
-    
+
 install:
     - npm config set python /usr/bin/python2.7
     - npm install
