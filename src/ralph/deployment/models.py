@@ -67,8 +67,8 @@ class PrebootConfiguration(PrebootItem):
         help_text=_(
             'All newline characters will be converted to Unix \\n '
             'newlines. You can use {{variables}} in the body. '
-            'Available variables: filename, filetype, mac, ip, '
-            'hostname, venture and venture_role.'
+            'Available variables: ralph_instance, deployment_id, kickstart, '
+            'initrd, kernel, dc, done_url.'
         ),
     )
 
