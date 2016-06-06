@@ -2,4 +2,6 @@
 
 set -e
 
-[[ $(test_ralph makemigrations --dry-run) =~ "No changes detected" ]]
+output=$(test_ralph makemigrations --dry-run)
+echo $output
+[[ output =~ "No changes detected" ]]
