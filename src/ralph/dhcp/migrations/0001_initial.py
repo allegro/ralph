@@ -7,16 +7,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('networks', '0006_auto_20160404_0852'),
     ]
 
     operations = [
         migrations.CreateModel(
             name='DHCPServer',
             fields=[
-                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
-                ('ip', models.IPAddressField(verbose_name='IP address', unique=True)),
-                ('last_synchronized', models.DateTimeField(null=True)),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('ip', models.GenericIPAddressField(verbose_name='IP address', unique=True)),
+                ('last_synchronized', models.DateTimeField(blank=True, null=True)),
             ],
             options={
                 'verbose_name': 'DHCP Server',
@@ -24,12 +23,15 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='DHCPEntry',
+            name='DNSServer',
             fields=[
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('ip_address', models.GenericIPAddressField(verbose_name='IP address', unique=True)),
+                ('is_default', models.BooleanField(verbose_name='is default', db_index=True, default=False)),
             ],
             options={
-                'proxy': True,
+                'verbose_name': 'DNS Server',
+                'verbose_name_plural': 'DNS Servers',
             },
-            bases=('networks.ipaddress',),
         ),
     ]
