@@ -54,6 +54,7 @@ install:
     - pip install django==$DJANGO_VERSION
 
 script:
+    - make check_missing_migrations
     - make coveralls
 
 after_success:

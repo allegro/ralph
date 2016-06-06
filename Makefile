@@ -63,3 +63,6 @@ translate_messages:
 
 compile_messages:
 	ralph compilemessages
+
+check_missing_migrations:
+	./scripts/check_missing_migrations.sh
