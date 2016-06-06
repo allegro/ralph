@@ -18,7 +18,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
     python3-pip \
     redis-server
 
-pip3 install virtualenv
+sudo pip3 install virtualenv
 virtualenv .
 . bin/activate
 
