@@ -56,7 +56,7 @@ install:
 
 script:
     - make coveralls
-    - [[ $(test_ralph makemigrations --dry-run) =~ "No changes detected" ]]
+    - ./scripts/check_missing_migrations.sh
 
 after_success:
     - if [[ $TEST_DB_ENGINE == mysql ]]; then coveralls; fi
