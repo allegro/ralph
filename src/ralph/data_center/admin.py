@@ -188,13 +188,13 @@ class DataCenterAssetAdmin(
     show_transition_history = True
     resource_class = resources.DataCenterAssetResource
     list_display = [
-        'status', 'barcode', 'model', 'sn', 'hostname', 'invoice_date',
+        'hostname', 'status', 'barcode', 'model', 'sn', 'invoice_date',
         'invoice_no', 'location', 'service_env',
     ]
     multiadd_summary_fields = list_display + ['rack']
     one_of_mulitvalue_required = ['sn', 'barcode']
     bulk_edit_list = [
-        'status', 'barcode', 'model', 'sn', 'hostname', 'invoice_date',
+        'hostname', 'status', 'barcode', 'model', 'sn', 'invoice_date',
         'invoice_no', 'rack', 'orientation', 'position', 'slot_no', 'price',
         'provider', 'service_env', 'tags'
     ]
