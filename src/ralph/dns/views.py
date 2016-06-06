@@ -30,7 +30,7 @@ class DNSView(RalphDetailView):
 
     def get_forms(self):
         forms = []
-        ipaddresses = self.object.ipaddress_set.all().values_list(
+        ipaddresses = self.object.ipaddresses.all().values_list(
             'address', flat=True
         )
         if not ipaddresses:

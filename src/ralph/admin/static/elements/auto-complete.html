@@ -4,8 +4,10 @@
 <link rel="import" href="../bower_components/iron-input/iron-input.html">
 <link rel="import" href="../bower_components/paper-menu/paper-menu.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
+
 <link rel="import" href="badge-input.html">
 <link rel="import" href="tool-tip.html">
+<link rel="import" href="html-echo.html">
 
 <!--
 Autocomplete field.
@@ -74,6 +76,7 @@ Example:
     }
     #icons {
       margin: 5px 5px 0 5px;
+      line-height: 2rem;
     }
     #icons i {
       font-size: 1.3rem;
@@ -113,7 +116,9 @@ Example:
       id='suggestList' class="dropdown-content" on-keydown='_preventSubmit'
     >
       <template is="dom-repeat" items="[[menuItems]]">
-        <paper-item>[[item.__str__]]</paper-item>
+        <paper-item>
+          <html-echo html="{{item.__str__}}"></html-echo>
+        </paper-item>
       </template>
     </paper-menu>
     <paper-menu hidden$='{{hideNoResults}}' >

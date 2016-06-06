@@ -6,12 +6,12 @@ from dj.choices import Choices
 class AssetPurpose(Choices):
     _ = Choices.Choice
 
-    for_contractor = _("for contractor")
-    sectional = _("sectional")
-    for_dashboards = _("for dashboards")
-    for_events = _("for events")
-    for_tests = _("for tests")
-    others = _("others")
+    for_contractor = _('for contractor')
+    sectional = _('sectional')
+    for_dashboards = _('for dashboards')
+    for_events = _('for events')
+    for_tests = _('for tests')
+    others = _('others')
 
 
 class AssetSource(Choices):
@@ -65,3 +65,17 @@ class ComponentType(Choices):
     backup = _('backup')
     software = _('software')
     os = _('operating system')
+
+
+class EthernetSpeed(Choices):
+    _ = Choices.Choice
+
+    s10mbit = _('10 Mbps')
+    s100mbit = _('100 Mbps')
+    s1gbit = _('1 Gbps')
+    s10gbit = _('10 Gbps')
+    s40gbit = _('40 Gbps')
+    s100gbit = _('100 Gbps')
+
+    UNKNOWN_GROUP = Choices.Group(10)
+    unknown = _('unknown speed')

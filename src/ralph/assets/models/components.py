@@ -1,12 +1,21 @@
 # -*- coding: utf-8 -*-
+import re
+
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.autocomplete import AutocompleteTooltipMixin
 from ralph.assets.models.base import BaseObject
-from ralph.assets.models.choices import ComponentType
+from ralph.assets.models.choices import ComponentType, EthernetSpeed
 from ralph.lib.mixins.fields import NullableCharField
-from ralph.lib.mixins.models import NamedMixin
+from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
+
+MAC_RE = re.compile(r'^\s*([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}\s*$')
+MAC_ERROR_MSG = "'%(value)s' is not a valid MAC address."
+mac_validator = RegexValidator(regex=MAC_RE, message=MAC_ERROR_MSG)
 
 
 class ComponentModel(AutocompleteTooltipMixin, NamedMixin, models.Model):
@@ -49,7 +58,7 @@ class ComponentModel(AutocompleteTooltipMixin, NamedMixin, models.Model):
         return self.name
 
 
-class Component(models.Model):
+class Component(TimeStampMixin, models.Model):
     base_object = models.ForeignKey(BaseObject, related_name='%(class)s')
     model = models.ForeignKey(
         ComponentModel,
@@ -77,3 +86,68 @@ class GenericComponent(Component):
     class Meta:
         verbose_name = _('generic component')
         verbose_name_plural = _('generic components')
+
+
+class Ethernet(Component):
+    label = NullableCharField(
+        verbose_name=_('name'), max_length=255, blank=True, null=True
+    )
+    mac = NullableCharField(
+        verbose_name=_('MAC address'), unique=True,
+        validators=[mac_validator], max_length=24, null=True, blank=True
+    )
+    speed = models.PositiveIntegerField(
+        verbose_name=_('speed'), choices=EthernetSpeed(),
+        default=EthernetSpeed.unknown.id,
+    )
+
+    class Meta:
+        verbose_name = _('ethernet')
+        verbose_name_plural = _('ethernets')
+        ordering = ('base_object', 'mac')
+
+    def __str__(self):
+        return '{} ({})'.format(self.label, self.mac)
+
+    def _validate_expose_in_dhcp_and_mac(self):
+        """
+        Check if mac is not empty when exposing in DHCP.
+        """
+        from ralph.networks.models import IPAddress
+        try:
+            if not self.mac and self.ipaddress.dhcp_expose:
+                raise ValidationError(
+                    _('MAC cannot be empty if record is exposed in DHCP')
+                )
+        except IPAddress.DoesNotExist:
+            pass
+
+    def _validate_change_when_exposing_in_dhcp(self):
+        """
+        Check if mas has changed when entry is exposed in DHCP.
+        """
+        if self.pk and settings.DHCP_ENTRY_FORBID_CHANGE:
+            from ralph.networks.models import IPAddress
+            old_obj = self.__class__._default_manager.get(pk=self.pk)
+            try:
+                if old_obj.ipaddress.dhcp_expose:
+                    if old_obj.mac != self.mac:
+                        raise ValidationError(
+                            'Cannot change MAC when exposing in DHCP'
+                        )
+            except IPAddress.DoesNotExist:
+                pass
+
+    def clean(self):
+        errors = {}
+        for validator in [
+            super().clean,
+            self._validate_expose_in_dhcp_and_mac,
+            self._validate_change_when_exposing_in_dhcp
+        ]:
+            try:
+                validator()
+            except ValidationError as e:
+                e.update_error_dict(errors)
+        if errors:
+            raise ValidationError(errors)

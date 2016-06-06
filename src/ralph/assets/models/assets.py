@@ -4,12 +4,11 @@ import logging
 
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
-from django.contrib import messages
-from django.core.exceptions import ImproperlyConfigured, ValidationError
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.template import Context, Template
 from django.utils.translation import ugettext_lazy as _
+
 from mptt.models import MPTTModel, TreeForeignKey
 
 from ralph.accounts.models import Team
@@ -26,10 +25,6 @@ from ralph.lib.mixins.models import (
     TimeStampMixin
 )
 from ralph.lib.permissions import PermByFieldMixin
-
-ASSET_HOSTNAME_TEMPLATE = getattr(settings, 'ASSET_HOSTNAME_TEMPLATE', None)
-if not ASSET_HOSTNAME_TEMPLATE:
-    raise ImproperlyConfigured('"ASSET_HOSTNAME_TEMPLATE" must be specified.')
 
 logger = logging.getLogger(__name__)
 
@@ -236,9 +231,9 @@ class Category(MPTTModel, NamedMixin.NonUnique, TimeStampMixin, models.Model):
 
 
 class AssetLastHostname(models.Model):
-    prefix = models.CharField(max_length=8, db_index=True)
+    prefix = models.CharField(max_length=30, db_index=True)
     counter = models.PositiveIntegerField(default=1)
-    postfix = models.CharField(max_length=8, db_index=True)
+    postfix = models.CharField(max_length=30, db_index=True)
 
     class Meta:
         unique_together = ('prefix', 'postfix')
@@ -265,6 +260,14 @@ class AssetLastHostname(models.Model):
         else:
             return obj
 
+    @classmethod
+    def get_next_free_hostname(cls, prefix, postfix, fill=5):
+        try:
+            last_hostname = cls.objects.get(prefix=prefix, postfix=postfix)
+        except cls.DoesNotExist:
+            last_hostname = cls(prefix=prefix, postfix=postfix)
+        return last_hostname.formatted_hostname(fill=fill)
+
     def __str__(self):
         return self.formatted_hostname()
 
@@ -281,12 +284,14 @@ class BudgetInfo(NamedMixin, TimeStampMixin, models.Model):
 
 class Asset(AdminAbsoluteUrlMixin, BaseObject):
     model = models.ForeignKey(AssetModel, related_name='assets')
-    hostname = models.CharField(
+    # TODO: unify hostname for DCA, VirtualServer, Cluster and CloudHost
+    # (use another model?)
+    hostname = NullableCharField(
         blank=True,
         default=None,
         max_length=255,
         null=True,
-        verbose_name=_('hostname'),
+        verbose_name=_('hostname'),  # TODO: unique
     )
     sn = NullableCharField(
         blank=True,
@@ -424,33 +429,6 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         # DEPRECATED
         # BACKWARD_COMPATIBILITY
         return self.is_depreciated()
-
-    def generate_hostname(self, commit=True, template_vars=None, request=None):
-        def render_template(template):
-            template = Template(template)
-            context = Context(template_vars or {})
-            return template.render(context)
-
-        logger.warning(
-            'Generating new hostname for {} using {} old hostname {}'.format(
-                self, template_vars, self.hostname
-            )
-        )
-        prefix = render_template(
-            ASSET_HOSTNAME_TEMPLATE.get('prefix', ''),
-        )
-        postfix = render_template(
-            ASSET_HOSTNAME_TEMPLATE.get('postfix', ''),
-        )
-        counter_length = ASSET_HOSTNAME_TEMPLATE.get('counter_length', 5)
-        last_hostname = AssetLastHostname.increment_hostname(prefix, postfix)
-        self.hostname = last_hostname.formatted_hostname(fill=counter_length)
-        if commit:
-            self.save()
-        if request:
-            messages.info(
-                request, 'Hostname changed to {}'.format(self.hostname)
-            )
 
     def _liquidated_at(self, date):
         liquidated_history = self.get_history().filter(

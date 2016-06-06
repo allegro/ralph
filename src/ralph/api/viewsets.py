@@ -6,6 +6,7 @@ from rest_framework import filters, permissions, relations, viewsets
 
 from ralph.admin.sites import ralph_site
 from ralph.api.filters import (
+    AdditionalDjangoFilterBackend,
     ExtendedFiltersBackend,
     ImportedIdFilterBackend,
     LookupFilterBackend,
@@ -36,7 +37,7 @@ class AdminSearchFieldsMixin(object):
 
     def _set_admin_search_fields(self):
         admin_site = ralph_site._registry.get(self.queryset.model)
-        filter_fields = getattr(self, 'filter_fields', None) or []
+        filter_fields = list(getattr(self, 'filter_fields', None) or [])
         if admin_site and not self._skip_admin_search_fields:
             filter_fields.extend(admin_site.search_fields or [])
         if admin_site and not self._skip_admin_list_filter:
@@ -62,7 +63,8 @@ class RalphAPIViewSetMixin(QuerysetRelatedMixin, AdminSearchFieldsMixin):
         PermissionsForObjectFilter, filters.OrderingFilter,
         ExtendedFiltersBackend, LookupFilterBackend,
         PolymorphicDescendantsFilterBackend, TagsFilterBackend,
-        ImportedIdFilterBackend, CustomFieldsFilterBackend
+        ImportedIdFilterBackend, CustomFieldsFilterBackend,
+        AdditionalDjangoFilterBackend
     ]
     permission_classes = [RalphPermission]
     save_serializer_class = None
@@ -129,12 +131,24 @@ class RalphAPIViewSetMetaclass(type):
         queryset = getattr(new_cls, 'queryset', None)
         if queryset is not None:  # don't evaluate queryset
             _viewsets_registry[queryset.model] = new_cls
+        # filter_class should not be overwrited for RalphViewSet
+        # use dedicated filter backend if you have specific needs
+        if 'filter_class' in attrs:
+            raise TypeError('Cannot define filter_class for RalphAPIViewSet')
         return new_cls
 
 
 class RalphAPIViewSet(
     RalphAPIViewSetMixin,
     viewsets.ModelViewSet,
+    metaclass=RalphAPIViewSetMetaclass
+):
+    pass
+
+
+class RalphReadOnlyAPIViewSet(
+    RalphAPIViewSetMixin,
+    viewsets.ReadOnlyModelViewSet,
     metaclass=RalphAPIViewSetMetaclass
 ):
     pass

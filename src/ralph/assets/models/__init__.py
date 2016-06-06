@@ -23,7 +23,12 @@ from ralph.assets.models.choices import (
 from ralph.assets.models.components import (
     ComponentModel,
     Component,
-    GenericComponent
+    GenericComponent,
+    Ethernet
+)
+from ralph.assets.models.configuration import (
+    ConfigurationClass,
+    ConfigurationModule
 )
 
 __all__ = [
@@ -40,6 +45,8 @@ __all__ = [
     'Component',
     'ComponentModel',
     'ComponentType',
+    'ConfigurationClass',
+    'ConfigurationModule',
     'Environment',
     'GenericComponent',
     'Manufacturer',
@@ -48,4 +55,5 @@ __all__ = [
     'ProfitCenter',
     'Service',
     'ServiceEnvironment',
+    'Ethernet',
 ]

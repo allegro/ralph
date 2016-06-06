@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import os
+from collections import ChainMap
 
 from django.contrib.messages import constants as messages
 
@@ -17,6 +18,8 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
+RALPH_INSTANCE = 'http://127.0.0.1:8000'
+
 # Application definition
 
 INSTALLED_APPS = (
@@ -28,6 +31,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_rq',
     'import_export',
     'mptt',
     'reversion',
@@ -38,17 +42,21 @@ INSTALLED_APPS = (
     'ralph.back_office',
     'ralph.dashboards',
     'ralph.data_center',
+    'ralph.dhcp',
+    'ralph.deployment',
     'ralph.licences',
     'ralph.domains',
     'ralph.supports',
     'ralph.security',
     'ralph.lib.foundation',
     'ralph.lib.table',
+    'ralph.networks',
     'ralph.data_importer',
     'ralph.dc_view',
     'ralph.reports',
     'ralph.virtual',
     'ralph.operations',
+    'ralph.lib.external_services',
     'ralph.lib.transitions',
     'ralph.lib.permissions',
     'ralph.lib.custom_fields',
@@ -216,6 +224,7 @@ LOGGING = {
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
@@ -262,10 +271,32 @@ BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME = True
 
 TAGGIT_CASE_INSENSITIVE = True  # case insensitive tags
 
+RQ_QUEUES = {
+    'default': dict(
+        **REDIS_CONNECTION
+    )
+}
+RALPH_QUEUES = {
+    'ralph_ext_pdf': {},
+    'ralph_async_transitions': {
+        'DEFAULT_TIMEOUT': 3600,
+    },
+}
+for queue_name, options in RALPH_QUEUES.items():
+    RQ_QUEUES[queue_name] = ChainMap(RQ_QUEUES['default'], options)
+
+
 RALPH_EXTERNAL_SERVICES = {
     'PDF': {
-        'name': 'ralph_ext_pdf',
+        'queue_name': 'ralph_ext_pdf',
         'method': 'inkpy_jinja.pdf',
+    },
+}
+
+RALPH_INTERNAL_SERVICES = {
+    'ASYNC_TRANSITIONS': {
+        'queue_name': 'ralph_async_transitions',
+        'method': 'ralph.lib.transitions.async.run_async_transition'
     }
 }
 
@@ -284,6 +315,11 @@ OPENSTACK_INSTANCES = json.loads(os.environ.get('OPENSTACK_INSTANCES', '[]'))
 # issue tracker url for Operations urls (issues ids) - should end with /
 ISSUE_TRACKER_URL = os.environ.get('ISSUE_TRACKER_URL', '')
 
+# Networks
+DEFAULT_NETWORK_MARGIN = int(os.environ.get('DEFAULT_NETWORK_MARGIN', 10))
+# when set to True, network records (IP/Ethernet) can't be modified until
+# 'expose in DHCP' is selected
+DHCP_ENTRY_FORBID_CHANGE = os_env_true('DHCP_ENTRY_FORBID_CHANGE', 'True')
 
 # enable integration with DNSaaS, for details see
 # https://github.com/allegro/django-powerdns-dnssec

@@ -19,12 +19,15 @@ from ralph.assets.models import (
     BudgetInfo,
     BusinessSegment,
     Category,
+    ConfigurationClass,
+    ConfigurationModule,
     Environment,
     Manufacturer,
     ProfitCenter,
     Service,
     ServiceEnvironment
 )
+from ralph.assets.models.components import Ethernet
 from ralph.lib.custom_fields.api import WithCustomFieldsSerializerMixin
 from ralph.licences.api_simple import SimpleBaseObjectLicenceSerializer
 
@@ -195,16 +198,8 @@ class AssetHolderSerializer(RalphAPISerializer):
     class Meta:
         model = AssetHolder
 
-
-class BaseObjectSerializer(
-    WithCustomFieldsSerializerMixin,
-    RalphAPISerializer
-):
-    """
-    Base class for other serializers inheriting from `BaseObject`.
-    """
-    service_env = ServiceEnvironmentSimpleSerializer()
-    licences = SimpleBaseObjectLicenceSerializer(read_only=True, many=True)
+0
+class BaseObjectSimpleSerializer(RalphAPISerializer):
     __str__ = StrField(show_type=True)
 
     class Meta:
@@ -212,6 +207,54 @@ class BaseObjectSerializer(
         exclude = ('content_type', )
 
 
+class ConfigurationModuleSimpleSerializer(RalphAPISerializer):
+    class Meta:
+        model = ConfigurationModule
+        fields = ('id', 'url', 'name', 'parent', 'support_team')
+
+
+class ConfigurationModuleSerializer(ConfigurationModuleSimpleSerializer):
+    children_modules = serializers.HyperlinkedRelatedField(
+        view_name='configurationmodule-detail',
+        many=True,
+        read_only=True,
+        required=False,
+    )
+
+    class Meta(ConfigurationModuleSimpleSerializer.Meta):
+        fields = ConfigurationModuleSimpleSerializer.Meta.fields + (
+            'children_modules',
+        )
+
+
+class ConfigurationClassSerializer(RalphAPISerializer):
+    module = ConfigurationModuleSimpleSerializer()
+
+    class Meta:
+        model = ConfigurationClass
+
+
+class BaseObjectSerializer(
+    WithCustomFieldsSerializerMixin,
+    BaseObjectSimpleSerializer
+):
+    """
+    Base class for other serializers inheriting from `BaseObject`.
+    """
+    service_env = ServiceEnvironmentSimpleSerializer()
+    licences = SimpleBaseObjectLicenceSerializer(read_only=True, many=True)
+    configuration_path = ConfigurationClassSerializer()
+
+    class Meta(BaseObjectSimpleSerializer.Meta):
+        pass
+
+
 class AssetSerializer(BaseObjectSerializer):
     class Meta(BaseObjectSerializer.Meta):
         model = Asset
+
+
+class EthernetSerializer(RalphAPISerializer):
+    class Meta:
+        model = Ethernet
+        depth = 1

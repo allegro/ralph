@@ -9,28 +9,40 @@ from functools import partial
 from dj.choices import Choices, Country
 from django import forms
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ImproperlyConfigured
 from django.db import models, transaction
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.forms import ValidationError
+from django.template import Context, Template
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
 from ralph.assets.country_utils import iso2_to_iso3
-from ralph.assets.models.assets import Asset, AssetModel, ServiceEnvironment
+from ralph.assets.models.assets import (
+    Asset,
+    AssetLastHostname,
+    AssetModel,
+    ServiceEnvironment
+)
 from ralph.assets.utils import move_parents_models
 from ralph.attachments.helpers import add_attachment_from_disk
 from ralph.lib.external_services import ExternalService, obj_to_dict
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
-from ralph.lib.transitions import transition_action, TransitionField
+from ralph.lib.transitions.decorators import transition_action
+from ralph.lib.transitions.fields import TransitionField
 from ralph.licences.models import BaseObjectLicence, Licence
 from ralph.reports.models import Report, ReportLanguage
 
 IMEI_UNTIL_2003 = re.compile(r'^\d{6} *\d{2} *\d{6} *\d$')
 IMEI_SINCE_2003 = re.compile(r'^\d{8} *\d{6} *\d$')
+ASSET_HOSTNAME_TEMPLATE = getattr(settings, 'ASSET_HOSTNAME_TEMPLATE', None)
+if not ASSET_HOSTNAME_TEMPLATE:
+    raise ImproperlyConfigured('"ASSET_HOSTNAME_TEMPLATE" must be specified.')
 
 logger = logging.getLogger(__name__)
 
@@ -183,6 +195,33 @@ class BackOfficeAsset(Regionalizable, Asset):
             return True
         return False
 
+    def generate_hostname(self, commit=True, template_vars=None, request=None):
+        def render_template(template):
+            template = Template(template)
+            context = Context(template_vars or {})
+            return template.render(context)
+
+        logger.warning(
+            'Generating new hostname for {} using {} old hostname {}'.format(
+                self, template_vars, self.hostname
+            )
+        )
+        prefix = render_template(
+            ASSET_HOSTNAME_TEMPLATE.get('prefix', ''),
+        )
+        postfix = render_template(
+            ASSET_HOSTNAME_TEMPLATE.get('postfix', ''),
+        )
+        counter_length = ASSET_HOSTNAME_TEMPLATE.get('counter_length', 5)
+        last_hostname = AssetLastHostname.increment_hostname(prefix, postfix)
+        self.hostname = last_hostname.formatted_hostname(fill=counter_length)
+        if commit:
+            self.save()
+        if request:
+            messages.info(
+                request, 'Hostname changed to {}'.format(self.hostname)
+            )
+
     def _try_assign_hostname(
         self, commit=False, country=None, force=False, request=None
     ):
@@ -216,7 +255,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             }
         },
     )
-    def assign_user(cls, instances, request, **kwargs):
+    def assign_user(cls, instances, **kwargs):
         user = get_user_model().objects.get(pk=int(kwargs['user']))
         for instance in instances:
             instance.user = user
@@ -235,7 +274,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             }
         }
     )
-    def assign_licence(cls, instances, request, **kwargs):
+    def assign_licence(cls, instances, **kwargs):
         for instance in instances:
             for obj in kwargs['licences']:
                 BaseObjectLicence.objects.get_or_create(
@@ -259,7 +298,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             'categories and only if owner\'s country has changed)'
         ),
     )
-    def assign_owner(cls, instances, request, **kwargs):
+    def assign_owner(cls, instances, **kwargs):
         owner = get_user_model().objects.get(pk=int(kwargs['owner']))
         for instance in instances:
             instance.owner = owner
@@ -268,7 +307,7 @@ class BackOfficeAsset(Regionalizable, Asset):
     @transition_action(
         run_after=['loan_report', 'return_report']
     )
-    def unassign_owner(cls, instances, request, **kwargs):
+    def unassign_owner(cls, instances, **kwargs):
         for instance in instances:
             kwargs['history_kwargs'][instance.pk][
                 'affected_owner'
@@ -279,7 +318,7 @@ class BackOfficeAsset(Regionalizable, Asset):
     @transition_action(
         run_after=['loan_report', 'return_report']
     )
-    def unassign_user(cls, instances, request, **kwargs):
+    def unassign_user(cls, instances, **kwargs):
         for instance in instances:
             kwargs['history_kwargs'][instance.pk][
                 'affected_user'
@@ -297,13 +336,13 @@ class BackOfficeAsset(Regionalizable, Asset):
             }
         },
     )
-    def assign_loan_end_date(cls, instances, request, **kwargs):
+    def assign_loan_end_date(cls, instances, **kwargs):
         for instance in instances:
             instance.loan_end_date = kwargs['loan_end_date']
 
     @classmethod
     @transition_action()
-    def unassign_loan_end_date(cls, instances, request, **kwargs):
+    def unassign_loan_end_date(cls, instances, **kwargs):
         for instance in instances:
             instance.loan_end_date = None
 
@@ -316,7 +355,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             }
         }
     )
-    def assign_warehouse(cls, instances, request, **kwargs):
+    def assign_warehouse(cls, instances, **kwargs):
         warehouse = Warehouse.objects.get(pk=int(kwargs['warehouse']))
         for instance in instances:
             instance.warehouse = warehouse
@@ -330,7 +369,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             }
         },
     )
-    def assign_office_infrastructure(cls, instances, request, **kwargs):
+    def assign_office_infrastructure(cls, instances, **kwargs):
         office_inf = OfficeInfrastructure.objects.get(
             pk=int(kwargs['office_infrastructure'])
         )
@@ -345,7 +384,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             }
         }
     )
-    def add_remarks(cls, instances, request, **kwargs):
+    def add_remarks(cls, instances, **kwargs):
         for instance in instances:
             instance.remarks = '{}\n{}'.format(
                 instance.remarks, kwargs['remarks']
@@ -359,13 +398,13 @@ class BackOfficeAsset(Regionalizable, Asset):
             }
         }
     )
-    def assign_task_url(cls, instances, request, **kwargs):
+    def assign_task_url(cls, instances, **kwargs):
         for instance in instances:
             instance.task_url = kwargs['task_url']
 
     @classmethod
     @transition_action()
-    def unassign_licences(cls, instances, request, **kwargs):
+    def unassign_licences(cls, instances, **kwargs):
         BaseObjectLicence.objects.filter(base_object__in=instances).delete()
 
     @classmethod
@@ -379,7 +418,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             }
         },
     )
-    def change_hostname(cls, instances, request, **kwargs):
+    def change_hostname(cls, instances, request=None, **kwargs):
         country_id = kwargs['country']
         country_name = Country.name_from_id(int(country_id)).upper()
         iso3_country_name = iso2_to_iso3(country_name)
@@ -402,7 +441,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             }
         }
     )
-    def change_user_and_owner(cls, instances, request, **kwargs):
+    def change_user_and_owner(cls, instances, **kwargs):
         UserModel = get_user_model()  # noqa
         user_id = kwargs.get('user', None)
         user = UserModel.objects.get(id=user_id)
@@ -549,7 +588,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             }
         }
     )
-    def convert_to_data_center_asset(cls, instances, request, **kwargs):
+    def convert_to_data_center_asset(cls, instances, **kwargs):
         from ralph.data_center.models.physical import DataCenterAsset, Rack  # noqa
         with transaction.atomic():
             for i, instance in enumerate(instances):

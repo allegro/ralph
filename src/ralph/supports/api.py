@@ -3,6 +3,7 @@ from django.db.models import Prefetch
 from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
+
 from ralph.assets.api.serializers import StrField
 from ralph.assets.models import BaseObject
 from ralph.supports.models import BaseObjectsSupport, Support, SupportType

@@ -250,6 +250,7 @@ class TestBackOfficeAsset(RalphTestCase):
         self.assertEqual(self.category_2.get_default_depreciation_rate(), 25)
         self.assertEqual(self.category_3.get_default_depreciation_rate(), 30)
 
+
 class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
     @classmethod
     def setUpClass(cls):
@@ -371,7 +372,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             _check_instances_for_transition([self.bo_asset], transition)
 
     @patch.object(ExternalService, "run")
-    def test_report_is_generated(self, mock_method):
+    def test_a_report_is_generated(self, mock_method):
         GENERATED_FILE_CONTENT = REPORT_TEMPLATE = b'some-content'
         mock_method.return_value = GENERATED_FILE_CONTENT
         report_template = ReportTemplateFactory(template__data=REPORT_TEMPLATE)

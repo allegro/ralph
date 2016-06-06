@@ -10,6 +10,8 @@ from ralph.assets.models import (
     AssetModel,
     BaseObject,
     Category,
+    ConfigurationClass,
+    ConfigurationModule,
     Environment,
     Manufacturer,
     ObjectModelType,
@@ -18,8 +20,11 @@ from ralph.assets.models import (
 )
 from ralph.assets.tests.factories import (
     CategoryFactory,
+    ConfigurationClassFactory,
+    ConfigurationModuleFactory,
     DataCenterAssetModelFactory,
     EnvironmentFactory,
+    EthernetFactory,
     ManufacturerFactory,
     ProfitCenterFactory,
     ServiceEnvironmentFactory,
@@ -38,8 +43,10 @@ from ralph.domains.models import Domain
 from ralph.domains.tests.factories import DomainFactory
 from ralph.licences.models import Licence
 from ralph.licences.tests.factories import LicenceFactory
+from ralph.networks.tests.factories import IPAddressFactory
 from ralph.supports.models import Support
 from ralph.supports.tests.factories import SupportFactory
+from ralph.tests.models import PolymorphicTestModel
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -448,19 +455,19 @@ class AssetModelAPITests(RalphAPITestCase):
 
 
 BASE_OBJECTS_FACTORIES = {
-        BackOfficeAsset: BackOfficeAssetFactory,
-        CloudFlavor: CloudFlavorFactory,
-        CloudHost: CloudHostFactory,
-        CloudProject: CloudProjectFactory,
-        Database: DatabaseFactory,
-        DataCenterAsset: DataCenterAssetFactory,
-        Domain: DomainFactory,
-        Licence: LicenceFactory,
-        ServiceEnvironment: ServiceEnvironmentFactory,
-        Support: SupportFactory,
-        VIP: VIPFactory,
-        VirtualServer: VirtualServerFactory,
-        Cluster: ClusterFactory
+    BackOfficeAsset: BackOfficeAssetFactory,
+    CloudFlavor: CloudFlavorFactory,
+    CloudHost: CloudHostFactory,
+    CloudProject: CloudProjectFactory,
+    Database: DatabaseFactory,
+    DataCenterAsset: DataCenterAssetFactory,
+    Domain: DomainFactory,
+    Licence: LicenceFactory,
+    ServiceEnvironment: ServiceEnvironmentFactory,
+    Support: SupportFactory,
+    VIP: VIPFactory,
+    VirtualServer: VirtualServerFactory,
+    Cluster: ClusterFactory,
 }
 
 
@@ -472,16 +479,23 @@ class BaseObjectAPITests(RalphAPITestCase):
         )
         self.bo_asset.tags.add('tag1')
         self.dc_asset = DataCenterAssetFactory(
-            barcode='12543', price='10.00'
+            barcode='12543', price='9.00'
         )
         self.dc_asset.tags.add('tag2')
+        self.ip = IPAddressFactory(
+            ethernet=EthernetFactory(base_object=self.dc_asset)
+        )
 
     def test_get_base_objects_list(self):
         url = reverse('baseobject-list')
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 2)
-        barcodes = [item['barcode'] for item in response.data['results']]
+        self.assertEqual(response.data['count'], BaseObject.objects.count())
+        barcodes = [
+            item['barcode']
+            for item in response.data['results']
+            if 'barcode' in item
+        ]
         self.assertCountEqual(barcodes, set(['12345', '12543']))
 
     def test_get_asset_model_details(self):
@@ -520,11 +534,11 @@ class BaseObjectAPITests(RalphAPITestCase):
     def test_lte_polymorphic(self):
         url = '{}?{}'.format(
             reverse('baseobject-list'), urlencode(
-                {'price__lte': '1'}
+                {'price__lte': '9'}
             )
         )
         response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_is_lookup_used(self):
         url = '{}?{}'.format(
@@ -534,6 +548,33 @@ class BaseObjectAPITests(RalphAPITestCase):
         )
         response = self.client.get(url, format='json')
         self.assertEqual(len(response.data['results']), 0)
+
+    def test_filter_by_ip(self):
+        url = '{}?{}'.format(
+            reverse('baseobject-list'), urlencode(
+                {'ip': self.ip.address}
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 1)
+
+    def test_filter_by_service_uid(self):
+        url = '{}?{}'.format(
+            reverse('baseobject-list'), urlencode(
+                {'service': self.dc_asset.service_env.service.uid}
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 1)
+
+    def test_filter_by_service_name(self):
+        url = '{}?{}'.format(
+            reverse('baseobject-list'), urlencode(
+                {'service': self.dc_asset.service_env.service.name}
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_tags(self):
         url = '{}?{}'.format(
@@ -555,6 +596,10 @@ class BaseObjectAPITests(RalphAPITestCase):
     def test_str_field(self):
         count = 0
         for descendant in BaseObject._polymorphic_descendants:
+            if descendant in [
+                PolymorphicTestModel
+            ]:
+                continue
             if not descendant._polymorphic_descendants:
                 count += 1
                 obj = BASE_OBJECTS_FACTORIES[descendant]()
@@ -569,3 +614,146 @@ class BaseObjectAPITests(RalphAPITestCase):
                     )
                 )
         self.assertEqual(count, len(BASE_OBJECTS_FACTORIES))
+
+
+class ConfigurationModuleAPITests(RalphAPITestCase):
+    def setUp(self):
+        super().setUp()
+        self.conf_module_1 = ConfigurationModuleFactory()
+        self.conf_module_2 = ConfigurationModuleFactory(
+            parent=self.conf_module_1
+        )
+
+    def test_get_configuration_modules_list(self):
+        url = reverse('configurationmodule-list')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+        self.assertEqual(
+            response.data['results'][0]['name'], self.conf_module_1.name
+        )
+
+    def test_get_configuration_module_details(self):
+        url = reverse('configurationmodule-detail', args=(self.conf_module_1.id,))
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], self.conf_module_1.name)
+        self.assertTrue(
+            response.data['children_modules'][0].endswith(
+                reverse('configurationmodule-detail', args=(self.conf_module_2.id,))
+            )
+        )
+
+    def test_get_configuration_module_details_with_parent(self):
+        url = reverse('configurationmodule-detail', args=(self.conf_module_2.id,))
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(
+            response.data['parent'].endswith(
+                reverse('configurationmodule-detail', args=(self.conf_module_1.id,))
+            )
+        )
+
+    def test_create_configuration_module(self):
+        url = reverse('configurationmodule-list')
+        data = {
+            'name': 'test_1',
+            'parent': self.conf_module_2.pk,
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(ConfigurationModule.objects.count(), 3)
+        conf_module = ConfigurationModule.objects.get(pk=response.data['id'])
+        self.assertEqual(conf_module.name, 'test_1')
+        self.assertEqual(conf_module.parent, self.conf_module_2)
+
+    def test_patch_configuration_module(self):
+        url = reverse('configurationmodule-detail', args=(self.conf_module_2.id,))
+        data = {
+            'name': 'test_2'
+        }
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.conf_module_2.refresh_from_db()
+        self.assertEqual(self.conf_module_2.name, 'test_2')
+
+
+class ConfigurationClassAPITests(RalphAPITestCase):
+    def setUp(self):
+        super().setUp()
+        self.conf_module_1 = ConfigurationModuleFactory()
+        self.conf_module_2 = ConfigurationModuleFactory(
+            parent=self.conf_module_1
+        )
+        self.conf_class_1 = ConfigurationClassFactory(module=self.conf_module_2)
+
+    def test_get_configuration_classes_list(self):
+        url = reverse('configurationclass-list')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(
+            response.data['results'][0]['class_name'],
+            self.conf_class_1.class_name
+        )
+        self.assertEqual(
+            response.data['results'][0]['module']['id'],
+            self.conf_module_2.id
+        )
+        self.assertEqual(
+            response.data['results'][0]['path'], self.conf_class_1.path
+        )
+
+    def test_get_configuration_class_details(self):
+        url = reverse('configurationclass-detail', args=(self.conf_class_1.id,))
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['class_name'],
+            self.conf_class_1.class_name
+        )
+        self.assertEqual(response.data['path'], self.conf_class_1.path)
+        self.assertTrue(
+            response.data['module']['url'].endswith(
+                reverse('configurationmodule-detail', args=(self.conf_module_2.id,))
+            )
+        )
+
+    def test_create_configuration_class(self):
+        url = reverse('configurationclass-list')
+        data = {
+            'class_name': 'test_1',
+            'module': self.conf_module_2.pk,
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(ConfigurationClass.objects.count(), 2)
+        conf_class = ConfigurationClass.objects.get(pk=response.data['id'])
+        self.assertEqual(conf_class.class_name, 'test_1')
+        self.assertEqual(conf_class.module, self.conf_module_2)
+
+    def test_patch_configuration_class(self):
+        url = reverse('configurationclass-detail', args=(self.conf_class_1.id,))
+        data = {
+            'class_name': 'test_2'
+        }
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.conf_class_1.refresh_from_db()
+        self.assertEqual(self.conf_class_1.class_name, 'test_2')
+
+
+class EthernetAPITests(RalphAPITestCase):
+    def setUp(self):
+        super().setUp()
+        self.ip = IPAddressFactory(dhcp_expose=True)
+        self.eth = self.ip.ethernet
+
+    def test_cannot_delete_when_exposed_in_dhcp(self):
+        url = reverse('ethernet-detail', args=(self.eth.id,))
+        response = self.client.delete(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            'Could not delete Ethernet when it is exposed in DHCP',
+            response.data
+        )

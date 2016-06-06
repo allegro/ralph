@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import transaction
-from rest_framework import serializers
+from rest_framework import relations, serializers
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import RalphAPISaveSerializer
@@ -8,13 +8,18 @@ from ralph.assets.api.serializers import (
     BaseObjectSerializer,
     ServiceEnvironmentSimpleSerializer
 )
-from ralph.data_center.api.serializers import DataCenterAssetSimpleSerializer
+from ralph.data_center.api.serializers import (
+    ClusterSimpleSerializer,
+    DataCenterAssetSimpleSerializer
+)
+from ralph.data_center.models import DataCenterAsset
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
     CloudProject,
     CloudProvider,
-    VirtualServer
+    VirtualServer,
+    VirtualServerType
 )
 
 
@@ -113,9 +118,29 @@ class CloudProviderSerializer(RalphAPISerializer):
         model = CloudProvider
 
 
+class VirtualServerTypeSerializer(RalphAPISerializer):
+    class Meta:
+        model = VirtualServerType
+
+
 class VirtualServerSerializer(BaseObjectSerializer):
+    type = VirtualServerTypeSerializer()
+    # TODO: cast BaseObject to DataCenterAsset for hypervisor field
+    hypervisor = DataCenterAssetSimpleSerializer(source='parent')
+    cluster = ClusterSimpleSerializer()
+
     class Meta(BaseObjectSerializer.Meta):
         model = VirtualServer
+
+
+class VirtualServerSaveSerializer(RalphAPISaveSerializer):
+    hypervisor = relations.PrimaryKeyRelatedField(
+        source='parent', queryset=DataCenterAsset.objects.all(),
+    )
+
+    class Meta:
+        model = VirtualServer
+        exclude = ('parent',)
 
 
 class CloudFlavorViewSet(RalphAPIViewSet):
@@ -139,8 +164,7 @@ class CloudHostViewSet(RalphAPIViewSet):
         'service_env__service', 'service_env__environment',
     ]
     prefetch_related = [
-        'tags', 'cloudflavor__virtualcomponent__model', 'ipaddress_set',
-        'licences'
+        'tags', 'cloudflavor__virtualcomponent__model', 'licences'
     ]
 
 
@@ -148,14 +172,23 @@ class CloudProjectViewSet(RalphAPIViewSet):
     queryset = CloudProject.objects.all()
     serializer_class = CloudProjectSerializer
     prefetch_related = [
-        'children', 'children__ipaddress_set', 'tags', 'licences',
-        'cloudprovider',
+        'children', 'tags', 'licences', 'cloudprovider',
     ]
+
+
+class VirtualServerTypeViewSet(RalphAPIViewSet):
+    queryset = VirtualServerType.objects.all()
+    serializer_class = VirtualServerTypeSerializer
 
 
 class VirtualServerViewSet(RalphAPIViewSet):
     queryset = VirtualServer.objects.all()
     serializer_class = VirtualServerSerializer
+    save_serializer_class = VirtualServerSaveSerializer
+    select_related = [
+        'parent', 'service_env__service', 'service_env__environment', 'cluster'
+    ]
+    prefetch_related = ['tags', 'licences']
 
 
 router.register(r'cloud-flavors', CloudFlavorViewSet)
@@ -163,4 +196,5 @@ router.register(r'cloud-hosts', CloudHostViewSet)
 router.register(r'cloud-projects', CloudProjectViewSet)
 router.register(r'cloud-providers', CloudProviderViewSet)
 router.register(r'virtual-servers', VirtualServerViewSet)
+router.register(r'virtual-server-types', VirtualServerTypeViewSet)
 urlpatterns = []
