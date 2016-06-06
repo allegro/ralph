@@ -110,7 +110,7 @@ def _perform_async_transition(transition_job):
             # action in transaction instead
             with transaction.atomic():
                 try:
-                    result = func(instances=[obj], **defaults)
+                    result = func(instances=[obj], tja=tja, **defaults)
                 except RescheduleAsyncTransitionActionLater as e:
                     # action is not ready - reschedule this job later and
                     # continue when you left off

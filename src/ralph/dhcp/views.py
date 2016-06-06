@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 from ralph.admin.helpers import get_client_ip
 from ralph.assets.models.components import Ethernet
 from ralph.data_center.models import DataCenter
+from ralph.deployment.models import Deployment
 from ralph.dhcp.models import DHCPEntry, DHCPServer
 from ralph.networks.models.networks import (
     IPAddress,
@@ -135,6 +136,11 @@ class DHCPEntriesView(
         IP (DHCP entry), ethernet.
         """
         last_items = []
+
+        try:
+            last_items.append(Deployment.objects.latest('modified').modified)
+        except Deployment.DoesNotExist:
+            pass
         last_items.append(last_modified_date(networks))
         last_items.append(
             last_modified_date(DHCPEntry.objects, filter_dict={
