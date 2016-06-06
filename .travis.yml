@@ -5,6 +5,7 @@ env:
         - DATABASE_USER=travis
         - DATABASE_PASSWORD=travis
         - DJANGO_CURRENT_VERSION=1.8.12
+        - TEST=ralph.support
     matrix:
         - DJANGO_VERSION=1.8.12 TEST_DB_ENGINE=sqlite
         - DJANGO_VERSION=1.8.12 TEST_DB_ENGINE=mysql
@@ -55,7 +56,7 @@ install:
 
 script:
     - make coveralls
-    - make check_missing_migrations
+    - [[ $(test_ralph makemigrations --dry-run) =~ "No changes detected" ]]
 
 after_success:
     - if [[ $TEST_DB_ENGINE == mysql ]]; then coveralls; fi
