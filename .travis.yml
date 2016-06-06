@@ -59,6 +59,8 @@ script:
 
 after_success:
     - if [[ $TEST_DB_ENGINE == mysql ]]; then coveralls; fi
+    - echo test
+    - echo test2
 
 before_deploy:
     - sudo add-apt-repository -y ppa:spotify-jyrki/dh-virtualenv
