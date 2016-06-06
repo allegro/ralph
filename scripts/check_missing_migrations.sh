@@ -2,4 +2,4 @@
 
 set -e
 
-[[ $(ralph makemigrations --dry-run) =~ "No changes detected" ]]
+[[ $(test_ralph makemigrations --dry-run) =~ "No changes detected" ]]
