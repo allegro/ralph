@@ -7,9 +7,6 @@ import datetime
 import ralph.lib.mixins.fields
 
 
-# TODO: add custom 0012_auto_20160316_1150
-
-
 class Migration(migrations.Migration):
 
     dependencies = [
