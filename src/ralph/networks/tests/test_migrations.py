@@ -7,12 +7,12 @@ from ralph.data_center.tests.factories import DataCenterAssetFactory
 
 class RemoveBaseObjectTestCase(MigrationTest):
     before = [
-        ('assets', '0014_auto_20160414_0958'),
-        ('networks', '0007_network_dns_servers'),
+        ('assets', '0012_auto_20160606_1409'),
+        ('networks', '0002_add_ethernet_field'),
     ]
 
     after = [
-        ('networks', '0008_remove_ipaddress_base_object'),
+        ('networks', '0003_custom_link_ips_to_eth'),
     ]
 
     def test_move_from_base_object_to_ethernet(self):
