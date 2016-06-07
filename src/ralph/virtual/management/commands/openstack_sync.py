@@ -7,7 +7,7 @@ from functools import lru_cache
 
 import reversion as revisions
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
@@ -279,7 +279,7 @@ class Command(BaseCommand):
         try:
             obj = DataCenterAsset.objects.get(hostname=host_name)
             return obj
-        except ObjectDoesNotExist:
+        except (MultipleObjectsReturned, ObjectDoesNotExist):
             logger.error('Hypervisor {} not found for {}'.format(
                 host_name, server_id,
             ))
