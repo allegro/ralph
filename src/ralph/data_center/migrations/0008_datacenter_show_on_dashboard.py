@@ -7,13 +7,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('networks', '0013_auto_20160509_1309'),
+        ('data_center', '0007_auto_20160225_1818'),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='ipaddress',
-            name='dhcp_expose',
-            field=models.BooleanField(default=False, verbose_name='Expose in DHCP'),
+            model_name='datacenter',
+            name='show_on_dashboard',
+            field=models.BooleanField(default=True),
         ),
     ]

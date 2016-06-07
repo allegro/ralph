@@ -26,7 +26,8 @@ def move_from_ethernet_to_base_object(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('networks', '0007_network_dns_servers'),
+        ('networks', '0002_add_ethernet_field'),
+        ('data_center', '0014_custom_move_managment_to_networks'),
     ]
 
     operations = [

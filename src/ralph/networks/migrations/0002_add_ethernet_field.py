@@ -7,13 +7,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data_center', '0008_auto_20160308_0842'),
+        ('networks', '0001_initial'),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='datacenter',
-            name='show_on_dashboard',
-            field=models.BooleanField(default=True),
+            model_name='ipaddress',
+            name='ethernet',
+            field=models.OneToOneField(to='assets.Ethernet', default=None, blank=True, null=True),
         ),
     ]

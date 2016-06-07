@@ -2,12 +2,14 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-
+import mptt.fields
+import ralph.networks.fields
+import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data_center', '0009_datacenter_show_on_dashboard'),
+        ('data_center', '0011_change_networks_models'),
     ]
 
     database_operations = [

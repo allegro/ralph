@@ -10,7 +10,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data_center', '0007_auto_20160225_1818'),
+        ('data_center', '0010_visualization_fields_for_serverroom'),
     ]
 
     operations = [

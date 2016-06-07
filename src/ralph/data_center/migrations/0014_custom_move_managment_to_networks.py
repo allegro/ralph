@@ -38,8 +38,8 @@ def move_from_networks(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data_center', '0011_auto_20160419_1003'),
-        ('networks', '0002_auto_20160310_1425'),
+        ('data_center', '0013_auto_20160606_1438'),
+        ('networks', '0001_initial'),
     ]
 
     operations = [

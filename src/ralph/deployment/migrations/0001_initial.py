@@ -8,35 +8,35 @@ import ralph.deployment.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('transitions', '0006_auto_20160401_0842'),
         ('contenttypes', '0002_remove_content_type_name'),
+        ('transitions', '0005_auto_20160606_1420'),
     ]
 
     operations = [
         migrations.CreateModel(
             name='Preboot',
             fields=[
-                ('id', models.AutoField(serialize=False, verbose_name='ID', auto_created=True, primary_key=True)),
-                ('name', models.CharField(verbose_name='name', unique=True, max_length=255)),
-                ('description', models.TextField(default='', verbose_name='description', blank=True)),
-                ('used_counter', models.PositiveIntegerField(default=0, editable=False)),
+                ('id', models.AutoField(serialize=False, primary_key=True, verbose_name='ID', auto_created=True)),
+                ('name', models.CharField(unique=True, max_length=255, verbose_name='name')),
+                ('description', models.TextField(blank=True, verbose_name='description', default='')),
+                ('used_counter', models.PositiveIntegerField(editable=False, default=0)),
             ],
             options={
-                'ordering': ('name',),
                 'verbose_name': 'preboot',
                 'verbose_name_plural': 'preboots',
+                'ordering': ('name',),
             },
         ),
         migrations.CreateModel(
             name='PrebootItem',
             fields=[
-                ('id', models.AutoField(serialize=False, verbose_name='ID', auto_created=True, primary_key=True)),
-                ('name', models.CharField(verbose_name='name', unique=True, max_length=255)),
-                ('description', models.TextField(default='', verbose_name='description', blank=True)),
+                ('id', models.AutoField(serialize=False, primary_key=True, verbose_name='ID', auto_created=True)),
+                ('name', models.CharField(unique=True, max_length=255, verbose_name='name')),
+                ('description', models.TextField(blank=True, verbose_name='description', default='')),
             ],
             options={
-                'abstract': False,
                 'ordering': ['name'],
+                'abstract': False,
             },
         ),
         migrations.CreateModel(
@@ -51,9 +51,9 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='PrebootConfiguration',
             fields=[
-                ('prebootitem_ptr', models.OneToOneField(parent_link=True, auto_created=True, serialize=False, to='deployment.PrebootItem', primary_key=True)),
-                ('type', models.PositiveIntegerField(default=41, verbose_name='type', choices=[(41, 'ipxe'), (42, 'kickstart')])),
-                ('configuration', models.TextField(verbose_name='configuration', help_text='All newline characters will be converted to Unix \\n newlines. You can use {{variables}} in the body. Available variables: filename, filetype, mac, ip, hostname, venture and venture_role.', blank=True)),
+                ('prebootitem_ptr', models.OneToOneField(serialize=False, primary_key=True, to='deployment.PrebootItem', parent_link=True, auto_created=True)),
+                ('type', models.PositiveIntegerField(choices=[(41, 'ipxe'), (42, 'kickstart')], verbose_name='type', default=41)),
+                ('configuration', models.TextField(help_text='All newline characters will be converted to Unix \\n newlines. You can use {{variables}} in the body. Available variables: ralph_instance, deployment_id, kickstart, initrd, kernel, dc, done_url.', blank=True, verbose_name='configuration')),
             ],
             options={
                 'verbose_name': 'preboot configuration',
@@ -64,9 +64,9 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='PrebootFile',
             fields=[
-                ('prebootitem_ptr', models.OneToOneField(parent_link=True, auto_created=True, serialize=False, to='deployment.PrebootItem', primary_key=True)),
-                ('type', models.PositiveIntegerField(default=1, verbose_name='type', choices=[(1, 'kernel'), (2, 'initrd')])),
-                ('file', models.FileField(null=True, default=None, verbose_name='file', upload_to=ralph.deployment.models.preboot_file_name, blank=True)),
+                ('prebootitem_ptr', models.OneToOneField(serialize=False, primary_key=True, to='deployment.PrebootItem', parent_link=True, auto_created=True)),
+                ('type', models.PositiveIntegerField(choices=[(1, 'kernel'), (2, 'initrd')], verbose_name='type', default=1)),
+                ('file', models.FileField(upload_to=ralph.deployment.models.preboot_file_name, null=True, verbose_name='file', default=None, blank=True)),
             ],
             options={
                 'verbose_name': 'preboot file',
@@ -77,11 +77,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='prebootitem',
             name='content_type',
-            field=models.ForeignKey(blank=True, null=True, to='contenttypes.ContentType'),
+            field=models.ForeignKey(to='contenttypes.ContentType', blank=True, null=True),
         ),
         migrations.AddField(
             model_name='preboot',
             name='items',
-            field=models.ManyToManyField(to='deployment.PrebootItem', verbose_name='files', blank=True),
+            field=models.ManyToManyField(blank=True, verbose_name='files', to='deployment.PrebootItem'),
         ),
     ]

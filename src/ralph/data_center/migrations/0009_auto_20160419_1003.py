@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('assets', '0010_auto_20160405_1531'),
-        ('data_center', '0010_auto_20160310_0957'),
+        ('data_center', '0008_datacenter_show_on_dashboard'),
     ]
 
     operations = [
