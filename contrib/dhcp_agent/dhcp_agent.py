@@ -16,13 +16,13 @@ from logging import handlers as logging_handlers
 
 IS_PY3 = sys.version_info[0] == 3
 if IS_PY3:
-    from dbm import gnu as gdbm
+    from dbm import gnu as cache_db
     from urllib.request import urlopen, Request
     from urllib.parse import urlencode
     from urllib.error import HTTPError
     string_types = (str,)
 else:
-    import gdbm
+    import dbm as cache_db
     from urllib import urlencode
     from urllib2 import urlopen, Request, HTTPError
     string_types = (basestring,)
@@ -52,11 +52,11 @@ def open_file_or_stdout_to_writing(filename=None):
 
 
 class Cache(object):
-    """Simple key-value cache based on gdbm."""
+    """Simple key-value cache based on dbm."""
     def __init__(self, cache_path):
         if not os.path.exists(cache_path):
             os.makedirs(cache_path)
-        self._cache = gdbm.open(os.path.join(cache_path, 'cache'), 'c')
+        self._cache = cache_db.open(os.path.join(cache_path, 'cache'), 'c')
 
     def get(self, key, prefix=''):
         url_hash = get_url_hash(key)
