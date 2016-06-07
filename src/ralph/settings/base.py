@@ -65,6 +65,7 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'taggit',
     'taggit_serializer',
+    'ralph.ralph2_sync',
 )
 
 MIDDLEWARE_CLASSES = (
