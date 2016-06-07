@@ -22,6 +22,7 @@ from ralph.back_office.views import (
     BackOfficeAssetSoftware
 )
 from ralph.data_importer import resources
+from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence, Licence
 from ralph.supports.models import BaseObjectsSupport
@@ -76,6 +77,7 @@ class BackOfficeAssetAdmin(
     BulkEditChangeListMixin,
     TransitionAdminMixin,
     AssetInvoiceReportMixin,
+    CustomFieldValueAdminMixin,
     RalphAdmin
 ):
 
