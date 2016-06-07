@@ -198,7 +198,7 @@ class AssetHolderSerializer(RalphAPISerializer):
     class Meta:
         model = AssetHolder
 
-0
+
 class BaseObjectSimpleSerializer(RalphAPISerializer):
     __str__ = StrField(show_type=True)
 
