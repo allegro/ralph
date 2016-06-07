@@ -8,4 +8,4 @@ class DCViewConfig(RalphAppConfig):
 
     def ready(self):
         super().ready()
-        from ralph.dc_view.views.ui import DataCenterView  # Noqa
+        from ralph.dc_view.views.ui import ServerRoomView  # Noqa

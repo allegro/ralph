@@ -1,0 +1,12 @@
+<h5>Racks in {{ server_room.name }}</h5>
+
+<form ng-submit="submit_search()">
+  <input class="small-12" type="text" placeholder="Filter rack by name" ng-model="rack_filter.name" style="margin-bottom:0">
+  <ul class="side-nav" ng-show="server_room.name">
+    <li ui-sref-active="active" ng-repeat="rack in server_room.rack_set|filter:rack_filter|orderBy:'name'">
+      <a ui-sref="server_room.detail.rack({srId:server_room.id, rackId:rack.id})">
+        {{ rack.name }}
+      </a>
+    </li>
+  </ul>
+</form>

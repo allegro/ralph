@@ -12,6 +12,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from ralph.data_center.models.physical import DataCenterAsset
+from ralph.lib import network
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -182,7 +183,7 @@ class Command(BaseCommand):
                 ) if server['image'] else None
                 flavor_id = server['flavor']['id']
                 new_server = {
-                    'hostname': server['name'],
+                    'hostname': None,
                     'id': server['id'],
                     'flavor_id': flavor_id,
                     'tag': site['tag'],
@@ -199,6 +200,16 @@ class Command(BaseCommand):
                         continue
                     for ip in server['addresses'][zone]:
                         new_server['ips'].append(ip['addr'])
+                        if not new_server['hostname']:
+                            # fetch FQDN from DNS by IP address
+                            new_server['hostname'] = network.hostname(
+                                ip['addr']
+                            )
+                # fallback to default behavior if FQDN could not be fetched
+                # from DNS
+                new_server['hostname'] = (
+                    new_server['hostname'] or server['name']
+                )
                 try:
                     self.openstack_projects[project_id]['servers'][host_id] = (
                         new_server

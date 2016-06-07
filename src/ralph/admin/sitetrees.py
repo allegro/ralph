@@ -115,7 +115,7 @@ sitetrees = [
         ralph_item(
             title=_('DC Visualization'),
             url='dc_view',
-            access_by_perms='accounts.can_view_extra_datacenterview'
+            access_by_perms='accounts.can_view_extra_serverroomview'
         ),
         ralph_item(
             title=_('Back Office'),
@@ -292,6 +292,7 @@ sitetrees = [
                 section(_('Regions'), 'accounts', 'Region'),
                 section(_('Transitions'), 'transitions', 'TransitionModel'),
                 section(_('Report template'), 'reports', 'Report'),
+                section(_('Custom fields'), 'custom_fields', 'CustomField'),
             ]
         )
     ])

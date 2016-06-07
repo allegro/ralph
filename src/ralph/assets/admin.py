@@ -28,6 +28,7 @@ from ralph.assets.models.configuration import (
     ConfigurationModule
 )
 from ralph.data_importer import resources
+from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.table import Table, TableWithUrl
 
 
@@ -196,7 +197,7 @@ class ProfitCenterAdmin(RalphAdmin):
 
 
 @register(AssetModel)
-class AssetModelAdmin(RalphAdmin):
+class AssetModelAdmin(CustomFieldValueAdminMixin, RalphAdmin):
 
     resource_class = resources.AssetModelResource
     list_select_related = ['manufacturer', 'category']

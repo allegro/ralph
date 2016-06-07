@@ -53,6 +53,7 @@ install:
     - gulp
     - make install-test
     - pip install coveralls
+    - pip install pylint
     - pip install django==$DJANGO_VERSION
 
 script:
@@ -60,7 +61,8 @@ script:
     - make coveralls
 
 after_success:
-    - coveralls
+    - if [[ $TEST_DB_ENGINE == mysql ]]; then coveralls; fi
+    - python <(curl -s https://raw.githubusercontent.com/TouK/sputnik-ci/master/sputnik-ci.py)
 
 before_deploy:
     - sudo add-apt-repository -y ppa:spotify-jyrki/dh-virtualenv

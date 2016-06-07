@@ -16,6 +16,42 @@ logger = logging.getLogger(__name__)
 
 
 class PermissionPerFieldAdminMixin(object):
+    def _has_access_to_field(self, field_name, request):
+        """
+        Check if user has access to field
+
+        If field is regular model's field, permission to it is checked.
+        Otherwise, field is fetched from admin or model (it could be
+        property, method etc) and it's '_permission_field' attribute is
+        checked - it should point to regular field which permissions will
+        be checked. If this attribute is not defined, user has access to
+        this field.
+        """
+        try:
+            self.model._meta.get_field_by_name(field_name)
+        except FieldDoesNotExist:
+            perm_field = getattr(
+                (
+                    getattr(self, field_name, None) or
+                    getattr(self.model, field_name, None)
+                ),
+                '_permission_field',
+                None
+            )
+            if perm_field:
+                logger.debug(
+                    'Checking permission for field {} instead of {}'.format(
+                        perm_field, field_name
+                    )
+                )
+                field_name = perm_field
+            else:
+                # by default user has access to the field
+                return True
+        return self.model.has_access_to_field(
+            field_name, request.user, action='view'
+        )
+
     # TODO: required permissions for add and change
     def get_fieldsets(self, request, obj=None):
         new_fieldsets = []
@@ -25,18 +61,10 @@ class PermissionPerFieldAdminMixin(object):
         if not issubclass(self.model, PermByFieldMixin):
             return fieldsets
 
-        def condition(field):
-            can_view = self.model.has_access_to_field(
-                field, request.user, 'view'
-            )
-            can_change = self.model.has_access_to_field(
-                field, request.user, 'change'
-            )
-            return can_view or can_change
         for fieldset in deepcopy(fieldsets):
             fields = [
                 field for field in fieldset[1]['fields']
-                if condition(field)
+                if self._has_access_to_field(field, request)
             ]
             if not fields:
                 continue
@@ -76,43 +104,9 @@ class PermissionPerFieldAdminMixin(object):
         if not issubclass(self.model, PermByFieldMixin):
             return list_display
 
-        def has_access_to_field(field_name):
-            """
-            Check if user has access to field
-
-            If field is regular model's field, permission to it is checked.
-            Otherwise, field is fetched from admin or model (it could be
-            property, method etc) and it's '_permission_field' attribute is
-            checked - it should point to regular field which permissions will
-            be checked. If this attribute is not defined, user has access to
-            this field.
-            """
-            try:
-                self.model._meta.get_field_by_name(field_name)
-            except FieldDoesNotExist:
-                perm_field = getattr(
-                    (
-                        getattr(self, field_name, None) or
-                        getattr(self.model, field_name, None)
-                    ),
-                    '_permission_field',
-                    None
-                )
-                if perm_field:
-                    logger.debug(
-                        'Checking permission for field {} instead of {}'.format(
-                            perm_field, field_name
-                        )
-                    )
-                    field_name = perm_field
-                else:
-                    return True
-            return self.model.has_access_to_field(
-                field_name, request.user, action='view'
-            )
-
         list_display = [
-            field for field in list_display if has_access_to_field(field)
+            field for field in list_display
+            if self._has_access_to_field(field, request)
         ]
         return list_display
 

@@ -231,7 +231,7 @@ class TestReportAssetAndLicence(RalphTestCase):
                 'N/A', 'Project Info', '1', '0.00',
                 str(self.licence.invoice_date), str(self.licence.invoice_no),
                 str(self.dc_1.id), self.dc_1.asset.barcode,
-                '', 'None', 'None', 'None', 'None', 'None', 'None', 'None',
+                'None', 'None', 'None', 'None', 'None', 'None', 'None', 'None',
                 '', '', '', ''
             ]
         ]

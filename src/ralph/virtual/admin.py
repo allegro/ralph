@@ -216,6 +216,7 @@ class CloudHostAdmin(RalphAdmin):
     get_cloudproject.short_description = _('Cloud Project')
     get_cloudproject.admin_order_field = 'parent'
     get_cloudproject.allow_tags = True
+    get_cloudproject._permission_field = 'parent'
 
     def get_cpu(self, obj):
         return obj.cloudflavor.cores

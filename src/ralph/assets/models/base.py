@@ -4,6 +4,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.configuration import ConfigurationClass
+from ralph.lib.custom_fields.models import WithCustomFieldsMixin
 from ralph.lib.mixins.models import TaggableMixin, TimeStampMixin
 from ralph.lib.permissions import PermByFieldMixin
 from ralph.lib.permissions.models import PermissionsBase
@@ -24,6 +25,7 @@ class BaseObject(
     TaggableMixin,
     PermByFieldMixin,
     TimeStampMixin,
+    WithCustomFieldsMixin,
     models.Model,
     metaclass=BaseObjectMeta
 ):

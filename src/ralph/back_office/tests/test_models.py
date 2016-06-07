@@ -45,7 +45,7 @@ class HostnameGeneratorTests(RalphTestCase):
     def _check_hostname_not_generated(self, asset):
         asset._try_assign_hostname(True)
         changed_asset = BackOfficeAsset.objects.get(pk=asset.id)
-        self.assertEqual(changed_asset.hostname, '')
+        self.assertIsNone(changed_asset.hostname)
 
     def _check_hostname_is_generated(self, asset):
         asset._try_assign_hostname(True)

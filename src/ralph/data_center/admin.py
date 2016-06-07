@@ -38,6 +38,7 @@ from ralph.data_center.models.virtual import (
 )
 from ralph.data_center.views.ui import DataCenterAssetSecurityInfo
 from ralph.data_importer import resources
+from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.table import Table
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
@@ -218,6 +219,7 @@ class DataCenterAssetAdmin(
     BulkEditChangeListMixin,
     AttachmentsMixin,
     AssetInvoiceReportMixin,
+    CustomFieldValueAdminMixin,
     RalphAdmin,
 ):
     """Data Center Asset admin class."""
@@ -237,13 +239,13 @@ class DataCenterAssetAdmin(
     show_transition_history = True
     resource_class = resources.DataCenterAssetResource
     list_display = [
-        'status', 'barcode', 'model', 'sn', 'hostname', 'invoice_date',
-        'invoice_no', 'show_location', 'service_env', 'configuration_path'
+        'hostname', 'status', 'barcode', 'model', 'sn', 'invoice_date',
+        'invoice_no', 'location', 'service_env',
     ]
     multiadd_summary_fields = list_display + ['rack']
     one_of_mulitvalue_required = ['sn', 'barcode']
     bulk_edit_list = [
-        'status', 'barcode', 'model', 'sn', 'hostname', 'invoice_date',
+        'hostname', 'status', 'barcode', 'model', 'sn', 'invoice_date',
         'invoice_no', 'rack', 'orientation', 'position', 'slot_no', 'price',
         'provider', 'service_env', 'tags'
     ]

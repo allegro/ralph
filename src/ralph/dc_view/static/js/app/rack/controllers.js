@@ -8,9 +8,9 @@
                 'common.directives',
             ]
         )
-        .controller('RackController', ['$scope', 'rack', 'data_center', function ($scope, rack, data_center) {
+        .controller('RackController', ['$scope', 'rack', 'server_room', function ($scope, rack, server_room) {
             $scope.rack = rack;
-            $scope.data_center = data_center;
+            $scope.server_room = server_room;
 
             $scope.$on('change_active_item', function (event, item) {
                 $scope.activeItem = item;

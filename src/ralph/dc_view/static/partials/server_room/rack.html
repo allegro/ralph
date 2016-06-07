@@ -1,5 +1,5 @@
 <div class="rack rotate-{{ rack.orientation }} x-{{ rack.visualization_col }} y-{{ rack.visualization_row }}" ng-class="{'active': rack.active, 'move': is_move, 'allowed': can_drop, 'not_allowed': !can_drop, 'new': rack.new, 'saved': rack.saved}">
-    <a ui-sref="data_center.detail.rack({rackId: rack.id, dcId: dc.id})" class="wrapper" ng-show="mode == 'preview'">
+    <a ui-sref="server_room.detail.rack({rackId: rack.id, dcId: dc.id})" class="wrapper" ng-show="mode == 'preview'">
         <div class="name">
             {{ rack.name | clean }}
         </div>

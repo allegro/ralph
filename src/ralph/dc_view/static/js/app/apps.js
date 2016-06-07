@@ -2,11 +2,11 @@
     'use strict';
 
     angular
-        .module('dataCenterVisualizationApp', [
+        .module('serverRoomVisualizationApp', [
                 'ui.router',
                 'common.filters',
                 'ncy-angular-breadcrumb',
-                'data_center.controllers',
+                'server_room.controllers',
                 'rack.controllers',
                 'angular-loading-bar',
             ]
@@ -16,36 +16,36 @@
             $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
             $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
-            $urlRouterProvider.otherwise('/dc');
+            $urlRouterProvider.otherwise('/sr');
             $breadcrumbProvider.setOptions({
                 template: 'bootstrap2'
             });
             $stateProvider
-                .state('data_center', {
-                    url: '/dc',
-                    templateUrl: '/static/partials/data_center/dc.html',
+                .state('server_room', {
+                    url: '/sr',
+                    templateUrl: '/static/partials/server_room/sr.html',
                     ncyBreadcrumb: {
-                        label: 'Data Centers'
+                        label: 'Server Rooms'
                     }
                 })
-                .state('data_center.detail', {
-                    url: '/{dcId:[0-9]{1,4}}',
+                .state('server_room.detail', {
+                    url: '/{srId:[0-9]{1,4}}',
                     views: {
                         '@': {
-                            templateUrl: '/static/partials/data_center/data_center.html',
-                            controller: 'DataCenterController',
+                            templateUrl: '/static/partials/server_room/server_room.html',
+                            controller: 'ServerRoomController',
                         },
                         'rack-list@': {
-                            templateUrl: '/static/partials/data_center/rack_list.html',
-                            controller: ['$scope', '$filter', '$state', 'data_center', function($scope, $filter, $state, data_center){
-                                $scope.data_center = data_center;
+                            templateUrl: '/static/partials/server_room/rack_list.html',
+                            controller: ['$scope', '$filter', '$state', 'server_room', function($scope, $filter, $state, server_room){
+                                $scope.server_room = server_room;
                                 $scope.submit_search = function() {
-                                    var filtered_racks = $filter('filter')($scope.data_center.rack_set, $scope.rack_filter);
+                                    var filtered_racks = $filter('filter')($scope.server_room.rack_set, $scope.rack_filter);
                                     if(filtered_racks !== undefined && filtered_racks.length == 1) {
                                         $state.go(
-                                            'data_center.detail.rack',
+                                            'server_room.detail.rack',
                                             {
-                                                dcId: $scope.data_center.id,
+                                                srId: $scope.server_room.id,
                                                 rackId: filtered_racks[0].id
                                             }
                                         );
@@ -55,19 +55,19 @@
                         }
                     },
                     resolve: {
-                        data_center: ['$stateParams', 'DataCenterModel', function($stateParams, DataCenterModel) {
-                            return DataCenterModel.get({dcId: $stateParams.dcId});
+                        server_room: ['$stateParams', 'ServerRoomModel', function($stateParams, ServerRoomModel) {
+                            return ServerRoomModel.get({srId: $stateParams.srId});
                         }]
                     },
                     ncyBreadcrumb: {
-                        label: '{{ data_center.name || rack.info.data_center.name }}',
+                        label: '{{ server_room.name || rack.info.server_room.name }}',
                     }
                 })
-                .state('data_center.detail.rack', {
+                .state('server_room.detail.rack', {
                     url: '/rack/{rackId:[0-9]{1,4}}',
                     views: {
                         '@': {
-                            templateUrl: '/static/partials/data_center/data_center.detail.rack.html',
+                            templateUrl: '/static/partials/server_room/server_room.detail.rack.html',
                             controller: 'RackController'
                         },
                     },
