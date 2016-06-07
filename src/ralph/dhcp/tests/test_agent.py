@@ -5,7 +5,6 @@ from dhcp_agent import Cache, DHCPConfigManager
 from django.contrib.auth import get_user_model
 from django.test import LiveServerTestCase
 
-
 from ralph.data_center.tests.factories import DataCenterFactory
 from ralph.dhcp.models import DHCPServer
 
