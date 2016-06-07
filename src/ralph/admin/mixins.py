@@ -60,18 +60,32 @@ class RalphAutocompleteMixin(object):
         self.formfield_overrides.update(FORMFIELD_FOR_DBFIELD_DEFAULTS)
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
-        if db_field.name in self.raw_id_fields:
-            kw = {}
-            if db_field.name in self.raw_id_override_parent:
-                kw['rel_to'] = self.raw_id_override_parent[db_field.name]
+        from dal import autocomplete
+        return forms.ModelChoiceField(
+            #TODO:: why this doesn't work
+            #queryset=db_field.model.objects.all(),
+            queryset=db_field.related_model.objects.all(),
+            widget=autocomplete.ModelSelect2(
+                url='/{app_name}/{model_name}/{field_name}/autocomplete2'.format(
+                    app_name=self.model._meta.app_label,
+                    model_name=self.model._meta.model_name,
+                    field_name=db_field.name,
+                )
+            ),
+        )
+        #TODO:: rm it?
+        #if db_field.name in self.raw_id_fields:
+        #    kw = {}
+        #    if db_field.name in self.raw_id_override_parent:
+        #        kw['rel_to'] = self.raw_id_override_parent[db_field.name]
 
-            kwargs['widget'] = widgets.AutocompleteWidget(
-                field=db_field, admin_site=self.admin_site,
-                using=kwargs.get('using'), request=request, **kw
-            )
-            return db_field.formfield(**kwargs)
-        else:
-            return super().formfield_for_foreignkey(db_field, request, **kwargs)
+        #    kwargs['widget'] = widgets.AutocompleteWidget(
+        #        field=db_field, admin_site=self.admin_site,
+        #        using=kwargs.get('using'), request=request, **kw
+        #    )
+        #    return db_field.formfield(**kwargs)
+        #else:
+        #    return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def formfield_for_manytomany(self, db_field, request=None, **kwargs):
         if db_field.name in self.raw_id_fields:
