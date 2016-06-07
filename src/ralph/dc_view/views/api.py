@@ -2,14 +2,14 @@ from django.http import Http404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ralph.data_center.models.physical import DataCenter, Rack, RackAccessory
+from ralph.data_center.models.physical import Rack, RackAccessory, ServerRoom
 from ralph.dc_view.serializers.models_serializer import (
     DataCenterAssetSerializer,
-    DCSerializer,
     PDUSerializer,
     RackAccessorySerializer,
     RackBaseSerializer,
-    RackSerializer
+    RackSerializer,
+    SRSerializer
 )
 
 
@@ -65,22 +65,22 @@ class DCAssetsView(APIView):
         return Response(serializer.errors)
 
 
-class DCRacksAPIView(APIView):
+class SRRacksAPIView(APIView):
     """
     Return information of list rack in data center with their positions.
     """
     def get_object(self, pk):
         try:
-            return DataCenter.objects.get(id=pk)
-        except DataCenter.DoesNotExist:
+            return ServerRoom.objects.get(id=pk)
+        except ServerRoom.DoesNotExist:
             raise Http404
 
-    def get(self, request, data_center_id, format=None):
+    def get(self, request, server_room_id, format=None):
         """
         Collecting racks information for given data_center id.
         :param data_center_id int: data_center id
         :returns list: list of informations about racks in given data center
         """
         return Response(
-            DCSerializer(self.get_object(data_center_id)).data
+            SRSerializer(self.get_object(server_room_id)).data
         )

@@ -28,6 +28,7 @@ from ralph.assets.models import (
     ServiceEnvironment
 )
 from ralph.assets.models.components import Ethernet
+from ralph.lib.custom_fields.api import WithCustomFieldsSerializerMixin
 from ralph.licences.api_simple import SimpleBaseObjectLicenceSerializer
 
 
@@ -170,7 +171,7 @@ class CategorySerializer(RalphAPISerializer):
         model = Category
 
 
-class AssetModelSerializer(RalphAPISerializer):
+class AssetModelSerializer(WithCustomFieldsSerializerMixin, RalphAPISerializer):
 
     category = CategorySerializer()
 
@@ -233,7 +234,10 @@ class ConfigurationClassSerializer(RalphAPISerializer):
         model = ConfigurationClass
 
 
-class BaseObjectSerializer(BaseObjectSimpleSerializer):
+class BaseObjectSerializer(
+    WithCustomFieldsSerializerMixin,
+    BaseObjectSimpleSerializer
+):
     """
     Base class for other serializers inheriting from `BaseObject`.
     """

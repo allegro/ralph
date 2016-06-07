@@ -1,0 +1,74 @@
+<dl class="sub-nav"  ng-init="mode = 'preview'">
+    <dd ng-class="{'active': mode == 'preview'}">
+        <a ng-click="mode = 'preview'">Preview</a>
+    </dd>
+    <dd ng-class="{'active': mode == 'edit'}">
+        <a ng-click="mode = 'edit'">Edit</a>
+    </dd>
+</dl>
+
+<div ng-switch on="mode">
+    <div class="rack-info" ng-switch-when="preview">
+        <table class="info">
+            <tr>
+                <td>Name</td>
+                <td>{{ info ? info.name : '-' }}</td>
+            </tr>
+            <tr>
+                <td>Description</td>
+                <td>{{ info ? info.description : '-' }}</td>
+            </tr>
+            <tr>
+                <td>Position</td>
+                <td>column: {{ info ? info.visualization_col : actualX }}<br/> row: {{ info ? info.visualization_row : actualY }}</td>
+            </tr>
+        </table>
+    </div>
+    <div class="rack-info" ng-switch-when="edit">
+        <div data-alert class="alert-box secondary" ng-hide="rack">
+            Please click <i class="icon-pencil"></i> to edit basic info about rack, click <i class="icon-repeat"></i> to rotate or just use drag and drop to edit position.
+            Use <a href="{{ data_center.admin_link }}">Admin</a> to edit DC properties.
+        </div>
+        <div data-alert class="alert-box success" ng-show="forms.edit_form.$success" ng-repeat="success in forms.edit_form.$success">
+            {{ success }}
+        </div>
+        <div ng-show="rack">
+            <form name="forms.edit_form" class="form" ng-submit="addOrEdit(rack)">
+                <div data-alert class="alert-box alert" ng-show="forms.edit_form.$error.all" ng-repeat="error in forms.edit_form.$error.all">
+                    {{ error }}
+                </div>
+                <div class="row">
+                  <div class="large-12 columns" ng-class="{'error': forms.edit_form.name.$invalid}">
+                      <label for="id_name">Name
+                          <input name="name" type="text" id="id_name" ng-model="rack.name" required>
+                          <span class="help-inline" ng-show="forms.edit_form.name.$error.required">This field is required.</span>
+                      </label>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="large-12 columns">
+                      <label for="id_name">Description
+                          <textarea ng-model="rack.description"></textarea>
+                      </label>
+                  </div>
+                </div>
+                <button type="submit" class="button tiny" ng-disabled="forms.edit_form.$invalid">Save</button>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="data-center">
+    <div class="grid rows-{{ server_room.visualization_rows_num }} cols-{{ server_room.visualization_cols_num }} {{ mode }}">
+        <div class="grid_wrapper" ng-mousemove="updatePosition($event)">
+            <div class="rack add x-{{ actualX }} y-{{ actualY }}" ng-show="mode == 'edit'" ng-click="newRack(actualX, actualY)">+</div>
+            <rack-top
+                ng-mouseleave="setInfo(null)"
+                ng-mouseover="setInfo(rack)"
+                ng-repeat="rack in server_room.rack_set"
+                rack="rack"
+                mode="mode"
+                dc="server_room"
+            ></rack-top>
+        </div>
+    </div>
+</div>

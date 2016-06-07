@@ -9,6 +9,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.templatetags.admin_static import static
 from django.contrib.auth import get_permission_codename
+from django.contrib.contenttypes.admin import GenericTabularInline
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.http import HttpResponseRedirect
@@ -365,6 +366,14 @@ class RalphStackedInline(
     RalphInlineMixin,
     RalphAutocompleteMixin,
     admin.StackedInline
+):
+    pass
+
+
+class RalphGenericTabularInline(
+    RalphInlineMixin,
+    RalphAutocompleteMixin,
+    GenericTabularInline
 ):
     pass
 

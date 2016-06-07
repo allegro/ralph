@@ -95,14 +95,6 @@ class Gap(object):
 class DataCenter(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
     _allow_in_dashboard = True
 
-    visualization_cols_num = models.PositiveIntegerField(
-        verbose_name=_('visualization grid columns number'),
-        default=20,
-    )
-    visualization_rows_num = models.PositiveIntegerField(
-        verbose_name=_('visualization grid rows number'),
-        default=20,
-    )
     show_on_dashboard = models.BooleanField(default=True)
 
     @property
@@ -125,6 +117,14 @@ class ServerRoom(NamedMixin.NonUnique, models.Model):
     data_center = models.ForeignKey(DataCenter, verbose_name=_("data center"))
     data_center._autocomplete = False
     data_center._filter_title = _('data center')
+    visualization_cols_num = models.PositiveIntegerField(
+        verbose_name=_('visualization grid columns number'),
+        default=20,
+    )
+    visualization_rows_num = models.PositiveIntegerField(
+        verbose_name=_('visualization grid rows number'),
+        default=20,
+    )
 
     def __str__(self):
         return '{} ({})'.format(self.name, self.data_center.name)

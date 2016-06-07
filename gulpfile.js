@@ -11,10 +11,11 @@ var gulp = require('gulp'),
     sourcemaps = require('gulp-sourcemaps');
 
 var config = {
-    bowerDir: './bower_components/',
+    bowerDir: './bower_components/',
+    elementsRoot: 'src/ralph/admin/static/elements/',
     srcRoot: 'src/ralph/static/src/',
     staticRoot: 'src/ralph/static/',
-    vendorRoot: 'src/ralph/static/vendor/'
+    vendorRoot: 'src/ralph/static/vendor/'
 }
 
 var sass_config = {
@@ -93,7 +94,7 @@ gulp.task('clean:elements', function () {
   ]);
 });
 gulp.task('vulcanize', function () {
-    return gulp.src('src/ralph/admin/static/elements/elements.html')
+    return gulp.src(config.elementsRoot + 'elements.html')
         .pipe(vulcanize({
             abspath: '',
             excludes: [],
@@ -102,7 +103,7 @@ gulp.task('vulcanize', function () {
             inlineCss: true,
             inlineScripts: true
         }))
-        .pipe(rename('src/ralph/admin/static/elements/elements-min.html'))
+        .pipe(rename(config.elementsRoot + 'elements-min.html'))
         .pipe(gulp.dest('.'));
 });
 gulp.task('polymer-dev', function() {
@@ -116,7 +117,7 @@ gulp.task('polymer-dev', function() {
 gulp.task('watch', function() {
     // run "gulp dev" before
     gulp.watch(config.srcRoot + 'scss/**/*.scss', ['scss']);
-    gulp.watch('src/ralph/admin/static/elements/elements.html', ['vulcanize']);
+    gulp.watch([config.elementsRoot + '*.html', '!' + config.elementsRoot + '*-min.html'], ['vulcanize']);
 });
 
 gulp.task('dev', function(callback) {

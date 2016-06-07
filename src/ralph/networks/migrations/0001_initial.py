@@ -3,17 +3,19 @@ from __future__ import unicode_literals
 
 from django.db import migrations, models
 import ralph.networks.fields
+import ralph.lib.mixins.fields
 import django.db.models.deletion
+import ralph.networks.models.networks
 import ralph.lib.mixins.models
 import mptt.fields
-import ralph.networks.models.networks
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data_center', '0010_auto_20160310_0957'),
-        ('assets', '0009_auto_20160307_1138'),
+        ('data_center', '0013_auto_20160606_1438'),
+        ('dhcp', '__first__'),
+        ('assets', '0012_auto_20160606_1409'),
     ]
 
     state_operations = [
