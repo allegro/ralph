@@ -382,6 +382,12 @@ ZABBIX_IMPORT_HOSTS = False
 #String contains HTML code injected into every page, for user tracking
 #such as Piwik, Google Analytics. Default: none - no tracking at all.
 TRACKING_CODE = None
+
+ENABLE_HERMES_INTEGRATION = False
+HERMES = {
+    'ENABLED': ENABLE_HERMES_INTEGRATION
+}
+
 # </template>
 
 # revert to the old cmdb only app
