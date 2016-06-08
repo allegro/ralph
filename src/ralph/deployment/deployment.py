@@ -31,7 +31,7 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.assets.models import ConfigurationClass, Ethernet
 from ralph.data_center.models import DataCenterAsset
 from ralph.deployment.models import Preboot
-from ralph.dhcp.models import DHCPServer
+from ralph.dhcp.models import DHCPEntry, DHCPServer
 from ralph.dns.dnsaas import DNSaaS
 from ralph.dns.forms import RecordType
 from ralph.dns.views import DNSaaSIntegrationNotEnabledError
@@ -271,10 +271,11 @@ def clean_dhcp(cls, instances, **kwargs):
     """
     for instance in instances:
         _get_non_mgmt_ethernets(instance).values_list('mac', flat=True)
-        # TODO when DHCPEntry model will not be proxy to ipaddresse
-        # for dhcp_entry in DHCPEntry.objects.filter(mac__in=mac_addresses):
-        #     logger.warning('Removing {} DHCP entry')
-        #     dhcp_entry.delete()
+        for dhcp_entry in DHCPEntry.objects.filter(
+            ethernet__base_object=instance, dhcp_expose=True
+        ):
+            logger.warning('Removing {} DHCP entry'.format(dhcp_entry))
+            dhcp_entry.delete()
 
 
 @deployment_action(
@@ -380,6 +381,7 @@ def _create_dhcp_entries_for_single_instance(
     ethernet = Ethernet.objects.get(pk=ethernet_id)
     ip.hostname = instance.hostname
     ip.ethernet = ethernet
+    ip.dhcp_expose = True
     ip.save()
     # TODO when DHCPEntry model will not be proxy to IPAddress
     # DHCPEntry.objects.create(mac=ethernet.mac, ip=ip.address)
