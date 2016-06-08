@@ -83,6 +83,7 @@ setup(
         'stevedore==1.5.0',
         'pbr==0.11.0',
         'python-keystoneclient==0.11.0',
+        'pyhermes>=0.1.2',
     ],
     entry_points={
         'console_scripts': [
