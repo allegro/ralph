@@ -67,7 +67,6 @@ class PrebootAdmin(RalphAdmin):
     )
 
 
-
 @register(Deployment)
 class DeploymentAdmin(RalphAdmin):
     pass
