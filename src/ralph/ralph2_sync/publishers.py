@@ -11,6 +11,9 @@ from ralph.data_importer.models import ImportedObjects
 
 
 def _get_obj_id_ralph_20(obj):
+    """
+    Returns ID of object in Ralph2 or None if not found.
+    """
     if not obj:
         return None
     pk = None
@@ -26,14 +29,22 @@ def _get_obj_id_ralph_20(obj):
     return pk
 
 
-@receiver(post_save, sender=DataCenterAsset)
+@receiver(
+    post_save, sender=DataCenterAsset, dispatch_uid='sync_dc_asset_to_ralph2'
+)
 @pyhermes.publisher(topic='sync_dc_asset_to_ralph2', auto_publish_result=True)
 def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
+    """
+    Publish information about DataCenterAsset after change to sync it in Ralph2.
+
+    Known situations when this sync will not work:
+    * new rack/server room/data center added (it's not synced with Ralph2)
+    """
     asset = instance
     data = {
         'ralph2_id': _get_obj_id_ralph_20(asset),
 
-        'service': _get_obj_id_ralph_20(asset.service_env.service),
+        'service': asset.service_env.service.uid,
         'environment': _get_obj_id_ralph_20(
             asset.service_env.environment
         ),
@@ -52,7 +63,8 @@ def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
         'id', 'orientation', 'position', 'sn', 'barcode', 'slot_no',
         'price', 'niw', 'task_url', 'remarks', 'order_no', 'invoice_date',
         'invoice_no', 'provider', 'source', 'status', 'depreciation_rate',
-        'depreciation_end_date', 'management_ip', 'management_hostname'
+        'depreciation_end_date', 'management_ip', 'management_hostname',
+        'hostname'
     ]:
         data[field] = str(getattr(asset, field, '') or '')
     # foreign key fields
@@ -63,12 +75,19 @@ def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
     return data
 
 
-@receiver(post_save, sender=AssetModel)
+@receiver(
+    post_save, sender=AssetModel, dispatch_uid='sync_model_to_ralph2'
+)
 @pyhermes.publisher(topic='sync_model_to_ralph2', auto_publish_result=True)
 def sync_model_to_ralph2(sender, instance=None, created=False, **kwargs):
+    """
+    Publish AssetModel info to sync it in Ralph3.
+    """
     model = instance
     return {
         'id': model.id,
+        'ralph2_id': _get_obj_id_ralph_20(model),
+        'name': model.name,
         'category': _get_obj_id_ralph_20(model.category),
         'cores_count': model.cores_count,
         'power_consumption': model.power_consumption,
