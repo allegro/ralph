@@ -5,6 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from ralph.assets.models import AssetModel
 from ralph.data_center.models import DataCenterAsset
 from ralph.data_importer.models import ImportedObjects
 
@@ -23,20 +24,6 @@ def _get_obj_id_ralph_20(obj):
     except (obj._meta.model.DoesNotExist, ImportedObjects.DoesNotExist):
         pass
     return pk
-
-
-def get_model_info(model):
-    data = {}
-    if model:
-        data = {
-            'id': model.id,
-            'category': _get_obj_id_ralph_20(model.category),
-            'cores_count': model.cores_count,
-            'power_consumption': model.power_consumption,
-            'height_of_device': model.height_of_device,
-            'manufacturer': _get_obj_id_ralph_20(model.manufacturer),
-        }
-    return data
 
 
 @receiver(post_save, sender=DataCenterAsset)
@@ -59,9 +46,6 @@ def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
         ),
         'server_room': _get_obj_id_ralph_20(asset.rack.server_room),
         'rack': _get_obj_id_ralph_20(asset.rack),
-
-        # model info
-        'model_info': get_model_info(asset.model),
     }
     # simple fields
     for field in [
@@ -77,3 +61,17 @@ def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
     ]:
         data[field] = _get_obj_id_ralph_20(getattr(asset, field, None))
     return data
+
+
+@receiver(post_save, sender=AssetModel)
+@pyhermes.publisher(topic='sync_model_to_ralph2', auto_publish_result=True)
+def sync_model_to_ralph2(sender, instance=None, created=False, **kwargs):
+    model = instance
+    return {
+        'id': model.id,
+        'category': _get_obj_id_ralph_20(model.category),
+        'cores_count': model.cores_count,
+        'power_consumption': model.power_consumption,
+        'height_of_device': model.height_of_device,
+        'manufacturer': _get_obj_id_ralph_20(model.manufacturer),
+    }
