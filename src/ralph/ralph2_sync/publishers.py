@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+from functools import wraps
+
 import pyhermes
 
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -8,6 +11,36 @@ from django.dispatch import receiver
 from ralph.assets.models import AssetModel
 from ralph.data_center.models import DataCenterAsset
 from ralph.data_importer.models import ImportedObjects
+
+
+def ralph2_sync(model):
+    """
+    Decorator for synchronizers with Ralph2. Decorated function should return
+    dict with event data. Decorated function name is used as a topic name and
+    dispatch_uid for post_save signal.
+    """
+    def wrap(func):
+        @wraps(func)
+        # connect to post_save signal for a model
+        @receiver(
+            post_save, sender=model, dispatch_uid=func.__name__,
+        )
+        # register publisher
+        @pyhermes.publisher(
+            topic=func.__name__
+        )
+        def wrapped_func(*args, **kwargs):
+            # publish only if sync enabled (globally and for particular
+            # function)
+            if (
+                settings.RALPH2_HERMES_SYNC_ENABLED and
+                func.__name__ in settings.RALPH2_HERMES_SYNC_FUNCTIONS
+            ):
+                result = func(*args, **kwargs)
+                pyhermes.publish(func.__name__, result)
+                return result
+        return wrapped_func
+    return wrap
 
 
 def _get_obj_id_ralph_20(obj):
@@ -29,10 +62,7 @@ def _get_obj_id_ralph_20(obj):
     return pk
 
 
-@receiver(
-    post_save, sender=DataCenterAsset, dispatch_uid='sync_dc_asset_to_ralph2'
-)
-@pyhermes.publisher(topic='sync_dc_asset_to_ralph2', auto_publish_result=True)
+@ralph2_sync(DataCenterAsset)
 def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
     """
     Publish information about DataCenterAsset after change to sync it in Ralph2.
@@ -75,10 +105,7 @@ def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
     return data
 
 
-@receiver(
-    post_save, sender=AssetModel, dispatch_uid='sync_model_to_ralph2'
-)
-@pyhermes.publisher(topic='sync_model_to_ralph2', auto_publish_result=True)
+@ralph2_sync(AssetModel)
 def sync_model_to_ralph2(sender, instance=None, created=False, **kwargs):
     """
     Publish AssetModel info to sync it in Ralph3.

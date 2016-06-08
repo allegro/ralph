@@ -1,5 +1,5 @@
-from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
+from django.contrib.contenttypes.models import ContentType
 
 from ralph.assets.models import AssetModel
 from ralph.data_importer.models import ImportedObjects

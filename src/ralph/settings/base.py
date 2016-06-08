@@ -347,3 +347,7 @@ if ENABLE_HERMES_INTEGRATION:
     INSTALLED_APPS += (
         'pyhermes.apps.django',
     )
+
+
+RALPH2_HERMES_SYNC_ENABLED = False
+RALPH2_HERMES_SYNC_FUNCTIONS = []

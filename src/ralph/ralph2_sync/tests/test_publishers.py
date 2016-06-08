@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import override_settings, TestCase
 
 from ralph.assets.models import AssetModel
 from ralph.assets.tests.factories import (
@@ -18,6 +18,7 @@ from ralph.ralph2_sync.publishers import (
 )
 
 
+@override_settings(RALPH2_HERMES_SYNC_ENABLED=True)
 class DCAssetPublisherTestCase(TestCase):
     def setUp(self):
         self.dc_asset = DataCenterAssetFactory(
@@ -73,6 +74,7 @@ class DCAssetPublisherTestCase(TestCase):
 
         self.maxDiff = None
 
+    @override_settings(RALPH2_HERMES_SYNC_FUNCTIONS=['sync_dc_asset_to_ralph2'])
     def test_publishing_dc_asset(self):
         result = sync_dc_asset_to_ralph2(DataCenterAsset, self.dc_asset)
         self.assertEqual(result, {
@@ -109,6 +111,7 @@ class DCAssetPublisherTestCase(TestCase):
         })
 
 
+@override_settings(RALPH2_HERMES_SYNC_ENABLED=True)
 class AssetModelPublisherTestCase(TestCase):
     def setUp(self):
         self.model = DataCenterAssetModelFactory(
@@ -130,6 +133,7 @@ class AssetModelPublisherTestCase(TestCase):
             self.model, self.ralph2_model_id
         )
 
+    @override_settings(RALPH2_HERMES_SYNC_FUNCTIONS=['sync_model_to_ralph2'])
     def test_publishing_model(self):
         result = sync_model_to_ralph2(AssetModel, self.model)
         self.assertEqual(result, {
