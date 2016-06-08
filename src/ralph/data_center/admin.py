@@ -240,7 +240,7 @@ class DataCenterAssetAdmin(
     resource_class = resources.DataCenterAssetResource
     list_display = [
         'hostname', 'status', 'barcode', 'model', 'sn', 'invoice_date',
-        'invoice_no', 'location', 'service_env',
+        'invoice_no', 'show_location', 'service_env',
     ]
     multiadd_summary_fields = list_display + ['rack']
     one_of_mulitvalue_required = ['sn', 'barcode']
