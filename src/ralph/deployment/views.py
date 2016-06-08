@@ -55,7 +55,12 @@ def _render_configuration(configuration, deployment):
             'deployment_id': deployment.id,
             'file_type': 'kernel'
         }),
-        'dc': deployment.obj.rack.server_room.data_center,
+        'dc': deployment.obj.rack.server_room.data_center.name,
+        'domain': (
+            deployment.obj.network_environment.domain
+            if deployment.obj.network_environment else ''
+        ),
+        'hostname': deployment.obj.hostname,
         'done_url': ralph_instance + reverse('deployment_done', kwargs={
             'deployment_id': deployment.id,
         })
