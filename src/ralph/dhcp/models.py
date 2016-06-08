@@ -11,10 +11,10 @@ class DHCPEntryManager(models.Manager):
             'ethernet', 'ethernet__base_object'
         ).filter(
             hostname__isnull=False,
+            dhcp_expose=True,
             ethernet__base_object__isnull=False,
             ethernet__isnull=False,
             ethernet__mac__isnull=False,
-            ethernet__ipaddress__isnull=False,
         ).exclude(
             status=IPAddressStatus.reserved.id
         )
