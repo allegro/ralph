@@ -5,8 +5,9 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphAdminForm, RalphTabularInline, register
 from ralph.admin.filters import IPFilter, TagsListFilter
+from ralph.assets.models.components import Ethernet
 from ralph.data_center.models.virtual import BaseObjectCluster
-from ralph.networks.models.networks import IPAddress
+from ralph.networks.forms import SimpleNetworkForm
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -109,10 +110,20 @@ class CloudHostTabularInline(RalphTabularInline):
         ).prefetch_related('tags')
 
 
+class CloudHostNetworkForm(SimpleNetworkForm):
+    class Meta(SimpleNetworkForm.Meta):
+        fields = ['address', 'hostname']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in ['address', 'hostname']:
+            self.fields[field].widget.attrs['readonly'] = True
+
+
 class CloudNetworkInline(RalphTabularInline):
     can_delete = False
-    readonly_fields = fields = ['address', 'hostname']
-    model = IPAddress
+    form = CloudHostNetworkForm
+    model = Ethernet
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -134,8 +145,7 @@ class CloudHostAdmin(RalphAdmin):
                        'modified', 'parent', 'service_env', 'image_name']
     search_fields = ['cloudflavor__name', 'hostname', 'host_id']
     raw_id_override_parent = {'parent': CloudProject}
-    # TODO
-    # inlines = [CloudNetworkInline]
+    inlines = [CloudNetworkInline]
     fieldsets = (
         (None, {
             'fields': ['hostname', 'get_hypervisor', 'host_id', 'created',
