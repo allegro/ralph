@@ -79,7 +79,8 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
         )),
     ]
     filter_fields = [
-        'id', 'service_env', 'service_env', 'content_type'
+        'id', 'service_env', 'service_env', 'service_env__service__uid',
+        'content_type'
     ]
     extended_filter_fields = {
         'name': ['asset__hostname'],
