@@ -4,7 +4,7 @@ cd $RALPH_DIR
 
 make docs
 
-yes yes | $RALPH_EXEC migrate
+$RALPH_EXEC migrate --noinput
 $RALPH_EXEC collectstatic --noinput
 
 make menu
