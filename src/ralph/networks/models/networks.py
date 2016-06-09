@@ -540,7 +540,7 @@ class IPAddress(
             if not self.hostname and self.address:
                 self.hostname = network_tools.hostname(self.address)
         if self.number and not self.address:
-            self.address = ipaddress.ip_address(self.number)
+            self.address = ipaddress.ip_address(int(self.number))
         else:
             self.number = int(ipaddress.ip_address(self.address or 0))
         self._assign_parent()

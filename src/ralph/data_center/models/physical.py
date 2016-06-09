@@ -420,6 +420,13 @@ class DataCenterAsset(NetworkableBaseObject, AutocompleteTooltipMixin, Asset):
             return eth.ipaddress
         return None
 
+    def _get_or_create_management_ip(self):
+        ip = self._get_management_ip()
+        if not ip:
+            eth = self.ethernet.create()
+            ip = IPAddress(ethernet=eth, is_management=True)
+        return ip
+
     @property
     def management_ip(self):
         ip = self._get_management_ip()
@@ -429,38 +436,29 @@ class DataCenterAsset(NetworkableBaseObject, AutocompleteTooltipMixin, Asset):
 
     @management_ip.setter
     def management_ip(self, value):
+        ip = self._get_or_create_management_ip()
+        ip.address = value
+        ip.save()
+
+    @management_ip.deleter
+    def management_ip(self):
         ip = self._get_management_ip()
-        if ip is None:
-            return
         if ip:
-            ip.address = value
-            ip.save()
-        else:
-            IPAddress.objects.create(
-                address=value,
-                is_management=True,
-            )
+            ip.delete()
+            ip.ethernet.delete()
 
     @property
     def management_hostname(self):
         ip = self._get_management_ip()
         if ip:
-            return ip.hostname
+            return ip.hostname or ''
         return ''
 
     @management_hostname.setter
     def management_hostname(self, value):
-        ip = self._get_management_ip()
-        if ip is None:
-            return
-        if ip:
-            ip.hostname = value
-            ip.save()
-        else:
-            IPAddress.objects.create(
-                hostname=value,
-                is_management=True,
-            )
+        ip = self._get_or_create_management_ip()
+        ip.hostname = value
+        ip.save()
 
     @cached_property
     def location(self):
