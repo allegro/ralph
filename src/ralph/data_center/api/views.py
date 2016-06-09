@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
+
 from ralph.api import RalphAPIViewSet
-from ralph.assets.api.views import BaseObjectViewSet
+from ralph.assets.api.filters import NetworkableObjectFilters
+from ralph.assets.api.views import BaseObjectViewSet, BaseObjectViewSetMixin
 from ralph.data_center.admin import DataCenterAssetAdmin
 from ralph.data_center.api.serializers import (
     AccessorySerializer,
+    BaseObjectClusterSerializer,
     ClusterSerializer,
     ClusterTypeSerializer,
     DatabaseSerializer,
@@ -17,6 +20,7 @@ from ralph.data_center.api.serializers import (
 )
 from ralph.data_center.models import (
     Accessory,
+    BaseObjectCluster,
     Cluster,
     ClusterType,
     Database,
@@ -29,7 +33,12 @@ from ralph.data_center.models import (
 )
 
 
-class DataCenterAssetViewSet(RalphAPIViewSet):
+class DataCenterAssetFilterSet(NetworkableObjectFilters):
+    class Meta(NetworkableObjectFilters.Meta):
+        model = DataCenterAsset
+
+
+class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     queryset = DataCenterAsset.objects.all()
     serializer_class = DataCenterAssetSerializer
     select_related = DataCenterAssetAdmin.list_select_related + [
@@ -44,11 +53,7 @@ class DataCenterAssetViewSet(RalphAPIViewSet):
         'connections',
         'tags',
     ]
-    filter_fields = [
-        'service_env__service__uid',
-        'service_env__service__name',
-        'service_env__service__id'
-    ]
+    additional_filter_class = DataCenterAssetFilterSet
 
 
 class AccessoryViewSet(RalphAPIViewSet):
@@ -90,6 +95,11 @@ class VIPViewSet(RalphAPIViewSet):
 class ClusterTypeViewSet(RalphAPIViewSet):
     queryset = ClusterType.objects.all()
     serializer_class = ClusterTypeSerializer
+
+
+class BaseObjectClusterViewSet(RalphAPIViewSet):
+    queryset = BaseObjectCluster.objects.all()
+    serializer_class = BaseObjectClusterSerializer
 
 
 class ClusterViewSet(RalphAPIViewSet):

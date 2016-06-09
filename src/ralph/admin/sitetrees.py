@@ -103,8 +103,13 @@ sitetrees = [
                 section(_('Server Rooms'), 'data_center', 'ServerRoom'),
                 section(_('VIPs'), 'data_center', 'VIP'),
                 section(_('Virtual Servers'), 'virtual', 'VirtualServer'),
-                section(_('IP Addresses'), 'data_center', 'ipaddress'),
                 section(_('Clusters'), 'data_center', 'cluster'),
+                section(_('Preboots'), 'deployment', 'Preboot'),
+                section(
+                    _('Preboot configuration'), 'deployment',
+                    'PrebootConfiguration'
+                ),
+                section(_('Preboot files'), 'deployment', 'PrebootFile'),
             ],
         ),
         ralph_item(
@@ -125,6 +130,22 @@ sitetrees = [
                     'back_office',
                     'officeinfrastructure'
                 ),
+            ]
+        ),
+        ralph_item(
+            title=_('Networks'),
+            url='#',
+            url_as_pattern=False,
+            perms_mode_all=False,
+            children=[
+                section(_('Networks'), 'networks', 'network'),
+                section(
+                    _('Network environments'), 'networks', 'networkenvironment'
+                ),
+                section(_('Network kind'), 'networks', 'networkkind'),
+                section(_('IP Addresses'), 'networks', 'ipaddress'),
+                section(_('DHCP Servers'), 'dhcp', 'DHCPServer'),
+                section(_('DNS Servers'), 'dhcp', 'DNSServer'),
             ]
         ),
         ralph_item(
@@ -258,6 +279,12 @@ sitetrees = [
                 section(_('Budget info'), 'assets', 'BudgetInfo'),
                 section(
                     _('Service Environment'), 'assets', 'ServiceEnvironment'
+                ),
+                section(
+                    _('Configuration modules'), 'assets', 'ConfigurationModule'
+                ),
+                section(
+                    _('Configuration classes'), 'assets', 'ConfigurationClass'
                 ),
                 section(_('Asset holder'), 'assets', 'AssetHolder'),
                 section(_('Users list'), 'accounts', 'RalphUser'),

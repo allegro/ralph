@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from rest_framework.fields import ChoiceField, Field
+from rest_framework.fields import ChoiceField, Field, MultipleChoiceField
 
 
 class StrField(Field):
@@ -56,3 +56,19 @@ class ReversedChoiceField(ChoiceField):
         except KeyError:
             pass
         return super(ReversedChoiceField, self).to_internal_value(data)
+
+
+class ModelMultipleChoiceField(MultipleChoiceField):
+    """
+    Multiple Model Choices Field for Django Rest Framework
+
+    Changes list of integer data to Django Model queryset
+    """
+    def __init__(self, *args, **kwargs):
+        self.model = kwargs['choices'].queryset.model
+        super().__init__(*args, **kwargs)
+
+    def to_internal_value(self, data):
+        if data:
+            return self.model.objects.filter(pk__in=data)
+        return self.model.objects.none()

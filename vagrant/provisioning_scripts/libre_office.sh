@@ -5,5 +5,8 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
     python3-uno
 
 # copy libreoffice service's conf
-sudo cp ~/src/ralph/vagrant/upstart/soffice.conf /etc/init/soffice.conf
+sudo cp /home/vagrant/src/ralph/vagrant/upstart/soffice.conf /etc/init/soffice.conf
 sudo start soffice
+if [[ $? != 0 ]]; then
+    sudo restart soffice
+fi

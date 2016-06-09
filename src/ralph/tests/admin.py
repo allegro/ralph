@@ -5,7 +5,16 @@ from ralph.admin import RalphAdmin, register
 from ralph.admin.m2m import RalphTabularM2MInline
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
-from ralph.tests.models import Bar, Car, Car2, Foo, Manufacturer, Order
+from ralph.networks.forms import NetworkInline
+from ralph.tests.models import (
+    Bar,
+    Car,
+    Car2,
+    Foo,
+    Manufacturer,
+    Order,
+    PolymorphicTestModel
+)
 
 
 @register(Car)
@@ -45,3 +54,9 @@ class ManufacturerAdmin(RalphAdmin):
 @register(Order)
 class OrderAdmin(AttachmentsMixin, TransitionAdminMixin, RalphAdmin):
     change_views = []
+
+
+@register(PolymorphicTestModel)
+class PolymorphicTestModelAdmin(RalphAdmin):
+    inlines = [NetworkInline]
+    exclude = ['service_env', 'parent', 'content_type']

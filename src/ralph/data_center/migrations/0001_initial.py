@@ -7,7 +7,7 @@ import django.core.validators
 import ralph.lib.mixins.models
 import ralph.lib.transitions.fields
 import re
-import ralph.data_center.models.networks
+import ralph.networks.models.networks
 import ralph.lib.mixins.fields
 
 
@@ -158,7 +158,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(verbose_name='name', unique=True, max_length=255)),
                 ('created', models.DateTimeField(verbose_name='date created', auto_now=True)),
                 ('modified', models.DateTimeField(verbose_name='last modified', auto_now_add=True)),
-                ('address', models.CharField(verbose_name='network address', help_text='Presented as string (e.g. 192.168.0.0/24)', validators=[ralph.data_center.models.networks.network_validator], unique=True, max_length=18)),
+                ('address', models.CharField(verbose_name='network address', help_text='Presented as string (e.g. 192.168.0.0/24)', validators=[ralph.networks.fields.network_validator], unique=True, max_length=18)),
                 ('gateway', models.GenericIPAddressField(default=None, verbose_name='gateway address', blank=True, null=True, help_text='Presented as string.')),
                 ('gateway_as_int', models.BigIntegerField(verbose_name='gateway as int', editable=False, blank=True, default=None, null=True)),
                 ('reserved', models.PositiveIntegerField(verbose_name='reserved', help_text='Number of addresses to be omitted in the automatic determination process, counted from the first in range.', default=10)),

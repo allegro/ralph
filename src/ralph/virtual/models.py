@@ -4,15 +4,25 @@ import logging
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.dispatch import receiver
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.helpers import get_value_by_relation_path
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ComponentType
-from ralph.assets.models.components import Component, ComponentModel
-from ralph.data_center.models.networks import IPAddress
-from ralph.data_center.models.physical import DataCenterAsset
-from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
+from ralph.assets.models.components import Component, ComponentModel, Ethernet
+from ralph.data_center.models.physical import (
+    DataCenterAsset,
+    NetworkableBaseObject
+)
+from ralph.data_center.models.virtual import Cluster
+from ralph.lib.mixins.fields import NullableCharField
+from ralph.lib.mixins.models import (
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    TimeStampMixin
+)
+from ralph.networks.models.networks import IPAddress
 
 logger = logging.getLogger(__name__)
 
@@ -154,17 +164,19 @@ class CloudHost(AdminAbsoluteUrlMixin, BaseObject):
         verbose_name_plural = _('Cloud hosts')
 
     def __str__(self):
-        return 'Cloud Host: {}'.format(self.hostname)
+        return self.hostname
 
     @property
     def ip_addresses(self):
-        return [ip.address for ip in self.ipaddress_set.all()]
+        return self.ethernet.select_related('ipaddress').values_list(
+            'ipaddress__address', flat=True
+        )
 
     @ip_addresses.setter
     def ip_addresses(self, value):
         if set(self.ip_addresses) == set(value):
             return
-        for ip in set(value)-set(self.ip_addresses):
+        for ip in set(value) - set(self.ip_addresses):
             try:
                 new_ip = IPAddress.objects.get(address=ip)
                 if new_ip.base_object is None:
@@ -176,13 +188,16 @@ class CloudHost(AdminAbsoluteUrlMixin, BaseObject):
                         'another asset'
                     ) % (ip, self.hostname))
             except ObjectDoesNotExist:
-                new_ip = IPAddress(base_object=self, address=ip)
+                new_ip = IPAddress(
+                    ethernet=Ethernet.objects.create(base_object=self),
+                    address=ip
+                )
                 new_ip.save()
 
-        for ip in set(self.ip_addresses) - set(value):
-            release_ip = IPAddress.objects.get(base_object=self, address=ip)
-            release_ip.base_object = None
-            release_ip.save()
+        to_delete = set(self.ip_addresses) - set(value)
+        Ethernet.objects.filter(
+            base_object=self, ipaddress__address__in=to_delete
+        ).delete()
 
     @property
     def cloudproject(self):
@@ -197,11 +212,48 @@ class VirtualComponent(Component):
     pass
 
 
-class VirtualServer(BaseObject):
-    # TODO This model has to be developed, eg. add hostanme, hypervisior e.t.c.
+class VirtualServerType(
+    NamedMixin.NonUnique,
+    TimeStampMixin,
+    models.Model
+):
+    pass
+
+
+class VirtualServer(NetworkableBaseObject, BaseObject):
+    # parent field for VirtualServer is hypervisor!
+    # TODO: limit parent to DataCenterAsset
+    type = models.ForeignKey(VirtualServerType, related_name='virtual_servers')
+    hostname = NullableCharField(
+        blank=True,
+        default=None,
+        max_length=255,
+        null=True,
+        verbose_name=_('hostname'),
+        unique=True,
+    )
+    sn = models.CharField(
+        max_length=200,
+        verbose_name=_('SN'),
+        unique=True,
+    )
+    cluster = models.ForeignKey(Cluster, blank=True, null=True)
+
+    @cached_property
+    def rack_id(self):
+        return self.rack.id if self.rack else None
+
+    @cached_property
+    def rack(self):
+        return (
+            self.parent.rack
+            if self.parent_id and isinstance(self.parent, DataCenterAsset)
+            else None
+        )
+
     class Meta:
         verbose_name = _('Virtual server (VM)')
         verbose_name_plural = _('Virtual servers (VM)')
 
     def __str__(self):
-        return 'VirtualServer: {}'.format(self.service_env)
+        return 'VirtualServer: {} ({})'.format(self.hostname, self.sn)

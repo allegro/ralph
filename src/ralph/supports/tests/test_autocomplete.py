@@ -47,15 +47,10 @@ class SupportAutocompleteTest(TestCase, ClientMixin):
         data = json.loads(str(response.content, 'utf-8'))['results'][0]
 
         self.assertEqual(
-            data['label'], '{} ({}, {})'.format(
+            data['__str__'], '{} ({}, {})'.format(
                 str(self.support.name),
                 self.support.date_to,
                 self.support.supplier
-            )
-        )
-        self.assertEqual(
-            data['__str__'], '{} ({})'.format(
-                self.support.name, self.support.date_to
             )
         )
 

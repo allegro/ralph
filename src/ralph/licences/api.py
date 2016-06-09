@@ -2,7 +2,7 @@
 from ralph.accounts.api_simple import SimpleRalphUserSerializer
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import ReversionHistoryAPISerializerMixin
-from ralph.assets.api.serializers import BaseObjectSerializer
+from ralph.assets.api.serializers import BaseObjectSimpleSerializer
 from ralph.licences.models import (
     BaseObjectLicence,
     Licence,
@@ -41,7 +41,7 @@ class BaseObjectLicenceSerializer(
         return data
 
 
-class LicenceSerializer(BaseObjectSerializer):
+class LicenceSerializer(BaseObjectSimpleSerializer):
     base_objects = BaseObjectLicenceSerializer(
         many=True, read_only=True, source='baseobjectlicence_set'
     )
@@ -52,7 +52,7 @@ class LicenceSerializer(BaseObjectSerializer):
     class Meta:
         model = Licence
         depth = 1
-        exclude = ('content_type', 'service_env')
+        exclude = ('content_type', 'service_env', 'configuration_path')
 
 
 class SoftwareSerializer(RalphAPISerializer):

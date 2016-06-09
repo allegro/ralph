@@ -2,13 +2,14 @@
 
 import inspect
 import logging
-import operator
 from collections import defaultdict
 
 import reversion
+from dj.choices import Choices
 from django import forms
 from django.conf import settings
 from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models, transaction
@@ -30,24 +31,26 @@ from ralph.admin.helpers import (
     get_field_by_relation_path
 )
 from ralph.attachments.models import Attachment
+from ralph.lib.external_services.models import Job
 from ralph.lib.mixins.models import TimeStampMixin
-from ralph.lib.transitions.conf import TRANSITION_ATTR_TAG
+from ralph.lib.transitions.conf import (
+    DEFAULT_ASYNC_TRANSITION_SERVICE_NAME,
+    TRANSITION_ATTR_TAG,
+    TRANSITION_ORIGINAL_STATUS
+)
 from ralph.lib.transitions.exceptions import (
     TransitionModelNotFoundError,
     TransitionNotAllowedError
 )
 from ralph.lib.transitions.fields import TransitionField
+from ralph.lib.transitions.utils import (
+    _compare_instances_types,
+    _sort_graph_topologically
+)
 
 _transitions_fields = {}
 
 logger = logging.getLogger(__name__)
-
-
-TRANSITION_ORIGINAL_STATUS = (0, 'Keep orginal status')
-
-
-class CycleError(Exception):
-    pass
 
 
 def _generate_transition_history(
@@ -106,22 +109,13 @@ def _get_history_dict(data, instance, runned_funcs):
                     field_name = field.verbose_name
             except FieldDoesNotExist:
                 field = func.form_fields[k]['field']
-                if isinstance(field, forms.ChoiceField):
+                if isinstance(field, forms.ModelChoiceField):
+                    value = str(v)
+                elif isinstance(field, forms.ChoiceField):
                     value = dict(field.choices).get(int(v))
                 field_name = field.label
             history[str(field_name)] = value
     return history
-
-
-def _check_type_instances(instances):
-    """Function check type of instances.
-    Conditions:
-        - transition can run only objects with the same type.
-    """
-    if not all(
-        map(lambda x: isinstance(instances[0], x.__class__), instances)
-    ):
-        raise NotImplementedError()
 
 
 def _check_and_get_transition(obj, transition, field):
@@ -158,7 +152,7 @@ def _check_instances_for_transition(instances, transition):
 
     Args:
         instances: Objects to checks.
-        transition: The transition object or a string.
+        transition: The transition object.
 
     Raises:
         TransitionNotAllowedError: An error ocurred when one or more of
@@ -169,7 +163,7 @@ def _check_instances_for_transition(instances, transition):
         if instance.status not in [int(s) for s in transition.source]:
             errors[instance].append(_('wrong source status'))
 
-    for func in transition.get_pure_actions(instances[0]):
+    for func in transition.get_pure_actions():
         error = func.precondition(instances)
         if error:
             for instance, error_details in error.items():
@@ -183,7 +177,7 @@ def _check_instances_for_transition(instances, transition):
 
 
 def _check_action_with_instances(instances, transition):
-    for func in transition.get_pure_actions(instances[0]):
+    for func in transition.get_pure_actions():
         validation_func = getattr(func, 'validation', lambda x: True)
         validation_func(instances)
 
@@ -209,34 +203,114 @@ def _create_graph_from_actions(actions, instance):
     return {k: v for (k, v) in graph.items() if k in actions_set}
 
 
-def _sort_graph_topologically(graph):
-    # calculate input degree (number of nodes pointing to particular node)
-    indeg = {k: 0 for k in graph}
-    for node, edges in graph.items():
-        for edge in edges:
-            indeg[edge] += 1
-    # sort graph topologically
-    # return nodes which input degree is 0
-    no_requirements = set([a for a in indeg if indeg.get(a, 0) == 0])
-    while no_requirements:
-        action_name = no_requirements.pop()
-        # for each node to which this one is pointing - decrease input degree
-        for dependency in graph[action_name]:
-            indeg[dependency] -= 1
-            # add to set of nodes ready to be returned (without nodes pointing
-            # to it)
-            if indeg[dependency] == 0:
-                no_requirements.add(dependency)
-        yield action_name
-    if any(indeg.values()):
-        raise CycleError("Cycle detected during topological sort")
-
-
 def _order_actions_by_requirements(actions, instance):
     graph = _create_graph_from_actions(actions, instance)
     actions_by_name = {a.name: a for a in actions}
     for action in _sort_graph_topologically(graph):
         yield actions_by_name[action]
+
+
+def run_transition(instances, transition_obj_or_name, field, data={}, **kwargs):
+    """
+    Main function to run transition (async or synchronous).
+    """
+    first_instance = instances[0]
+    transition = _check_and_get_transition(
+        first_instance, transition_obj_or_name, field
+    )
+    if transition.is_async:
+        job_ids = []
+        for instance in instances:
+            job_id, job = TransitionJob.run(
+                transition.async_service_name or DEFAULT_ASYNC_TRANSITION_SERVICE_NAME,  # noqa
+                instance,
+                transition=transition,
+                data=data,
+                **kwargs
+            )
+            job_ids.append(job_id)
+        return job_ids
+    else:
+        return run_field_transition(
+            instances, transition_obj_or_name, field, data, **kwargs
+        )
+
+
+def _prepare_action_data(
+    action, data, history_kwargs=None, shared_params=None, **kwargs
+):
+    """
+    Prepare data for single transition action
+
+    Args:
+        action: Action instance
+        data: dict with
+    """
+    defaults = data.copy()
+    defaults.update(kwargs)
+    if history_kwargs is not None:
+        defaults.update({'history_kwargs': history_kwargs})
+    if shared_params is not None:
+        defaults.update({'shared_params': shared_params})
+    # for current action, strip action name from param
+    # for example if current action is `test`, and it has param `abc`,
+    # `test__abc` is stored in and additional param `abc` will be passed to
+    # this action
+    defaults.update({
+        key.split('__')[1]: value
+        for key, value in data.items()
+        if key.startswith(action.name)
+    })
+    return defaults
+
+
+def _save_instance_after_transition(instance, transition, user=None):
+    # don't save object if any of actions have `disable_save_object` flag set
+    if not any([a.disable_save_object for a in transition.get_pure_actions()]):
+        with transaction.atomic(), reversion.create_revision():
+            instance.save()
+            # TODO: store changed fields
+            reversion.set_comment('Transition {}'.format(transition))
+            if user:
+                reversion.set_user(user)
+
+
+def _create_instance_history_entry(
+    instance, transition, data, history_kwargs, user=None, attachment=None
+):
+    funcs = transition.get_pure_actions()
+    action_names = [str(getattr(
+        func,
+        'verbose_name',
+        func.__name__.replace('_', ' ').capitalize()
+    )) for func in funcs]
+    history = _get_history_dict(data, instance, funcs)
+    history.update(history_kwargs.get(instance.pk, {}))
+    transition_history = _generate_transition_history(
+        instance=instance,
+        transition=transition,
+        user=user,
+        attachment=attachment,
+        history_kwargs=history,
+        action_names=action_names,
+        field=transition.model.field_name
+    )
+    transition_history.save()
+
+
+def _post_transition_instance_processing(
+    instance, transition, data, history_kwargs, user=None, attachment=None
+):
+    # change transition field (ex. status) if not keeping orignial
+    if not int(transition.target) == TRANSITION_ORIGINAL_STATUS[0]:
+        setattr(instance, transition.model.field_name, int(transition.target))
+    _create_instance_history_entry(
+        instance, transition, data, history_kwargs,
+        user=user, attachment=attachment
+    )
+    _save_instance_after_transition(
+        instance, transition, user
+    )
 
 
 @transaction.atomic
@@ -247,17 +321,15 @@ def run_field_transition(
     Execute all actions assigned to the selected transition.
     """
     first_instance = instances[0]
-    _check_type_instances(instances)
+    _compare_instances_types(instances)
     transition = _check_and_get_transition(
         first_instance, transition_obj_or_name, field
     )
     _check_instances_for_transition(instances, transition)
     _check_action_with_instances(instances, transition)
     attachment = None
-    action_names = []
-    runned_funcs = []
-    func_history_kwargs = defaultdict(dict)
-    disable_save_object = False
+    history_kwargs = defaultdict(dict)
+    shared_params = defaultdict(dict)
     for action in _order_actions_by_requirements(
         transition.actions.all(), first_instance
     ):
@@ -265,52 +337,26 @@ def run_field_transition(
             action, transition
         ))
         func = getattr(first_instance, action.name)
-        if func.disable_save_object:
-            disable_save_object = True
-        defaults = data.copy()
-        defaults.update(kwargs)
-        defaults.update({'history_kwargs': func_history_kwargs})
-        defaults.update({
-            key.split('__')[1]: value
-            for key, value in data.items()
-            if key.startswith(action.name)
-        })
+        defaults = _prepare_action_data(
+            action,
+            data,
+            history_kwargs=history_kwargs,
+            shared_params=shared_params,
+            **kwargs
+        )
         try:
             result = func(instances=instances, **defaults)
         except Exception as e:
             logger.exception(e)
             return False, None
 
-        runned_funcs.append(func)
-        action_names.append(str(getattr(
-            func,
-            'verbose_name',
-            func.__name__.replace('_', ' ').capitalize()
-        )))
         if isinstance(result, Attachment):
             attachment = result
-    history_list = []
     for instance in instances:
-        if not int(transition.target) == TRANSITION_ORIGINAL_STATUS[0]:
-            setattr(instance, field, int(transition.target))
-        history_kwargs = _get_history_dict(data, instance, runned_funcs)
-        history_kwargs.update(func_history_kwargs[instance.pk])
-        history_list.append(_generate_transition_history(
-            instance=instance,
-            transition=transition,
-            user=kwargs['request'].user,
-            attachment=attachment,
-            history_kwargs=history_kwargs,
-            action_names=action_names,
-            field=field
-        ))
-        if not disable_save_object:
-            with transaction.atomic(), reversion.create_revision():
-                instance.save()
-                reversion.set_comment('Transition {}'.format(transition))
-                reversion.set_user(kwargs['request'].user)
-    if history_list:
-        TransitionsHistory.objects.bulk_create(history_list)
+        _post_transition_instance_processing(
+            instance, transition, data, history_kwargs=history_kwargs,
+            user=kwargs['request'].user, attachment=attachment,
+        )
     return True, attachment
 
 
@@ -372,6 +418,21 @@ class TransitionModel(models.Model):
 class Transition(models.Model):
     name = models.CharField(max_length=50)
     model = models.ForeignKey(TransitionModel)
+    run_asynchronously = models.BooleanField(
+        default=False,
+        help_text=_(
+            'Run this transition in the background (this could be enforced if '
+            'you choose at least one asynchronous action)'
+        )
+    )
+    async_service_name = models.CharField(
+        max_length=100, blank=True, null=True,
+        default=DEFAULT_ASYNC_TRANSITION_SERVICE_NAME, help_text=_(
+            'Name of asynchronous (internal) service to run this transition. '
+            'Fill this field only if you want to run this transition in the '
+            'background.'
+        )
+    )
     source = JSONField()
     target = models.CharField(max_length=50)
     actions = models.ManyToManyField('Action')
@@ -391,6 +452,17 @@ class Transition(models.Model):
             'codename': 'can_run_{}_transition'.format(slugify(self.name))
         }
 
+    @property
+    def model_cls(self):
+        return self.model.content_type.model_class()
+
+    @property
+    def is_async(self):
+        return (
+            self.run_asynchronously or
+            any([func.is_async for func in self.get_pure_actions()])
+        )
+
     @classmethod
     def transitions_for_model(cls, model, user=None):
         content_type = ContentType.objects.get_for_model(model)
@@ -400,13 +472,14 @@ class Transition(models.Model):
             if _check_user_perm_for_transition(user, transition)
         ]
 
-    def get_pure_actions(self, instance):
+    def get_pure_actions(self):
         return [
-            getattr(instance, action.name) for action in self.actions.all()
+            getattr(self.model_cls, action.name)
+            for action in self.actions.all()
         ]
 
-    def has_form(self, instance):
-        for action in self.get_pure_actions(instance):
+    def has_form(self):
+        for action in self.get_pure_actions():
             if getattr(action, 'form_fields', None):
                 return True
         return False
@@ -448,6 +521,76 @@ class TransitionsHistory(TimeStampMixin):
         return str(self.transition_name)
 
 
+class TransitionJobActionStatus(Choices):
+    _ = Choices.Choice
+
+    STARTED = _('started')
+    FINISHED = _('finished')
+    FAILED = _('failed')
+
+
+class TransitionJob(Job):
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
+    # char field to allow uids, not only ints
+    object_id = models.CharField(max_length=200)
+    obj = GenericForeignKey('content_type', 'object_id')
+    transition = models.ForeignKey(Transition, on_delete=models.CASCADE)  # ?
+    # TODO: field?
+
+    @classmethod
+    def run(
+        cls, service_name, obj, transition, request=None, defaults=None,
+        **kwargs
+    ):
+        defaults = defaults or {}
+        defaults.update(
+            content_type=ContentType.objects.get_for_model(obj),
+            object_id=obj.pk,
+            transition=transition,
+        )
+        if 'data' not in kwargs:
+            kwargs['data'] = {}
+        for p in ['history_kwargs', 'shared_params']:
+            if p not in kwargs:
+                # obj.pk will be casted to str when dumping to json!
+                # (json needs str as the key of an object)
+                # we need to restore it in `_restore_params`
+                kwargs[p] = {obj.pk: {}}
+        return super().run(service_name, defaults, request=request, **kwargs)
+
+    @classmethod
+    def _restore_params(cls, obj):
+        params = super()._restore_params(obj)
+        # fix history_kwargs and shared_params key (from str to int)
+        for param_name in ['history_kwargs', 'shared_params']:
+            param = params.get(param_name, {}).copy()
+            new_param = defaultdict(dict)
+            for k, v in param.items():
+                try:
+                    k = int(k)
+                except ValueError:
+                    # pk is not int (ex. uid)
+                    pass
+                new_param[k] = v
+            params[param_name] = new_param
+        return params
+
+
+class TransitionJobAction(TimeStampMixin):
+    transition_job = models.ForeignKey(
+        TransitionJob,
+        on_delete=models.PROTECT,
+        related_name='transition_job_actions',
+    )
+    action_name = models.CharField(max_length=50)
+    status = models.PositiveIntegerField(
+        verbose_name=_('transition action status'),
+        choices=TransitionJobActionStatus(),
+        default=TransitionJobActionStatus.STARTED.id,
+    )
+    # TODO: add retries field and max retries param for async action
+
+
 def update_models_attrs():
     """
     Add to class new attribute `transition_models` which is dict with all
@@ -466,17 +609,16 @@ def update_models_attrs():
         setattr(model, 'transition_models', transition_models)
 
 
-def update_transitions_affter_migrate(**kwargs):
+def update_transitions_after_migrate(**kwargs):
     """
     Create or update transition for models which detetected
     TRANSITION_ATTR_TAG in any field in model.
     """
     sender_models = list(kwargs['sender'].get_models())
-
-    for model, field_names in filter(
-        lambda x: operator.itemgetter(0)(x) in sender_models,
-        _transitions_fields.items()
-    ):
+    action_ids = set()
+    for model, field_names in _transitions_fields.items():
+        if model not in sender_models:
+            continue
         content_type = ContentType.objects.get_for_model(model)
         for field_name in field_names:
             transition_model, _ = TransitionModel.objects.get_or_create(
@@ -491,8 +633,14 @@ def update_transitions_affter_migrate(**kwargs):
                     name=name,
                 )
                 action.content_type.add(content_type)
+                action_ids.add(action.id)
+        to_delete = Action.objects.filter(content_type=content_type).exclude(
+            id__in=action_ids
+        )
+        logger.warning('Deleting actions: {}'.format(list(to_delete)))
+        to_delete.delete()
 
-post_migrate.connect(update_transitions_affter_migrate)
+post_migrate.connect(update_transitions_after_migrate)
 
 
 @receiver(post_delete, sender=Transition)

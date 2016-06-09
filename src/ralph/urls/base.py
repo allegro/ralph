@@ -14,10 +14,13 @@ api_urls = list(map(lambda u: url(r'^', include(u)), [
     'ralph.back_office.api',
     'ralph.data_center.api.routers',
     'ralph.dc_view.urls.api',
+    'ralph.dhcp.api',
     'ralph.domains.api',
     'ralph.supports.api',
     'ralph.security.api',
+    'ralph.networks.api',
     'ralph.virtual.api',
+    'ralph.lib.transitions.api.routers'
 ]))
 # include router urls
 # because we're using single router instance and urls are cached inside this
@@ -35,6 +38,9 @@ urlpatterns = [
     url(r'^', include('ralph.accounts.urls')),
     url(r'^', include('ralph.reports.urls')),
     url(r'^', include('ralph.admin.autocomplete_urls')),
+    url(r'^dhcp/', include('ralph.dhcp.urls')),
+    url(r'^deployment/', include('ralph.deployment.urls')),
+    url(r'^', include('ralph.lib.transitions.urls')),
 ]
 
 if getattr(settings, 'ENABLE_HERMES_INTEGRATION', False):

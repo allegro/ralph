@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db.models import Prefetch
+from rest_framework.exceptions import ValidationError
 
 from ralph.api import RalphAPIViewSet
 from ralph.api.utils import PolymorphicViewSetMixin
@@ -7,6 +8,7 @@ from ralph.assets import models
 from ralph.assets.api import serializers
 from ralph.licences.api import BaseObjectLicenceViewSet
 from ralph.licences.models import BaseObjectLicence
+from ralph.networks.models import IPAddress
 
 
 class BusinessSegmentViewSet(RalphAPIViewSet):
@@ -77,15 +79,59 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
         )),
     ]
     filter_fields = [
-        'id', 'service_env', 'service_env__service__uid', 'content_type'
+        'id', 'service_env', 'service_env', 'service_env__service__uid',
+        'content_type'
     ]
     extended_filter_fields = {
         'name': ['asset__hostname'],
         'sn': ['asset__sn'],
         'barcode': ['asset__barcode'],
+        'price': ['asset__price'],
+        'ip': ['ethernet__ipaddress__address'],
+        'service': ['service_env__service__uid', 'service_env__service__name'],
     }
 
 
 class AssetHolderViewSet(RalphAPIViewSet):
     queryset = models.AssetHolder.objects.all()
     serializer_class = serializers.AssetHolderSerializer
+
+
+class EthernetViewSet(RalphAPIViewSet):
+    queryset = models.Ethernet.objects.all()
+    serializer_class = serializers.EthernetSerializer
+    filter_fields = ['base_object']
+    prefetch_related = ['model', 'base_object', 'base_object__tags']
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        try:
+            if instance and instance.ipaddress.dhcp_expose:
+                raise ValidationError(
+                    'Could not delete Ethernet when it is exposed in DHCP'
+                )
+        except IPAddress.DoesNotExist:
+            pass
+        return super().destroy(request, *args, **kwargs)
+
+
+class ConfigurationModuleViewSet(RalphAPIViewSet):
+    queryset = models.ConfigurationModule.objects.all()
+    serializer_class = serializers.ConfigurationModuleSerializer
+    save_serializer_class = serializers.ConfigurationModuleSimpleSerializer
+    filter_fields = ('parent', 'name')
+
+
+class ConfigurationClassViewSet(RalphAPIViewSet):
+    queryset = models.ConfigurationClass.objects.all()
+    serializer_class = serializers.ConfigurationClassSerializer
+    filter_fields = ('module', 'module__name', 'class_name', 'path')
+
+
+class BaseObjectViewSetMixin(object):
+    """
+    Base class for viewsets that inherits from BaseObject
+    """
+    extended_filter_fields = {
+        'service': ['service_env__service__uid', 'service_env__service__name']
+    }
