@@ -27,15 +27,15 @@ def move_to_networks(apps, schema_editor):
 
 
 def move_from_networks(apps, schema_editor):
-    DataCenterAsset = apps.get_model('data_center', 'DataCenterAsset')
     IPAddress = apps.get_model('networks', 'IPAddress')
     ips = IPAddress.objects.filter(
-        is_management=True, base_object__isnull=False
+        is_management=True, base_object__asset__datacenterasset__isnull=False
     )
     for ip in ips:
-        ip.base_object.management_ip_old = ip.address
-        ip.base_object.management_hostname_old = ip.hostname
-        ip.base_object.save()
+        dca = ip.base_object.asset.data_center_asset
+        dca.management_ip_old = ip.address
+        dca.management_hostname_old = ip.hostname
+        dca.save()
 
 
 class Migration(migrations.Migration):
