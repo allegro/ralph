@@ -60,8 +60,8 @@ class TestRestAssetInfoPerRack(TestCase):
             force_depreciation=False,
             model=asset_model,
             rack=self.rack_1,
-            management_ip='10.15.25.45'
         )
+        self.asset_1.management_ip = '10.15.25.45'
 
         self.pdu_1 = DataCenterAssetFactory(
             service_env=service_env,

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.contrib.auth import get_user_model
+from django.core.urlresolvers import reverse
 from django.forms import ValidationError
 from django.test import RequestFactory
-from django.core.urlresolvers import reverse
 
 from ralph.assets.models import Ethernet
 from ralph.data_center.models import DataCenterAsset
