@@ -56,6 +56,8 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'taggit',
     'taggit_serializer',
+
+    'ralph.cross_validator'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -110,7 +112,7 @@ DATABASES = {
         'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'ralph_ng') or None,
         'HOST': os.environ.get('DATABASE_HOST', '127.0.0.1'),
         'PORT': os.environ.get('DATABASE_PORT', 3306),
-        'OPTIONS': MYSQL_OPTIONS,
+        # 'OPTIONS': MYSQL_OPTIONS,
         'ATOMIC_REQUESTS': True,
         'TEST': {
             'NAME': 'test_ralph_ng',
