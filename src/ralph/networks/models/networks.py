@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import ipaddress
+import logging
 import socket
 import struct
 from itertools import chain
@@ -9,6 +10,7 @@ from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.db.models import Q
 from django.db.models.signals import post_migrate
+from django.db.utils import ProgrammingError
 from django.dispatch import receiver
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
@@ -25,6 +27,8 @@ from ralph.lib.mixins.models import (
 )
 from ralph.networks.fields import IPNetwork
 from ralph.networks.models.choices import IPAddressStatus
+
+logger = logging.getLogger(__name__)
 
 
 class NetworkKind(NamedMixin, models.Model):
@@ -585,4 +589,9 @@ def rebuild_handler(sender, **kwargs):
     """
     # post_migrate is called after each app's migrations
     if sender.name == 'ralph.' + Network._meta.app_label:
-        Network.objects.rebuild()
+        try:
+            Network.objects.rebuild()
+        except ProgrammingError:
+            # this may happen during unapplying initial migration for networks
+            # app
+            logger.warning('ProgrammingError during Network rebuilding')

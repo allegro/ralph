@@ -20,7 +20,12 @@ def move_from_base_object_to_ethernet(apps, schema_editor):
 
 
 def move_from_ethernet_to_base_object(apps, schema_editor):
-    pass
+    Ethernet = apps.get_model('assets', 'Ethernet')
+    for eth in Ethernet.objects.filter(
+        ipaddress__isnull=False,
+    ):
+        eth.ipaddress.base_object_id = eth.base_object_id
+        eth.ipaddress.save()
 
 
 class Migration(migrations.Migration):
