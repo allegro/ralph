@@ -1,9 +1,11 @@
+from dal import autocomplete
 from django.conf import settings
 from django.conf.urls import include, url
 from rest_framework.authtoken import views
 
 from ralph.admin import ralph_site as admin
 from ralph.api import router
+from ralph.assets.models.assets import ProfitCenter
 
 # import custom urls from each api module
 # notice that each module should have `urlpatters` variable defined
@@ -35,6 +37,11 @@ urlpatterns = [
     url(r'^', include('ralph.accounts.urls')),
     url(r'^', include('ralph.reports.urls')),
     url(r'^', include('ralph.admin.autocomplete_urls')),
+
+    ##TODO:: make urls dynamically added
+    #url(r'^profitcenter-autocomplete/$',
+    #    autocomplete.Select2QuerySetView.as_view(model=ProfitCenter),
+    #    name='profit_center-autocomplete',),
 ]
 
 if getattr(settings, 'ENABLE_HERMES_INTEGRATION', False):

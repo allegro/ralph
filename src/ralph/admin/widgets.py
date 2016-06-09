@@ -129,6 +129,7 @@ class PermissionsSelectWidget(forms.Widget):
         return rendered_options
 
 
+#TODO:: rm it?
 class AutocompleteWidget(forms.TextInput):
     multivalue_separator = ','
 

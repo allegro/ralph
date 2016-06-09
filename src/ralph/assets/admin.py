@@ -76,8 +76,15 @@ class ServiceBaseObjects(RalphDetailView):
         return context
 
 
+from ralph.admin.mixins import RalphAdminFormMixin
+from django import forms
+class ServiceForm(RalphAdminFormMixin, forms.ModelForm):
+    pass
+
+
 @register(Service)
 class ServiceAdmin(RalphAdmin):
+    form = ServiceForm
     fields = (
         'name', 'uid', 'active', 'profit_center', 'cost_center',
         'technical_owners', 'business_owners', 'support_team',
@@ -85,7 +92,7 @@ class ServiceAdmin(RalphAdmin):
     inlines = [ServiceEnvironmentInline]
     search_fields = ['name', 'uid']
     raw_id_fields = [
-        'profit_center', 'support_team', 'business_owners', 'technical_owners'
+        'support_team', 'business_owners', 'technical_owners'
     ]
     resource_class = resources.ServiceResource
     change_views = [ServiceBaseObjects]

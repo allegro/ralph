@@ -68,6 +68,7 @@ gulp.task('js', function(){
         './bower_components/raven-js/dist/raven.min.js',
         './bower_components/webcomponentsjs/webcomponents-lite.js',
         './bower_components/chartist/dist/chartist.js',
+        './bower_components/select2/dist/js/select2.full.js',
     ];
     gulp.src(vendorFiles)
         .pipe(gulp.dest(config.vendorRoot + 'js/'));
