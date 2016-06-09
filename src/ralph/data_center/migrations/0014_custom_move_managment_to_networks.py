@@ -29,7 +29,9 @@ def move_to_networks(apps, schema_editor):
 def move_from_networks(apps, schema_editor):
     DataCenterAsset = apps.get_model('data_center', 'DataCenterAsset')
     IPAddress = apps.get_model('networks', 'IPAddress')
-    ips = IPAddress.objects.exclude(is_management=False, base_object=None)
+    ips = IPAddress.objects.filter(
+        is_management=True, base_object__isnull=False
+    )
     for ip in ips:
         ip.base_object.management_ip_old = ip.address
         ip.base_object.management_hostname_old = ip.hostname
