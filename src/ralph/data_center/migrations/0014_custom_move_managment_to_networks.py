@@ -32,7 +32,7 @@ def move_from_networks(apps, schema_editor):
         is_management=True, base_object__asset__datacenterasset__isnull=False
     )
     for ip in ips:
-        dca = ip.base_object.asset.data_center_asset
+        dca = ip.base_object.asset.datacenterasset
         dca.management_ip_old = ip.address
         dca.management_hostname_old = ip.hostname
         dca.save()
