@@ -16,35 +16,6 @@ def _remap_result(result):
     }
 
 
-class Ignored(models.Model):
-    i_am_your_father = True
-
-    content_type = models.ForeignKey(ContentType)
-    object_pk = models.IntegerField(db_index=True)
-
-    field = models.CharField(max_length=50, db_index=True)
-    old = NullableCharField(null=True, max_length=255, db_index=True)
-    new = NullableCharField(null=True, max_length=255, db_index=True)
-
-    @classmethod
-    def split(cls, result):
-        ignored = {}
-        result = result.copy()
-        for field, values in result.items():
-            try:
-                cls.objects.get(
-                    field=field,
-                    old=values['old'],
-                    new=values['new']
-                )
-            except cls.DoesNotExist:
-                pass
-            else:
-                ignored.update({field: values})
-                del result[field]
-        return result, ignored
-
-
 class Run(TimeStampMixin, models.Model):
     i_am_your_father = True
 
@@ -66,7 +37,6 @@ class Result(TimeStampMixin, models.Model):
 
     old = models.ForeignKey(ImportedObject, null=True)
     result = JSONField()
-    ignored = JSONField()
     errors = JSONField()
 
     @classmethod
@@ -78,13 +48,11 @@ class Result(TimeStampMixin, models.Model):
             app_label=opts.app_label, model=opts.model_name
         )
         result = _remap_result(result)
-        result, ignored = Ignored.split(result)
         cls.objects.create(
             run=run,
             content_type=ct,
             object_pk=obj.pk,
             old=old,
             result=result,
-            ignored=ignored,
             errors=errors,
         )

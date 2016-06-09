@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import ralph.lib.mixins.fields
 import django_extensions.db.fields.json
 
 
@@ -15,47 +14,35 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Ignored',
-            fields=[
-                ('id', models.AutoField(serialize=False, primary_key=True, auto_created=True, verbose_name='ID')),
-                ('object_pk', models.IntegerField(db_index=True)),
-                ('field', models.CharField(max_length=50, db_index=True)),
-                ('old', ralph.lib.mixins.fields.NullableCharField(max_length=255, null=True, db_index=True)),
-                ('new', ralph.lib.mixins.fields.NullableCharField(max_length=255, null=True, db_index=True)),
-                ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
-            ],
-        ),
-        migrations.CreateModel(
             name='Result',
             fields=[
-                ('id', models.AutoField(serialize=False, primary_key=True, auto_created=True, verbose_name='ID')),
-                ('created', models.DateTimeField(verbose_name='date created', auto_now_add=True)),
-                ('modified', models.DateTimeField(verbose_name='last modified', auto_now=True)),
+                ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
+                ('created', models.DateTimeField(auto_now_add=True, verbose_name='date created')),
+                ('modified', models.DateTimeField(auto_now=True, verbose_name='last modified')),
                 ('object_pk', models.IntegerField(db_index=True)),
                 ('result', django_extensions.db.fields.json.JSONField()),
-                ('ignored', django_extensions.db.fields.json.JSONField()),
                 ('errors', django_extensions.db.fields.json.JSONField()),
                 ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
-                ('old', models.ForeignKey(to='data_importer.ImportedObjects', null=True)),
+                ('old', models.ForeignKey(null=True, to='data_importer.ImportedObjects')),
             ],
             options={
-                'ordering': ('-modified', '-created'),
                 'abstract': False,
+                'ordering': ('-modified', '-created'),
             },
         ),
         migrations.CreateModel(
             name='Run',
             fields=[
-                ('id', models.AutoField(serialize=False, primary_key=True, auto_created=True, verbose_name='ID')),
-                ('created', models.DateTimeField(verbose_name='date created', auto_now_add=True)),
-                ('modified', models.DateTimeField(verbose_name='last modified', auto_now=True)),
+                ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
+                ('created', models.DateTimeField(auto_now_add=True, verbose_name='date created')),
+                ('modified', models.DateTimeField(auto_now=True, verbose_name='last modified')),
                 ('checked_count', models.PositiveIntegerField(default=0)),
                 ('invalid_count', models.PositiveIntegerField(default=0)),
                 ('valid_count', models.PositiveIntegerField(default=0)),
             ],
             options={
-                'ordering': ('-modified', '-created'),
                 'abstract': False,
+                'ordering': ('-modified', '-created'),
             },
         ),
         migrations.AddField(
