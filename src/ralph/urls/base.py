@@ -14,6 +14,7 @@ api_urls = list(map(lambda u: url(r'^', include(u)), [
     'ralph.back_office.api',
     'ralph.data_center.api.routers',
     'ralph.dc_view.urls.api',
+    'ralph.dhcp.api',
     'ralph.domains.api',
     'ralph.supports.api',
     'ralph.security.api',
