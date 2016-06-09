@@ -2,8 +2,10 @@
 from django.contrib.auth import get_user_model
 from django.forms import ValidationError
 from django.test import RequestFactory
+from django.core.urlresolvers import reverse
 
 from ralph.assets.models import Ethernet
+from ralph.data_center.models import DataCenterAsset
 from ralph.data_center.tests.factories import DataCenterAssetFactory
 from ralph.networks.forms import validate_is_management
 from ralph.networks.models import IPAddress
@@ -206,3 +208,36 @@ class TestDataCenterAssetForm(RalphTestCase):
         self.assertEqual(IPAddress.objects.count(), ip_count - 1)
         self.assertEqual(len(IPAddress.objects.filter(pk=ip.pk)), 0)
         self.assertEqual(len(Ethernet.objects.filter(pk=eth.pk)), 0)
+
+    def test_create_new_data_center_asset_with_management(self):
+        data = self._get_initial_data()
+        data.update({
+            'barcode': '1234',
+            'sn': '321',
+            # mgmt fields are now ignored
+            'management_ip': '10.20.30.44',
+            'management_hostname': 'qwerty.mydc.net',
+        })
+        response = self.client.post(
+            reverse('admin:data_center_datacenterasset_add'), data
+        )
+        self.assertEqual(response.status_code, 302)
+        dca = DataCenterAsset.objects.get(barcode='1234')
+        self.assertEqual(dca.management_ip, '')
+        self.assertEqual(dca.management_hostname, '')
+
+    def test_get_add_form(self):
+        response = self.client.get(
+            reverse('admin:data_center_datacenterasset_add'),
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_add_details_form(self):
+        response = self.client.get(self.dca.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_add_details_form_with_management_ip(self):
+        self.dca.management_ip = '10.20.30.40'
+        self.dca.management_hostname = 'qwerty.mydc.net'
+        response = self.client.get(self.dca.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
