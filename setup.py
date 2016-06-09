@@ -30,6 +30,7 @@ setup(
             'ralph = ralph.__main__:prod',
             'dev_ralph = ralph.__main__:dev',
             'test_ralph = ralph.__main__:test',
+            'validate_ralph = ralph.cross_validator.__main__:main',
         ],
     },
     classifiers=[

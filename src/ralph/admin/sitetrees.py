@@ -83,6 +83,14 @@ def section(section_name, app, model):
     item._model = model
     return item
 
+cross_validation_items = []
+if settings.RALPH2_RALPH3_CROSS_VALIDATION_ENABLED:
+    cross_validation_items = [
+        section(
+            _('Ralph2 Validation'), 'cross_validator', 'CrossValidationRun'
+        ),
+    ]
+
 sitetrees = [
     tree('ralph_admin', items=[
         ralph_item(
@@ -293,6 +301,7 @@ sitetrees = [
                 section(_('Transitions'), 'transitions', 'TransitionModel'),
                 section(_('Report template'), 'reports', 'Report'),
                 section(_('Custom fields'), 'custom_fields', 'CustomField'),
+                *cross_validation_items
             ]
         )
     ])
