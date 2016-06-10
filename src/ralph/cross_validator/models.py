@@ -36,23 +36,23 @@ class Result(TimeStampMixin, models.Model):
     object_pk = models.IntegerField(db_index=True)
 
     old = models.ForeignKey(ImportedObject, null=True)
-    result = JSONField()
+    diff = JSONField()
     errors = JSONField()
 
     @classmethod
-    def create(cls, run, obj, old, result, errors):
+    def create(cls, run, obj, old, diff, errors):
         if old:
             old = ImportedObject.objects.using('default').get(id=old.pk)
         opts = ContentType.objects._get_opts(obj.__class__, True)
         ct = ContentType.objects.using('default').get(
             app_label=opts.app_label, model=opts.model_name
         )
-        result = _remap_result(result)
+        diff = _remap_result(diff)
         cls.objects.create(
             run=run,
             content_type=ct,
             object_pk=obj.pk,
             old=old,
-            result=result,
+            diff=diff,
             errors=errors,
         )

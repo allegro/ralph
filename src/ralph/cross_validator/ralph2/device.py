@@ -1,8 +1,4 @@
-from collections import ChainMap
-
 from django.db import models
-
-from ralph.cross_validator.helpers import get_fitered_dict
 
 
 def generate_meta(app_label, model_name):
@@ -48,11 +44,8 @@ class DeviceInfo(SoftDeletable, models.Model):
     # rack = models.ForeignKey(Rack, null=True, blank=True)
     # # deperecated field, use rack instead
     # rack_old = models.CharField(max_length=10, null=True, blank=True)
-    # slot_no = models.CharField(
-    #     verbose_name=_("slot number"), max_length=3, null=True, blank=True,
-    #     help_text=_('Fill it if asset is blade server'),
-    # )
-    # position = models.IntegerField(null=True)
+    slot_no = models.CharField(max_length=3)
+    position = models.IntegerField(null=True)
     # orientation = models.PositiveIntegerField(
     #     choices=Orientation(),
     #     default=Orientation.front.id,
@@ -89,14 +82,3 @@ class Asset(models.Model):
         except AttributeError:
             device = None
         return device
-
-
-def old_asset_dict(old_id):
-    asset = Asset.objects.get(id=old_id)
-    device = asset.linked_device
-    return dict(
-        ChainMap(
-            get_fitered_dict(device) if device else {},
-            get_fitered_dict(asset)
-        )
-    )

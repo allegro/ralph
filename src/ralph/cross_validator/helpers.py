@@ -45,6 +45,7 @@ def normalize(value):
         return None
     return value
 
+
 def diff(old, new, blacklist=None):
     if old is None:
         old = {}
