@@ -26,11 +26,7 @@ class MultiAddTest(ClientMixin, TestCase):
             admin_site=ralph_site
         )
         self.bo_1 = BackOfficeAssetFactory()
-        self.dc_1 = DataCenterAssetFactory(
-            sn='12345',
-            management_ip=None,
-            management_hostname=None
-        )
+        self.dc_1 = DataCenterAssetFactory(sn='12345')
 
     def tests_multi_add_bo(self):
         post_data = {
