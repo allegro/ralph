@@ -214,7 +214,6 @@ class TestDataCenterAssetForm(RalphTestCase):
         data.update({
             'barcode': '1234',
             'sn': '321',
-            # mgmt fields are now ignored
             'management_ip': '10.20.30.44',
             'management_hostname': 'qwerty.mydc.net',
         })
@@ -223,8 +222,26 @@ class TestDataCenterAssetForm(RalphTestCase):
         )
         self.assertEqual(response.status_code, 302)
         dca = DataCenterAsset.objects.get(barcode='1234')
+        self.assertEqual(dca.management_ip, '10.20.30.44')
+        self.assertEqual(dca.management_hostname, 'qwerty.mydc.net')
+
+    def test_create_new_data_center_asset_without_management(self):
+        data = self._get_initial_data()
+        data.update({
+            'barcode': '1234',
+            'sn': '321',
+            'management_ip': '',
+            'management_hostname': '',
+        })
+        ip_count = IPAddress.objects.count()
+        response = self.client.post(
+            reverse('admin:data_center_datacenterasset_add'), data
+        )
+        self.assertEqual(response.status_code, 302)
+        dca = DataCenterAsset.objects.get(barcode='1234')
         self.assertEqual(dca.management_ip, '')
         self.assertEqual(dca.management_hostname, '')
+        self.assertEqual(IPAddress.objects.count(), ip_count)
 
     def test_get_add_form(self):
         response = self.client.get(

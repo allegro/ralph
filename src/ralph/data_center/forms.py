@@ -23,26 +23,22 @@ class DataCenterAssetForm(RalphAdminForm):
         for field_name in self.ip_fields:
             field = self.fields[field_name]
             field.initial = getattr(self.instance, field_name)
-            if not self.instance.pk:
-                field.widget.attrs['readonly'] = True
 
     def save(self, *args, **kwargs):
-        creating = self.instance.pk is None
         obj = super().save(*args, **kwargs)
-        # FIXME: saving mgmt ip/hostname will not work for creating objects
-        # we should either hide this field or make it working
-        if obj.pk:
-            if (
-                not self.cleaned_data['management_hostname'] and
-                not self.cleaned_data['management_ip']
-            ):
-                if not creating:
-                    del obj.management_ip
-            else:
-                obj.management_ip = self.cleaned_data['management_ip']
-                obj.management_hostname = (
-                    self.cleaned_data['management_hostname']
-                )
+        # save object to enable creating ethernet (and link it to
+        # DataCenterAsset)
+        obj.save()
+        if (
+            not self.cleaned_data['management_hostname'] and
+            not self.cleaned_data['management_ip']
+        ):
+            del obj.management_ip
+        else:
+            obj.management_ip = self.cleaned_data['management_ip']
+            obj.management_hostname = (
+                self.cleaned_data['management_hostname']
+            )
         return obj
 
     def _validate_mgmt_ip_is_unique(self):
