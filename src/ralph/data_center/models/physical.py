@@ -1,17 +1,21 @@
 # -*- coding: utf-8 -*-
+import logging
 import re
 from collections import namedtuple
 from itertools import chain
 
 from django import forms
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 from django.core.validators import RegexValidator
 from django.db import models, transaction
 from django.db.models import Q
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Region
 from ralph.admin.autocomplete import AutocompleteTooltipMixin
+from ralph.admin.helpers import generate_html_link
 from ralph.admin.sites import ralph_site
 from ralph.admin.widgets import AutocompleteWidget
 from ralph.assets.models.assets import Asset, NamedMixin
@@ -24,13 +28,12 @@ from ralph.data_center.models.choices import (
     Orientation,
     RackOrientation
 )
-from ralph.lib.mixins.fields import (
-    NullableCharField,
-    NullableGenericIPAddressField
-)
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
+from ralph.networks.models import IPAddress, Network, NetworkEnvironment
+
+logger = logging.getLogger(__name__)
 
 # i.e. number in range 1-16 and optional postfix 'A' or 'B'
 VALID_SLOT_NUMBER_FORMAT = re.compile('^([1-9][A,B]?|1[0-6][A,B]?)$')
@@ -265,7 +268,56 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
         )
 
 
-class DataCenterAsset(AutocompleteTooltipMixin, Asset):
+class NetworkableBaseObject(models.Model):
+    # TODO: hostname field and not-abstract cls
+
+    @cached_property
+    def network_environment(self):
+        """
+        Return first found network environment for this `DataCenterAsset` based
+        on assigned rack.
+
+        Full algorithm:
+            * find networks which are "connected" to rack assigned to me
+            * find all (distinct) network environments assigned to these
+              networks
+            * return first founded network environment if there is any,
+              otherwise return `None`
+        """
+        if self.rack_id:
+            return NetworkEnvironment.objects.filter(
+                network__racks=self.rack
+            ).distinct().first()
+
+    @property
+    def ipaddresses(self):
+        return IPAddress.objects.filter(ethernet__base_object=self)
+
+    def get_next_free_hostname(self):
+        """
+        Returns next free hostname for this asset based on Rack's network
+        environment (hostnaming template).
+        """
+        if self.network_environment:
+            return self.network_environment.next_free_hostname
+        logger.warning('Network-environment not provided for {}'.format(self))
+        return ''
+
+    def issue_next_free_hostname(self):
+        """
+        Reserve next (currently) free hostname and return it. You should assign
+        this hostname to asset manually (or do with it whatever you like).
+        """
+        if self.network_environment:
+            return self.network_environment.issue_next_free_hostname()
+        logger.warning('Network-environment not provided for {}'.format(self))
+        return ''
+
+    class Meta:
+        abstract = True
+
+
+class DataCenterAsset(NetworkableBaseObject, AutocompleteTooltipMixin, Asset):
     _allow_in_dashboard = True
 
     rack = models.ForeignKey(Rack, null=True, blank=True)
@@ -311,32 +363,15 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
     production_year = models.PositiveSmallIntegerField(null=True, blank=True)
     production_use_date = models.DateField(null=True, blank=True)
 
-    # Temporary solution until core functionality will not be fully migrated to
-    # NG
-    management_ip = NullableGenericIPAddressField(
-        verbose_name=_('Management IP address'),
-        help_text=_('Presented as string.'),
-        unique=True,
-        blank=True,
-        null=True,
-        default=None,
-    )
-    management_hostname = NullableCharField(
-        max_length=100, unique=True, null=True, blank=True
-    )
-
-    # @property
-    # def management_ip(self):
-    #     """A property that gets management IP of a asset."""
-    #     management_ip = self.ipaddress_set.filter(
-    #         is_management=True
-    #     ).order_by('-address').first()
-    #     return management_ip.address if management_ip else ''
-
     autocomplete_tooltip_fields = [
         'rack',
         'barcode',
         'sn',
+    ]
+    _summary_fields = [
+        ('hostname', 'Hostname'),
+        ('location', 'Location'),
+        ('model__name', 'Model'),
     ]
 
     class Meta:
@@ -376,6 +411,111 @@ class DataCenterAsset(AutocompleteTooltipMixin, Asset):
         """Returns cores count assigned to device in Ralph"""
         asset_cores_count = self.model.cores_count if self.model else 0
         return asset_cores_count
+
+    def _get_management_ip(self):
+        eth = self.ethernet.select_related('ipaddress').filter(
+            ipaddress__is_management=True
+        ).first()
+        if eth:
+            return eth.ipaddress
+        return None
+
+    def _get_or_create_management_ip(self):
+        ip = self._get_management_ip()
+        if not ip:
+            eth = self.ethernet.create()
+            ip = IPAddress(ethernet=eth, is_management=True)
+        return ip
+
+    @property
+    def management_ip(self):
+        ip = self._get_management_ip()
+        if ip:
+            return ip.address
+        return ''
+
+    @management_ip.setter
+    def management_ip(self, value):
+        ip = self._get_or_create_management_ip()
+        ip.address = value
+        ip.save()
+
+    @management_ip.deleter
+    def management_ip(self):
+        ip = self._get_management_ip()
+        if ip:
+            ip.delete()
+            ip.ethernet.delete()
+
+    @property
+    def management_hostname(self):
+        ip = self._get_management_ip()
+        if ip:
+            return ip.hostname or ''
+        return ''
+
+    @management_hostname.setter
+    def management_hostname(self, value):
+        ip = self._get_or_create_management_ip()
+        ip.hostname = value
+        ip.save()
+
+    @cached_property
+    def location(self):
+        """
+        Additional column 'location' display filter by:
+        data center, server_room, rack, position (if is blade)
+        """
+        base_url = reverse('admin:data_center_datacenterasset_changelist')
+        position = self.position
+        if self.is_blade:
+            position = generate_html_link(
+                base_url,
+                {
+                    'rack': self.rack_id,
+                    'position__start': self.position,
+                    'position__end': self.position
+                },
+                position,
+            )
+
+        result = [
+            generate_html_link(
+                base_url,
+                {
+                    'rack__server_room__data_center':
+                        self.rack.server_room.data_center_id
+                },
+                self.rack.server_room.data_center.name
+            ),
+            generate_html_link(
+                base_url,
+                {'rack__server_room': self.rack.server_room_id},
+                self.rack.server_room.name
+            ),
+            generate_html_link(
+                base_url,
+                {'rack': self.rack_id},
+                self.rack.name
+            )
+        ] if self.rack else []
+
+        if self.position:
+            result.append(str(position))
+        if self.slot_no:
+            result.append(str(self.slot_no))
+
+        return '&nbsp;/&nbsp;'.join(result) if self.rack else '&mdash;'
+
+    def _get_available_network_environments(self):
+        return list(NetworkEnvironment.objects.filter(
+            network__racks=self.rack_id
+        ).distinct())
+
+    def _get_available_networks(self):
+        return list(Network.objects.filter(
+            racks=self.rack_id
+        ).distinct())
 
     def _validate_orientation(self):
         """

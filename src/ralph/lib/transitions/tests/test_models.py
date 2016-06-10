@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.test import RequestFactory
 
-from ralph.lib.transitions import transition_action
+from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.exceptions import (
     TransitionModelNotFoundError,
     TransitionNotAllowedError
@@ -11,9 +11,6 @@ from ralph.lib.transitions.exceptions import (
 from ralph.lib.transitions.models import (
     _check_and_get_transition,
     _create_graph_from_actions,
-    _sort_graph_topologically,
-    Action,
-    CycleError,
     run_field_transition,
     Transition
 )
@@ -103,6 +100,25 @@ class TransitionsTest(TransitionTestCase):
             [order], transition, request=self.request, field='status'
         )
         self.assertTrue(order.go_to_post_office.runned)
+
+    def test_action_is_added_to_model_when_registered_on_model(self):
+        # action is registered in tests/models.py
+        self.assertTrue(hasattr(Order, 'action_registered_on_model'))
+
+    def test_transition_runs_action_registered_on_model(self):
+        # action is registered in tests/models.py
+        order = Order.objects.create()
+        _, transition, _ = self._create_transition(
+            model=order, name='action_name',
+            source=[OrderStatus.new.id], target=OrderStatus.to_send.id,
+            actions=['action_registered_on_model']
+        )
+
+        self.assertNotEqual(order.remarks, 'done')
+        run_field_transition(
+            [order], transition, request=self.request, field='status'
+        )
+        self.assertEqual(order.remarks, 'done')
 
     def test_run_transition_from_string(self):
         transition_name = 'send'
@@ -199,25 +215,3 @@ class TransitionsTest(TransitionTestCase):
         self.assertEqual(graph, {
             'go_to_post_office': [],
         })
-
-    def test_topological_sort(self):
-        graph = {
-            1: [],
-            2: [1, 4],
-            3: [],
-            4: [1]
-        }
-        order = [a for a in _sort_graph_topologically(graph)]
-        # order of 2 and 3 doesn't matter
-        self.assertEqual(set(order[:2]), set([2, 3]))
-        self.assertEqual(order[2:], [4, 1])
-
-    def test_topological_sort_cycle(self):
-        graph = {
-            1: [2],
-            2: [1, 4],
-            3: [],
-            4: [1]
-        }
-        with self.assertRaises(CycleError):
-            [a for a in _sort_graph_topologically(graph)]

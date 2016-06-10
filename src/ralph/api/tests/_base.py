@@ -69,3 +69,12 @@ class RalphAPITestCase(APITestCase):
     def setUp(self):
         super().setUp()
         self.client.force_authenticate(self.superuser)
+
+    @classmethod
+    def get_full_url(self, url):
+        """
+        Convert URL to fully qualified URL (with protocol and domain).
+        """
+        # testserver is default name of server using by Django test client
+        # see django/test/client.py for details
+        return 'http://testserver{}'.format(url)

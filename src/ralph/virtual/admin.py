@@ -3,27 +3,70 @@ from django.core.urlresolvers import reverse
 from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, RalphTabularInline, register
-from ralph.data_center.models.networks import IPAddress
+from ralph.admin import RalphAdmin, RalphAdminForm, RalphTabularInline, register
+from ralph.admin.filters import IPFilter, TagsListFilter
+from ralph.assets.models.components import Ethernet
+from ralph.data_center.models.virtual import BaseObjectCluster
+from ralph.networks.forms import SimpleNetworkForm
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
     CloudProject,
     CloudProvider,
-    VirtualServer
+    VirtualServer,
+    VirtualServerType
 )
+
+
+@register(VirtualServerType)
+class VirtualServerTypeForm(RalphAdmin):
+    pass
+
+
+class VirtualServerForm(RalphAdminForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['parent'].label = _('Hypervisor')
+        self.fields['parent'].required = True
 
 
 @register(VirtualServer)
 class VirtualServerAdmin(RalphAdmin):
-    pass
+    form = VirtualServerForm
+    search_fields = ['hostname', 'sn']
+    list_filter = [
+        'sn', 'hostname', 'service_env', 'configuration_path', IPFilter,
+        'parent', ('tags', TagsListFilter)
+    ]
+    list_display = [
+        'hostname', 'type', 'sn', 'service_env', 'configuration_path'
+    ]
+    raw_id_fields = ['parent', 'service_env', 'configuration_path']
+    fields = [
+        'hostname', 'type', 'sn', 'service_env', 'configuration_path',
+        'parent', 'tags'
+    ]
+    list_select_related = [
+        'service_env__service', 'service_env__environment', 'type',
+        'configuration_path'
+    ]
+
+    # TODO: add the same tabs as in DCAsset
+    class ClusterBaseObjectInline(RalphTabularInline):
+        model = BaseObjectCluster
+        fk_name = 'base_object'
+        raw_id_fields = ('cluster',)
+        extra = 1
+        verbose_name = _('Base Object')
+
+    inlines = [ClusterBaseObjectInline]
 
 
 class CloudHostTabularInline(RalphTabularInline):
     can_delete = False
     model = CloudHost
     fk_name = 'parent'
-    fields = ['get_hostname', 'get_hypervisor', 'get_ipaddresses', 'created',
+    fields = ['get_hostname', 'get_hypervisor', 'get_ip_addresses', 'created',
               'tags', 'remarks']
     readonly_fields = fields
 
@@ -48,9 +91,15 @@ class CloudHostTabularInline(RalphTabularInline):
     get_hypervisor.short_description = _('Hypervisor')
     get_hypervisor.allow_tags = True
 
-    def get_ipaddresses(self, obj):
-        return '\n'.join(obj.ip_addresses)
-    get_ipaddresses.short_description = _('IP Addresses')
+    def get_ip_addresses(self, obj):
+        ips = obj.ethernet.values_list(
+            'ipaddress', flat=True
+        ).select_related('ipaddress').all()
+        if not ips:
+            return '&ndash;'
+        return '\n'.join(ips)
+    get_ip_addresses.short_description = _('IP Addresses')
+    get_ip_addresses.allow_tags = True
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -58,15 +107,23 @@ class CloudHostTabularInline(RalphTabularInline):
     def get_queryset(self, *args, **kwargs):
         return super().get_queryset(*args, **kwargs).select_related(
             'hypervisor',
-        ).prefetch_related(
-            'ipaddress_set', 'tags'
-        )
+        ).prefetch_related('tags')
+
+
+class CloudHostNetworkForm(SimpleNetworkForm):
+    class Meta(SimpleNetworkForm.Meta):
+        fields = ['address', 'hostname']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in ['address', 'hostname']:
+            self.fields[field].widget.attrs['readonly'] = True
 
 
 class CloudNetworkInline(RalphTabularInline):
     can_delete = False
-    readonly_fields = fields = ['address', 'hostname']
-    model = IPAddress
+    form = CloudHostNetworkForm
+    model = Ethernet
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -86,8 +143,7 @@ class CloudHostAdmin(RalphAdmin):
                        'get_cloudproject', 'get_cloudprovider',
                        'get_cpu', 'get_disk', 'get_hypervisor', 'get_memory',
                        'modified', 'parent', 'service_env', 'image_name']
-    search_fields = ['cloudflavor__name', 'hostname', 'host_id',
-                     'ipaddress__address']
+    search_fields = ['cloudflavor__name', 'hostname', 'host_id']
     raw_id_override_parent = {'parent': CloudProject}
     inlines = [CloudNetworkInline]
     fieldsets = (
@@ -105,9 +161,7 @@ class CloudHostAdmin(RalphAdmin):
     )
 
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related(
-            'ipaddress_set', 'tags'
-        )
+        return super().get_queryset(request).prefetch_related('tags')
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -152,8 +206,14 @@ class CloudHostAdmin(RalphAdmin):
     cloudflavor_name.allow_tags = True
 
     def get_ip_addresses(self, obj):
-        return '\n'.join(obj.ip_addresses)
+        ips = obj.ethernet.values_list(
+            'ipaddress__address', flat=True
+        ).select_related('ipaddress').all()
+        if not ips:
+            return '&ndash;'
+        return '\n'.join(ips)
     get_ip_addresses.short_description = _('IP Addresses')
+    get_ip_addresses.allow_tags = True
 
     def get_cloudproject(self, obj):
         return '<a href="{}">{}</a>'.format(
@@ -177,7 +237,7 @@ class CloudHostAdmin(RalphAdmin):
     get_memory.short_description = _('RAM size (MiB)')
 
     def get_disk(self, obj):
-        return obj.cloudflavor.disk/1024
+        return obj.cloudflavor.disk / 1024
     get_disk.short_description = _('Disk size (GiB)')
 
 
@@ -220,7 +280,7 @@ class CloudFlavorAdmin(RalphAdmin):
     get_memory.short_description = _('RAM size (MiB)')
 
     def get_disk(self, obj):
-        return obj.disk/1024
+        return obj.disk / 1024
     get_disk.short_description = _('Disk size (GiB)')
 
     def instances_count(self, obj):

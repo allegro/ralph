@@ -5,8 +5,8 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from ralph.assets.models.components import ComponentModel
 from ralph.assets.tests.factories import DataCenterAssetModelFactory
-from ralph.data_center.models.networks import IPAddress
 from ralph.data_center.models.physical import DataCenterAsset
+from ralph.networks.models.networks import IPAddress
 from ralph.tests import RalphTestCase
 from ralph.virtual.management.commands.openstack_sync import Command
 from ralph.virtual.models import (
@@ -49,9 +49,8 @@ class TestOpenstackSync(RalphTestCase):
             parent=self.cloud_project,
             cloudflavor=self.cloud_flavor[1]
         )
-        host.ipaddress_set.create(address='2.2.3.4')
-
-        IPAddress.objects.create(address='1.2.3.4')
+        IPAddress.objects.create(base_object=host, address='2.2.3.4')
+        IPAddress.objects.create(base_object=host, address='1.2.3.4')
 
         DataCenterAsset.objects.create(
             hostname='hypervisor_os1.dcn.net',
@@ -74,7 +73,7 @@ class TestOpenstackSync(RalphTestCase):
 
         for host_id, test_host in TEST_HOSTS.items():
             host = CloudHost.objects.get(host_id=host_id)
-            ips = map(lambda x: x.address, host.ipaddress_set.all())
+            ips = host.ip_addresses
             self.assertEqual(host.hostname, test_host['hostname'])
             self.assertIn(test_host['tag'], host.tags.names())
             self.assertEqual(self.cloud_provider, host.cloudprovider)
@@ -121,7 +120,7 @@ class TestOpenstackSync(RalphTestCase):
             self.assertEqual(self.cloud_provider, ralph_project.cloudprovider)
             for host_id, host in OPENSTACK_DATA[project_id]['servers'].items():
                 ralph_host = CloudHost.objects.get(host_id=host_id)
-                ips = map(lambda x: x.address, ralph_host.ipaddress_set.all())
+                ips = ralph_host.ip_addresses
                 self.assertEqual(ralph_host.hostname, host['hostname'])
                 self.assertIn(host['tag'], ralph_host.tags.names())
                 self.assertEqual(set(host['ips']), set(ips))
@@ -143,5 +142,3 @@ class TestOpenstackSync(RalphTestCase):
             CloudHost.objects.get,
             host_id='host_id1',
         )
-        ip = IPAddress.objects.get(address='2.2.3.4')
-        self.assertEqual(ip.base_object, None)

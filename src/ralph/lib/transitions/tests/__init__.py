@@ -26,10 +26,10 @@ class TransitionTestCase(TestCase):
 
     def _create_transition(
         self, model, name, actions=None, field='status',
-        source=None, target=None
+        source=None, target=None, **kwargs
     ):
         transition_model = model.transition_models[field]
-        transition_kwargs = {'name': name, 'model': transition_model}
+        transition_kwargs = dict(name=name, model=transition_model, **kwargs)
         if source:
             transition_kwargs['source'] = source
         if target:

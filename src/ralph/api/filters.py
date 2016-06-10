@@ -6,7 +6,7 @@ from functools import reduce
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models
-from rest_framework.filters import BaseFilterBackend
+from rest_framework.filters import BaseFilterBackend, DjangoFilterBackend
 
 from ralph.admin.helpers import get_field_by_relation_path
 from ralph.admin.sites import ralph_site
@@ -14,6 +14,15 @@ from ralph.data_importer.models import ImportedObjects
 from ralph.lib.mixins.models import TaggableMixin
 
 logger = logging.getLogger(__name__)
+
+
+class AdditionalDjangoFilterBackend(DjangoFilterBackend):
+    """
+    Allows to spcify additional FilterSet for viewset (besides standard one,
+    which uses fields from `filter_fields` property.
+    """
+    def get_filter_class(self, view, queryset=None):
+        return getattr(view, 'additional_filter_class', None)
 
 
 class TagsFilterBackend(BaseFilterBackend):

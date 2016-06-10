@@ -18,10 +18,85 @@ from ralph.assets.models.assets import (
     Service,
     ServiceEnvironment
 )
-from ralph.assets.models.components import ComponentModel, GenericComponent
+from ralph.assets.models.components import (
+    ComponentModel,
+    Ethernet,
+    GenericComponent
+)
+from ralph.assets.models.configuration import (
+    ConfigurationClass,
+    ConfigurationModule
+)
 from ralph.data_importer import resources
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
-from ralph.lib.table import Table
+from ralph.lib.table import Table, TableWithUrl
+
+
+@register(ConfigurationClass)
+class ConfigurationClassAdmin(RalphAdmin):
+    fields = ['class_name', 'module', 'path']
+    readonly_fields = ['path']
+    raw_id_fields = ['module']
+    search_fields = [
+        'path',
+    ]
+    list_display = ['class_name', 'module', 'path', 'objects_count']
+    list_select_related = ['module']
+    list_filter = ['class_name', 'module']
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs = qs.annotate(objects_count=Count('baseobject'))
+        return qs
+
+    def objects_count(self, instance):
+        return instance.objects_count
+    objects_count.short_description = _('Objects count')
+    objects_count.admin_order_field = 'objects_count'
+
+
+@register(ConfigurationModule)
+class ConfigurationModuleAdmin(RalphMPTTAdmin):
+    list_display = ['name']
+    search_fields = ['name']
+    readonly_fields = [
+        'show_children_modules', 'show_children_classes'
+    ]
+    raw_id_fields = ['parent']
+    fieldsets = (
+        (_('Basic info'), {
+            'fields': [
+                'name', 'parent', 'support_team'
+            ]
+        }),
+        (_('Relations'), {
+            'fields': [
+                'show_children_modules', 'show_children_classes'
+            ]
+        })
+    )
+
+    def show_children_modules(self, module):
+        if not module or not module.pk:
+            return '&ndash;'
+        return TableWithUrl(
+            module.children_modules.all(),
+            ['name'],
+            url_field='name'
+        ).render()
+    show_children_modules.allow_tags = True
+    show_children_modules.short_description = _('Children modules')
+
+    def show_children_classes(self, module):
+        if not module or not module.pk:
+            return '&ndash;'
+        return TableWithUrl(
+            module.configuration_classes.all(),
+            ['name'],
+            url_field='name'
+        ).render()
+    show_children_classes.allow_tags = True
+    show_children_classes.short_description = _('Children classes')
 
 
 @register(ServiceEnvironment)
@@ -165,6 +240,11 @@ class ComponentModelAdmin(RalphAdmin):
 @register(GenericComponent)
 class GenericComponentAdmin(RalphAdmin):
     search_fields = ['name']
+
+
+@register(Ethernet)
+class EthernetAdmin(RalphAdmin):
+    search_fields = ['label', 'mac']
 
 
 @register(Asset)

@@ -26,11 +26,7 @@ class MultiAddTest(ClientMixin, TestCase):
             admin_site=ralph_site
         )
         self.bo_1 = BackOfficeAssetFactory()
-        self.dc_1 = DataCenterAssetFactory(
-            sn='12345',
-            management_ip=None,
-            management_hostname=None
-        )
+        self.dc_1 = DataCenterAssetFactory(sn='12345')
 
     def tests_multi_add_bo(self):
         post_data = {
@@ -214,85 +210,3 @@ class MultiAddTest(ClientMixin, TestCase):
             'position',
             'Enter a valid number.'
         )
-
-    def test_multi_add_dc_with_clearing_mgmt(self):
-        dca = DataCenterAssetFactory(
-            management_ip='10.20.30.40',
-            management_hostname='abc.def'
-        )
-        dca_count = DataCenterAsset.objects.count()
-        dca_count_empty_mgmt = DataCenterAsset.objects.filter(
-            management_ip__isnull=True,
-            management_hostname__isnull=True,
-        ).count()
-        post_data = {
-            'sn': 'dc_sn,dc_sn2',
-            'barcode': 'dc_barcode,dc_barcode2'
-        }
-        response = self.client.post(
-            reverse(
-                self.dc_admin.get_url_name(),
-                args=[dca.pk]
-            ),
-            post_data,
-            follow=True
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(DataCenterAsset.objects.count(), dca_count + 2)
-
-        result = DataCenterAsset.objects.filter(
-            management_ip='10.20.30.40',
-            management_hostname='abc.def',
-        ).count()
-        self.assertEqual(result, 1)
-
-        result = DataCenterAsset.objects.filter(
-            management_ip__isnull=True,
-            management_hostname__isnull=True,
-        ).count()
-        self.assertEqual(result, dca_count_empty_mgmt + 2)
-
-    @override_settings(MULTIADD_DATA_CENTER_ASSET_FIELDS=[
-        {'field': 'sn', 'allow_duplicates': False},
-        {'field': 'barcode', 'allow_duplicates': False},
-        {'field': 'management_ip', 'allow_duplicates': False},
-        {'field': 'management_hostname', 'allow_duplicates': False},
-    ])
-    def test_multi_add_dc_with_clearing_mgmt_and_mgmt_fields(self):
-        dca = DataCenterAssetFactory(
-            management_ip='10.20.30.40',
-            management_hostname='abc.def'
-        )
-        dca_count = DataCenterAsset.objects.count()
-        post_data = {
-            'sn': 'dc_sn,dc_sn2',
-            'barcode': 'dc_barcode,dc_barcode2',
-            'management_ip': '10.20.30.41,10.20.30.42',
-            'management_hostname': 'abc.def2,abc.def3',
-        }
-        response = self.client.post(
-            reverse(
-                self.dc_admin.get_url_name(),
-                args=[dca.pk]
-            ),
-            post_data,
-            follow=True
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(DataCenterAsset.objects.count(), dca_count + 2)
-
-        result = DataCenterAsset.objects.filter(
-            management_ip='10.20.30.41',
-            management_hostname='abc.def2',
-            sn='dc_sn',
-            barcode='dc_barcode',
-        ).count()
-        self.assertEqual(result, 1)
-
-        result = DataCenterAsset.objects.filter(
-            management_ip='10.20.30.42',
-            management_hostname='abc.def3',
-            sn='dc_sn2',
-            barcode='dc_barcode2',
-        ).count()
-        self.assertEqual(result, 1)

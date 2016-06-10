@@ -36,6 +36,8 @@ before_install:
     - pip install flake8 isort
     - make flake
     - export RALPH_VERSION=$(cat VERSION)
+    - export REDIS_PORT=6379
+    - docker run -d -p "$REDIS_PORT:6379" redis:3.0;
     - export NEW_TAG=$RALPH_VERSION-snapshot-$(date "+%Y%m%d")-$TRAVIS_BUILD_NUMBER
     - if [[ $TEST_DB_ENGINE == mysql ]]; then docker run -d -v $(pwd)/docker/mysql.cnf:/etc/mysql/conf.d/mysql.cnf -p "3306:3306" -e "MYSQL_ALLOW_EMPTY_PASSWORD=yes" -e "MYSQL_DATABASE=ralph_ng" -e "MYSQL_ROOT_PASSWORD=root" -e "MYSQL_USER=travis" -e "MYSQL_PASSWORD=travis" mysql:5.6; fi
     - if [[ $TEST_DB_ENGINE == psql ]]; then
@@ -51,16 +53,15 @@ install:
     - gulp
     - make install-test
     - pip install coveralls
-    - pip install pylint
     - pip install django==$DJANGO_VERSION
 
 script:
+    - python contrib/dhcp_agent/test.py
     - make coveralls
     - ./scripts/check_missing_migrations.sh
 
 after_success:
     - if [[ $TEST_DB_ENGINE == mysql ]]; then coveralls; fi
-    - python <(curl -s https://raw.githubusercontent.com/TouK/sputnik-ci/master/sputnik-ci.py)
 
 before_deploy:
     - sudo add-apt-repository -y ppa:spotify-jyrki/dh-virtualenv
