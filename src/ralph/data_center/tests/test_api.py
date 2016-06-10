@@ -176,6 +176,16 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             response.data['count'], 1
         )
 
+    def test_filter_by_service_uid2(self):
+        url = reverse('datacenterasset-list') + '?service_env__service__uid={}'.format(  # noqa
+            self.dc_asset.service_env.service.uid,
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['count'], 1
+        )
+
     def test_filter_by_service_name(self):
         url = reverse('datacenterasset-list') + '?service={}'.format(
             self.dc_asset.service_env.service.name,
