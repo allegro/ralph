@@ -479,7 +479,10 @@ class BaseObjectAPITests(RalphAPITestCase):
         )
         self.bo_asset.tags.add('tag1')
         self.dc_asset = DataCenterAssetFactory(
-            barcode='12543', price='9.00'
+            barcode='12543', price='9.00',
+            service_env__service__name='test-service',
+            service_env__service__uid='sc-123',
+            service_env__environment__name='prod',
         )
         self.dc_asset.tags.add('tag2')
         self.ip = IPAddressFactory(
@@ -503,6 +506,15 @@ class BaseObjectAPITests(RalphAPITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['barcode'], '12345')
+
+    def test_get_asset_service_simple_details(self):
+        url = reverse('baseobject-detail', args=(self.dc_asset.id,))
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        service_env = response.data['service_env']
+        self.assertEqual(service_env['service_uid'], 'sc-123')
+        self.assertEqual(service_env['service'], 'test-service')
+        self.assertEqual(service_env['environment'], 'prod')
 
     def test_icontains_polymorphic(self):
         url = '{}?{}'.format(
