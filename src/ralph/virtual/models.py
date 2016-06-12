@@ -220,7 +220,7 @@ class VirtualServerType(
     pass
 
 
-class VirtualServer(NetworkableBaseObject, BaseObject):
+class VirtualServer(AdminAbsoluteUrlMixin, NetworkableBaseObject, BaseObject):
     # parent field for VirtualServer is hypervisor!
     # TODO: limit parent to DataCenterAsset
     type = models.ForeignKey(VirtualServerType, related_name='virtual_servers')
