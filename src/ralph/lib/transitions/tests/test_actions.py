@@ -92,15 +92,14 @@ class TransitionActionTest(TransitionTestCase):
         ).last()
 
     def test_sync_api(self):
-        request = self.api_client.post(
+        response = self.api_client.post(
             reverse(
                 'transition-view',
                 args=(self.transition_1.id, self.bo.pk)
             ),
             self.prepare_api_data()
         )
-        self.assertEqual(request.data['status'], True)
-
+        self.assertEqual(response.status_code, 201)
         bo = BackOfficeAsset.objects.get(pk=self.bo)
         self.assertEqual(bo.owner_id, self.user.id)
         self.assertEqual(bo.warehouse_id, self.warehouse_1.id)
@@ -110,7 +109,7 @@ class TransitionActionTest(TransitionTestCase):
     def test_sync_api_validation_error(self):
         data = self.prepare_api_data()
         data['user'] = ''
-        request = self.api_client.post(
+        response = self.api_client.post(
             reverse(
                 'transition-view',
                 args=(self.transition_1.id, self.bo.pk)
@@ -118,9 +117,9 @@ class TransitionActionTest(TransitionTestCase):
             data
         )
 
-        self.assertEqual(request.data['status'], False)
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            request.data['errors']['user'],
+            response.data['user'],
             ['This field is required.']
         )
 
@@ -163,14 +162,14 @@ class TransitionActionTest(TransitionTestCase):
         )
 
     def test_async_api(self):
-        request = self.api_client.post(
+        response = self.api_client.post(
             reverse(
                 'transition-view',
                 args=(self.transition_2.id, self.bo.pk)
             ),
             self.prepare_api_data()
         )
-        self.assertEqual(request.data['status'], True)
+        self.assertEqual(response.status_code, 202)
         bo = BackOfficeAsset.objects.get(pk=self.bo)
         self.assertEqual(bo.owner_id, self.user.id)
         self.assertEqual(bo.warehouse_id, self.warehouse_1.id)
