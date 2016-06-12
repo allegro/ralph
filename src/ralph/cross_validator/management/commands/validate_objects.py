@@ -17,6 +17,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         check_objects(
             chain(
-                *[model.objects.all()[1:10] for model in mappers.keys()]
+                *[model.objects.all() for model in mappers.keys()]
             )
         )

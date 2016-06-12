@@ -36,14 +36,22 @@ def _get_values(new):
         errors.append('ObjectDoesNotExist')
 
     values['blacklist'] = mapping['blacklist']
-    for field_name, fields_names in mapping['fields'].items():
-        old_field_path, new_field_path = fields_names
-        values['old'].update(
-            {field_name: get_value(old, old_field_path, errors)}
-        )
-        values['new'].update(
-            {field_name: get_value(new, new_field_path, errors)}
-        )
+    for field_name, fields in mapping['fields'].items():
+        if callable(fields):
+            if old is None:
+                continue
+            change_dict = fields(old, new)
+            if bool(change_dict):
+                values['old'].update({field_name: change_dict['old']})
+                values['new'].update({field_name: change_dict['new']})
+        else:
+            old_field_path, new_field_path = fields
+            values['old'].update(
+                {field_name: get_value(old, old_field_path, errors)}
+            )
+            values['new'].update(
+                {field_name: get_value(new, new_field_path, errors)}
+            )
 
     return values, errors
 

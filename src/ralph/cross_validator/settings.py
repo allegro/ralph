@@ -6,12 +6,6 @@ from ralph.settings.base import *
 
 DEBUG = True
 
-INSTALLED_APPS = (
-    'django.contrib.contenttypes',
-    'ralph.data_importer',
-    'ralph.cross_validator',
-)
-
 DATABASES.update({
     'ralph2': {
         'ENGINE': 'django.db.backends.mysql',

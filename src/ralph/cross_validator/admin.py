@@ -36,7 +36,7 @@ class ResultAdmin(RalphAdmin):
             diff_pos = [
                 i for i in range(min(len(new), len(old))) if new[i] != old[i]
             ]
-            if len(diff_pos) >= 1 and len(diff_pos) <= 4:
+            if len(diff_pos) >= 1 and len(diff_pos) <= 3:
                 html += '<ul><strong>{}</strong></ul><li style="font-family:monospace">{}</li><li style="font-family:monospace">{}</li>'.format(  # noqa
                     item, format_diff(diff_pos, old), format_diff(diff_pos, new)
                 )
