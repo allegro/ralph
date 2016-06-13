@@ -320,7 +320,7 @@ class Network(
     def get_subnetworks(self):
         return self.get_descendants()
 
-    def reserve_margin_addresses(self, bottom_count=None, top_count=None):
+    def reserve_margin_addresses(self, bottom_count=0, top_count=0):
         ips = []
         existing_ips = set(IPAddress.objects.filter(
             Q(

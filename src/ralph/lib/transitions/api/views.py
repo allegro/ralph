@@ -7,6 +7,8 @@ from rest_framework.views import APIView
 
 from ralph.api import RalphReadOnlyAPIViewSet
 from ralph.api.fields import ModelMultipleChoiceField
+from ralph.lib.mixins.api import ChoiceFieldWithOtherOptionField
+from ralph.lib.mixins.forms import ChoiceFieldWithOtherOption
 from ralph.lib.transitions.api.serializers import (
     TransitionActionSerializer,
     TransitionJobSerializer,
@@ -42,6 +44,10 @@ FIELD_MAP = {
     forms.ChoiceField: (serializers.ChoiceField, [
         'initial', 'required', 'choices'
     ]),
+    ChoiceFieldWithOtherOption: (ChoiceFieldWithOtherOptionField, [
+        'initial', 'required', 'choices', 'auto_other_choice',
+        'other_option_label'
+    ])
 }
 
 
