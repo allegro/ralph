@@ -140,10 +140,11 @@ class ServiceEnvironmentSimpleSerializer(RalphAPISerializer):
     environment = serializers.CharField(
         source='environment_name', read_only=True
     )
+    service_uid = serializers.CharField(read_only=True)
 
     class Meta:
         model = ServiceEnvironment
-        fields = ('id', 'service', 'environment', 'url')
+        fields = ('id', 'service', 'environment', 'url', 'service_uid')
         _skip_tags_field = True
 
 

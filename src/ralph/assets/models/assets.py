@@ -100,6 +100,10 @@ class ServiceEnvironment(BaseObject):
         return self.service.name
 
     @property
+    def service_uid(self):
+        return self.service.uid
+
+    @property
     def environment_name(self):
         return self.environment.name
 
