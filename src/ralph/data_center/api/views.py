@@ -53,7 +53,11 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         'connections',
         'tags',
     ]
-    filter_fields = ['service_env__service__uid']
+    filter_fields = [
+        'service_env__service__uid',
+        'service_env__service__name',
+        'service_env__service__id',
+    ]
     additional_filter_class = DataCenterAssetFilterSet
 
 
