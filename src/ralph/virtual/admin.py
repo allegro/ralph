@@ -8,6 +8,7 @@ from ralph.admin.filters import IPFilter, TagsListFilter
 from ralph.assets.models.components import Ethernet
 from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.networks.forms import SimpleNetworkForm
+from ralph.networks.views import NetworkView
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -30,6 +31,10 @@ class VirtualServerForm(RalphAdminForm):
         self.fields['parent'].required = True
 
 
+class VirtualServerNetworkView(NetworkView):
+    pass
+
+
 @register(VirtualServer)
 class VirtualServerAdmin(RalphAdmin):
     form = VirtualServerForm
@@ -50,6 +55,8 @@ class VirtualServerAdmin(RalphAdmin):
         'service_env__service', 'service_env__environment', 'type',
         'configuration_path'
     ]
+
+    change_views = [VirtualServerNetworkView]
 
     # TODO: add the same tabs as in DCAsset
     class ClusterBaseObjectInline(RalphTabularInline):

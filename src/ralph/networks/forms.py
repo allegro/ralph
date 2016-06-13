@@ -6,7 +6,6 @@ from django.forms.formsets import DELETION_FIELD_NAME
 from django.forms.models import BaseInlineFormSet
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphTabularInline
 from ralph.assets.models.components import Ethernet
 from ralph.networks.models import IPAddress
 
@@ -247,10 +246,3 @@ class NetworkInlineFormset(BaseInlineFormSet):
                 raise ValidationError(
                     "Cannot delete entry if its exposed in DHCP"
                 )
-
-
-class NetworkInline(RalphTabularInline):
-    form = NetworkForm
-    formset = NetworkInlineFormset
-    model = Ethernet
-    exclude = ['model']

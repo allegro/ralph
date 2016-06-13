@@ -99,9 +99,23 @@ class AdminViewBase(type):
         admin_attrs = {
             key: attrs.pop(key, []) for key in admin_whitelist
         }
-        admin_attrs['change_form_template'] = base_template
-        admin_attrs['fieldsets'] = admin_attrs['fieldsets'] or empty_fieldset
         new_class = super().__new__(cls, name, bases, attrs)
+
+        # create admin class
+        admin_attrs['change_form_template'] = base_template
+        # rewrite admin fields from bases
+        for base in bases:
+            base_admin_class = getattr(base, 'admin_class', None)
+            if (
+                not base_admin_class or
+                not issubclass(base_admin_class, RalphAdmin)
+            ):
+                continue
+            for field in admin_whitelist + ['change_form_template']:
+                admin_attrs[field] = (
+                    admin_attrs[field] or getattr(base_admin_class, field, None)
+                )
+        admin_attrs['fieldsets'] = admin_attrs['fieldsets'] or empty_fieldset
         new_class.admin_class = type('AdminView', (RalphAdmin,), admin_attrs)
         return new_class
 

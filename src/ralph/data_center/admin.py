@@ -42,8 +42,9 @@ from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.table import Table
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
-from ralph.networks.forms import NetworkInline, SimpleNetworkForm
+from ralph.networks.forms import SimpleNetworkForm
 from ralph.networks.models.networks import Network
+from ralph.networks.views import NetworkWithTerminatorsView
 from ralph.operations.views import OperationViewReadOnlyForExisiting
 from ralph.supports.models import BaseObjectsSupport
 
@@ -150,16 +151,8 @@ class NetworkTerminatorReadOnlyInline(RalphTabularM2MInline):
         return False
 
 
-class NetworkView(RalphDetailViewAdmin):
-    icon = 'chain'
-    name = 'network'
-    label = 'Network'
-    url_name = 'network'
-
-    inlines = [
-        NetworkInline,
-        NetworkTerminatorReadOnlyInline
-    ]
+class DataCenterAssetNetworkView(NetworkWithTerminatorsView):
+    pass
 
 
 class DataCenterAssetSupport(RalphDetailViewAdmin):
@@ -227,11 +220,11 @@ class DataCenterAssetAdmin(
     actions = ['bulk_edit_action']
     change_views = [
         DataCenterAssetComponents,
+        DataCenterAssetNetworkView,
         DataCenterAssetSecurityInfo,
         DataCenterAssetLicence,
         DataCenterAssetSupport,
         DataCenterAssetOperation,
-        NetworkView,
     ]
     form = DataCenterAssetForm
     if settings.ENABLE_DNSAAS_INTEGRATION:

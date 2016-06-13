@@ -5,7 +5,7 @@ from ralph.admin import RalphAdmin, register
 from ralph.admin.m2m import RalphTabularM2MInline
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
-from ralph.networks.forms import NetworkInline
+from ralph.networks.views import NetworkInline
 from ralph.tests.models import (
     Bar,
     Car,
