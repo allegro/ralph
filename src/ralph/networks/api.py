@@ -4,7 +4,7 @@ from rest_framework.exceptions import ValidationError
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import RalphAPISaveSerializer
-from ralph.assets.api.serializers import EthernetSerializer
+# from ralph.assets.api.serializers import EthernetSerializer
 from ralph.networks.models import (
     IPAddress,
     Network,
@@ -41,7 +41,6 @@ class NetworkSerializer(RalphAPISerializer):
 
 
 class IPAddressSerializer(RalphAPISerializer):
-    ethernet = EthernetSerializer()
     network = NetworkSimpleSerializer()
 
     class Meta:
@@ -80,7 +79,7 @@ class IPAddressViewSet(RalphAPIViewSet):
     ]
     filter_fields = [
         'hostname', 'ethernet__base_object', 'network', 'network__address',
-        'status', 'is_public', 'is_management', 'dhcp_expose'
+        'status', 'is_public', 'is_management', 'dhcp_expose', 'ethernet__mac',
     ]
 
     def destroy(self, request, *args, **kwargs):

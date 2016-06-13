@@ -30,6 +30,7 @@ from ralph.assets.models import (
 from ralph.assets.models.components import Ethernet
 from ralph.lib.custom_fields.api import WithCustomFieldsSerializerMixin
 from ralph.licences.api_simple import SimpleBaseObjectLicenceSerializer
+from ralph.networks.api_simple import IPAddressSimpleSerializer
 
 
 class BusinessSegmentSerializer(RalphAPISerializer):
@@ -255,7 +256,16 @@ class AssetSerializer(BaseObjectSerializer):
         model = Asset
 
 
-class EthernetSerializer(RalphAPISerializer):
+class EthernetSimpleSerializer(RalphAPISerializer):
+    ipaddress = IPAddressSimpleSerializer()
+
+    class Meta:
+        model = Ethernet
+        fields = ('id', 'mac', 'ipaddress', 'url')
+
+
+class EthernetSerializer(EthernetSimpleSerializer):
+
     class Meta:
         model = Ethernet
         depth = 1

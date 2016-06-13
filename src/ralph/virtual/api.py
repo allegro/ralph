@@ -10,6 +10,7 @@ from ralph.assets.api.serializers import (
 )
 from ralph.data_center.api.serializers import (
     ClusterSimpleSerializer,
+    ComponentSerializerMixin,
     DataCenterAssetSimpleSerializer
 )
 from ralph.data_center.models import DataCenterAsset
@@ -123,7 +124,8 @@ class VirtualServerTypeSerializer(RalphAPISerializer):
         model = VirtualServerType
 
 
-class VirtualServerSerializer(BaseObjectSerializer):
+# TODO: select related
+class VirtualServerSerializer(ComponentSerializerMixin, BaseObjectSerializer):
     type = VirtualServerTypeSerializer()
     # TODO: cast BaseObject to DataCenterAsset for hypervisor field
     hypervisor = DataCenterAssetSimpleSerializer(source='parent')

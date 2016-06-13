@@ -100,7 +100,7 @@ class AssetHolderViewSet(RalphAPIViewSet):
 class EthernetViewSet(RalphAPIViewSet):
     queryset = models.Ethernet.objects.all()
     serializer_class = serializers.EthernetSerializer
-    filter_fields = ['base_object']
+    filter_fields = ['base_object', 'ipaddress__address']
     prefetch_related = ['model', 'base_object', 'base_object__tags']
 
     def destroy(self, request, *args, **kwargs):

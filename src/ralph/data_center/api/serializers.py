@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from rest_framework import serializers
+from rest_framework import fields, serializers
 
 from ralph.api import RalphAPISerializer
 from ralph.assets.api.serializers import AssetSerializer, BaseObjectSerializer
-from ralph.assets.models.components import Ethernet
+from ralph.assets.api.serializers import EthernetSimpleSerializer
 from ralph.data_center.models import (
     Accessory,
     BaseObjectCluster,
@@ -81,21 +81,13 @@ class SimpleRackSerializer(RalphAPISerializer):
         exclude = ('accessories',)
 
 
-class EthernetSerializer(RalphAPISerializer):
-    class Meta:
-        model = Ethernet
-        depth = 1
-
-
+# used by DataCenterAsset and VirtualServer serializers
 class ComponentSerializerMixin(serializers.Serializer):
-    # ethernets = EthernetSerializer()
-    # disk_shares = ..
-    # ipaddresses = SimpleIPAddressesSerializer()
-    # mac_addresses = SimpleRackSerializer()
-    service = serializers.SerializerMethodField('get_service_env')
+    ethernet = EthernetSimpleSerializer(many=True)
+    ipaddresses = fields.SerializerMethodField()
 
-    def get_service_env(self, obj):
-        return ''
+    def get_ipaddresses(self, instance):
+        return instance.ipaddresses.values_list('address', flat=True)
 
 
 class RackSerializer(RalphAPISerializer):
