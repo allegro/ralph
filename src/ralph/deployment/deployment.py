@@ -326,7 +326,7 @@ def assign_new_hostname(cls, instances, network_environment, **kwargs):
             'exclude_from_history': True,  # TODO: history
         },
     },
-    run_after=['assign_new_hostname'],
+    run_after=['assign_new_hostname', 'clean_ipaddresses', 'clean_dhcp'],
     precondition=check_mac_address
 )
 def create_dhcp_entries(cls, instances, ip_or_network, ethernet, **kwargs):
@@ -378,13 +378,15 @@ def _create_dhcp_entries_for_single_instance(
             pk=ip_or_network['value']
         )
         ip = network.issue_next_free_ip()
-    ethernet = Ethernet.objects.get(pk=ethernet_id)
+    logger.info('Assigning {} to {}'.format(ip, instance))
+    # pass base_object as param to make sure that this ethernet is assigned
+    # to currently transitioned instance
+    ethernet = Ethernet.objects.get(pk=ethernet_id, base_object=instance)
     ip.hostname = instance.hostname
+    logger.info('Bounding {} to {} ethernet'.format(ip, ethernet))
     ip.ethernet = ethernet
     ip.dhcp_expose = True
     ip.save()
-    # TODO when DHCPEntry model will not be proxy to IPAddress
-    # DHCPEntry.objects.create(mac=ethernet.mac, ip=ip.address)
     return ip, ethernet
 
 
