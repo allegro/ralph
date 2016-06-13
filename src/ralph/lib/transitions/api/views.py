@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django import forms
 from django.core.urlresolvers import reverse
-from rest_framework import serializers
+from rest_framework import serializers, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -75,6 +75,7 @@ class TransitionView(APIView):
         self.obj = self.transition.model.content_type.get_object_for_this_type(
             pk=obj_pk
         )
+        self.objects = [self.obj]
         self.actions, self.return_attachment = collect_actions(
             self.obj, self.transition
         )
@@ -86,6 +87,11 @@ class TransitionView(APIView):
         for action in self.actions:
             action_fields = getattr(action, 'form_fields', {})
             for name, options in action_fields.items():
+                # TODO: unify this with
+                # TransitionViewMixin.form_fields_from_actions
+                condition = options.get('condition', lambda x, y: True)
+                if not condition(self.obj, self.actions):
+                    continue
                 field_class, field_attr = FIELD_MAP.get(
                     options['field'].__class__, None
                 )
@@ -94,6 +100,13 @@ class TransitionView(APIView):
                         options['field'], name, None
                     ) for name in field_attr
                 }
+                choices = options.get('choices')
+                if choices:
+                    if callable(choices):
+                        list_of_choices = choices(self.actions, self.objects)
+                    else:
+                        list_of_choices = choices.copy()
+                    attrs['choices'] = list_of_choices
                 fields_name_map[name] = '{}__{}'.format(action.__name__, name)
                 fields[name] = field_class(**attrs)
         return fields, fields_name_map
@@ -121,25 +134,21 @@ class TransitionView(APIView):
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer_class()(data=request.data)
-        result = {'status': False}
-        if serializer.is_valid():
-            data = self.add_function_name_to_data(serializer.validated_data)
-            transition_result = run_transition(
-                [self.obj],
-                self.transition,
-                self.transition.model.field_name,
-                data,
-                request=request
-            )
-            if self.transition.is_async:
-                result['job_ids'] = [
-                    reverse('transitionjob-detail', args=(i,))
-                    for i in transition_result
-                ]
-                result['status'] = True if transition_result else False
-            else:
-                result['status'] = transition_result[0]
-        else:
-            result['errors'] = serializer.errors
-
-        return Response(result)
+        serializer.is_valid(raise_exception=True)
+        result = {}
+        data = self.add_function_name_to_data(serializer.validated_data)
+        transition_result = run_transition(
+            self.objects,
+            self.transition,
+            self.transition.model.field_name,
+            data,
+            request=request
+        )
+        status_code = status.HTTP_201_CREATED
+        if self.transition.is_async:
+            result['job_ids'] = [
+                reverse('transitionjob-detail', args=(i,))
+                for i in transition_result
+            ]
+            status_code = status.HTTP_202_ACCEPTED
+        return Response(result, status=status_code)

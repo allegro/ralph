@@ -247,6 +247,7 @@ class AssetLastHostname(models.Model):
         )
 
     @classmethod
+    # TODO: select_for_update
     def increment_hostname(cls, prefix, postfix=''):
         obj, created = cls.objects.get_or_create(
             prefix=prefix,
@@ -264,6 +265,9 @@ class AssetLastHostname(models.Model):
     def get_next_free_hostname(cls, prefix, postfix, fill=5):
         try:
             last_hostname = cls.objects.get(prefix=prefix, postfix=postfix)
+            # last used hostname is stored in DB so we need to increment it by
+            # one
+            last_hostname.counter += 1
         except cls.DoesNotExist:
             last_hostname = cls(prefix=prefix, postfix=postfix)
         return last_hostname.formatted_hostname(fill=fill)
