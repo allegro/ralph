@@ -7,6 +7,7 @@ from ralph.admin import RalphAdmin, RalphAdminForm, RalphTabularInline, register
 from ralph.admin.filters import IPFilter, TagsListFilter
 from ralph.assets.models.components import Ethernet
 from ralph.data_center.models.virtual import BaseObjectCluster
+from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.networks.forms import SimpleNetworkForm
 from ralph.networks.views import NetworkView
 from ralph.virtual.models import (
@@ -36,7 +37,7 @@ class VirtualServerNetworkView(NetworkView):
 
 
 @register(VirtualServer)
-class VirtualServerAdmin(RalphAdmin):
+class VirtualServerAdmin(TransitionAdminMixin, RalphAdmin):
     form = VirtualServerForm
     search_fields = ['hostname', 'sn']
     list_filter = [
@@ -48,8 +49,8 @@ class VirtualServerAdmin(RalphAdmin):
     ]
     raw_id_fields = ['parent', 'service_env', 'configuration_path']
     fields = [
-        'hostname', 'type', 'sn', 'service_env', 'configuration_path',
-        'parent', 'tags'
+        'hostname', 'type', 'status', 'sn', 'service_env',
+        'configuration_path', 'parent', 'tags'
     ]
     list_select_related = [
         'service_env__service', 'service_env__environment', 'type',

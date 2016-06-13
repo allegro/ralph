@@ -313,6 +313,16 @@ class NetworkableBaseObject(models.Model):
         logger.warning('Network-environment not provided for {}'.format(self))
         return ''
 
+    def _get_available_network_environments(self):
+        return list(NetworkEnvironment.objects.filter(
+            network__racks=self.rack_id
+        ).distinct())
+
+    def _get_available_networks(self):
+        return list(Network.objects.filter(
+            racks=self.rack_id
+        ).distinct())
+
     class Meta:
         abstract = True
 
@@ -506,16 +516,6 @@ class DataCenterAsset(NetworkableBaseObject, AutocompleteTooltipMixin, Asset):
             result.append(str(self.slot_no))
 
         return '&nbsp;/&nbsp;'.join(result) if self.rack else '&mdash;'
-
-    def _get_available_network_environments(self):
-        return list(NetworkEnvironment.objects.filter(
-            network__racks=self.rack_id
-        ).distinct())
-
-    def _get_available_networks(self):
-        return list(Network.objects.filter(
-            racks=self.rack_id
-        ).distinct())
 
     def _validate_orientation(self):
         """

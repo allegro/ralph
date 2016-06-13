@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from dj.choices import Choices
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.dispatch import receiver
@@ -22,6 +23,7 @@ from ralph.lib.mixins.models import (
     NamedMixin,
     TimeStampMixin
 )
+from ralph.lib.transitions.fields import TransitionField
 from ralph.networks.models.networks import IPAddress
 
 logger = logging.getLogger(__name__)
@@ -116,7 +118,7 @@ class CloudFlavor(BaseObject):
     @disk.setter
     def disk(self, new_disk):
         disk = {
-            'name': "{} GiB vHDD".format(int(new_disk/1024)),
+            'name': "{} GiB vHDD".format(int(new_disk / 1024)),
             'size': new_disk,
             'type': ComponentType.disk,
         }
@@ -220,9 +222,22 @@ class VirtualServerType(
     pass
 
 
+class VirtualServerStatus(Choices):
+    _ = Choices.Choice
+
+    new = _('new')
+    used = _('in use')
+    to_deploy = _('to deploy')
+    liquidated = _('liquidated')
+
+
 class VirtualServer(AdminAbsoluteUrlMixin, NetworkableBaseObject, BaseObject):
     # parent field for VirtualServer is hypervisor!
     # TODO: limit parent to DataCenterAsset
+    status = TransitionField(
+        default=VirtualServerStatus.new.id,
+        choices=VirtualServerStatus(),
+    )
     type = models.ForeignKey(VirtualServerType, related_name='virtual_servers')
     hostname = NullableCharField(
         blank=True,
@@ -245,11 +260,11 @@ class VirtualServer(AdminAbsoluteUrlMixin, NetworkableBaseObject, BaseObject):
 
     @cached_property
     def rack(self):
-        return (
-            self.parent.rack
-            if self.parent_id and isinstance(self.parent, DataCenterAsset)
-            else None
-        )
+        if self.parent_id:
+            parent = self.parent.last_descendant
+            if isinstance(parent, DataCenterAsset):
+                return parent.rack
+        return None
 
     class Meta:
         verbose_name = _('Virtual server (VM)')
