@@ -10,6 +10,7 @@ from ralph.assets.tests.factories import (
     BudgetInfoFactory,
     ConfigurationClassFactory,
     DataCenterAssetModelFactory,
+    EthernetWithIPAddressFactory,
     ServiceEnvironmentFactory
 )
 from ralph.data_center.models.physical import (
@@ -113,6 +114,49 @@ class DataCenterAssetFactory(DjangoModelFactory):
 
     class Meta:
         model = DataCenterAsset
+
+
+class DataCenterAssetFullFactory(DataCenterAssetFactory):
+    """
+    Factory for DataCenterAsset and m2m relations
+    """
+    rack = factory.SubFactory(RackFactory)
+    # TODO: parent, licences, supports, networks (as terminators), operations,
+    # security scans, clusters, tags
+
+    eth1 = factory.RelatedFactory(
+        EthernetWithIPAddressFactory,
+        'base_object',
+        ipaddress__is_management=True,
+    )
+    eth2 = factory.RelatedFactory(
+        EthernetWithIPAddressFactory,
+        'base_object',
+
+    )
+    eth3 = factory.RelatedFactory(
+        EthernetWithIPAddressFactory,
+        'base_object',
+        ipaddress__dhcp_expose=True,
+    )
+
+    licence1 = factory.RelatedFactory(
+        'ralph.licences.tests.factories.BaseObjectLicenceFactory', 'base_object'
+    )
+    licence2 = factory.RelatedFactory(
+        'ralph.licences.tests.factories.BaseObjectLicenceFactory',
+        'base_object',
+        quantity=3
+    )
+
+    # support1 = factory.RelatedFactory(
+    #     'ralph.supports.tests.factories.BaseObjectsSupportFactory',
+    #     'baseobject'
+    # )
+    # support2 = factory.RelatedFactory(
+    #     'ralph.supports.tests.factories.BaseObjectsSupportFactory',
+    #     'baseobject'
+    # )
 
 
 class DatabaseFactory(DjangoModelFactory):

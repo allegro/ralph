@@ -10,7 +10,10 @@ class SimpleLicenceSerializer(RalphAPISerializer):
     class Meta:
         model = Licence
         depth = 1
-        exclude = ('base_objects', 'users', 'content_type', 'service_env')
+        exclude = (
+            'base_objects', 'users', 'content_type', 'service_env', 'parent',
+            'configuration_path', 'tags'
+        )
 
 
 class SimpleLicenceUserSerializer(RalphAPISerializer):

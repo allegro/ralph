@@ -1,3 +1,5 @@
+import ipaddress
+
 import factory
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyText
@@ -12,7 +14,7 @@ from ralph.networks.models.networks import (
 
 
 class NetworkEnvironmentFactory(DjangoModelFactory):
-    name = factory.Iterator(['DC1', 'DC2', 'Warehouse'])
+    name = factory.Iterator(['prod1', 'test1', 'preprod1', 'dev1'])
     data_center = factory.SubFactory(DataCenterFactory)
     hostname_template_prefix = 's1'
     hostname_template_postfix = '.mydc.net'
@@ -39,6 +41,30 @@ class IPAddressFactory(DjangoModelFactory):
 
     class Meta:
         model = IPAddress
+
+
+def _get_network_address(ip, mask=24):
+    """
+    Return address of the IPv4 network for single IPv4 address with given mask.
+    """
+    ip = ipaddress.ip_address(ip)
+    return ipaddress.ip_network(
+        '{}/{}'.format(
+            ipaddress.ip_address(int(ip) & (2**32 - 1) << (32 - mask)),
+            mask
+        )
+    )
+
+
+class IPAddressWithNetworkFactory(IPAddressFactory):
+    network = factory.SubFactory(
+        NetworkFactory,
+        address=factory.LazyAttribute(
+            lambda ipaddress: _get_network_address(
+                ipaddress.factory_parent.address
+            )
+        )
+    )
 
 
 class ManagementIPAddressFactory(DjangoModelFactory):

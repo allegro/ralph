@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-
+from django.db.models import Prefetch
 
 from ralph.api import RalphAPIViewSet
 from ralph.assets.api.filters import NetworkableObjectFilters
 from ralph.assets.api.views import BaseObjectViewSet, BaseObjectViewSetMixin
+from ralph.assets.models import Ethernet
 from ralph.data_center.admin import DataCenterAssetAdmin
 from ralph.data_center.api.serializers import (
     AccessorySerializer,
@@ -47,11 +48,12 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         'property_of', 'budget_info'
     ]
     prefetch_related = BaseObjectViewSet.prefetch_related + [
-        'service_env__service__environments',
-        'service_env__service__business_owners',
-        'service_env__service__technical_owners',
         'connections',
         'tags',
+        Prefetch(
+            'ethernet',
+            queryset=Ethernet.objects.select_related('ipaddress')
+        ),
     ]
     filter_fields = [
         'service_env__service__uid',

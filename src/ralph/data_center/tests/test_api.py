@@ -22,6 +22,7 @@ from ralph.data_center.tests.factories import (
     ClusterFactory,
     ClusterTypeFactory,
     DataCenterAssetFactory,
+    DataCenterAssetFullFactory,
     RackAccessoryFactory,
     RackFactory,
     ServerRoomFactory
@@ -35,7 +36,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         self.service_env = ServiceEnvironmentFactory()
         self.model = DataCenterAssetModelFactory()
         self.rack = RackFactory()
-        self.dc_asset = DataCenterAssetFactory(
+        self.dc_asset = DataCenterAssetFullFactory(
             rack=self.rack,
             position=10,
             model=self.model,
@@ -48,7 +49,8 @@ class DataCenterAssetAPITests(RalphAPITestCase):
 
     def test_get_data_center_assets_list(self):
         url = reverse('datacenterasset-list')
-        response = self.client.get(url, format='json')
+        with self.assertNumQueries(9):
+            response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.data['count'], DataCenterAsset.objects.count()

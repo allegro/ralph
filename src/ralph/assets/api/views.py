@@ -6,6 +6,7 @@ from ralph.api import RalphAPIViewSet
 from ralph.api.utils import PolymorphicViewSetMixin
 from ralph.assets import models
 from ralph.assets.api import serializers
+from ralph.lib.custom_fields.models import CustomFieldValue
 from ralph.licences.api import BaseObjectLicenceViewSet
 from ralph.licences.models import BaseObjectLicence
 from ralph.networks.models import IPAddress
@@ -77,6 +78,10 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
         Prefetch('licences', queryset=BaseObjectLicence.objects.select_related(
             *BaseObjectLicenceViewSet.select_related
         )),
+        Prefetch(
+            'custom_fields',
+            queryset=CustomFieldValue.objects.select_related('custom_field')
+        )
     ]
     filter_fields = [
         'id', 'service_env', 'service_env', 'service_env__service__uid',

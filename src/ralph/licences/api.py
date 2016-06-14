@@ -68,7 +68,9 @@ class BaseObjectLicenceViewSet(RalphAPIViewSet):
     serializer_class = BaseObjectLicenceSerializer
     select_related = [
         'licence', 'licence__region', 'licence__manufacturer',
-        'licence__licence_type', 'licence__software', 'base_object'
+        'licence__licence_type', 'licence__software', 'base_object',
+        'licence__budget_info', 'licence__office_infrastructure',
+        'licence__property_of',
     ]
     save_serializer_class = BaseObjectLicenceSerializer
 

@@ -87,7 +87,19 @@ class ComponentSerializerMixin(serializers.Serializer):
     ipaddresses = fields.SerializerMethodField()
 
     def get_ipaddresses(self, instance):
-        return instance.ipaddresses.values_list('address', flat=True)
+        """
+        Return list of ip addresses for passed instance.
+
+        Returns:
+            list of ip addresses (as strings)
+        """
+        # don't use `ipaddresses` property here to make use of
+        # `ethernet__ipaddresses` in prefetch related
+        return [
+            eth.ipaddress.address
+            for eth in instance.ethernet.all()
+            if eth.ipaddress
+        ]
 
 
 class RackSerializer(RalphAPISerializer):
