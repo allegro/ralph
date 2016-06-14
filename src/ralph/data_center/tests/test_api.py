@@ -69,7 +69,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         )
         self.assertEqual(len(response.data['ethernet']), 4)
         self.assertIn(self.ip.address, [
-            eth['ipaddress']['address'] for eth in response.data['ethernets']
+            eth['ipaddress']['address'] for eth in response.data['ethernet']
             if eth['ipaddress']
         ])
 
