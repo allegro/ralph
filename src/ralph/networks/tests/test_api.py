@@ -39,6 +39,21 @@ class IPAddressAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
 
+    def test_get_ip_details(self):
+        url = reverse('ipaddress-detail', args=(self.ip1.id,))
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['ethernet']['mac'], self.ip1.ethernet.mac
+        )
+        self.assertEqual(
+            response.data['ethernet']['ipaddress']['address'], self.ip1.address
+        )
+        self.assertEqual(
+            response.data['ethernet']['base_object']['id'],
+            self.ip1.ethernet.base_object.id
+        )
+
     def test_change_network_should_not_pass(self):
         net = NetworkFactory(address='192.168.1.0/24')
         data = {'network': net.id}

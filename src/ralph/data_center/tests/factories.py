@@ -10,6 +10,7 @@ from ralph.assets.tests.factories import (
     BudgetInfoFactory,
     ConfigurationClassFactory,
     DataCenterAssetModelFactory,
+    EthernetFactory,
     EthernetWithIPAddressFactory,
     ServiceEnvironmentFactory
 )
@@ -121,18 +122,16 @@ class DataCenterAssetFullFactory(DataCenterAssetFactory):
     Factory for DataCenterAsset and m2m relations
     """
     rack = factory.SubFactory(RackFactory)
-    # TODO: parent, licences, supports, networks (as terminators), operations,
-    # security scans, clusters, tags
 
+    # m2m relations
+    # TODO: parent, networks (as terminators), operations, security scans,
+    # clusters, tags
     eth1 = factory.RelatedFactory(
         EthernetWithIPAddressFactory,
         'base_object',
         ipaddress__is_management=True,
     )
-    eth2 = factory.RelatedFactory(
-        EthernetWithIPAddressFactory,
-        'base_object',
-    )
+    eth2 = factory.RelatedFactory(EthernetFactory, 'base_object')
     eth3 = factory.RelatedFactory(
         EthernetWithIPAddressFactory,
         'base_object',

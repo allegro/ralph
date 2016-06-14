@@ -30,9 +30,7 @@ from ralph.virtual.tests.factories import (
     CloudHostFactory,
     CloudProjectFactory,
     CloudProviderFactory,
-    VirtualServerFactory,
-    VirtualServerFullFactory,
-    VirtualServerTypeFactory
+    VirtualServerFullFactory
 )
 
 
@@ -323,7 +321,11 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         )
         self.assertEqual(len(response.data['ethernet']), 2)
         self.assertCountEqual(
-            [eth['ipaddress']['address'] for eth in response.data['ethernet']],
+            [
+                eth['ipaddress']['address']
+                for eth in response.data['ethernet']
+                if eth['ipaddress']
+            ],
             self.virtual_server.ipaddresses.values_list('address', flat=True)
         )
 

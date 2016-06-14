@@ -3,6 +3,7 @@ from factory.django import DjangoModelFactory
 
 from ralph.assets.tests.factories import (
     ConfigurationClassFactory,
+    EthernetFactory,
     EthernetWithIPAddressFactory,
     ServiceEnvironmentFactory
 )
@@ -92,10 +93,7 @@ class VirtualServerFactory(DjangoModelFactory):
 
 
 class VirtualServerFullFactory(VirtualServerFactory):
-    eth1 = factory.RelatedFactory(
-        EthernetWithIPAddressFactory,
-        'base_object',
-    )
+    eth1 = factory.RelatedFactory(EthernetFactory, 'base_object')
     eth2 = factory.RelatedFactory(
         EthernetWithIPAddressFactory,
         'base_object',

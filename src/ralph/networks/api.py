@@ -4,7 +4,7 @@ from rest_framework.exceptions import ValidationError
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import RalphAPISaveSerializer
-# from ralph.assets.api.serializers import EthernetSerializer
+from ralph.assets.api.serializers import EthernetSerializer
 from ralph.networks.models import (
     IPAddress,
     Network,
@@ -42,6 +42,7 @@ class NetworkSerializer(RalphAPISerializer):
 
 class IPAddressSerializer(RalphAPISerializer):
     network = NetworkSimpleSerializer()
+    ethernet = EthernetSerializer()
 
     class Meta:
         model = IPAddress
