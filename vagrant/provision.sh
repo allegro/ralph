@@ -47,3 +47,6 @@ fi
 
 # install DHCP server
 ./vagrant/provisioning_scripts/dhcp.sh
+
+# configure environment for deployment
+./vagrant/provisioning_scripts/deployment.sh
