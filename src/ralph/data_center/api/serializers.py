@@ -2,8 +2,11 @@
 from rest_framework import fields, serializers
 
 from ralph.api import RalphAPISerializer
-from ralph.assets.api.serializers import AssetSerializer, BaseObjectSerializer
-from ralph.assets.api.serializers import EthernetSimpleSerializer
+from ralph.assets.api.serializers import (
+    AssetSerializer,
+    BaseObjectSerializer,
+    EthernetSimpleSerializer
+)
 from ralph.data_center.models import (
     Accessory,
     BaseObjectCluster,
