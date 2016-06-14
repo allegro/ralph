@@ -4,7 +4,11 @@ from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphAdminForm, RalphTabularInline, register
-from ralph.admin.filters import IPFilter, TagsListFilter
+from ralph.admin.filters import (
+    IPFilter,
+    TagsListFilter,
+    TreeRelatedAutocompleteFilterWithDescendants
+)
 from ralph.assets.models.components import Ethernet
 from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.lib.transitions.admin import TransitionAdminMixin
@@ -41,8 +45,9 @@ class VirtualServerAdmin(TransitionAdminMixin, RalphAdmin):
     form = VirtualServerForm
     search_fields = ['hostname', 'sn']
     list_filter = [
-        'sn', 'hostname', 'service_env', 'configuration_path', IPFilter,
-        'parent', ('tags', TagsListFilter)
+        'sn', 'hostname', 'service_env', IPFilter,
+        'parent', ('tags', TagsListFilter),
+        ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants)  # noqa
     ]
     list_display = [
         'hostname', 'type', 'sn', 'service_env', 'configuration_path'
@@ -54,7 +59,7 @@ class VirtualServerAdmin(TransitionAdminMixin, RalphAdmin):
     ]
     list_select_related = [
         'service_env__service', 'service_env__environment', 'type',
-        'configuration_path'
+        'configuration_path__module'
     ]
 
     change_views = [VirtualServerNetworkView]

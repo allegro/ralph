@@ -132,14 +132,12 @@ class DataCenterAssetFullFactory(DataCenterAssetFactory):
     eth2 = factory.RelatedFactory(
         EthernetWithIPAddressFactory,
         'base_object',
-
     )
     eth3 = factory.RelatedFactory(
         EthernetWithIPAddressFactory,
         'base_object',
         ipaddress__dhcp_expose=True,
     )
-
     licence1 = factory.RelatedFactory(
         'ralph.licences.tests.factories.BaseObjectLicenceFactory', 'base_object'
     )
@@ -148,15 +146,14 @@ class DataCenterAssetFullFactory(DataCenterAssetFactory):
         'base_object',
         quantity=3
     )
-
-    # support1 = factory.RelatedFactory(
-    #     'ralph.supports.tests.factories.BaseObjectsSupportFactory',
-    #     'baseobject'
-    # )
-    # support2 = factory.RelatedFactory(
-    #     'ralph.supports.tests.factories.BaseObjectsSupportFactory',
-    #     'baseobject'
-    # )
+    support1 = factory.RelatedFactory(
+        'ralph.supports.tests.factories.BaseObjectsSupportFactory',
+        'baseobject'
+    )
+    support2 = factory.RelatedFactory(
+        'ralph.supports.tests.factories.BaseObjectsSupportFactory',
+        'baseobject'
+    )
 
 
 class DatabaseFactory(DjangoModelFactory):

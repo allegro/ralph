@@ -760,6 +760,28 @@ class EthernetAPITests(RalphAPITestCase):
         super().setUp()
         self.ip = IPAddressFactory(dhcp_expose=True)
         self.eth = self.ip.ethernet
+        self.eth2 = EthernetFactory()
+
+    def test_get_list_of_ethernets(self):
+        url = reverse('ethernet-list')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['count'], 2)
+
+    def test_get_ethernet_with_ip_details(self):
+        url = reverse('ethernet-detail', args=(self.eth.id,))
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['ipaddress'], {
+            'id': self.ip.id,
+            'address': self.ip.address,
+            'hostname': self.ip.hostname,
+            'dhcp_expose': self.ip.dhcp_expose,
+            'is_management': self.ip.is_management,
+            'url': self.get_full_url(
+                reverse('ipaddress-detail', args=(self.ip.id,))
+            )
+        })
 
     def test_cannot_delete_when_exposed_in_dhcp(self):
         url = reverse('ethernet-detail', args=(self.eth.id,))
@@ -769,3 +791,11 @@ class EthernetAPITests(RalphAPITestCase):
             'Could not delete Ethernet when it is exposed in DHCP',
             response.data
         )
+
+    def test_filter_by_ipaddress(self):
+        url = '{}?ipaddress__address={}'.format(
+            reverse('ethernet-list'), self.ip.address
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['count'], 1)

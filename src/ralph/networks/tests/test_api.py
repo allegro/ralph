@@ -31,6 +31,14 @@ class IPAddressAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
 
+    def test_get_ip_list_filter_by_mac(self):
+        url = '{}?ethernet__mac={}'.format(
+            reverse('ipaddress-list'), self.ip1.ethernet.mac
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
     def test_change_network_should_not_pass(self):
         net = NetworkFactory(address='192.168.1.0/24')
         data = {'network': net.id}

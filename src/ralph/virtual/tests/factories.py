@@ -1,7 +1,11 @@
 import factory
 from factory.django import DjangoModelFactory
 
-from ralph.assets.tests.factories import ServiceEnvironmentFactory
+from ralph.assets.tests.factories import (
+    ConfigurationClassFactory,
+    EthernetWithIPAddressFactory,
+    ServiceEnvironmentFactory
+)
 from ralph.data_center.tests.factories import DataCenterAssetFactory
 from ralph.virtual.models import (
     CloudFlavor,
@@ -81,6 +85,27 @@ class VirtualServerFactory(DjangoModelFactory):
     type = factory.SubFactory(VirtualServerTypeFactory)
     sn = factory.Faker('ssn')
     parent = factory.SubFactory(DataCenterAssetFactory)
+    configuration_path = factory.SubFactory(ConfigurationClassFactory)
 
     class Meta:
         model = VirtualServer
+
+
+class VirtualServerFullFactory(VirtualServerFactory):
+    eth1 = factory.RelatedFactory(
+        EthernetWithIPAddressFactory,
+        'base_object',
+    )
+    eth2 = factory.RelatedFactory(
+        EthernetWithIPAddressFactory,
+        'base_object',
+        ipaddress__dhcp_expose=True,
+    )
+    licence1 = factory.RelatedFactory(
+        'ralph.licences.tests.factories.BaseObjectLicenceFactory', 'base_object'
+    )
+    licence2 = factory.RelatedFactory(
+        'ralph.licences.tests.factories.BaseObjectLicenceFactory',
+        'base_object',
+        quantity=3
+    )

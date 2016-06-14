@@ -225,17 +225,6 @@ class DataCenterAssetTest(RalphTestCase):
         self._prepare_rack(self.dc_asset, '192.168.1.0/24')
         self.assertEqual(self.dc_asset.network_environment, self.net_env)
 
-    def test_network_environment_many_options(self):
-        self._prepare_rack(self.dc_asset, '192.168.1.0/24')
-        proper_net_env = self.net_env
-        self._prepare_rack(self.dc_asset, '192.168.2.0/24', rack=self.rack)
-        self.assertGreater(
-            NetworkEnvironment.objects.filter(network__racks=self.rack).count(),
-            1
-        )
-        self.assertEqual(self.dc_asset.network_environment, proper_net_env)
-        self.assertNotEqual(self.dc_asset.network_environment, self.net_env)
-
     # =========================================================================
     # next free hostname
     # =========================================================================

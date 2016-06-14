@@ -252,6 +252,7 @@ class VirtualServer(AdminAbsoluteUrlMixin, NetworkableBaseObject, BaseObject):
         verbose_name=_('SN'),
         unique=True,
     )
+    # TODO: remove this field
     cluster = models.ForeignKey(Cluster, blank=True, null=True)
 
     @cached_property

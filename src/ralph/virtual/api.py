@@ -1,19 +1,23 @@
 # -*- coding: utf-8 -*-
 from django.db import transaction
+from django.db.models import Prefetch
 from rest_framework import relations, serializers
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import RalphAPISaveSerializer
+from ralph.assets.api.filters import NetworkableObjectFilters
 from ralph.assets.api.serializers import (
     BaseObjectSerializer,
     ServiceEnvironmentSimpleSerializer
 )
+from ralph.assets.api.views import BaseObjectViewSet, BaseObjectViewSetMixin
+from ralph.assets.models import Ethernet
 from ralph.data_center.api.serializers import (
-    ClusterSimpleSerializer,
     ComponentSerializerMixin,
     DataCenterAssetSimpleSerializer
 )
 from ralph.data_center.models import DataCenterAsset
+from ralph.virtual.admin import VirtualServerAdmin
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -129,10 +133,11 @@ class VirtualServerSerializer(ComponentSerializerMixin, BaseObjectSerializer):
     type = VirtualServerTypeSerializer()
     # TODO: cast BaseObject to DataCenterAsset for hypervisor field
     hypervisor = DataCenterAssetSimpleSerializer(source='parent')
-    cluster = ClusterSimpleSerializer()
+    # TODO: clusters
 
     class Meta(BaseObjectSerializer.Meta):
         model = VirtualServer
+        exclude = ('content_type', 'cluster')
 
 
 class VirtualServerSaveSerializer(RalphAPISaveSerializer):
@@ -183,14 +188,33 @@ class VirtualServerTypeViewSet(RalphAPIViewSet):
     serializer_class = VirtualServerTypeSerializer
 
 
-class VirtualServerViewSet(RalphAPIViewSet):
+class VirtualServerFilterSet(NetworkableObjectFilters):
+    class Meta(NetworkableObjectFilters.Meta):
+        model = VirtualServer
+
+
+class VirtualServerViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     queryset = VirtualServer.objects.all()
     serializer_class = VirtualServerSerializer
     save_serializer_class = VirtualServerSaveSerializer
-    select_related = [
-        'parent', 'service_env__service', 'service_env__environment', 'cluster'
+    select_related = VirtualServerAdmin.list_select_related + [
+        'parent', 'service_env__service', 'service_env__environment',
+        'configuration_path',
     ]
-    prefetch_related = ['tags', 'licences']
+    prefetch_related = BaseObjectViewSet.prefetch_related + [
+        'tags',
+        Prefetch(
+            'ethernet',
+            queryset=Ethernet.objects.select_related('ipaddress')
+        ),
+        # TODO: clusters
+    ]
+    filter_fields = [
+        'service_env__service__uid',
+        'service_env__service__name',
+        'service_env__service__id',
+    ]
+    additional_filter_class = VirtualServerFilterSet
 
 
 router.register(r'cloud-flavors', CloudFlavorViewSet)

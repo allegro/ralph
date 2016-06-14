@@ -6,11 +6,16 @@ from ralph.api.tests._base import RalphAPITestCase
 from ralph.assets.models.assets import ServiceEnvironment
 from ralph.assets.models.choices import ComponentType
 from ralph.assets.models.components import ComponentModel
-from ralph.assets.tests.factories import EnvironmentFactory, ServiceFactory
+from ralph.assets.tests.factories import (
+    EnvironmentFactory,
+    EthernetFactory,
+    ServiceFactory
+)
 from ralph.data_center.tests.factories import (
     ClusterFactory,
     DataCenterAssetFactory
 )
+from ralph.networks.tests.factories import IPAddressFactory
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -26,6 +31,7 @@ from ralph.virtual.tests.factories import (
     CloudProjectFactory,
     CloudProviderFactory,
     VirtualServerFactory,
+    VirtualServerFullFactory,
     VirtualServerTypeFactory
 )
 
@@ -294,21 +300,18 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         self.hypervisor = DataCenterAssetFactory()
         self.cluster = ClusterFactory()
         self.type = VirtualServerType.objects.create(name='XEN')
-        self.virtual_server = VirtualServerFactory(cluster=self.cluster)
+        self.virtual_server = VirtualServerFullFactory()
+        self.virtual_server2 = VirtualServerFullFactory()
+        self.ip = IPAddressFactory(
+            ethernet=EthernetFactory(base_object=self.virtual_server2)
+        )
 
     def test_get_virtual_server_list(self):
         url = reverse('virtualserver-list')
-        response = self.client.get(url, format='json')
+        with self.assertNumQueries(8):
+            response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
-        self.assertEqual(
-            response.data['results'][0]['hostname'],
-            self.virtual_server.hostname
-        )
-        self.assertEqual(
-            response.data['results'][0]['cluster']['id'],
-            self.cluster.id
-        )
+        self.assertEqual(response.data['count'], 2)
 
     def test_get_virtual_server_details(self):
         url = reverse('virtualserver-detail', args=(self.virtual_server.id,))
@@ -318,28 +321,30 @@ class VirtualServerAPITestCase(RalphAPITestCase):
             response.data['hostname'],
             self.virtual_server.hostname
         )
-        self.assertEqual(
-            response.data['cluster']['id'],
-            self.cluster.id
+        self.assertEqual(len(response.data['ethernet']), 2)
+        self.assertCountEqual(
+            [eth['ipaddress']['address'] for eth in response.data['ethernet']],
+            self.virtual_server.ipaddresses.values_list('address', flat=True)
         )
 
     def test_create_virtual_server(self):
+        virtual_server_count = VirtualServer.objects.count()
         url = reverse('virtualserver-list')
         data = {
             'hostname': 's1234.local',
             'type': self.type.id,
             'sn': '143ed36a-3e86-457d-9e19-3dcfe4d5ed26',
             'hypervisor': self.hypervisor.id,
-            'cluster': self.cluster.id,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(VirtualServer.objects.count(), 2)
+        self.assertEqual(
+            VirtualServer.objects.count(), virtual_server_count + 1
+        )
         virtual_server = VirtualServer.objects.get(pk=response.data['id'])
         self.assertEqual(virtual_server.hostname, data['hostname'])
         self.assertEqual(virtual_server.parent.id, self.hypervisor.id)
         self.assertEqual(virtual_server.sn, data['sn'])
-        self.assertEqual(virtual_server.cluster, self.cluster)
 
     def test_patch_virtual_server(self):
         url = reverse('virtualserver-detail', args=(self.virtual_server.id,))
@@ -350,3 +355,92 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.virtual_server.refresh_from_db()
         self.assertEqual(self.virtual_server.hostname, 's111111.local')
+
+    def test_filter_by_configuration_path(self):
+        url = reverse('virtualserver-list') + '?configuration_path={}'.format(
+            self.virtual_server.configuration_path.path,
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['count'], 1
+        )
+
+    def test_filter_by_hostname(self):
+        url = reverse('virtualserver-list') + '?hostname={}'.format(
+            self.virtual_server.hostname,
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['count'], 1
+        )
+
+    def test_filter_by_ip_address(self):
+        url = reverse('virtualserver-list') + '?ip={}'.format(
+            self.ip.address,
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['count'], 1
+        )
+
+    def test_filter_by_service_uid(self):
+        url = reverse('virtualserver-list') + '?service={}'.format(
+            self.virtual_server.service_env.service.uid,
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['count'], 1
+        )
+
+    def test_filter_by_service_uid2(self):
+        url = (
+            reverse('virtualserver-list') +
+            '?service_env__service__uid={}'.format(
+                self.virtual_server.service_env.service.uid,
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['count'], 1
+        )
+
+    def test_filter_by_service_id(self):
+        url = (
+            reverse('virtualserver-list') +
+            '?service_env__service__id={}'.format(
+                self.virtual_server.service_env.service.id,
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['count'], 1
+        )
+
+    def test_filter_by_service_name(self):
+        url = reverse('virtualserver-list') + '?service={}'.format(
+            self.virtual_server.service_env.service.name,
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['count'], 1
+        )
+
+    def test_filter_by_service_name2(self):
+        url = (
+            reverse('virtualserver-list') +
+            '?service_env__service__name={}'.format(
+                self.virtual_server.service_env.service.name,
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['count'], 1
+        )

@@ -98,11 +98,13 @@ class ComponentSerializerMixin(serializers.Serializer):
         """
         # don't use `ipaddresses` property here to make use of
         # `ethernet__ipaddresses` in prefetch related
-        return [
-            eth.ipaddress.address
-            for eth in instance.ethernet.all()
-            if eth.ipaddress
-        ]
+        ipaddresses = []
+        for eth in instance.ethernet.all():
+            try:
+                ipaddresses.append(eth.ipaddress.address)
+            except AttributeError:
+                pass
+        return ipaddresses
 
 
 class RackSerializer(RalphAPISerializer):
