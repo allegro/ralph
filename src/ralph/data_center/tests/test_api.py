@@ -22,6 +22,7 @@ from ralph.data_center.tests.factories import (
     ClusterFactory,
     ClusterTypeFactory,
     DataCenterAssetFactory,
+    DataCenterAssetFullFactory,
     RackAccessoryFactory,
     RackFactory,
     ServerRoomFactory
@@ -35,7 +36,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         self.service_env = ServiceEnvironmentFactory()
         self.model = DataCenterAssetModelFactory()
         self.rack = RackFactory()
-        self.dc_asset = DataCenterAssetFactory(
+        self.dc_asset = DataCenterAssetFullFactory(
             rack=self.rack,
             position=10,
             model=self.model,
@@ -44,11 +45,12 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             ethernet=EthernetFactory(base_object=self.dc_asset)
         )
         self.dc_asset.tags.add('db', 'test')
-        self.dc_asset_2 = DataCenterAssetFactory()
+        self.dc_asset_2 = DataCenterAssetFullFactory()
 
     def test_get_data_center_assets_list(self):
         url = reverse('datacenterasset-list')
-        response = self.client.get(url, format='json')
+        with self.assertNumQueries(9):
+            response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.data['count'], DataCenterAsset.objects.count()
@@ -65,6 +67,11 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         self.assertEqual(
             response.data['model']['id'], self.dc_asset.model.id
         )
+        self.assertEqual(len(response.data['ethernet']), 4)
+        self.assertIn(self.ip.address, [
+            eth['ipaddress']['address'] for eth in response.data['ethernet']
+            if eth['ipaddress']
+        ])
 
     def test_create_data_center_asset(self):
         url = reverse('datacenterasset-list')

@@ -258,7 +258,8 @@ class DataCenterAssetAdmin(
     list_select_related = [
         'model', 'model__manufacturer', 'model__category', 'rack',
         'rack__server_room', 'rack__server_room__data_center', 'service_env',
-        'service_env__service', 'service_env__environment', 'configuration_path'
+        'service_env__service', 'service_env__environment',
+        'configuration_path__module',
     ]
     raw_id_fields = [
         'model', 'rack', 'service_env', 'parent', 'budget_info',

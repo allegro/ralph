@@ -231,6 +231,15 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
     objects_used_free_with_related = LicencesUsedFreeRelatedObjectsManager()
 
     def __str__(self):
+        return "{} x {} - {} ({})".format(
+            self.number_bought,
+            self.software.name,
+            self.invoice_date,
+            self.niw,
+        )
+
+    @cached_property
+    def autocomplete_str(self):
         return "{} ({} free) x {} - {} ({})".format(
             self.number_bought,
             self.free,

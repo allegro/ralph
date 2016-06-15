@@ -41,8 +41,8 @@ class NetworkSerializer(RalphAPISerializer):
 
 
 class IPAddressSerializer(RalphAPISerializer):
-    ethernet = EthernetSerializer()
     network = NetworkSimpleSerializer()
+    ethernet = EthernetSerializer()
 
     class Meta:
         model = IPAddress
@@ -80,7 +80,7 @@ class IPAddressViewSet(RalphAPIViewSet):
     ]
     filter_fields = [
         'hostname', 'ethernet__base_object', 'network', 'network__address',
-        'status', 'is_public', 'is_management', 'dhcp_expose'
+        'status', 'is_public', 'is_management', 'dhcp_expose', 'ethernet__mac',
     ]
 
     def destroy(self, request, *args, **kwargs):
