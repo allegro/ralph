@@ -59,7 +59,7 @@ class ComponentModel(AutocompleteTooltipMixin, NamedMixin, models.Model):
 
 
 class Component(TimeStampMixin, models.Model):
-    base_object = models.ForeignKey(BaseObject, related_name='%(class)s')
+    base_object = models.ForeignKey(BaseObject, related_name='%(class)s_set')
     model = models.ForeignKey(
         ComponentModel,
         verbose_name=_('model'),

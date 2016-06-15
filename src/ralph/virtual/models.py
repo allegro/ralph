@@ -57,7 +57,7 @@ class CloudFlavor(BaseObject):
         try:
             VirtualComponent.objects.get(base_object=self, model=model)
         except ObjectDoesNotExist:
-            for component in self.virtualcomponent.filter(
+            for component in self.virtualcomponent_set.filter(
                 model__type=model_args['type']
             ):
                 component.delete()
@@ -70,7 +70,7 @@ class CloudFlavor(BaseObject):
         try:
             components = self._prefetched_objects_cache['virtualcomponent']
         except (KeyError, AttributeError):
-            return self.virtualcomponent.filter(
+            return self.virtualcomponent_set.filter(
                 model__type=model_type
             ).values_list(field_path, flat=True).first()
         else:
@@ -170,7 +170,7 @@ class CloudHost(AdminAbsoluteUrlMixin, BaseObject):
 
     @property
     def ip_addresses(self):
-        return self.ethernet.select_related('ipaddress').values_list(
+        return self.ethernet_set.select_related('ipaddress').values_list(
             'ipaddress__address', flat=True
         )
 

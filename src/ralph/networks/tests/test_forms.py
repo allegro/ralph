@@ -10,7 +10,7 @@ from ralph.tests.models import PolymorphicTestModel
 
 class NetworkInlineTestCase(RalphTestCase):
     def setUp(self):
-        self.inline_prefix = 'ethernet-'
+        self.inline_prefix = 'ethernet_set-'
         self.obj1 = PolymorphicTestModel.objects.create(hostname='abc')
         self.obj2 = PolymorphicTestModel.objects.create(hostname='xyz')
         self.ip1 = IPAddressFactory(
@@ -302,7 +302,7 @@ class NetworkInlineTestCase(RalphTestCase):
 
 class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
     def setUp(self):
-        self.inline_prefix = 'ethernet-'
+        self.inline_prefix = 'ethernet_set-'
         self.obj1 = PolymorphicTestModel.objects.create(hostname='abc')
         self.ip1 = IPAddressFactory(
             ethernet__base_object=self.obj1,
