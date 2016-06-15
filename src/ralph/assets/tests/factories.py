@@ -16,7 +16,7 @@ from ralph.assets.models.assets import (
 )
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
-from ralph.assets.models.components import Ethernet
+from ralph.assets.models.components import Ethernet, Memory
 from ralph.assets.models.configuration import (
     ConfigurationClass,
     ConfigurationModule
@@ -207,3 +207,14 @@ class ConfigurationClassFactory(DjangoModelFactory):
     class Meta:
         model = ConfigurationClass
         django_get_or_create = ['class_name']
+
+
+class MemoryFactory(DjangoModelFactory):
+    base_object = factory.SubFactory(BaseObjectFactory)
+    label = factory.Sequence(lambda n: 'MEM#{}'.format(n))
+    size = 8192
+    speed = 1600
+    slot_no = factory.Sequence(lambda n: n)
+
+    class Meta:
+        model = Memory

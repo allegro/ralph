@@ -120,6 +120,13 @@ class EthernetViewSet(RalphAPIViewSet):
         return super().destroy(request, *args, **kwargs)
 
 
+class MemoryViewSet(RalphAPIViewSet):
+    queryset = models.Memory.objects.all()
+    serializer_class = serializers.MemorySerializer
+    filter_fields = ['base_object', 'size']
+    prefetch_related = ['model', 'base_object', 'base_object__tags']
+
+
 class ConfigurationModuleViewSet(RalphAPIViewSet):
     queryset = models.ConfigurationModule.objects.all()
     serializer_class = serializers.ConfigurationModuleSerializer

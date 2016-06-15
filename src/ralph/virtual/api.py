@@ -203,6 +203,7 @@ class VirtualServerViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     ]
     prefetch_related = BaseObjectViewSet.prefetch_related + [
         'tags',
+        'memory_set',
         Prefetch(
             'ethernet_set',
             queryset=Ethernet.objects.select_related('ipaddress')

@@ -306,7 +306,7 @@ class VirtualServerAPITestCase(RalphAPITestCase):
 
     def test_get_virtual_server_list(self):
         url = reverse('virtualserver-list')
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(9):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 2)
@@ -328,6 +328,9 @@ class VirtualServerAPITestCase(RalphAPITestCase):
             ],
             self.virtual_server.ipaddresses.values_list('address', flat=True)
         )
+        self.assertEqual(len(response.data['memories']), 2)
+        self.assertEqual(response.data['memories'][0]['speed'], 1600)
+        self.assertEqual(response.data['memories'][0]['size'], 8192)
 
     def test_create_virtual_server(self):
         virtual_server_count = VirtualServer.objects.count()

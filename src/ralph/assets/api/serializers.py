@@ -27,7 +27,7 @@ from ralph.assets.models import (
     Service,
     ServiceEnvironment
 )
-from ralph.assets.models.components import Ethernet
+from ralph.assets.models.components import Ethernet, Memory
 from ralph.lib.custom_fields.api import WithCustomFieldsSerializerMixin
 from ralph.licences.api_simple import SimpleBaseObjectLicenceSerializer
 from ralph.networks.api_simple import IPAddressSimpleSerializer
@@ -269,3 +269,16 @@ class EthernetSerializer(EthernetSimpleSerializer):
     class Meta:
         model = Ethernet
         depth = 1
+
+
+class MemorySimpleSerializer(RalphAPISerializer):
+    class Meta:
+        model = Memory
+        fields = ('id', 'url', 'label', 'size', 'speed', 'slot_no')
+
+
+class MemorySerializer(MemorySimpleSerializer):
+    class Meta:
+        depth = 1
+        model = Memory
+        exclude = ('model',)
