@@ -20,25 +20,27 @@ def ralph2_sync(model):
     dispatch_uid for post_save signal.
     """
     def wrap(func):
-        @wraps(func)
-        # connect to post_save signal for a model
-        @receiver(
-            post_save, sender=model, dispatch_uid=func.__name__,
-        )
-        # register publisher
-        @pyhermes.publisher(
-            topic=func.__name__
-        )
-        def wrapped_func(*args, **kwargs):
-            # publish only if sync enabled (globally and for particular
-            # function)
-            if (
-                settings.RALPH2_HERMES_SYNC_ENABLED and
-                func.__name__ in settings.RALPH2_HERMES_SYNC_FUNCTIONS
-            ):
+        # publish only if sync enabled (globally and for particular
+        # function)
+        if (
+            settings.RALPH2_HERMES_SYNC_ENABLED and
+            func.__name__ in settings.RALPH2_HERMES_SYNC_FUNCTIONS
+        ):
+            @wraps(func)
+            # connect to post_save signal for a model
+            @receiver(
+                post_save, sender=model, dispatch_uid=func.__name__,
+            )
+            # register publisher
+            @pyhermes.publisher(topic=func.__name__)
+            def wrapped_func(*args, **kwargs):
                 result = func(*args, **kwargs)
                 pyhermes.publish(func.__name__, result)
                 return result
+        else:
+            # by default this would be standalone function, not attached to any
+            # signal
+            wrapped_func = func
         return wrapped_func
     return wrap
 
