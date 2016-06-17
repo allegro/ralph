@@ -3,13 +3,14 @@ from functools import wraps
 
 from dateutil.parser import parse as dt_parse
 from dj.choices import Choices
+from django.conf import settings
+from lck.django.common import nested_commit_on_success
 from pyhermes import subscriber
 
 from ralph.discovery.admin import SAVE_PRIORITY
 from ralph_assets.models import Asset, AssetModel
-from ralph_assets.models_assets import AssetStatus, AssetType
+from ralph_assets.models_assets import AssetStatus, AssetType, Warehouse, DataCenter
 from ralph_assets.models_dc_assets import DeviceInfo
-from ralph_assets.views.utils import update_management_ip
 from ralph.discovery.models import ServiceCatalog
 from ralph.export_to_ng.publishers import publish_sync_ack_to_ralph3
 
@@ -38,22 +39,18 @@ DATA_CENTER_ASSET_STATUS_MAPPING = {
 }
 
 
-# TODO: turn off publisher for particular model(s) when in subscriber
-# https://docs.djangoproject.com/en/1.9/topics/signals/#disconnecting-signals
-# http://stackoverflow.com/questions/11487128/django-temporarily-disable-signals
-
 class sync_subscriber(subscriber):
     """
     Log additional exception when sync has failed.
     """
     def _get_wrapper(self, func):
         @wraps(func)
+        @nested_commit_on_success
         def exception_wrapper(*args, **kwargs):
             try:
                 return func(*args, **kwargs)
             except:
                 logger.exception('Exception during syncing')
-                raise
         return exception_wrapper
 
 
@@ -68,31 +65,28 @@ def sync_dc_asset_to_ralph2_handler(data):
     else:
         asset = Asset(type=AssetType.data_center)
         creating = True
-    device_info = asset.device_info if not creating else DeviceInfo
 
     # simple asset fields
     for field in [
         'source', 'invoice_no', 'provider', 'niw',
-        'task_url', 'remarks', 'order_no', 'sn', 'barcode', 'price',
+        'task_url', 'remarks', 'order_no',
     ]:
         setattr(asset, field, data[field])
 
-    device_info.position = data['position'] or None
-    device_info.orientation = data['orientation']
-    device_info.slot_no = data['slot_no']
-
-    device_info.rack_id = data['rack']
-    device_info.server_room_id = data['server_room']
-    device_info.data_center_id = data['data_center']
+    asset.barcode = data['barcode'] or None
+    asset.sn = data['sn'] or None
 
     asset.invoice_date = data['invoice_date'] or None
     if asset.invoice_date:
         asset.invoice_date = dt_parse(asset.invoice_date)
-    asset.deprecation_rate = data['depreciation_rate']
+    asset.deprecation_rate = (
+        data['depreciation_rate'] or settings.DEFAULT_DEPRECATION_RATE
+    )
     asset.deprecation_end_date = data['depreciation_end_date'] or None
     if asset.deprecation_end_date:
         asset.deprecation_end_date = dt_parse(asset.deprecation_end_date)
     asset.force_deprecation = data['force_depreciation']
+    asset.price = data['price'] or None
 
     asset.status = DATA_CENTER_ASSET_STATUS_MAPPING[int(data['status'])]
 
@@ -106,21 +100,46 @@ def sync_dc_asset_to_ralph2_handler(data):
     # model
     asset.model_id = data['model'] or None
 
-    # save
+    # default value
+    asset.region_id = 1  # from ralph/accounts/fixtures/initial_data.yaml
+
+    # warehouse based on dc
+    try:
+        asset.warehouse = Warehouse.objects.get(
+            name=DataCenter.objects.get(pk=data['data_center'])
+        )
+    except (Warehouse.DoesNotExist, DataCenter.DoesNotExist):
+        asset.warehouse_id = 3631  # TODO: fix
+
+    if creating:
+        device_info = DeviceInfo()
+    else:
+        device_info = asset.device_info
+
+    device_info.position = data['position'] or None
+    device_info.orientation = data['orientation']
+    device_info.slot_no = data['slot_no']
+
+    device_info.rack_id = data['rack']
+    device_info.server_room_id = data['server_room']
+    device_info.data_center_id = data['data_center']
+    device_info._handle_post_save = False
     device_info.save()
+
+    # save
     if creating:
         asset.device_info = device_info
+    asset._handle_post_save = False
     asset.save()
-
-    # mgmt
-    update_management_ip(asset, data)
-
-    publish_sync_ack_to_ralph3(asset, data['id'])
 
     # device part
     device = asset.get_ralph_device()
     device.name = data['hostname']
+    device.management_ip = data.get('management_ip')
+    device._handle_post_save = False
     device.save(priority=SAVE_PRIORITY)
+
+    publish_sync_ack_to_ralph3(asset, data['id'])
 
 
 @sync_subscriber(topic='sync_model_to_ralph2')
@@ -140,5 +159,6 @@ def sync_model_to_ralph2(data):
 
     model.manufacturer_id = data['manufacturer']
     model.category_id = data['category']
+    model._handle_post_save = False
     model.save()
     publish_sync_ack_to_ralph3(model, data['id'])
