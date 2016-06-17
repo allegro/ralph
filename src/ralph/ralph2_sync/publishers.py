@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 from functools import wraps
 
 import pyhermes
@@ -11,6 +12,8 @@ from django.dispatch import receiver
 from ralph.assets.models import AssetModel
 from ralph.data_center.models import DataCenterAsset
 from ralph.data_importer.models import ImportedObjects
+
+logger = logging.getLogger(__name__)
 
 
 def ralph2_sync(model):
@@ -33,10 +36,17 @@ def ralph2_sync(model):
             )
             # register publisher
             @pyhermes.publisher(topic=func.__name__)
-            def wrapped_func(*args, **kwargs):
-                result = func(*args, **kwargs)
-                pyhermes.publish(func.__name__, result)
-                return result
+            def wrapped_func(sender, instance=None, created=False, **kwargs):
+                # process the signal only if instance has not attribute
+                # `_handle_post_save` set to False
+                if getattr(instance, '_handle_post_save', True):
+                    try:
+                        result = func(sender, instance, created, **kwargs)
+                        pyhermes.publish(func.__name__, result)
+                    except:
+                        logger.exception('Error during Ralph2 sync')
+                    else:
+                        return result
         else:
             # by default this would be standalone function, not attached to any
             # signal
@@ -86,8 +96,11 @@ def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
         # location
         'data_center': _get_obj_id_ralph_20(
             asset.rack.server_room.data_center
+        ) if asset.rack else None,
+        'server_room': (
+            _get_obj_id_ralph_20(asset.rack.server_room)
+            if asset.rack else None
         ),
-        'server_room': _get_obj_id_ralph_20(asset.rack.server_room),
         'rack': _get_obj_id_ralph_20(asset.rack),
     }
     # simple fields
