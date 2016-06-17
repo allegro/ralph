@@ -23,34 +23,30 @@ def ralph2_sync(model):
     dispatch_uid for post_save signal.
     """
     def wrap(func):
-        # publish only if sync enabled (globally and for particular
-        # function)
-        if (
-            settings.RALPH2_HERMES_SYNC_ENABLED and
-            func.__name__ in settings.RALPH2_HERMES_SYNC_FUNCTIONS
-        ):
-            @wraps(func)
-            # connect to post_save signal for a model
-            @receiver(
-                post_save, sender=model, dispatch_uid=func.__name__,
-            )
-            # register publisher
-            @pyhermes.publisher(topic=func.__name__)
-            def wrapped_func(sender, instance=None, created=False, **kwargs):
+        @wraps(func)
+        # connect to post_save signal for a model
+        @receiver(
+            post_save, sender=model, dispatch_uid=func.__name__,
+        )
+        # register publisher
+        @pyhermes.publisher(topic=func.__name__)
+        def wrapped_func(sender, instance=None, created=False, **kwargs):
+            # publish only if sync enabled (globally and for particular
+            # function)
+            if (
+                settings.RALPH2_HERMES_SYNC_ENABLED and
+                func.__name__ in settings.RALPH2_HERMES_SYNC_FUNCTIONS and
                 # process the signal only if instance has not attribute
                 # `_handle_post_save` set to False
-                if getattr(instance, '_handle_post_save', True):
-                    try:
-                        result = func(sender, instance, created, **kwargs)
-                        pyhermes.publish(func.__name__, result)
-                    except:
-                        logger.exception('Error during Ralph2 sync')
-                    else:
-                        return result
-        else:
-            # by default this would be standalone function, not attached to any
-            # signal
-            wrapped_func = func
+                getattr(instance, '_handle_post_save', True)
+            ):
+                try:
+                    result = func(sender, instance, created, **kwargs)
+                    pyhermes.publish(func.__name__, result)
+                except:
+                    logger.exception('Error during Ralph2 sync')
+                else:
+                    return result
         return wrapped_func
     return wrap
 
