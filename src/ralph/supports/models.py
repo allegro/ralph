@@ -164,6 +164,4 @@ class BaseObjectsSupport(models.Model):
     )
 
     class Meta:
-        managed = False
         unique_together = ('support', 'baseobject')
-        db_table = 'supports_support_base_objects'
