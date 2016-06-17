@@ -154,7 +154,7 @@ class CloudFlavorViewSet(RalphAPIViewSet):
     queryset = CloudFlavor.objects.all()
     serializer_class = CloudFlavorSerializer
     save_serializer_class = SaveCloudFlavorSerializer
-    prefetch_related = ['tags', 'virtualcomponent__model']
+    prefetch_related = ['tags', 'virtualcomponent_set__model']
 
 
 class CloudProviderViewSet(RalphAPIViewSet):
@@ -171,7 +171,7 @@ class CloudHostViewSet(RalphAPIViewSet):
         'service_env__service', 'service_env__environment',
     ]
     prefetch_related = [
-        'tags', 'cloudflavor__virtualcomponent__model', 'licences'
+        'tags', 'cloudflavor__virtualcomponent_set__model', 'licences'
     ]
 
 
@@ -204,7 +204,7 @@ class VirtualServerViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     prefetch_related = BaseObjectViewSet.prefetch_related + [
         'tags',
         Prefetch(
-            'ethernet',
+            'ethernet_set',
             queryset=Ethernet.objects.select_related('ipaddress')
         ),
         # TODO: clusters

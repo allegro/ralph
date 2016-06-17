@@ -165,7 +165,7 @@ def mac_choices_for_objects(actions, objects):
         list of tuples with MAC addresses
     """
     if len(objects) == 1:
-        return [(eth.id, eth.mac) for eth in objects[0].ethernet.filter(
+        return [(eth.id, eth.mac) for eth in objects[0].ethernet_set.filter(
             Q(ipaddress__is_management=False) | Q(ipaddress__isnull=True),
             mac__isnull=False,
         )]
@@ -181,7 +181,7 @@ def _get_non_mgmt_ethernets(instance):
     Args:
         instance: BaseObject instance
     """
-    return instance.ethernet.filter(
+    return instance.ethernet_set.filter(
         mac__isnull=False
     ).exclude(
         ipaddress__is_management=True

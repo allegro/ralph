@@ -8,7 +8,7 @@ class NetworkableObjectFilters(django_filters.FilterSet):
     configuration_path = django_filters.CharFilter(
         name='configuration_path__path'
     )
-    ip = django_filters.CharFilter(name='ethernet__ipaddress__address')
+    ip = django_filters.CharFilter(name='ethernet_set__ipaddress__address')
 
     class Meta:
         fields = [

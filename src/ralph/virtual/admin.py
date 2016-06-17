@@ -277,7 +277,7 @@ class CloudFlavorAdmin(RalphAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related(
-            'virtualcomponent__model', 'tags'
+            'virtualcomponent_set__model', 'tags'
         ).annotate(instances_count=Count('cloudhost'))
 
     def get_tags(self, obj):

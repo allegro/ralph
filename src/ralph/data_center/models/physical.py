@@ -423,7 +423,7 @@ class DataCenterAsset(NetworkableBaseObject, AutocompleteTooltipMixin, Asset):
         return asset_cores_count
 
     def _get_management_ip(self):
-        eth = self.ethernet.select_related('ipaddress').filter(
+        eth = self.ethernet_set.select_related('ipaddress').filter(
             ipaddress__is_management=True
         ).first()
         if eth:
@@ -433,7 +433,7 @@ class DataCenterAsset(NetworkableBaseObject, AutocompleteTooltipMixin, Asset):
     def _get_or_create_management_ip(self):
         ip = self._get_management_ip()
         if not ip:
-            eth = self.ethernet.create()
+            eth = self.ethernet_set.create()
             ip = IPAddress(ethernet=eth, is_management=True)
         return ip
 

@@ -51,7 +51,7 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         'connections',
         'tags',
         Prefetch(
-            'ethernet',
+            'ethernet_set',
             queryset=Ethernet.objects.select_related('ipaddress')
         ),
     ]

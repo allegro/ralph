@@ -86,7 +86,7 @@ class SimpleRackSerializer(RalphAPISerializer):
 
 # used by DataCenterAsset and VirtualServer serializers
 class ComponentSerializerMixin(serializers.Serializer):
-    ethernet = EthernetSimpleSerializer(many=True)
+    ethernet = EthernetSimpleSerializer(many=True, source='ethernet_set')
     ipaddresses = fields.SerializerMethodField()
 
     def get_ipaddresses(self, instance):
@@ -99,7 +99,7 @@ class ComponentSerializerMixin(serializers.Serializer):
         # don't use `ipaddresses` property here to make use of
         # `ethernet__ipaddresses` in prefetch related
         ipaddresses = []
-        for eth in instance.ethernet.all():
+        for eth in instance.ethernet_set.all():
             try:
                 ipaddresses.append(eth.ipaddress.address)
             except AttributeError:
