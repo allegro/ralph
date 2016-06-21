@@ -29,8 +29,6 @@ class DCAssetPublisherTestCase(TestCase):
             hostname='my-host.mydc.net',
             invoice_date='2016-06-01',
             invoice_no='INVOICE-1234',
-            management_hostname='mgmt11.my.dc',
-            management_ip='10.20.30.40',
             niw='11111',
             order_no='ORDER-1234',
             orientation=1,
@@ -46,6 +44,9 @@ class DCAssetPublisherTestCase(TestCase):
             status=DataCenterAssetStatus.new.id,
             task_url='http://ralph.com/1234',
         )
+        self.dc_asset.management_ip = '10.20.30.40'
+        self.dc_asset.management_hostname = 'mgmt11.my.dc'
+
         self.ralph2_dc_id = '11'
         ImportedObjects.create(
             self.dc_asset.rack.server_room.data_center, self.ralph2_dc_id
