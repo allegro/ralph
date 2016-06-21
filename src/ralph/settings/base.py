@@ -65,6 +65,7 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'taggit',
     'taggit_serializer',
+    'ralph.ralph2_sync',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -346,3 +347,9 @@ if ENABLE_HERMES_INTEGRATION:
     INSTALLED_APPS += (
         'pyhermes.apps.django',
     )
+
+
+RALPH2_HERMES_SYNC_ENABLED = os_env_true('RALPH2_HERMES_SYNC_ENABLED')
+RALPH2_HERMES_SYNC_FUNCTIONS = json.loads(
+    os.environ.get('RALPH2_HERMES_SYNC_FUNCTIONS', '[]')
+)

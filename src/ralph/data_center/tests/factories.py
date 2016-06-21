@@ -86,6 +86,7 @@ class RackAccessoryFactory(DjangoModelFactory):
 class RackFactory(DjangoModelFactory):
 
     name = factory.Sequence(lambda n: 'Rack #{}'.format(n + 100))
+    server_room = factory.SubFactory(ServerRoomFactory)
 
     class Meta:
         model = Rack
