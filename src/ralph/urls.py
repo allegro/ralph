@@ -57,6 +57,7 @@ from ralph.app import mount_api
 from ralph.scan.api import ExternalPluginResource
 from ralph.ui.views.common import VhostRedirectView
 from ralph.util import clone_class
+from ralph.export_to_ng import publishers, subscribers  # noqa
 
 from django.conf import settings
 from django.contrib import admin
@@ -123,6 +124,7 @@ for r in (PowerDnsRecordResource,):
 v09_api.register(ExternalPluginResource())
 LATEST_API = v09_api
 
+
 urlpatterns = patterns(
     '',
     url(r'^$', login_required(VhostRedirectView.as_view(permanent=False))),
@@ -172,6 +174,12 @@ urlpatterns = patterns(
     url(r'^djid/', include(Djid.resolver())),
 
 )
+
+if getattr(settings, 'ENABLE_HERMES_INTEGRATION', False):
+    urlpatterns += patterns(
+        '',
+        url(r'^hermes/', include('pyhermes.apps.django.urls')),
+    )
 
 urlpatterns += pluggableapp.patterns()
 
