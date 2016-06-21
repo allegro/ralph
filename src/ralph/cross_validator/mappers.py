@@ -1,7 +1,8 @@
 from django.db.models import Prefetch
 
+from ralph.admin.helpers import getattr_dunder
 from ralph.assets.models import AssetModel, Ethernet
-from ralph.cross_validator.helpers import get_obj_id_ralph_20, getattr_dunder
+from ralph.cross_validator.helpers import get_obj_id_ralph_20
 from ralph.cross_validator.ralph2.device import AssetModel as Ralph2AssetModel
 from ralph.cross_validator.ralph2.device import Asset
 from ralph.data_center.models import DataCenterAsset

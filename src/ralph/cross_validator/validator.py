@@ -3,11 +3,11 @@ from collections import defaultdict
 
 from django.core.exceptions import ObjectDoesNotExist
 
+from ralph.admin.helpers import getattr_dunder
 from ralph.cross_validator.helpers import (
     diff,
     get_imported_obj,
-    get_obj_id_ralph_20,
-    getattr_dunder
+    get_obj_id_ralph_20
 )
 from ralph.cross_validator.models import CrossValidationResult
 

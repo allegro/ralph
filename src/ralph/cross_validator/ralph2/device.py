@@ -68,17 +68,9 @@ class DeviceInfo(SoftDeletable, models.Model):
     ralph_device = models.OneToOneField(Device)
     u_level = models.CharField(max_length=10, null=True, blank=True)
     u_height = models.CharField(max_length=10, null=True, blank=True)
-    # data_center = models.ForeignKey(DataCenter, null=True, blank=False)
-    # server_room = models.ForeignKey(ServerRoom, null=True, blank=False)
     rack = models.ForeignKey(Rack, null=True, blank=True)
-    # # deperecated field, use rack instead
-    # rack_old = models.CharField(max_length=10, null=True, blank=True)
     slot_no = models.CharField(max_length=3)
     position = models.IntegerField(null=True)
-    # orientation = models.PositiveIntegerField(
-    #     choices=Orientation(),
-    #     default=Orientation.front.id,
-    # )
 
     class Meta(
         generate_meta(app_label='ralph_assets', model_name='deviceinfo')

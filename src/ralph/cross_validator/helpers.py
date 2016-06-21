@@ -80,13 +80,3 @@ def diff(old, new, blacklist=None):
         new_value = normalize(new[change])
         if old_value != new_value:
             yield change, old_value, new_value
-
-
-def getattr_dunder(obj, field_path, default=None):
-    """
-    Return nested object value usign django __ convention or None (default)
-    if any of nested objects was not found.
-    """
-    current_field, __, rest = field_path.partition('__')
-    value = getattr(obj, current_field, default)
-    return getattr_dunder(value, rest) if rest else value
