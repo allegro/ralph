@@ -15,8 +15,8 @@ from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.assets.invoice_report import AssetInvoiceReportMixin
-from ralph.assets.models.components import GenericComponent as AssetComponent
 from ralph.assets.models.components import Ethernet
+from ralph.assets.views import ComponentsAdminView
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_center.forms import DataCenterAssetForm
 from ralph.data_center.models.components import DiskShare, DiskShareMount
@@ -185,18 +185,8 @@ class DataCenterAssetLicence(RalphDetailViewAdmin):
     inlines = [DataCenterAssetLicenceInline]
 
 
-class DataCenterAssetComponents(RalphDetailViewAdmin):
-    icon = 'folder'
-    name = 'dc_components'
-    label = _('Components')
-    url_name = 'datacenter_asset_components'
-
-    class DataCenterComponentsInline(RalphTabularInline):
-        model = AssetComponent
-        raw_id_fields = ('model',)
-        extra = 1
-
-    inlines = [DataCenterComponentsInline]
+class DataCenterAssetComponents(ComponentsAdminView):
+    pass
 
 
 class DataCenterAssetOperation(OperationViewReadOnlyForExisiting):

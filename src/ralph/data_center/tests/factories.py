@@ -12,6 +12,7 @@ from ralph.assets.tests.factories import (
     DataCenterAssetModelFactory,
     EthernetFactory,
     EthernetWithIPAddressFactory,
+    MemoryFactory,
     ServiceEnvironmentFactory
 )
 from ralph.data_center.models.physical import (
@@ -154,6 +155,8 @@ class DataCenterAssetFullFactory(DataCenterAssetFactory):
         'ralph.supports.tests.factories.BaseObjectsSupportFactory',
         'baseobject'
     )
+    mem1 = factory.RelatedFactory(MemoryFactory, 'base_object')
+    mem2 = factory.RelatedFactory(MemoryFactory, 'base_object')
 
 
 class DatabaseFactory(DjangoModelFactory):

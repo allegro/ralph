@@ -24,7 +24,8 @@ from ralph.assets.models.components import (
     ComponentModel,
     Component,
     GenericComponent,
-    Ethernet
+    Ethernet,
+    Memory,
 )
 from ralph.assets.models.configuration import (
     ConfigurationClass,
@@ -50,6 +51,7 @@ __all__ = [
     'Environment',
     'GenericComponent',
     'Manufacturer',
+    'Memory',
     'ModelVisualizationLayout',
     'ObjectModelType',
     'ProfitCenter',

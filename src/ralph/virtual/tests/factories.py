@@ -5,6 +5,7 @@ from ralph.assets.tests.factories import (
     ConfigurationClassFactory,
     EthernetFactory,
     EthernetWithIPAddressFactory,
+    MemoryFactory,
     ServiceEnvironmentFactory
 )
 from ralph.data_center.tests.factories import DataCenterAssetFactory
@@ -107,3 +108,5 @@ class VirtualServerFullFactory(VirtualServerFactory):
         'base_object',
         quantity=3
     )
+    mem1 = factory.RelatedFactory(MemoryFactory, 'base_object')
+    mem2 = factory.RelatedFactory(MemoryFactory, 'base_object')

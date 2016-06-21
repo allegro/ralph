@@ -151,3 +151,25 @@ class Ethernet(Component):
                 e.update_error_dict(errors)
         if errors:
             raise ValidationError(errors)
+
+
+class Memory(Component):
+    label = models.CharField(verbose_name=_('name'), max_length=255)
+    size = models.PositiveIntegerField(verbose_name=_("size (MiB)"))
+    speed = models.PositiveIntegerField(
+        verbose_name=_("speed (MHz)"), null=True, blank=True,
+    )
+    slot_no = models.PositiveIntegerField(
+        verbose_name=_("slot number"), null=True, blank=True,
+    )
+
+    class Meta:
+        verbose_name = _('memory')
+        verbose_name_plural = _('memories')
+
+    def __str__(self):
+        if self.slot_no:
+            return '#{}: {} ({} MiB)'.format(
+                self.slot_no, self.label, self.size
+            )
+        return '{} ({} MiB)'.format(self.label, self.size)

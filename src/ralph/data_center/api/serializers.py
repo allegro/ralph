@@ -5,7 +5,8 @@ from ralph.api import RalphAPISerializer
 from ralph.assets.api.serializers import (
     AssetSerializer,
     BaseObjectSerializer,
-    EthernetSimpleSerializer
+    EthernetSimpleSerializer,
+    MemorySimpleSerializer
 )
 from ralph.data_center.models import (
     Accessory,
@@ -87,6 +88,7 @@ class SimpleRackSerializer(RalphAPISerializer):
 # used by DataCenterAsset and VirtualServer serializers
 class ComponentSerializerMixin(serializers.Serializer):
     ethernet = EthernetSimpleSerializer(many=True, source='ethernet_set')
+    memories = MemorySimpleSerializer(many=True, source='memory_set')
     ipaddresses = fields.SerializerMethodField()
 
     def get_ipaddresses(self, instance):
