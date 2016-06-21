@@ -11,7 +11,10 @@ from django.dispatch import receiver
 
 from ralph.assets.models import AssetModel
 from ralph.data_center.models import DataCenterAsset
-from ralph.data_importer.models import ImportedObjects
+from ralph.data_importer.models import (
+    ImportedObjectDoesNotExist,
+    ImportedObjects
+)
 
 logger = logging.getLogger(__name__)
 
@@ -51,21 +54,16 @@ def ralph2_sync(model):
     return wrap
 
 
-def _get_obj_id_ralph_20(obj):
+def _get_obj_id_ralph_2(obj):
     """
     Returns ID of object in Ralph2 or None if not found.
     """
     if not obj:
         return None
     pk = None
-    content_type = ContentType.objects.get_for_model(obj._meta.model)
     try:
-        imported_obj = ImportedObjects.objects.get(
-            object_pk=obj.pk,
-            content_type=content_type,
-        )
-        pk = imported_obj.old_object_pk
-    except (obj._meta.model.DoesNotExist, ImportedObjects.DoesNotExist):
+        pk = ImportedObjects.get_imported_id(obj)
+    except ImportedObjectDoesNotExist:
         pass
     return pk
 
@@ -80,24 +78,24 @@ def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
     """
     asset = instance
     data = {
-        'ralph2_id': _get_obj_id_ralph_20(asset),
+        'ralph2_id': _get_obj_id_ralph_2(asset),
 
         'service': asset.service_env.service.uid,
-        'environment': _get_obj_id_ralph_20(
+        'environment': _get_obj_id_ralph_2(
             asset.service_env.environment
         ),
 
         'force_depreciation': asset.force_depreciation,
 
         # location
-        'data_center': _get_obj_id_ralph_20(
+        'data_center': _get_obj_id_ralph_2(
             asset.rack.server_room.data_center
         ) if asset.rack else None,
         'server_room': (
-            _get_obj_id_ralph_20(asset.rack.server_room)
+            _get_obj_id_ralph_2(asset.rack.server_room)
             if asset.rack else None
         ),
-        'rack': _get_obj_id_ralph_20(asset.rack),
+        'rack': _get_obj_id_ralph_2(asset.rack),
     }
     # simple fields
     for field in [
@@ -112,7 +110,7 @@ def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
     for field in [
         'model', 'property_of',
     ]:
-        data[field] = _get_obj_id_ralph_20(getattr(asset, field, None))
+        data[field] = _get_obj_id_ralph_2(getattr(asset, field, None))
     return data
 
 
@@ -124,11 +122,11 @@ def sync_model_to_ralph2(sender, instance=None, created=False, **kwargs):
     model = instance
     return {
         'id': model.id,
-        'ralph2_id': _get_obj_id_ralph_20(model),
+        'ralph2_id': _get_obj_id_ralph_2(model),
         'name': model.name,
-        'category': _get_obj_id_ralph_20(model.category),
+        'category': _get_obj_id_ralph_2(model.category),
         'cores_count': model.cores_count,
         'power_consumption': model.power_consumption,
         'height_of_device': model.height_of_device,
-        'manufacturer': _get_obj_id_ralph_20(model.manufacturer),
+        'manufacturer': _get_obj_id_ralph_2(model.manufacturer),
     }
