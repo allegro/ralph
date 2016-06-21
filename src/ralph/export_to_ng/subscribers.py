@@ -109,7 +109,7 @@ def sync_dc_asset_to_ralph2_handler(data):
             name=DataCenter.objects.get(pk=data['data_center'])
         )
     except (Warehouse.DoesNotExist, DataCenter.DoesNotExist):
-        asset.warehouse_id = 3631  # TODO: fix
+        asset.warehouse_id = settings.NG_SYNC_DEFAULT_WAREHOUSE
 
     if creating:
         device_info = DeviceInfo()
