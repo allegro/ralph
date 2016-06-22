@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import logging
 from collections import defaultdict
 from functools import partial
 
 from django.db import connection, migrations, models
+
+logger = logging.getLogger(__name__)
 
 
 def baseobject_migration(
@@ -18,7 +21,7 @@ def baseobject_migration(
     related models to new point to new ids.
     """
     model_str = '{}.{}'.format(app_name, model_name)
-    print('Inheriting {} from baseobject'.format(model_str))
+    logger.info('Inheriting {} from baseobject'.format(model_str))
     Model = apps.get_model(app_name, model_name)
     BaseObject = apps.get_model('assets', 'BaseObject')
     ContentType = apps.get_model('contenttypes', 'ContentType')
@@ -26,7 +29,7 @@ def baseobject_migration(
 
     id_mapping = {}
     max_id = 0
-    print('Creating new IDs for {}'.format(model_str))
+    logger.info('Creating new IDs for {}'.format(model_str))
     for obj in Model._default_manager.order_by('baseobject_ptr_id'):
         # first of all, create new BaseObject instance for each object
         # it's id will be later referenced as baseobject_ptr_id
@@ -51,9 +54,10 @@ def baseobject_migration(
         Model._default_manager.filter(baseobject_ptr_id=old_pk).update(
             baseobject_ptr_id=id_mapping[old_pk - max_id],
         )
-        print('Mapping {} to {}'.format(old_pk, id_mapping[old_pk - max_id]))
-    print(id_mapping)
-    print(max_id)
+        logger.info(
+            'Mapping {} to {}'.format(old_pk, id_mapping[old_pk - max_id])
+        )
+
     # save each obj once again to refresh content type etc
     for obj in Model._default_manager.all():
         obj.save()
@@ -62,7 +66,7 @@ def baseobject_migration(
     for relation in Model._meta.get_all_related_objects(local_only=True):
         related_model = relation.related_model
         relation_field = relation.field.attname
-        print('Processing relation {}<->{} using field {}'.format(
+        logger.info('Processing relation {}<->{} using field {}'.format(
             model_str, related_model, relation_field
         ))
         relation_mapping = defaultdict(list)
