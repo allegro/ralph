@@ -83,7 +83,6 @@ class ResultAdmin(RalphAdmin):
             return format_html('-')
         html = ''
         for item, values in obj.diff.items():
-            print(item, values)
             old = str(values['old']) or ''
             new = str(values['new']) or ''
             diff_pos = get_diff_positions(old, new)
@@ -102,14 +101,8 @@ class ResultAdmin(RalphAdmin):
     get_diff_display.short_description = 'Diff'
 
     def get_errors_display(self, obj):
-        if not bool(obj.errors):
-            return '-'
-        html = ''
-        for item in obj.errors:
-            html += '{}<br>'.format(
-                item
-            )
-        return format_html(html)
+        html = '<br>'.join(obj.errors)
+        return format_html(html) or '-'
     get_errors_display.short_description = 'Errors'
 
     def get_object_display(self, result):
