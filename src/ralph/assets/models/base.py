@@ -31,15 +31,14 @@ class HostFilterMixin(object):
 
         Proper content types:
         * DataCenterAsset
-        * Cluster
         * VirtualServer
         * CloudHost
         """
-        from ralph.data_center.models import Cluster, DataCenterAsset
+        from ralph.data_center.models import DataCenterAsset
         from ralph.virtual.models import CloudHost, VirtualServer
         return self.filter(
             content_type__in=ContentType.objects.get_for_models(
-                DataCenterAsset, Cluster, VirtualServer, CloudHost
+                DataCenterAsset, VirtualServer, CloudHost
             ).values()
         )
 

@@ -199,7 +199,7 @@ class VirtualServerViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     save_serializer_class = VirtualServerSaveSerializer
     select_related = VirtualServerAdmin.list_select_related + [
         'parent', 'service_env__service', 'service_env__environment',
-        'configuration_path',
+        'configuration_path', 'content_type'
     ]
     prefetch_related = BaseObjectViewSet.prefetch_related + [
         'tags',

@@ -33,6 +33,13 @@ from ralph.licences.api_simple import SimpleBaseObjectLicenceSerializer
 from ralph.networks.api_simple import IPAddressSimpleSerializer
 
 
+class TypeFromContentTypeSerializerMixin(RalphAPISerializer):
+    object_type = fields.SerializerMethodField(read_only=True)
+
+    def get_object_type(self, instance):
+        return instance.content_type.model
+
+
 class BusinessSegmentSerializer(RalphAPISerializer):
     class Meta:
         model = BusinessSegment
@@ -149,7 +156,9 @@ class ServiceEnvironmentSimpleSerializer(RalphAPISerializer):
         _skip_tags_field = True
 
 
-class ServiceEnvironmentSerializer(RalphAPISerializer):
+class ServiceEnvironmentSerializer(
+    TypeFromContentTypeSerializerMixin, RalphAPISerializer
+):
     __str__ = StrField(show_type=True)
 
     class Meta:
@@ -201,7 +210,11 @@ class AssetHolderSerializer(RalphAPISerializer):
         model = AssetHolder
 
 
-class BaseObjectSimpleSerializer(RalphAPISerializer):
+class BaseObjectSimpleSerializer(
+    TypeFromContentTypeSerializerMixin,
+    WithCustomFieldsSerializerMixin,
+    RalphAPISerializer
+):
     __str__ = StrField(show_type=True)
 
     class Meta:
@@ -236,23 +249,16 @@ class ConfigurationClassSerializer(RalphAPISerializer):
         model = ConfigurationClass
 
 
-class BaseObjectSerializer(
-    WithCustomFieldsSerializerMixin,
-    BaseObjectSimpleSerializer
-):
+class BaseObjectSerializer(BaseObjectSimpleSerializer):
     """
     Base class for other serializers inheriting from `BaseObject`.
     """
     service_env = ServiceEnvironmentSimpleSerializer()
     licences = SimpleBaseObjectLicenceSerializer(read_only=True, many=True)
     configuration_path = ConfigurationClassSerializer()
-    type = fields.SerializerMethodField(read_only=True)
 
     class Meta(BaseObjectSimpleSerializer.Meta):
         pass
-
-    def get_type(self, instance):
-        return instance.content_type.model
 
 
 class AssetSerializer(BaseObjectSerializer):
@@ -320,5 +326,5 @@ class DCHostSerializer(ComponentSerializerMixin, BaseObjectSerializer):
         fields = [
             'id', 'url', 'ethernet', 'memories', 'ipaddresses', 'custom_fields',
             '__str__', 'tags', 'service_env', 'configuration_path', 'hostname',
-            'created', 'modified', 'remarks', 'parent', 'type'
+            'created', 'modified', 'remarks', 'parent', 'object_type'
         ]

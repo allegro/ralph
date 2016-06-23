@@ -167,7 +167,7 @@ class DCHostFilterSet(NetworkableObjectFilters):
 
 
 class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
-    queryset = models.BaseObject.polymorphic_objects.dc_hosts()
+    queryset = models.BaseObject.polymorphic_objects
     serializer_class = serializers.DCHostSerializer
     http_method_names = ['get', 'options', 'head']
     filter_fields = [
@@ -191,15 +191,16 @@ class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
             'asset__hostname',
             'virtualserver__hostname',
             'cloudhost__hostname',
-            'cluster__hostname',
         ],
         'hostname': [
             'asset__hostname',
             'virtualserver__hostname',
             'cloudhost__hostname',
-            'cluster__hostname',
         ],
         'ip': ['ethernet_set__ipaddress__address'],
         'service': ['service_env__service__uid', 'service_env__service__name'],
-        'type': ['content_type__model'],
+        'object_type': ['content_type__model'],
     }
+
+    def get_queryset(self):
+        return super().get_queryset().dc_hosts()

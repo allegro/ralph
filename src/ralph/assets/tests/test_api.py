@@ -608,7 +608,7 @@ class BaseObjectAPITests(RalphAPITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(len(response.data['results']), 1)
 
-    def test_str_field(self):
+    def test_str_and_type_field(self):
         count = 0
         for descendant in BaseObject._polymorphic_descendants:
             if descendant in [
@@ -627,6 +627,9 @@ class BaseObjectAPITests(RalphAPITestCase):
                     msg='__str__ not found (or different) for {}'.format(
                         descendant
                     )
+                )
+                self.assertEqual(
+                    response.data.get('object_type'), obj.content_type.model
                 )
         self.assertEqual(count, len(BASE_OBJECTS_FACTORIES))
 
@@ -655,24 +658,21 @@ class DCHostAPITests(RalphAPITestCase):
             configuration_path__module__name='ralph3',
             service_env=se,
             parent__service_env=se,
-        )
-        self.cloud_host.ip_addresses = ['10.20.30.40']
-        self.cluster = ClusterFactory(
-            configuration_path__module__name='ralph4',
-            service_env__service__uid='sc-444',
             hostname='aaaa'
         )
+        self.cloud_host.ip_addresses = ['10.20.30.40']
 
     def test_get_dc_hosts_list(self):
         url = reverse('dchost-list')
-        with self.assertNumQueries(15):
+        with self.assertNumQueries(13):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 4)
+        self.assertEqual(response.data['count'], 3)
 
     def test_filter_by_type_dc_asset(self):
         url = '{}?{}'.format(
-            reverse('dchost-list'), urlencode({'type': 'datacenterasset'})
+            reverse('dchost-list'),
+            urlencode({'object_type': 'datacenterasset'})
         )
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -684,11 +684,12 @@ class DCHostAPITests(RalphAPITestCase):
         self.assertCountEqual(dca['tags'], ['abc, cde', 'xyz'])
         self.assertEqual(dca['configuration_path']['module']['name'], 'ralph')
         self.assertEqual(dca['service_env']['service_uid'], 'sc-123')
-        self.assertEqual(dca['type'], 'datacenterasset')
+        self.assertEqual(dca['object_type'], 'datacenterasset')
 
     def test_filter_by_type_virtual(self):
         url = '{}?{}'.format(
-            reverse('dchost-list'), urlencode({'type': 'virtualserver'})
+            reverse('dchost-list'),
+            urlencode({'object_type': 'virtualserver'})
         )
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -700,11 +701,11 @@ class DCHostAPITests(RalphAPITestCase):
         self.assertCountEqual(virt['tags'], ['abc, cde', 'xyz'])
         self.assertEqual(virt['configuration_path']['module']['name'], 'ralph2')
         self.assertEqual(virt['service_env']['service_uid'], 'sc-222')
-        self.assertEqual(virt['type'], 'virtualserver')
+        self.assertEqual(virt['object_type'], 'virtualserver')
 
     def test_filter_by_type_cloudhost(self):
         url = '{}?{}'.format(
-            reverse('dchost-list'), urlencode({'type': 'cloudhost'})
+            reverse('dchost-list'), urlencode({'object_type': 'cloudhost'})
         )
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -716,25 +717,9 @@ class DCHostAPITests(RalphAPITestCase):
             cloud['configuration_path']['module']['name'], 'ralph3'
         )
         self.assertEqual(cloud['service_env']['service_uid'], 'sc-333')
-        self.assertEqual(cloud['type'], 'cloudhost')
+        self.assertEqual(cloud['object_type'], 'cloudhost')
         self.assertEqual(len(cloud['ethernet']), 1)
         self.assertEqual(len(cloud['ipaddresses']), 1)
-
-    def test_filter_by_type_cluster(self):
-        url = '{}?{}'.format(
-            reverse('dchost-list'), urlencode({'type': 'cluster'})
-        )
-        response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
-        cluster = response.data['results'][0]
-        self.assertEqual(cluster['hostname'], self.cluster.hostname)
-        self.assertCountEqual(cluster['tags'], ['abc, cde', 'xyz'])
-        self.assertEqual(
-            cluster['configuration_path']['module']['name'], 'ralph4'
-        )
-        self.assertEqual(cluster['service_env']['service_uid'], 'sc-444')
-        self.assertEqual(cluster['type'], 'cluster')
 
     def test_filter_by_hostname(self):
         url = '{}?{}'.format(
