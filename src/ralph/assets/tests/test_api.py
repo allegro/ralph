@@ -37,6 +37,7 @@ from ralph.data_center.tests.factories import (
     ClusterFactory,
     DatabaseFactory,
     DataCenterAssetFactory,
+    DataCenterAssetFullFactory,
     VIPFactory
 )
 from ralph.domains.models import Domain
@@ -56,8 +57,10 @@ from ralph.virtual.models import (
 from ralph.virtual.tests.factories import (
     CloudFlavorFactory,
     CloudHostFactory,
+    CloudHostFullFactory,
     CloudProjectFactory,
-    VirtualServerFactory
+    VirtualServerFactory,
+    VirtualServerFullFactory
 )
 
 
@@ -626,6 +629,144 @@ class BaseObjectAPITests(RalphAPITestCase):
                     )
                 )
         self.assertEqual(count, len(BASE_OBJECTS_FACTORIES))
+
+
+class DCHostAPITests(RalphAPITestCase):
+    def setUp(self):
+        super().setUp()
+        # is should be skipped in API
+        self.bo_asset = BackOfficeAssetFactory(
+            barcode='12345', hostname='host1'
+        )
+
+        self.dc_asset = DataCenterAssetFullFactory(
+            service_env__service__name='test-service',
+            service_env__service__uid='sc-123',
+            service_env__environment__name='prod',
+            configuration_path__module__name='ralph',
+        )
+        self.virtual = VirtualServerFullFactory(
+            parent=self.dc_asset,
+            configuration_path__module__name='ralph2',
+            service_env__service__uid='sc-222',
+        )
+        se = ServiceEnvironmentFactory(service__uid='sc-333')
+        self.cloud_host = CloudHostFullFactory(
+            configuration_path__module__name='ralph3',
+            service_env=se,
+            parent__service_env=se,
+        )
+        self.cloud_host.ip_addresses = ['10.20.30.40']
+        self.cluster = ClusterFactory(
+            configuration_path__module__name='ralph4',
+            service_env__service__uid='sc-444',
+            hostname='aaaa'
+        )
+
+    def test_get_dc_hosts_list(self):
+        url = reverse('dchost-list')
+        with self.assertNumQueries(15):
+            response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 4)
+
+    def test_filter_by_type_dc_asset(self):
+        url = '{}?{}'.format(
+            reverse('dchost-list'), urlencode({'type': 'datacenterasset'})
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        dca = response.data['results'][0]
+        self.assertEqual(dca['hostname'], self.dc_asset.hostname)
+        self.assertEqual(len(dca['ethernet']), 3)
+        self.assertEqual(len(dca['ipaddresses']), 2)
+        self.assertCountEqual(dca['tags'], ['abc, cde', 'xyz'])
+        self.assertEqual(dca['configuration_path']['module']['name'], 'ralph')
+        self.assertEqual(dca['service_env']['service_uid'], 'sc-123')
+        self.assertEqual(dca['type'], 'datacenterasset')
+
+    def test_filter_by_type_virtual(self):
+        url = '{}?{}'.format(
+            reverse('dchost-list'), urlencode({'type': 'virtualserver'})
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        virt = response.data['results'][0]
+        self.assertEqual(virt['hostname'], self.virtual.hostname)
+        self.assertEqual(len(virt['ethernet']), 2)
+        self.assertEqual(len(virt['ipaddresses']), 1)
+        self.assertCountEqual(virt['tags'], ['abc, cde', 'xyz'])
+        self.assertEqual(virt['configuration_path']['module']['name'], 'ralph2')
+        self.assertEqual(virt['service_env']['service_uid'], 'sc-222')
+        self.assertEqual(virt['type'], 'virtualserver')
+
+    def test_filter_by_type_cloudhost(self):
+        url = '{}?{}'.format(
+            reverse('dchost-list'), urlencode({'type': 'cloudhost'})
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        cloud = response.data['results'][0]
+        self.assertEqual(cloud['hostname'], self.cloud_host.hostname)
+        self.assertCountEqual(cloud['tags'], ['abc, cde', 'xyz'])
+        self.assertEqual(
+            cloud['configuration_path']['module']['name'], 'ralph3'
+        )
+        self.assertEqual(cloud['service_env']['service_uid'], 'sc-333')
+        self.assertEqual(cloud['type'], 'cloudhost')
+        self.assertEqual(len(cloud['ethernet']), 1)
+        self.assertEqual(len(cloud['ipaddresses']), 1)
+
+    def test_filter_by_type_cluster(self):
+        url = '{}?{}'.format(
+            reverse('dchost-list'), urlencode({'type': 'cluster'})
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        cluster = response.data['results'][0]
+        self.assertEqual(cluster['hostname'], self.cluster.hostname)
+        self.assertCountEqual(cluster['tags'], ['abc, cde', 'xyz'])
+        self.assertEqual(
+            cluster['configuration_path']['module']['name'], 'ralph4'
+        )
+        self.assertEqual(cluster['service_env']['service_uid'], 'sc-444')
+        self.assertEqual(cluster['type'], 'cluster')
+
+    def test_filter_by_hostname(self):
+        url = '{}?{}'.format(
+            reverse('dchost-list'), urlencode({'hostname': 'aaaa'})
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_name(self):
+        url = '{}?{}'.format(
+            reverse('dchost-list'), urlencode({'name': 'aaaa'})
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_service_uid(self):
+        url = '{}?{}'.format(
+            reverse('dchost-list'), urlencode({'service': 'sc-222'})
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_ip(self):
+        url = '{}?{}'.format(
+            reverse('dchost-list'), urlencode({'ip': '10.20.30.40'})
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
 
 
 class ConfigurationModuleAPITests(RalphAPITestCase):

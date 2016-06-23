@@ -6,6 +6,7 @@ from ralph.api import RalphAPIViewSet
 from ralph.api.utils import PolymorphicViewSetMixin
 from ralph.assets import models
 from ralph.assets.api import serializers
+from ralph.assets.api.filters import NetworkableObjectFilters
 from ralph.lib.custom_fields.models import CustomFieldValue
 from ralph.licences.api import BaseObjectLicenceViewSet
 from ralph.licences.models import BaseObjectLicence
@@ -88,7 +89,18 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
         'content_type'
     ]
     extended_filter_fields = {
-        'name': ['asset__hostname'],
+        'name': [
+            'asset__hostname',
+            'virtualserver__hostname',
+            'cloudhost__hostname',
+            'cluster__hostname',
+        ],
+        'hostname': [
+            'asset__hostname',
+            'virtualserver__hostname',
+            'cloudhost__hostname',
+            'cluster__hostname',
+        ],
         'sn': ['asset__sn'],
         'barcode': ['asset__barcode'],
         'price': ['asset__price'],
@@ -146,4 +158,48 @@ class BaseObjectViewSetMixin(object):
     """
     extended_filter_fields = {
         'service': ['service_env__service__uid', 'service_env__service__name']
+    }
+
+
+class DCHostFilterSet(NetworkableObjectFilters):
+    class Meta(NetworkableObjectFilters.Meta):
+        model = models.BaseObject
+
+
+class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
+    queryset = models.BaseObject.polymorphic_objects.dc_hosts()
+    serializer_class = serializers.DCHostSerializer
+    http_method_names = ['get', 'options', 'head']
+    filter_fields = [
+        'id', 'service_env', 'service_env', 'service_env__service__uid',
+        'content_type',
+    ]
+    select_related = [
+        'service_env', 'service_env__service', 'service_env__environment',
+        'configuration_path', 'configuration_path__module'
+    ]
+    prefetch_related = BaseObjectViewSet.prefetch_related + [
+        'tags',
+        'memory_set',
+        Prefetch(
+            'ethernet_set',
+            queryset=models.Ethernet.objects.select_related('ipaddress')
+        ),
+    ]
+    extended_filter_fields = {
+        'name': [
+            'asset__hostname',
+            'virtualserver__hostname',
+            'cloudhost__hostname',
+            'cluster__hostname',
+        ],
+        'hostname': [
+            'asset__hostname',
+            'virtualserver__hostname',
+            'cloudhost__hostname',
+            'cluster__hostname',
+        ],
+        'ip': ['ethernet_set__ipaddress__address'],
+        'service': ['service_env__service__uid', 'service_env__service__name'],
+        'type': ['content_type__model'],
     }

@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from rest_framework import serializers
+from rest_framework import fields, serializers
 
 from ralph.accounts.api_simple import SimpleRalphUserSerializer
 from ralph.accounts.models import Team
@@ -246,9 +246,13 @@ class BaseObjectSerializer(
     service_env = ServiceEnvironmentSimpleSerializer()
     licences = SimpleBaseObjectLicenceSerializer(read_only=True, many=True)
     configuration_path = ConfigurationClassSerializer()
+    type = fields.SerializerMethodField(read_only=True)
 
     class Meta(BaseObjectSimpleSerializer.Meta):
         pass
+
+    def get_type(self, instance):
+        return instance.content_type.model
 
 
 class AssetSerializer(BaseObjectSerializer):
@@ -282,3 +286,39 @@ class MemorySerializer(MemorySimpleSerializer):
         depth = 1
         model = Memory
         exclude = ('model',)
+
+
+# used by DataCenterAsset and VirtualServer serializers
+class ComponentSerializerMixin(serializers.Serializer):
+    ethernet = EthernetSimpleSerializer(many=True, source='ethernet_set')
+    memories = MemorySimpleSerializer(many=True, source='memory_set')
+    ipaddresses = fields.SerializerMethodField()
+
+    def get_ipaddresses(self, instance):
+        """
+        Return list of ip addresses for passed instance.
+
+        Returns:
+            list of ip addresses (as strings)
+        """
+        # don't use `ipaddresses` property here to make use of
+        # `ethernet__ipaddresses` in prefetch related
+        ipaddresses = []
+        for eth in instance.ethernet_set.all():
+            try:
+                ipaddresses.append(eth.ipaddress.address)
+            except AttributeError:
+                pass
+        return ipaddresses
+
+
+class DCHostSerializer(ComponentSerializerMixin, BaseObjectSerializer):
+    hostname = fields.CharField()
+
+    class Meta:
+        model = BaseObject
+        fields = [
+            'id', 'url', 'ethernet', 'memories', 'ipaddresses', 'custom_fields',
+            '__str__', 'tags', 'service_env', 'configuration_path', 'hostname',
+            'created', 'modified', 'remarks', 'parent', 'type'
+        ]

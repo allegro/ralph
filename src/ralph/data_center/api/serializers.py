@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-from rest_framework import fields, serializers
+from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer
 from ralph.assets.api.serializers import (
     AssetSerializer,
     BaseObjectSerializer,
-    EthernetSimpleSerializer,
-    MemorySimpleSerializer
+    ComponentSerializerMixin
 )
 from ralph.data_center.models import (
     Accessory,
@@ -83,30 +82,6 @@ class SimpleRackSerializer(RalphAPISerializer):
         model = Rack
         depth = 2
         exclude = ('accessories',)
-
-
-# used by DataCenterAsset and VirtualServer serializers
-class ComponentSerializerMixin(serializers.Serializer):
-    ethernet = EthernetSimpleSerializer(many=True, source='ethernet_set')
-    memories = MemorySimpleSerializer(many=True, source='memory_set')
-    ipaddresses = fields.SerializerMethodField()
-
-    def get_ipaddresses(self, instance):
-        """
-        Return list of ip addresses for passed instance.
-
-        Returns:
-            list of ip addresses (as strings)
-        """
-        # don't use `ipaddresses` property here to make use of
-        # `ethernet__ipaddresses` in prefetch related
-        ipaddresses = []
-        for eth in instance.ethernet_set.all():
-            try:
-                ipaddresses.append(eth.ipaddress.address)
-            except AttributeError:
-                pass
-        return ipaddresses
 
 
 class RackSerializer(RalphAPISerializer):

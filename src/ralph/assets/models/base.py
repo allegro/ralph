@@ -8,7 +8,11 @@ from ralph.lib.custom_fields.models import WithCustomFieldsMixin
 from ralph.lib.mixins.models import TaggableMixin, TimeStampMixin
 from ralph.lib.permissions import PermByFieldMixin
 from ralph.lib.permissions.models import PermissionsBase
-from ralph.lib.polymorphic.models import Polymorphic, PolymorphicBase
+from ralph.lib.polymorphic.models import (
+    Polymorphic,
+    PolymorphicBase,
+    PolymorphicQuerySet
+)
 from ralph.lib.transitions.models import TransitionWorkflowBase
 
 BaseObjectMeta = type(
@@ -20,6 +24,30 @@ BaseObjectMeta = type(
 )
 
 
+class HostFilterMixin(object):
+    def dc_hosts(self):
+        """
+        Filter objects to get only hosts.
+
+        Proper content types:
+        * DataCenterAsset
+        * Cluster
+        * VirtualServer
+        * CloudHost
+        """
+        from ralph.data_center.models import Cluster, DataCenterAsset
+        from ralph.virtual.models import CloudHost, VirtualServer
+        return self.filter(
+            content_type__in=ContentType.objects.get_for_models(
+                DataCenterAsset, Cluster, VirtualServer, CloudHost
+            ).values()
+        )
+
+
+class BaseObjectPolymorphicQuerySet(HostFilterMixin, PolymorphicQuerySet):
+    pass
+
+
 class BaseObject(
     Polymorphic,
     TaggableMixin,
@@ -29,6 +57,7 @@ class BaseObject(
     models.Model,
     metaclass=BaseObjectMeta
 ):
+    polymorphic_objects = BaseObjectPolymorphicQuerySet.as_manager()
 
     """Base object mixin."""
     # TODO: dynamically limit parent basing on model

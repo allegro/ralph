@@ -8,6 +8,7 @@ from ralph.assets.api.views import (
     CategoryViewSet,
     ConfigurationClassViewSet,
     ConfigurationModuleViewSet,
+    DCHostViewSet,
     EnvironmentViewSet,
     EthernetViewSet,
     ManufacturerViewSet,
@@ -32,5 +33,6 @@ router.register(r'manufacturers', ManufacturerViewSet)
 router.register(r'profit-centers', ProfitCenterViewSet)
 router.register(r'services-environments', ServiceEnvironmentViewSet)
 router.register(r'services', ServiceViewSet)
+router.register(r'dc-hosts', DCHostViewSet, base_name='dchost')
 
 urlpatterns = []

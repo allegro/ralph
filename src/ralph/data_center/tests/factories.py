@@ -42,10 +42,16 @@ class ClusterFactory(DjangoModelFactory):
 
     name = factory.Iterator(['Databases', 'Applications'])
     type = factory.SubFactory(ClusterTypeFactory)
+    configuration_path = factory.SubFactory(ConfigurationClassFactory)
+    service_env = factory.SubFactory(ServiceEnvironmentFactory)
 
     class Meta:
         model = Cluster
         django_get_or_create = ['name']
+
+    @factory.post_generation
+    def post_tags(self, create, extracted, **kwargs):
+        self.tags.add('abc, cde', 'xyz')
 
 
 class DataCenterFactory(DjangoModelFactory):
@@ -157,6 +163,10 @@ class DataCenterAssetFullFactory(DataCenterAssetFactory):
     )
     mem1 = factory.RelatedFactory(MemoryFactory, 'base_object')
     mem2 = factory.RelatedFactory(MemoryFactory, 'base_object')
+
+    @factory.post_generation
+    def post_tags(self, create, extracted, **kwargs):
+        self.tags.add('abc, cde', 'xyz')
 
 
 class DatabaseFactory(DjangoModelFactory):
