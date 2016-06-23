@@ -55,6 +55,7 @@ docs/_build/
 
 src/ralph_assets
 src/ralph/settings/*local.py
+src/ralph/cross_validator/settings_local.py
 src/ralph/urls/*local.py
 
 # Vagrant

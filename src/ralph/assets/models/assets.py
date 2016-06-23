@@ -120,6 +120,7 @@ class AssetModel(
     PermByFieldMixin,
     NamedMixin.NonUnique,
     TimeStampMixin,
+    AdminAbsoluteUrlMixin,
     WithCustomFieldsMixin,
     models.Model
 ):
