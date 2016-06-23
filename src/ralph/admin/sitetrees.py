@@ -301,8 +301,7 @@ sitetrees = [
                 section(_('Transitions'), 'transitions', 'TransitionModel'),
                 section(_('Report template'), 'reports', 'Report'),
                 section(_('Custom fields'), 'custom_fields', 'CustomField'),
-                *cross_validation_items
-            ]
+            ] + cross_validation_items
         )
     ])
 ]
