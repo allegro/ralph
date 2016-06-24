@@ -100,8 +100,11 @@ def sync_device_to_ralph3(data):
     """
     dca = ImportedObjects.get_object_from_old_pk(DataCenterAsset, data['id'])
     dca.hostname = data['hostname']
-    dca.management_ip = data['management_ip']
-    dca.management_hostname = data['management_hostname']
+    if data['management_ip']:
+        dca.management_ip = data['management_ip']
+        dca.management_hostname = data['management_hostname']
+    else:
+        del dca.management_ip
     if data['service'] and data['environment']:
         dca.service_env = ServiceEnvironment.objects.get(
             service__uid=data['service'],
