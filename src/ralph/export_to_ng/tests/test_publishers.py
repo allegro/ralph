@@ -1,12 +1,17 @@
 from django.test import TestCase
 from django.test.utils import override_settings
 
+from ralph.business.models import Department, Venture, VentureRole
 from ralph.cmdb.tests.utils import (
     DeviceEnvironmentFactory,
     ServiceCatalogFactory
 )
 from ralph.discovery.models import DeviceType, Device
-from ralph.export_to_ng.publishers import sync_device_to_ralph3
+from ralph.export_to_ng.publishers import (
+    sync_device_to_ralph3,
+    sync_venture_role_to_ralph3,
+    sync_venture_to_ralph3
+)
 from ralph_assets.tests.utils.assets import DCAssetFactory
 
 
@@ -26,6 +31,16 @@ class DevicePublisherTestCase(TestCase):
         self.device.device_environment = DeviceEnvironmentFactory(
             id=9876, name='prod'
         )
+        self.venture1 = Venture.objects.create(
+            name='Venture 1', symbol='v1',
+        )
+        self.venture_role = VentureRole.objects.create(
+            id=11111,
+            name='abcd',
+            venture=self.venture1
+        )
+        self.device.venture = self.venture1
+        self.device.venture_role = self.venture_role
 
     @override_settings(RALPH3_HERMES_SYNC_ENABLED=False)
     def test_sync_device_when_hermes_sync_disabled(self):
@@ -60,6 +75,7 @@ class DevicePublisherTestCase(TestCase):
             'environment': None,
             'management_ip': '',
             'management_hostname': '',
+            'venture_role': None,
         })
 
     def test_publish_device_full(self):
@@ -71,4 +87,60 @@ class DevicePublisherTestCase(TestCase):
             'environment': 9876,
             'management_ip': '10.20.30.40',
             'management_hostname': 'mgmt-1.mydc.net',
+            'venture_role': 11111,
+        })
+
+
+@override_settings(
+    RALPH3_HERMES_SYNC_ENABLED=True,
+    RALPH3_HERMES_SYNC_FUNCTIONS=['sync_venture_to_ralph3'])
+class VenturePublisherTestCase(TestCase):
+    def setUp(self):
+        self.department = Department.objects.create(name='TEAM1')
+        self.venture1 = Venture.objects.create(
+            name='Venture 1', symbol='v1',
+        )
+        self.venture2 = Venture.objects.create(
+            name='Venture 2', symbol='v2', parent=self.venture1,
+            department=self.department
+        )
+
+    def test_publish_venture_without_parent_and_team(self):
+        result = sync_venture_to_ralph3(Venture, self.venture1)
+        self.assertEqual(result, {
+            'id': self.venture1.id,
+            'symbol': 'v1',
+            'department': None,
+            'parent': None,
+        })
+
+    def test_publish_venture_with_parent_and_team(self):
+        result = sync_venture_to_ralph3(Venture, self.venture2)
+        self.assertEqual(result, {
+            'id': self.venture2.id,
+            'symbol': 'v2',
+            'department': 'TEAM1',
+            'parent': self.venture1.id,
+        })
+
+
+@override_settings(
+    RALPH3_HERMES_SYNC_ENABLED=True,
+    RALPH3_HERMES_SYNC_FUNCTIONS=['sync_venture_role_to_ralph3'])
+class VentureRolePublisherTestCase(TestCase):
+    def setUp(self):
+        self.venture1 = Venture.objects.create(
+            name='Venture 1', symbol='v1',
+        )
+        self.venture_role = VentureRole.objects.create(
+            name='abcd',
+            venture=self.venture1
+        )
+
+    def test_publish_venture_role(self):
+        result = sync_venture_role_to_ralph3(VentureRole, self.venture_role)
+        self.assertEqual(result, {
+            'id': self.venture_role.id,
+            'name': 'abcd',
+            'venture': self.venture1.id,
         })

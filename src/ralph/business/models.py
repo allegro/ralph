@@ -66,6 +66,7 @@ class HasSymbolBasedPath(db.Model):
             self.path = self.symbol
         super(HasSymbolBasedPath, self).save(*args, **kwargs)
         for child in self.child_set.all():
+            child._handle_post_save = False
             child.save()
 
 
@@ -159,6 +160,7 @@ class Venture(Named, PrebootMixin, HasSymbolBasedPath, TimeTrackable):
             self.path = self.symbol
         super(Venture, self).save(*args, **kwargs)
         for child in self.child_set.all():
+            child._handle_post_save = False
             child.save()
 
     @db.permalink
