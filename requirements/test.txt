@@ -9,3 +9,5 @@ django_migration_testcase
 factory-boy
 flake8
 sphinx
+flake8-debugger
+flake8-print
