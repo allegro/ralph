@@ -50,6 +50,7 @@ class CloudProjectFactory(DjangoModelFactory):
         CloudProviderFactory,
         name='openstack',
     )
+    service_env = factory.SubFactory(ServiceEnvironmentFactory)
 
     class Meta:
         model = CloudProject
@@ -65,10 +66,18 @@ class CloudHostFactory(DjangoModelFactory):
     )
     host_id = factory.Iterator(['host_id1', 'host_id2', 'host_id3'])
     parent = factory.SubFactory(CloudProjectFactory)
+    configuration_path = factory.SubFactory(ConfigurationClassFactory)
+    service_env = factory.SubFactory(ServiceEnvironmentFactory)
 
     class Meta:
         model = CloudHost
         django_get_or_create = ['host_id']
+
+
+class CloudHostFullFactory(CloudHostFactory):
+    @factory.post_generation
+    def post_tags(self, create, extracted, **kwargs):
+        self.tags.add('abc, cde', 'xyz')
 
 
 class VirtualServerTypeFactory(DjangoModelFactory):
@@ -110,3 +119,7 @@ class VirtualServerFullFactory(VirtualServerFactory):
     )
     mem1 = factory.RelatedFactory(MemoryFactory, 'base_object')
     mem2 = factory.RelatedFactory(MemoryFactory, 'base_object')
+
+    @factory.post_generation
+    def post_tags(self, create, extracted, **kwargs):
+        self.tags.add('abc, cde', 'xyz')

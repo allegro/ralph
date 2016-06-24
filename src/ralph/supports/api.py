@@ -3,7 +3,10 @@ from django.db.models import Prefetch
 from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
-from ralph.assets.api.serializers import StrField
+from ralph.assets.api.serializers import (
+    StrField,
+    TypeFromContentTypeSerializerMixin
+)
 from ralph.assets.models import BaseObject
 from ralph.supports.models import BaseObjectsSupport, Support, SupportType
 
@@ -28,7 +31,7 @@ class SupportSimpleSerializer(RalphAPISerializer):
         _skip_tags_field = True
 
 
-class SupportSerializer(RalphAPISerializer):
+class SupportSerializer(TypeFromContentTypeSerializerMixin, RalphAPISerializer):
     __str__ = StrField(show_type=True)
     base_objects = serializers.HyperlinkedRelatedField(
         many=True, view_name='baseobject-detail', read_only=True

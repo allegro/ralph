@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from rest_framework import serializers
+from rest_framework import fields, serializers
 
 from ralph.accounts.api_simple import SimpleRalphUserSerializer
 from ralph.accounts.models import Team
@@ -31,6 +31,13 @@ from ralph.assets.models.components import Ethernet, Memory
 from ralph.lib.custom_fields.api import WithCustomFieldsSerializerMixin
 from ralph.licences.api_simple import SimpleBaseObjectLicenceSerializer
 from ralph.networks.api_simple import IPAddressSimpleSerializer
+
+
+class TypeFromContentTypeSerializerMixin(RalphAPISerializer):
+    object_type = fields.SerializerMethodField(read_only=True)
+
+    def get_object_type(self, instance):
+        return instance.content_type.model
 
 
 class BusinessSegmentSerializer(RalphAPISerializer):
@@ -149,7 +156,9 @@ class ServiceEnvironmentSimpleSerializer(RalphAPISerializer):
         _skip_tags_field = True
 
 
-class ServiceEnvironmentSerializer(RalphAPISerializer):
+class ServiceEnvironmentSerializer(
+    TypeFromContentTypeSerializerMixin, RalphAPISerializer
+):
     __str__ = StrField(show_type=True)
 
     class Meta:
@@ -201,7 +210,11 @@ class AssetHolderSerializer(RalphAPISerializer):
         model = AssetHolder
 
 
-class BaseObjectSimpleSerializer(RalphAPISerializer):
+class BaseObjectSimpleSerializer(
+    TypeFromContentTypeSerializerMixin,
+    WithCustomFieldsSerializerMixin,
+    RalphAPISerializer
+):
     __str__ = StrField(show_type=True)
 
     class Meta:
@@ -236,10 +249,7 @@ class ConfigurationClassSerializer(RalphAPISerializer):
         model = ConfigurationClass
 
 
-class BaseObjectSerializer(
-    WithCustomFieldsSerializerMixin,
-    BaseObjectSimpleSerializer
-):
+class BaseObjectSerializer(BaseObjectSimpleSerializer):
     """
     Base class for other serializers inheriting from `BaseObject`.
     """
@@ -282,3 +292,39 @@ class MemorySerializer(MemorySimpleSerializer):
         depth = 1
         model = Memory
         exclude = ('model',)
+
+
+# used by DataCenterAsset and VirtualServer serializers
+class ComponentSerializerMixin(serializers.Serializer):
+    ethernet = EthernetSimpleSerializer(many=True, source='ethernet_set')
+    memories = MemorySimpleSerializer(many=True, source='memory_set')
+    ipaddresses = fields.SerializerMethodField()
+
+    def get_ipaddresses(self, instance):
+        """
+        Return list of ip addresses for passed instance.
+
+        Returns:
+            list of ip addresses (as strings)
+        """
+        # don't use `ipaddresses` property here to make use of
+        # `ethernet__ipaddresses` in prefetch related
+        ipaddresses = []
+        for eth in instance.ethernet_set.all():
+            try:
+                ipaddresses.append(eth.ipaddress.address)
+            except AttributeError:
+                pass
+        return ipaddresses
+
+
+class DCHostSerializer(ComponentSerializerMixin, BaseObjectSerializer):
+    hostname = fields.CharField()
+
+    class Meta:
+        model = BaseObject
+        fields = [
+            'id', 'url', 'ethernet', 'memories', 'ipaddresses', 'custom_fields',
+            '__str__', 'tags', 'service_env', 'configuration_path', 'hostname',
+            'created', 'modified', 'remarks', 'parent', 'object_type'
+        ]
