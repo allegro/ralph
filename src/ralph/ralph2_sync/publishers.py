@@ -49,6 +49,10 @@ def ralph2_sync(model):
                     logger.exception('Error during Ralph2 sync')
                 else:
                     return result
+        # store additional info about signal
+        wrapped_func._signal_model = model
+        wrapped_func._signal_dispatch_uid = func.__name__
+        wrapped_func._signal_type = post_save
         return wrapped_func
     return wrap
 
