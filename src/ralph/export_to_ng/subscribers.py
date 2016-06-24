@@ -1,4 +1,5 @@
 import logging
+from contextlib import nested
 from functools import wraps
 
 from dateutil.parser import parse as dt_parse
@@ -12,7 +13,11 @@ from ralph_assets.models import Asset, AssetModel
 from ralph_assets.models_assets import AssetStatus, AssetType, Warehouse, DataCenter
 from ralph_assets.models_dc_assets import DeviceInfo
 from ralph.discovery.models import ServiceCatalog
-from ralph.export_to_ng.publishers import publish_sync_ack_to_ralph3
+from ralph.export_to_ng.helpers import WithSignalDisabled
+from ralph.export_to_ng.publishers import (
+    publish_sync_ack_to_ralph3,
+    sync_device_to_ralph3
+)
 
 
 logger = logging.getLogger(__name__)
@@ -39,22 +44,46 @@ DATA_CENTER_ASSET_STATUS_MAPPING = {
 }
 
 
+def _get_publisher_signal_info(func):
+    """
+    Return signal info for publisher in format accepted by `WithSignalDisabled`.
+    """
+    return {
+        'dispatch_uid': func._signal_dispatch_uid,
+        'sender': func._signal_model,
+        'signal': func._signal_type,
+        'receiver': func,
+    }
+
+
 class sync_subscriber(subscriber):
     """
     Log additional exception when sync has failed.
     """
+    def __init__(self, topic, disable_publishers=None):
+        self.disable_publishers = disable_publishers or []
+        super(sync_subscriber, self).__init__(topic)
+
     def _get_wrapper(self, func):
         @wraps(func)
         @nested_commit_on_success
         def exception_wrapper(*args, **kwargs):
-            try:
-                return func(*args, **kwargs)
-            except:
-                logger.exception('Exception during syncing')
+            # disable selected publisher signals during handling subcriber
+            with nested(*[
+                WithSignalDisabled(**_get_publisher_signal_info(publisher))
+                for publisher in self.disable_publishers
+            ]):
+                try:
+                    return func(*args, **kwargs)
+                except:
+                    logger.exception('Exception during syncing')
         return exception_wrapper
 
 
-@sync_subscriber(topic='sync_dc_asset_to_ralph2')
+@sync_subscriber(
+    topic='sync_dc_asset_to_ralph2',
+    disable_publishers=[sync_device_to_ralph3]
+)
 def sync_dc_asset_to_ralph2_handler(data):
     """
     Saves asset data from Ralph3 to Ralph2.
@@ -136,7 +165,6 @@ def sync_dc_asset_to_ralph2_handler(data):
     device = asset.get_ralph_device()
     device.name = data['hostname']
     device.management_ip = data.get('management_ip')
-    device._handle_post_save = False
     device.save(priority=SAVE_PRIORITY)
 
     publish_sync_ack_to_ralph3(asset, data['id'])
@@ -159,6 +187,5 @@ def sync_model_to_ralph2(data):
 
     model.manufacturer_id = data['manufacturer']
     model.category_id = data['category']
-    model._handle_post_save = False
     model.save()
     publish_sync_ack_to_ralph3(model, data['id'])

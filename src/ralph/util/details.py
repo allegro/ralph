@@ -275,4 +275,6 @@ def _update_batch(device_ids, rack, dc):
         else:
             d.rack = None
         d.dc = dc.name.upper() if dc else None
+        # don't run ralph3 sync
+        d._handle_post_save = False
         d.save()
