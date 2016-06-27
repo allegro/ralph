@@ -92,8 +92,8 @@ class ConfigurationModuleAdmin(RalphMPTTAdmin):
             return '&ndash;'
         return TableWithUrl(
             module.configuration_classes.all(),
-            ['name'],
-            url_field='name'
+            ['class_name'],
+            url_field='class_name'
         ).render()
     show_children_classes.allow_tags = True
     show_children_classes.short_description = _('Children classes')
