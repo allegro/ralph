@@ -7,6 +7,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from pyhermes import publisher
 
+from ralph.business.models import Venture, VentureRole
 from ralph.discovery.models import Device
 
 logger = logging.getLogger(__name__)
@@ -79,5 +80,38 @@ def sync_device_to_ralph3(sender, instance=None, created=False, **kwargs):
         'management_hostname': mgmt_ip.hostname if mgmt_ip else '',
         'service': device.service.uid if device.service else None,
         'environment': device.device_environment_id,
+        'venture_role': device.venture_role_id,
+    }
+    return data
+
+
+@ralph3_sync(Venture)
+def sync_venture_to_ralph3(sender, instance=None, created=False, **kwargs):
+    """
+    Send venture info to Ralph3.
+
+    Notice that in case of saving Venture, child sub-ventures are not synced
+    (although they are saved in Venture.save).
+    """
+    venture = instance
+    data = {
+        'id': venture.id,
+        'symbol': venture.symbol,
+        'parent': venture.parent_id,
+        'department': venture.department.name if venture.department else None,
+    }
+    return data
+
+
+@ralph3_sync(VentureRole)
+def sync_venture_role_to_ralph3(sender, instance=None, created=False, **kwargs):
+    """
+    Send venture role info to Ralph3.
+    """
+    venture_role = instance
+    data = {
+        'id': venture_role.id,
+        'name': venture_role.name,
+        'venture': venture_role.venture_id,
     }
     return data
