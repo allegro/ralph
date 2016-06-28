@@ -147,6 +147,9 @@ def sync_role_property_to_ralph3(sender, instance=None, created=False, **kwargs)
     Send role property info to Ralph3
     """
     role_property = instance
+    if role_property.symbol not in settings.RALPH2_HERMES_SYNC_ROLE_PROPERTY_WHITELIST:  # noqa
+        return {}
+
     choices = []
     if role_property.type:
         choices = list(
