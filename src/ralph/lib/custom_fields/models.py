@@ -162,7 +162,7 @@ class WithCustomFieldsMixin(models.Model):
 
     @property
     def custom_fields_as_dict(self):
-        return dict(self.custom_fields.select_related('custom_field').values_list(  # noqa
+        return dict(self.custom_fields.values_list(
             'custom_field__name', 'value'
         ).all())
 
