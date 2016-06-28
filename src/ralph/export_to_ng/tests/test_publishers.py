@@ -1,7 +1,14 @@
 from django.test import TestCase
 from django.test.utils import override_settings
 
-from ralph.business.models import Department, Venture, VentureRole
+from ralph.business.models import (
+    Department,
+    RoleProperty,
+    RolePropertyType,
+    RolePropertyTypeValue,
+    Venture,
+    VentureRole,
+)
 from ralph.cmdb.tests.utils import (
     DeviceEnvironmentFactory,
     ServiceCatalogFactory
@@ -9,8 +16,9 @@ from ralph.cmdb.tests.utils import (
 from ralph.discovery.models import DeviceType, Device
 from ralph.export_to_ng.publishers import (
     sync_device_to_ralph3,
+    sync_role_property_to_ralph3,
     sync_venture_role_to_ralph3,
-    sync_venture_to_ralph3
+    sync_venture_to_ralph3,
 )
 from ralph_assets.tests.utils.assets import DCAssetFactory
 
@@ -76,6 +84,7 @@ class DevicePublisherTestCase(TestCase):
             'management_ip': '',
             'management_hostname': '',
             'venture_role': None,
+            'custom_fields': {},
         })
 
     def test_publish_device_full(self):
@@ -88,6 +97,26 @@ class DevicePublisherTestCase(TestCase):
             'management_ip': '10.20.30.40',
             'management_hostname': 'mgmt-1.mydc.net',
             'venture_role': 11111,
+            'custom_fields': {},
+        })
+
+    def test_devices_properties(self):
+        property_symbol = 'test_symbol'
+        property_value = 'test_value'
+        self.device.venture_role.roleproperty_set.create(symbol=property_symbol)  # noqa
+        self.device.set_property(property_symbol, property_value, None)
+        result = sync_device_to_ralph3(Device, self.device)
+        self.assertEqual(result, {
+            'id': self.asset.id,
+            'hostname': 's1.mydc.net',
+            'service': 'sc-1',
+            'environment': 9876,
+            'management_ip': '10.20.30.40',
+            'management_hostname': 'mgmt-1.mydc.net',
+            'venture_role': 11111,
+            'custom_fields': {
+                property_symbol: property_value
+            },
         })
 
 
@@ -143,4 +172,36 @@ class VentureRolePublisherTestCase(TestCase):
             'id': self.venture_role.id,
             'name': 'abcd',
             'venture': self.venture1.id,
+        })
+
+
+@override_settings(
+    RALPH3_HERMES_SYNC_ENABLED=True,
+    RALPH3_HERMES_SYNC_FUNCTIONS=['sync_role_property_to_ralph3'])
+class RolePropertyPublisherTestCase(TestCase):
+    def setUp(self):
+        self.prop = RoleProperty.objects.create(
+            symbol='test_symbol', default='default_value'
+        )
+
+    def test_publish_role_property(self):
+        result = sync_role_property_to_ralph3(RoleProperty, self.prop)
+        self.assertEqual(result, {
+            'symbol': self.prop.symbol,
+            'default': self.prop.default,
+            'choices': []
+        })
+
+    def test_publish_role_property_with_choices(self):
+        choices = ['active', 'pending', 'finished']
+        self.prop.type = RolePropertyType.objects.create(symbol='status')
+        for choice in choices:
+            RolePropertyTypeValue.objects.create(
+                type=self.prop.type, value=choice
+            )
+        result = sync_role_property_to_ralph3(RoleProperty, self.prop)
+        self.assertEqual(result, {
+            'symbol': self.prop.symbol,
+            'default': self.prop.default,
+            'choices': choices
         })

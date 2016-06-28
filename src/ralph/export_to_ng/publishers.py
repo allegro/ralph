@@ -7,13 +7,18 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from pyhermes import publisher
 
-from ralph.business.models import RoleProperty, Venture, VentureRole
+from ralph.business.models import (
+    RoleProperty,
+    RolePropertyValue,
+    Venture,
+    VentureRole
+)
 from ralph.discovery.models import Device
 
 logger = logging.getLogger(__name__)
 
 
-def ralph3_sync(model):
+def ralph3_sync(model, topic=None):
     """
     Decorator for synchronizers with Ralph3. Decorated function should return
     dict with event data. Decorated function name is used as a topic name and
@@ -26,8 +31,8 @@ def ralph3_sync(model):
             post_save, sender=model, dispatch_uid=func.__name__,
         )
         # register publisher
-        @pyhermes.publisher(topic=func.__name__)
-        def wrapped_func(sender, instance=None, created=False, **kwargs):
+        @pyhermes.publisher(topic=topic or func.__name__)
+        def wrapped_func(sender, instance=None, **kwargs):
             if (
                 # publish only if sync enabled (globally and for particular
                 # function)
@@ -38,7 +43,7 @@ def ralph3_sync(model):
                 getattr(instance, '_handle_post_save', True)
             ):
                 try:
-                    result = func(sender, instance, created, **kwargs)
+                    result = func(sender, instance, **kwargs)
                     if result:
                         pyhermes.publish(func.__name__, result)
                 except:
@@ -66,9 +71,10 @@ def publish_sync_ack_to_ralph3(obj, ralph3_id):
     }
 
 
-@ralph3_sync(Device)
-def sync_device_to_ralph3(sender, instance=None, created=False, **kwargs):
-    device = instance
+def get_device_data(device):
+    """
+    Returns dictonary with device data.
+    """
     asset = device.get_asset()
     if not asset:
         return {}
@@ -84,6 +90,23 @@ def sync_device_to_ralph3(sender, instance=None, created=False, **kwargs):
         'custom_fields': device.get_property_set(),
     }
     return data
+
+
+@ralph3_sync(Device)
+def sync_device_to_ralph3(sender, instance=None, **kwargs):
+    """
+    Send device data when device was saved.
+    """
+    return get_device_data(instance)
+
+
+@ralph3_sync(RolePropertyValue, topic='sync_device_to_ralph3')
+def sync_device_properties_to_ralph3(sender, instance=None, **kwargs):
+    """
+    Send device data when properties was changed.
+    """
+    device = instance.device
+    return get_device_data(device)
 
 
 @ralph3_sync(Venture)
