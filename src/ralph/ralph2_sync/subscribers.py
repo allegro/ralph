@@ -16,11 +16,11 @@ from ralph.assets.models import (
     ServiceEnvironment
 )
 from ralph.data_center.models import DataCenterAsset
-from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
 from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
     ImportedObjects
 )
+from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
 from ralph.ralph2_sync.helpers import WithSignalDisabled
 from ralph.ralph2_sync.publishers import sync_dc_asset_to_ralph2
 

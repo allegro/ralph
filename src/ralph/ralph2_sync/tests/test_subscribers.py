@@ -21,7 +21,7 @@ from ralph.ralph2_sync.subscribers import (
     ralph2_sync_ack,
     sync_device_to_ralph3,
     sync_venture_role_to_ralph3,
-    sync_venture_to_ralph3,
+    sync_venture_to_ralph3
 )
 
 
