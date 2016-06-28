@@ -124,6 +124,9 @@ def sync_device_to_ralph3(data):
             )
         )
     # TODO: handle venture_role field
+    if data['custom_fields']:
+        for field, value in data['custom_fields'].items():
+            dca.add_or_update_custom_field(field, value)
     dca.save()
 
 
@@ -239,4 +242,3 @@ def sync_venture_role_to_ralph3(data):
     if creating:
         ImportedObjects.create(conf_class, data['id'])
     logger.info('Synced configuration class {}'.format(conf_class))
->>>>>>> c4e1e788f5ce43ec73dd02cd01f5ef5052df2953

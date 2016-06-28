@@ -159,3 +159,6 @@ class WithCustomFieldsMixin(models.Model):
 
     class Meta:
         abstract = True
+
+    def add_or_update_custom_field(self, name, value):
+        pass
