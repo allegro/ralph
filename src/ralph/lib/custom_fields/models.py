@@ -164,7 +164,7 @@ class WithCustomFieldsMixin(models.Model):
     def custom_fields_as_dict(self):
         return dict(self.custom_fields.values_list(
             'custom_field__name', 'value'
-        ).all())
+        ))
 
     def update_custom_field(self, name, value):
         cf = CustomField.objects.get(name=name)
