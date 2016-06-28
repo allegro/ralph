@@ -11,12 +11,22 @@ from optparse import make_option
 
 from django.core.management.base import BaseCommand
 
-from ralph.business.models import Venture, VentureRole
+from ralph.business.models import (
+    RoleProperty,
+    RolePropertyValue,
+    Venture,
+    VentureRole
+)
 from ralph.discovery.models import Device
 # register handlers
 from ralph.export_to_ng import publishers  # noqa
 
 logger = logging.getLogger(__name__)
+
+
+def generic_sync(model, **options):
+    for obj in model._default_manager.all():
+        obj.save()
 
 
 def generic_sync(model, **options):
@@ -80,6 +90,8 @@ def venture_role_sync(model, **options):
 models_handlers = {
     'Venture': (Venture, venture_sync),
     'VentureRole': (VentureRole, venture_role_sync),
+    'RoleProperty': (RoleProperty, generic_sync),
+    'RolePropertyValue': (RolePropertyValue, generic_sync),
 }
 
 

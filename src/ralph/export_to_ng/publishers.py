@@ -25,19 +25,21 @@ def ralph3_sync(model, topic=None):
     dispatch_uid for post_save signal.
     """
     def wrap(func):
+        topic_name = topic or func.__name__
+
         @wraps(func)
         # connect to post_save signal for a model
         @receiver(
             post_save, sender=model, dispatch_uid=func.__name__,
         )
         # register publisher
-        @pyhermes.publisher(topic=topic or func.__name__)
+        @pyhermes.publisher(topic=topic_name)
         def wrapped_func(sender, instance=None, **kwargs):
             if (
                 # publish only if sync enabled (globally and for particular
                 # function)
                 settings.RALPH3_HERMES_SYNC_ENABLED and
-                func.__name__ in settings.RALPH3_HERMES_SYNC_FUNCTIONS and
+                topic_name in settings.RALPH3_HERMES_SYNC_FUNCTIONS and
                 # process the signal only if instance has not attribute
                 # `_handle_post_save` set to False
                 getattr(instance, '_handle_post_save', True)
@@ -45,7 +47,7 @@ def ralph3_sync(model, topic=None):
                 try:
                     result = func(sender, instance, **kwargs)
                     if result:
-                        pyhermes.publish(func.__name__, result)
+                        pyhermes.publish(topic_name, result)
                 except:
                     logger.exception('Error during Ralph2 sync')
                 else:
@@ -87,7 +89,10 @@ def get_device_data(device):
         'service': device.service.uid if device.service else None,
         'environment': device.device_environment_id,
         'venture_role': device.venture_role_id,
-        'custom_fields': device.get_property_set(),
+        'custom_fields': {
+            k: v for k,v in  device.get_property_set().items()
+            if k in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST
+        },
     }
     return data
 
@@ -147,9 +152,8 @@ def sync_role_property_to_ralph3(sender, instance=None, created=False, **kwargs)
     Send role property info to Ralph3
     """
     role_property = instance
-    if role_property.symbol not in settings.RALPH2_HERMES_SYNC_ROLE_PROPERTY_WHITELIST:  # noqa
+    if role_property.symbol not in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST:  # noqa
         return {}
-
     choices = []
     if role_property.type:
         choices = list(
