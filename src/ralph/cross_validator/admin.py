@@ -1,7 +1,7 @@
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db.models import Count
-from django.utils.html import format_html
+from django.utils.html import mark_safe
 
 from .models import CrossValidationResult, CrossValidationRun
 
@@ -80,7 +80,7 @@ class ResultAdmin(RalphAdmin):
 
     def get_diff_display(self, obj):
         if not bool(obj.diff) or bool(obj.errors):
-            return format_html('-')
+            return mark_safe('-')
         html = ''
         for item, values in obj.diff.items():
             old = str(values['old']) or ''
@@ -97,12 +97,12 @@ class ResultAdmin(RalphAdmin):
                 new=format_diff(diff_pos, new),
                 mono_end='</span>',
             )
-        return format_html(html)
+        return mark_safe(html)
     get_diff_display.short_description = 'Diff'
 
     def get_errors_display(self, obj):
         html = '<br>'.join(obj.errors)
-        return format_html(html) or '-'
+        return mark_safe(html) or '-'
     get_errors_display.short_description = 'Errors'
 
     def get_object_display(self, result):

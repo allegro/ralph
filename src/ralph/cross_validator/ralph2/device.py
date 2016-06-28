@@ -44,6 +44,8 @@ class Device(SoftDeletable, models.Model):
 
     service = models.ForeignKey(ServiceCatalog, default=None)
     device_environment = models.ForeignKey(DeviceEnvironment)
+    venture = models.ForeignKey('Venture', null=True)
+    venture_role = models.ForeignKey('VentureRole', null=True)
 
     _excludes = ['deleted', 'logicalchild_set', 'deviceinfo']
 
@@ -55,6 +57,30 @@ class Device(SoftDeletable, models.Model):
         for ip in self.ipaddress_set.all():
             if ip.is_management:
                 return ip.address
+
+    def get_property_set(self):
+        props = {}
+        if self.venture:
+            props.update(dict(
+                [
+                    (p.symbol, p.default)
+                    for p in self.venture.roleproperty_set.all()
+                ]
+            ))
+        if self.venture_role:
+            props.update(dict(
+                [
+                    (p.symbol, p.default)
+                    for p in self.venture_role.roleproperty_set.all()
+                ]
+            ))
+        props.update(dict(
+            [
+                (p.property.symbol, p.value) for p in
+                self.rolepropertyvalue_set.all()
+            ]
+        ))
+        return props
 
 
 class Rack(models.Model):
@@ -141,3 +167,85 @@ class IPAddress(models.Model):
 
     class Meta(generate_meta(app_label='discovery', model_name='ipaddress')):
         pass
+
+
+class Venture(models.Model):
+    name = models.CharField(max_length=255)
+    parent = models.ForeignKey('self', null=True, related_name="child_set")
+    symbol = models.CharField(max_length=32)
+
+    class Meta(generate_meta(app_label='business', model_name='venture')):
+        pass
+
+
+class VentureRole(models.Model):
+    name = models.CharField(max_length=255)
+    venture = models.ForeignKey(Venture)
+
+    class Meta(generate_meta(app_label='business', model_name='venturerole')):
+        pass
+
+    def get_properties(self, device):
+        def property_dict(properties):
+            props = {}
+            for prop in properties:
+                try:
+                    pv = prop.rolepropertyvalue_set.get(device=device)
+                except RolePropertyValue.DoesNotExist:
+                    value = prop.default
+                else:
+                    value = pv.value
+                props[prop.symbol] = value or ''
+            return props
+        values = {}
+        values.update(property_dict(
+            self.venture.roleproperty_set.filter(role=None),
+        ))
+        values.update(property_dict(
+            self.roleproperty_set.filter(venture=None),
+        ))
+        return values
+
+
+class RolePropertyType(models.Model):
+    symbol = models.CharField(max_length=32, null=True)
+
+    class Meta(generate_meta(
+        app_label='business', model_name='rolepropertytype'
+    )):
+        pass
+
+
+class RolePropertyTypeValue(models.Model):
+    type = models.ForeignKey(RolePropertyType, null=True,)
+    value = models.TextField(null=True)
+
+    class Meta(generate_meta(
+        app_label='business', model_name='rolepropertytypevalue'
+    )):
+        pass
+
+
+class RoleProperty(models.Model):
+    symbol = models.CharField(max_length=32, null=True)
+    role = models.ForeignKey(VentureRole, null=True)
+    venture = models.ForeignKey(Venture, null=True)
+    type = models.ForeignKey(RolePropertyType, null=True)
+    default = models.TextField(null=True)
+
+    class Meta(generate_meta(
+        app_label='business', model_name='roleproperty'
+    )):
+        pass
+
+
+class RolePropertyValue(models.Model):
+    property = models.ForeignKey(RoleProperty, null=True)
+    device = models.ForeignKey(Device, null=True)
+    value = models.TextField(null=True, default=None)
+
+    class Meta(generate_meta(
+        app_label='business', model_name='rolepropertyvalue'
+    )):
+        pass
+
