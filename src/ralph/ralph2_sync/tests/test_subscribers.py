@@ -11,6 +11,7 @@ from ralph.assets.tests.factories import (
     ConfigurationClassFactory,
     ConfigurationModuleFactory
 )
+from ralph.data_center.tests.factories import DataCenterAssetFactory
 from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
     ImportedObjects
@@ -18,8 +19,9 @@ from ralph.data_importer.models import (
 from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
 from ralph.ralph2_sync.subscribers import (
     ralph2_sync_ack,
+    sync_device_to_ralph3,
     sync_venture_role_to_ralph3,
-    sync_venture_to_ralph3
+    sync_venture_to_ralph3,
 )
 
 
@@ -53,7 +55,27 @@ class Ralph2SyncACKTestCase(TestCase):
         )
 
 
-class CustomFieldsFromRalph2TestCase(TestCase):
+class Ralph2DataCenterAssetTestCase(TestCase):
+    def test_sync_device_custom_fields(self):
+        old_id = 1
+        field_name = 'test_field'
+        dca = DataCenterAssetFactory()
+        CustomField.objects.create(name=field_name)
+        ImportedObjects.create(obj=dca, old_pk=old_id)
+        custom_fields = {field_name: 'test_value'}
+        data = {
+            'id': old_id,
+            'hostname': 'test',
+            'management_ip': None,
+            'service': None,
+            'environment': None,
+            'custom_fields': custom_fields
+        }
+        sync_device_to_ralph3(data)
+        self.assertEqual(dca.custom_fields_as_dict, custom_fields)
+
+
+class Ralph2CustomFieldsTestCase(TestCase):
     def test_sync_custom_fields_to_ralph3_with_choices(self):
         data = {
             'symbol': 'test_name',

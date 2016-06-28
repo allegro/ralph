@@ -108,6 +108,7 @@ def sync_device_to_ralph3(data):
     * hostname
     * service/env
     * management ip/hostname
+    * custom_fields
     """
     dca = ImportedObjects.get_object_from_old_pk(DataCenterAsset, data['id'])
     dca.hostname = data['hostname']
@@ -126,7 +127,7 @@ def sync_device_to_ralph3(data):
     # TODO: handle venture_role field
     if data['custom_fields']:
         for field, value in data['custom_fields'].items():
-            dca.add_or_update_custom_field(field, value)
+            dca.update_custom_field(field, value)
     dca.save()
 
 
