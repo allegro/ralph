@@ -10,6 +10,7 @@ from django.db import transaction
 from ralph.assets.models import AssetModel, Environment, ServiceEnvironment
 from ralph.data_center.models import DataCenterAsset
 from ralph.data_importer.models import ImportedObjects
+from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
 from ralph.ralph2_sync.helpers import WithSignalDisabled
 from ralph.ralph2_sync.publishers import sync_dc_asset_to_ralph2
 
@@ -113,3 +114,25 @@ def sync_device_to_ralph3(data):
             )
         )
     dca.save()
+
+
+@sync_subscriber(
+    topic='sync_role_property_to_ralph3',
+)
+def sync_custom_fields_to_ralph3(data):
+    """
+    Receive data about custom fields from Ralph2
+
+    Supported fields:
+    * symbol (name)
+    * choices
+    * default value
+    """
+    cf, _ = CustomField.objects.get_or_create(name=data['symbol'])
+    if data['choices']:
+        cf.type = CustomFieldTypes.CHOICE
+        cf.choices = '|'.join(data['choices'])
+    else:
+        cf.type = CustomFieldTypes.STRING
+    cf.default_value = data['default']
+    cf.save()
