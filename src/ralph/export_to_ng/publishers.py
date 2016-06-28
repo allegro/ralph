@@ -7,7 +7,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from pyhermes import publisher
 
-from ralph.business.models import Venture, VentureRole
+from ralph.business.models import RoleProperty, Venture, VentureRole
 from ralph.discovery.models import Device
 
 logger = logging.getLogger(__name__)
@@ -81,6 +81,7 @@ def sync_device_to_ralph3(sender, instance=None, created=False, **kwargs):
         'service': device.service.uid if device.service else None,
         'environment': device.device_environment_id,
         'venture_role': device.venture_role_id,
+        'custom_fields': device.get_property_set(),
     }
     return data
 
@@ -113,5 +114,26 @@ def sync_venture_role_to_ralph3(sender, instance=None, created=False, **kwargs):
         'id': venture_role.id,
         'name': venture_role.name,
         'venture': venture_role.venture_id,
+    }
+    return data
+
+
+@ralph3_sync(RoleProperty)
+def sync_role_property_to_ralph3(sender, instance=None, created=False, **kwargs):
+    """
+    Send role property info to Ralph3
+    """
+    role_property = instance
+    choices = []
+    if role_property.type:
+        choices = list(
+            role_property.type.rolepropertytypevalue_set.all().values_list(
+                'value', flat=True
+            )
+        )
+    data = {
+        'symbol': role_property.symbol,
+        'default': role_property.default,
+        'choices': choices
     }
     return data
