@@ -48,8 +48,10 @@ def ralph3_sync(model, topic=None):
                     result = func(sender, instance, **kwargs)
                     if result:
                         pyhermes.publish(topic_name, result)
-                except:
-                    logger.exception('Error during Ralph2 sync')
+                except Exception as e:
+                    logger.exception(
+                        'Error during Ralph2 sync ({})'.format(str(e))
+                    )
                 else:
                     return result
 
@@ -94,7 +96,7 @@ def get_device_data(device, fields=None):
             if k in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST
         },
     }
-    return data if not fields else {k: v for k, v in data.items()}
+    return {k: v for k, v in data.items()} if fields else data
 
 
 @ralph3_sync(Device)

@@ -25,7 +25,8 @@ from ralph_assets.tests.utils.assets import DCAssetFactory
 
 @override_settings(
     RALPH3_HERMES_SYNC_ENABLED=True,
-    RALPH3_HERMES_SYNC_FUNCTIONS=['sync_device_to_ralph3'])
+    RALPH3_HERMES_SYNC_FUNCTIONS=['sync_device_to_ralph3'],
+    RALPH2_HERMES_ROLE_PROPERTY_WHITELIST=['test_symbol'])
 class DevicePublisherTestCase(TestCase):
     def setUp(self):
         self.asset = DCAssetFactory()
