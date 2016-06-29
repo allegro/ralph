@@ -111,7 +111,7 @@ def sync_device_to_ralph3(data):
     * custom_fields
     """
     dca = ImportedObjects.get_object_from_old_pk(DataCenterAsset, data['id'])
-    hostname = data['hostname']
+    hostname = data.get('hostname')
     management_ip = data.get('management_ip', False)
     service = data.get('service')
     environment = data.get('environment')
