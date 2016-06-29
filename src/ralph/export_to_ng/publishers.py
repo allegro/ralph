@@ -73,11 +73,11 @@ def publish_sync_ack_to_ralph3(obj, ralph3_id):
     }
 
 
-def get_device_data(device):
+def get_device_data(device, fields=None):
     """
     Returns dictonary with device data.
     """
-    asset = device.get_asset()
+    asset = device.get_asset(manager='admin_objects')
     if not asset:
         return {}
     mgmt_ip = device.management_ip
@@ -90,11 +90,11 @@ def get_device_data(device):
         'environment': device.device_environment_id,
         'venture_role': device.venture_role_id,
         'custom_fields': {
-            k: v for k,v in  device.get_property_set().items()
+            k: v for k, v in device.get_property_set().items()
             if k in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST
         },
     }
-    return data
+    return data if not fields else {k: v for k, v in data.items()}
 
 
 @ralph3_sync(Device)
@@ -111,7 +111,7 @@ def sync_device_properties_to_ralph3(sender, instance=None, **kwargs):
     Send device data when properties was changed.
     """
     device = instance.device
-    return get_device_data(device)
+    return get_device_data(device, fields=['id', 'custom_fields'])
 
 
 @ralph3_sync(Venture)

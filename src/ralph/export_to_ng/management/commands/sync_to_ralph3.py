@@ -9,6 +9,7 @@ import logging
 import re
 from optparse import make_option
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from ralph.business.models import (
@@ -29,8 +30,10 @@ def generic_sync(model, **options):
         obj.save()
 
 
-def generic_sync(model, **options):
-    for obj in model._default_manager.all():
+def role_property_sync(model, **options):
+    for obj in model._default_manager.filter(
+        symbol__in=settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST
+    ):
         obj.save()
 
 
@@ -90,8 +93,9 @@ def venture_role_sync(model, **options):
 models_handlers = {
     'Venture': (Venture, venture_sync),
     'VentureRole': (VentureRole, venture_role_sync),
-    'RoleProperty': (RoleProperty, generic_sync),
+    'RoleProperty': (RoleProperty, role_property_sync),
     'RolePropertyValue': (RolePropertyValue, generic_sync),
+    'Device': (Device, generic_sync),
 }
 
 
