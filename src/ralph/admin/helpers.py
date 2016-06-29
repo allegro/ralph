@@ -55,16 +55,16 @@ def get_value_by_relation_path(obj, field_path):
     return get_value_by_relation_path(value, rest) if rest else value
 
 
-def getattr_dunder(obj, attr):
+def getattr_dunder(obj, attr, default=None):
     """
     Gets attribute of object. Works recursively
     if attr contains double underscores.
     """
 
     first, dunder, rest = attr.partition('__')
-    value = getattr(obj, first, None)
+    value = getattr(obj, first, default)
     if rest:
-        return getattr_dunder(value, rest)
+        return getattr_dunder(value, rest, default)
     return value
 
 
