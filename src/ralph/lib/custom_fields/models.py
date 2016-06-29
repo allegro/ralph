@@ -160,6 +160,7 @@ class WithCustomFieldsMixin(models.Model):
     class Meta:
         abstract = True
 
+    @property
     def custom_fields_as_dict(self):
         return dict(self.custom_fields.values_list(
             'custom_field__name', 'value'
