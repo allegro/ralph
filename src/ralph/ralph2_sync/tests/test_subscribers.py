@@ -66,10 +66,6 @@ class Ralph2DataCenterAssetTestCase(TestCase):
         custom_fields = {field_name: 'test_value'}
         data = {
             'id': old_id,
-            'hostname': 'test',
-            'management_ip': None,
-            'service': None,
-            'environment': None,
             'custom_fields': custom_fields
         }
         sync_device_to_ralph3(data)
