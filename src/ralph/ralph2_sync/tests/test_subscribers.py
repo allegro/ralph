@@ -19,6 +19,7 @@ from ralph.data_importer.models import (
 from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
 from ralph.ralph2_sync.subscribers import (
     ralph2_sync_ack,
+    sync_custom_fields_to_ralph3,
     sync_device_to_ralph3,
     sync_venture_role_to_ralph3,
     sync_venture_to_ralph3
