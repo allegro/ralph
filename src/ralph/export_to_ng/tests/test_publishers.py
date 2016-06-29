@@ -179,7 +179,7 @@ class VentureRolePublisherTestCase(TestCase):
 @override_settings(
     RALPH3_HERMES_SYNC_ENABLED=True,
     RALPH3_HERMES_SYNC_FUNCTIONS=['sync_role_property_to_ralph3'],
-    RALPH2_HERMES_SYNC_ROLE_PROPERTY_WHITELIST=['test_symbol'],)
+    RALPH2_HERMES_ROLE_PROPERTY_WHITELIST=['test_symbol'],)
 class RolePropertyPublisherTestCase(TestCase):
     def setUp(self):
         self.prop = RoleProperty.objects.create(
