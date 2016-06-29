@@ -20,6 +20,7 @@ from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
     ImportedObjects
 )
+from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
 from ralph.ralph2_sync.helpers import WithSignalDisabled
 from ralph.ralph2_sync.publishers import sync_dc_asset_to_ralph2
 
@@ -107,23 +108,65 @@ def sync_device_to_ralph3(data):
     * hostname
     * service/env
     * management ip/hostname
+    * custom_fields
     """
     dca = ImportedObjects.get_object_from_old_pk(DataCenterAsset, data['id'])
-    dca.hostname = data['hostname']
-    if data['management_ip']:
-        dca.management_ip = data['management_ip']
-        dca.management_hostname = data['management_hostname']
-    else:
-        del dca.management_ip
-    if data['service'] and data['environment']:
+    if 'hostname' in data:
+        dca.hostname = data['hostname']
+    if 'management_ip' in data:
+        management_ip = data['management_ip']
+        if management_ip:
+            dca.management_ip = management_ip
+            dca.management_hostname = data.get('management_hostname')
+        else:
+            del dca.management_ip
+    if 'service' in data and 'environment' in data:
+        service = data['service']
+        environment = data['environment']
         dca.service_env = ServiceEnvironment.objects.get(
-            service__uid=data['service'],
+            service__uid=service,
             environment=ImportedObjects.get_object_from_old_pk(
-                Environment, data['environment']
+                Environment, environment
             )
         )
-    # TODO: handle venture_role field
+    if 'venture_role' in data:
+        if data['venture_role']:
+            try:
+                dca.configuration_path = ImportedObjects.get_object_from_old_pk(
+                    ConfigurationClass, data['venture_role']
+                )
+            except ImportedObjectDoesNotExist:
+                logger.error('VentureRole {} not found when syncing {}'.format(
+                    data['venture_role'], data['id']
+                ))
+        else:
+            dca.configuration_path = None
+    if 'custom_fields' in data:
+        for field, value in data['custom_fields'].items():
+            dca.update_custom_field(field, value)
     dca.save()
+
+
+@sync_subscriber(
+    topic='sync_role_property_to_ralph3',
+)
+def sync_custom_fields_to_ralph3(data):
+    """
+    Receive data about custom fields from Ralph2
+
+    Supported fields:
+    * symbol (name)
+    * choices
+    * default value
+    """
+    cf, _ = CustomField.objects.get_or_create(name=data['symbol'])
+    if data['choices']:
+        cf.type = CustomFieldTypes.CHOICE
+        cf.choices = '|'.join(data['choices'])
+    else:
+        cf.type = CustomFieldTypes.STRING
+    cf.default_value = data['default']
+    cf.save()
 
 
 @sync_subscriber(topic='sync_venture_to_ralph3')

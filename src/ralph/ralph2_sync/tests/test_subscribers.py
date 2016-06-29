@@ -11,12 +11,16 @@ from ralph.assets.tests.factories import (
     ConfigurationClassFactory,
     ConfigurationModuleFactory
 )
+from ralph.data_center.tests.factories import DataCenterAssetFactory
 from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
     ImportedObjects
 )
+from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
 from ralph.ralph2_sync.subscribers import (
     ralph2_sync_ack,
+    sync_custom_fields_to_ralph3,
+    sync_device_to_ralph3,
     sync_venture_role_to_ralph3,
     sync_venture_to_ralph3
 )
@@ -50,6 +54,47 @@ class Ralph2SyncACKTestCase(TestCase):
             content_type=ContentType.objects.get_for_model(AssetModel),
             object_pk='321'
         )
+
+
+class Ralph2DataCenterAssetTestCase(TestCase):
+    def test_sync_device_custom_fields(self):
+        old_id = 1
+        field_name = 'test_field'
+        dca = DataCenterAssetFactory()
+        CustomField.objects.create(name=field_name)
+        ImportedObjects.create(obj=dca, old_pk=old_id)
+        custom_fields = {field_name: 'test_value'}
+        data = {
+            'id': old_id,
+            'custom_fields': custom_fields
+        }
+        sync_device_to_ralph3(data)
+        self.assertEqual(dca.custom_fields_as_dict, custom_fields)
+
+
+class Ralph2CustomFieldsTestCase(TestCase):
+    def test_sync_custom_fields_to_ralph3_with_choices(self):
+        data = {
+            'symbol': 'test_name',
+            'default': '1',
+            'choices': ['1', '2', '3']
+        }
+        sync_custom_fields_to_ralph3(data=data)
+        cf = CustomField.objects.get(name=data['symbol'])
+        self.assertEqual(cf._get_choices(), data['choices'])
+        self.assertEqual(cf.default_value, data['default'])
+        self.assertEqual(cf.type, CustomFieldTypes.CHOICE)
+
+    def test_sync_custom_fields_to_ralph3_without_choices(self):
+        data = {
+            'symbol': 'test_name',
+            'default': '1',
+            'choices': []
+        }
+        sync_custom_fields_to_ralph3(data=data)
+        cf = CustomField.objects.get(name=data['symbol'])
+        self.assertEqual(cf.default_value, data['default'])
+        self.assertEqual(cf.type, CustomFieldTypes.STRING)
 
 
 class Ralph2SyncVentureTestCase(TestCase):

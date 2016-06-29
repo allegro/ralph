@@ -159,3 +159,15 @@ class WithCustomFieldsMixin(models.Model):
 
     class Meta:
         abstract = True
+
+    @property
+    def custom_fields_as_dict(self):
+        return dict(self.custom_fields.values_list(
+            'custom_field__name', 'value'
+        ))
+
+    def update_custom_field(self, name, value):
+        cf = CustomField.objects.get(name=name)
+        cfv, _ = self.custom_fields.get_or_create(custom_field=cf)
+        cfv.value = value
+        cfv.save(update_fields=['value'])
