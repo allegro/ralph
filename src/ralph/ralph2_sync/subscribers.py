@@ -129,7 +129,18 @@ def sync_device_to_ralph3(data):
                 Environment, environment
             )
         )
-    # TODO: handle venture_role field
+    if 'venture_role' in data:
+        if data['venture_role']:
+            try:
+                dca.configuration_path = ImportedObjects.get_object_from_old_pk(
+                    ConfigurationClass, data['venture_role']
+                )
+            except ImportedObjectDoesNotExist:
+                logger.error('VentureRole {} not found when syncing {}'.format(
+                    data['venture_role'], data['id']
+                ))
+        else:
+            dca.configuration_path = None
     if 'custom_fields' in data:
         for field, value in data['custom_fields'].items():
             dca.update_custom_field(field, value)
