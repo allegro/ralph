@@ -96,7 +96,7 @@ def get_device_data(device, fields=None):
             if k in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST
         },
     }
-    return {k: v for k, v in data.items()} if fields else data
+    return {k: v for k, v in data.items() if k in fields} if fields else data
 
 
 @ralph3_sync(Device)

@@ -810,7 +810,4 @@ NG_EXPORTER = {
     'discovery_datacenter_constant': 1000,
 }
 
-import json
-RALPH2_HERMES_ROLE_PROPERTY_WHITELIST = json.loads(
-    os.environ.get('RALPH2_HERMES_ROLE_PROPERTY_WHITELIST', '[]')
-)
+RALPH2_HERMES_ROLE_PROPERTY_WHITELIST = []
