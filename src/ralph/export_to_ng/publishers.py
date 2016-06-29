@@ -7,42 +7,51 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from pyhermes import publisher
 
-from ralph.business.models import Venture, VentureRole
+from ralph.business.models import (
+    RoleProperty,
+    RolePropertyValue,
+    Venture,
+    VentureRole
+)
 from ralph.discovery.models import Device
 
 logger = logging.getLogger(__name__)
 
 
-def ralph3_sync(model):
+def ralph3_sync(model, topic=None):
     """
     Decorator for synchronizers with Ralph3. Decorated function should return
     dict with event data. Decorated function name is used as a topic name and
     dispatch_uid for post_save signal.
     """
     def wrap(func):
+        topic_name = topic or func.__name__
+
         @wraps(func)
         # connect to post_save signal for a model
         @receiver(
             post_save, sender=model, dispatch_uid=func.__name__,
         )
         # register publisher
-        @pyhermes.publisher(topic=func.__name__)
-        def wrapped_func(sender, instance=None, created=False, **kwargs):
+        @pyhermes.publisher(topic=topic_name)
+        def wrapped_func(sender, instance=None, **kwargs):
             if (
                 # publish only if sync enabled (globally and for particular
                 # function)
                 settings.RALPH3_HERMES_SYNC_ENABLED and
-                func.__name__ in settings.RALPH3_HERMES_SYNC_FUNCTIONS and
+                topic_name in settings.RALPH3_HERMES_SYNC_FUNCTIONS and
                 # process the signal only if instance has not attribute
                 # `_handle_post_save` set to False
                 getattr(instance, '_handle_post_save', True)
             ):
                 try:
-                    result = func(sender, instance, created, **kwargs)
+                    result = func(sender, instance, **kwargs)
                     if result:
-                        pyhermes.publish(func.__name__, result)
-                except:
-                    logger.exception('Error during Ralph2 sync')
+                        pyhermes.publish(topic_name, result)
+                except Exception as e:
+                    logger.exception(
+                        'Error during Ralph2 sync ({})'.format(str(e))
+                    )
                 else:
                     return result
 
@@ -66,10 +75,11 @@ def publish_sync_ack_to_ralph3(obj, ralph3_id):
     }
 
 
-@ralph3_sync(Device)
-def sync_device_to_ralph3(sender, instance=None, created=False, **kwargs):
-    device = instance
-    asset = device.get_asset()
+def get_device_data(device, fields=None):
+    """
+    Returns dictonary with device data.
+    """
+    asset = device.get_asset(manager='admin_objects')
     if not asset:
         return {}
     mgmt_ip = device.management_ip
@@ -81,8 +91,29 @@ def sync_device_to_ralph3(sender, instance=None, created=False, **kwargs):
         'service': device.service.uid if device.service else None,
         'environment': device.device_environment_id,
         'venture_role': device.venture_role_id,
+        'custom_fields': {
+            k: v for k, v in device.get_property_set().items()
+            if k in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST
+        },
     }
-    return data
+    return {k: v for k, v in data.items() if k in fields} if fields else data
+
+
+@ralph3_sync(Device)
+def sync_device_to_ralph3(sender, instance=None, **kwargs):
+    """
+    Send device data when device was saved.
+    """
+    return get_device_data(instance)
+
+
+@ralph3_sync(RolePropertyValue, topic='sync_device_to_ralph3')
+def sync_device_properties_to_ralph3(sender, instance=None, **kwargs):
+    """
+    Send device data when properties was changed.
+    """
+    device = instance.device
+    return get_device_data(device, fields=['id', 'custom_fields'])
 
 
 @ralph3_sync(Venture)
@@ -113,5 +144,28 @@ def sync_venture_role_to_ralph3(sender, instance=None, created=False, **kwargs):
         'id': venture_role.id,
         'name': venture_role.name,
         'venture': venture_role.venture_id,
+    }
+    return data
+
+
+@ralph3_sync(RoleProperty)
+def sync_role_property_to_ralph3(sender, instance=None, created=False, **kwargs):
+    """
+    Send role property info to Ralph3
+    """
+    role_property = instance
+    if role_property.symbol not in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST:  # noqa
+        return {}
+    choices = []
+    if role_property.type:
+        choices = list(
+            role_property.type.rolepropertytypevalue_set.all().values_list(
+                'value', flat=True
+            )
+        )
+    data = {
+        'symbol': role_property.symbol,
+        'default': role_property.default,
+        'choices': choices
     }
     return data
