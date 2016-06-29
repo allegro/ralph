@@ -248,4 +248,3 @@ class RolePropertyValue(models.Model):
         app_label='business', model_name='rolepropertyvalue'
     )):
         pass
-
