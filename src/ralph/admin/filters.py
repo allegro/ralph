@@ -484,7 +484,7 @@ class IPFilter(SimpleListFilter):
                 raise IncorrectLookupParameters()
             else:
                 queryset = queryset.filter(
-                    ethernet__ipaddress__address=self.value()
+                    ethernet_set__ipaddress__address=self.value()
                 )
         return queryset
 

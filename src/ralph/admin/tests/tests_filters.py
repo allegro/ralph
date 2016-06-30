@@ -12,6 +12,7 @@ from ralph.admin.filters import (
     ChoicesListFilter,
     date_format_to_human,
     DateListFilter,
+    IPFilter,
     LiquidatedStatusFilter,
     NumberListFilter,
     RelatedAutocompleteFieldListFilter,
@@ -61,6 +62,7 @@ class AdminFiltersTestCase(TestCase):
             barcode='barcode_two',
             status=DataCenterAssetStatus.liquidated,
         )
+        cls.dca_2.management_ip = '10.20.30.40'
         cls.dca_2.tags.add('tag_1')
         cls.dca_3 = DataCenterAssetFactory(
             invoice_date=datetime.date(2015, 3, 1),
@@ -413,3 +415,15 @@ class AdminFiltersTestCase(TestCase):
         )
         with self.assertRaises(IncorrectLookupParameters):
             related_filter.queryset(request, Car.objects.all())
+
+    def test_ip_address_filter(self):
+        ipaddress_filter = IPFilter(
+            request=None,
+            params={'ip': '10.20.30.40'},
+            model=DataCenterAsset,
+            model_admin=DataCenterAssetAdmin,
+        )
+        queryset = ipaddress_filter.queryset(
+            None, DataCenterAsset.objects.all()
+        )
+        self.assertEqual(1, queryset.count())
