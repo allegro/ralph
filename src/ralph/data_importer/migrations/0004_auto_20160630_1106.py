@@ -11,8 +11,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # migrations.AlterUniqueTogether(
-        #     name='importedobjects',
-        #     unique_together=set([('content_type', 'object_pk')]),
-        # ),
+        migrations.AlterUniqueTogether(
+            name='importedobjects',
+            unique_together=set([('content_type', 'object_pk')]),
+        ),
     ]
