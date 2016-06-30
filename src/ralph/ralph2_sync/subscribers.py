@@ -226,7 +226,6 @@ def sync_venture_role_to_ralph3(data):
     Supported fields:
     * symbol
     * parent
-    * team
     """
     creating = False
     try:
