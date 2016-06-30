@@ -24,7 +24,7 @@ class ImportedObjects(TimeStampMixin, models.Model):
         )
 
     class Meta:
-        unique_together = [('content_type', 'object_pk', 'old_object_pk')]
+        unique_together = [('content_type', 'object_pk')]
 
     @classmethod
     def get_object_from_old_pk(cls, model, old_pk):

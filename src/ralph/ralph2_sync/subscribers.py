@@ -4,6 +4,7 @@ from contextlib import ExitStack
 from functools import wraps
 
 import pyhermes
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 
@@ -23,6 +24,7 @@ from ralph.data_importer.models import (
 from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
 from ralph.ralph2_sync.helpers import WithSignalDisabled
 from ralph.ralph2_sync.publishers import sync_dc_asset_to_ralph2
+from ralph.virtual.models import VirtualServer, VirtualServerType
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +44,37 @@ def _get_publisher_signal_info(func):
         'signal': func._signal_type,
         'receiver': func,
     }
+
+
+def _get_service_env(data, service_key='service', env_key='environment'):
+    """
+    Return service-env instance based on data dict.
+    """
+    if service_key not in data and env_key not in data:
+        return None
+    service = data[service_key]
+    environment = data[env_key]
+    if not service or not environment:
+        return None
+    service_env = ServiceEnvironment.objects.get(
+        service__uid=service,
+        environment=ImportedObjects.get_object_from_old_pk(
+            Environment, environment
+        )
+    )
+    return service_env
+
+
+def _get_configuration_path_from_venture_role(venture_role_id):
+    try:
+        return ImportedObjects.get_object_from_old_pk(
+            ConfigurationClass, venture_role_id
+        )
+    except ImportedObjectDoesNotExist:
+        logger.error('VentureRole {} not found when syncing'.format(
+            venture_role_id
+        ))
+    return None
 
 
 class sync_subscriber(pyhermes.subscriber):
@@ -64,8 +97,10 @@ class sync_subscriber(pyhermes.subscriber):
                     ))
                 try:
                     return func(*args, **kwargs)
-                except:
-                    logger.exception('Exception during syncing')
+                except Exception as e:
+                    logger.exception(
+                        'Exception during syncing {}'.format(str(e))
+                    )
         return exception_wrapper
 
 
@@ -120,15 +155,9 @@ def sync_device_to_ralph3(data):
             dca.management_hostname = data.get('management_hostname')
         else:
             del dca.management_ip
-    if 'service' in data and 'environment' in data:
-        service = data['service']
-        environment = data['environment']
-        dca.service_env = ServiceEnvironment.objects.get(
-            service__uid=service,
-            environment=ImportedObjects.get_object_from_old_pk(
-                Environment, environment
-            )
-        )
+    service_env = _get_service_env(data)
+    if service_env:
+        dca.service_env = service_env
     if 'venture_role' in data:
         if data['venture_role']:
             try:
@@ -141,10 +170,10 @@ def sync_device_to_ralph3(data):
                 ))
         else:
             dca.configuration_path = None
+    dca.save()
     if 'custom_fields' in data:
         for field, value in data['custom_fields'].items():
             dca.update_custom_field(field, value)
-    dca.save()
 
 
 @sync_subscriber(
@@ -259,3 +288,55 @@ def sync_venture_role_to_ralph3(data):
     if creating:
         ImportedObjects.create(conf_class, data['id'])
     logger.info('Synced configuration class {}'.format(conf_class))
+
+
+def _get_obj(model_class, obj_id, creating=False):
+    """
+    Custom get or create based on imported objects.
+    """
+    try:
+        obj = ImportedObjects.get_object_from_old_pk(
+            model_class, obj_id
+        )
+        return obj, False
+    except ImportedObjectDoesNotExist:
+        obj = None
+        if creating:
+            obj = model_class()
+        logger.info(
+            '{} class ({}) not found'.format(
+                model_class, obj_id
+            )
+        )
+        return obj, True
+
+
+@sync_subscriber(topic='sync_virtual_server_to_ralph3')
+def sync_virtual_server_to_ralph3(data):
+    virtual_type = settings.RALPH2_RALPH3_VIRTUAL_SERVER_TYPE_MAPPING.get(data['type'])  # noqa
+    if virtual_type is None:
+        logger.info(
+            'Type {} not found in mapping dict'.format(
+                data['type']
+            )
+        )
+        virtual_type = 'unknown'
+    virtual_server, created = _get_obj(VirtualServer, data['id'], creating=True)
+    service_env = _get_service_env(data)
+    virtual_server.sn = data['sn']
+    virtual_server.hostname = data['hostname']
+    virtual_server.service_env = service_env
+    virtual_server.configuration_path = _get_configuration_path_from_venture_role(  # noqa
+        venture_role_id=data['venture_role']
+    )
+    virtual_server.type = VirtualServerType.objects.get_or_create(
+        name=virtual_type
+    )[0]
+    hypervisor, _ = _get_obj(DataCenterAsset, data['parent_id'])
+    virtual_server.parent = hypervisor
+    virtual_server.save()
+    if 'custom_fields' in data:
+        for field, value in data['custom_fields'].items():
+            virtual_server.update_custom_field(field, value)
+    # if created:
+    ImportedObjects.create(virtual_server, data['id'])

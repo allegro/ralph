@@ -215,7 +215,7 @@ class VirtualComponent(Component):
 
 
 class VirtualServerType(
-    NamedMixin.NonUnique,
+    NamedMixin,
     TimeStampMixin,
     models.Model
 ):
@@ -247,9 +247,12 @@ class VirtualServer(AdminAbsoluteUrlMixin, NetworkableBaseObject, BaseObject):
         verbose_name=_('hostname'),
         unique=True,
     )
-    sn = models.CharField(
+    sn = NullableCharField(
         max_length=200,
         verbose_name=_('SN'),
+        blank=True,
+        default=None,
+        null=True,
         unique=True,
     )
     # TODO: remove this field
