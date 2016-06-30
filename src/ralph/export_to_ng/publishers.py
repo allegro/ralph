@@ -181,8 +181,8 @@ def sync_virtual_server_to_ralph3(sender, instance=None, created=False, **kwargs
         'type': instance.model.name if instance.model else None,
         'hostname': instance.name,
         'sn': instance.sn,
-        'service': instance.service.name,
-        'env': instance.device_environment.name,
+        'service': instance.service.uid if instance.service else None,
+        'environment': instance.device_environment_id,
         'venture_role': instance.venture_role_id,
         'parent_id': instance.parent_id,
     }

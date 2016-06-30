@@ -34,14 +34,18 @@ def generic_sync(model, **options):
             instance=obj,
             _sync_fields=options.get('_sync_fields')
         )
-        time.sleep(options['time'])
+        time.sleep(options['sleep'])
 
 
 def virtual_server_sync(model, **options):
     for obj in model._default_manager.filter(
-        model__type=DeviceType.virtual_server
+        model__type=DeviceType.virtual_server,
+        id__in=settings.RALPH2_HERMES_VIRTUAL_SERVERS_IDS_WHITELIST
     ):
-        obj.save()
+        post_save.send(
+            sender=model, instance=obj, raw=None, using='default'
+        )
+        time.sleep(options['sleep'])
 
 
 def role_property_sync(model, **options):
