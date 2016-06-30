@@ -481,11 +481,19 @@ class BaseObjectAPITests(RalphAPITestCase):
             barcode='12345', hostname='host1'
         )
         self.bo_asset.tags.add('tag1')
+        self.conf_module_1 = ConfigurationModuleFactory()
+        self.conf_module_2 = ConfigurationModuleFactory(
+            parent=self.conf_module_1, name='mod1'
+        )
+        self.conf_class_1 = ConfigurationClassFactory(
+            module=self.conf_module_2, class_name='cls1'
+        )
         self.dc_asset = DataCenterAssetFactory(
             barcode='12543', price='9.00',
             service_env__service__name='test-service',
             service_env__service__uid='sc-123',
             service_env__environment__name='prod',
+            configuration_path=self.conf_class_1,
         )
         self.dc_asset.tags.add('tag2')
         self.ip = IPAddressFactory(
@@ -591,6 +599,26 @@ class BaseObjectAPITests(RalphAPITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(len(response.data['results']), 1)
 
+    def test_filter_by_configuration_path(self):
+        url = '{}?{}'.format(
+            reverse('baseobject-list'), urlencode(
+                {'configuration_path': 'mod1/cls1'}
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['id'], self.dc_asset.id)
+
+    def test_filter_by_configuration_path_module_name(self):
+        url = '{}?{}'.format(
+            reverse('baseobject-list'), urlencode(
+                {'configuration_path__module__name': 'mod1'}
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['id'], self.dc_asset.id)
+
     def test_tags(self):
         url = '{}?{}'.format(
             reverse('baseobject-list'), urlencode(
@@ -641,12 +669,18 @@ class DCHostAPITests(RalphAPITestCase):
         self.bo_asset = BackOfficeAssetFactory(
             barcode='12345', hostname='host1'
         )
-
+        self.conf_module_1 = ConfigurationModuleFactory()
+        self.conf_module_2 = ConfigurationModuleFactory(
+            parent=self.conf_module_1, name='ralph'
+        )
+        self.conf_class_1 = ConfigurationClassFactory(
+            module=self.conf_module_2, class_name='cls1'
+        )
         self.dc_asset = DataCenterAssetFullFactory(
             service_env__service__name='test-service',
             service_env__service__uid='sc-123',
             service_env__environment__name='prod',
-            configuration_path__module__name='ralph',
+            configuration_path=self.conf_class_1,
         )
         self.virtual = VirtualServerFullFactory(
             parent=self.dc_asset,
@@ -752,6 +786,26 @@ class DCHostAPITests(RalphAPITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_configuration_path(self):
+        url = '{}?{}'.format(
+            reverse('dchost-list'), urlencode(
+                {'configuration_path': 'ralph/cls1'}
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['id'], self.dc_asset.id)
+
+    def test_filter_by_configuration_path_module_name(self):
+        url = '{}?{}'.format(
+            reverse('dchost-list'), urlencode(
+                {'configuration_path__module__name': 'ralph'}
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['id'], self.dc_asset.id)
 
 
 class ConfigurationModuleAPITests(RalphAPITestCase):
