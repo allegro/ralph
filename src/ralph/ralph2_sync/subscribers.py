@@ -320,7 +320,7 @@ def sync_virtual_server_to_ralph3(data):
                 data['type']
             )
         )
-        virtual_type = 'unknown'
+        virtual_type = data['type']
     virtual_server, created = _get_obj(VirtualServer, data['id'], creating=True)
     service_env = _get_service_env(data)
     virtual_server.sn = data['sn']
