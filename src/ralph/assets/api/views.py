@@ -71,6 +71,11 @@ class AssetModelViewSet(RalphAPIViewSet):
     serializer_class = serializers.AssetModelSerializer
 
 
+class BaseObjectFilterSet(NetworkableObjectFilters):
+    class Meta(NetworkableObjectFilters.Meta):
+        model = models.BaseObject
+
+
 class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
     queryset = models.BaseObject.polymorphic_objects.all()
     serializer_class = serializers.BaseObjectPolymorphicSerializer
@@ -107,6 +112,7 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
         'ip': ['ethernet_set__ipaddress__address'],
         'service': ['service_env__service__uid', 'service_env__service__name'],
     }
+    additional_filter_class = BaseObjectFilterSet
 
 
 class AssetHolderViewSet(RalphAPIViewSet):
@@ -201,6 +207,7 @@ class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         'service': ['service_env__service__uid', 'service_env__service__name'],
         'object_type': ['content_type__model'],
     }
+    additional_filter_class = DCHostFilterSet
 
     def get_queryset(self):
         return super().get_queryset().dc_hosts()
