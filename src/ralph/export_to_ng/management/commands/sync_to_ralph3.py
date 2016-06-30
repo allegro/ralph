@@ -7,10 +7,12 @@ from __future__ import unicode_literals
 
 import logging
 import re
+import time
 from optparse import make_option
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.db.models.signals import post_save
 
 from ralph.business.models import (
     RoleProperty,
@@ -27,7 +29,12 @@ logger = logging.getLogger(__name__)
 
 def generic_sync(model, **options):
     for obj in model._default_manager.all():
-        obj.save()
+        post_save.send(
+            sender=model,
+            instance=obj,
+            _sync_fields=options.get('_sync_fields')
+        )
+        time.sleep(options['time'])
 
 
 def role_property_sync(model, **options):
@@ -35,6 +42,7 @@ def role_property_sync(model, **options):
         symbol__in=settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST
     ):
         obj.save()
+        time.sleep(options['sleep'])
 
 
 def venture_sync(model, **options):
@@ -49,9 +57,10 @@ def venture_sync(model, **options):
     skip_empty = options.get('skip_empty')
     valid_ventures = {}
     for v in Venture.objects.all():
+        descendants = v.find_descendant_ids()
         dev_count = Device.admin_objects.filter(
-            venture__in=v.find_descendant_ids()
-        ).count()
+            venture__in=descendants
+        ).exclude(deleted=True).count()
         if (skip_empty and dev_count > 0) or not skip_empty:
             valid_ventures[v] = dev_count
         else:
@@ -63,7 +72,10 @@ def venture_sync(model, **options):
     ]
     for venture in ventures:
         logger.info('Saving {}'.format(venture))
-        venture.save()
+        post_save.send(
+            sender=Venture, instance=venture, raw=None, using='default'
+        )
+        time.sleep(options['sleep'])
 
 
 def venture_role_sync(model, **options):
@@ -82,12 +94,35 @@ def venture_role_sync(model, **options):
             logger.warning((
                 'VentureRole {} name ("{}") is not valid slug It\'s assigned '
                 'to {} objects. Skipping..'
-            ).format(obj, obj.name, obj.device.count()))
+            ).format(obj, obj.name, obj.device.exclude(deleted=True).count()))
             continue
         if options.get('skip_empty') and is_empty:
             logger.warning('Skipping empty role {}'.format(obj))
             continue
-        obj.save()
+        post_save.send(
+            sender=VentureRole, instance=obj, raw=None, using='default'
+        )
+        time.sleep(options['sleep'])
+
+
+def _device_partial_sync(fields, **options):
+    for obj in Device.objects.exclude(deleted=True)[:10]:
+        post_save.send(
+            sender=Device,
+            instance=obj,
+            raw=None,
+            using='default',
+            _sync_fields=fields
+        )
+        time.sleep(options['sleep'])
+
+
+def device_venture_sync(model, **options):
+    _device_partial_sync(['id', 'venture_role'], **options)
+
+
+def device_role_properties_sync(model, **options):
+    _device_partial_sync(['id', 'custom_fields'], **options)
 
 
 models_handlers = {
@@ -96,6 +131,8 @@ models_handlers = {
     'RoleProperty': (RoleProperty, role_property_sync),
     'RolePropertyValue': (RolePropertyValue, generic_sync),
     'Device': (Device, generic_sync),
+    'DeviceVentureOnly': (Device, device_venture_sync),
+    'DeviceRolePropertiesOnly': (Device, device_role_properties_sync),
 }
 
 
@@ -113,6 +150,12 @@ class Command(BaseCommand):
         make_option(
             '--skip-empty',
             action="store_true",
+        ),
+        make_option(
+            '--sleep',
+            type=int,
+            default=0,
+            help='Sleep time after each sync in seconds'
         ),
     )
 
