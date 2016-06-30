@@ -7,9 +7,19 @@ import pyhermes
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 
-from ralph.assets.models import AssetModel, Environment, ServiceEnvironment
+from ralph.accounts.models import Team
+from ralph.assets.models import (
+    AssetModel,
+    ConfigurationClass,
+    ConfigurationModule,
+    Environment,
+    ServiceEnvironment
+)
 from ralph.data_center.models import DataCenterAsset
-from ralph.data_importer.models import ImportedObjects
+from ralph.data_importer.models import (
+    ImportedObjectDoesNotExist,
+    ImportedObjects
+)
 from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
 from ralph.ralph2_sync.helpers import WithSignalDisabled
 from ralph.ralph2_sync.publishers import sync_dc_asset_to_ralph2
@@ -98,21 +108,42 @@ def sync_device_to_ralph3(data):
     * hostname
     * service/env
     * management ip/hostname
+    * custom_fields
     """
     dca = ImportedObjects.get_object_from_old_pk(DataCenterAsset, data['id'])
-    dca.hostname = data['hostname']
-    if data['management_ip']:
-        dca.management_ip = data['management_ip']
-        dca.management_hostname = data['management_hostname']
-    else:
-        del dca.management_ip
-    if data['service'] and data['environment']:
+    if 'hostname' in data:
+        dca.hostname = data['hostname']
+    if 'management_ip' in data:
+        management_ip = data['management_ip']
+        if management_ip:
+            dca.management_ip = management_ip
+            dca.management_hostname = data.get('management_hostname')
+        else:
+            del dca.management_ip
+    if 'service' in data and 'environment' in data:
+        service = data['service']
+        environment = data['environment']
         dca.service_env = ServiceEnvironment.objects.get(
-            service__uid=data['service'],
+            service__uid=service,
             environment=ImportedObjects.get_object_from_old_pk(
-                Environment, data['environment']
+                Environment, environment
             )
         )
+    if 'venture_role' in data:
+        if data['venture_role']:
+            try:
+                dca.configuration_path = ImportedObjects.get_object_from_old_pk(
+                    ConfigurationClass, data['venture_role']
+                )
+            except ImportedObjectDoesNotExist:
+                logger.error('VentureRole {} not found when syncing {}'.format(
+                    data['venture_role'], data['id']
+                ))
+        else:
+            dca.configuration_path = None
+    if 'custom_fields' in data:
+        for field, value in data['custom_fields'].items():
+            dca.update_custom_field(field, value)
     dca.save()
 
 
@@ -136,3 +167,95 @@ def sync_custom_fields_to_ralph3(data):
         cf.type = CustomFieldTypes.STRING
     cf.default_value = data['default']
     cf.save()
+
+
+@sync_subscriber(topic='sync_venture_to_ralph3')
+def sync_venture_to_ralph3(data):
+    """
+    Receive data about venture from Ralph2 (ConfigurationModule in Ralph3).
+
+    Supported fields:
+    * symbol
+    * parent
+    * team
+    """
+    creating = False
+    try:
+        conf_module = ImportedObjects.get_object_from_old_pk(
+            ConfigurationModule, data['id']
+        )
+    except ImportedObjectDoesNotExist:
+        creating = True
+        conf_module = ConfigurationModule()
+        logger.info(
+            'Configuration module {} ({}) not found - creating new one'.format(
+                data['symbol'], data['id']
+            )
+        )
+
+    if data['parent']:
+        try:
+            conf_module.parent = ImportedObjects.get_object_from_old_pk(
+                ConfigurationModule, data['parent']
+            )
+        except ImportedObjectDoesNotExist:
+            logger.error(
+                'Parent configuration module with old_pk={} not found'.format(
+                    data['parent']
+                )
+            )
+            return
+
+    conf_module.name = data['symbol']
+    if data['department']:
+        try:
+            conf_module.support_team = Team.objects.get(name=data['department'])
+        except Team.DoesNotExist:
+            logger.warning('Team {} not found'.format(data['department']))
+    conf_module.save()
+    if creating:
+        ImportedObjects.create(conf_module, data['id'])
+    logger.info('Synced configuration module {}'.format(conf_module))
+
+
+@sync_subscriber(topic='sync_venture_role_to_ralph3')
+def sync_venture_role_to_ralph3(data):
+    """
+    Receive data about venture role from Ralph2 (ConfigurationClass in Ralph3).
+
+    Supported fields:
+    * symbol
+    * parent
+    * team
+    """
+    creating = False
+    try:
+        conf_class = ImportedObjects.get_object_from_old_pk(
+            ConfigurationClass, data['id']
+        )
+    except ImportedObjectDoesNotExist:
+        creating = True
+        conf_class = ConfigurationClass()
+        logger.info(
+            'Configuration class {} ({}) not found - creating new one'.format(
+                data['name'], data['id']
+            )
+        )
+
+    try:
+        conf_class.module = ImportedObjects.get_object_from_old_pk(
+            ConfigurationModule, data['venture']
+        )
+    except ImportedObjectDoesNotExist:
+        logger.error(
+            'Venture with old_pk={} not found for role {}'.format(
+                data['venture'], data['id']
+            )
+        )
+        return
+
+    conf_class.class_name = data['name']
+    conf_class.save()
+    if creating:
+        ImportedObjects.create(conf_class, data['id'])
+    logger.info('Synced configuration class {}'.format(conf_class))

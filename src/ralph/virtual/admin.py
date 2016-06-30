@@ -11,6 +11,7 @@ from ralph.admin.filters import (
 )
 from ralph.assets.models.components import Ethernet
 from ralph.data_center.models.virtual import BaseObjectCluster
+from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.networks.forms import SimpleNetworkForm
 from ralph.networks.views import NetworkView
@@ -41,7 +42,9 @@ class VirtualServerNetworkView(NetworkView):
 
 
 @register(VirtualServer)
-class VirtualServerAdmin(TransitionAdminMixin, RalphAdmin):
+class VirtualServerAdmin(
+    CustomFieldValueAdminMixin, TransitionAdminMixin, RalphAdmin
+):
     form = VirtualServerForm
     search_fields = ['hostname', 'sn']
     list_filter = [
@@ -105,9 +108,9 @@ class CloudHostTabularInline(RalphTabularInline):
     get_hypervisor.allow_tags = True
 
     def get_ip_addresses(self, obj):
-        ips = obj.ethernet.values_list(
-            'ipaddress', flat=True
-        ).select_related('ipaddress').all()
+        ips = obj.ethernet_set.values_list(
+            'ipaddress__address', flat=True
+        )
         if not ips:
             return '&ndash;'
         return '\n'.join(ips)
@@ -143,7 +146,7 @@ class CloudNetworkInline(RalphTabularInline):
 
 
 @register(CloudHost)
-class CloudHostAdmin(RalphAdmin):
+class CloudHostAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     list_display = ['hostname', 'get_ip_addresses', 'service_env',
                     'get_cloudproject', 'cloudflavor_name', 'host_id',
                     'created', 'image_name', 'get_tags']
@@ -219,7 +222,7 @@ class CloudHostAdmin(RalphAdmin):
     cloudflavor_name.allow_tags = True
 
     def get_ip_addresses(self, obj):
-        ips = obj.ethernet.values_list(
+        ips = obj.ethernet_set.values_list(
             'ipaddress__address', flat=True
         ).select_related('ipaddress').all()
         if not ips:
@@ -303,7 +306,7 @@ class CloudFlavorAdmin(RalphAdmin):
 
 
 @register(CloudProject)
-class CloudProjectAdmin(RalphAdmin):
+class CloudProjectAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     fields = ['name', 'project_id', 'cloudprovider', 'service_env', 'tags',
               'remarks', 'instances_count']
     list_display = ['name', 'service_env', 'instances_count']

@@ -57,6 +57,22 @@ def foreign_key_diff(old_path, new_path):
     return diff
 
 
+def custom_fields_diff(old, new):
+    dev = old.linked_device
+    if dev:
+        # TODO: respect whitelist of custom fields to sync
+        old_custom_fields = dev.get_property_set()
+    else:
+        old_custom_fields = {}
+    # TODO: ignore new (not-synced) custom fields (probably look at
+    # ImportedObject for particular CF will be enough here)
+    new_custom_fields = new.custom_fields_as_dict
+    if old_custom_fields != new_custom_fields:
+        return {
+            'old': old_custom_fields,
+            'new': new_custom_fields,
+        }
+
 mappers = {
     'DataCenterAsset': {
         'ralph2_model': Asset,
@@ -89,7 +105,10 @@ mappers = {
             'model': foreign_key_diff('model', 'model'),
             'service_env': service_env_diff,
             'position': ('device_info__position', 'position'),
-            'rack': foreign_key_diff('device_info__rack', 'rack')
+            'rack': foreign_key_diff('device_info__rack', 'rack'),
+            # waiting for subscriber implementation
+            # 'venture': foreign_key_diff('venture_role', 'configuration_path'),
+            # 'custom_fields': custom_fields_diff,
         },
         'blacklist': ['id', 'parent_id']
     },

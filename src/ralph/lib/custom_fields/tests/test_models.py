@@ -39,3 +39,29 @@ class CustomFieldModelsTestCase(TestCase):
                 ('zxcvbn', 'zxcvbn'),
             ]
         )
+
+    def test_fields_as_dict_should_return_dict(self):
+        self.assertIsInstance(self.sm1.custom_fields_as_dict, dict)
+
+    def test_update_custom_field_should_add_value(self):
+        field_name, field_value = 'test_choices', 'qwerty'
+        self.assertEqual({}, self.sm1.custom_fields_as_dict)
+        self.sm1.update_custom_field(name=field_name, value=field_value)
+        self.assertEqual(
+            {field_name: field_value}, self.sm1.custom_fields_as_dict
+        )
+
+    def test_update_custom_field_should_update_value(self):
+        field_name, field_value = 'test_choices', 'qwerty'
+        new_value = 'asdfgh'
+        self.sm1.update_custom_field(name=field_name, value=field_value)
+        self.sm1.update_custom_field(name=field_name, value=new_value)
+        self.assertEqual(
+            {field_name: new_value}, self.sm1.custom_fields_as_dict
+        )
+
+    def test_should_custom_fields_as_dict_run_1_quey(self):
+        self.sm1.update_custom_field(name='test_str', value='new_value')
+        self.sm1.update_custom_field(name='test_choices', value='qwerty')
+        with self.assertNumQueries(1):
+            self.sm1.custom_fields_as_dict
