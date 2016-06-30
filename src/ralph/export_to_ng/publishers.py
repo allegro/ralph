@@ -176,6 +176,7 @@ def sync_role_property_to_ralph3(sender, instance=None, created=False, **kwargs)
 def sync_virtual_server_to_ralph3(sender, instance=None, created=False, **kwargs):
     if instance.model.type != DeviceType.virtual_server:
         return
+    asset = instance.parent.get_asset(manager='admin_objects')
     return {
         'id': instance.id,
         'type': instance.model.name if instance.model else None,
@@ -184,5 +185,9 @@ def sync_virtual_server_to_ralph3(sender, instance=None, created=False, **kwargs
         'service': instance.service.uid if instance.service else None,
         'environment': instance.device_environment_id,
         'venture_role': instance.venture_role_id,
-        'parent_id': instance.parent_id,
+        'parent_id': asset.id if asset else None,
+        'custom_fields': {
+            k: v for k, v in instance.get_property_set().items()
+            if k in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST
+        },
     }

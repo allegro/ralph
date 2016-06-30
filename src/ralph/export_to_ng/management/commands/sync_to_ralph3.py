@@ -32,6 +32,8 @@ def generic_sync(model, **options):
         post_save.send(
             sender=model,
             instance=obj,
+            raw=None,
+            using='default',
             _sync_fields=options.get('_sync_fields')
         )
         time.sleep(options['sleep'])
