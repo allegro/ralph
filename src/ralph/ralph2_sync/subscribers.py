@@ -338,5 +338,5 @@ def sync_virtual_server_to_ralph3(data):
     if 'custom_fields' in data:
         for field, value in data['custom_fields'].items():
             virtual_server.update_custom_field(field, value)
-    # if created:
-    ImportedObjects.create(virtual_server, data['id'])
+    if created:
+        ImportedObjects.create(virtual_server, data['id'])
