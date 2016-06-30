@@ -155,21 +155,12 @@ def sync_device_to_ralph3(data):
             dca.management_hostname = data.get('management_hostname')
         else:
             del dca.management_ip
-    service_env = _get_service_env(data)
-    if service_env:
-        dca.service_env = service_env
+    dca.service_env = _get_service_env(data)
     if 'venture_role' in data:
         if data['venture_role']:
-            try:
-                dca.configuration_path = ImportedObjects.get_object_from_old_pk(
-                    ConfigurationClass, data['venture_role']
-                )
-            except ImportedObjectDoesNotExist:
-                logger.error('VentureRole {} not found when syncing {}'.format(
-                    data['venture_role'], data['id']
-                ))
-        else:
-            dca.configuration_path = None
+            dca.configuration_path = _get_configuration_path_from_venture_role(
+                venture_role_id=data['venture_role']
+            )
     dca.save()
     if 'custom_fields' in data:
         for field, value in data['custom_fields'].items():
