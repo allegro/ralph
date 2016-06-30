@@ -18,7 +18,7 @@ from ralph.business.models import (
     Venture,
     VentureRole
 )
-from ralph.discovery.models import Device
+from ralph.discovery.models import Device, DeviceType
 # register handlers
 from ralph.export_to_ng import publishers  # noqa
 
@@ -27,6 +27,13 @@ logger = logging.getLogger(__name__)
 
 def generic_sync(model, **options):
     for obj in model._default_manager.all():
+        obj.save()
+
+
+def virtual_server_sync(model, **options):
+    for obj in model._default_manager.filter(
+        model__type=DeviceType.virtual_server
+    ):
         obj.save()
 
 
@@ -96,6 +103,7 @@ models_handlers = {
     'RoleProperty': (RoleProperty, role_property_sync),
     'RolePropertyValue': (RolePropertyValue, generic_sync),
     'Device': (Device, generic_sync),
+    'VirtualServer': (Device, virtual_server_sync),
 }
 
 

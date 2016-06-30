@@ -809,5 +809,3 @@ NG_EXPORTER = {
     # non-conflicting. this is achieved by adding below constant
     'discovery_datacenter_constant': 1000,
 }
-
-RALPH2_HERMES_ROLE_PROPERTY_WHITELIST = []
