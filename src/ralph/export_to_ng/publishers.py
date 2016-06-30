@@ -105,7 +105,7 @@ def sync_device_to_ralph3(sender, instance=None, **kwargs):
     """
     Send device data when device was saved.
     """
-    return get_device_data(instance)
+    return get_device_data(instance, fields=kwargs.get('_sync_fields'))
 
 
 @ralph3_sync(RolePropertyValue, topic='sync_device_to_ralph3')
