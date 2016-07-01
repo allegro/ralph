@@ -263,7 +263,7 @@ class Ralph2SyncVirtualServerTestCase(TestCase):
     def setUp(self):
         self.data = {
             'id': 1,
-            'type': None,
+            'type': 'unknown',
             'hostname': None,
             'sn': None,
             'service': None,
