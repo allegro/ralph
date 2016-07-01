@@ -9,7 +9,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from ralph.assets.models import AssetModel
-from ralph.data_center.models import DataCenterAsset
+from ralph.data_center.models import DataCenterAsset, Rack
 from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
     ImportedObjects
@@ -132,4 +132,24 @@ def sync_model_to_ralph2(sender, instance=None, created=False, **kwargs):
         'power_consumption': model.power_consumption,
         'height_of_device': model.height_of_device,
         'manufacturer': _get_obj_id_ralph_2(model.manufacturer),
+    }
+
+
+@ralph2_sync(Rack)
+def sync_rack_to_ralph2(sender, instance=None, created=False, **kwargs):
+    """
+    Publish Rack info to sync it in Ralph3.
+    """
+    rack = instance
+    return {
+        'id': rack.id,
+        'ralph2_id': _get_obj_id_ralph_2(rack),
+        'name': rack.name,
+        'description': rack.description,
+        'orientation': rack.orientation,
+        'max_u_height': rack.max_u_height,
+        'visualization_col': rack.visualization_col,
+        'visualization_row': rack.visualization_row,
+        'server_room': _get_obj_id_ralph_2(rack.server_room),
+        'data_center': _get_obj_id_ralph_2(rack.server_room.data_center) if rack.server_room else None,  # noqa
     }
