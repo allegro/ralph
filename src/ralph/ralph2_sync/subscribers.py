@@ -225,7 +225,7 @@ def sync_venture_role_to_ralph3(data):
 
     Supported fields:
     * symbol
-    * parent
+    * module
     """
     creating = False
     try:
