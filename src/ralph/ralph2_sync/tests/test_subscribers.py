@@ -17,6 +17,7 @@ from ralph.data_importer.models import (
     ImportedObjects
 )
 from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
+from ralph.networks.tests.factories import IPAddressFactory
 from ralph.ralph2_sync.subscribers import (
     ralph2_sync_ack,
     sync_custom_fields_to_ralph3,
@@ -70,6 +71,32 @@ class Ralph2DataCenterAssetTestCase(TestCase):
         }
         sync_device_to_ralph3(data)
         self.assertEqual(dca.custom_fields_as_dict, custom_fields)
+
+    def test_sync_device_new_management_ip(self):
+        old_id = 1
+        dca = DataCenterAssetFactory()
+        ImportedObjects.create(obj=dca, old_pk=old_id)
+        data = {
+            'id': old_id,
+            'management_ip': '10.20.30.40',
+        }
+        sync_device_to_ralph3(data)
+        self.assertEqual(dca.management_ip, '10.20.30.40')
+
+    def test_sync_device_existing_management_ip(self):
+        old_id = 1
+        ip = IPAddressFactory(address='10.20.30.40', is_management=True)
+        dca = DataCenterAssetFactory()
+        ImportedObjects.create(obj=dca, old_pk=old_id)
+        data = {
+            'id': old_id,
+            'management_ip': '10.20.30.40',
+        }
+        sync_device_to_ralph3(data)
+        self.assertEqual(dca.management_ip, '10.20.30.40')
+        ip.refresh_from_db()
+        ip.ethernet.refresh_from_db()
+        self.assertEqual(ip.ethernet.base_object.pk, dca.pk)
 
 
 class Ralph2CustomFieldsTestCase(TestCase):
