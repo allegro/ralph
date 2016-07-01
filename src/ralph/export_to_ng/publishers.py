@@ -3,6 +3,7 @@ from functools import wraps
 
 import pyhermes
 from django.conf import settings
+
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from pyhermes import publisher
@@ -13,7 +14,7 @@ from ralph.business.models import (
     Venture,
     VentureRole
 )
-from ralph.discovery.models import Device
+from ralph.discovery.models import Device, DeviceType
 
 logger = logging.getLogger(__name__)
 
@@ -169,3 +170,24 @@ def sync_role_property_to_ralph3(sender, instance=None, created=False, **kwargs)
         'choices': choices
     }
     return data
+
+
+@ralph3_sync(Device)
+def sync_virtual_server_to_ralph3(sender, instance=None, created=False, **kwargs):
+    if instance.model.type != DeviceType.virtual_server:
+        return
+    asset = instance.parent.get_asset(manager='admin_objects') if instance.parent else None  # noqa
+    return {
+        'id': instance.id,
+        'type': instance.model.name if instance.model else None,
+        'hostname': instance.name,
+        'sn': instance.sn,
+        'service': instance.service.uid if instance.service else None,
+        'environment': instance.device_environment_id,
+        'venture_role': instance.venture_role_id,
+        'parent_id': asset.id if asset else None,
+        'custom_fields': {
+            k: v for k, v in instance.get_property_set().items()
+            if k in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST
+        },
+    }

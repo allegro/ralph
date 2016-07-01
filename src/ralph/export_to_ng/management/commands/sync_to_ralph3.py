@@ -20,7 +20,7 @@ from ralph.business.models import (
     Venture,
     VentureRole
 )
-from ralph.discovery.models import Device
+from ralph.discovery.models import Device, DeviceType
 # register handlers
 from ralph.export_to_ng import publishers  # noqa
 
@@ -32,9 +32,22 @@ def generic_sync(model, **options):
         post_save.send(
             sender=model,
             instance=obj,
+            raw=None,
+            using='default',
             _sync_fields=options.get('_sync_fields')
         )
-        time.sleep(options['time'])
+        time.sleep(options['sleep'])
+
+
+def virtual_server_sync(model, **options):
+    for obj in model._default_manager.filter(
+        model__type=DeviceType.virtual_server,
+        id__in=settings.RALPH2_HERMES_VIRTUAL_SERVERS_IDS_WHITELIST
+    ):
+        post_save.send(
+            sender=model, instance=obj, raw=None, using='default'
+        )
+        time.sleep(options['sleep'])
 
 
 def role_property_sync(model, **options):
@@ -131,6 +144,7 @@ models_handlers = {
     'RoleProperty': (RoleProperty, role_property_sync),
     'RolePropertyValue': (RolePropertyValue, generic_sync),
     'Device': (Device, generic_sync),
+    'VirtualServer': (Device, virtual_server_sync),
     'DeviceVentureOnly': (Device, device_venture_sync),
     'DeviceRolePropertiesOnly': (Device, device_role_properties_sync),
 }
