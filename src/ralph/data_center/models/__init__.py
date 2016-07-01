@@ -1,5 +1,6 @@
 from ralph.data_center.models.choices import (
     ConnectionType,
+    DataCenterAssetStatus,
     Orientation,
     RackOrientation,
 )
@@ -35,6 +36,7 @@ __all__ = [
     'Database',
     'DataCenter',
     'DataCenterAsset',
+    'DataCenterAssetStatus',
     'DiskShare',
     'DiskShareMount',
     'Gap',
