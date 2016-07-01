@@ -156,6 +156,7 @@ def sync_rack_to_ralph2(sender, instance=None, created=False, **kwargs):
         'visualization_row': rack.visualization_row,
         'server_room': _get_obj_id_ralph_2(rack.server_room),
         'data_center': _get_obj_id_ralph_2(rack.server_room.data_center) if rack.server_room else None,  # noqa
+    }
 
 
 @ralph2_sync(ConfigurationModule)
