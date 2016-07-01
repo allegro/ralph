@@ -5,7 +5,7 @@ from ralph.assets.models import AssetModel, Ethernet
 from ralph.cross_validator.helpers import get_obj_id_ralph_20
 from ralph.cross_validator.ralph2.device import AssetModel as Ralph2AssetModel
 from ralph.cross_validator.ralph2.device import Asset
-from ralph.data_center.models import DataCenterAsset
+from ralph.data_center.models import DataCenterAsset, DataCenterAssetStatus
 
 
 """
@@ -73,6 +73,15 @@ def custom_fields_diff(old, new):
             'new': new_custom_fields,
         }
 
+
+def check_asset_has_device(old, new):
+    if not old:
+        return
+    dev = old.linked_device
+    if not dev and new.status != DataCenterAssetStatus.liquidated:
+        return 'Asset has no linked device'
+
+
 mappers = {
     'DataCenterAsset': {
         'ralph2_model': Asset,
@@ -110,7 +119,10 @@ mappers = {
             # 'venture': foreign_key_diff('venture_role', 'configuration_path'),
             # 'custom_fields': custom_fields_diff,
         },
-        'blacklist': ['id', 'parent_id']
+        'blacklist': ['id', 'parent_id'],
+        'errors_checkers': [
+            check_asset_has_device,
+        ]
     },
     'AssetModel': {
         'ralph2_model': Ralph2AssetModel,

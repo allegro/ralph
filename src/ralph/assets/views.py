@@ -18,8 +18,7 @@ class ComponentsAdminView(RalphDetailViewAdmin):
 
     class MemoryInline(RalphTabularInline):
         model = Memory
-        # TODO: discuss model field
-        fields = ('label', 'size', 'speed', 'slot_no')
+        fields = ('model_name', 'size', 'speed')
         extra = 1
 
     inlines = [GenericComponentInline, MemoryInline]

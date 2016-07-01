@@ -18,6 +18,9 @@ MAC_ERROR_MSG = "'%(value)s' is not a valid MAC address."
 mac_validator = RegexValidator(regex=MAC_RE, message=MAC_ERROR_MSG)
 
 
+# TODO(xor-xor): As discussed with @mkurek, this class should be removed,
+# but since it is used in some cloud-related functionality, it will be
+# removed later.
 class ComponentModel(AutocompleteTooltipMixin, NamedMixin, models.Model):
     speed = models.PositiveIntegerField(
         verbose_name=_('speed (MHz)'),
@@ -60,6 +63,8 @@ class ComponentModel(AutocompleteTooltipMixin, NamedMixin, models.Model):
 
 class Component(TimeStampMixin, models.Model):
     base_object = models.ForeignKey(BaseObject, related_name='%(class)s_set')
+    # TODO(xor-xor): This field should be removed along with ComponentModel
+    # class.
     model = models.ForeignKey(
         ComponentModel,
         verbose_name=_('model'),
@@ -67,6 +72,9 @@ class Component(TimeStampMixin, models.Model):
         blank=True,
         default=None,
         on_delete=models.SET_NULL,
+    )
+    model_name = models.CharField(
+        verbose_name=_('model name'), max_length=255, blank=True, null=True,
     )
 
     class Meta:
@@ -90,7 +98,7 @@ class GenericComponent(Component):
 
 class Ethernet(Component):
     label = NullableCharField(
-        verbose_name=_('name'), max_length=255, blank=True, null=True
+        verbose_name=_('label'), max_length=255, blank=True, null=True
     )
     mac = NullableCharField(
         verbose_name=_('MAC address'), unique=True,
@@ -99,6 +107,10 @@ class Ethernet(Component):
     speed = models.PositiveIntegerField(
         verbose_name=_('speed'), choices=EthernetSpeed(),
         default=EthernetSpeed.unknown.id,
+    )
+    firmware_version = models.CharField(
+        verbose_name=_('firmware version'), max_length=255, blank=True,
+        null=True,
     )
 
     class Meta:
@@ -154,22 +166,14 @@ class Ethernet(Component):
 
 
 class Memory(Component):
-    label = models.CharField(verbose_name=_('name'), max_length=255)
     size = models.PositiveIntegerField(verbose_name=_("size (MiB)"))
     speed = models.PositiveIntegerField(
         verbose_name=_("speed (MHz)"), null=True, blank=True,
     )
-    slot_no = models.PositiveIntegerField(
-        verbose_name=_("slot number"), null=True, blank=True,
-    )
 
     class Meta:
         verbose_name = _('memory')
-        verbose_name_plural = _('memories')
+        verbose_name_plural = _('memory')
 
     def __str__(self):
-        if self.slot_no:
-            return '#{}: {} ({} MiB)'.format(
-                self.slot_no, self.label, self.size
-            )
-        return '{} ({} MiB)'.format(self.label, self.size)
+        return '{} MiB ({} MHz)'.format(self.size, self.speed)

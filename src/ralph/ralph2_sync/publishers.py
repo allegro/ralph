@@ -3,13 +3,16 @@ import logging
 from functools import wraps
 
 import pyhermes
-
 from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from ralph.assets.models import AssetModel
-from ralph.data_center.models import DataCenterAsset
+from ralph.assets.models import (
+    AssetModel,
+    ConfigurationClass,
+    ConfigurationModule
+)
+from ralph.data_center.models import DataCenterAsset, Rack
 from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
     ImportedObjects
@@ -132,4 +135,51 @@ def sync_model_to_ralph2(sender, instance=None, created=False, **kwargs):
         'power_consumption': model.power_consumption,
         'height_of_device': model.height_of_device,
         'manufacturer': _get_obj_id_ralph_2(model.manufacturer),
+    }
+
+
+@ralph2_sync(Rack)
+def sync_rack_to_ralph2(sender, instance=None, created=False, **kwargs):
+    """
+    Publish Rack info to sync it in Ralph3.
+    """
+    rack = instance
+    return {
+        'id': rack.id,
+        'ralph2_id': _get_obj_id_ralph_2(rack),
+        'name': rack.name,
+        'description': rack.description,
+        'orientation': rack.orientation,
+        'max_u_height': rack.max_u_height,
+        'visualization_col': rack.visualization_col,
+        'visualization_row': rack.visualization_row,
+        'server_room': _get_obj_id_ralph_2(rack.server_room),
+        'data_center': _get_obj_id_ralph_2(rack.server_room.data_center) if rack.server_room else None,  # noqa
+    }
+
+
+@ralph2_sync(ConfigurationModule)
+def sync_configuration_module_to_ralph2(sender, instance=None, created=False, **kwargs):  # noqa
+    """
+    ConfigurationModule -> Venture
+    """
+    return {
+        'id': instance.id,
+        'ralph2_id': _get_obj_id_ralph_2(instance),
+        'ralph2_parent_id': _get_obj_id_ralph_2(instance.parent) if instance.parent else None,  # noqa
+        'symbol': instance.name,
+        'department': instance.support_team.name if instance.support_team else None,  # noqa
+    }
+
+
+@ralph2_sync(ConfigurationClass)
+def sync_configuration_class_to_ralph2(sender, instance=None, created=False, **kwargs):  # noqa
+    """
+    ConfigurationClass -> VentureRole
+    """
+    return {
+        'id': instance.id,
+        'ralph2_id': _get_obj_id_ralph_2(instance),
+        'ralph2_parent_id': _get_obj_id_ralph_2(instance.module) if instance.module else None,  # noqa
+        'symbol': instance.class_name,
     }

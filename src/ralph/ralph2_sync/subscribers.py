@@ -187,7 +187,7 @@ def sync_custom_fields_to_ralph3(data):
     Receive data about custom fields from Ralph2
 
     Supported fields:
-    * symbol (name)
+    * name (old symbol)
     * choices
     * default value
     """
@@ -207,9 +207,9 @@ def sync_venture_to_ralph3(data):
     Receive data about venture from Ralph2 (ConfigurationModule in Ralph3).
 
     Supported fields:
-    * symbol
-    * parent
-    * team
+    * name (old symbol)
+    * parent (old parent)
+    * team (old department)
     """
     creating = False
     try:
@@ -256,9 +256,8 @@ def sync_venture_role_to_ralph3(data):
     Receive data about venture role from Ralph2 (ConfigurationClass in Ralph3).
 
     Supported fields:
-    * symbol
-    * parent
-    * team
+    * name (old symbol)
+    * module (old venture)
     """
     creating = False
     try:
