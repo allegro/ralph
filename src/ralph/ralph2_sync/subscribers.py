@@ -166,7 +166,8 @@ def sync_device_to_ralph3(data):
             dca.management_hostname = data.get('management_hostname')
         else:
             del dca.management_ip
-    dca.service_env = _get_service_env(data)
+    if 'service' in data and 'environment' in data:
+        dca.service_env = _get_service_env(data)
     if 'venture_role' in data:
         if data['venture_role']:
             dca.configuration_path = _get_configuration_path_from_venture_role(
