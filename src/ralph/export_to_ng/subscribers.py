@@ -146,6 +146,8 @@ def sync_dc_asset_to_ralph2_handler(data):
         device_info = asset.device_info
 
     device_info.position = data['position'] or None
+    if device_info.position:
+        device_info.position = int(device_info.position)
     device_info.orientation = data['orientation']
     device_info.slot_no = data['slot_no']
 
