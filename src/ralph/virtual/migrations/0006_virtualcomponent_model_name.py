@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('virtual', '0005_auto_20160615_2140'),
+        ('virtual', '0006_virtualcomponent_model_name'),
     ]
 
     operations = [
