@@ -1,0 +1,4 @@
+/* see: https://github.com/mkdocs/mkdocs/issues/318 */
+li.toctree-l3:first-child {
+    display: none;
+}

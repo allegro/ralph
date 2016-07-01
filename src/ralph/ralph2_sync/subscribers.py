@@ -22,6 +22,7 @@ from ralph.data_importer.models import (
     ImportedObjects
 )
 from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
+from ralph.networks.models import IPAddress
 from ralph.ralph2_sync.helpers import WithSignalDisabled
 from ralph.ralph2_sync.publishers import sync_dc_asset_to_ralph2
 from ralph.virtual.models import VirtualServer, VirtualServerType
@@ -153,7 +154,15 @@ def sync_device_to_ralph3(data):
     if 'management_ip' in data:
         management_ip = data['management_ip']
         if management_ip:
-            dca.management_ip = management_ip
+            try:
+                ip = IPAddress.objects.get(address=management_ip)
+            except IPAddress.DoesNotExist:
+                dca.management_ip = management_ip
+            else:
+                ip.ethernet.base_object = dca
+                ip.ethernet.save()
+                ip.is_management = True
+                ip.save()
             dca.management_hostname = data.get('management_hostname')
         else:
             del dca.management_ip
