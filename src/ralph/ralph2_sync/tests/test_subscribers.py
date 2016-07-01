@@ -22,8 +22,11 @@ from ralph.ralph2_sync.subscribers import (
     sync_custom_fields_to_ralph3,
     sync_device_to_ralph3,
     sync_venture_role_to_ralph3,
-    sync_venture_to_ralph3
+    sync_venture_to_ralph3,
+    sync_virtual_server_to_ralph3
 )
+from ralph.virtual.models import VirtualServer, VirtualServerType
+from ralph.virtual.tests.factories import VirtualServerFactory
 
 
 class Ralph2SyncACKTestCase(TestCase):
@@ -215,3 +218,47 @@ class Ralph2SyncVentureRoleTestCase(TestCase):
             ImportedObjects.get_object_from_old_pk(
                 ConfigurationModule, 33
             )
+
+
+class Ralph2SyncVirtualServerTestCase(TestCase):
+    """
+    {
+        'id': instance.id,
+        'type': instance.model.name if instance.model else None,
+        'hostname': instance.name,
+        'sn': instance.sn,
+        'service': instance.service.uid if instance.service else None,
+        'environment': instance.device_environment_id,
+        'venture_role': instance.venture_role_id,
+        'parent_id': asset.id if asset else None,
+        'custom_fields': {
+            k: v for k, v in instance.get_property_set().items()
+            if k in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST
+        },
+    }
+    """
+    # def setUp(self):
+    #     self.conf_module = ConfigurationModuleFactory()
+    #     ImportedObjects.create(self.conf_module, 11)
+    #     self.conf_class = ConfigurationClassFactory()
+    #     ImportedObjects.create(self.conf_class, 12)
+
+    def test_new_virtual_server_should_create_imported_object(self):
+        self.assertEqual(VirtualServer.objects.count(), 0)
+        data = {
+            'id': 1,
+            'type': 'QEMU',
+            'hostname': 's333.dc8',
+            'sn': None,
+            'service': None,
+            'environment': None,
+            'venture_role': None,
+            'parent_id': None,
+            'custom_fields': {}
+        }
+        sync_virtual_server_to_ralph3(data)
+        self.assertEqual(VirtualServer.objects.count(), 1)
+        vs = ImportedObjects.get_object_from_old_pk(
+            VirtualServer, data['id']
+        )
+        self.assertEqual(vs.hostname, data['hostname'])
