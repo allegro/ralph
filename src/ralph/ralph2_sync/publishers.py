@@ -153,7 +153,7 @@ def sync_configuration_module_to_ralph2(sender, instance=None, created=False, **
 
 
 @ralph2_sync(ConfigurationClass)
-def sync_configuration_path_to_ralph2(sender, instance=None, created=False, **kwargs):  # noqa
+def sync_configuration_class_to_ralph2(sender, instance=None, created=False, **kwargs):  # noqa
     """
     ConfigurationClass -> VentureRole
     """
