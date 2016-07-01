@@ -11,9 +11,9 @@ from ralph.assets.models import (
 from ralph.assets.tests.factories import (
     ConfigurationClassFactory,
     ConfigurationModuleFactory,
-    ServiceFactory,
     EnvironmentFactory,
-    ServiceEnvironmentFactory
+    ServiceEnvironmentFactory,
+    ServiceFactory
 )
 from ralph.data_center.tests.factories import DataCenterAssetFactory
 from ralph.data_importer.models import (
