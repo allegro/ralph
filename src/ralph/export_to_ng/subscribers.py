@@ -11,7 +11,7 @@ from pyhermes import subscriber
 from ralph.discovery.admin import SAVE_PRIORITY
 from ralph_assets.models import Asset, AssetModel
 from ralph_assets.models_assets import AssetStatus, AssetType, Warehouse, DataCenter
-from ralph_assets.models_dc_assets import DeviceInfo
+from ralph_assets.models_dc_assets import DeviceInfo, Rack
 from ralph.discovery.models import ServiceCatalog
 from ralph.export_to_ng.helpers import WithSignalDisabled
 from ralph.export_to_ng.publishers import (
@@ -168,8 +168,8 @@ def sync_dc_asset_to_ralph2_handler(data):
     device.name = data['hostname']
     device.management_ip = data.get('management_ip')
     device.save(priority=SAVE_PRIORITY)
-
-    publish_sync_ack_to_ralph3(asset, data['id'])
+    if creating:
+        publish_sync_ack_to_ralph3(asset, data['id'])
 
 
 @sync_subscriber(topic='sync_model_to_ralph2')
@@ -177,9 +177,11 @@ def sync_model_to_ralph2(data):
     """
     Saves asset model data from Ralph3 to Ralph2.
     """
+    creating = False
     if data['ralph2_id']:
         model = AssetModel.objects.get(pk=data['ralph2_id'])
     else:
+        creating = True
         model = AssetModel(type=AssetType.data_center)
 
     for field in [
@@ -190,4 +192,29 @@ def sync_model_to_ralph2(data):
     model.manufacturer_id = data['manufacturer']
     model.category_id = data['category']
     model.save()
-    publish_sync_ack_to_ralph3(model, data['id'])
+    if creating:
+        publish_sync_ack_to_ralph3(model, data['id'])
+
+
+@sync_subscriber(topic='sync_rack_to_ralph2')
+def sync_rack_to_ralph2(data):
+    """
+    Saves rack data from Ralph3 to Ralph2.
+    """
+    creating = False
+    if data['ralph2_id']:
+        rack = Rack.objects.get(pk=data['ralph2_id'])
+    else:
+        rack = Rack()
+
+    for field in [
+        'name', 'description', 'orientation', 'max_u_height',
+        'visualization_col', 'visualization_row'
+    ]:
+        setattr(rack, field, data[field])
+
+    rack.data_center_id = data['data_center']
+    rack.server_room_id = data['server_room']
+    rack.save()
+    if creating:
+        publish_sync_ack_to_ralph3(rack, data['id'])
