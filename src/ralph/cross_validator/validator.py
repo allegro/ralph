@@ -31,6 +31,10 @@ def _get_values(new, imported_object, config):
         old = ralph2_objects.get(id=old_obj_id)
     except ObjectDoesNotExist:
         errors.append('ObjectDoesNotExist in Ralph2')
+    for error_checker in config.get('errors_checkers', []):
+        error = error_checker(old, new)
+        if error:
+            errors.append(error)
     values['blacklist'] = config['blacklist']
     for field_name, fields in config['fields'].items():
         if callable(fields):

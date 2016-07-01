@@ -72,9 +72,9 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             eth['ipaddress']['address'] for eth in response.data['ethernet']
             if eth['ipaddress']
         ])
-        self.assertEqual(len(response.data['memories']), 2)
-        self.assertEqual(response.data['memories'][0]['speed'], 1600)
-        self.assertEqual(response.data['memories'][0]['size'], 8192)
+        self.assertEqual(len(response.data['memory']), 2)
+        self.assertEqual(response.data['memory'][0]['speed'], 1600)
+        self.assertEqual(response.data['memory'][0]['size'], 8192)
 
     def test_create_data_center_asset(self):
         url = reverse('datacenterasset-list')

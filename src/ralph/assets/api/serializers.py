@@ -284,7 +284,7 @@ class EthernetSerializer(EthernetSimpleSerializer):
 class MemorySimpleSerializer(RalphAPISerializer):
     class Meta:
         model = Memory
-        fields = ('id', 'url', 'label', 'size', 'speed', 'slot_no')
+        fields = ('id', 'url', 'size', 'speed')
 
 
 class MemorySerializer(MemorySimpleSerializer):
@@ -297,7 +297,7 @@ class MemorySerializer(MemorySimpleSerializer):
 # used by DataCenterAsset and VirtualServer serializers
 class ComponentSerializerMixin(serializers.Serializer):
     ethernet = EthernetSimpleSerializer(many=True, source='ethernet_set')
-    memories = MemorySimpleSerializer(many=True, source='memory_set')
+    memory = MemorySimpleSerializer(many=True, source='memory_set')
     ipaddresses = fields.SerializerMethodField()
 
     def get_ipaddresses(self, instance):
@@ -324,7 +324,7 @@ class DCHostSerializer(ComponentSerializerMixin, BaseObjectSerializer):
     class Meta:
         model = BaseObject
         fields = [
-            'id', 'url', 'ethernet', 'memories', 'ipaddresses', 'custom_fields',
+            'id', 'url', 'ethernet', 'memory', 'ipaddresses', 'custom_fields',
             '__str__', 'tags', 'service_env', 'configuration_path', 'hostname',
             'created', 'modified', 'remarks', 'parent', 'object_type'
         ]

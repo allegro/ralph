@@ -3,12 +3,15 @@ import logging
 from functools import wraps
 
 import pyhermes
-
 from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from ralph.assets.models import AssetModel
+from ralph.assets.models import (
+    AssetModel,
+    ConfigurationClass,
+    ConfigurationModule
+)
 from ralph.data_center.models import DataCenterAsset, Rack
 from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
@@ -153,4 +156,30 @@ def sync_rack_to_ralph2(sender, instance=None, created=False, **kwargs):
         'visualization_row': rack.visualization_row,
         'server_room': _get_obj_id_ralph_2(rack.server_room),
         'data_center': _get_obj_id_ralph_2(rack.server_room.data_center) if rack.server_room else None,  # noqa
+
+
+@ralph2_sync(ConfigurationModule)
+def sync_configuration_module_to_ralph2(sender, instance=None, created=False, **kwargs):  # noqa
+    """
+    ConfigurationModule -> Venture
+    """
+    return {
+        'id': instance.id,
+        'ralph2_id': _get_obj_id_ralph_2(instance),
+        'ralph2_parent_id': _get_obj_id_ralph_2(instance.parent) if instance.parent else None,  # noqa
+        'symbol': instance.name,
+        'department': instance.support_team.name if instance.support_team else None,  # noqa
+    }
+
+
+@ralph2_sync(ConfigurationClass)
+def sync_configuration_class_to_ralph2(sender, instance=None, created=False, **kwargs):  # noqa
+    """
+    ConfigurationClass -> VentureRole
+    """
+    return {
+        'id': instance.id,
+        'ralph2_id': _get_obj_id_ralph_2(instance),
+        'ralph2_parent_id': _get_obj_id_ralph_2(instance.module) if instance.module else None,  # noqa
+        'symbol': instance.class_name,
     }

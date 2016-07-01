@@ -91,7 +91,7 @@ class Rack(models.Model):
 
 
 class DeviceInfo(SoftDeletable, models.Model):
-    ralph_device = models.OneToOneField(Device)
+    ralph_device = models.OneToOneField(Device, null=True)
     u_level = models.CharField(max_length=10, null=True, blank=True)
     u_height = models.CharField(max_length=10, null=True, blank=True)
     rack = models.ForeignKey(Rack, null=True, blank=True)
