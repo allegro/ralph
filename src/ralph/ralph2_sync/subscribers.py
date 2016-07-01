@@ -66,6 +66,8 @@ def _get_service_env(data, service_key='service', env_key='environment'):
 
 
 def _get_configuration_path_from_venture_role(venture_role_id):
+    if venture_role_id is None:
+        return
     try:
         return ImportedObjects.get_object_from_old_pk(
             ConfigurationClass, venture_role_id

@@ -1,5 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
+from django.test.utils import override_settings
 
 from ralph.accounts.tests.factories import TeamFactory
 from ralph.assets.models import (
@@ -9,7 +10,10 @@ from ralph.assets.models import (
 )
 from ralph.assets.tests.factories import (
     ConfigurationClassFactory,
-    ConfigurationModuleFactory
+    ConfigurationModuleFactory,
+    ServiceFactory,
+    EnvironmentFactory,
+    ServiceEnvironmentFactory
 )
 from ralph.data_center.tests.factories import DataCenterAssetFactory
 from ralph.data_importer.models import (
@@ -27,6 +31,14 @@ from ralph.ralph2_sync.subscribers import (
 )
 from ralph.virtual.models import VirtualServer, VirtualServerType
 from ralph.virtual.tests.factories import VirtualServerFactory
+
+
+def _create_imported_object(factory, old_id, factory_kwargs=None):
+    if factory_kwargs is None:
+        factory_kwargs = {}
+    obj = factory(**factory_kwargs)
+    ImportedObjects.create(obj, old_id)
+    return obj
 
 
 class Ralph2SyncACKTestCase(TestCase):
@@ -221,34 +233,11 @@ class Ralph2SyncVentureRoleTestCase(TestCase):
 
 
 class Ralph2SyncVirtualServerTestCase(TestCase):
-    """
-    {
-        'id': instance.id,
-        'type': instance.model.name if instance.model else None,
-        'hostname': instance.name,
-        'sn': instance.sn,
-        'service': instance.service.uid if instance.service else None,
-        'environment': instance.device_environment_id,
-        'venture_role': instance.venture_role_id,
-        'parent_id': asset.id if asset else None,
-        'custom_fields': {
-            k: v for k, v in instance.get_property_set().items()
-            if k in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST
-        },
-    }
-    """
-    # def setUp(self):
-    #     self.conf_module = ConfigurationModuleFactory()
-    #     ImportedObjects.create(self.conf_module, 11)
-    #     self.conf_class = ConfigurationClassFactory()
-    #     ImportedObjects.create(self.conf_class, 12)
-
-    def test_new_virtual_server_should_create_imported_object(self):
-        self.assertEqual(VirtualServer.objects.count(), 0)
-        data = {
+    def setUp(self):
+        self.data = {
             'id': 1,
-            'type': 'QEMU',
-            'hostname': 's333.dc8',
+            'type': None,
+            'hostname': None,
             'sn': None,
             'service': None,
             'environment': None,
@@ -256,9 +245,110 @@ class Ralph2SyncVirtualServerTestCase(TestCase):
             'parent_id': None,
             'custom_fields': {}
         }
-        sync_virtual_server_to_ralph3(data)
+
+    def sync(self):
+        obj = self._create_imported_virtual_server()
+        sync_virtual_server_to_ralph3(self.data)
+        obj.refresh_from_db()
+        return obj
+
+    def _create_imported_virtual_server(self, old_id=None):
+        return _create_imported_object(
+            factory=VirtualServerFactory,
+            old_id=old_id if old_id else self.data['id']
+        )
+
+    def test_new_virtual_server_should_create_imported_object(self):
+        self.assertEqual(VirtualServer.objects.count(), 0)
+        sync_virtual_server_to_ralph3(self.data)
         self.assertEqual(VirtualServer.objects.count(), 1)
         vs = ImportedObjects.get_object_from_old_pk(
-            VirtualServer, data['id']
+            VirtualServer, self.data['id']
         )
-        self.assertEqual(vs.hostname, data['hostname'])
+        self.assertEqual(vs.hostname, self.data['hostname'])
+
+    def test_existing_virtual_server_should_updated(self):
+        vs = self._create_imported_virtual_server()
+        sync_virtual_server_to_ralph3(self.data)
+        self.assertEqual(VirtualServer.objects.count(), 1)
+        vs = ImportedObjects.get_object_from_old_pk(
+            VirtualServer, self.data['id']
+        )
+        self.assertEqual(vs.hostname, self.data['hostname'])
+
+    def test_sync_should_change_hostname(self):
+        vs = self._create_imported_virtual_server()
+        self.data['hostname'] = 'new.hostname.dc.net'
+        self.assertNotEqual(self.data['hostname'], vs.hostname)
+        sync_virtual_server_to_ralph3(self.data)
+        vs.refresh_from_db()
+        self.assertEqual(vs.hostname, self.data['hostname'])
+
+    def test_sync_should_change_sn(self):
+        vs = self._create_imported_virtual_server()
+        self.data['sn'] = 'sn-123'
+        self.assertNotEqual(self.data['sn'], vs.sn)
+        sync_virtual_server_to_ralph3(self.data)
+        vs.refresh_from_db()
+        self.assertEqual(vs.sn, self.data['sn'])
+
+    def test_sync_should_create_type_if_not_exist(self):
+        self.data['type'] = 'new unique type'
+        type_exists = VirtualServerType.objects.filter(name=self.data['type']).exists  # noqa
+        self.assertFalse(type_exists())
+        sync_virtual_server_to_ralph3(self.data)
+        self.assertTrue(type_exists())
+
+    @override_settings(
+        RALPH2_RALPH3_VIRTUAL_SERVER_TYPE_MAPPING={
+            'type in R2': 'type in R3'
+        },
+    )
+    def test_sync_should_create_type_and_mapping(self):
+        self.data['type'] = 'type in R2'
+        type_exists = VirtualServerType.objects.filter(name='type in R3').exists  # noqa
+        self.assertFalse(type_exists())
+        sync_virtual_server_to_ralph3(self.data)
+        self.assertTrue(type_exists())
+
+    def test_sync_should_change_service_env(self):
+        self.data['service'] = '123'
+        service = _create_imported_object(
+            ServiceFactory, self.data['service'], factory_kwargs={
+                'uid': self.data['service']
+            }
+        )
+        self.data['environment'] = '124'
+        env = _create_imported_object(
+            EnvironmentFactory, self.data['environment']
+        )
+        se = ServiceEnvironmentFactory(service=service, environment=env)
+        vs = self.sync()
+        self.assertEqual(vs.service_env, se)
+
+    def test_sync_should_change_configuration_path(self):
+        self.data['venture_role'] = 'venture_role_123'
+        conf_class = _create_imported_object(
+            ConfigurationClassFactory, self.data['venture_role']
+        )
+        vs = self.sync()
+        self.assertEqual(vs.configuration_path, conf_class)
+
+    def test_sync_should_change_parent(self):
+        self.data['parent_id'] = '123333'
+        parent = _create_imported_object(
+            DataCenterAssetFactory, self.data['parent_id']
+        )
+        vs = self.sync()
+        self.assertEqual(vs.parent.id, parent.id)
+
+    def test_sync_should_change_custom_fields(self):
+        cf = CustomField.objects.create(
+            name='test_str', type=CustomFieldTypes.STRING,
+        )
+        custom_fields = {
+            cf.name: 'test'
+        }
+        self.data['custom_fields'] = custom_fields
+        vs = self.sync()
+        self.assertEqual(vs.custom_fields_as_dict, custom_fields)
