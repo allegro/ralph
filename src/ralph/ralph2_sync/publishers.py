@@ -17,6 +17,7 @@ from ralph.data_importer.models import (
 
 logger = logging.getLogger(__name__)
 
+print('load publishers')
 
 def ralph2_sync(model):
     """
