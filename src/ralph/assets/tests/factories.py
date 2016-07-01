@@ -211,10 +211,9 @@ class ConfigurationClassFactory(DjangoModelFactory):
 
 class MemoryFactory(DjangoModelFactory):
     base_object = factory.SubFactory(BaseObjectFactory)
-    label = factory.Sequence(lambda n: 'MEM#{}'.format(n))
     size = 8192
     speed = 1600
-    slot_no = factory.Sequence(lambda n: n)
+    model_name = "Samsung DDR3 DIMM"
 
     class Meta:
         model = Memory

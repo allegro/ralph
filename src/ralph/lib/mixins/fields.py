@@ -35,7 +35,7 @@ class NullableCharFieldMixin(object):
     Mixin for char fields and descendants which will replace empty string value
     ('') by null when saving to the database.
 
-    It's especially usefull when field is marked as unique and at the same time
+    It's especially useful when field is marked as unique and at the same time
     allows null/blank (`models.CharField(unique=True, null=True, blank=True)`)
     """
     _formfield_class = NullableCharFormField
