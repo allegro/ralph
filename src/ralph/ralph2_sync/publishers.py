@@ -102,6 +102,8 @@ def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
             if asset.rack else None
         ),
         'rack': _get_obj_id_ralph_2(asset.rack),
+        'venture': _get_obj_id_ralph_2(asset.configuration_path.module) if asset.configuration_path.module else None,  # noqa
+        'venture_role': _get_obj_id_ralph_2(asset.configuration_path),
     }
     # simple fields
     for field in [
