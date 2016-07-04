@@ -16,7 +16,7 @@ from ralph.assets.models import (
     Environment,
     ServiceEnvironment
 )
-from ralph.data_center.models import DataCenterAsset
+from ralph.data_center.models import DataCenterAsset, Rack
 from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
     ImportedObjects
@@ -32,6 +32,9 @@ logger = logging.getLogger(__name__)
 model_mapping = {
     'Asset': DataCenterAsset,
     'AssetModel': AssetModel,
+    'Rack': Rack,
+    'Venture': ConfigurationModule,
+    'VentureRole': ConfigurationClass,
 }
 
 
