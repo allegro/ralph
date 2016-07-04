@@ -7,6 +7,7 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from ralph.accounts.models import Team
 from ralph.assets.models import (
     AssetModel,
     ConfigurationClass,
@@ -182,4 +183,13 @@ def sync_configuration_class_to_ralph2(sender, instance=None, created=False, **k
         'ralph2_id': _get_obj_id_ralph_2(instance),
         'ralph2_parent_id': _get_obj_id_ralph_2(instance.module) if instance.module else None,  # noqa
         'symbol': instance.class_name,
+    }
+
+
+@ralph2_sync(Team)
+def sync_team_to_ralph2(sender, instance=None, created=False, **kwargs):
+    return {
+        'id': instance.id,
+        'ralph2_id': _get_obj_id_ralph_2(instance),
+        'name': instance.name,
     }
