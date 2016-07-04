@@ -11,6 +11,7 @@ from pyhermes import subscriber
 from ralph_assets.models import Asset, AssetModel
 from ralph_assets.models_assets import AssetStatus, AssetType, Warehouse, DataCenter
 from ralph_assets.models_dc_assets import DeviceInfo, Rack
+from ralph.business.models import Venture, VentureRole
 from ralph.discovery.models import ServiceCatalog
 from ralph.export_to_ng.helpers import WithSignalDisabled
 from ralph.export_to_ng.publishers import (
@@ -206,6 +207,7 @@ def sync_rack_to_ralph2(data):
     if data['ralph2_id']:
         rack = Rack.objects.get(pk=data['ralph2_id'])
     else:
+        creating = True
         rack = Rack()
 
     for field in [
@@ -223,7 +225,18 @@ def sync_rack_to_ralph2(data):
 
 @sync_subscriber(topic='sync_configuration_module_to_ralph2')
 def sync_venture_to_ralph2(data):
-    pass
+    created = False
+    if data['ralph2_id']:
+        pass
+    else:
+        created = True
+        venture = Venture()
+
+    venture.symbol = data['symbol']
+    venture.name = data['symbol']
+    venture.save()
+    if created:
+        publish_sync_ack_to_ralph3(venture, data['id'])
 
 
 @sync_subscriber(topic='sync_configuration_class_to_ralph2')
