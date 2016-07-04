@@ -16,7 +16,9 @@ from ralph.discovery.models import ServiceCatalog
 from ralph.export_to_ng.helpers import WithSignalDisabled
 from ralph.export_to_ng.publishers import (
     publish_sync_ack_to_ralph3,
-    sync_device_to_ralph3
+    sync_device_to_ralph3,
+    sync_venture_role_to_ralph3,
+    sync_venture_to_ralph3
 )
 
 
@@ -223,7 +225,10 @@ def sync_rack_to_ralph2(data):
         publish_sync_ack_to_ralph3(rack, data['id'])
 
 
-@sync_subscriber(topic='sync_configuration_module_to_ralph2')
+@sync_subscriber(
+    topic='sync_configuration_module_to_ralph2',
+    disable_publishers=[sync_venture_to_ralph3, sync_venture_role_to_ralph3]
+)
 def sync_venture_to_ralph2(data):
     created = False
     if data['ralph2_id']:
@@ -238,9 +243,10 @@ def sync_venture_to_ralph2(data):
             try:
                 parent = Venture.objects.get(id=data['ralph2_parent_id'])
             except:
-                logger.exception('Venture (as parent) with id "{}" doesn\'t exist'.format(  # noqa
+                logger.error('Venture (as parent) with id "{}" doesn\'t exist'.format(  # noqa
                     data['department'])
                 )
+                return
             else:
                 venture.parent = parent
         else:
@@ -248,7 +254,7 @@ def sync_venture_to_ralph2(data):
     try:
         venture.department = Department.objects.get(name=data['department']) if data['department'] else None  # noqa
     except Department.DoesNotExist:
-        logger.exception('Department with name "{}" doesn\'t exist'.format(
+        logger.error('Department with name "{}" doesn\'t exist'.format(
             data['department'])
         )
     venture.save()
@@ -256,7 +262,10 @@ def sync_venture_to_ralph2(data):
         publish_sync_ack_to_ralph3(venture, data['id'])
 
 
-@sync_subscriber(topic='sync_configuration_class_to_ralph2')
+@sync_subscriber(
+    topic='sync_configuration_class_to_ralph2',
+    disable_publishers=[sync_venture_to_ralph3, sync_venture_role_to_ralph3]
+)
 def sync_venture_role_to_ralph2(data):
     created = False
     if data['ralph2_id']:
