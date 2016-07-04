@@ -70,6 +70,16 @@ class DCAssetPublisherTestCase(TestCase):
             self.dc_asset.property_of, self.ralph2_property_of_id
         )
 
+        self.ralph2_venture_id = '99'
+        ImportedObjects.create(
+            self.dc_asset.configuration_path.module, self.ralph2_venture_id
+        )
+
+        self.ralph2_venture_role_id = '990'
+        ImportedObjects.create(
+            self.dc_asset.configuration_path, self.ralph2_venture_role_id
+        )
+
         self.ralph2_dc_asset_id = '88'
         ImportedObjects.create(self.dc_asset, self.ralph2_dc_asset_id)
 
@@ -109,6 +119,8 @@ class DCAssetPublisherTestCase(TestCase):
             'source': '1',
             'status': str(DataCenterAssetStatus.new.id),
             'task_url': 'http://ralph.com/1234',
+            'venture': self.ralph2_venture_id,
+            'venture_role': self.ralph2_venture_role_id,
         })
 
 
