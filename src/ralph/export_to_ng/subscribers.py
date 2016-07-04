@@ -8,7 +8,6 @@ from django.conf import settings
 from lck.django.common import nested_commit_on_success
 from pyhermes import subscriber
 
-from ralph.discovery.admin import SAVE_PRIORITY
 from ralph_assets.models import Asset, AssetModel
 from ralph_assets.models_assets import AssetStatus, AssetType, Warehouse, DataCenter
 from ralph_assets.models_dc_assets import DeviceInfo, Rack
@@ -19,6 +18,8 @@ from ralph.export_to_ng.publishers import (
     sync_device_to_ralph3
 )
 
+
+SAVE_PRIORITY = 215
 
 logger = logging.getLogger(__name__)
 
@@ -218,3 +219,13 @@ def sync_rack_to_ralph2(data):
     rack.save()
     if creating:
         publish_sync_ack_to_ralph3(rack, data['id'])
+
+
+@sync_subscriber(topic='sync_configuration_module_to_ralph2')
+def sync_venture_to_ralph2(data):
+    pass
+
+
+@sync_subscriber(topic='sync_configuration_class_to_ralph2')
+def sync_venture_role_to_ralph2(data):
+    pass
