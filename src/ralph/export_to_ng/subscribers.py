@@ -227,13 +227,30 @@ def sync_rack_to_ralph2(data):
 def sync_venture_to_ralph2(data):
     created = False
     if data['ralph2_id']:
-        pass
+        venture = Venture.objects.get(id=data['ralph2_id'])
     else:
         created = True
         venture = Venture()
     venture.symbol = data['symbol']
     venture.name = data['symbol']
-    venture.name = Department.objects.get(name=data['department']) if data['department'] else None  # noqa
+    if 'ralph2_parent_id' in data:
+        if data['ralph2_parent_id']:
+            try:
+                parent = Venture.objects.get(id=data['ralph2_parent_id'])
+            except:
+                logger.exception('Venture (as parent) with id "{}" doesn\'t exist'.format(  # noqa
+                    data['department'])
+                )
+            else:
+                venture.parent = parent
+        else:
+            venture.parent = None
+    try:
+        venture.department = Department.objects.get(name=data['department']) if data['department'] else None  # noqa
+    except Department.DoesNotExist:
+        logger.exception('Department with name "{}" doesn\'t exist'.format(
+            data['department'])
+        )
     venture.save()
     if created:
         publish_sync_ack_to_ralph3(venture, data['id'])
@@ -241,4 +258,20 @@ def sync_venture_to_ralph2(data):
 
 @sync_subscriber(topic='sync_configuration_class_to_ralph2')
 def sync_venture_role_to_ralph2(data):
-    pass
+    created = False
+    if data['ralph2_id']:
+        venture_role = VentureRole.objects.get(id=data['ralph2_id'])
+    else:
+        created = True
+        venture_role = VentureRole()
+    try:
+        venture_role.venture = Venture.objects.get(id=data['ralph2_parent_id'])
+    except Venture.DoesNotExist:
+        logger.exception('Venture with id "{}" doesn\'t exist. Syncing VentureRole with id {} failed'.format(  # noqa
+            data['ralph2_parent_id'], data['ralph2_id'])
+        )
+        return
+    venture_role.name = data['symbol']
+    venture_role.save()
+    if created:
+        publish_sync_ack_to_ralph3(venture_role, data['id'])
