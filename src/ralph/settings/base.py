@@ -360,3 +360,8 @@ RALPH2_HERMES_SYNC_ENABLED = os_env_true('RALPH2_HERMES_SYNC_ENABLED')
 RALPH2_HERMES_SYNC_FUNCTIONS = json.loads(
     os.environ.get('RALPH2_HERMES_SYNC_FUNCTIONS', '[]')
 )
+
+# mapping model's name to type
+RALPH2_RALPH3_VIRTUAL_SERVER_TYPE_MAPPING = json.loads(
+    os.environ.get('RALPH2_RALPH3_VIRTUAL_SERVER_TYPE_MAPPING', '{}')
+)
