@@ -119,7 +119,13 @@ def venture_role_sync(model, **options):
 
 
 def _device_partial_sync(fields, **options):
-    for obj in Device.objects.exclude(deleted=True)[:10]:
+    for obj in Device.objects.exclude(deleted=True):
+        if (
+            options.get('device_with_asset_only') and
+            not obj.get_asset(manager='admin_objects')
+        ):
+            logger.info('Skipping {} - it does not have asset'.format(obj))
+            continue
         post_save.send(
             sender=Device,
             instance=obj,
@@ -163,6 +169,10 @@ class Command(BaseCommand):
         ),
         make_option(
             '--skip-empty',
+            action="store_true",
+        ),
+        make_option(
+            '--device-with-asset-only',
             action="store_true",
         ),
         make_option(
