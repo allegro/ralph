@@ -119,7 +119,7 @@ def venture_role_sync(model, **options):
 
 
 def _device_partial_sync(fields, **options):
-    for obj in Device.objects.exclude(deleted=True)[:10]:
+    for obj in Device.objects.exclude(deleted=True):
         post_save.send(
             sender=Device,
             instance=obj,
