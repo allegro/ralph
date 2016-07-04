@@ -11,7 +11,7 @@ from pyhermes import subscriber
 from ralph_assets.models import Asset, AssetModel
 from ralph_assets.models_assets import AssetStatus, AssetType, Warehouse, DataCenter
 from ralph_assets.models_dc_assets import DeviceInfo, Rack
-from ralph.business.models import Venture, VentureRole
+from ralph.business.models import Department, Venture, VentureRole
 from ralph.discovery.models import ServiceCatalog
 from ralph.export_to_ng.helpers import WithSignalDisabled
 from ralph.export_to_ng.publishers import (
@@ -231,9 +231,9 @@ def sync_venture_to_ralph2(data):
     else:
         created = True
         venture = Venture()
-
     venture.symbol = data['symbol']
     venture.name = data['symbol']
+    venture.name = Department.objects.get(name=data['department']) if data['department'] else None  # noqa
     venture.save()
     if created:
         publish_sync_ack_to_ralph3(venture, data['id'])
