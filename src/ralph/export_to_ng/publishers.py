@@ -174,7 +174,7 @@ def sync_role_property_to_ralph3(sender, instance=None, created=False, **kwargs)
 
 @ralph3_sync(Device)
 def sync_virtual_server_to_ralph3(sender, instance=None, created=False, **kwargs):
-    if instance.model.type != DeviceType.virtual_server:
+    if not instance.model or instance.model.type != DeviceType.virtual_server:
         return
     asset = instance.parent.get_asset(manager='admin_objects') if instance.parent else None  # noqa
     return {
