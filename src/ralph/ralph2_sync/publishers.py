@@ -3,6 +3,7 @@ import logging
 from functools import wraps
 
 import pyhermes
+from dj.choices import Choices
 from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -22,12 +23,33 @@ from ralph.virtual.models import VirtualServer, VirtualServerStatus
 logger = logging.getLogger(__name__)
 
 
-# noqa based on https://github.com/allegro/ralph_assets/blob/develop/src/ralph_assets/models_assets.py#L179
+class AssetStatus(Choices):
+    # noqa taken from https://github.com/allegro/ralph_assets/blob/develop/src/ralph_assets/models_assets.py#L179
+    _ = Choices.Choice
+
+    HARDWARE = Choices.Group(0)
+    new = _('new')
+    in_progress = _('in progress')
+    waiting_for_release = _('waiting for release')
+    used = _('in use')
+    loan = _('loan')
+    damaged = _('damaged')
+    liquidated = _('liquidated')
+    in_service = _('in service')
+    in_repair = _('in repair')
+    ok = _('ok')
+    to_deploy = _('to deploy')
+
+    SOFTWARE = Choices.Group(100)
+    installed = _('installed')
+    free = _('free')
+    reserved = _('reserved')
+
 virtual_server_type_asset_mapping = {
-    VirtualServerStatus.new.id: 1,
-    VirtualServerStatus.used.id: 4,
-    VirtualServerStatus.to_deploy.id: 11,
-    VirtualServerStatus.liquidated.id: 7,
+    VirtualServerStatus.new.id: AssetStatus.new.id,
+    VirtualServerStatus.used.id: AssetStatus.used.id,
+    VirtualServerStatus.to_deploy.id: AssetStatus.to_deploy.id,
+    VirtualServerStatus.liquidated.id: AssetStatus.liquidated.id,
 }
 
 
