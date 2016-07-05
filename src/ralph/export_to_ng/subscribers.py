@@ -8,17 +8,21 @@ from django.conf import settings
 from lck.django.common import nested_commit_on_success
 from pyhermes import subscriber
 
-from ralph.discovery.admin import SAVE_PRIORITY
 from ralph_assets.models import Asset, AssetModel
 from ralph_assets.models_assets import AssetStatus, AssetType, Warehouse, DataCenter
 from ralph_assets.models_dc_assets import DeviceInfo, Rack
+from ralph.business.models import Department, Venture, VentureRole
 from ralph.discovery.models import ServiceCatalog
 from ralph.export_to_ng.helpers import WithSignalDisabled
 from ralph.export_to_ng.publishers import (
     publish_sync_ack_to_ralph3,
-    sync_device_to_ralph3
+    sync_device_to_ralph3,
+    sync_venture_role_to_ralph3,
+    sync_venture_to_ralph3
 )
 
+
+SAVE_PRIORITY = 215
 
 logger = logging.getLogger(__name__)
 
@@ -208,6 +212,7 @@ def sync_rack_to_ralph2(data):
     if data['ralph2_id']:
         rack = Rack.objects.get(pk=data['ralph2_id'])
     else:
+        creating = True
         rack = Rack()
 
     for field in [
@@ -221,3 +226,64 @@ def sync_rack_to_ralph2(data):
     rack.save()
     if creating:
         publish_sync_ack_to_ralph3(rack, data['id'])
+
+
+@sync_subscriber(
+    topic='sync_configuration_module_to_ralph2',
+    disable_publishers=[sync_venture_to_ralph3, sync_venture_role_to_ralph3]
+)
+def sync_venture_to_ralph2(data):
+    created = False
+    if data['ralph2_id']:
+        venture = Venture.objects.get(id=data['ralph2_id'])
+    else:
+        created = True
+        venture = Venture()
+    venture.symbol = data['symbol']
+    venture.name = data['symbol']
+    if 'ralph2_parent_id' in data:
+        if data['ralph2_parent_id']:
+            try:
+                parent = Venture.objects.get(id=data['ralph2_parent_id'])
+            except:
+                logger.error('Parent venture with id "{}" doesn\'t exist'.format(  # noqa
+                    data['ralph2_parent_id'])
+                )
+                return
+            else:
+                venture.parent = parent
+        else:
+            venture.parent = None
+    try:
+        venture.department = Department.objects.get(name=data['department']) if data['department'] else None  # noqa
+    except Department.DoesNotExist:
+        logger.error('Department with name "{}" doesn\'t exist'.format(
+            data['department'])
+        )
+    venture.save()
+    if created:
+        publish_sync_ack_to_ralph3(venture, data['id'])
+
+
+@sync_subscriber(
+    topic='sync_configuration_class_to_ralph2',
+    disable_publishers=[sync_venture_to_ralph3, sync_venture_role_to_ralph3]
+)
+def sync_venture_role_to_ralph2(data):
+    created = False
+    if data['ralph2_id']:
+        venture_role = VentureRole.objects.get(id=data['ralph2_id'])
+    else:
+        created = True
+        venture_role = VentureRole()
+    try:
+        venture_role.venture = Venture.objects.get(id=data['ralph2_parent_id'])
+    except Venture.DoesNotExist:
+        logger.exception('Venture with id "{}" doesn\'t exist. Syncing VentureRole with id {} failed'.format(  # noqa
+            data['ralph2_parent_id'], data['ralph2_id'])
+        )
+        return
+    venture_role.name = data['symbol']
+    venture_role.save()
+    if created:
+        publish_sync_ack_to_ralph3(venture_role, data['id'])
