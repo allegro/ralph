@@ -143,7 +143,8 @@ def sync_venture_role_to_ralph3(sender, instance=None, created=False, **kwargs):
     venture_role = instance
     data = {
         'id': venture_role.id,
-        'name': venture_role.name,
+        # publish full name instead of single name (based on puppet classifier)
+        'name': venture_role.full_name.replace(' / ', '__'),
         'venture': venture_role.venture_id,
     }
     return data
