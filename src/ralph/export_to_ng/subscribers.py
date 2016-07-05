@@ -243,8 +243,8 @@ def sync_venture_to_ralph2(data):
             try:
                 parent = Venture.objects.get(id=data['ralph2_parent_id'])
             except:
-                logger.error('Venture (as parent) with id "{}" doesn\'t exist'.format(  # noqa
-                    data['department'])
+                logger.error('Parent venture with id "{}" doesn\'t exist'.format(  # noqa
+                    data['ralph2_parent_id'])
                 )
                 return
             else:
