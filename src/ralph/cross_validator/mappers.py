@@ -115,9 +115,8 @@ mappers = {
             'service_env': service_env_diff,
             'position': ('device_info__position', 'position'),
             'rack': foreign_key_diff('device_info__rack', 'rack'),
-            # waiting for subscriber implementation
-            # 'venture': foreign_key_diff('venture_role', 'configuration_path'),
-            # 'custom_fields': custom_fields_diff,
+            'venture': foreign_key_diff('venture_role', 'configuration_path'),
+            'custom_fields': custom_fields_diff,
         },
         'blacklist': ['id', 'parent_id'],
         'errors_checkers': [
