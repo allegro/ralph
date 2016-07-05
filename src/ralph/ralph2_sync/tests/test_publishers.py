@@ -15,7 +15,7 @@ from ralph.data_importer.models import ImportedObjects
 from ralph.ralph2_sync.publishers import (
     sync_dc_asset_to_ralph2,
     sync_model_to_ralph2,
-    sync_virtual_server_to_ralph2,
+    sync_virtual_server_to_ralph2
 )
 from ralph.virtual.models import VirtualServer
 from ralph.virtual.tests.factories import VirtualServerFactory
