@@ -49,6 +49,7 @@ def unlock_field(request):
     priorities = device.get_save_priorities()
     priorities[field_name] = 0
     device.update_save_priorities(priorities)
+    device._handle_post_save = False
     device.save()
     return {}
 
