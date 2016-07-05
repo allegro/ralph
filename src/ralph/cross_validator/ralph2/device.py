@@ -36,6 +36,7 @@ class DeviceEnvironment(models_ci.CI):
 
 class Device(SoftDeletable, models.Model):
     name = models.CharField(max_length=255)
+    sn = models.CharField(max_length=255)
     parent = models.ForeignKey('self', related_name='child_set', null=True)
     logical_parent = models.ForeignKey(
         'self', related_name='logicalchild_set', null=True
@@ -51,6 +52,12 @@ class Device(SoftDeletable, models.Model):
 
     class Meta(generate_meta(app_label='discovery', model_name='device')):
         pass
+
+    @property
+    def asset(self):
+        return Asset.objects.filter(
+            device_info__ralph_device_id=self.pk
+        ).first()
 
     @property
     def management_ip(self):
