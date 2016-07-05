@@ -26,15 +26,13 @@ def _get_venture_and_role_from_configuration_path(configuration_path):
     venture_id, venture_role_id = None, None
     if configuration_path is None:
         return None, None
-    try:
-        venture_id = ImportedObjects.get_imported_id(configuration_path.module)
-    except ImportedObjectDoesNotExist:
+    venture_id = _get_obj_id_ralph_2(configuration_path.module)
+    venture_role_id = _get_obj_id_ralph_2(configuration_path)
+    if venture_id is None:
         logger.error('ConfigurationModule {} not found when syncing'.format(
             configuration_path.module.id
         ))
-    try:
-        venture_role_id = ImportedObjects.get_imported_id(configuration_path)
-    except ImportedObjectDoesNotExist:
+    if venture_role_id is None:
         logger.error('ConfigurationClass {} not found when syncing'.format(
             configuration_path.id
         ))
