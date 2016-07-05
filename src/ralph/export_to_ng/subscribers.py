@@ -245,8 +245,7 @@ def _get_or_create_obj(model, data, ralph_id_key='ralph2_id'):
 )
 def sync_virtual_server_to_ralph2(data):
     vs, created = _get_or_create_obj(Device, data)
-
-    vs.hostname = data['hostname']
+    vs.name = data['hostname']
     vs.sn = data['sn']
     model, _ = DeviceModel.objects.get_or_create(
         type=DeviceType.virtual_server, name=data['type']
@@ -261,11 +260,10 @@ def sync_virtual_server_to_ralph2(data):
         vs.venture_id = data['venture_id']
         vs.venture_role_id = data['venture_role_id']
     else:
-        logger.error('Venture role is None for Device with id {} (virtual server)'.format(  # noqa
+        logger.info('Venture role is None for Device with id {} (virtual server)'.format(  # noqa
             vs.id
         ))
     vs.save()
-
     if created:
         publish_sync_ack_to_ralph3(vs, data['id'])
 
