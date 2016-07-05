@@ -16,7 +16,7 @@ from ralph.assets.models import (
     Environment,
     ServiceEnvironment
 )
-from ralph.data_center.models import DataCenterAsset
+from ralph.data_center.models import DataCenterAsset, Rack
 from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
     ImportedObjects
@@ -24,7 +24,11 @@ from ralph.data_importer.models import (
 from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
 from ralph.networks.models import IPAddress
 from ralph.ralph2_sync.helpers import WithSignalDisabled
-from ralph.ralph2_sync.publishers import sync_dc_asset_to_ralph2
+from ralph.ralph2_sync.publishers import (
+    sync_configuration_class_to_ralph2,
+    sync_configuration_module_to_ralph2,
+    sync_dc_asset_to_ralph2
+)
 from ralph.virtual.models import VirtualServer, VirtualServerType
 
 logger = logging.getLogger(__name__)
@@ -32,6 +36,9 @@ logger = logging.getLogger(__name__)
 model_mapping = {
     'Asset': DataCenterAsset,
     'AssetModel': AssetModel,
+    'Rack': Rack,
+    'Venture': ConfigurationModule,
+    'VentureRole': ConfigurationClass,
 }
 
 
@@ -201,7 +208,13 @@ def sync_custom_fields_to_ralph3(data):
     cf.save()
 
 
-@sync_subscriber(topic='sync_venture_to_ralph3')
+@sync_subscriber(
+    topic='sync_venture_to_ralph3',
+    disable_publishers=[
+        sync_configuration_class_to_ralph2,
+        sync_configuration_module_to_ralph2,
+    ],
+)
 def sync_venture_to_ralph3(data):
     """
     Receive data about venture from Ralph2 (ConfigurationModule in Ralph3).
@@ -250,7 +263,10 @@ def sync_venture_to_ralph3(data):
     logger.info('Synced configuration module {}'.format(conf_module))
 
 
-@sync_subscriber(topic='sync_venture_role_to_ralph3')
+@sync_subscriber(
+    topic='sync_venture_role_to_ralph3',
+    disable_publishers=[sync_configuration_class_to_ralph2]
+)
 def sync_venture_role_to_ralph3(data):
     """
     Receive data about venture role from Ralph2 (ConfigurationClass in Ralph3).
