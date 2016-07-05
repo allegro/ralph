@@ -9,6 +9,7 @@ from lck.django.common import nested_commit_on_success
 from pyhermes import subscriber
 
 from ralph.discovery.admin import SAVE_PRIORITY
+from ralph.discovery.models import Device, DeviceType, DeviceModel
 from ralph_assets.models import Asset, AssetModel
 from ralph_assets.models_assets import AssetStatus, AssetType, Warehouse, DataCenter
 from ralph_assets.models_dc_assets import DeviceInfo, Rack
@@ -218,3 +219,37 @@ def sync_rack_to_ralph2(data):
     rack.save()
     if creating:
         publish_sync_ack_to_ralph3(rack, data['id'])
+
+
+def _get_or_create_obj(model, data, ralph_id_key='ralph2_id'):
+    created = False
+    if data[ralph_id_key]:
+        obj = model.objects.get(pk=data[ralph_id_key])
+    else:
+        created = True
+        obj = model()
+    return obj, created
+
+
+@sync_subscriber(topic='sync_virtual_server_to_ralph2')
+def sync_virtual_server_to_ralph2(data):
+    vs, created = _get_or_create_obj(Device, data)
+
+    vs.hostname = data['hostname']
+    vs.sn = data['sn']
+    model, _ = DeviceModel.objects.get_or_create(
+        type=DeviceType.virtual_server, name=data['type']
+    )
+    vs.model = model
+    vs.service = ServiceCatalog.objects.get(uid=data['service_uid'])
+    vs.device_environment_id = data['environment_id']
+    if data['venture_role_id']:
+        vs.venture_role_id = data['venture_role_id']
+    else:
+        logger.error('Venture role is None for Device with id {} (virtual server)'.format(  # noqa
+            vs.id
+        ))
+    vs.save()
+
+    if created:
+        publish_sync_ack_to_ralph3(vs, data['id'])
