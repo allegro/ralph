@@ -150,6 +150,8 @@ class Asset(models.Model):
     barcode = models.CharField(max_length=255)
     niw = models.CharField(max_length=200)
     model = models.ForeignKey(AssetModel)
+    service = models.ForeignKey(ServiceCatalog, default=None)
+    device_environment = models.ForeignKey(DeviceEnvironment)
 
     _excludes = ['device_info_id']
 
