@@ -25,7 +25,11 @@ from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
 from ralph.networks.models import IPAddress
 from ralph.ralph2_sync.helpers import WithSignalDisabled
 from ralph.ralph2_sync.publishers import sync_dc_asset_to_ralph2
-from ralph.virtual.models import VirtualServer, VirtualServerType
+from ralph.virtual.models import (
+    VirtualServer,
+    VirtualServerStatus,
+    VirtualServerType
+)
 
 logger = logging.getLogger(__name__)
 
@@ -326,6 +330,7 @@ def sync_virtual_server_to_ralph3(data):
     virtual_server, created = _get_obj(VirtualServer, data['id'], creating=True)
     service_env = _get_service_env(data)
     virtual_server.sn = data['sn']
+    virtual_server.status = VirtualServerStatus.used
     virtual_server.hostname = data['hostname']
     virtual_server.service_env = service_env
     virtual_server.configuration_path = _get_configuration_path_from_venture_role(  # noqa
