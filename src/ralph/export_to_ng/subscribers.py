@@ -167,6 +167,9 @@ def sync_dc_asset_to_ralph2_handler(data):
     device = asset.get_ralph_device()
     device.name = data['hostname']
     device.management_ip = data.get('management_ip')
+    if 'venture' in data and 'venture_role' in data:
+        device.venture_id = data['venture']
+        device.venture_role_id = data['venture_role']
     device.save(priority=SAVE_PRIORITY)
     if creating:
         publish_sync_ack_to_ralph3(asset, data['id'])
