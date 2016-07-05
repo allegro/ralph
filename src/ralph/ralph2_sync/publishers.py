@@ -3,7 +3,6 @@ import logging
 from functools import wraps
 
 import pyhermes
-from dj.choices import Choices
 from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -18,51 +17,29 @@ from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
     ImportedObjects
 )
-from ralph.virtual.models import VirtualServer, VirtualServerStatus
+from ralph.virtual.models import VirtualServer
 
 logger = logging.getLogger(__name__)
 
 
-class AssetStatus(Choices):
-    # noqa taken from https://github.com/allegro/ralph_assets/blob/develop/src/ralph_assets/models_assets.py#L179
-    _ = Choices.Choice
-
-    HARDWARE = Choices.Group(0)
-    new = _('new')
-    in_progress = _('in progress')
-    waiting_for_release = _('waiting for release')
-    used = _('in use')
-    loan = _('loan')
-    damaged = _('damaged')
-    liquidated = _('liquidated')
-    in_service = _('in service')
-    in_repair = _('in repair')
-    ok = _('ok')
-    to_deploy = _('to deploy')
-
-    SOFTWARE = Choices.Group(100)
-    installed = _('installed')
-    free = _('free')
-    reserved = _('reserved')
-
-virtual_server_type_asset_mapping = {
-    VirtualServerStatus.new.id: AssetStatus.new.id,
-    VirtualServerStatus.used.id: AssetStatus.used.id,
-    VirtualServerStatus.to_deploy.id: AssetStatus.to_deploy.id,
-    VirtualServerStatus.liquidated.id: AssetStatus.liquidated.id,
-}
-
-
-def _get_venture_role_from_configuration_path(configuration_path):
+def _get_venture_and_role_from_configuration_path(configuration_path):
+    venture_id, venture_role_id = None, None
     if configuration_path is None:
-        return
+        return None, None
     try:
-        return ImportedObjects.get_imported_id(configuration_path)
+        venture_id = ImportedObjects.get_imported_id(configuration_path.module)
+    except ImportedObjectDoesNotExist:
+        logger.error('ConfigurationModule {} not found when syncing'.format(
+            configuration_path.module.id
+        ))
+    try:
+        venture_role_id = ImportedObjects.get_imported_id(configuration_path)
     except ImportedObjectDoesNotExist:
         logger.error('ConfigurationClass {} not found when syncing'.format(
             configuration_path.id
         ))
-    return None
+        configuration_path.module
+    return venture_id, venture_role_id
 
 
 def ralph2_sync(model):
@@ -235,7 +212,7 @@ def sync_virtual_server_to_ralph2(sender, instance=None, created=False, **kwargs
     VirtualServer -> Device (virtual server)
     """
     # TODO: custom fields
-    venture_role_id = _get_venture_role_from_configuration_path(
+    venture_id, venture_role_id = _get_venture_and_role_from_configuration_path(  # noqa
         instance.configuration_path
     )
     return {
@@ -245,10 +222,10 @@ def sync_virtual_server_to_ralph2(sender, instance=None, created=False, **kwargs
         'hostname': instance.hostname,
         'sn': instance.sn,
         'type': instance.type.name,
-        'status': virtual_server_type_asset_mapping[instance.status],
-        'service_uid': instance.service_env.service.uid,
+        'service_uid': instance.service_env.service.uid if instance.service_env else None,  # noqa
         'environment_id': _get_obj_id_ralph_2(
             instance.service_env.environment
         ),
+        'venture_id': venture_id,
         'venture_role_id': venture_role_id
     }

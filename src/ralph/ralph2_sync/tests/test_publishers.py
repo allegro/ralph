@@ -182,8 +182,8 @@ class VirtualServerPublisherTestCase(TestCase):
             'hostname': self.vs.hostname,
             'sn': self.vs.sn,
             'type': self.vs.type.name,
-            'status': 1,
             'service_uid': self.vs.service_env.service.uid,
             'environment_id': str(self.old_env_id),
+            'venture_id': None,
             'venture_role_id': None,
         })
