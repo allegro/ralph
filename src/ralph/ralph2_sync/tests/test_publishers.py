@@ -14,8 +14,11 @@ from ralph.data_center.tests.factories import (
 from ralph.data_importer.models import ImportedObjects
 from ralph.ralph2_sync.publishers import (
     sync_dc_asset_to_ralph2,
-    sync_model_to_ralph2
+    sync_model_to_ralph2,
+    sync_virtual_server_to_ralph2,
 )
+from ralph.virtual.models import VirtualServer
+from ralph.virtual.tests.factories import VirtualServerFactory
 
 
 @override_settings(RALPH2_HERMES_SYNC_ENABLED=True)
@@ -146,4 +149,41 @@ class AssetModelPublisherTestCase(TestCase):
             'power_consumption': 11,
             'height_of_device': 12,
             'manufacturer': '11',
+        })
+
+
+@override_settings(RALPH2_HERMES_SYNC_ENABLED=True)
+class VirtualServerPublisherTestCase(TestCase):
+    def setUp(self):
+        hypervisor = DataCenterAssetFactory()
+        self.old_vs_id = 123
+        self.old_hypervisor_id = 987
+        self.old_env_id = 786
+        self.vs = VirtualServerFactory(parent=hypervisor)
+        ImportedObjects.create(
+            self.vs, self.old_vs_id
+        )
+        ImportedObjects.create(
+            hypervisor, self.old_hypervisor_id
+        )
+        ImportedObjects.create(
+            self.vs.service_env.environment, self.old_env_id
+        )
+
+    @override_settings(RALPH2_HERMES_SYNC_FUNCTIONS=[
+        'sync_virtual_server_to_ralph2'
+    ])
+    def test_publishing_model(self):
+        result = sync_virtual_server_to_ralph2(VirtualServer, self.vs)
+        self.assertEqual(result, {
+            'id': self.vs.id,
+            'ralph2_id': str(self.old_vs_id),
+            'ralph2_parent_id': str(self.old_hypervisor_id),
+            'hostname': self.vs.hostname,
+            'sn': self.vs.sn,
+            'type': self.vs.type.name,
+            'status': 1,
+            'service_uid': self.vs.service_env.service.uid,
+            'environment_id': str(self.old_env_id),
+            'venture_role_id': None,
         })

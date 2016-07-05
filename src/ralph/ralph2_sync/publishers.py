@@ -17,8 +17,30 @@ from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
     ImportedObjects
 )
+from ralph.virtual.models import VirtualServer, VirtualServerStatus
 
 logger = logging.getLogger(__name__)
+
+
+# noqa based on https://github.com/allegro/ralph_assets/blob/develop/src/ralph_assets/models_assets.py#L179
+virtual_server_type_asset_mapping = {
+    VirtualServerStatus.new.id: 1,
+    VirtualServerStatus.used.id: 4,
+    VirtualServerStatus.to_deploy.id: 11,
+    VirtualServerStatus.liquidated.id: 7,
+}
+
+
+def _get_venture_role_from_configuration_path(configuration_path):
+    if configuration_path is None:
+        return
+    try:
+        return ImportedObjects.get_imported_id(configuration_path)
+    except ImportedObjectDoesNotExist:
+        logger.error('ConfigurationClass {} not found when syncing'.format(
+            configuration_path.id
+        ))
+    return None
 
 
 def ralph2_sync(model):
@@ -182,4 +204,29 @@ def sync_configuration_class_to_ralph2(sender, instance=None, created=False, **k
         'ralph2_id': _get_obj_id_ralph_2(instance),
         'ralph2_parent_id': _get_obj_id_ralph_2(instance.module) if instance.module else None,  # noqa
         'symbol': instance.class_name,
+    }
+
+
+@ralph2_sync(VirtualServer)
+def sync_virtual_server_to_ralph2(sender, instance=None, created=False, **kwargs):  # noqa
+    """
+    VirtualServer -> Device (virtual server)
+    """
+    # TODO: custom fields
+    venture_role_id = _get_venture_role_from_configuration_path(
+        instance.configuration_path
+    )
+    return {
+        'id': instance.id,
+        'ralph2_id': _get_obj_id_ralph_2(instance),
+        'ralph2_parent_id': _get_obj_id_ralph_2(instance.parent) if instance.parent else None,  # noqa
+        'hostname': instance.hostname,
+        'sn': instance.sn,
+        'type': instance.type.name,
+        'status': virtual_server_type_asset_mapping[instance.status],
+        'service_uid': instance.service_env.service.uid,
+        'environment_id': _get_obj_id_ralph_2(
+            instance.service_env.environment
+        ),
+        'venture_role_id': venture_role_id
     }
