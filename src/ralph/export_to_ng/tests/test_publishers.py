@@ -166,12 +166,25 @@ class VentureRolePublisherTestCase(TestCase):
             name='abcd',
             venture=self.venture1
         )
+        self.venture_role2 = VentureRole.objects.create(
+            name='qwerty',
+            venture=self.venture1,
+            parent=self.venture_role
+        )
 
     def test_publish_venture_role(self):
         result = sync_venture_role_to_ralph3(VentureRole, self.venture_role)
         self.assertEqual(result, {
             'id': self.venture_role.id,
             'name': 'abcd',
+            'venture': self.venture1.id,
+        })
+
+    def test_publish_venture_role_with_parent(self):
+        result = sync_venture_role_to_ralph3(VentureRole, self.venture_role2)
+        self.assertEqual(result, {
+            'id': self.venture_role2.id,
+            'name': 'abcd__qwerty',
             'venture': self.venture1.id,
         })
 
