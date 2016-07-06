@@ -60,3 +60,14 @@ class CrossValidationResult(TimeStampMixin, models.Model):
             diff=diff,
             errors=errors,
         )
+
+    @classmethod
+    def get_last_diff(cls, obj):
+        opts = obj._meta
+        ct = ContentType.objects.using('default').get(
+            app_label=opts.app_label, model=opts.model_name
+        )
+        return cls.objects.filter(
+            content_type=ct, object_pk=obj.pk
+        ).latest('created')
+
