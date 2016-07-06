@@ -17,6 +17,7 @@ from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
     ImportedObjects
 )
+from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
 from ralph.virtual.models import VirtualServer
 
 logger = logging.getLogger(__name__)
@@ -36,7 +37,6 @@ def _get_venture_and_role_from_configuration_path(configuration_path):
         logger.error('ConfigurationClass {} not found when syncing'.format(
             configuration_path.id
         ))
-        configuration_path.module
     return venture_id, venture_role_id
 
 
@@ -226,4 +226,18 @@ def sync_virtual_server_to_ralph2(sender, instance=None, created=False, **kwargs
         ) if instance.service_env else None,
         'venture_id': venture_id,
         'venture_role_id': venture_role_id
+
+
+@ralph2_sync(CustomField)
+def sync_custom_field_to_ralph2(sender, instance=None, created=False, **kwargs):  # noqa
+    """
+    CustomField -> RoleProperty
+    """
+    choices = None
+    if instance.type == CustomFieldTypes.CHOICE:
+        choices = instance._get_choices()
+    return {
+        'symbol': instance.attribute_name,
+        'default': instance.default_value,
+        'choices': choices
     }
