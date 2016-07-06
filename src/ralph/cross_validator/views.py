@@ -9,10 +9,15 @@ class ShowDiffMessageMixin(object):
     diff_message = 'Latest diff between Ralph 2 and Ralph 3:<br>{}'
 
     def changeform_view(self, request, object_id, *args, **kwargs):
-        last_diff = CrossValidationResult.get_last_diff(
-            self.get_object(request, object_id)
-        )
+        obj = self.get_object(request, object_id)
+        last_diff = CrossValidationResult.get_last_diff(obj)
         if last_diff:
-            msg = self.diff_message.format(get_html_diff(last_diff))
-            messages.info(request, mark_safe(msg))
+            if last_diff.errors:
+                msg = '<ul>'
+                for error in last_diff.errors:
+                    msg += '<li>{}</li>'.format(error)
+                msg += '</ul>'
+            else:
+                msg = get_html_diff(last_diff)
+            messages.info(request, mark_safe(self.diff_message.format(msg)))
         return super().changeform_view(request, object_id, *args, **kwargs)
