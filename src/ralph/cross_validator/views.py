@@ -11,8 +11,10 @@ class ShowDiffMessageMixin(object):
     def changeform_view(self, request, object_id, *args, **kwargs):
         response = super().changeform_view(request, object_id, *args, **kwargs)
         obj = self.get_object(request, object_id)
+        if not obj:
+            return response
         last_diff = CrossValidationResult.get_last_diff(obj)
-        if last_diff and last_diff.created > obj.modified:
+        if last_diff and obj and last_diff.created > obj.modified:
             if last_diff.errors:
                 msg = '<ul>'
                 for error in last_diff.errors:
