@@ -70,4 +70,3 @@ class CrossValidationResult(TimeStampMixin, models.Model):
         return cls.objects.filter(
             content_type=ct, object_pk=obj.pk
         ).latest('created')
-
