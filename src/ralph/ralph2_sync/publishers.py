@@ -75,6 +75,10 @@ def _get_obj_id_ralph_2(obj):
     return pk
 
 
+def _add_custom_fields(data, obj):
+    data.update({'custom_fields': obj.custom_fields_as_dict})
+
+
 @ralph2_sync(DataCenterAsset)
 def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
     """
@@ -118,6 +122,7 @@ def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
         'model', 'property_of',
     ]:
         data[field] = _get_obj_id_ralph_2(getattr(asset, field, None))
+    _add_custom_fields(data, instance)
     return data
 
 

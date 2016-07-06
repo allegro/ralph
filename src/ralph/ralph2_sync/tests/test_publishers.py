@@ -109,6 +109,7 @@ class DCAssetPublisherTestCase(TestCase):
             'source': '1',
             'status': str(DataCenterAssetStatus.new.id),
             'task_url': 'http://ralph.com/1234',
+            'custom_fields': {},
         })
 
 
