@@ -7,7 +7,13 @@ from ralph.business.models import (
     Venture,
     VentureRole
 )
-from ralph.discovery.models import Device, DeviceModel, DeviceType
+from ralph.discovery.models import (
+    Device,
+    DeviceModel,
+    DeviceType,
+    DeviceEnvironment,
+    ServiceCatalog
+)
 from ralph.export_to_ng.subscribers import (
     sync_venture_role_to_ralph2,
     sync_venture_to_ralph2,
@@ -187,3 +193,27 @@ class VirtualServerTestCase(TestCase):
             vs.model, DeviceModel.objects.get(name=self.data['type'])
         )
 
+    def test_sync_should_update_model(self):
+        model = DeviceModel.objects.create(
+            name='QEMU', type=DeviceType.virtual_server
+        )
+        device = self.create_test_virtual_server()
+        old_count = DeviceModel.objects.count()
+        self.data['ralph2_id'] = device.id
+        self.data['type'] = model.name
+        vs = self.sync(device)
+        self.assertEqual(old_count, DeviceModel.objects.count())
+        self.assertEqual(
+            vs.model, DeviceModel.objects.get(name=self.data['type'])
+        )
+
+    def test_sync_should_service_env(self):
+        ServiceCatalog.objects.create()
+        # old_count = DeviceModel.objects.count()
+        # self.data['ralph2_id'] = device.id
+        # self.data['type'] = model.name
+        # vs = self.sync(device)
+        # self.assertEqual(old_count, DeviceModel.objects.count())
+        # self.assertEqual(
+        #     vs.model, DeviceModel.objects.get(name=self.data['type'])
+        # )
