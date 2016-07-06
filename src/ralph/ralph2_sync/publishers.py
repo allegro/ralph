@@ -17,6 +17,7 @@ from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
     ImportedObjects
 )
+from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
 
 logger = logging.getLogger(__name__)
 
@@ -182,4 +183,19 @@ def sync_configuration_class_to_ralph2(sender, instance=None, created=False, **k
         'ralph2_id': _get_obj_id_ralph_2(instance),
         'ralph2_parent_id': _get_obj_id_ralph_2(instance.module) if instance.module else None,  # noqa
         'symbol': instance.class_name,
+    }
+
+
+@ralph2_sync(CustomField)
+def sync_custom_field_to_ralph2(sender, instance=None, created=False, **kwargs):  # noqa
+    """
+    CustomField -> RoleProperty
+    """
+    choices = None
+    if instance.type == CustomFieldTypes.CHOICE:
+        choices = instance._get_choices()
+    return {
+        'symbol': instance.attribute_name,
+        'default': instance.default_value,
+        'choices': choices
     }
