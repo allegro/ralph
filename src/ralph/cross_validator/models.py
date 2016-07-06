@@ -64,9 +64,12 @@ class CrossValidationResult(TimeStampMixin, models.Model):
     @classmethod
     def get_last_diff(cls, obj):
         opts = obj._meta
+        latest_run = CrossValidationRun.objects.latest('created')
+        if not latest_run:
+            return None
         ct = ContentType.objects.using('default').get(
             app_label=opts.app_label, model=opts.model_name
         )
         return cls.objects.filter(
-            content_type=ct, object_pk=obj.pk
-        ).latest('created')
+            run=latest_run, content_type=ct, object_pk=obj.pk
+        ).first()
