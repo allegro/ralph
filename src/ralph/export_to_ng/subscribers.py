@@ -80,8 +80,9 @@ class sync_subscriber(subscriber):
             ]):
                 try:
                     return func(*args, **kwargs)
-                except:
+                except Exception as e:
                     logger.exception('Exception during syncing')
+                    raise e
         return exception_wrapper
 
 
@@ -255,8 +256,9 @@ def sync_virtual_server_to_ralph2(data):
         vs.service = ServiceCatalog.objects.get(uid=data['service_uid'])
     else:
         vs.service = None
-    vs.device_environment_id = data['environment_id']
-    if data['venture_id'] and data['venture_role_id']:
+    if 'environment_id' in data:
+        vs.device_environment_id = data['environment_id']
+    if 'venture_id' in data and 'venture_role_id' in data:
         vs.venture_id = data['venture_id']
         vs.venture_role_id = data['venture_role_id']
     else:

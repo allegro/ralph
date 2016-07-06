@@ -2,23 +2,24 @@ from django.test import TestCase
 
 from ralph.business.models import (
     Department,
-    RoleProperty,
-    RolePropertyValue,
     Venture,
     VentureRole
+)
+from ralph.cmdb.tests.utils import (
+    DeviceEnvironmentFactory,
+    ServiceCatalogFactory
 )
 from ralph.discovery.models import (
     Device,
     DeviceModel,
     DeviceType,
-    DeviceEnvironment,
-    ServiceCatalog
 )
 from ralph.export_to_ng.subscribers import (
     sync_venture_role_to_ralph2,
     sync_venture_to_ralph2,
     sync_virtual_server_to_ralph2
 )
+from ralph.util.tests.utils import VentureFactory, VentureRoleFactory
 
 
 class SyncVentureTestCase(TestCase):
@@ -207,13 +208,54 @@ class VirtualServerTestCase(TestCase):
             vs.model, DeviceModel.objects.get(name=self.data['type'])
         )
 
-    def test_sync_should_service_env(self):
-        ServiceCatalog.objects.create()
-        # old_count = DeviceModel.objects.count()
-        # self.data['ralph2_id'] = device.id
-        # self.data['type'] = model.name
-        # vs = self.sync(device)
-        # self.assertEqual(old_count, DeviceModel.objects.count())
-        # self.assertEqual(
-        #     vs.model, DeviceModel.objects.get(name=self.data['type'])
-        # )
+    def test_sync_should_update_service_env(self):
+        new_service = ServiceCatalogFactory()
+        new_env = DeviceEnvironmentFactory()
+        device = self.create_test_virtual_server()
+        device.service = ServiceCatalogFactory()
+        device.device_environment = DeviceEnvironmentFactory()
+        device.save()
+        self.data['ralph2_id'] = device.id
+        self.data['service_uid'] = new_service.uid
+        self.data['environment_id'] = new_env.id
+        vs = self.sync(device)
+        self.assertEqual(vs.service, new_service)
+        self.assertEqual(vs.device_environment, new_env)
+
+    def test_sync_should_clear_service_env_when_given_none(self):
+        device = self.create_test_virtual_server()
+        device.service = ServiceCatalogFactory()
+        device.device_environment = DeviceEnvironmentFactory()
+        device.save()
+        self.data['ralph2_id'] = device.id
+        self.data['service_uid'] = None
+        self.data['environment_id'] = None
+        vs = self.sync(device)
+        self.assertEqual(vs.service, None)
+        self.assertEqual(vs.device_environment, None)
+
+    def test_sync_should_update_venture_and_role(self):
+        new_venture = VentureFactory()
+        new_venture_role = VentureRoleFactory()
+        device = self.create_test_virtual_server()
+        device.venture = VentureFactory()
+        device.venture_role = VentureRoleFactory()
+        device.save()
+        self.data['ralph2_id'] = device.id
+        self.data['venture_id'] = new_venture.id
+        self.data['venture_role_id'] = new_venture_role.id
+        vs = self.sync(device)
+        self.assertEqual(vs.venture, new_venture)
+        self.assertEqual(vs.venture_role, new_venture_role)
+
+    def test_sync_should_clear_venture_and_role_when_given_none(self):
+        device = self.create_test_virtual_server()
+        device.venture = VentureFactory()
+        device.venture_role = VentureRoleFactory()
+        device.save()
+        self.data['ralph2_id'] = device.id
+        self.data['venture_id'] = None
+        self.data['venture_role_id'] = None
+        vs = self.sync(device)
+        self.assertEqual(vs.venture, None)
+        self.assertEqual(vs.venture_role, None)
