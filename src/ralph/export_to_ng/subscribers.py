@@ -80,9 +80,8 @@ class sync_subscriber(subscriber):
             ]):
                 try:
                     return func(*args, **kwargs)
-                except Exception as e:
+                except:
                     logger.exception('Exception during syncing')
-                    raise e
         return exception_wrapper
 
 
