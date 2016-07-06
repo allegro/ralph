@@ -223,7 +223,7 @@ def sync_virtual_server_to_ralph2(sender, instance=None, created=False, **kwargs
         'service_uid': instance.service_env.service.uid if instance.service_env else None,  # noqa
         'environment_id': _get_obj_id_ralph_2(
             instance.service_env.environment
-        ),
+        ) if instance.service_env else None,
         'venture_id': venture_id,
         'venture_role_id': venture_role_id
     }
