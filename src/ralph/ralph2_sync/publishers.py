@@ -226,6 +226,7 @@ def sync_virtual_server_to_ralph2(sender, instance=None, created=False, **kwargs
         ) if instance.service_env else None,
         'venture_id': venture_id,
         'venture_role_id': venture_role_id
+    }
 
 
 @ralph2_sync(CustomField)
