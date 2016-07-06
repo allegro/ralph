@@ -60,6 +60,10 @@ def _get_publisher_signal_info(func):
     }
 
 
+def _handle_custom_fields(data, obj):
+    obj.rolepropertyvalue
+
+
 class sync_subscriber(subscriber):
     """
     Log additional exception when sync has failed.

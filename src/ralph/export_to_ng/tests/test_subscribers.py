@@ -8,9 +8,54 @@ from ralph.business.models import (
     VentureRole
 )
 from ralph.export_to_ng.subscribers import (
+    sync_dc_asset_to_ralph2_handler,
     sync_venture_role_to_ralph2,
     sync_venture_to_ralph2
 )
+
+
+class DeviceDCAssetTestCase(TestCase):
+    def setUp(self):
+        self.data = {
+            'ralph2_id': None,
+            'service': None,
+            'environment': None,
+            'force_depreciation': None,
+            'data_center': None,
+            'server_room': None,
+            'rack': None,
+            'id': None,
+            'orientation': None,
+            'position': None,
+            'sn': None,
+            'barcode': None,
+            'slot_no': None,
+            'price': None,
+            'niw': None,
+            'task_url': None,
+            'remarks': None,
+            'order_no': None,
+            'invoice_date': None,
+            'invoice_no': None,
+            'provider': None,
+            'source': None,
+            'status': None,
+            'depreciation_rate': None,
+            'depreciation_end_date': None,
+            'management_ip': None,
+            'management_hostname': None,
+            'hostname': None,
+            'model': None,
+            'propoerty_of': None,
+        }
+
+    def sync(self, obj):
+        sync_dc_asset_to_ralph2_handler(self.data)
+        new_obj = obj.__class__.objects.get(id=obj.id)
+        return new_obj
+
+    def test_sync_should_update_custom_fields(self):
+        pass
 
 
 class SyncVentureTestCase(TestCase):
@@ -128,4 +173,3 @@ class SyncVentureRoleTestCase(TestCase):
         self.data['ralph2_parent_id'] = new_venture.id
         venture_role = self.sync(venture_role)
         self.assertEqual(new_venture, venture_role.venture)
-
