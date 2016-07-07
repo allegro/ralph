@@ -11,6 +11,7 @@ from ralph.assets.api.views import (
     DCHostViewSet,
     EnvironmentViewSet,
     EthernetViewSet,
+    FibreChannelCardViewSet,
     ManufacturerViewSet,
     MemoryViewSet,
     ProfitCenterViewSet,
@@ -27,6 +28,7 @@ router.register(r'categories', CategoryViewSet)
 router.register(r'configuration-modules', ConfigurationModuleViewSet)
 router.register(r'configuration-classes', ConfigurationClassViewSet)
 router.register(r'environments', EnvironmentViewSet)
+router.register(r'fibre-channel-cards', FibreChannelCardViewSet)
 router.register(r'ethernets', EthernetViewSet)
 router.register(r'memory', MemoryViewSet)
 router.register(r'manufacturers', ManufacturerViewSet)

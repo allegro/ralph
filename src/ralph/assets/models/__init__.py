@@ -26,6 +26,7 @@ from ralph.assets.models.components import (
     GenericComponent,
     Ethernet,
     Memory,
+    FibreChannelCard,
 )
 from ralph.assets.models.configuration import (
     ConfigurationClass,
@@ -49,6 +50,7 @@ __all__ = [
     'ConfigurationClass',
     'ConfigurationModule',
     'Environment',
+    'FibreChannelCard',
     'GenericComponent',
     'Manufacturer',
     'Memory',

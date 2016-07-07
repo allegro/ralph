@@ -9,7 +9,11 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.autocomplete import AutocompleteTooltipMixin
 from ralph.assets.models.base import BaseObject
-from ralph.assets.models.choices import ComponentType, EthernetSpeed
+from ralph.assets.models.choices import (
+    ComponentType,
+    EthernetSpeed,
+    FibreChannelCardSpeed
+)
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
 
@@ -177,3 +181,28 @@ class Memory(Component):
 
     def __str__(self):
         return '{} MiB ({} MHz)'.format(self.size, self.speed)
+
+
+class FibreChannelCard(Component):
+    firmware_version = models.CharField(
+        verbose_name=_('firmware version'), max_length=255, blank=True,
+        null=True,
+    )
+    speed = models.PositiveIntegerField(
+        verbose_name=_('speed'), choices=FibreChannelCardSpeed(),
+        default=FibreChannelCardSpeed.unknown.id,
+    )
+
+    # If you need PWWN (or any other *WWN), add a separate field for
+    # it instead of using/re-using this one.
+    wwn = NullableCharField(
+        verbose_name=_('WWN'), max_length=255, unique=True, null=True,
+        blank=True, default=None,
+    )
+
+    class Meta:
+        verbose_name = _('fibre channel card')
+        verbose_name_plural = _('fibre channel cards')
+
+    def __str__(self):
+        return '{}'.format(self.model)

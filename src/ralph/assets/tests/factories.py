@@ -16,7 +16,7 @@ from ralph.assets.models.assets import (
 )
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
-from ralph.assets.models.components import Ethernet, Memory
+from ralph.assets.models.components import Ethernet, FibreChannelCard, Memory
 from ralph.assets.models.configuration import (
     ConfigurationClass,
     ConfigurationModule
@@ -33,6 +33,20 @@ def next_mac(n):
         n & 0xff
     ]
     return ':'.join(map(lambda x: '%02x' % x, mac))
+
+
+def next_wwn(n):
+    wwn = [
+        0xaa,
+        0xbb,
+        0xcc,
+        0xdd,
+        0xee,
+        n >> 16 & 0xff,
+        n >> 8 & 0xff,
+        n & 0xff
+    ]
+    return ''.join(map(lambda x: '%02x' % x, wwn))
 
 
 class BaseObjectFactory(DjangoModelFactory):
@@ -217,3 +231,15 @@ class MemoryFactory(DjangoModelFactory):
 
     class Meta:
         model = Memory
+
+
+class FibreChannelCardFactory(DjangoModelFactory):
+    base_object = factory.SubFactory(BaseObjectFactory)
+    firmware_version = factory.Iterator(
+        ['1.1.1', '1.1.2', '1.1.3', '1.1.4', '1.1.5']
+    )
+    model_name = "Saturn-X: LightPulse Fibre Channel Host Adapter"
+    wwn = factory.Sequence(next_wwn)
+
+    class Meta:
+        model = FibreChannelCard

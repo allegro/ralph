@@ -124,7 +124,7 @@ class EthernetViewSet(RalphAPIViewSet):
     queryset = models.Ethernet.objects.all()
     serializer_class = serializers.EthernetSerializer
     filter_fields = ['base_object', 'ipaddress__address']
-    prefetch_related = ['model', 'base_object', 'base_object__tags']
+    prefetch_related = ['base_object', 'base_object__tags']
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -142,7 +142,14 @@ class MemoryViewSet(RalphAPIViewSet):
     queryset = models.Memory.objects.all()
     serializer_class = serializers.MemorySerializer
     filter_fields = ['base_object', 'size']
-    prefetch_related = ['model', 'base_object', 'base_object__tags']
+    prefetch_related = ['base_object', 'base_object__tags']
+
+
+class FibreChannelCardViewSet(RalphAPIViewSet):
+    queryset = models.FibreChannelCard.objects.all()
+    serializer_class = serializers.FibreChannelCardSerializer
+    filter_fields = ['base_object', 'wwn']
+    prefetch_related = ['base_object', 'base_object__tags']
 
 
 class ConfigurationModuleViewSet(RalphAPIViewSet):
