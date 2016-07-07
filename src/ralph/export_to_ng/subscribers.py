@@ -265,6 +265,7 @@ def sync_virtual_server_to_ralph2(data):
             vs.id
         ))
     vs.save()
+    _handle_custom_fields(data, device)
     if created:
         publish_sync_ack_to_ralph3(vs, data['id'])
 
