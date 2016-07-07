@@ -2,10 +2,12 @@ from django.test import TestCase
 
 from ralph.business.models import (
     Department,
-    RoleProperty,
-    RolePropertyValue,
     Venture,
     VentureRole
+)
+from ralph.cmdb.tests.utils import (
+    DeviceEnvironmentFactory,
+    ServiceCatalogFactory
 )
 from ralph.discovery.models import (
     Device,
@@ -15,8 +17,10 @@ from ralph.discovery.models import (
 from ralph.export_to_ng.subscribers import (
     sync_dc_asset_to_ralph2_handler,
     sync_venture_role_to_ralph2,
-    sync_venture_to_ralph2
+    sync_venture_to_ralph2,
+    sync_virtual_server_to_ralph2
 )
+from ralph.util.tests.utils import VentureFactory, VentureRoleFactory
 from ralph_assets.tests.utils.assets import DCAssetFactory
 
 
@@ -199,3 +203,125 @@ class SyncVentureRoleTestCase(TestCase):
         self.data['ralph2_parent_id'] = new_venture.id
         venture_role = self.sync(venture_role)
         self.assertEqual(new_venture, venture_role.venture)
+
+
+class VirtualServerTestCase(TestCase):
+    def setUp(self):
+        self.data = {
+            'id': None,
+            'ralph2_id': None,
+            'ralph2_parent_id': None,
+            'hostname': 'test.dc.net',
+            'sn': '21334',
+            'type': 'XEN',
+            'service_uid': None,
+            'environment_id': None,
+            'venture_id': None,
+            'venture_role_id': None,
+        }
+
+    def create_test_virtual_server(self):
+        model = DeviceModel.objects.create(
+            name='XEN', type=DeviceType.virtual_server
+        )
+        return Device.objects.create(model=model)
+
+    def sync(self, obj):
+        sync_virtual_server_to_ralph2(self.data)
+        new_obj = obj.__class__.objects.get(id=obj.id)
+        return new_obj
+
+    def test_sync_should_create_new_if_virtual_server_doesnt_exist(self):
+        sync_virtual_server_to_ralph2(self.data)
+        self.assertTrue(Device.objects.filter(sn=self.data['sn']).exists())
+
+    def test_sync_should_update_name(self):
+        device = self.create_test_virtual_server()
+        self.data['ralph2_id'] = device.id
+        self.data['hostname'] = 'new.dc.net'
+        vs = self.sync(device)
+        self.assertEqual(vs.name, self.data['hostname'])
+
+    def test_sync_should_update_sn(self):
+        device = self.create_test_virtual_server()
+        self.data['ralph2_id'] = device.id
+        self.data['sn'] = 'new-sn-22324234'
+        vs = self.sync(device)
+        self.assertEqual(vs.sn, self.data['sn'])
+
+    def test_sync_should_create_model_if_doesnt_exist(self):
+        device = self.create_test_virtual_server()
+        old_count = DeviceModel.objects.count()
+        self.data['ralph2_id'] = device.id
+        self.data['type'] = 'new-unique-model'
+        vs = self.sync(device)
+        self.assertEqual(old_count + 1, DeviceModel.objects.count())
+        self.assertEqual(
+            vs.model, DeviceModel.objects.get(name=self.data['type'])
+        )
+
+    def test_sync_should_update_model(self):
+        model = DeviceModel.objects.create(
+            name='QEMU', type=DeviceType.virtual_server
+        )
+        device = self.create_test_virtual_server()
+        old_count = DeviceModel.objects.count()
+        self.data['ralph2_id'] = device.id
+        self.data['type'] = model.name
+        vs = self.sync(device)
+        self.assertEqual(old_count, DeviceModel.objects.count())
+        self.assertEqual(
+            vs.model, DeviceModel.objects.get(name=self.data['type'])
+        )
+
+    def test_sync_should_update_service_env(self):
+        new_service = ServiceCatalogFactory()
+        new_env = DeviceEnvironmentFactory()
+        device = self.create_test_virtual_server()
+        device.service = ServiceCatalogFactory()
+        device.device_environment = DeviceEnvironmentFactory()
+        device.save()
+        self.data['ralph2_id'] = device.id
+        self.data['service_uid'] = new_service.uid
+        self.data['environment_id'] = new_env.id
+        vs = self.sync(device)
+        self.assertEqual(vs.service, new_service)
+        self.assertEqual(vs.device_environment, new_env)
+
+    def test_sync_should_clear_service_env_when_given_none(self):
+        device = self.create_test_virtual_server()
+        device.service = ServiceCatalogFactory()
+        device.device_environment = DeviceEnvironmentFactory()
+        device.save()
+        self.data['ralph2_id'] = device.id
+        self.data['service_uid'] = None
+        self.data['environment_id'] = None
+        vs = self.sync(device)
+        self.assertEqual(vs.service, None)
+        self.assertEqual(vs.device_environment, None)
+
+    def test_sync_should_update_venture_and_role(self):
+        new_venture = VentureFactory()
+        new_venture_role = VentureRoleFactory()
+        device = self.create_test_virtual_server()
+        device.venture = VentureFactory()
+        device.venture_role = VentureRoleFactory()
+        device.save()
+        self.data['ralph2_id'] = device.id
+        self.data['venture_id'] = new_venture.id
+        self.data['venture_role_id'] = new_venture_role.id
+        vs = self.sync(device)
+        self.assertEqual(vs.venture, new_venture)
+        self.assertEqual(vs.venture_role, new_venture_role)
+
+    def test_sync_should_clear_venture_and_role_when_given_none(self):
+        device = self.create_test_virtual_server()
+        device.venture = VentureFactory()
+        device.venture_role = VentureRoleFactory()
+        device.save()
+        self.data['ralph2_id'] = device.id
+        self.data['venture_id'] = None
+        self.data['venture_role_id'] = None
+        vs = self.sync(device)
+        self.assertEqual(vs.venture, None)
+        self.assertEqual(vs.venture_role, None)

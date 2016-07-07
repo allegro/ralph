@@ -76,6 +76,14 @@ def publish_sync_ack_to_ralph3(obj, ralph3_id):
     }
 
 
+def _get_custom_fields(device):
+    result = {}
+    for key, value in device.get_property_set().items():
+        if key in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST:
+            result[key] = value if value is not None else ''
+    return result
+
+
 def get_device_data(device, fields=None):
     """
     Returns dictonary with device data.
@@ -92,10 +100,7 @@ def get_device_data(device, fields=None):
         'service': device.service.uid if device.service else None,
         'environment': device.device_environment_id,
         'venture_role': device.venture_role_id,
-        'custom_fields': {
-            k: v for k, v in device.get_property_set().items()
-            if k in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST
-        },
+        'custom_fields': _get_custom_fields(device),
     }
     return {k: v for k, v in data.items() if k in fields} if fields else data
 
@@ -187,8 +192,5 @@ def sync_virtual_server_to_ralph3(sender, instance=None, created=False, **kwargs
         'environment': instance.device_environment_id,
         'venture_role': instance.venture_role_id,
         'parent_id': asset.id if asset else None,
-        'custom_fields': {
-            k: v for k, v in instance.get_property_set().items()
-            if k in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST
-        },
+        'custom_fields': _get_custom_fields(instance),
     }
