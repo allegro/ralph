@@ -27,7 +27,10 @@ from ralph_assets.tests.utils.assets import DCAssetFactory
 @override_settings(
     RALPH3_HERMES_SYNC_ENABLED=True,
     RALPH3_HERMES_SYNC_FUNCTIONS=['sync_device_to_ralph3'],
-    RALPH2_HERMES_ROLE_PROPERTY_WHITELIST=['test_symbol', 'test_symbol2'])
+    RALPH2_HERMES_ROLE_PROPERTY_WHITELIST=[
+        'test_symbol', 'test_symbol2', 'for_device_only'
+    ]
+)
 class DevicePublisherTestCase(TestCase):
     def setUp(self):
         self.asset = DCAssetFactory()
@@ -114,6 +117,25 @@ class DevicePublisherTestCase(TestCase):
         RolePropertyValue.objects.get_or_create(
             property=prop2, device=self.device, value=None
         )
+
+        # this is property unrelated to current venture role of device
+        # it might comes from some previous role of this device, but it's still
+        # attached to this device in DB - but it's NOT visible in GUI or through
+        # puppet-classifier endpoint, so we should not sync it as well
+        venture_role2 = VentureRole.objects.create(
+            name='qwerty', venture=self.venture1
+        )
+        property_for_device_only = venture_role2.roleproperty_set.create(
+            symbol='for_device_only'
+        )
+        RolePropertyValue.objects.create(
+            property=property_for_device_only,
+            value='xxxxx',
+            device=self.device
+        )
+        # it is, unfortunately, accessible through Device's get_property_set -_-
+        self.assertIn('for_device_only', self.device.get_property_set())
+
         result = sync_device_to_ralph3(Device, self.device)
         self.assertEqual(result, {
             'id': self.asset.id,
@@ -128,6 +150,12 @@ class DevicePublisherTestCase(TestCase):
                 property_symbol2: '',
             },
         })
+
+        # if we change Device's venture_role to venture_role2, this field is
+        # in dump to sync
+        self.device.venture_role = venture_role2
+        result2 = sync_device_to_ralph3(Device, self.device)
+        self.assertIn('for_device_only', result2['custom_fields'])
 
 
 @override_settings(

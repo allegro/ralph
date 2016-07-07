@@ -78,9 +78,10 @@ def publish_sync_ack_to_ralph3(obj, ralph3_id):
 
 def _get_custom_fields(device):
     result = {}
-    for key, value in device.get_property_set().items():
-        if key in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST:
-            result[key] = value if value is not None else ''
+    if device.venture_role:
+        for key, value in device.venture_role.get_properties(device).items():
+            if key in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST:
+                result[key] = value if value is not None else ''
     return result
 
 
