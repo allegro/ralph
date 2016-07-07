@@ -73,12 +73,20 @@ class DeviceDCAssetTestCase(TestCase):
 
     def create_test_device(self):
         device = DeviceFactory()
+        device.venture = Venture.objects.create(
+            name='test_v', symbol='test_v'
+        )
+        device.venture_role = VentureRole.objects.create(
+            venture=device.venture, name='test_vr'
+        )
         asset = DCAssetFactory()
         asset.device_info.ralph_device = device
         asset.device_info.save()
         self.data['ralph2_id'] = asset.id
         self.data['service'] = device.service.uid
         self.data['environment'] = device.device_environment.id
+        self.data['venture'] = device.venture_id
+        self.data['venture_role'] = device.venture_role_id
         self.data['rack'] = asset.device_info.rack_id
         self.data['data_center'] = asset.device_info.rack.data_center_id
         self.data['server_room'] = asset.device_info.rack.server_room_id
@@ -89,6 +97,7 @@ class DeviceDCAssetTestCase(TestCase):
         self.data['invoice_no'] = asset.invoice_no
         self.data['provider'] = asset.provider
         self.data['source'] = asset.source
+        device.save()
         return device
 
     def _custom_fields_test_common(
@@ -99,7 +108,9 @@ class DeviceDCAssetTestCase(TestCase):
         device = self.create_test_device()
         role_property = None
         if create_role_property:
-            role_property = RoleProperty.objects.create(symbol=symbol)
+            role_property = RoleProperty.objects.create(
+                symbol=symbol, venture=device.venture
+            )
         if choices:
             role_property_type = RolePropertyType.objects.create(
                 symbol='choices type'
@@ -130,6 +141,12 @@ class DeviceDCAssetTestCase(TestCase):
             self.data['custom_fields']
         )
 
+    @override_settings(RALPH2_HERMES_ROLE_PROPERTY_WHITELIST=['test_field'])
+    def test_sync_should_create_when_role_property_value_doesnt_exist(self):  # noqa
+        device, _ = self._custom_fields_test_common(create_role_property_value=False)  # noqa
+        device = self.sync(device)
+        self.assertEqual(device.get_property_set(), self.data['custom_fields'])
+
     @override_settings(RALPH2_HERMES_ROLE_PROPERTY_WHITELIST=[])
     def test_sync_should_respect_whitelist(self):
         symbol = 'blacklisted_field'
@@ -146,12 +163,6 @@ class DeviceDCAssetTestCase(TestCase):
     @override_settings(RALPH2_HERMES_ROLE_PROPERTY_WHITELIST=['test_field'])
     def test_sync_should_do_nothing_when_role_property_doesnt_exist(self):
         device, _ = self._custom_fields_test_common(create_role_property=False)
-        device = self.sync(device)
-        self.assertEqual(device.get_property_set(), {})
-
-    @override_settings(RALPH2_HERMES_ROLE_PROPERTY_WHITELIST=['test_field'])
-    def test_sync_should_do_nothing_when_role_property_value_doesnt_exist(self):  # noqa
-        device, _ = self._custom_fields_test_common(create_role_property_value=False)  # noqa
         device = self.sync(device)
         self.assertEqual(device.get_property_set(), {})
 

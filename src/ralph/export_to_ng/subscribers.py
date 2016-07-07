@@ -73,14 +73,16 @@ def _get_publisher_signal_info(func):
 
 
 def _handle_custom_fields(data, obj):
-    for field, value in data['custom_fields'].items():
-        if field not in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST:
+    for symbol, value in data['custom_fields'].items():
+        if symbol not in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST:
             continue
+        prop = None
         try:
-            prop = RoleProperty.objects.get(symbol=field)
+            prop = obj.set_property(symbol, value, None)
         except RoleProperty.DoesNotExist:
-            prop = None
-        if not prop:
+            logger.error(
+                'RoleProperty with symbol {} doesn\'t exist'.format(symbol)
+            )
             continue
         if not RolePropertyTypeValue.objects.filter(type=prop.type, value=value).exists():  # noqa
             RolePropertyTypeValue.objects.create(type=prop.type, value=value)
@@ -106,11 +108,11 @@ class sync_subscriber(subscriber):
                 WithSignalDisabled(**_get_publisher_signal_info(publisher))
                 for publisher in self.disable_publishers
             ]):
-                try:
-                    return func(*args, **kwargs)
-                except Exception as e:
-                    logger.exception('Exception during syncing')
-                    raise e
+                # try:
+                return func(*args, **kwargs)
+                # except Exception as e:
+                #     logger.exception('Exception during syncing')
+                #     raise e
         return exception_wrapper
 
 
