@@ -14,7 +14,8 @@ from ralph.business.models import (
     Venture,
     VentureRole
 )
-from ralph.discovery.models import Device, DeviceType
+from ralph.discovery.models import Device, DeviceType, IPAddress, Network
+from ralph.dnsedit.models import DHCPEntry
 
 logger = logging.getLogger(__name__)
 
@@ -45,8 +46,8 @@ def ralph3_sync(model, topic=None):
                 # `_handle_post_save` set to False
                 getattr(instance, '_handle_post_save', True)
             ):
+                result = func(sender, instance, **kwargs)
                 try:
-                    result = func(sender, instance, **kwargs)
                     if result:
                         pyhermes.publish(topic_name, result)
                 except Exception as e:
@@ -193,4 +194,35 @@ def sync_virtual_server_to_ralph3(sender, instance=None, created=False, **kwargs
         'venture_role': instance.venture_role_id,
         'parent_id': asset.id if asset else None,
         'custom_fields': _get_custom_fields(instance),
+    }
+
+
+@ralph3_sync(Network, topic='sync_ipaddress_to_ralph3')
+def sync_gateway_ipaddress_to_ralph3(sender, instance=None, created=False, **kwargs):
+    if not instance.gateway:
+        return {}
+    return {
+        'id': None,
+        'address': instance.gateway,
+        'device_id': None,
+        'hostname': None,
+        'is_management': False,
+        'is_gateway': True,
+        'dhcp_expose': False
+    }
+
+
+@ralph3_sync(IPAddress)
+def sync_ipaddress_to_ralph3(sender, instance=None, created=False, **kwargs):
+    return {
+        'id': instance.id,
+        'address': instance.address,
+        'device_id': instance.device_id,
+        'hostname': instance.hostname,
+        'is_management': instance.is_management,
+        'is_gateway': False,
+        'dhcp_expose': bool(
+            DHCPEntry.objects.filter(ip=instance.address).exists()
+            and (instance.network and instance.network.dhcp_broadcast)
+        )
     }

@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 import logging
 import re
 import time
+from itertools import chain
 from optparse import make_option
 
 from django.conf import settings
@@ -20,7 +21,7 @@ from ralph.business.models import (
     Venture,
     VentureRole
 )
-from ralph.discovery.models import Device, DeviceType
+from ralph.discovery.models import Device, DeviceType, IPAddress, Network
 # register handlers
 from ralph.export_to_ng import publishers  # noqa
 
@@ -29,6 +30,21 @@ logger = logging.getLogger(__name__)
 
 def generic_sync(model, **options):
     for obj in model._default_manager.all():
+        post_save.send(
+            sender=model,
+            instance=obj,
+            raw=None,
+            using='default',
+            _sync_fields=options.get('_sync_fields')
+        )
+        time.sleep(options['sleep'])
+
+
+def ip_addresses_sync(model, **options):
+    for obj in chain(
+        model._default_manager.all(),
+        Network._default_manager.filter(gateway__isnull=False)
+    ):
         post_save.send(
             sender=model,
             instance=obj,
@@ -153,6 +169,7 @@ models_handlers = {
     'VirtualServer': (Device, virtual_server_sync),
     'DeviceVentureOnly': (Device, device_venture_sync),
     'DeviceRolePropertiesOnly': (Device, device_role_properties_sync),
+    'IPAddress': (IPAddress, ip_addresses_sync),
 }
 
 
