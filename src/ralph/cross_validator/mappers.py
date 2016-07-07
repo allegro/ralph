@@ -67,9 +67,8 @@ def custom_fields_diff(old, new):
         dev = old.linked_device
     else:
         dev = old
-    if dev:
-        # TODO: respect whitelist of custom fields to sync
-        old_custom_fields = dev.get_property_set()
+    if dev and dev.venture_role:
+        old_custom_fields = dev.venture_role.get_properties(dev)
     else:
         old_custom_fields = {}
     new_custom_fields = new.custom_fields_as_dict
