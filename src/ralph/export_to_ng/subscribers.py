@@ -11,7 +11,13 @@ from pyhermes import subscriber
 from ralph_assets.models import Asset, AssetModel
 from ralph_assets.models_assets import AssetStatus, AssetType, Warehouse, DataCenter
 from ralph_assets.models_dc_assets import DeviceInfo, Rack
-from ralph.business.models import Department, Venture, VentureRole
+from ralph.business.models import (
+    Department,
+    RoleProperty,
+    RolePropertyValue,
+    Venture,
+    VentureRole
+)
 from ralph.discovery.models import ServiceCatalog
 from ralph.export_to_ng.helpers import WithSignalDisabled
 from ralph.export_to_ng.publishers import (
@@ -61,7 +67,9 @@ def _get_publisher_signal_info(func):
 
 
 def _handle_custom_fields(data, obj):
-    obj.rolepropertyvalue
+    # RoleProperty.objects.get(symbol)
+    for k, v in data['custom_fields']:
+        RolePropertyValue.objects.get(device=obj, value=v)
 
 
 class sync_subscriber(subscriber):
@@ -83,8 +91,9 @@ class sync_subscriber(subscriber):
             ]):
                 try:
                     return func(*args, **kwargs)
-                except:
+                except Exception as e:
                     logger.exception('Exception during syncing')
+                    raise e
         return exception_wrapper
 
 
@@ -178,6 +187,7 @@ def sync_dc_asset_to_ralph2_handler(data):
     if 'venture' in data and 'venture_role' in data:
         device.venture_id = data['venture']
         device.venture_role_id = data['venture_role']
+    _handle_custom_fields(data, device)
     device.save(priority=SAVE_PRIORITY)
     if creating:
         publish_sync_ack_to_ralph3(asset, data['id'])

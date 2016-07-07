@@ -7,11 +7,17 @@ from ralph.business.models import (
     Venture,
     VentureRole
 )
+from ralph.discovery.models import (
+    Device,
+    DeviceModel,
+    DeviceType,
+)
 from ralph.export_to_ng.subscribers import (
     sync_dc_asset_to_ralph2_handler,
     sync_venture_role_to_ralph2,
     sync_venture_to_ralph2
 )
+from ralph_assets.tests.utils.assets import DCAssetFactory
 
 
 class DeviceDCAssetTestCase(TestCase):
@@ -19,17 +25,17 @@ class DeviceDCAssetTestCase(TestCase):
         self.data = {
             'ralph2_id': None,
             'service': None,
-            'environment': None,
+            # 'environment': None,
             'force_depreciation': None,
-            'data_center': None,
-            'server_room': None,
-            'rack': None,
-            'id': None,
-            'orientation': None,
-            'position': None,
+            # 'data_center': None,
+            # 'server_room': None,
+            # 'rack': None,
+            # 'id': None,
+            # 'orientation': None,
+            # 'position': None,
             'sn': None,
             'barcode': None,
-            'slot_no': None,
+            # 'slot_no': None,
             'price': None,
             'niw': None,
             'task_url': None,
@@ -39,14 +45,14 @@ class DeviceDCAssetTestCase(TestCase):
             'invoice_no': None,
             'provider': None,
             'source': None,
-            'status': None,
+            'status': 1,
             'depreciation_rate': None,
             'depreciation_end_date': None,
-            'management_ip': None,
-            'management_hostname': None,
-            'hostname': None,
-            'model': None,
-            'propoerty_of': None,
+            # 'management_ip': None,
+            # 'management_hostname': None,
+            # 'hostname': None,
+            # 'model': None,
+            # 'property_of': None,
         }
 
     def sync(self, obj):
@@ -54,8 +60,28 @@ class DeviceDCAssetTestCase(TestCase):
         new_obj = obj.__class__.objects.get(id=obj.id)
         return new_obj
 
+    def create_test_device(self):
+        model = DeviceModel.objects.create(
+            name='test.local.net',
+            type=DeviceType.rack_server
+        )
+        device = Device.objects.create(model=model)
+        asset = DCAssetFactory()
+        asset.device_info.device = device
+        return device
+
     def test_sync_should_update_custom_fields(self):
-        pass
+        device = self.create_test_device()
+        role_property = RoleProperty.objects.create(symbol='test_field')
+        self.data['ralph2_id'] = device.id
+        self.data['custom_fields'] = {
+            role_property.symbol: 'test_value'
+        }
+        device = self.sync(device)
+        self.assertEqual(
+            device.get_property_set(),
+            self.data['custom_fields']
+        )
 
 
 class SyncVentureTestCase(TestCase):
