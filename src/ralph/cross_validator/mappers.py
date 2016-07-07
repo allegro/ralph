@@ -31,12 +31,8 @@ mappers = {
 
 
 def service_env_diff(old, new):
-    if isinstance(old, Asset):
-        old_uid = getattr_dunder(old, 'linked_device__service__uid')
-        old_env = getattr_dunder(old, 'linked_device__device_environment__name')
-    else:
-        old_uid = getattr_dunder(old, 'service__uid')
-        old_env = getattr_dunder(old, 'device_environment__name')
+    old_uid = getattr_dunder(old, 'service__uid')
+    old_env = getattr_dunder(old, 'device_environment__name')
     new_uid = getattr_dunder(new, 'service_env__service__uid')
     new_env = getattr_dunder(new, 'service_env__environment__name')
     if old_uid != new_uid or old_env != new_env:
