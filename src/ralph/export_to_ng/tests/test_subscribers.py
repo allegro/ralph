@@ -1,9 +1,15 @@
 from django.test import TestCase
+from django.test.utils import override_settings
+
 
 from ralph.business.models import (
     Department,
     Venture,
-    VentureRole
+    VentureRole,
+    RoleProperty,
+    RolePropertyType,
+    RolePropertyTypeValue,
+    RolePropertyValue
 )
 from ralph.cmdb.tests.utils import (
     DeviceEnvironmentFactory,
@@ -14,12 +20,168 @@ from ralph.discovery.models import (
     DeviceModel,
     DeviceType,
 )
+from ralph.discovery.tests.util import DeviceFactory
 from ralph.export_to_ng.subscribers import (
+    sync_dc_asset_to_ralph2_handler,
     sync_venture_role_to_ralph2,
     sync_venture_to_ralph2,
     sync_virtual_server_to_ralph2
 )
 from ralph.util.tests.utils import VentureFactory, VentureRoleFactory
+from ralph_assets.tests.utils.assets import DCAssetFactory
+
+
+class DeviceDCAssetTestCase(TestCase):
+    def setUp(self):
+        self.data = {
+            'ralph2_id': None,
+            'service': None,
+            'environment': None,
+            'force_depreciation': 0,
+            'data_center': None,
+            'server_room': None,
+            'rack': None,
+            'id': 1,
+            'orientation': 1,
+            'position': 1,
+            'sn': None,
+            'barcode': None,
+            'slot_no': 1,
+            'price': 1,
+            'niw': None,
+            'task_url': 'http://tasks.local.net/issue-123',
+            'remarks': 'empty',
+            'order_no': 1,
+            'invoice_date': None,
+            'invoice_no': None,
+            'provider': None,
+            'source': None,
+            'status': 1,
+            'depreciation_rate': 48,
+            'depreciation_end_date': None,
+            'management_ip': None,
+            'management_hostname': None,
+            'hostname': 'test.local.net',
+            'model': None,
+            'property_of': None,
+        }
+
+    def sync(self, obj):
+        sync_dc_asset_to_ralph2_handler(self.data)
+        new_obj = obj.__class__.objects.get(id=obj.id)
+        return new_obj
+
+    def create_test_device(self):
+        device = DeviceFactory()
+        device.venture = Venture.objects.create(
+            name='test_v', symbol='test_v'
+        )
+        device.venture_role = VentureRole.objects.create(
+            venture=device.venture, name='test_vr'
+        )
+        asset = DCAssetFactory()
+        asset.device_info.ralph_device = device
+        asset.device_info.save()
+        self.data['ralph2_id'] = asset.id
+        self.data['service'] = device.service.uid
+        self.data['environment'] = device.device_environment.id
+        self.data['venture'] = device.venture_id
+        self.data['venture_role'] = device.venture_role_id
+        self.data['rack'] = asset.device_info.rack_id
+        self.data['data_center'] = asset.device_info.rack.data_center_id
+        self.data['server_room'] = asset.device_info.rack.server_room_id
+        self.data['model'] = asset.model_id
+        self.data['sn'] = asset.sn
+        self.data['barcode'] = asset.barcode
+        self.data['invoice_date'] = asset.invoice_date.strftime('%d.%m.%Y')
+        self.data['invoice_no'] = asset.invoice_no
+        self.data['provider'] = asset.provider
+        self.data['source'] = asset.source
+        device.save()
+        return device
+
+    def _custom_fields_test_common(
+        self, symbol='test_field', original_value='original_value',
+        test_value='test_value', custom_fields=None, create_role_property=True,
+        create_role_property_value=True, choices=None
+    ):
+        device = self.create_test_device()
+        role_property = None
+        if create_role_property:
+            role_property = RoleProperty.objects.create(
+                symbol=symbol, venture=device.venture
+            )
+        if choices:
+            role_property_type = RolePropertyType.objects.create(
+                symbol='choices type'
+            )
+            role_property.type = role_property_type
+            role_property.save()
+            for choice in choices:
+                RolePropertyTypeValue.objects.create(
+                    type=role_property_type, value=choice
+                )
+        if create_role_property and create_role_property_value:
+            RolePropertyValue.objects.create(
+                device=device, property=role_property, value=original_value
+            )
+        if custom_fields is None:
+            custom_fields = {
+                symbol: test_value
+            }
+        self.data['custom_fields'] = custom_fields
+        return device, role_property
+
+    @override_settings(RALPH2_HERMES_ROLE_PROPERTY_WHITELIST=['test_field'])
+    def test_sync_should_update_custom_fields(self):
+        device, _ = self._custom_fields_test_common()
+        device = self.sync(device)
+        self.assertEqual(
+            device.get_property_set(),
+            self.data['custom_fields']
+        )
+
+    @override_settings(RALPH2_HERMES_ROLE_PROPERTY_WHITELIST=['test_field'])
+    def test_sync_should_create_when_role_property_value_doesnt_exist(self):  # noqa
+        device, _ = self._custom_fields_test_common(create_role_property_value=False)  # noqa
+        device = self.sync(device)
+        self.assertEqual(device.get_property_set(), self.data['custom_fields'])
+
+    @override_settings(RALPH2_HERMES_ROLE_PROPERTY_WHITELIST=[])
+    def test_sync_should_respect_whitelist(self):
+        symbol = 'blacklisted_field'
+        original_value = 'fo bar'
+        device, _ = self._custom_fields_test_common(
+            symbol=symbol, original_value=original_value
+        )
+        device = self.sync(device)
+        self.assertEqual(
+            device.get_property_set()[symbol],
+            original_value
+        )
+
+    @override_settings(RALPH2_HERMES_ROLE_PROPERTY_WHITELIST=['test_field'])
+    def test_sync_should_do_nothing_when_role_property_doesnt_exist(self):
+        device, _ = self._custom_fields_test_common(create_role_property=False)
+        device = self.sync(device)
+        self.assertEqual(device.get_property_set(), {})
+
+    @override_settings(RALPH2_HERMES_ROLE_PROPERTY_WHITELIST=['test_field'])
+    def test_sync_should_create_choice_to_type(self):  # noqa
+        predefinied_choices = ['one', 'two', 'three']
+        test_value = 'four'
+        device, prop = self._custom_fields_test_common(
+            original_value=predefinied_choices[0],
+            choices=predefinied_choices,
+            test_value=test_value
+        )
+        device = self.sync(device)
+        self.assertEqual(device.get_property_set(), self.data['custom_fields'])
+        self.assertTrue(
+            RolePropertyTypeValue.objects.filter(
+                type=prop.type, value=test_value
+            ).exists()
+        )
 
 
 class SyncVentureTestCase(TestCase):
