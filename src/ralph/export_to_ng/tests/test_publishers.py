@@ -6,6 +6,7 @@ from ralph.business.models import (
     RoleProperty,
     RolePropertyType,
     RolePropertyTypeValue,
+    RolePropertyValue,
     Venture,
     VentureRole,
 )
@@ -26,7 +27,7 @@ from ralph_assets.tests.utils.assets import DCAssetFactory
 @override_settings(
     RALPH3_HERMES_SYNC_ENABLED=True,
     RALPH3_HERMES_SYNC_FUNCTIONS=['sync_device_to_ralph3'],
-    RALPH2_HERMES_ROLE_PROPERTY_WHITELIST=['test_symbol'])
+    RALPH2_HERMES_ROLE_PROPERTY_WHITELIST=['test_symbol', 'test_symbol2'])
 class DevicePublisherTestCase(TestCase):
     def setUp(self):
         self.asset = DCAssetFactory()
@@ -104,8 +105,15 @@ class DevicePublisherTestCase(TestCase):
     def test_devices_properties(self):
         property_symbol = 'test_symbol'
         property_value = 'test_value'
+        property_symbol2 = 'test_symbol2'
         self.device.venture_role.roleproperty_set.create(symbol=property_symbol)  # noqa
+        prop2 = self.device.venture_role.roleproperty_set.create(
+            symbol=property_symbol2
+        )
         self.device.set_property(property_symbol, property_value, None)
+        RolePropertyValue.objects.get_or_create(
+            property=prop2, device=self.device, value=None
+        )
         result = sync_device_to_ralph3(Device, self.device)
         self.assertEqual(result, {
             'id': self.asset.id,
@@ -116,7 +124,8 @@ class DevicePublisherTestCase(TestCase):
             'management_hostname': 'mgmt-1.mydc.net',
             'venture_role': 11111,
             'custom_fields': {
-                property_symbol: property_value
+                property_symbol: property_value,
+                property_symbol2: '',
             },
         })
 
