@@ -8,7 +8,12 @@ from django.conf import settings
 from lck.django.common import nested_commit_on_success
 from pyhermes import subscriber
 
-from ralph.discovery.models import Device, DeviceType, DeviceModel
+from ralph.discovery.models import (
+    Device,
+    DeviceType,
+    DeviceModel,
+    ServiceCatalog
+)
 from ralph_assets.models import Asset, AssetModel
 from ralph_assets.models_assets import AssetStatus, AssetType, Warehouse, DataCenter
 from ralph_assets.models_dc_assets import DeviceInfo, Rack
@@ -16,10 +21,10 @@ from ralph.business.models import (
     Department,
     RoleProperty,
     RolePropertyValue,
+    RolePropertyTypeValue,
     Venture,
     VentureRole
 )
-from ralph.discovery.models import ServiceCatalog
 from ralph.export_to_ng.helpers import WithSignalDisabled
 from ralph.export_to_ng.publishers import (
     publish_sync_ack_to_ralph3,
@@ -68,9 +73,20 @@ def _get_publisher_signal_info(func):
 
 
 def _handle_custom_fields(data, obj):
-    # RoleProperty.objects.get(symbol)
-    for k, v in data['custom_fields']:
-        RolePropertyValue.objects.get(device=obj, value=v)
+    for field, value in data['custom_fields'].items():
+        if field not in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST:
+            continue
+        try:
+            prop = RoleProperty.objects.get(symbol=field)
+        except RoleProperty.DoesNotExist:
+            prop = None
+        if not prop:
+            continue
+        if not RolePropertyTypeValue.objects.filter(type=prop.type, value=value).exists():  # noqa
+            RolePropertyTypeValue.objects.create(type=prop.type, value=value)
+        RolePropertyValue.objects.filter(
+            device=obj, property=prop
+        ).update(value=value)
 
 
 class sync_subscriber(subscriber):
@@ -149,7 +165,6 @@ def sync_dc_asset_to_ralph2_handler(data):
 
     # default value
     asset.region_id = 1  # from ralph/accounts/fixtures/initial_data.yaml
-
     # warehouse based on dc
     try:
         asset.warehouse = Warehouse.objects.get(
