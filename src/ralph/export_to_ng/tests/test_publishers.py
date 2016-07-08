@@ -14,9 +14,15 @@ from ralph.cmdb.tests.utils import (
     DeviceEnvironmentFactory,
     ServiceCatalogFactory
 )
-from ralph.discovery.models import DeviceType, Device
+from ralph.discovery.models import DeviceType, Device, Network
+from ralph.discovery.tests.util import (
+    DeprecatedRackFactory,
+    DNSServerFactory,
+    NetworkFactory
+)
 from ralph.export_to_ng.publishers import (
     sync_device_to_ralph3,
+    sync_network_to_ralph3,
     sync_role_property_to_ralph3,
     sync_venture_role_to_ralph3,
     sync_venture_to_ralph3,
@@ -257,3 +263,60 @@ class RolePropertyPublisherTestCase(TestCase):
             'default': self.prop.default,
             'choices': choices
         })
+
+
+@override_settings(
+    RALPH3_HERMES_SYNC_ENABLED=True,
+    RALPH3_HERMES_SYNC_FUNCTIONS=['sync_network_to_ralph3'])
+class NetworkPublisherTestCase(TestCase):
+    def setUp(self):
+        self.net = NetworkFactory(
+            address='192.168.1.0/24',
+            remarks='lorem ipsum dolor sit amet',
+            vlan=10,
+            dhcp_broadcast=True,
+            gateway='192.168.1.1',
+            reserved=0,
+            reserved_top_margin=0,
+        )
+
+    def test_publish_network(self):
+        self.assertEqual(sync_network_to_ralph3(Network, self.net), {
+            'address': self.net.address,
+            'remarks': self.net.remarks,
+            'vlan': self.net.vlan,
+            'dhcp_broadcast': self.net.dhcp_broadcast,
+            'gateway': self.net.gateway,
+            'reserved_ips': [],
+            'environment_id': self.net.environment_id,
+            'kind_id': self.net.kind_id,
+            'racks_ids': [],
+            'dns_servers_ids': [],
+        })
+
+    def test_reserved_ips(self):
+        self.net.reserved = 1
+        self.net.reserved_top_margin = 1
+        self.net.save()
+        self.assertEqual(
+            sync_network_to_ralph3(Network, self.net)['reserved_ips'],
+            ['192.168.1.1', '192.168.1.254']
+        )
+
+    def test_racks_ids(self):
+        racks = [DeprecatedRackFactory() for _ in range(0, 5)]
+        self.net.racks.add(*racks)
+        self.net.save()
+        self.assertEqual(
+            sync_network_to_ralph3(Network, self.net)['racks_ids'],
+            [rack.id for rack in racks]
+        )
+
+    def test_dns_servers_ids(self):
+        servers = [DNSServerFactory() for _ in range(0, 5)]
+        self.net.custom_dns_servers.add(*servers)
+        self.net.save()
+        self.assertEqual(
+            sync_network_to_ralph3(Network, self.net)['dns_servers_ids'],
+            [dns.id for dns in servers]
+        )

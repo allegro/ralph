@@ -25,12 +25,15 @@ from ralph.discovery.models_device import (
     LoadBalancerType,
     LoadBalancerVirtualServer,
 )
+from ralph.dnsedit.models import DNSServer
 from ralph.cmdb.tests import utils as cmdb_utils
 from ralph.discovery.models_network import (
+    DataCenter,
     DiscoveryQueue,
     Environment,
     IPAddress,
     Network,
+    NetworkKind
 )
 from ralph_assets.models_dc_assets import DeprecatedRalphDC, DeprecatedRalphRack
 
@@ -72,6 +75,7 @@ class ComponentModelFactory(DjangoModelFactory):
     FACTORY_FOR = ComponentModel
     name = Sequence(lambda n: 'Componenent model {}'.format(n))
     family = Sequence(lambda n: 'Family {}'.format(n))
+
 
 class ComponentFactory(DjangoModelFactory):
     FACTORY_FOR = ComponentModel
@@ -150,8 +154,39 @@ class TenantFactory(Factory):
     enabled = True
 
 
-class NetworkFactory(Factory):
+class DataCenterFactory(DjangoModelFactory):
+    FACTORY_FOR = DataCenter
+
+    name = Sequence(lambda n: 'Data center #{}'.format(n))
+
+
+class EnvironmentFactory(DjangoModelFactory):
+    FACTORY_FOR = Environment
+
+    name = Sequence(lambda n: 'Environment {}'.format(n))
+    data_center = SubFactory(DataCenterFactory)
+
+
+class NetworkKindFactory(DjangoModelFactory):
+    FACTORY_FOR = NetworkKind
+
+    name = Sequence(lambda n: 'net-kind-{}'.format(n))
+
+
+class NetworkFactory(DjangoModelFactory):
     FACTORY_FOR = Network
+
+    name = Sequence(lambda n: 'net-{}'.format(n))
+    kind = SubFactory(NetworkKindFactory)
+    environment = SubFactory(EnvironmentFactory)
+
+
+class DNSServerFactory(DjangoModelFactory):
+    FACTORY_FOR = DNSServer
+
+    @sequence
+    def ip_address(n):
+        return ipaddr.IPAddress(int(ipaddr.IPAddress('10.1.1.0')) + n)
 
 
 class IPAddressFactory(DjangoModelFactory):
@@ -204,12 +239,6 @@ class DiscoveryQueueFactory(DjangoModelFactory):
     FACTORY_FOR = DiscoveryQueue
 
     name = Sequence(lambda n: 'Queue {}'.format(n))
-
-
-class EnvironmentFactory(DjangoModelFactory):
-    FACTORY_FOR = Environment
-
-    name = Sequence(lambda n: 'Environment {}'.format(n))
 
 
 class MockSSH(object):

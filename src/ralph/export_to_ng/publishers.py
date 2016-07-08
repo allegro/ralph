@@ -1,3 +1,4 @@
+import ipaddr
 import logging
 from functools import wraps
 
@@ -14,7 +15,7 @@ from ralph.business.models import (
     Venture,
     VentureRole
 )
-from ralph.discovery.models import Device, DeviceType
+from ralph.discovery.models import Device, DeviceType, Network
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +46,7 @@ def ralph3_sync(model, topic=None):
                 # `_handle_post_save` set to False
                 getattr(instance, '_handle_post_save', True)
             ):
+                result = func(sender, instance, **kwargs)
                 try:
                     result = func(sender, instance, **kwargs)
                     if result:
@@ -194,4 +196,40 @@ def sync_virtual_server_to_ralph3(sender, instance=None, created=False, **kwargs
         'venture_role': instance.venture_role_id,
         'parent_id': asset.id if asset else None,
         'custom_fields': _get_custom_fields(instance),
+    }
+
+# TODO:
+# NetworkKind
+# NetworkEnvironment
+
+
+@ralph3_sync(Network)
+def sync_network_to_ralph3(sender, instance=None, created=False, **kwargs):
+    net = instance
+
+    def get_reserved_ips(net):
+        start = net.min_ip
+        end = net.max_ip
+        bottom, top = net.reserved, net.reserved_top_margin
+        # start + 1 , start is reserved for network address
+        for int_ip in xrange(start + 1, start + bottom + 1):
+            yield str(ipaddr.IPAddress(int_ip))
+        # end - 1 , end is reserved for broadcast address
+        for int_ip in xrange(end - 1, end - top - 1, -1):
+            yield str(ipaddr.IPAddress(int_ip))
+
+    def get_ids(manager):
+        return list(manager.all().values_list('id', flat=True))
+
+    return {
+        'address': net.address,
+        'remarks': net.remarks,
+        'vlan': net.vlan,
+        'dhcp_broadcast': net.dhcp_broadcast,
+        'gateway': net.gateway,
+        'reserved_ips': list(get_reserved_ips(net)) if net.min_ip and net.max_ip else [],  # noqa
+        'environment_id': net.environment_id,
+        'kind_id': net.kind_id,
+        'racks_ids': get_ids(net.racks),
+        'dns_servers_ids': get_ids(net.custom_dns_servers),
     }
