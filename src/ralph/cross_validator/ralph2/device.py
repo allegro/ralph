@@ -65,30 +65,6 @@ class Device(SoftDeletable, models.Model):
             if ip.is_management:
                 return ip.address
 
-    def get_property_set(self):
-        props = {}
-        if self.venture:
-            props.update(dict(
-                [
-                    (p.symbol, p.default)
-                    for p in self.venture.roleproperty_set.all()
-                ]
-            ))
-        if self.venture_role:
-            props.update(dict(
-                [
-                    (p.symbol, p.default)
-                    for p in self.venture_role.roleproperty_set.all()
-                ]
-            ))
-        props.update(dict(
-            [
-                (p.property.symbol, p.value) for p in
-                self.rolepropertyvalue_set.all()
-            ]
-        ))
-        return props
-
 
 class Rack(models.Model):
     name = models.CharField(max_length=255)
