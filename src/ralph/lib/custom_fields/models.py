@@ -98,6 +98,10 @@ class CustomField(TimeStampMixin, models.Model):
             params.update({
                 'choices': zip(choices, choices),
             })
+        else:
+            params.update({
+                'required': False
+            })
         return field_type.form_field(**params)
 
 
