@@ -290,6 +290,7 @@ class NetworkPublisherTestCase(TestCase):
     def test_publish_network(self):
         self.assertEqual(sync_network_to_ralph3(Network, self.net), {
             'id': self.net.id,
+            'name': self.net.name,
             'address': self.net.address,
             'remarks': self.net.remarks,
             'vlan': self.net.vlan,
