@@ -205,4 +205,4 @@ class FibreChannelCard(Component):
         verbose_name_plural = _('fibre channel cards')
 
     def __str__(self):
-        return '{}'.format(self.model)
+        return 'model: "{}", WWN: "{}"'.format(self.model_name, self.wwn)
