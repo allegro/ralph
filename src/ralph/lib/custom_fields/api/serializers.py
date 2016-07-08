@@ -97,9 +97,21 @@ class WithCustomFieldsSerializerMixin(serializers.Serializer):
     attribute_name of custom_field and value is value of custom field.
     """
     custom_fields = serializers.SerializerMethodField()
+    configuration_variables = serializers.SerializerMethodField()
 
     def get_custom_fields(self, obj):
+        # use base manager to not execute separated query when
+        # custom fields are included in prefetch_related
         return {
             cfv.custom_field.attribute_name: cfv.value
             for cfv in obj.custom_fields.all()
+        }
+
+    def get_configuration_variables(self, obj):
+        # use base manager to not execute separated query when
+        # custom fields are included in prefetch_related
+        return {
+            cfv.custom_field.attribute_name: cfv.value
+            for cfv in obj.custom_fields.all()
+            if cfv.custom_field.use_as_configuration_variable
         }

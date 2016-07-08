@@ -7,6 +7,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.functional import cached_property
 from django.utils.text import capfirst, slugify
 from django.utils.translation import ugettext_lazy as _
 
@@ -64,6 +65,14 @@ class CustomField(TimeStampMixin, models.Model):
         null=True,
         blank=True,
         default='',
+    )
+    use_as_configuration_variable = models.BooleanField(
+        default=False,
+        help_text=_(
+            'When set, this variable will be exposed in API in '
+            '"configuration_variables" section. You could use this later in '
+            'configuration management tool like Puppet or Ansible.'
+        )
     )
     # TODO: when required, custom validator (regex?), is_unique
 
@@ -163,6 +172,14 @@ class WithCustomFieldsMixin(models.Model):
     @property
     def custom_fields_as_dict(self):
         return dict(self.custom_fields.values_list(
+            'custom_field__name', 'value'
+        ))
+
+    @property
+    def custom_fields_configuration_variables(self):
+        return dict(self.custom_fields.filter(
+            custom_field__use_as_configuration_variable=True
+        ).values_list(
             'custom_field__name', 'value'
         ))
 
