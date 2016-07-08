@@ -21,6 +21,7 @@ from ralph.data_importer.models import (
     ImportedObjects
 )
 from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
+from ralph.networks.models import Network
 from ralph.networks.tests.factories import IPAddressFactory
 from ralph.ralph2_sync.subscribers import (
     ralph2_sync_ack,
@@ -28,7 +29,10 @@ from ralph.ralph2_sync.subscribers import (
     sync_device_to_ralph3,
     sync_venture_role_to_ralph3,
     sync_venture_to_ralph3,
-    sync_virtual_server_to_ralph3
+    sync_virtual_server_to_ralph3,
+    sync_network_to_ralph3,
+    sync_network_kind_to_ralph3,
+    sync_network_environment_to_ralph3
 )
 from ralph.virtual.models import VirtualServer, VirtualServerType
 from ralph.virtual.tests.factories import VirtualServerFactory
@@ -392,3 +396,43 @@ class Ralph2SyncVirtualServerTestCase(TestCase):
         self.data['custom_fields'] = custom_fields
         vs = self.sync()
         self.assertEqual(vs.custom_fields_as_dict, custom_fields)
+
+
+class Ralph2NetworkTestCase(TestCase):
+    def setUp(self):
+        self.data = {
+            'id': 1,
+            'name': 'net-test',
+            'address': '192.168.1.0/24',
+            'remarks': 'remarks',
+            'vlan': 1,
+            'dhcp_broadcast': True,
+            'gateway': '192.168.1.1',
+            'reserved_ips': ['192.168.1.2', '192.168.1.2'],
+            'environment_id': 1,
+            'kind_id': 1,
+            'racks_ids': [],
+            'dns_servers': [],
+        }
+
+    def _create_imported_network(self):
+        pass
+
+    def sync(self):
+        obj = self._create_imported_network()
+        sync_network_to_ralph3(self.data)
+        obj.refresh_from_db()
+        return obj
+
+    def test_sync_sholud_create_new_network(self):
+        sync_network_to_ralph3(self.data)
+        net = ImportedObjects.get_object_from_old_pk(Network, self.data['id'])
+        self.assertEqual(net.name, self.data['name'])
+
+
+class Ralph2NetworkKindTestCase(TestCase):
+    pass
+
+
+class Ralph2NetworkEnvironmentTestCase(TestCase):
+    pass

@@ -22,7 +22,13 @@ from ralph.data_importer.models import (
     ImportedObjects
 )
 from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
-from ralph.networks.models import IPAddress
+from ralph.networks.models import (
+    IPAddress,
+    Network,
+    NetworkEnvironment,
+    NetworkKind
+)
+from ralph.networks.models.choices import IPAddressStatus
 from ralph.ralph2_sync.helpers import WithSignalDisabled
 from ralph.ralph2_sync.publishers import (
     sync_configuration_class_to_ralph2,
@@ -109,6 +115,7 @@ class sync_subscriber(pyhermes.subscriber):
                     stack.enter_context(WithSignalDisabled(
                         **_get_publisher_signal_info(publisher)
                     ))
+                return func(*args, **kwargs)
                 try:
                     return func(*args, **kwargs)
                 except Exception as e:
@@ -362,3 +369,69 @@ def sync_virtual_server_to_ralph3(data):
             virtual_server.update_custom_field(field, value)
     if created:
         ImportedObjects.create(virtual_server, data['id'])
+
+
+@sync_subscriber(topic='sync_network_to_ralph3')
+def sync_network_to_ralph3(data):
+    net, created = _get_obj(Network, data['id'], creating=True)
+    net.name = data['name']
+    net.address = data['address']
+    net.remarks = data['remarks']
+    net.vlan = data['vlan']
+    net.dhcp_broadcast = data['dhcp_broadcast']
+    if data['reserved_ips']:
+        for ip in data['reserved_ips']:
+            IPAddress.objects.update_or_create(
+                address=ip,
+                defaults=dict(status=IPAddressStatus.reserved, network=net)
+            )
+    if data['gateway']:
+        if net.gateway is not None:
+            IPAddress.objects.create(
+                address=data['gateway'],
+                network=net,
+                is_gateway=True
+            )
+        else:
+            # delete exist ip and update or create new one
+            IPAddress.objects.filter(
+                address=data['gateway'],
+                network=net,
+                is_gateway=True
+            ).delete()
+            IPAddress.objects.update_or_create(
+                address=data['gateway'],
+                network=net,
+                defaults=dict(is_gateway=True)
+            )
+    net.network_environment = _get_obj(
+        NetworkEnvironment, data['environment_id']
+    )[0]
+    net.kind = _get_obj(NetworkKind, data['kind_id'])[0]
+    net.save()
+    if created:
+        ImportedObjects.create(net, data['id'])
+
+
+@sync_subscriber(topic='sync_network_kind_to_ralph3')
+def sync_network_kind_to_ralph3(data):
+    kind, created = _get_obj(NetworkKind, data['id'], creating=True)
+    kind.name = data['name']
+    kind.save()
+    if created:
+        ImportedObjects.create(kind, data['id'])
+
+
+@sync_subscriber(topic='sync_network_environment_to_ralph3')
+def sync_network_environment_to_ralph3(data):
+    env, created = _get_obj(NetworkEnvironment, data['id'], creating=True)
+    env.name = data['name']
+    env.data_center_id = data['data_center_id']
+    env.domain = data['domain']
+    env.remarks = data['remarks']
+    if not created:
+        env.hostname_template_prefix = data['hostname_template_prefix']
+        env.hostname_template_counter_length = data['hostname_template_counter_length']  # noqa
+        env.hostname_template_postfix = data['hostname_template_postfix']
+    if created:
+        ImportedObjects.create(env, data['id'])
