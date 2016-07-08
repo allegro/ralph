@@ -268,6 +268,7 @@ def sync_network_to_ralph3(sender, instance=None, created=False, **kwargs):
         return list(manager.all().values_list('id', flat=True))
 
     return {
+        'id': net.id,
         'address': net.address,
         'remarks': net.remarks,
         'vlan': net.vlan,
@@ -277,5 +278,7 @@ def sync_network_to_ralph3(sender, instance=None, created=False, **kwargs):
         'environment_id': net.environment_id,
         'kind_id': net.kind_id,
         'racks_ids': get_ids(net.racks),
-        'dns_servers_ids': get_ids(net.custom_dns_servers),
+        'dns_servers': list(
+            net.custom_dns_servers.all().values_list('ip_address', flat=True)  # noqa
+        ),
     }

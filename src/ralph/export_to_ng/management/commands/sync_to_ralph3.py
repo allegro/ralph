@@ -20,7 +20,13 @@ from ralph.business.models import (
     Venture,
     VentureRole
 )
-from ralph.discovery.models import Device, DeviceType
+from ralph.discovery.models import (
+    Device,
+    DeviceType,
+    Network,
+    NetworkKind,
+    Environment as NetworkEnvironment
+)
 # register handlers
 from ralph.export_to_ng import publishers  # noqa
 
@@ -28,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 
 def generic_sync(model, **options):
-    for obj in model._default_manager.all():
+    for obj in model._default_manager.all()[:10]:
         post_save.send(
             sender=model,
             instance=obj,
@@ -153,6 +159,9 @@ models_handlers = {
     'VirtualServer': (Device, virtual_server_sync),
     'DeviceVentureOnly': (Device, device_venture_sync),
     'DeviceRolePropertiesOnly': (Device, device_role_properties_sync),
+    'Network': (Network, generic_sync),
+    'NetworkKind': (NetworkKind, generic_sync),
+    'NetworkEnvironment': (NetworkEnvironment, generic_sync),
 }
 
 

@@ -287,6 +287,7 @@ class NetworkPublisherTestCase(TestCase):
 
     def test_publish_network(self):
         self.assertEqual(sync_network_to_ralph3(Network, self.net), {
+            'id': self.net.id,
             'address': self.net.address,
             'remarks': self.net.remarks,
             'vlan': self.net.vlan,
@@ -296,7 +297,7 @@ class NetworkPublisherTestCase(TestCase):
             'environment_id': self.net.environment_id,
             'kind_id': self.net.kind_id,
             'racks_ids': [],
-            'dns_servers_ids': [],
+            'dns_servers': [],
         })
 
     def test_reserved_ips(self):
@@ -317,13 +318,13 @@ class NetworkPublisherTestCase(TestCase):
             [rack.id for rack in racks]
         )
 
-    def test_dns_servers_ids(self):
+    def test_dns_servers(self):
         servers = [DNSServerFactory() for _ in range(0, 5)]
         self.net.custom_dns_servers.add(*servers)
         self.net.save()
         self.assertEqual(
-            sync_network_to_ralph3(Network, self.net)['dns_servers_ids'],
-            [dns.id for dns in servers]
+            sync_network_to_ralph3(Network, self.net)['dns_servers'],
+            [str(dns.ip_address) for dns in servers]
         )
 
 
