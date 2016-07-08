@@ -15,7 +15,7 @@ from ralph.business.models import (
     Venture,
     VentureRole
 )
-from ralph.discovery.models import Device, DeviceType, Network
+from ralph.discovery.models import Device, DeviceType, Network, NetworkKind
 
 logger = logging.getLogger(__name__)
 
@@ -199,8 +199,13 @@ def sync_virtual_server_to_ralph3(sender, instance=None, created=False, **kwargs
     }
 
 # TODO:
-# NetworkKind
 # NetworkEnvironment
+@ralph3_sync(NetworkKind)
+def sync_network_kind_to_ralph3(sender, instance=None, created=False, **kwargs):
+    return {
+        'id': instance.id,
+        'name': instance.name
+    }
 
 
 @ralph3_sync(Network)
