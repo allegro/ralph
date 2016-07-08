@@ -275,6 +275,7 @@ def sync_network_to_ralph3(sender, instance=None, created=False, **kwargs):
 
     return {
         'id': net.id,
+        'name': net.name,
         'address': net.address,
         'remarks': net.remarks,
         'vlan': net.vlan,
