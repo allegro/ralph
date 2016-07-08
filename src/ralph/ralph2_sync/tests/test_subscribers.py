@@ -27,12 +27,12 @@ from ralph.ralph2_sync.subscribers import (
     ralph2_sync_ack,
     sync_custom_fields_to_ralph3,
     sync_device_to_ralph3,
+    sync_network_environment_to_ralph3,
+    sync_network_kind_to_ralph3,
+    sync_network_to_ralph3,
     sync_venture_role_to_ralph3,
     sync_venture_to_ralph3,
-    sync_virtual_server_to_ralph3,
-    sync_network_to_ralph3,
-    sync_network_kind_to_ralph3,
-    sync_network_environment_to_ralph3
+    sync_virtual_server_to_ralph3
 )
 from ralph.virtual.models import VirtualServer, VirtualServerType
 from ralph.virtual.tests.factories import VirtualServerFactory
