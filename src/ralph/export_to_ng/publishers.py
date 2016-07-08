@@ -51,7 +51,6 @@ def ralph3_sync(model, topic=None):
                 # `_handle_post_save` set to False
                 getattr(instance, '_handle_post_save', True)
             ):
-                result = func(sender, instance, **kwargs)
                 try:
                     result = func(sender, instance, **kwargs)
                     if result:
