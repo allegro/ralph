@@ -20,8 +20,6 @@ from ralph_assets.models_dc_assets import DeviceInfo, Rack
 from ralph.business.models import (
     Department,
     RoleProperty,
-    RolePropertyValue,
-    RolePropertyTypeValue,
     Venture,
     VentureRole
 )
