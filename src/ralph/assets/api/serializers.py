@@ -149,10 +149,17 @@ class ServiceEnvironmentSimpleSerializer(RalphAPISerializer):
         source='environment_name', read_only=True
     )
     service_uid = serializers.CharField(read_only=True)
+    business_owners = SimpleRalphUserSerializer(
+        many=True, source='service.business_owners')
+    technical_owners = SimpleRalphUserSerializer(
+        many=True, source='service.technical_owners')
 
     class Meta:
         model = ServiceEnvironment
-        fields = ('id', 'service', 'environment', 'url', 'service_uid')
+        fields = (
+            'id', 'service', 'environment', 'url', 'service_uid',
+            'business_owners', 'technical_owners'
+        )
         _skip_tags_field = True
 
 
@@ -160,11 +167,19 @@ class ServiceEnvironmentSerializer(
     TypeFromContentTypeSerializerMixin, RalphAPISerializer
 ):
     __str__ = StrField(show_type=True)
+    business_owners = SimpleRalphUserSerializer(
+        many=True, source='service.business_owners'
+    )
+    technical_owners = SimpleRalphUserSerializer(
+        many=True, source='service.technical_owners'
+    )
 
     class Meta:
         model = ServiceEnvironment
         depth = 1
-        exclude = ('content_type', 'parent', 'service_env')
+        exclude = (
+            'content_type', 'parent', 'service_env',
+        )
 
 
 class ManufacturerSerializer(RalphAPISerializer):
@@ -308,9 +323,8 @@ class FibreChannelCardSerializer(FibreChannelCardSimpleSerializer):
 
 
 # used by DataCenterAsset and VirtualServer serializers
-class ComponentSerializerMixin(serializers.Serializer):
+class NetworkComponentSerializerMixin(serializers.Serializer):
     ethernet = EthernetSimpleSerializer(many=True, source='ethernet_set')
-    memory = MemorySimpleSerializer(many=True, source='memory_set')
     ipaddresses = fields.SerializerMethodField()
 
     def get_ipaddresses(self, instance):
@@ -329,6 +343,11 @@ class ComponentSerializerMixin(serializers.Serializer):
             except AttributeError:
                 pass
         return ipaddresses
+
+
+# used by DataCenterAsset and VirtualServer serializers
+class ComponentSerializerMixin(NetworkComponentSerializerMixin):
+    memory = MemorySimpleSerializer(many=True, source='memory_set')
 
 
 class DCHostSerializer(ComponentSerializerMixin, BaseObjectSerializer):

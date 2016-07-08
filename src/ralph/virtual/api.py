@@ -8,14 +8,13 @@ from ralph.api.serializers import RalphAPISaveSerializer
 from ralph.assets.api.filters import NetworkableObjectFilters
 from ralph.assets.api.serializers import (
     BaseObjectSerializer,
+    ComponentSerializerMixin,
+    NetworkComponentSerializerMixin,
     ServiceEnvironmentSimpleSerializer
 )
 from ralph.assets.api.views import BaseObjectViewSet, BaseObjectViewSetMixin
 from ralph.assets.models import Ethernet
-from ralph.data_center.api.serializers import (
-    ComponentSerializerMixin,
-    DataCenterAssetSimpleSerializer
-)
+from ralph.data_center.api.serializers import DataCenterAssetSimpleSerializer
 from ralph.data_center.models import DataCenterAsset
 from ralph.virtual.admin import VirtualServerAdmin
 from ralph.virtual.models import (
@@ -97,8 +96,9 @@ class CloudFlavorSerializer(BaseObjectSerializer):
         exclude = ['content_type', 'service_env', 'parent']
 
 
-class CloudHostSerializer(BaseObjectSerializer):
-    ip_addresses = serializers.ListField()
+class CloudHostSerializer(
+    NetworkComponentSerializerMixin, BaseObjectSerializer
+):
     hypervisor = DataCenterAssetSimpleSerializer()
     parent = CloudProjectSimpleSerializer(source='cloudproject')
     cloudflavor = CloudFlavorSimpleSerializer()
@@ -162,16 +162,20 @@ class CloudProviderViewSet(RalphAPIViewSet):
     serializer_class = CloudProviderSerializer
 
 
-class CloudHostViewSet(RalphAPIViewSet):
+class CloudHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     queryset = CloudHost.objects.all()
     serializer_class = CloudHostSerializer
     save_serializer_class = SaveCloudHostSerializer
     select_related = [
         'parent', 'parent__cloudproject', 'cloudprovider', 'hypervisor',
-        'service_env__service', 'service_env__environment',
+        'service_env__service', 'service_env__environment', 'content_type'
     ]
-    prefetch_related = [
-        'tags', 'cloudflavor__virtualcomponent_set__model', 'licences'
+    prefetch_related = BaseObjectViewSet.prefetch_related + [
+        'tags', 'cloudflavor__virtualcomponent_set__model', 'licences',
+        Prefetch(
+            'ethernet_set',
+            queryset=Ethernet.objects.select_related('ipaddress')
+        ),
     ]
 
 

@@ -111,11 +111,13 @@ class BaseObjectClusterViewSet(RalphAPIViewSet):
     serializer_class = BaseObjectClusterSerializer
 
 
-class ClusterViewSet(RalphAPIViewSet):
+class ClusterViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     queryset = Cluster.objects.all()
     serializer_class = ClusterSerializer
     select_related = [
         'type', 'parent', 'service_env', 'service_env__service',
-        'service_env__environment',
+        'service_env__environment', 'configuration_path', 'content_type'
     ]
-    prefetch_related = ['tags', 'baseobjectcluster_set']
+    prefetch_related = BaseObjectViewSet.prefetch_related + [
+        'tags', 'baseobjectcluster_set',
+    ]
