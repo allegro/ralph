@@ -20,7 +20,8 @@ class CustomFieldsAPITests(APITestCase):
         )
         cls.custom_field_choices = CustomField.objects.create(
             name='test choice', type=CustomFieldTypes.CHOICE,
-            choices='qwerty|asdfgh|zxcvbn', default_value='zxcvbn'
+            choices='qwerty|asdfgh|zxcvbn', default_value='zxcvbn',
+            use_as_configuration_variable=True,
         )
 
         cls.user = get_user_model().objects.create_superuser(
@@ -52,6 +53,23 @@ class CustomFieldsAPITests(APITestCase):
             custom_field=self.custom_field_str,
             value='sample_value2',
         )
+
+    def test_get_customfields_in_object_resource(self):
+        url = reverse('somemodel-detail', args=(self.sm2.id,))
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['custom_fields'], {
+            'test_str': 'sample_value2',
+            'test_choice': 'qwerty',
+        })
+
+    def test_get_configuration_variables_in_object_resource(self):
+        url = reverse('somemodel-detail', args=(self.sm2.id,))
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['configuration_variables'], {
+            'test_choice': 'qwerty',
+        })
 
     def test_get_customfields_for_single_object(self):
         url = reverse(self.list_view_name, args=(self.sm1.id,))
