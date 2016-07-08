@@ -18,6 +18,7 @@ from ralph.discovery.models import DeviceType, Device
 from ralph.export_to_ng.publishers import (
     sync_device_to_ralph3,
     sync_role_property_to_ralph3,
+    sync_stacked_switch_to_ralph3,
     sync_venture_role_to_ralph3,
     sync_venture_to_ralph3,
 )
@@ -229,3 +230,69 @@ class RolePropertyPublisherTestCase(TestCase):
             'default': self.prop.default,
             'choices': choices
         })
+
+
+@override_settings(
+    RALPH3_HERMES_SYNC_ENABLED=True,
+    RALPH3_HERMES_SYNC_FUNCTIONS=['sync_stacked_switch_to_ralph3'],
+    RALPH2_HERMES_ROLE_PROPERTY_WHITELIST=['test_symbol'])
+class StackedSwitchPublisherTestCase(TestCase):
+    def setUp(self):
+        self.child1 = DCAssetFactory()
+        self.child2 = DCAssetFactory()
+        self.child1_device = self.child1.get_ralph_device()
+        self.child2_device = self.child2.get_ralph_device()
+
+        self.venture1 = Venture.objects.create(
+            name='Venture 1', symbol='v1',
+        )
+        self.venture_role = VentureRole.objects.create(
+            id=11111,
+            name='abcd',
+            venture=self.venture1
+        )
+        self.device = Device.create(
+            sn='12345',
+            model_name='Juniper stacked switch',
+            model_type=DeviceType.switch_stack,
+            service=ServiceCatalogFactory(
+                name='service-1', uid='sc-1'
+            ),
+            device_environment=DeviceEnvironmentFactory(
+                id=9876, name='prod'
+            ),
+            venture=self.venture1,
+            venture_role=self.venture_role,
+        )
+        self.device.name = 'ss-1.mydc.net'
+        self.device.save()
+        self.child1_device.name = 'sw1-0.mydc.net'
+        self.child1_device.logical_parent = self.device
+        self.child1_device.save()
+        self.child2_device.name = 'sw1-1.mydc.net'
+        self.child2_device.logical_parent = self.device
+        self.child2_device.save()
+
+        property_symbol = 'test_symbol'
+        property_value = 'test_value'
+        self.device.venture_role.roleproperty_set.create(symbol=property_symbol)
+        self.device.set_property(property_symbol, property_value, None)
+
+        self.maxDiff = None
+
+    def test_sync_stacked_switch(self):
+        result = sync_stacked_switch_to_ralph3(Device, self.device)
+        child_devices = result.pop('child_devices')
+        self.assertEqual(result, {
+            'hostname': 'ss-1.mydc.net',
+            'custom_fields': {'test_symbol': 'test_value'},
+            'environment': 9876,
+            'id': self.device.id,
+            'service': 'sc-1',
+            'type': 'Juniper stacked switch',
+            'venture_role': 11111,
+        })
+        self.assertItemsEqual(child_devices, [
+            {'asset_id': self.child1.id, 'is_master': True},
+            {'asset_id': self.child2.id, 'is_master': False}
+        ])
