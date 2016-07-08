@@ -1,5 +1,6 @@
 import ipaddr
 import logging
+import re
 from functools import wraps
 
 import pyhermes
@@ -15,7 +16,10 @@ from ralph.business.models import (
     Venture,
     VentureRole
 )
-from ralph.discovery.models import Device, DeviceType, Network, NetworkKind
+from ralph.discovery.models import (
+    Device, DeviceType, Network, NetworkKind, Environment
+)
+from ralph.export_to_ng.resources import get_data_center_id
 
 logger = logging.getLogger(__name__)
 
@@ -198,8 +202,45 @@ def sync_virtual_server_to_ralph3(sender, instance=None, created=False, **kwargs
         'custom_fields': _get_custom_fields(instance),
     }
 
-# TODO:
-# NetworkEnvironment
+
+@ralph3_sync(Environment)
+def sync_network_environment_to_ralph3(sender, instance=None, created=False, **kwargs):
+    def convert_template(instance):
+        """Handle template without pipe inside"""
+        template = instance.hosts_naming_template
+        counter_result = re.search('<([0-9]+),([0-9]+)>', template)
+        if not counter_result:
+            logger.info(
+                'Incorrect template for network environment with id {}. Return default values.'.format(instance.id)  # noqa
+            )
+            return {
+                'hostname_template_prefix': '',
+                'hostname_template_counter_length': 4,
+                'hostname_template_postfix': instance.domain or ''
+            }
+        start = template.find('<')
+        end = template.rfind('>')
+        counter_min, counter_max = counter_result.groups()
+
+        prefix = template[:start] + counter_min[0]
+        data = {
+            'hostname_template_prefix': prefix,
+            'hostname_template_counter_length': max(len(counter_min), len(counter_max)) - 1,  # noqa
+            'hostname_template_postfix': template[end + 1:]
+        }
+        return data
+
+    data = {
+        'id': instance.id,
+        'name': instance.name,
+        'data_center_id': get_data_center_id(instance.data_center),
+        'domain': instance.domain,
+        'remarks': instance.remarks,
+    }
+    data.update(convert_template(instance))
+    return data
+
+
 @ralph3_sync(NetworkKind)
 def sync_network_kind_to_ralph3(sender, instance=None, created=False, **kwargs):
     return {

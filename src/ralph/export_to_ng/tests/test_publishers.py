@@ -18,16 +18,21 @@ from ralph.discovery.models import DeviceType, Device, Network
 from ralph.discovery.tests.util import (
     DeprecatedRackFactory,
     DNSServerFactory,
-    NetworkFactory
+    NetworkFactory,
+    EnvironmentFactory,
+    DeprecatedDataCenterFactory,
+    DataCenterFactory as NetworkDataCenter
 )
 from ralph.export_to_ng.publishers import (
     sync_device_to_ralph3,
     sync_network_to_ralph3,
+    sync_network_environment_to_ralph3,
     sync_role_property_to_ralph3,
     sync_venture_role_to_ralph3,
     sync_venture_to_ralph3,
 )
-from ralph_assets.tests.utils.assets import DCAssetFactory
+from ralph_assets.tests.utils.assets import DCAssetFactory, DataCenterFactory
+from ralph_assets.models_dc_assets import DeprecatedRalphDC
 
 
 @override_settings(
@@ -320,3 +325,50 @@ class NetworkPublisherTestCase(TestCase):
             sync_network_to_ralph3(Network, self.net)['dns_servers_ids'],
             [dns.id for dns in servers]
         )
+
+
+@override_settings(
+    RALPH3_HERMES_SYNC_ENABLED=True,
+    RALPH3_HERMES_SYNC_FUNCTIONS=['sync_network_environment_to_ralph3'])
+class NetworkEnvironmentPublisherTestCase(TestCase):
+    def setUp(self):
+        self.asset_dc = DataCenterFactory(
+            name='DC#1',
+        )
+        self.env = EnvironmentFactory(
+            domain='dc.net', data_center=NetworkDataCenter(name='DC#1'),
+            hosts_naming_template='server<1000,5000>.dc.net'
+        )
+
+    def test_publish(self):
+        self.assertEqual(
+            sync_network_environment_to_ralph3(self.env.__class__, self.env),
+            {
+                'id': self.env.id,
+                'name': self.env.name,
+                'data_center_id': self.asset_dc.id,
+                'domain': self.env.domain,
+                'remarks': self.env.remarks,
+                'hostname_template_counter_length': 3,
+                'hostname_template_postfix': '.dc.net',
+                'hostname_template_prefix': 'server1',
+            }
+        )
+
+    def test_hostname_template(self):
+        self.env.hosts_naming_template = '<10,99>.dc.net'
+        self.env.save()
+        self.assertEqual(
+            sync_network_environment_to_ralph3(self.env.__class__, self.env),
+            {
+                'id': self.env.id,
+                'name': self.env.name,
+                'data_center_id': self.asset_dc.id,
+                'domain': self.env.domain,
+                'remarks': self.env.remarks,
+                'hostname_template_counter_length': 1,
+                'hostname_template_postfix': '.dc.net',
+                'hostname_template_prefix': '1',
+            }
+        )
+
