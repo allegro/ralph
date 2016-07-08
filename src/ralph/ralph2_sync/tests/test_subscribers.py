@@ -17,8 +17,8 @@ from ralph.assets.tests.factories import (
 )
 from ralph.data_center.models import Cluster
 from ralph.data_center.tests.factories import (
-    DataCenterAssetFactory,
-    ClusterFactory
+    ClusterFactory,
+    DataCenterAssetFactory
 )
 from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
