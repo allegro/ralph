@@ -31,7 +31,9 @@ from ralph.export_to_ng.publishers import (
     sync_venture_role_to_ralph3,
     sync_venture_to_ralph3,
 )
-from ralph_assets.tests.utils.assets import DCAssetFactory, DataCenterFactory
+from ralph_assets.tests.utils.assets import (
+    DCAssetFactory, DataCenterFactory, RackFactory
+)
 from ralph_assets.models_dc_assets import DeprecatedRalphDC
 
 
@@ -311,6 +313,8 @@ class NetworkPublisherTestCase(TestCase):
 
     def test_racks_ids(self):
         racks = [DeprecatedRackFactory() for _ in range(0, 5)]
+        for rack in racks:
+            RackFactory(deprecated_ralph_rack=rack)
         self.net.racks.add(*racks)
         self.net.save()
         self.assertEqual(

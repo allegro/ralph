@@ -20,6 +20,7 @@ from ralph.discovery.models import (
     Device, DeviceType, Network, NetworkKind, Environment
 )
 from ralph.export_to_ng.resources import get_data_center_id
+from ralph_assets.models_dc_assets import Rack
 
 logger = logging.getLogger(__name__)
 
@@ -216,7 +217,7 @@ def sync_network_environment_to_ralph3(sender, instance=None, created=False, **k
             return {
                 'hostname_template_prefix': '',
                 'hostname_template_counter_length': 4,
-                'hostname_template_postfix': instance.domain or ''
+                'hostname_template_postfix': '.{}'.format(instance.domain)
             }
         start = template.find('<')
         end = template.rfind('>')
@@ -264,8 +265,14 @@ def sync_network_to_ralph3(sender, instance=None, created=False, **kwargs):
         for int_ip in xrange(end - 1, end - top - 1, -1):
             yield str(ipaddr.IPAddress(int_ip))
 
-    def get_ids(manager):
-        return list(manager.all().values_list('id', flat=True))
+    def get_racks_ids(net):
+        for rack in net.racks.all():
+            try:
+                yield Rack.objects.get(
+                    deprecated_ralph_rack_id=rack.id
+                ).id
+            except Rack.DoesNotExist:
+                pass
 
     return {
         'id': net.id,
@@ -277,7 +284,7 @@ def sync_network_to_ralph3(sender, instance=None, created=False, **kwargs):
         'reserved_ips': list(get_reserved_ips(net)) if net.min_ip and net.max_ip else [],  # noqa
         'environment_id': net.environment_id,
         'kind_id': net.kind_id,
-        'racks_ids': get_ids(net.racks),
+        'racks_ids': list(get_racks_ids(net)) if net.racks.count() else [],
         'dns_servers': list(
             net.custom_dns_servers.all().values_list('ip_address', flat=True)  # noqa
         ),
