@@ -113,6 +113,19 @@ class Ralph2DataCenterAssetTestCase(TestCase):
         ip.ethernet.refresh_from_db()
         self.assertEqual(ip.ethernet.base_object.pk, dca.pk)
 
+    def test_sync_device_empty_venture_role(self):
+        old_id = 1
+        conf_class = ConfigurationClassFactory()
+        dca = DataCenterAssetFactory(configuration_path=conf_class)
+        ImportedObjects.create(obj=dca, old_pk=old_id)
+        data = {
+            'id': old_id,
+            'venture_role': None,
+        }
+        sync_device_to_ralph3(data)
+        dca.refresh_from_db()
+        self.assertIsNone(dca.configuration_path)
+
 
 class Ralph2CustomFieldsTestCase(TestCase):
     def test_sync_custom_fields_to_ralph3_with_choices(self):

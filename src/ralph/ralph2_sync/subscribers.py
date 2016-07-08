@@ -180,10 +180,9 @@ def sync_device_to_ralph3(data):
     if 'service' in data and 'environment' in data:
         dca.service_env = _get_service_env(data)
     if 'venture_role' in data:
-        if data['venture_role']:
-            dca.configuration_path = _get_configuration_path_from_venture_role(
-                venture_role_id=data['venture_role']
-            )
+        dca.configuration_path = _get_configuration_path_from_venture_role(
+            venture_role_id=data['venture_role']
+        )
     dca.save()
     if 'custom_fields' in data:
         for field, value in data['custom_fields'].items():
