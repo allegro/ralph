@@ -98,8 +98,9 @@ class DevicePublisherTestCase(TestCase):
             'environment': 9876,
             'venture_role': 11111,
             'ips': [{
-                'address': '10.20.30.40',
                 'hostname': 'mgmt-1.mydc.net',
+                'address': '10.20.30.40',
+                'mac': '',
                 'is_management': True,
                 'dhcp_expose': False,
             }],
@@ -126,8 +127,9 @@ class DevicePublisherTestCase(TestCase):
             'environment': 9876,
             'venture_role': 11111,
             'ips': [{
-                'address': '10.20.30.40',
                 'hostname': 'mgmt-1.mydc.net',
+                'address': '10.20.30.40',
+                'mac': '',
                 'is_management': True,
                 'dhcp_expose': False,
             }],

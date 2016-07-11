@@ -4,6 +4,7 @@ from functools import wraps
 import pyhermes
 from django.conf import settings
 
+from django.core.exceptions import MultipleObjectsReturned
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from pyhermes import publisher
@@ -94,11 +95,25 @@ def _get_ips_list(device):
             DHCPEntry.objects.filter(ip=ip.address).exists() and
             (ip.network and ip.network.dhcp_broadcast)
         )
+
+    def get_mac(ip):
+        mac = ''
+        try:
+            mac = DHCPEntry.objects.get(ip=ip.address).mac
+        except DHCPEntry.DoesNotExist:
+            pass
+        except MultipleObjectsReturned:
+            logger.exception('Multiple entries in DCHP for {}'.format(
+                ip.address
+            ))
+        return mac
+
     for ip in device.ipaddress_set.all():
         ips_list.append({
             'address': ip.address,
             'hostname': ip.hostname,
             'is_management': ip.is_management,
+            'mac': get_mac(ip),
             'dhcp_expose': in_dhcp(ip)
         })
     return {
