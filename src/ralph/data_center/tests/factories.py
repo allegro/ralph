@@ -12,6 +12,7 @@ from ralph.assets.tests.factories import (
     DataCenterAssetModelFactory,
     EthernetFactory,
     EthernetWithIPAddressFactory,
+    FibreChannelCardFactory,
     MemoryFactory,
     ServiceEnvironmentFactory
 )
@@ -163,6 +164,8 @@ class DataCenterAssetFullFactory(DataCenterAssetFactory):
     )
     mem1 = factory.RelatedFactory(MemoryFactory, 'base_object')
     mem2 = factory.RelatedFactory(MemoryFactory, 'base_object')
+    fc_card1 = factory.RelatedFactory(FibreChannelCardFactory, 'base_object')
+    fc_card2 = factory.RelatedFactory(FibreChannelCardFactory, 'base_object')
 
     @factory.post_generation
     def post_tags(self, create, extracted, **kwargs):
