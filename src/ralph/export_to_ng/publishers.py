@@ -85,6 +85,27 @@ def _get_custom_fields(device):
     return result
 
 
+def _get_ips_list(device):
+    ips_list = []
+
+    def in_dhcp(ip):
+        return bool(
+            not ip.is_management and
+            DHCPEntry.objects.filter(ip=ip.address).exists() and
+            (ip.network and ip.network.dhcp_broadcast)
+        )
+    for ip in device.ipaddress_set.all():
+        ips_list.append({
+            'address': ip.address,
+            'hostname': ip.hostname,
+            'is_management': ip.is_management,
+            'dhcp_expose': in_dhcp(ip)
+        })
+    return {
+        'ips': ips_list
+    }
+
+
 def get_device_data(device, fields=None):
     """
     Returns dictonary with device data.
@@ -92,17 +113,15 @@ def get_device_data(device, fields=None):
     asset = device.get_asset(manager='admin_objects')
     if not asset:
         return {}
-    mgmt_ip = device.management_ip
     data = {
         'id': asset.id,
         'hostname': device.name,
-        'management_ip': mgmt_ip.address if mgmt_ip else '',
-        'management_hostname': mgmt_ip.hostname if mgmt_ip else '',
         'service': device.service.uid if device.service else None,
         'environment': device.device_environment_id,
         'venture_role': device.venture_role_id,
         'custom_fields': _get_custom_fields(device),
     }
+    data.update(_get_ips_list(device))
     return {k: v for k, v in data.items() if k in fields} if fields else data
 
 
@@ -194,35 +213,4 @@ def sync_virtual_server_to_ralph3(sender, instance=None, created=False, **kwargs
         'venture_role': instance.venture_role_id,
         'parent_id': asset.id if asset else None,
         'custom_fields': _get_custom_fields(instance),
-    }
-
-
-@ralph3_sync(Network, topic='sync_ipaddress_to_ralph3')
-def sync_gateway_ipaddress_to_ralph3(sender, instance=None, created=False, **kwargs):
-    if not instance.gateway:
-        return {}
-    return {
-        'id': None,
-        'address': instance.gateway,
-        'device_id': None,
-        'hostname': None,
-        'is_management': False,
-        'is_gateway': True,
-        'dhcp_expose': False
-    }
-
-
-@ralph3_sync(IPAddress)
-def sync_ipaddress_to_ralph3(sender, instance=None, created=False, **kwargs):
-    return {
-        'id': instance.id,
-        'address': instance.address,
-        'device_id': instance.device_id,
-        'hostname': instance.hostname,
-        'is_management': instance.is_management,
-        'is_gateway': False,
-        'dhcp_expose': bool(
-            DHCPEntry.objects.filter(ip=instance.address).exists()
-            and (instance.network and instance.network.dhcp_broadcast)
-        )
     }

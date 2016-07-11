@@ -18,8 +18,6 @@ from ralph.discovery.models import DeviceType, Device, IPAddress, Network
 from ralph.dnsedit.models import DHCPEntry
 from ralph.export_to_ng.publishers import (
     sync_device_to_ralph3,
-    sync_gateway_ipaddress_to_ralph3,
-    sync_ipaddress_to_ralph3,
     sync_role_property_to_ralph3,
     sync_venture_role_to_ralph3,
     sync_venture_to_ralph3,
@@ -86,9 +84,8 @@ class DevicePublisherTestCase(TestCase):
             'hostname': 's2.mydc.net',
             'service': None,
             'environment': None,
-            'management_ip': '',
-            'management_hostname': '',
             'venture_role': None,
+            'ips': [],
             'custom_fields': {},
         })
 
@@ -99,9 +96,13 @@ class DevicePublisherTestCase(TestCase):
             'hostname': 's1.mydc.net',
             'service': 'sc-1',
             'environment': 9876,
-            'management_ip': '10.20.30.40',
-            'management_hostname': 'mgmt-1.mydc.net',
             'venture_role': 11111,
+            'ips': [{
+                'address': '10.20.30.40',
+                'hostname': 'mgmt-1.mydc.net',
+                'is_management': True,
+                'dhcp_expose': False,
+            }],
             'custom_fields': {},
         })
 
@@ -123,9 +124,13 @@ class DevicePublisherTestCase(TestCase):
             'hostname': 's1.mydc.net',
             'service': 'sc-1',
             'environment': 9876,
-            'management_ip': '10.20.30.40',
-            'management_hostname': 'mgmt-1.mydc.net',
             'venture_role': 11111,
+            'ips': [{
+                'address': '10.20.30.40',
+                'hostname': 'mgmt-1.mydc.net',
+                'is_management': True,
+                'dhcp_expose': False,
+            }],
             'custom_fields': {
                 property_symbol: property_value,
                 property_symbol2: '',
@@ -234,43 +239,43 @@ class RolePropertyPublisherTestCase(TestCase):
         })
 
 
-@override_settings(
-    RALPH3_HERMES_SYNC_ENABLED=True,
-    RALPH3_HERMES_SYNC_FUNCTIONS=['sync_ipaddress_to_ralph3']
-)
-class IPAddressPublisherTestCase(TestCase):
-    def setUp(self):
-        network = Network.objects.create(
-            name='test_net',
-            address='192.168.1.0/24', dhcp_broadcast=True
-        )
-        self.ip = IPAddress.objects.create(
-            address='192.168.1.1', hostname='hostname.local.net',
-            network=network
-        )
+# @override_settings(
+#     RALPH3_HERMES_SYNC_ENABLED=True,
+#     RALPH3_HERMES_SYNC_FUNCTIONS=['sync_ipaddress_to_ralph3']
+# )
+# class IPAddressPublisherTestCase(TestCase):
+#     def setUp(self):
+#         network = Network.objects.create(
+#             name='test_net',
+#             address='192.168.1.0/24', dhcp_broadcast=True
+#         )
+#         self.ip = IPAddress.objects.create(
+#             address='192.168.1.1', hostname='hostname.local.net',
+#             network=network
+#         )
 
-    def test_ipaddress_publish(self):
-        result = sync_ipaddress_to_ralph3(IPAddress, self.ip)
-        self.assertEqual(result, {
-            'id': self.ip.id,
-            'address': self.ip.address,
-            'device_id': self.ip.device_id,
-            'hostname': self.ip.hostname,
-            'is_management': False,
-            'is_gateway': False,
-            'dhcp_expose': False
-        })
+#     def test_ipaddress_publish(self):
+#         result = sync_ipaddress_to_ralph3(IPAddress, self.ip)
+#         self.assertEqual(result, {
+#             'id': self.ip.id,
+#             'address': self.ip.address,
+#             'device_id': self.ip.device_id,
+#             'hostname': self.ip.hostname,
+#             'is_management': False,
+#             'is_gateway': False,
+#             'dhcp_expose': False
+#         })
 
-    def test_dhcp_expose_true(self):
-        DHCPEntry.objects.create(ip=self.ip.address, mac='00:00:00:00:00:00')
-        result = sync_ipaddress_to_ralph3(IPAddress, self.ip)
-        self.assertTrue(result['dhcp_expose'])
+#     def test_dhcp_expose_true(self):
+#         DHCPEntry.objects.create(ip=self.ip.address, mac='00:00:00:00:00:00')
+#         result = sync_ipaddress_to_ralph3(IPAddress, self.ip)
+#         self.assertTrue(result['dhcp_expose'])
 
-    def test_publish_gateway(self):
-        net = Network.objects.create(
-            name='test_net2',
-            address='192.168.1.128/25', dhcp_broadcast=True,
-            gateway='192.168.1.255'
-        )
-        result = sync_gateway_ipaddress_to_ralph3(Network, net)
-        self.assertTrue(result['is_gateway'])
+#     def test_publish_gateway(self):
+#         net = Network.objects.create(
+#             name='test_net2',
+#             address='192.168.1.128/25', dhcp_broadcast=True,
+#             gateway='192.168.1.255'
+#         )
+#         result = sync_gateway_ipaddress_to_ralph3(Network, net)
+#         self.assertTrue(result['is_gateway'])
