@@ -431,8 +431,47 @@ class Ralph2NetworkTestCase(TestCase):
 
 
 class Ralph2NetworkKindTestCase(TestCase):
-    pass
+    def setUp(self):
+        self.data = {
+            'id': 1,
+            'name': 'net-kind-test',
+        }
+
+    def _create_imported_network_kind(self):
+        return _create_imported_object(
+            factory=VirtualServerFactory,
+            old_id=old_id if old_id else self.data['id']
+        )
+
+    def sync(self):
+        obj = self._create_imported_network()
+        sync_network_kind_to_ralph3(self.data)
+        obj.refresh_from_db()
+        return obj
 
 
 class Ralph2NetworkEnvironmentTestCase(TestCase):
-    pass
+    def setUp(self):
+        self.data = {
+            'id': 1,
+            'name': 'net-test',
+            'address': '192.168.1.0/24',
+            'remarks': 'remarks',
+            'vlan': 1,
+            'dhcp_broadcast': True,
+            'gateway': '192.168.1.1',
+            'reserved_ips': ['192.168.1.2', '192.168.1.2'],
+            'environment_id': 1,
+            'kind_id': 1,
+            'racks_ids': [],
+            'dns_servers': [],
+        }
+
+    def _create_imported_network_environment(self):
+        pass
+
+    def sync(self):
+        obj = self._create_imported_network()
+        sync_network_environment_to_ralph3(self.data)
+        obj.refresh_from_db()
+        return obj
