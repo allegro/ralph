@@ -8,7 +8,6 @@ from __future__ import unicode_literals
 import logging
 import re
 import time
-from itertools import chain
 from optparse import make_option
 
 from django.conf import settings
@@ -21,7 +20,7 @@ from ralph.business.models import (
     Venture,
     VentureRole
 )
-from ralph.discovery.models import Device, DeviceType, IPAddress
+from ralph.discovery.models import Device, DeviceType
 # register handlers
 from ralph.export_to_ng import publishers  # noqa
 

@@ -15,7 +15,7 @@ from ralph.business.models import (
     Venture,
     VentureRole
 )
-from ralph.discovery.models import Device, DeviceType, IPAddress, Network
+from ralph.discovery.models import Device, DeviceType
 from ralph.dnsedit.models import DHCPEntry
 
 logger = logging.getLogger(__name__)
@@ -218,7 +218,7 @@ def sync_virtual_server_to_ralph3(sender, instance=None, created=False, **kwargs
     if not instance.model or instance.model.type != DeviceType.virtual_server:
         return
     asset = instance.parent.get_asset(manager='admin_objects') if instance.parent else None  # noqa
-    return {
+    data = {
         'id': instance.id,
         'type': instance.model.name if instance.model else None,
         'hostname': instance.name,
@@ -229,3 +229,5 @@ def sync_virtual_server_to_ralph3(sender, instance=None, created=False, **kwargs
         'parent_id': asset.id if asset else None,
         'custom_fields': _get_custom_fields(instance),
     }
+    data.update(_get_ips_list(instance))
+    return data
