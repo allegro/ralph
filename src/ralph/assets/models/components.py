@@ -206,3 +206,17 @@ class FibreChannelCard(Component):
 
     def __str__(self):
         return 'model: "{}", WWN: "{}"'.format(self.model_name, self.wwn)
+
+
+class Processor(Component):
+    speed = models.PositiveIntegerField(
+        verbose_name=_("speed (MHz)"), null=True, blank=True,
+    )
+    cores = models.PositiveIntegerField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = _('processor')
+        verbose_name_plural = _('processors')
+
+    def __str__(self):
+        return self.model_name

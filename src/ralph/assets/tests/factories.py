@@ -252,3 +252,13 @@ class FibreChannelCardFactory(DjangoModelFactory):
 
     class Meta:
         model = FibreChannelCard
+
+
+class ProcessorFactory(DjangoModelFactory):
+    base_object = factory.SubFactory(BaseObjectFactory)
+    speed = factory.Iterator([2500, 2600, 3000, 3200])
+    cores = factory.Iterator([4, 8, 16])
+    model_name = "Intel(R) Xeon(R) CPU"
+
+    class Meta:
+        model = Processor

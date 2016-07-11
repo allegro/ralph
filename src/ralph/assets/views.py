@@ -35,4 +35,18 @@ class ComponentsAdminView(RalphDetailViewAdmin):
         )
         extra = 1
 
-    inlines = [GenericComponentInline, MemoryInline, FibreChannelCardInline]
+    class ProcessorInline(RalphTabularInline):
+        model = Processor
+        fields = (
+            'model_name',
+            'speed',
+            'cores',
+        )
+        extra = 1
+
+    inlines = [
+        GenericComponentInline,
+        MemoryInline,
+        FibreChannelCardInline,
+        ProcessorInline,
+    ]

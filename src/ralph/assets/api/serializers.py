@@ -322,6 +322,19 @@ class FibreChannelCardSerializer(FibreChannelCardSimpleSerializer):
         exclude = ('model',)
 
 
+class ProcessorSimpleSerializer(RalphAPISerializer):
+    class Meta:
+        model = Processor
+        fields = ('id', 'url', 'speed', 'cores')
+
+
+class ProcessorSerializer(ProcessorSimpleSerializer):
+    class Meta:
+        depth = 1
+        model = Processor
+        exclude = ('model',)
+
+
 # used by DataCenterAsset and VirtualServer serializers
 class NetworkComponentSerializerMixin(OwnersFromServiceEnvSerializerMixin):
     ethernet = EthernetSimpleSerializer(many=True, source='ethernet_set')
