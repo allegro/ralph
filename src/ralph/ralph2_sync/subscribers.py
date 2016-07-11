@@ -427,7 +427,8 @@ def sync_network_kind_to_ralph3(data):
 def sync_network_environment_to_ralph3(data):
     env, created = _get_obj(NetworkEnvironment, data['id'], creating=True)
     env.name = data['name']
-    env.data_center_id = data['data_center_id']
+    if 'data_center_id' in data:
+        env.data_center_id = data['data_center_id']
     env.domain = data['domain']
     env.remarks = data['remarks']
     if created:

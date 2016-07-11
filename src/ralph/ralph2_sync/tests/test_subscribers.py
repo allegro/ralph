@@ -15,7 +15,10 @@ from ralph.assets.tests.factories import (
     ServiceEnvironmentFactory,
     ServiceFactory
 )
-from ralph.data_center.tests.factories import DataCenterAssetFactory
+from ralph.data_center.tests.factories import (
+    DataCenterAssetFactory,
+    DataCenterFactory
+)
 from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
     ImportedObjects
@@ -473,7 +476,7 @@ class Ralph2NetworkKindTestCase(TestCase):
 
 class Ralph2NetworkEnvironmentTestCase(TestCase):
     def setUp(self):
-        self.dc = DataCenterAssetFactory()
+        self.dc = DataCenterFactory()
         self.data = {
             'id': 1,
             'name': 'net-env',
