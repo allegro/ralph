@@ -476,7 +476,7 @@ class Ralph2NetworkEnvironmentTestCase(TestCase):
         self.data = {
             'id': 1,
             'name': 'net-env',
-            'data_center_id': 1,
+            'data_center_id': None,
             'domain': 'foo.net',
             'remarks': '',
             'hostname_template_prefix': 's1',
