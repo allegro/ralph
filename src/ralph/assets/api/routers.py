@@ -12,9 +12,9 @@ from ralph.assets.api.views import (
     EnvironmentViewSet,
     EthernetViewSet,
     FibreChannelCardViewSet,
-    ProcessorViewSet,
     ManufacturerViewSet,
     MemoryViewSet,
+    ProcessorViewSet,
     ProfitCenterViewSet,
     ServiceEnvironmentViewSet,
     ServiceViewSet
