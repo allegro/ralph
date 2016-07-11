@@ -166,23 +166,6 @@ class DeviceDCAssetTestCase(TestCase):
         device = self.sync(device)
         self.assertEqual(device.get_property_set(), {})
 
-    @override_settings(RALPH2_HERMES_ROLE_PROPERTY_WHITELIST=['test_field'])
-    def test_sync_should_create_choice_to_type(self):  # noqa
-        predefinied_choices = ['one', 'two', 'three']
-        test_value = 'four'
-        device, prop = self._custom_fields_test_common(
-            original_value=predefinied_choices[0],
-            choices=predefinied_choices,
-            test_value=test_value
-        )
-        device = self.sync(device)
-        self.assertEqual(device.get_property_set(), self.data['custom_fields'])
-        self.assertTrue(
-            RolePropertyTypeValue.objects.filter(
-                type=prop.type, value=test_value
-            ).exists()
-        )
-
 
 class SyncVentureTestCase(TestCase):
     def setUp(self):
