@@ -21,9 +21,15 @@ from ralph.data_importer.models import (
     ImportedObjects
 )
 from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
-from ralph.networks.models import Network
-from ralph.networks.tests.factories import IPAddressFactory
+from ralph.networks.models import Network, NetworkKind, NetworkEnvironment
+from ralph.networks.tests.factories import (
+    IPAddressFactory,
+    NetworkEnvironmentFactory,
+    NetworkFactory,
+    NetworkKindFactory
+)
 from ralph.ralph2_sync.subscribers import (
+    _get_obj,
     ralph2_sync_ack,
     sync_custom_fields_to_ralph3,
     sync_device_to_ralph3,
@@ -437,41 +443,99 @@ class Ralph2NetworkKindTestCase(TestCase):
             'name': 'net-kind-test',
         }
 
-    def _create_imported_network_kind(self):
+    def _create_imported_network_kind(self, old_id=None):
         return _create_imported_object(
-            factory=VirtualServerFactory,
+            factory=NetworkKindFactory,
             old_id=old_id if old_id else self.data['id']
         )
 
     def sync(self):
-        obj = self._create_imported_network()
+        obj = self._create_imported_network_kind()
         sync_network_kind_to_ralph3(self.data)
         obj.refresh_from_db()
         return obj
+
+    def test_sync_should_create_new_network_kind(self):
+        self.assertFalse(
+            NetworkKind.objects.filter(name=self.data['name']).exists()
+        )
+        self.sync()
+        self.assertTrue(NetworkKind.objects.get(name=self.data['name']))
+
+    def test_sync_should_update_name(self):
+        net_kind = self._create_imported_network_kind()
+        self.data['name'] = 'new_name'
+        self.assertNotEqual(self.data['name'], net_kind.name)
+        sync_network_kind_to_ralph3(self.data)
+        net_kind.refresh_from_db()
+        self.assertEqual(net_kind.name, self.data['name'])
 
 
 class Ralph2NetworkEnvironmentTestCase(TestCase):
     def setUp(self):
         self.data = {
             'id': 1,
-            'name': 'net-test',
-            'address': '192.168.1.0/24',
-            'remarks': 'remarks',
-            'vlan': 1,
-            'dhcp_broadcast': True,
-            'gateway': '192.168.1.1',
-            'reserved_ips': ['192.168.1.2', '192.168.1.2'],
-            'environment_id': 1,
-            'kind_id': 1,
-            'racks_ids': [],
-            'dns_servers': [],
+            'name': 'net-env',
+            'data_center_id': 1,
+            'domain': 'foo.net',
+            'remarks': '',
+            'hostname_template_prefix': 's1',
+            'hostname_template_counter_length': 4,
+            'hostname_template_postfix': '.foo.net'
         }
 
-    def _create_imported_network_environment(self):
-        pass
+    def _create_imported_network_environment(self, old_id=None):
+        return _create_imported_object(
+            factory=NetworkEnvironmentFactory,
+            old_id=old_id if old_id else self.data['id']
+        )
 
     def sync(self):
-        obj = self._create_imported_network()
+        obj = self._create_imported_network_environment()
         sync_network_environment_to_ralph3(self.data)
         obj.refresh_from_db()
         return obj
+
+    def test_sync_should_create_new_network_environment(self):
+        self.assertFalse(
+            NetworkEnvironment.objects.filter(name=self.data['name']).exists()
+        )
+        self.sync()
+        self.assertTrue(NetworkEnvironment.objects.get(name=self.data['name']))
+
+    def test_sync_should_update_hostname_template_if_created(self):
+        self.data['hostname_template_prefix'] = 'x1'
+        self.data['hostname_template_counter_length'] = 5
+        self.data['hostname_template_postfix'] = '.foo.bar.net'
+        sync_network_environment_to_ralph3(self.data)
+        net_kind, _ = _get_obj(NetworkEnvironment, self.data['id'])
+        self.assertEqual(
+            net_kind.hostname_template_prefix,
+            self.data['hostname_template_prefix']
+        )
+        self.assertEqual(
+            net_kind.hostname_template_counter_length,
+            self.data['hostname_template_counter_length']
+        )
+        self.assertEqual(
+            net_kind.hostname_template_postfix,
+            self.data['hostname_template_postfix']
+        )
+
+    def test_sync_shouldnt_update_hostname_template_if_not_created(self):
+        self.data['hostname_template_prefix'] = 'x1'
+        self.data['hostname_template_counter_length'] = 5
+        self.data['hostname_template_postfix'] = '.foo.bar.net'
+        net_kind = self.sync()
+        self.assertNotEqual(
+            net_kind.hostname_template_prefix,
+            self.data['hostname_template_prefix']
+        )
+        self.assertNotEqual(
+            net_kind.hostname_template_counter_length,
+            self.data['hostname_template_counter_length']
+        )
+        self.assertNotEqual(
+            net_kind.hostname_template_postfix,
+            self.data['hostname_template_postfix']
+        )

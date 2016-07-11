@@ -115,6 +115,7 @@ class sync_subscriber(pyhermes.subscriber):
                     stack.enter_context(WithSignalDisabled(
                         **_get_publisher_signal_info(publisher)
                     ))
+                # TODO: delete
                 return func(*args, **kwargs)
                 try:
                     return func(*args, **kwargs)
@@ -429,9 +430,10 @@ def sync_network_environment_to_ralph3(data):
     env.data_center_id = data['data_center_id']
     env.domain = data['domain']
     env.remarks = data['remarks']
-    if not created:
+    if created:
         env.hostname_template_prefix = data['hostname_template_prefix']
         env.hostname_template_counter_length = data['hostname_template_counter_length']  # noqa
         env.hostname_template_postfix = data['hostname_template_postfix']
+    env.save()
     if created:
         ImportedObjects.create(env, data['id'])
