@@ -21,7 +21,7 @@ from ralph.data_importer.models import (
     ImportedObjects
 )
 from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
-from ralph.networks.models import Network, NetworkKind, NetworkEnvironment
+from ralph.networks.models import Network, NetworkEnvironment, NetworkKind
 from ralph.networks.tests.factories import (
     IPAddressFactory,
     NetworkEnvironmentFactory,
