@@ -5,7 +5,8 @@ from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.assets.models.components import (
     FibreChannelCard,
     GenericComponent,
-    Memory
+    Memory,
+    Processor
 )
 
 

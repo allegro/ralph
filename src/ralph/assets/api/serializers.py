@@ -27,7 +27,12 @@ from ralph.assets.models import (
     Service,
     ServiceEnvironment
 )
-from ralph.assets.models.components import Ethernet, FibreChannelCard, Memory
+from ralph.assets.models.components import (
+    Ethernet,
+    FibreChannelCard,
+    Memory,
+    Processor
+)
 from ralph.lib.custom_fields.api import WithCustomFieldsSerializerMixin
 from ralph.licences.api_simple import SimpleBaseObjectLicenceSerializer
 from ralph.networks.api_simple import IPAddressSimpleSerializer
