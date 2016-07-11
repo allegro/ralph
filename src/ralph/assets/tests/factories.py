@@ -16,7 +16,12 @@ from ralph.assets.models.assets import (
 )
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
-from ralph.assets.models.components import Ethernet, FibreChannelCard, Memory
+from ralph.assets.models.components import (
+    Ethernet,
+    FibreChannelCard,
+    Memory,
+    Processor
+)
 from ralph.assets.models.configuration import (
     ConfigurationClass,
     ConfigurationModule

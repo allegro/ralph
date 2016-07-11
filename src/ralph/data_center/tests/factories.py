@@ -14,6 +14,7 @@ from ralph.assets.tests.factories import (
     EthernetWithIPAddressFactory,
     FibreChannelCardFactory,
     MemoryFactory,
+    ProcessorFactory,
     ServiceEnvironmentFactory
 )
 from ralph.data_center.models.physical import (
