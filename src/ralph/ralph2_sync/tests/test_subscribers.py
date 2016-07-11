@@ -473,10 +473,11 @@ class Ralph2NetworkKindTestCase(TestCase):
 
 class Ralph2NetworkEnvironmentTestCase(TestCase):
     def setUp(self):
+        self.dc = DataCenterAssetFactory()
         self.data = {
             'id': 1,
             'name': 'net-env',
-            'data_center_id': None,
+            'data_center_id': self.dc.id,
             'domain': 'foo.net',
             'remarks': '',
             'hostname_template_prefix': 's1',
