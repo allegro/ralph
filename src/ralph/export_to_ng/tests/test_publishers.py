@@ -450,6 +450,7 @@ class StackedSwitchPublisherTestCase(TestCase):
             'service': 'sc-1',
             'type': 'Juniper stacked switch',
             'venture_role': 11111,
+            'ips': []
         })
         self.assertItemsEqual(child_devices, [
             {'asset_id': self.child1.id, 'is_master': True},
