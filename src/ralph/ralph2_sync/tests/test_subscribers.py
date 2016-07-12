@@ -15,7 +15,11 @@ from ralph.assets.tests.factories import (
     ServiceEnvironmentFactory,
     ServiceFactory
 )
-from ralph.data_center.tests.factories import DataCenterAssetFactory
+from ralph.data_center.models import Cluster
+from ralph.data_center.tests.factories import (
+    ClusterFactory,
+    DataCenterAssetFactory
+)
 from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
     ImportedObjects
@@ -26,6 +30,7 @@ from ralph.ralph2_sync.subscribers import (
     ralph2_sync_ack,
     sync_custom_fields_to_ralph3,
     sync_device_to_ralph3,
+    sync_stacked_switch_to_ralph3,
     sync_venture_role_to_ralph3,
     sync_venture_to_ralph3,
     sync_virtual_server_to_ralph3
@@ -392,3 +397,73 @@ class Ralph2SyncVirtualServerTestCase(TestCase):
         self.data['custom_fields'] = custom_fields
         vs = self.sync()
         self.assertEqual(vs.custom_fields_as_dict, custom_fields)
+
+
+class Ralph2StackedSwitchSyncTestCase(TestCase):
+    def setUp(self):
+        self.service = _create_imported_object(
+            ServiceFactory, 123, factory_kwargs={'uid': 'sc-123'}
+        )
+        self.env = _create_imported_object(EnvironmentFactory, 321)
+        self.se = ServiceEnvironmentFactory(
+            service=self.service, environment=self.env
+        )
+        self.conf_class = _create_imported_object(
+            ConfigurationClassFactory, 987
+        )
+        CustomField.objects.create(
+            name='test_field', type=CustomFieldTypes.STRING,
+        )
+        self.child1 = _create_imported_object(DataCenterAssetFactory, 1111)
+        self.child2 = _create_imported_object(DataCenterAssetFactory, 2222)
+        self.data = {
+            'id': 1,
+            'type': 'juniper switch',
+            'hostname': 'ss-1.mydc.net',
+            'service': 'sc-123',
+            'environment': 321,
+            'venture_role': 987,
+            'custom_fields': {'test_field': 'some_value'},
+            'child_devices': [
+                {'asset_id': 2222, 'is_master': True},
+                {'asset_id': 1111, 'is_master': False},
+            ]
+        }
+
+    def test_stacked_switch_subscriber_for_new_obj(self):
+        sync_stacked_switch_to_ralph3(self.data)
+        ss = ImportedObjects.get_object_from_old_pk(Cluster, self.data['id'])
+        self.assertEqual(ss.hostname, self.data['hostname'])
+        self.assertEqual(ss.type.name, self.data['type'])
+        self.assertEqual(ss.service_env.service, self.service)
+        self.assertEqual(ss.service_env.environment, self.env)
+        self.assertEqual(ss.configuration_path, self.conf_class)
+        self.assertEqual(ss.custom_fields_as_dict, self.data['custom_fields'])
+        self.assertCountEqual(
+            [self.child1, self.child2], list(ss.base_objects.all())
+        )
+        self.assertEqual(
+            ss.baseobjectcluster_set.get(is_master=True).base_object.pk,
+            self.child2.pk
+        )
+
+    def test_stacked_switch_subscriber_for_existing_obj(self):
+        ss = _create_imported_object(
+            factory=ClusterFactory, old_id=self.data['id'],
+            factory_kwargs={'type__name': self.data['type']}
+        )
+        sync_stacked_switch_to_ralph3(self.data)
+        ss.refresh_from_db()
+        self.assertEqual(ss.hostname, self.data['hostname'])
+        self.assertEqual(ss.type.name, self.data['type'])
+        self.assertEqual(ss.service_env.service, self.service)
+        self.assertEqual(ss.service_env.environment, self.env)
+        self.assertEqual(ss.configuration_path, self.conf_class)
+        self.assertEqual(ss.custom_fields_as_dict, self.data['custom_fields'])
+        self.assertCountEqual(
+            [self.child1, self.child2], list(ss.base_objects.all())
+        )
+        self.assertEqual(
+            ss.baseobjectcluster_set.get(is_master=True).base_object.pk,
+            self.child2.pk
+        )

@@ -16,7 +16,14 @@ from ralph.assets.models import (
     Environment,
     ServiceEnvironment
 )
-from ralph.data_center.models import DataCenterAsset, Rack
+from ralph.data_center.models import (
+    BaseObjectCluster,
+    Cluster,
+    ClusterStatus,
+    ClusterType,
+    DataCenterAsset,
+    Rack
+)
 from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
     ImportedObjects
@@ -362,3 +369,34 @@ def sync_virtual_server_to_ralph3(data):
             virtual_server.update_custom_field(field, value)
     if created:
         ImportedObjects.create(virtual_server, data['id'])
+
+
+@sync_subscriber(topic='sync_stacked_switch_to_ralph3')
+def sync_stacked_switch_to_ralph3(data):
+    stacked_switch, created = _get_obj(Cluster, data['id'], creating=True)
+    service_env = _get_service_env(data)
+    stacked_switch.type = ClusterType.objects.get_or_create(
+        name=data['type'], defaults=dict(show_master_summary=True)
+    )[0]
+    stacked_switch.status = ClusterStatus.in_use
+    stacked_switch.hostname = data['hostname']
+    stacked_switch.service_env = service_env
+    stacked_switch.configuration_path = _get_configuration_path_from_venture_role(  # noqa
+        venture_role_id=data['venture_role']
+    )
+    stacked_switch.save()
+    if 'custom_fields' in data:
+        for field, value in data['custom_fields'].items():
+            stacked_switch.update_custom_field(field, value)
+    if 'child_devices' in data:
+        for child_data in data['child_devices']:
+            child, _ = _get_obj(DataCenterAsset, child_data['asset_id'])
+            BaseObjectCluster.objects.update_or_create(
+                cluster=stacked_switch,
+                base_object=child,
+                defaults=dict(
+                    is_master=child_data.get('is_master', False),
+                )
+            )
+    if created:
+        ImportedObjects.create(stacked_switch, data['id'])

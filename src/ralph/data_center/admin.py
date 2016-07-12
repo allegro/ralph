@@ -72,7 +72,7 @@ class ClusterTypeAdmin(RalphAdmin):
 
 
 @register(Cluster)
-class ClusterAdmin(RalphAdmin):
+class ClusterAdmin(CustomFieldValueAdminMixin, RalphAdmin):
 
     search_fields = ['name', 'hostname']
     fieldsets = (
