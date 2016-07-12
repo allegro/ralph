@@ -21,6 +21,7 @@ from ralph.data_center.models import (
     Cluster,
     ClusterStatus,
     ClusterType,
+    DataCenter,
     DataCenterAsset,
     Rack
 )
@@ -430,7 +431,7 @@ def sync_network_environment_to_ralph3(data):
     env, created = _get_obj(NetworkEnvironment, data['id'], creating=True)
     env.name = data['name']
     if 'data_center_id' in data:
-        env.data_center_id = data['data_center_id']
+        env.data_center = _get_obj(DataCenter, data['data_center_id'])[0]
     env.domain = data['domain']
     env.remarks = data['remarks']
     if created:
