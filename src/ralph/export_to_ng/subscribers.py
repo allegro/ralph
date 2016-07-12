@@ -71,7 +71,7 @@ def _get_publisher_signal_info(func):
 
 
 def _handle_custom_fields(data, obj):
-    for symbol, value in data['custom_fields'].items():
+    for symbol, value in data.get('custom_fields', {}).items():
         if symbol not in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST:
             continue
         try:
