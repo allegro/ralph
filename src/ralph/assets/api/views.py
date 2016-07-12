@@ -157,7 +157,7 @@ class FibreChannelCardViewSet(RalphAPIViewSet):
 class ProcessorViewSet(RalphAPIViewSet):
     queryset = models.Processor.objects.all()
     serializer_class = serializers.ProcessorSerializer
-    filter_fields = ['base_object']  # XXX what else we may need here..?
+    filter_fields = ['base_object', 'cores']
     prefetch_related = ['base_object', 'base_object__tags']
 
 
