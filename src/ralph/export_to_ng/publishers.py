@@ -195,3 +195,31 @@ def sync_virtual_server_to_ralph3(sender, instance=None, created=False, **kwargs
         'parent_id': asset.id if asset else None,
         'custom_fields': _get_custom_fields(instance),
     }
+
+
+@ralph3_sync(Device)
+def sync_stacked_switch_to_ralph3(sender, instance=None, created=False, **kwargs):
+    if not instance.model or instance.model.type != DeviceType.switch_stack:
+        return
+
+    child_devices = []
+    for child in instance.logicalchild_set.all().order_by('-name'):
+        asset = child.get_asset(manager='admin_objects')
+        if asset:
+            child_devices.append(
+                # mark is_master as True when it's first child
+                {'asset_id': asset.id, 'is_master': bool(child_devices)}
+            )
+        else:
+            logger.error('Asset not found for child device {}'.format(child))
+
+    return {
+        'id': instance.id,
+        'type': instance.model.name if instance.model else None,
+        'hostname': instance.name,
+        'service': instance.service.uid if instance.service else None,
+        'environment': instance.device_environment_id,
+        'venture_role': instance.venture_role_id,
+        'custom_fields': _get_custom_fields(instance),
+        'child_devices': child_devices,
+    }
