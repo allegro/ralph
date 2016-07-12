@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 
 def generic_sync(model, **options):
-    for obj in model._default_manager.all()[:10]:
+    for obj in model._default_manager.all():
         post_save.send(
             sender=model,
             instance=obj,
