@@ -288,6 +288,7 @@ def sync_network_to_ralph3(sender, instance=None, created=False, **kwargs):
         'dns_servers': list(
             net.custom_dns_servers.all().values_list('ip_address', flat=True)  # noqa
         ),
+    }
 
 
 @ralph3_sync(Device)
