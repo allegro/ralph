@@ -55,6 +55,7 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
             'ethernet_set',
             queryset=Ethernet.objects.select_related('ipaddress')
         ),
+        'fibrechannelcard_set',
     ]
     filter_fields = [
         'service_env__service__uid',

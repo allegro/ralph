@@ -2,7 +2,9 @@
 import logging
 
 from django.conf import settings
+from django.contrib import messages
 from django.http import HttpResponseRedirect
+from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.views.extra import RalphDetailView
 from ralph.dns.dnsaas import DNSaaS
@@ -71,14 +73,26 @@ class DNSView(RalphDetailView):
         if posted_form.is_valid():
             if posted_form.data.get('delete'):
                 errors = self.dnsaas.delete_dns_record(form.data['pk'])
+                if not errors:
+                    messages.success(
+                        request, _('DNS record has been deleted.')
+                    )
             elif posted_form.cleaned_data.get('pk'):
                 errors = self.dnsaas.update_dns_record(
                     posted_form.cleaned_data
                 )
+                if not errors:
+                    messages.success(
+                        request, _('DNS record has been updated.')
+                    )
             else:
                 errors = self.dnsaas.create_dns_record(
                     posted_form.cleaned_data
                 )
+                if not errors:
+                    messages.success(
+                        request, _('DNS record has been created.')
+                    )
 
             if errors:
                 for field_name, field_errors in errors.items():

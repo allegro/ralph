@@ -31,6 +31,7 @@ def _get_values(new, imported_object, config):
         old = ralph2_objects.get(id=old_obj_id)
     except ObjectDoesNotExist:
         errors.append('ObjectDoesNotExist in Ralph2')
+        return values, errors
     for error_checker in config.get('errors_checkers', []):
         error = error_checker(old, new)
         if error:

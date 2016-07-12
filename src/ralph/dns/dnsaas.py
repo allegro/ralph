@@ -23,6 +23,31 @@ class DNSaaS:
             _headers.update(headers)
         self.session.headers.update(_headers)
 
+    def build_url(self, resource_name, id=None, version='v2', get_params=None):
+        """
+        Return Url for DNSAAS endpoint
+
+        Args:
+            resource_name: Resource name (example: domains)
+            id: Record ID,
+            version: Api Version
+            get_params: List of tuple to URL GET params: (example:
+                [('name', 'value')]
+            )
+        Returns:
+            string url
+        """
+        result_url = urljoin(
+            settings.DNSAAS_URL,
+            'api/{}/{}/'.format(version, resource_name)
+        )
+        if id:
+            result_url = "{}{}/".format(result_url, str(id))
+        if get_params:
+            result_url = "{}?{}".format(result_url, urlencode(get_params))
+
+        return result_url
+
     def get_api_result(self, url):
         """
         Returns 'results' from DNSAAS API.
@@ -45,14 +70,12 @@ class DNSaaS:
         """Gets DNS Records for `ipaddresses` by API call"""
         dns_records = []
         ipaddresses = [('ip', i) for i in ipaddresses]
-        url = urljoin(
-            settings.DNSAAS_URL,
-            'api/records/?{}'.format(
-                urlencode([
-                    ('limit', 100),
-                    ('offset', 0)
-                ] + ipaddresses)
-            )
+        url = self.build_url(
+            'records',
+            get_params=[
+                ('limit', 100),
+                ('offset', 0)
+            ] + ipaddresses
         )
         api_results = self.get_api_result(url)
         ptrs = set([i['content'] for i in api_results if i['type'] == 'PTR'])
@@ -79,9 +102,7 @@ class DNSaaS:
         Returns:
             Validation error from API or None if update correct
         """
-        url = urljoin(
-            settings.DNSAAS_URL, 'api/records/{}/'.format(record['pk'])
-        )
+        url = self.build_url('records', id=record['pk'])
         data = {
             'name': record['name'],
             'type': RecordType.raw_from_id(int(record['type'])),
@@ -112,14 +133,10 @@ class DNSaaS:
         Return:
             Domain URL from API or False if not exists
         """
-        url = urljoin(
-            settings.DNSAAS_URL, 'api/domains/?'.format(
-                urlencode([('name', domain_name)])
-            )
-        )
+        url = self.build_url('domains', get_params=[('name', domain_name)])
         result = self.get_api_result(url)
         if result:
-            return result[0]['url']
+            return result[0]['id']
 
     def create_dns_record(self, record):
         """
@@ -132,7 +149,7 @@ class DNSaaS:
             Validation error from API or None if create correct
         """
 
-        url = urljoin(settings.DNSAAS_URL, 'api/records/')
+        url = self.build_url('records')
         domain_name = record['name'].split('.', 1)
         domain = self.get_domain(domain_name[-1])
         if not domain:
@@ -171,9 +188,7 @@ class DNSaaS:
         Returns:
             Validation error from API or None if delete correct
         """
-        url = urljoin(
-            settings.DNSAAS_URL, 'api/records/{}/'.format(record_id)
-        )
+        url = self.build_url('records', id=record_id)
         request = self.session.delete(url)
         if request.status_code == 500:
             return {
