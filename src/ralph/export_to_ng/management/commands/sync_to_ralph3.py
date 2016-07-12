@@ -20,7 +20,13 @@ from ralph.business.models import (
     Venture,
     VentureRole
 )
-from ralph.discovery.models import Device, DeviceType
+from ralph.discovery.models import (
+    Device,
+    DeviceType,
+    Network,
+    NetworkKind,
+    Environment as NetworkEnvironment
+)
 # register handlers
 from ralph.export_to_ng import publishers  # noqa
 
@@ -165,6 +171,9 @@ models_handlers = {
     'StackedSwitch': (Device, stacked_switch_sync),
     'DeviceVentureOnly': (Device, device_venture_sync),
     'DeviceRolePropertiesOnly': (Device, device_role_properties_sync),
+    'Network': (Network, generic_sync),
+    'NetworkKind': (NetworkKind, generic_sync),
+    'NetworkEnvironment': (NetworkEnvironment, generic_sync),
 }
 
 

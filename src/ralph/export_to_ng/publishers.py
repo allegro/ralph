@@ -1,4 +1,6 @@
+import ipaddr
 import logging
+import re
 from functools import wraps
 
 import pyhermes
@@ -14,7 +16,11 @@ from ralph.business.models import (
     Venture,
     VentureRole
 )
-from ralph.discovery.models import Device, DeviceType
+from ralph.discovery.models import (
+    Device, DeviceType, Network, NetworkKind, Environment
+)
+from ralph.export_to_ng.resources import get_data_center_id
+from ralph_assets.models_dc_assets import Rack
 
 logger = logging.getLogger(__name__)
 
@@ -194,6 +200,94 @@ def sync_virtual_server_to_ralph3(sender, instance=None, created=False, **kwargs
         'venture_role': instance.venture_role_id,
         'parent_id': asset.id if asset else None,
         'custom_fields': _get_custom_fields(instance),
+    }
+
+
+@ralph3_sync(Environment)
+def sync_network_environment_to_ralph3(sender, instance=None, created=False, **kwargs):
+    def convert_template(instance):
+        """Handle template without pipe inside"""
+        template = instance.hosts_naming_template
+        counter_result = re.search('<([0-9]+),([0-9]+)>', template)
+        if not counter_result:
+            logger.info(
+                'Incorrect template for network environment with id {}. Return default values.'.format(instance.id)  # noqa
+            )
+            return {
+                'hostname_template_prefix': '',
+                'hostname_template_counter_length': 4,
+                'hostname_template_postfix': '.{}'.format(instance.domain)
+            }
+        start = template.find('<')
+        end = template.rfind('>')
+        counter_min, counter_max = counter_result.groups()
+
+        prefix = template[:start] + counter_min[0]
+        data = {
+            'hostname_template_prefix': prefix,
+            'hostname_template_counter_length': max(len(counter_min), len(counter_max)) - 1,  # noqa
+            'hostname_template_postfix': template[end + 1:]
+        }
+        return data
+
+    data = {
+        'id': instance.id,
+        'name': instance.name,
+        'data_center_id': get_data_center_id(instance.data_center),
+        'domain': instance.domain,
+        'remarks': instance.remarks,
+    }
+    data.update(convert_template(instance))
+    return data
+
+
+@ralph3_sync(NetworkKind)
+def sync_network_kind_to_ralph3(sender, instance=None, created=False, **kwargs):
+    return {
+        'id': instance.id,
+        'name': instance.name
+    }
+
+
+@ralph3_sync(Network)
+def sync_network_to_ralph3(sender, instance=None, created=False, **kwargs):
+    net = instance
+
+    def get_reserved_ips(net):
+        start = net.min_ip
+        end = net.max_ip
+        bottom, top = net.reserved, net.reserved_top_margin
+        # start + 1 , start is reserved for network address
+        for int_ip in xrange(start + 1, start + bottom + 1):
+            yield str(ipaddr.IPAddress(int_ip))
+        # end - 1 , end is reserved for broadcast address
+        for int_ip in xrange(end - 1, end - top - 1, -1):
+            yield str(ipaddr.IPAddress(int_ip))
+
+    def get_racks_ids(net):
+        for rack in net.racks.all():
+            try:
+                yield Rack.objects.get(
+                    deprecated_ralph_rack_id=rack.id
+                ).id
+            except Rack.DoesNotExist:
+                pass
+
+    return {
+        'id': net.id,
+        'name': net.name,
+        'address': net.address,
+        'remarks': net.remarks,
+        'vlan': net.vlan,
+        'dhcp_broadcast': net.dhcp_broadcast,
+        'gateway': net.gateway,
+        'reserved_ips': list(get_reserved_ips(net)) if net.min_ip and net.max_ip else [],  # noqa
+        'environment_id': net.environment_id,
+        'kind_id': net.kind_id,
+        'racks_ids': list(get_racks_ids(net)) if net.racks.count() else [],
+        'dns_servers': list(
+            net.custom_dns_servers.all().values_list('ip_address', flat=True)  # noqa
+        ),
     }
 
 

@@ -14,15 +14,28 @@ from ralph.cmdb.tests.utils import (
     DeviceEnvironmentFactory,
     ServiceCatalogFactory
 )
-from ralph.discovery.models import DeviceType, Device
+from ralph.discovery.models import DeviceType, Device, Network
+from ralph.discovery.tests.util import (
+    DeprecatedRackFactory,
+    DNSServerFactory,
+    NetworkFactory,
+    EnvironmentFactory,
+    DeprecatedDataCenterFactory,
+    DataCenterFactory as NetworkDataCenter
+)
 from ralph.export_to_ng.publishers import (
     sync_device_to_ralph3,
+    sync_network_to_ralph3,
+    sync_network_environment_to_ralph3,
     sync_role_property_to_ralph3,
     sync_stacked_switch_to_ralph3,
     sync_venture_role_to_ralph3,
     sync_venture_to_ralph3,
 )
-from ralph_assets.tests.utils.assets import DCAssetFactory
+from ralph_assets.tests.utils.assets import (
+    DCAssetFactory, DataCenterFactory, RackFactory
+)
+from ralph_assets.models_dc_assets import DeprecatedRalphDC
 
 
 @override_settings(
@@ -262,8 +275,116 @@ class RolePropertyPublisherTestCase(TestCase):
 
 @override_settings(
     RALPH3_HERMES_SYNC_ENABLED=True,
+    RALPH3_HERMES_SYNC_FUNCTIONS=['sync_network_to_ralph3'])
+class NetworkPublisherTestCase(TestCase):
+    def setUp(self):
+        self.net = NetworkFactory(
+            address='192.168.1.0/24',
+            remarks='lorem ipsum dolor sit amet',
+            vlan=10,
+            dhcp_broadcast=True,
+            gateway='192.168.1.1',
+            reserved=0,
+            reserved_top_margin=0,
+        )
+
+    def test_publish_network(self):
+        self.assertEqual(sync_network_to_ralph3(Network, self.net), {
+            'id': self.net.id,
+            'name': self.net.name,
+            'address': self.net.address,
+            'remarks': self.net.remarks,
+            'vlan': self.net.vlan,
+            'dhcp_broadcast': self.net.dhcp_broadcast,
+            'gateway': self.net.gateway,
+            'reserved_ips': [],
+            'environment_id': self.net.environment_id,
+            'kind_id': self.net.kind_id,
+            'racks_ids': [],
+            'dns_servers': [],
+        })
+
+    def test_reserved_ips(self):
+        self.net.reserved = 1
+        self.net.reserved_top_margin = 1
+        self.net.save()
+        self.assertEqual(
+            sync_network_to_ralph3(Network, self.net)['reserved_ips'],
+            ['192.168.1.1', '192.168.1.254']
+        )
+
+    def test_racks_ids(self):
+        racks = [DeprecatedRackFactory() for _ in range(0, 5)]
+        for rack in racks:
+            RackFactory(deprecated_ralph_rack=rack)
+        self.net.racks.add(*racks)
+        self.net.save()
+        self.assertEqual(
+            sync_network_to_ralph3(Network, self.net)['racks_ids'],
+            [rack.id for rack in racks]
+        )
+
+    def test_dns_servers(self):
+        servers = [DNSServerFactory() for _ in range(0, 5)]
+        self.net.custom_dns_servers.add(*servers)
+        self.net.save()
+        self.assertEqual(
+            sync_network_to_ralph3(Network, self.net)['dns_servers'],
+            [str(dns.ip_address) for dns in servers]
+        )
+
+
+@override_settings(
+    RALPH3_HERMES_SYNC_ENABLED=True,
+    RALPH3_HERMES_SYNC_FUNCTIONS=['sync_network_environment_to_ralph3'])
+class NetworkEnvironmentPublisherTestCase(TestCase):
+    def setUp(self):
+        self.asset_dc = DataCenterFactory(
+            name='DC#1',
+        )
+        self.env = EnvironmentFactory(
+            domain='dc.net', data_center=NetworkDataCenter(name='DC#1'),
+            hosts_naming_template='server<1000,5000>.dc.net'
+        )
+
+    def test_publish(self):
+        self.assertEqual(
+            sync_network_environment_to_ralph3(self.env.__class__, self.env),
+            {
+                'id': self.env.id,
+                'name': self.env.name,
+                'data_center_id': self.asset_dc.id,
+                'domain': self.env.domain,
+                'remarks': self.env.remarks,
+                'hostname_template_counter_length': 3,
+                'hostname_template_postfix': '.dc.net',
+                'hostname_template_prefix': 'server1',
+            }
+        )
+
+    def test_hostname_template(self):
+        self.env.hosts_naming_template = '<10,99>.dc.net'
+        self.env.save()
+        self.assertEqual(
+            sync_network_environment_to_ralph3(self.env.__class__, self.env),
+            {
+                'id': self.env.id,
+                'name': self.env.name,
+                'data_center_id': self.asset_dc.id,
+                'domain': self.env.domain,
+                'remarks': self.env.remarks,
+                'hostname_template_counter_length': 1,
+                'hostname_template_postfix': '.dc.net',
+                'hostname_template_prefix': '1',
+            }
+        )
+
+
+@override_settings(
+    RALPH3_HERMES_SYNC_ENABLED=True,
     RALPH3_HERMES_SYNC_FUNCTIONS=['sync_stacked_switch_to_ralph3'],
-    RALPH2_HERMES_ROLE_PROPERTY_WHITELIST=['test_symbol'])
+    RALPH2_HERMES_ROLE_PROPERTY_WHITELIST=['test_symbol']
+)
 class StackedSwitchPublisherTestCase(TestCase):
     def setUp(self):
         self.child1 = DCAssetFactory()
