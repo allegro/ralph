@@ -432,7 +432,7 @@ class Ralph2NetworkTestCase(TestCase):
             'dns_servers': [],
         }
 
-    def _create_imported_network(self):
+    def _create_imported_network(self, old_id=None):
         return _create_imported_object(
             factory=NetworkFactory,
             old_id=old_id if old_id else self.data['id']
@@ -513,11 +513,13 @@ class Ralph2NetworkKindTestCase(TestCase):
 
 class Ralph2NetworkEnvironmentTestCase(TestCase):
     def setUp(self):
-        self.dc = DataCenterFactory()
+        self.dc = _create_imported_object(
+            factory=DataCenterFactory, old_id=10
+        )
         self.data = {
             'id': 1,
             'name': 'net-env',
-            'data_center_id': self.dc.id,
+            'data_center_id': 10,
             'domain': 'foo.net',
             'remarks': '',
             'hostname_template_prefix': 's1',
