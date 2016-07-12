@@ -971,6 +971,7 @@ class Device(
                 pass
             else:
                 pv.delete()
+        return p
 
     def get_asset(self, manager=None):
         asset = None
