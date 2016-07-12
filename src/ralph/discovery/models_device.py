@@ -971,6 +971,7 @@ class Device(
                 pass
             else:
                 pv.delete()
+        return p
 
     def get_asset(self, manager=None):
         asset = None
@@ -992,6 +993,8 @@ class Device(
         return [(obj, fields)] if obj else []
 
     def get_property_set(self):
+        # don't rely on this method - use venture_role.get_properties(device)
+        # instead!
         props = {}
         if self.venture:
             props.update(dict(

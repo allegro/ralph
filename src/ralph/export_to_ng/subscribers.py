@@ -8,12 +8,21 @@ from django.conf import settings
 from lck.django.common import nested_commit_on_success
 from pyhermes import subscriber
 
-from ralph.discovery.models import Device, DeviceType, DeviceModel
+from ralph.discovery.models import (
+    Device,
+    DeviceType,
+    DeviceModel,
+    ServiceCatalog
+)
 from ralph_assets.models import Asset, AssetModel
 from ralph_assets.models_assets import AssetStatus, AssetType, Warehouse, DataCenter
 from ralph_assets.models_dc_assets import DeviceInfo, Rack
-from ralph.business.models import Department, Venture, VentureRole
-from ralph.discovery.models import ServiceCatalog
+from ralph.business.models import (
+    Department,
+    RoleProperty,
+    Venture,
+    VentureRole
+)
 from ralph.export_to_ng.helpers import WithSignalDisabled
 from ralph.export_to_ng.publishers import (
     publish_sync_ack_to_ralph3,
@@ -61,6 +70,18 @@ def _get_publisher_signal_info(func):
     }
 
 
+def _handle_custom_fields(data, obj):
+    for symbol, value in data.get('custom_fields', {}).items():
+        if symbol not in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST:
+            continue
+        try:
+            obj.set_property(symbol, value, None)
+        except RoleProperty.DoesNotExist:
+            logger.error(
+                'RoleProperty with symbol {} doesn\'t exist'.format(symbol)
+            )
+
+
 class sync_subscriber(subscriber):
     """
     Log additional exception when sync has failed.
@@ -80,7 +101,7 @@ class sync_subscriber(subscriber):
             ]):
                 try:
                     return func(*args, **kwargs)
-                except:
+                except Exception:
                     logger.exception('Exception during syncing')
         return exception_wrapper
 
@@ -136,7 +157,6 @@ def sync_dc_asset_to_ralph2_handler(data):
 
     # default value
     asset.region_id = 1  # from ralph/accounts/fixtures/initial_data.yaml
-
     # warehouse based on dc
     try:
         asset.warehouse = Warehouse.objects.get(
@@ -175,6 +195,7 @@ def sync_dc_asset_to_ralph2_handler(data):
     if 'venture' in data and 'venture_role' in data:
         device.venture_id = data['venture']
         device.venture_role_id = data['venture_role']
+    _handle_custom_fields(data, device)
     device.save(priority=SAVE_PRIORITY)
     if creating:
         publish_sync_ack_to_ralph3(asset, data['id'])
@@ -265,6 +286,7 @@ def sync_virtual_server_to_ralph2(data):
             vs.id
         ))
     vs.save()
+    _handle_custom_fields(data, vs)
     if created:
         publish_sync_ack_to_ralph3(vs, data['id'])
 

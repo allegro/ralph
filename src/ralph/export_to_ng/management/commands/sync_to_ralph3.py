@@ -20,7 +20,13 @@ from ralph.business.models import (
     Venture,
     VentureRole
 )
-from ralph.discovery.models import Device, DeviceType
+from ralph.discovery.models import (
+    Device,
+    DeviceType,
+    Network,
+    NetworkKind,
+    Environment as NetworkEnvironment
+)
 # register handlers
 from ralph.export_to_ng import publishers  # noqa
 
@@ -43,6 +49,17 @@ def virtual_server_sync(model, **options):
     for obj in model._default_manager.filter(
         model__type=DeviceType.virtual_server,
         id__in=settings.RALPH2_HERMES_VIRTUAL_SERVERS_IDS_WHITELIST
+    ):
+        post_save.send(
+            sender=model, instance=obj, raw=None, using='default'
+        )
+        time.sleep(options['sleep'])
+
+
+def stacked_switch_sync(model, **options):
+    for obj in model._default_manager.filter(
+        model__type=DeviceType.switch_stack,
+        deleted=False,
     ):
         post_save.send(
             sender=model, instance=obj, raw=None, using='default'
@@ -151,8 +168,12 @@ models_handlers = {
     'RolePropertyValue': (RolePropertyValue, generic_sync),
     'Device': (Device, generic_sync),
     'VirtualServer': (Device, virtual_server_sync),
+    'StackedSwitch': (Device, stacked_switch_sync),
     'DeviceVentureOnly': (Device, device_venture_sync),
     'DeviceRolePropertiesOnly': (Device, device_role_properties_sync),
+    'Network': (Network, generic_sync),
+    'NetworkKind': (NetworkKind, generic_sync),
+    'NetworkEnvironment': (NetworkEnvironment, generic_sync),
 }
 
 
