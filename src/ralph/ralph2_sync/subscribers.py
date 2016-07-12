@@ -391,16 +391,19 @@ def sync_network_to_ralph3(data):
                 address=ip,
                 defaults=dict(status=IPAddressStatus.reserved, network=net)
             )
-    if data['gateway']:
-        if net.gateway is not None:
-            IPAddress.objects.update_or_create(
+    if 'gateway' in data:
+        if data['gateway']:
+            IPAddress.objects.filter(
+                network=net,
+                is_gateway=True
+            ).delete()
+            IPAddress.objects.create(
                 address=data['gateway'],
                 network=net,
                 is_gateway=True
             )
         else:
             IPAddress.objects.filter(
-                address=data['gateway'],
                 network=net,
                 is_gateway=True
             ).delete()

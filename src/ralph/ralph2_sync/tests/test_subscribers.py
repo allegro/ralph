@@ -26,7 +26,12 @@ from ralph.data_importer.models import (
     ImportedObjects
 )
 from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
-from ralph.networks.models import Network, NetworkEnvironment, NetworkKind
+from ralph.networks.models import (
+    IPAddress,
+    Network,
+    NetworkEnvironment,
+    NetworkKind
+)
 from ralph.networks.tests.factories import (
     IPAddressFactory,
     NetworkEnvironmentFactory,
@@ -428,7 +433,10 @@ class Ralph2NetworkTestCase(TestCase):
         }
 
     def _create_imported_network(self):
-        pass
+        return _create_imported_object(
+            factory=NetworkFactory,
+            old_id=old_id if old_id else self.data['id']
+        )
 
     def sync(self):
         obj = self._create_imported_network()
@@ -440,6 +448,32 @@ class Ralph2NetworkTestCase(TestCase):
         sync_network_to_ralph3(self.data)
         net = ImportedObjects.get_object_from_old_pk(Network, self.data['id'])
         self.assertEqual(net.name, self.data['name'])
+
+    def test_syc_should_create_gateway(self):
+        sync_network_to_ralph3(self.data)
+        self.assertTrue(
+            IPAddress.objects.get(address=self.data['gateway'])
+        )
+
+    def test_syc_should_update_gateway(self):
+        net = sync_network_to_ralph3(self.data)
+        IPAddressFactory(network=net, address='192.168.1.10', is_gateway=True)
+        sync_network_to_ralph3(self.data)
+        self.assertTrue(
+            IPAddress.objects.filter(address=self.data['gateway']).exists()
+        )
+
+    def test_syc_should_delete_current_gateway(self):
+        net = sync_network_to_ralph3(self.data)
+        IPAddressFactory(network=net, address='192.168.1.10', is_gateway=True)
+        self.data['gateway'] = None
+        sync_network_to_ralph3(self.data)
+        self.assertFalse(
+            IPAddress.objects.filter(is_gateway=True).exists()
+        )
+        self.assertFalse(
+            IPAddress.objects.filter(address='192.168.1.10').exists()
+        )
 
 
 class Ralph2NetworkKindTestCase(TestCase):
