@@ -344,7 +344,7 @@ def sync_stacked_switch_to_ralph3(sender, instance=None, created=False, **kwargs
         else:
             logger.error('Asset not found for child device {}'.format(child))
 
-    return {
+    data = {
         'id': instance.id,
         'type': instance.model.name if instance.model else None,
         'hostname': instance.name,
@@ -354,3 +354,5 @@ def sync_stacked_switch_to_ralph3(sender, instance=None, created=False, **kwargs
         'custom_fields': _get_custom_fields(instance),
         'child_devices': child_devices,
     }
+    data.update(_get_ips_list(instance))
+    return data
