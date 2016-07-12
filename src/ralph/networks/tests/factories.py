@@ -9,8 +9,17 @@ from ralph.data_center.tests.factories import DataCenterFactory
 from ralph.networks.models.networks import (
     IPAddress,
     Network,
-    NetworkEnvironment
+    NetworkEnvironment,
+    NetworkKind
 )
+
+
+class NetworkKindFactory(DjangoModelFactory):
+    name = factory.Iterator(['office', 'DC', 'HA', 'L3'])
+
+    class Meta:
+        model = NetworkKind
+        django_get_or_create = ['name']
 
 
 class NetworkEnvironmentFactory(DjangoModelFactory):
