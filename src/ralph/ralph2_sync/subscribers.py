@@ -115,8 +115,6 @@ class sync_subscriber(pyhermes.subscriber):
                     stack.enter_context(WithSignalDisabled(
                         **_get_publisher_signal_info(publisher)
                     ))
-                # TODO: delete
-                return func(*args, **kwargs)
                 try:
                     return func(*args, **kwargs)
                 except Exception as e:
@@ -170,21 +168,22 @@ def sync_device_to_ralph3(data):
     dca = ImportedObjects.get_object_from_old_pk(DataCenterAsset, data['id'])
     if 'hostname' in data:
         dca.hostname = data['hostname']
-    if 'management_ip' in data:
-        management_ip = data['management_ip']
-        if management_ip:
-            try:
-                ip = IPAddress.objects.get(address=management_ip)
-            except IPAddress.DoesNotExist:
-                dca.management_ip = management_ip
-            else:
-                ip.ethernet.base_object = dca
-                ip.ethernet.save()
-                ip.is_management = True
-                ip.save()
-            dca.management_hostname = data.get('management_hostname')
-        else:
-            del dca.management_ip
+    # https://github.com/allegro/ralph/pull/2550
+    # if 'management_ip' in data:
+    #     management_ip = data['management_ip']
+    #     if management_ip:
+    #         try:
+    #             ip = IPAddress.objects.get(address=management_ip)
+    #         except IPAddress.DoesNotExist:
+    #             dca.management_ip = management_ip
+    #         else:
+    #             ip.ethernet.base_object = dca
+    #             ip.ethernet.save()
+    #             ip.is_management = True
+    #             ip.save()
+    #         dca.management_hostname = data.get('management_hostname')
+    #     else:
+    #         del dca.management_ip
     if 'service' in data and 'environment' in data:
         dca.service_env = _get_service_env(data)
     if 'venture_role' in data:
@@ -388,23 +387,17 @@ def sync_network_to_ralph3(data):
             )
     if data['gateway']:
         if net.gateway is not None:
-            IPAddress.objects.create(
+            IPAddress.objects.update_or_create(
                 address=data['gateway'],
                 network=net,
                 is_gateway=True
             )
         else:
-            # delete exist ip and update or create new one
             IPAddress.objects.filter(
                 address=data['gateway'],
                 network=net,
                 is_gateway=True
             ).delete()
-            IPAddress.objects.update_or_create(
-                address=data['gateway'],
-                network=net,
-                defaults=dict(is_gateway=True)
-            )
     net.network_environment = _get_obj(
         NetworkEnvironment, data['environment_id']
     )[0]
