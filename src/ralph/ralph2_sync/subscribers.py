@@ -14,6 +14,7 @@ from ralph.assets.models import (
     ConfigurationClass,
     ConfigurationModule,
     Environment,
+    Ethernet,
     ServiceEnvironment
 )
 from ralph.data_center.models import (
@@ -98,6 +99,56 @@ def _get_configuration_path_from_venture_role(venture_role_id):
     return None
 
 
+def _handle_management_ip(dca, management_ip, management_hostname):
+    if management_ip:
+        print(management_ip, management_hostname)
+        try:
+            ip = IPAddress.objects.get(address=management_ip)
+        except IPAddress.DoesNotExist:
+            dca.management_ip = management_ip
+        else:
+            ip.ethernet.base_object = dca
+            ip.ethernet.save()
+            ip.is_management = True
+            ip.save()
+        dca.management_hostname = management_hostname
+    else:
+        del dca.management_ip
+
+
+def _handle_ips(obj, ips):
+    if ips is None:
+        return
+    management_ip = list(filter(lambda ip: ip['is_management'], ips))
+    if len(management_ip) > 1:
+        logger.info('More than one management IP ({}) for {}.'.format(
+            ', '.join([ip['address'] for ip in management_ip]), obj
+        ))
+    elif len(management_ip) == 1:
+        management_ip = management_ip[0]
+        _handle_management_ip(
+            obj, management_ip['address'], management_ip['hostname']
+        )
+    for ip_dict in filter(lambda ip: not ip['is_management'], ips):
+        ip, created = IPAddress.objects.get_or_create(
+            address=ip_dict['address'],
+            defaults=dict(
+                hostname=ip_dict['hostname'],
+                dhcp_expose=ip_dict['dhcp_expose'],
+                is_management=False
+            )
+        )
+        if created:
+            ip.ethernet = Ethernet.objects.create(
+                base_object=obj, mac=ip_dict['mac']
+            )
+        else:
+            ip.ethernet.base_object = obj
+            ip.ethernet.mac = ip_dict['mac']
+            ip.ethernet.save()
+        ip.save()
+
+
 class sync_subscriber(pyhermes.subscriber):
     """
     Log additional exception when sync has failed.
@@ -165,25 +216,15 @@ def sync_device_to_ralph3(data):
     * service/env
     * management ip/hostname
     * custom_fields
+    * ips
     """
     dca = ImportedObjects.get_object_from_old_pk(DataCenterAsset, data['id'])
     if 'hostname' in data:
         dca.hostname = data['hostname']
     if 'management_ip' in data:
-        management_ip = data['management_ip']
-        if management_ip:
-            try:
-                ip = IPAddress.objects.get(address=management_ip)
-            except IPAddress.DoesNotExist:
-                dca.management_ip = management_ip
-            else:
-                ip.ethernet.base_object = dca
-                ip.ethernet.save()
-                ip.is_management = True
-                ip.save()
-            dca.management_hostname = data.get('management_hostname')
-        else:
-            del dca.management_ip
+        _handle_management_ip(
+            dca, data.get('management_ip'), data.get('management_hostname')
+        )
     if 'service' in data and 'environment' in data:
         dca.service_env = _get_service_env(data)
     if 'venture_role' in data:
@@ -194,6 +235,8 @@ def sync_device_to_ralph3(data):
     if 'custom_fields' in data:
         for field, value in data['custom_fields'].items():
             dca.update_custom_field(field, value)
+    if 'ips' in data:
+        _handle_ips(dca, data['ips'])
 
 
 @sync_subscriber(
@@ -367,6 +410,8 @@ def sync_virtual_server_to_ralph3(data):
     if 'custom_fields' in data:
         for field, value in data['custom_fields'].items():
             virtual_server.update_custom_field(field, value)
+    if 'ips' in data:
+        _handle_ips(data['ips'])
     if created:
         ImportedObjects.create(virtual_server, data['id'])
 
