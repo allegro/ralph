@@ -168,22 +168,21 @@ def sync_device_to_ralph3(data):
     dca = ImportedObjects.get_object_from_old_pk(DataCenterAsset, data['id'])
     if 'hostname' in data:
         dca.hostname = data['hostname']
-    # https://github.com/allegro/ralph/pull/2550
-    # if 'management_ip' in data:
-    #     management_ip = data['management_ip']
-    #     if management_ip:
-    #         try:
-    #             ip = IPAddress.objects.get(address=management_ip)
-    #         except IPAddress.DoesNotExist:
-    #             dca.management_ip = management_ip
-    #         else:
-    #             ip.ethernet.base_object = dca
-    #             ip.ethernet.save()
-    #             ip.is_management = True
-    #             ip.save()
-    #         dca.management_hostname = data.get('management_hostname')
-    #     else:
-    #         del dca.management_ip
+    if 'management_ip' in data:
+        management_ip = data['management_ip']
+        if management_ip:
+            try:
+                ip = IPAddress.objects.get(address=management_ip)
+            except IPAddress.DoesNotExist:
+                dca.management_ip = management_ip
+            else:
+                ip.ethernet.base_object = dca
+                ip.ethernet.save()
+                ip.is_management = True
+                ip.save()
+            dca.management_hostname = data.get('management_hostname')
+        else:
+            del dca.management_ip
     if 'service' in data and 'environment' in data:
         dca.service_env = _get_service_env(data)
     if 'venture_role' in data:

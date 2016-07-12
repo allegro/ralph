@@ -106,7 +106,7 @@ class Ralph2DataCenterAssetTestCase(TestCase):
         ImportedObjects.create(obj=dca, old_pk=old_id)
         data = {
             'id': old_id,
-            'management_ip': '10.20.30.40',
+            'management_ip': '10.20.30.40'
         }
         sync_device_to_ralph3(data)
         self.assertEqual(dca.management_ip, '10.20.30.40')
@@ -118,7 +118,7 @@ class Ralph2DataCenterAssetTestCase(TestCase):
         ImportedObjects.create(obj=dca, old_pk=old_id)
         data = {
             'id': old_id,
-            'management_ip': '10.20.30.40',
+            'management_ip': '10.20.30.40'
         }
         sync_device_to_ralph3(data)
         self.assertEqual(dca.management_ip, '10.20.30.40')
