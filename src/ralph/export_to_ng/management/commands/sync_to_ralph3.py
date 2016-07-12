@@ -50,6 +50,17 @@ def virtual_server_sync(model, **options):
         time.sleep(options['sleep'])
 
 
+def stacked_switch_sync(model, **options):
+    for obj in model._default_manager.filter(
+        model__type=DeviceType.switch_stack,
+        deleted=False,
+    ):
+        post_save.send(
+            sender=model, instance=obj, raw=None, using='default'
+        )
+        time.sleep(options['sleep'])
+
+
 def role_property_sync(model, **options):
     for obj in model._default_manager.filter(
         symbol__in=settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST
@@ -151,6 +162,7 @@ models_handlers = {
     'RolePropertyValue': (RolePropertyValue, generic_sync),
     'Device': (Device, generic_sync),
     'VirtualServer': (Device, virtual_server_sync),
+    'StackedSwitch': (Device, stacked_switch_sync),
     'DeviceVentureOnly': (Device, device_venture_sync),
     'DeviceRolePropertiesOnly': (Device, device_role_properties_sync),
 }
