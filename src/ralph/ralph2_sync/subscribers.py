@@ -22,6 +22,7 @@ from ralph.data_center.models import (
     Cluster,
     ClusterStatus,
     ClusterType,
+    DataCenter,
     DataCenterAsset,
     Rack
 )
@@ -30,7 +31,13 @@ from ralph.data_importer.models import (
     ImportedObjects
 )
 from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
-from ralph.networks.models import IPAddress
+from ralph.networks.models import (
+    IPAddress,
+    Network,
+    NetworkEnvironment,
+    NetworkKind
+)
+from ralph.networks.models.choices import IPAddressStatus
 from ralph.ralph2_sync.helpers import WithSignalDisabled
 from ralph.ralph2_sync.publishers import (
     sync_configuration_class_to_ralph2,
@@ -414,6 +421,71 @@ def sync_virtual_server_to_ralph3(data):
         _handle_ips(data['ips'])
     if created:
         ImportedObjects.create(virtual_server, data['id'])
+
+
+@sync_subscriber(topic='sync_network_to_ralph3')
+def sync_network_to_ralph3(data):
+    net, created = _get_obj(Network, data['id'], creating=True)
+    net.name = data['name']
+    net.address = data['address']
+    net.remarks = data['remarks']
+    net.vlan = data['vlan']
+    net.dhcp_broadcast = data['dhcp_broadcast']
+    if data['reserved_ips']:
+        for ip in data['reserved_ips']:
+            IPAddress.objects.update_or_create(
+                address=ip,
+                defaults=dict(status=IPAddressStatus.reserved, network=net)
+            )
+    if 'gateway' in data:
+        if data['gateway']:
+            IPAddress.objects.filter(
+                network=net,
+                is_gateway=True
+            ).delete()
+            IPAddress.objects.create(
+                address=data['gateway'],
+                network=net,
+                is_gateway=True
+            )
+        else:
+            IPAddress.objects.filter(
+                network=net,
+                is_gateway=True
+            ).delete()
+    net.network_environment = _get_obj(
+        NetworkEnvironment, data['environment_id']
+    )[0]
+    net.kind = _get_obj(NetworkKind, data['kind_id'])[0]
+    net.save()
+    if created:
+        ImportedObjects.create(net, data['id'])
+
+
+@sync_subscriber(topic='sync_network_kind_to_ralph3')
+def sync_network_kind_to_ralph3(data):
+    kind, created = _get_obj(NetworkKind, data['id'], creating=True)
+    kind.name = data['name']
+    kind.save()
+    if created:
+        ImportedObjects.create(kind, data['id'])
+
+
+@sync_subscriber(topic='sync_network_environment_to_ralph3')
+def sync_network_environment_to_ralph3(data):
+    env, created = _get_obj(NetworkEnvironment, data['id'], creating=True)
+    env.name = data['name']
+    if 'data_center_id' in data:
+        env.data_center = _get_obj(DataCenter, data['data_center_id'])[0]
+    env.domain = data['domain']
+    env.remarks = data['remarks']
+    if created:
+        env.hostname_template_prefix = data['hostname_template_prefix']
+        env.hostname_template_counter_length = data['hostname_template_counter_length']  # noqa
+        env.hostname_template_postfix = data['hostname_template_postfix']
+    env.save()
+    if created:
+        ImportedObjects.create(env, data['id'])
 
 
 @sync_subscriber(topic='sync_stacked_switch_to_ralph3')
