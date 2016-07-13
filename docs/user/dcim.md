@@ -22,3 +22,5 @@ Then you could add configuration classes (`http://<YOUR_RALPH_URL>/assets/config
 > For Ansible, this could be mapped to [Playbook](http://docs.ansible.com/ansible/playbooks.html).
 
 Finally, you could attach configuration to your host (`Data Center Asset`, `Virtual Server` etc.) using `configuration path` field. This could be used for administrators information only, but you could use this to automate you configuration management tool as well! Simply fetch `configuration_path` for host from Ralph's API and apply it in your tool.
+
+You could use custom fields to set some variables passed to your configuration management tool. To show custom field under `configuration_variables` field in REST API, select `use as configuration variable` in its settings. See [Custom fields](/user/custom_fields) section for more infromation.

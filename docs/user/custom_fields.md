@@ -22,6 +22,7 @@ Possible options:
     * `choice list`
 * `choices` - fill it if you've chosen `choices` type. This is list of possible choices for your custom field. Separate choices by `|`, ex. `abc|def|ghi`.
 * `default value` - if you fill it, this value will be used as a default for your custom field,
+* `use as configuration variable` - when set, this variable will be exposed in API in "configuration_variables" field. You could use this later in configuration management tool like Puppet or Ansible.
 
 Example:
 
@@ -59,7 +60,10 @@ Example:
     ...
     "custom_fields": {
         "monitoring": "zabbix",
-        "docker_version": "1.11"
+        "docker_version": "1.11"  # this field doesn't have `use_as_configuration_variable` checked, so it won't be visible in `configuration_variables` field
+    },
+    "configuration_variables": {
+        "monitoring": "zabbix"
     },
     ...
 }

@@ -18,6 +18,7 @@ from ralph.assets.invoice_report import AssetInvoiceReportMixin
 from ralph.assets.models.components import Ethernet
 from ralph.assets.views import ComponentsAdminView
 from ralph.attachments.admin import AttachmentsMixin
+from ralph.cross_validator.views import ShowDiffMessageMixin
 from ralph.data_center.forms import DataCenterAssetForm
 from ralph.data_center.models.components import DiskShare, DiskShareMount
 from ralph.data_center.models.physical import (
@@ -71,7 +72,7 @@ class ClusterTypeAdmin(RalphAdmin):
 
 
 @register(Cluster)
-class ClusterAdmin(RalphAdmin):
+class ClusterAdmin(CustomFieldValueAdminMixin, RalphAdmin):
 
     search_fields = ['name', 'hostname']
     fieldsets = (
@@ -203,6 +204,7 @@ class DataCenterAssetAdmin(
     AttachmentsMixin,
     AssetInvoiceReportMixin,
     CustomFieldValueAdminMixin,
+    ShowDiffMessageMixin,
     RalphAdmin,
 ):
     """Data Center Asset admin class."""

@@ -1,12 +1,13 @@
+from django.conf import settings
 from django.db.models import Prefetch
 
 from ralph.admin.helpers import getattr_dunder
 from ralph.assets.models import AssetModel, Ethernet
 from ralph.cross_validator.helpers import get_obj_id_ralph_20
 from ralph.cross_validator.ralph2.device import AssetModel as Ralph2AssetModel
-from ralph.cross_validator.ralph2.device import Asset
+from ralph.cross_validator.ralph2.device import Asset, Device
 from ralph.data_center.models import DataCenterAsset, DataCenterAssetStatus
-
+from ralph.virtual.models import VirtualServer
 
 """
 def return_diff(old, new):
@@ -30,8 +31,8 @@ mappers = {
 
 
 def service_env_diff(old, new):
-    old_uid = getattr_dunder(old, 'linked_device__service__uid')
-    old_env = getattr_dunder(old, 'linked_device__device_environment__name')
+    old_uid = getattr_dunder(old, 'service__uid')
+    old_env = getattr_dunder(old, 'device_environment__name')
     new_uid = getattr_dunder(new, 'service_env__service__uid')
     new_env = getattr_dunder(new, 'service_env__environment__name')
     if old_uid != new_uid or old_env != new_env:
@@ -58,15 +59,26 @@ def foreign_key_diff(old_path, new_path):
 
 
 def custom_fields_diff(old, new):
-    dev = old.linked_device
-    if dev:
-        # TODO: respect whitelist of custom fields to sync
-        old_custom_fields = dev.get_property_set()
+    if isinstance(old, Asset):
+        dev = old.linked_device
+    else:
+        dev = old
+    if dev and dev.venture_role:
+        old_custom_fields = dev.venture_role.get_properties(dev)
     else:
         old_custom_fields = {}
-    # TODO: ignore new (not-synced) custom fields (probably look at
-    # ImportedObject for particular CF will be enough here)
     new_custom_fields = new.custom_fields_as_dict
+
+    # filter to compare only imported Custom Fields
+    def filter_cf(cf):
+        return {
+            k: v for (k, v) in cf.items()
+            if k in settings.RALPH2_HERMES_ROLE_PROPERTY_WHITELIST
+        }
+
+    old_custom_fields = filter_cf(old_custom_fields)
+    new_custom_fields = filter_cf(new_custom_fields)
+
     if old_custom_fields != new_custom_fields:
         return {
             'old': old_custom_fields,
@@ -115,9 +127,11 @@ mappers = {
             'service_env': service_env_diff,
             'position': ('device_info__position', 'position'),
             'rack': foreign_key_diff('device_info__rack', 'rack'),
-            # waiting for subscriber implementation
-            # 'venture': foreign_key_diff('venture_role', 'configuration_path'),
-            # 'custom_fields': custom_fields_diff,
+            'venture': foreign_key_diff(
+                'device_info__ralph_device__venture_role',
+                'configuration_path'
+            ),
+            'custom_fields': custom_fields_diff,
         },
         'blacklist': ['id', 'parent_id'],
         'errors_checkers': [
@@ -131,5 +145,27 @@ mappers = {
             'name': ('name', 'name')
         },
         'blacklist': ['id']
-    }
+    },
+    'VirtualServer': {
+        'ralph2_model': Device,
+        'ralph3_model': VirtualServer,
+        'ralph3_queryset': VirtualServer.objects.select_related(
+            'service_env__service', 'service_env__environment',
+            'type'
+        ),
+        'ralph2_queryset': Device.objects.select_related(
+            'parent',
+        ),
+        'fields': {
+            'sn': ('sn', 'sn'),
+            'hostname': ('name', 'hostname'),
+            'service_env': service_env_diff,
+            'parent': foreign_key_diff(
+                'parent__asset', 'parent__asset__datacenterasset'
+            ),
+            'venture': foreign_key_diff('venture_role', 'configuration_path'),
+            'custom_fields': custom_fields_diff,
+        },
+        'blacklist': ['id'],
+    },
 }

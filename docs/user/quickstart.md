@@ -234,4 +234,4 @@ As always, you can add as many attachments(for example pdf scans of support cont
 So, this is it! Congratulations, you've finished our Quickstart!
 
 
-You might want to learn Workflow(Transitions) tutorial and customization, PDF templates, permissions customization and many more - just follow [advanced user guide](/user/guide.md)
+You might want to learn Workflow(Transitions) tutorial and customization, PDF templates, permissions customization and many more - just follow [advanced user guide](/user/guide)

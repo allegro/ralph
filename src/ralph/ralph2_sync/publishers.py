@@ -17,8 +17,27 @@ from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
     ImportedObjects
 )
+from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
+from ralph.virtual.models import VirtualServer
 
 logger = logging.getLogger(__name__)
+
+
+def _get_venture_and_role_from_configuration_path(configuration_path):
+    venture_id, venture_role_id = None, None
+    if configuration_path is None:
+        return None, None
+    venture_id = _get_obj_id_ralph_2(configuration_path.module)
+    venture_role_id = _get_obj_id_ralph_2(configuration_path)
+    if venture_id is None:
+        logger.error('ConfigurationModule {} not found when syncing'.format(
+            configuration_path.module.id
+        ))
+    if venture_role_id is None:
+        logger.error('ConfigurationClass {} not found when syncing'.format(
+            configuration_path.id
+        ))
+    return venture_id, venture_role_id
 
 
 def ralph2_sync(model):
@@ -184,4 +203,44 @@ def sync_configuration_class_to_ralph2(sender, instance=None, created=False, **k
         'ralph2_id': _get_obj_id_ralph_2(instance),
         'ralph2_parent_id': _get_obj_id_ralph_2(instance.module) if instance.module else None,  # noqa
         'symbol': instance.class_name,
+    }
+
+
+@ralph2_sync(VirtualServer)
+def sync_virtual_server_to_ralph2(sender, instance=None, created=False, **kwargs):  # noqa
+    """
+    VirtualServer -> Device (virtual server)
+    """
+    # TODO: custom fields
+    venture_id, venture_role_id = _get_venture_and_role_from_configuration_path(  # noqa
+        instance.configuration_path
+    )
+    return {
+        'id': instance.id,
+        'ralph2_id': _get_obj_id_ralph_2(instance),
+        'ralph2_parent_id': _get_obj_id_ralph_2(instance.parent) if instance.parent else None,  # noqa
+        'hostname': instance.hostname,
+        'sn': instance.sn,
+        'type': instance.type.name,
+        'service_uid': instance.service_env.service.uid if instance.service_env else None,  # noqa
+        'environment_id': _get_obj_id_ralph_2(
+            instance.service_env.environment
+        ) if instance.service_env else None,
+        'venture_id': venture_id,
+        'venture_role_id': venture_role_id
+    }
+
+
+@ralph2_sync(CustomField)
+def sync_custom_field_to_ralph2(sender, instance=None, created=False, **kwargs):  # noqa
+    """
+    CustomField -> RoleProperty
+    """
+    choices = None
+    if instance.type == CustomFieldTypes.CHOICE:
+        choices = instance._get_choices()
+    return {
+        'symbol': instance.attribute_name,
+        'default': instance.default_value,
+        'choices': choices
     }

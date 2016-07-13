@@ -10,6 +10,7 @@ from ralph.admin.filters import (
     TreeRelatedAutocompleteFilterWithDescendants
 )
 from ralph.assets.models.components import Ethernet
+from ralph.cross_validator.views import ShowDiffMessageMixin
 from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
@@ -43,7 +44,10 @@ class VirtualServerNetworkView(NetworkView):
 
 @register(VirtualServer)
 class VirtualServerAdmin(
-    CustomFieldValueAdminMixin, TransitionAdminMixin, RalphAdmin
+    CustomFieldValueAdminMixin,
+    TransitionAdminMixin,
+    ShowDiffMessageMixin,
+    RalphAdmin
 ):
     form = VirtualServerForm
     search_fields = ['hostname', 'sn']

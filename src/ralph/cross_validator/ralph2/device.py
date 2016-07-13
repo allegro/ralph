@@ -36,6 +36,7 @@ class DeviceEnvironment(models_ci.CI):
 
 class Device(SoftDeletable, models.Model):
     name = models.CharField(max_length=255)
+    sn = models.CharField(max_length=255)
     parent = models.ForeignKey('self', related_name='child_set', null=True)
     logical_parent = models.ForeignKey(
         'self', related_name='logicalchild_set', null=True
@@ -53,34 +54,16 @@ class Device(SoftDeletable, models.Model):
         pass
 
     @property
+    def asset(self):
+        return Asset.objects.filter(
+            device_info__ralph_device_id=self.pk
+        ).first()
+
+    @property
     def management_ip(self):
         for ip in self.ipaddress_set.all():
             if ip.is_management:
                 return ip.address
-
-    def get_property_set(self):
-        props = {}
-        if self.venture:
-            props.update(dict(
-                [
-                    (p.symbol, p.default)
-                    for p in self.venture.roleproperty_set.all()
-                ]
-            ))
-        if self.venture_role:
-            props.update(dict(
-                [
-                    (p.symbol, p.default)
-                    for p in self.venture_role.roleproperty_set.all()
-                ]
-            ))
-        props.update(dict(
-            [
-                (p.property.symbol, p.value) for p in
-                self.rolepropertyvalue_set.all()
-            ]
-        ))
-        return props
 
 
 class Rack(models.Model):
@@ -143,6 +126,8 @@ class Asset(models.Model):
     barcode = models.CharField(max_length=255)
     niw = models.CharField(max_length=200)
     model = models.ForeignKey(AssetModel)
+    service = models.ForeignKey(ServiceCatalog, default=None)
+    device_environment = models.ForeignKey(DeviceEnvironment)
 
     _excludes = ['device_info_id']
 

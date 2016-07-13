@@ -34,6 +34,43 @@ class TestGetDnsRecords(TestCase):
         self.assertEqual(found_dns[0]['name'], data['name'])
         self.assertEqual(found_dns[0]['type'], RecordType.a)
 
+    @override_settings(DNSAAS_URL='http://dnsaas.com/')
+    def test_build_url(self):
+        self.assertEqual(
+            self.dnsaas.build_url('domains'),
+            'http://dnsaas.com/api/v2/domains/'
+        )
+
+    @override_settings(DNSAAS_URL='http://dnsaas.com/')
+    def test_build_url_with_version(self):
+        self.assertEqual(
+            self.dnsaas.build_url('domains', version='v1'),
+            'http://dnsaas.com/api/v1/domains/'
+        )
+
+    @override_settings(DNSAAS_URL='http://dnsaas.com/')
+    def test_build_url_with_id(self):
+        self.assertEqual(
+            self.dnsaas.build_url('domains', id=1),
+            'http://dnsaas.com/api/v2/domains/1/'
+        )
+
+    @override_settings(DNSAAS_URL='http://dnsaas.com/')
+    def test_build_url_with_get_params(self):
+        self.assertEqual(
+            self.dnsaas.build_url('domains', get_params=[('name', 'ralph')]),
+            'http://dnsaas.com/api/v2/domains/?name=ralph'
+        )
+
+    @override_settings(DNSAAS_URL='http://dnsaas.com/')
+    def test_build_url_with_id_and_get_params(self):
+        self.assertEqual(
+            self.dnsaas.build_url(
+                'domains', id=1, get_params=[('name', 'ralph')]
+            ),
+            'http://dnsaas.com/api/v2/domains/1/?name=ralph'
+        )
+
 
 class TestDNSView(TestCase):
     @override_settings(ENABLE_DNSAAS_INTEGRATION=False)
