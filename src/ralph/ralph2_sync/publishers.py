@@ -218,6 +218,7 @@ def sync_virtual_server_to_ralph2(sender, instance=None, created=False, **kwargs
     venture_id, venture_role_id = _get_venture_and_role_from_configuration_path(  # noqa
         instance.configuration_path
     )
+    import ipdb; ipdb.set_trace()
     data = {
         'id': instance.id,
         'ralph2_id': _get_obj_id_ralph_2(instance),
@@ -233,7 +234,7 @@ def sync_virtual_server_to_ralph2(sender, instance=None, created=False, **kwargs
         'venture_role_id': venture_role_id
     }
     data.update(_add_custom_fields(instance))
-    return
+    return data
 
 
 @ralph2_sync(CustomField)

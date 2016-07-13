@@ -174,7 +174,7 @@ class VirtualServerPublisherTestCase(TestCase):
     @override_settings(RALPH2_HERMES_SYNC_FUNCTIONS=[
         'sync_virtual_server_to_ralph2'
     ])
-    def test_publishing_model(self):
+    def test_publishing(self):
         result = sync_virtual_server_to_ralph2(VirtualServer, self.vs)
         self.assertEqual(result, {
             'id': self.vs.id,
