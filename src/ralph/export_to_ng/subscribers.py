@@ -27,8 +27,10 @@ from ralph.export_to_ng.helpers import WithSignalDisabled
 from ralph.export_to_ng.publishers import (
     publish_sync_ack_to_ralph3,
     sync_device_to_ralph3,
+    sync_stacked_switch_to_ralph3,
     sync_venture_role_to_ralph3,
-    sync_venture_to_ralph3
+    sync_venture_to_ralph3,
+    sync_virtual_server_to_ralph3
 )
 
 
@@ -262,7 +264,10 @@ def _get_or_create_obj(model, data, ralph_id_key='ralph2_id'):
 
 @sync_subscriber(
     topic='sync_virtual_server_to_ralph2',
-    disable_publishers=[sync_device_to_ralph3]
+    disable_publishers=[
+        sync_device_to_ralph3,
+        sync_virtual_server_to_ralph3,
+    ]
 )
 def sync_virtual_server_to_ralph2(data):
     vs, created = _get_or_create_obj(Device, data)
@@ -347,6 +352,36 @@ def sync_venture_role_to_ralph2(data):
         )
         return
     venture_role.name = data['symbol']
-    venture_role.save()
+    venture_role.save(priority=SAVE_PRIORITY)
     if created:
         publish_sync_ack_to_ralph3(venture_role, data['id'])
+
+
+@sync_subscriber(
+    topic='sync_stacked_switch_to_ralph2',
+    disable_publishers=[sync_device_to_ralph3, sync_stacked_switch_to_ralph3]
+)
+def sync_stacked_switch_to_ralph2(data):
+    ss, created = _get_or_create_obj(Device, data)
+    ss.name = data['hostname']
+    model, _ = DeviceModel.objects.get_or_create(
+        type=DeviceType.switch_stack, name=data['type']
+    )
+    ss.model = model
+    if data['service_uid']:
+        ss.service = ServiceCatalog.objects.get(uid=data['service_uid'])
+    else:
+        ss.service = None
+    if 'environment_id' in data:
+        ss.device_environment_id = data['environment_id']
+    if 'venture_id' in data and 'venture_role_id' in data:
+        ss.venture_id = data['venture_id']
+        ss.venture_role_id = data['venture_role_id']
+    else:
+        logger.info('Venture role is None for Device with id {} (virtual server)'.format(  # noqa
+            ss.id
+        ))
+    ss.save(priority=SAVE_PRIORITY)
+    _handle_custom_fields(data, ss)
+    if created:
+        publish_sync_ack_to_ralph3(ss, data['id'])
