@@ -267,5 +267,6 @@ class StackedSwitchPublisherTestCase(TestCase):
             'environment_id': '321',
             'venture_id': '789',
             'venture_role_id': '987',
-            'children': ['1111', '2222']
+            'children': ['1111', '2222'],
+            'custom_fields': {'test_field': 'abc'},
         })
