@@ -122,6 +122,7 @@ class DCAssetPublisherTestCase(TestCase):
             'source': '1',
             'status': str(DataCenterAssetStatus.new.id),
             'task_url': 'http://ralph.com/1234',
+            'custom_fields': {},
             'venture': self.ralph2_venture_id,
             'venture_role': self.ralph2_venture_role_id,
         })
@@ -185,7 +186,7 @@ class VirtualServerPublisherTestCase(TestCase):
     @override_settings(RALPH2_HERMES_SYNC_FUNCTIONS=[
         'sync_virtual_server_to_ralph2'
     ])
-    def test_publishing_model(self):
+    def test_publishing(self):
         result = sync_virtual_server_to_ralph2(VirtualServer, self.vs)
         self.assertEqual(result, {
             'id': self.vs.id,
@@ -198,4 +199,5 @@ class VirtualServerPublisherTestCase(TestCase):
             'environment_id': str(self.old_env_id),
             'venture_id': None,
             'venture_role_id': None,
+            'custom_fields': {},
         })

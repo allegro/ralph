@@ -93,6 +93,10 @@ def _get_obj_id_ralph_2(obj):
     return pk
 
 
+def _add_custom_fields(obj):
+    return {'custom_fields': obj.custom_fields_as_dict}
+
+
 @ralph2_sync(DataCenterAsset)
 def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
     """
@@ -141,6 +145,7 @@ def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
         'model', 'property_of',
     ]:
         data[field] = _get_obj_id_ralph_2(getattr(asset, field, None))
+    data.update(_add_custom_fields(instance))
     return data
 
 
@@ -218,7 +223,7 @@ def sync_virtual_server_to_ralph2(sender, instance=None, created=False, **kwargs
     venture_id, venture_role_id = _get_venture_and_role_from_configuration_path(  # noqa
         instance.configuration_path
     )
-    return {
+    data = {
         'id': instance.id,
         'ralph2_id': _get_obj_id_ralph_2(instance),
         'ralph2_parent_id': _get_obj_id_ralph_2(instance.parent) if instance.parent else None,  # noqa
@@ -232,6 +237,8 @@ def sync_virtual_server_to_ralph2(sender, instance=None, created=False, **kwargs
         'venture_id': venture_id,
         'venture_role_id': venture_role_id
     }
+    data.update(_add_custom_fields(instance))
+    return data
 
 
 @ralph2_sync(CustomField)
