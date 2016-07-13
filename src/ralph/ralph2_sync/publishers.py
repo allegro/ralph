@@ -12,7 +12,7 @@ from ralph.assets.models import (
     ConfigurationClass,
     ConfigurationModule
 )
-from ralph.data_center.models import DataCenterAsset, Rack
+from ralph.data_center.models import Cluster, DataCenterAsset, Rack
 from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
     ImportedObjects
@@ -66,7 +66,8 @@ def ralph2_sync(model):
             ):
                 try:
                     result = func(sender, instance, created, **kwargs)
-                    pyhermes.publish(func.__name__, result)
+                    if result:
+                        pyhermes.publish(func.__name__, result)
                 except:
                     logger.exception('Error during Ralph2 sync')
                 else:
@@ -254,3 +255,31 @@ def sync_custom_field_to_ralph2(sender, instance=None, created=False, **kwargs):
         'default': instance.default_value,
         'choices': choices
     }
+
+
+@ralph2_sync(Cluster)
+def sync_stacked_switch_to_ralph2(sender, instance=None, created=False, **kwargs):  # noqa
+    """
+    Cluster -> Device (switch stack)
+    """
+    venture_id, venture_role_id = _get_venture_and_role_from_configuration_path(
+        instance.configuration_path
+    )
+    ralph2_id = _get_obj_id_ralph_2(instance)
+    if not ralph2_id:
+        return {}
+    data = {
+        'id': instance.id,
+        'ralph2_id': ralph2_id,
+        'hostname': instance.hostname,
+        'type': instance.type.name,
+        'service_uid': instance.service_env.service.uid if instance.service_env else None,  # noqa
+        'environment_id': _get_obj_id_ralph_2(
+            instance.service_env.environment
+        ) if instance.service_env else None,
+        'venture_id': venture_id,
+        'venture_role_id': venture_role_id,
+        'children': list(map(_get_obj_id_ralph_2, instance.base_objects.all())),
+    }
+    data.update(_add_custom_fields(instance))
+    return data
