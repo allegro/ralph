@@ -102,6 +102,9 @@ def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
     * new rack/server room/data center added (it's not synced with Ralph2)
     """
     asset = instance
+    venture_id, venture_role_id = _get_venture_and_role_from_configuration_path(  # noqa
+        instance.configuration_path
+    )
     data = {
         'ralph2_id': _get_obj_id_ralph_2(asset),
 
@@ -121,6 +124,8 @@ def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
             if asset.rack else None
         ),
         'rack': _get_obj_id_ralph_2(asset.rack),
+        'venture': venture_id,
+        'venture_role': venture_role_id,
     }
     # simple fields
     for field in [
