@@ -310,10 +310,22 @@ def sync_network_to_ralph3(sender, instance=None, created=False, **kwargs):
             except Rack.DoesNotExist:
                 pass
 
+    try:
+        network_address = ipaddr.IPNetwork(net.address, strict=True)
+    except ValueError:
+        network_address = ipaddr.IPNetwork(net.address)
+        logger.info('Network {} will be converted to {}/{}'.format(
+            network_address,
+            network_address.network,
+            network_address.prefixlen
+        ))
+
     return {
         'id': net.id,
         'name': net.name,
-        'address': net.address,
+        'address': '{}/{}'.format(
+            network_address.network, network_address.prefixlen
+        ),
         'remarks': net.remarks,
         'vlan': net.vlan,
         'dhcp_broadcast': net.dhcp_broadcast,
