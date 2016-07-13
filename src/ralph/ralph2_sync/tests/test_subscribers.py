@@ -432,30 +432,18 @@ class Ralph2NetworkTestCase(TestCase):
             'dns_servers': [],
         }
 
-    def _create_imported_network(self, old_id=None):
-        return _create_imported_object(
-            factory=NetworkFactory,
-            old_id=old_id if old_id else self.data['id']
-        )
-
-    def sync(self):
-        obj = self._create_imported_network()
-        sync_network_to_ralph3(self.data)
-        obj.refresh_from_db()
-        return obj
-
     def test_sync_sholud_create_new_network(self):
         sync_network_to_ralph3(self.data)
         net = ImportedObjects.get_object_from_old_pk(Network, self.data['id'])
         self.assertEqual(net.name, self.data['name'])
 
-    def test_syc_should_create_gateway(self):
+    def test_sync_should_create_gateway(self):
         sync_network_to_ralph3(self.data)
         self.assertTrue(
             IPAddress.objects.get(address=self.data['gateway'])
         )
 
-    def test_syc_should_update_gateway(self):
+    def test_sync_should_update_gateway(self):
         net = sync_network_to_ralph3(self.data)
         IPAddressFactory(network=net, address='192.168.1.10', is_gateway=True)
         sync_network_to_ralph3(self.data)
@@ -463,7 +451,14 @@ class Ralph2NetworkTestCase(TestCase):
             IPAddress.objects.filter(address=self.data['gateway']).exists()
         )
 
-    def test_syc_should_delete_current_gateway(self):
+    def test_sync_should_update_gateway_when_ip_already_exist_outside_net(self):
+        net2 = NetworkFactory(address='192.168.0.0/15')
+        IPAddressFactory(address='192.168.1.1', network=net2)
+        sync_network_to_ralph3(self.data)
+        net = ImportedObjects.get_object_from_old_pk(Network, self.data['id'])
+        self.assertEqual(str(net.gateway), '192.168.1.1')
+
+    def test_sync_should_delete_current_gateway(self):
         net = sync_network_to_ralph3(self.data)
         IPAddressFactory(network=net, address='192.168.1.10', is_gateway=True)
         self.data['gateway'] = None
