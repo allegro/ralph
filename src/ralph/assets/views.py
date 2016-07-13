@@ -2,7 +2,11 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphTabularInline
 from ralph.admin.views.extra import RalphDetailViewAdmin
-from ralph.assets.models.components import GenericComponent, Memory
+from ralph.assets.models.components import (
+    FibreChannelCard,
+    GenericComponent,
+    Memory
+)
 
 
 class ComponentsAdminView(RalphDetailViewAdmin):
@@ -21,4 +25,14 @@ class ComponentsAdminView(RalphDetailViewAdmin):
         fields = ('model_name', 'size', 'speed')
         extra = 1
 
-    inlines = [GenericComponentInline, MemoryInline]
+    class FibreChannelCardInline(RalphTabularInline):
+        model = FibreChannelCard
+        fields = (
+            'model_name',
+            'speed',
+            'wwn',
+            'firmware_version',
+        )
+        extra = 1
+
+    inlines = [GenericComponentInline, MemoryInline, FibreChannelCardInline]

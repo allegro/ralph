@@ -79,3 +79,17 @@ class EthernetSpeed(Choices):
 
     UNKNOWN_GROUP = Choices.Group(10)
     unknown = _('unknown speed')
+
+
+class FibreChannelCardSpeed(Choices):
+    _ = Choices.Choice
+
+    s1gbit = _('1 Gbit')
+    s2gbit = _('2 Gbit')
+    s4gbit = _('4 Gbit')
+    s8gbit = _('8 Gbit')
+    s16gbit = _('16 Gbit')
+    s32gbit = _('32 Gbit')
+
+    UNKNOWN_GROUP = Choices.Group(10)
+    unknown = _('unknown speed')

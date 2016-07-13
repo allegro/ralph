@@ -26,6 +26,27 @@ def get_diff_positions(old, new):
     return diff_pos
 
 
+def get_html_diff(obj):
+    html = ''
+    for item, values in obj.diff.items():
+        old = str(values['old']) or ''
+        new = str(values['new']) or ''
+        diff_pos = get_diff_positions(old, new)
+        html += """
+            <ul><strong>{item}</strong>
+            <li>Ralph2: {mono_start}{old}{mono_end}</li>
+            <li>Ralph3: {mono_start}{new}{mono_end}</li>
+            </ul>
+        """.format(
+            item=item,
+            mono_start='<span style="font-family:monospace">',
+            old=format_diff(diff_pos, old),
+            new=format_diff(diff_pos, new),
+            mono_end='</span>',
+        )
+    return html
+
+
 @register(ContentType)
 class ContentTypeAdmin(RalphAdmin):
     search_fields = ['model']
@@ -81,23 +102,7 @@ class ResultAdmin(RalphAdmin):
     def get_diff_display(self, obj):
         if not bool(obj.diff) or bool(obj.errors):
             return mark_safe('-')
-        html = ''
-        for item, values in obj.diff.items():
-            old = str(values['old']) or ''
-            new = str(values['new']) or ''
-            diff_pos = get_diff_positions(old, new)
-            html += """
-                <ul><strong>{item}</strong></ul>
-                <li>Ralph2: {mono_start}{old}{mono_end}</li>
-                <li>Ralph3: {mono_start}{new}{mono_end}</li>
-            """.format(
-                item=item,
-                mono_start='<span style="font-family:monospace">',
-                old=format_diff(diff_pos, old),
-                new=format_diff(diff_pos, new),
-                mono_end='</span>',
-            )
-        return mark_safe(html)
+        return mark_safe(get_html_diff(obj))
     get_diff_display.short_description = 'Diff'
 
     def get_errors_display(self, obj):

@@ -65,30 +65,6 @@ class Device(SoftDeletable, models.Model):
             if ip.is_management:
                 return ip.address
 
-    def get_property_set(self):
-        props = {}
-        if self.venture:
-            props.update(dict(
-                [
-                    (p.symbol, p.default)
-                    for p in self.venture.roleproperty_set.all()
-                ]
-            ))
-        if self.venture_role:
-            props.update(dict(
-                [
-                    (p.symbol, p.default)
-                    for p in self.venture_role.roleproperty_set.all()
-                ]
-            ))
-        props.update(dict(
-            [
-                (p.property.symbol, p.value) for p in
-                self.rolepropertyvalue_set.all()
-            ]
-        ))
-        return props
-
 
 class Rack(models.Model):
     name = models.CharField(max_length=255)
@@ -150,6 +126,8 @@ class Asset(models.Model):
     barcode = models.CharField(max_length=255)
     niw = models.CharField(max_length=200)
     model = models.ForeignKey(AssetModel)
+    service = models.ForeignKey(ServiceCatalog, default=None)
+    device_environment = models.ForeignKey(DeviceEnvironment)
 
     _excludes = ['device_info_id']
 

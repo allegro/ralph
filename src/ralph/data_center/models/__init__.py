@@ -21,6 +21,7 @@ from ralph.data_center.models.physical import (
 from ralph.data_center.models.virtual import (
     BaseObjectCluster,
     Cluster,
+    ClusterStatus,
     ClusterType,
     Database,
     VIP,
@@ -32,6 +33,7 @@ __all__ = [
     'Connection',
     'ConnectionType',
     'Cluster',
+    'ClusterStatus',
     'ClusterType',
     'Database',
     'DataCenter',

@@ -31,12 +31,8 @@ mappers = {
 
 
 def service_env_diff(old, new):
-    if isinstance(old, Asset):
-        old_uid = getattr_dunder(old, 'linked_device__service__uid')
-        old_env = getattr_dunder(old, 'linked_device__device_environment__name')
-    else:
-        old_uid = getattr_dunder(old, 'service__uid')
-        old_env = getattr_dunder(old, 'device_environment__name')
+    old_uid = getattr_dunder(old, 'service__uid')
+    old_env = getattr_dunder(old, 'device_environment__name')
     new_uid = getattr_dunder(new, 'service_env__service__uid')
     new_env = getattr_dunder(new, 'service_env__environment__name')
     if old_uid != new_uid or old_env != new_env:
@@ -67,9 +63,8 @@ def custom_fields_diff(old, new):
         dev = old.linked_device
     else:
         dev = old
-    if dev:
-        # TODO: respect whitelist of custom fields to sync
-        old_custom_fields = dev.get_property_set()
+    if dev and dev.venture_role:
+        old_custom_fields = dev.venture_role.get_properties(dev)
     else:
         old_custom_fields = {}
     new_custom_fields = new.custom_fields_as_dict
