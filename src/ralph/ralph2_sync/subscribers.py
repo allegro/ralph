@@ -420,7 +420,7 @@ def sync_virtual_server_to_ralph3(data):
         for field, value in data['custom_fields'].items():
             virtual_server.update_custom_field(field, value)
     if 'ips' in data:
-        _handle_ips(data['ips'])
+        _handle_ips(virtual_server, data['ips'])
     if created:
         ImportedObjects.create(virtual_server, data['id'])
 
@@ -519,5 +519,7 @@ def sync_stacked_switch_to_ralph3(data):
                     is_master=child_data.get('is_master', False),
                 )
             )
+    if 'ips' in data:
+        _handle_ips(stacked_switch, data['ips'])
     if created:
         ImportedObjects.create(stacked_switch, data['id'])
