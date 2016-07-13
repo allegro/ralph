@@ -94,7 +94,10 @@ def check_object(obj, run, config):
     imported_object = get_imported_obj(obj)
     errors = []
     values, errors = _get_values(obj, imported_object, config)
-    diff_result = list(diff(**values))
+    if values:
+        diff_result = list(diff(**values))
+    else:
+        diff_result = {}
     if run and (errors or diff_result):
         CrossValidationResult.create(
             run=run,
