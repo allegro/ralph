@@ -128,7 +128,7 @@ def _handle_ips(obj, ips):
         return
     management_ip = list(filter(lambda ip: ip['is_management'], ips))
     if len(management_ip) > 1:
-        logger.info('More than one management IP ({}) for {}.'.format(
+        logger.error('More than one management IP ({}) for {}.'.format(
             ', '.join([ip['address'] for ip in management_ip]), obj
         ))
     elif len(management_ip) == 1:
@@ -146,12 +146,14 @@ def _handle_ips(obj, ips):
             )
         )
         if created:
-            ip.ethernet = Ethernet.objects.create(
+            ip.ethernet, _ = Ethernet.objects.get_or_create(
                 base_object=obj, mac=ip_dict['mac']
             )
         else:
             ip.ethernet.base_object = obj
             ip.ethernet.mac = ip_dict['mac']
+            ip.is_management = False
+            ip.dhcp_expose = ip_dict['dhcp_expose']
             ip.ethernet.save()
         ip.save()
 
