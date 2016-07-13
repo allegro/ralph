@@ -23,6 +23,7 @@ from ralph.discovery.models import (
 from ralph.discovery.tests.util import DeviceFactory
 from ralph.export_to_ng.subscribers import (
     sync_dc_asset_to_ralph2_handler,
+    sync_stacked_switch_to_ralph2,
     sync_venture_role_to_ralph2,
     sync_venture_to_ralph2,
     sync_virtual_server_to_ralph2
@@ -404,3 +405,57 @@ class VirtualServerTestCase(TestCase):
         vs = self.sync(device)
         self.assertEqual(vs.venture, None)
         self.assertEqual(vs.venture_role, None)
+
+
+class StackedSwitchSyncTestCase(TestCase):
+    def setUp(self):
+        venture = VentureFactory()
+        self.venture_role = VentureRoleFactory(venture=venture)
+        service = ServiceCatalogFactory(uid='sc-123')
+        env = DeviceEnvironmentFactory()
+        rpt = RolePropertyType.objects.create(
+            symbol='custom field'
+        )
+        RoleProperty.objects.create(
+            symbol='abc', role=self.venture_role, type=rpt,
+        )
+
+        self.data = {
+            'id': '11',
+            'ralph2_id': '10',
+            'hostname': 'ss1.mydc.net',
+            'type': 'stacked switch',
+            'service_uid': service.uid,
+            'environment_id': env.id,
+            'venture_id': venture.id,
+            'venture_role_id': self.venture_role.id,
+            'children': ['1111', '2222'],
+            'custom_fields': {'abc': 'def'}
+        }
+
+    def create_test_stacked_switch(self):
+        model = DeviceModel.objects.create(
+            name='stacked switch', type=DeviceType.switch_stack
+        )
+        return Device.objects.create(model=model, name='111')
+
+    def sync(self, obj):
+        sync_stacked_switch_to_ralph2(self.data)
+        new_obj = obj.__class__.objects.get(id=obj.id)
+        return new_obj
+
+    @override_settings(RALPH2_HERMES_ROLE_PROPERTY_WHITELIST=['abc'])
+    def test_sync(self):
+        device = self.create_test_stacked_switch()
+
+        self.data['ralph2_id'] = device.id
+        ss = self.sync(device)
+        self.assertEqual(ss.name, self.data['hostname'])
+        self.assertEqual(ss.model.name, self.data['type'])
+        self.assertEqual(ss.venture_id, self.data['venture_id'])
+        self.assertEqual(ss.venture_role_id, self.data['venture_role_id'])
+        self.assertEqual(ss.service.uid, self.data['service_uid'])
+        self.assertEqual(ss.device_environment.id, self.data['environment_id'])
+        self.assertEqual(
+            self.venture_role.get_properties(device), {'abc': 'def'}
+        )
