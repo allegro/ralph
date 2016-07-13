@@ -12,7 +12,7 @@ from ralph.assets.models import (
     ConfigurationClass,
     ConfigurationModule
 )
-from ralph.data_center.models import DataCenterAsset, Rack
+from ralph.data_center.models import Cluster, DataCenterAsset, Rack
 from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
     ImportedObjects
@@ -66,7 +66,8 @@ def ralph2_sync(model):
             ):
                 try:
                     result = func(sender, instance, created, **kwargs)
-                    pyhermes.publish(func.__name__, result)
+                    if result:
+                        pyhermes.publish(func.__name__, result)
                 except:
                     logger.exception('Error during Ralph2 sync')
                 else:
@@ -93,6 +94,10 @@ def _get_obj_id_ralph_2(obj):
     return pk
 
 
+def _add_custom_fields(obj):
+    return {'custom_fields': obj.custom_fields_as_dict}
+
+
 @ralph2_sync(DataCenterAsset)
 def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
     """
@@ -102,6 +107,9 @@ def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
     * new rack/server room/data center added (it's not synced with Ralph2)
     """
     asset = instance
+    venture_id, venture_role_id = _get_venture_and_role_from_configuration_path(  # noqa
+        instance.configuration_path
+    )
     data = {
         'ralph2_id': _get_obj_id_ralph_2(asset),
 
@@ -121,6 +129,8 @@ def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
             if asset.rack else None
         ),
         'rack': _get_obj_id_ralph_2(asset.rack),
+        'venture': venture_id,
+        'venture_role': venture_role_id,
     }
     # simple fields
     for field in [
@@ -136,6 +146,7 @@ def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
         'model', 'property_of',
     ]:
         data[field] = _get_obj_id_ralph_2(getattr(asset, field, None))
+    data.update(_add_custom_fields(instance))
     return data
 
 
@@ -213,7 +224,7 @@ def sync_virtual_server_to_ralph2(sender, instance=None, created=False, **kwargs
     venture_id, venture_role_id = _get_venture_and_role_from_configuration_path(  # noqa
         instance.configuration_path
     )
-    return {
+    data = {
         'id': instance.id,
         'ralph2_id': _get_obj_id_ralph_2(instance),
         'ralph2_parent_id': _get_obj_id_ralph_2(instance.parent) if instance.parent else None,  # noqa
@@ -227,6 +238,8 @@ def sync_virtual_server_to_ralph2(sender, instance=None, created=False, **kwargs
         'venture_id': venture_id,
         'venture_role_id': venture_role_id
     }
+    data.update(_add_custom_fields(instance))
+    return data
 
 
 @ralph2_sync(CustomField)
@@ -242,3 +255,31 @@ def sync_custom_field_to_ralph2(sender, instance=None, created=False, **kwargs):
         'default': instance.default_value,
         'choices': choices
     }
+
+
+@ralph2_sync(Cluster)
+def sync_stacked_switch_to_ralph2(sender, instance=None, created=False, **kwargs):  # noqa
+    """
+    Cluster -> Device (switch stack)
+    """
+    venture_id, venture_role_id = _get_venture_and_role_from_configuration_path(
+        instance.configuration_path
+    )
+    ralph2_id = _get_obj_id_ralph_2(instance)
+    if not ralph2_id:
+        return {}
+    data = {
+        'id': instance.id,
+        'ralph2_id': ralph2_id,
+        'hostname': instance.hostname,
+        'type': instance.type.name,
+        'service_uid': instance.service_env.service.uid if instance.service_env else None,  # noqa
+        'environment_id': _get_obj_id_ralph_2(
+            instance.service_env.environment
+        ) if instance.service_env else None,
+        'venture_id': venture_id,
+        'venture_role_id': venture_role_id,
+        'children': list(map(_get_obj_id_ralph_2, instance.base_objects.all())),
+    }
+    data.update(_add_custom_fields(instance))
+    return data

@@ -2,21 +2,29 @@ from django.test import override_settings, TestCase
 
 from ralph.assets.models import AssetModel
 from ralph.assets.tests.factories import (
+    ConfigurationClassFactory,
+    ConfigurationModuleFactory,
     DataCenterAssetModelFactory,
-    ServiceEnvironmentFactory
+    EnvironmentFactory,
+    ServiceEnvironmentFactory,
+    ServiceFactory
 )
-from ralph.data_center.models import DataCenterAsset
+from ralph.data_center.models import Cluster, DataCenterAsset
 from ralph.data_center.models.choices import DataCenterAssetStatus
 from ralph.data_center.tests.factories import (
+    ClusterFactory,
     DataCenterAssetFactory,
     RackFactory
 )
 from ralph.data_importer.models import ImportedObjects
+from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
 from ralph.ralph2_sync.publishers import (
     sync_dc_asset_to_ralph2,
     sync_model_to_ralph2,
+    sync_stacked_switch_to_ralph2,
     sync_virtual_server_to_ralph2
 )
+from ralph.ralph2_sync.tests.test_subscribers import _create_imported_object
 from ralph.virtual.models import VirtualServer
 from ralph.virtual.tests.factories import VirtualServerFactory
 
@@ -73,6 +81,16 @@ class DCAssetPublisherTestCase(TestCase):
             self.dc_asset.property_of, self.ralph2_property_of_id
         )
 
+        self.ralph2_venture_id = '99'
+        ImportedObjects.create(
+            self.dc_asset.configuration_path.module, self.ralph2_venture_id
+        )
+
+        self.ralph2_venture_role_id = '990'
+        ImportedObjects.create(
+            self.dc_asset.configuration_path, self.ralph2_venture_role_id
+        )
+
         self.ralph2_dc_asset_id = '88'
         ImportedObjects.create(self.dc_asset, self.ralph2_dc_asset_id)
 
@@ -112,6 +130,9 @@ class DCAssetPublisherTestCase(TestCase):
             'source': '1',
             'status': str(DataCenterAssetStatus.new.id),
             'task_url': 'http://ralph.com/1234',
+            'custom_fields': {},
+            'venture': self.ralph2_venture_id,
+            'venture_role': self.ralph2_venture_role_id,
         })
 
 
@@ -173,7 +194,7 @@ class VirtualServerPublisherTestCase(TestCase):
     @override_settings(RALPH2_HERMES_SYNC_FUNCTIONS=[
         'sync_virtual_server_to_ralph2'
     ])
-    def test_publishing_model(self):
+    def test_publishing(self):
         result = sync_virtual_server_to_ralph2(VirtualServer, self.vs)
         self.assertEqual(result, {
             'id': self.vs.id,
@@ -186,4 +207,66 @@ class VirtualServerPublisherTestCase(TestCase):
             'environment_id': str(self.old_env_id),
             'venture_id': None,
             'venture_role_id': None,
+            'custom_fields': {},
+        })
+
+
+@override_settings(RALPH2_HERMES_SYNC_ENABLED=True)
+class StackedSwitchPublisherTestCase(TestCase):
+    def setUp(self):
+        self.service = _create_imported_object(
+            ServiceFactory, 123, factory_kwargs={'uid': 'sc-123'}
+        )
+        self.env = _create_imported_object(EnvironmentFactory, 321)
+        self.se = ServiceEnvironmentFactory(
+            service=self.service, environment=self.env
+        )
+        self.conf_module = _create_imported_object(
+            ConfigurationModuleFactory, 789
+        )
+        self.conf_class = _create_imported_object(
+            ConfigurationClassFactory,
+            987,
+            factory_kwargs={'module': self.conf_module}
+        )
+        self.custom_field = CustomField.objects.create(
+            name='test_field', type=CustomFieldTypes.STRING,
+        )
+        self.child1 = _create_imported_object(DataCenterAssetFactory, 1111)
+        self.child2 = _create_imported_object(DataCenterAssetFactory, 2222)
+
+    @override_settings(RALPH2_HERMES_SYNC_FUNCTIONS=[
+        'sync_stacked_switch_to_ralph2'
+    ])
+    def test_publish_stacked_switch(self):
+        self.cluster = ClusterFactory(
+            hostname='ss1.mydc.net',
+            type__name='stacked switch',
+            service_env=self.se,
+            configuration_path=self.conf_class,
+        )
+        ImportedObjects.create(
+            self.cluster, 10
+        )
+        self.cluster.baseobjectcluster_set.create(
+            base_object=self.child1, is_master=True
+        )
+        self.cluster.baseobjectcluster_set.create(
+            base_object=self.child2, is_master=False
+        )
+        self.cluster.custom_fields.create(
+            custom_field=self.custom_field, value='abc'
+        )
+        result = sync_stacked_switch_to_ralph2(Cluster, self.cluster)
+        self.assertEqual(result, {
+            'id': self.cluster.id,
+            'ralph2_id': '10',
+            'hostname': 'ss1.mydc.net',
+            'type': 'stacked switch',
+            'service_uid': 'sc-123',
+            'environment_id': '321',
+            'venture_id': '789',
+            'venture_role_id': '987',
+            'children': ['1111', '2222'],
+            'custom_fields': {'test_field': 'abc'},
         })
