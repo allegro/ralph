@@ -187,4 +187,5 @@ class VirtualServerPublisherTestCase(TestCase):
             'environment_id': str(self.old_env_id),
             'venture_id': None,
             'venture_role_id': None,
+            'custom_fields': {},
         })
