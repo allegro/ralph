@@ -29,6 +29,7 @@ from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
     ImportedObjects
 )
+from ralph.dhcp.models import DNSServer
 from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
 from ralph.networks.models import (
     IPAddress,
@@ -325,6 +326,16 @@ def sync_venture_role_to_ralph3(data):
     logger.info('Synced configuration class {}'.format(conf_class))
 
 
+def _handle_m2m(ids, model, target, field):
+    if ids:
+        objs = []
+        for obj_id in ids:
+            obj, _ = _get_obj(model, obj_id)
+            if obj:
+                objs.append(obj)
+        setattr(target, field, objs)
+
+
 def _get_obj(model_class, obj_id, creating=False):
     """
     Custom get or create based on imported objects.
@@ -415,6 +426,9 @@ def sync_network_to_ralph3(data):
     )[0]
     net.kind = _get_obj(NetworkKind, data['kind_id'])[0]
     net.save()
+
+    _handle_m2m(data['racks_ids'], Rack, net, 'racks')
+    _handle_m2m(data['dns_servers'], DNSServer, net, 'dns_servers')
     if created:
         ImportedObjects.create(net, data['id'])
 
