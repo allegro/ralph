@@ -281,5 +281,5 @@ def sync_stacked_switch_to_ralph2(sender, instance=None, created=False, **kwargs
         'venture_role_id': venture_role_id,
         'children': list(map(_get_obj_id_ralph_2, instance.base_objects.all())),
     }
-    # data.update(_add_custom_fields(instance))
+    data.update(_add_custom_fields(instance))
     return data
