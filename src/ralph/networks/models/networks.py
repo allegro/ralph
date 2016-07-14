@@ -151,6 +151,10 @@ class Network(
         verbose_name=_('network address'),
         help_text=_('Presented as string (e.g. 192.168.0.0/24)'),
     )
+    gateway = models.ForeignKey(
+        'IPAddress', verbose_name=_('Gateway address'), null=True, blank=True,
+        related_name='gateway_network'
+    )
     remarks = models.TextField(
         verbose_name=_('remarks'),
         help_text=_('Additional information.'),
@@ -240,11 +244,6 @@ class Network(
         )
 
     @property
-    def gateway(self):
-        ip = self.ips.filter(is_gateway=True).first()
-        return ip.ip if ip else None
-
-    @property
     def domain(self):
         net_env = self.network_environment
         return net_env.domain if net_env else None
@@ -284,6 +283,11 @@ class Network(
             >>> network.min_ip, network.max_ip, network.gateway
             (3232235776, 3232236031, None)
         """
+        if self.gateway_id and not self.gateway.is_gateway:
+            self.gateway.is_gateway = True
+            self.gateway.status = IPAddressStatus.reserved
+            self.gateway.save()
+
         enable_save_descendants = kwargs.pop('enable_save_descendants', True)
         self.min_ip = int(self.network_address)
         self.max_ip = int(self.broadcast_address)

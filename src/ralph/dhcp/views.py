@@ -200,7 +200,7 @@ class DHCPNetworksView(
         networks = self.networks.filter(
             network_environment__domain__isnull=False,
             dhcp_broadcast=True,
-            ips__is_gateway=True,
+            gateway__isnull=False,
         ).exclude(
             network_environment=False
         ).prefetch_related('dns_servers')

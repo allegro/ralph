@@ -138,19 +138,6 @@ class NetworkTest(RalphTestCase):
         result = ip.get_network()
         self.assertEqual(None, result)
 
-    def test_network_should_return_gateway(self):
-        net = Network.objects.create(
-            name='ip_address_should_return_gateway',
-            address='10.1.1.0/24',
-        )
-        net.save()
-        ip = IPAddress.objects.create(
-            address='10.1.1.2',
-            is_gateway=True,
-            network=net
-        )
-        self.assertEqual(net.gateway, ip.ip)
-
     def test_reserve_margin_addresses_should_reserve_free_addresses(self):
         net = Network.objects.create(
             name='ip_address_should_return_network',
