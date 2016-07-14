@@ -170,4 +170,15 @@ mappers = {
         },
         'blacklist': ['id'],
     },
+    'Network': {
+        'ralph2_model': Ralph2Network,
+        'ralph3_model': Network,
+        'ralph3_queryset': Network.objects.all(),  # TODO: related
+        'ralph2_queryset': Ralph2Network.objects.all(),
+        'fields': {
+            'address': ('address', 'address'),
+            'gateway': ('gateway', 'gateway__address'),
+        },
+        'blacklist': ['id'],
+    }
 }
