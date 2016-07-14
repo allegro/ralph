@@ -342,9 +342,8 @@ class ProcessorSerializer(ProcessorSimpleSerializer):
 
 # used by DataCenterAsset and VirtualServer serializers
 class NetworkComponentSerializerMixin(OwnersFromServiceEnvSerializerMixin):
+    # TODO(xor-xor): ethernet -> ethernets
     ethernet = EthernetSimpleSerializer(many=True, source='ethernet_set')
-    memory = MemorySimpleSerializer(many=True, source='memory_set')
-    processor = ProcessorSimpleSerializer(many=True, source='processor_set')
     ipaddresses = fields.SerializerMethodField()
 
     def get_ipaddresses(self, instance):
@@ -368,6 +367,7 @@ class NetworkComponentSerializerMixin(OwnersFromServiceEnvSerializerMixin):
 # used by DataCenterAsset and VirtualServer serializers
 class ComponentSerializerMixin(NetworkComponentSerializerMixin):
     memory = MemorySimpleSerializer(many=True, source='memory_set')
+    processors = ProcessorSimpleSerializer(many=True, source='processor_set')
 
 
 class DCHostSerializer(ComponentSerializerMixin, BaseObjectSerializer):
