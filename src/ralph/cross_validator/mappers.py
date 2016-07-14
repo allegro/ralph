@@ -98,7 +98,9 @@ mappers = {
     'DataCenterAsset': {
         'ralph2_model': Asset,
         'ralph3_model': DataCenterAsset,
-        'ralph3_queryset': DataCenterAsset.objects.select_related(
+        'ralph3_queryset': DataCenterAsset.objects.exclude(
+            status=DataCenterAssetStatus.liquidated
+        ).select_related(
             'service_env__service', 'service_env__environment',
             'rack', 'model'
         ).prefetch_related(
