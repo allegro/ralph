@@ -5,7 +5,8 @@ from ralph.api import RalphAPISerializer
 from ralph.assets.api.serializers import (
     AssetSerializer,
     BaseObjectSerializer,
-    ComponentSerializerMixin
+    ComponentSerializerMixin,
+    OwnersFromServiceEnvSerializerMixin
 )
 from ralph.data_center.models import (
     Accessory,
@@ -41,7 +42,9 @@ class BaseObjectClusterSerializer(RalphAPISerializer):
         fields = ('id', 'url', 'base_object', 'is_master', 'cluster')
 
 
-class ClusterSerializer(ClusterSimpleSerializer):
+class ClusterSerializer(
+    OwnersFromServiceEnvSerializerMixin, ClusterSimpleSerializer
+):
     base_objects = BaseObjectClusterSerializer(
         many=True, read_only=True, source='baseobjectcluster_set'
     )

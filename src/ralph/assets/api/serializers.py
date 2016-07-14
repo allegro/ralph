@@ -40,6 +40,13 @@ class TypeFromContentTypeSerializerMixin(RalphAPISerializer):
         return instance.content_type.model
 
 
+class OwnersFromServiceEnvSerializerMixin(RalphAPISerializer):
+    business_owners = SimpleRalphUserSerializer(
+        many=True, source='service_env.service.business_owners')
+    technical_owners = SimpleRalphUserSerializer(
+        many=True, source='service_env.service.technical_owners')
+
+
 class BusinessSegmentSerializer(RalphAPISerializer):
     class Meta:
         model = BusinessSegment
@@ -152,7 +159,9 @@ class ServiceEnvironmentSimpleSerializer(RalphAPISerializer):
 
     class Meta:
         model = ServiceEnvironment
-        fields = ('id', 'service', 'environment', 'url', 'service_uid')
+        fields = (
+            'id', 'service', 'environment', 'url', 'service_uid',
+        )
         _skip_tags_field = True
 
 
@@ -160,6 +169,12 @@ class ServiceEnvironmentSerializer(
     TypeFromContentTypeSerializerMixin, RalphAPISerializer
 ):
     __str__ = StrField(show_type=True)
+    business_owners = SimpleRalphUserSerializer(
+        many=True, source='service.business_owners'
+    )
+    technical_owners = SimpleRalphUserSerializer(
+        many=True, source='service.technical_owners'
+    )
 
     class Meta:
         model = ServiceEnvironment
@@ -308,9 +323,8 @@ class FibreChannelCardSerializer(FibreChannelCardSimpleSerializer):
 
 
 # used by DataCenterAsset and VirtualServer serializers
-class ComponentSerializerMixin(serializers.Serializer):
+class NetworkComponentSerializerMixin(OwnersFromServiceEnvSerializerMixin):
     ethernet = EthernetSimpleSerializer(many=True, source='ethernet_set')
-    memory = MemorySimpleSerializer(many=True, source='memory_set')
     ipaddresses = fields.SerializerMethodField()
 
     def get_ipaddresses(self, instance):
@@ -329,6 +343,11 @@ class ComponentSerializerMixin(serializers.Serializer):
             except AttributeError:
                 pass
         return ipaddresses
+
+
+# used by DataCenterAsset and VirtualServer serializers
+class ComponentSerializerMixin(NetworkComponentSerializerMixin):
+    memory = MemorySimpleSerializer(many=True, source='memory_set')
 
 
 class DCHostSerializer(ComponentSerializerMixin, BaseObjectSerializer):

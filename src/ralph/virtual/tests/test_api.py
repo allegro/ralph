@@ -45,7 +45,9 @@ class OpenstackModelsTestCase(RalphAPITestCase):
             self.service_env.append(ServiceEnvironment.objects.create(
                 service=self.services[i], environment=self.envs[i]
             ))
-
+        self.service_env[0].service.business_owners = [self.user1]
+        self.service_env[0].service.technical_owners = [self.user2]
+        self.service_env[0].save()
         self.cloud_provider = CloudProviderFactory(name='openstack')
         self.cloud_flavor = CloudFlavorFactory()
         self.cloud_project = CloudProjectFactory(
@@ -122,6 +124,12 @@ class OpenstackModelsTestCase(RalphAPITestCase):
                          self.cloud_flavor.disk)
         self.assertEqual(response.data['cloudflavor']['name'],
                          self.cloud_flavor.name)
+        self.assertEqual(
+            response.data['business_owners'][0]['username'], 'user1'
+        )
+        self.assertEqual(
+            response.data['technical_owners'][0]['username'], 'user2'
+        )
 
     def test_get_cloudproject_detail(self):
         url = reverse('cloudproject-detail', args=(self.cloud_project.id,))
@@ -299,6 +307,9 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         self.cluster = ClusterFactory()
         self.type = VirtualServerType.objects.create(name='XEN')
         self.virtual_server = VirtualServerFullFactory()
+        self.virtual_server.service_env.service.business_owners = [self.user1]
+        self.virtual_server.service_env.service.technical_owners = [self.user2]
+        self.virtual_server.service_env.save()
         self.virtual_server2 = VirtualServerFullFactory()
         self.ip = IPAddressFactory(
             ethernet=EthernetFactory(base_object=self.virtual_server2)
@@ -306,7 +317,7 @@ class VirtualServerAPITestCase(RalphAPITestCase):
 
     def test_get_virtual_server_list(self):
         url = reverse('virtualserver-list')
-        with self.assertNumQueries(9):
+        with self.assertNumQueries(11):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 2)
@@ -331,6 +342,12 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         self.assertEqual(len(response.data['memory']), 2)
         self.assertEqual(response.data['memory'][0]['speed'], 1600)
         self.assertEqual(response.data['memory'][0]['size'], 8192)
+        self.assertEqual(
+            response.data['business_owners'][0]['username'], 'user1'
+        )
+        self.assertEqual(
+            response.data['technical_owners'][0]['username'], 'user2'
+        )
 
     def test_create_virtual_server(self):
         virtual_server_count = VirtualServer.objects.count()

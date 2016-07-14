@@ -41,6 +41,9 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             position=10,
             model=self.model,
         )
+        self.dc_asset.service_env.service.business_owners = [self.user1]
+        self.dc_asset.service_env.service.technical_owners = [self.user2]
+        self.dc_asset.service_env.save()
         self.ip = IPAddressFactory(
             ethernet=EthernetFactory(base_object=self.dc_asset)
         )
@@ -49,7 +52,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
 
     def test_get_data_center_assets_list(self):
         url = reverse('datacenterasset-list')
-        with self.assertNumQueries(11):
+        with self.assertNumQueries(13):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
@@ -75,6 +78,12 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         self.assertEqual(len(response.data['memory']), 2)
         self.assertEqual(response.data['memory'][0]['speed'], 1600)
         self.assertEqual(response.data['memory'][0]['size'], 8192)
+        self.assertEqual(
+            response.data['business_owners'][0]['username'], 'user1'
+        )
+        self.assertEqual(
+            response.data['technical_owners'][0]['username'], 'user2'
+        )
 
     def test_create_data_center_asset(self):
         url = reverse('datacenterasset-list')
@@ -397,6 +406,9 @@ class ClusterAPITests(RalphAPITestCase):
             is_master=True
         )
         self.cluster_2 = ClusterFactory()
+        self.cluster_1.service_env.service.business_owners = [self.user1]
+        self.cluster_1.service_env.service.technical_owners = [self.user2]
+        self.cluster_1.service_env.save()
 
     def test_create_cluster(self):
         url = reverse('cluster-list')
@@ -422,19 +434,18 @@ class ClusterAPITests(RalphAPITestCase):
         cluster = Cluster.objects.get(pk=response.data['id'])
         self.assertEqual(cluster.hostname, data['hostname'])
 
-    # TODO: waiting for #2423
-    # def test_create_cluster_without_hostname_or_name(self):
-    #     url = reverse('cluster-list')
-    #     data = {
-    #         'type': self.cluster_type.id,
-    #         'service_env': self.service_env.id,
-    #     }
-    #     response = self.client.post(url, data, format='json')
-    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-    #     self.assertEqual(response.data, {
-    #         'name': ['At least one of name or hostname is required'],
-    #         'hostname': ['At least one of name or hostname is required'],
-    #     })
+    def test_create_cluster_without_hostname_or_name(self):
+        url = reverse('cluster-list')
+        data = {
+            'type': self.cluster_type.id,
+            'service_env': self.service_env.id,
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {
+            'name': ['At least one of name or hostname is required'],
+            'hostname': ['At least one of name or hostname is required'],
+        })
 
     def test_list_cluster(self):
         url = reverse('cluster-list')
@@ -451,6 +462,12 @@ class ClusterAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], self.cluster_1.name)
         self.assertEqual(response.data['hostname'], self.cluster_1.hostname)
+        self.assertEqual(
+            response.data['business_owners'][0]['username'], 'user1'
+        )
+        self.assertEqual(
+            response.data['technical_owners'][0]['username'], 'user2'
+        )
         self.assertEqual(len(response.data['base_objects']), 2)
         self.assertCountEqual(response.data['base_objects'], [
             {
