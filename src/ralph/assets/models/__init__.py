@@ -27,6 +27,7 @@ from ralph.assets.models.components import (
     Ethernet,
     Memory,
     FibreChannelCard,
+    Processor
 )
 from ralph.assets.models.configuration import (
     ConfigurationClass,
@@ -57,6 +58,7 @@ __all__ = [
     'ModelVisualizationLayout',
     'ObjectModelType',
     'ProfitCenter',
+    'Processor',
     'Service',
     'ServiceEnvironment',
     'Ethernet',

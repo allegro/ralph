@@ -16,7 +16,12 @@ from ralph.assets.models.assets import (
 )
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
-from ralph.assets.models.components import Ethernet, FibreChannelCard, Memory
+from ralph.assets.models.components import (
+    Ethernet,
+    FibreChannelCard,
+    Memory,
+    Processor
+)
 from ralph.assets.models.configuration import (
     ConfigurationClass,
     ConfigurationModule
@@ -252,3 +257,13 @@ class FibreChannelCardFactory(DjangoModelFactory):
 
     class Meta:
         model = FibreChannelCard
+
+
+class ProcessorFactory(DjangoModelFactory):
+    base_object = factory.SubFactory(BaseObjectFactory)
+    speed = factory.Iterator([2500, 2600, 3000, 3200])
+    cores = factory.Iterator([4, 8, 16])
+    model_name = "Intel(R) Xeon(R) CPU"
+
+    class Meta:
+        model = Processor

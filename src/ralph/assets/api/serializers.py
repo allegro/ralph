@@ -27,7 +27,12 @@ from ralph.assets.models import (
     Service,
     ServiceEnvironment
 )
-from ralph.assets.models.components import Ethernet, FibreChannelCard, Memory
+from ralph.assets.models.components import (
+    Ethernet,
+    FibreChannelCard,
+    Memory,
+    Processor
+)
 from ralph.lib.custom_fields.api import WithCustomFieldsSerializerMixin
 from ralph.licences.api_simple import SimpleBaseObjectLicenceSerializer
 from ralph.networks.api_simple import IPAddressSimpleSerializer
@@ -322,8 +327,22 @@ class FibreChannelCardSerializer(FibreChannelCardSimpleSerializer):
         exclude = ('model',)
 
 
+class ProcessorSimpleSerializer(RalphAPISerializer):
+    class Meta:
+        model = Processor
+        fields = ('id', 'url', 'speed', 'cores')
+
+
+class ProcessorSerializer(ProcessorSimpleSerializer):
+    class Meta:
+        depth = 1
+        model = Processor
+        exclude = ('model',)
+
+
 # used by DataCenterAsset and VirtualServer serializers
 class NetworkComponentSerializerMixin(OwnersFromServiceEnvSerializerMixin):
+    # TODO(xor-xor): ethernet -> ethernets
     ethernet = EthernetSimpleSerializer(many=True, source='ethernet_set')
     ipaddresses = fields.SerializerMethodField()
 
@@ -348,6 +367,7 @@ class NetworkComponentSerializerMixin(OwnersFromServiceEnvSerializerMixin):
 # used by DataCenterAsset and VirtualServer serializers
 class ComponentSerializerMixin(NetworkComponentSerializerMixin):
     memory = MemorySimpleSerializer(many=True, source='memory_set')
+    processors = ProcessorSimpleSerializer(many=True, source='processor_set')
 
 
 class DCHostSerializer(ComponentSerializerMixin, BaseObjectSerializer):
