@@ -40,6 +40,13 @@ class TypeFromContentTypeSerializerMixin(RalphAPISerializer):
         return instance.content_type.model
 
 
+class OwnersFromServiceEnvSerializerMixin(RalphAPISerializer):
+    business_owners = SimpleRalphUserSerializer(
+        many=True, source='service_env.service.business_owners')
+    technical_owners = SimpleRalphUserSerializer(
+        many=True, source='service_env.service.technical_owners')
+
+
 class BusinessSegmentSerializer(RalphAPISerializer):
     class Meta:
         model = BusinessSegment
@@ -149,16 +156,16 @@ class ServiceEnvironmentSimpleSerializer(RalphAPISerializer):
         source='environment_name', read_only=True
     )
     service_uid = serializers.CharField(read_only=True)
-    business_owners = SimpleRalphUserSerializer(
-        many=True, source='service.business_owners')
-    technical_owners = SimpleRalphUserSerializer(
-        many=True, source='service.technical_owners')
+    # business_owners = SimpleRalphUserSerializer(
+    #     many=True, source='service.business_owners')
+    # technical_owners = SimpleRalphUserSerializer(
+    #     many=True, source='service.technical_owners')
 
     class Meta:
         model = ServiceEnvironment
         fields = (
             'id', 'service', 'environment', 'url', 'service_uid',
-            'business_owners', 'technical_owners'
+            # 'business_owners', 'technical_owners'
         )
         _skip_tags_field = True
 
@@ -323,7 +330,7 @@ class FibreChannelCardSerializer(FibreChannelCardSimpleSerializer):
 
 
 # used by DataCenterAsset and VirtualServer serializers
-class NetworkComponentSerializerMixin(serializers.Serializer):
+class NetworkComponentSerializerMixin(OwnersFromServiceEnvSerializerMixin):
     ethernet = EthernetSimpleSerializer(many=True, source='ethernet_set')
     ipaddresses = fields.SerializerMethodField()
 

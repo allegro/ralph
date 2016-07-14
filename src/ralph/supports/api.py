@@ -40,7 +40,7 @@ class SupportSerializer(TypeFromContentTypeSerializerMixin, RalphAPISerializer):
     class Meta:
         model = Support
         depth = 1
-        exclude = ('content_type', 'service_env')
+        exclude = ('content_type', 'service_env', 'configuration_path')
 
 
 class SupportViewSet(RalphAPIViewSet):
