@@ -422,7 +422,13 @@ def sync_network_to_ralph3(data):
     net.save()
 
     _handle_m2m(data['racks_ids'], Rack, net, 'racks')
-    _handle_m2m(data['dns_servers'], DNSServer, net, 'dns_servers')
+    dns_servers = []
+    for dns_ip in data['dns_servers']:
+        try:
+            dns_servers.append(DNSServer.objects.get(ip_address=dns_ip))
+        except DNSServer.DoesNotExist:
+            logger.error('DNS Server with ip {} not found'.format(dns_ip))
+    net.dns_servers = dns_servers
     if created:
         ImportedObjects.create(net, data['id'])
 
