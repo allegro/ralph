@@ -488,12 +488,17 @@ class Ralph2NetworkTestCase(TestCase):
         self.assertEqual(list(net.racks.all()), racks)
 
     def test_sync_should_update_dns(self):
-        id_range = list(range(1, 10))
-        dnss = [_create_imported_object(DNSServerFactory, i) for i in id_range]  # noqa
-        self.data['dns_servers'] = id_range
+        ips = ['10.20.30.40', '10.20.30.50', '10.20.30.60']
+        dnss = [DNSServerFactory(ip_address=ip) for ip in ips]
+        self.data['dns_servers'] = ips[:2]
         sync_network_to_ralph3(self.data)
         net = ImportedObjects.get_object_from_old_pk(Network, self.data['id'])
-        self.assertEqual(list(net.dns_servers.all()), dnss)
+        self.assertCountEqual(net.dns_servers.all(), dnss[:2])
+        # update
+        self.data['dns_servers'] = ips[1:]
+        sync_network_to_ralph3(self.data)
+        net.refresh_from_db()
+        self.assertCountEqual(net.dns_servers.all(), dnss[1:])
 
 
 class Ralph2NetworkKindTestCase(TestCase):
