@@ -23,6 +23,7 @@ from ralph.assets.models.choices import (
 from ralph.assets.models.components import (
     ComponentModel,
     Component,
+    Disk,
     GenericComponent,
     Ethernet,
     Memory,
@@ -50,6 +51,7 @@ __all__ = [
     'ComponentType',
     'ConfigurationClass',
     'ConfigurationModule',
+    'Disk',
     'Environment',
     'FibreChannelCard',
     'GenericComponent',
