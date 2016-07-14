@@ -326,7 +326,9 @@ OPENSTACK_INSTANCES = json.loads(os.environ.get('OPENSTACK_INSTANCES', '[]'))
 ISSUE_TRACKER_URL = os.environ.get('ISSUE_TRACKER_URL', '')
 
 # Networks
-DEFAULT_NETWORK_MARGIN = int(os.environ.get('DEFAULT_NETWORK_MARGIN', 10))
+DEFAULT_NETWORK_MARGIN = int(os.environ.get('DEFAULT_NETWORK_MARGIN', 10))  # deprecated, to remove in the future
+DEFAULT_NETWORK_TOP_MARGIN = int(os.environ.get('DEFAULT_NETWORK_TOP_MARGIN', 10))
+DEFAULT_NETWORK_BOTTOM_MARGIN = int(os.environ.get('DEFAULT_NETWORK_BOTTOM_MARGIN', 0))
 # when set to True, network records (IP/Ethernet) can't be modified until
 # 'expose in DHCP' is selected
 DHCP_ENTRY_FORBID_CHANGE = os_env_true('DHCP_ENTRY_FORBID_CHANGE', 'True')

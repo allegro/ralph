@@ -394,22 +394,14 @@ def sync_network_to_ralph3(data):
             )
     if 'gateway' in data:
         if data['gateway']:
-            IPAddress.objects.filter(
-                network=net,
-                is_gateway=True
-            ).delete()
-            IPAddress.objects.update_or_create(
+            net.gateway = IPAddress.objects.update_or_create(
                 address=data['gateway'],
                 defaults=dict(
-                    network=net,
                     is_gateway=True
                 )
-            )
+            )[0]
         else:
-            IPAddress.objects.filter(
-                network=net,
-                is_gateway=True
-            ).delete()
+            net.gateway = None
     net.network_environment = _get_obj(
         NetworkEnvironment, data['environment_id']
     )[0]

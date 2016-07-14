@@ -56,8 +56,10 @@ class DiscoveryQueueAdmin(RalphAdmin):
 
 
 class NetworkForm(RalphAdminFormMixin, ModelForm):
-    top_margin = forms.IntegerField(initial=settings.DEFAULT_NETWORK_MARGIN)
-    bottom_margin = forms.IntegerField(initial=settings.DEFAULT_NETWORK_MARGIN)
+    top_margin = forms.IntegerField(initial=settings.DEFAULT_NETWORK_TOP_MARGIN)
+    bottom_margin = forms.IntegerField(
+        initial=settings.DEFAULT_NETWORK_BOTTOM_MARGIN
+    )
 
     class Meta:
         model = Network
@@ -125,7 +127,7 @@ class NetworkAdmin(RalphMPTTAdmin):
         ('min_ip', NetworkRangeFilter)
     ]
     list_select_related = ['kind', 'network_environment']
-    raw_id_fields = ['racks', 'terminators', 'service_env']
+    raw_id_fields = ['racks', 'gateway', 'terminators', 'service_env']
     resource_class = resources.NetworkResource
     readonly_fields = [
         'show_subnetworks', 'show_addresses', 'show_parent_networks'
@@ -139,9 +141,9 @@ class NetworkAdmin(RalphMPTTAdmin):
     fieldsets = (
         (_('Basic info'), {
             'fields': [
-                'name', 'address', 'remarks', 'terminators', 'vlan', 'racks',
-                'network_environment', 'dns_servers', 'kind', 'service_env',
-                'dhcp_broadcast', 'top_margin', 'bottom_margin'
+                'name', 'address', 'gateway', 'remarks', 'terminators', 'vlan',
+                'racks', 'network_environment', 'dns_servers', 'kind',
+                'service_env', 'dhcp_broadcast', 'bottom_margin', 'top_margin',
             ]
         }),
         (_('Relations'), {
