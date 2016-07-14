@@ -145,7 +145,7 @@ class Table(object):
 
     def render(self, request=None):
         content = self.get_table_content()
-        context = {'show_header': self.transpose}
+        context = {'show_header': not self.transpose}
         if self.transpose:
             context.update({'rows': content})
         else:
