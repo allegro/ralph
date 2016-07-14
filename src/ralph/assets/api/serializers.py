@@ -156,16 +156,11 @@ class ServiceEnvironmentSimpleSerializer(RalphAPISerializer):
         source='environment_name', read_only=True
     )
     service_uid = serializers.CharField(read_only=True)
-    # business_owners = SimpleRalphUserSerializer(
-    #     many=True, source='service.business_owners')
-    # technical_owners = SimpleRalphUserSerializer(
-    #     many=True, source='service.technical_owners')
 
     class Meta:
         model = ServiceEnvironment
         fields = (
             'id', 'service', 'environment', 'url', 'service_uid',
-            # 'business_owners', 'technical_owners'
         )
         _skip_tags_field = True
 
@@ -184,9 +179,7 @@ class ServiceEnvironmentSerializer(
     class Meta:
         model = ServiceEnvironment
         depth = 1
-        exclude = (
-            'content_type', 'parent', 'service_env',
-        )
+        exclude = ('content_type', 'parent', 'service_env')
 
 
 class ManufacturerSerializer(RalphAPISerializer):
