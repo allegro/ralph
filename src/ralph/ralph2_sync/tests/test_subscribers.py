@@ -19,12 +19,15 @@ from ralph.data_center.models import Cluster
 from ralph.data_center.tests.factories import (
     ClusterFactory,
     DataCenterAssetFactory,
-    DataCenterFactory
+    DataCenterFactory,
+    RackFactory
 )
 from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
     ImportedObjects
 )
+from ralph.dhcp.models import DNSServer
+from ralph.dhcp.tests.factories import DNSServerFactory
 from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
 from ralph.networks.models import (
     IPAddress,
@@ -475,6 +478,22 @@ class Ralph2NetworkTestCase(TestCase):
         sync_network_to_ralph3(self.data)
         net = self._get_network()
         self.assertIsNone(net.gateway)
+
+    def test_sync_should_update_racks(self):
+        id_range = list(range(1, 10))
+        racks = [_create_imported_object(RackFactory, i) for i in id_range]  # noqa
+        self.data['racks_ids'] = id_range
+        sync_network_to_ralph3(self.data)
+        net = ImportedObjects.get_object_from_old_pk(Network, self.data['id'])
+        self.assertEqual(list(net.racks.all()), racks)
+
+    def test_sync_should_update_dns(self):
+        id_range = list(range(1, 10))
+        dnss = [_create_imported_object(DNSServerFactory, i) for i in id_range]  # noqa
+        self.data['dns_servers'] = id_range
+        sync_network_to_ralph3(self.data)
+        net = ImportedObjects.get_object_from_old_pk(Network, self.data['id'])
+        self.assertEqual(list(net.dns_servers.all()), dnss)
 
 
 class Ralph2NetworkKindTestCase(TestCase):
