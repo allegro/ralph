@@ -343,7 +343,7 @@ class ProcessorSerializer(ProcessorSimpleSerializer):
 
 class DiskSimpleSerializer(RalphAPISerializer):
     class Meta:
-        model = FibreChannelCard
+        model = Disk
         fields = (
             'id', 'url', 'size', 'serial_number', 'slot', 'firmware_version',
         )
