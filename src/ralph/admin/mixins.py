@@ -277,6 +277,10 @@ class RalphAdminMixin(RalphAutocompleteMixin):
             request, object_id, version_id, extra_context
         )
 
+    def recover_view(self, request, version_id, extra_context=None):
+        extra_context = self._add_recovery_to_extra_context(extra_context)
+        return super().recover_view(request, version_id, extra_context)
+
     def get_queryset(self, *args, **kwargs):
         if self._queryset_manager:
             return getattr(self.model, self._queryset_manager).all()
