@@ -333,6 +333,8 @@ def _handle_m2m(ids, model, target, field):
             obj, _ = _get_obj(model, obj_id)
             if obj:
                 objs.append(obj)
+            else:
+                logger.error('{} with id {} not found'.format(model, obj_id))
         setattr(target, field, objs)
 
 
