@@ -181,7 +181,8 @@ def network_sync(model, **options):
                 Q(min_ip__gte=int(net.network)) &
                 Q(max_ip__lte=int(net.broadcast))
             )
-    for obj in Network.objects.exclude(exclude):
+    # order networks by size (largest first)
+    for obj in Network.objects.exclude(exclude).order_by('min_ip', '-max_ip'):
         post_save.send(
             sender=model,
             instance=obj,
