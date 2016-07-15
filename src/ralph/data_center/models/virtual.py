@@ -72,11 +72,9 @@ class Cluster(BaseObject, models.Model):
 
     @cached_property
     def masters(self):
-        return BaseObject.polymorphic_objects.filter(
-            pk__in=self.baseobjectcluster_set.filter(
-                is_master=True
-            ).values_list('base_object_id', flat=True)
-        )
+        for obj in self.baseobjectcluster_set.all():
+            if obj.is_master:
+                yield obj
 
     def _validate_name_hostname(self):
         if not self.name and not self.hostname:

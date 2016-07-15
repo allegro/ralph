@@ -36,6 +36,12 @@ class ClusterSimpleSerializer(BaseObjectSerializer):
         depth = 1
 
 
+class BaseObjectClusterSimpleSerializer(RalphAPISerializer):
+    class Meta:
+        model = BaseObjectCluster
+        fields = ('id', 'url', 'base_object', 'is_master')
+
+
 class BaseObjectClusterSerializer(RalphAPISerializer):
     class Meta:
         model = BaseObjectCluster
@@ -45,7 +51,7 @@ class BaseObjectClusterSerializer(RalphAPISerializer):
 class ClusterSerializer(
     OwnersFromServiceEnvSerializerMixin, ClusterSimpleSerializer
 ):
-    base_objects = BaseObjectClusterSerializer(
+    base_objects = BaseObjectClusterSimpleSerializer(
         many=True, read_only=True, source='baseobjectcluster_set'
     )
     masters = serializers.HyperlinkedRelatedField(

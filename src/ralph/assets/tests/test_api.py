@@ -42,6 +42,7 @@ from ralph.data_center.tests.factories import (
 )
 from ralph.domains.models import Domain
 from ralph.domains.tests.factories import DomainFactory
+from ralph.lib.custom_fields.models import CustomField
 from ralph.licences.models import Licence
 from ralph.licences.tests.factories import LicenceFactory
 from ralph.networks.tests.factories import IPAddressFactory
@@ -511,6 +512,23 @@ class BaseObjectAPITests(RalphAPITestCase):
             if 'barcode' in item
         ]
         self.assertCountEqual(barcodes, set(['12345', '12543']))
+
+    def test_get_base_objects_list_different_type_with_custom_fields(self):
+        CustomField.objects.create(name='test_field')
+        self.dc_asset.update_custom_field('test_field', 'abc')
+        self.bo_asset.update_custom_field('test_field', 'def')
+        url = reverse('baseobject-list')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        count = 0
+        for item in response.data['results']:
+            if item['id'] == self.dc_asset.id:
+                self.assertEqual(item['custom_fields'], {'test_field': 'abc'})
+                count += 1
+            if item['id'] == self.bo_asset.id:
+                self.assertEqual(item['custom_fields'], {'test_field': 'def'})
+                count += 1
+        self.assertEqual(count, 2)
 
     def test_get_asset_model_details(self):
         url = reverse('baseobject-detail', args=(self.bo_asset.id,))
