@@ -3,7 +3,10 @@ from django.db.models import Prefetch
 
 from ralph.api import RalphAPIViewSet
 from ralph.assets.api.filters import NetworkableObjectFilters
-from ralph.assets.api.views import BaseObjectViewSet, BaseObjectViewSetMixin
+from ralph.assets.api.views import (
+    base_object_descendant_prefetch_related,
+    BaseObjectViewSetMixin
+)
 from ralph.assets.models import Ethernet
 from ralph.data_center.admin import DataCenterAssetAdmin
 from ralph.data_center.api.serializers import (
@@ -47,7 +50,7 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         'rack', 'rack__server_room', 'rack__server_room__data_center',
         'property_of', 'budget_info', 'content_type'
     ]
-    prefetch_related = BaseObjectViewSet.prefetch_related + [
+    prefetch_related = base_object_descendant_prefetch_related + [
         'connections',
         'tags',
         'memory_set',
@@ -118,6 +121,6 @@ class ClusterViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         'type', 'parent', 'service_env', 'service_env__service',
         'service_env__environment', 'configuration_path', 'content_type'
     ]
-    prefetch_related = BaseObjectViewSet.prefetch_related + [
-        'tags', 'baseobjectcluster_set',
+    prefetch_related = base_object_descendant_prefetch_related + [
+        'tags', 'baseobjectcluster_set'
     ]

@@ -12,7 +12,10 @@ from ralph.assets.api.serializers import (
     NetworkComponentSerializerMixin,
     ServiceEnvironmentSimpleSerializer
 )
-from ralph.assets.api.views import BaseObjectViewSet, BaseObjectViewSetMixin
+from ralph.assets.api.views import (
+    base_object_descendant_prefetch_related,
+    BaseObjectViewSetMixin
+)
 from ralph.assets.models import Ethernet
 from ralph.data_center.api.serializers import DataCenterAssetSimpleSerializer
 from ralph.data_center.models import DataCenterAsset
@@ -170,7 +173,7 @@ class CloudHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         'parent', 'parent__cloudproject', 'cloudprovider', 'hypervisor',
         'service_env__service', 'service_env__environment', 'content_type'
     ]
-    prefetch_related = BaseObjectViewSet.prefetch_related + [
+    prefetch_related = base_object_descendant_prefetch_related + [
         'tags', 'cloudflavor__virtualcomponent_set__model', 'licences',
         Prefetch(
             'ethernet_set',
@@ -205,7 +208,7 @@ class VirtualServerViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         'parent', 'service_env__service', 'service_env__environment',
         'configuration_path', 'content_type'
     ]
-    prefetch_related = BaseObjectViewSet.prefetch_related + [
+    prefetch_related = base_object_descendant_prefetch_related + [
         'tags',
         'memory_set',
         Prefetch(

@@ -2,7 +2,7 @@
 from ralph.accounts.api_simple import SimpleRalphUserSerializer
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.assets.api.serializers import AssetSerializer
-from ralph.assets.api.views import BaseObjectViewSet
+from ralph.assets.api.views import base_object_descendant_prefetch_related
 from ralph.back_office.admin import BackOfficeAssetAdmin
 from ralph.back_office.models import (
     BackOfficeAsset,
@@ -53,7 +53,7 @@ class BackOfficeAssetViewSet(RalphAPIViewSet):
         'user', 'owner', 'property_of', 'office_infrastructure',
         'budget_info'
     ]
-    prefetch_related = BaseObjectViewSet.prefetch_related + [
+    prefetch_related = base_object_descendant_prefetch_related + [
         'user__groups', 'user__user_permissions',
         'service_env__service__environments',
         'service_env__service__business_owners',

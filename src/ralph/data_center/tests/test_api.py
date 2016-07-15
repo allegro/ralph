@@ -449,7 +449,8 @@ class ClusterAPITests(RalphAPITestCase):
 
     def test_list_cluster(self):
         url = reverse('cluster-list')
-        response = self.client.get(url, format='json')
+        with self.assertNumQueries(12):
+            response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 2)
         for item in response.data['results']:
@@ -458,7 +459,8 @@ class ClusterAPITests(RalphAPITestCase):
 
     def test_get_cluster_details(self):
         url = reverse('cluster-detail', args=(self.cluster_1.id,))
-        response = self.client.get(url, format='json')
+        with self.assertNumQueries(10):
+            response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], self.cluster_1.name)
         self.assertEqual(response.data['hostname'], self.cluster_1.hostname)
@@ -481,7 +483,6 @@ class ClusterAPITests(RalphAPITestCase):
                     )
                 ),
                 'is_master': self.boc_1.is_master,
-                'cluster': self.get_full_url(url),
             },
             {
                 'id': self.boc_2.id,
@@ -492,6 +493,5 @@ class ClusterAPITests(RalphAPITestCase):
                     'baseobject-detail', args=(self.boc_2.base_object.id,)
                 )),
                 'is_master': self.boc_2.is_master,
-                'cluster': self.get_full_url(url),
             }
         ])
