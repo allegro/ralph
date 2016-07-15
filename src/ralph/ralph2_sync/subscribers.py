@@ -4,9 +4,10 @@ from contextlib import ExitStack
 from functools import wraps
 
 import pyhermes
+import time
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.db import transaction
+from django.db import connection, transaction
 
 from ralph.accounts.models import Team
 from ralph.assets.models import (
@@ -419,8 +420,7 @@ def sync_network_to_ralph3(data):
         NetworkEnvironment, data['environment_id']
     )[0]
     net.kind = _get_obj(NetworkKind, data['kind_id'])[0]
-    net.save(enable_save_descendants=settings.ENABLE_SAVE_DESCENDANTS_DURING_NETWORK_SYNC)  # noqa
-
+    net.save(update_subnetworks_parent=settings.ENABLE_SAVE_DESCENDANTS_DURING_NETWORK_SYNC)  # noqa
     _handle_m2m(data['racks_ids'], Rack, net, 'racks')
     dns_servers = []
     for dns_ip in data['dns_servers']:

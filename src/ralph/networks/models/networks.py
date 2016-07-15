@@ -12,7 +12,6 @@ from django.db.models import Q
 from django.db.models.signals import post_migrate
 from django.db.utils import ProgrammingError
 from django.dispatch import receiver
-from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
@@ -264,10 +263,7 @@ class Network(
         return self.max_ip - self.min_ip - 1
 
     @property
-    def _address_has_changed(self):
-        """
-        Returns True if address of the network has changed
-        """
+    def _has_address_changed(self):
         return self.address != self._old_address
 
     class Meta:
@@ -304,7 +300,11 @@ class Network(
         )
         creating = not self.pk
         # store previous subnetworks to update them when address has changed
-        if self._address_has_changed and update_subnetworks_parent:
+        if (
+            self._address_has_changed and
+            update_subnetworks_parent and
+            not creating
+        ):
             prev_subnetworks = self.get_immediate_subnetworks()
         else:
             prev_subnetworks = []
