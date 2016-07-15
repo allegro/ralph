@@ -108,7 +108,6 @@ def _get_configuration_path_from_venture_role(venture_role_id):
 
 def _handle_management_ip(dca, management_ip, management_hostname):
     if management_ip:
-        print(management_ip, management_hostname)
         try:
             ip = IPAddress.objects.get(address=management_ip)
         except IPAddress.DoesNotExist:
@@ -119,6 +118,7 @@ def _handle_management_ip(dca, management_ip, management_hostname):
             ip.is_management = True
             ip.save()
         dca.management_hostname = management_hostname
+        dca.save()
     else:
         del dca.management_ip
 
