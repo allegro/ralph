@@ -70,6 +70,28 @@ class Cluster(BaseObject, models.Model):
     def __str__(self):
         return '{} ({})'.format(self.name or self.hostname, self.type)
 
+    @property
+    def publish_data(self):
+        location, ipaddresses = [], []
+        master = None
+        if self.masters:
+            master = self.masters[0]
+            location = master.get_location()
+            ipaddresses = list(master.ipaddresses.all().values_list(
+                'address', flat=True
+            ))
+
+        return {
+            'hostname': self.hostname,
+            'model': master.model.name if master else '',
+            'configuration_path': (
+                self.configuration_path.path if self.configuration_path else ''
+            ),
+            'location': ' / '.join(location),
+            'service_env': str(self.service_env),
+            'ipaddresses': ipaddresses
+        }
+
     @cached_property
     def masters(self):
         return BaseObject.polymorphic_objects.filter(

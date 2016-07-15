@@ -410,6 +410,35 @@ class DataCenterAsset(NetworkableBaseObject, AutocompleteTooltipMixin, Asset):
     def get_orientation_desc(self):
         return Orientation.name_from_id(self.orientation)
 
+    def get_location(self):
+        location = []
+        if self.rack:
+            location.extend([
+                self.rack.server_room.data_center.name,
+                self.rack.server_room.name,
+                self.rack.name
+            ])
+        if self.position:
+            location.append(str(self.position))
+        if self.slot_no:
+            location.append(str(self.slot_no))
+        return location
+
+    @property
+    def publish_data(self):
+        return {
+            'hostname': self.hostname,
+            'model': self.model.name,
+            'configuration_path': (
+                self.configuration_path.path if self.configuration_path else ''
+            ),
+            'location': ' / '.join(self.get_location()),
+            'service_env': str(self.service_env),
+            'ipaddresses': list(self.ipaddresses.all().values_list(
+                'address', flat=True
+            ))
+        }
+
     @property
     def is_blade(self):
         if self.model_id and self.model.has_parent:
