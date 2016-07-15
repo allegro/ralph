@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+if [ -z "$2" ]; then
+  # do install stuff
+else
+  /opt/ralph/ralph-core/bin/ralph migrate
+  /opt/ralph/ralph-core/bin/ralph sitetree_resync_apps
+fi
+
+#DEBHELPER#
+
+exit 0
