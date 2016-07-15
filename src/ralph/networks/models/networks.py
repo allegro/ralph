@@ -220,7 +220,7 @@ class Network(
         blank=True,
     )
 
-    @cached_property
+    @property
     def network(self):
         return ipaddress.ip_network(self.address, strict=False)
 
@@ -263,10 +263,21 @@ class Network(
             return 2
         return self.max_ip - self.min_ip - 1
 
+    @property
+    def _address_has_changed(self):
+        """
+        Returns True if address of the network has changed
+        """
+        return self.address != self._old_address
+
     class Meta:
         verbose_name = _('network')
         verbose_name_plural = _('networks')
         unique_together = ('min_ip', 'max_ip')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._old_address = self.address
 
     def __str__(self):
         return '{} ({} | VLAN: {})'.format(self.name, self.address, self.vlan)
@@ -288,14 +299,30 @@ class Network(
             self.gateway.status = IPAddressStatus.reserved
             self.gateway.save()
 
-        enable_save_descendants = kwargs.pop('enable_save_descendants', True)
+        update_subnetworks_parent = kwargs.pop(
+            'update_subnetworks_parent', True
+        )
+        creating = not self.pk
+        # store previous subnetworks to update them when address has changed
+        if self._address_has_changed and update_subnetworks_parent:
+            prev_subnetworks = self.get_immediate_subnetworks()
+        else:
+            prev_subnetworks = []
+
         self.min_ip = int(self.network_address)
         self.max_ip = int(self.broadcast_address)
         self._assign_parent()
         super(Network, self).save(*args, **kwargs)
-        self._assign_ips_to_network()
-        if enable_save_descendants:
-            self._update_subnetworks_parent()
+
+        # change related ips and (sub)networks only if address has changed
+        if self._address_has_changed or creating:
+            # after changing address, assign new ips to this network
+            self._assign_new_ips_to_network()
+            # change also ip addresses which are no longer in scope of current
+            # network
+            self._unassign_ips_from_network()
+            if update_subnetworks_parent:
+                self._update_subnetworks_parent(prev_subnetworks)
 
     def delete(self):
         # Save fake address so that all children of network changed its
@@ -305,24 +332,64 @@ class Network(
             self.save()
             super().delete()
 
-    def _update_subnetworks_parent(self):
-        for network in self.__class__.objects.all():
-            network.save(enable_save_descendants=False)
+    def _update_subnetworks_parent(self, prev_subnetworks):
+        """
+        When address change, update information about parent in previous and
+        current subnetworks.
+        """
+        # re-save previous subnetworks
+        for network in prev_subnetworks:
+            network.save(update_subnetworks_parent=False)
+        # re-save current subnetworks
+        for network in self.get_immediate_subnetworks():
+            network.save(update_subnetworks_parent=False)
+        # current network is intermediate network between previous parent and
+        # previous child - re-save child to assign current network as a parent
+        # example:
+        # previous state:
+        # * netX: 10.20.30.0/24 (parent)
+        # * netY: 10.20.30.240/28 (child)
+        # adding new network netZ 10.20.30.128/25
+        # -> should change parent of netY to netZ
+        for network in self.__class__._default_manager.filter(
+            parent=self.parent, min_ip__gte=self.min_ip, max_ip__lte=self.max_ip
+        ):
+            network.save(update_subnetworks_parent=False)
 
-    def _assign_ips_to_network(self):
-        self, IPAddress.objects.exclude(
+    def _assign_new_ips_to_network(self):
+        """
+        Filter IP addresses in scope of this network and save them, to
+        (possibly) assign them to current network (according to rules in
+        IPAddress.save)
+        """
+        for ip in IPAddress.objects.exclude(
             network=self,
         ).exclude(
             network__in=self.get_subnetworks()
         ).filter(
             number__gte=self.min_ip,
             number__lte=self.max_ip
-        ).update(
-            network=self
-        )
+        ):
+            # call save instead of update - ip might be assigned to another
+            # (smaller) network, which became subnetwork of current network
+            ip.save()
+
+    def _unassign_ips_from_network(self):
+        """
+        Filter IPAddresses which are assigned to current network, but should
+        NOT be (their address is not in scope of current network) and save them
+        (to reassign them to another network).
+        """
+        for ip in IPAddress.objects.filter(
+            network=self, number__lt=self.min_ip, number__gt=self.max_ip
+        ):
+            ip.save()
 
     def get_subnetworks(self):
         return self.get_descendants()
+
+    def get_immediate_subnetworks(self):
+        return self.get_children()
 
     def reserve_margin_addresses(self, bottom_count=0, top_count=0):
         ips = []
