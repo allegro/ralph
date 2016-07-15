@@ -4,10 +4,9 @@ from contextlib import ExitStack
 from functools import wraps
 
 import pyhermes
-import time
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.db import connection, transaction
+from django.db import transaction
 
 from ralph.accounts.models import Team
 from ralph.assets.models import (
