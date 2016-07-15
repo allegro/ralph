@@ -301,7 +301,7 @@ class Network(
         creating = not self.pk
         # store previous subnetworks to update them when address has changed
         if (
-            self._address_has_changed and
+            self._has_address_changed and
             update_subnetworks_parent and
             not creating
         ):
@@ -315,7 +315,7 @@ class Network(
         super(Network, self).save(*args, **kwargs)
 
         # change related ips and (sub)networks only if address has changed
-        if self._address_has_changed or creating:
+        if self._has_address_changed or creating:
             # after changing address, assign new ips to this network
             self._assign_new_ips_to_network()
             # change also ip addresses which are no longer in scope of current
