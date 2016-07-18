@@ -17,6 +17,7 @@ from ralph.assets.models.assets import (
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
 from ralph.assets.models.components import (
+    Disk,
     Ethernet,
     FibreChannelCard,
     Memory,
@@ -267,3 +268,17 @@ class ProcessorFactory(DjangoModelFactory):
 
     class Meta:
         model = Processor
+
+
+class DiskFactory(DjangoModelFactory):
+    base_object = factory.SubFactory(BaseObjectFactory)
+    size = factory.Iterator([476, 256])
+    serial_number = factory.Sequence(lambda n: 'S1234{}'.format(n))
+    slot = factory.Iterator([0, 1, 2, 3, 4, 5, 6, 7])
+    firmware_version = factory.Iterator(
+        ['1.1.1', '1.1.2', '1.1.3', '1.1.4', '1.1.5']
+    )
+    model_name = factory.Iterator(["ATA Samsung SSD", "Toshiba SSD"])
+
+    class Meta:
+        model = Disk

@@ -28,6 +28,7 @@ from ralph.assets.models import (
     ServiceEnvironment
 )
 from ralph.assets.models.components import (
+    Disk,
     Ethernet,
     FibreChannelCard,
     Memory,
@@ -340,6 +341,21 @@ class ProcessorSerializer(ProcessorSimpleSerializer):
         exclude = ('model',)
 
 
+class DiskSimpleSerializer(RalphAPISerializer):
+    class Meta:
+        model = Disk
+        fields = (
+            'id', 'url', 'size', 'serial_number', 'slot', 'firmware_version',
+        )
+
+
+class DiskSerializer(DiskSimpleSerializer):
+    class Meta:
+        depth = 1
+        model = Disk
+        exclude = ('model',)
+
+
 # used by DataCenterAsset and VirtualServer serializers
 class NetworkComponentSerializerMixin(OwnersFromServiceEnvSerializerMixin):
     # TODO(xor-xor): ethernet -> ethernets
@@ -366,6 +382,7 @@ class NetworkComponentSerializerMixin(OwnersFromServiceEnvSerializerMixin):
 
 # used by DataCenterAsset and VirtualServer serializers
 class ComponentSerializerMixin(NetworkComponentSerializerMixin):
+    disk = DiskSimpleSerializer(many=True, source='disk_set')
     memory = MemorySimpleSerializer(many=True, source='memory_set')
     processors = ProcessorSimpleSerializer(many=True, source='processor_set')
 

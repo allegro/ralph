@@ -167,6 +167,13 @@ class ProcessorViewSet(RalphAPIViewSet):
     prefetch_related = ['base_object', 'base_object__tags']
 
 
+class DiskViewSet(RalphAPIViewSet):
+    queryset = models.Disk.objects.all()
+    serializer_class = serializers.DiskSerializer
+    filter_fields = ['base_object', 'serial_number', 'size']
+    prefetch_related = ['base_object', 'base_object__tags']
+
+
 class ConfigurationModuleViewSet(RalphAPIViewSet):
     queryset = models.ConfigurationModule.objects.all()
     serializer_class = serializers.ConfigurationModuleSerializer

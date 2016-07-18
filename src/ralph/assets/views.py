@@ -3,6 +3,7 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.admin import RalphTabularInline
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.assets.models.components import (
+    Disk,
     FibreChannelCard,
     GenericComponent,
     Memory,
@@ -45,9 +46,17 @@ class ComponentsAdminView(RalphDetailViewAdmin):
         )
         extra = 1
 
+    class DiskInline(RalphTabularInline):
+        model = Disk
+        fields = (
+            'model_name', 'size', 'serial_number', 'slot', 'firmware_version',
+        )
+        extra = 1
+
     inlines = [
         GenericComponentInline,
         MemoryInline,
         FibreChannelCardInline,
         ProcessorInline,
+        DiskInline,
     ]

@@ -60,6 +60,7 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         ),
         'fibrechannelcard_set',
         'processor_set',
+        'disk_set',
     ]
     filter_fields = [
         'service_env__service__uid',

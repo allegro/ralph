@@ -220,3 +220,25 @@ class Processor(Component):
 
     def __str__(self):
         return self.model_name
+
+
+class Disk(Component):
+    size = models.PositiveIntegerField(verbose_name=_("size (GiB)"))
+    serial_number = models.CharField(
+        verbose_name=_('serial number'), max_length=255, blank=True,
+        null=True,
+    )
+    slot = models.PositiveIntegerField(
+        verbose_name=_("slot number"), null=True, blank=True,
+    )
+    firmware_version = models.CharField(
+        verbose_name=_('firmware version'), max_length=255, blank=True,
+        null=True,
+    )
+
+    class Meta:
+        verbose_name = _('disk')
+        verbose_name_plural = _('disks')
+
+    def __str__(self):
+        return 'model: "{}", size: "{}"'.format(self.model_name, self.size)
