@@ -251,7 +251,9 @@ mappers = {
             'terminators': network_terminators_diff,
             'vlan': ('vlan', 'vlan'),
             'racks': network_racks_diff,
-            'network_environment': foreign_key_diff('environment', 'network_environment'),
+            'network_environment': foreign_key_diff(
+                'environment', 'network_environment'
+            ),
             'kind': foreign_key_diff('kind', 'kind'),
             'dhcp_broadcast': ('dhcp_broadcast', 'dhcp_broadcast'),
             'dns_servers': network_dns_servers_diff,
