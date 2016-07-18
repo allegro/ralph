@@ -303,6 +303,33 @@ def sync_network_to_ralph3(sender, instance=None, created=False, **kwargs):
             except Rack.DoesNotExist:
                 pass
 
+    def get_terminators_ids(net):
+        result = []
+        for terminator in net.terminators.all():
+            name = terminator.name
+            try:
+                dev = Device.objects.get(name=name)
+            except Device.DoesNotExist:
+                logger.warning(
+                    'Device/Terminator with name {} not found'.format(name)
+                )
+            except Device.MultipleObjectsReturned:
+                logger.error(
+                    'Multiple Devices returned for name {}'.format(name)
+                )
+            else:
+                if dev.model and dev.model.type == DeviceType.switch_stack:
+                    result.append(('StackedSwitch', dev.id))
+                else:
+                    asset = dev.get_asset(manager='admin_objects')
+                    if not asset:
+                        logger.warning(
+                            'Asset for terminator {} not found'.format(name)
+                        )
+                    else:
+                        result.append(('DataCenterAsset', asset.id))
+        return result
+
     try:
         network_address = ipaddr.IPNetwork(net.address, strict=True)
     except ValueError:
@@ -330,6 +357,7 @@ def sync_network_to_ralph3(sender, instance=None, created=False, **kwargs):
         'dns_servers': list(
             net.custom_dns_servers.all().values_list('ip_address', flat=True)  # noqa
         ),
+        'terminators': get_terminators_ids(net),
     }
 
 

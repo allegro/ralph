@@ -8,10 +8,13 @@ from __future__ import unicode_literals
 import logging
 import re
 import time
+import sys
+from ipaddr import AddressValueError, IPv4Network
 from optparse import make_option
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.db.models import Q
 from django.db.models.signals import post_save
 
 from ralph.business.models import (
@@ -161,6 +164,34 @@ def device_role_properties_sync(model, **options):
     _device_partial_sync(['id', 'custom_fields'], **options)
 
 
+def network_sync(model, **options):
+    exclude = Q()
+    for network in (options.get('exclude_network', []) or []):
+        try:
+            net = IPv4Network(network)
+        except AddressValueError:
+            print(
+                "Value '{}' for '--exclude-network' is not CIDR format".format(
+                    network
+                )
+            )
+            sys.exit(1)
+        else:
+            exclude |= Q(
+                Q(min_ip__gte=int(net.network)) &
+                Q(max_ip__lte=int(net.broadcast))
+            )
+    # order networks by size (largest first)
+    for obj in Network.objects.exclude(exclude).order_by('min_ip', '-max_ip'):
+        post_save.send(
+            sender=model,
+            instance=obj,
+            raw=None,
+            using='default',
+        )
+        time.sleep(options['sleep'])
+
+
 models_handlers = {
     'Venture': (Venture, venture_sync),
     'VentureRole': (VentureRole, venture_role_sync),
@@ -171,7 +202,7 @@ models_handlers = {
     'StackedSwitch': (Device, stacked_switch_sync),
     'DeviceVentureOnly': (Device, device_venture_sync),
     'DeviceRolePropertiesOnly': (Device, device_role_properties_sync),
-    'Network': (Network, generic_sync),
+    'Network': (Network, network_sync),
     'NetworkKind': (NetworkKind, generic_sync),
     'NetworkEnvironment': (NetworkEnvironment, generic_sync),
 }
@@ -201,6 +232,12 @@ class Command(BaseCommand):
             type=int,
             default=0,
             help='Sleep time after each sync in seconds'
+        ),
+        make_option(
+            '--exclude-network',
+            action="append",
+            help='Excludes network from address, eg.: --exclude-network=10.20.30.0/24',  # noqa
+            type="str"
         ),
     )
 

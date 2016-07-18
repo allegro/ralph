@@ -14,14 +14,17 @@ from ralph.cmdb.tests.utils import (
     DeviceEnvironmentFactory,
     ServiceCatalogFactory
 )
-from ralph.discovery.models import DeviceType, Device, IPAddress, Network
-from ralph.dnsedit.models import DHCPEntry
+from ralph.discovery.models import (
+    DeviceType,
+    Device,
+    Network,
+    NetworkTerminator
+)
 from ralph.discovery.tests.util import (
     DeprecatedRackFactory,
     DNSServerFactory,
     NetworkFactory,
     EnvironmentFactory,
-    DeprecatedDataCenterFactory,
     DataCenterFactory as NetworkDataCenter
 )
 from ralph.export_to_ng.publishers import (
@@ -36,7 +39,6 @@ from ralph.export_to_ng.publishers import (
 from ralph_assets.tests.utils.assets import (
     DCAssetFactory, DataCenterFactory, RackFactory
 )
-from ralph_assets.models_dc_assets import DeprecatedRalphDC
 
 
 @override_settings(
@@ -312,6 +314,7 @@ class NetworkPublisherTestCase(TestCase):
             'kind_id': self.net.kind_id,
             'racks_ids': [],
             'dns_servers': [],
+            'terminators': [],
         })
 
     def test_reserved_ips(self):
@@ -342,6 +345,35 @@ class NetworkPublisherTestCase(TestCase):
             sync_network_to_ralph3(Network, self.net)['dns_servers'],
             [str(dns.ip_address) for dns in servers]
         )
+
+    def test_terminators(self):
+        asset = DCAssetFactory()
+        device = asset.get_ralph_device()
+        device.name = 'asset1.mydc.net'
+        device.save()
+
+        stacked_switch = Device.create(
+            sn='11', model_name='Juniper stacked switch',
+            model_type=DeviceType.switch_stack
+        )
+        stacked_switch.name = 'ss1.mydc.net'
+        stacked_switch.save()
+
+        self.net.terminators.add(
+            NetworkTerminator.objects.create(name='asset1.mydc.net')
+        )
+        self.net.terminators.add(
+            NetworkTerminator.objects.create(name='ss1.mydc.net')
+        )
+        self.net.terminators.add(
+            NetworkTerminator.objects.create(name='unknown.mydc.net')
+        )
+
+        result = sync_network_to_ralph3(Network, self.net)
+        self.assertItemsEqual(result['terminators'], [
+            ('StackedSwitch', stacked_switch.id),
+            ('DataCenterAsset', asset.id),
+        ])
 
 
 @override_settings(
