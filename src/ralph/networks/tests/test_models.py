@@ -256,6 +256,61 @@ class NetworkTest(RalphTestCase):
         ip.refresh_from_db()
         self.assertTrue(ip)
 
+    def test_reserved_count(self):
+        net = Network.objects.create(
+            name='net', address='192.169.58.0/24'
+        )
+        self.assertEqual(net.reserved_bottom, 0)
+        self.assertEqual(net.reserved_top, 0)
+
+        # add one reserved IP
+        ip11 = IPAddress.objects.create(
+            address='192.169.58.1', status=IPAddressStatus.reserved
+        )
+        self.assertEqual(net.reserved_bottom, 1)
+        ip21 = IPAddress.objects.create(
+            address='192.169.58.255', status=IPAddressStatus.reserved
+        )
+        self.assertEqual(net.reserved_top, 1)
+
+        # add another reserved IP on both sides
+        ip12 = IPAddress.objects.create(
+            address='192.169.58.2', status=IPAddressStatus.reserved
+        )
+        self.assertEqual(net.reserved_bottom, 2)
+        ip22 = IPAddress.objects.create(
+            address='192.169.58.254', status=IPAddressStatus.reserved
+        )
+        self.assertEqual(net.reserved_top, 2)
+
+        # add more reserved IPs inside network
+        IPAddress.objects.create(
+            address='192.169.58.3', status=IPAddressStatus.reserved
+        )
+        IPAddress.objects.create(
+            address='192.169.58.253', status=IPAddressStatus.reserved
+        )
+        IPAddress.objects.create(
+            address='192.169.58.10', status=IPAddressStatus.reserved
+        )
+        IPAddress.objects.create(
+            address='192.169.58.240', status=IPAddressStatus.reserved
+        )
+        import ipdb; ipdb.set_trace()
+        self.assertEqual(net.reserved_bottom, 3)
+        self.assertEqual(net.reserved_top, 3)
+
+        # delete reversed IPs
+        ip12.delete()
+        ip22.delete()
+        self.assertEqual(net.reserved_bottom, 1)
+        self.assertEqual(net.reserved_top, 1)
+
+        ip11.delete()
+        ip21.delete()
+        self.assertEqual(net.reserved_bottom, 0)
+        self.assertEqual(net.reserved_top, 0)
+
 
 class NetworkEnvironmentTest(RalphTestCase):
     def test_issue_next_hostname(self):

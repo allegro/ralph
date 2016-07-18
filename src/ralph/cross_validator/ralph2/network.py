@@ -26,6 +26,13 @@ class Environment(models.Model):
         pass
 
 
+class NetworkTerminator(models.Model):
+    name = models.CharField(max_length=255)
+
+    class Meta(generate_meta(app_label='discovery', model_name='networkterminator')):  # noqa
+        pass
+
+
 class DNSServer(models.Model):
     ip_address = models.IPAddressField(unique=True)
     is_default = models.BooleanField(default=False)
