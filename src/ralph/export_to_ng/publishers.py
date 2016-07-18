@@ -53,7 +53,6 @@ def ralph3_sync(model, topic=None):
                 # `_handle_post_save` set to False
                 getattr(instance, '_handle_post_save', True)
             ):
-                result = func(sender, instance, **kwargs)
                 try:
                     if result:
                         pyhermes.publish(topic_name, result)
@@ -96,13 +95,6 @@ def _get_custom_fields(device):
 def _get_ips_list(device):
     ips_list = []
 
-    def in_dhcp(ip):
-        return bool(
-            not ip.is_management and
-            DHCPEntry.objects.filter(ip=ip.address).exists() and
-            (ip.network and ip.network.dhcp_broadcast)
-        )
-
     def get_mac(ip):
         mac = ''
         try:
@@ -116,12 +108,13 @@ def _get_ips_list(device):
         return mac
 
     for ip in device.ipaddress_set.all():
+        mac = get_mac(ip)
         ips_list.append({
             'address': ip.address,
             'hostname': ip.hostname,
             'is_management': ip.is_management,
-            'mac': get_mac(ip),
-            'dhcp_expose': in_dhcp(ip)
+            'mac': mac,
+            'dhcp_expose': bool(mac)
         })
     return {
         'ips': ips_list
