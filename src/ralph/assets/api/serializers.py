@@ -31,7 +31,7 @@ from ralph.assets.models.components import (
     Disk,
     Ethernet,
     FibreChannelCard,
-    Memory
+    Memory,
     Processor
 )
 from ralph.lib.custom_fields.api import WithCustomFieldsSerializerMixin
