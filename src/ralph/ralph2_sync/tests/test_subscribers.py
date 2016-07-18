@@ -433,6 +433,7 @@ class Ralph2NetworkTestCase(TestCase):
             'kind_id': 1,
             'racks_ids': [],
             'dns_servers': [],
+            'terminators': [],
         }
 
     def _get_network(self):
@@ -499,6 +500,21 @@ class Ralph2NetworkTestCase(TestCase):
         sync_network_to_ralph3(self.data)
         net.refresh_from_db()
         self.assertCountEqual(net.dns_servers.all(), dnss[1:])
+
+    def test_sync_should_update_terminators(self):
+        self.data['terminators'] = [
+            ('DataCenterAsset', 1111),
+            ('StackedSwitch', 2222)
+        ]
+        dca = _create_imported_object(
+            factory=DataCenterAssetFactory, old_id=1111,
+        )
+        cluster = _create_imported_object(
+            factory=ClusterFactory, old_id=2222,
+        )
+        sync_network_to_ralph3(self.data)
+        net = ImportedObjects.get_object_from_old_pk(Network, self.data['id'])
+        self.assertCountEqual(net.terminators.all(), [dca, cluster])
 
 
 class Ralph2NetworkKindTestCase(TestCase):
