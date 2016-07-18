@@ -296,7 +296,6 @@ class NetworkTest(RalphTestCase):
         IPAddress.objects.create(
             address='192.169.58.240', status=IPAddressStatus.reserved
         )
-        import ipdb; ipdb.set_trace()
         self.assertEqual(net.reserved_bottom, 3)
         self.assertEqual(net.reserved_top, 3)
 
