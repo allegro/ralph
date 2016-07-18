@@ -419,8 +419,7 @@ def sync_network_to_ralph3(data):
         NetworkEnvironment, data['environment_id']
     )[0]
     net.kind = _get_obj(NetworkKind, data['kind_id'])[0]
-    net.save()
-
+    net.save(update_subnetworks_parent=settings.ENABLE_SAVE_DESCENDANTS_DURING_NETWORK_SYNC)  # noqa
     _handle_m2m(data['racks_ids'], Rack, net, 'racks')
     dns_servers = []
     for dns_ip in data['dns_servers']:

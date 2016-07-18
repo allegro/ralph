@@ -206,9 +206,9 @@ class NetworkTest(RalphTestCase):
             name='net3', address='10.20.30.128/25'
         )
 
-        self.refresh_objects_from_db(net2)
+        self.refresh_objects_from_db(net2, net3)
         self.assertEqual(net2.parent, net3)
-
+        self.assertIn(net2, net3.get_immediate_subnetworks())
         self.assertEqual(net3.parent, net1)
 
         net4 = Network.objects.create(
