@@ -1,7 +1,7 @@
 from django.db import models
 
 from ralph.cross_validator.ralph2 import generate_meta
-from .device import Device
+from ralph.cross_validator.ralph2.device import Device
 
 
 class DataCenter(models.Model):

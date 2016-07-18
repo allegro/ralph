@@ -122,12 +122,12 @@ def network_racks_diff(old, new):
 
 def network_dns_servers_diff(old, new):
     old_dns = set(old.custom_dns_servers.values_list('ip_address', flat=True))
-    new_dns = set(new.dns_servers.values_list('ip_address'), flat=True)
+    new_dns = set(new.dns_servers.values_list('ip_address', flat=True))
     diff = old_dns - new_dns
     if diff:
         return {
-            'old': list(old_dns),
-            'new': list(new_dns)
+            'old': list(map(str, old_dns)),
+            'new': list(map(str, new_dns))
         }
 
 
@@ -149,6 +149,18 @@ def network_reserved_top_diff(old, new):
             'old': old_reserved,
             'new': new_reserved,
         }
+
+
+def ip_diff(old_path, new_path):
+    def diff(old, new):
+        old_ip = str(getattr_dunder(old, old_path))
+        new_ip = str(getattr_dunder(new, new_path))
+        if old_ip != new_ip:
+            return {
+                'old': old_ip,
+                'new': new_ip,
+            }
+    return diff
 
 
 mappers = {
@@ -233,8 +245,8 @@ mappers = {
         'ralph3_queryset': Network.objects.all(),  # TODO: related
         'ralph2_queryset': Ralph2Network.objects.all(),
         'fields': {
-            'address': ('address', 'address'),
-            'gateway': ('gateway', 'gateway__address'),
+            'address': ip_diff('address', 'address'),
+            'gateway': ip_diff('gateway', 'gateway__address'),
             'remarks': ('remarks', 'remarks'),
             'terminators': network_terminators_diff,
             'vlan': ('vlan', 'vlan'),
