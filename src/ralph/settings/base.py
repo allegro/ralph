@@ -167,7 +167,7 @@ MESSAGE_TAGS = {
 }
 
 DEFAULT_DEPRECIATION_RATE = int(os.environ.get('DEFAULT_DEPRECIATION_RATE', 25))  # noqa
-CHECK_IP_HOSTNAME_ON_SAVE = os_env_true('CHECK_IP_HOSTNAME_ON_SAVE')
+CHECK_IP_HOSTNAME_ON_SAVE = os_env_true('CHECK_IP_HOSTNAME_ON_SAVE', '1')
 ASSET_HOSTNAME_TEMPLATE = {
     'prefix': '{{ country_code|upper }}{{ code|upper }}',
     'postfix': '',
