@@ -54,6 +54,7 @@ def ralph3_sync(model, topic=None):
                 getattr(instance, '_handle_post_save', True)
             ):
                 try:
+                    result = func(sender, instance, **kwargs)
                     if result:
                         pyhermes.publish(topic_name, result)
                 except Exception as e:
