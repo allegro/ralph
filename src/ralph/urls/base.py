@@ -20,6 +20,7 @@ api_urls = list(map(lambda u: url(r'^', include(u)), [
     'ralph.security.api',
     'ralph.networks.api',
     'ralph.virtual.api',
+    'ralph.lib.custom_fields.api.custom_fields_api',
     'ralph.lib.transitions.api.routers'
 ]))
 # include router urls

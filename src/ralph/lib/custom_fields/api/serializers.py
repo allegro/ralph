@@ -6,7 +6,7 @@ from .fields import CustomFieldValueHyperlinkedIdentityField
 from ralph.api.serializers import RalphAPISaveSerializer, RalphAPISerializer
 
 
-class CustomFieldSerializer(RalphAPISerializer):
+class CustomFieldSimpleSerializer(RalphAPISerializer):
     class Meta:
         model = CustomField
         fields = ('name', 'attribute_name', 'type', 'default_value')
@@ -82,7 +82,7 @@ class CustomFieldValueSaveSerializer(
 class CustomFieldValueSerializer(
     CustomFieldValueSerializerMixin, RalphAPISerializer
 ):
-    custom_field = CustomFieldSerializer()
+    custom_field = CustomFieldSimpleSerializer()
 
     class Meta:
         model = CustomFieldValue

@@ -83,10 +83,11 @@ class CustomField(TimeStampMixin, models.Model):
         super().save(*args, **kwargs)
 
     def _get_choices(self):
-        assert self.type in (
+        if self.type in (
             CustomFieldTypes.CHOICE,
-        )
-        return self.choices.split('|')
+        ):
+            return self.choices.split('|')
+        return []
 
     def get_form_field(self):
         params = {
