@@ -1,6 +1,7 @@
 import logging
 from collections import defaultdict
 
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 
 from ralph.admin.helpers import getattr_dunder
@@ -10,6 +11,7 @@ from ralph.cross_validator.helpers import (
     get_obj_id_ralph_20
 )
 from ralph.cross_validator.models import CrossValidationResult
+from ralph.data_importer.models import ImportedObjects
 
 logger = logging.getLogger(__name__)
 
@@ -76,17 +78,16 @@ def check_objects_of_single_type(config, run):
 
     # TODO: handling when obj exist in Ralph2 but not in Ralph3
     # sth similar to:
-    # ralph2_objects = config.get(
-    #     'ralph2_queryset', config['ralph2_model']._default_manager
-    # )
-    # for obj in ralph2_objects.exclude(
-    #     pk__in=ImportedObject.objects.filter(
-    #         content_type=ContentType.objects.get_for_model(
-    #             config['ralph2_model']
-    #         )
-    #     )
-    # ):
-    #     invalid += 1
+    ralph2_objects = config.get(
+        'ralph2_queryset', config['ralph2_model']._default_manager.all()
+    )
+    ids = list(ImportedObjects.objects.filter(
+        content_type=ContentType.objects.get_for_model(
+            config['ralph3_model']
+        )
+    ).values_list('old_object_pk', flat=True))
+    for obj in ralph2_objects.exclude(pk__in=ids):
+        invalid += 1
     return invalid, valid
 
 
