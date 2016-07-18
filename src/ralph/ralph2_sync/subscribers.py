@@ -429,6 +429,25 @@ def sync_network_to_ralph3(data):
         except DNSServer.DoesNotExist:
             logger.error('DNS Server with ip {} not found'.format(dns_ip))
     net.dns_servers = dns_servers
+
+    if 'terminators' in data:
+        terminators = []
+        for obj_type, obj_id in data['terminators']:
+            terminator_model = None
+            if obj_type == 'StackedSwitch':
+                terminator_model = Cluster
+            elif obj_type == 'DataCenterAsset':
+                terminator_model = DataCenterAsset
+            else:
+                logger.error(
+                    'Unknown terminator type: {}'.format(terminator_model)
+                )
+            if terminator_model:
+                terminator = _get_obj(terminator_model, obj_id)[0]
+                if terminator:
+                    terminators.append(terminator)
+        net.terminators = terminators
+
     if created:
         ImportedObjects.create(net, data['id'])
 
