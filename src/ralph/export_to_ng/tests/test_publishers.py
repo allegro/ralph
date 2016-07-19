@@ -25,7 +25,6 @@ from ralph.discovery.tests.util import (
     DNSServerFactory,
     NetworkFactory,
     EnvironmentFactory,
-    DeprecatedDataCenterFactory,
     DataCenterFactory as NetworkDataCenter
 )
 from ralph.export_to_ng.publishers import (
@@ -40,7 +39,6 @@ from ralph.export_to_ng.publishers import (
 from ralph_assets.tests.utils.assets import (
     DCAssetFactory, DataCenterFactory, RackFactory
 )
-from ralph_assets.models_dc_assets import DeprecatedRalphDC
 
 
 @override_settings(
@@ -108,6 +106,7 @@ class DevicePublisherTestCase(TestCase):
             'management_ip': '',
             'management_hostname': '',
             'venture_role': None,
+            'ips': [],
             'custom_fields': {},
         })
 
@@ -121,6 +120,13 @@ class DevicePublisherTestCase(TestCase):
             'management_ip': '10.20.30.40',
             'management_hostname': 'mgmt-1.mydc.net',
             'venture_role': 11111,
+            'ips': [{
+                'hostname': 'mgmt-1.mydc.net',
+                'address': '10.20.30.40',
+                'mac': '',
+                'is_management': True,
+                'dhcp_expose': False,
+            }],
             'custom_fields': {},
         })
 
@@ -164,6 +170,13 @@ class DevicePublisherTestCase(TestCase):
             'management_ip': '10.20.30.40',
             'management_hostname': 'mgmt-1.mydc.net',
             'venture_role': 11111,
+            'ips': [{
+                'hostname': 'mgmt-1.mydc.net',
+                'address': '10.20.30.40',
+                'mac': '',
+                'is_management': True,
+                'dhcp_expose': False,
+            }],
             'custom_fields': {
                 property_symbol: property_value,
                 property_symbol2: '',
@@ -475,6 +488,7 @@ class StackedSwitchPublisherTestCase(TestCase):
             'service': 'sc-1',
             'type': 'Juniper stacked switch',
             'venture_role': 11111,
+            'ips': []
         })
         self.assertItemsEqual(child_devices, [
             {'asset_id': self.child1.id, 'is_master': True},

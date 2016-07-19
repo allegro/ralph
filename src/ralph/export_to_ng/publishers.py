@@ -6,6 +6,7 @@ from functools import wraps
 import pyhermes
 from django.conf import settings
 
+from django.core.exceptions import MultipleObjectsReturned
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from pyhermes import publisher
@@ -19,6 +20,7 @@ from ralph.business.models import (
 from ralph.discovery.models import (
     Device, DeviceType, Network, NetworkKind, Environment
 )
+from ralph.dnsedit.models import DHCPEntry
 from ralph.export_to_ng.resources import get_data_center_id
 from ralph_assets.models_dc_assets import Rack
 
@@ -91,6 +93,35 @@ def _get_custom_fields(device):
     return result
 
 
+def _get_ips_list(device):
+    ips_list = []
+
+    def get_mac(ip):
+        mac = ''
+        try:
+            mac = DHCPEntry.objects.get(ip=ip.address).mac
+        except DHCPEntry.DoesNotExist:
+            pass
+        except MultipleObjectsReturned:
+            logger.exception('Multiple entries in DCHP for {}'.format(
+                ip.address
+            ))
+        return mac
+
+    for ip in device.ipaddress_set.all():
+        mac = get_mac(ip)
+        ips_list.append({
+            'address': ip.address,
+            'hostname': ip.hostname,
+            'is_management': ip.is_management,
+            'mac': mac,
+            'dhcp_expose': bool(mac)
+        })
+    return {
+        'ips': ips_list
+    }
+
+
 def get_device_data(device, fields=None):
     """
     Returns dictonary with device data.
@@ -109,6 +140,7 @@ def get_device_data(device, fields=None):
         'venture_role': device.venture_role_id,
         'custom_fields': _get_custom_fields(device),
     }
+    data.update(_get_ips_list(device))
     return {k: v for k, v in data.items() if k in fields} if fields else data
 
 
@@ -190,7 +222,7 @@ def sync_virtual_server_to_ralph3(sender, instance=None, created=False, **kwargs
     if not instance.model or instance.model.type != DeviceType.virtual_server:
         return
     asset = instance.parent.get_asset(manager='admin_objects') if instance.parent else None  # noqa
-    return {
+    data = {
         'id': instance.id,
         'type': instance.model.name if instance.model else None,
         'hostname': instance.name,
@@ -201,6 +233,8 @@ def sync_virtual_server_to_ralph3(sender, instance=None, created=False, **kwargs
         'parent_id': asset.id if asset else None,
         'custom_fields': _get_custom_fields(instance),
     }
+    data.update(_get_ips_list(instance))
+    return data
 
 
 @ralph3_sync(Environment)
@@ -347,7 +381,7 @@ def sync_stacked_switch_to_ralph3(sender, instance=None, created=False, **kwargs
         else:
             logger.error('Asset not found for child device {}'.format(child))
 
-    return {
+    data = {
         'id': instance.id,
         'type': instance.model.name if instance.model else None,
         'hostname': instance.name,
@@ -357,3 +391,5 @@ def sync_stacked_switch_to_ralph3(sender, instance=None, created=False, **kwargs
         'custom_fields': _get_custom_fields(instance),
         'child_devices': child_devices,
     }
+    data.update(_get_ips_list(instance))
+    return data
