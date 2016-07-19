@@ -1,4 +1,5 @@
 import logging
+from functools import partial
 from collections import defaultdict
 
 from django.contrib.contenttypes.models import ContentType
@@ -76,17 +77,22 @@ def check_objects_of_single_type(config, run):
         if i % 100 == 0:
             logger.info('{} / {}'.format(i, total))
 
+    checkers = config.get('additional_checkers', [])
     ralph2_objects = config.get(
         'ralph2_queryset', config['ralph2_model']._default_manager.all()
     )
-    ids = list(ImportedObjects.objects.filter(
-        content_type=ContentType.objects.get_for_model(
-            config['ralph3_model']
+    missing_object_callback = partial(
+        missing_object_in_r3, run=run, config=config
+    )
+    for checker in checkers:
+        checker_valid, checker_invalid = checker(
+            ralph2_objects=ralph2_objects,
+            ralph3_objects=ralph3_objects,
+            ralph3_model=config['ralph3_model'],
+            missing_object_callback=missing_object_callback
         )
-    ).values_list('old_object_pk', flat=True))
-    for obj in ralph2_objects.exclude(pk__in=ids):
-        missing_object_in_r3(obj, run, config)
-        invalid += 1
+        valid += checker_valid
+        invalid += checker_invalid
     return valid, invalid
 
 
