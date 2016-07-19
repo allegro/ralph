@@ -76,17 +76,16 @@ def check_objects_of_single_type(config, run):
 
     # TODO: handling when obj exist in Ralph2 but not in Ralph3
     # sth similar to:
-    # ralph2_objects = config.get(
-    #     'ralph2_queryset', config['ralph2_model']._default_manager
-    # )
-    # for obj in ralph2_objects.exclude(
-    #     pk__in=ImportedObject.objects.filter(
-    #         content_type=ContentType.objects.get_for_model(
-    #             config['ralph2_model']
-    #         )
-    #     )
-    # ):
-    #     invalid += 1
+    ralph2_objects = config.get(
+        'ralph2_queryset', config['ralph2_model']._default_manager.all()
+    )
+    ids = list(ImportedObjects.objects.filter(
+        content_type=ContentType.objects.get_for_model(
+            config['ralph3_model']
+        )
+    ).values_list('old_object_pk', flat=True))
+    for obj in ralph2_objects.exclude(pk__in=ids):
+        invalid += 1
     return invalid, valid
 
 
