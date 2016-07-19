@@ -1,15 +1,21 @@
+import logging
 import operator
 import re
 from functools import reduce
 
 from dj.choices import Choices
 from django.conf.urls import url
-from django.db.models import Q
+from django.core.exceptions import FieldDoesNotExist
+from django.db.models import Q, Manager
 from django.db.models.loading import get_model
 from django.http import Http404, HttpResponseBadRequest, JsonResponse
 from django.views.generic import View
 
-from ralph.admin.helpers import get_admin_url
+from ralph.admin.helpers import (
+    get_admin_url,
+    get_field_by_relation_path,
+    get_value_by_relation_path
+)
 from ralph.admin.sites import ralph_site
 from ralph.lib.permissions.models import PermissionsForObjectMixin
 
@@ -17,6 +23,8 @@ AUTOCOMPLETE_EMPTY_VALUE = '0'
 QUERY_PARAM = 'q'
 DETAIL_PARAM = 'pk'
 QUERY_REGEX = re.compile(r'[.| ]')
+
+logger = logging.getLogger(__name__)
 
 
 class JsonViewMixin(object):
@@ -37,19 +45,27 @@ class AutocompleteTooltipMixin(object):
     @property
     def autocomplete_tooltip(self):
         empty_element = '<empty>'
-        tooltip = ''
+        tooltip = []
         for field in self.autocomplete_tooltip_fields:
-            if not hasattr(self, field):
+            try:
+                model_field = get_field_by_relation_path(self, field)
+            except FieldDoesNotExist:
+                logger.warning(
+                    'Autocomplete tooltip dield {} not found for {}'.format(
+                        field, self._meta.model_name,
+                    )
+                )
                 continue
-            model_field = self._meta.get_field(field)
-            value = getattr(self, field)
+            value = get_value_by_relation_path(self, field)
             if isinstance(model_field.choices, Choices):
                 value = model_field.choices.name_from_id(value)
-            label = str(self._meta.get_field(field).verbose_name)
-            tooltip += '{}: {}\n'.format(
+            label = str(model_field.verbose_name)
+            if isinstance(value, Manager):
+                value = ', '.join(map(str, value.all()))
+            tooltip.append('{}: {}'.format(
                 label.capitalize(), value or empty_element
-            )
-        return tooltip
+            ))
+        return '\n'.join(tooltip)
 
 
 class SuggestView(JsonViewMixin, View):
