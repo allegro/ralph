@@ -12,6 +12,7 @@ from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
 from ralph.accounts.models import Team
+from ralph.admin.autocomplete import AutocompleteTooltipMixin
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import (
     ModelVisualizationLayout,
@@ -85,9 +86,15 @@ class Service(
         return cls._default_manager.filter(active=True)
 
 
-class ServiceEnvironment(BaseObject):
+class ServiceEnvironment(AutocompleteTooltipMixin, BaseObject):
     service = models.ForeignKey(Service)
     environment = models.ForeignKey(Environment)
+
+    autocomplete_tooltip_fields = [
+        'service__business_owners',
+        'service__technical_owners',
+        'service__support_team',
+    ]
 
     def __str__(self):
         return '{} - {}'.format(self.service.name, self.environment.name)
