@@ -6,9 +6,7 @@ from ralph.assets.models import AssetModel, Ethernet
 from ralph.cross_validator.helpers import get_obj_id_ralph_20
 from ralph.cross_validator.ralph2.device import AssetModel as Ralph2AssetModel
 from ralph.cross_validator.ralph2.device import Asset, Device
-from ralph.cross_validator.ralph2.networks import DHCPEntry as Ralph2DHCPEntry
 from ralph.data_center.models import DataCenterAsset, DataCenterAssetStatus
-from ralph.dhcp.models import DHCPEntry
 from ralph.virtual.models import VirtualServer
 
 """
