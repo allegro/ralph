@@ -16,20 +16,25 @@ logger = logging.getLogger(__name__)
 
 
 def _get_values(new, imported_object, config):
-    def get_value(o, path, errors):
+    def get_value(o, path):
         if o is None:
             return ''
         return getattr_dunder(o, path)
 
     values = defaultdict(dict)
     errors = []
-    old_obj_id = get_obj_id_ralph_20(imported_object)
+    qs_kwargs = {}
+    if config.get('use_imported_object', True):
+        qs_kwargs['id'] = get_obj_id_ralph_20(imported_object)
+    else:
+        for _, (old_field, new_field) in config['fields'].items():
+            qs_kwargs[old_field] = get_value(new, new_field)
     ralph2_objects = config.get(
         'ralph2_queryset', config['ralph2_model']._default_manager
     )
     old = None
     try:
-        old = ralph2_objects.get(id=old_obj_id)
+        old = ralph2_objects.get(**qs_kwargs)
     except ObjectDoesNotExist:
         errors.append('ObjectDoesNotExist in Ralph2')
         return values, errors
@@ -49,10 +54,10 @@ def _get_values(new, imported_object, config):
         else:
             old_field_path, new_field_path = fields
             values['old'].update(
-                {field_name: get_value(old, old_field_path, errors)}
+                {field_name: get_value(old, old_field_path)}
             )
             values['new'].update(
-                {field_name: get_value(new, new_field_path, errors)}
+                {field_name: get_value(new, new_field_path)}
             )
 
     return values, errors

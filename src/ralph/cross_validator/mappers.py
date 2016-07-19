@@ -246,6 +246,8 @@ mappers = {
     'DHCPEntry': {
         'ralph2_model': Ralph2DHCPEntry,
         'ralph3_model': DHCPEntry,
+        # 'ralph2_queryset': Ralph2DHCPEntry.objects.exclude()
+        'use_imported_object': False,
         'fields': {
             'mac': ('mac', 'mac'),
             'ip': ('ip', 'address')
