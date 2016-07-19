@@ -264,7 +264,8 @@ class DataCenterAssetAdmin(
         (_('Basic info'), {
             'fields': (
                 'hostname', 'model', 'status', 'barcode', 'sn', 'niw',
-                'required_support', 'remarks', 'parent', 'tags', 'property_of'
+                'required_support', 'remarks', 'parent', 'tags', 'property_of',
+                'firmware_version', 'bios_version',
             )
         }),
         (_('Location Info'), {
