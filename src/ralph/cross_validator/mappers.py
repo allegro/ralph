@@ -6,9 +6,13 @@ from ralph.assets.models import AssetModel, Ethernet
 from ralph.cross_validator.helpers import get_obj_id_ralph_20
 from ralph.cross_validator.ralph2.device import AssetModel as Ralph2AssetModel
 from ralph.cross_validator.ralph2.device import Asset, Device
-from ralph.cross_validator.ralph2.network import DHCPEntry as Ralph2DHCPEntry
+from ralph.cross_validator.ralph2.network import (
+    DHCPEntry as Ralph2DHCPEntry,
+    Network as Ralph2Network
+)
 from ralph.data_center.models import DataCenterAsset, DataCenterAssetStatus
 from ralph.dhcp.models import DHCPEntry
+from ralph.networks.models import Network
 from ralph.virtual.models import VirtualServer
 
 """
@@ -96,6 +100,73 @@ def check_asset_has_device(old, new):
         return 'Asset has no linked device'
 
 
+def network_terminators_diff(old, new):
+    old_terminators_names = set(old.terminators.values_list('name', flat=True))
+    new_terminators_names = set(new.terminators.values_list(
+        'asset__datacenterasset__hostname', flat=True
+    ))
+    diff = old_terminators_names - new_terminators_names
+    if diff:
+        return {
+            'old': list(old_terminators_names),
+            'new': list(new_terminators_names)
+        }
+
+
+def network_racks_diff(old, new):
+    old_racks = set(old.racks.values_list('name', flat=True))
+    new_racks = set(new.racks.values_list('name', flat=True))
+    diff = old_racks - new_racks
+    if diff:
+        return {
+            'old': list(old_racks),
+            'new': list(new_racks)
+        }
+
+
+def network_dns_servers_diff(old, new):
+    old_dns = set(old.custom_dns_servers.values_list('ip_address', flat=True))
+    new_dns = set(new.dns_servers.values_list('ip_address', flat=True))
+    diff = old_dns - new_dns
+    if diff:
+        return {
+            'old': list(map(str, old_dns)),
+            'new': list(map(str, new_dns))
+        }
+
+
+def network_reserved_bottom_diff(old, new):
+    old_reserved = old.reserved
+    new_reserved = new.reserved_bottom
+    if old_reserved != new_reserved:
+        return {
+            'old': old_reserved,
+            'new': new_reserved,
+        }
+
+
+def network_reserved_top_diff(old, new):
+    old_reserved = old.reserved_top_margin
+    new_reserved = new.reserved_top
+    if old_reserved != new_reserved:
+        return {
+            'old': old_reserved,
+            'new': new_reserved,
+        }
+
+
+def ip_diff(old_path, new_path):
+    def diff(old, new):
+        old_ip = str(getattr_dunder(old, old_path))
+        new_ip = str(getattr_dunder(new, new_path))
+        if old_ip != new_ip:
+            return {
+                'old': old_ip,
+                'new': new_ip,
+            }
+    return diff
+
+
 mappers = {
     'DataCenterAsset': {
         'ralph2_model': Asset,
@@ -177,5 +248,28 @@ mappers = {
             'name': ('mac', 'name')
         },
         'blacklist': ['id']
+    },
+    'Network': {
+        'ralph2_model': Ralph2Network,
+        'ralph3_model': Network,
+        'ralph3_queryset': Network.objects.all(),  # TODO: related
+        'ralph2_queryset': Ralph2Network.objects.all(),
+        'fields': {
+            'address': ip_diff('address', 'address'),
+            'gateway': ip_diff('gateway', 'gateway__address'),
+            'remarks': ('remarks', 'remarks'),
+            'terminators': network_terminators_diff,
+            'vlan': ('vlan', 'vlan'),
+            'racks': network_racks_diff,
+            'network_environment': foreign_key_diff(
+                'environment', 'network_environment'
+            ),
+            'kind': foreign_key_diff('kind', 'kind'),
+            'dhcp_broadcast': ('dhcp_broadcast', 'dhcp_broadcast'),
+            'dns_servers': network_dns_servers_diff,
+            'reserved_bottom': network_reserved_bottom_diff,
+            'reserved_top': network_reserved_top_diff,
+        },
+        'blacklist': ['id'],
     },
 }

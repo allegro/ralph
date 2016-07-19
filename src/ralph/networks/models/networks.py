@@ -266,6 +266,30 @@ class Network(
     def _has_address_changed(self):
         return self.address != self._old_address
 
+    def _get_reserved_count(self, ips, margin_num):
+        if not ips or ips[0] != margin_num:
+            return 0
+        reserved_count = 1
+        for num1, num2 in zip(ips, ips[1:]):
+            if abs(num2 - num1) != 1:
+                break
+            reserved_count += 1
+        return reserved_count
+
+    @property
+    def reserved_bottom(self):
+        reserved = IPAddress.objects.filter(
+            network=self, status=IPAddressStatus.reserved
+        ).values_list('number', flat=True).order_by('number')
+        return self._get_reserved_count(reserved, self.min_ip + 1)
+
+    @property
+    def reserved_top(self):
+        reserved = IPAddress.objects.filter(
+            network=self, status=IPAddressStatus.reserved
+        ).values_list('number', flat=True).order_by('-number')
+        return self._get_reserved_count(reserved, self.max_ip)
+
     class Meta:
         verbose_name = _('network')
         verbose_name_plural = _('networks')

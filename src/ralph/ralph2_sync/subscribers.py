@@ -42,7 +42,9 @@ from ralph.ralph2_sync.helpers import WithSignalDisabled
 from ralph.ralph2_sync.publishers import (
     sync_configuration_class_to_ralph2,
     sync_configuration_module_to_ralph2,
-    sync_dc_asset_to_ralph2
+    sync_dc_asset_to_ralph2,
+    sync_stacked_switch_to_ralph2,
+    sync_virtual_server_to_ralph2
 )
 from ralph.virtual.models import (
     VirtualServer,
@@ -359,7 +361,10 @@ def _get_obj(model_class, obj_id, creating=False):
         return obj, True
 
 
-@sync_subscriber(topic='sync_virtual_server_to_ralph3')
+@sync_subscriber(
+    topic='sync_virtual_server_to_ralph3',
+    disable_publishers=[sync_virtual_server_to_ralph2]
+)
 def sync_virtual_server_to_ralph3(data):
     virtual_type = settings.RALPH2_RALPH3_VIRTUAL_SERVER_TYPE_MAPPING.get(data['type'])  # noqa
     if virtual_type is None:
@@ -478,7 +483,10 @@ def sync_network_environment_to_ralph3(data):
         ImportedObjects.create(env, data['id'])
 
 
-@sync_subscriber(topic='sync_stacked_switch_to_ralph3')
+@sync_subscriber(
+    topic='sync_stacked_switch_to_ralph3',
+    disable_publishers=[sync_stacked_switch_to_ralph2]
+)
 def sync_stacked_switch_to_ralph3(data):
     stacked_switch, created = _get_obj(Cluster, data['id'], creating=True)
     service_env = _get_service_env(data)
