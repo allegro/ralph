@@ -1,6 +1,7 @@
 import logging
 from collections import defaultdict
 
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 
 from ralph.admin.helpers import getattr_dunder
@@ -10,6 +11,7 @@ from ralph.cross_validator.helpers import (
     get_obj_id_ralph_20
 )
 from ralph.cross_validator.models import CrossValidationResult
+from ralph.data_importer.models import ImportedObjects
 
 logger = logging.getLogger(__name__)
 
@@ -59,12 +61,12 @@ def _get_values(new, imported_object, config):
 
 def check_objects_of_single_type(config, run):
     invalid = valid = 0
-    qs = config.get(
+    ralph3_objects = config.get(
         'ralph3_queryset',
         config['ralph3_model']._default_manager.all()
     )
-    total = qs.count()
-    for i, obj in enumerate(qs):
+    total = ralph3_objects.count()
+    for i, obj in enumerate(ralph3_objects):
         result, errors = check_object(obj, run, config)
         if errors or bool(result):
             invalid += 1
@@ -74,8 +76,6 @@ def check_objects_of_single_type(config, run):
         if i % 100 == 0:
             logger.info('{} / {}'.format(i, total))
 
-    # TODO: handling when obj exist in Ralph2 but not in Ralph3
-    # sth similar to:
     ralph2_objects = config.get(
         'ralph2_queryset', config['ralph2_model']._default_manager.all()
     )
@@ -84,6 +84,7 @@ def check_objects_of_single_type(config, run):
             config['ralph3_model']
         )
     ).values_list('old_object_pk', flat=True))
+    print(ids)
     for obj in ralph2_objects.exclude(pk__in=ids):
         invalid += 1
     return invalid, valid

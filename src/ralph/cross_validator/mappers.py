@@ -6,7 +6,9 @@ from ralph.assets.models import AssetModel, Ethernet
 from ralph.cross_validator.helpers import get_obj_id_ralph_20
 from ralph.cross_validator.ralph2.device import AssetModel as Ralph2AssetModel
 from ralph.cross_validator.ralph2.device import Asset, Device
+from ralph.cross_validator.ralph2.network import DHCPEntry as Ralph2DHCPEntry
 from ralph.data_center.models import DataCenterAsset, DataCenterAssetStatus
+from ralph.dhcp.models import DHCPEntry
 from ralph.virtual.models import VirtualServer
 
 """
@@ -98,9 +100,7 @@ mappers = {
     'DataCenterAsset': {
         'ralph2_model': Asset,
         'ralph3_model': DataCenterAsset,
-        'ralph3_queryset': DataCenterAsset.objects.exclude(
-            status=DataCenterAssetStatus.liquidated
-        ).select_related(
+        'ralph3_queryset': DataCenterAsset.objects.select_related(
             'service_env__service', 'service_env__environment',
             'rack', 'model'
         ).prefetch_related(
@@ -169,5 +169,13 @@ mappers = {
             'custom_fields': custom_fields_diff,
         },
         'blacklist': ['id'],
+    },
+    'DHCPEntry': {
+        'ralph2_model': Ralph2DHCPEntry,
+        'ralph3_model': DHCPEntry,
+        'fields': {
+            'name': ('mac', 'name')
+        },
+        'blacklist': ['id']
     },
 }
