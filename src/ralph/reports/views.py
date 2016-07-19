@@ -373,7 +373,7 @@ class LicenceRelationsReport(BaseRelationsReport):
 
     licences_headers = [
         'niw', 'software', 'number_bought', 'price', 'invoice_date',
-        'invoice_no'
+        'invoice_no', 'region',
     ]
     licences_asset_headers = [
         'id', 'asset__barcode', 'asset__niw',
@@ -390,7 +390,7 @@ class LicenceRelationsReport(BaseRelationsReport):
     ]
 
     def prepare(self, model, *args, **kwargs):
-        queryset = Licence.objects.all()
+        queryset = Licence.objects.select_related('region', 'software')
         asset_related = [None]
         if model._meta.object_name == 'BackOfficeAsset':
             queryset = queryset.filter(
