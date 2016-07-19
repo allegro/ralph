@@ -3,8 +3,9 @@ from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from rest_framework import status
 
-from ralph.api.tests._base import RalphAPITestCase
 from ..models import CustomField, CustomFieldTypes
+
+from ralph.api.tests._base import RalphAPITestCase
 
 
 class CustomFieldsAPITests(RalphAPITestCase):
