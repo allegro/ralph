@@ -1,8 +1,7 @@
 import logging
-from functools import partial
 from collections import defaultdict
+from functools import partial
 
-from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 
 from ralph.admin.helpers import getattr_dunder
@@ -12,7 +11,6 @@ from ralph.cross_validator.helpers import (
     get_obj_id_ralph_20
 )
 from ralph.cross_validator.models import CrossValidationResult
-from ralph.data_importer.models import ImportedObjects
 
 logger = logging.getLogger(__name__)
 

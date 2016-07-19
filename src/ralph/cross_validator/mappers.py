@@ -3,8 +3,8 @@ from django.db.models import Prefetch
 
 from ralph.admin.helpers import getattr_dunder
 from ralph.assets.models import AssetModel, Ethernet
-from ralph.cross_validator.helpers import get_obj_id_ralph_20
 from ralph.cross_validator.additional_checkers import ralph2_dhcp_checker
+from ralph.cross_validator.helpers import get_obj_id_ralph_20
 from ralph.cross_validator.ralph2.device import AssetModel as Ralph2AssetModel
 from ralph.cross_validator.ralph2.device import Asset, Device
 from ralph.cross_validator.ralph2.network import DHCPEntry as Ralph2DHCPEntry
@@ -171,7 +171,9 @@ mappers = {
     'DataCenterAsset': {
         'ralph2_model': Asset,
         'ralph3_model': DataCenterAsset,
-        'ralph3_queryset': DataCenterAsset.objects.select_related(
+        'ralph3_queryset': DataCenterAsset.objects.exclude(
+            status=DataCenterAssetStatus.liquidated
+        ).select_related(
             'service_env__service', 'service_env__environment',
             'rack', 'model'
         ).prefetch_related(
