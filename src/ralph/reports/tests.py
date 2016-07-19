@@ -164,7 +164,8 @@ class TestReportAssetAndLicence(RalphTestCase):
             number_bought=1,
             niw='N/A',
             software__name='Project Info',
-            software__asset_type=ObjectModelType.data_center
+            software__asset_type=ObjectModelType.data_center,
+            region__name='US',
         )
         BaseObjectLicence.objects.create(
             licence=self.licence, base_object=self.dc_1.baseobject_ptr
@@ -212,7 +213,7 @@ class TestReportAssetAndLicence(RalphTestCase):
         result = [
             [
                 'niw', 'software', 'number_bought', 'price', 'invoice_date',
-                'invoice_no', 'id', 'asset__barcode', 'asset__niw',
+                'invoice_no', 'region', 'id', 'asset__barcode', 'asset__niw',
                 'asset__backofficeasset__user__username',
                 'asset__backofficeasset__user__first_name',
                 'asset__backofficeasset__user__last_name',
@@ -225,12 +226,12 @@ class TestReportAssetAndLicence(RalphTestCase):
             [
                 'N/A', 'Project Info', '1', '0.00',
                 str(self.licence.invoice_date), str(self.licence.invoice_no),
-                '', '', '', '', '', '', '', '', '', '', '', '', '', ''
+                'US', '', '', '', '', '', '', '', '', '', '', '', '', '', ''
             ],
             [
                 'N/A', 'Project Info', '1', '0.00',
                 str(self.licence.invoice_date), str(self.licence.invoice_no),
-                str(self.dc_1.id), self.dc_1.asset.barcode,
+                'US', str(self.dc_1.id), self.dc_1.asset.barcode,
                 'None', 'None', 'None', 'None', 'None', 'None', 'None', 'None',
                 '', '', '', ''
             ]
