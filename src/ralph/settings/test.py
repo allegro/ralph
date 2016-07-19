@@ -34,6 +34,7 @@ INSTALLED_APPS += (
     'ralph.lib.custom_fields.tests',
     'ralph.lib.permissions.tests',
     'ralph.lib.polymorphic.tests',
+    'ralph.lib.mixins.tests',
 )
 
 USE_CACHE = False

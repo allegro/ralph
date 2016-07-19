@@ -14,7 +14,7 @@ from ralph.assets.models.choices import (
     EthernetSpeed,
     FibreChannelCardSpeed
 )
-from ralph.lib.mixins.fields import NullableCharField
+from ralph.lib.mixins.fields import MACAddressField, NullableCharField
 from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
 
 MAC_RE = re.compile(r'^\s*([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}\s*$')
@@ -104,7 +104,7 @@ class Ethernet(Component):
     label = NullableCharField(
         verbose_name=_('label'), max_length=255, blank=True, null=True
     )
-    mac = NullableCharField(
+    mac = MACAddressField(
         verbose_name=_('MAC address'), unique=True,
         validators=[mac_validator], max_length=24, null=True, blank=True
     )

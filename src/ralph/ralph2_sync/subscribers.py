@@ -123,6 +123,12 @@ def _handle_management_ip(dca, management_ip, management_hostname):
         dca.management_hostname = management_hostname
         dca.save()
     else:
+        if dca.management_ip:
+            logger.warning(
+                'Removing management IP {} from {}'.format(
+                    dca.management_ip, dca
+                )
+            )
         del dca.management_ip
 
 
@@ -148,7 +154,7 @@ def _handle_ips(obj, ips):
                 is_management=False
             )
         )
-        if created:
+        if created or not ip.ethernet:
             mac = ip_dict['mac']
             if mac is None:
                 ip.ethernet = Ethernet.objects.create(

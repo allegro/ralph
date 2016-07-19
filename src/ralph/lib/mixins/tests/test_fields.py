@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from ralph.assets.models.base import BaseObject
 from ralph.back_office.models import BackOfficeAsset
 from ralph.data_center.models import DataCenterAsset
 from ralph.lib.mixins.fields import TaggitTagField
+from ralph.lib.mixins.tests.models import MACModel
 from ralph.tests.models import BaseObjectForeignKeyModel
 
 
@@ -52,3 +54,37 @@ class TestTaggitTagField(TestCase):
 
     def test_field_has_changed_remove_item_different_order(self):
         self.assertTrue(self.field.has_changed(['a', 'b', 'c'], 'c,a'))
+
+
+class TestMACAddressField(TestCase):
+    def test_mac_without_separators(self):
+        instance = MACModel()
+        instance.mac = 'aabbccddeeff'
+        instance.save()
+        instance.refresh_from_db()
+        self.assertEqual(instance.mac, 'AA:BB:CC:DD:EE:FF')
+
+    def test_mac_with_colon_separators(self):
+        instance = MACModel()
+        instance.mac = 'aa:00:BB:cc:99:55'
+        instance.save()
+        instance.refresh_from_db()
+        self.assertEqual(instance.mac, 'AA:00:BB:CC:99:55')
+
+    def test_mac_with_hyphen_separators(self):
+        instance = MACModel()
+        instance.mac = 'aa-00-BB-cc-99-55'
+        instance.save()
+        instance.refresh_from_db()
+        self.assertEqual(instance.mac, 'AA:00:BB:CC:99:55')
+
+    def test_mac_with_incomplete_octet(self):
+        instance = MACModel()
+        instance.mac = 'abbccddeeff'
+        instance.save()
+        instance.refresh_from_db()
+        self.assertEqual(instance.mac, '0A:BB:CC:DD:EE:FF')
+
+    def test_mac_with_invalid_mac(self):
+        with self.assertRaises(ValueError):
+            MACModel.objects.create(mac='xxxx')
