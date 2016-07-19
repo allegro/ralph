@@ -146,9 +146,15 @@ def _handle_ips(obj, ips):
             )
         )
         if created:
-            ip.ethernet, _ = Ethernet.objects.get_or_create(
-                base_object=obj, mac=ip_dict['mac']
-            )
+            mac = ip_dict['mac']
+            if mac is None:
+                ip.ethernet = Ethernet.objects.create(
+                    base_object=obj, mac=None
+                )
+            else:
+                ip.ethernet, _ = Ethernet.objects.get_or_create(
+                    base_object=obj, mac=mac
+                )
         else:
             ip.ethernet.base_object = obj
             ip.ethernet.mac = ip_dict['mac']
