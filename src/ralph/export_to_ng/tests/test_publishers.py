@@ -103,6 +103,8 @@ class DevicePublisherTestCase(TestCase):
             'hostname': 's2.mydc.net',
             'service': None,
             'environment': None,
+            'management_ip': '',
+            'management_hostname': '',
             'venture_role': None,
             'ips': [],
             'custom_fields': {},
@@ -115,6 +117,8 @@ class DevicePublisherTestCase(TestCase):
             'hostname': 's1.mydc.net',
             'service': 'sc-1',
             'environment': 9876,
+            'management_ip': '10.20.30.40',
+            'management_hostname': 'mgmt-1.mydc.net',
             'venture_role': 11111,
             'ips': [{
                 'hostname': 'mgmt-1.mydc.net',
@@ -163,6 +167,8 @@ class DevicePublisherTestCase(TestCase):
             'hostname': 's1.mydc.net',
             'service': 'sc-1',
             'environment': 9876,
+            'management_ip': '10.20.30.40',
+            'management_hostname': 'mgmt-1.mydc.net',
             'venture_role': 11111,
             'ips': [{
                 'hostname': 'mgmt-1.mydc.net',

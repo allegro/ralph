@@ -129,9 +129,12 @@ def get_device_data(device, fields=None):
     asset = device.get_asset(manager='admin_objects')
     if not asset:
         return {}
+    mgmt_ip = device.management_ip
     data = {
         'id': asset.id,
         'hostname': device.name,
+        'management_ip': mgmt_ip.address if mgmt_ip else '',
+        'management_hostname': mgmt_ip.hostname if mgmt_ip else '',
         'service': device.service.uid if device.service else None,
         'environment': device.device_environment_id,
         'venture_role': device.venture_role_id,
