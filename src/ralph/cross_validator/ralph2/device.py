@@ -145,15 +145,6 @@ class Asset(models.Model):
         return device
 
 
-class IPAddress(models.Model):
-    address = models.IPAddressField()
-    is_management = models.BooleanField(default=False)
-    device = models.ForeignKey('Device', null=True)
-
-    class Meta(generate_meta(app_label='discovery', model_name='ipaddress')):
-        pass
-
-
 class Venture(models.Model):
     name = models.CharField(max_length=255)
     parent = models.ForeignKey('self', null=True, related_name="child_set")

@@ -72,6 +72,9 @@ RALPH2_RALPH3_CROSS_VALIDATION_ENABLED = os_env_true(
     'RALPH2_RALPH3_CROSS_VALIDATION_ENABLED'
 )
 if RALPH2_RALPH3_CROSS_VALIDATION_ENABLED:
+    RALPH2_PREVIEW_PREFIX_URL = os.environ.get(
+        'RALPH2_PREVIEW_PREFIX_URL', 'http://ralph2.localhost/admin'
+    )
     INSTALLED_APPS += (
         'ralph.cross_validator',
     )

@@ -84,10 +84,23 @@ def check_objects_of_single_type(config, run):
             config['ralph3_model']
         )
     ).values_list('old_object_pk', flat=True))
-    print(ids)
     for obj in ralph2_objects.exclude(pk__in=ids):
+        missing_object_in_r3(obj, run, config)
         invalid += 1
-    return invalid, valid
+    return valid, invalid
+
+
+def missing_object_in_r3(obj, run, config):
+    url = obj.get_link_to_r2()
+    CrossValidationResult.create(
+        run=run,
+        obj=config['ralph3_model'](),
+        old=None,
+        diff={},
+        errors=['Missing object <a href="{}">{}</a> in Ralph3'.format(
+            url, str(obj)
+        )],
+    )
 
 
 def check_object(obj, run, config):

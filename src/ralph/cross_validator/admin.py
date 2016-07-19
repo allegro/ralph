@@ -111,11 +111,13 @@ class ResultAdmin(RalphAdmin):
     get_errors_display.short_description = 'Errors'
 
     def get_object_display(self, result):
-        return '<a href="{}">{} id: {} ({})</a>'.format(
-            result.object.get_absolute_url(),
-            result.content_type,
-            result.object_pk,
-            str(result.object)
-        )
+        if result.object:
+            return '<a href="{}">{} id: {} ({})</a>'.format(
+                result.object.get_absolute_url(),
+                result.content_type,
+                result.object_pk,
+                str(result.object)
+            )
+        return '-'
     get_object_display.allow_tags = True
     get_object_display.short_description = 'Object'

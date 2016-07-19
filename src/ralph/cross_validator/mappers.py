@@ -245,7 +245,8 @@ mappers = {
         'ralph2_model': Ralph2DHCPEntry,
         'ralph3_model': DHCPEntry,
         'fields': {
-            'name': ('mac', 'name')
+            'mac': ('mac', 'mac'),
+            'ip': ('ip', 'address')
         },
         'blacklist': ['id']
     },
