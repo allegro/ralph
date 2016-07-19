@@ -357,6 +357,18 @@ class DataCenterAsset(NetworkableBaseObject, AutocompleteTooltipMixin, Asset):
         ],
         verbose_name=_('slot number'),
     )
+    firmware_version = models.CharField(
+        null=True,
+        blank=True,
+        max_length=16,
+        verbose_name=_('firmware version'),
+    )
+    bios_version = models.CharField(
+        null=True,
+        blank=True,
+        max_length=16,
+        verbose_name=_('BIOS version'),
+    )
     connections = models.ManyToManyField(
         'self',
         through='Connection',
