@@ -136,6 +136,15 @@ class AssetList(Table):
         return ''
     report_failure.title = ''
 
+    def confirm_ownership(self, item):
+        if settings.INVENTORY_TAG not in item.tags.names():
+            return '<a href="{}">{}</a> '.format(
+                reverse('inventory_tag_confirmation', args=[item.id]),
+                _('yes')
+            )
+        return ''
+    confirm_ownership.title = _('Do you have it?')
+
 
 class AssignedLicenceList(Table):
 

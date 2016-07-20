@@ -1,0 +1,19 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_static %}
+
+{% block title %}
+  {% trans "inventory taking status" %}
+{% endblock %}
+
+{% block content %}
+<div id="content-main" class="row">
+  <div class="large-12 columns">
+    <h1>{% trans "Succesfully added inventory tag" %}</h1>
+    <p>
+      <a href="{% url 'current_user_info' %}">
+        {% trans "Return to my equipment" %}
+      </a>
+    </p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_static table %}
+
+{% block title %}
+  {% trans "Asset possession confirmation" %}
+{% endblock %}
+
+{% block content %}
+<div id="content-main" class="row">
+  <div class="large-12 columns">
+    <h1>Are you sure you have following item?</h1>
+    {% table asset_details.get_table_content %}
+    <form action={% url 'inventory_tag' %} method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="asset_id" value={{ asset_id }} />
+      <input type="submit" name="confirm_button" value="Yes" />
+    </form>
+  </div>
+</div>
+{% endblock %}
