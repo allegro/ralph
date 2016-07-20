@@ -123,6 +123,8 @@ class DataCenterAssetFactory(DjangoModelFactory):
     price = FuzzyDecimal(10, 300)
     service_env = factory.SubFactory(ServiceEnvironmentFactory)
     configuration_path = factory.SubFactory(ConfigurationClassFactory)
+    firmware_version = factory.Sequence(lambda n: '1.1.{}'.format(n))
+    bios_version = factory.Sequence(lambda n: '2.2.{}'.format(n))
 
     class Meta:
         model = DataCenterAsset
