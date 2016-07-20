@@ -48,26 +48,36 @@ def generic_sync(model, **options):
         time.sleep(options['sleep'])
 
 
-def virtual_server_sync(model, **options):
+def virtual_server_sync(model, fields=None, **options):
     for obj in model._default_manager.filter(
         model__type=DeviceType.virtual_server,
         id__in=settings.RALPH2_HERMES_VIRTUAL_SERVERS_IDS_WHITELIST
     ):
         post_save.send(
-            sender=model, instance=obj, raw=None, using='default'
+            sender=model, instance=obj, raw=None, using='default',
+            _sync_fields=fields,
         )
         time.sleep(options['sleep'])
 
 
-def stacked_switch_sync(model, **options):
+def virtual_server_ips_sync(model, **options):
+    virtual_server_sync(Device, fields=['id', 'ips'], **options)
+
+
+def stacked_switch_sync(model, fields=None, **options):
     for obj in model._default_manager.filter(
         model__type=DeviceType.switch_stack,
         deleted=False,
     ):
         post_save.send(
-            sender=model, instance=obj, raw=None, using='default'
+            sender=model, instance=obj, raw=None, using='default',
+            _sync_fields=fields,
         )
         time.sleep(options['sleep'])
+
+
+def stacked_switch_ips_sync(model, **options):
+    stacked_switch_sync(Device, fields=['id', 'ips'], **options)
 
 
 def role_property_sync(model, **options):
@@ -160,6 +170,10 @@ def device_venture_sync(model, **options):
     _device_partial_sync(['id', 'venture_role'], **options)
 
 
+def device_ips_sync(model, **options):
+    _device_partial_sync(['id', 'ips'], **options)
+
+
 def device_role_properties_sync(model, **options):
     _device_partial_sync(['id', 'custom_fields'], **options)
 
@@ -199,8 +213,11 @@ models_handlers = {
     'RolePropertyValue': (RolePropertyValue, generic_sync),
     'Device': (Device, generic_sync),
     'VirtualServer': (Device, virtual_server_sync),
+    'VirtualServerIPsOnly': (Device, virtual_server_ips_sync),
     'StackedSwitch': (Device, stacked_switch_sync),
+    'StackedSwitchIPsOnly': (Device, stacked_switch_ips_sync),
     'DeviceVentureOnly': (Device, device_venture_sync),
+    'DeviceIPsOnly': (Device, device_ips_sync),
     'DeviceRolePropertiesOnly': (Device, device_role_properties_sync),
     'Network': (Network, network_sync),
     'NetworkKind': (NetworkKind, generic_sync),
