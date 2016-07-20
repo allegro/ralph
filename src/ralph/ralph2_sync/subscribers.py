@@ -6,7 +6,7 @@ from functools import wraps
 import pyhermes
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.db import transaction
+from django.db import OperationalError, transaction
 
 from ralph.accounts.models import Team
 from ralph.assets.models import (
@@ -193,6 +193,11 @@ class sync_subscriber(pyhermes.subscriber):
                     ))
                 try:
                     return func(*args, **kwargs)
+                except (OperationalError, ) as e:
+                    logger.exception(
+                        'Exception during syncing: {}'.format(str(e))
+                    )
+                    raise  # return 500 to retry on hermes
                 except Exception as e:
                     logger.exception(
                         'Exception during syncing {}'.format(str(e))
