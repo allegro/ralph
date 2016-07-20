@@ -10,7 +10,6 @@ iso8601==0.1.11
 keystoneauth1==2.3.0
 monotonic==0.6
 msgpack-python==0.4.7
-netaddr==0.7.18
 netifaces==0.10.4
 oslo.config==3.9.0
 oslo.i18n==3.4.0
