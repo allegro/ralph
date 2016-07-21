@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from datetime import date
+
 from django.conf import settings
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404
@@ -59,7 +61,15 @@ class InventoryTagView(RalphBaseTemplateView):
         if not asset.user_id == request.user.id:
             return HttpResponseForbidden()
 
-        asset.tags.add(settings.INVENTORY_TAG)
+        date_tag = None
+        if settings.INVENTORY_TAG_APPEND_DATE:
+            date_tag = settings.INVENTORY_TAG + '_' + date.today().isoformat()
+
+        asset.tags.add(
+            settings.INVENTORY_TAG,
+            settings.INVENTORY_TAG_USER,
+            date_tag
+        )
         asset.save()
 
         return super().get(request, *args, **kwargs)
