@@ -8,7 +8,7 @@ from django.conf.urls import url
 from django.core.exceptions import FieldDoesNotExist
 from django.db.models import Manager, Q
 from django.db.models.loading import get_model
-from django.http import Http404, HttpResponseBadRequest, JsonResponse
+from django.http import Http404, HttpResponseBadRequest, JsonResponse, HttpResponse  # noqa
 from django.views.generic import View
 
 from ralph.admin.helpers import (
@@ -77,6 +77,11 @@ class SuggestView(JsonViewMixin, View):
     def get_results(self, user, can_edit):
         return [
             {
+                # dal schema
+                'id': obj.pk,
+                'text': getattr(obj, 'autocomplete_str', str(obj)),
+
+                # backward compatibility
                 'pk': obj.pk,
                 '__str__': getattr(obj, 'autocomplete_str', str(obj)),
                 'edit_url': '{}?_popup=1'.format(
@@ -161,12 +166,12 @@ class AutocompleteList(SuggestView):
             model = get_model(kwargs['app'], kwargs['model'])
         except LookupError:
             return HttpResponseBadRequest('Model not found')
-
+        print(model)
         self.field = model._meta.get_field(kwargs['field'])
         self.model = self.field.rel.to
         self.query = request.GET.get(QUERY_PARAM, None)
         if not self.query:
-            return HttpResponseBadRequest()
+            return HttpResponse('{"results": [{"id": 2, "text": "recent use"}, {"id": 5, "text": "from cache"}]}')
         return super().dispatch(request, *args, **kwargs)
 
     def get_query_filters(self, queryset, query, search_fields):

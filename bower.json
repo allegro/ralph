@@ -32,7 +32,8 @@
     "polymer": "Polymer/polymer#^1.2.4",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#1.2.x",
     "iron-form": "PolymerElements/iron-form#1.0.x",
-    "chartist": "~0.9.5"
+    "chartist": "~0.9.5",
+    "select2": "select2-dist#^4.0.3"
   },
   "devDependencies": {
     "qunit": "~1.18.0",
