@@ -116,6 +116,10 @@ def _handle_management_ip(obj, management_ip, management_hostname):
         except IPAddress.DoesNotExist:
             obj.management_ip = management_ip
         else:
+            if not ip.ethernet:
+                ip.ethernet = Ethernet.objects.create(
+                    base_object=obj, mac=None
+                )
             ip.ethernet.base_object = obj
             ip.ethernet.save()
             ip.is_management = True
