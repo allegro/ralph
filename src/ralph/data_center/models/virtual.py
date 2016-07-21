@@ -6,6 +6,7 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.base import BaseObject
+from ralph.data_center.models.mixins import WithManagementIPMixin
 from ralph.lib.mixins.fields import BaseObjectForeignKey, NullableCharField
 from ralph.lib.mixins.models import NamedMixin
 from ralph.lib.transitions.fields import TransitionField
@@ -46,7 +47,7 @@ class ClusterStatus(Choices):
     for_deploy = _('for deploy')
 
 
-class Cluster(BaseObject, models.Model):
+class Cluster(WithManagementIPMixin, BaseObject, models.Model):
     name = models.CharField(_('name'), max_length=255, blank=True, null=True)
     hostname = NullableCharField(
         unique=True,

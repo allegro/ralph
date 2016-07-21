@@ -732,3 +732,48 @@ class Ralph2StackedSwitchSyncTestCase(TestCase):
             ss.baseobjectcluster_set.get(is_master=True).base_object.pk,
             self.child2.pk
         )
+
+    def test_handle_management_ips(self):
+        ss = _create_imported_object(
+            factory=ClusterFactory, old_id=self.data['id'],
+            factory_kwargs={'type__name': self.data['type']}
+        )
+        data = {
+            'id': self.data['id'],
+            'ips': [
+                {
+                    'address': '10.20.30.40',
+                    'hostname': 'mgmt-1.net',
+                    'is_management': True,
+                    'mac': None,
+                    'dhcp_expose': False
+                },
+            ],
+        }
+        sync_stacked_switch_to_ralph3(data)
+        ss.refresh_from_db()
+        self.assertEqual(ss.management_ip, '10.20.30.40')
+
+    def test_handle_new_ip(self):
+        ss = _create_imported_object(
+            factory=ClusterFactory, old_id=self.data['id'],
+            factory_kwargs={'type__name': self.data['type']}
+        )
+        data = {
+            'id': self.data['id'],
+            'ips': [
+                {
+                    'address': '10.20.30.40',
+                    'hostname': 'foo-bar.net',
+                    'is_management': False,
+                    'mac': '31:8F:A1:2B:7F:80',
+                    'dhcp_expose': False
+                },
+            ],
+        }
+        sync_stacked_switch_to_ralph3(data)
+        ss.refresh_from_db()
+        self.assertEqual(
+            IPAddress.objects.get(address='10.20.30.40').ethernet.base_object.pk,  # noqa
+            ss.pk
+        )
