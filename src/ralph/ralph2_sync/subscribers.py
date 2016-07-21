@@ -565,7 +565,7 @@ def sync_stacked_switch_to_ralph3(data):
         )[0]
     if 'hostname' in data:
         stacked_switch.hostname = data['hostname']
-    if 'configuration_path' in data:
+    if 'venture_role' in data:
         stacked_switch.configuration_path = _get_configuration_path_from_venture_role(  # noqa
             venture_role_id=data['venture_role']
         )
