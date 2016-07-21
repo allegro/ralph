@@ -234,7 +234,8 @@ def sync_virtual_server_to_ralph3(sender, instance=None, created=False, **kwargs
         'custom_fields': _get_custom_fields(instance),
     }
     data.update(_get_ips_list(instance))
-    return data
+    fields = kwargs.get('_sync_fields')
+    return {k: v for k, v in data.items() if k in fields} if fields else data
 
 
 @ralph3_sync(Environment)
@@ -392,4 +393,5 @@ def sync_stacked_switch_to_ralph3(sender, instance=None, created=False, **kwargs
         'child_devices': child_devices,
     }
     data.update(_get_ips_list(instance))
-    return data
+    fields = kwargs.get('_sync_fields')
+    return {k: v for k, v in data.items() if k in fields} if fields else data
