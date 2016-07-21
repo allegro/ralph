@@ -29,8 +29,9 @@ def do_clean(dev, user):
     save_comment = "Deployment"
     dev.save_comment = save_comment
     dev.save_user = user
-    # Disconnect all IP addresses and delete DNS and DHCP entries
-    for ipaddress in dev.ipaddress_set.all():
+    # Disconnect all IP addresses (excluding management) and delete DNS and
+    # DHCP entries
+    for ipaddress in dev.ipaddress_set.exclude(is_management=True):
         clean_dhcp_ip(ipaddress.address)
         clean_dns_entries(ipaddress.address)
         ipaddress.device = None
