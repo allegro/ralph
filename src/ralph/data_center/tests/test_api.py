@@ -409,6 +409,7 @@ class ClusterAPITests(RalphAPITestCase):
         self.cluster_1.service_env.service.business_owners = [self.user1]
         self.cluster_1.service_env.service.technical_owners = [self.user2]
         self.cluster_1.service_env.save()
+        self.cluster_1.management_ip = '10.20.30.40'
 
     def test_create_cluster(self):
         url = reverse('cluster-list')
@@ -449,7 +450,7 @@ class ClusterAPITests(RalphAPITestCase):
 
     def test_list_cluster(self):
         url = reverse('cluster-list')
-        with self.assertNumQueries(12):
+        with self.assertNumQueries(13):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 2)
@@ -459,7 +460,7 @@ class ClusterAPITests(RalphAPITestCase):
 
     def test_get_cluster_details(self):
         url = reverse('cluster-detail', args=(self.cluster_1.id,))
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(11):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], self.cluster_1.name)
@@ -495,3 +496,12 @@ class ClusterAPITests(RalphAPITestCase):
                 'is_master': self.boc_2.is_master,
             }
         ])
+        self.assertEqual(
+            response.data['ethernet'][0]['ipaddress']['address'], '10.20.30.40'
+        )
+        self.assertTrue(
+            response.data['ethernet'][0]['ipaddress']['is_management']
+        )
+        self.assertEqual(
+            response.data['ipaddresses'], ['10.20.30.40']
+        )

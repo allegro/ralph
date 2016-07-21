@@ -73,9 +73,11 @@ class Cluster(WithManagementIPMixin, BaseObject, models.Model):
 
     @cached_property
     def masters(self):
+        result = []
         for obj in self.baseobjectcluster_set.all():
             if obj.is_master:
-                yield obj
+                result.append(obj)
+        return result
 
     def _validate_name_hostname(self):
         if not self.name and not self.hostname:
