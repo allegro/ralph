@@ -52,6 +52,15 @@ class InventoryTagConfirmationView(RalphBaseTemplateView):
         return context
 
 
+class InventoryAssetMissingView(RalphBaseTemplateView):
+    template_name = 'ralphuser/inventory_missing.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['settings'] = settings
+        return context
+
+
 class InventoryTagView(RalphBaseTemplateView):
     template_name = 'ralphuser/inventory_tag.html'
     http_method_names = ['post']

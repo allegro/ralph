@@ -138,9 +138,12 @@ class AssetList(Table):
 
     def confirm_ownership(self, item):
         if settings.INVENTORY_TAG not in item.tags.names():
-            return '<a href="{}">{}</a> '.format(
+            return '<div style="text-align: justify; width: 100%;"><a href="{}">{}</a> \
+                    <a href="{}">{}</a></div>'.format(
                 reverse('inventory_tag_confirmation', args=[item.id]),
-                _('yes')
+                _('yes'),
+                reverse('inventory_asset_missing'),
+                _('no')
             )
         return _('confirmed')
     confirm_ownership.title = _('Do you have it?')

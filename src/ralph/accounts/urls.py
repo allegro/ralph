@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 
 from ralph.accounts.views import (
     CurrentUserInfoView,
+    InventoryAssetMissingView,
     InventoryTagConfirmationView,
     InventoryTagView,
     UserProfileView
@@ -28,5 +29,10 @@ urlpatterns = [
         r'^my_equipment/inventory_tag/$',
         login_required(InventoryTagView.as_view()),
         name='inventory_tag'
-    )
+    ),
+    url(
+        r'^my_equipment/inventory_asset_missing/$',
+        login_required(InventoryAssetMissingView.as_view()),
+        name='inventory_asset_missing'
+    ),
 ]
