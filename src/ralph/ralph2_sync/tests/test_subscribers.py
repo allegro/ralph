@@ -168,6 +168,25 @@ class Ralph2DataCenterAssetTestCase(TestCase):
         sync_device_to_ralph3(data)
         self.assertEqual(dca.management_ip, '10.20.30.40')
 
+    def test_handle_management_ip_when_ip_without_ethernet_exist(self):
+        old_id = 1
+        dca = _create_imported_object(DataCenterAssetFactory, old_id)
+        IPAddressFactory(address='10.20.30.40', ethernet=None)
+        data = {
+            'id': old_id,
+            'ips': [
+                {
+                    'address': '10.20.30.40',
+                    'hostname': 'mgmt-1.net',
+                    'is_management': True,
+                    'mac': None,
+                    'dhcp_expose': False
+                },
+            ],
+        }
+        sync_device_to_ralph3(data)
+        self.assertEqual(dca.management_ip, '10.20.30.40')
+
     def test_handle_new_ip(self):
         old_id = 1
         dca = _create_imported_object(DataCenterAssetFactory, old_id)
