@@ -5,6 +5,7 @@ from functools import reduce
 
 from dj.choices import Choices
 from django.conf.urls import url
+from django.core.cache import cache
 from django.core.exceptions import FieldDoesNotExist
 from django.db.models import Manager, Q
 from django.db.models.loading import get_model
@@ -161,18 +162,46 @@ class AutocompleteList(SuggestView):
     limit = 10
     model = None
 
+    @staticmethod
+    def get_cache_key(model, field):
+        return 'autocomplete_recent_{}_{}'.format(
+            model._meta.model_name, field.name
+        )
+
     def dispatch(self, request, *args, **kwargs):
         try:
             model = get_model(kwargs['app'], kwargs['model'])
         except LookupError:
             return HttpResponseBadRequest('Model not found')
-        print(model)
         self.field = model._meta.get_field(kwargs['field'])
         self.model = self.field.rel.to
         self.query = request.GET.get(QUERY_PARAM, None)
+        if 'selected' in request.GET and 'id' in request.GET:
+            return self.add_recent_item(request, self.model, self.field)
         if not self.query:
-            return HttpResponse('{"results": [{"id": 2, "text": "recent use"}, {"id": 5, "text": "from cache"}]}')
+            return self.recent_items(request, self.model, self.field)
         return super().dispatch(request, *args, **kwargs)
+
+    def recent_items(self, request, model, field):
+        key = self.get_cache_key(model, field)
+        return self.render_to_json_response(
+            {'results': cache.get(key, [])}
+        )
+
+    def add_recent_item(self, request, model, field):
+        key = self.get_cache_key(model, field)
+        obj = model.objects.get(id=request.GET['id'])
+        items = cache.get(key, [])
+        item = {
+            'id': obj.id, 'text': getattr(obj, 'autocomplete_str', str(obj))
+        }
+        if item in items:
+            items.remove(item)
+            items.insert(0, item)
+        else:
+            items = [item] + items[:9]
+        cache.set(key, items)
+        return HttpResponse()
 
     def get_query_filters(self, queryset, query, search_fields):
         """
