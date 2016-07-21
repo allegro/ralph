@@ -7,7 +7,7 @@ from ralph.assets.api.views import (
     base_object_descendant_prefetch_related,
     BaseObjectViewSetMixin
 )
-from ralph.assets.models import Ethernet
+from ralph.assets.models import BaseObject, Ethernet
 from ralph.data_center.admin import DataCenterAssetAdmin
 from ralph.data_center.api.serializers import (
     AccessorySerializer,
@@ -131,7 +131,19 @@ class ClusterViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         'service_env__environment', 'configuration_path', 'content_type'
     ]
     prefetch_related = base_object_descendant_prefetch_related + [
-        'tags', 'baseobjectcluster_set',
+        'tags',
+        # prefetch baseobject using polymorphic_objects to get list of
+        # objects of final type (ex. DataCenterAsset) and to allow to use
+        # prefetched objects in `masters` property
+        Prefetch(
+            'baseobjectcluster_set',
+            queryset=BaseObjectCluster.objects.prefetch_related(
+                Prefetch(
+                    'base_object',
+                    queryset=BaseObject.polymorphic_objects.all()
+                )
+            )
+        ),
         Prefetch(
             'ethernet_set',
             queryset=Ethernet.objects.select_related('ipaddress')

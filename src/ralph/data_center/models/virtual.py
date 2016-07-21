@@ -6,6 +6,7 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.base import BaseObject
+from ralph.data_center.models.physical import DataCenterAsset
 from ralph.data_center.models.mixins import WithManagementIPMixin
 from ralph.data_center.models.physical import (
     DataCenterAsset,
@@ -79,10 +80,21 @@ class Cluster(
 
     @cached_property
     def masters(self):
+        # prevents cyclic import
+        from ralph.virtual.models import CloudHost, VirtualServer  # noqa
+
         result = []
         for obj in self.baseobjectcluster_set.all():
             if obj.is_master:
-                result.append(obj)
+                bo = obj.base_object
+                # fetch final object if it's base object
+                if not isinstance(
+                    bo,
+                    # list equal to BaseObjectCluster.base_object.limit_models
+                    (Database, DataCenterAsset, CloudHost, VirtualServer)
+                ):
+                    bo = bo.last_descendant
+                result.append(bo)
         return result
 
     @cached_property
