@@ -9,7 +9,12 @@ from django.core.cache import cache
 from django.core.exceptions import FieldDoesNotExist
 from django.db.models import Manager, Q
 from django.db.models.loading import get_model
-from django.http import Http404, HttpResponseBadRequest, JsonResponse, HttpResponse  # noqa
+from django.http import (
+    Http404,
+    HttpResponse,
+    HttpResponseBadRequest,
+    JsonResponse
+)
 from django.views.generic import View
 
 from ralph.admin.helpers import (

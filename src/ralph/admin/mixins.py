@@ -4,6 +4,7 @@ import os
 import urllib
 from copy import copy
 
+from dal import autocomplete
 from django import forms
 from django.conf import settings
 from django.contrib import admin
@@ -60,7 +61,6 @@ class RalphAutocompleteMixin(object):
         self.formfield_overrides.update(FORMFIELD_FOR_DBFIELD_DEFAULTS)
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
-        from dal import autocomplete
         if db_field.name in self.raw_id_fields:
             return forms.ModelChoiceField(
                 queryset=db_field.related_model.objects.all(),
