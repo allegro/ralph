@@ -423,28 +423,35 @@ def _get_obj(model_class, obj_id, creating=False):
     disable_publishers=[sync_virtual_server_to_ralph2]
 )
 def sync_virtual_server_to_ralph3(data):
-    virtual_type = settings.RALPH2_RALPH3_VIRTUAL_SERVER_TYPE_MAPPING.get(data['type'])  # noqa
-    if virtual_type is None:
-        logger.info(
-            'Type {} not found in mapping dict'.format(
-                data['type']
-            )
-        )
-        virtual_type = data['type']
     virtual_server, created = _get_obj(VirtualServer, data['id'], creating=True)
-    service_env = _get_service_env(data)
-    virtual_server.sn = data['sn']
     virtual_server.status = VirtualServerStatus.used
-    virtual_server.hostname = data['hostname']
-    virtual_server.service_env = service_env
-    virtual_server.configuration_path = _get_configuration_path_from_venture_role(  # noqa
-        venture_role_id=data['venture_role']
-    )
-    virtual_server.type = VirtualServerType.objects.get_or_create(
-        name=virtual_type
-    )[0]
-    hypervisor, _ = _get_obj(DataCenterAsset, data['parent_id'])
-    virtual_server.parent = hypervisor
+
+    if 'type' in data:
+        virtual_type = settings.RALPH2_RALPH3_VIRTUAL_SERVER_TYPE_MAPPING.get(data['type'])  # noqa
+        if virtual_type is None:
+            logger.info(
+                'Type {} not found in mapping dict'.format(
+                    data['type']
+                )
+            )
+            virtual_type = data['type']
+        virtual_server.type = VirtualServerType.objects.get_or_create(
+            name=virtual_type
+        )[0]
+    if 'service' in data and 'environment' in data:
+        service_env = _get_service_env(data)
+        virtual_server.service_env = service_env
+    if 'sn' in data:
+        virtual_server.sn = data['sn']
+    if 'hostname' in data:
+        virtual_server.hostname = data['hostname']
+    if 'venture_role' in data:
+        virtual_server.configuration_path = _get_configuration_path_from_venture_role(  # noqa
+            venture_role_id=data['venture_role']
+        )
+    if 'parent_id' in data:
+        hypervisor, _ = _get_obj(DataCenterAsset, data['parent_id'])
+        virtual_server.parent = hypervisor
     virtual_server.save()
     if 'custom_fields' in data:
         for field, value in data['custom_fields'].items():
@@ -548,16 +555,20 @@ def sync_network_environment_to_ralph3(data):
 )
 def sync_stacked_switch_to_ralph3(data):
     stacked_switch, created = _get_obj(Cluster, data['id'], creating=True)
-    service_env = _get_service_env(data)
-    stacked_switch.type = ClusterType.objects.get_or_create(
-        name=data['type'], defaults=dict(show_master_summary=True)
-    )[0]
     stacked_switch.status = ClusterStatus.in_use
-    stacked_switch.hostname = data['hostname']
-    stacked_switch.service_env = service_env
-    stacked_switch.configuration_path = _get_configuration_path_from_venture_role(  # noqa
-        venture_role_id=data['venture_role']
-    )
+    if 'service' in data and 'environment' in data:
+        service_env = _get_service_env(data)
+        stacked_switch.service_env = service_env
+    if 'type' in data:
+        stacked_switch.type = ClusterType.objects.get_or_create(
+            name=data['type'], defaults=dict(show_master_summary=True)
+        )[0]
+    if 'hostname' in data:
+        stacked_switch.hostname = data['hostname']
+    if 'venture_role' in data:
+        stacked_switch.configuration_path = _get_configuration_path_from_venture_role(  # noqa
+            venture_role_id=data['venture_role']
+        )
     stacked_switch.save()
     if 'custom_fields' in data:
         for field, value in data['custom_fields'].items():
