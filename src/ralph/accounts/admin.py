@@ -142,7 +142,7 @@ class AssetList(Table):
                 reverse('inventory_tag_confirmation', args=[item.id]),
                 _('yes')
             )
-        return ''
+        return _('confirmed')
     confirm_ownership.title = _('Do you have it?')
 
 
