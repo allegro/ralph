@@ -43,7 +43,7 @@ from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.table import Table
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
-from ralph.networks.forms import SimpleNetworkForm
+from ralph.networks.forms import SimpleNetworkWithManagementIPForm
 from ralph.networks.models.networks import Network
 from ralph.networks.views import NetworkWithTerminatorsView
 from ralph.operations.views import OperationViewReadOnlyForExisiting
@@ -60,7 +60,7 @@ class AccessoryAdmin(RalphAdmin):
 
 
 class ClusterNetworkInline(RalphTabularInline):
-    form = SimpleNetworkForm
+    form = SimpleNetworkWithManagementIPForm
     model = Ethernet
     exclude = ['model']
 
