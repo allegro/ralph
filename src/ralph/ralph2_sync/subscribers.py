@@ -109,27 +109,27 @@ def _get_configuration_path_from_venture_role(venture_role_id):
     return None
 
 
-def _handle_management_ip(dca, management_ip, management_hostname):
+def _handle_management_ip(obj, management_ip, management_hostname):
     if management_ip:
         try:
             ip = IPAddress.objects.get(address=management_ip)
         except IPAddress.DoesNotExist:
-            dca.management_ip = management_ip
+            obj.management_ip = management_ip
         else:
-            ip.ethernet.base_object = dca
+            ip.ethernet.base_object = obj
             ip.ethernet.save()
             ip.is_management = True
             ip.save()
-        dca.management_hostname = management_hostname
-        dca.save()
+        obj.management_hostname = management_hostname
+        obj.save()
     else:
-        if dca.management_ip:
+        if obj.management_ip:
             logger.warning(
                 'Removing management IP {} from {}'.format(
-                    dca.management_ip, dca
+                    obj.management_ip, obj
                 )
             )
-        del dca.management_ip
+        del obj.management_ip
 
 
 def _handle_ips(obj, ips):
