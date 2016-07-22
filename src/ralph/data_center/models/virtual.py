@@ -7,6 +7,10 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.base import BaseObject
 from ralph.data_center.models.mixins import WithManagementIPMixin
+from ralph.data_center.models.physical import (
+    DataCenterAsset,
+    NetworkableBaseObject
+)
 from ralph.lib.mixins.fields import BaseObjectForeignKey, NullableCharField
 from ralph.lib.mixins.models import NamedMixin
 from ralph.lib.transitions.fields import TransitionField
@@ -47,7 +51,9 @@ class ClusterStatus(Choices):
     for_deploy = _('for deploy')
 
 
-class Cluster(WithManagementIPMixin, BaseObject, models.Model):
+class Cluster(
+    WithManagementIPMixin, NetworkableBaseObject, BaseObject, models.Model
+):
     name = models.CharField(_('name'), max_length=255, blank=True, null=True)
     hostname = NullableCharField(
         unique=True,
@@ -78,6 +84,17 @@ class Cluster(WithManagementIPMixin, BaseObject, models.Model):
             if obj.is_master:
                 result.append(obj)
         return result
+
+    @cached_property
+    def rack_id(self):
+        return self.rack.id if self.rack else None
+
+    @cached_property
+    def rack(self):
+        for master in self.masters:
+            if isinstance(master, DataCenterAsset) and master.rack_id:
+                return master.rack
+        return None
 
     def _validate_name_hostname(self):
         if not self.name and not self.hostname:

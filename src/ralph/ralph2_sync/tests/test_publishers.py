@@ -18,6 +18,7 @@ from ralph.data_center.tests.factories import (
 )
 from ralph.data_importer.models import ImportedObjects
 from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
+from ralph.networks.tests.factories import IPAddressFactory
 from ralph.ralph2_sync.publishers import (
     sync_dc_asset_to_ralph2,
     sync_model_to_ralph2,
@@ -32,6 +33,7 @@ from ralph.virtual.tests.factories import VirtualServerFactory
 @override_settings(RALPH2_HERMES_SYNC_ENABLED=True)
 class DCAssetPublisherTestCase(TestCase):
     def setUp(self):
+        self.maxDiff = None
         self.dc_asset = DataCenterAssetFactory(
             barcode='bc12345',
             depreciation_end_date='2016-07-01',
@@ -94,11 +96,34 @@ class DCAssetPublisherTestCase(TestCase):
         self.ralph2_dc_asset_id = '88'
         ImportedObjects.create(self.dc_asset, self.ralph2_dc_asset_id)
 
-        self.maxDiff = None
+        IPAddressFactory(
+            address='10.20.30.41',
+            hostname='my-host.mydc.net',
+            ethernet__mac='aa:bb:cc:dd:ee:ff',
+            dhcp_expose=True,
+            ethernet__base_object=self.dc_asset,
+        )
 
     @override_settings(RALPH2_HERMES_SYNC_FUNCTIONS=['sync_dc_asset_to_ralph2'])
     def test_publishing_dc_asset(self):
         result = sync_dc_asset_to_ralph2(DataCenterAsset, self.dc_asset)
+        ips = result.pop('ips')
+        self.assertCountEqual(ips, [
+            {
+                'ip': '10.20.30.40',
+                'hostname': 'mgmt11.my.dc',
+                'is_management': True,
+                'mac': None,
+                'dhcp_expose': False,
+            },
+            {
+                'ip': '10.20.30.41',
+                'hostname': 'my-host.mydc.net',
+                'is_management': False,
+                'mac': 'AA:BB:CC:DD:EE:FF',
+                'dhcp_expose': True,
+            }
+        ])
         self.assertEqual(result, {
             'barcode': 'bc12345',
             'data_center': '11',
@@ -190,12 +215,29 @@ class VirtualServerPublisherTestCase(TestCase):
         ImportedObjects.create(
             self.vs.service_env.environment, self.old_env_id
         )
+        IPAddressFactory(
+            address='10.20.30.41',
+            hostname='my-host.mydc.net',
+            ethernet__mac='aa:bb:cc:dd:ee:ff',
+            dhcp_expose=True,
+            ethernet__base_object=self.vs,
+        )
 
     @override_settings(RALPH2_HERMES_SYNC_FUNCTIONS=[
         'sync_virtual_server_to_ralph2'
     ])
     def test_publishing(self):
         result = sync_virtual_server_to_ralph2(VirtualServer, self.vs)
+        ips = result.pop('ips')
+        self.assertCountEqual(ips, [
+            {
+                'ip': '10.20.30.41',
+                'hostname': 'my-host.mydc.net',
+                'is_management': False,
+                'mac': 'AA:BB:CC:DD:EE:FF',
+                'dhcp_expose': True,
+            }
+        ])
         self.assertEqual(result, {
             'id': self.vs.id,
             'ralph2_id': str(self.old_vs_id),
@@ -245,6 +287,15 @@ class StackedSwitchPublisherTestCase(TestCase):
             service_env=self.se,
             configuration_path=self.conf_class,
         )
+        self.cluster.management_ip = '10.20.30.40'
+        self.cluster.management_hostname = 'mgmt1.mydc.net'
+        IPAddressFactory(
+            address='10.20.30.41',
+            hostname='my-host.mydc.net',
+            ethernet__mac='aa:bb:cc:dd:ee:ff',
+            dhcp_expose=True,
+            ethernet__base_object=self.cluster,
+        )
         ImportedObjects.create(
             self.cluster, 10
         )
@@ -258,6 +309,23 @@ class StackedSwitchPublisherTestCase(TestCase):
             custom_field=self.custom_field, value='abc'
         )
         result = sync_stacked_switch_to_ralph2(Cluster, self.cluster)
+        ips = result.pop('ips')
+        self.assertCountEqual(ips, [
+            {
+                'ip': '10.20.30.40',
+                'hostname': 'mgmt1.mydc.net',
+                'is_management': True,
+                'mac': None,
+                'dhcp_expose': False,
+            },
+            {
+                'ip': '10.20.30.41',
+                'hostname': 'my-host.mydc.net',
+                'is_management': False,
+                'mac': 'AA:BB:CC:DD:EE:FF',
+                'dhcp_expose': True,
+            }
+        ])
         self.assertEqual(result, {
             'id': self.cluster.id,
             'ralph2_id': '10',
