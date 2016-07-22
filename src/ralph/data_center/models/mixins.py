@@ -43,7 +43,9 @@ class WithManagementIPMixin(object):
                         ip.ethernet.base_object_id != self.pk
                     ):
                         raise ValidationError(
-                            'IP is already assigned to another object'
+                            'IP is already assigned to {}'.format(
+                                ip.ethernet.base_object.last_descendant
+                            )
                         )
                     # check if object has ethernet attached - if not, create new
                     # one
