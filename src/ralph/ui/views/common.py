@@ -17,6 +17,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
 from django.db import models as db, transaction
+from django.db.models.signals import post_save
 from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
 from django.shortcuts import get_object_or_404
 from django.utils import importlib, timezone
@@ -709,6 +710,10 @@ class Components(DeviceDetailView):
         return ret
 
 
+def sync_device_to_ralph3(device):
+    post_save.send(sender=Device, instance=device, raw=None, using='default')
+
+
 class Addresses(DeviceDetailView):
     template_name = 'ui/device_addresses.html'
     read_perm = Perm.read_device_info_generic
@@ -918,6 +923,7 @@ class Addresses(DeviceDetailView):
                         )
                     instance.save()
                 messages.success(self.request, "DHCP records updated.")
+                sync_device_to_ralph3(self.object)
                 return HttpResponseRedirect(self.request.path)
             else:
                 messages.error(self.request, "Errors in the DHCP form.")
@@ -939,6 +945,7 @@ class Addresses(DeviceDetailView):
                         form.instance.device = self.object
                 self.ip_formset.save()
                 messages.success(self.request, "IP addresses updated.")
+                sync_device_to_ralph3(self.object)
                 return HttpResponseRedirect(self.request.path)
             else:
                 messages.error(self.request, "Errors in the addresses form.")
