@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import unittest
+from datetime import date
 
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from rest_framework import status
@@ -12,7 +14,14 @@ from ralph.accounts.management.commands.ldap_sync import (
 )
 from ralph.accounts.models import RalphUser, Region
 from ralph.api.tests._base import RalphAPITestCase
-from ralph.back_office.tests.factories import BackOfficeAssetFactory
+from ralph.assets.tests.factories import (
+    BackOfficeAssetModelFactory,
+    ServiceEnvironmentFactory
+)
+from ralph.back_office.tests.factories import (
+    BackOfficeAssetFactory,
+    WarehouseFactory
+)
 from ralph.licences.models import LicenceUser
 from ralph.licences.tests.factories import LicenceFactory
 from ralph.tests import factories
@@ -155,3 +164,59 @@ class RalphUserAPITests(RalphAPITestCase):
         }
         response = self.client.patch(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class StockTakingTests(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.user1 = factories.UserFactory()
+        self.user1.save()
+        self.user2 = factories.UserFactory()
+        self.user2.save()
+        self.service_env = ServiceEnvironmentFactory()
+        self.model = BackOfficeAssetModelFactory()
+        self.warehouse = WarehouseFactory()
+        self.asset = BackOfficeAssetFactory(
+            warehouse=self.warehouse,
+            model=self.model,
+        )
+        self.asset.user = self.user1
+        self.asset.save()
+
+        self.date_tag = settings.INVENTORY_TAG + '_' + date.today().isoformat()
+        self.tags = [
+            settings.INVENTORY_TAG,
+            settings.INVENTORY_TAG_USER,
+            self.date_tag
+        ]
+    
+    def test_tag_asset(self):
+        self.assertTrue(self.client.login(
+            username=self.user1,
+            password='ralph'
+        ))
+        response = self.client.post(
+            reverse('inventory_tag'),
+            {
+                'asset_id': self.asset.id,
+                'confirm_button': 'Yes'
+            }
+        )
+
+        self.assertEqual(response.status_code, 200)
+        for t in self.tags:
+            self.assertIn(t, self.asset.tags.names())
+
+    def test_ownership_verification(self):
+        self.assertTrue(self.client.login(
+            username=self.user2,
+            password='ralph'
+        ))
+        response = self.client.post(
+            reverse('inventory_tag'),
+            {
+                'asset_id': self.asset.id,
+                'confirm_button': 'Yes'
+            }
+        )
+        self.assertEqual(response.status_code, 403)
