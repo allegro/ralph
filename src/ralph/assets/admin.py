@@ -237,18 +237,22 @@ class CategoryAdmin(RalphMPTTAdmin):
         return []
 
 
+class ComponentAdminMixin(object):
+    raw_id_fields = ['base_object', 'model']
+
+
 @register(ComponentModel)
 class ComponentModelAdmin(RalphAdmin):
     search_fields = ['name']
 
 
 @register(GenericComponent)
-class GenericComponentAdmin(RalphAdmin):
+class GenericComponentAdmin(ComponentAdminMixin, RalphAdmin):
     search_fields = ['name']
 
 
 @register(Ethernet)
-class EthernetAdmin(RalphAdmin):
+class EthernetAdmin(ComponentAdminMixin, RalphAdmin):
     search_fields = ['label', 'mac']
 
 
