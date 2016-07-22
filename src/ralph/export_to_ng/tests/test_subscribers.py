@@ -472,6 +472,40 @@ class VirtualServerTestCase(TestCase):
         self.assertEqual(vs.venture, None)
         self.assertEqual(vs.venture_role, None)
 
+    def test_ips_new_ips(self):
+        self.data['ips'] = [
+            {
+                'ip': '10.20.30.40', 'hostname': 'host.mydc.net',
+                'mac': 'aa:bb:cc:dd:ee:ff', 'dhcp_expose': True,
+                'is_management': False
+            },
+            {
+                'ip': '10.20.30.41', 'hostname': 'host2.mydc.net',
+                'mac': None, 'dhcp_expose': False,
+                'is_management': False
+            }
+        ]
+        vs = self.create_test_virtual_server()
+        vs = self.sync(vs)
+        self.assertTrue(
+            vs.ipaddress.filter(
+                address='10.20.30.40', hostname='host.mydc.net'
+            ).exists()
+        )
+        self.assertTrue(
+            vs.ipaddress.filter(
+                address='10.20.30.41', hostname='host2.mydc.net'
+            ).exists()
+        )
+        self.assertTrue(
+            DHCPEntry.objects.filter(
+                ip='10.20.30.40', mac='AABBCCDDEEFF'
+            ).exists()
+        )
+        self.assertTrue(
+            vs.ethernet_set.filter(mac='AABBCCDDEEFF').exists()
+        )
+
 
 class StackedSwitchSyncTestCase(TestCase):
     def setUp(self):
