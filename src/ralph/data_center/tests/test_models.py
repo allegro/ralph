@@ -9,9 +9,9 @@ from ralph.data_center.models.choices import DataCenterAssetStatus, Orientation
 from ralph.data_center.models.physical import DataCenterAsset
 from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.data_center.tests.factories import (
-    DataCenterAssetFactory,
     ClusterFactory,
     ClusterTypeFactory,
+    DataCenterAssetFactory,
     RackFactory
 )
 from ralph.networks.models import IPAddress, IPAddressStatus

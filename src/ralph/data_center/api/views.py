@@ -128,22 +128,10 @@ class ClusterViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     serializer_class = ClusterSerializer
     select_related = [
         'type', 'parent', 'service_env', 'service_env__service',
-        'service_env__environment', 'configuration_path', 'content_type'
+        'service_env__environment', 'configuration_path__module', 'content_type'
     ]
     prefetch_related = base_object_descendant_prefetch_related + [
-        'tags',
-        # prefetch baseobject using polymorphic_objects to get list of
-        # objects of final type (ex. DataCenterAsset) and to allow to use
-        # prefetched objects in `masters` property
-        Prefetch(
-            'baseobjectcluster_set',
-            queryset=BaseObjectCluster.objects.prefetch_related(
-                Prefetch(
-                    'base_object',
-                    queryset=BaseObject.polymorphic_objects.all()
-                )
-            )
-        ),
+        'tags', 'baseobjectcluster_set__base_object',
         Prefetch(
             'ethernet_set',
             queryset=Ethernet.objects.select_related('ipaddress')

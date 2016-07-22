@@ -58,7 +58,8 @@ class ClusterSerializer(
         many=True, read_only=True, source='baseobjectcluster_set'
     )
     masters = serializers.HyperlinkedRelatedField(
-        many=True, view_name='baseobject-detail', read_only=True
+        many=True, view_name='baseobject-detail', read_only=True,
+        source='get_masters'
     )
 
     class Meta(ClusterSimpleSerializer.Meta):
