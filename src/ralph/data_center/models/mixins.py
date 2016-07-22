@@ -29,13 +29,19 @@ class WithManagementIPMixin(object):
 
     def _get_or_create_management_ip(self, address=None):
         ip = self._get_management_ip()
+
+        def _create_new_ip():
+            eth = self.ethernet_set.create()
+            ip = IPAddress(ethernet=eth, is_management=True)
+            return ip
+
         if not ip:
             if address:
                 # check if IP is already created
                 try:
                     ip = IPAddress.objects.get(address=address)
                 except IPAddress.DoesNotExist:
-                    pass
+                    ip = _create_new_ip()
                 else:
                     # check if it's not assigned to any object
                     if (
@@ -55,9 +61,8 @@ class WithManagementIPMixin(object):
                     else:
                         ip.ethernet = self.ethernet_set.create()
                     ip.is_management = True
-            if not ip:
-                eth = self.ethernet_set.create()
-                ip = IPAddress(ethernet=eth, is_management=True)
+            else:
+                ip = _create_new_ip()
         return ip
 
     @property
