@@ -11,8 +11,9 @@ from ralph.data_center.tests.factories import (
     DataCenterAssetFactory,
     RackFactory
 )
-from ralph.networks.models import NetworkEnvironment
+from ralph.networks.models import IPAddress, IPAddressStatus
 from ralph.networks.tests.factories import (
+    IPAddressFactory,
     NetworkEnvironmentFactory,
     NetworkFactory
 )
@@ -271,6 +272,70 @@ class DataCenterAssetTest(RalphTestCase):
     def test_get_autocomplete_queryset(self):
         queryset = DataCenterAsset.get_autocomplete_queryset()
         self.assertEquals(1, queryset.count())
+
+    # =========================================================================
+    # management_ip
+    # =========================================================================
+    def test_assign_new_management_ip_should_pass(self):
+        self.dc_asset.management_ip = '10.20.30.40'
+        self.dc_asset.refresh_from_db()
+        self.assertEqual(self.dc_asset.management_ip, '10.20.30.40')
+
+    def test_assign_existing_ip_assigned_to_another_obj_should_not_pass(self):
+        IPAddressFactory(address='10.20.30.40', is_management=True)
+        with self.assertRaises(ValidationError):
+            self.dc_asset.management_ip = '10.20.30.40'
+
+    def test_assign_existing_ip_not_assigned_to_another_obj_should_pass(self):
+        IPAddressFactory(address='10.20.30.40', ethernet=None)
+        self.dc_asset.management_ip = '10.20.30.40'
+        self.dc_asset.refresh_from_db()
+        self.assertEqual(self.dc_asset.management_ip, '10.20.30.40')
+
+    def test_change_mgmt_ip_for_new_ip_should_pass(self):
+        self.dc_asset.management_ip = '10.20.30.40'
+        self.dc_asset.refresh_from_db()
+        self.assertEqual(self.dc_asset.management_ip, '10.20.30.40')
+        self.dc_asset.management_ip = '10.20.30.41'
+        self.dc_asset.refresh_from_db()
+        self.assertEqual(self.dc_asset.management_ip, '10.20.30.41')
+        self.assertFalse(
+            IPAddress.objects.filter(address='10.20.30.40').exists()
+        )
+
+    def test_change_mgmt_ip_for_existing_ip_without_object_should_pass(self):
+        IPAddressFactory(address='10.20.30.42', ethernet=None)
+        self.dc_asset.management_ip = '10.20.30.40'
+        self.dc_asset.refresh_from_db()
+        self.assertEqual(self.dc_asset.management_ip, '10.20.30.40')
+        self.dc_asset.management_ip = '10.20.30.42'
+        self.dc_asset.refresh_from_db()
+        self.assertEqual(self.dc_asset.management_ip, '10.20.30.42')
+        self.assertFalse(
+            IPAddress.objects.filter(address='10.20.30.40').exists()
+        )
+
+    def test_change_mgmt_ip_reserved_for_existing_ip_without_object_should_pass(self):  # noqa
+        IPAddressFactory(
+            address='10.20.30.40',
+            is_management=True,
+            ethernet__base_object=self.dc_asset,
+            status=IPAddressStatus.reserved
+        )
+        self.assertEqual(self.dc_asset.management_ip, '10.20.30.40')
+        self.dc_asset.management_ip = '10.20.30.43'
+        self.dc_asset.refresh_from_db()
+        self.assertEqual(self.dc_asset.management_ip, '10.20.30.43')
+        reserved_ip = IPAddress.objects.get(address='10.20.30.40')
+        self.assertFalse(reserved_ip.is_management)
+
+    def test_change_mgmt_ip_for_existing_ip_with_object_should_not_pass(self):
+        IPAddressFactory(address='10.20.30.42')
+        self.dc_asset.management_ip = '10.20.30.40'
+        self.dc_asset.refresh_from_db()
+        self.assertEqual(self.dc_asset.management_ip, '10.20.30.40')
+        with self.assertRaises(ValidationError):
+            self.dc_asset.management_ip = '10.20.30.42'
 
 
 @ddt
