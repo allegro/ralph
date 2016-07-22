@@ -13,7 +13,10 @@
     <form action={% url 'inventory_tag' %} method="POST">
       {% csrf_token %}
       <input type="hidden" name="asset_id" value={{ asset_id }} />
-      <input type="submit" name="confirm_button" value="Yes" />
+      <input type="submit" name="confirm_button" value="Yes" 
+          class="button small success left" autocomplete="off" />
+      <a href="javascript:history.back()" class="button small cancel left">
+          Cancel</a>
     </form>
   </div>
 </div>
