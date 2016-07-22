@@ -472,7 +472,7 @@ class VirtualServerTestCase(TestCase):
         self.assertEqual(vs.venture, None)
         self.assertEqual(vs.venture_role, None)
 
-    def test_ips_new_ips(self):
+    def test_sync_ips(self):
         self.data['ips'] = [
             {
                 'ip': '10.20.30.40', 'hostname': 'host.mydc.net',
@@ -486,6 +486,7 @@ class VirtualServerTestCase(TestCase):
             }
         ]
         vs = self.create_test_virtual_server()
+        self.data['ralph2_id'] = vs.id
         vs = self.sync(vs)
         self.assertTrue(
             vs.ipaddress.filter(
@@ -558,4 +559,39 @@ class StackedSwitchSyncTestCase(TestCase):
         self.assertEqual(ss.device_environment.id, self.data['environment_id'])
         self.assertEqual(
             self.venture_role.get_properties(device), {'abc': 'def'}
+        )
+
+    def test_sync_ips(self):
+        self.data['ips'] = [
+            {
+                'ip': '10.20.30.40', 'hostname': 'host.mydc.net',
+                'mac': 'aa:bb:cc:dd:ee:ff', 'dhcp_expose': True,
+                'is_management': False
+            },
+            {
+                'ip': '10.20.30.41', 'hostname': 'host2.mydc.net',
+                'mac': None, 'dhcp_expose': False,
+                'is_management': False
+            }
+        ]
+        device = self.create_test_stacked_switch()
+        self.data['ralph2_id'] = device.id
+        device = self.sync(device)
+        self.assertTrue(
+            device.ipaddress.filter(
+                address='10.20.30.40', hostname='host.mydc.net'
+            ).exists()
+        )
+        self.assertTrue(
+            device.ipaddress.filter(
+                address='10.20.30.41', hostname='host2.mydc.net'
+            ).exists()
+        )
+        self.assertTrue(
+            DHCPEntry.objects.filter(
+                ip='10.20.30.40', mac='AABBCCDDEEFF'
+            ).exists()
+        )
+        self.assertTrue(
+            device.ethernet_set.filter(mac='AABBCCDDEEFF').exists()
         )
