@@ -7,7 +7,7 @@ from ralph.assets.api.views import (
     base_object_descendant_prefetch_related,
     BaseObjectViewSetMixin
 )
-from ralph.assets.models import BaseObject, Ethernet
+from ralph.assets.models import Ethernet
 from ralph.data_center.admin import DataCenterAssetAdmin
 from ralph.data_center.api.serializers import (
     AccessorySerializer,
