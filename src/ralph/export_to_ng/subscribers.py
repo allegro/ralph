@@ -14,9 +14,11 @@ from ralph.discovery.models import (
     DeviceModel,
     Ethernet,
     IPAddress,
+    Network,
+    NetworkTerminator,
     ServiceCatalog
 )
-from ralph.dnsedit.models import DHCPEntry
+from ralph.dnsedit.models import DHCPEntry, DNSServer
 from ralph_assets.models import Asset, AssetModel
 from ralph_assets.models_assets import AssetStatus, AssetType, Warehouse, DataCenter
 from ralph_assets.models_dc_assets import DeviceInfo, Rack
@@ -31,6 +33,7 @@ from ralph.export_to_ng.publishers import (
     publish_sync_ack_to_ralph3,
     sync_device_properties_to_ralph3,
     sync_device_to_ralph3,
+    sync_network_to_ralph3,
     sync_stacked_switch_to_ralph3,
     sync_venture_role_to_ralph3,
     sync_venture_to_ralph3,
@@ -127,10 +130,10 @@ class sync_subscriber(subscriber):
                 WithSignalDisabled(**_get_publisher_signal_info(publisher))
                 for publisher in self.disable_publishers
             ]):
-                try:
+                # try:
                     return func(*args, **kwargs)
-                except Exception:
-                    logger.exception('Exception during syncing')
+                # except Exception:
+                #     logger.exception('Exception during syncing')
         return exception_wrapper
 
 
@@ -417,3 +420,41 @@ def sync_stacked_switch_to_ralph2(data):
     _handle_ips(data, ss)
     if created:
         publish_sync_ack_to_ralph3(ss, data['id'])
+
+
+@sync_subscriber(
+    topic='sync_network_to_ralph2',
+    disable_publishers=[sync_network_to_ralph3]
+)
+def sync_network_to_ralph2(data):
+    net, created = _get_or_create_obj(Network, data)
+    net.name = data['name']
+    net.address = data['address']
+    net.vlan = data['vlan']
+    net.kind_id = data['kind']
+    net.environment_id = data['network_environment']
+    net.gateway = data['gateway']
+    net.reserved = data['reserved_bottom']
+    net.reserved_top_margin = data['reserved_top']
+    net.remarks = data['remarks']
+    net.dhcp_broadcast = data['dhcp_broadcast']
+    net.save()
+    for terminator in data['terminators']:
+        net.terminators.add(
+            NetworkTerminator.objects.get_or_create(name=terminator)[0]
+        )
+    for dns in data['dns_servers']:
+        net.custom_dns_servers.add(
+            DNSServer.objects.get_or_create(ip_address=dns)[0]
+        )
+    for rack in data['racks']:
+        try:
+            deprecated_rack = Rack.objects.get(pk=rack).deprecated_ralph_rack
+        except Rack.DoesNotExist:
+            logger.error('Rack {} not found for network {}'.format(rack, net))
+        else:
+            if deprecated_rack:
+                net.racks.add(deprecated_rack)
+    if created:
+        publish_sync_ack_to_ralph3(net, data['id'])
+    return net
