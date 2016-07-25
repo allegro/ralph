@@ -313,6 +313,7 @@ def sync_network_to_ralph2(sender, instance=None, created=False, **kwargs):
         'ralph2_id': ralph2_id,
         'name': instance.name,
         'address': instance.address,
+        'gateway': instance.gateway.address if instance.gateway else None,
         'vlan': instance.vlan,
         'remarks': instance.remarks,
         'dhcp_broadcast': instance.dhcp_broadcast,
@@ -326,5 +327,6 @@ def sync_network_to_ralph2(sender, instance=None, created=False, **kwargs):
         'terminators': [
             bo.last_descendant.hostname for bo in instance.terminators.all()
         ],
+        'racks': list(map(_get_obj_id_ralph_2, instance.racks.all())),
     }
     return data

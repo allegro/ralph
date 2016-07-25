@@ -360,6 +360,7 @@ class NetworkPublisherTestCase(TestCase):
             dhcp_broadcast=False,
             network_environment=self.net_env,
             kind=self.net_kind,
+            gateway=IPAddressFactory(address='192.168.0.1'),
         )
         ImportedObjects.create(
             self.net, 10
@@ -370,6 +371,9 @@ class NetworkPublisherTestCase(TestCase):
         self.net.terminators.add(self.terminator1, self.terminator2)
         self.net.dns_servers.create(ip_address='1.2.3.4')
         self.net.dns_servers.create(ip_address='4.3.2.1')
+        self.rack1 = _create_imported_object(RackFactory, 11)
+        self.rack2 = _create_imported_object(RackFactory, 12)
+        self.net.racks.add(self.rack1, self.rack2)
         self.maxDiff = None
 
     @override_settings(RALPH2_HERMES_SYNC_FUNCTIONS=[
@@ -388,6 +392,7 @@ class NetworkPublisherTestCase(TestCase):
             'ralph2_id': '10',
             'name': 'my network',
             'address': '192.168.0.0/15',
+            'gateway': '192.168.0.1',
             'vlan': 10,
             'remarks': 'qwerty',
             'dhcp_broadcast': False,
@@ -395,4 +400,5 @@ class NetworkPublisherTestCase(TestCase):
             'reserved_top': 5,
             'network_environment': '2222',
             'kind': '1111',
+            'racks': ['11', '12'],
         })
