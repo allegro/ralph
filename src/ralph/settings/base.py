@@ -371,3 +371,6 @@ RALPH2_RALPH3_VIRTUAL_SERVER_TYPE_MAPPING = json.loads(
 RALPH2_HERMES_ROLE_PROPERTY_WHITELIST = json.loads(
     os.environ.get('RALPH2_HERMES_ROLE_PROPERTY_WHITELIST', '[]')
 )
+
+# user in dnsaas which can update TXT records
+DNSAAS_USERNAME = None

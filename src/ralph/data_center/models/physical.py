@@ -5,6 +5,7 @@ from collections import namedtuple
 from itertools import chain
 
 from django import forms
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.core.validators import RegexValidator
@@ -426,18 +427,38 @@ class DataCenterAsset(NetworkableBaseObject, AutocompleteTooltipMixin, Asset):
 
     @property
     def publish_data(self):
-        return {
-            'hostname': self.hostname,
-            'model': self.model.name,
-            'configuration_path': (
-                self.configuration_path.path if self.configuration_path else ''
-            ),
-            'location': ' / '.join(self.get_location()),
-            'service_env': str(self.service_env),
-            'ipaddresses': list(self.ipaddresses.all().values_list(
-                'address', flat=True
-            ))
-        }
+        publish_data = []
+        _data = (
+            #TODO:: really VENTURE or module here?
+            ('VENTURE', self.configuration_path.class_name if self.configuration_path else ''),
+            #TODO:: really ROLE or class_name here?
+            ('ROLE', self.configuration_path.module.name if self.configuration_path else ''),
+            ('MODEL', self.model),
+            ('LOCATION', ' / '.join(self.get_location())),
+        )
+        for purpose, content in _data:
+            data = {
+                'name': self.hostname,
+                #TODO:: user from threadlocal?
+                'target_owner': 'john.doe',
+                'owner': settings.DNSAAS_USERNAME,
+            }
+            data['purpose'] = purpose
+            data['content'] = content
+            publish_data.append(data)
+        return publish_data
+        #return {
+        #    'hostname': self.hostname,
+        #    'model': self.model.name,
+        #    'configuration_path': (
+        #        self.configuration_path.path if self.configuration_path else ''
+        #    ),
+        #    'location': ' / '.join(self.get_location()),
+        #    'service_env': str(self.service_env),
+        #    'ipaddresses': list(self.ipaddresses.all().values_list(
+        #        'address', flat=True
+        #    ))
+        #}
 
     @property
     def is_blade(self):

@@ -9,7 +9,8 @@ from ralph.data_center.models.virtual import Cluster
 from ralph.virtual.models import VirtualServer
 
 
-@pyhermes.publisher(topic='host_update', auto_publish_result=True)
+#TODO:: change topic name, shouldn't this be full path or from settings?
+@pyhermes.publisher(topic='auto_txt_record', auto_publish_result=True)
 def publish_data_to_dnsaaas(obj):
     return obj.publish_data
 
