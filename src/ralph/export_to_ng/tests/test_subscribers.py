@@ -19,19 +19,26 @@ from ralph.discovery.models import (
     Device,
     DeviceModel,
     DeviceType,
-    IPAddress
+    IPAddress,
+    Network
 )
-from ralph.discovery.tests.util import DeviceFactory
+from ralph.discovery.tests.util import (
+    DeprecatedRackFactory,
+    DeviceFactory,
+    EnvironmentFactory,
+    NetworkKindFactory,
+)
 from ralph.dnsedit.models import DHCPEntry
 from ralph.export_to_ng.subscribers import (
     sync_dc_asset_to_ralph2_handler,
+    sync_network_to_ralph2,
     sync_stacked_switch_to_ralph2,
     sync_venture_role_to_ralph2,
     sync_venture_to_ralph2,
     sync_virtual_server_to_ralph2
 )
 from ralph.util.tests.utils import VentureFactory, VentureRoleFactory
-from ralph_assets.tests.utils.assets import DCAssetFactory
+from ralph_assets.tests.utils.assets import DCAssetFactory, RackFactory
 
 
 class DeviceDCAssetTestCase(TestCase):
@@ -594,4 +601,88 @@ class StackedSwitchSyncTestCase(TestCase):
         )
         self.assertTrue(
             device.ethernet_set.filter(mac='AABBCCDDEEFF').exists()
+        )
+
+
+class NetworkSyncTestCase(TestCase):
+    def setUp(self):
+        self.env = EnvironmentFactory()
+        self.kind = NetworkKindFactory()
+        self.dep_rack1 = DeprecatedRackFactory()
+        self.rack1 = RackFactory(deprecated_ralph_rack=self.dep_rack1)
+
+        self.data = {
+            'id': '11',
+            'ralph2_id': '',
+            'name': 'my net',
+            'address': '192.168.1.0/24',
+            'gateway': '192.168.1.1',
+            'network_environment': str(self.env.id),
+            'kind': str(self.kind.id),
+            'vlan': 11,
+            'reserved_top': 5,
+            'reserved_bottom': 5,
+            'remarks': 'qwerty',
+            'dhcp_broadcast': False,
+            'terminators': ['h1.mydc.net', 'ss1.mydc.net'],
+            'dns_servers': ['1.2.3.4', '4.3.2.1'],
+            'racks': [self.rack1.id]
+        }
+
+    def test_network_sync(self):
+        net = sync_network_to_ralph2(self.data)
+        net = Network.objects.get(pk=net.id)
+
+        self.assertEqual(net.name, 'my net')
+        self.assertEqual(net.address, '192.168.1.0/24')
+        self.assertEqual(net.vlan, 11)
+        self.assertEqual(net.environment, self.env)
+        self.assertEqual(net.kind, self.kind)
+        self.assertEqual(net.reserved, 5)
+        self.assertEqual(net.reserved_top_margin, 5)
+        self.assertEqual(net.remarks, 'qwerty')
+        self.assertEqual(net.gateway, '192.168.1.1')
+        self.assertFalse(net.dhcp_broadcast)
+        self.assertItemsEqual(
+            net.terminators.values_list('name', flat=True),
+            ['h1.mydc.net', 'ss1.mydc.net']
+        )
+        self.assertItemsEqual(
+            net.custom_dns_servers.values_list('ip_address', flat=True),
+            ['1.2.3.4', '4.3.2.1']
+        )
+        self.assertItemsEqual(
+            net.racks.values_list('id', flat=True), [self.dep_rack1.id]
+        )
+
+    def test_update_terminators(self):
+        net = sync_network_to_ralph2(self.data)
+        self.data['ralph2_id'] = net.id
+        self.data['terminators'] += ['h2.mydc.net']
+        net = sync_network_to_ralph2(self.data)
+        self.assertItemsEqual(
+            net.terminators.values_list('name', flat=True),
+            ['h1.mydc.net', 'ss1.mydc.net', 'h2.mydc.net']
+        )
+
+    def test_update_dns_servers(self):
+        net = sync_network_to_ralph2(self.data)
+        self.data['ralph2_id'] = net.id
+        self.data['dns_servers'] += ['9.8.7.6']
+        net = sync_network_to_ralph2(self.data)
+        self.assertItemsEqual(
+            net.custom_dns_servers.values_list('ip_address', flat=True),
+            ['1.2.3.4', '4.3.2.1', '9.8.7.6']
+        )
+
+    def test_update_racks_with_unexisting_rack(self):
+        net = sync_network_to_ralph2(self.data)
+        self.data['ralph2_id'] = net.id
+        dep_rack2 = DeprecatedRackFactory()
+        rack2 = RackFactory(deprecated_ralph_rack=dep_rack2)
+        self.data['racks'] += [rack2.id, 1111]
+        net = sync_network_to_ralph2(self.data)
+        self.assertItemsEqual(
+            net.racks.values_list('id', flat=True),
+            [self.dep_rack1.id, dep_rack2.id]
         )
