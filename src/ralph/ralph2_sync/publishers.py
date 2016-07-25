@@ -98,6 +98,19 @@ def _add_custom_fields(obj):
     return {'custom_fields': obj.custom_fields_as_dict}
 
 
+def _add_ips(obj):
+    ips = []
+    for ip in obj.ipaddresses.all():
+        ips.append({
+            'ip': ip.address,
+            'hostname': ip.hostname,
+            'is_management': ip.is_management,
+            'mac': ip.ethernet.mac if ip.ethernet else None,
+            'dhcp_expose': ip.dhcp_expose,
+        })
+    return {'ips': ips}
+
+
 @ralph2_sync(DataCenterAsset)
 def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
     """
@@ -147,6 +160,7 @@ def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
     ]:
         data[field] = _get_obj_id_ralph_2(getattr(asset, field, None))
     data.update(_add_custom_fields(instance))
+    data.update(_add_ips(instance))
     return data
 
 
@@ -239,6 +253,7 @@ def sync_virtual_server_to_ralph2(sender, instance=None, created=False, **kwargs
         'venture_role_id': venture_role_id
     }
     data.update(_add_custom_fields(instance))
+    data.update(_add_ips(instance))
     return data
 
 
@@ -282,4 +297,5 @@ def sync_stacked_switch_to_ralph2(sender, instance=None, created=False, **kwargs
         'children': list(map(_get_obj_id_ralph_2, instance.base_objects.all())),
     }
     data.update(_add_custom_fields(instance))
+    data.update(_add_ips(instance))
     return data
