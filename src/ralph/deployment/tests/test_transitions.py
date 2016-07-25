@@ -52,7 +52,8 @@ class _BaseDeploymentTransitionTestCase(object):
             network_environment=cls.net_env,
             address='10.20.30.0/24',
         )
-        cls.net.reserve_margin_addresses(bottom_count=6)
+        # reserve 10.20.30.1, 10.20.30.2, 10.20.30.3, 10.20.30.4, 10.20.30.5
+        cls.net.reserve_margin_addresses(bottom_count=5)
         cls.net_2 = NetworkFactory(
             network_environment=cls.net_env_2,
             address='11.20.30.0/24',

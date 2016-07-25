@@ -146,8 +146,8 @@ class NetworkTest(RalphTestCase):
         ip1 = IPAddress.objects.create(address='10.1.1.1')
         ip2 = IPAddress.objects.create(address='10.1.1.254')
         result = net.reserve_margin_addresses(bottom_count=10, top_count=10)
-        self.assertEqual(17, net.ips.filter(status=IPAddressStatus.reserved).count())  # noqa
-        self.assertEqual(17, result[0])
+        self.assertEqual(18, net.ips.filter(status=IPAddressStatus.reserved).count())  # noqa
+        self.assertEqual(18, result[0])
         self.assertEqual(set([ip1.number, ip2.number]), result[1])
 
     def test_create_ip_address(self):
@@ -269,7 +269,7 @@ class NetworkTest(RalphTestCase):
         )
         self.assertEqual(net.reserved_bottom, 1)
         ip21 = IPAddress.objects.create(
-            address='192.169.58.255', status=IPAddressStatus.reserved
+            address='192.169.58.254', status=IPAddressStatus.reserved
         )
         self.assertEqual(net.reserved_top, 1)
 
@@ -279,7 +279,7 @@ class NetworkTest(RalphTestCase):
         )
         self.assertEqual(net.reserved_bottom, 2)
         ip22 = IPAddress.objects.create(
-            address='192.169.58.254', status=IPAddressStatus.reserved
+            address='192.169.58.253', status=IPAddressStatus.reserved
         )
         self.assertEqual(net.reserved_top, 2)
 
@@ -288,7 +288,7 @@ class NetworkTest(RalphTestCase):
             address='192.169.58.3', status=IPAddressStatus.reserved
         )
         IPAddress.objects.create(
-            address='192.169.58.253', status=IPAddressStatus.reserved
+            address='192.169.58.252', status=IPAddressStatus.reserved
         )
         IPAddress.objects.create(
             address='192.169.58.10', status=IPAddressStatus.reserved

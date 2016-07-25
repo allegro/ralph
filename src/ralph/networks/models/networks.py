@@ -288,7 +288,7 @@ class Network(
         reserved = IPAddress.objects.filter(
             network=self, status=IPAddressStatus.reserved
         ).values_list('number', flat=True).order_by('-number')
-        return self._get_reserved_count(reserved, self.max_ip)
+        return self._get_reserved_count(reserved, self.max_ip - 1)
 
     class Meta:
         verbose_name = _('network')
@@ -419,14 +419,14 @@ class Network(
         ips = []
         existing_ips = set(IPAddress.objects.filter(
             Q(
-                number__gte=self.min_ip,
-                number__lte=self.min_ip + bottom_count
+                number__gte=self.min_ip + 1,
+                number__lte=self.min_ip + bottom_count + 1
             ) |
             Q(number__gte=self.max_ip - top_count, number__lte=self.max_ip)
         ).values_list('number', flat=True))
         to_create = set(chain.from_iterable([
-            range(int(self.min_ip + 1), int(self.min_ip + bottom_count)),
-            range(int(self.max_ip - top_count), int(self.max_ip - 1))
+            range(int(self.min_ip + 1), int(self.min_ip + bottom_count + 1)),
+            range(int(self.max_ip - top_count), int(self.max_ip))
         ]))
         to_create = to_create - existing_ips
         for ip_as_int in to_create:

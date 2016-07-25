@@ -18,10 +18,17 @@ from ralph.data_center.tests.factories import (
 )
 from ralph.data_importer.models import ImportedObjects
 from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
-from ralph.networks.tests.factories import IPAddressFactory
+from ralph.networks.models import Network
+from ralph.networks.tests.factories import (
+    IPAddressFactory,
+    NetworkEnvironmentFactory,
+    NetworkFactory,
+    NetworkKindFactory
+)
 from ralph.ralph2_sync.publishers import (
     sync_dc_asset_to_ralph2,
     sync_model_to_ralph2,
+    sync_network_to_ralph2,
     sync_stacked_switch_to_ralph2,
     sync_virtual_server_to_ralph2
 )
@@ -337,4 +344,61 @@ class StackedSwitchPublisherTestCase(TestCase):
             'venture_role_id': '987',
             'children': ['1111', '2222'],
             'custom_fields': {'test_field': 'abc'},
+        })
+
+
+@override_settings(RALPH2_HERMES_SYNC_ENABLED=True)
+class NetworkPublisherTestCase(TestCase):
+    def setUp(self):
+        self.net_kind = _create_imported_object(NetworkKindFactory, 1111)
+        self.net_env = _create_imported_object(NetworkEnvironmentFactory, 2222)
+        self.net = NetworkFactory(
+            name='my network',
+            address='192.168.0.0/15',
+            vlan=10,
+            remarks='qwerty',
+            dhcp_broadcast=False,
+            network_environment=self.net_env,
+            kind=self.net_kind,
+            gateway=IPAddressFactory(address='192.168.0.1'),
+        )
+        ImportedObjects.create(
+            self.net, 10
+        )
+        self.net.reserve_margin_addresses(10, 5)
+        self.terminator1 = DataCenterAssetFactory(hostname='h1.mydc.net')
+        self.terminator2 = ClusterFactory(hostname='ss1.mydc.net')
+        self.net.terminators.add(self.terminator1, self.terminator2)
+        self.net.dns_servers.create(ip_address='1.2.3.4')
+        self.net.dns_servers.create(ip_address='4.3.2.1')
+        self.rack1 = _create_imported_object(RackFactory, 11)
+        self.rack2 = _create_imported_object(RackFactory, 12)
+        self.net.racks.add(self.rack1, self.rack2)
+        self.maxDiff = None
+
+    @override_settings(RALPH2_HERMES_SYNC_FUNCTIONS=[
+        'sync_network_to_ralph2'
+    ])
+    def test_network_publisher(self):
+        result = sync_network_to_ralph2(Network, self.net)
+        self.assertCountEqual(
+            result.pop('terminators'), ['h1.mydc.net', 'ss1.mydc.net']
+        )
+        self.assertCountEqual(
+            result.pop('dns_servers'), ['1.2.3.4', '4.3.2.1']
+        )
+        self.assertEqual(result, {
+            'id': self.net.id,
+            'ralph2_id': '10',
+            'name': 'my network',
+            'address': '192.168.0.0/15',
+            'gateway': '192.168.0.1',
+            'vlan': 10,
+            'remarks': 'qwerty',
+            'dhcp_broadcast': False,
+            'reserved_bottom': 10,
+            'reserved_top': 5,
+            'network_environment': '2222',
+            'kind': '1111',
+            'racks': ['11', '12'],
         })
