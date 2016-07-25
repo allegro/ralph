@@ -3,13 +3,17 @@ from django.db.models import Prefetch
 
 from ralph.admin.helpers import getattr_dunder
 from ralph.assets.models import AssetModel, Ethernet
+from ralph.cross_validator.additional_checkers import ralph2_dhcp_checker
 from ralph.cross_validator.helpers import get_obj_id_ralph_20
 from ralph.cross_validator.ralph2.device import AssetModel as Ralph2AssetModel
 from ralph.cross_validator.ralph2.device import Asset, Device
+from ralph.cross_validator.ralph2.network import DHCPEntry as Ralph2DHCPEntry
 from ralph.cross_validator.ralph2.network import Network as Ralph2Network
 from ralph.data_center.models import DataCenterAsset, DataCenterAssetStatus
+from ralph.dhcp.models import DHCPEntry
 from ralph.networks.models import Network
 from ralph.virtual.models import VirtualServer
+
 
 """
 def return_diff(old, new):
@@ -239,6 +243,18 @@ mappers = {
         },
         'blacklist': ['id'],
     },
+    'DHCPEntry': {
+        'ralph2_model': Ralph2DHCPEntry,
+        'ralph3_model': DHCPEntry,
+        # 'ralph2_queryset': Ralph2DHCPEntry.objects.exclude()
+        'use_imported_object': False,
+        'fields': {
+            'mac': ('mac', 'mac'),
+            'ip': ('ip', 'address')
+        },
+        'blacklist': ['id'],
+        'additional_checkers': [ralph2_dhcp_checker]
+    },
     'Network': {
         'ralph2_model': Ralph2Network,
         'ralph3_model': Network,
@@ -261,5 +277,5 @@ mappers = {
             'reserved_top': network_reserved_top_diff,
         },
         'blacklist': ['id'],
-    }
+    },
 }

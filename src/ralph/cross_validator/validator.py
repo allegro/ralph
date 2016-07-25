@@ -1,5 +1,6 @@
 import logging
 from collections import defaultdict
+from functools import partial
 
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -15,20 +16,25 @@ logger = logging.getLogger(__name__)
 
 
 def _get_values(new, imported_object, config):
-    def get_value(o, path, errors):
+    def get_value(o, path):
         if o is None:
             return ''
         return getattr_dunder(o, path)
 
     values = defaultdict(dict)
     errors = []
-    old_obj_id = get_obj_id_ralph_20(imported_object)
+    qs_kwargs = {}
+    if config.get('use_imported_object', True):
+        qs_kwargs['id'] = get_obj_id_ralph_20(imported_object)
+    else:
+        for _, (old_field, new_field) in config['fields'].items():
+            qs_kwargs[old_field] = get_value(new, new_field)
     ralph2_objects = config.get(
         'ralph2_queryset', config['ralph2_model']._default_manager
     )
     old = None
     try:
-        old = ralph2_objects.get(id=old_obj_id)
+        old = ralph2_objects.get(**qs_kwargs)
     except ObjectDoesNotExist:
         errors.append('ObjectDoesNotExist in Ralph2')
         return values, errors
@@ -48,10 +54,10 @@ def _get_values(new, imported_object, config):
         else:
             old_field_path, new_field_path = fields
             values['old'].update(
-                {field_name: get_value(old, old_field_path, errors)}
+                {field_name: get_value(old, old_field_path)}
             )
             values['new'].update(
-                {field_name: get_value(new, new_field_path, errors)}
+                {field_name: get_value(new, new_field_path)}
             )
 
     return values, errors
@@ -59,12 +65,12 @@ def _get_values(new, imported_object, config):
 
 def check_objects_of_single_type(config, run):
     invalid = valid = 0
-    qs = config.get(
+    ralph3_objects = config.get(
         'ralph3_queryset',
         config['ralph3_model']._default_manager.all()
     )
-    total = qs.count()
-    for i, obj in enumerate(qs):
+    total = ralph3_objects.count()
+    for i, obj in enumerate(ralph3_objects):
         result, errors = check_object(obj, run, config)
         if errors or bool(result):
             invalid += 1
@@ -74,20 +80,36 @@ def check_objects_of_single_type(config, run):
         if i % 100 == 0:
             logger.info('{} / {}'.format(i, total))
 
-    # TODO: handling when obj exist in Ralph2 but not in Ralph3
-    # sth similar to:
-    # ralph2_objects = config.get(
-    #     'ralph2_queryset', config['ralph2_model']._default_manager
-    # )
-    # for obj in ralph2_objects.exclude(
-    #     pk__in=ImportedObject.objects.filter(
-    #         content_type=ContentType.objects.get_for_model(
-    #             config['ralph2_model']
-    #         )
-    #     )
-    # ):
-    #     invalid += 1
-    return invalid, valid
+    checkers = config.get('additional_checkers', [])
+    ralph2_objects = config.get(
+        'ralph2_queryset', config['ralph2_model']._default_manager.all()
+    )
+    missing_object_callback = partial(
+        missing_object_in_r3, run=run, config=config
+    )
+    for checker in checkers:
+        checker_valid, checker_invalid = checker(
+            ralph2_objects=ralph2_objects,
+            ralph3_objects=ralph3_objects,
+            ralph3_model=config['ralph3_model'],
+            missing_object_callback=missing_object_callback
+        )
+        valid += checker_valid
+        invalid += checker_invalid
+    return valid, invalid
+
+
+def missing_object_in_r3(obj, run, config):
+    url = obj.get_link_to_r2()
+    CrossValidationResult.create(
+        run=run,
+        obj=config['ralph3_model'](),
+        old=None,
+        diff={},
+        errors=['Missing object <a href="{}">{}</a> in Ralph3'.format(
+            url, str(obj)
+        )],
+    )
 
 
 def check_object(obj, run, config):

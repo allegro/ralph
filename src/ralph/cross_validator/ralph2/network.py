@@ -1,7 +1,27 @@
 from django.db import models
 
-from ralph.cross_validator.ralph2 import generate_meta
+from ralph.cross_validator.ralph2 import generate_meta, Ralph2LinkMixin
 from ralph.cross_validator.ralph2.device import Device
+
+
+class IPAddress(models.Model):
+    address = models.IPAddressField()
+    is_management = models.BooleanField(default=False)
+    device = models.ForeignKey('Device', null=True)
+
+    class Meta(generate_meta(app_label='discovery', model_name='ipaddress')):
+        pass
+
+
+class DHCPEntry(Ralph2LinkMixin, models.Model):
+    mac = models.CharField(max_length=32)
+    ip = models.CharField(max_length=len('xxx.xxx.xxx.xxx'))
+
+    def __str__(self):
+        return 'DHCP entry (IP:{}, MAC:{})'.format(self.ip, self.mac)
+
+    class Meta(generate_meta(app_label='dnsedit', model_name='dhcpentry')):
+        pass
 
 
 class DataCenter(models.Model):
