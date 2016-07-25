@@ -130,10 +130,10 @@ class sync_subscriber(subscriber):
                 WithSignalDisabled(**_get_publisher_signal_info(publisher))
                 for publisher in self.disable_publishers
             ]):
-                # try:
+                try:
                     return func(*args, **kwargs)
-                # except Exception:
-                #     logger.exception('Exception during syncing')
+                except Exception:
+                    logger.exception('Exception during syncing')
         return exception_wrapper
 
 
