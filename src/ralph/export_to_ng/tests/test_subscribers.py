@@ -19,8 +19,10 @@ from ralph.discovery.models import (
     Device,
     DeviceModel,
     DeviceType,
+    IPAddress
 )
 from ralph.discovery.tests.util import DeviceFactory
+from ralph.dnsedit.models import DHCPEntry
 from ralph.export_to_ng.subscribers import (
     sync_dc_asset_to_ralph2_handler,
     sync_stacked_switch_to_ralph2,
@@ -166,6 +168,70 @@ class DeviceDCAssetTestCase(TestCase):
         device, _ = self._custom_fields_test_common(create_role_property=False)
         device = self.sync(device)
         self.assertEqual(device.get_property_set(), {})
+
+    def test_ips_new_ips(self):
+        self.data['ips'] = [
+            {
+                'ip': '10.20.30.40', 'hostname': 'host.mydc.net',
+                'mac': 'aa:bb:cc:dd:ee:ff', 'dhcp_expose': True,
+                'is_management': False
+            },
+            {
+                'ip': '10.20.30.41', 'hostname': 'mgmt1.mydc.net',
+                'mac': None, 'dhcp_expose': False,
+                'is_management': True
+            }
+        ]
+        device = self.create_test_device()
+        device = self.sync(device)
+        self.assertEqual(device.management_ip.address, '10.20.30.41')
+        self.assertEqual(device.management_ip.hostname, 'mgmt1.mydc.net')
+        self.assertTrue(
+            device.ipaddress.filter(
+                address='10.20.30.40', hostname='host.mydc.net'
+            ).exists()
+        )
+        self.assertTrue(
+            DHCPEntry.objects.filter(
+                ip='10.20.30.40', mac='AABBCCDDEEFF'
+            ).exists()
+        )
+        self.assertTrue(
+            device.ethernet_set.filter(mac='AABBCCDDEEFF').exists()
+        )
+
+    def test_ips_existing_ips(self):
+        device2 = Device.objects.create(name='111')
+        IPAddress.objects.create(
+            address='10.20.30.40', hostname='aaaa', device=device2
+        )
+        IPAddress.objects.create(
+            address='10.20.30.41', hostname='aaaa', device=device2
+        )
+        self.data['ips'] = [
+            {
+                'ip': '10.20.30.40', 'hostname': 'host.mydc.net',
+                'mac': 'aa:bb:cc:dd:ee:ff', 'dhcp_expose': True,
+                'is_management': False
+            },
+            {
+                'ip': '10.20.30.41', 'hostname': 'mgmt1.mydc.net',
+                'mac': None, 'dhcp_expose': False,
+                'is_management': True
+            }
+        ]
+        device = self.create_test_device()
+        device = self.sync(device)
+        self.assertEqual(device.management_ip.address, '10.20.30.41')
+        self.assertEqual(device.management_ip.hostname, 'mgmt1.mydc.net')
+        self.assertTrue(
+            device.ipaddress.filter(address='10.20.30.40').exists()
+        )
+        self.assertTrue(
+            DHCPEntry.objects.filter(
+                ip='10.20.30.40', mac='AABBCCDDEEFF'
+            ).exists()
+        )
 
 
 class SyncVentureTestCase(TestCase):
@@ -406,6 +472,41 @@ class VirtualServerTestCase(TestCase):
         self.assertEqual(vs.venture, None)
         self.assertEqual(vs.venture_role, None)
 
+    def test_sync_ips(self):
+        self.data['ips'] = [
+            {
+                'ip': '10.20.30.40', 'hostname': 'host.mydc.net',
+                'mac': 'aa:bb:cc:dd:ee:ff', 'dhcp_expose': True,
+                'is_management': False
+            },
+            {
+                'ip': '10.20.30.41', 'hostname': 'host2.mydc.net',
+                'mac': None, 'dhcp_expose': False,
+                'is_management': False
+            }
+        ]
+        vs = self.create_test_virtual_server()
+        self.data['ralph2_id'] = vs.id
+        vs = self.sync(vs)
+        self.assertTrue(
+            vs.ipaddress.filter(
+                address='10.20.30.40', hostname='host.mydc.net'
+            ).exists()
+        )
+        self.assertTrue(
+            vs.ipaddress.filter(
+                address='10.20.30.41', hostname='host2.mydc.net'
+            ).exists()
+        )
+        self.assertTrue(
+            DHCPEntry.objects.filter(
+                ip='10.20.30.40', mac='AABBCCDDEEFF'
+            ).exists()
+        )
+        self.assertTrue(
+            vs.ethernet_set.filter(mac='AABBCCDDEEFF').exists()
+        )
+
 
 class StackedSwitchSyncTestCase(TestCase):
     def setUp(self):
@@ -458,4 +559,39 @@ class StackedSwitchSyncTestCase(TestCase):
         self.assertEqual(ss.device_environment.id, self.data['environment_id'])
         self.assertEqual(
             self.venture_role.get_properties(device), {'abc': 'def'}
+        )
+
+    def test_sync_ips(self):
+        self.data['ips'] = [
+            {
+                'ip': '10.20.30.40', 'hostname': 'host.mydc.net',
+                'mac': 'aa:bb:cc:dd:ee:ff', 'dhcp_expose': True,
+                'is_management': False
+            },
+            {
+                'ip': '10.20.30.41', 'hostname': 'host2.mydc.net',
+                'mac': None, 'dhcp_expose': False,
+                'is_management': False
+            }
+        ]
+        device = self.create_test_stacked_switch()
+        self.data['ralph2_id'] = device.id
+        device = self.sync(device)
+        self.assertTrue(
+            device.ipaddress.filter(
+                address='10.20.30.40', hostname='host.mydc.net'
+            ).exists()
+        )
+        self.assertTrue(
+            device.ipaddress.filter(
+                address='10.20.30.41', hostname='host2.mydc.net'
+            ).exists()
+        )
+        self.assertTrue(
+            DHCPEntry.objects.filter(
+                ip='10.20.30.40', mac='AABBCCDDEEFF'
+            ).exists()
+        )
+        self.assertTrue(
+            device.ethernet_set.filter(mac='AABBCCDDEEFF').exists()
         )

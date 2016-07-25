@@ -12,8 +12,11 @@ from ralph.discovery.models import (
     Device,
     DeviceType,
     DeviceModel,
+    Ethernet,
+    IPAddress,
     ServiceCatalog
 )
+from ralph.dnsedit.models import DHCPEntry
 from ralph_assets.models import Asset, AssetModel
 from ralph_assets.models_assets import AssetStatus, AssetType, Warehouse, DataCenter
 from ralph_assets.models_dc_assets import DeviceInfo, Rack
@@ -26,6 +29,7 @@ from ralph.business.models import (
 from ralph.export_to_ng.helpers import WithSignalDisabled
 from ralph.export_to_ng.publishers import (
     publish_sync_ack_to_ralph3,
+    sync_device_properties_to_ralph3,
     sync_device_to_ralph3,
     sync_stacked_switch_to_ralph3,
     sync_venture_role_to_ralph3,
@@ -84,6 +88,28 @@ def _handle_custom_fields(data, obj):
             )
 
 
+def _handle_ips(data, device):
+    for ip_data in data.get('ips', []):
+        ip = IPAddress.objects.get_or_create(address=ip_data['ip'])[0]
+        if ip.device != device:
+            if ip.device is not None:
+                logger.warning(
+                    'Reassigning {} from {} to {}'.format(ip, ip.device, device)
+                )
+            ip.device = device
+        ip.hostname = ip_data['hostname']
+        ip.is_management = ip_data['is_management']
+        ip.save()
+
+        if ip_data['dhcp_expose']:
+            Ethernet.objects.get_or_create(
+                device=device, mac=ip_data['mac']
+            )
+            DHCPEntry.objects.get_or_create(
+                ip=ip_data['ip'], mac=ip_data['mac']
+            )
+
+
 class sync_subscriber(subscriber):
     """
     Log additional exception when sync has failed.
@@ -110,7 +136,10 @@ class sync_subscriber(subscriber):
 
 @sync_subscriber(
     topic='sync_dc_asset_to_ralph2',
-    disable_publishers=[sync_device_to_ralph3]
+    disable_publishers=[
+        sync_device_to_ralph3,
+        sync_device_properties_to_ralph3
+    ]
 )
 def sync_dc_asset_to_ralph2_handler(data):
     """
@@ -197,8 +226,9 @@ def sync_dc_asset_to_ralph2_handler(data):
     if 'venture' in data and 'venture_role' in data:
         device.venture_id = data['venture']
         device.venture_role_id = data['venture_role']
-    _handle_custom_fields(data, device)
     device.save(priority=SAVE_PRIORITY)
+    _handle_custom_fields(data, device)
+    _handle_ips(data, device)
     if creating:
         publish_sync_ack_to_ralph3(asset, data['id'])
 
@@ -292,6 +322,7 @@ def sync_virtual_server_to_ralph2(data):
         ))
     vs.save()
     _handle_custom_fields(data, vs)
+    _handle_ips(data, vs)
     if created:
         publish_sync_ack_to_ralph3(vs, data['id'])
 
@@ -383,5 +414,6 @@ def sync_stacked_switch_to_ralph2(data):
         ))
     ss.save(priority=SAVE_PRIORITY)
     _handle_custom_fields(data, ss)
+    _handle_ips(data, ss)
     if created:
         publish_sync_ack_to_ralph3(ss, data['id'])
