@@ -426,8 +426,6 @@ class Network(
         ).values_list('number', flat=True))
         to_create = set(chain.from_iterable([
             range(int(self.min_ip + 1), int(self.min_ip + bottom_count + 1)),
-            # TODO: discuss if broadcast ip should be included in reserved
-            # margin
             range(int(self.max_ip - top_count), int(self.max_ip))
         ]))
         to_create = to_create - existing_ips
