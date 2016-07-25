@@ -401,8 +401,9 @@ class ClusterAPITests(RalphAPITestCase):
         self.boc_1 = BaseObjectCluster.objects.create(
             cluster=self.cluster_1, base_object=DataCenterAssetFactory()
         )
+        self.master = DataCenterAssetFactory()
         self.boc_2 = BaseObjectCluster.objects.create(
-            cluster=self.cluster_1, base_object=DataCenterAssetFactory(),
+            cluster=self.cluster_1, base_object=self.master,
             is_master=True
         )
         self.cluster_2 = ClusterFactory()
@@ -450,7 +451,7 @@ class ClusterAPITests(RalphAPITestCase):
 
     def test_list_cluster(self):
         url = reverse('cluster-list')
-        with self.assertNumQueries(13):
+        with self.assertNumQueries(12):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 2)
@@ -504,4 +505,10 @@ class ClusterAPITests(RalphAPITestCase):
         )
         self.assertEqual(
             response.data['ipaddresses'], ['10.20.30.40']
+        )
+        self.assertEqual(
+            response.data['masters'][0],
+            self.get_full_url(
+                reverse('baseobject-detail', args=(self.master.id,))
+            )
         )

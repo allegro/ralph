@@ -79,10 +79,24 @@ class Cluster(
 
     @cached_property
     def masters(self):
+        return self.get_masters(cast_base_object=True)
+
+    def get_masters(self, cast_base_object=False):
+        # prevents cyclic import
+        from ralph.virtual.models import CloudHost, VirtualServer  # noqa
+
         result = []
         for obj in self.baseobjectcluster_set.all():
             if obj.is_master:
-                result.append(obj)
+                bo = obj.base_object
+                # fetch final object if it's base object
+                if cast_base_object and not isinstance(
+                    bo,
+                    # list equal to BaseObjectCluster.base_object.limit_models
+                    (Database, DataCenterAsset, CloudHost, VirtualServer)
+                ):
+                    bo = bo.last_descendant
+                result.append(bo)
         return result
 
     @cached_property

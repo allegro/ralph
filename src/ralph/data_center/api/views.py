@@ -128,10 +128,10 @@ class ClusterViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     serializer_class = ClusterSerializer
     select_related = [
         'type', 'parent', 'service_env', 'service_env__service',
-        'service_env__environment', 'configuration_path', 'content_type'
+        'service_env__environment', 'configuration_path__module', 'content_type'
     ]
     prefetch_related = base_object_descendant_prefetch_related + [
-        'tags', 'baseobjectcluster_set',
+        'tags', 'baseobjectcluster_set__base_object',
         Prefetch(
             'ethernet_set',
             queryset=Ethernet.objects.select_related('ipaddress')

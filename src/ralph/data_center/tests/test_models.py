@@ -7,7 +7,10 @@ from ralph.back_office.models import BackOfficeAsset
 from ralph.back_office.tests.factories import WarehouseFactory
 from ralph.data_center.models.choices import DataCenterAssetStatus, Orientation
 from ralph.data_center.models.physical import DataCenterAsset
+from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.data_center.tests.factories import (
+    ClusterFactory,
+    ClusterTypeFactory,
     DataCenterAssetFactory,
     RackFactory
 )
@@ -393,3 +396,20 @@ class RackTest(RalphTestCase):
             orientation=Orientation.back.id, **asset_common_kwargs
         )
         self.assertEqual(rack.get_free_u(), 47)
+
+
+class ClusterTest(RalphTestCase):
+    def setUp(self):
+        self.cluster_type = ClusterTypeFactory()
+        self.cluster_1 = ClusterFactory()
+        self.boc_1 = BaseObjectCluster.objects.create(
+            cluster=self.cluster_1, base_object=DataCenterAssetFactory()
+        )
+        self.master = DataCenterAssetFactory()
+        self.boc_2 = BaseObjectCluster.objects.create(
+            cluster=self.cluster_1, base_object=self.master,
+            is_master=True
+        )
+
+    def test_masters(self):
+        self.assertEqual(self.cluster_1.masters, [self.master])
