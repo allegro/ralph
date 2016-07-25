@@ -35,7 +35,7 @@ HOSTS_NAMING_TEMPLATE_REGEX = re.compile(r'<[0-9]+,[0-9]+>.*\.[a-zA-Z0-9]+')
 def copy_network(modeladmin, request, queryset):
     for net in queryset:
         name = 'Copy of %s' % net.name
-        address = net.address.rsplit('/', 1)[0] + '/1'
+        address = net.address.rsplit('/', 1)[0] + '/32'
         new_net = models.Network(
             name=name,
             address=address,
