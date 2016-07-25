@@ -688,6 +688,7 @@ class Info(DeviceUpdateView):
                     self.object,
                     self.property_form.cleaned_data,
                 )
+                sync_device_to_ralph3(self.object)
                 return HttpResponseRedirect(self.request.path)
         elif 'save-tags' in self.request.POST:
             tags = self.request.POST.get('tags', '')
