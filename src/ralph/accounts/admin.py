@@ -137,15 +137,18 @@ class AssetList(Table):
     report_failure.title = ''
 
     def confirm_ownership(self, item):
-        if settings.INVENTORY_TAG not in item.tags.names():
+        if settings.INVENTORY_TAG in item.tags.names():
+            return _('confirmed')
+        elif settings.INVENTORY_TAG_MISSING in item.tags.names():
+            return _('missing')
+        else:
             return '<div style="text-align: justify; width: 100%;"><a href="{}">{}</a> \
                     <a href="{}">{}</a></div>'.format(
-                reverse('inventory_tag_confirmation', args=[item.id]),
+                reverse('inventory_tag_confirmation', args=[item.id, 'yes']),
                 _('yes'),
-                reverse('inventory_asset_missing'),
+                reverse('inventory_tag_confirmation', args=[item.id, 'no']),
                 _('no')
             )
-        return _('confirmed')
     confirm_ownership.title = _('Do you have it?')
 
 

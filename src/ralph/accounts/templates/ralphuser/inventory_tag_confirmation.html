@@ -7,17 +7,23 @@
 
 {% block content %}
 <div id="content-main" class="row">
-  <div class="large-12 columns">
-    <h1>Are you sure you have following item?</h1>
+  <div class="large-6 columns">
+    {% if answer == "yes" %}
+      <h1>{% trans "Are you sure you have following item?" %}</h1>
+    {% elif answer ==  "no" %}
+      <h1>{% trans "Are you sure you don't have this item?" %}</h1>
+    {% endif %}
     {% table asset_details.get_table_content %}
     <form action={% url 'inventory_tag' %} method="POST">
       {% csrf_token %}
       <input type="hidden" name="asset_id" value={{ asset_id }} />
-      <input type="submit" name="confirm_button" value="Yes" 
-          class="button small success left" autocomplete="off" />
-      <a href="javascript:history.back()" class="button small cancel left">
+      <input type="hidden" name="answer" value={{ answer }} />
+      <a href="javascript:history.back()" class= "button small alert left">
           Cancel</a>
+      <input type="submit" name="confirm_button" value="Yes"
+          class="button small success left" autocomplete="off" />
     </form>
   </div>
+  <div class="large-6 columns"></div>
 </div>
 {% endblock %}

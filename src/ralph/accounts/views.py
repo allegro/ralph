@@ -55,19 +55,17 @@ class InventoryTagConfirmationView(RalphBaseTemplateView):
         return context
 
 
-class InventoryAssetMissingView(RalphBaseTemplateView):
-    template_name = 'ralphuser/inventory_missing.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['settings'] = settings
-        return context
-
-
 class InventoryTagView(View):
     http_method_names = ['post']
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['answer'] = kwargs['answer']
+        return context
+
     def post(self, request, *args, **kwargs):
+        response = HttpResponseRedirect(reverse('current_user_info'))
+
         asset = get_object_or_404(BackOfficeAsset, id=request.POST['asset_id'])
         if not asset.user_id == request.user.id:
             return HttpResponseForbidden()
@@ -76,29 +74,32 @@ class InventoryTagView(View):
         if settings.INVENTORY_TAG_APPEND_DATE:
             date_tag = settings.INVENTORY_TAG + '_' + date.today().isoformat()
 
-        asset.tags.add(
-            settings.INVENTORY_TAG,
-            settings.INVENTORY_TAG_USER,
-            date_tag
-        )
-        asset.save()
+        if request.POST['answer'] == 'yes':
+            asset.tags.add(
+                settings.INVENTORY_TAG,
+                settings.INVENTORY_TAG_USER,
+                date_tag
+            )
 
-        response = HttpResponseRedirect(reverse('current_user_info'))
-        response.set_cookie('tag_success', 1)
+            asset.save()
+            messages.success(request, _('Successfully tagged asset'))
+        elif request.POST['answer'] == 'no':
+            asset.tags.add(
+                settings.INVENTORY_TAG_MISSING
+            )
+            missing_asset_info = 'Please contact person responsible ' \
+                                 'for asset management'
+            if settings.MISSING_ASSET_REPORT_URL is not None:
+                missing_asset_info += '\n' + settings.MISSING_ASSET_REPORT_URL
+
+            asset.save()
+            messages.info(request, _(missing_asset_info))
+
         return response
 
 
 class CurrentUserInfoView(UserInfoMixin, RalphBaseTemplateView):
     template_name = 'ralphuser/my_equipment.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        try:
-            if request.COOKIES.get('tag_success'):
-                messages.success(request, _('Asset successfully tagged'))
-        except KeyError:
-            pass
-
-        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
