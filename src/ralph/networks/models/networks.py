@@ -419,14 +419,16 @@ class Network(
         ips = []
         existing_ips = set(IPAddress.objects.filter(
             Q(
-                number__gte=self.min_ip,
-                number__lte=self.min_ip + bottom_count
+                number__gte=self.min_ip + 1,
+                number__lte=self.min_ip + bottom_count + 1
             ) |
             Q(number__gte=self.max_ip - top_count, number__lte=self.max_ip)
         ).values_list('number', flat=True))
         to_create = set(chain.from_iterable([
-            range(int(self.min_ip + 1), int(self.min_ip + bottom_count)),
-            range(int(self.max_ip - top_count), int(self.max_ip - 1))
+            range(int(self.min_ip + 1), int(self.min_ip + bottom_count + 1)),
+            # TODO: discuss if broadcast ip should be included in reserved
+            # margin
+            range(int(self.max_ip - top_count + 1), int(self.max_ip + 1))
         ]))
         to_create = to_create - existing_ips
         for ip_as_int in to_create:

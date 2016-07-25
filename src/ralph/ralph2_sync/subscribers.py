@@ -44,6 +44,7 @@ from ralph.ralph2_sync.publishers import (
     sync_configuration_class_to_ralph2,
     sync_configuration_module_to_ralph2,
     sync_dc_asset_to_ralph2,
+    sync_network_to_ralph2,
     sync_stacked_switch_to_ralph2,
     sync_virtual_server_to_ralph2
 )
@@ -471,7 +472,10 @@ def sync_virtual_server_to_ralph3(data):
         ImportedObjects.create(virtual_server, data['id'])
 
 
-@sync_subscriber(topic='sync_network_to_ralph3')
+@sync_subscriber(
+    topic='sync_network_to_ralph3',
+    disable_publishers=[sync_network_to_ralph2]
+)
 def sync_network_to_ralph3(data):
     net, created = _get_obj(Network, data['id'], creating=True)
     net.name = data['name']
