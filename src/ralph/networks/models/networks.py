@@ -288,7 +288,7 @@ class Network(
         reserved = IPAddress.objects.filter(
             network=self, status=IPAddressStatus.reserved
         ).values_list('number', flat=True).order_by('-number')
-        return self._get_reserved_count(reserved, self.max_ip)
+        return self._get_reserved_count(reserved, self.max_ip - 1)
 
     class Meta:
         verbose_name = _('network')
@@ -428,7 +428,7 @@ class Network(
             range(int(self.min_ip + 1), int(self.min_ip + bottom_count + 1)),
             # TODO: discuss if broadcast ip should be included in reserved
             # margin
-            range(int(self.max_ip - top_count + 1), int(self.max_ip + 1))
+            range(int(self.max_ip - top_count), int(self.max_ip))
         ]))
         to_create = to_create - existing_ips
         for ip_as_int in to_create:
