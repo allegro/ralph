@@ -2,9 +2,12 @@
 from datetime import date
 
 from django.conf import settings
-from django.http import HttpResponseForbidden
+from django.contrib import messages
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
+from django.views.generic import View
 
 from ralph.accounts.admin import AssetList, AssignedLicenceList, UserInfoMixin
 from ralph.admin.mixins import RalphBaseTemplateView, RalphTemplateView
@@ -61,8 +64,7 @@ class InventoryAssetMissingView(RalphBaseTemplateView):
         return context
 
 
-class InventoryTagView(RalphBaseTemplateView):
-    template_name = 'ralphuser/inventory_tag.html'
+class InventoryTagView(View):
     http_method_names = ['post']
 
     def post(self, request, *args, **kwargs):
@@ -81,11 +83,22 @@ class InventoryTagView(RalphBaseTemplateView):
         )
         asset.save()
 
-        return super().get(request, *args, **kwargs)
+        response = HttpResponseRedirect(reverse('current_user_info'))
+        response.set_cookie('tag_success', 1)
+        return response
 
 
 class CurrentUserInfoView(UserInfoMixin, RalphBaseTemplateView):
     template_name = 'ralphuser/my_equipment.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            if request.COOKIES.get('tag_success'):
+                messages.success(request, _('Asset successfully tagged'))
+        except KeyError:
+            pass
+
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
