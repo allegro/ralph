@@ -6,7 +6,8 @@ from ralph.accounts.tests.factories import TeamFactory
 from ralph.assets.models import (
     AssetModel,
     ConfigurationClass,
-    ConfigurationModule
+    ConfigurationModule,
+    Ethernet
 )
 from ralph.assets.tests.factories import (
     ConfigurationClassFactory,
@@ -26,11 +27,11 @@ from ralph.data_importer.models import (
     ImportedObjectDoesNotExist,
     ImportedObjects
 )
-from ralph.dhcp.models import DNSServer
 from ralph.dhcp.tests.factories import DNSServerFactory
 from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
 from ralph.networks.models import (
     IPAddress,
+    IPAddressStatus,
     Network,
     NetworkEnvironment,
     NetworkKind
@@ -206,6 +207,107 @@ class Ralph2DataCenterAssetTestCase(TestCase):
         self.assertEqual(
             IPAddress.objects.get(address='10.20.30.40').ethernet.base_object.pk,  # noqa
             dca.pk
+        )
+
+    def test_handle_new_ip_without_mac(self):
+        old_id = 1
+        dca = _create_imported_object(DataCenterAssetFactory, old_id)
+        data = {
+            'id': old_id,
+            'ips': [
+                {
+                    'address': '10.20.30.40',
+                    'hostname': 'foo-bar.net',
+                    'is_management': False,
+                    'mac': None,
+                    'dhcp_expose': False
+                },
+            ],
+        }
+        sync_device_to_ralph3(data)
+        self.assertEqual(
+            IPAddress.objects.get(address='10.20.30.40').ethernet.base_object.pk,  # noqa
+            dca.pk
+        )
+        self.assertIsNone(
+            IPAddress.objects.get(address='10.20.30.40').ethernet.mac
+        )
+        # test if after another sync new Ethernet was NOT created
+        eth_count = Ethernet.objects.count()
+        sync_device_to_ralph3(data)
+        self.assertEqual(Ethernet.objects.count(), eth_count)
+
+    def test_handle_new_ip_with_existing_mac_and_other_ip(self):
+        old_id = 1
+        dca = _create_imported_object(DataCenterAssetFactory, old_id)
+        ip_old = IPAddressFactory(
+            address='10.20.30.45',
+            ethernet__mac='31:8F:A1:2B:7F:80',
+            ethernet__base_object=dca
+        )
+        eth_pk = ip_old.ethernet_id
+        data = {
+            'id': old_id,
+            'ips': [
+                {
+                    'address': '10.20.30.40',
+                    'hostname': 'foo-bar.net',
+                    'is_management': False,
+                    'mac': '31:8F:A1:2B:7F:80',
+                    'dhcp_expose': False
+                },
+            ],
+        }
+        sync_device_to_ralph3(data)
+        self.assertEqual(
+            IPAddress.objects.get(address='10.20.30.40').ethernet.base_object.pk,  # noqa
+            dca.pk
+        )
+        self.assertEqual(
+            IPAddress.objects.get(address='10.20.30.40').ethernet.mac,
+            '31:8F:A1:2B:7F:80'
+        )
+        # check if eth id hasn't changed
+        self.assertEqual(
+            IPAddress.objects.get(address='10.20.30.40').ethernet.pk, eth_pk
+        )
+        self.assertFalse(
+            IPAddress.objects.filter(address='10.20.30.45').exists()
+        )
+
+    def test_handle_existing_ip_with_existing_mac_and_other_ip_reserved(self):
+        old_id = 1
+        dca = _create_imported_object(DataCenterAssetFactory, old_id)
+        IPAddressFactory(address='10.20.30.40')
+        IPAddressFactory(
+            address='10.20.30.45',
+            status=IPAddressStatus.reserved,
+            ethernet__mac='31:8F:A1:2B:7F:80',
+            ethernet__base_object=dca
+        )
+        data = {
+            'id': old_id,
+            'ips': [
+                {
+                    'address': '10.20.30.40',
+                    'hostname': 'foo-bar.net',
+                    'is_management': False,
+                    'mac': '31:8F:A1:2B:7F:80',
+                    'dhcp_expose': False
+                },
+            ],
+        }
+        sync_device_to_ralph3(data)
+        self.assertEqual(
+            IPAddress.objects.get(address='10.20.30.40').ethernet.base_object.pk,  # noqa
+            dca.pk
+        )
+        self.assertEqual(
+            IPAddress.objects.get(address='10.20.30.40').ethernet.mac,
+            '31:8F:A1:2B:7F:80'
+        )
+        self.assertTrue(
+            IPAddress.objects.filter(address='10.20.30.45').exists()
         )
 
 
