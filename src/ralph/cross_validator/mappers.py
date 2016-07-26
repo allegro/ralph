@@ -167,6 +167,17 @@ def ip_diff(old_path, new_path):
     return diff
 
 
+def compare_mac(old, new):
+    def parse_mac(mac):
+        return mac.lower().replace('-', '').replace(':', '')
+    old_mac = parse_mac(old.mac)
+    new_mac = parse_mac(new.mac)
+    if new_mac != old_mac:
+        return {
+            'old': old.mac,
+            'new': new.mac,
+        }
+
 mappers = {
     'DataCenterAsset': {
         'ralph2_model': Asset,
@@ -248,8 +259,12 @@ mappers = {
         'ralph3_model': DHCPEntry,
         # 'ralph2_queryset': Ralph2DHCPEntry.objects.exclude()
         'use_imported_object': False,
+        'query_params': lambda new: {
+            'ip': new.address,
+            'mac': new.mac.replace(':', ''),
+        },
         'fields': {
-            'mac': ('mac', 'mac'),
+            'mac': compare_mac,
             'ip': ('ip', 'address')
         },
         'blacklist': ['id'],
