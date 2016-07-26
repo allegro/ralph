@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
+import django_filters
 from django.db.models import Prefetch
 from rest_framework.exceptions import ValidationError
 
-import django_filters
 from ralph.api import RalphAPIViewSet
 from ralph.api.filters import BooleanFilter
 from ralph.api.utils import PolymorphicViewSetMixin
