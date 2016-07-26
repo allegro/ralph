@@ -84,7 +84,7 @@ class Cluster(BaseObject, models.Model):
             self.hostname,
             #TODO:: user from threadlocal?
             'john.doe',
-            settings.DNSAAS_USERNAME,
+            settings.DNSAAS_OWNER,
             data,
         )
         return publish_data

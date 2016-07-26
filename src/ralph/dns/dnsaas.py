@@ -12,6 +12,30 @@ from ralph.helpers import cache
 logger = logging.getLogger(__name__)
 
 
+#TODO:: add mixin
+class DNSaaSPublisher:
+    def get_auto_txt_data(self, hostname, target_owner, owner, data):
+        data = []
+        for purpose, content in  (
+            #TODO:: really VENTURE or module here?
+            ('VENTURE', self.configuration_path.class_name if self.configuration_path else ''),
+            #TODO:: really ROLE or class_name here?
+            ('ROLE', self.configuration_path.module.name if self.configuration_path else ''),
+            #TODO;:
+            ('MODEL', master.model.name if master else ''),
+            ('LOCATION', ' / '.join(master.get_location() if self.masters else [])),
+        ):
+            data.append({
+                'name': self.hostname,
+                'purpose': purpose,
+                'content': content,
+            })
+
+        return data
+
+
+
+
 class DNSaaS:
 
     def __init__(self, headers=None):

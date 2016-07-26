@@ -441,7 +441,7 @@ class DataCenterAsset(NetworkableBaseObject, AutocompleteTooltipMixin, Asset):
                 'name': self.hostname,
                 #TODO:: user from threadlocal?
                 'target_owner': 'john.doe',
-                'owner': settings.DNSAAS_USERNAME,
+                'owner': settings.DNSAAS_OWNER,
             }
             data['purpose'] = purpose
             data['content'] = content

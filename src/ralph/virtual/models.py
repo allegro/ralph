@@ -273,7 +273,7 @@ class VirtualServer(AdminAbsoluteUrlMixin, NetworkableBaseObject, BaseObject):
             self.hostname,
             #TODO:: user from threadlocal?
             'john.doe',
-            settings.DNSAAS_USERNAME,
+            settings.DNSAAS_OWNER,
             data
         )
         return publish_data

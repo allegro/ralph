@@ -341,7 +341,10 @@ DNSAAS_URL = os.environ.get('DNSAAS_URL', '')
 DNSAAS_TOKEN = os.environ.get('DNSAAS_TOKEN', '')
 DNSAAS_AUTO_PTR_ALWAYS = os.environ.get('DNSAAS_AUTO_PTR_ALWAYS', 2)
 DNSAAS_AUTO_PTR_NEVER = os.environ.get('DNSAAS_AUTO_PTR_NEVER', 1)
+# user in dnsaas which can do changes, like update TXT records etc.
 DNSAAS_OWNER = os.environ.get('DNSAAS_OWNER', 'ralph')
+# pyhermes topic where messages about auto txt records are announced
+DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME = os.environ.get('DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME', None)
 
 if ENABLE_DNSAAS_INTEGRATION:
     INSTALLED_APPS += (
@@ -371,6 +374,3 @@ RALPH2_RALPH3_VIRTUAL_SERVER_TYPE_MAPPING = json.loads(
 RALPH2_HERMES_ROLE_PROPERTY_WHITELIST = json.loads(
     os.environ.get('RALPH2_HERMES_ROLE_PROPERTY_WHITELIST', '[]')
 )
-
-# user in dnsaas which can update TXT records
-DNSAAS_USERNAME = None
