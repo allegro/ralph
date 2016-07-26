@@ -150,6 +150,47 @@ class NetworkTest(RalphTestCase):
         self.assertEqual(18, result[0])
         self.assertEqual(set([ip1.number, ip2.number]), result[1])
 
+    def test_reserve_margin_addresses_should_release_addresses(self):
+        net = Network.objects.create(
+            name='ip_address_should_return_network',
+            address='10.1.1.0/24',
+        )
+        ip_count = IPAddress.objects.count()
+        net.reserve_margin_addresses(bottom_count=10, top_count=10)
+        self.assertEqual(
+            net.ips.filter(status=IPAddressStatus.reserved).count(), 20
+        )
+        self.assertEqual(IPAddress.objects.count(), ip_count + 20)
+        self.assertEqual(net.reserved_bottom, 10)
+        self.assertEqual(net.reserved_top, 10)
+        # decrease reserved ips
+        net.reserve_margin_addresses(bottom_count=5, top_count=5)
+        self.assertEqual(
+            net.ips.filter(status=IPAddressStatus.reserved).count(), 10
+        )
+        self.assertEqual(IPAddress.objects.count(), ip_count + 10)
+        # assign the highest reserved from bottom to some ethernet
+        ip = IPAddress.objects.get(address='10.1.1.5')
+        ip.ethernet = EthernetFactory()
+        ip.save()
+        # decrease reserved count below the one assigned to ethernet
+        net.reserve_margin_addresses(bottom_count=4, top_count=5)
+        # ! still 10 !
+        self.assertEqual(
+            net.ips.filter(status=IPAddressStatus.reserved).count(), 10
+        )
+        self.assertEqual(IPAddress.objects.count(), ip_count + 10)
+        ip.refresh_from_db()
+        self.assertEqual(ip.status, IPAddressStatus.used)
+        # increase to contain 10.1.1.5 again
+        net.reserve_margin_addresses(bottom_count=5, top_count=5)
+        self.assertEqual(
+            net.ips.filter(status=IPAddressStatus.reserved).count(), 10
+        )
+        self.assertEqual(IPAddress.objects.count(), ip_count + 10)
+        ip.refresh_from_db()
+        self.assertEqual(ip.status, IPAddressStatus.reserved)
+
     def test_create_ip_address(self):
         Network.objects.create(
             name='test_create_ip_address',

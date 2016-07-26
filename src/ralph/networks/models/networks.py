@@ -440,6 +440,7 @@ class Network(
             ))
         IPAddress.objects.bulk_create(ips_to_create)
         to_delete = existing_ips - final_state
+        import ipdb; ipdb.set_trace()
         # delete reserved ips without ethernet
         IPAddress.objects.filter(
             number__in=to_delete,
