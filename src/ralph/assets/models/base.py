@@ -83,3 +83,33 @@ class BaseObject(
             'class'
         )
     )
+
+
+class BaseObjectListManager(models.Manager):
+    polymorphic_select_related_fields = [
+        'configuration_path',
+        'service_env',
+        'service_env__environment',
+        'service_env__service'
+    ]
+    related_models = [
+        'Cluster',
+        'CloudHost',
+        'DataCenterAsset',
+        'VirtualServer'
+    ]
+
+    def get_queryset(self):
+        return BaseObject.polymorphic_objects.dc_hosts().polymorphic_select_related(
+            **{
+                model: self.polymorphic_select_related_fields
+                for model in self.related_models
+            }
+        )
+
+
+class BaseObjectList(BaseObject):
+    objects = BaseObjectListManager()
+
+    class Meta:
+        proxy = True
