@@ -296,15 +296,14 @@ class BaseObjectList(BaseObjectAdmin):
         'get_hostname',
         'service_env',
         'configuration_path',
-        'remarks',
         # TODO: location
+        'remarks',
     ]
     # TODO: hostname, IP, DC
     list_filter = [
-        # remove
-        'content_type',
         'service_env',
         'configuration_path',
+        'content_type',
         # 'hostname'
     ]
 
@@ -318,6 +317,8 @@ class BaseObjectList(BaseObjectAdmin):
     def get_hostname(self, obj):
         return obj.hostname
     get_hostname.short_description = 'Hostname'
+    # TODO: simple if hostname would be in one model
+    # get_hostname.admin_order_field = 'asset__hostname'
 
     def __init__(self, model, *args, **kwargs):
         super().__init__(model, *args, **kwargs)
