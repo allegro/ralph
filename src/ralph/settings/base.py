@@ -345,6 +345,21 @@ DNSAAS_AUTO_PTR_NEVER = os.environ.get('DNSAAS_AUTO_PTR_NEVER', 1)
 DNSAAS_OWNER = os.environ.get('DNSAAS_OWNER', 'ralph')
 # pyhermes topic where messages about auto txt records are announced
 DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME = os.environ.get('DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME', '')
+# define names of values send to DNSAAS for (DataCenterAsset, Cluster, VirtualServer)
+DNSAAS_AUTO_TXT_RECORD_PURPOSE_MAP = {
+    # self.configuration_path.class will be send as 'VENTURE'
+    'class_name': 'VENTURE',
+    # self.configuration_path.module will be send as 'ROLE'
+    'module_name': 'ROLE',
+    # self.model will be send as 'MODEL'
+    'model': 'MODEL',
+    # self.location will be send as 'LOCATION'
+    'location': 'LOCATION',
+    # self.location will be send as 'LOCATION'
+    # if any of above is set to none
+    # 'location': None
+    # then this value won't be set at all
+}
 
 if ENABLE_DNSAAS_INTEGRATION:
     INSTALLED_APPS += (

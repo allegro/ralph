@@ -84,6 +84,7 @@ class TestDNSView(TestCase):
         DNSView()
 
 
+from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.data_center.tests.factories import RackFactory
 from ralph.data_center.tests.factories import ClusterFactory
 from ralph.data_center.tests.factories import DataCenterAssetFactory
@@ -93,15 +94,26 @@ class TestPublisher(TestCase):
 
     def setUp(self):
         self.dc_asset = DataCenterAssetFactory(
-            #service_env=service_env,
-            rack=RackFactory(),
-            position=1,
-            slot_no='1',
-            #force_depreciation=False,
-            #model=asset_model,
+            rack=RackFactory(), position=1, slot_no='1',
         )
-        self.virtual_server = VirtualServerFactory()
+        self.virtual_server = VirtualServerFactory(
+            parent=DataCenterAssetFactory(
+                rack=RackFactory(), position=1, slot_no='1',
+            )
+        )
+
+        # TODO:: factory handling that
         self.cluster = ClusterFactory()
+        self.cluster_1 = ClusterFactory()
+        self.boc_1 = BaseObjectCluster.objects.create(
+            cluster=self.cluster_1, base_object=DataCenterAssetFactory()
+        )
+        self.boc_2 = BaseObjectCluster.objects.create(
+            cluster=self.cluster_1, base_object=DataCenterAssetFactory(),
+            is_master=True
+        )
+        import ipdb
+        ipdb.set_trace()
 
     def test_dc_asset_gets_data_ok(self):
         data = _publish_data_to_dnsaaas(self.dc_asset)
@@ -128,9 +140,30 @@ class TestPublisher(TestCase):
         }])
 
     def test_cluster_gets_data_ok(self):
-        pass
+        data = _publish_data_to_dnsaaas(self.cluster)
+        self.assertEqual(data, [{
+        }])
 
     def test_virtual_server_gets_data_ok(self):
-
-        pass
-
+        data = _publish_data_to_dnsaaas(self.virtual_server)
+        self.assertEqual(data, [{
+            'content': 'worker',
+            'name': 's000.local',
+            'owner': 'ralph',
+            'purpose': 'VENTURE'
+        }, {
+            'content': 'auth',
+            'name': 's000.local',
+            'owner': 'ralph',
+            'purpose': 'ROLE'
+        }, {
+            'content': 'DL380p',
+            'name': 's000.local',
+            'owner': 'ralph',
+            'purpose': 'MODEL'
+        }, {
+            'content': 'DC2 / Server Room B / Rack #101 / 1 / 1',
+            'name': 's000.local',
+            'owner': 'ralph',
+            'purpose': 'LOCATION'
+        }])

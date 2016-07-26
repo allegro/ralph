@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
 from django.db import transaction
 
 
@@ -7,20 +8,22 @@ class DNSaaSPublisherMixin:
     """
     def get_auto_txt_data(self):
         data = []
-        for purpose, content in  (
-            #TODO:: really VENTURE or module here?
-            ('VENTURE', self.configuration_path.class_name if self.configuration_path else ''),
-            #TODO:: really ROLE or class_name here?
-            ('ROLE', self.configuration_path.module.name if self.configuration_path else ''),
-            ('MODEL', self.model.name if self.model else ''),
-            ('LOCATION', ' / '.join(self.get_location() or [])),
+        for purpose_name, content in  (
+            ('class_name', self.configuration_path.class_name if self.configuration_path else ''),  # noqa
+            ('module_name', self.configuration_path.module.name if self.configuration_path else ''),  # noqa
+            ('model', self.model.name if self.model else ''),
+            ('location', ' / '.join(self.get_location() or [])),
         ):
+            purpose = settings.DNSAAS_AUTO_TXT_RECORD_PURPOSE_MAP.get(
+                purpose_name, None
+            )
+            if not purpose:
+                continue
             data.append({
                 'name': self.hostname,
                 'purpose': purpose,
                 'content': content,
             })
-
         return data
 
 
