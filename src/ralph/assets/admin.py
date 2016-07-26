@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
+from django.core.urlresolvers import reverse
 
 from ralph.admin import RalphAdmin, RalphMPTTAdmin, RalphTabularInline, register
 from ralph.admin.views.extra import RalphDetailView
@@ -271,6 +272,85 @@ class BaseObjectAdmin(RalphAdmin):
 
     def repr(self, obj):
         return '{}: {}'.format(obj.content_type, obj)
+
+
+class BaseObjectList(BaseObject):
+    class Meta:
+        proxy = True
+
+
+@register(BaseObjectList)
+class BaseObjectList(BaseObjectAdmin):
+    search_fields = [
+        'remarks',
+        'asset__hostname',
+        'cloudhost__hostname',
+        'cluster__hostname',
+        'virtualserver__hostname'
+    ]
+    list_display = [
+        'get_hostname',
+        'service_env',
+        'configuration_path',
+        'remarks',
+        # TODO: location
+    ]
+    # TODO: hostname, IP, DC
+    list_filter = [
+        # remove
+        'content_type',
+        'service_env',
+        'configuration_path',
+        # 'hostname'
+    ]
+    polymorphic_select_related_fields = [
+        'configuration_path',
+        'service_env',
+        'service_env__environment',
+        'service_env__service'
+    ]
+    related_models = [
+        'Cluster',
+        'CloudHost',
+        'DataCenterAsset',
+        'VirtualServer'
+    ]
+
+    def get_actions(self, request):
+        return None
+
+    # TODO: hostname sorting
+    def get_hostname(self, obj):
+        return '<strong><a href="{}">{}</a></strong>'.format(
+            obj.get_absolute_url(), obj.hostname
+        )
+    get_hostname.short_description = 'Hostname'
+    get_hostname.allow_tags = True
+
+    def __init__(self, model, *args, **kwargs):
+        super().__init__(model, *args, **kwargs)
+        # fixed issue with proxy model
+        self.opts = BaseObject._meta
+        # remove link
+        self.list_display_links = (None, )
+
+    def _initialize_search_form(self, extra_context, fields_from_model=True):
+        return super()._initialize_search_form(
+            extra_context, fields_from_model=False
+        )
+
+    def get_queryset(self, request):
+        # TODO: limit to DataCenterAsset, VirtualServer, CloudHost
+        qs = BaseObject.polymorphic_objects.dc_hosts().polymorphic_select_related(
+            **{
+                model: self.polymorphic_select_related_fields
+                for model in self.related_models
+            }
+        )
+        ordering = self.get_ordering(request)
+        if ordering:
+            qs = qs.order_by(*ordering)
+        return qs
 
 
 @register(AssetHolder)

@@ -168,12 +168,13 @@ class RalphAdminMixin(RalphAutocompleteMixin):
         else:
             return None
 
-    def _initialize_search_form(self, extra_context):
-        search_fields = []
-        for field_name in self.search_fields:
-            field = get_field_by_relation_path(self.model, field_name)
-            search_fields.append(field.verbose_name)
-        extra_context['search_fields'] = search_fields
+    def _initialize_search_form(self, extra_context, fields_from_model=True):
+        search_fields = self.search_fields if not fields_from_model else []
+        if fields_from_model:
+            for field_name in self.search_fields:
+                field = get_field_by_relation_path(self.model, field_name)
+                search_fields.append(field.verbose_name)
+        extra_context['search_fields'] = set(search_fields)
         extra_context['search_url'] = reverse(
             'admin:{app_label}_{model_name}_changelist'.format(
                 app_label=self.model._meta.app_label,
