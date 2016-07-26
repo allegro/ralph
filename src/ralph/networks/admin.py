@@ -1,6 +1,9 @@
+import ipaddress
+
 from django import forms
 from django.conf import settings
 from django.contrib.admin.views.main import ORDER_VAR, SEARCH_VAR
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db.models import Count, Prefetch
 from django.forms.models import ModelForm
@@ -56,10 +59,39 @@ class DiscoveryQueueAdmin(RalphAdmin):
 
 
 class NetworkForm(RalphAdminFormMixin, ModelForm):
-    top_margin = forms.IntegerField(initial=settings.DEFAULT_NETWORK_TOP_MARGIN)
     bottom_margin = forms.IntegerField(
         initial=settings.DEFAULT_NETWORK_BOTTOM_MARGIN
     )
+    top_margin = forms.IntegerField(initial=settings.DEFAULT_NETWORK_TOP_MARGIN)
+
+    def __init__(self, *args, **kwargs):
+        if not kwargs.get('initial'):
+            kwargs['initial'] = {}
+        if kwargs.get('instance'):
+            instance = kwargs['instance']
+            kwargs['initial'].update({
+                'bottom_margin': instance.reserved_bottom,
+                'top_margin': instance.reserved_top,
+            })
+        return super().__init__(*args, **kwargs)
+
+    def _clean_margin(self, margin_key, margin_name):
+        try:
+            net = ipaddress.IPv4Network(self.cleaned_data['address'])
+        except ValueError:
+            pass
+        margin = self.cleaned_data[margin_key]
+        if int(net.network_address) + margin > int(net.broadcast_address):
+            raise ValidationError('{} margin is larger than network.'.format(
+                margin_name
+            ))
+        return margin
+
+    def clean_bottom_margin(self, *args, **kwargs):
+        return self._clean_margin('bottom_margin', 'Bottom')
+
+    def clean_top_margin(self, *args, **kwargs):
+        return self._clean_margin('top_margin', 'Top')
 
     class Meta:
         model = Network
@@ -175,7 +207,7 @@ class NetworkAdmin(RalphMPTTAdmin):
         bottom_margin = form.cleaned_data.get('bottom_margin', None)
         top_margin = form.cleaned_data.get('top_margin', None)
         super().save_model(request, obj, form, change)
-        if bottom_margin and top_margin:
+        if bottom_margin or top_margin:
             obj.reserve_margin_addresses(
                 bottom_count=form.cleaned_data['bottom_margin'],
                 top_count=form.cleaned_data['top_margin'],
