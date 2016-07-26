@@ -109,7 +109,6 @@ class Cluster(DNSaaSPublisherMixin, BaseObject, models.Model):
 #            'ipaddresses': ipaddresses
 #        }
 
-    @property
     def get_location(self):
         return self.masters[0].get_location() if self.masters else None
     @property

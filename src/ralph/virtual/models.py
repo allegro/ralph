@@ -302,7 +302,6 @@ class VirtualServer(
         #    ))
         #}
 
-    @property
     def get_location(self):
         return self.parent.get_location() if self.parent else None
     @property

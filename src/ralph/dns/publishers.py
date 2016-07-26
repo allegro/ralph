@@ -16,7 +16,7 @@ def _publish_data_to_dnsaaas(obj):
         data['owner'] = settings.DNSAAS_OWNER
         #TODO::
         #data['target_owner'] = get_current_user().username
-        publish_data.insert(0, data)
+        publish_data.append(data)
     return publish_data
 
 

@@ -97,11 +97,18 @@ class TestPublisher(TestCase):
 
     def test_dc_asset_gets_data_ok(self):
         data = _publish_data_to_dnsaaas(self.dc_asset)
-        #data['name'] = self.dc_asset.hostname
-        #data['purpose'] = self.dc_asset.hostname
-        #data['content'] = self.dc_asset.hostname
-        #data['target'] = self.dc_asset.hostname
-        #data['target_owner'] = self.dc_asset.hostname
+        self.assertEqual(data, [{
+            'content': 'www',
+            'name': 'ralph0.allegro.pl',
+            'owner': 'ralph',
+            'purpose': 'VENTURE'
+        }, {
+            'content': 'ralph',
+            'name': 'ralph0.allegro.pl',
+            'owner': 'ralph',
+            'purpose': 'ROLE',
+            #TODO:: rest of data
+        }])
 
     def test_cluster_gets_data_ok(self):
         pass
