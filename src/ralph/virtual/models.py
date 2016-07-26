@@ -260,24 +260,41 @@ class VirtualServer(AdminAbsoluteUrlMixin, NetworkableBaseObject, BaseObject):
 
     @property
     def publish_data(self):
-        location = []
-        model_name = ''
-        if self.parent:
-            location = self.parent.get_location()
-            model_name = self.parent.model.name
+        data = (
+            #TODO:: really VENTURE or module here?
+            ('VENTURE', self.configuration_path.class_name if self.configuration_path else ''),
+            #TODO:: really ROLE or class_name here?
+            ('ROLE', self.configuration_path.module.name if self.configuration_path else ''),
+            ('MODEL', self.parent.model.name if self.parent else ''),
+            ('LOCATION', ' / '.join(self.parent.get_location() if self.parent else [])),
+        )
 
-        return {
-            'hostname': self.hostname,
-            'model': model_name,
-            'configuration_path': (
-                self.configuration_path.path if self.configuration_path else ''
-            ),
-            'location': ' / '.join(location),
-            'service_env': str(self.service_env),
-            'ipaddresses': list(self.ipaddresses.all().values_list(
-                'address', flat=True
-            ))
-        }
+        publish_data = dnsaas_txt_record_data(
+            self.hostname,
+            #TODO:: user from threadlocal?
+            'john.doe',
+            settings.DNSAAS_USERNAME,
+            data
+        )
+        return publish_data
+        #location = []
+        #model_name = ''
+        #if self.parent:
+        #    location = self.parent.get_location()
+        #    model_name = self.parent.model.name
+
+        #return {
+        #    'hostname': self.hostname,
+        #    'model': model_name,
+        #    'configuration_path': (
+        #        self.configuration_path.path if self.configuration_path else ''
+        #    ),
+        #    'location': ' / '.join(location),
+        #    'service_env': str(self.service_env),
+        #    'ipaddresses': list(self.ipaddresses.all().values_list(
+        #        'address', flat=True
+        #    ))
+        #}
 
     @cached_property
     def rack_id(self):
