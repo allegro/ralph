@@ -2,6 +2,31 @@
 from django.db import transaction
 
 
+class DNSaaSPublisherMixin:
+    """TODO::
+    """
+    def get_auto_txt_data(self):
+        data = []
+        for purpose, content in  (
+            #TODO:: really VENTURE or module here?
+            ('VENTURE', self.configuration_path.class_name if self.configuration_path else ''),
+            #TODO:: really ROLE or class_name here?
+            ('ROLE', self.configuration_path.module.name if self.configuration_path else ''),
+            ('MODEL', self.model or ''),
+            ('LOCATION', ' / '.join(self.get_location() or [])),
+        ):
+            data.append({
+                'name': self.hostname,
+                'purpose': purpose,
+                'content': content,
+            })
+
+        return data
+
+
+
+
+
 @transaction.atomic
 def move_parents_models(from_obj, to_obj, exclude_copy_fields=None):
     """

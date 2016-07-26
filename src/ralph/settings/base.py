@@ -344,7 +344,7 @@ DNSAAS_AUTO_PTR_NEVER = os.environ.get('DNSAAS_AUTO_PTR_NEVER', 1)
 # user in dnsaas which can do changes, like update TXT records etc.
 DNSAAS_OWNER = os.environ.get('DNSAAS_OWNER', 'ralph')
 # pyhermes topic where messages about auto txt records are announced
-DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME = os.environ.get('DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME', None)
+DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME = os.environ.get('DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME', '')
 
 if ENABLE_DNSAAS_INTEGRATION:
     INSTALLED_APPS += (

@@ -9,27 +9,6 @@ from django.http import HttpResponse
 logger = logging.getLogger(__name__)
 
 
-def dnsaas_txt_record_data(hostname, target_owner, owner, data):
-    """Return dict with data set for dnsaas auto txt records update
-
-    target_owner: owner of txt record (as username)
-    owner: dnsaas user responsible for update
-    data = (
-        (key, value),
-        ..
-    )
-    """
-    publish_data = []
-    for purpose, content in data:
-        data = {
-            'name': hostname,
-            'target_owner': target_owner,
-            'owner': owner,
-            'purpose': purpose,
-            'content': content,
-        }
-    return publish_data
-
 def add_request_to_form(form_class, request):
     form_class._request = request
     return form_class

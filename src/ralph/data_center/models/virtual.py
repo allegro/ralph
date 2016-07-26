@@ -6,6 +6,7 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.base import BaseObject
+from ralph.assets.utils import DNSaaSPublisherMixin
 from ralph.lib.mixins.fields import BaseObjectForeignKey, NullableCharField
 from ralph.lib.mixins.models import NamedMixin
 from ralph.lib.transitions.fields import TransitionField
@@ -46,7 +47,7 @@ class ClusterStatus(Choices):
     for_deploy = _('for deploy')
 
 
-class Cluster(BaseObject, models.Model):
+class Cluster(DNSaaSPublisherMixin, BaseObject, models.Model):
     name = models.CharField(_('name'), max_length=255, blank=True, null=True)
     hostname = NullableCharField(
         unique=True,
@@ -70,24 +71,24 @@ class Cluster(BaseObject, models.Model):
     def __str__(self):
         return '{} ({})'.format(self.name or self.hostname, self.type)
 
-    @property
-    def publish_data(self):
-        data = (
-            #TODO:: really VENTURE or module here?
-            ('VENTURE', self.configuration_path.class_name if self.configuration_path else ''),
-            #TODO:: really ROLE or class_name here?
-            ('ROLE', self.configuration_path.module.name if self.configuration_path else ''),
-            ('MODEL', master.model.name if master else ''),
-            ('LOCATION', ' / '.join(master.get_location() if self.masters else [])),
-        )
-        publish_data = dnsaas_txt_record_data(
-            self.hostname,
-            #TODO:: user from threadlocal?
-            'john.doe',
-            settings.DNSAAS_OWNER,
-            data,
-        )
-        return publish_data
+#    @property
+#    def publish_data(self):
+#        data = (
+#            #TODO:: really VENTURE or module here?
+#            ('VENTURE', self.configuration_path.class_name if self.configuration_path else ''),
+#            #TODO:: really ROLE or class_name here?
+#            ('ROLE', self.configuration_path.module.name if self.configuration_path else ''),
+#            ('MODEL', master.model.name if master else ''),
+#            ('LOCATION', ' / '.join(master.get_location() if self.masters else [])),
+#        )
+#        publish_data = dnsaas_txt_record_data(
+#            self.hostname,
+#            #TODO:: user from threadlocal?
+#            'john.doe',
+#            settings.DNSAAS_OWNER,
+#            data,
+#        )
+#        return publish_data
 #        location, ipaddresses = [], []
 #        master = None
 #        if self.masters:
@@ -107,6 +108,14 @@ class Cluster(BaseObject, models.Model):
 #            'service_env': str(self.service_env),
 #            'ipaddresses': ipaddresses
 #        }
+
+    @property
+    def get_location(self):
+        return self.masters[0].get_location() if self.masters else None
+    @property
+    def model(self):
+        return self.parent.model if self.parent else None
+
 
     @cached_property
     def masters(self):

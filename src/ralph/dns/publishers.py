@@ -10,17 +10,22 @@ from ralph.data_center.models.virtual import Cluster
 from ralph.virtual.models import VirtualServer
 
 
+def _publish_data_to_dnsaaas(obj):
+    publish_data = []
+    for data in obj.get_auto_txt_data():
+        data['owner'] = settings.DNSAAS_OWNER
+        #TODO::
+        #data['target_owner'] = get_current_user().username
+        publish_data.insert(0, data)
+    return publish_data
+
+
 @pyhermes.publisher(
     topic=settings.DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME,
     auto_publish_result=True
 )
 def publish_data_to_dnsaaas(obj):
-    publish_data = []
-    for data in obj.get_auto_txt_data():
-        data['owner'] = settings.DNSAAS_OWNER
-        data['target_owner'] = get_current_user().username
-        publish_data.insert(0, data)
-    return publish_data
+    return _publish_data_to_dnsaaas(obj)
 
 
 @receiver(post_save, sender=DataCenterAsset)

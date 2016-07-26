@@ -21,7 +21,7 @@ from ralph.admin.sites import ralph_site
 from ralph.admin.widgets import AutocompleteWidget
 from ralph.assets.models.assets import Asset, NamedMixin
 from ralph.assets.models.choices import AssetSource
-from ralph.assets.utils import move_parents_models
+from ralph.assets.utils import DNSaaSPublisherMixin, move_parents_models
 from ralph.back_office.models import BackOfficeAsset, Warehouse
 from ralph.data_center.models.choices import (
     ConnectionType,
@@ -328,7 +328,12 @@ class NetworkableBaseObject(models.Model):
         abstract = True
 
 
-class DataCenterAsset(NetworkableBaseObject, AutocompleteTooltipMixin, Asset):
+class DataCenterAsset(
+    DNSaaSPublisherMixin,
+    NetworkableBaseObject,
+    AutocompleteTooltipMixin,
+    Asset
+):
     _allow_in_dashboard = True
 
     rack = models.ForeignKey(Rack, null=True, blank=True)
@@ -425,28 +430,28 @@ class DataCenterAsset(NetworkableBaseObject, AutocompleteTooltipMixin, Asset):
             location.append(str(self.slot_no))
         return location
 
-    @property
-    def publish_data(self):
-        publish_data = []
-        _data = (
-            #TODO:: really VENTURE or module here?
-            ('VENTURE', self.configuration_path.class_name if self.configuration_path else ''),
-            #TODO:: really ROLE or class_name here?
-            ('ROLE', self.configuration_path.module.name if self.configuration_path else ''),
-            ('MODEL', self.model),
-            ('LOCATION', ' / '.join(self.get_location())),
-        )
-        for purpose, content in _data:
-            data = {
-                'name': self.hostname,
-                #TODO:: user from threadlocal?
-                'target_owner': 'john.doe',
-                'owner': settings.DNSAAS_OWNER,
-            }
-            data['purpose'] = purpose
-            data['content'] = content
-            publish_data.append(data)
-        return publish_data
+#    @property
+#    def publish_data(self):
+#        publish_data = []
+#        _data = (
+#            #TODO:: really VENTURE or module here?
+#            ('VENTURE', self.configuration_path.class_name if self.configuration_path else ''),
+#            #TODO:: really ROLE or class_name here?
+#            ('ROLE', self.configuration_path.module.name if self.configuration_path else ''),
+#            ('MODEL', self.model),
+#            ('LOCATION', ' / '.join(self.get_location())),
+#        )
+#        for purpose, content in _data:
+#            data = {
+#                'name': self.hostname,
+#                #TODO:: user from threadlocal?
+#                'target_owner': 'john.doe',
+#                'owner': settings.DNSAAS_OWNER,
+#            }
+#            data['purpose'] = purpose
+#            data['content'] = content
+#            publish_data.append(data)
+#        return publish_data
         #return {
         #    'hostname': self.hostname,
         #    'model': self.model.name,

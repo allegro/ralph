@@ -82,3 +82,31 @@ class TestDNSView(TestCase):
     def test_dnsaasintegration_enabled(self):
         # should not raise exception
         DNSView()
+
+
+from ralph.data_center.tests.factories import ClusterFactory
+from ralph.data_center.tests.factories import DataCenterAssetFactory
+from ralph.virtual.tests.factories import VirtualServerFactory
+from ralph.dns.publishers import _publish_data_to_dnsaaas
+class TestPublisher(TestCase):
+
+    def setUp(self):
+        self.dc_asset = DataCenterAssetFactory()
+        self.virtual_server = VirtualServerFactory()
+        self.cluster = ClusterFactory()
+
+    def test_dc_asset_gets_data_ok(self):
+        data = _publish_data_to_dnsaaas(self.dc_asset)
+        #data['name'] = self.dc_asset.hostname
+        #data['purpose'] = self.dc_asset.hostname
+        #data['content'] = self.dc_asset.hostname
+        #data['target'] = self.dc_asset.hostname
+        #data['target_owner'] = self.dc_asset.hostname
+
+    def test_cluster_gets_data_ok(self):
+        pass
+
+    def test_virtual_server_gets_data_ok(self):
+
+        pass
+

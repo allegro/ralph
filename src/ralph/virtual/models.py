@@ -12,6 +12,7 @@ from ralph.admin.helpers import get_value_by_relation_path
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ComponentType
 from ralph.assets.models.components import Component, ComponentModel, Ethernet
+from ralph.assets.utils import DNSaaSPublisherMixin
 from ralph.data_center.models.physical import (
     DataCenterAsset,
     NetworkableBaseObject
@@ -231,7 +232,12 @@ class VirtualServerStatus(Choices):
     liquidated = _('liquidated')
 
 
-class VirtualServer(AdminAbsoluteUrlMixin, NetworkableBaseObject, BaseObject):
+class VirtualServer(
+    DNSaaSPublisherMixin,
+    AdminAbsoluteUrlMixin,
+    NetworkableBaseObject,
+    BaseObject
+):
     # parent field for VirtualServer is hypervisor!
     # TODO: limit parent to DataCenterAsset
     status = TransitionField(
@@ -258,25 +264,25 @@ class VirtualServer(AdminAbsoluteUrlMixin, NetworkableBaseObject, BaseObject):
     # TODO: remove this field
     cluster = models.ForeignKey(Cluster, blank=True, null=True)
 
-    @property
-    def publish_data(self):
-        data = (
-            #TODO:: really VENTURE or module here?
-            ('VENTURE', self.configuration_path.class_name if self.configuration_path else ''),
-            #TODO:: really ROLE or class_name here?
-            ('ROLE', self.configuration_path.module.name if self.configuration_path else ''),
-            ('MODEL', self.parent.model.name if self.parent else ''),
-            ('LOCATION', ' / '.join(self.parent.get_location() if self.parent else [])),
-        )
-
-        publish_data = dnsaas_txt_record_data(
-            self.hostname,
-            #TODO:: user from threadlocal?
-            'john.doe',
-            settings.DNSAAS_OWNER,
-            data
-        )
-        return publish_data
+#    @property
+#    def publish_data(self):
+#        data = (
+#            #TODO:: really VENTURE or module here?
+#            ('VENTURE', self.configuration_path.class_name if self.configuration_path else ''),
+#            #TODO:: really ROLE or class_name here?
+#            ('ROLE', self.configuration_path.module.name if self.configuration_path else ''),
+#            ('MODEL', self.parent.model.name if self.parent else ''),
+#            ('LOCATION', ' / '.join(self.parent.get_location() if self.parent else [])),
+#        )
+#
+#        publish_data = dnsaas_txt_record_data(
+#            self.hostname,
+#            #TODO:: user from threadlocal?
+#            'john.doe',
+#            settings.DNSAAS_OWNER,
+#            data
+#        )
+#        return publish_data
         #location = []
         #model_name = ''
         #if self.parent:
@@ -295,6 +301,13 @@ class VirtualServer(AdminAbsoluteUrlMixin, NetworkableBaseObject, BaseObject):
         #        'address', flat=True
         #    ))
         #}
+
+    @property
+    def get_location(self):
+        return self.parent.get_location() if self.parent else None
+    @property
+    def model(self):
+        return self.parent.model if self.parent else None
 
     @cached_property
     def rack_id(self):
