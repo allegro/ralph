@@ -137,18 +137,32 @@ class AssetList(Table):
     report_failure.title = ''
 
     def confirm_ownership(self, item):
+        if item.user.regions.filter(stocktaking_enabled=True).count() == 0 \
+                and not item.warehouse.stocktaking_enabled:
+            return ''
         if settings.INVENTORY_TAG in item.tags.names():
-            return _('confirmed')
-        elif settings.INVENTORY_TAG_MISSING in item.tags.names():
-            return _('missing')
-        else:
-            return '<div style="text-align: justify; width: 100%;"><a href="{}">{}</a> \
-                    <a href="{}">{}</a></div>'.format(
-                reverse('inventory_tag_confirmation', args=[item.id, 'yes']),
-                _('yes'),
-                reverse('inventory_tag_confirmation', args=[item.id, 'no']),
-                _('no')
+            return _(
+                '<div class="small-12 columns label success">confirmed</div>'
             )
+        elif settings.INVENTORY_TAG_MISSING in item.tags.names():
+            return _(
+                '<div class="small-12 columns label alert">missing</div>'
+            )
+        else:
+            return '<a class="small-6 columns label success" href="{}">{}</a>' \
+                    '<a class="small-6 columns label alert" href="{}">' \
+                    '{}</a>'.format(
+                        reverse(
+                            'inventory_tag_confirmation',
+                            args=[item.id, 'yes']
+                        ),
+                        _('yes'),
+                        reverse(
+                            'inventory_tag_confirmation',
+                            args=[item.id, 'no']
+                        ),
+                        _('no')
+                    )
     confirm_ownership.title = _('Do you have it?')
 
 
