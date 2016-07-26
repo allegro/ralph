@@ -20,7 +20,7 @@ class DNSaaSPublisherMixin:
             if not purpose:
                 continue
             data.append({
-                'name': self.hostname,
+                'name': self.hostname or '',
                 'purpose': purpose,
                 'content': content,
             })

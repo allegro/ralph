@@ -103,17 +103,22 @@ class TestPublisher(TestCase):
         )
 
         # TODO:: factory handling that
-        self.cluster = ClusterFactory()
-        self.cluster_1 = ClusterFactory()
+        cluster = ClusterFactory()
         self.boc_1 = BaseObjectCluster.objects.create(
-            cluster=self.cluster_1, base_object=DataCenterAssetFactory()
+            cluster=cluster,
+            base_object=DataCenterAssetFactory(
+                rack=RackFactory(), position=1,
+            )
         )
         self.boc_2 = BaseObjectCluster.objects.create(
-            cluster=self.cluster_1, base_object=DataCenterAssetFactory(),
+            cluster=cluster,
+            base_object=DataCenterAssetFactory(
+                rack=RackFactory(), position=1,
+            ),
             is_master=True
         )
-        import ipdb
-        ipdb.set_trace()
+
+        self.cluster = ClusterFactory._meta.model.objects.get(pk=cluster)
 
     def test_dc_asset_gets_data_ok(self):
         data = _publish_data_to_dnsaaas(self.dc_asset)
@@ -142,6 +147,25 @@ class TestPublisher(TestCase):
     def test_cluster_gets_data_ok(self):
         data = _publish_data_to_dnsaaas(self.cluster)
         self.assertEqual(data, [{
+            'content': 'www',
+            'name': '',
+            'owner': 'ralph',
+            'purpose': 'VENTURE'
+        }, {
+            'content': 'ralph',
+            'name': '', 'owner':
+            'ralph',
+            'purpose': 'ROLE'
+        }, {
+            'content': 'DL380p',
+            'name': '',
+            'owner': 'ralph',
+            'purpose': 'MODEL'
+        }, {
+            'content': 'DC2 / Server Room B / Rack #101 / 1',
+            'name': '',
+            'owner': 'ralph',
+            'purpose': 'LOCATION'
         }])
 
     def test_virtual_server_gets_data_ok(self):

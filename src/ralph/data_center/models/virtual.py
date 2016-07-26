@@ -120,7 +120,7 @@ class Cluster(
         return self.masters[0].get_location() if self.masters else None
     @property
     def model(self):
-        return self.parent.model if self.parent else None
+        return self.masters[0].model if self.masters else None
 
 
     @cached_property
