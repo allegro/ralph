@@ -84,6 +84,7 @@ class TestDNSView(TestCase):
         DNSView()
 
 
+from ralph.accounts.tests.factories import UserFactory
 from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.data_center.tests.factories import RackFactory
 from ralph.data_center.tests.factories import ClusterFactory
@@ -93,6 +94,7 @@ from ralph.dns.publishers import _publish_data_to_dnsaaas
 class TestPublisher(TestCase):
 
     def setUp(self):
+        self.user = UserFactory(is_superuser=False)
         self.dc_asset = DataCenterAssetFactory(
             rack=RackFactory(), position=1, slot_no='1',
         )
@@ -120,74 +122,92 @@ class TestPublisher(TestCase):
 
         self.cluster = ClusterFactory._meta.model.objects.get(pk=cluster)
 
-    def test_dc_asset_gets_data_ok(self):
+    @patch('ralph.dns.publishers.get_current_user')
+    def test_dc_asset_gets_data_ok(self, mocked_get_current_user):
+        mocked_get_current_user.return_value = self.user
         data = _publish_data_to_dnsaaas(self.dc_asset)
         self.assertEqual(data, [{
             'content': 'www',
             'name': 'ralph0.allegro.pl',
-            'owner': 'ralph',
+            'owner': self.user.username,
+            'target_owner': 'ralph',
             'purpose': 'VENTURE'
         }, {
             'content': 'ralph',
             'name': 'ralph0.allegro.pl',
-            'owner': 'ralph',
+            'owner': self.user.username,
+            'target_owner': 'ralph',
             'purpose': 'ROLE',
         }, {
             'content': 'DL360',
             'name': 'ralph0.allegro.pl',
-            'owner': 'ralph',
+            'owner': self.user.username,
+            'target_owner': 'ralph',
             'purpose': 'MODEL'
         }, {
             'content': 'DC1 / Server Room A / Rack #100 / 1 / 1',
             'name': 'ralph0.allegro.pl',
-            'owner': 'ralph',
+            'owner': self.user.username,
+            'target_owner': 'ralph',
             'purpose': 'LOCATION'
         }])
 
-    def test_cluster_gets_data_ok(self):
+    @patch('ralph.dns.publishers.get_current_user')
+    def test_cluster_gets_data_ok(self, mocked_get_current_user):
+        mocked_get_current_user.return_value = self.user
         data = _publish_data_to_dnsaaas(self.cluster)
         self.assertEqual(data, [{
             'content': 'www',
             'name': '',
-            'owner': 'ralph',
+            'owner': self.user.username,
+            'target_owner': 'ralph',
             'purpose': 'VENTURE'
         }, {
             'content': 'ralph',
-            'name': '', 'owner':
-            'ralph',
+            'name': '',
+            'owner': self.user.username,
+            'target_owner': 'ralph',
             'purpose': 'ROLE'
         }, {
             'content': 'DL380p',
             'name': '',
-            'owner': 'ralph',
+            'owner': self.user.username,
+            'target_owner': 'ralph',
             'purpose': 'MODEL'
         }, {
             'content': 'DC2 / Server Room B / Rack #101 / 1',
             'name': '',
-            'owner': 'ralph',
+            'owner': self.user.username,
+            'target_owner': 'ralph',
             'purpose': 'LOCATION'
         }])
 
-    def test_virtual_server_gets_data_ok(self):
+    @patch('ralph.dns.publishers.get_current_user')
+    def test_virtual_server_gets_data_ok(self, mocked_get_current_user):
+        mocked_get_current_user.return_value = self.user
         data = _publish_data_to_dnsaaas(self.virtual_server)
         self.assertEqual(data, [{
             'content': 'worker',
             'name': 's000.local',
-            'owner': 'ralph',
+            'owner': self.user.username,
+            'target_owner': 'ralph',
             'purpose': 'VENTURE'
         }, {
             'content': 'auth',
             'name': 's000.local',
-            'owner': 'ralph',
+            'owner': self.user.username,
+            'target_owner': 'ralph',
             'purpose': 'ROLE'
         }, {
             'content': 'DL380p',
             'name': 's000.local',
-            'owner': 'ralph',
+            'owner': self.user.username,
+            'target_owner': 'ralph',
             'purpose': 'MODEL'
         }, {
             'content': 'DC2 / Server Room B / Rack #101 / 1 / 1',
             'name': 's000.local',
-            'owner': 'ralph',
+            'owner': self.user.username,
+            'target_owner': 'ralph',
             'purpose': 'LOCATION'
         }])
