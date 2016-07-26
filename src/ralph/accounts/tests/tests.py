@@ -167,12 +167,16 @@ class RalphUserAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
-class StockTakingTests(RalphAPITestCase, ClientMixin):
+class StockTakingTests(TestCase, ClientMixin):
     def setUp(self):
         super().setUp()
+        self.user1 = factories.UserFactory()
+        self.user2 = factories.UserFactory()
         self.service_env = ServiceEnvironmentFactory()
         self.model = BackOfficeAssetModelFactory()
         self.warehouse = WarehouseFactory()
+        self.warehouse.stocktaking_enabled = True
+        self.warehouse.save()
         self.asset = BackOfficeAssetFactory(
             warehouse=self.warehouse,
             model=self.model,
@@ -188,26 +192,28 @@ class StockTakingTests(RalphAPITestCase, ClientMixin):
         ]
     
     def test_tag_asset(self):
-        self.login_as_user(self.user1.username)
+        self.assertTrue(self.login_as_user(self.user1))
         response = self.client.post(
             reverse('inventory_tag'),
             {
                 'asset_id': self.asset.id,
-                'confirm_button': 'Yes'
-            }
+                'confirm_button': 'Yes',
+                'answer': 'yes'
+            }, follow=True
         )
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEquals(response.status_code, 200)
         for t in self.tags:
             self.assertIn(t, self.asset.tags.names())
 
     def test_ownership_verification(self):
-        self.login_as_user(self.user2.username)
+        self.assertTrue(self.login_as_user(self.user2))
         response = self.client.post(
             reverse('inventory_tag'),
             {
                 'asset_id': self.asset.id,
-                'confirm_button': 'Yes'
-            }
+                'confirm_button': 'Yes',
+                'answer': 'yes'
+            }, follow=True
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEquals(response.status_code, 403)
