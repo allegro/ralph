@@ -174,6 +174,7 @@ def _handle_ips(obj, ips):
                     else:
                         # otherwise clean it's ethernet assignment
                         other_ip = eth.ipaddress
+                        other_ip.dhcp_expose = False
                         other_ip.ethernet = None
                         other_ip.save()
             except IPAddress.DoesNotExist:
