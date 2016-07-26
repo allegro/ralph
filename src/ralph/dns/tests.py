@@ -84,6 +84,7 @@ class TestDNSView(TestCase):
         DNSView()
 
 
+from ralph.data_center.tests.factories import RackFactory
 from ralph.data_center.tests.factories import ClusterFactory
 from ralph.data_center.tests.factories import DataCenterAssetFactory
 from ralph.virtual.tests.factories import VirtualServerFactory
@@ -91,7 +92,14 @@ from ralph.dns.publishers import _publish_data_to_dnsaaas
 class TestPublisher(TestCase):
 
     def setUp(self):
-        self.dc_asset = DataCenterAssetFactory()
+        self.dc_asset = DataCenterAssetFactory(
+            #service_env=service_env,
+            rack=RackFactory(),
+            position=1,
+            slot_no='1',
+            #force_depreciation=False,
+            #model=asset_model,
+        )
         self.virtual_server = VirtualServerFactory()
         self.cluster = ClusterFactory()
 
@@ -113,7 +121,7 @@ class TestPublisher(TestCase):
             'owner': 'ralph',
             'purpose': 'MODEL'
         }, {
-            'content': '',
+            'content': 'DC1 / Server Room A / Rack #100 / 1 / 1',
             'name': 'ralph0.allegro.pl',
             'owner': 'ralph',
             'purpose': 'LOCATION'
