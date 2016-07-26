@@ -1,15 +1,12 @@
-from django import forms
-from django.conf import settings
 from django.contrib.admin.views.main import ORDER_VAR, SEARCH_VAR
 from django.core.urlresolvers import reverse
 from django.db.models import Count, F, Prefetch
-from django.forms.models import ModelForm
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, register
 from ralph.admin.filters import RelatedAutocompleteFieldListFilter
 from ralph.admin.helpers import CastToInteger
-from ralph.admin.mixins import RalphAdminFormMixin, RalphMPTTAdmin
+from ralph.admin.mixins import RalphMPTTAdmin
 from ralph.admin.views.main import RalphChangeList
 from ralph.assets.models import BaseObject
 from ralph.data_importer import resources
@@ -57,17 +54,6 @@ class NetworkKindAdmin(RalphAdmin):
 @register(DiscoveryQueue)
 class DiscoveryQueueAdmin(RalphAdmin):
     pass
-
-
-class NetworkForm(RalphAdminFormMixin, ModelForm):
-    top_margin = forms.IntegerField(initial=settings.DEFAULT_NETWORK_TOP_MARGIN)
-    bottom_margin = forms.IntegerField(
-        initial=settings.DEFAULT_NETWORK_BOTTOM_MARGIN
-    )
-
-    class Meta:
-        model = Network
-        exclude = ('parent',)
 
 
 def ip_address_base_object_link(obj):
@@ -136,8 +122,6 @@ class NetworkAdmin(RalphMPTTAdmin):
     readonly_fields = [
         'show_subnetworks', 'show_addresses', 'show_parent_networks'
     ]
-    # TODO: adapt form to handle change action
-    form = NetworkForm
 
     add_message = _('Network added to <a href="{}" _target="blank">{}</a>')
     change_message = _('Network reassigned from network <a href="{}" target="_blank">{}</a> to <a href="{}" target="_blank">{}</a>')  # noqa
@@ -147,7 +131,8 @@ class NetworkAdmin(RalphMPTTAdmin):
             'fields': [
                 'name', 'address', 'gateway', 'remarks', 'terminators', 'vlan',
                 'racks', 'network_environment', 'dns_servers', 'kind',
-                'service_env', 'dhcp_broadcast', 'bottom_margin', 'top_margin',
+                'service_env', 'dhcp_broadcast', 'reserved_from_beginning',
+                'reserved_from_end',
             ]
         }),
         (_('Relations'), {
@@ -171,19 +156,6 @@ class NetworkAdmin(RalphMPTTAdmin):
         return super().changeform_view(
             request, object_id, form_url, extra_context
         )
-
-    def save_model(self, request, obj, form, change):
-        """
-        Given a model instance save it to the database.
-        """
-        bottom_margin = form.cleaned_data.get('bottom_margin', None)
-        top_margin = form.cleaned_data.get('top_margin', None)
-        super().save_model(request, obj, form, change)
-        if bottom_margin and top_margin:
-            obj.reserve_margin_addresses(
-                bottom_count=form.cleaned_data['bottom_margin'],
-                top_count=form.cleaned_data['top_margin'],
-            )
 
     def address(self, obj):
         return obj.address

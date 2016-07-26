@@ -14,7 +14,7 @@ from ralph.data_center.tests.factories import (
     DataCenterAssetFactory,
     RackFactory
 )
-from ralph.networks.models import IPAddress, IPAddressStatus
+from ralph.networks.models import IPAddress
 from ralph.networks.tests.factories import (
     IPAddressFactory,
     NetworkEnvironmentFactory,
@@ -317,20 +317,6 @@ class DataCenterAssetTest(RalphTestCase):
         self.assertFalse(
             IPAddress.objects.filter(address='10.20.30.40').exists()
         )
-
-    def test_change_mgmt_ip_reserved_for_existing_ip_without_object_should_pass(self):  # noqa
-        IPAddressFactory(
-            address='10.20.30.40',
-            is_management=True,
-            ethernet__base_object=self.dc_asset,
-            status=IPAddressStatus.reserved
-        )
-        self.assertEqual(self.dc_asset.management_ip, '10.20.30.40')
-        self.dc_asset.management_ip = '10.20.30.43'
-        self.dc_asset.refresh_from_db()
-        self.assertEqual(self.dc_asset.management_ip, '10.20.30.43')
-        reserved_ip = IPAddress.objects.get(address='10.20.30.40')
-        self.assertFalse(reserved_ip.is_management)
 
     def test_change_mgmt_ip_for_existing_ip_with_object_should_not_pass(self):
         IPAddressFactory(address='10.20.30.42')
