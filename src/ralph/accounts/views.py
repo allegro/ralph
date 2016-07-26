@@ -58,44 +58,52 @@ class InventoryTagConfirmationView(RalphBaseTemplateView):
 class InventoryTagView(View):
     http_method_names = ['post']
 
+    def _post_no(self, request, asset):
+        asset.tags.add(
+            settings.INVENTORY_TAG_MISSING
+        )
+        missing_asset_info = 'Please contact person responsible ' \
+                             'for asset management'
+        if settings.MISSING_ASSET_REPORT_URL is not None:
+            missing_asset_info += '\n' + settings.MISSING_ASSET_REPORT_URL
+
+        asset.save()
+        messages.info(request, _(missing_asset_info))
+
+    def _post_yes(self, request, asset):
+        date_tag = None
+        if settings.INVENTORY_TAG_APPEND_DATE:
+            date_tag = settings.INVENTORY_TAG + '_' + date.today().isoformat()
+
+        asset.tags.add(
+            settings.INVENTORY_TAG,
+            settings.INVENTORY_TAG_USER,
+            date_tag
+        )
+
+        asset.save()
+        messages.success(request, _('Successfully tagged asset'))
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['answer'] = kwargs['answer']
         return context
 
     def post(self, request, *args, **kwargs):
-        response = HttpResponseRedirect(reverse('current_user_info'))
-
         asset = get_object_or_404(BackOfficeAsset, id=request.POST['asset_id'])
-        if not asset.user_id == request.user.id:
+        if(asset.user_id != request.user.id
+                or (not asset.warehouse.stocktaking_enabled
+                    and request.user.regions.filter(
+                        stocktaking_enabled=True
+                    ).count() == 0)):
             return HttpResponseForbidden()
 
-        date_tag = None
-        if settings.INVENTORY_TAG_APPEND_DATE:
-            date_tag = settings.INVENTORY_TAG + '_' + date.today().isoformat()
-
         if request.POST['answer'] == 'yes':
-            asset.tags.add(
-                settings.INVENTORY_TAG,
-                settings.INVENTORY_TAG_USER,
-                date_tag
-            )
-
-            asset.save()
-            messages.success(request, _('Successfully tagged asset'))
+            self._post_yes(request, asset)
         elif request.POST['answer'] == 'no':
-            asset.tags.add(
-                settings.INVENTORY_TAG_MISSING
-            )
-            missing_asset_info = 'Please contact person responsible ' \
-                                 'for asset management'
-            if settings.MISSING_ASSET_REPORT_URL is not None:
-                missing_asset_info += '\n' + settings.MISSING_ASSET_REPORT_URL
+            self._post_no(request, asset)
 
-            asset.save()
-            messages.info(request, _(missing_asset_info))
-
-        return response
+        return HttpResponseRedirect(reverse('current_user_info'))
 
 
 class CurrentUserInfoView(UserInfoMixin, RalphBaseTemplateView):
@@ -116,7 +124,12 @@ class CurrentUserInfoView(UserInfoMixin, RalphBaseTemplateView):
         if settings.MY_EQUIPMENT_REPORT_FAILURE_URL:
             asset_fields += ['report_failure']
 
-        if settings.MY_EQUIPMENT_ENABLE_INVENTORY_TAKING:
+        if BackOfficeAsset.objects.filter(
+                user=self.request.user, warehouse__stocktaking_enabled=True
+        ).count() > 0\
+                or self.request.user.regions.filter(
+                    stocktaking_enabled=True
+                ).count() > 0:
             asset_fields += ['confirm_ownership']
 
         context['asset_list'] = MyEquipmentAssetList(

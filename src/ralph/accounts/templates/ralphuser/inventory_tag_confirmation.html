@@ -18,7 +18,7 @@
       {% csrf_token %}
       <input type="hidden" name="asset_id" value={{ asset_id }} />
       <input type="hidden" name="answer" value={{ answer }} />
-      <a href="javascript:history.back()" class= "button small alert left">
+      <a href={% url 'current_user_info' %} class= "button small alert left">
           Cancel</a>
       <input type="submit" name="confirm_button" value="Yes"
           class="button small success left" autocomplete="off" />

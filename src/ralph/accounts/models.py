@@ -32,6 +32,7 @@ class Region(PermissionsForObjectMixin, NamedMixin):
         choices=Country(),
         default=Country.pl.id,
     )
+    stocktaking_enabled = models.BooleanField(default=False)
 
     """Used for distinguishing the origin of the object by region"""
     class Permissions:

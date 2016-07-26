@@ -25,6 +25,7 @@ from ralph.back_office.tests.factories import (
 from ralph.licences.models import LicenceUser
 from ralph.licences.tests.factories import LicenceFactory
 from ralph.tests import factories
+from ralph.tests.mixins import ClientMixin
 
 NO_LDAP_MODULE = not ldap_module_exists
 
@@ -166,13 +167,9 @@ class RalphUserAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
-class StockTakingTests(TestCase):
+class StockTakingTests(RalphAPITestCase, ClientMixin):
     def setUp(self):
         super().setUp()
-        self.user1 = factories.UserFactory()
-        self.user1.save()
-        self.user2 = factories.UserFactory()
-        self.user2.save()
         self.service_env = ServiceEnvironmentFactory()
         self.model = BackOfficeAssetModelFactory()
         self.warehouse = WarehouseFactory()
@@ -191,10 +188,7 @@ class StockTakingTests(TestCase):
         ]
     
     def test_tag_asset(self):
-        self.assertTrue(self.client.login(
-            username=self.user1,
-            password='ralph'
-        ))
+        self.login_as_user(self.user1.username)
         response = self.client.post(
             reverse('inventory_tag'),
             {
@@ -208,10 +202,7 @@ class StockTakingTests(TestCase):
             self.assertIn(t, self.asset.tags.names())
 
     def test_ownership_verification(self):
-        self.assertTrue(self.client.login(
-            username=self.user2,
-            password='ralph'
-        ))
+        self.login_as_user(self.user2.username)
         response = self.client.post(
             reverse('inventory_tag'),
             {
