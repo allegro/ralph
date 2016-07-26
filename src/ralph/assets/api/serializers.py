@@ -91,11 +91,11 @@ class SaveServiceSerializer(
     )
     business_owners = AdditionalLookupRelatedField(
         many=True, read_only=False, queryset=get_user_model().objects.all(),
-        lookup_fields=['username'],
+        lookup_fields=['username'], style={'base_template': 'input.html'}
     )
     technical_owners = AdditionalLookupRelatedField(
         many=True, read_only=False, queryset=get_user_model().objects.all(),
-        lookup_fields=['username'],
+        lookup_fields=['username'], style={'base_template': 'input.html'}
     )
     support_team = AdditionalLookupRelatedField(
         read_only=False, queryset=Team.objects.all(), lookup_fields=['name'],

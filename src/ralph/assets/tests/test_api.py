@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from urllib.parse import urlencode
 
+from ddt import data, ddt, unpack
 from django.core.urlresolvers import reverse
 from rest_framework import status
 
@@ -63,6 +64,52 @@ from ralph.virtual.tests.factories import (
     VirtualServerFactory,
     VirtualServerFullFactory
 )
+
+
+@ddt
+class ServiceAPITests(RalphAPITestCase):
+    def setUp(self):
+        super().setUp()
+        self.services = ServiceFactory.create_batch(2, active=True)
+        self.inactive_services = ServiceFactory.create_batch(1, active=False)
+
+    @data(
+        1,
+        '1',
+        'true',
+        'True',
+        'yes',
+    )
+    def test_filter_by_active(self, active):
+        url = '{}?{}'.format(
+            reverse('service-list'), urlencode({'active': active})
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+
+    @data(
+        0,
+        '0',
+        'false',
+        'False',
+        'no',
+    )
+    def test_filter_by_inactive(self, active):
+        url = '{}?{}'.format(
+            reverse('service-list'), urlencode({'active': active})
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_active_invalid_value_should_return_all(self):
+        url = '{}?{}'.format(
+            reverse('service-list'), urlencode({'active': 'invalid'})
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 3)
 
 
 class ServicesEnvironmentsAPITests(RalphAPITestCase):

@@ -2,7 +2,9 @@
 from django.db.models import Prefetch
 from rest_framework.exceptions import ValidationError
 
+import django_filters
 from ralph.api import RalphAPIViewSet
+from ralph.api.filters import BooleanFilter
 from ralph.api.utils import PolymorphicViewSetMixin
 from ralph.assets import models
 from ralph.assets.api import serializers
@@ -33,12 +35,21 @@ class EnvironmentViewSet(RalphAPIViewSet):
     serializer_class = serializers.EnvironmentSerializer
 
 
+class ServiceFilterSet(django_filters.FilterSet):
+    active = BooleanFilter(name='active')
+
+    class Meta:
+        model = models.Service
+        fields = ['active']
+
+
 class ServiceViewSet(RalphAPIViewSet):
     queryset = models.Service.objects.all()
     serializer_class = serializers.ServiceSerializer
     save_serializer_class = serializers.SaveServiceSerializer
     select_related = ['profit_center']
     prefetch_related = ['business_owners', 'technical_owners', 'environments']
+    additional_filter_class = ServiceFilterSet
 
 
 class ServiceEnvironmentViewSet(RalphAPIViewSet):
