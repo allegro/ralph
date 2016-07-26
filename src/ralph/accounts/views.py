@@ -91,11 +91,13 @@ class InventoryTagView(View):
 
     def post(self, request, *args, **kwargs):
         asset = get_object_or_404(BackOfficeAsset, id=request.POST['asset_id'])
-        if(asset.user_id != request.user.id
-                or (not asset.warehouse.stocktaking_enabled
-                    and request.user.regions.filter(
+
+        region_stocktaking_enabled = request.user.regions.filter(
                         stocktaking_enabled=True
-                    ).count() == 0)):
+                    ).exists()
+        if(asset.user_id != request.user.id
+                or not (asset.warehouse.stocktaking_enabled
+                        or region_stocktaking_enabled)):
             return HttpResponseForbidden()
 
         if request.POST['answer'] == 'yes':
@@ -124,12 +126,14 @@ class CurrentUserInfoView(UserInfoMixin, RalphBaseTemplateView):
         if settings.MY_EQUIPMENT_REPORT_FAILURE_URL:
             asset_fields += ['report_failure']
 
-        if BackOfficeAsset.objects.filter(
+        warehouse_stocktaking_enabled = BackOfficeAsset.objects.filter(
                 user=self.request.user, warehouse__stocktaking_enabled=True
-        ).count() > 0\
-                or self.request.user.regions.filter(
-                    stocktaking_enabled=True
-                ).count() > 0:
+        ).exists()
+        region_stocktaking_enabled = self.request.user.regions.filter(
+            stocktaking_enabled=True
+        ).exists()
+
+        if warehouse_stocktaking_enabled or region_stocktaking_enabled:
             asset_fields += ['confirm_ownership']
 
         context['asset_list'] = MyEquipmentAssetList(

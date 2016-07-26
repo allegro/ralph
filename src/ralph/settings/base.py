@@ -317,11 +317,17 @@ RALPH_INTERNAL_SERVICES = {
 MY_EQUIPMENT_LINKS = json.loads(os.environ.get('MY_EQUIPMENT_LINKS', '[]'))
 MY_EQUIPMENT_REPORT_FAILURE_URL = os.environ.get('MY_EQUIPMENT_REPORT_FAILURE_URL', '')  # noqa
 MY_EQUIPMENT_SHOW_BUYOUT_DATE = os_env_true('MY_EQUIPMENT_SHOW_BUYOUT_DATE')
+
+# Sets URL shown to user if they declare that they dp not have specific asset.
 MISSING_ASSET_REPORT_URL = os.environ.get('MISSING_ASSET_REPORT_URL', None)
+
+# Stocktaking tagging config - each variable describes individual tag.
+# To disable tag set it to None or, in case of date tag, set variable to '0'.
 INVENTORY_TAG = os.environ.get('INVENTORY_TAG', 'INV')
+# This tag means user himself confirmed asset possession.
 INVENTORY_TAG_USER = os.environ.get('INVENTORY_TAG_USER', 'INV_CONF')
-INVENTORY_TAG_APPEND_DATE = os_env_true('INVENTORY_TAG_APPEND_DATE', '1')
 INVENTORY_TAG_MISSING = os.environ.get('INVENTORY_TAG_MISSING', 'INV_MISSING')
+INVENTORY_TAG_APPEND_DATE = os_env_true('INVENTORY_TAG_APPEND_DATE', '1')
 
 MAP_IMPORTED_ID_TO_NEW_ID = False
 
