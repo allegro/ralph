@@ -18,6 +18,7 @@ from ralph.data_importer.models import (
     ImportedObjects
 )
 from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
+from ralph.networks.models import Network
 from ralph.virtual.models import VirtualServer
 
 logger = logging.getLogger(__name__)
@@ -98,6 +99,19 @@ def _add_custom_fields(obj):
     return {'custom_fields': obj.custom_fields_as_dict}
 
 
+def _add_ips(obj):
+    ips = []
+    for ip in obj.ipaddresses.all():
+        ips.append({
+            'ip': ip.address,
+            'hostname': ip.hostname,
+            'is_management': ip.is_management,
+            'mac': ip.ethernet.mac if ip.ethernet else None,
+            'dhcp_expose': ip.dhcp_expose,
+        })
+    return {'ips': ips}
+
+
 @ralph2_sync(DataCenterAsset)
 def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
     """
@@ -147,6 +161,7 @@ def sync_dc_asset_to_ralph2(sender, instance=None, created=False, **kwargs):
     ]:
         data[field] = _get_obj_id_ralph_2(getattr(asset, field, None))
     data.update(_add_custom_fields(instance))
+    data.update(_add_ips(instance))
     return data
 
 
@@ -239,6 +254,7 @@ def sync_virtual_server_to_ralph2(sender, instance=None, created=False, **kwargs
         'venture_role_id': venture_role_id
     }
     data.update(_add_custom_fields(instance))
+    data.update(_add_ips(instance))
     return data
 
 
@@ -282,4 +298,35 @@ def sync_stacked_switch_to_ralph2(sender, instance=None, created=False, **kwargs
         'children': list(map(_get_obj_id_ralph_2, instance.base_objects.all())),
     }
     data.update(_add_custom_fields(instance))
+    data.update(_add_ips(instance))
+    return data
+
+
+@ralph2_sync(Network)
+def sync_network_to_ralph2(sender, instance=None, created=False, **kwargs):
+    """
+    Network publisher
+    """
+    ralph2_id = _get_obj_id_ralph_2(instance)
+    data = {
+        'id': instance.id,
+        'ralph2_id': ralph2_id,
+        'name': instance.name,
+        'address': str(instance.address),
+        'gateway': str(instance.gateway.address) if instance.gateway else None,
+        'vlan': instance.vlan,
+        'remarks': instance.remarks,
+        'dhcp_broadcast': instance.dhcp_broadcast,
+        'reserved_bottom': instance.reserved_bottom,
+        'reserved_top': instance.reserved_top,
+        'network_environment': _get_obj_id_ralph_2(
+            instance.network_environment
+        ),
+        'kind': _get_obj_id_ralph_2(instance.kind),
+        'dns_servers': [dns.ip_address for dns in instance.dns_servers.all()],
+        'terminators': [
+            bo.last_descendant.hostname for bo in instance.terminators.all()
+        ],
+        'racks': list(map(_get_obj_id_ralph_2, instance.racks.all())),
+    }
     return data

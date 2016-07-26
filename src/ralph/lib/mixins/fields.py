@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+import netaddr
+
 from django import forms
 from django.conf import settings
 from django.contrib.admin.widgets import AdminTextInputWidget
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.loading import get_model
 from django.forms.utils import flatatt
@@ -54,7 +57,6 @@ class NullableCharFieldMixin(object):
 class NullableCharField(
     NullableCharFieldMixin,
     models.CharField,
-    metaclass=models.SubfieldBase
 ):
     pass
 
@@ -206,3 +208,52 @@ class TaggitTagField(TagField):
             changed = len(initial) != len(data) or set(initial) - set(data)
             return changed
         return initial or data
+
+
+class RalphMACStrategy(netaddr.mac_unix_expanded):
+    word_fmt = '%.2X'
+
+
+class MACAddressField(NullableCharField):
+    dialect = RalphMACStrategy
+    default_error_messages = {
+        'invalid': _("'%(value)s' is not a valid MAC address."),
+    }
+    description = 'MAC address'
+    max_length = len('aa:aa:aa:aa:aa:aa')
+
+    def __init__(self, verbose_name=None, **kwargs):
+        kwargs['max_length'] = self.max_length
+        super().__init__(verbose_name, **kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super().deconstruct()
+        del kwargs['max_length']
+        return name, path, args, kwargs
+
+    def get_db_prep_value(self, value, connection, prepared=False):
+        return self.normalize(value)
+
+    def to_python(self, value):
+        try:
+            return self.normalize(value)
+        except ValueError:
+            raise ValidationError(
+                self.error_messages['invalid'],
+                code='invalid',
+                params={'value': value},
+            )
+
+    @classmethod
+    def normalize(cls, value):
+        """
+        Normalize MAC address to EUI-48 format using unix expanded dialect
+        (separated by :).
+        """
+        if not value:
+            return None
+        try:
+            mac = netaddr.EUI(value, version=48, dialect=cls.dialect)
+        except netaddr.AddrFormatError:
+            raise ValueError("Invalid MAC address: '{}'".format(value))
+        return str(mac) or None

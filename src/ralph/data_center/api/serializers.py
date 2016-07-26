@@ -6,6 +6,7 @@ from ralph.assets.api.serializers import (
     AssetSerializer,
     BaseObjectSerializer,
     ComponentSerializerMixin,
+    NetworkComponentSerializerMixin,
     OwnersFromServiceEnvSerializerMixin
 )
 from ralph.data_center.models import (
@@ -36,6 +37,12 @@ class ClusterSimpleSerializer(BaseObjectSerializer):
         depth = 1
 
 
+class BaseObjectClusterSimpleSerializer(RalphAPISerializer):
+    class Meta:
+        model = BaseObjectCluster
+        fields = ('id', 'url', 'base_object', 'is_master')
+
+
 class BaseObjectClusterSerializer(RalphAPISerializer):
     class Meta:
         model = BaseObjectCluster
@@ -43,13 +50,16 @@ class BaseObjectClusterSerializer(RalphAPISerializer):
 
 
 class ClusterSerializer(
-    OwnersFromServiceEnvSerializerMixin, ClusterSimpleSerializer
+    NetworkComponentSerializerMixin,
+    OwnersFromServiceEnvSerializerMixin,
+    ClusterSimpleSerializer
 ):
-    base_objects = BaseObjectClusterSerializer(
+    base_objects = BaseObjectClusterSimpleSerializer(
         many=True, read_only=True, source='baseobjectcluster_set'
     )
     masters = serializers.HyperlinkedRelatedField(
-        many=True, view_name='baseobject-detail', read_only=True
+        many=True, view_name='baseobject-detail', read_only=True,
+        source='get_masters'
     )
 
     class Meta(ClusterSimpleSerializer.Meta):

@@ -3,9 +3,11 @@ from factory.django import DjangoModelFactory
 
 from ralph.assets.tests.factories import (
     ConfigurationClassFactory,
+    DiskFactory,
     EthernetFactory,
     EthernetWithIPAddressFactory,
     MemoryFactory,
+    ProcessorFactory,
     ServiceEnvironmentFactory
 )
 from ralph.data_center.tests.factories import DataCenterAssetFactory
@@ -119,6 +121,10 @@ class VirtualServerFullFactory(VirtualServerFactory):
     )
     mem1 = factory.RelatedFactory(MemoryFactory, 'base_object')
     mem2 = factory.RelatedFactory(MemoryFactory, 'base_object')
+    proc1 = factory.RelatedFactory(ProcessorFactory, 'base_object')
+    proc2 = factory.RelatedFactory(ProcessorFactory, 'base_object')
+    disk1 = factory.RelatedFactory(DiskFactory, 'base_object')
+    disk2 = factory.RelatedFactory(DiskFactory, 'base_object')
 
     @factory.post_generation
     def post_tags(self, create, extracted, **kwargs):

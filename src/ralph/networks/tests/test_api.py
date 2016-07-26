@@ -18,6 +18,7 @@ class IPAddressAPITests(RalphAPITestCase):
     def setUp(self):
         super().setUp()
         self.ip1 = IPAddressFactory(address='127.0.0.1')
+        self.ip1.ethernet.refresh_from_db()  # to update mac
         self.ip_with_dhcp = IPAddressFactory(
             address='127.0.0.2', dhcp_expose=True
         )

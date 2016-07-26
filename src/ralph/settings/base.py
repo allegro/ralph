@@ -72,6 +72,9 @@ RALPH2_RALPH3_CROSS_VALIDATION_ENABLED = os_env_true(
     'RALPH2_RALPH3_CROSS_VALIDATION_ENABLED'
 )
 if RALPH2_RALPH3_CROSS_VALIDATION_ENABLED:
+    RALPH2_PREVIEW_PREFIX_URL = os.environ.get(
+        'RALPH2_PREVIEW_PREFIX_URL', 'http://ralph2.localhost/admin'
+    )
     INSTALLED_APPS += (
         'ralph.cross_validator',
     )
@@ -167,7 +170,7 @@ MESSAGE_TAGS = {
 }
 
 DEFAULT_DEPRECIATION_RATE = int(os.environ.get('DEFAULT_DEPRECIATION_RATE', 25))  # noqa
-CHECK_IP_HOSTNAME_ON_SAVE = True
+CHECK_IP_HOSTNAME_ON_SAVE = os_env_true('CHECK_IP_HOSTNAME_ON_SAVE', '1')
 ASSET_HOSTNAME_TEMPLATE = {
     'prefix': '{{ country_code|upper }}{{ code|upper }}',
     'postfix': '',
@@ -326,8 +329,8 @@ OPENSTACK_INSTANCES = json.loads(os.environ.get('OPENSTACK_INSTANCES', '[]'))
 ISSUE_TRACKER_URL = os.environ.get('ISSUE_TRACKER_URL', '')
 
 # Networks
-DEFAULT_NETWORK_TOP_MARGIN = int(os.environ.get('DEFAULT_NETWORK_TOP_MARGIN', 10))  # noqa
-DEFAULT_NETWORK_BOTTOM_MARGIN = int(os.environ.get('DEFAULT_NETWORK_BOTTOM_MARGIN', 0))  # noqa
+DEFAULT_NETWORK_BOTTOM_MARGIN = int(os.environ.get('DEFAULT_NETWORK_BOTTOM_MARGIN', 10))  # noqa
+DEFAULT_NETWORK_TOP_MARGIN = int(os.environ.get('DEFAULT_NETWORK_TOP_MARGIN', 0))  # noqa
 # deprecated, to remove in the future
 DEFAULT_NETWORK_MARGIN = int(os.environ.get('DEFAULT_NETWORK_MARGIN', 10))
 # when set to True, network records (IP/Ethernet) can't be modified until
@@ -388,4 +391,7 @@ RALPH2_RALPH3_VIRTUAL_SERVER_TYPE_MAPPING = json.loads(
 )
 RALPH2_HERMES_ROLE_PROPERTY_WHITELIST = json.loads(
     os.environ.get('RALPH2_HERMES_ROLE_PROPERTY_WHITELIST', '[]')
+)
+ENABLE_SAVE_DESCENDANTS_DURING_NETWORK_SYNC = os_env_true(
+    'ENABLE_SAVE_DESCENDANTS_DURING_NETWORK_SYNC', '1'
 )

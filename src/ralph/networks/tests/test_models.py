@@ -146,8 +146,8 @@ class NetworkTest(RalphTestCase):
         ip1 = IPAddress.objects.create(address='10.1.1.1')
         ip2 = IPAddress.objects.create(address='10.1.1.254')
         result = net.reserve_margin_addresses(bottom_count=10, top_count=10)
-        self.assertEqual(17, net.ips.filter(status=IPAddressStatus.reserved).count())  # noqa
-        self.assertEqual(17, result[0])
+        self.assertEqual(18, net.ips.filter(status=IPAddressStatus.reserved).count())  # noqa
+        self.assertEqual(18, result[0])
         self.assertEqual(set([ip1.number, ip2.number]), result[1])
 
     def test_create_ip_address(self):
@@ -206,9 +206,9 @@ class NetworkTest(RalphTestCase):
             name='net3', address='10.20.30.128/25'
         )
 
-        self.refresh_objects_from_db(net2)
+        self.refresh_objects_from_db(net2, net3)
         self.assertEqual(net2.parent, net3)
-
+        self.assertIn(net2, net3.get_immediate_subnetworks())
         self.assertEqual(net3.parent, net1)
 
         net4 = Network.objects.create(
@@ -255,6 +255,60 @@ class NetworkTest(RalphTestCase):
         net.delete()
         ip.refresh_from_db()
         self.assertTrue(ip)
+
+    def test_reserved_count(self):
+        net = Network.objects.create(
+            name='net', address='192.169.58.0/24'
+        )
+        self.assertEqual(net.reserved_bottom, 0)
+        self.assertEqual(net.reserved_top, 0)
+
+        # add one reserved IP
+        ip11 = IPAddress.objects.create(
+            address='192.169.58.1', status=IPAddressStatus.reserved
+        )
+        self.assertEqual(net.reserved_bottom, 1)
+        ip21 = IPAddress.objects.create(
+            address='192.169.58.254', status=IPAddressStatus.reserved
+        )
+        self.assertEqual(net.reserved_top, 1)
+
+        # add another reserved IP on both sides
+        ip12 = IPAddress.objects.create(
+            address='192.169.58.2', status=IPAddressStatus.reserved
+        )
+        self.assertEqual(net.reserved_bottom, 2)
+        ip22 = IPAddress.objects.create(
+            address='192.169.58.253', status=IPAddressStatus.reserved
+        )
+        self.assertEqual(net.reserved_top, 2)
+
+        # add more reserved IPs inside network
+        IPAddress.objects.create(
+            address='192.169.58.3', status=IPAddressStatus.reserved
+        )
+        IPAddress.objects.create(
+            address='192.169.58.252', status=IPAddressStatus.reserved
+        )
+        IPAddress.objects.create(
+            address='192.169.58.10', status=IPAddressStatus.reserved
+        )
+        IPAddress.objects.create(
+            address='192.169.58.240', status=IPAddressStatus.reserved
+        )
+        self.assertEqual(net.reserved_bottom, 3)
+        self.assertEqual(net.reserved_top, 3)
+
+        # delete reversed IPs
+        ip12.delete()
+        ip22.delete()
+        self.assertEqual(net.reserved_bottom, 1)
+        self.assertEqual(net.reserved_top, 1)
+
+        ip11.delete()
+        ip21.delete()
+        self.assertEqual(net.reserved_bottom, 0)
+        self.assertEqual(net.reserved_top, 0)
 
 
 class NetworkEnvironmentTest(RalphTestCase):

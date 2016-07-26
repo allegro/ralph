@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+import django_filters
 from django.db.models import Prefetch
 from rest_framework.exceptions import ValidationError
 
 from ralph.api import RalphAPIViewSet
+from ralph.api.filters import BooleanFilter
 from ralph.api.utils import PolymorphicViewSetMixin
 from ralph.assets import models
 from ralph.assets.api import serializers
@@ -33,12 +35,21 @@ class EnvironmentViewSet(RalphAPIViewSet):
     serializer_class = serializers.EnvironmentSerializer
 
 
+class ServiceFilterSet(django_filters.FilterSet):
+    active = BooleanFilter(name='active')
+
+    class Meta:
+        model = models.Service
+        fields = ['active']
+
+
 class ServiceViewSet(RalphAPIViewSet):
     queryset = models.Service.objects.all()
     serializer_class = serializers.ServiceSerializer
     save_serializer_class = serializers.SaveServiceSerializer
     select_related = ['profit_center']
     prefetch_related = ['business_owners', 'technical_owners', 'environments']
+    additional_filter_class = ServiceFilterSet
 
 
 class ServiceEnvironmentViewSet(RalphAPIViewSet):
@@ -76,21 +87,27 @@ class BaseObjectFilterSet(NetworkableObjectFilters):
         model = models.BaseObject
 
 
+base_object_descendant_prefetch_related = [
+    Prefetch('licences', queryset=BaseObjectLicence.objects.select_related(
+        *BaseObjectLicenceViewSet.select_related
+    )),
+    Prefetch(
+        'custom_fields',
+        queryset=CustomFieldValue.objects.select_related('custom_field')
+    ),
+    'service_env__service__business_owners',
+    'service_env__service__technical_owners',
+]
+
+
+class BaseObjectDescendantViewSetMixin(RalphAPIViewSet):
+    prefetch_related = base_object_descendant_prefetch_related
+
+
 class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
     queryset = models.BaseObject.polymorphic_objects.all()
     serializer_class = serializers.BaseObjectPolymorphicSerializer
     http_method_names = ['get', 'options', 'head']
-    prefetch_related = [
-        Prefetch('licences', queryset=BaseObjectLicence.objects.select_related(
-            *BaseObjectLicenceViewSet.select_related
-        )),
-        Prefetch(
-            'custom_fields',
-            queryset=CustomFieldValue.objects.select_related('custom_field')
-        ),
-        'service_env__service__business_owners',
-        'service_env__service__technical_owners',
-    ]
     filter_fields = [
         'id', 'service_env', 'service_env', 'service_env__service__uid',
         'content_type'
@@ -161,6 +178,13 @@ class ProcessorViewSet(RalphAPIViewSet):
     prefetch_related = ['base_object', 'base_object__tags']
 
 
+class DiskViewSet(RalphAPIViewSet):
+    queryset = models.Disk.objects.all()
+    serializer_class = serializers.DiskSerializer
+    filter_fields = ['base_object', 'serial_number', 'size']
+    prefetch_related = ['base_object', 'base_object__tags']
+
+
 class ConfigurationModuleViewSet(RalphAPIViewSet):
     queryset = models.ConfigurationModule.objects.all()
     serializer_class = serializers.ConfigurationModuleSerializer
@@ -200,7 +224,7 @@ class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         'service_env', 'service_env__service', 'service_env__environment',
         'configuration_path', 'configuration_path__module'
     ]
-    prefetch_related = BaseObjectViewSet.prefetch_related + [
+    prefetch_related = base_object_descendant_prefetch_related + [
         'tags',
         'memory_set',
         Prefetch(

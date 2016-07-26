@@ -10,6 +10,7 @@ from ralph.assets.tests.factories import (
     BudgetInfoFactory,
     ConfigurationClassFactory,
     DataCenterAssetModelFactory,
+    DiskFactory,
     EthernetFactory,
     EthernetWithIPAddressFactory,
     FibreChannelCardFactory,
@@ -122,6 +123,8 @@ class DataCenterAssetFactory(DjangoModelFactory):
     price = FuzzyDecimal(10, 300)
     service_env = factory.SubFactory(ServiceEnvironmentFactory)
     configuration_path = factory.SubFactory(ConfigurationClassFactory)
+    firmware_version = factory.Sequence(lambda n: '1.1.{}'.format(n))
+    bios_version = factory.Sequence(lambda n: '2.2.{}'.format(n))
 
     class Meta:
         model = DataCenterAsset
@@ -169,6 +172,8 @@ class DataCenterAssetFullFactory(DataCenterAssetFactory):
     fc_card2 = factory.RelatedFactory(FibreChannelCardFactory, 'base_object')
     proc1 = factory.RelatedFactory(ProcessorFactory, 'base_object')
     proc2 = factory.RelatedFactory(ProcessorFactory, 'base_object')
+    disk1 = factory.RelatedFactory(DiskFactory, 'base_object')
+    disk2 = factory.RelatedFactory(DiskFactory, 'base_object')
 
     @factory.post_generation
     def post_tags(self, create, extracted, **kwargs):

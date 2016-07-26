@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 
 class SoftDeletableManager(models.Manager):
@@ -14,6 +15,14 @@ class SoftDeletable(models.Model):
 
     class Meta:
         abstract = True
+
+
+class Ralph2LinkMixin(object):
+    def get_link_to_r2(self):
+        url = '/'.join(self._meta.db_table.split('_'))
+        return '/'.join([
+            settings.RALPH2_PREVIEW_PREFIX_URL, url, str(self.pk)
+        ])
 
 
 def generate_meta(app_label, model_name):

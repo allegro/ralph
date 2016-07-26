@@ -36,7 +36,7 @@ class CrossValidationResult(TimeStampMixin, models.Model):
 
     run = models.ForeignKey(CrossValidationRun)
     content_type = models.ForeignKey(ContentType)
-    object_pk = models.IntegerField(db_index=True)
+    object_pk = models.IntegerField(db_index=True, null=True)
     object = generic.GenericForeignKey('content_type', 'object_pk')
 
     old = models.ForeignKey(ImportedObject, null=True)
@@ -51,7 +51,8 @@ class CrossValidationResult(TimeStampMixin, models.Model):
         ct = ContentType.objects.using('default').get(
             app_label=opts.app_label, model=opts.model_name
         )
-        diff = _remap_result(diff)
+        if diff:
+            diff = _remap_result(diff)
         cls.objects.create(
             run=run,
             content_type=ct,

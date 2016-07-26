@@ -201,8 +201,13 @@ class SimpleNetworkForm(forms.ModelForm):
         return obj
 
 
-class NetworkForm(SimpleNetworkForm):
+class SimpleNetworkWithManagementIPForm(SimpleNetworkForm):
     is_management = forms.BooleanField(label='Is managment', required=False)
+
+    ip_fields = ['hostname', 'address', 'is_management']
+
+
+class NetworkForm(SimpleNetworkWithManagementIPForm):
     dhcp_expose = forms.BooleanField(label=_('Expose in DHCP'), required=False)
 
     ip_fields = ['hostname', 'address', 'is_management', 'dhcp_expose']

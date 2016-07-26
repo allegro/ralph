@@ -52,7 +52,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
 
     def test_get_data_center_assets_list(self):
         url = reverse('datacenterasset-list')
-        with self.assertNumQueries(14):
+        with self.assertNumQueries(15):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
@@ -401,14 +401,16 @@ class ClusterAPITests(RalphAPITestCase):
         self.boc_1 = BaseObjectCluster.objects.create(
             cluster=self.cluster_1, base_object=DataCenterAssetFactory()
         )
+        self.master = DataCenterAssetFactory()
         self.boc_2 = BaseObjectCluster.objects.create(
-            cluster=self.cluster_1, base_object=DataCenterAssetFactory(),
+            cluster=self.cluster_1, base_object=self.master,
             is_master=True
         )
         self.cluster_2 = ClusterFactory()
         self.cluster_1.service_env.service.business_owners = [self.user1]
         self.cluster_1.service_env.service.technical_owners = [self.user2]
         self.cluster_1.service_env.save()
+        self.cluster_1.management_ip = '10.20.30.40'
 
     def test_create_cluster(self):
         url = reverse('cluster-list')
@@ -449,7 +451,8 @@ class ClusterAPITests(RalphAPITestCase):
 
     def test_list_cluster(self):
         url = reverse('cluster-list')
-        response = self.client.get(url, format='json')
+        with self.assertNumQueries(12):
+            response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 2)
         for item in response.data['results']:
@@ -458,7 +461,8 @@ class ClusterAPITests(RalphAPITestCase):
 
     def test_get_cluster_details(self):
         url = reverse('cluster-detail', args=(self.cluster_1.id,))
-        response = self.client.get(url, format='json')
+        with self.assertNumQueries(11):
+            response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], self.cluster_1.name)
         self.assertEqual(response.data['hostname'], self.cluster_1.hostname)
@@ -481,7 +485,6 @@ class ClusterAPITests(RalphAPITestCase):
                     )
                 ),
                 'is_master': self.boc_1.is_master,
-                'cluster': self.get_full_url(url),
             },
             {
                 'id': self.boc_2.id,
@@ -492,6 +495,20 @@ class ClusterAPITests(RalphAPITestCase):
                     'baseobject-detail', args=(self.boc_2.base_object.id,)
                 )),
                 'is_master': self.boc_2.is_master,
-                'cluster': self.get_full_url(url),
             }
         ])
+        self.assertEqual(
+            response.data['ethernet'][0]['ipaddress']['address'], '10.20.30.40'
+        )
+        self.assertTrue(
+            response.data['ethernet'][0]['ipaddress']['is_management']
+        )
+        self.assertEqual(
+            response.data['ipaddresses'], ['10.20.30.40']
+        )
+        self.assertEqual(
+            response.data['masters'][0],
+            self.get_full_url(
+                reverse('baseobject-detail', args=(self.master.id,))
+            )
+        )

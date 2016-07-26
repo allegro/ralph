@@ -6,7 +6,7 @@ from functools import wraps
 import pyhermes
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.db import transaction
+from django.db import OperationalError, transaction
 
 from ralph.accounts.models import Team
 from ralph.assets.models import (
@@ -14,6 +14,7 @@ from ralph.assets.models import (
     ConfigurationClass,
     ConfigurationModule,
     Environment,
+    Ethernet,
     ServiceEnvironment
 )
 from ralph.data_center.models import (
@@ -42,7 +43,10 @@ from ralph.ralph2_sync.helpers import WithSignalDisabled
 from ralph.ralph2_sync.publishers import (
     sync_configuration_class_to_ralph2,
     sync_configuration_module_to_ralph2,
-    sync_dc_asset_to_ralph2
+    sync_dc_asset_to_ralph2,
+    sync_network_to_ralph2,
+    sync_stacked_switch_to_ralph2,
+    sync_virtual_server_to_ralph2
 )
 from ralph.virtual.models import (
     VirtualServer,
@@ -106,6 +110,74 @@ def _get_configuration_path_from_venture_role(venture_role_id):
     return None
 
 
+def _handle_management_ip(obj, management_ip, management_hostname):
+    if management_ip:
+        try:
+            ip = IPAddress.objects.get(address=management_ip)
+        except IPAddress.DoesNotExist:
+            obj.management_ip = management_ip
+        else:
+            if not ip.ethernet:
+                ip.ethernet = Ethernet.objects.create(
+                    base_object=obj, mac=None
+                )
+            ip.ethernet.base_object = obj
+            ip.ethernet.save()
+            ip.is_management = True
+            ip.save()
+        obj.management_hostname = management_hostname
+        obj.save()
+    else:
+        if obj.management_ip:
+            logger.warning(
+                'Removing management IP {} from {}'.format(
+                    obj.management_ip, obj
+                )
+            )
+        del obj.management_ip
+
+
+def _handle_ips(obj, ips):
+    if ips is None:
+        return
+    management_ip = list(filter(lambda ip: ip['is_management'], ips))
+    if len(management_ip) > 1:
+        logger.error('More than one management IP ({}) for {}.'.format(
+            ', '.join([ip['address'] for ip in management_ip]), obj
+        ))
+    elif len(management_ip) == 1:
+        management_ip = management_ip[0]
+        _handle_management_ip(
+            obj, management_ip['address'], management_ip['hostname']
+        )
+    for ip_dict in filter(lambda ip: not ip['is_management'], ips):
+        ip, created = IPAddress.objects.get_or_create(
+            address=ip_dict['address'],
+            defaults=dict(
+                hostname=ip_dict['hostname'],
+                dhcp_expose=ip_dict['dhcp_expose'],
+                is_management=False
+            )
+        )
+        if created or not ip.ethernet:
+            mac = ip_dict['mac']
+            if mac is None:
+                ip.ethernet = Ethernet.objects.create(
+                    base_object=obj, mac=None
+                )
+            else:
+                ip.ethernet, _ = Ethernet.objects.get_or_create(
+                    base_object=obj, mac=mac
+                )
+        else:
+            ip.ethernet.base_object = obj
+            ip.ethernet.mac = ip_dict['mac']
+            ip.is_management = False
+            ip.dhcp_expose = ip_dict['dhcp_expose']
+            ip.ethernet.save()
+        ip.save()
+
+
 class sync_subscriber(pyhermes.subscriber):
     """
     Log additional exception when sync has failed.
@@ -126,6 +198,11 @@ class sync_subscriber(pyhermes.subscriber):
                     ))
                 try:
                     return func(*args, **kwargs)
+                except (OperationalError, ) as e:
+                    logger.exception(
+                        'Exception during syncing: {}'.format(str(e))
+                    )
+                    raise  # return 500 to retry on hermes
                 except Exception as e:
                     logger.exception(
                         'Exception during syncing {}'.format(str(e))
@@ -173,25 +250,15 @@ def sync_device_to_ralph3(data):
     * service/env
     * management ip/hostname
     * custom_fields
+    * ips
     """
     dca = ImportedObjects.get_object_from_old_pk(DataCenterAsset, data['id'])
     if 'hostname' in data:
         dca.hostname = data['hostname']
     if 'management_ip' in data:
-        management_ip = data['management_ip']
-        if management_ip:
-            try:
-                ip = IPAddress.objects.get(address=management_ip)
-            except IPAddress.DoesNotExist:
-                dca.management_ip = management_ip
-            else:
-                ip.ethernet.base_object = dca
-                ip.ethernet.save()
-                ip.is_management = True
-                ip.save()
-            dca.management_hostname = data.get('management_hostname')
-        else:
-            del dca.management_ip
+        _handle_management_ip(
+            dca, data.get('management_ip'), data.get('management_hostname')
+        )
     if 'service' in data and 'environment' in data:
         dca.service_env = _get_service_env(data)
     if 'venture_role' in data:
@@ -202,6 +269,8 @@ def sync_device_to_ralph3(data):
     if 'custom_fields' in data:
         for field, value in data['custom_fields'].items():
             dca.update_custom_field(field, value)
+    if 'ips' in data:
+        _handle_ips(dca, data['ips'])
 
 
 @sync_subscriber(
@@ -359,39 +428,54 @@ def _get_obj(model_class, obj_id, creating=False):
         return obj, True
 
 
-@sync_subscriber(topic='sync_virtual_server_to_ralph3')
+@sync_subscriber(
+    topic='sync_virtual_server_to_ralph3',
+    disable_publishers=[sync_virtual_server_to_ralph2]
+)
 def sync_virtual_server_to_ralph3(data):
-    virtual_type = settings.RALPH2_RALPH3_VIRTUAL_SERVER_TYPE_MAPPING.get(data['type'])  # noqa
-    if virtual_type is None:
-        logger.info(
-            'Type {} not found in mapping dict'.format(
-                data['type']
-            )
-        )
-        virtual_type = data['type']
     virtual_server, created = _get_obj(VirtualServer, data['id'], creating=True)
-    service_env = _get_service_env(data)
-    virtual_server.sn = data['sn']
     virtual_server.status = VirtualServerStatus.used
-    virtual_server.hostname = data['hostname']
-    virtual_server.service_env = service_env
-    virtual_server.configuration_path = _get_configuration_path_from_venture_role(  # noqa
-        venture_role_id=data['venture_role']
-    )
-    virtual_server.type = VirtualServerType.objects.get_or_create(
-        name=virtual_type
-    )[0]
-    hypervisor, _ = _get_obj(DataCenterAsset, data['parent_id'])
-    virtual_server.parent = hypervisor
+
+    if 'type' in data:
+        virtual_type = settings.RALPH2_RALPH3_VIRTUAL_SERVER_TYPE_MAPPING.get(data['type'])  # noqa
+        if virtual_type is None:
+            logger.info(
+                'Type {} not found in mapping dict'.format(
+                    data['type']
+                )
+            )
+            virtual_type = data['type']
+        virtual_server.type = VirtualServerType.objects.get_or_create(
+            name=virtual_type
+        )[0]
+    if 'service' in data and 'environment' in data:
+        service_env = _get_service_env(data)
+        virtual_server.service_env = service_env
+    if 'sn' in data:
+        virtual_server.sn = data['sn']
+    if 'hostname' in data:
+        virtual_server.hostname = data['hostname']
+    if 'venture_role' in data:
+        virtual_server.configuration_path = _get_configuration_path_from_venture_role(  # noqa
+            venture_role_id=data['venture_role']
+        )
+    if 'parent_id' in data:
+        hypervisor, _ = _get_obj(DataCenterAsset, data['parent_id'])
+        virtual_server.parent = hypervisor
     virtual_server.save()
     if 'custom_fields' in data:
         for field, value in data['custom_fields'].items():
             virtual_server.update_custom_field(field, value)
+    if 'ips' in data:
+        _handle_ips(virtual_server, data['ips'])
     if created:
         ImportedObjects.create(virtual_server, data['id'])
 
 
-@sync_subscriber(topic='sync_network_to_ralph3')
+@sync_subscriber(
+    topic='sync_network_to_ralph3',
+    disable_publishers=[sync_network_to_ralph2]
+)
 def sync_network_to_ralph3(data):
     net, created = _get_obj(Network, data['id'], creating=True)
     net.name = data['name']
@@ -400,11 +484,12 @@ def sync_network_to_ralph3(data):
     net.vlan = data['vlan']
     net.dhcp_broadcast = data['dhcp_broadcast']
     if data['reserved_ips']:
-        for ip in data['reserved_ips']:
-            IPAddress.objects.update_or_create(
-                address=ip,
-                defaults=dict(status=IPAddressStatus.reserved, network=net)
-            )
+        for address in data['reserved_ips']:
+            ip = IPAddress.objects.get_or_create(
+                address=address,
+                defaults=dict(status=IPAddressStatus.reserved)
+            )[0]
+            ip.save()  # trigger save to reassign to proper network
     if 'gateway' in data:
         if data['gateway']:
             net.gateway = IPAddress.objects.update_or_create(
@@ -419,8 +504,7 @@ def sync_network_to_ralph3(data):
         NetworkEnvironment, data['environment_id']
     )[0]
     net.kind = _get_obj(NetworkKind, data['kind_id'])[0]
-    net.save()
-
+    net.save(update_subnetworks_parent=settings.ENABLE_SAVE_DESCENDANTS_DURING_NETWORK_SYNC)  # noqa
     _handle_m2m(data['racks_ids'], Rack, net, 'racks')
     dns_servers = []
     for dns_ip in data['dns_servers']:
@@ -429,6 +513,25 @@ def sync_network_to_ralph3(data):
         except DNSServer.DoesNotExist:
             logger.error('DNS Server with ip {} not found'.format(dns_ip))
     net.dns_servers = dns_servers
+
+    if 'terminators' in data:
+        terminators = []
+        for obj_type, obj_id in data['terminators']:
+            terminator_model = None
+            if obj_type == 'StackedSwitch':
+                terminator_model = Cluster
+            elif obj_type == 'DataCenterAsset':
+                terminator_model = DataCenterAsset
+            else:
+                logger.error(
+                    'Unknown terminator type: {}'.format(terminator_model)
+                )
+            if terminator_model:
+                terminator = _get_obj(terminator_model, obj_id)[0]
+                if terminator:
+                    terminators.append(terminator)
+        net.terminators = terminators
+
     if created:
         ImportedObjects.create(net, data['id'])
 
@@ -459,19 +562,26 @@ def sync_network_environment_to_ralph3(data):
         ImportedObjects.create(env, data['id'])
 
 
-@sync_subscriber(topic='sync_stacked_switch_to_ralph3')
+@sync_subscriber(
+    topic='sync_stacked_switch_to_ralph3',
+    disable_publishers=[sync_stacked_switch_to_ralph2]
+)
 def sync_stacked_switch_to_ralph3(data):
     stacked_switch, created = _get_obj(Cluster, data['id'], creating=True)
-    service_env = _get_service_env(data)
-    stacked_switch.type = ClusterType.objects.get_or_create(
-        name=data['type'], defaults=dict(show_master_summary=True)
-    )[0]
     stacked_switch.status = ClusterStatus.in_use
-    stacked_switch.hostname = data['hostname']
-    stacked_switch.service_env = service_env
-    stacked_switch.configuration_path = _get_configuration_path_from_venture_role(  # noqa
-        venture_role_id=data['venture_role']
-    )
+    if 'service' in data and 'environment' in data:
+        service_env = _get_service_env(data)
+        stacked_switch.service_env = service_env
+    if 'type' in data:
+        stacked_switch.type = ClusterType.objects.get_or_create(
+            name=data['type'], defaults=dict(show_master_summary=True)
+        )[0]
+    if 'hostname' in data:
+        stacked_switch.hostname = data['hostname']
+    if 'venture_role' in data:
+        stacked_switch.configuration_path = _get_configuration_path_from_venture_role(  # noqa
+            venture_role_id=data['venture_role']
+        )
     stacked_switch.save()
     if 'custom_fields' in data:
         for field, value in data['custom_fields'].items():
@@ -486,5 +596,7 @@ def sync_stacked_switch_to_ralph3(data):
                     is_master=child_data.get('is_master', False),
                 )
             )
+    if 'ips' in data:
+        _handle_ips(stacked_switch, data['ips'])
     if created:
         ImportedObjects.create(stacked_switch, data['id'])

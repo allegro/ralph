@@ -7,6 +7,11 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.base import BaseObject
 from ralph.assets.utils import DNSaaSPublisherMixin
+from ralph.data_center.models.mixins import WithManagementIPMixin
+from ralph.data_center.models.physical import (
+    DataCenterAsset,
+    NetworkableBaseObject
+)
 from ralph.lib.mixins.fields import BaseObjectForeignKey, NullableCharField
 from ralph.lib.mixins.models import NamedMixin
 from ralph.lib.transitions.fields import TransitionField
@@ -47,7 +52,9 @@ class ClusterStatus(Choices):
     for_deploy = _('for deploy')
 
 
-class Cluster(DNSaaSPublisherMixin, BaseObject, models.Model):
+class Cluster(
+    DNSaaSPublisherMixin, WithManagementIPMixin, NetworkableBaseObject, BaseObject, models.Model
+):
     name = models.CharField(_('name'), max_length=255, blank=True, null=True)
     hostname = NullableCharField(
         unique=True,
@@ -118,11 +125,36 @@ class Cluster(DNSaaSPublisherMixin, BaseObject, models.Model):
 
     @cached_property
     def masters(self):
-        return BaseObject.polymorphic_objects.filter(
-            pk__in=self.baseobjectcluster_set.filter(
-                is_master=True
-            ).values_list('base_object_id', flat=True)
-        )
+        return self.get_masters(cast_base_object=True)
+
+    def get_masters(self, cast_base_object=False):
+        # prevents cyclic import
+        from ralph.virtual.models import CloudHost, VirtualServer  # noqa
+
+        result = []
+        for obj in self.baseobjectcluster_set.all():
+            if obj.is_master:
+                bo = obj.base_object
+                # fetch final object if it's base object
+                if cast_base_object and not isinstance(
+                    bo,
+                    # list equal to BaseObjectCluster.base_object.limit_models
+                    (Database, DataCenterAsset, CloudHost, VirtualServer)
+                ):
+                    bo = bo.last_descendant
+                result.append(bo)
+        return result
+
+    @cached_property
+    def rack_id(self):
+        return self.rack.id if self.rack else None
+
+    @cached_property
+    def rack(self):
+        for master in self.masters:
+            if isinstance(master, DataCenterAsset) and master.rack_id:
+                return master.rack
+        return None
 
     def _validate_name_hostname(self):
         if not self.name and not self.hostname:

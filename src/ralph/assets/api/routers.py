@@ -9,6 +9,7 @@ from ralph.assets.api.views import (
     ConfigurationClassViewSet,
     ConfigurationModuleViewSet,
     DCHostViewSet,
+    DiskViewSet,
     EnvironmentViewSet,
     EthernetViewSet,
     FibreChannelCardViewSet,
@@ -28,6 +29,7 @@ router.register(r'business-segments', BusinessSegmentViewSet)
 router.register(r'categories', CategoryViewSet)
 router.register(r'configuration-modules', ConfigurationModuleViewSet)
 router.register(r'configuration-classes', ConfigurationClassViewSet)
+router.register(r'disks', DiskViewSet)
 router.register(r'environments', EnvironmentViewSet)
 router.register(r'fibre-channel-cards', FibreChannelCardViewSet)
 router.register(r'ethernets', EthernetViewSet)
