@@ -12,7 +12,7 @@ class DNSaaSPublisherMixin:
             ('VENTURE', self.configuration_path.class_name if self.configuration_path else ''),
             #TODO:: really ROLE or class_name here?
             ('ROLE', self.configuration_path.module.name if self.configuration_path else ''),
-            ('MODEL', self.model or ''),
+            ('MODEL', self.model.name if self.model else ''),
             ('LOCATION', ' / '.join(self.get_location() or [])),
         ):
             data.append({

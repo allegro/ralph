@@ -107,7 +107,16 @@ class TestPublisher(TestCase):
             'name': 'ralph0.allegro.pl',
             'owner': 'ralph',
             'purpose': 'ROLE',
-            #TODO:: rest of data
+        }, {
+            'content': 'DL360',
+            'name': 'ralph0.allegro.pl',
+            'owner': 'ralph',
+            'purpose': 'MODEL'
+        }, {
+            'content': '',
+            'name': 'ralph0.allegro.pl',
+            'owner': 'ralph',
+            'purpose': 'LOCATION'
         }])
 
     def test_cluster_gets_data_ok(self):
