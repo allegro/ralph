@@ -4,8 +4,7 @@ from django.db import transaction
 
 
 class DNSaaSPublisherMixin:
-    """TODO::
-    """
+    """Generate data formatted for DNSaaS auto txt update"""
     def get_auto_txt_data(self):
         data = []
         for purpose_name, content in  (

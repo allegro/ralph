@@ -53,7 +53,8 @@ class ClusterStatus(Choices):
 
 
 class Cluster(
-    DNSaaSPublisherMixin, WithManagementIPMixin, NetworkableBaseObject, BaseObject, models.Model
+    DNSaaSPublisherMixin, WithManagementIPMixin, NetworkableBaseObject,
+    BaseObject, models.Model
 ):
     name = models.CharField(_('name'), max_length=255, blank=True, null=True)
     hostname = NullableCharField(
@@ -78,50 +79,12 @@ class Cluster(
     def __str__(self):
         return '{} ({})'.format(self.name or self.hostname, self.type)
 
-#    @property
-#    def publish_data(self):
-#        data = (
-#            #TODO:: really VENTURE or module here?
-#            ('VENTURE', self.configuration_path.class_name if self.configuration_path else ''),
-#            #TODO:: really ROLE or class_name here?
-#            ('ROLE', self.configuration_path.module.name if self.configuration_path else ''),
-#            ('MODEL', master.model.name if master else ''),
-#            ('LOCATION', ' / '.join(master.get_location() if self.masters else [])),
-#        )
-#        publish_data = dnsaas_txt_record_data(
-#            self.hostname,
-#            #TODO:: user from threadlocal?
-#            'john.doe',
-#            settings.DNSAAS_OWNER,
-#            data,
-#        )
-#        return publish_data
-#        location, ipaddresses = [], []
-#        master = None
-#        if self.masters:
-#            master = self.masters[0]
-#            location = master.get_location()
-#            ipaddresses = list(master.ipaddresses.all().values_list(
-#                'address', flat=True
-#            ))
-#
-#        return {
-#            'hostname': self.hostname,
-#            'model': master.model.name if master else '',
-#            'configuration_path': (
-#                self.configuration_path.path if self.configuration_path else ''
-#            ),
-#            'location': ' / '.join(location),
-#            'service_env': str(self.service_env),
-#            'ipaddresses': ipaddresses
-#        }
-
     def get_location(self):
         return self.masters[0].get_location() if self.masters else None
+
     @property
     def model(self):
         return self.masters[0].model if self.masters else None
-
 
     @cached_property
     def masters(self):
