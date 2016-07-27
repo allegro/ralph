@@ -17,6 +17,7 @@ from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.networks.forms import SimpleNetworkForm
 from ralph.networks.views import NetworkView
+from ralph.security.views import SecurityInfo
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -31,7 +32,6 @@ if settings.ENABLE_DNSAAS_INTEGRATION:
     class VirtualServerDNSView(DNSView):
         namespace = None
 
-from ralph.security.views import SecurityInfo
 class VirtaulServerSecurityInfoView(SecurityInfo):
     url_name = 'security_virtualserver_security_info'
     template_name = 'security/securityinfo/security_info.html'
@@ -281,7 +281,7 @@ class CloudHostAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     get_memory.short_description = _('RAM size (MiB)')
 
     def get_disk(self, obj):
-        return obj.cloudflavor.disk / 1024 if obj.cloudflavor.disk else ''
+        return obj.cloudflavor.disk / 1024 if obj.cloudflavor.disk else None
     get_disk.short_description = _('Disk size (GiB)')
 
 
