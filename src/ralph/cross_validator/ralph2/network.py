@@ -7,7 +7,8 @@ from ralph.cross_validator.ralph2.device import Device
 class IPAddress(models.Model):
     address = models.IPAddressField()
     is_management = models.BooleanField(default=False)
-    device = models.ForeignKey('Device', null=True)
+    device = models.ForeignKey(Device, null=True)
+    hostname = models.CharField(max_length=255, null=True)
 
     class Meta(generate_meta(app_label='discovery', model_name='ipaddress')):
         pass
