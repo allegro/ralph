@@ -4,13 +4,6 @@ from unittest.mock import patch
 from django.test import override_settings, TestCase
 
 from ralph.data_center.models.virtual import BaseObjectCluster
-from ralph.data_center.tests.factories import (
-    ClusterFactory,
-    ConfigurationClassFactory,
-    DataCenterAssetFactory,
-    RackFactory,
-    UserFactory
-)
 from ralph.dns.dnsaas import DNSaaS
 from ralph.dns.forms import RecordType
 from ralph.dns.publishers import _publish_data_to_dnsaaas
@@ -97,6 +90,11 @@ class TestDNSView(TestCase):
 class TestPublisher(TestCase):
 
     def setUp(self):
+        from ralph.data_center.tests.factories import (
+            ClusterFactory,
+            DataCenterAssetFactory,
+            RackFactory,
+        )
         self.dc_asset = DataCenterAssetFactory(
             hostname='ralph0.allegro.pl',
             model__name='DL360',
@@ -128,6 +126,7 @@ class TestPublisher(TestCase):
 
         cluster = ClusterFactory(
             hostname='',
+            type__name='Application',
             configuration_path__class_name='www',
             configuration_path__module__name='ralph',
         )
@@ -167,6 +166,12 @@ class TestPublisher(TestCase):
             'target_owner': 'ralph',
             'purpose': 'ROLE',
         }, {
+            'content': 'ralph/www',
+            'name': 'ralph0.allegro.pl',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'PATH',
+        }, {
             'content': 'DL360',
             'name': 'ralph0.allegro.pl',
             'owner': '',
@@ -194,6 +199,12 @@ class TestPublisher(TestCase):
             'owner': '',
             'target_owner': 'ralph',
             'purpose': 'ROLE'
+        }, {
+            'content': 'auth/worker',
+            'name': 's000.local',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'PATH',
         }, {
             'content': 'DL380p',
             'name': 's000.local',
@@ -223,7 +234,13 @@ class TestPublisher(TestCase):
             'target_owner': 'ralph',
             'purpose': 'ROLE'
         }, {
-            'content': 'DL380p',
+            'content': 'ralph/www',
+            'name': '',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'PATH',
+        }, {
+            'content': 'Application',
             'name': '',
             'owner': '',
             'target_owner': 'ralph',

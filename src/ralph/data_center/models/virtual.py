@@ -84,7 +84,7 @@ class Cluster(
 
     @property
     def model(self):
-        return self.masters[0].model if self.masters else None
+        return self.type
 
     @cached_property
     def masters(self):

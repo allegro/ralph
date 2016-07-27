@@ -7,9 +7,10 @@ class DNSaaSPublisherMixin:
     """Generate data formatted for DNSaaS auto txt update"""
     def get_auto_txt_data(self):
         data = []
-        for purpose_name, content in  (
+        for purpose_name, content in (
             ('class_name', self.configuration_path.class_name if self.configuration_path else ''),  # noqa
             ('module_name', self.configuration_path.module.name if self.configuration_path else ''),  # noqa
+            ('path', self.configuration_path.path if self.configuration_path else ''),  # noqa
             ('model', self.model.name if self.model else ''),
             ('location', ' / '.join(self.get_location() or [])),
         ):
@@ -24,9 +25,6 @@ class DNSaaSPublisherMixin:
                 'content': content,
             })
         return data
-
-
-
 
 
 @transaction.atomic
