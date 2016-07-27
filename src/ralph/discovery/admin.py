@@ -24,6 +24,7 @@ from django.template.defaultfilters import slugify
 from ralph.business.admin import RolePropertyValueInline
 from ralph.discovery import models
 from ralph.discovery import models_device
+from ralph.export_to_ng.admin import Ralph3SyncAdminMixin
 from ralph.ui.forms.network import NetworkForm
 from ralph.ui.widgets import ReadOnlyWidget
 
@@ -58,7 +59,7 @@ def copy_network(modeladmin, request, queryset):
 copy_network.short_description = "Copy network"
 
 
-class NetworkAdmin(ModelAdmin):
+class NetworkAdmin(Ralph3SyncAdminMixin, ModelAdmin):
 
     def address(self):
         return self.address
