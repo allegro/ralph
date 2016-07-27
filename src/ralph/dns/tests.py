@@ -97,6 +97,8 @@ class TestPublisher(TestCase):
         )
         self.dc_asset = DataCenterAssetFactory(
             hostname='ralph0.allegro.pl',
+            service_env__service__name='service',
+            service_env__environment__name='test',
             model__name='DL360',
             rack=RackFactory(
                 name='Rack #100',
@@ -112,6 +114,8 @@ class TestPublisher(TestCase):
             hostname='s000.local',
             configuration_path__class_name='worker',
             configuration_path__module__name='auth',
+            service_env__service__name='service',
+            service_env__environment__name='prod',
             parent=DataCenterAssetFactory(
                 model__name='DL380p',
                 rack=RackFactory(
@@ -129,6 +133,8 @@ class TestPublisher(TestCase):
             type__name='Application',
             configuration_path__class_name='www',
             configuration_path__module__name='ralph',
+            service_env__service__name='service',
+            service_env__environment__name='preprod',
         )
         self.boc_1 = BaseObjectCluster.objects.create(
             cluster=cluster,
@@ -172,6 +178,12 @@ class TestPublisher(TestCase):
             'target_owner': 'ralph',
             'purpose': 'PATH',
         }, {
+            'content': 'service - test',
+            'name': 'ralph0.allegro.pl',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'SERVICE_ENV',
+        }, {
             'content': 'DL360',
             'name': 'ralph0.allegro.pl',
             'owner': '',
@@ -206,6 +218,12 @@ class TestPublisher(TestCase):
             'target_owner': 'ralph',
             'purpose': 'PATH',
         }, {
+            'content': 'service - prod',
+            'name': 's000.local',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'SERVICE_ENV',
+        }, {
             'content': 'DL380p',
             'name': 's000.local',
             'owner': '',
@@ -239,6 +257,12 @@ class TestPublisher(TestCase):
             'owner': '',
             'target_owner': 'ralph',
             'purpose': 'PATH',
+        }, {
+            'content': 'service - preprod',
+            'name': '',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'SERVICE_ENV',
         }, {
             'content': 'Application',
             'name': '',

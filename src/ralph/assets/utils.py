@@ -11,6 +11,7 @@ class DNSaaSPublisherMixin:
             ('class_name', self.configuration_path.class_name if self.configuration_path else ''),  # noqa
             ('module_name', self.configuration_path.module.name if self.configuration_path else ''),  # noqa
             ('path', self.configuration_path.path if self.configuration_path else ''),  # noqa
+            ('service_env', str(self.service_env) if self.service_env else ''),  # noqa
             ('model', self.model.name if self.model else ''),
             ('location', ' / '.join(self.get_location() or [])),
         ):
