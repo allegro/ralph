@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
@@ -24,6 +25,11 @@ from ralph.virtual.models import (
     VirtualServer,
     VirtualServerType
 )
+
+if settings.ENABLE_DNSAAS_INTEGRATION:
+    from ralph.dns.views import DNSView
+    class VirtualServerDNSView(DNSView):
+        namespace = None
 
 
 @register(VirtualServerType)
@@ -70,6 +76,8 @@ class VirtualServerAdmin(
     ]
 
     change_views = [VirtualServerNetworkView]
+    if settings.ENABLE_DNSAAS_INTEGRATION:
+        change_views += [VirtualServerDNSView]
 
     # TODO: add the same tabs as in DCAsset
     class ClusterBaseObjectInline(RalphTabularInline):

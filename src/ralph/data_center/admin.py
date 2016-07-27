@@ -51,6 +51,8 @@ from ralph.supports.models import BaseObjectsSupport
 
 if settings.ENABLE_DNSAAS_INTEGRATION:
     from ralph.dns.views import DNSView
+    class ClusterDNSView(DNSView):
+        name_space = None
 
 
 @register(Accessory)
@@ -91,6 +93,8 @@ class ClusterAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     list_filter = [
         'name', 'type', 'service_env', 'configuration_path', 'status'
     ]
+    if settings.ENABLE_DNSAAS_INTEGRATION:
+        change_views = [ClusterDNSView]
 
     class ClusterBaseObjectInline(RalphTabularInline):
         model = BaseObjectCluster
