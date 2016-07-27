@@ -481,8 +481,8 @@ class AddVM(View):
         )]
         device = Device.create(
             ethernets=ethernets,
-            model_type=DeviceType.unknown,
-            model_name='Unknown',
+            model_type=DeviceType.virtual_server,
+            model_name=settings.ADD_VM_MODEL_NAME,
             verified=True,
         )
         device.name = hostname
