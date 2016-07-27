@@ -30,15 +30,16 @@ class HostFilterMixin(object):
         Filter objects to get only hosts.
 
         Proper content types:
+        * Cluster
         * DataCenterAsset
         * VirtualServer
         * CloudHost
         """
-        from ralph.data_center.models import DataCenterAsset
+        from ralph.data_center.models import Cluster, DataCenterAsset
         from ralph.virtual.models import CloudHost, VirtualServer
         return self.filter(
             content_type__in=ContentType.objects.get_for_models(
-                DataCenterAsset, VirtualServer, CloudHost
+                Cluster, DataCenterAsset, VirtualServer, CloudHost
             ).values()
         )
 
@@ -86,25 +87,16 @@ class BaseObject(
 
 
 class BaseObjectListManager(models.Manager):
-    polymorphic_select_related_fields = [
+    select_related_fields = [
         'configuration_path',
         'service_env',
         'service_env__environment',
         'service_env__service'
     ]
-    related_models = [
-        'Cluster',
-        'CloudHost',
-        'DataCenterAsset',
-        'VirtualServer'
-    ]
 
     def get_queryset(self):
-        return BaseObject.polymorphic_objects.dc_hosts().polymorphic_select_related(
-            **{
-                model: self.polymorphic_select_related_fields
-                for model in self.related_models
-            }
+        return BaseObject.polymorphic_objects.dc_hosts().select_related(
+            *self.select_related_fields
         )
 
 
