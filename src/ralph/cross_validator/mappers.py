@@ -8,6 +8,7 @@ from ralph.cross_validator.helpers import get_obj_id_ralph_20
 from ralph.cross_validator.ralph2.device import AssetModel as Ralph2AssetModel
 from ralph.cross_validator.ralph2.device import Asset, Device
 from ralph.cross_validator.ralph2.network import DHCPEntry as Ralph2DHCPEntry
+from ralph.cross_validator.ralph2.network import IPAddress as Ralph2IPAddress
 from ralph.cross_validator.ralph2.network import Network as Ralph2Network
 from ralph.data_center.models import DataCenterAsset, DataCenterAssetStatus
 from ralph.dhcp.models import DHCPEntry
@@ -178,6 +179,45 @@ def compare_mac(old, new):
             'new': new.mac,
         }
 
+
+def ips_diff(old, new):
+    if isinstance(old, Asset):
+        dev = old.linked_device
+    else:
+        dev = old
+    if dev:
+        old_ips = set([
+            (str(ip.address), ip.hostname) for ip in dev.ipaddress_set.all()
+        ])
+    else:
+        old_ips = set()
+    new_ips = set([
+        (str(ip.address), ip.hostname) for ip in new.ipaddresses.all()
+    ])
+    if old_ips != new_ips:
+        return {
+            'old': list(sorted(old_ips)),
+            'new': list(sorted(new_ips)),
+        }
+
+
+def dhcp_entries_diff(old, new):
+    if isinstance(old, Asset):
+        dev = old.linked_device
+    else:
+        dev = old
+    if dev:
+        old_macs = set(eth.mac for eth in dev.ethernet_set.all())
+        old_entries = set([(str(dhcp.ip), dhcp.mac) for dhcp in Ralph2DHCPEntry.objects.filter(mac__in=old_macs)])  # noqa
+    else:
+        old_entries = set()
+    new_entries = set([(str(dhcp.address), dhcp.mac.replace(':', '')) for dhcp in DHCPEntry.objects.filter(ethernet__base_object=new)])  # noqa
+    if old_entries != new_entries:
+        return {
+            'old': list(sorted(old_entries)),
+            'new': list(sorted(new_entries)),
+        }
+
 mappers = {
     'DataCenterAsset': {
         'ralph2_model': Asset,
@@ -198,7 +238,8 @@ mappers = {
             'model', 'device_info__ralph_device__parent',
             'device_info__ralph_device__logical_parent'
         ).prefetch_related(
-            'device_info__ralph_device__ipaddress_set'
+            'device_info__ralph_device__ipaddress_set',
+            'device_info__ralph_device__ethernet_set',
         ),
         'fields': {
             'sn': ('sn', 'sn'),
@@ -218,6 +259,8 @@ mappers = {
                 'configuration_path'
             ),
             'custom_fields': custom_fields_diff,
+            'ips': ips_diff,
+            'dhcp': dhcp_entries_diff,
         },
         'blacklist': ['id', 'parent_id'],
         'errors_checkers': [
@@ -251,6 +294,8 @@ mappers = {
             ),
             'venture': foreign_key_diff('venture_role', 'configuration_path'),
             'custom_fields': custom_fields_diff,
+            'ips': ips_diff,
+            'dhcp': dhcp_entries_diff,
         },
         'blacklist': ['id'],
     },
