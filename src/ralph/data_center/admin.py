@@ -73,6 +73,13 @@ class ClusterTypeAdmin(RalphAdmin):
     search_fields = ['name']
 
 
+from ralph.security.views import SecurityInfo
+class ClusterSecurityInfoView(SecurityInfo):
+    namespace = None
+    url_name = 'security_cluster_security_info'
+    template_name = 'security/securityinfo/security_info.html'
+
+
 @register(Cluster)
 class ClusterAdmin(CustomFieldValueAdminMixin, RalphAdmin):
 
@@ -93,8 +100,9 @@ class ClusterAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     list_filter = [
         'name', 'type', 'service_env', 'configuration_path', 'status'
     ]
+    change_views = [ClusterSecurityInfoView]
     if settings.ENABLE_DNSAAS_INTEGRATION:
-        change_views = [ClusterDNSView]
+        change_views += [ClusterDNSView]
 
     class ClusterBaseObjectInline(RalphTabularInline):
         model = BaseObjectCluster

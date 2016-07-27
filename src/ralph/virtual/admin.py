@@ -31,6 +31,12 @@ if settings.ENABLE_DNSAAS_INTEGRATION:
     class VirtualServerDNSView(DNSView):
         namespace = None
 
+from ralph.security.views import SecurityInfo
+class VirtaulServerSecurityInfoView(SecurityInfo):
+    namespace = None
+    url_name = 'security_virtualserver_security_info'
+    template_name = 'security/securityinfo/security_info.html'
+
 
 @register(VirtualServerType)
 class VirtualServerTypeForm(RalphAdmin):
@@ -75,7 +81,10 @@ class VirtualServerAdmin(
         'configuration_path__module'
     ]
 
-    change_views = [VirtualServerNetworkView]
+    change_views = [
+        VirtualServerNetworkView,
+        VirtaulServerSecurityInfoView,
+    ]
     if settings.ENABLE_DNSAAS_INTEGRATION:
         change_views += [VirtualServerDNSView]
 
