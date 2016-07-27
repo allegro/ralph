@@ -109,13 +109,16 @@ def next_free_hostname_choices(actions, objects):
         )
     # get common part
     network_environments = set.intersection(*network_environments)
-    return [
+    hostnames = [
         (
             str(net_env.id),
             '{} ({})'.format(net_env.next_free_hostname, net_env)
         )
         for net_env in network_environments
     ]
+    if len(objects) == 1:
+        hostnames += [(OTHER, _('Other'))]
+    return hostnames
 
 
 def next_free_ip_choices(actions, objects):
@@ -282,8 +285,10 @@ def clean_dhcp(cls, instances, **kwargs):
     verbose_name=_('Assign new hostname'),
     form_fields={
         'network_environment': {
-            'field': forms.ChoiceField(
-                label=_('Network environment (for hostname)')
+            'field': ChoiceFieldWithOtherOption(
+                label=_('Hostname'),
+                other_field=forms.CharField(),
+                auto_other_choice=False,
             ),
             'choices': next_free_hostname_choices,
             'exclude_from_history': True,
@@ -295,15 +300,25 @@ def assign_new_hostname(cls, instances, network_environment, **kwargs):
     """
     Assign new hostname for each instance based on selected network environment.
     """
-    net_env = NetworkEnvironment.objects.get(pk=network_environment)
-    for instance in instances:
-        new_hostname = net_env.issue_next_free_hostname()
+    def _assign_hostname(instance, new_hostname, net_env=None):
         logger.info('Assigning {} to {}'.format(new_hostname, instance))
         instance.hostname = new_hostname
         instance.save()
-        kwargs['history_kwargs'][instance.pk]['hostname'] = (
-            '{} (from {})'.format(new_hostname, net_env)
+        kwargs['history_kwargs'][instance.pk]['hostname'] = '{}{}'.format(
+            new_hostname, ' (from {})'.format(net_env) if net_env else ''
         )
+
+    if network_environment['value'] == OTHER:
+        hostname = network_environment[OTHER]
+        # when OTHER value posted, there could be only one instance
+        _assign_hostname(instances[0], hostname)
+    else:
+        net_env = NetworkEnvironment.objects.get(
+            pk=network_environment['value']
+        )
+        for instance in instances:
+            new_hostname = net_env.issue_next_free_hostname()
+            _assign_hostname(instance, new_hostname, net_env)
 
 
 @deployment_action(
