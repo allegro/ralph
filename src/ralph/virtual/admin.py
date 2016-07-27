@@ -4,9 +4,8 @@ from django.core.urlresolvers import reverse
 from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import (
-    RalphAdmin, RalphAdminForm, RalphTabularInline, register,
-)
+from ralph.admin import RalphAdmin, RalphAdminForm, RalphTabularInline, register
+
 from ralph.admin.filters import (
     IPFilter,
     TagsListFilter,
