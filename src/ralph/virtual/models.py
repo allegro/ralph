@@ -258,6 +258,27 @@ class VirtualServer(AdminAbsoluteUrlMixin, NetworkableBaseObject, BaseObject):
     # TODO: remove this field
     cluster = models.ForeignKey(Cluster, blank=True, null=True)
 
+    @property
+    def publish_data(self):
+        location = []
+        model_name = ''
+        if self.parent:
+            location = self.parent.get_location()
+            model_name = self.parent.model.name
+
+        return {
+            'hostname': self.hostname,
+            'model': model_name,
+            'configuration_path': (
+                self.configuration_path.path if self.configuration_path else ''
+            ),
+            'location': ' / '.join(location),
+            'service_env': str(self.service_env),
+            'ipaddresses': list(self.ipaddresses.all().values_list(
+                'address', flat=True
+            ))
+        }
+
     @cached_property
     def rack_id(self):
         return self.rack.id if self.rack else None
