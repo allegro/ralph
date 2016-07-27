@@ -89,23 +89,46 @@ from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.data_center.tests.factories import RackFactory
 from ralph.data_center.tests.factories import ClusterFactory
 from ralph.data_center.tests.factories import DataCenterAssetFactory
+from ralph.data_center.tests.factories import ConfigurationClassFactory
 from ralph.virtual.tests.factories import VirtualServerFactory
 from ralph.dns.publishers import _publish_data_to_dnsaaas
 class TestPublisher(TestCase):
 
     def setUp(self):
-        self.user = UserFactory(is_superuser=False)
         self.dc_asset = DataCenterAssetFactory(
-            rack=RackFactory(), position=1, slot_no='1',
+            hostname='ralph0.allegro.pl',
+            model__name='DL360',
+            rack=RackFactory(
+                name='Rack #100',
+                server_room__name='Server Room A',
+                server_room__data_center__name='DC1',
+            ),
+            position=1,
+            slot_no='1',
+            configuration_path__class_name='www',
+            configuration_path__module__name='ralph',
         )
         self.virtual_server = VirtualServerFactory(
+            hostname='s000.local',
+            configuration_path__class_name='worker',
+            configuration_path__module__name='auth',
             parent=DataCenterAssetFactory(
-                rack=RackFactory(), position=1, slot_no='1',
-            )
+                model__name='DL380p',
+                rack=RackFactory(
+                    name='Rack #101',
+                    server_room__name='Server Room B',
+                    server_room__data_center__name='DC2',
+                ),
+                position=1,
+                slot_no='1',
+            ),
         )
 
-        # TODO:: factory handling that
-        cluster = ClusterFactory()
+        cluster = ClusterFactory(
+            hostname='',
+            configuration_path__class_name='www',
+            configuration_path__module__name='ralph',
+        )
         self.boc_1 = BaseObjectCluster.objects.create(
             cluster=cluster,
             base_object=DataCenterAssetFactory(
@@ -115,99 +138,98 @@ class TestPublisher(TestCase):
         self.boc_2 = BaseObjectCluster.objects.create(
             cluster=cluster,
             base_object=DataCenterAssetFactory(
-                rack=RackFactory(), position=1,
+                rack=RackFactory(
+                    server_room__data_center__name='DC2',
+                    server_room__name='Server Room B',
+                    name='Rack #101',
+                ),
+                position=1,
             ),
             is_master=True
         )
 
         self.cluster = ClusterFactory._meta.model.objects.get(pk=cluster)
 
-    @patch('ralph.dns.publishers.get_current_user')
-    def test_dc_asset_gets_data_ok(self, mocked_get_current_user):
-        mocked_get_current_user.return_value = self.user
+    def test_dc_asset_gets_data_ok(self):
         data = _publish_data_to_dnsaaas(self.dc_asset)
         self.assertEqual(data, [{
             'content': 'www',
             'name': 'ralph0.allegro.pl',
-            'owner': self.user.username,
+            'owner': '',
             'target_owner': 'ralph',
             'purpose': 'VENTURE'
         }, {
             'content': 'ralph',
             'name': 'ralph0.allegro.pl',
-            'owner': self.user.username,
+            'owner': '',
             'target_owner': 'ralph',
             'purpose': 'ROLE',
         }, {
             'content': 'DL360',
             'name': 'ralph0.allegro.pl',
-            'owner': self.user.username,
+            'owner': '',
             'target_owner': 'ralph',
             'purpose': 'MODEL'
         }, {
             'content': 'DC1 / Server Room A / Rack #100 / 1 / 1',
             'name': 'ralph0.allegro.pl',
-            'owner': self.user.username,
+            'owner': '',
             'target_owner': 'ralph',
             'purpose': 'LOCATION'
         }])
 
-    @patch('ralph.dns.publishers.get_current_user')
-    def test_cluster_gets_data_ok(self, mocked_get_current_user):
-        mocked_get_current_user.return_value = self.user
-        data = _publish_data_to_dnsaaas(self.cluster)
-        self.assertEqual(data, [{
-            'content': 'www',
-            'name': '',
-            'owner': self.user.username,
-            'target_owner': 'ralph',
-            'purpose': 'VENTURE'
-        }, {
-            'content': 'ralph',
-            'name': '',
-            'owner': self.user.username,
-            'target_owner': 'ralph',
-            'purpose': 'ROLE'
-        }, {
-            'content': 'DL380p',
-            'name': '',
-            'owner': self.user.username,
-            'target_owner': 'ralph',
-            'purpose': 'MODEL'
-        }, {
-            'content': 'DC2 / Server Room B / Rack #101 / 1',
-            'name': '',
-            'owner': self.user.username,
-            'target_owner': 'ralph',
-            'purpose': 'LOCATION'
-        }])
-
-    @patch('ralph.dns.publishers.get_current_user')
-    def test_virtual_server_gets_data_ok(self, mocked_get_current_user):
-        mocked_get_current_user.return_value = self.user
+    def test_virtual_server_gets_data_ok(self):
         data = _publish_data_to_dnsaaas(self.virtual_server)
         self.assertEqual(data, [{
             'content': 'worker',
             'name': 's000.local',
-            'owner': self.user.username,
+            'owner': '',
             'target_owner': 'ralph',
             'purpose': 'VENTURE'
         }, {
             'content': 'auth',
             'name': 's000.local',
-            'owner': self.user.username,
+            'owner': '',
             'target_owner': 'ralph',
             'purpose': 'ROLE'
         }, {
             'content': 'DL380p',
             'name': 's000.local',
-            'owner': self.user.username,
+            'owner': '',
             'target_owner': 'ralph',
             'purpose': 'MODEL'
         }, {
             'content': 'DC2 / Server Room B / Rack #101 / 1 / 1',
             'name': 's000.local',
-            'owner': self.user.username,
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'LOCATION'
+        }])
+
+    def test_cluster_gets_data_ok(self):
+        data = _publish_data_to_dnsaaas(self.cluster)
+        self.assertEqual(data, [{
+            'content': 'www',
+            'name': '',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'VENTURE'
+        }, {
+            'content': 'ralph',
+            'name': '',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'ROLE'
+        }, {
+            'content': 'DL380p',
+            'name': '',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'MODEL'
+        }, {
+            'content': 'DC2 / Server Room B / Rack #101 / 1',
+            'name': '',
+            'owner': '',
             'target_owner': 'ralph',
             'purpose': 'LOCATION'
         }])
