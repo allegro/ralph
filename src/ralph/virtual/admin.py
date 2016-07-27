@@ -4,7 +4,9 @@ from django.core.urlresolvers import reverse
 from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, RalphAdminForm, RalphTabularInline, register
+from ralph.admin import (
+    RalphAdmin, RalphAdminForm, RalphTabularInline, register,
+)
 from ralph.admin.filters import (
     IPFilter,
     TagsListFilter,
@@ -29,8 +31,10 @@ from ralph.virtual.models import (
 
 if settings.ENABLE_DNSAAS_INTEGRATION:
     from ralph.dns.views import DNSView
+
     class VirtualServerDNSView(DNSView):
         namespace = None
+
 
 class VirtaulServerSecurityInfoView(SecurityInfo):
     url_name = 'security_virtualserver_security_info'

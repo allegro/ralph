@@ -51,6 +51,7 @@ from ralph.supports.models import BaseObjectsSupport
 
 if settings.ENABLE_DNSAAS_INTEGRATION:
     from ralph.dns.views import DNSView
+
     class ClusterDNSView(DNSView):
         pass
 
@@ -245,9 +246,10 @@ class DataCenterAssetAdmin(
         'order_no', 'model__name',
         ('model__category', RelatedAutocompleteFieldListFilter), 'service_env',
         ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
-        'depreciation_end_date', 'force_depreciation', 'remarks', 'budget_info',
-        'rack', 'rack__server_room', 'rack__server_room__data_center',
-        'position', 'property_of', LiquidatedStatusFilter, IPFilter,
+        'depreciation_end_date', 'force_depreciation', 'remarks',
+        'budget_info', 'rack', 'rack__server_room',
+        'rack__server_room__data_center', 'position', 'property_of',
+        LiquidatedStatusFilter, IPFilter,
         ('tags', TagsListFilter)
     ]
     date_hierarchy = 'created'
