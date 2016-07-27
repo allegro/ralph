@@ -5,7 +5,6 @@ from collections import namedtuple
 from itertools import chain
 
 from django import forms
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.core.validators import RegexValidator

@@ -13,7 +13,9 @@ from ralph.virtual.models import VirtualServer
 def _publish_data_to_dnsaaas(obj):
     publish_data = []
     for data in obj.get_auto_txt_data():
-        data['owner'] = get_current_user().username if get_current_user() else ''
+        data['owner'] = (
+            get_current_user().username if get_current_user() else ''
+        )
         data['target_owner'] = settings.DNSAAS_OWNER
         publish_data.append(data)
     return publish_data
