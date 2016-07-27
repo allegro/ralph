@@ -358,7 +358,7 @@ DNSAAS_AUTO_TXT_RECORD_PURPOSE_MAP = {
     # self.configuration_path.module will be send as 'ROLE'
     'module_name': 'ROLE',
     # self.configuration_path.path will be send as 'PATH'
-    'path': 'PATH',
+    'configuration_path': 'CONFIGURATION_PATH',
     # self.service_env will be send as 'SERVICE_ENV'
     'service_env': 'SERVICE_ENV',
     # self.model will be send as 'MODEL'

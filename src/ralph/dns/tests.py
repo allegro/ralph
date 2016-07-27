@@ -176,7 +176,7 @@ class TestPublisher(TestCase):
             'name': 'ralph0.allegro.pl',
             'owner': '',
             'target_owner': 'ralph',
-            'purpose': 'PATH',
+            'purpose': 'CONFIGURATION_PATH',
         }, {
             'content': 'service - test',
             'name': 'ralph0.allegro.pl',
@@ -184,7 +184,7 @@ class TestPublisher(TestCase):
             'target_owner': 'ralph',
             'purpose': 'SERVICE_ENV',
         }, {
-            'content': 'DL360',
+            'content': '[ATS] Asus DL360',
             'name': 'ralph0.allegro.pl',
             'owner': '',
             'target_owner': 'ralph',
@@ -216,7 +216,7 @@ class TestPublisher(TestCase):
             'name': 's000.local',
             'owner': '',
             'target_owner': 'ralph',
-            'purpose': 'PATH',
+            'purpose': 'CONFIGURATION_PATH',
         }, {
             'content': 'service - prod',
             'name': 's000.local',
@@ -224,7 +224,7 @@ class TestPublisher(TestCase):
             'target_owner': 'ralph',
             'purpose': 'SERVICE_ENV',
         }, {
-            'content': 'DL380p',
+            'content': '[Database Machine] Brother DL380p',
             'name': 's000.local',
             'owner': '',
             'target_owner': 'ralph',
@@ -256,7 +256,7 @@ class TestPublisher(TestCase):
             'name': '',
             'owner': '',
             'target_owner': 'ralph',
-            'purpose': 'PATH',
+            'purpose': 'CONFIGURATION_PATH',
         }, {
             'content': 'service - preprod',
             'name': '',
