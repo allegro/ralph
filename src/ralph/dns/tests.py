@@ -3,9 +3,19 @@ from unittest.mock import patch
 
 from django.test import override_settings, TestCase
 
+from ralph.data_center.models.virtual import BaseObjectCluster
+from ralph.data_center.tests.factories import (
+    ClusterFactory,
+    ConfigurationClassFactory,
+    DataCenterAssetFactory,
+    RackFactory,
+    UserFactory
+)
 from ralph.dns.dnsaas import DNSaaS
 from ralph.dns.forms import RecordType
+from ralph.dns.publishers import _publish_data_to_dnsaaas
 from ralph.dns.views import DNSaaSIntegrationNotEnabledError, DNSView
+from ralph.virtual.tests.factories import VirtualServerFactory
 
 
 class TestGetDnsRecords(TestCase):
@@ -84,14 +94,6 @@ class TestDNSView(TestCase):
         DNSView()
 
 
-from ralph.accounts.tests.factories import UserFactory
-from ralph.data_center.models.virtual import BaseObjectCluster
-from ralph.data_center.tests.factories import RackFactory
-from ralph.data_center.tests.factories import ClusterFactory
-from ralph.data_center.tests.factories import DataCenterAssetFactory
-from ralph.data_center.tests.factories import ConfigurationClassFactory
-from ralph.virtual.tests.factories import VirtualServerFactory
-from ralph.dns.publishers import _publish_data_to_dnsaaas
 class TestPublisher(TestCase):
 
     def setUp(self):
