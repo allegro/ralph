@@ -37,6 +37,11 @@ class VirtaulServerSecurityInfoView(SecurityInfo):
     template_name = 'security/securityinfo/security_info.html'
 
 
+class CloudHostSecurityInfoView(SecurityInfo):
+    url_name = 'security_cloudhost_security_info'
+    template_name = 'security/securityinfo/security_info.html'
+
+
 @register(VirtualServerType)
 class VirtualServerTypeForm(RalphAdmin):
     pass
@@ -182,6 +187,9 @@ class CloudHostAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     search_fields = ['cloudflavor__name', 'hostname', 'host_id']
     raw_id_override_parent = {'parent': CloudProject}
     inlines = [CloudNetworkInline]
+    change_views = [
+        CloudHostSecurityInfoView
+    ]
     fieldsets = (
         (None, {
             'fields': ['hostname', 'get_hypervisor', 'host_id', 'created',
@@ -273,7 +281,7 @@ class CloudHostAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     get_memory.short_description = _('RAM size (MiB)')
 
     def get_disk(self, obj):
-        return obj.cloudflavor.disk / 1024
+        return obj.cloudflavor.disk / 1024 if obj.cloudflavor.disk else ''
     get_disk.short_description = _('Disk size (GiB)')
 
 
