@@ -8,7 +8,6 @@ from ralph.cross_validator.helpers import get_obj_id_ralph_20
 from ralph.cross_validator.ralph2.device import AssetModel as Ralph2AssetModel
 from ralph.cross_validator.ralph2.device import Asset, Device
 from ralph.cross_validator.ralph2.network import DHCPEntry as Ralph2DHCPEntry
-from ralph.cross_validator.ralph2.network import IPAddress as Ralph2IPAddress
 from ralph.cross_validator.ralph2.network import Network as Ralph2Network
 from ralph.data_center.models import DataCenterAsset, DataCenterAssetStatus
 from ralph.dhcp.models import DHCPEntry
