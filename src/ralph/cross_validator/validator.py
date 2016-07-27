@@ -27,8 +27,7 @@ def _get_values(new, imported_object, config):
     if config.get('use_imported_object', True):
         qs_kwargs['id'] = get_obj_id_ralph_20(imported_object)
     else:
-        for _, (old_field, new_field) in config['fields'].items():
-            qs_kwargs[old_field] = get_value(new, new_field)
+        qs_kwargs = config['query_params'](new)
     ralph2_objects = config.get(
         'ralph2_queryset', config['ralph2_model']._default_manager
     )
@@ -53,6 +52,10 @@ def _get_values(new, imported_object, config):
                 values['new'].update({field_name: change_dict['new']})
         else:
             old_field_path, new_field_path = fields
+            if isinstance(old_field_path, (list, tuple)):
+                old_field_path = old_field_path[0]
+            if isinstance(new_field_path, (list, tuple)):
+                new_field_path = new_field_path[0]
             values['old'].update(
                 {field_name: get_value(old, old_field_path)}
             )
