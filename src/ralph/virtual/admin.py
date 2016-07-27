@@ -33,7 +33,6 @@ if settings.ENABLE_DNSAAS_INTEGRATION:
 
 from ralph.security.views import SecurityInfo
 class VirtaulServerSecurityInfoView(SecurityInfo):
-    namespace = None
     url_name = 'security_virtualserver_security_info'
     template_name = 'security/securityinfo/security_info.html'
 

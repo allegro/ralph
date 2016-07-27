@@ -8,7 +8,6 @@ class SecurityInfo(RalphDetailView):
     icon = 'lock'
     label = 'Security Info'
     name = 'security_info'
-    #url_name = 'datacenter_asset_security_info'
     url_name = None
 
     def get_context_data(self, **kwargs):

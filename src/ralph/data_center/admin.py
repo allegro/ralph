@@ -52,7 +52,7 @@ from ralph.supports.models import BaseObjectsSupport
 if settings.ENABLE_DNSAAS_INTEGRATION:
     from ralph.dns.views import DNSView
     class ClusterDNSView(DNSView):
-        name_space = None
+        pass
 
 
 @register(Accessory)
@@ -75,7 +75,6 @@ class ClusterTypeAdmin(RalphAdmin):
 
 from ralph.security.views import SecurityInfo
 class ClusterSecurityInfoView(SecurityInfo):
-    namespace = None
     url_name = 'security_cluster_security_info'
     template_name = 'security/securityinfo/security_info.html'
 
