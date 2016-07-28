@@ -184,11 +184,20 @@ class StockTakingTests(TestCase, ClientMixin):
         self.asset.user = self.user1
         self.asset.save()
 
-        self.date_tag = settings.INVENTORY_TAG + '_' + date.today().isoformat()
+        self.base_tag = '{prefix}-{warehouse}'.format(
+            prefix=settings.INVENTORY_TAG,
+            warehouse=self.asset.warehouse.stocktaking_tag_suffix,
+        )
+        self.date_tag = None
+        if settings.INVENTORY_TAG_APPEND_DATE:
+            self.date_tag = '{base}_{date}'.format(
+                base=self.base_tag,
+                date=date.today().isoformat(),
+            )
         self.tags = [
-            settings.INVENTORY_TAG,
+            self.base_tag,
             settings.INVENTORY_TAG_USER,
-            self.date_tag
+            self.date_tag,
         ]
     
     def test_tag_asset(self):
