@@ -348,7 +348,7 @@ DNSAAS_AUTO_PTR_NEVER = os.environ.get('DNSAAS_AUTO_PTR_NEVER', 1)
 DNSAAS_OWNER = os.environ.get('DNSAAS_OWNER', 'ralph')
 # pyhermes topic where messages about auto txt records are announced
 DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME = os.environ.get(
-    'DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME', ''
+    'DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME', None
 )
 # define names of values send to DNSAAS for:
 # DataCenterAsset, Cluster, VirtualServer
