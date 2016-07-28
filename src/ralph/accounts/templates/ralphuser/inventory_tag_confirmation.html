@@ -1,0 +1,29 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_static table %}
+
+{% block title %}
+  {% trans "Asset possession confirmation" %}
+{% endblock %}
+
+{% block content %}
+<div id="content-main" class="row">
+  <div class="large-6 columns">
+    {% if answer == "yes" %}
+      <h1>{% trans "Are you sure you have following item?" %}</h1>
+    {% elif answer ==  "no" %}
+      <h1>{% trans "Are you sure you don't have this item?" %}</h1>
+    {% endif %}
+    {% table asset_details.get_table_content %}
+    <form action={% url 'inventory_tag' %} method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="asset_id" value={{ asset_id }} />
+      <input type="hidden" name="answer" value={{ answer }} />
+      <a href={% url 'current_user_info' %} class= "button small alert left">
+          Cancel</a>
+      <input type="submit" name="confirm_button" value="Yes"
+          class="button small success left" autocomplete="off" />
+    </form>
+  </div>
+  <div class="large-6 columns"></div>
+</div>
+{% endblock %}
