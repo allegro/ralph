@@ -99,6 +99,7 @@ sitetrees = [
             url_as_pattern=False,
             perms_mode_all=False,
             children=[
+                section(_('All hosts'), 'data_center', 'DCHost'),
                 section(_('Hardware'), 'data_center', 'DataCenterAsset'),
                 section(_('Racks'), 'data_center', 'Rack'),
                 section(_('Cloud projects'), 'virtual', 'CloudProject'),

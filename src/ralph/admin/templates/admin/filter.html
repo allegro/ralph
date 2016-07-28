@@ -3,6 +3,7 @@
   {% blocktrans with filter_title=title %}
     By {{ filter_title }}
   {% endblocktrans %}
+  {{ choices }}
 </h6>
 <select class="filter">
   {% for choice in choices %}

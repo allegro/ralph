@@ -1,9 +1,17 @@
 # -*- coding: utf-8 -*-
+import operator
+from functools import reduce
+
+from django.contrib import admin
+from django.contrib.admin.views.main import ChangeList
+from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
+from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import (
+    ChoicesListFilter,
     IPFilter,
     LiquidatedStatusFilter,
     RelatedAutocompleteFieldListFilter,
@@ -15,11 +23,13 @@ from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.assets.invoice_report import AssetInvoiceReportMixin
+from ralph.assets.models.base import BaseObject
 from ralph.assets.models.components import Ethernet
 from ralph.assets.views import ComponentsAdminView
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.cross_validator.views import ShowDiffMessageMixin
 from ralph.data_center.forms import DataCenterAssetForm
+from ralph.data_center.models.hosts import DCHost
 from ralph.data_center.models.components import DiskShare, DiskShareMount
 from ralph.data_center.models.physical import (
     Accessory,
@@ -383,3 +393,107 @@ class DiskShareAdmin(RalphAdmin):
 @register(DiskShareMount)
 class DiskShareMountAdmin(RalphAdmin):
     pass
+
+
+class BaseObjectListChangeList(ChangeList):
+    def url_for_result(self, result):
+        return result.get_absolute_url()
+
+
+class ContentTypeListFilter(ChoicesListFilter):
+    from ralph.data_center.models import Cluster, DataCenterAsset
+    from ralph.virtual.models import CloudHost, VirtualServer
+    models = [Cluster, DataCenterAsset, CloudHost, VirtualServer]
+    choices_list = [
+        (ContentType.objects.get_for_model(model).pk, model._meta.verbose_name)
+        for model in models
+    ]
+
+
+class BaseObjectHostnameFilter(admin.SimpleListFilter):
+    title = _('Hostname')
+    parameter_name = 'hostname'
+    template = 'admin/filters/text_filter.html'
+
+    def queryset(self, request, queryset):
+        if not self.value():
+            return queryset
+        fields = [
+            'asset__hostname',
+            'cloudhost__hostname',
+            'cluster__hostname',
+            'virtualserver__hostname'
+        ]
+        # TODO: simple if hostname would be in one model
+        queries = [
+            Q(**{'{}__startswith'.format(field): self.value()})
+            for field in fields
+        ]
+        return queryset.filter(reduce(operator.or_, queries))
+
+    def lookups(self, request, model_admin):
+        return (
+            (1, _('Hostname')),
+        )
+
+    def choices(self, cl):
+        yield {
+            'selected': self.value(),
+            'parameter_name': self.parameter_name,
+        }
+
+
+@register(DCHost)
+class DCHostAdmin(RalphAdmin):
+    search_fields = [
+        'remarks',
+        'asset__hostname',
+        'cloudhost__hostname',
+        'cluster__hostname',
+        'virtualserver__hostname'
+    ]
+    list_display = [
+        'get_hostname',
+        'content_type',
+        'service_env',
+        'configuration_path',
+        'remarks',
+    ]
+    # TODO: sn
+    # TODO: hostname, DC
+    list_filter = [
+        BaseObjectHostnameFilter,
+        'service_env',
+        'configuration_path',
+        ('content_type', ContentTypeListFilter),
+        IPFilter,
+    ]
+    list_select_related = [
+        'content_type',
+        'configuration_path',
+        'service_env',
+        'service_env__environment',
+        'service_env__service',
+    ]
+
+    def get_changelist(self, request, **kwargs):
+        return BaseObjectListChangeList
+
+    def get_actions(self, request):
+        return None
+
+    def get_hostname(self, obj):
+        return obj.hostname
+    get_hostname.short_description = _('Hostname')
+    # TODO: simple if hostname would be in one model
+    # get_hostname.admin_order_field = 'asset__hostname'
+
+    def __init__(self, model, *args, **kwargs):
+        super().__init__(model, *args, **kwargs)
+        # fixed issue with proxy model
+        self.opts = BaseObject._meta
+
+    def _initialize_search_form(self, extra_context, fields_from_model=True):
+        return super()._initialize_search_form(
+            extra_context, fields_from_model=False
+        )

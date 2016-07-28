@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*-
-from django.contrib.admin.views.main import ChangeList
 from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphMPTTAdmin, RalphTabularInline, register
 from ralph.admin.views.extra import RalphDetailView
-from ralph.assets.models.base import (
-    BaseObject,
-    # TODO: name?
-    BaseObjectList,
-)
+from ralph.assets.models.base import BaseObject
 from ralph.assets.models.assets import (
     Asset,
     AssetHolder,
@@ -276,59 +271,6 @@ class BaseObjectAdmin(RalphAdmin):
 
     def repr(self, obj):
         return '{}: {}'.format(obj.content_type, obj)
-
-
-class BaseObjectListChangeList(ChangeList):
-    def url_for_result(self, result):
-        return result.get_absolute_url()
-
-
-@register(BaseObjectList)
-class BaseObjectList(BaseObjectAdmin):
-    search_fields = [
-        'remarks',
-        'asset__hostname',
-        'cloudhost__hostname',
-        'cluster__hostname',
-        'virtualserver__hostname'
-    ]
-    list_display = [
-        'get_hostname',
-        'service_env',
-        'configuration_path',
-        # TODO: location
-        'remarks',
-    ]
-    # TODO: hostname, IP, DC
-    list_filter = [
-        'service_env',
-        'configuration_path',
-        'content_type',
-        # 'hostname'
-    ]
-
-    def get_changelist(self, request, **kwargs):
-        return BaseObjectListChangeList
-
-    def get_actions(self, request):
-        return None
-
-    # TODO: hostname sorting
-    def get_hostname(self, obj):
-        return obj.hostname
-    get_hostname.short_description = 'Hostname'
-    # TODO: simple if hostname would be in one model
-    # get_hostname.admin_order_field = 'asset__hostname'
-
-    def __init__(self, model, *args, **kwargs):
-        super().__init__(model, *args, **kwargs)
-        # fixed issue with proxy model
-        self.opts = BaseObject._meta
-
-    def _initialize_search_form(self, extra_context, fields_from_model=True):
-        return super()._initialize_search_form(
-            extra_context, fields_from_model=False
-        )
 
 
 @register(AssetHolder)
