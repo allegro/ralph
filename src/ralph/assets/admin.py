@@ -4,7 +4,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphMPTTAdmin, RalphTabularInline, register
 from ralph.admin.views.extra import RalphDetailView
-from ralph.assets.models.base import BaseObject
 from ralph.assets.models.assets import (
     Asset,
     AssetHolder,
@@ -18,6 +17,7 @@ from ralph.assets.models.assets import (
     Service,
     ServiceEnvironment
 )
+from ralph.assets.models.base import BaseObject
 from ralph.assets.models.components import (
     ComponentModel,
     Ethernet,

@@ -2,10 +2,10 @@
 import operator
 from functools import reduce
 
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.views.main import ChangeList
 from django.contrib.contenttypes.models import ContentType
-from django.conf import settings
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
@@ -29,8 +29,8 @@ from ralph.assets.views import ComponentsAdminView
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.cross_validator.views import ShowDiffMessageMixin
 from ralph.data_center.forms import DataCenterAssetForm
-from ralph.data_center.models.hosts import DCHost
 from ralph.data_center.models.components import DiskShare, DiskShareMount
+from ralph.data_center.models.hosts import DCHost
 from ralph.data_center.models.physical import (
     Accessory,
     Connection,
