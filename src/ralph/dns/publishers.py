@@ -20,7 +20,7 @@ def _publish_data_to_dnsaaas(obj):
     return publish_data
 
 
-if DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME:
+if settings.DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME:
     @pyhermes.publisher(
         topic=settings.DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME,
         auto_publish_result=True
@@ -28,16 +28,13 @@ if DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME:
     def publish_data_to_dnsaaas(obj):
         return _publish_data_to_dnsaaas(obj)
 
-
     @receiver(post_save, sender=DataCenterAsset)
     def post_save_dc_asset(sender, instance, **kwargs):
         publish_data_to_dnsaaas(instance)
 
-
     @receiver(post_save, sender=Cluster)
     def post_save_cluster(sender, instance, **kwargs):
         publish_data_to_dnsaaas(instance)
-
 
     @receiver(post_save, sender=VirtualServer)
     def post_save_virtual_server(sender, instance, **kwargs):
