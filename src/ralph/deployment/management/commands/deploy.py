@@ -12,6 +12,8 @@ from django.core.management.base import BaseCommand
 
 from ralph.deployment.models import Deployment, DeploymentStatus
 from ralph.deployment.tasks import run_deployment
+# register export to NG publishers
+from ralph.export_to_ng import publishers  # noqa
 
 
 class Command(BaseCommand):
