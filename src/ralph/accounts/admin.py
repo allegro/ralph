@@ -140,16 +140,19 @@ class AssetList(Table):
         region_stocktaking_enabled = item.user.regions.filter(
             stocktaking_enabled=True
         ).exists()
+        has_inv_tag = [n.startswith(settings.INVENTORY_TAG)
+                       for n in item.tags.names()]
+
         if not (item.warehouse.stocktaking_enabled
                 or region_stocktaking_enabled):
             return ''
-        if settings.INVENTORY_TAG in item.tags.names():
-            return _(
-                '<div class="small-12 columns label success">confirmed</div>'
-            )
         elif settings.INVENTORY_TAG_MISSING in item.tags.names():
             return _(
                 '<div class="small-12 columns label alert">missing</div>'
+            )
+        elif has_inv_tag:
+            return _(
+                '<div class="small-12 columns label success">confirmed</div>'
             )
         else:
             return '<a class="small-6 columns label success" href="{}">{}</a>' \
