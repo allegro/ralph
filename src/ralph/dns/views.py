@@ -17,6 +17,26 @@ class DNSaaSIntegrationNotEnabledError(Exception):
     pass
 
 
+def add_errors(form, errors):
+    """
+    Set `errors` on `form`.
+
+    form: Django form, form.Form
+    errors: (ordered)dict {key: ["error", ..], ..}
+    """
+    form_fields = {
+        pair[0] for pair in form.fields.items()
+    }
+    for field_name, field_errors in errors.items():
+        for field_error in field_errors:
+            if (
+                field_name == 'non_field_errors' or
+                field_name not in form_fields
+            ):
+                field_name = None
+            form.add_error(field_name, field_error)
+
+
 class DNSView(RalphDetailView):
     icon = 'chain-broken'
     name = 'dns_edit'
@@ -95,11 +115,7 @@ class DNSView(RalphDetailView):
                     )
 
             if errors:
-                for field_name, field_errors in errors.items():
-                    for field_error in field_errors:
-                        if field_name == 'non_field_errors':
-                            field_name = None
-                        posted_form.add_error(field_name, field_error)
+                add_errors(posted_form, errors)
             else:
                 return HttpResponseRedirect('.')
 
