@@ -22,14 +22,12 @@ def ralph_item(*args, **kwargs):
     # and extracting app and model name from it
     # permission is created in '<app>.{add|change|view}_<model>' format
     access_by_perms = kwargs.get('access_by_perms', [])
-    perm_app = kwargs.pop('perm_app', None)
-    print(access_by_perms, perm_app, kwargs['title'])
     if isinstance(access_by_perms, (str, int)):
         access_by_perms = [access_by_perms]
     for child in kwargs.get('children', []):
         if hasattr(child, '_model') and hasattr(child, '_app'):
             model = child._model.lower()
-            app = perm_app or getattr(child, '_perm_app', None) or child._app.lower()  # noqa
+            app = child._app.lower()  # noqa
             access_by_perms.extend([
                 '{}.add_{}'.format(app, model),
                 '{}.change_{}'.format(app, model),
@@ -45,22 +43,27 @@ def ralph_item(*args, **kwargs):
 extra_views = ralph_site.get_extra_view_menu_items()
 
 
-def get_menu_items_for_admin(name, perm, perm_app=None):
+def get_menu_items_for_admin(name, perm):
     # TODO: detailed permissions for extra views
     return [
-        ralph_item(access_by_perms=perm, perm_app=perm_app, **view)
+        ralph_item(access_by_perms=perm, **view)
         for view in extra_views[name]
     ]
 
 
-def section(section_name, app, model, perm_app=None):
+def section(section_name, app, model):
     app, model = map(str.lower, [app, model])
     model_class = apps.get_model(app, model)
-    change_perm = '{}.change_{}'.format(perm_app or app, model)
+    # support for proxy model beacause this bug
+    # https://code.djangoproject.com/ticket/11154
+    opts = model_class._meta
+    if model_class._meta.proxy:
+        app = opts.concrete_model._meta.app_label
+    change_perm = '{}.change_{}'.format(app, model)
     item = ralph_item(
         title=section_name,
         url='admin:{}_{}_changelist'.format(app, model),
-        access_by_perms='{}.view_{}'.format(perm_app or app, model),
+        access_by_perms='{}.view_{}'.format(app, model),
         perms_mode_all=False,
         children=[
             ralph_item(
@@ -68,8 +71,7 @@ def section(section_name, app, model, perm_app=None):
                     model_class._meta.verbose_name.lower()
                 )),
                 url='admin:{}_{}_add'.format(app, model),
-                access_by_perms='{}.add_{}'.format(perm_app or app, model),
-                perm_app=perm_app,
+                access_by_perms='{}.add_{}'.format(app, model),
             ),
             ralph_item(
                 title='{{ original }}',
@@ -78,16 +80,13 @@ def section(section_name, app, model, perm_app=None):
                 children=get_menu_items_for_admin(
                     '{}_{}'.format(app, model),
                     change_perm,
-                    perm_app=perm_app,
                 ),
-                perm_app=perm_app,
             ),
         ]
     )
     # save app and model info to create permissions entries later
     item._app = app
     item._model = model
-    item._perm_app = perm_app
     return item
 
 cross_validation_items = []
@@ -106,7 +105,7 @@ sitetrees = [
             url_as_pattern=False,
             perms_mode_all=False,
             children=[
-                section(_('All hosts'), 'data_center', 'DCHost', perm_app='assets'),
+                section(_('All hosts'), 'data_center', 'DCHost'),
                 section(_('Hardware'), 'data_center', 'DataCenterAsset'),
                 section(_('Racks'), 'data_center', 'Rack'),
                 section(_('Cloud projects'), 'virtual', 'CloudProject'),
