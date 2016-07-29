@@ -4,7 +4,6 @@ from rest_framework import status
 
 from ralph.api.tests._base import RalphAPITestCase
 from ralph.assets.tests.factories import EthernetFactory
-from ralph.networks.models import IPAddressStatus
 from ralph.networks.tests.factories import IPAddressFactory, NetworkFactory
 
 

@@ -3,12 +3,10 @@ import ipaddress
 import logging
 import socket
 import struct
-from itertools import chain
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
-from django.db.models import Q
 from django.db.models.signals import post_migrate
 from django.db.utils import ProgrammingError
 from django.dispatch import receiver
