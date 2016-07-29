@@ -179,18 +179,17 @@ def mac_choices_for_objects(actions, objects):
 
 def dhcp_entries_for_objects(actions, objects):
     """
-    Generate choices with MAC addresses.
+    Generate choices with DHCP entries.
 
     If there is only object in `objects`, returns list of it's MAC addresses.
-    If there is more than one object, return one-elem list with special value
-    'use first'.
+    Runnig this action for more than one object at a time is not allowed.
 
     Args:
         actions: Transition action list
         objects: Django models objects
 
     Returns:
-        list of tuples with MAC addresses
+        list of tuples with DHCP entries.
     """
     if len(objects) == 1:
         return [(
