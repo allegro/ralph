@@ -58,7 +58,7 @@ def run_async_transition(job_id):
 def _perform_async_transition(transition_job):
     transition = transition_job.transition
     obj = transition_job.obj
-    _check_instances_for_transition([obj], transition)
+    _check_instances_for_transition([obj], transition, check_async_job=False)
     _check_action_with_instances([obj], transition)
 
     # check if this job isn't already finished

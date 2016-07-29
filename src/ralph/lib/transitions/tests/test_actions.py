@@ -14,7 +14,11 @@ from ralph.back_office.tests.factories import (
     OfficeInfrastructureFactory,
     WarehouseFactory
 )
-from ralph.lib.transitions.models import TransitionsHistory
+from ralph.lib.transitions.models import (
+    JobStatus,
+    TransitionsHistory,
+    TransitionJob
+)
 from ralph.lib.transitions.tests import TransitionTestCase
 from ralph.licences.tests.factories import LicenceFactory
 
@@ -197,6 +201,34 @@ class TransitionActionTest(TransitionTestCase):
         self.assertEqual(bo.warehouse_id, self.warehouse_1.id)
         history = self.get_transition_history(bo.pk)
         self.assertIn(self.user.username, history.kwargs['user'])
+
+    def test_async_gui_running_new_when_another_in_progress_should_return_error(self):  # noqa
+        # mock another async job running
+        TransitionJob.objects.create(
+            obj=self.bo,
+            transition=self.transition_2,
+            status=JobStatus.STARTED,
+            service_name='ASYNC',
+        )
+        request = self.client.post(
+            reverse(
+                'admin:back_office_backofficeasset_transition',
+                args=(self.bo.id, self.transition_2.id)
+            ),
+            self.prepare_gui_data(),
+            follow=True
+        )
+        self.assertTrue(
+            request.redirect_chain[0][0],
+            reverse(
+                'admin:back_office_backofficeasset_change',
+                args=(self.bo.id,)
+            )
+        )
+        self.assertIn(
+            'Another async transition for this object is already stared',
+            str(list(request.context['messages'])[1])
+        )
 
     def test_api_options(self):
         request = self.api_client.options(

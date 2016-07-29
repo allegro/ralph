@@ -31,7 +31,7 @@ from ralph.admin.helpers import (
     get_field_by_relation_path
 )
 from ralph.attachments.models import Attachment
-from ralph.lib.external_services.models import Job
+from ralph.lib.external_services.models import Job, JobStatus
 from ralph.lib.mixins.models import TimeStampMixin
 from ralph.lib.transitions.conf import (
     DEFAULT_ASYNC_TRANSITION_SERVICE_NAME,
@@ -147,7 +147,9 @@ def _check_and_get_transition(obj, transition, field):
     return transition
 
 
-def _check_instances_for_transition(instances, transition):
+def _check_instances_for_transition(
+    instances, transition, check_async_job=True
+):
     """Check in respect of the instances source status.
 
     Args:
@@ -168,6 +170,22 @@ def _check_instances_for_transition(instances, transition):
         if error:
             for instance, error_details in error.items():
                 errors[instance].append(error_details)
+
+    if transition.is_async and check_async_job:
+        for instance in instances:
+            if TransitionJob.objects.filter(
+                object_id=instance.id,
+                content_type=ContentType.objects.get_for_model(instance),
+                status__in=(JobStatus.STARTED, JobStatus.QUEUED)
+            ).exists():
+                logger.warning(
+                    'Another async transition is already running for {}'.format(
+                        instance,
+                    )
+                )
+                errors[instance].append(
+                    'Another async transition for this object is already stared'
+                )
 
     if errors:
         raise TransitionNotAllowedError(
