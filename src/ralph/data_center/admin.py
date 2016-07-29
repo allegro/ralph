@@ -233,7 +233,7 @@ class DataCenterAssetAdmin(
         'invoice_no',
         'show_location',
         'service_env',
-        'get_configuration_path',
+        'configuration_path',
     ]
     multiadd_summary_fields = list_display + ['rack']
     one_of_mulitvalue_required = ['sn', 'barcode']
@@ -317,10 +317,6 @@ class DataCenterAssetAdmin(
         return obj.location
     show_location.short_description = _('Location')
     show_location.allow_tags = True
-
-    def get_configuration_path(self, obj):
-        return obj.configuration_path.path if obj.configuration_path else None
-    show_location.short_description = _('Configuration path')
 
 
 @register(ServerRoom)
