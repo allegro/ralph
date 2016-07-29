@@ -356,6 +356,8 @@ def sync_network_to_ralph3(sender, instance=None, created=False, **kwargs):
         'dhcp_broadcast': net.dhcp_broadcast,
         'gateway': net.gateway,
         'reserved_ips': list(get_reserved_ips(net)) if net.min_ip and net.max_ip else [],  # noqa
+        'reserved_from_beginning': net.reserved,
+        'reserved_from_end': net.reserved_top_margin,
         'environment_id': net.environment_id,
         'kind_id': net.kind_id,
         'racks_ids': list(get_racks_ids(net)) if net.racks.count() else [],

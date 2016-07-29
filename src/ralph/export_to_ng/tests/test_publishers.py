@@ -316,6 +316,8 @@ class NetworkPublisherTestCase(TestCase):
             'dhcp_broadcast': self.net.dhcp_broadcast,
             'gateway': self.net.gateway,
             'reserved_ips': [],
+            'reserved_from_beginning': 0,
+            'reserved_from_end': 0,
             'environment_id': self.net.environment_id,
             'kind_id': self.net.kind_id,
             'racks_ids': [],
@@ -327,10 +329,12 @@ class NetworkPublisherTestCase(TestCase):
         self.net.reserved = 1
         self.net.reserved_top_margin = 1
         self.net.save()
+        result = sync_network_to_ralph3(Network, self.net)
         self.assertEqual(
-            sync_network_to_ralph3(Network, self.net)['reserved_ips'],
-            ['192.168.1.1', '192.168.1.254']
+            result['reserved_ips'], ['192.168.1.1', '192.168.1.254']
         )
+        self.assertEqual(result['reserved_from_beginning'], 1)
+        self.assertEqual(result['reserved_from_end'], 1)
 
     def test_racks_ids(self):
         racks = [DeprecatedRackFactory() for _ in range(0, 5)]
