@@ -457,3 +457,20 @@ class BulkEditChangeListMixin(object):
         )
 
     bulk_edit_action.short_description = 'Bulk edit'
+
+
+class OnlyFieldsMixin(object):
+    """Fetching from database only fields defined in ``list_only_fields``."""
+
+    list_only_fields = None
+    is_on_changelist_view = False
+
+    def changelist_view(self, request, extra_context=None):
+        self.is_on_changelist_view = True
+        return super().changelist_view(request, extra_context)
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        if self.is_on_changelist_view and self.list_only_fields is not None:
+            queryset = queryset.only(*self.list_only_fields)
+        return queryset

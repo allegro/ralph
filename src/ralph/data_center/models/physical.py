@@ -112,6 +112,11 @@ class DataCenter(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
         return self.name
 
 
+class ServerRoomManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related('data_center')
+
+
 class ServerRoom(NamedMixin.NonUnique, models.Model):
     _allow_in_dashboard = True
 
@@ -126,6 +131,7 @@ class ServerRoom(NamedMixin.NonUnique, models.Model):
         verbose_name=_('visualization grid rows number'),
         default=20,
     )
+    objects = ServerRoomManager()
 
     def __str__(self):
         return '{} ({})'.format(self.name, self.data_center.name)

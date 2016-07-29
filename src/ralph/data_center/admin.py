@@ -11,7 +11,7 @@ from ralph.admin.filters import (
     TreeRelatedAutocompleteFilterWithDescendants
 )
 from ralph.admin.m2m import RalphTabularM2MInline
-from ralph.admin.mixins import BulkEditChangeListMixin
+from ralph.admin.mixins import BulkEditChangeListMixin, OnlyFieldsMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.assets.invoice_report import AssetInvoiceReportMixin
@@ -198,6 +198,7 @@ class DataCenterAssetOperation(OperationViewReadOnlyForExisiting):
 
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(
+    OnlyFieldsMixin,
     MulitiAddAdminMixin,
     TransitionAdminMixin,
     BulkEditChangeListMixin,
@@ -224,8 +225,16 @@ class DataCenterAssetAdmin(
     show_transition_history = True
     resource_class = resources.DataCenterAssetResource
     list_display = [
-        'hostname', 'status', 'barcode', 'model', 'sn', 'invoice_date',
-        'invoice_no', 'show_location', 'service_env',
+        'hostname',
+        'status',
+        'barcode',
+        'model',
+        'sn',
+        'invoice_date',
+        'invoice_no',
+        'show_location',
+        'service_env',
+        'get_configuration_path',
     ]
     multiadd_summary_fields = list_display + ['rack']
     one_of_mulitvalue_required = ['sn', 'barcode']
@@ -244,14 +253,21 @@ class DataCenterAssetAdmin(
         'depreciation_end_date', 'force_depreciation', 'remarks', 'budget_info',
         'rack', 'rack__server_room', 'rack__server_room__data_center',
         'position', 'property_of', LiquidatedStatusFilter, IPFilter,
-        ('tags', TagsListFilter)
+        TagsListFilter
     ]
     date_hierarchy = 'created'
+    list_select_related = []
     list_select_related = [
-        'model', 'model__manufacturer', 'model__category', 'rack',
-        'rack__server_room', 'rack__server_room__data_center', 'service_env',
-        'service_env__service', 'service_env__environment',
-        'configuration_path__module',
+        'model',
+        'model__manufacturer',
+        'model__category',
+        'rack',
+        'rack__server_room',
+        'rack__server_room__data_center',
+        'service_env',
+        'service_env__service',
+        'service_env__environment',
+        'configuration_path',
     ]
     raw_id_fields = [
         'model', 'rack', 'service_env', 'parent', 'budget_info',
@@ -289,6 +305,30 @@ class DataCenterAssetAdmin(
             )
         }),
     )
+    list_only_fields = [
+        'hostname',
+        'model',
+        'rack_id',
+        'status',
+        'barcode',
+        'sn',
+        'slot_no',
+        'position',
+        'invoice_date',
+        'invoice_no',
+        'model_id',
+        'model__category_id',
+        'model__manufacturer_id',
+        'model__name',
+        'model__has_parent',
+        'model__manufacturer__name',
+        'service_env_id',
+        'service_env__service__name',
+        'service_env__environment__name',
+        'configuration_path_id',
+        'configuration_path__path',
+        # TODO: check model__category__name
+    ]
 
     def get_multiadd_fields(self, obj=None):
         multiadd_fields = [
@@ -303,6 +343,10 @@ class DataCenterAssetAdmin(
         return obj.location
     show_location.short_description = _('Location')
     show_location.allow_tags = True
+
+    def get_configuration_path(self, obj):
+        return obj.configuration_path.path if obj.configuration_path else None
+    show_location.short_description = _('Configuration path')
 
 
 @register(ServerRoom)
