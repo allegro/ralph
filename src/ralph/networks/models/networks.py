@@ -416,7 +416,8 @@ class Network(
         return self.get_children()
 
     def reserve_margin_addresses(self, bottom_count=0, top_count=0):
-        ips = []
+        assert bottom_count <= self.size
+        assert top_count <= self.size
         existing_ips = set(IPAddress.objects.filter(
             Q(
                 number__gte=self.min_ip + 1,
@@ -424,20 +425,33 @@ class Network(
             ) |
             Q(number__gte=self.max_ip - top_count, number__lte=self.max_ip)
         ).values_list('number', flat=True))
-        to_create = set(chain.from_iterable([
+        final_state = set(chain.from_iterable([
             range(int(self.min_ip + 1), int(self.min_ip + bottom_count + 1)),
             range(int(self.max_ip - top_count), int(self.max_ip))
         ]))
-        to_create = to_create - existing_ips
+        to_create = final_state - existing_ips
+        ips_to_create = []
         for ip_as_int in to_create:
-            ips.append(IPAddress(
+            ips_to_create.append(IPAddress(
                 address=str(ipaddress.ip_address(ip_as_int)),
                 number=ip_as_int,
                 network=self,
                 status=IPAddressStatus.reserved
             ))
-        IPAddress.objects.bulk_create(ips)
-        # TODO: handle decreasing count
+        IPAddress.objects.bulk_create(ips_to_create)
+        to_delete = existing_ips - final_state
+        import ipdb; ipdb.set_trace()
+        # delete reserved ips without ethernet
+        IPAddress.objects.filter(
+            number__in=to_delete,
+            status=IPAddressStatus.reserved,
+            ethernet__isnull=False,
+        ).delete()
+        # change status of ips with ethernet
+        IPAddress.objects.filter(
+            number__in=to_delete,
+            status=IPAddressStatus.reserved,
+        ).update(status=IPAddressStatus.used)
         return len(to_create), existing_ips - to_create
 
     def get_first_free_ip(self):
