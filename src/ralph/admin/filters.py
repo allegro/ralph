@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
-from functools import lru_cache
-from functools import reduce
 import ipaddress
 import operator
 import re
+from datetime import datetime
+from functools import lru_cache, reduce
 
 from django.contrib import messages
 from django.contrib.admin import SimpleListFilter
