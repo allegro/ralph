@@ -9,6 +9,7 @@ class SecurityInfo(RalphDetailView):
     label = 'Security Info'
     name = 'security_info'
     url_name = None
+    template_name = 'security/securityinfo/security_info.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
