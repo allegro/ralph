@@ -177,6 +177,35 @@ def mac_choices_for_objects(actions, objects):
     return [('0', _('use first'))]
 
 
+def dhcp_entries_for_objects(actions, objects):
+    """
+    Generate choices with MAC addresses.
+
+    If there is only object in `objects`, returns list of it's MAC addresses.
+    If there is more than one object, return one-elem list with special value
+    'use first'.
+
+    Args:
+        actions: Transition action list
+        objects: Django models objects
+
+    Returns:
+        list of tuples with MAC addresses
+    """
+    if len(objects) == 1:
+        return [(
+            ip.id,
+            '{} ({}) / {}'.format(
+                ip.address,
+                ip.hostname,
+                # theoritically should never happen...
+                ip.ethernet.mac if ip.ethernet else None
+            )
+        ) for ip in objects[0].ipaddresses.filter(dhcp_expose=True)]
+    # TODO: don't allow to run this action when more than one object selected
+    return []
+
+
 def _get_non_mgmt_ethernets(instance):
     """
     Returns ethernets of instance which is not used for management IP.
@@ -279,6 +308,30 @@ def clean_dhcp(cls, instances, **kwargs):
         ):
             logger.warning('Removing {} DHCP entry'.format(dhcp_entry))
             dhcp_entry.delete()
+
+
+@deployment_action(
+    verbose_name=_('Remove from DHCP entries'),
+    form_fields={
+        'ipaddress': {
+            'field': forms.ChoiceField(label=_('DHCP Entry')),
+            'choices': dhcp_entries_for_objects,
+            'exclude_from_history': True,
+        },
+    },
+)
+def remove_from_dhcp_entries(cls, instances, ipaddress, **kwargs):
+    """
+    Clean DHCP entries for each instance.
+    """
+    ip = IPAddress.objects.get(pk=ipaddress)
+    entry = '{} ({}) / {}'.format(
+        ip.address, ip.hostname, ip.ethernet.mac if ip.ethernet else None
+    )
+    logger.warning('Removing entry from DHCP: {}'.format(entry))
+    kwargs['history_kwargs'][instances[0].pk]['DHCP entry'] = entry
+    ip.dhcp_expose = False
+    ip.save()
 
 
 @deployment_action(
