@@ -47,7 +47,7 @@ class NetworkEnvironmentAdmin(RalphAdmin):
 
 @register(NetworkKind)
 class NetworkKindAdmin(RalphAdmin):
-    pass
+    search_fields = ['name']
 
 
 @register(DiscoveryQueue)
