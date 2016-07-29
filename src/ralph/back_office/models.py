@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 class Warehouse(NamedMixin, TimeStampMixin, models.Model):
     _allow_in_dashboard = True
     stocktaking_enabled = models.BooleanField(default=False)
-    stocktaking_tag_suffix = models.CharField(max_length=8, default='WHOUSE')
+    stocktaking_tag_suffix = models.CharField(max_length=8, default='')
 
 
 class BackOfficeAssetStatus(Choices):

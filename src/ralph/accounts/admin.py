@@ -140,8 +140,9 @@ class AssetList(Table):
         region_stocktaking_enabled = item.user.regions.filter(
             stocktaking_enabled=True
         ).exists()
-        has_inv_tag = [n.startswith(settings.INVENTORY_TAG)
-                       for n in item.tags.names()]
+        has_inv_tag = any(
+            [n.startswith(settings.INVENTORY_TAG) for n in item.tags.names()]
+        )
 
         if not (item.warehouse.stocktaking_enabled
                 or region_stocktaking_enabled):
