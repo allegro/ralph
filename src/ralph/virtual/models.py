@@ -265,7 +265,13 @@ class VirtualServer(
     cluster = models.ForeignKey(Cluster, blank=True, null=True)
 
     def get_location(self):
-        return self.parent.get_location() if self.parent else None
+        if self.parent:
+            location = self.parent.get_location()
+            if self.parent.hostname:
+                location.append(self.parent.hostname)
+        else:
+            location = None
+        return location
 
     @property
     def model(self):

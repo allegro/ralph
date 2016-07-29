@@ -117,6 +117,7 @@ class TestPublisher(TestCase):
             service_env__service__name='service',
             service_env__environment__name='prod',
             parent=DataCenterAssetFactory(
+                hostname='parent',
                 model__name='DL380p',
                 rack=RackFactory(
                     name='Rack #101',
@@ -230,7 +231,7 @@ class TestPublisher(TestCase):
             'target_owner': 'ralph',
             'purpose': 'MODEL'
         }, {
-            'content': 'DC2 / Server Room B / Rack #101 / 1 / 1',
+            'content': 'DC2 / Server Room B / Rack #101 / 1 / 1 / parent',
             'name': 's000.local',
             'owner': '',
             'target_owner': 'ralph',
