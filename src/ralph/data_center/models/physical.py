@@ -178,7 +178,7 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
     server_room = models.ForeignKey(
         ServerRoom, verbose_name=_('server room'),
         null=True,
-        blank=True,
+        blank=False,
     )
     server_room._autocomplete = False
     server_room._filter_title = _('server room')
