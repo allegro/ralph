@@ -82,3 +82,13 @@ class TestDNSView(TestCase):
     def test_dnsaasintegration_enabled(self):
         # should not raise exception
         DNSView()
+
+
+from ralph.dns.forms import DNSRecordForm, RecordType
+from ralph.dns.views import add_errors
+class TestDNSForm(TestCase):
+    def test_nonfield_error_when_unknown_field_error(self):
+        errors = {'unknown_field': ['value']}
+        form = DNSRecordForm({})
+        add_errors(form, errors)
+        self.assertIn('value', form.non_field_errors())

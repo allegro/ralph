@@ -175,6 +175,9 @@ class DNSaaS:
             return {
                 'non_field_errors': [_('Internal Server Error from DNSAAS')]
             }
+        elif request.status_code == 202:
+            #TODO:: is this enough?
+            return Exception("User has insufficient permissions")
         elif request.status_code != 201:
             return request.json()
 
