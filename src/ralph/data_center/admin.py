@@ -1,17 +1,13 @@
 # -*- coding: utf-8 -*-
-import operator
-from functools import reduce
-
 from django.conf import settings
-from django.contrib import admin
 from django.contrib.admin.views.main import ChangeList
-from django.contrib.contenttypes.models import ContentType
-from django.db.models import Q
+
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import (
-    ChoicesListFilter,
+    BaseObjectHostnameFilter,
+    DCHostListFilter,
     IPFilter,
     LiquidatedStatusFilter,
     RelatedAutocompleteFieldListFilter,
@@ -400,49 +396,6 @@ class BaseObjectListChangeList(ChangeList):
         return result.get_absolute_url()
 
 
-class ContentTypeListFilter(ChoicesListFilter):
-    from ralph.data_center.models import Cluster, DataCenterAsset
-    from ralph.virtual.models import CloudHost, VirtualServer
-    models = [Cluster, DataCenterAsset, CloudHost, VirtualServer]
-    choices_list = [
-        (ContentType.objects.get_for_model(model).pk, model._meta.verbose_name)
-        for model in models
-    ]
-
-
-class BaseObjectHostnameFilter(admin.SimpleListFilter):
-    title = _('Hostname')
-    parameter_name = 'hostname'
-    template = 'admin/filters/text_filter.html'
-
-    def queryset(self, request, queryset):
-        if not self.value():
-            return queryset
-        fields = [
-            'asset__hostname',
-            'cloudhost__hostname',
-            'cluster__hostname',
-            'virtualserver__hostname'
-        ]
-        # TODO: simple if hostname would be in one model
-        queries = [
-            Q(**{'{}__startswith'.format(field): self.value()})
-            for field in fields
-        ]
-        return queryset.filter(reduce(operator.or_, queries))
-
-    def lookups(self, request, model_admin):
-        return (
-            (1, _('Hostname')),
-        )
-
-    def choices(self, cl):
-        yield {
-            'selected': self.value(),
-            'parameter_name': self.parameter_name,
-        }
-
-
 @register(DCHost)
 class DCHostAdmin(RalphAdmin):
     search_fields = [
@@ -465,7 +418,7 @@ class DCHostAdmin(RalphAdmin):
         BaseObjectHostnameFilter,
         'service_env',
         'configuration_path',
-        ('content_type', ContentTypeListFilter),
+        ('content_type', DCHostListFilter),
         IPFilter,
     ]
     list_select_related = [

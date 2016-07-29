@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
-import ipaddress
-import re
 from datetime import datetime
 from functools import lru_cache
+from functools import reduce
+import ipaddress
+import operator
+import re
 
 from django.contrib import messages
 from django.contrib.admin import SimpleListFilter
 from django.contrib.admin.filters import FieldListFilter
 from django.contrib.admin.options import IncorrectLookupParameters
 from django.contrib.admin.utils import get_model_from_relation
+from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
@@ -456,6 +459,51 @@ class TreeRelatedAutocompleteFilterWithDescendants(
             )
             raise IncorrectLookupParameters()
         return queryset
+
+
+class DCHostListFilter(ChoicesListFilter):
+    def __init__(self, *args, **kwargs):
+        from ralph.data_center.models import Cluster, DataCenterAsset
+        from ralph.virtual.models import CloudHost, VirtualServer
+        models = [Cluster, DataCenterAsset, CloudHost, VirtualServer]
+        self.choices_list = [
+            (ContentType.objects.get_for_model(model).pk, model._meta.verbose_name)
+            for model in models
+        ]
+        super().__init__(*args, **kwargs)
+
+
+class BaseObjectHostnameFilter(SimpleListFilter):
+    title = _('Hostname')
+    parameter_name = 'hostname'
+    template = 'admin/filters/text_filter.html'
+
+    def queryset(self, request, queryset):
+        if not self.value():
+            return queryset
+        fields = [
+            'asset__hostname',
+            'cloudhost__hostname',
+            'cluster__hostname',
+            'virtualserver__hostname'
+        ]
+        # TODO: simple if hostname would be in one model
+        queries = [
+            Q(**{'{}__startswith'.format(field): self.value()})
+            for field in fields
+        ]
+        return queryset.filter(reduce(operator.or_, queries))
+
+    def lookups(self, request, model_admin):
+        return (
+            (1, _('Hostname')),
+        )
+
+    def choices(self, cl):
+        yield {
+            'selected': self.value(),
+            'parameter_name': self.parameter_name,
+        }
 
 
 class IPFilter(SimpleListFilter):

@@ -657,7 +657,7 @@ class BaseObjectAPITests(RalphAPITestCase):
     def test_str_and_type_field(self):
         count = 0
         for descendant in BaseObject._polymorphic_descendants:
-            if descendant in [
+            if descendant._meta.proxy or descendant in [
                 PolymorphicTestModel
             ]:
                 continue
