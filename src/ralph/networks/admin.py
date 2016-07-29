@@ -174,7 +174,7 @@ class NetworkAdmin(RalphMPTTAdmin):
         """
         bottom_margin = form.cleaned_data.get('bottom_margin', None)
         top_margin = form.cleaned_data.get('top_margin', None)
-        obj.save()
+        super().save_model(request, obj, form, change)
         if bottom_margin and top_margin:
             obj.reserve_margin_addresses(
                 bottom_count=form.cleaned_data['bottom_margin'],

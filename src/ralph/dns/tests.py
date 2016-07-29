@@ -2,12 +2,17 @@
 from unittest.mock import patch
 
 from django.test import override_settings, TestCase
+from django.utils.translation import ugettext_lazy as _
 
 from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.dns.dnsaas import DNSaaS
-from ralph.dns.forms import RecordType
+from ralph.dns.forms import DNSRecordForm, RecordType
 from ralph.dns.publishers import _publish_data_to_dnsaaas
-from ralph.dns.views import DNSaaSIntegrationNotEnabledError, DNSView
+from ralph.dns.views import (
+    add_errors,
+    DNSaaSIntegrationNotEnabledError,
+    DNSView
+)
 from ralph.virtual.tests.factories import VirtualServerFactory
 
 
@@ -277,3 +282,28 @@ class TestPublisher(TestCase):
             'target_owner': 'ralph',
             'purpose': 'LOCATION'
         }])
+
+
+class TestDNSaaS(TestCase):
+    def test_user_get_info_when_dnsaas_user_has_no_perm(self):
+        class RequestStub():
+            status_code = 202
+        request = RequestStub()
+        dns = DNSaaS()
+
+        result = dns._request2result(request)
+
+        self.assertEqual(
+            result,
+            {'non_field_errors': [
+                _("Your request couldn't be handled, try later.")
+            ]},
+        )
+
+
+class TestDNSForm(TestCase):
+    def test_unknown_field_goes_to_non_field_errors(self):
+        errors = {'unknown_field': ['value']}
+        form = DNSRecordForm({})
+        add_errors(form, errors)
+        self.assertIn('value', form.non_field_errors())

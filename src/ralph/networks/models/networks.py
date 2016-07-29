@@ -441,7 +441,11 @@ class Network(
         return len(to_create), existing_ips - to_create
 
     def get_first_free_ip(self):
-        used_ips = set(self.ips.values_list('number', flat=True))
+        used_ips = set(IPAddress.objects.filter(
+            number__range=(self.min_ip, self.max_ip)
+        ).values_list(
+            'number', flat=True
+        ))
         min_ip = int(self.min_ip if self.netmask == 31 else self.min_ip + 1)
         max_ip = int(self.max_ip + 1 if self.netmask == 31 else self.max_ip)
         ip_as_int = None

@@ -138,6 +138,25 @@ class DNSaaS:
         if result:
             return result[0]['id']
 
+    def _request2result(self, request):
+        if request.status_code == 500:
+            return {
+                'non_field_errors': [_('Internal Server Error from DNSAAS')]
+            }
+        elif request.status_code == 202:
+            logger.error(
+                "User '{}' has insufficient permission".format(
+                    settings.DNSAAS_OWNER
+                )
+            )
+            return {
+                'non_field_errors': [
+                    _("Your request couldn't be handled, try later.")
+                ]
+            }
+        elif request.status_code != 201:
+            return request.json()
+
     def create_dns_record(self, record):
         """
         Create new DNS record.
@@ -171,12 +190,7 @@ class DNSaaS:
             'owner': settings.DNSAAS_OWNER
         }
         request = self.session.post(url, data=data)
-        if request.status_code == 500:
-            return {
-                'non_field_errors': [_('Internal Server Error from DNSAAS')]
-            }
-        elif request.status_code != 201:
-            return request.json()
+        return self._request2result(request)
 
     def delete_dns_record(self, record_id):
         """

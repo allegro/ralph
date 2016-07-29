@@ -121,6 +121,28 @@ class _BaseDeploymentTransitionTestCase(object):
         self.instance.refresh_from_db()
         self.assertEqual(self.instance.hostname, 'server_100012.mydc.net')
 
+    def test_assign_new_hostname_through_api_custom_hostname(self):
+        self._prepare_assign_new_hostname_transition()
+        response = self.api_client.post(
+            reverse(
+                'transition-view',
+                args=(
+                    self.assign_new_hostname_transition.id,
+                    self.instance.pk
+                )
+            ),
+            {
+                'network_environment': {
+                    'value': '__other__',
+                    '__other__': 's12345.mydc.net',
+                }
+            },
+            format='json',
+        )
+        self.assertEqual(response.status_code, 201)
+        self.instance.refresh_from_db()
+        self.assertEqual(self.instance.hostname, 's12345.mydc.net')
+
     def test_assign_new_hostname_through_api_without_asset_last_hostname(self):
         self._prepare_assign_new_hostname_transition()
         response = self.api_client.post(
@@ -197,6 +219,27 @@ class _BaseDeploymentTransitionTestCase(object):
         )
         self.instance.refresh_from_db()
         self.assertEqual(self.instance.hostname, 'server_100012.mydc.net')
+
+    def test_assign_new_hostname_through_gui_with_other_value(self):
+        self._prepare_assign_new_hostname_transition()
+        response = self.gui_client.post(
+            reverse(
+                self.transition_url_name,
+                args=(self.instance.id, self.assign_new_hostname_transition.id)
+            ),
+            {
+                'assign_new_hostname__network_environment': '__other__',
+                'assign_new_hostname__network_environment__other__': 's1234.mydc.net'  # noqa
+            },
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            response.redirect_chain[0][0],
+            reverse(self.redirect_url_name, args=(self.instance.id,))
+        )
+        self.instance.refresh_from_db()
+        self.assertEqual(self.instance.hostname, 's1234.mydc.net')
 
     def test_assign_new_hostname_through_gui_without_asset_last_hostname(self):
         self._prepare_assign_new_hostname_transition()
