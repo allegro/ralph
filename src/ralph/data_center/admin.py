@@ -256,7 +256,6 @@ class DataCenterAssetAdmin(
         TagsListFilter
     ]
     date_hierarchy = 'created'
-    list_select_related = []
     list_select_related = [
         'model',
         'model__manufacturer',

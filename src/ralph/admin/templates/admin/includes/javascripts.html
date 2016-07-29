@@ -45,7 +45,7 @@
                 $('input, select', $clone).each(function(i, item) {
                   var $item = $(item);
                   if($item.val())
-                    $(item).appendTo($form);
+                    $item.appendTo($form);
                 });
                 $form[0].submit();
             });

@@ -52,7 +52,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
 
     def test_get_data_center_assets_list(self):
         url = reverse('datacenterasset-list')
-        with self.assertNumQueries(15):
+        with self.assertNumQueries(13):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
@@ -451,7 +451,7 @@ class ClusterAPITests(RalphAPITestCase):
 
     def test_list_cluster(self):
         url = reverse('cluster-list')
-        with self.assertNumQueries(12):
+        with self.assertNumQueries(10):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 2)
@@ -461,7 +461,7 @@ class ClusterAPITests(RalphAPITestCase):
 
     def test_get_cluster_details(self):
         url = reverse('cluster-detail', args=(self.cluster_1.id,))
-        with self.assertNumQueries(11):
+        with self.assertNumQueries(9):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], self.cluster_1.name)
