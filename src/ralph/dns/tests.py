@@ -4,8 +4,12 @@ from unittest.mock import patch
 from django.test import override_settings, TestCase
 
 from ralph.dns.dnsaas import DNSaaS
-from ralph.dns.forms import RecordType
-from ralph.dns.views import DNSaaSIntegrationNotEnabledError, DNSView
+from ralph.dns.forms import DNSRecordForm, RecordType
+from ralph.dns.views import (
+    add_errors,
+    DNSaaSIntegrationNotEnabledError,
+    DNSView
+)
 
 
 class TestGetDnsRecords(TestCase):
@@ -84,10 +88,8 @@ class TestDNSView(TestCase):
         DNSView()
 
 
-from ralph.dns.forms import DNSRecordForm, RecordType
-from ralph.dns.views import add_errors
 class TestDNSForm(TestCase):
-    def test_nonfield_error_when_unknown_field_error(self):
+    def test_unknown_field_goes_to_non_field_errors(self):
         errors = {'unknown_field': ['value']}
         form = DNSRecordForm({})
         add_errors(form, errors)
