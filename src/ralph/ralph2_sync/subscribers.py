@@ -504,13 +504,13 @@ def sync_network_to_ralph3(data):
     net.remarks = data['remarks']
     net.vlan = data['vlan']
     net.dhcp_broadcast = data['dhcp_broadcast']
-    if data['reserved_ips']:
-        for address in data['reserved_ips']:
-            ip = IPAddress.objects.get_or_create(
-                address=address,
-                defaults=dict(status=IPAddressStatus.reserved)
-            )[0]
-            ip.save()  # trigger save to reassign to proper network
+    # if data['reserved_ips']:
+    #     for address in data['reserved_ips']:
+    #         ip = IPAddress.objects.get_or_create(
+    #             address=address,
+    #             defaults=dict(status=IPAddressStatus.reserved)
+    #         )[0]
+    #         ip.save()  # trigger save to reassign to proper network
     if 'gateway' in data:
         if data['gateway']:
             net.gateway = IPAddress.objects.update_or_create(

@@ -14,7 +14,6 @@ from ralph.data_center.tests.factories import (
 from ralph.lib.transitions.conf import TRANSITION_ORIGINAL_STATUS
 from ralph.lib.transitions.tests import TransitionTestCase
 from ralph.networks.tests.factories import (
-    IPAddressFactory,
     NetworkEnvironmentFactory,
     NetworkFactory
 )
@@ -51,9 +50,9 @@ class _BaseDeploymentTransitionTestCase(object):
         cls.net = NetworkFactory(
             network_environment=cls.net_env,
             address='10.20.30.0/24',
+            # reserve 10.20.30.1, 10.20.30.2, 10.20.30.3, 10.20.30.4, 10.20.30.5
+            reserved_from_beginning=5
         )
-        # reserve 10.20.30.1, 10.20.30.2, 10.20.30.3, 10.20.30.4, 10.20.30.5
-        cls.net.reserve_margin_addresses(bottom_count=5)
         cls.net_2 = NetworkFactory(
             network_environment=cls.net_env_2,
             address='11.20.30.0/24',

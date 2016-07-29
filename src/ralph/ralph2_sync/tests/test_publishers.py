@@ -361,11 +361,12 @@ class NetworkPublisherTestCase(TestCase):
             network_environment=self.net_env,
             kind=self.net_kind,
             gateway=IPAddressFactory(address='192.168.0.1'),
+            reserved_from_beginning=10,
+            reserved_from_end=5
         )
         ImportedObjects.create(
             self.net, 10
         )
-        self.net.reserve_margin_addresses(10, 5)
         self.terminator1 = DataCenterAssetFactory(hostname='h1.mydc.net')
         self.terminator2 = ClusterFactory(hostname='ss1.mydc.net')
         self.net.terminators.add(self.terminator1, self.terminator2)
