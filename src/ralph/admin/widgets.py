@@ -112,7 +112,7 @@ class PermissionsSelectWidget(forms.Widget):
                     </a>
                     <div id="{slug}" class="content">
                         {all}{items}
-                    </div>  # noqa
+                    </div>
                 </li>""".format(
                 slug=slug,
                 title=label,
