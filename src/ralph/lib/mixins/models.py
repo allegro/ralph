@@ -67,8 +67,9 @@ class LastSeenMixin(models.Model):
 class AdminAbsoluteUrlMixin(object):
     def get_absolute_url(self):
         opts = self._meta
+        # support for proxy
         if opts.proxy:
-            opts = opts.proxy_for_model._meta
+            opts = opts.concrete_model._meta
         return reverse(
             'admin:{}_{}_change'.format(
                 opts.app_label, opts.model_name

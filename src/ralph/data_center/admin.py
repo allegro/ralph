@@ -11,7 +11,7 @@ from ralph.admin.filters import (
     TreeRelatedAutocompleteFilterWithDescendants
 )
 from ralph.admin.m2m import RalphTabularM2MInline
-from ralph.admin.mixins import BulkEditChangeListMixin, OnlyFieldsMixin
+from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.assets.invoice_report import AssetInvoiceReportMixin
@@ -198,7 +198,6 @@ class DataCenterAssetOperation(OperationViewReadOnlyForExisiting):
 
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(
-    OnlyFieldsMixin,
     MulitiAddAdminMixin,
     TransitionAdminMixin,
     BulkEditChangeListMixin,
@@ -304,30 +303,6 @@ class DataCenterAssetAdmin(
             )
         }),
     )
-    list_only_fields = [
-        'hostname',
-        'model',
-        'rack_id',
-        'status',
-        'barcode',
-        'sn',
-        'slot_no',
-        'position',
-        'invoice_date',
-        'invoice_no',
-        'model_id',
-        'model__category_id',
-        'model__manufacturer_id',
-        'model__name',
-        'model__has_parent',
-        'model__manufacturer__name',
-        'service_env_id',
-        'service_env__service__name',
-        'service_env__environment__name',
-        'configuration_path_id',
-        'configuration_path__path',
-        # TODO: check model__category__name
-    ]
 
     def get_multiadd_fields(self, obj=None):
         multiadd_fields = [
