@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.networks.models.networks import IPAddress  # , IPAddressStatus
+from ralph.networks.models.networks import IPAddress
 
 
 class DHCPEntryManager(models.Manager):
