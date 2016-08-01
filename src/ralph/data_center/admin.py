@@ -6,8 +6,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import (
-    BaseObjectHostnameFilter,
-    DCHostListFilter,
+    DCHostnameFilter,
+    DCHostTypeListFilter,
     IPFilter,
     LiquidatedStatusFilter,
     RelatedAutocompleteFieldListFilter,
@@ -391,7 +391,7 @@ class DiskShareMountAdmin(RalphAdmin):
     pass
 
 
-class BaseObjectListChangeList(ChangeList):
+class DCHostChangeList(ChangeList):
     def url_for_result(self, result):
         return result.get_absolute_url()
 
@@ -415,10 +415,10 @@ class DCHostAdmin(RalphAdmin):
     # TODO: sn
     # TODO: hostname, DC
     list_filter = [
-        BaseObjectHostnameFilter,
+        DCHostnameFilter,
         'service_env',
         'configuration_path',
-        ('content_type', DCHostListFilter),
+        ('content_type', DCHostTypeListFilter),
         IPFilter,
     ]
     list_select_related = [
@@ -430,7 +430,7 @@ class DCHostAdmin(RalphAdmin):
     ]
 
     def get_changelist(self, request, **kwargs):
-        return BaseObjectListChangeList
+        return DCHostChangeList
 
     def get_actions(self, request):
         return None

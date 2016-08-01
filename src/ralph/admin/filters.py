@@ -460,19 +460,22 @@ class TreeRelatedAutocompleteFilterWithDescendants(
         return queryset
 
 
-class DCHostListFilter(ChoicesListFilter):
+class DCHostTypeListFilter(ChoicesListFilter):
     def __init__(self, *args, **kwargs):
         from ralph.data_center.models import Cluster, DataCenterAsset
         from ralph.virtual.models import CloudHost, VirtualServer
         models = [Cluster, DataCenterAsset, CloudHost, VirtualServer]
         self.choices_list = [
-            (ContentType.objects.get_for_model(model).pk, model._meta.verbose_name)
+            (
+                ContentType.objects.get_for_model(model).pk,
+                model._meta.verbose_name
+            )
             for model in models
         ]
         super().__init__(*args, **kwargs)
 
 
-class BaseObjectHostnameFilter(SimpleListFilter):
+class DCHostnameFilter(SimpleListFilter):
     title = _('Hostname')
     parameter_name = 'hostname'
     template = 'admin/filters/text_filter.html'
@@ -488,7 +491,7 @@ class BaseObjectHostnameFilter(SimpleListFilter):
         ]
         # TODO: simple if hostname would be in one model
         queries = [
-            Q(**{'{}__startswith'.format(field): self.value()})
+            Q(**{'{}__icontains'.format(field): self.value()})
             for field in fields
         ]
         return queryset.filter(reduce(operator.or_, queries))
