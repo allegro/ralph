@@ -58,8 +58,7 @@ class DomainAdmin(AttachmentsMixin, RalphAdmin):
         links = []
         for contract in obj.domaincontract_set.all():
             link = '<a href="{}">{} ({})</a>'.format(
-                #TODO:: reverse
-                '/domains/domaincontract/' + str(contract.id),
+                contract.get_absolute_url(),
                 contract.expiration_date,
                 contract.registrant or '-',
 
