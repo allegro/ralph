@@ -224,3 +224,15 @@ class RolePropertyValue(models.Model):
         app_label='business', model_name='rolepropertyvalue'
     )):
         pass
+
+
+class Ethernet(models.Model):
+    device = models.ForeignKey(Device)
+    label = models.CharField(max_length=255)
+    mac = models.CharField(unique=True, max_length=255)
+    speed = models.PositiveIntegerField()
+
+    class Meta(generate_meta(
+        app_label='discovery', model_name='ethernet'
+    )):
+        pass

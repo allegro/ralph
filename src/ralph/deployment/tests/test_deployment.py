@@ -75,7 +75,7 @@ class _BaseTestDeploymentActionsTestCase(object):
         next_free_hostname = self.instance.get_next_free_hostname()
         history = {self.instance.pk: {}}
         self.instance.__class__.assign_new_hostname(
-            [self.instance], self.net_env.id, history_kwargs=history
+            [self.instance], {'value': self.net_env.id}, history_kwargs=history
         )
         self.assertEqual(self.instance.hostname, next_free_hostname)
         self.assertEqual(history, {
@@ -84,6 +84,19 @@ class _BaseTestDeploymentActionsTestCase(object):
                     next_free_hostname, self.net_env
                 )
             }
+        })
+
+    def test_assign_new_hostname_custom_value(self):
+        self._prepare_rack()
+        history = {self.instance.pk: {}}
+        self.instance.__class__.assign_new_hostname(
+            [self.instance],
+            {'value': '__other__', '__other__': 's12345.mydc.net'},
+            history_kwargs=history
+        )
+        self.assertEqual(self.instance.hostname, 's12345.mydc.net')
+        self.assertEqual(history, {
+            self.instance.pk: {'hostname': '{}'.format('s12345.mydc.net')}
         })
 
 

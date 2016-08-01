@@ -12,6 +12,7 @@ from ralph.admin.helpers import get_value_by_relation_path
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ComponentType
 from ralph.assets.models.components import Component, ComponentModel, Ethernet
+from ralph.assets.utils import DNSaaSPublisherMixin
 from ralph.data_center.models.physical import (
     DataCenterAsset,
     NetworkableBaseObject
@@ -231,7 +232,12 @@ class VirtualServerStatus(Choices):
     liquidated = _('liquidated')
 
 
-class VirtualServer(AdminAbsoluteUrlMixin, NetworkableBaseObject, BaseObject):
+class VirtualServer(
+    DNSaaSPublisherMixin,
+    AdminAbsoluteUrlMixin,
+    NetworkableBaseObject,
+    BaseObject
+):
     # parent field for VirtualServer is hypervisor!
     # TODO: limit parent to DataCenterAsset
     status = TransitionField(
@@ -257,6 +263,19 @@ class VirtualServer(AdminAbsoluteUrlMixin, NetworkableBaseObject, BaseObject):
     )
     # TODO: remove this field
     cluster = models.ForeignKey(Cluster, blank=True, null=True)
+
+    def get_location(self):
+        if self.parent:
+            location = self.parent.get_location()
+            if self.parent.hostname:
+                location.append(self.parent.hostname)
+        else:
+            location = None
+        return location
+
+    @property
+    def model(self):
+        return self.parent.model if self.parent else None
 
     @cached_property
     def rack_id(self):

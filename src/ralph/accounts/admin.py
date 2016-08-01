@@ -136,6 +136,38 @@ class AssetList(Table):
         return ''
     report_failure.title = ''
 
+    def confirm_ownership(self, item):
+        region_stocktaking_enabled = item.user.regions.filter(
+            stocktaking_enabled=True
+        ).exists()
+        if not (item.warehouse.stocktaking_enabled
+                or region_stocktaking_enabled):
+            return ''
+        if settings.INVENTORY_TAG in item.tags.names():
+            return _(
+                '<div class="small-12 columns label success">confirmed</div>'
+            )
+        elif settings.INVENTORY_TAG_MISSING in item.tags.names():
+            return _(
+                '<div class="small-12 columns label alert">missing</div>'
+            )
+        else:
+            return '<a class="small-6 columns label success" href="{}">{}</a>' \
+                    '<a class="small-6 columns label alert" href="{}">' \
+                    '{}</a>'.format(
+                        reverse(
+                            'inventory_tag_confirmation',
+                            args=[item.id, 'yes']
+                        ),
+                        _('yes'),
+                        reverse(
+                            'inventory_tag_confirmation',
+                            args=[item.id, 'no']
+                        ),
+                        _('no')
+                    )
+    confirm_ownership.title = _('Do you have it?')
+
 
 class AssignedLicenceList(Table):
 

@@ -103,29 +103,28 @@ class PermissionsSelectWidget(forms.Widget):
             local_selected = set(local_values) & set(selected_choices or [])
             slug = slugify(group_key)
             label = title(group_key)
-            rendered_options += mark_safe(
-                '<li class="accordion-navigation">'
-                    '<a href="#{slug}">'
-                        '{title}<i class="right">'
-                            '<span class="counter">{selected}</span> of {total}'
-                        '</i>'
-                    '</a>'
-                    '<div id="{slug}" class="content">'
-                        '{all}{items}'
-                    '</div>'  # noqa
-                '</li>'.format(
-                    slug=slug,
-                    title=label,
-                    selected=len(local_selected),
-                    total=len(local_values),
-                    all=self.render_all_option(slugify(group_key)),
-                    items='<br />'.join([
-                        self.render_option(
-                            local_selected, c[0], c[1].split(separator)[-1]
-                        ) for c in items
-                    ])
-                )
-            )
+            rendered_options += mark_safe("""
+                <li class="accordion-navigation">
+                    <a href="#{slug}">
+                        {title}<i class="right">
+                            <span class="counter">{selected}</span> of {total}
+                        </i>
+                    </a>
+                    <div id="{slug}" class="content">
+                        {all}{items}
+                    </div>
+                </li>""".format(
+                slug=slug,
+                title=label,
+                selected=len(local_selected),
+                total=len(local_values),
+                all=self.render_all_option(slugify(group_key)),
+                items='<br />'.join([
+                    self.render_option(
+                        local_selected, c[0], c[1].split(separator)[-1]
+                    ) for c in items
+                ])
+            ))
         return rendered_options
 
 

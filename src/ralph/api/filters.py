@@ -6,6 +6,8 @@ from functools import reduce
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models
+from django.forms import Widget
+from django_filters import Filter
 from rest_framework.filters import BaseFilterBackend, DjangoFilterBackend
 
 from ralph.admin.helpers import get_field_by_relation_path
@@ -14,6 +16,23 @@ from ralph.data_importer.models import ImportedObjects
 from ralph.lib.mixins.models import TaggableMixin
 
 logger = logging.getLogger(__name__)
+
+TRUE_VALUES = dict.fromkeys([1, '1', 'true', 'True', 'yes'], True)
+FALSE_VALUES = dict.fromkeys([0, '0', 'false', 'False', 'no'], False)
+BOOL_VALUES = TRUE_VALUES.copy()
+BOOL_VALUES.update(FALSE_VALUES)
+
+
+class BooleanWidget(Widget):
+    def value_from_datadict(self, data, files, name):
+        value = data.get(name, None)
+        return BOOL_VALUES.get(value, None)
+
+
+class BooleanFilter(Filter):
+    def __init__(self, widget=None, *args, **kwargs):
+        widget = widget or BooleanWidget
+        super().__init__(widget=widget, *args, **kwargs)
 
 
 class AdditionalDjangoFilterBackend(DjangoFilterBackend):

@@ -159,22 +159,39 @@ def _handle_ips(obj, ips):
                 is_management=False
             )
         )
-        if created or not ip.ethernet:
-            mac = ip_dict['mac']
-            if mac is None:
-                ip.ethernet = Ethernet.objects.create(
-                    base_object=obj, mac=None
-                )
-            else:
-                ip.ethernet, _ = Ethernet.objects.get_or_create(
-                    base_object=obj, mac=mac
-                )
+        mac = ip_dict['mac']
+        if mac:
+            # find existing Ethernet by mac
+            eth = Ethernet.objects.get_or_create(
+                mac=mac, defaults=dict(base_object=obj)
+            )[0]
+            # if it's already assigned to other ip address, clean it
+            try:
+                if eth.ipaddress != ip:
+                    if eth.ipaddress.status != IPAddressStatus.reserved:
+                        # delete ip if it's not reserved
+                        eth.ipaddress.delete()
+                    else:
+                        # otherwise clean it's ethernet assignment
+                        other_ip = eth.ipaddress
+                        other_ip.dhcp_expose = False
+                        other_ip.ethernet = None
+                        other_ip.save()
+            except IPAddress.DoesNotExist:
+                pass
+            eth.base_object = obj
+            eth.save()
         else:
-            ip.ethernet.base_object = obj
-            ip.ethernet.mac = ip_dict['mac']
-            ip.is_management = False
-            ip.dhcp_expose = ip_dict['dhcp_expose']
-            ip.ethernet.save()
+            # don't create another Ethernet when mac not provided
+            if ip.ethernet:
+                eth = ip.ethernet
+            else:
+                eth = Ethernet.objects.create(base_object=obj, mac=None)
+
+        ip.ethernet = eth
+        ip.is_management = False
+        ip.dhcp_expose = ip_dict['dhcp_expose']
+        ip.hostname = ip_dict['hostname']
         ip.save()
 
 

@@ -321,6 +321,17 @@ MY_EQUIPMENT_LINKS = json.loads(os.environ.get('MY_EQUIPMENT_LINKS', '[]'))
 MY_EQUIPMENT_REPORT_FAILURE_URL = os.environ.get('MY_EQUIPMENT_REPORT_FAILURE_URL', '')  # noqa
 MY_EQUIPMENT_SHOW_BUYOUT_DATE = os_env_true('MY_EQUIPMENT_SHOW_BUYOUT_DATE')
 
+# Sets URL shown to user if they declare that they dp not have specific asset.
+MISSING_ASSET_REPORT_URL = os.environ.get('MISSING_ASSET_REPORT_URL', None)
+
+# Stocktaking tagging config - each variable describes individual tag.
+# To disable tag set it to None or, in case of date tag, set variable to '0'.
+INVENTORY_TAG = os.environ.get('INVENTORY_TAG', 'INV')
+# This tag means user himself confirmed asset possession.
+INVENTORY_TAG_USER = os.environ.get('INVENTORY_TAG_USER', 'INV_CONF')
+INVENTORY_TAG_MISSING = os.environ.get('INVENTORY_TAG_MISSING', 'INV_MISSING')
+INVENTORY_TAG_APPEND_DATE = os_env_true('INVENTORY_TAG_APPEND_DATE', '1')
+
 MAP_IMPORTED_ID_TO_NEW_ID = False
 
 OPENSTACK_INSTANCES = json.loads(os.environ.get('OPENSTACK_INSTANCES', '[]'))
@@ -344,7 +355,32 @@ DNSAAS_URL = os.environ.get('DNSAAS_URL', '')
 DNSAAS_TOKEN = os.environ.get('DNSAAS_TOKEN', '')
 DNSAAS_AUTO_PTR_ALWAYS = os.environ.get('DNSAAS_AUTO_PTR_ALWAYS', 2)
 DNSAAS_AUTO_PTR_NEVER = os.environ.get('DNSAAS_AUTO_PTR_NEVER', 1)
+# user in dnsaas which can do changes, like update TXT records etc.
 DNSAAS_OWNER = os.environ.get('DNSAAS_OWNER', 'ralph')
+# pyhermes topic where messages about auto txt records are announced
+DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME = os.environ.get(
+    'DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME', None
+)
+# define names of values send to DNSAAS for:
+# DataCenterAsset, Cluster, VirtualServer
+DNSAAS_AUTO_TXT_RECORD_PURPOSE_MAP = {
+    # self.configuration_path.class will be send as 'VENTURE'
+    'class_name': 'VENTURE',
+    # self.configuration_path.module will be send as 'ROLE'
+    'module_name': 'ROLE',
+    # self.configuration_path.path will be send as 'PATH'
+    'configuration_path': 'CONFIGURATION_PATH',
+    # self.service_env will be send as 'SERVICE_ENV'
+    'service_env': 'SERVICE_ENV',
+    # self.model will be send as 'MODEL'
+    'model': 'MODEL',
+    # self.location will be send as 'LOCATION'
+    'location': 'LOCATION',
+    # self.location will be send as 'LOCATION'
+    # if any of above is set to none
+    # 'location': None
+    # then this value won't be set at all
+}
 
 if ENABLE_DNSAAS_INTEGRATION:
     INSTALLED_APPS += (

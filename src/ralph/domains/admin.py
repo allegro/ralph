@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin.filters import DateListFilter
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer.resources import DomainResource
 from ralph.domains.models.domains import (
@@ -20,13 +22,17 @@ class DomainContractInline(RalphTabularInline):
 @register(Domain)
 class DomainAdmin(AttachmentsMixin, RalphAdmin):
     resource_class = DomainResource
-    list_select_related = ['technical_owner', 'business_owner', 'domain_holder']
+    list_select_related = [
+        'technical_owner', 'business_owner', 'domain_holder',
+    ]
     list_filter = [
-        'name', 'service_env',
+        'name', 'service_env', 'domain_status', 'business_segment',
+        ('domaincontract__expiration_date', DateListFilter)
+
     ]
     list_display = [
-        'name', 'parent', 'business_owner',
-        'technical_owner', 'domain_holder'
+        'name', 'business_owner',
+        'technical_owner', 'domain_holder', 'service_env', 'expiration_date'
     ]
     raw_id_fields = [
         'service_env', 'business_owner', 'technical_owner', 'domain_holder'
@@ -47,6 +53,19 @@ class DomainAdmin(AttachmentsMixin, RalphAdmin):
     )
     search_fields = ['name', ]
     inlines = (DomainContractInline, )
+
+    def expiration_date(self, obj):
+        links = []
+        for contract in obj.domaincontract_set.all():
+            link = '<a href="{}">{} ({})</a>'.format(
+                contract.get_absolute_url(),
+                contract.expiration_date,
+                contract.registrant or '-',
+
+            )
+            links.append(link)
+        return format_html('<br>'.join(links))
+    expiration_date.short_description = 'Expiration date'
 
 
 @register(DomainContract)
