@@ -17,7 +17,6 @@ activate(settings.LANGUAGE_CODE)
 
 def ralph_item(*args, **kwargs):
     kwargs.setdefault('access_loggedin', True)
-
     # create access_by_perms entries by iterating through all children
     # and extracting app and model name from it
     # permission is created in '<app>.{add|change|view}_<model>' format
@@ -25,9 +24,9 @@ def ralph_item(*args, **kwargs):
     if isinstance(access_by_perms, (str, int)):
         access_by_perms = [access_by_perms]
     for child in kwargs.get('children', []):
-        if hasattr(child, '_model') and hasattr(child, '_app'):
+        if hasattr(child, '_model') and hasattr(child, '_perm_app'):
             model = child._model.lower()
-            app = child._app.lower()  # noqa
+            app = child._perm_app.lower()  # noqa
             access_by_perms.extend([
                 '{}.add_{}'.format(app, model),
                 '{}.change_{}'.format(app, model),
@@ -57,13 +56,14 @@ def section(section_name, app, model):
     # support for proxy model beacause this bug
     # https://code.djangoproject.com/ticket/11154
     opts = model_class._meta
+    perm_app = app
     if model_class._meta.proxy:
-        app = opts.concrete_model._meta.app_label
-    change_perm = '{}.change_{}'.format(app, model)
+        perm_app = opts.concrete_model._meta.app_label
+    change_perm = '{}.change_{}'.format(perm_app, model)
     item = ralph_item(
         title=section_name,
         url='admin:{}_{}_changelist'.format(app, model),
-        access_by_perms='{}.view_{}'.format(app, model),
+        access_by_perms='{}.view_{}'.format(perm_app, model),
         perms_mode_all=False,
         children=[
             ralph_item(
@@ -71,7 +71,7 @@ def section(section_name, app, model):
                     model_class._meta.verbose_name.lower()
                 )),
                 url='admin:{}_{}_add'.format(app, model),
-                access_by_perms='{}.add_{}'.format(app, model),
+                access_by_perms='{}.add_{}'.format(perm_app, model),
             ),
             ralph_item(
                 title='{{ original }}',
@@ -85,7 +85,7 @@ def section(section_name, app, model):
         ]
     )
     # save app and model info to create permissions entries later
-    item._app = app
+    item._perm_app = perm_app
     item._model = model
     return item
 
