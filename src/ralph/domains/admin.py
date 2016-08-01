@@ -4,6 +4,7 @@ from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin.filters import DateListFilter
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer.resources import DomainResource
 from ralph.domains.models.domains import (
@@ -26,6 +27,8 @@ class DomainAdmin(AttachmentsMixin, RalphAdmin):
     ]
     list_filter = [
         'name', 'service_env', 'domain_status', 'business_segment',
+        ('domaincontract__expiration_date', DateListFilter)
+
     ]
     list_display = [
         'name', 'business_owner',
