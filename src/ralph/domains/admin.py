@@ -21,9 +21,11 @@ class DomainContractInline(RalphTabularInline):
 @register(Domain)
 class DomainAdmin(AttachmentsMixin, RalphAdmin):
     resource_class = DomainResource
-    list_select_related = ['technical_owner', 'business_owner', 'domain_holder']
+    list_select_related = [
+        'technical_owner', 'business_owner', 'domain_holder',
+    ]
     list_filter = [
-        'name', 'service_env',
+        'name', 'service_env', 'domain_status', 'business_segment',
     ]
     list_display = [
         'name', 'business_owner',
@@ -62,8 +64,6 @@ class DomainAdmin(AttachmentsMixin, RalphAdmin):
             links.append(link)
         return format_html('<br>'.join(links))
     expiration_date.short_description = 'Expiration date'
-
-
 
 
 @register(DomainContract)
