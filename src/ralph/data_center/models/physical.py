@@ -20,7 +20,7 @@ from ralph.admin.sites import ralph_site
 from ralph.admin.widgets import AutocompleteWidget
 from ralph.assets.models.assets import Asset, NamedMixin
 from ralph.assets.models.choices import AssetSource
-from ralph.assets.utils import move_parents_models
+from ralph.assets.utils import DNSaaSPublisherMixin, move_parents_models
 from ralph.back_office.models import BackOfficeAsset, Warehouse
 from ralph.data_center.models.choices import (
     ConnectionType,
@@ -329,6 +329,7 @@ class NetworkableBaseObject(models.Model):
 
 
 class DataCenterAsset(
+    DNSaaSPublisherMixin,
     WithManagementIPMixin,
     NetworkableBaseObject,
     AutocompleteTooltipMixin,
@@ -427,6 +428,20 @@ class DataCenterAsset(
 
     def get_orientation_desc(self):
         return Orientation.name_from_id(self.orientation)
+
+    def get_location(self):
+        location = []
+        if self.rack:
+            location.extend([
+                self.rack.server_room.data_center.name,
+                self.rack.server_room.name,
+                self.rack.name
+            ])
+        if self.position:
+            location.append(str(self.position))
+        if self.slot_no:
+            location.append(str(self.slot_no))
+        return location
 
     @property
     def is_blade(self):

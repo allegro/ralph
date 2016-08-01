@@ -4,13 +4,16 @@ from unittest.mock import patch
 from django.test import override_settings, TestCase
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.dns.dnsaas import DNSaaS
 from ralph.dns.forms import DNSRecordForm, RecordType
+from ralph.dns.publishers import _publish_data_to_dnsaaas
 from ralph.dns.views import (
     add_errors,
     DNSaaSIntegrationNotEnabledError,
     DNSView
 )
+from ralph.virtual.tests.factories import VirtualServerFactory
 
 
 class TestGetDnsRecords(TestCase):
@@ -87,6 +90,198 @@ class TestDNSView(TestCase):
     def test_dnsaasintegration_enabled(self):
         # should not raise exception
         DNSView()
+
+
+class TestPublisher(TestCase):
+
+    def setUp(self):
+        from ralph.data_center.tests.factories import (
+            ClusterFactory,
+            DataCenterAssetFactory,
+            RackFactory,
+        )
+        self.dc_asset = DataCenterAssetFactory(
+            hostname='ralph0.allegro.pl',
+            service_env__service__name='service',
+            service_env__environment__name='test',
+            model__name='DL360',
+            rack=RackFactory(
+                name='Rack #100',
+                server_room__name='Server Room A',
+                server_room__data_center__name='DC1',
+            ),
+            position=1,
+            slot_no='1',
+            configuration_path__class_name='www',
+            configuration_path__module__name='ralph',
+        )
+        self.virtual_server = VirtualServerFactory(
+            hostname='s000.local',
+            configuration_path__class_name='worker',
+            configuration_path__module__name='auth',
+            service_env__service__name='service',
+            service_env__environment__name='prod',
+            parent=DataCenterAssetFactory(
+                hostname='parent',
+                model__name='DL380p',
+                rack=RackFactory(
+                    name='Rack #101',
+                    server_room__name='Server Room B',
+                    server_room__data_center__name='DC2',
+                ),
+                position=1,
+                slot_no='1',
+            ),
+        )
+
+        cluster = ClusterFactory(
+            hostname='',
+            type__name='Application',
+            configuration_path__class_name='www',
+            configuration_path__module__name='ralph',
+            service_env__service__name='service',
+            service_env__environment__name='preprod',
+        )
+        self.boc_1 = BaseObjectCluster.objects.create(
+            cluster=cluster,
+            base_object=DataCenterAssetFactory(
+                rack=RackFactory(), position=1,
+            )
+        )
+        self.boc_2 = BaseObjectCluster.objects.create(
+            cluster=cluster,
+            base_object=DataCenterAssetFactory(
+                rack=RackFactory(
+                    server_room__data_center__name='DC2',
+                    server_room__name='Server Room B',
+                    name='Rack #101',
+                ),
+                position=1,
+            ),
+            is_master=True
+        )
+
+        self.cluster = ClusterFactory._meta.model.objects.get(pk=cluster)
+
+    def test_dc_asset_gets_data_ok(self):
+        data = _publish_data_to_dnsaaas(self.dc_asset)
+        self.assertEqual(data, [{
+            'content': 'www',
+            'name': 'ralph0.allegro.pl',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'VENTURE'
+        }, {
+            'content': 'ralph',
+            'name': 'ralph0.allegro.pl',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'ROLE',
+        }, {
+            'content': 'ralph/www',
+            'name': 'ralph0.allegro.pl',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'CONFIGURATION_PATH',
+        }, {
+            'content': 'service - test',
+            'name': 'ralph0.allegro.pl',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'SERVICE_ENV',
+        }, {
+            'content': '[ATS] Asus DL360',
+            'name': 'ralph0.allegro.pl',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'MODEL'
+        }, {
+            'content': 'DC1 / Server Room A / Rack #100 / 1 / 1',
+            'name': 'ralph0.allegro.pl',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'LOCATION'
+        }])
+
+    def test_virtual_server_gets_data_ok(self):
+        data = _publish_data_to_dnsaaas(self.virtual_server)
+        self.assertEqual(data, [{
+            'content': 'worker',
+            'name': 's000.local',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'VENTURE'
+        }, {
+            'content': 'auth',
+            'name': 's000.local',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'ROLE'
+        }, {
+            'content': 'auth/worker',
+            'name': 's000.local',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'CONFIGURATION_PATH',
+        }, {
+            'content': 'service - prod',
+            'name': 's000.local',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'SERVICE_ENV',
+        }, {
+            'content': '[Database Machine] Brother DL380p',
+            'name': 's000.local',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'MODEL'
+        }, {
+            'content': 'DC2 / Server Room B / Rack #101 / 1 / 1 / parent',
+            'name': 's000.local',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'LOCATION'
+        }])
+
+    def test_cluster_gets_data_ok(self):
+        data = _publish_data_to_dnsaaas(self.cluster)
+        self.assertEqual(data, [{
+            'content': 'www',
+            'name': '',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'VENTURE'
+        }, {
+            'content': 'ralph',
+            'name': '',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'ROLE'
+        }, {
+            'content': 'ralph/www',
+            'name': '',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'CONFIGURATION_PATH',
+        }, {
+            'content': 'service - preprod',
+            'name': '',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'SERVICE_ENV',
+        }, {
+            'content': 'Application',
+            'name': '',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'MODEL'
+        }, {
+            'content': 'DC2 / Server Room B / Rack #101 / 1',
+            'name': '',
+            'owner': '',
+            'target_owner': 'ralph',
+            'purpose': 'LOCATION'
+        }])
 
 
 class TestDNSaaS(TestCase):

@@ -1,5 +1,31 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
 from django.db import transaction
+
+
+class DNSaaSPublisherMixin:
+    """Generate data formatted for DNSaaS auto txt update"""
+    def get_auto_txt_data(self):
+        data = []
+        for purpose_name, content in (
+            ('class_name', self.configuration_path.class_name if self.configuration_path else ''),  # noqa
+            ('module_name', self.configuration_path.module.name if self.configuration_path else ''),  # noqa
+            ('configuration_path', self.configuration_path.path if self.configuration_path else ''),  # noqa
+            ('service_env', str(self.service_env) if self.service_env else ''),  # noqa
+            ('model', str(self.model) if self.model else ''),
+            ('location', ' / '.join(self.get_location() or [])),
+        ):
+            purpose = settings.DNSAAS_AUTO_TXT_RECORD_PURPOSE_MAP.get(
+                purpose_name, None
+            )
+            if not purpose:
+                continue
+            data.append({
+                'name': self.hostname or '',
+                'purpose': purpose,
+                'content': content,
+            })
+        return data
 
 
 @transaction.atomic
