@@ -274,10 +274,25 @@ class TextListFilter(BaseCustomFilter):
         },)
 
 
-class TagsListFilter(TextListFilter):
-    """Filter by taggit tags."""
-    separators = " and ".join(list(SEARCH_AND_SEPARATORS_REGEX.pattern[1:-1]))
-    multiple = False
+class TagsListFilter(SimpleListFilter):
+
+    title = _('Tags')
+    parameter_name = 'tags'
+    separators = ' or '.join(list(SEARCH_AND_SEPARATORS_REGEX.pattern[1:-1]))
+    template = 'admin/filters/text_filter.html'
+
+    def lookups(self, request, model_admin):
+        return (
+            (1, _('Tags')),
+        )
+
+    def choices(self, cl):
+        yield {
+            'current_value': self.value() or '',
+            'parameter_name': self.parameter_name,
+            'separators': self.separators,
+            'multiple': True,
+        }
 
     def queryset(self, request, queryset):
         if self.value():
@@ -471,7 +486,7 @@ class IPFilter(SimpleListFilter):
 
     def choices(self, cl):
         yield {
-            'selected': self.value() or False,
+            'current_value': self.value() or '',
             'parameter_name': self.parameter_name,
         }
 

@@ -233,8 +233,16 @@ class DataCenterAssetAdmin(
     show_transition_history = True
     resource_class = resources.DataCenterAssetResource
     list_display = [
-        'hostname', 'status', 'barcode', 'model', 'sn', 'invoice_date',
-        'invoice_no', 'show_location', 'service_env',
+        'hostname',
+        'status',
+        'barcode',
+        'model',
+        'sn',
+        'invoice_date',
+        'invoice_no',
+        'show_location',
+        'service_env',
+        'configuration_path',
     ]
     multiadd_summary_fields = list_display + ['rack']
     one_of_mulitvalue_required = ['sn', 'barcode']
@@ -253,15 +261,20 @@ class DataCenterAssetAdmin(
         'depreciation_end_date', 'force_depreciation', 'remarks',
         'budget_info', 'rack', 'rack__server_room',
         'rack__server_room__data_center', 'position', 'property_of',
-        LiquidatedStatusFilter, IPFilter,
-        ('tags', TagsListFilter)
+        LiquidatedStatusFilter, IPFilter, TagsListFilter
     ]
     date_hierarchy = 'created'
     list_select_related = [
-        'model', 'model__manufacturer', 'model__category', 'rack',
-        'rack__server_room', 'rack__server_room__data_center', 'service_env',
-        'service_env__service', 'service_env__environment',
-        'configuration_path__module',
+        'model',
+        'model__manufacturer',
+        'model__category',
+        'rack',
+        'rack__server_room',
+        'rack__server_room__data_center',
+        'service_env',
+        'service_env__service',
+        'service_env__environment',
+        'configuration_path',
     ]
     raw_id_fields = [
         'model', 'rack', 'service_env', 'parent', 'budget_info',

@@ -42,7 +42,11 @@
                 $clone.find('select').each(function(index, item) {
                   $(item).val($original_selects.eq(index).val());
                 });
-                $clone.appendTo($form);
+                $('input, select', $clone).each(function(i, item) {
+                  var $item = $(item);
+                  if($item.val())
+                    $item.appendTo($form);
+                });
                 $form[0].submit();
             });
 

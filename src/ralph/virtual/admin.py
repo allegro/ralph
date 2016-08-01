@@ -70,7 +70,7 @@ class VirtualServerAdmin(
     search_fields = ['hostname', 'sn']
     list_filter = [
         'sn', 'hostname', 'service_env', IPFilter,
-        'parent', ('tags', TagsListFilter),
+        'parent', TagsListFilter,
         ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants)  # noqa
     ]
     list_display = [
