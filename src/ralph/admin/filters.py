@@ -278,7 +278,8 @@ class TagsListFilter(SimpleListFilter):
 
     title = _('Tags')
     parameter_name = 'tags'
-    template = "admin/filters/text_filter.html"
+    separators = ' or '.join(list(SEARCH_AND_SEPARATORS_REGEX.pattern[1:-1]))
+    template = 'admin/filters/text_filter.html'
 
     def lookups(self, request, model_admin):
         return (
@@ -289,6 +290,7 @@ class TagsListFilter(SimpleListFilter):
         yield {
             'current_value': self.value() or '',
             'parameter_name': self.parameter_name,
+            'separators': self.separators,
         }
 
     def queryset(self, request, queryset):
