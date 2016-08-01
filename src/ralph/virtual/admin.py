@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphAdminForm, RalphTabularInline, register
+
 from ralph.admin.filters import (
     IPFilter,
     TagsListFilter,
@@ -16,6 +18,7 @@ from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.networks.forms import SimpleNetworkForm
 from ralph.networks.views import NetworkView
+from ralph.security.views import SecurityInfo
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -24,6 +27,20 @@ from ralph.virtual.models import (
     VirtualServer,
     VirtualServerType
 )
+
+if settings.ENABLE_DNSAAS_INTEGRATION:
+    from ralph.dns.views import DNSView
+
+    class VirtualServerDNSView(DNSView):
+        namespace = None
+
+
+class VirtaulServerSecurityInfoView(SecurityInfo):
+    url_name = 'security_virtualserver_security_info'
+
+
+class CloudHostSecurityInfoView(SecurityInfo):
+    url_name = 'security_cloudhost_security_info'
 
 
 @register(VirtualServerType)
@@ -69,7 +86,12 @@ class VirtualServerAdmin(
         'configuration_path__module'
     ]
 
-    change_views = [VirtualServerNetworkView]
+    change_views = [
+        VirtualServerNetworkView,
+        VirtaulServerSecurityInfoView,
+    ]
+    if settings.ENABLE_DNSAAS_INTEGRATION:
+        change_views += [VirtualServerDNSView]
 
     # TODO: add the same tabs as in DCAsset
     class ClusterBaseObjectInline(RalphTabularInline):
@@ -166,6 +188,9 @@ class CloudHostAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     search_fields = ['cloudflavor__name', 'hostname', 'host_id']
     raw_id_override_parent = {'parent': CloudProject}
     inlines = [CloudNetworkInline]
+    change_views = [
+        CloudHostSecurityInfoView
+    ]
     fieldsets = (
         (None, {
             'fields': ['hostname', 'get_hypervisor', 'host_id', 'created',
@@ -257,7 +282,7 @@ class CloudHostAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     get_memory.short_description = _('RAM size (MiB)')
 
     def get_disk(self, obj):
-        return obj.cloudflavor.disk / 1024
+        return obj.cloudflavor.disk / 1024 if obj.cloudflavor.disk else None
     get_disk.short_description = _('Disk size (GiB)')
 
 

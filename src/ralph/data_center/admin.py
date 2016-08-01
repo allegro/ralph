@@ -37,7 +37,6 @@ from ralph.data_center.models.virtual import (
     Database,
     VIP
 )
-from ralph.data_center.views.ui import DataCenterAssetSecurityInfo
 from ralph.data_importer import resources
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.table import Table
@@ -47,10 +46,14 @@ from ralph.networks.forms import SimpleNetworkWithManagementIPForm
 from ralph.networks.models.networks import Network
 from ralph.networks.views import NetworkWithTerminatorsView
 from ralph.operations.views import OperationViewReadOnlyForExisiting
+from ralph.security.views import SecurityInfo
 from ralph.supports.models import BaseObjectsSupport
 
 if settings.ENABLE_DNSAAS_INTEGRATION:
     from ralph.dns.views import DNSView
+
+    class ClusterDNSView(DNSView):
+        pass
 
 
 @register(Accessory)
@@ -91,6 +94,8 @@ class ClusterAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     list_filter = [
         'name', 'type', 'service_env', 'configuration_path', 'status'
     ]
+    if settings.ENABLE_DNSAAS_INTEGRATION:
+        change_views = [ClusterDNSView]
 
     class ClusterBaseObjectInline(RalphTabularInline):
         model = BaseObjectCluster
@@ -196,6 +201,10 @@ class DataCenterAssetOperation(OperationViewReadOnlyForExisiting):
     inlines = OperationViewReadOnlyForExisiting.admin_class.inlines
 
 
+class DataCenterAssetSecurityInfo(SecurityInfo):
+    url_name = 'datacenter_asset_security_info'
+
+
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(
     MulitiAddAdminMixin,
@@ -241,9 +250,10 @@ class DataCenterAssetAdmin(
         'order_no', 'model__name',
         ('model__category', RelatedAutocompleteFieldListFilter), 'service_env',
         ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
-        'depreciation_end_date', 'force_depreciation', 'remarks', 'budget_info',
-        'rack', 'rack__server_room', 'rack__server_room__data_center',
-        'position', 'property_of', LiquidatedStatusFilter, IPFilter,
+        'depreciation_end_date', 'force_depreciation', 'remarks',
+        'budget_info', 'rack', 'rack__server_room',
+        'rack__server_room__data_center', 'position', 'property_of',
+        LiquidatedStatusFilter, IPFilter,
         ('tags', TagsListFilter)
     ]
     date_hierarchy = 'created'
