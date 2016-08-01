@@ -291,6 +291,7 @@ class TagsListFilter(SimpleListFilter):
             'current_value': self.value() or '',
             'parameter_name': self.parameter_name,
             'separators': self.separators,
+            'multiple': True,
         }
 
     def queryset(self, request, queryset):
