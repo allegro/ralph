@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import date
 
+import reversion
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
@@ -58,16 +59,22 @@ class InventoryTagConfirmationView(RalphBaseTemplateView):
 class InventoryTagView(View):
     http_method_names = ['post']
 
+    @staticmethod
+    def _add_tags(request, asset, tags):
+        asset.tags.add(*tags)
+        with reversion.create_revision():
+            asset.save()
+            reversion.set_user(request.user)
+            reversion.set_comment('Added tags {}'.format(', '.join(tags)))
+
     def _post_no(self, request, asset):
-        asset.tags.add(
-            settings.INVENTORY_TAG_MISSING
-        )
+        tags = [settings.INVENTORY_TAG_MISSING]
         missing_asset_info = 'Please contact person responsible ' \
                              'for asset management'
         if settings.MISSING_ASSET_REPORT_URL is not None:
             missing_asset_info += '\n' + settings.MISSING_ASSET_REPORT_URL
 
-        asset.save()
+        self._add_tags(request, asset, tags)
         messages.info(request, _(missing_asset_info))
 
     def _post_yes(self, request, asset):
@@ -75,13 +82,13 @@ class InventoryTagView(View):
         if settings.INVENTORY_TAG_APPEND_DATE:
             date_tag = settings.INVENTORY_TAG + '_' + date.today().isoformat()
 
-        asset.tags.add(
+        tags = [
             settings.INVENTORY_TAG,
             settings.INVENTORY_TAG_USER,
             date_tag
-        )
+        ]
 
-        asset.save()
+        self._add_tags(request, asset, tags)
         messages.success(request, _('Successfully tagged asset'))
 
     def get_context_data(self, **kwargs):

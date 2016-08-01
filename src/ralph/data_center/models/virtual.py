@@ -6,6 +6,7 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.base import BaseObject
+from ralph.assets.utils import DNSaaSPublisherMixin
 from ralph.data_center.models.mixins import WithManagementIPMixin
 from ralph.data_center.models.physical import (
     DataCenterAsset,
@@ -52,7 +53,8 @@ class ClusterStatus(Choices):
 
 
 class Cluster(
-    WithManagementIPMixin, NetworkableBaseObject, BaseObject, models.Model
+    DNSaaSPublisherMixin, WithManagementIPMixin, NetworkableBaseObject,
+    BaseObject, models.Model
 ):
     name = models.CharField(_('name'), max_length=255, blank=True, null=True)
     hostname = NullableCharField(
@@ -76,6 +78,13 @@ class Cluster(
 
     def __str__(self):
         return '{} ({})'.format(self.name or self.hostname, self.type)
+
+    def get_location(self):
+        return self.masters[0].get_location() if self.masters else None
+
+    @property
+    def model(self):
+        return self.type
 
     @cached_property
     def masters(self):

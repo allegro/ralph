@@ -191,6 +191,7 @@ def _handle_ips(obj, ips):
         ip.ethernet = eth
         ip.is_management = False
         ip.dhcp_expose = ip_dict['dhcp_expose']
+        ip.hostname = ip_dict['hostname']
         ip.save()
 
 
