@@ -16,8 +16,8 @@ from ralph.back_office.tests.factories import (
 )
 from ralph.lib.transitions.models import (
     JobStatus,
-    TransitionsHistory,
-    TransitionJob
+    TransitionJob,
+    TransitionsHistory
 )
 from ralph.lib.transitions.tests import TransitionTestCase
 from ralph.licences.tests.factories import LicenceFactory
