@@ -2,7 +2,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.admin.views.main import ORDER_VAR, SEARCH_VAR
 from django.core.urlresolvers import reverse
-from django.db.models import Count, Prefetch, F
+from django.db.models import Count, F, Prefetch
 from django.forms.models import ModelForm
 from django.utils.translation import ugettext_lazy as _
 
