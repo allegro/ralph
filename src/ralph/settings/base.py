@@ -6,12 +6,20 @@ from collections import ChainMap
 from django.contrib.messages import constants as messages
 
 
-def os_env_true(var, default=''):
+def bool_from_env(var, default: bool=False):
     """Helper for converting env string into boolean.
 
-    Returns bool True for string values: '1' or 'true', or False otherwise.
+    Returns bool True for string values: '1' or 'true', False otherwise.
     """
-    return os.environ.get(var, default).lower() in ('1', 'true')
+    def str_to_bool(s: str) -> bool:
+        return s.lower() in ('1', 'true')
+
+    os_var = os.environ.get(var)
+    if os_var is None:
+        # as user expect
+        return default
+    else:
+        return str_to_bool(os_var)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -72,7 +80,7 @@ INSTALLED_APPS = (
     'ralph.ralph2_sync',
 )
 
-RALPH2_RALPH3_CROSS_VALIDATION_ENABLED = os_env_true(
+RALPH2_RALPH3_CROSS_VALIDATION_ENABLED = bool_from_env(
     'RALPH2_RALPH3_CROSS_VALIDATION_ENABLED'
 )
 if RALPH2_RALPH3_CROSS_VALIDATION_ENABLED:
@@ -174,7 +182,7 @@ MESSAGE_TAGS = {
 }
 
 DEFAULT_DEPRECIATION_RATE = int(os.environ.get('DEFAULT_DEPRECIATION_RATE', 25))  # noqa
-CHECK_IP_HOSTNAME_ON_SAVE = os_env_true('CHECK_IP_HOSTNAME_ON_SAVE', '1')
+CHECK_IP_HOSTNAME_ON_SAVE = bool_from_env('CHECK_IP_HOSTNAME_ON_SAVE', True)
 ASSET_HOSTNAME_TEMPLATE = {
     'prefix': '{{ country_code|upper }}{{ code|upper }}',
     'postfix': '',
@@ -278,9 +286,9 @@ REDIS_CONNECTION = {
 }
 
 # set to False to turn off cache decorator
-USE_CACHE = os_env_true('USE_CACHE', 'True')
+USE_CACHE = bool_from_env('USE_CACHE', True)
 
-SENTRY_ENABLED = os_env_true('SENTRY_ENABLED')
+SENTRY_ENABLED = bool_from_env('SENTRY_ENABLED')
 SENTRY_JS_DSN = os.environ.get('SENTRY_JS_DSN', None)
 SENTRY_JS_CONFIG = json.loads(os.environ.get('SENTRY_JS_CONFIG', '{}'))
 
@@ -323,7 +331,7 @@ RALPH_INTERNAL_SERVICES = {
 # ]
 MY_EQUIPMENT_LINKS = json.loads(os.environ.get('MY_EQUIPMENT_LINKS', '[]'))
 MY_EQUIPMENT_REPORT_FAILURE_URL = os.environ.get('MY_EQUIPMENT_REPORT_FAILURE_URL', '')  # noqa
-MY_EQUIPMENT_SHOW_BUYOUT_DATE = os_env_true('MY_EQUIPMENT_SHOW_BUYOUT_DATE')
+MY_EQUIPMENT_SHOW_BUYOUT_DATE = bool_from_env('MY_EQUIPMENT_SHOW_BUYOUT_DATE')
 
 # Sets URL shown to user if they declare that they dp not have specific asset.
 MISSING_ASSET_REPORT_URL = os.environ.get('MISSING_ASSET_REPORT_URL', None)
@@ -334,7 +342,7 @@ INVENTORY_TAG = os.environ.get('INVENTORY_TAG', 'INV')
 # This tag means user himself confirmed asset possession.
 INVENTORY_TAG_USER = os.environ.get('INVENTORY_TAG_USER', 'INV_CONF')
 INVENTORY_TAG_MISSING = os.environ.get('INVENTORY_TAG_MISSING', 'INV_MISSING')
-INVENTORY_TAG_APPEND_DATE = os_env_true('INVENTORY_TAG_APPEND_DATE', '1')
+INVENTORY_TAG_APPEND_DATE = bool_from_env('INVENTORY_TAG_APPEND_DATE', True)
 
 MAP_IMPORTED_ID_TO_NEW_ID = False
 
@@ -350,11 +358,11 @@ DEFAULT_NETWORK_TOP_MARGIN = int(os.environ.get('DEFAULT_NETWORK_TOP_MARGIN', 0)
 DEFAULT_NETWORK_MARGIN = int(os.environ.get('DEFAULT_NETWORK_MARGIN', 10))
 # when set to True, network records (IP/Ethernet) can't be modified until
 # 'expose in DHCP' is selected
-DHCP_ENTRY_FORBID_CHANGE = os_env_true('DHCP_ENTRY_FORBID_CHANGE', 'True')
+DHCP_ENTRY_FORBID_CHANGE = bool_from_env('DHCP_ENTRY_FORBID_CHANGE', True)
 
 # enable integration with DNSaaS, for details see
 # https://github.com/allegro/django-powerdns-dnssec
-ENABLE_DNSAAS_INTEGRATION = os_env_true('ENABLE_DNSAAS_INTEGRATION')
+ENABLE_DNSAAS_INTEGRATION = bool_from_env('ENABLE_DNSAAS_INTEGRATION')
 DNSAAS_URL = os.environ.get('DNSAAS_URL', '')
 DNSAAS_TOKEN = os.environ.get('DNSAAS_TOKEN', '')
 DNSAAS_AUTO_PTR_ALWAYS = os.environ.get('DNSAAS_AUTO_PTR_ALWAYS', 2)
@@ -392,7 +400,7 @@ if ENABLE_DNSAAS_INTEGRATION:
     )
 
 
-ENABLE_HERMES_INTEGRATION = os_env_true('ENABLE_HERMES_INTEGRATION')
+ENABLE_HERMES_INTEGRATION = bool_from_env('ENABLE_HERMES_INTEGRATION')
 HERMES = json.loads(os.environ.get('HERMES', '{}'))
 HERMES['ENABLED'] = ENABLE_HERMES_INTEGRATION
 
@@ -402,7 +410,7 @@ if ENABLE_HERMES_INTEGRATION:
     )
 
 
-RALPH2_HERMES_SYNC_ENABLED = os_env_true('RALPH2_HERMES_SYNC_ENABLED')
+RALPH2_HERMES_SYNC_ENABLED = bool_from_env('RALPH2_HERMES_SYNC_ENABLED')
 RALPH2_HERMES_SYNC_FUNCTIONS = json.loads(
     os.environ.get('RALPH2_HERMES_SYNC_FUNCTIONS', '[]')
 )
@@ -414,6 +422,6 @@ RALPH2_RALPH3_VIRTUAL_SERVER_TYPE_MAPPING = json.loads(
 RALPH2_HERMES_ROLE_PROPERTY_WHITELIST = json.loads(
     os.environ.get('RALPH2_HERMES_ROLE_PROPERTY_WHITELIST', '[]')
 )
-ENABLE_SAVE_DESCENDANTS_DURING_NETWORK_SYNC = os_env_true(
-    'ENABLE_SAVE_DESCENDANTS_DURING_NETWORK_SYNC', '1'
+ENABLE_SAVE_DESCENDANTS_DURING_NETWORK_SYNC = bool_from_env(
+    'ENABLE_SAVE_DESCENDANTS_DURING_NETWORK_SYNC', True
 )
