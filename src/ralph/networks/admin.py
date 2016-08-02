@@ -247,7 +247,9 @@ class NetworkAdmin(RalphMPTTAdmin):
         qs = qs.annotate(ipaddress_count=Count('ips'))
         # Getting subnetwork counts, used for column ordering
         # https://github.com/django-mptt/django-mptt/blob/master/mptt/models.py#L594  # noqa
-        qs = qs.extra(select={'subnetworks_count': 'rght - lft'})
+        qs = qs.extra(select={
+            'subnetworks_count': 'CAST(rght AS SIGNED) - CAST(lft AS SIGNED)'
+        })
         return qs
 
     def get_paginator(

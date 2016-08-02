@@ -47,6 +47,7 @@ class SimpleNetworkTest(RalphTestCase):
         self.ip2.save()
         self.ip3 = IPAddress(address='192.168.128.11')
         self.ip3.save()
+        Network.objects.rebuild()
 
     @unpack
     @data(
@@ -67,6 +68,13 @@ class SimpleNetworkTest(RalphTestCase):
         self.assertEquals(
             list(res), list(Network.objects.filter(name__in=correct))
         )
+
+    def test_subnetworks_count_cast_to_integer(self):
+        net = Network.objects.get(pk=self.net1.pk)
+        count = Network.objects.filter(id=self.net1.id).extra(select={
+            'subnetworks_count': 'CAST(rght AS SIGNED) - CAST(lft AS SIGNED)'
+        }).values_list('subnetworks_count', flat=True)[0]
+        self.assertTrue(count)
 
 
 @ddt
