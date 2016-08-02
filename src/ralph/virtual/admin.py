@@ -70,7 +70,7 @@ class VirtualServerAdmin(
     search_fields = ['hostname', 'sn']
     list_filter = [
         'sn', 'hostname', 'service_env', IPFilter,
-        'parent', ('tags', TagsListFilter),
+        'parent', TagsListFilter,
         ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants)  # noqa
     ]
     list_display = [
@@ -176,7 +176,9 @@ class CloudHostAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     list_display = ['hostname', 'get_ip_addresses', 'service_env',
                     'get_cloudproject', 'cloudflavor_name', 'host_id',
                     'created', 'image_name', 'get_tags']
-    list_filter = ['cloudprovider', 'service_env', 'cloudflavor', 'tags']
+    list_filter = [
+        'cloudprovider', 'service_env', 'cloudflavor', TagsListFilter
+    ]
     list_select_related = [
         'cloudflavor', 'cloudprovider', 'parent__cloudproject',
         'service_env__service', 'service_env__environment'
@@ -211,6 +213,7 @@ class CloudHostAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+    # additional list and details fields
     def get_tags(self, obj):
         return ', '.join([tag.name for tag in obj.tags.all()])
     get_tags.short_description = _('Tags')
@@ -293,7 +296,7 @@ class CloudFlavorAdmin(RalphAdmin):
     search_fields = ['name']
     readonly_fields = ['name', 'cloudprovider', 'flavor_id', 'cores',
                        'memory', 'disk', 'instances_count']
-    list_filter = ['cloudprovider', 'tags']
+    list_filter = ['cloudprovider', TagsListFilter]
     fieldsets = (
         ('Cloud Flavor', {
             'fields': ['name', 'cloudprovider', 'flavor_id', 'tags',
@@ -341,7 +344,7 @@ class CloudProjectAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     list_display = ['name', 'service_env', 'instances_count']
     list_select_related = ['cloudprovider__name', 'service_env__environment',
                            'service_env__service']
-    list_filter = ['service_env', 'cloudprovider', 'tags']
+    list_filter = ['service_env', 'cloudprovider', TagsListFilter]
     readonly_fields = ['name', 'project_id', 'cloudprovider', 'created',
                        'instances_count']
     search_fields = ['name', 'project_id']

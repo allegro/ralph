@@ -149,6 +149,8 @@ class PolymorphicBase(models.base.ModelBase):
         for polymorphic_class in base_polymorphic:
             # Set is_polymorphic flag for classes that use polymorphic
             polymorphic_class.is_polymorphic = True
+            if new_class._meta.proxy:
+                continue
             try:
                 polymorphic_class._polymorphic_descendants.append(new_class)
             except AttributeError:

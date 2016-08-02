@@ -44,7 +44,7 @@ class SupportAdmin(
     list_filter = [
         'contract_id', 'name', 'serial_no', 'price', 'remarks', 'description',
         'support_type', 'budget_info', 'date_from', 'date_to', 'property_of',
-        ('tags', TagsListFilter)
+        TagsListFilter
     ]
     date_hierarchy = 'created'
     list_display = [

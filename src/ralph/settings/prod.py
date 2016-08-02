@@ -3,8 +3,7 @@ import os
 
 from ralph.settings import *  # noqa
 
-# FIXME: when going for full production, change it to False
-DEBUG = False
+DEBUG = os_env_true('RALPH_DEBUG', False)
 
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'  # noqa
 

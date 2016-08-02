@@ -182,24 +182,20 @@ class AdminFiltersTestCase(TestCase):
 
     def test_tags_filter(self):
         tags_filter = TagsListFilter(
-            field=DataCenterAsset._meta.get_field('tags'),
             request=None,
             params={'tags': 'tag1 & tag2'},
             model=DataCenterAsset,
             model_admin=DataCenterAssetAdmin,
-            field_path='tags'
         )
         queryset = tags_filter.queryset(None, DataCenterAsset.objects.all())
 
         self.assertEqual(len(queryset), 1)
 
         tags_filter = TagsListFilter(
-            field=DataCenterAsset._meta.get_field('tags'),
             request=None,
             params={'tags': 'tag1'},
             model=DataCenterAsset,
             model_admin=DataCenterAssetAdmin,
-            field_path='tags'
         )
         queryset = tags_filter.queryset(None, DataCenterAsset.objects.all())
 

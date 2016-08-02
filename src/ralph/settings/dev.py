@@ -26,6 +26,24 @@ ROOT_URLCONF = 'ralph.urls.dev'
 # https://github.com/idlesign/django-sitetree/pull/157/files
 RAISE_ITEMS_ERRORS_ON_DEBUG = False
 
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+            'loaders': [
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader',
+                'ralph.lib.template.loaders.AppTemplateLoader',
+            ],
+        },
+    },
+]
+
 LOGGING['handlers']['console']['level'] = 'DEBUG'
 for logger in LOGGING['loggers']:
     LOGGING['loggers'][logger]['level'] = 'DEBUG'

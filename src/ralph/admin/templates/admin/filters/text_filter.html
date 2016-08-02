@@ -1,7 +1,9 @@
 {% extends "admin/filters/_filter_base.html" %}
 
 {% block filter_after_header %}
-  <i data-tooltip class="has-tip fa fa-info-circle" title='Use {{ i.separators }} separators to search{% if i.multiple %} for multiple values{% endif %}'></i>
+  {% if i.separators %}
+    <i data-tooltip class="has-tip fa fa-info-circle" title='Use {{ i.separators }} separator{{ i.separators|length|pluralize }} to search{% if i.multiple %} for multiple values{% endif %}'></i>
+  {% endif %}
 {% endblock %}
 
 {% block filter_choices %}

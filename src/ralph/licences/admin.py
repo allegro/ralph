@@ -69,7 +69,7 @@ class LicenceAdmin(
         'niw', 'sn', 'remarks', 'software', 'property_of',
         'licence_type', 'valid_thru', 'order_no', 'invoice_no', 'invoice_date',
         'budget_info', 'manufacturer', 'region', 'office_infrastructure',
-        ('tags', TagsListFilter)
+        TagsListFilter
     ]
     date_hierarchy = 'created'
     list_display = [
