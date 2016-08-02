@@ -146,6 +146,6 @@ class CastToInteger(Func):
         self.extra['integer_type'] = 'SIGNED'
         return super().as_sql(compiler, connection)
 
-    def as_psql(self, compiler, connection):
+    def as_postgresql(self, compiler, connection):
         self.extra['integer_type'] = 'INTEGER'
         return super().as_sql(compiler, connection)
