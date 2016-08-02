@@ -58,6 +58,7 @@ install:
 
 script:
     - python contrib/dhcp_agent/test.py
+    - for ralph_env in prod, test, dev; do DJANGO_SETTINGS_MODULE=ralph.settings.$ralph_env ralph; done
     - make coveralls
     - ./scripts/check_missing_migrations.sh
 
