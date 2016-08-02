@@ -5,6 +5,7 @@ from django.contrib.admin.utils import get_fields_from_path
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db.models.constants import LOOKUP_SEP
+from django.db.models.expressions import Func
 
 
 def get_admin_url(obj, action):
@@ -128,3 +129,19 @@ def get_client_ip(request):
     else:
         ip = request.META.get('REMOTE_ADDR')
     return ip
+
+
+class CastToInteger(Func):
+    """
+    A helper class for casting values to signed integer in database.
+    """
+    function = 'CAST'
+    template = '%(function)s(%(expressions)s as %(integer_type)s)'
+
+    def __init__(self, *expressions, **extra):
+        super().__init__(*expressions, **extra)
+        self.extra['integer_type'] = 'INTEGER'
+
+    def as_mysql(self, compiler, connection):
+        self.extra['integer_type'] = 'SIGNED'
+        return super().as_sql(compiler, connection)
