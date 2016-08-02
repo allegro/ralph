@@ -344,7 +344,7 @@ class CloudProjectAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     list_display = ['name', 'service_env', 'instances_count']
     list_select_related = ['cloudprovider__name', 'service_env__environment',
                            'service_env__service']
-    list_filter = ['service_env', 'cloudprovider', 'tags']
+    list_filter = ['service_env', 'cloudprovider', TagsListFilter]
     readonly_fields = ['name', 'project_id', 'cloudprovider', 'created',
                        'instances_count']
     search_fields = ['name', 'project_id']
