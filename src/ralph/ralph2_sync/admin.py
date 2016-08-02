@@ -15,7 +15,7 @@ class Ralph2SyncAdminMixin(object):
         # enable back syncing of object
         obj._handle_post_save = True
         # call post_save to trigger syning "manually"
-        post_save.send(sender=self.model, instance=obj, created=created)
+        post_save.send(sender=self.model, instance=obj, created=False)
 
     # log_addition and log_change are called after succesfull save (with m2m)
     # in regular form and bulk edit
