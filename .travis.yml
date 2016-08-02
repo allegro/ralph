@@ -58,12 +58,9 @@ install:
 
 script:
     - python contrib/dhcp_agent/test.py
-    - for RALPH_ENV in prod, test; do
-        echo "testing ralph $RALPH_ENV settings";
-        DJANGO_SETTINGS_MODULE=ralph.settings.$RALPH_ENV ralph;
-        done
-    # - make coveralls
-    # - ./scripts/check_missing_migrations.sh
+    - ./scripts/test_settings.sh prod test >/dev/null
+    - make coveralls
+    - ./scripts/check_missing_migrations.sh
 
 after_success:
     - if [[ $TEST_DB_ENGINE == mysql ]]; then coveralls; fi
