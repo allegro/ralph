@@ -7,6 +7,10 @@ from django.contrib.messages import constants as messages
 
 
 def os_env_true(var, default=''):
+    """Helper for converting env string into boolean.
+
+    Returns bool True for string values: '1' or 'true', or False otherwise.
+    """
     return os.environ.get(var, default).lower() in ('1', 'true')
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

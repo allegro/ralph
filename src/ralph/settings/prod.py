@@ -3,7 +3,7 @@ import os
 
 from ralph.settings import *  # noqa
 
-DEBUG = os.environ.get('RALPH_DEBUG', False) 
+DEBUG = os_env_true('RALPH_DEBUG', False)
 
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'  # noqa
 
