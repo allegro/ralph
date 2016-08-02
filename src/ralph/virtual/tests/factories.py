@@ -23,6 +23,8 @@ from ralph.virtual.models import (
 
 class CloudProviderFactory(DjangoModelFactory):
 
+    name = factory.Iterator(['openstack', 'openstack2'])
+
     class Meta:
         model = CloudProvider
         django_get_or_create = ['name']

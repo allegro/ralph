@@ -7,6 +7,7 @@ from factory.fuzzy import FuzzyDecimal
 from ralph.assets.models.choices import AssetSource
 from ralph.assets.tests.factories import (
     AssetHolderFactory,
+    BaseObjectFactory,
     BudgetInfoFactory,
     ConfigurationClassFactory,
     DataCenterAssetModelFactory,
@@ -18,9 +19,12 @@ from ralph.assets.tests.factories import (
     ProcessorFactory,
     ServiceEnvironmentFactory
 )
+from ralph.data_center.models.choices import ConnectionType
+from ralph.data_center.models.components import DiskShare, DiskShareMount
 from ralph.data_center.models.physical import (
     Accessory,
     ACCESSORY_DATA,
+    Connection,
     DataCenter,
     DataCenterAsset,
     Rack,
@@ -30,6 +34,23 @@ from ralph.data_center.models.physical import (
 from ralph.data_center.models.virtual import Cluster, ClusterType, Database, VIP
 
 date_now = datetime.now().date()
+
+
+class DiskShareFactory(DjangoModelFactory):
+
+    base_object = factory.SubFactory(BaseObjectFactory)
+    wwn = factory.Sequence(lambda n: 'wwn {}'.format(n))
+
+    class Meta:
+        model = DiskShare
+
+
+class DiskShareMountFactory(DjangoModelFactory):
+
+    share = factory.SubFactory(DiskShareFactory)
+
+    class Meta:
+        model = DiskShareMount
 
 
 class ClusterTypeFactory(DjangoModelFactory):
@@ -87,12 +108,6 @@ class AccessoryFactory(DjangoModelFactory):
         django_get_or_create = ['name']
 
 
-class RackAccessoryFactory(DjangoModelFactory):
-
-    class Meta:
-        model = RackAccessory
-
-
 class RackFactory(DjangoModelFactory):
 
     name = factory.Sequence(lambda n: 'Rack #{}'.format(n + 100))
@@ -101,6 +116,15 @@ class RackFactory(DjangoModelFactory):
     class Meta:
         model = Rack
         django_get_or_create = ['name']
+
+
+class RackAccessoryFactory(DjangoModelFactory):
+
+    accessory = factory.SubFactory(AccessoryFactory)
+    rack = factory.SubFactory(RackFactory)
+
+    class Meta:
+        model = RackAccessory
 
 
 class DataCenterAssetFactory(DjangoModelFactory):
@@ -178,6 +202,16 @@ class DataCenterAssetFullFactory(DataCenterAssetFactory):
     @factory.post_generation
     def post_tags(self, create, extracted, **kwargs):
         self.tags.add('abc, cde', 'xyz')
+
+
+class ConnectionFactory(DjangoModelFactory):
+
+    outbound = factory.SubFactory(DataCenterAssetFactory)
+    inbound = factory.SubFactory(DataCenterAssetFactory)
+    connection_type = factory.Iterator([ConnectionType.network.id])
+
+    class Meta:
+        model = Connection
 
 
 class DatabaseFactory(DjangoModelFactory):

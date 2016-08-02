@@ -2,7 +2,12 @@
 import factory
 from factory.django import DjangoModelFactory
 
-from ralph.domains.models import Domain, DomainStatus
+from ralph.domains.models import (
+    Domain,
+    DomainContract,
+    DomainRegistrant,
+    DomainStatus
+)
 
 
 class DomainFactory(DjangoModelFactory):
@@ -12,3 +17,20 @@ class DomainFactory(DjangoModelFactory):
 
     class Meta:
         model = Domain
+
+
+class DomainContractFactory(DjangoModelFactory):
+
+    domain = factory.SubFactory(DomainFactory)
+
+    class Meta:
+        model = DomainContract
+
+
+class DomainRegistrantFactory(DjangoModelFactory):
+
+    name = factory.Iterator(['ovh', 'home.pl', 'nazwa.pl'])
+
+    class Meta:
+        model = DomainRegistrant
+        django_get_or_create = ['name']

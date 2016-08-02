@@ -17,6 +17,15 @@ def get_operation_type(name):
     return OperationType.objects.get(name=name)
 
 
+class OperationTypeFactory(DjangoModelFactory):
+
+    name = factory.Iterator(['Problem', 'Incident', 'Failure', 'Change'])
+
+    class Meta:
+        model = OperationType
+        django_get_or_create = ['name']
+
+
 class OperationFactory(DjangoModelFactory):
 
     title = factory.Sequence(lambda n: 'Operation #%d' % n)
