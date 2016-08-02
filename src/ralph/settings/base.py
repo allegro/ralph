@@ -6,7 +6,7 @@ from collections import ChainMap
 from django.contrib.messages import constants as messages
 
 
-def bool_from_env(var, default: bool=False):
+def bool_from_env(var, default: bool=False) -> bool:
     """Helper for converting env string into boolean.
 
     Returns bool True for string values: '1' or 'true', False otherwise.
