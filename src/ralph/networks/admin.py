@@ -246,7 +246,9 @@ class NetworkAdmin(RalphMPTTAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         qs = qs.annotate(ipaddress_count=Count('ips')).annotate(
-            subnetworks_count=CastToInteger(F('rght')) - CastToInteger(F('lft'))  # noqa
+            subnetworks_count=(
+                CastToInteger(F('rght')) - CastToInteger(F('lft'))
+            )
         )
         # Getting subnetwork counts, used for column ordering
         # https://github.com/django-mptt/django-mptt/blob/master/mptt/models.py#L594  # noqa
