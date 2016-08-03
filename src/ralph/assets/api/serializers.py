@@ -66,6 +66,8 @@ class BudgetInfoSerializer(RalphAPISerializer):
 class ProfitCenterSerializer(RalphAPISerializer):
     class Meta:
         model = ProfitCenter
+        fields = ('id', 'name', 'description', 'url', 'business_segment')
+        depth = 1
 
 
 class EnvironmentSerializer(RalphAPISerializer):
