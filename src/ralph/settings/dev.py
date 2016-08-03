@@ -48,3 +48,18 @@ LOGGING['handlers']['console']['level'] = 'DEBUG'
 for logger in LOGGING['loggers']:
     LOGGING['loggers'][logger]['level'] = 'DEBUG'
     LOGGING['loggers'][logger]['handlers'].append('console')
+
+if os_env_true('RALPH_PROFILING'):
+    SILKY_PYTHON_PROFILER = True
+    MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + (
+        'silk.middleware.SilkyMiddleware',
+    )
+    INSTALLED_APPS = INSTALLED_APPS + (
+        'silk',
+    )
+    SILKY_DYNAMIC_PROFILING = [
+        {
+            'module': 'ralph.data_center.admin',
+            'function': 'DataCenterAssetAdmin.changelist_view'
+        },
+    ]
