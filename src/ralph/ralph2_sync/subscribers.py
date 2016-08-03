@@ -59,9 +59,13 @@ logger = logging.getLogger(__name__)
 model_mapping = {
     'Asset': DataCenterAsset,
     'AssetModel': AssetModel,
+    'ConfigurationModule': ConfigurationModule,
+    'ConfigurationClass': ConfigurationClass,
+    'Network': Network,
     'Rack': Rack,
     'Venture': ConfigurationModule,
     'VentureRole': ConfigurationClass,
+    'VirtualServer': VirtualServer,
 }
 
 
