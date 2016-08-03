@@ -505,6 +505,7 @@ class AddVM(View):
         resp['Location'] = LATEST_API.canonical_resource_for(
             'dev'
         ).get_resource_uri(device)
+        device._handle_post_save = True
         post_save.send(
             sender=Device, instance=device, raw=None, using='default'
         )
