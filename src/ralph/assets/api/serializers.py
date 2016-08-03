@@ -268,6 +268,7 @@ class ConfigurationClassSerializer(RalphAPISerializer):
 
     class Meta:
         model = ConfigurationClass
+        exclude = ('content_type',)
 
 
 class BaseObjectSerializer(BaseObjectSimpleSerializer):
