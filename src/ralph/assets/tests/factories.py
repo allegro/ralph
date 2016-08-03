@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import factory
 from factory.django import DjangoModelFactory
+from factory.fuzzy import FuzzyText
 
 from ralph.assets.models.assets import (
     AssetHolder,
@@ -15,8 +16,9 @@ from ralph.assets.models.assets import (
     ServiceEnvironment
 )
 from ralph.assets.models.base import BaseObject
-from ralph.assets.models.choices import ObjectModelType
+from ralph.assets.models.choices import ComponentType, ObjectModelType
 from ralph.assets.models.components import (
+    ComponentModel,
     Disk,
     Ethernet,
     FibreChannelCard,
@@ -62,6 +64,25 @@ def next_wwn(n):
         n & 0xff
     ]
     return ''.join(map(lambda x: '%02x' % x, wwn))
+
+
+class ComponentModelFactory(DjangoModelFactory):
+
+    speed = factory.Iterator(['2700', '2500', '2100'])
+    cores = factory.Iterator(['2', '4', '8'])
+    size = factory.Iterator(['512', '1024', '2048'])
+    type = factory.Iterator([
+        ComponentType.processor.id, ComponentType.memory.id,
+        ComponentType.disk.id, ComponentType.ethernet.id
+    ])
+    name = FuzzyText()
+    family = FuzzyText()
+
+    class Meta:
+        model = ComponentModel
+        django_get_or_create = [
+            'name', 'speed', 'cores', 'size', 'type', 'family'
+        ]
 
 
 class BaseObjectFactory(DjangoModelFactory):

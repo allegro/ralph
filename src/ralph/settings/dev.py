@@ -49,7 +49,7 @@ for logger in LOGGING['loggers']:
     LOGGING['loggers'][logger]['level'] = 'DEBUG'
     LOGGING['loggers'][logger]['handlers'].append('console')
 
-if os_env_true('RALPH_PROFILING'):
+if bool_from_env('RALPH_PROFILING'):
     SILKY_PYTHON_PROFILER = True
     MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + (
         'silk.middleware.SilkyMiddleware',
