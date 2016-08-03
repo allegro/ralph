@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='warehouse',
             name='stocktaking_tag_suffix',
-            field=models.CharField(default='WHOUSE', max_length=8),
+            field=models.CharField(max_length=8, default=''),
         ),
     ]
