@@ -99,6 +99,28 @@ class _BaseTestDeploymentActionsTestCase(object):
             self.instance.pk: {'hostname': '{}'.format('s12345.mydc.net')}
         })
 
+    def test_remove_entry_from_dhcp(self):
+        history = {self.instance.pk: {}}
+        ip = IPAddressFactory(
+            address='10.20.30.40',
+            hostname='s1234.mydc.net',
+            ethernet__mac='aa:bb:cc:dd:ee:ff',
+            ethernet__base_object=self.instance,
+            dhcp_expose=True
+        )
+        self.instance.__class__.remove_from_dhcp_entries(
+            [self.instance],
+            ipaddress=ip.id,
+            history_kwargs=history
+        )
+        ip.refresh_from_db()
+        self.assertFalse(ip.dhcp_expose)
+        self.assertEqual(history, {
+            self.instance.pk: {
+                'DHCP entry': '10.20.30.40 (s1234.mydc.net) / AA:BB:CC:DD:EE:FF'
+            }
+        })
+
 
 class DataCenterAssetDeploymentActionsTestCase(
     _BaseTestDeploymentActionsTestCase, TestCase
