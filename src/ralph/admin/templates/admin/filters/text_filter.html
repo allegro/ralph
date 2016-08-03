@@ -7,5 +7,5 @@
 {% endblock %}
 
 {% block filter_choices %}
-  <input type="text" name="{{ i.parameter_name }}" value="{{ i.current_value|default_if_none:"" }}" />
+  <input type="text" name="{{ i.parameter_name }}" value="{{ i.selected|default_if_none:"" }}" />
 {% endblock %}

@@ -9,7 +9,7 @@ Example:
     [
         <Model1: model1: test>,
         <Model2: model2: test>,
-        <Model3: model3L test>
+        <Model3: model3: test>
     ]
 """
 from itertools import groupby

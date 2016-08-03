@@ -169,12 +169,23 @@ class RalphAdminMixin(Ralph2SyncAdminMixin, RalphAutocompleteMixin):
         else:
             return None
 
-    def _initialize_search_form(self, extra_context):
-        search_fields = []
-        for field_name in self.search_fields:
-            field = get_field_by_relation_path(self.model, field_name)
-            search_fields.append(field.verbose_name)
-        extra_context['search_fields'] = search_fields
+    def _initialize_search_form(self, extra_context, fields_from_model=True):
+        """
+        Add to template's context extra variables (search_fields,
+        search_url) which are used by search form.
+
+        Args:
+            extra_context (dict): context from view
+            fields_from_model (bool): if True (by default) then fetching
+                field name from database model, otherwise fetching from
+                admin model (search_field)
+        """
+        search_fields = self.search_fields if not fields_from_model else []
+        if fields_from_model:
+            for field_name in self.search_fields:
+                field = get_field_by_relation_path(self.model, field_name)
+                search_fields.append(field.verbose_name)
+        extra_context['search_fields'] = set(search_fields)
         extra_context['search_url'] = reverse(
             'admin:{app_label}_{model_name}_changelist'.format(
                 app_label=self.model._meta.app_label,

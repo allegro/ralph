@@ -486,7 +486,7 @@ class IPFilter(SimpleListFilter):
 
     def choices(self, cl):
         yield {
-            'current_value': self.value() or '',
+            'selected': self.value() or '',
             'parameter_name': self.parameter_name,
         }
 

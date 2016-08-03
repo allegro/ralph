@@ -8,7 +8,6 @@ from ralph.assets.models.assets import (
     Asset,
     AssetHolder,
     AssetModel,
-    BaseObject,
     BudgetInfo,
     BusinessSegment,
     Category,
@@ -18,6 +17,7 @@ from ralph.assets.models.assets import (
     Service,
     ServiceEnvironment
 )
+from ralph.assets.models.base import BaseObject
 from ralph.assets.models.components import (
     ComponentModel,
     Ethernet,

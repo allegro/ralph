@@ -1,7 +1,8 @@
 {% load i18n %}
 
-<div class="actions">
-  <h4>{% trans "Actions" %}</h4>
+{% if action_form %}
+  <div class="actions">
+    <h4>{% trans "Actions" %}</h4>
     {% for field in action_form %}
       {{ field }}
     {% endfor %}
@@ -15,4 +16,5 @@
       </script>
       <span class="action-counter">{{ selection_note }}</span>
     {% endif %}
-</div>
+  </div>
+{% endif %}

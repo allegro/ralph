@@ -1,6 +1,6 @@
 {% load ralph_tags i18n admin_static %}
 
-{% if search_fields %}
+{% if search_fields and search_url %}
   <div class="contextual_search">
     <form id="changelist-search" action="{{ search_url }}" method="get" class="row collapse">
       <div class="small-10 columns">

@@ -13,7 +13,7 @@ from ralph.data_center.models.physical import (
     NetworkableBaseObject
 )
 from ralph.lib.mixins.fields import BaseObjectForeignKey, NullableCharField
-from ralph.lib.mixins.models import NamedMixin
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
 from ralph.lib.transitions.fields import TransitionField
 
 
@@ -53,8 +53,12 @@ class ClusterStatus(Choices):
 
 
 class Cluster(
-    DNSaaSPublisherMixin, WithManagementIPMixin, NetworkableBaseObject,
-    BaseObject, models.Model
+    DNSaaSPublisherMixin,
+    AdminAbsoluteUrlMixin,
+    WithManagementIPMixin,
+    NetworkableBaseObject,
+    BaseObject,
+    models.Model
 ):
     name = models.CharField(_('name'), max_length=255, blank=True, null=True)
     hostname = NullableCharField(
