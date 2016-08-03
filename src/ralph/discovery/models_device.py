@@ -616,7 +616,7 @@ class Device(
     @classmethod
     def create(cls, ethernets=None, sn=None, model=None, model_name=None,
                model_type=None, device=None, allow_stub=False, priority=0,
-               **kwargs):
+               handle_post_save=True, **kwargs):
         if 'parent' in kwargs and kwargs['parent'] is None:
             del kwargs['parent']
         if not model and (not model_name or not model_type):
@@ -708,6 +708,7 @@ class Device(
             user = kwargs.get('user')
         except KeyError:
             user = None
+        dev._handle_post_save = handle_post_save
         dev.save(user=user, update_last_seen=True, priority=priority)
         for eth in ethernets:
             ethernet, eth_created = Ethernet.concurrent_get_or_create(
