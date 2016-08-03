@@ -1,6 +1,8 @@
 from ddt import data, ddt, unpack
+from unittest import mock
 
-from django.test import TestCase
+from django.conf import settings
+from django.test import override_settings, TestCase
 
 from ralph.assets.models import Ethernet
 from ralph.assets.tests.factories import ServiceEnvironmentFactory
@@ -120,6 +122,30 @@ class _BaseTestDeploymentActionsTestCase(object):
                 'DHCP entry': '10.20.30.40 (s1234.mydc.net) / AA:BB:CC:DD:EE:FF'
             }
         })
+
+    @override_settings(ENABLE_DNSAAS_INTEGRATION=True)
+    @override_settings(DNSAAS_URL='https://dnsaas.mydc.net')
+    @mock.patch('ralph.dns.dnsaas.DNSaaS._post')
+    @mock.patch('ralph.dns.dnsaas.DNSaaS.get_domain')
+    def test_create_dns_records(self, get_domain, _post):
+        get_domain.return_value = 1
+        history = {self.instance.pk: {'ip': '10.20.30.40'}}
+        self.instance.hostname = 's12345.mydc.net'
+        self.instance.__class__.create_dns_entries(
+            [self.instance],
+            history_kwargs=history
+        )
+        _post.assert_called_once_with(
+            'https://dnsaas.mydc.net/api/v2/records/',
+            {
+                'type': 'A',
+                'auto_ptr': settings.DNSAAS_AUTO_PTR_ALWAYS,
+                'domain': 1,
+                'name': 's12345.mydc.net',
+                'content': '10.20.30.40',
+                'owner': 'ralph'
+            }
+        )
 
 
 class DataCenterAssetDeploymentActionsTestCase(

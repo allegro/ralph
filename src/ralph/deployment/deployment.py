@@ -511,6 +511,7 @@ def create_dns_entries(cls, instances, **kwargs):
             'name': instance.hostname,
             'type': RecordType.a.id,
             'content': ip,
+            'ptr': True,
         })
 
 

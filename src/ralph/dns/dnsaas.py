@@ -189,8 +189,11 @@ class DNSaaS:
             'domain': domain,
             'owner': settings.DNSAAS_OWNER
         }
-        request = self.session.post(url, data=data)
-        return self._request2result(request)
+        return self._post(url, data)
+
+    def _post(self, url, data):
+        response = self.session.post(url, data=data)
+        return self._request2result(response)
 
     def delete_dns_record(self, record_id):
         """
