@@ -229,6 +229,21 @@ Notable differences from the Licenses module:
 
 As always, you can add as many attachments(for example pdf scans of support contracts), as you want.
 
+
+## Stock-taking
+
+In the realm of business one is required to perform verification of quantities and conditions of assets owned by company. Ralph simplifies this tedious process by providing staff with tool allowing employees to report the state of assigned items effortlessly and in virtually no time.
+
+To start stock-taking process:
+
+* Check box in warehouse admin panel (enables stock-taking for all assets associated with given warehouse)
+* Check box in region admin panel (enables stock-taking for all assets belonging to users assigned to given region)
+
+Now users will have option to check assigned items information in `My equipment` view:
+![quickstart-stock-taking](/img/stock-taking.png "Quickstart stock-taking")
+
+Once user confirms that they have specific asset inventory tags are added to asset record in database and are recorded in hardware history. Tags are configurable using settings file and warehouse admin. Self-stock-taking process does not conflict with regular stock-taking. When you are done you can simply un-check the boxes in admin panels.
+
 ---
 
 So, this is it! Congratulations, you've finished our Quickstart!

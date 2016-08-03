@@ -78,14 +78,23 @@ class InventoryTagView(View):
         messages.info(request, _(missing_asset_info))
 
     def _post_yes(self, request, asset):
+        base_tag = settings.INVENTORY_TAG
+        if asset.warehouse.stocktaking_tag_suffix != '':
+            base_tag = '{prefix}-{warehouse}'.format(
+                prefix=base_tag,
+                warehouse=asset.warehouse.stocktaking_tag_suffix,
+            )
         date_tag = None
         if settings.INVENTORY_TAG_APPEND_DATE:
-            date_tag = settings.INVENTORY_TAG + '_' + date.today().isoformat()
+            date_tag = '{base}_{date}'.format(
+                base=base_tag,
+                date=date.today().isoformat(),
+            )
 
         tags = [
-            settings.INVENTORY_TAG,
+            base_tag,
             settings.INVENTORY_TAG_USER,
-            date_tag
+            date_tag,
         ]
 
         self._add_tags(request, asset, tags)
