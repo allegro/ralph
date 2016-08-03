@@ -16,6 +16,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common import nested_commit_on_success
@@ -503,6 +504,9 @@ class AddVM(View):
         resp['Location'] = LATEST_API.canonical_resource_for(
             'dev'
         ).get_resource_uri(device)
+        post_save.send(
+            sender=Device, instance=device, raw=None, using='default'
+        )
         return resp
 
     @csrf_exempt
