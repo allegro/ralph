@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
-
+from ralph.assets.models.base import BaseObject
 
 dir_file_name_validator = RegexValidator(regex='\w+')
 
@@ -56,7 +56,7 @@ class ConfigurationModule(
             cls.save()
 
 
-class ConfigurationClass(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
+class ConfigurationClass(AdminAbsoluteUrlMixin, BaseObject):
     class_name = models.CharField(
         verbose_name=_('class name'),
         max_length=255,

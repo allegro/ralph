@@ -3,7 +3,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.assets.models.configuration import ConfigurationClass
 from ralph.lib.custom_fields.models import WithCustomFieldsMixin
 from ralph.lib.mixins.models import TaggableMixin, TimeStampMixin
 from ralph.lib.permissions import PermByFieldMixin
@@ -74,7 +73,7 @@ class BaseObject(
         )
 
     configuration_path = models.ForeignKey(
-        ConfigurationClass,
+        'ConfigurationClass',
         null=True,
         blank=True,
         verbose_name=_('configuration path'),

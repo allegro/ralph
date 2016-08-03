@@ -81,6 +81,16 @@ def baseobject_migration(
                 **{relation_field: new_id}
             )
 
+    # ImportedObjects
+    ImportedObjects = apps.get_model('data_importer', 'ImportedObjects')
+    for old_id, new_id in id_mapping.items():
+        ImportedObjects._default_manager.filter(
+            object_pk=old_id,
+            content_type=model_content_type,
+        ).update(
+            object_pk=new_id
+        )
+
     # TODO: m2m?
 
 
