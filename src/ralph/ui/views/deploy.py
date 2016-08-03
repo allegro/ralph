@@ -485,6 +485,7 @@ class AddVM(View):
             model_type=DeviceType.virtual_server,
             model_name=settings.ADD_VM_MODEL_NAME,
             verified=True,
+            handle_post_save=False,
         )
         device.name = hostname
         device.parent = parent
