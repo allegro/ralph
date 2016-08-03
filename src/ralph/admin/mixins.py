@@ -176,7 +176,7 @@ class RalphAdminMixin(Ralph2SyncAdminMixin, RalphAutocompleteMixin):
 
         Args:
             extra_context (dict): context from view
-            fields_from_model (bool): if True (by defautl) then fetching
+            fields_from_model (bool): if True (by default) then fetching
                 field name from database model, otherwise fetching from
                 admin model (search_field)
         """
