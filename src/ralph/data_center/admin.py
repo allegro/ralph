@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
-from django.conf import settings
-from django.contrib.admin.views.main import ChangeList
+import operator
+from functools import reduce
 
+from django.conf import settings
+from django.contrib.admin import SimpleListFilter
+from django.contrib.admin.views.main import ChangeList
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import (
-    DCHostnameFilter,
-    DCHostTypeListFilter,
+    ChoicesListFilter,
     IPFilter,
     LiquidatedStatusFilter,
     RelatedAutocompleteFieldListFilter,
@@ -54,6 +58,56 @@ from ralph.networks.views import NetworkWithTerminatorsView
 from ralph.operations.views import OperationViewReadOnlyForExisiting
 from ralph.security.views import SecurityInfo
 from ralph.supports.models import BaseObjectsSupport
+
+
+class DCHostTypeListFilter(ChoicesListFilter):
+    def __init__(self, *args, **kwargs):
+        from ralph.data_center.models import Cluster, DataCenterAsset
+        from ralph.virtual.models import CloudHost, VirtualServer
+        models = [Cluster, DataCenterAsset, CloudHost, VirtualServer]
+        self.choices_list = [
+            (
+                ContentType.objects.get_for_model(model).pk,
+                model._meta.verbose_name
+            )
+            for model in models
+        ]
+        super().__init__(*args, **kwargs)
+
+
+class DCHostHostnameFilter(SimpleListFilter):
+    title = _('Hostname')
+    parameter_name = 'hostname'
+    template = 'admin/filters/text_filter.html'
+
+    def queryset(self, request, queryset):
+        if not self.value():
+            return queryset
+        fields = [
+            'asset__hostname',
+            'cloudhost__hostname',
+            'cluster__hostname',
+            'virtualserver__hostname'
+        ]
+        # TODO: simple if hostname would be in one model
+        queries = [
+            Q(**{'{}__icontains'.format(field): self.value()})
+            for field in fields
+        ]
+        return queryset.filter(reduce(operator.or_, queries))
+
+    def lookups(self, request, model_admin):
+        return (
+            (1, _('Hostname')),
+        )
+
+    def choices(self, cl):
+        yield {
+            'selected': self.value(),
+            'parameter_name': self.parameter_name,
+        }
+
+
 
 if settings.ENABLE_DNSAAS_INTEGRATION:
     from ralph.dns.views import DNSView
@@ -438,7 +492,7 @@ class DCHostAdmin(RalphAdmin):
     # TODO: sn
     # TODO: hostname, DC
     list_filter = [
-        DCHostnameFilter,
+        DCHostHostnameFilter,
         'service_env',
         'configuration_path',
         ('content_type', DCHostTypeListFilter),

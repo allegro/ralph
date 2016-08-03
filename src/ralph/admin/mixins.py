@@ -170,6 +170,16 @@ class RalphAdminMixin(Ralph2SyncAdminMixin, RalphAutocompleteMixin):
             return None
 
     def _initialize_search_form(self, extra_context, fields_from_model=True):
+        """
+        Add to template's context extra variables (search_fields,
+        search_url) which are used by search form.
+
+        Args:
+            extra_context (dict): context from view
+            fields_from_model (bool): if True (by defautl) then fetching
+                field name from database model, otherwise fetching from
+                admin model (search_field)
+        """
         search_fields = self.search_fields if not fields_from_model else []
         if fields_from_model:
             for field_name in self.search_fields:
