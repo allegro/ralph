@@ -2,12 +2,13 @@ from django import forms
 from django.conf import settings
 from django.contrib.admin.views.main import ORDER_VAR, SEARCH_VAR
 from django.core.urlresolvers import reverse
-from django.db.models import Count, Prefetch
+from django.db.models import Count, F, Prefetch
 from django.forms.models import ModelForm
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, register
 from ralph.admin.filters import RelatedAutocompleteFieldListFilter
+from ralph.admin.helpers import CastToInteger
 from ralph.admin.mixins import RalphAdminFormMixin, RalphMPTTAdmin
 from ralph.admin.views.main import RalphChangeList
 from ralph.assets.models import BaseObject
@@ -244,10 +245,13 @@ class NetworkAdmin(RalphMPTTAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        qs = qs.annotate(ipaddress_count=Count('ips'))
         # Getting subnetwork counts, used for column ordering
         # https://github.com/django-mptt/django-mptt/blob/master/mptt/models.py#L594  # noqa
-        qs = qs.extra(select={'subnetworks_count': 'rght - lft'})
+        qs = qs.annotate(ipaddress_count=Count('ips')).annotate(
+            subnetworks_count=(
+                CastToInteger(F('rght')) - CastToInteger(F('lft'))
+            )
+        )
         return qs
 
     def get_paginator(

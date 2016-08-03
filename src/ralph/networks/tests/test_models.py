@@ -2,7 +2,9 @@ from ipaddress import ip_address, ip_network
 
 from ddt import data, ddt, unpack
 from django.core.exceptions import ValidationError
+from django.db.models import F
 
+from ralph.admin.helpers import CastToInteger
 from ralph.assets.models import AssetLastHostname
 from ralph.assets.tests.factories import EthernetFactory
 from ralph.networks.models.choices import IPAddressStatus
@@ -47,6 +49,7 @@ class SimpleNetworkTest(RalphTestCase):
         self.ip2.save()
         self.ip3 = IPAddress(address='192.168.128.11')
         self.ip3.save()
+        Network.objects.rebuild()
 
     @unpack
     @data(
@@ -67,6 +70,15 @@ class SimpleNetworkTest(RalphTestCase):
         self.assertEquals(
             list(res), list(Network.objects.filter(name__in=correct))
         )
+
+    def test_subnetworks_count_cast_to_integer(self):
+        net = Network.objects.get(pk=self.net1.pk)
+        count = Network.objects.filter(id=self.net1.id).annotate(
+            subnetworks_count=(
+                CastToInteger(F('rght')) - CastToInteger(F('lft'))
+            )
+        ).values_list('subnetworks_count', flat=True)[0]
+        self.assertTrue(count)
 
 
 @ddt
