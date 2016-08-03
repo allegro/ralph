@@ -5,8 +5,8 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
-from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 from ralph.assets.models.base import BaseObject
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 
 dir_file_name_validator = RegexValidator(regex='\w+')
 
