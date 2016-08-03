@@ -108,7 +108,6 @@ class DCHostHostnameFilter(SimpleListFilter):
         }
 
 
-
 if settings.ENABLE_DNSAAS_INTEGRATION:
     from ralph.dns.views import DNSView
 
