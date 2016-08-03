@@ -1,6 +1,6 @@
-from ddt import data, ddt, unpack
 from unittest import mock
 
+from ddt import data, ddt, unpack
 from django.conf import settings
 from django.test import override_settings, TestCase
 
