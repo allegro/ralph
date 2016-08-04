@@ -268,6 +268,7 @@ def clean_dns(cls, instances, **kwargs):
             logger.info('No IPs for {} - skipping cleaning DNS entries'.format(
                 instance
             ))
+            continue
         records = dnsaas.get_dns_records(ips)
         if len(records) > settings.DEPLOYMENT_MAX_DNS_ENTRIES_TO_CLEAN:
             raise Exception(
