@@ -5,7 +5,7 @@ from django.conf import settings
 from ralph.assets.api.serializers import DCHostSerializer
 
 
-def _get_dc_asset_data(instance):
+def _get_host_data(instance):
     serializer = DCHostSerializer(instance=instance)
     return serializer.data
 

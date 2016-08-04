@@ -393,7 +393,8 @@ if ENABLE_DNSAAS_INTEGRATION:
 ENABLE_HERMES_INTEGRATION = os_env_true('ENABLE_HERMES_INTEGRATION')
 HERMES = json.loads(os.environ.get('HERMES', '{}'))
 HERMES['ENABLED'] = ENABLE_HERMES_INTEGRATION
-#
+# topic name where DC asset, cloud host, virtual server changes should be
+# announced
 HERMES_HOST_UPDATE_TOPIC_NAME = None
 
 if ENABLE_HERMES_INTEGRATION:

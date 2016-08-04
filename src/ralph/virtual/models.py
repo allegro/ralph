@@ -299,16 +299,12 @@ class VirtualServer(
 
 
 if settings.HERMES_HOST_UPDATE_TOPIC_NAME:
-    from ralph.publishers import _get_dc_asset_data, publish_host_update
+    from ralph.publishers import _get_host_data, publish_host_update
 
     @receiver(models.signals.post_save, sender=CloudHost)
     def post_save_cloud_host(sender, instance, **kwargs):
-        return publish_host_update(
-            _get_dc_asset_data(instance)
-        )
+        return publish_host_update(_get_host_data(instance))
 
     @receiver(models.signals.post_save, sender=VirtualServer)
     def post_save_virtual_server(sender, instance, **kwargs):
-        return publish_host_update(
-            _get_dc_asset_data(instance)
-        )
+        return publish_host_update(_get_host_data(instance))

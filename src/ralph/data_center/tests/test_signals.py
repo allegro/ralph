@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from ralph.publishers import _get_dc_asset_data
+from ralph.publishers import _get_host_data
 from ralph.data_center.tests.factories import DataCenterAssetFullFactory
 from ralph.virtual.tests.factories import (
     CloudHostFullFactory,
@@ -16,10 +16,13 @@ class TestPublishing(TestCase):
         self.virtual_server = VirtualServerFactory()
 
     def test_dc_asset_is_serialized_ok(self):
-        data = _get_dc_asset_data(self.dc_asset)
+        data = _get_host_data(self.dc_asset)
+        self.assertTrue(isinstance(data, dict))
 
     def test_cloud_host_is_serialized_ok(self):
-        data = _get_dc_asset_data(self.cloud_host)
+        data = _get_host_data(self.cloud_host)
+        self.assertTrue(isinstance(data, dict))
 
     def test_asset_is_serialized_ok(self):
-        data = _get_dc_asset_data(self.dc_asset)
+        data = _get_host_data(self.dc_asset)
+        self.assertTrue(isinstance(data, dict))
