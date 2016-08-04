@@ -20,6 +20,10 @@ class RescheduleAsyncTransitionActionLater(Exception):
     pass
 
 
+class FreezeAsyncTransition(Exception):
+    pass
+
+
 class AsyncTransitionError(TransitionError):
     pass
 

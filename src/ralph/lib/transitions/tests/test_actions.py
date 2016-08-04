@@ -14,8 +14,8 @@ from ralph.back_office.tests.factories import (
     OfficeInfrastructureFactory,
     WarehouseFactory
 )
+from ralph.lib.external_services.models import JobStatus
 from ralph.lib.transitions.models import (
-    JobStatus,
     TransitionJob,
     TransitionsHistory
 )

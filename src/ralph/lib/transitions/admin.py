@@ -12,7 +12,6 @@ from django.utils.http import urlencode
 from ralph.admin import RalphAdmin, register
 from ralph.admin.views.extra import RalphDetailView
 from ralph.helpers import get_model_view_url_name
-from ralph.lib.external_services.models import JobStatus
 from ralph.lib.transitions.forms import TransitionForm
 from ralph.lib.transitions.models import (
     Transition,
@@ -53,13 +52,12 @@ class CurrentTransitionsView(RalphDetailView):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        status_filter = dict(status__in=[JobStatus.FAILED, JobStatus.FINISHED])
         jobs = TransitionJob.objects.filter(
             content_type=ContentType.objects.get_for_model(self.object),
             object_id=self.object.pk,
         )
-        jobs_in_progress = jobs.exclude(**status_filter)
-        jobs_ended = jobs.filter(**status_filter)
+        jobs_in_progress = jobs.active()
+        jobs_ended = jobs.inactive()
         context['jobs_in_progress'] = jobs_in_progress
         context['jobs_ended'] = jobs_ended
         context['are_jobs_running'] = any([j.is_running for j in jobs])

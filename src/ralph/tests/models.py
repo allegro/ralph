@@ -9,7 +9,10 @@ from ralph.assets.models.base import BaseObject
 from ralph.attachments.helpers import add_attachment_from_disk
 from ralph.lib.mixins.fields import BaseObjectForeignKey
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
-from ralph.lib.transitions.async import RescheduleAsyncTransitionActionLater
+from ralph.lib.transitions.exceptions import (
+    FreezeAsyncTransition,
+    RescheduleAsyncTransitionActionLater
+)
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
 from ralph.lib.transitions.models import TransitionWorkflowBase
@@ -125,7 +128,8 @@ class AsyncOrder(
                 'field': forms.CharField(label='name'),
             }
         },
-        is_async=True
+        is_async=True,
+        run_after=['freezing_action']
     )
     def long_running_action(cls, instances, **kwargs):
         for instance in instances:
@@ -175,6 +179,15 @@ class AsyncOrder(
     def failing_action(cls, instances, **kwargs):
         kwargs['shared_params'][instances[0].pk]['test'] = 'failing'
         raise ValueError()
+
+    @classmethod
+    @transition_action(
+        verbose_name='Freezing action',
+        is_async=True,
+    )
+    def freezing_action(cls, instances, **kwargs):
+        kwargs['shared_params'][instances[0].pk]['test'] = 'freezing'
+        raise FreezeAsyncTransition()
 
 
 class TestAsset(models.Model):
