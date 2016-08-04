@@ -6,8 +6,6 @@
         <th>{% trans "Date" %}</th>
         <th>{% trans "Author" %}</th>
         <th>{% trans "Transition" %}</th>
-        <th>{% trans "Source" %}</th>
-        <th>{% trans "Target" %}</th>
         {% if for_many_objects %}
             <th>{% trans "Object" %}</th>
         {% endif %}
@@ -18,16 +16,18 @@
 </thead>
 <tbody>
     {% for job in jobs %}
-        <tr class="{{ job | choice_str:"status" | slugify }}">
+        <tr>
             <td>{{ job.created }}</td>
             <td>{{ job.user }}</td>
             <td>{{ job.transition.name }}</td>
-            <td>{{ job.source }}</td>
-            <td>{{ job.actions }}</td>
             {% if for_many_objects %}
                 <td><a href="{{ job.obj.get_absolute_url }}">{{ job.obj }}</a></td>
             {% endif %}
-            <td>{{ job | choice_str:"status" }}</td>
+            <td class="{{ job | choice_str:"status" | slugify }}">
+              <span class="label">
+                {{ job | choice_str:"status" }}
+              </span>
+            </td>
             <td>
                 <ul>
                     {% for action in job.transition_job_actions.all %}

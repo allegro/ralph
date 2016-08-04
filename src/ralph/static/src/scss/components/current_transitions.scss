@@ -1,11 +1,9 @@
 .current-transitions {
-    table tr {
-        $failed-color: #ffecec;
-        &.failed {
-            &:hover {
-                background-color: darken($failed-color, 1%);
-            }
-            background-color: $failed-color;
-        }
+    table tr td {
+        &.queued .label { @include label-style($warning-color); }
+        &.finished .label { @include label-style($success-color); }
+        &.failed .label { @include label-style($alert-color);} ;
+        &.started .label { @include label-style($success-color);} ;
+        &.freezed .label { @include label-style($primary-color); }
     }
 }
