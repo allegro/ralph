@@ -16,7 +16,10 @@ class Migration(migrations.Migration):
     operations = [
         InheritFromBaseObject(
             'assets', 'ConfigurationClass',
-            rewrite_fields=['created', 'modified']
+            rewrite_fields={
+                'created': 'created',
+                'modified': 'modified',
+            }
         ),
         migrations.RemoveField(
             model_name='configurationclass',

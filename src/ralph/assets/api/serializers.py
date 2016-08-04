@@ -263,12 +263,23 @@ class ConfigurationModuleSerializer(ConfigurationModuleSimpleSerializer):
         )
 
 
-class ConfigurationClassSerializer(RalphAPISerializer):
+class ConfigurationClassSimpleSerializer(RalphAPISerializer):
     module = ConfigurationModuleSimpleSerializer()
 
     class Meta:
         model = ConfigurationClass
-        exclude = ('content_type',)
+        exclude = ('content_type', 'tags', 'service_env', 'configuration_path', 'parent')
+
+
+class ConfigurationClassSerializer(
+    TypeFromContentTypeSerializerMixin, RalphAPISerializer
+):
+    __str__ = StrField(show_type=True)
+    module = ConfigurationModuleSimpleSerializer()
+
+    class Meta:
+        model = ConfigurationClass
+        exclude = ('content_type', 'service_env', 'configuration_path')
 
 
 class BaseObjectSerializer(BaseObjectSimpleSerializer):
@@ -277,7 +288,7 @@ class BaseObjectSerializer(BaseObjectSimpleSerializer):
     """
     service_env = ServiceEnvironmentSimpleSerializer()
     licences = SimpleBaseObjectLicenceSerializer(read_only=True, many=True)
-    configuration_path = ConfigurationClassSerializer()
+    configuration_path = ConfigurationClassSimpleSerializer()
 
     class Meta(BaseObjectSimpleSerializer.Meta):
         pass
