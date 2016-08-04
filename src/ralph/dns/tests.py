@@ -13,6 +13,7 @@ from ralph.dns.views import (
     DNSaaSIntegrationNotEnabledError,
     DNSView
 )
+from ralph.virtual.models import VirtualServer
 from ralph.virtual.tests.factories import VirtualServerFactory
 
 
@@ -132,6 +133,11 @@ class TestPublisher(TestCase):
                 position=1,
                 slot_no='1',
             ),
+        )
+        # refresh virtual server to get parent as BaseObject, not
+        # DataCenterAsset
+        self.virtual_server = VirtualServer.objects.get(
+            pk=self.virtual_server.id
         )
 
         cluster = ClusterFactory(

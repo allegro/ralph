@@ -264,18 +264,24 @@ class VirtualServer(
     # TODO: remove this field
     cluster = models.ForeignKey(Cluster, blank=True, null=True)
 
+    @cached_property
+    def polymorphic_parent(self):
+        return self.parent.last_descendant if self.parent_id else None
+
     def get_location(self):
-        if self.parent:
-            location = self.parent.get_location()
-            if self.parent.hostname:
-                location.append(self.parent.hostname)
+        if self.polymorphic_parent:
+            location = self.polymorphic_parent.get_location()
+            if self.polymorphic_parent.hostname:
+                location.append(self.polymorphic_parent.hostname)
         else:
             location = None
         return location
 
     @property
     def model(self):
-        return self.parent.model if self.parent else None
+        return (
+            self.polymorphic_parent.model if self.polymorphic_parent else None
+        )
 
     @cached_property
     def rack_id(self):
@@ -284,9 +290,9 @@ class VirtualServer(
     @cached_property
     def rack(self):
         if self.parent_id:
-            parent = self.parent.last_descendant
-            if isinstance(parent, DataCenterAsset):
-                return parent.rack
+            polymorphic_parent = self.polymorphic_parent.last_descendant
+            if isinstance(polymorphic_parent, DataCenterAsset):
+                return polymorphic_parent.rack
         return None
 
     class Meta:
