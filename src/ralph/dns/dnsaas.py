@@ -69,6 +69,8 @@ class DNSaaS:
     def get_dns_records(self, ipaddresses):
         """Gets DNS Records for `ipaddresses` by API call"""
         dns_records = []
+        if not ipaddresses:
+            return []
         ipaddresses = [('ip', i) for i in ipaddresses]
         url = self.build_url(
             'records',

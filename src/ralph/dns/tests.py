@@ -28,6 +28,10 @@ class TestGetDnsRecords(TestCase):
         found_dns = self.dnsaas.get_dns_records(['192.168.0.1'])
         self.assertEqual(found_dns, [])
 
+    def test_return_empty_when_no_ipaddress(self):
+        found_dns = self.dnsaas.get_dns_records([])
+        self.assertEqual(found_dns, [])
+
     @patch.object(DNSaaS, 'get_api_result')
     def test_return_dns_records_when_api_returns_records(self, mocked):
         data = {
