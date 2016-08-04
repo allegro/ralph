@@ -261,9 +261,20 @@ def clean_dns(cls, instances, **kwargs):
     dnsaas = DNSaaS()
     # TODO: transaction?
     for instance in instances:
-        records = dnsaas.get_dns_records(instance.ipaddresses.all().values_list(
-            'address', flat=True
-        ))
+        ips = list(instance.ipaddresses.exclude(
+            is_management=True
+        ).values_list('address', flat=True))
+        if not ips:
+            logger.info('No IPs for {} - skipping cleaning DNS entries'.format(
+                instance
+            ))
+        records = dnsaas.get_dns_records(ips)
+        if len(records) > settings.DEPLOYMENT_MAX_DNS_ENTRIES_TO_CLEAN:
+            raise Exception(
+                'Cannot clean {} entries for {} - clean it manually'.format(
+                    len(records), instance
+                )
+            )
         for record in records:
             logger.warning(
                 'Deleting {pk} ({type} / {name} / {content}) DNS record'.format(
