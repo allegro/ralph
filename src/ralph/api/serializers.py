@@ -4,6 +4,7 @@ import operator
 from functools import reduce
 
 import reversion
+from django.conf import settings
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.exceptions import NON_FIELD_ERRORS, ObjectDoesNotExist
 from django.db import transaction
@@ -92,6 +93,8 @@ class RalphAPISerializerMixin(
         * use `ReversedChoiceField` as default serializer for choice field
         * request and user object easily accessible in each related serializer
     """
+    #TODO:: desc here
+    skip_url_when_no_request = True
     serializer_choice_field = ReversedChoiceField
 
     @property
@@ -128,6 +131,12 @@ class RalphAPISerializerMixin(
         for field_name, field in fields.items():
             if not field.parent:
                 field.parent = self
+        if (
+            self.skip_url_when_no_request and
+            not self.context.get('request') and
+            settings.REST_FRAMEWORK['URL_FIELD_NAME'] in fields
+        ):
+            del fields['url']
         return fields
 
     def build_field(self, field_name, info, model_class, nested_depth):
@@ -282,3 +291,32 @@ class RalphAPISerializer(
     metaclass=RalphAPISerializerMetaclass
 ):
     pass
+    ##TODO:: desc here
+    #skip_url_when_no_request = True
+
+    #def get_fields(self, *args, **kwargs):
+    #    """
+    #    Bind every returned field to self (as a parent)
+    #    """
+    #    #TODO:: maybe super() is enough?
+    #    #TODO:: explain it
+    #    fields = super().get_fields(*args, **kwargs)
+    #    # assign parent to every field as self
+    #    for field_name, field in fields.items():
+    #        if not field.parent:
+    #            field.parent = self
+    #    print('RalphAPISerializer FIELDS')
+    #    print(
+    #        #self.skip_url_when_no_request,
+    #        not self.context.get('request'),
+    #        settings.REST_FRAMEWORK['URL_FIELD_NAME'] in fields
+    #    )
+    #    if (
+    #        #0 and
+    #        self.skip_url_when_no_request and
+    #        not self.context.get('request') and
+    #        settings.REST_FRAMEWORK['URL_FIELD_NAME'] in fields
+    #    ):
+    #        print(self, 'RalphAPISerializer REMOVED')
+    #        del fields['url']
+    #    return fields

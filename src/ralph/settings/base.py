@@ -264,7 +264,8 @@ REST_FRAMEWORK = {
     'DEFAULT_METADATA_CLASS': 'ralph.lib.api.utils.RalphApiMetadata',
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.AcceptHeaderVersioning',  # noqa
     'DEFAULT_VERSION': 'v1',
-    'ALLOWED_VERSIONS': ('v1',)
+    'ALLOWED_VERSIONS': ('v1',),
+    'URL_FIELD_NAME': 'url',
 }
 
 REDIS_CONNECTION = {

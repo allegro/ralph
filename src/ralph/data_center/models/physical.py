@@ -696,17 +696,13 @@ class Connection(models.Model):
 def _get_dc_asset_data(instance):
     from ralph.assets.api.serializers import DCHostSerializer
     serializer = DCHostSerializer(instance=instance)
-    import ipdb
-    ipdb.set_trace()
-    return serializer.data
+    return serializer.data()
 
 if settings.HERMES_HOST_UPDATE_TOPIC_NAME:
     from ralph.publishers import publish_host_update
 
     @receiver(post_save, sender=DataCenterAsset)
     def post_save_dc_asset(sender, instance, **kwargs):
-        import ipdb
-        ipdb.set_trace()
         return publish_host_update(
             _get_dc_asset_data(instance)
         )
