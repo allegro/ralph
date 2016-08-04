@@ -105,6 +105,8 @@ class TestPublisher(TestCase):
             service_env__service__name='service',
             service_env__environment__name='test',
             model__name='DL360',
+            model__manufacturer__name='Asus',
+            model__category__name='ATS',
             rack=RackFactory(
                 name='Rack #100',
                 server_room__name='Server Room A',
@@ -124,6 +126,8 @@ class TestPublisher(TestCase):
             parent=DataCenterAssetFactory(
                 hostname='parent',
                 model__name='DL380p',
+                model__manufacturer__name='Brother',
+                model__category__name='Database Machine',
                 rack=RackFactory(
                     name='Rack #101',
                     server_room__name='Server Room B',
