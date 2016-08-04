@@ -695,8 +695,8 @@ class Connection(models.Model):
 
 
 if settings.HERMES_HOST_UPDATE_TOPIC_NAME:
-    from ralph.publishers import _get_host_data, publish_host_update
+    from ralph.publishers import publish_host_update
 
     @receiver(post_save, sender=DataCenterAsset)
     def post_save_dc_asset(sender, instance, **kwargs):
-        return publish_host_update(_get_host_data(instance))
+        return publish_host_update(instance)

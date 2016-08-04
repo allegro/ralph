@@ -4,7 +4,6 @@ import operator
 from functools import reduce
 
 import reversion
-from django.conf import settings
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.exceptions import NON_FIELD_ERRORS, ObjectDoesNotExist
 from django.db import transaction
@@ -13,6 +12,7 @@ from django.db.models.fields import exceptions
 from rest_framework import permissions, relations, serializers
 from rest_framework.exceptions import \
     ValidationError as RestFrameworkValidationError
+from rest_framework.settings import api_settings
 from rest_framework.utils import model_meta
 from taggit_serializer.serializers import (
     TaggitSerializer,
@@ -137,9 +137,9 @@ class RalphAPISerializerMixin(
         if (
             self.skip_url_when_no_request and
             not self.context.get('request') and
-            settings.REST_FRAMEWORK['URL_FIELD_NAME'] in fields
+            api_settings.URL_FIELD_NAME in fields
         ):
-            del fields['url']
+            del fields[api_settings.URL_FIELD_NAME]
         return fields
 
     def build_field(self, field_name, info, model_class, nested_depth):
