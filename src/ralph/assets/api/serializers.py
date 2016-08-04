@@ -268,7 +268,10 @@ class ConfigurationClassSimpleSerializer(RalphAPISerializer):
 
     class Meta:
         model = ConfigurationClass
-        exclude = ('content_type', 'tags', 'service_env', 'configuration_path', 'parent')
+        exclude = (
+            'content_type', 'tags', 'service_env', 'configuration_path',
+            'parent'
+        )
 
 
 class ConfigurationClassSerializer(
