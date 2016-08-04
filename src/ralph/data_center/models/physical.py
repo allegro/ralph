@@ -693,13 +693,9 @@ class Connection(models.Model):
             self.connection_type
         )
 
-def _get_dc_asset_data(instance):
-    from ralph.assets.api.serializers import DCHostSerializer
-    serializer = DCHostSerializer(instance=instance)
-    return serializer.data()
 
 if settings.HERMES_HOST_UPDATE_TOPIC_NAME:
-    from ralph.publishers import publish_host_update
+    from ralph.publishers import _get_dc_asset_data, publish_host_update
 
     @receiver(post_save, sender=DataCenterAsset)
     def post_save_dc_asset(sender, instance, **kwargs):
