@@ -1,0 +1,11 @@
+.current-transitions {
+    table tr {
+        $failed-color: #ffecec;
+        &.failed {
+            &:hover {
+                background-color: darken($failed-color, 1%);
+            }
+            background-color: $failed-color;
+        }
+    }
+}

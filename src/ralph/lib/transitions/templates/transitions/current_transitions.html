@@ -1,6 +1,8 @@
 {% extends BASE_TEMPLATE %}
 {% load i18n transitions_tags %}
 
+{% block bodyclass %}current-transitions{% endblock %}
+
 {% block extrahead %}
     {{ block.super }}
     {% if are_jobs_running %}
@@ -9,11 +11,19 @@
 {% endblock %}
 
 {% block view_content %}
+  <div class="large-12 columns">
     <h1>{% trans "Current transitions" %}</h1>
-    {% include "transitions/_transition_jobs_table.html" with jobs=jobs_in_progress %}
-
+    {% if jobs_in_progress %}
+      {% include "transitions/_transition_jobs_table.html" with jobs=jobs_in_progress %}
+    {% else %}
+      {% include "admin/partials/message.html" with message="Nothing to do." static=True tags="info" %}
+    {% endif %}
     <h1>{% trans "Finished transitions" %}</h1>
     {# TODO: add pagination etc #}
-    {% include "transitions/_transition_jobs_table.html" with jobs=jobs_ended %}
-
+    {% if jobs_ended %}
+      {% include "transitions/_transition_jobs_table.html" with jobs=jobs_ended %}
+    {% else %}
+      {% include "admin/partials/message.html" with message="Nothing to display." static=True tags="info" %}
+    {% endif %}
+  </div>
 {% endblock %}

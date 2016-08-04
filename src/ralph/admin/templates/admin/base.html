@@ -60,10 +60,7 @@
       <div class="row">
         <div class="small-12 columns">
           {% for message in messages %}
-            <div data-alert class="alert-box radius {{ message.tags }}">
-              {{ message }}
-              <a href="#" class="close">&times;</a>
-            </div>
+            {% include "admin/partials/message.html" with message=message tags=message.tags %}
          {% endfor %}
         </div>
       </div>
