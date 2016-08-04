@@ -395,7 +395,9 @@ HERMES = json.loads(os.environ.get('HERMES', '{}'))
 HERMES['ENABLED'] = ENABLE_HERMES_INTEGRATION
 # topic name where DC asset, cloud host, virtual server changes should be
 # announced
-HERMES_HOST_UPDATE_TOPIC_NAME = None
+HERMES_HOST_UPDATE_TOPIC_NAME = os.environ.get(
+    'HERMES_HOST_UPDATE_TOPIC_NAME', None
+)
 
 if ENABLE_HERMES_INTEGRATION:
     INSTALLED_APPS += (
