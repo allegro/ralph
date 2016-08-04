@@ -1,10 +1,10 @@
 from django.test import TestCase
 
-from ralph.publishers import _get_host_data
 from ralph.data_center.tests.factories import DataCenterAssetFullFactory
+from ralph.publishers import _get_host_data
 from ralph.virtual.tests.factories import (
     CloudHostFullFactory,
-    VirtualServerFactory,
+    VirtualServerFactory
 )
 
 
