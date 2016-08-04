@@ -1,1 +1,1 @@
-default_app_config = 'ralph.assets.apps.Assets'
+default_app_config = 'ralph.dns.apps.DNS'
