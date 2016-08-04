@@ -349,7 +349,32 @@ class RalphAdminImportExportMixin(ImportExportModelAdmin):
         return super().get_queryset(request)
 
 
+class ProxyModelsPermissionsMixin(object):
+
+    def has_add_permission(self, request):
+        if not self.model._meta.proxy:
+            return super().has_add_permission(request)
+        opts = self.model._meta
+        codename = get_permission_codename('add', opts)
+        return request.user.has_perm("%s.%s" % (opts.app_label, codename))
+
+    def has_change_permission(self, request, obj=None):
+        if not self.model._meta.proxy:
+            return super().has_change_permission(request, obj)
+        opts = self.model._meta
+        codename = get_permission_codename('change', opts)
+        return request.user.has_perm("%s.%s" % (opts.app_label, codename))
+
+    def has_delete_permission(self, request, obj=None):
+        if not self.model._meta.proxy:
+            return super().has_delete_permission(request, obj)
+        opts = self.model._meta
+        codename = get_permission_codename('delete', opts)
+        return request.user.has_perm("%s.%s" % (opts.app_label, codename))
+
+
 class RalphAdmin(
+    ProxyModelsPermissionsMixin,
     PermissionAdminMixin,
     RalphAdminImportExportMixin,
     AjaxAutocompleteMixin,
