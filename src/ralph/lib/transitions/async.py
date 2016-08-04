@@ -9,6 +9,7 @@ from ralph.attachments.models import Attachment
 from ralph.lib.transitions.exceptions import (
     AsyncTransitionError,
     FailedActionError,
+    FreezeAsyncTransition,
     MoreThanOneStartedActionError,
     RescheduleAsyncTransitionActionLater
 )
@@ -47,6 +48,7 @@ def _check_previous_actions(job, executed_actions):
 
 def run_async_transition(job_id):
     transition_job = TransitionJob.objects.get(pk=job_id)
+    transition_job.start()
     try:
         _perform_async_transition(transition_job)
     except Exception as e:
@@ -104,6 +106,7 @@ def _perform_async_transition(transition_job):
                 status=TransitionJobActionStatus.STARTED,
             )
         )[0]
+        freeze = False
         try:
             # we shouldn't run whole transition atomically since it could be
             # spreaded to multiple processes (multiple tasks) - run single
@@ -116,6 +119,10 @@ def _perform_async_transition(transition_job):
                     # continue when you left off
                     transition_job.reschedule()
                     return
+                except FreezeAsyncTransition:
+                    # if action raise this exception, we're assumming that it's
+                    # finished
+                    freeze = True
                 else:
                     if isinstance(result, Attachment):
                         attachment = result
@@ -128,6 +135,10 @@ def _perform_async_transition(transition_job):
         finally:
             tja.save()
         completed_actions_names.add(action.name)
+        # freeze whole transition if demanded by some action
+        if freeze:
+            transition_job.freeze()
+            return
 
     # save obj and history
     _post_transition_instance_processing(

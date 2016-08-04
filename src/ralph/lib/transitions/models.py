@@ -31,7 +31,11 @@ from ralph.admin.helpers import (
     get_field_by_relation_path
 )
 from ralph.attachments.models import Attachment
-from ralph.lib.external_services.models import Job, JobStatus
+from ralph.lib.external_services.models import (
+    Job,
+    JOB_NOT_ENDED_STATUSES,
+    JobQuerySet
+)
 from ralph.lib.mixins.models import TimeStampMixin
 from ralph.lib.transitions.conf import (
     DEFAULT_ASYNC_TRANSITION_SERVICE_NAME,
@@ -176,7 +180,7 @@ def _check_instances_for_transition(
             if TransitionJob.objects.filter(
                 object_id=instance.id,
                 content_type=ContentType.objects.get_for_model(instance),
-                status__in=(JobStatus.STARTED, JobStatus.QUEUED)
+                status__in=JOB_NOT_ENDED_STATUSES
             ).exists():
                 logger.warning(
                     'Another async transition is already running for {}'.format(
@@ -554,6 +558,8 @@ class TransitionJob(Job):
     obj = GenericForeignKey('content_type', 'object_id')
     transition = models.ForeignKey(Transition, on_delete=models.CASCADE)  # ?
     # TODO: field?
+
+    objects = JobQuerySet.as_manager()
 
     @classmethod
     def run(

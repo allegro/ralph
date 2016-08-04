@@ -97,6 +97,59 @@ class AsyncTransitionsTest(TransitionTestCase):
                 ]
             )
 
+    def test_freezing_action_during_async_transition(self):
+        async_order = AsyncOrder.objects.create(name='test')
+        async_order2 = AsyncOrder.objects.create(name='test3')
+        async_orders = [async_order, async_order2]
+        _, transition, _ = self._create_transition(
+            model=async_order, name='prepare',
+            source=[OrderStatus.new.id], target=OrderStatus.to_send.id,
+            actions=[
+                'freezing_action',
+                'long_running_action',
+                'assing_user',
+            ],
+            async_service_name='ASYNC_TRANSITIONS',
+        )
+        job_ids = run_transition(
+            instances=async_orders,
+            transition_obj_or_name=transition,
+            request=self.request,
+            field='status',
+            data={'name': 'def', 'foo': self.foo}
+        )
+        for job_id, async_order in zip(job_ids, async_orders):
+            job = TransitionJob.objects.get(pk=job_id)
+            async_order.refresh_from_db()
+            self.assertEqual(job.status, JobStatus.FREEZED)
+
+        # unfreeze
+        for job_id in job_ids:
+            job = TransitionJob.objects.get(pk=job_id)
+            job.unfreeze()
+
+        for job_id, async_order in zip(job_ids, async_orders):
+            job = TransitionJob.objects.get(pk=job_id)
+            async_order.refresh_from_db()
+            self.assertEqual(job.status, JobStatus.FINISHED)
+            self.assertEqual(async_order.counter, 2)
+            self.assertEqual(async_order.name, 'def')
+            # check if shared params and history kwargs are properly stored
+            # during freezing
+            self.assertEqual(
+                job.params['shared_params'][async_order.pk]['test'], 'freezing'
+            )
+            # check history entries
+            th = TransitionsHistory.objects.get(object_id=async_order.id)
+            self.assertCountEqual(
+                th.actions,
+                [
+                    "Assign user",
+                    "Long runnign action",
+                    "Freezing action"
+                ]
+            )
+
     def test_run_failing_async_transition(self):
         async_order = AsyncOrder.objects.create(name='test')
         async_order2 = AsyncOrder.objects.create(name='test')

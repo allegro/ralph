@@ -8,7 +8,6 @@ from dj.choices import Choices
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields.json import JSONField
@@ -32,13 +31,19 @@ class JobStatus(Choices):
     FINISHED = _('finished')
     FAILED = _('failed')
     STARTED = _('started')
+    FREEZED = _('freezed')
+
+JOB_NOT_ENDED_STATUSES = set(
+    [JobStatus.QUEUED, JobStatus.STARTED, JobStatus.FREEZED]
+)
 
 
-class JobManager(models.Manager):
+class JobQuerySet(models.QuerySet):
     def active(self):
-        return super().get_queryset().filter(
-            Q(status=JobStatus.STARTED.id) | Q(status=JobStatus.QUEUED.id)
-        )
+        return self.filter(status__in=JOB_NOT_ENDED_STATUSES)
+
+    def inactive(self):
+        return self.exclude(status__in=JOB_NOT_ENDED_STATUSES)
 
 
 class Job(TimeStampMixin):
@@ -52,7 +57,7 @@ class Job(TimeStampMixin):
         default=JobStatus.QUEUED.id,
     )
     _params = None
-    objects = JobManager()
+    objects = JobQuerySet.as_manager()
 
     class Meta:
         app_label = 'external_services'
@@ -79,7 +84,14 @@ class Job(TimeStampMixin):
         """
         Return True if job is not ended.
         """
-        return self.status not in (JobStatus.FINISHED, JobStatus.FAILED)
+        return self.status in JOB_NOT_ENDED_STATUSES
+
+    @property
+    def is_freezed(self):
+        """
+        Return True if job is not ended.
+        """
+        return self.status == JobStatus.FREEZED
 
     @property
     def params(self):
@@ -102,6 +114,14 @@ class Job(TimeStampMixin):
         ))
         self.save()
 
+    def start(self):
+        """
+        Mark job as started.
+        """
+        logger.info('Starting job {}'.format(self))
+        self.status = JobStatus.STARTED
+        self.save()
+
     def reschedule(self):
         """
         Reschedule the same job again.
@@ -109,6 +129,18 @@ class Job(TimeStampMixin):
         # TODO: use rq scheduler
         self._update_dumped_params()
         logger.info('Rescheduling {}'.format(self))
+        service = InternalService(self.service_name)
+        job = service.run_async(job_id=self.id)
+        return job
+
+    def freeze(self):
+        self._update_dumped_params()
+        logger.info('Freezing job {}'.format(self))
+        self.status = JobStatus.FREEZED
+        self.save()
+
+    def unfreeze(self):
+        logger.info('Unfreezing {}'.format(self))
         service = InternalService(self.service_name)
         job = service.run_async(job_id=self.id)
         return job

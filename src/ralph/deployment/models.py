@@ -1,19 +1,20 @@
+import logging
 import os
 
 from dj.choices import Choices
 from django.db import models
 from django.db.models import F
+from django.db.models.manager import Manager
 from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import Ethernet
-from ralph.lib.external_services.models import JobManager
+from ralph.lib.external_services.models import JobQuerySet
 from ralph.lib.mixins.models import NamedMixin
 from ralph.lib.polymorphic.models import Polymorphic, PolymorphicBase
-from ralph.lib.transitions.models import (
-    TransitionJob,
-    TransitionJobActionStatus
-)
+from ralph.lib.transitions.models import TransitionJob
+
+logger = logging.getLogger(__name__)
 
 
 class PrebootItemType(Choices):
@@ -147,7 +148,7 @@ class Preboot(NamedMixin):
             return item.configuration
 
 
-class DeploymentManager(JobManager):
+class DeploymentManager(Manager.from_queryset(JobQuerySet)):
     def get_queryset(self):
         from ralph.deployment.deployment import deploy
         # TODO: test it
@@ -177,8 +178,9 @@ class Deployment(TransitionJob):
     @classmethod
     def mark_as_done(cls, deployment_id):
         deployment = cls.objects.get(id=deployment_id)
-        tja = deployment.transition_job_actions.get(
-            action_name='wait_for_ping'
-        )
-        tja.status = TransitionJobActionStatus.FINISHED
-        tja.save()
+        if deployment.is_freezed:
+            deployment.unfreeze()
+        else:
+            logger.warning(
+                'Deployment {} was already unfreezed'.format(deployment)
+            )

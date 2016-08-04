@@ -37,7 +37,7 @@ from ralph.dns.forms import RecordType
 from ralph.dns.views import DNSaaSIntegrationNotEnabledError
 from ralph.lib.mixins.forms import ChoiceFieldWithOtherOption, OTHER
 from ralph.lib.transitions.decorators import transition_action
-from ralph.lib.transitions.models import TransitionJobActionStatus
+from ralph.lib.transitions.exceptions import FreezeAsyncTransition
 from ralph.networks.models import IPAddress, Network, NetworkEnvironment
 from ralph.virtual.models import VirtualServer
 
@@ -577,7 +577,8 @@ def deploy(cls, instances, **kwargs):
     """
     This function just indicates that it's deployment transition.
     """
-    pass
+    # freeze transition and wait for "ping" from server
+    raise FreezeAsyncTransition()
 
 
 @deployment_action(
@@ -589,6 +590,4 @@ def wait_for_ping(cls, instances, tja, **kwargs):
     """
     Wait until server ping to Ralph that is has properly deployed.
     """
-    while tja.status == TransitionJobActionStatus.STARTED:
-        tja.refresh_from_db()
-        time.sleep(1)
+    pass
