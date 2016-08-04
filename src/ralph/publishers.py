@@ -7,7 +7,7 @@ from ralph.assets.api.serializers import DCHostSerializer
 
 def _get_dc_asset_data(instance):
     serializer = DCHostSerializer(instance=instance)
-    return serializer.data()
+    return serializer.data
 
 if settings.HERMES_HOST_UPDATE_TOPIC_NAME:
     @pyhermes.publisher(

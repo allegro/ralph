@@ -93,7 +93,10 @@ class RalphAPISerializerMixin(
         * use `ReversedChoiceField` as default serializer for choice field
         * request and user object easily accessible in each related serializer
     """
-    #TODO:: desc here
+    # This switch disable `url` fields in serializers
+    # Ralph uses serializers mainly with http requests, but occasionally we
+    # need to use Ralph serializers with django signals (if so there is no
+    # request, and all `url` fields in serializers are irrelevant)
     skip_url_when_no_request = True
     serializer_choice_field = ReversedChoiceField
 
@@ -291,32 +294,3 @@ class RalphAPISerializer(
     metaclass=RalphAPISerializerMetaclass
 ):
     pass
-    ##TODO:: desc here
-    #skip_url_when_no_request = True
-
-    #def get_fields(self, *args, **kwargs):
-    #    """
-    #    Bind every returned field to self (as a parent)
-    #    """
-    #    #TODO:: maybe super() is enough?
-    #    #TODO:: explain it
-    #    fields = super().get_fields(*args, **kwargs)
-    #    # assign parent to every field as self
-    #    for field_name, field in fields.items():
-    #        if not field.parent:
-    #            field.parent = self
-    #    print('RalphAPISerializer FIELDS')
-    #    print(
-    #        #self.skip_url_when_no_request,
-    #        not self.context.get('request'),
-    #        settings.REST_FRAMEWORK['URL_FIELD_NAME'] in fields
-    #    )
-    #    if (
-    #        #0 and
-    #        self.skip_url_when_no_request and
-    #        not self.context.get('request') and
-    #        settings.REST_FRAMEWORK['URL_FIELD_NAME'] in fields
-    #    ):
-    #        print(self, 'RalphAPISerializer REMOVED')
-    #        del fields['url']
-    #    return fields
