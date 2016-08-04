@@ -32,6 +32,7 @@ class JobStatus(Choices):
     FAILED = _('failed')
     STARTED = _('started')
     FREEZED = _('freezed')
+    KILLED = _('killed')
 
 JOB_NOT_ENDED_STATUSES = set(
     [JobStatus.QUEUED, JobStatus.STARTED, JobStatus.FREEZED]
@@ -89,9 +90,16 @@ class Job(TimeStampMixin):
     @property
     def is_freezed(self):
         """
-        Return True if job is not ended.
+        Return True if job is freezed.
         """
         return self.status == JobStatus.FREEZED
+
+    @property
+    def is_killed(self):
+        """
+        Return True if job is killed.
+        """
+        return self.status == JobStatus.KILLED
 
     @property
     def params(self):
@@ -144,6 +152,11 @@ class Job(TimeStampMixin):
         service = InternalService(self.service_name)
         job = service.run_async(job_id=self.id)
         return job
+
+    def kill(self):
+        logger.info('Kill job {}'.format(self))
+        self.status = JobStatus.KILLED
+        self.save()
 
     def fail(self, reason=''):
         """

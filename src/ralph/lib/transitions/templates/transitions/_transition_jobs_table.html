@@ -9,7 +9,8 @@
             <th>{% trans "Object" %}</th>
         {% endif %}
         <th>{% trans "Status" %}</th>
-        <th>{% trans "Actions" %}</th>
+        <th>{% trans "Transition actions" %}</th>
+        {% if show_action %}<th>{% trans "Actions" %}</th>{% endif %}
     </tr>
 </thead>
 <tbody>
@@ -28,6 +29,11 @@
                     {% endfor %}
                 </ul>
             </td>
+            {% if show_action %}
+            <td>
+              <button class="tiny button alert" onclick="javascript:if (confirm('{% trans 'Are you sure you want to kill transition job?' %}')) location.href='{% url 'kill_transition_job' job.id %}'">kill</button>
+            </td>
+            {% endif %}
         </tr>
     {% endfor %}
 </tbody>
