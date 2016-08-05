@@ -381,7 +381,7 @@ class NetworkEnvironmentTest(RalphTestCase):
         network_env = NetworkEnvironmentFactory(
             hostname_template_prefix=prefix,
             hostname_template_postfix=postfix,
-            hostname_template_counter_lengt=6,
+            hostname_template_counter_length=6,
             use_hostname_counter=False
         )
         self.assertEqual(
