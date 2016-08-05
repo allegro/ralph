@@ -55,11 +55,13 @@ class PermissionViewMetaClass(type):
         return new_class
 
 
-def update_extra_view_permissions(**kwargs):
+def update_extra_view_permissions(sender, **kwargs):
     """
     Get all views that inherit the PermissionViewMetaClass and
     adding them permission.
     """
+    if sender.name != 'django.contrib.auth':
+        return
     logger.info('Updating extra views permissions...')
     admin_classes = {}
     for model, admin_class in ralph_site._registry.items():
