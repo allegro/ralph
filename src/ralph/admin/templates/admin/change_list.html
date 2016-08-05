@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load i18n admin_urls ralph_tags admin_static admin_list foundation_alert sitetree %}
+{% load i18n admin_urls ralph_tags admin_static admin_list foundation_alert sitetree cache %}
 {% block extrastyle %}
   {{ block.super }}
   {% if not actions_on_top and not actions_on_bottom %}
@@ -81,22 +81,23 @@
         {% if not bulk_edit %}
           {% block filters %}
             {% if cl.has_filters %}
-              <div class="small-2 columns sidebar actions-and-filters">
-                {% admin_actions %}
-                <div class="filters">
-                  <h4>Filters</h4>
-                  <div class="filter-container">
-                    {% if is_popup %}
-                      <input type="hidden" name="_popup" value="1" />
-                    {% endif %}
-                    {% for spec in cl.filter_specs %}
-                      {% admin_list_filter cl spec %}
-                    {% endfor %}
+              {% cache 3600 filters request.user request.path %}
+                <div class="small-2 columns sidebar actions-and-filters">
+                  {% admin_actions %}
+                  <div class="filters">
+                    <h4>Filters</h4>
+                    <div class="filter-container">
+                      {% if is_popup %}
+                        <input type="hidden" name="_popup" value="1" />
+                      {% endif %}
+                      {% for spec in cl.filter_specs %}
+                        {% admin_list_filter cl spec %}
+                      {% endfor %}
+                    </div>
+                    <input type="button" class="button" id="filter-button" value="Filter" />
                   </div>
-                  <input type="button" class="button" id="filter-button" value="Filter" />
                 </div>
-
-              </div>
+              {% endcache %}
             {% endif %}
           {% endblock %}
         {% endif %}

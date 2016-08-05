@@ -1,4 +1,4 @@
-{% load ralph_tags i18n staticfiles sitetree admin_list %}
+{% load ralph_tags i18n staticfiles sitetree admin_list cache %}
 <!DOCTYPE html>
 {% get_current_language as LANGUAGE_CODE %}
 {% get_current_language_bidi as LANGUAGE_BIDI %}
@@ -25,31 +25,32 @@
               <a href="#"><span>Menu</span></a>
             </li>
           </ul>
-          <section class="top-bar-section">
-             {% sitetree_menu from "ralph_admin" include "trunk" template "admin/menu_admin.html" %}
-            <ul class="right">
-              <li class="has-form">
-                {% contextual_search_form search_url search_fields cl.opts.verbose_name %}
-              </li>
-              {% block usertools %}
-                {% if has_permission %}
-                  {% block welcome-msg %}
-                    <li class="has-dropdown not-click">
-                      <a href="">
-                        {% firstof user.get_full_name user.get_username %}
-                      </a>
-                      <ul class="dropdown">
-                        {% block userlinks %}
-                          {% include 'admin/partials/userlinks.html' %}
-                        {% endblock %}
-                      </ul>
-                    </li>
-                  {% endblock %}
-                {% endif %}
-              {% endblock %}
-              {% block nav-global %}{% endblock %}
-            </ul>
-          </section>
+          {% cache 3600 header request.user request.path %}
+            <section class="top-bar-section">
+               {% sitetree_menu from "ralph_admin" include "trunk" template "admin/menu_admin.html" %}
+              <ul class="right">
+                <li class="has-form">
+                  {% contextual_search_form search_url search_fields cl.opts.verbose_name %}
+                </li>
+                {% block usertools %}
+                  {% if has_permission %}
+                    {% block welcome-msg %}
+                      <li class="has-dropdown not-click">
+                        <a href="">
+                          {% firstof user.get_full_name user.get_username %}
+                        </a>
+                        <ul class="dropdown">
+                          {% block userlinks %}
+                            {% include 'admin/partials/userlinks.html' %}
+                          {% endblock %}
+                        </ul>
+                      </li>
+                    {% endblock %}
+                  {% endif %}
+                {% endblock %}
+                {% block nav-global %}{% endblock %}
+            </section>
+          {% endcache %}
         </nav>
         {% block breadcrumbs %}
           {% sitetree_breadcrumbs from "ralph_admin" template "admin/breadcrumbs_foundation.html" %}
