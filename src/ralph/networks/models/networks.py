@@ -149,6 +149,7 @@ class Network(
     address = IPNetwork(
         verbose_name=_('network address'),
         help_text=_('Presented as string (e.g. 192.168.0.0/24)'),
+        unique=True
     )
     gateway = models.ForeignKey(
         'IPAddress', verbose_name=_('Gateway address'), null=True, blank=True,
