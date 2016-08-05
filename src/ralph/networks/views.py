@@ -31,24 +31,6 @@ class NetworkTerminatorReadOnlyInline(RalphTabularM2MInline):
         return False
 
 
-from ralph.assets.models.assets import ServiceEnvironment
-from ralph.admin.mixins import RalphTabularInline
-class ServiceEnvReadOnlyInline(RalphTabularInline):
-    model = ServiceEnvironment
-    extra = 0
-    show_change_link = True
-    verbose_name_plural = _('Service Environment')
-    fields = [
-        'service', #'address',
-    ]
-
-    def get_readonly_fields(self, request, obj=None):
-        return self.get_fields(request, obj)
-
-    def has_add_permission(self, request):
-        return False
-
-
 class NetworkView(RalphDetailViewAdmin):
     icon = 'chain'
     name = 'network'
@@ -63,6 +45,11 @@ class NetworkView(RalphDetailViewAdmin):
 class NetworkWithTerminatorsView(NetworkView):
     inlines = [
         NetworkInline,
-        #ServiceEnvReadOnlyInline,
         NetworkTerminatorReadOnlyInline,
     ]
+    template_name = 'data_center/datacenterasset/networks.html'
+
+    def dispatch(self, request, model, pk, *args, **kwargs):
+        result = super().dispatch(request, model, pk, *args, **kwargs)
+        result.context_data['xxx'] = 'yyy'
+        return result

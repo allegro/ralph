@@ -155,6 +155,8 @@ class RalphDetailView(
 
 class RalphDetailViewAdmin(RalphDetailView):
     """This class helps to display standard model admin in tab."""
+    template_name = 'admin/extra_views/base_admin_change.html'
+
     def dispatch(self, request, model, pk, *args, **kwargs):
         self.object = get_object_or_404(model, pk=pk)
         self.views = kwargs['views']
@@ -166,6 +168,7 @@ class RalphDetailViewAdmin(RalphDetailView):
         self.admin_class_instance = self.admin_class(
             model, ralph_site, change_views=self.views
         )
+        self.admin_class_instance.change_form_template = self.template_name
         extra_context['media'] += self.admin_class_instance.media
         return self.admin_class_instance.change_view(
             request,
