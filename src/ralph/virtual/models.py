@@ -299,7 +299,7 @@ class VirtualServer(
 
 
 if settings.HERMES_HOST_UPDATE_TOPIC_NAME:
-    from ralph.publishers import publish_host_update
+    from ralph.data_center.publishers import publish_host_update
 
     @receiver(models.signals.post_save, sender=CloudHost)
     def post_save_cloud_host(sender, instance, **kwargs):
