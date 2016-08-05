@@ -2,6 +2,7 @@
 import logging
 
 from dj.choices import Choices
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.dispatch import receiver
@@ -301,3 +302,15 @@ class VirtualServer(
 
     def __str__(self):
         return 'VirtualServer: {} ({})'.format(self.hostname, self.sn)
+
+
+if settings.HERMES_HOST_UPDATE_TOPIC_NAME:
+    from ralph.data_center.publishers import publish_host_update
+
+    @receiver(models.signals.post_save, sender=CloudHost)
+    def post_save_cloud_host(sender, instance, **kwargs):
+        return publish_host_update(instance)
+
+    @receiver(models.signals.post_save, sender=VirtualServer)
+    def post_save_virtual_server(sender, instance, **kwargs):
+        return publish_host_update(instance)

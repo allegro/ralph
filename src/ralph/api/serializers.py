@@ -12,6 +12,7 @@ from django.db.models.fields import exceptions
 from rest_framework import permissions, relations, serializers
 from rest_framework.exceptions import \
     ValidationError as RestFrameworkValidationError
+from rest_framework.settings import api_settings
 from rest_framework.utils import model_meta
 from taggit_serializer.serializers import (
     TaggitSerializer,
@@ -92,6 +93,11 @@ class RalphAPISerializerMixin(
         * use `ReversedChoiceField` as default serializer for choice field
         * request and user object easily accessible in each related serializer
     """
+    # This switch disable `url` fields in serializers
+    # Ralph uses serializers mainly with http requests, but occasionally we
+    # need to use Ralph serializers with django signals (if so there is no
+    # request, and all `url` fields in serializers are irrelevant)
+    skip_url_when_no_request = True
     serializer_choice_field = ReversedChoiceField
 
     @property
@@ -128,6 +134,12 @@ class RalphAPISerializerMixin(
         for field_name, field in fields.items():
             if not field.parent:
                 field.parent = self
+        if (
+            self.skip_url_when_no_request and
+            not self.context.get('request') and
+            api_settings.URL_FIELD_NAME in fields
+        ):
+            del fields[api_settings.URL_FIELD_NAME]
         return fields
 
     def build_field(self, field_name, info, model_class, nested_depth):

@@ -5,11 +5,14 @@ from collections import namedtuple
 from itertools import chain
 
 from django import forms
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.core.validators import RegexValidator
 from django.db import models, transaction
 from django.db.models import Q
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
@@ -689,3 +692,11 @@ class Connection(models.Model):
             self.inbound,
             self.connection_type
         )
+
+
+if settings.HERMES_HOST_UPDATE_TOPIC_NAME:
+    from ralph.data_center.publishers import publish_host_update
+
+    @receiver(post_save, sender=DataCenterAsset)
+    def post_save_dc_asset(sender, instance, **kwargs):
+        return publish_host_update(instance)
