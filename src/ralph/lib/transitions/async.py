@@ -84,6 +84,11 @@ def _perform_async_transition(transition_job):
     # TODO: move this to transition (sth like
     # `for action in transition.get_actions(obj)`)
     for action in _order_actions_by_requirements(transition.actions.all(), obj):
+        transition_job.refresh_from_db()
+        if transition_job.is_killed:
+            logger.info('Transition job: {} is killed'.format(transition_job))
+            return
+
         if action.name in completed_actions_names:
             logger.debug('Action {} already performed - skipping'.format(
                 action.name
