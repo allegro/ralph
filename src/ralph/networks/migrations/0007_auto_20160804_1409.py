@@ -8,7 +8,7 @@ import ralph.networks.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('networks', '0005_network_gateway'),
+        ('networks', '0006_networkenvironment_use_hostname_counter'),
     ]
 
     operations = [
