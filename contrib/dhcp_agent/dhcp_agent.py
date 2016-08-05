@@ -67,7 +67,7 @@ class Cache(object):
         return last
 
     def set(self, key, value, prefix=''):
-        url_hash = get_url_hash(value)
+        url_hash = get_url_hash(key)
         self._cache[prefix + url_hash] = value
 
     def close(self):
@@ -310,7 +310,7 @@ class DHCPConfigManager(object):
             self._restart_dhcp_server()
         self._send_sync_confirmation()
 
-    def make_authorized_request(self, url, params=None):
+    def make_authorized_request(self, url):
         """Make request with extra headers like Authorization
         and If-Modified-Since.
 
@@ -323,12 +323,18 @@ class DHCPConfigManager(object):
             object: standard response object (file-like object)
         """
         headers = {}
-        if params:
-            params = urlencode(params)
-            url += '?' + params
         last = self.cache.get(prefix=CACHE_LAST_MODIFIED_PREFIX, key=url)
         if last:
+            self.logger.info(
+                'Using If-Modified-Since with value {} for url {}'.format(
+                    last, url
+                )
+            )
             headers['If-Modified-Since'] = last
+        else:
+            self.logger.info(
+                'Last modified not found in cache for url {}'.format(url)
+            )
         headers.update({'Authorization': 'Token {}'.format(self.key)})
         return urlopen(Request(url, headers=headers))
 
@@ -340,11 +346,14 @@ class DHCPConfigManager(object):
             self.host,
             mode,
         )
+        if params:
+            params = urlencode(params)
+            url += '?' + params
         configuration = None
 
         self.logger.info('Sending request to {}'.format(url))
         try:
-            response = self.make_authorized_request(url, params)
+            response = self.make_authorized_request(url)
         except HTTPError as e:
             if e.code != 304:
                 self.logger.error(
@@ -359,10 +368,16 @@ class DHCPConfigManager(object):
             return False
         else:
             configuration = response.read()
+            last_modified = response.headers.get('Last-Modified')
+            self.logger.info(
+                'Storing Last-Modified for url {} with value {}'.format(
+                    url, last_modified
+                )
+            )
             self.cache.set(
                 prefix=CACHE_LAST_MODIFIED_PREFIX,
                 key=url,
-                value=response.headers.get('Last-Modified')
+                value=last_modified
             )
         return configuration
 
@@ -403,7 +418,7 @@ class DHCPConfigManager(object):
         """
         try:
             with open_file_or_stdout_to_writing(path_to_config) as f:
-                f.write(config)
+                f.write(str(config))
                 self.logger.info(
                     'Configuration written to {}'.format(
                         path_to_config or 'stdout'
