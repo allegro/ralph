@@ -27,10 +27,13 @@ from ralph.networks.models.networks import (
 
 @register(NetworkEnvironment)
 class NetworkEnvironmentAdmin(RalphAdmin):
-    list_display = ['name', 'data_center']
+    list_display = ['name', 'data_center', 'use_hostname_counter']
     fieldsets = (
         (_('Basic info'), {
-            'fields': ['name', 'data_center', 'domain', 'remarks'],
+            'fields': [
+                'name', 'data_center', 'domain', 'remarks',
+                'use_hostname_counter'
+            ],
         }),
         (_('Hostnames'), {
             'fields': [
