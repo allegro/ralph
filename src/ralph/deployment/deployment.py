@@ -231,6 +231,17 @@ def check_mac_address(instances):
     return errors
 
 
+def check_if_network_environment_exists(instances):
+    """
+    Verify, that each instance has network environment exists.
+    """
+    errors = {}
+    for instance in instances:
+        if not instance.network_environment:
+            errors[instance] = _('Network environment not found.')
+    return errors
+
+
 # =============================================================================
 # transition actions
 # =============================================================================
@@ -441,6 +452,7 @@ def create_dhcp_entries(cls, instances, ip_or_network, ethernet, **kwargs):
             instances[0], ip_or_network, ethernet
         )
         _store_history(instances[0], ip, ethernet)
+        kwargs['shared_params']['ip_addresses'][instances[0].pk] = ip
     else:
         for instance, (ip, ethernet) in zip(
             _create_dhcp_entries_for_many_instances(
@@ -449,8 +461,9 @@ def create_dhcp_entries(cls, instances, ip_or_network, ethernet, **kwargs):
             instances
         ):
             _store_history(instance, ip, ethernet)
-    # TODO: use dedicated key
-    kwargs['history_kwargs']['dhcp_entry_created_date'] = datetime.now()
+            kwargs['shared_params']['ip_addresses'][instance.pk] = ip
+
+    kwargs['shared_params']['dhcp_entry_created_date'] = datetime.now()
 
 
 def _create_dhcp_entries_for_single_instance(
@@ -507,18 +520,24 @@ def _create_dhcp_entries_for_many_instances(instances, ip_or_network):
     verbose_name=_('Wait for DHCP servers'),
     is_async=True,
     run_after=['create_dhcp_entries'],
+    precondition=check_if_network_environment_exists
 )
 def wait_for_dhcp_servers(cls, instances, **kwargs):
     """
     Wait until DHCP servers ping to Ralph.
     """
-    created = kwargs['history_kwargs']['dhcp_entry_created_date']
+    created = kwargs['shared_params']['dhcp_entry_created_date']
     # TODO: rescheduler instead of while
+    network_environment_ids = []
+    for ip in kwargs['shared_params']['ip_addresses'].values():
+        network_environment_ids.append(ip.network.network_environment_id)
+
     while True:
-        servers_sync_date = DHCPServer.objects.values_list(
-            'last_synchronized', flat=True
-        ).all()
-        for server_sync_date in servers_sync_date:
+        servers_sync_list = DHCPServer.objects.filter(
+            Q(network_environment__isnull=True) |
+            Q(network_environment_id__in=network_environment_ids)
+        ).values_list('last_synchronized', flat=True)
+        for server_sync_date in servers_sync_list:
             if created < server_sync_date:
                 return
         time.sleep(1)

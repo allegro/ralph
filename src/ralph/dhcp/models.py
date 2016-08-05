@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.networks.models.networks import IPAddress
+from ralph.networks.models.networks import IPAddress, NetworkEnvironment
 
 
 class DHCPEntryManager(models.Manager):
@@ -32,6 +32,9 @@ class DHCPEntry(IPAddress):
 class DHCPServer(models.Model):
     ip = models.GenericIPAddressField(
         verbose_name=_('IP address'), unique=True
+    )
+    network_environment = models.ForeignKey(
+        NetworkEnvironment, null=True, blank=True
     )
     last_synchronized = models.DateTimeField(null=True, blank=True)
 
