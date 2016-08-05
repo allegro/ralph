@@ -26,7 +26,7 @@ table {
             th {
                 @include cell-border();
                 background: $thead-bg-color;
-                padding: 0 5px;
+                padding: 5px;
                 text-align: left;
                 &.action-checkbox-column {
                     text-align: center;
@@ -72,7 +72,7 @@ table {
             td, th {
                 text-align: left;
                 @include cell-border();
-                padding: 0 5px;
+                padding: 5px;
                 &.action-checkbox {
                     width: 3rem;
                     padding-top: 0.5rem;

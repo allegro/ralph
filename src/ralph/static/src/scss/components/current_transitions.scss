@@ -1,9 +1,16 @@
 .current-transitions {
-    table tr td {
-        &.queued .label { @include label-style($warning-color); }
-        &.finished .label { @include label-style($success-color); }
-        &.failed .label { @include label-style($alert-color);} ;
-        &.started .label { @include label-style($success-color);} ;
-        &.freezed .label { @include label-style($primary-color); }
+    table tr {
+        .queued .label { @include label-style($warning-color); }
+        .finished .label { @include label-style($success-color); }
+        .failed .label { @include label-style($alert-color); }
+        .started .label { @include label-style($warning-color); }
+        .freezed .label { @include label-style($primary-color); }
+        .status {
+            .label { width:100%; }
+        }
+        .actions .label {
+            padding: .1rem .2rem .1rem;
+            line-height:1;
+        }
     }
 }
