@@ -7,7 +7,12 @@ from django.contrib.auth import get_user_model
 from django.http import QueryDict
 from rest_framework.test import APIClient, APIRequestFactory
 
-from ralph.api.filters import ExtendedFiltersBackend, LookupFilterBackend
+from ralph.api.filters import (
+    ExtendedFiltersBackend,
+    FALSE_VALUES,
+    LookupFilterBackend,
+    TRUE_VALUES
+)
 from ralph.api.tests.api import (
     Bar,
     BarViewSet,
@@ -79,6 +84,12 @@ class TestLookupFilterBackend(RalphTestCase):
             price=Decimal('31.4'),
             count=3
         )
+        Bar.objects.create(
+            name='Bar44',
+            date=None,
+            price=Decimal('41.4'),
+            count=4
+        )
         self.lookup_filter = LookupFilterBackend()
 
     def test_query_filters_charfield(self):
@@ -96,7 +107,7 @@ class TestLookupFilterBackend(RalphTestCase):
         request.query_params = QueryDict(urlencode({'name__range': 10}))
         self.assertEqual(len(self.lookup_filter.filter_queryset(
             request, Bar.objects.all(), bvs)
-        ), 3)
+        ), 4)
 
     def test_query_filters_decimalfield(self):
         request = self.request_factory.get('/api/bar')
@@ -105,13 +116,13 @@ class TestLookupFilterBackend(RalphTestCase):
         bvs.request = request
         self.assertEqual(len(self.lookup_filter.filter_queryset(
             request, Bar.objects.all(), bvs)
-        ), 2)
+        ), 3)
 
         # Failed filter
         request.query_params = QueryDict(urlencode({'price__istartswith': 10}))
         self.assertEqual(len(self.lookup_filter.filter_queryset(
             request, Bar.objects.all(), bvs)
-        ), 3)
+        ), 4)
 
     def test_query_filters_integerfield(self):
         request = self.request_factory.get('/api/bar')
@@ -120,13 +131,13 @@ class TestLookupFilterBackend(RalphTestCase):
         bvs.request = request
         self.assertEqual(len(self.lookup_filter.filter_queryset(
             request, Bar.objects.all(), bvs)
-        ), 2)
+        ), 3)
 
         # Failed filter
         request.query_params = QueryDict(urlencode({'count__istartswith': 10}))
         self.assertEqual(len(self.lookup_filter.filter_queryset(
             request, Bar.objects.all(), bvs)
-        ), 3)
+        ), 4)
 
     def test_query_filters_datefield(self):
         request = self.request_factory.get('/api/bar')
@@ -141,7 +152,7 @@ class TestLookupFilterBackend(RalphTestCase):
         request.query_params = QueryDict(urlencode({'date__istartswith': 10}))
         self.assertEqual(len(self.lookup_filter.filter_queryset(
             request, Bar.objects.all(), bvs)
-        ), 3)
+        ), 4)
 
     def test_query_filters_datetimefield(self):
         request = self.request_factory.get('/api/bar')
@@ -152,7 +163,7 @@ class TestLookupFilterBackend(RalphTestCase):
         bvs.request = request
         self.assertEqual(len(self.lookup_filter.filter_queryset(
             request, Bar.objects.all(), bvs)
-        ), 3)
+        ), 4)
 
         request.query_params = QueryDict(
             urlencode({
@@ -171,4 +182,26 @@ class TestLookupFilterBackend(RalphTestCase):
         )
         self.assertEqual(len(self.lookup_filter.filter_queryset(
             request, Bar.objects.all(), bvs)
-        ), 3)
+        ), 4)
+
+    def test_query_filters_isnull(self):
+        request = self.request_factory.get('/api/bar')
+        bvs = BarViewSet()
+
+        for val in TRUE_VALUES:
+            request.query_params = QueryDict(urlencode(
+                {'date__isnull': val})
+            )
+            bvs.request = request
+            self.assertEqual(len(self.lookup_filter.filter_queryset(
+                request, Bar.objects.all(), bvs)
+            ), 1)
+
+        for val in FALSE_VALUES:
+            request.query_params = QueryDict(urlencode(
+                {'date__isnull': val})
+            )
+            bvs.request = request
+            self.assertEqual(len(self.lookup_filter.filter_queryset(
+                request, Bar.objects.all(), bvs)
+            ), 3)
