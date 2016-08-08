@@ -1,4 +1,4 @@
-{% load ralph_tags i18n staticfiles sitetree admin_list cache %}
+{% load ralph_tags i18n staticfiles sitetree admin_list cache cache_tags %}
 <!DOCTYPE html>
 {% get_current_language as LANGUAGE_CODE %}
 {% get_current_language_bidi as LANGUAGE_BIDI %}
@@ -25,10 +25,9 @@
               <a href="#"><span>Menu</span></a>
             </li>
           </ul>
-          {# TODO: invalid cache based on view name and modified date user and their groups#}
-          {% cache 3600 header request.user request.path %}
+          {% cache_fragment 3600 header_menu opts.app_label opts.model_name prefix=header_menu_cache_prefix %}
+          <!-- cache -->
           {% spaceless %}
-
             <section class="top-bar-section">
                {% sitetree_menu from "ralph_admin" include "trunk" template "admin/menu_admin.html" %}
               <ul class="right">
@@ -55,12 +54,20 @@
             </section>
           {% endspaceless %}
           {% endcache %}
+          <!-- end cache -->
         </nav>
         {% block breadcrumbs %}
-        {# TODO: invalid cache based on view name and modified date object #}
-        {% cache 3600 breadcrumbs request.path %}
-          {% sitetree_breadcrumbs from "ralph_admin" template "admin/breadcrumbs_foundation.html" %}
-        {% endcache %}
+          {% if original.modified %}
+            <!-- cache -->
+            {% cache 3600 breadcrumbs opts.app_label opts.model_name original.modified %}
+              {% spaceless %}
+                {% sitetree_breadcrumbs from "ralph_admin" template "admin/breadcrumbs_foundation.html" %}
+              {% endspaceless %}
+            {% endcache %}
+            <!-- end cache -->
+          {% else %}
+              {% sitetree_breadcrumbs from "ralph_admin" template "admin/breadcrumbs_foundation.html" %}
+          {% endif %}
         {% endblock %}
       {% endblock %}
     {% endif %}

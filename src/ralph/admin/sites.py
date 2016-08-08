@@ -6,7 +6,17 @@ from django.conf.urls import url
 from django.contrib.admin.sites import AdminSite
 
 
-class RalphAdminSiteMixin(object):
+class RalphCacheKeysMixin(object):
+    def each_context(self, request):
+        context = super().each_context(request)
+        if request.user:
+            context['header_menu_cache_prefix'] = 'user:{}'.format(
+                request.user.id
+            )
+        return context
+
+
+class RalphAdminSiteMixin(RalphCacheKeysMixin):
 
     """Ralph admin site mixin."""
     site_header = settings.ADMIN_SITE_HEADER
