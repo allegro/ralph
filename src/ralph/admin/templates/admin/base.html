@@ -25,7 +25,10 @@
               <a href="#"><span>Menu</span></a>
             </li>
           </ul>
+          {# TODO: invalid cache based on view name and modified date user and their groups#}
           {% cache 3600 header request.user request.path %}
+          {% spaceless %}
+
             <section class="top-bar-section">
                {% sitetree_menu from "ralph_admin" include "trunk" template "admin/menu_admin.html" %}
               <ul class="right">
@@ -50,10 +53,14 @@
                 {% endblock %}
                 {% block nav-global %}{% endblock %}
             </section>
+          {% endspaceless %}
           {% endcache %}
         </nav>
         {% block breadcrumbs %}
+        {# TODO: invalid cache based on view name and modified date object #}
+        {% cache 3600 breadcrumbs request.path %}
           {% sitetree_breadcrumbs from "ralph_admin" template "admin/breadcrumbs_foundation.html" %}
+        {% endcache %}
         {% endblock %}
       {% endblock %}
     {% endif %}
