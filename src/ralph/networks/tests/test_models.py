@@ -386,7 +386,7 @@ class NetworkEnvironmentTest(RalphTestCase):
         )
         self.assertEqual(
             network_env.next_hostname_without_model_counter(),
-            'test.0001.ralph.pl'
+            'test.000001.ralph.pl'
         )
         for i in ['000009', '000001', '000008', '000007', '000050', '000044']:
             DataCenterAssetFactory(hostname="".join([prefix, i, postfix]))
