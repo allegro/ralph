@@ -387,9 +387,11 @@ def assign_new_hostname(cls, instances, network_environment, **kwargs):
 
 
 def check_ipaddress_unique(instances, data):
+    """
+    Validate if custom (other) IP is already assigned to another (base) object.
+    """
     if data['ip_or_network']['value'] == OTHER:
-        if len(instances) > 1:
-            raise ValidationError('Max one instance when other IP')  # TODO
+        assert len(instances) == 1
         instance = instances[0]
         address = data['ip_or_network'][OTHER]
         try:

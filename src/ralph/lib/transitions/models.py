@@ -201,7 +201,12 @@ def _check_instances_for_transition(
 
 def _transition_data_validation(instances, transition, data):
     """
-    TODO
+    Run additional data validation using transition instances. It's using
+    `validation` option assigned to transition field.
+
+    Returns: nested dict with action name on first level, field name on second
+        level and list of errors as values, ex.
+        `{'action_name': {'field_name': ['Some error', 'Other error']}}`
     """
     errors = defaultdict(lambda: defaultdict(list))
     for action in transition.actions.all():

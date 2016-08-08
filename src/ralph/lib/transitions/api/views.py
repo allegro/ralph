@@ -141,6 +141,11 @@ class TransitionView(APIView):
         return result
 
     def _run_additional_validation(self, data):
+        """
+        Run additional data validation on API data and transition instances.
+
+        Raise ValidationError (DRF) if any error occurs.
+        """
         errors = _transition_data_validation(
             self.objects, self.transition, data
         )
