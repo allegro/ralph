@@ -385,6 +385,35 @@ class _BaseDeploymentTransitionTestCase(object):
             response.data['ethernet']
         )
 
+    def test_create_dhcp_entries_through_api_with_occupied_ip(self):
+        self._prepare_create_dhcp_entries_transition()
+        IPAddressFactory(
+            address='10.20.30.40',
+            ethernet__base_object=DataCenterAssetFactory()
+        )
+        response = self.api_client.post(
+            reverse(
+                'transition-view',
+                args=(
+                    self.create_dhcp_entries_transition.id,
+                    self.instance.pk
+                )
+            ),
+            {
+                'ip_or_network': {
+                    'value': '__other__',
+                    '__other__': '10.20.30.40',
+                },
+                'ethernet': self.eth.id,
+            },
+            format='json',
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(
+            'IP 10.20.30.40 is already assigned to other object!',
+            response.data['ip_or_network']
+        )
+
     @unpack
     @data(
         (lambda t: t._get_create_dhcp_entries_gui(), '10.20.30.6'),
@@ -431,7 +460,28 @@ class _BaseDeploymentTransitionTestCase(object):
             response.context_data['form'].errors
         )
 
-    # TODO: test for used address
+    def test_create_dhcp_entries_through_gui_with_occupied_ip(self):
+        self._prepare_create_dhcp_entries_transition()
+        IPAddressFactory(
+            address='10.20.30.40',
+            ethernet__base_object=DataCenterAssetFactory()
+        )
+        response = self.gui_client.post(
+            reverse(
+                self.transition_url_name,
+                args=(self.instance.id, self.create_dhcp_entries_transition.id)
+            ),
+            {
+                'create_dhcp_entries__ip_or_network': '__other__',
+                'create_dhcp_entries__ip_or_network__other__': '10.20.30.40',
+                'create_dhcp_entries__ethernet': self.eth.id,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context_data['form'].errors['create_dhcp_entries__ip_or_network'],  # noqa
+            ['IP 10.20.30.40 is already assigned to other object!']
+        )
 
 
 class VirtualServerDeploymentTransitionTestCase(
