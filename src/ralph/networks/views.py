@@ -81,8 +81,11 @@ class NetworkWithTerminatorsView(NetworkView):
 
     def dispatch(self, request, model, pk, *args, **kwargs):
         result = super().dispatch(request, model, pk, *args, **kwargs)
-        from django.http import HttpResponseRedirect
-        if not isinstance(result, HttpResponseRedirect):
-            result.context_data['networks'] = self.object._get_available_networks()
-            result.context_data['network_envs'] = self.object._get_available_network_environments()
+        self.network_data = self.network_data()
         return result
+
+    def network_data(self, **kwargs):
+        return {
+            'networks': self.object._get_available_networks(),
+            'network_envs': self.object._get_available_network_environments(),
+        }
