@@ -7,3 +7,8 @@
     vertical-align: middle;
     margin: 0.5rem;
 }
+
+.alert-box.static {
+    border-style: dashed;
+    .close {display: none}
+}
