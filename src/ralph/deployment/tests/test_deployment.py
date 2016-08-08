@@ -21,15 +21,82 @@ from ralph.virtual.tests.factories import VirtualServerFactory
 
 
 class _BaseTestDeploymentActionsTestCase(object):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls._dns_record = {
+            'pk': 10,
+            'name': 's12345.mydc.net',
+            'type': 1,
+            'content': '10.20.30.40',
+            'ptr': True,
+            'owner': '_ralph'
+        }
+
     def test_clean_hostname(self):
         self.instance.hostname = 'test'
         self.instance.__class__.clean_hostname([self.instance])
         # TODO: needs NullableCharField fix for VirtualServer
         # self.assertIsNone(self.instance.hostname)
 
-    def test_clean_dns(self):
-        # TODO
-        pass
+    @override_settings(ENABLE_DNSAAS_INTEGRATION=True)
+    @mock.patch('ralph.deployment.deployment.DNSaaS.get_dns_records')
+    @mock.patch('ralph.deployment.deployment.DNSaaS.delete_dns_record')
+    def test_clean_dns(self, delete_dns_record_mock, get_dns_records_mock):
+        IPAddressFactory(address='10.20.30.41')
+        IPAddressFactory(
+            ethernet__base_object=self.instance, is_management=True
+        )
+        IPAddressFactory(
+            ethernet__base_object=self.instance,
+            ethernet__mac=None,
+            ethernet__label=None,
+            address='10.20.30.40',
+        )
+        delete_dns_record_mock.return_value = False
+        get_dns_records_mock.return_value = [self._dns_record] * 3
+        history = {self.instance.pk: {}}
+        self.instance.__class__.clean_dns(
+            [self.instance], history_kwargs=history
+        )
+        get_dns_records_mock.assert_called_with(['10.20.30.40'])
+        self.assertEqual(delete_dns_record_mock.call_count, 3)
+        delete_dns_record_mock.assert_called_with(10)
+
+    @override_settings(ENABLE_DNSAAS_INTEGRATION=True)
+    @mock.patch('ralph.deployment.deployment.DNSaaS.delete_dns_record')
+    def test_clean_dns_with_no_ips(self, delete_dns_record_mock):
+        IPAddressFactory(
+            ethernet__base_object=self.instance, is_management=True
+        )
+        history = {self.instance.pk: {}}
+        self.instance.__class__.clean_dns(
+            [self.instance], history_kwargs=history
+        )
+        self.assertEqual(delete_dns_record_mock.call_count, 0)
+
+    @override_settings(ENABLE_DNSAAS_INTEGRATION=True)
+    @mock.patch('ralph.deployment.deployment.DNSaaS.get_dns_records')
+    def test_clean_dns_with_too_much_ips(self, get_dns_records_mock):
+        IPAddressFactory(
+            ethernet__base_object=self.instance,
+            ethernet__mac=None,
+            ethernet__label=None,
+            address='10.20.30.40',
+        )
+        history = {self.instance.pk: {}}
+        get_dns_records_mock.return_value = [self._dns_record] * 50
+        history = {self.instance.pk: {}}
+        with self.assertRaises(Exception) as e:
+            self.instance.__class__.clean_dns(
+                [self.instance], history_kwargs=history
+            )
+        self.assertEqual(
+            str(e.exception),
+            'Cannot clean 50 entries for {} - clean it manually'.format(
+                self.instance
+            )
+        )
 
     def test_clean_ipaddresses(self):
         ip = IPAddressFactory(ethernet__base_object=self.instance)

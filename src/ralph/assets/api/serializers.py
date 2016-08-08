@@ -8,6 +8,7 @@ from ralph.api import RalphAPISerializer
 from ralph.api.fields import StrField
 from ralph.api.serializers import (
     AdditionalLookupRelatedField,
+    RalphAPISaveSerializer,
     ReversionHistoryAPISerializerMixin
 )
 from ralph.api.utils import PolymorphicSerializer
@@ -208,6 +209,20 @@ class CategorySerializer(RalphAPISerializer):
 class AssetModelSerializer(WithCustomFieldsSerializerMixin, RalphAPISerializer):
 
     category = CategorySerializer()
+
+    class Meta:
+        model = AssetModel
+        fields = (
+            'id', 'url', 'custom_fields', 'configuration_variables',
+            'category', 'name', 'created', 'modified', 'type',
+            'power_consumption', 'height_of_device', 'cores_count',
+            'visualization_layout_front', 'visualization_layout_back',
+            'has_parent', 'manufacturer',
+        )
+        depth = 1
+
+
+class AssetModelSaveSerializer(RalphAPISaveSerializer):
 
     class Meta:
         model = AssetModel

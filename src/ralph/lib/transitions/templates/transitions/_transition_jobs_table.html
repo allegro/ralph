@@ -3,40 +3,47 @@
 <table class="full">
 <thead>
     <tr>
-        <th>{% trans "Date" %}</th>
+        <th>{% trans "Basic info" %}</th>
         <th>{% trans "Author" %}</th>
         <th>{% trans "Transition" %}</th>
         {% if for_many_objects %}
             <th>{% trans "Object" %}</th>
         {% endif %}
         <th>{% trans "Status" %}</th>
-        <th>{% trans "Actions" %}</th>
+        <th>{% trans "Transition actions" %}</th>
         <th>{% trans "Data" %}</th>
+        {% if show_kill %}<th>{% trans "Actions" %}</th>{% endif %}
     </tr>
 </thead>
 <tbody>
     {% for job in jobs %}
         <tr>
-            <td>{{ job.created }} <i>{{ job.created|timesince }} ago</i><br>ID: {{ job.id }}</td>
+            <td>
+                ID: {{ job.id }}<br>
+                Created date: {{ job.created }} <span class="date">{{ job.created|timesince }} ago</span>
+            </td>
             <td><a href="{{ job.user.get_absolute_url }}">{{ job.user }}</a></td>
             <td>{{ job.transition.name }}</td>
             {% if for_many_objects %}
                 <td><a href="{{ job.obj.get_absolute_url }}">{{ job.obj }}</a></td>
             {% endif %}
-            <td class="status {{ job | choice_str:"status" | slugify }}">
-              <span class="label">
+            <td class="status">
+              <span class="label {{ job | choice_str:"status" | slugify }}">
                 {{ job | choice_str:"status" }}
               </span>
             </td>
             <td class="actions">
-                <ul>
+                <table class="full">
+                    <tbody>
                     {% for action in job.transition_job_actions.all %}
-                        <li class="{{ action | choice_str:"status" | slugify }}">
-                        {# TODO: ile trwala akcja #}
-                          {{ action.action_name }} - <span class="label small">{{ action | choice_str:"status" }}</span> ({{ action.created }} {{ action.modified }})
-                        </li>
+                        <tr>
+                            <td class="status"><span class="label small {{ action | choice_str:"status" | slugify }}">{{ action | choice_str:"status" }}</span></td>
+                            <td>{{ action.action_name }}</td>
+                            <td class="right"><span class="date">{{ action.created }}</span></td>
+                        </tr>
                     {% endfor %}
-                </ul>
+                    </tbody>
+                </table>
             </td>
             <td>
               {% history_for_object job object as history_items %}
@@ -44,6 +51,11 @@
                 {{ value.0 }}: <strong>{{ value.1 }}</strong><br />
               {% endfor %}
             </td>
+            {% if show_kill %}
+            <td>
+              <button class="tiny button alert" onclick="javascript:if (confirm('{% trans 'Are you sure you want to kill transition job?' %}')) location.href='{% url 'kill_transition_job' job.id %}'">kill</button>
+            </td>
+            {% endif %}
         </tr>
     {% endfor %}
 </tbody>

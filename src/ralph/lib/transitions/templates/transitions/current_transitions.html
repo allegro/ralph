@@ -6,7 +6,7 @@
 {% block extrahead %}
     {{ block.super }}
     {% if are_jobs_running %}
-        {# <meta http-equiv="refresh" content="5"> #}
+        <meta http-equiv="refresh" content="5">
     {% endif %}
 {% endblock %}
 
@@ -14,16 +14,16 @@
   <div class="large-12 columns">
     <h1>{% trans "Current transitions" %}</h1>
     {% if jobs_in_progress %}
-      {% include "transitions/_transition_jobs_table.html" with jobs=jobs_in_progress %}
+      {% include "transitions/_transition_jobs_table.html" with jobs=jobs_in_progress show_kill=True %}
     {% else %}
-      {% include "admin/partials/message.html" with message="Nothing to do." static=True tags="info" %}
+      {% include "admin/partials/message.html" with message="Nothing to do." tags="info static" %}
     {% endif %}
     <h1>{% trans "Finished transitions" %}</h1>
     {# TODO: add pagination etc #}
     {% if jobs_ended %}
       {% include "transitions/_transition_jobs_table.html" with jobs=jobs_ended %}
     {% else %}
-      {% include "admin/partials/message.html" with message="Nothing to display." static=True tags="info" %}
+      {% include "admin/partials/message.html" with message="Nothing to display." static=True tags="info static" %}
     {% endif %}
   </div>
 {% endblock %}

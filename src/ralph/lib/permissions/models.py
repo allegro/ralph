@@ -1,6 +1,8 @@
 import operator
 
-from django.db import models
+from django.contrib.auth.management import _get_all_permissions
+from django.core import exceptions
+from django.db import DEFAULT_DB_ALIAS, models, router, transaction
 from django.db.models.base import ModelBase
 from django.utils.translation import ugettext_lazy as _
 
@@ -288,3 +290,86 @@ class PermissionsForObjectMixin(models.Model, metaclass=PermissionsBase):
 
     class Meta:
         abstract = True
+
+
+@transaction.atomic
+def create_permissions(
+    app_config, verbosity=2, interactive=True, using=DEFAULT_DB_ALIAS, **kwargs
+):
+    """
+    Copy/paste from django/contrib/auth/management/__init__.py with
+    small modifications (for_concrete_model, app_config.get_proxies).
+
+    Create permissions for defined proxy models in apps module.
+    """
+    from django.apps import apps
+
+    if not app_config.models_module:
+        return
+
+    try:
+        Permission = apps.get_model('auth', 'Permission')
+    except LookupError:
+        return
+
+    if not router.allow_migrate_model(using, Permission):
+        return
+
+    from django.contrib.contenttypes.models import ContentType
+
+    # This will hold the permissions we're looking for as
+    # (content_type, (codename, name))
+    searched_perms = list()
+    # The codenames and ctypes that should exist.
+    ctypes = set()
+    for klass in app_config.get_models():
+        # Force looking up the content types in the current database
+        # before creating foreign keys to them.
+        ctype = ContentType.objects.db_manager(using).get_for_model(
+            model=klass, for_concrete_model=False
+        )
+        if klass._meta.proxy:
+            concrete_ctype = ContentType.objects.db_manager(using).get_for_model(  # noqa
+                model=klass,
+            )
+            perms = Permission.objects.using(using).filter(
+                content_type=concrete_ctype,
+                codename__endswith=klass._meta.model_name
+            )
+            if perms:
+                perms.update(content_type=ctype)
+        ctypes.add(ctype)
+        for perm in _get_all_permissions(klass._meta, ctype):
+            searched_perms.append((ctype, perm))
+
+    # Find all the Permissions that have a content_type for a model we're
+    # looking for.  We don't need to check for codenames since we already have
+    # a list of the ones we're going to create.
+    all_perms = set(Permission.objects.using(using).filter(
+        content_type__in=ctypes,
+    ).values_list(
+        "content_type", "codename"
+    ))
+
+    perms = [
+        Permission(codename=codename, name=name, content_type=ct)
+        for ct, (codename, name) in searched_perms
+        if (ct.pk, codename) not in all_perms
+    ]
+    # Validate the permissions before bulk_creation to avoid cryptic
+    # database error when the verbose_name is longer than 50 characters
+    permission_name_max_length = Permission._meta.get_field('name').max_length
+    verbose_name_max_length = permission_name_max_length - len('Can change ')
+    for perm in perms:
+        if len(perm.name) > permission_name_max_length:
+            raise exceptions.ValidationError(
+                "The verbose_name of %s.%s is longer than %s characters" % (
+                    perm.content_type.app_label,
+                    perm.content_type.model,
+                    verbose_name_max_length,
+                )
+            )
+    Permission.objects.using(using).bulk_create(perms)
+    if verbosity >= 2:
+        for perm in perms:
+            print("Adding permission '%s'" % perm)

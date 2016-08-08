@@ -115,7 +115,7 @@ class CustomFieldValue(TimeStampMixin, models.Model):
     # of integers or other Django filters like gte, lte.
     value = models.CharField(max_length=CUSTOM_FIELD_VALUE_MAX_LENGTH)
     content_type = models.ForeignKey(ContentType)
-    object_id = models.PositiveIntegerField()
+    object_id = models.PositiveIntegerField(db_index=True)
     object = generic.GenericForeignKey('content_type', 'object_id')
 
     class Meta:

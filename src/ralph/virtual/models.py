@@ -2,6 +2,7 @@
 import logging
 
 from dj.choices import Choices
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.dispatch import receiver
@@ -264,18 +265,24 @@ class VirtualServer(
     # TODO: remove this field
     cluster = models.ForeignKey(Cluster, blank=True, null=True)
 
+    @cached_property
+    def polymorphic_parent(self):
+        return self.parent.last_descendant if self.parent_id else None
+
     def get_location(self):
-        if self.parent:
-            location = self.parent.get_location()
-            if self.parent.hostname:
-                location.append(self.parent.hostname)
+        if self.polymorphic_parent:
+            location = self.polymorphic_parent.get_location()
+            if self.polymorphic_parent.hostname:
+                location.append(self.polymorphic_parent.hostname)
         else:
             location = None
         return location
 
     @property
     def model(self):
-        return self.parent.model if self.parent else None
+        return (
+            self.polymorphic_parent.model if self.polymorphic_parent else None
+        )
 
     @cached_property
     def rack_id(self):
@@ -284,9 +291,9 @@ class VirtualServer(
     @cached_property
     def rack(self):
         if self.parent_id:
-            parent = self.parent.last_descendant
-            if isinstance(parent, DataCenterAsset):
-                return parent.rack
+            polymorphic_parent = self.polymorphic_parent.last_descendant
+            if isinstance(polymorphic_parent, DataCenterAsset):
+                return polymorphic_parent.rack
         return None
 
     class Meta:
@@ -295,3 +302,15 @@ class VirtualServer(
 
     def __str__(self):
         return 'VirtualServer: {} ({})'.format(self.hostname, self.sn)
+
+
+if settings.HERMES_HOST_UPDATE_TOPIC_NAME:
+    from ralph.data_center.publishers import publish_host_update
+
+    @receiver(models.signals.post_save, sender=CloudHost)
+    def post_save_cloud_host(sender, instance, **kwargs):
+        return publish_host_update(instance)
+
+    @receiver(models.signals.post_save, sender=VirtualServer)
+    def post_save_virtual_server(sender, instance, **kwargs):
+        return publish_host_update(instance)

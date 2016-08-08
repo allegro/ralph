@@ -7,6 +7,7 @@ from django.db.models import F
 from ralph.admin.helpers import CastToInteger
 from ralph.assets.models import AssetLastHostname
 from ralph.assets.tests.factories import EthernetFactory
+from ralph.data_center.tests.factories import DataCenterAssetFactory
 from ralph.networks.models.choices import IPAddressStatus
 from ralph.networks.models.networks import IPAddress, Network
 from ralph.networks.tests.factories import (
@@ -14,6 +15,7 @@ from ralph.networks.tests.factories import (
     NetworkEnvironmentFactory
 )
 from ralph.tests import RalphTestCase
+from ralph.virtual.tests.factories import VirtualServerFactory
 
 
 @ddt
@@ -372,6 +374,32 @@ class NetworkEnvironmentTest(RalphTestCase):
         # check if hostname is not increased
         self.assertEqual(ne.next_free_hostname, 's12300001.dc.local')
         self.assertEqual(ne.next_free_hostname, 's12300001.dc.local')
+
+    def test_next_hostname_without_counter(self):
+        prefix = 'test.'
+        postfix = '.ralph.pl'
+        network_env = NetworkEnvironmentFactory(
+            hostname_template_prefix=prefix,
+            hostname_template_postfix=postfix,
+            use_hostname_counter=False
+        )
+        self.assertEqual(
+            network_env.next_hostname_without_model_counter(),
+            'test.00001.ralph.pl'
+        )
+        for i in ['00009', '00001', '00008', '00007', '00050', '00044']:
+            DataCenterAssetFactory(hostname="".join([prefix, i, postfix]))
+        self.assertEqual(
+            network_env.next_hostname_without_model_counter(),
+            'test.00051.ralph.pl'
+        )
+        for i in ['00019', '00011', '00098', '00053', '00444']:
+            VirtualServerFactory(hostname="".join([prefix, i, postfix]))
+
+        self.assertEqual(
+            network_env.next_hostname_without_model_counter(),
+            'test.00445.ralph.pl'
+        )
 
 
 class IPAddressTest(RalphTestCase):

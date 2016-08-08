@@ -81,6 +81,10 @@ class NetworkEnvironment(TimeStampMixin, NamedMixin, models.Model):
         blank=True,
         null=True,
     )
+    use_hostname_counter = models.BooleanField(
+        default=True,
+        help_text='If set to false hostname based on already added hostnames.'
+    )
 
     def __str__(self):
         return self.name
@@ -93,20 +97,60 @@ class NetworkEnvironment(TimeStampMixin, NamedMixin, models.Model):
         """
         Retrieve next free hostname
         """
-        return AssetLastHostname.get_next_free_hostname(
-            self.hostname_template_prefix,
-            self.hostname_template_postfix,
-            self.hostname_template_counter_length
-        )
+        if self.use_hostname_counter:
+            return AssetLastHostname.get_next_free_hostname(
+                self.hostname_template_prefix,
+                self.hostname_template_postfix,
+                self.hostname_template_counter_length
+            )
+        return self.next_hostname_without_model_counter()
 
     def issue_next_free_hostname(self):
         """
         Retrieve and reserve next free hostname
         """
-        return AssetLastHostname.increment_hostname(
-            self.hostname_template_prefix,
-            self.hostname_template_postfix,
-        ).formatted_hostname(self.hostname_template_counter_length)
+        if self.use_hostname_counter:
+            return AssetLastHostname.increment_hostname(
+                self.hostname_template_prefix,
+                self.hostname_template_postfix,
+            ).formatted_hostname(self.hostname_template_counter_length)
+        return self.next_hostname_without_model_counter()
+
+    def next_hostname_without_model_counter(self):
+        """
+        Return hostname based on already added hostnames
+
+        Returns:
+            hostname string
+        """
+        from ralph.data_center.models.physical import DataCenterAsset
+        from ralph.data_center.models.virtual import Cluster
+        from ralph.virtual.models import VirtualServer
+
+        hostname_models = [DataCenterAsset, VirtualServer, Cluster, IPAddress]
+        hostnames = []
+        for model_class in hostname_models:
+            item = model_class.objects.filter(
+                hostname__startswith=self.hostname_template_prefix,
+                hostname__endswith=self.hostname_template_postfix
+            ).order_by('-hostname').first()
+            if item and item.hostname:
+                hostnames.append(
+                    item.hostname[
+                        len(self.hostname_template_prefix):
+                        -len(self.hostname_template_postfix)
+                    ]
+                )
+        counter = 1
+        if hostnames:
+            hostnames = sorted(hostnames, reverse=True)
+            counter = int(hostnames[0]) + 1
+        hostname = AssetLastHostname(
+            prefix=self.hostname_template_prefix,
+            counter=counter,
+            postfix=self.hostname_template_postfix
+        )
+        return hostname.formatted_hostname()
 
 
 class NetworkMixin(object):
@@ -149,6 +193,7 @@ class Network(
     address = IPNetwork(
         verbose_name=_('network address'),
         help_text=_('Presented as string (e.g. 192.168.0.0/24)'),
+        unique=True
     )
     gateway = models.ForeignKey(
         'IPAddress', verbose_name=_('Gateway address'), null=True, blank=True,

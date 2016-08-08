@@ -81,6 +81,8 @@ class CategoryViewSet(RalphAPIViewSet):
 class AssetModelViewSet(RalphAPIViewSet):
     queryset = models.AssetModel.objects.all()
     serializer_class = serializers.AssetModelSerializer
+    save_serializer_class = serializers.AssetModelSaveSerializer
+    select_related = ['manufacturer']
 
 
 class BaseObjectFilterSet(NetworkableObjectFilters):

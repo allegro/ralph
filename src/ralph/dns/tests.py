@@ -13,6 +13,7 @@ from ralph.dns.views import (
     DNSaaSIntegrationNotEnabledError,
     DNSView
 )
+from ralph.virtual.models import VirtualServer
 from ralph.virtual.tests.factories import VirtualServerFactory
 
 
@@ -25,6 +26,10 @@ class TestGetDnsRecords(TestCase):
     def test_return_empty_when_api_returns_empty(self, mocked):
         mocked.return_value = []
         found_dns = self.dnsaas.get_dns_records(['192.168.0.1'])
+        self.assertEqual(found_dns, [])
+
+    def test_return_empty_when_no_ipaddress(self):
+        found_dns = self.dnsaas.get_dns_records([])
         self.assertEqual(found_dns, [])
 
     @patch.object(DNSaaS, 'get_api_result')
@@ -136,6 +141,11 @@ class TestPublisher(TestCase):
                 position=1,
                 slot_no='1',
             ),
+        )
+        # refresh virtual server to get parent as BaseObject, not
+        # DataCenterAsset
+        self.virtual_server = VirtualServer.objects.get(
+            pk=self.virtual_server.id
         )
 
         cluster = ClusterFactory(

@@ -15,11 +15,13 @@ from django.utils.datastructures import MultiValueDict
 from django.utils.http import urlencode
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
+from django.views.generic import View
 
 from ralph.admin.helpers import get_admin_url
 from ralph.admin.mixins import RalphTemplateView
 from ralph.admin.sites import ralph_site
 from ralph.admin.widgets import AutocompleteWidget
+from ralph.lib.permissions.views import PermissionViewMetaClass
 from ralph.lib.transitions.exceptions import TransitionNotAllowedError
 from ralph.lib.transitions.models import (
     _check_instances_for_transition,
@@ -291,3 +293,12 @@ class AsyncBulkTransitionsAwaiterView(RalphTemplateView):
             context['are_jobs_running'] = any([j.is_running for j in jobs])
             context['for_many_objects'] = True
         return context
+
+
+class KillTransitionJobView(View, metaclass=PermissionViewMetaClass):
+
+    def get(self, request, job_id, *args, **kwargs):
+        job = get_object_or_404(TransitionJob, pk=job_id)
+        job.kill()
+        messages.success(request, 'Job {} killed successfully'.format(job.id))
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))

@@ -1,6 +1,4 @@
 <div{% if not static %} data-alert{% endif %} class="alert-box radius{% if tags %} {{ tags }}{% endif %}">
   {{ message }}
-  {% if not static %}
-    <a href="#" class="close">&times;</a>
-  {% endif %}
+  <a href="#" class="close">&times;</a>
 </div>
