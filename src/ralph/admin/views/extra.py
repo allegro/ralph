@@ -58,7 +58,7 @@ class RalphExtraViewMixin(object):
         context = super().get_context_data(**kwargs)
         context.update(ralph_site.each_context(self.request))
         context['BASE_TEMPLATE'] = self.get_extra_view_base_template()
-        context['label'] = self.label
+        context['title'] = self.label
         context['view_name'] = self.name
         return context
 
