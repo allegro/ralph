@@ -69,7 +69,7 @@ def remove_reserved_ips(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('networks', '0006_auto_20160804_1409'),
+        ('networks', '0007_auto_20160804_1409'),
     ]
 
     operations = [
