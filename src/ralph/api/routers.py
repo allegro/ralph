@@ -15,6 +15,9 @@ class RalphRouter(NestedCustomFieldsRouterMixin, routers.DefaultRouter):
     Acts like DefaultRouter + checks if user has permissions to see viewset.
     Viewsets for which user doesn't have permissions are hidden in root view.
     """
+    # skip .json style formatting suffixes in urls
+    include_format_suffixes = False
+
     def get_api_root_view(self):
         api_root_dict = {}
         list_name = self.routes[0].name
