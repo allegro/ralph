@@ -1,16 +1,23 @@
-{% extends BASE_TEMPLATE %}
-{% load i18n %}
-{% block view_content %}
+{% extends "admin/change_form.html" %}
 
-{% comment %}
-{% endcomment %}
+{% load ralph_tags %}
 
-  {% block inline_field_sets %}
-    {% for inline_admin_formset in inline_admin_formsets %}
-      {% include inline_admin_formset.opts.template %}
-    {% endfor %}
-  {% endblock %}
+{% block tabs %}
+  {% views_tabs change_views view_name object %}
+{% endblock %}
 
-  xx{{ xxx }}xx
+{% block title_head %}{{ original }}{% endblock %}
 
+{% block field_sets %}
+  {% for fieldset in adminform %}
+    {# some hack - don't display form without defined fieldsets #}
+    {% if fieldset.name != '__empty__' %}
+      <div class="small-12 medium-6 large-6 columns">
+        {% include "admin/includes/fieldset.html" %}
+      </div>
+    {% endif %}
+  {% endfor %}
+{% endblock %}
+
+{% block object-tools %}
 {% endblock %}

@@ -51,5 +51,5 @@ class NetworkWithTerminatorsView(NetworkView):
 
     def dispatch(self, request, model, pk, *args, **kwargs):
         result = super().dispatch(request, model, pk, *args, **kwargs)
-        result.context_data['xxx'] = 'yyy'
+        #result.context_data['xxx'] = 'yyy'
         return result
