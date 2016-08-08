@@ -2,6 +2,7 @@ from unittest import mock
 
 from ddt import data, ddt, unpack
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.test import override_settings, TestCase
 
 from ralph.assets.models import Ethernet
@@ -10,7 +11,10 @@ from ralph.data_center.tests.factories import (
     DataCenterAssetFactory,
     RackFactory
 )
-from ralph.deployment.deployment import autocomplete_service_env
+from ralph.deployment.deployment import (
+    autocomplete_service_env,
+    check_ipaddress_unique
+)
 from ralph.networks.models.networks import IPAddress
 from ralph.networks.tests.factories import (
     IPAddressFactory,
@@ -212,6 +216,25 @@ class _BaseTestDeploymentActionsTestCase(object):
                 'content': '10.20.30.40',
                 'owner': 'ralph'
             }
+        )
+
+    def test_check_ipaddress_unique_with_occupied_ip_should_raise_validation_error(self):  # noqa
+        IPAddressFactory(address='10.20.30.40')
+        with self.assertRaises(ValidationError):
+            check_ipaddress_unique(
+                [self.instance], {'ip_or_network': {
+                    'value': '__other__', '__other__': '10.20.30.40'
+                }}
+            )
+
+    def test_check_ipaddress_unique_with_ip_assigned_to_the_same_object_should_pass(self):
+        IPAddressFactory(
+            address='10.20.30.40', ethernet__base_object=self.instance
+        )
+        check_ipaddress_unique(
+            [self.instance], {'ip_or_network': {
+                'value': '__other__', '__other__': '10.20.30.40'
+            }}
         )
 
 

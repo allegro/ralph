@@ -2,6 +2,7 @@
 from django import forms
 from django.core.urlresolvers import reverse
 from rest_framework import serializers, status
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -16,6 +17,7 @@ from ralph.lib.transitions.api.serializers import (
     TransitionSerializer
 )
 from ralph.lib.transitions.models import (
+    _transition_data_validation,
     Action,
     run_transition,
     Transition,
@@ -138,9 +140,23 @@ class TransitionView(APIView):
             result[fields_name_map.get(k)] = v
         return result
 
+    def _run_additional_validation(self, data):
+        errors = _transition_data_validation(
+            self.objects, self.transition, data
+        )
+        if errors:
+            api_errors = {}
+            for action_name, action_errors in errors.items():
+                for field_name, field_errors in action_errors.items():
+                    api_errors[field_name] = [
+                        exc.message for exc in field_errors
+                    ]
+            raise DRFValidationError(api_errors)
+
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer_class()(data=request.data)
         serializer.is_valid(raise_exception=True)
+        self._run_additional_validation(serializer.validated_data)
         result = {}
         data = self.add_function_name_to_data(serializer.validated_data)
         transition_result = run_transition(
