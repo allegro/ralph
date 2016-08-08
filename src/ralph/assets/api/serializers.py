@@ -410,7 +410,8 @@ class DCHostSerializer(ComponentSerializerMixin, BaseObjectSerializer):
     class Meta:
         model = BaseObject
         fields = [
-            'id', 'url', 'ethernet', 'memory', 'ipaddresses', 'custom_fields',
+            'id', 'url', 'ethernet', 'ipaddresses', 'custom_fields',
             '__str__', 'tags', 'service_env', 'configuration_path', 'hostname',
-            'created', 'modified', 'remarks', 'parent', 'object_type'
+            'created', 'modified', 'remarks', 'parent', 'object_type',
+            'configuration_variables',
         ]

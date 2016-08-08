@@ -730,6 +730,9 @@ class BaseObjectAPITests(RalphAPITestCase):
 class DCHostAPITests(RalphAPITestCase):
     def setUp(self):
         super().setUp()
+        self.cf = CustomField.objects.create(
+            name='test_cf', use_as_configuration_variable=True
+        )
         # is should be skipped in API
         self.bo_asset = BackOfficeAssetFactory(
             barcode='12345', hostname='host1'
@@ -747,11 +750,13 @@ class DCHostAPITests(RalphAPITestCase):
             service_env__environment__name='prod',
             configuration_path=self.conf_class_1,
         )
+        self.dc_asset.update_custom_field('test_cf', 'abc')
         self.virtual = VirtualServerFullFactory(
             parent=self.dc_asset,
             configuration_path__module__name='ralph2',
             service_env__service__uid='sc-222',
         )
+        self.virtual.update_custom_field('test_cf', 'def')
         se = ServiceEnvironmentFactory(service__uid='sc-333')
         self.cloud_host = CloudHostFullFactory(
             configuration_path__module__name='ralph3',
@@ -760,10 +765,11 @@ class DCHostAPITests(RalphAPITestCase):
             hostname='aaaa'
         )
         self.cloud_host.ip_addresses = ['10.20.30.40']
+        self.cloud_host.update_custom_field('test_cf', 'xyz')
 
     def test_get_dc_hosts_list(self):
         url = reverse('dchost-list')
-        with self.assertNumQueries(15):
+        with self.assertNumQueries(11):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 3)
@@ -784,6 +790,8 @@ class DCHostAPITests(RalphAPITestCase):
         self.assertEqual(dca['configuration_path']['module']['name'], 'ralph')
         self.assertEqual(dca['service_env']['service_uid'], 'sc-123')
         self.assertEqual(dca['object_type'], 'datacenterasset')
+        self.assertEqual(dca['custom_fields'], {'test_cf': 'abc'})
+        self.assertEqual(dca['configuration_variables'], {'test_cf': 'abc'})
 
     def test_filter_by_type_virtual(self):
         url = '{}?{}'.format(
@@ -801,6 +809,8 @@ class DCHostAPITests(RalphAPITestCase):
         self.assertEqual(virt['configuration_path']['module']['name'], 'ralph2')
         self.assertEqual(virt['service_env']['service_uid'], 'sc-222')
         self.assertEqual(virt['object_type'], 'virtualserver')
+        self.assertEqual(virt['custom_fields'], {'test_cf': 'def'})
+        self.assertEqual(virt['configuration_variables'], {'test_cf': 'def'})
 
     def test_filter_by_type_cloudhost(self):
         url = '{}?{}'.format(
@@ -819,6 +829,8 @@ class DCHostAPITests(RalphAPITestCase):
         self.assertEqual(cloud['object_type'], 'cloudhost')
         self.assertEqual(len(cloud['ethernet']), 1)
         self.assertEqual(len(cloud['ipaddresses']), 1)
+        self.assertEqual(cloud['custom_fields'], {'test_cf': 'xyz'})
+        self.assertEqual(cloud['configuration_variables'], {'test_cf': 'xyz'})
 
     def test_filter_by_hostname(self):
         url = '{}?{}'.format(
