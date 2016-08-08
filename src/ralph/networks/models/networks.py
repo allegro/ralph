@@ -150,7 +150,9 @@ class NetworkEnvironment(TimeStampMixin, NamedMixin, models.Model):
             counter=counter,
             postfix=self.hostname_template_postfix
         )
-        return hostname.formatted_hostname()
+        return hostname.formatted_hostname(
+            self.hostname_template_counter_length
+        )
 
 
 class NetworkMixin(object):
