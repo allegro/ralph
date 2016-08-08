@@ -7,6 +7,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.template import Context, Template
 
 from ralph.admin.helpers import get_client_ip
+from ralph.assets.models import Ethernet
 from ralph.deployment.models import Deployment
 
 logger = logging.getLogger(__name__)
@@ -86,6 +87,9 @@ def ipxe(request, deployment_id=None):
             deployment = Deployment.objects.get(id=deployment_id)
         else:
             deployment = Deployment.get_deployment_for_ip(ip)
+    except Ethernet.DoesNotExist:
+        logger.warning('Deployment does not exists for ip: {}'.format(ip))
+        raise Http404
     except Deployment.DoesNotExist:
         logger.warning(DEPLOYMENT_404_MSG.format(deployment_id))
         raise Http404
