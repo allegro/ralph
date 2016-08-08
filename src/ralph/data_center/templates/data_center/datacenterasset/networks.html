@@ -19,5 +19,28 @@
   {% endfor %}
 {% endblock %}
 
+
+{% block after_related_objects %}
+
+
+{% comment %}
+{% endcomment %}
+<h5>Networks</h5>
+{% for network in networks %}
+  {{ network }}<br />
+{% endfor  %}
+
+<h5>Network Environments</h5>
+{% for env in network_environments %}
+  {{ env }}<br />
+{% endfor  %}
+
+
+
+{% endblock %}
+
+
+
+
 {% block object-tools %}
 {% endblock %}
