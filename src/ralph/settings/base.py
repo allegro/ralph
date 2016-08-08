@@ -78,6 +78,8 @@ INSTALLED_APPS = (
     'taggit',
     'taggit_serializer',
     'ralph.ralph2_sync',
+    'dal',
+    'dal_select2',
 )
 
 RALPH2_RALPH3_CROSS_VALIDATION_ENABLED = bool_from_env(

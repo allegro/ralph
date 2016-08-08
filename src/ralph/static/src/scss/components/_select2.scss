@@ -1,0 +1,30 @@
+
+.select2.select2-container{
+    margin-bottom: 12px;
+    .selection {
+        .select2-container--default, .select2-selection--single {
+            border-radius: $input-border-radius;
+            border-color: $input-border-color;
+            height: 30px;
+            .select2-selection__rendered {
+                line-height: 30px;
+                font-size: 14px;
+                padding-left: 6px;
+            }
+            .select2-selection__arrow {
+                height: 30px;
+                b {
+                    border-color: #000 transparent transparent transparent;
+                    border-width: 3px 3px 0 3px;
+                    margin-top: -1px;
+                }
+            }
+        }
+    }
+}
+
+.select2-dropdown {
+    border-radius: $input-border-radius;
+    border-color: $input-border-color;
+    box-shadow: 0 0 2px #ccc;
+}
