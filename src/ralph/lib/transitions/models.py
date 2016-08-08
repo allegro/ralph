@@ -199,6 +199,12 @@ def _check_instances_for_transition(
         )
 
 
+def _check_action_with_instances(instances, transition):
+    for func in transition.get_pure_actions():
+        validation_func = getattr(func, 'validation', lambda x: True)
+        validation_func(instances)
+
+
 def _transition_data_validation(instances, transition, data):
     """
     Run additional data validation using transition instances. It's using
