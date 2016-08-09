@@ -57,7 +57,7 @@
           {% endcache %}
         </nav>
         {% block breadcrumbs %}
-          {% if not original or original.modified%}
+          {% if not original or original.modified %}
             {% cache 86400 breadcrumbs opts.app_label opts.model_name original.modified %}
             <!-- cache -->
               {% spaceless %}
