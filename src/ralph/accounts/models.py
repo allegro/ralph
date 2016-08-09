@@ -185,7 +185,7 @@ class RalphUser(
 
     @property
     def cache_param(self):
-        """Property used in tamplate as a param to cache invalidation."""
+        """Property used in template as a param to cache invalidation."""
         perms_set = self.get_all_permissions()
         key = '{}:{}'.format(self.id, urlquote(perms_set))
         return hashlib.md5(force_bytes(key)).hexdigest()
