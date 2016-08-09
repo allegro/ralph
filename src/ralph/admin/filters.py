@@ -267,7 +267,7 @@ class TextListFilter(BaseCustomFilter):
 
     def choices(self, cl):
         return ({
-            'current_value': self.value(),
+            'selected': self.value(),
             'parameter_name': self.field_path,
             'separators': self.separators,
             'multiple': self.multiple
