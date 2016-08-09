@@ -82,27 +82,17 @@
           {% block filters %}
             {% if cl.has_filters %}
               {# TODO: request.user.permissions_hash if filters respect permissions #}
-              {% cache 86400 filters opts.app_label opts.model_name %}
-                <!-- cache -->
-                {% spaceless %}
-                <div class="small-2 columns sidebar actions-and-filters">
-                  {% admin_actions %}
-                  <div class="filters">
-                    <h4>Filters</h4>
-                    <div class="filter-container">
-                      {% if is_popup %}
-                        <input type="hidden" name="_popup" value="1" />
-                      {% endif %}
-                      {% for spec in cl.filter_specs %}
-                        {% admin_list_filter cl spec %}
-                      {% endfor %}
-                    </div>
-                    <input type="button" class="button" id="filter-button" value="Filter" />
-                  </div>
-                </div>
-                {% endspaceless %}
-                <!-- end cache -->
-              {% endcache %}
+              {% if not request.GET %}
+                {% cache 3600 filters opts.app_label opts.model_name %}
+                  <!-- cache -->
+                  {% spaceless %}
+                    {% include 'admin/partials/filters.html' %}
+                  {% endspaceless %}
+                  <!-- end cache -->
+                {% endcache %}
+              {% else %}
+                {% include 'admin/partials/filters.html' %}
+              {% endif %}
             {% endif %}
           {% endblock %}
         {% endif %}
