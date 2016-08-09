@@ -12,7 +12,7 @@ from ralph.lib.transitions.models import (
 from ralph.tests.models import Order
 
 
-class TransitionTestCase(TestCase):
+class TransitionTestCaseMixin(object):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -44,3 +44,7 @@ class TransitionTestCase(TestCase):
             actions = Action.actions_for_model(model)
         transition.actions.add(*[x for x in actions])
         return transition_model, transition, actions
+
+
+class TransitionTestCase(TransitionTestCaseMixin, TestCase):
+    pass

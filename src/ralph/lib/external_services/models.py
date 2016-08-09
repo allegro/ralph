@@ -7,7 +7,7 @@ from dateutil.parser import parse
 from dj.choices import Choices
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from django.db import models
+from django.db import models, transaction
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields.json import JSONField
@@ -201,6 +201,7 @@ class Job(TimeStampMixin):
             _dumped_params=cls.prepare_params(**kwargs),
             **(defaults or {})
         )
+        transaction.commit()
         service.run_async(job_id=obj.id)
         return obj.id, obj
 
