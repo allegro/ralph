@@ -1,0 +1,24 @@
+@mixin label-border($color) {
+    border: 1px solid darken($color, 15%);
+}
+
+@mixin status-transition-label($color) {
+    @include label-style($color);
+    @include label-border($color);
+}
+
+.label {
+    line-height: 1.5;
+    @include label-border($primary-color);
+    &.alert     { @include label-border($alert-color); }
+    &.warning   { @include label-border($warning-color); }
+    &.success   { @include label-border($success-color); }
+    &.secondary { @include label-border($secondary-color); }
+    &.info      { @include label-border($info-color); }
+    &.queued    { @include status-transition-label(#ccc); }
+    &.finished  { @include status-transition-label($success-color); }
+    &.failed    { @include status-transition-label($alert-color); }
+    &.started   { @include status-transition-label($warning-color); }
+    &.freezed   { @include status-transition-label($primary-color); }
+    &.killed    { @include status-transition-label($alert-color); }
+}

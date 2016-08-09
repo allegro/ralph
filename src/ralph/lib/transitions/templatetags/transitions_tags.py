@@ -30,3 +30,37 @@ def choice_str(obj, field_name):
         return field.choices.desc_from_id(value)
     except (AttributeError, ValueError):
         return value
+
+
+class HistoryForObjectNode(template.Node):
+    def __init__(self, job, obj, var_name='data'):
+        self.job = job
+        self.obj = obj
+        self.var_name = var_name
+
+    def render(self, context):
+        job = context[self.job]
+        obj = context[self.obj]
+        history = job.params['history_kwargs']
+        context[self.var_name] = history[obj.pk].items()
+        if not context[self.var_name]:
+            return '&ndash;'
+        return ''
+
+
+@register.tag(name='history_for_object')
+def history_for_object(parser, token):
+    error = False
+    try:
+        _, job, obj, _as, var_name = token.split_contents()
+        if _as != 'as':
+            error = True
+    except:
+        error = True
+
+    if error:
+        raise template.TemplateSyntaxError(
+            'history_for_object must be of the form, "history_for_object <job> <obj> as <var_name>"'  # noqa
+        )
+    else:
+        return HistoryForObjectNode(job, obj, var_name)

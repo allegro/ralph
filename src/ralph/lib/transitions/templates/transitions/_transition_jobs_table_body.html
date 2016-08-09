@@ -1,0 +1,47 @@
+{% load i18n transitions_tags %}
+
+{% for job in jobs %}
+  <tr>
+    <td>
+      ID: {{ job.id }}<br>
+      {% trans "Created date" %}: {{ job.created }} <span class="date">{{ job.created|timesince }} ago</span>
+    </td>
+    <td>
+      <a href="{{ job.user.get_absolute_url }}">{{ job.user }}</a>
+    </td>
+    <td>{{ job.transition.name }}</td>
+    {% if for_many_objects %}
+      <td><a href="{{ job.obj.get_absolute_url }}">{{ job.obj }}</a></td>
+    {% endif %}
+    <td class="status">
+      <span class="label {{ job | choice_str:"status" | slugify }}">
+        {{ job | choice_str:"status" }}
+      </span>
+    </td>
+    <td class="actions">
+      <table class="full">
+        <tbody>
+          {% for action in job.transition_job_actions.all %}
+            <tr>
+              <td class="status"><span class="label small {{ action | choice_str:"status" | slugify }}">{{ action | choice_str:"status" }}</span></td>
+              <td>{{ action.action_name }}</td>
+              <td class="right"><span class="date">{{ action.created }}</span></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </td>
+    <td>
+      {% history_for_object job object as history_items %}
+      {% for value in history_items %}
+        {{ value.0 }}: <strong>{{ value.1 }}</strong><br />
+      {% endfor %}
+    </td>
+    <td width="10px">
+      {% if show_kill %}
+        <button class="tiny button alert" onclick="javascript:if (confirm('{% trans 'Are you sure you want to kill transition job?' %}')) location.href='{% url 'kill_transition_job' job.id %}'">kill</button>
+      {% endif %}
+    </td>
+  </tr>
+{% endfor %}
+

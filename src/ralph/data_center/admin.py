@@ -48,6 +48,7 @@ from ralph.data_center.models.virtual import (
     VIP
 )
 from ralph.data_importer import resources
+from ralph.deployment.mixins import ActiveDeploymentMessageMixin
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.table import Table
 from ralph.lib.transitions.admin import TransitionAdminMixin
@@ -266,6 +267,7 @@ class DataCenterAssetSecurityInfo(SecurityInfo):
 
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(
+    ActiveDeploymentMessageMixin,
     MulitiAddAdminMixin,
     TransitionAdminMixin,
     BulkEditChangeListMixin,

@@ -534,6 +534,7 @@ class Transition(models.Model):
 class Action(models.Model):
     content_type = models.ManyToManyField(ContentType)
     name = models.CharField(max_length=50)
+    # TODO: verbose_name
 
     class Meta:
         app_label = 'transitions'
@@ -622,6 +623,13 @@ class TransitionJob(Job):
                 new_param[k] = v
             params[param_name] = new_param
         return params
+
+    @classmethod
+    def get_transitions_for_object(cls, obj):
+        if obj is None:
+            return None
+        ct = ContentType.objects.get_for_model(obj.__class__)
+        return cls.objects.filter(object_id=obj.pk, content_type=ct).active()
 
 
 class TransitionJobAction(TimeStampMixin):

@@ -1,0 +1,33 @@
+.current-transitions {
+    .status {
+        .label { width:100%; }
+    }
+    table tr {
+        .info-header {
+            background-color: $info-color;
+            font-weight: bold;
+            border-top-width: 2px;
+        }
+        &:first-child .info-header {
+            border-top-width: 1px;
+        }
+        .empty {
+            font-style: italic;
+        }
+        .date {
+            font-size: .8rem;
+            color: #999;
+        }
+        .actions {
+            .label {
+                padding: .1rem .2rem .1rem;
+                line-height:1;
+            }
+        }
+        table tr {
+            line-height: 1rem;
+            &:first-child td { padding-top: 0;}
+            td { border: none; padding: 5px 5px 5px 0; margin:0;}
+        }
+    }
+}

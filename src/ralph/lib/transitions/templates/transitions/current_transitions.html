@@ -1,6 +1,8 @@
 {% extends BASE_TEMPLATE %}
 {% load i18n transitions_tags %}
 
+{% block bodyclass %}current-transitions{% endblock %}
+
 {% block extrahead %}
     {{ block.super }}
     {% if are_jobs_running %}
@@ -9,11 +11,49 @@
 {% endblock %}
 
 {% block view_content %}
-    <h1>{% trans "Current transitions" %}</h1>
-    {% include "transitions/_transition_jobs_table.html" with jobs=jobs_in_progress show_action=True %}
-
-    <h1>{% trans "Finished transitions" %}</h1>
-    {# TODO: add pagination etc #}
-    {% include "transitions/_transition_jobs_table.html" with jobs=jobs_ended show_action=False %}
-
+  <div class="large-12 columns">
+    <table class="full">
+      <thead>
+        <tr>
+          <th>{% trans "Basic info" %}</th>
+          <th>{% trans "Author" %}</th>
+          <th>{% trans "Transition" %}</th>
+          {% if for_many_objects %}
+              <th>{% trans "Object" %}</th>
+          {% endif %}
+          <th>{% trans "Status" %}</th>
+          <th>{% trans "Transition actions" %}</th>
+          <th>{% trans "Data" %}</th>
+          <th>{% trans "Actions" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="7" class="info-header">{% trans "Current transition" %}</td>
+        </tr>
+        {% if jobs_in_progress %}
+          {% include "transitions/_transition_jobs_table_body.html" with jobs=jobs_in_progress show_kill=True %}
+        {% else %}
+        <tr>
+          <td colspan="7" class="empty">
+            {% trans "Nothing to do." %}
+          </td>
+        </tr>
+        {% endif %}
+        {# TODO: add pagination etc #}
+        <tr>
+          <td colspan="7" class="info-header">{% trans "Finished transitions" %}</td>
+        </tr>
+        {% if jobs_ended %}
+          {% include "transitions/_transition_jobs_table_body.html" with jobs=jobs_ended %}
+        {% else %}
+        <tr>
+          <td colspan="7" class="empty">
+            {% trans "Nothing to display" %}
+          </td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
 {% endblock %}
