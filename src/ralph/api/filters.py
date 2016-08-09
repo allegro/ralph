@@ -152,9 +152,13 @@ class LookupFilterBackend(BaseFilterBackend):
             'in', 'iendswith', 'isnull', 'regex', 'iregex'
         },
         models.DateField: {
-            'year', 'month', 'day', 'week_day', 'range', 'isnull'
+            'year', 'month', 'day', 'week_day', 'range', 'isnull', 'lte',
+            'gte', 'lt', 'gt'
         },
-        models.DateTimeField: {'hour', 'minute', 'second'},
+        models.DateTimeField: {
+            'year', 'month', 'day', 'week_day', 'hour', 'minute', 'second',
+            'range', 'isnull', 'lte', 'gte', 'lt', 'gt'
+        },
         models.DecimalField: {
             'lte', 'gte', 'lt', 'gt', 'exact', 'in', 'range', 'isnull'
         }
@@ -197,6 +201,14 @@ class LookupFilterBackend(BaseFilterBackend):
                 model, model_field_name, field_lookups
             ))
             if lookup in field_lookups:
+                if lookup == 'isnull':
+                    if value not in BOOL_VALUES:
+                        logger.debug(
+                            'Unknown value for isnull filter: {}'.format(value)
+                        )
+                        return {}
+                    else:
+                        value = BOOL_VALUES[value]
                 result = {'{}__{}'.format(model_field_name, lookup): value}
         return result
 
