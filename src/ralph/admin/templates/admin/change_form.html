@@ -13,6 +13,11 @@
         <h1 class="ellipsis-hidden">{% block title_head %}{% if original %}{{ original }}{% else %}{% trans 'Add' %} {{ opts.verbose_name|lower }}{% endif %}{% endblock %}</h1>
       </div>
       {% if not in_recovery_mode %}
+        <div class="large-8 small-8 columns">
+          {% block tabs %}
+            {% views_tabs change_views '' original %}
+          {% endblock %}
+        </div>
         <div class="large-2 small-2 columns">
           <div class="header-toolbar">
             {% available_transitions original 'status' %}
@@ -36,61 +41,51 @@
         </div>
       {% endif %}
     </div>
-    <div class="row">
-      <div class="large-1 small-1 columns no-horizontal-padding elevate">
-          {% block tabs %}
-            {% views_tabs change_views '' original %}
+    <form  class="row content" {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.model_name }}_form" novalidate>{% csrf_token %}
+    {% block form_top %}{% endblock %}
+      <div>
+        {% block summary %}
+          {% include "admin/includes/summary_table.html" %}
+        {% endblock %}
+
+        {% if is_popup %}<input type="hidden" name="{{ is_popup_var }}" value="1" />{% endif %}
+        {% if to_field %}<input type="hidden" name="{{ to_field_var }}" value="{{ to_field }}" />{% endif %}
+        {% if save_on_top %}{% block submit_buttons_top %}{% submit_row %}{% endblock %}{% endif %}
+        {% if errors %}
+          {% if errors|length == 1 %}
+            {% alert _("Please correct the error below.") 'alert' %}
+          {% else %}
+            {% alert _("Please correct the errors below.") 'alert' %}
+          {% endif %}
+          {% errors adminform.form %}
+        {% endif %}
+        <div class="row">
+          {% block field_sets %}
+            {% for fieldset in adminform %}
+              <div class="small-12 medium-6 large-6 columns">
+                {% include "admin/includes/fieldset.html" %}
+              </div>
+            {% endfor %}
           {% endblock %}
-      </div>
-      <div class="large-11 small-11 columns no-left-padding">
-        <form  class="row content" {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.model_name }}_form" novalidate>{% csrf_token %}
-        {% block form_top %}{% endblock %}
-          <div>
-            {% block summary %}
-              {% include "admin/includes/summary_table.html" %}
-            {% endblock %}
+        </div>
+        {% block after_field_sets %}{% endblock %}
+        {% block inline_field_sets %}
+          {% for inline_admin_formset in inline_admin_formsets %}
+            {% include inline_admin_formset.opts.template %}
+          {% endfor %}
+        {% endblock %}
 
-            {% if is_popup %}<input type="hidden" name="{{ is_popup_var }}" value="1" />{% endif %}
-            {% if to_field %}<input type="hidden" name="{{ to_field_var }}" value="{{ to_field }}" />{% endif %}
-            {% if save_on_top %}{% block submit_buttons_top %}{% submit_row %}{% endblock %}{% endif %}
-            {% if errors %}
-              {% if errors|length == 1 %}
-                {% alert _("Please correct the error below.") 'alert' %}
-              {% else %}
-                {% alert _("Please correct the errors below.") 'alert' %}
-              {% endif %}
-              {% errors adminform.form %}
-            {% endif %}
-            <div class="row">
-              {% block field_sets %}
-                {% for fieldset in adminform %}
-                  <div class="small-12 medium-6 large-6 columns">
-                    {% include "admin/includes/fieldset.html" %}
-                  </div>
-                {% endfor %}
-              {% endblock %}
-            </div>
-            {% block after_field_sets %}{% endblock %}
-            {% block inline_field_sets %}
-              {% for inline_admin_formset in inline_admin_formsets %}
-                {% include inline_admin_formset.opts.template %}
-              {% endfor %}
-            {% endblock %}
+        {% block after_related_objects %}{% endblock %}
 
-            {% block after_related_objects %}{% endblock %}
-
-            {# JavaScript for prepopulated fields #}
-            {% prepopulated_fields_js %}
-            {% if admin_view.show_transition_history and original and not in_recovery_mode %}
-              {% transition_history original %}
-            {% endif %}
-          </div>
-
-          {% block submit_buttons_bottom %}{% ralph_submit_row %}{% endblock %}
-        </form>
+        {# JavaScript for prepopulated fields #}
+        {% prepopulated_fields_js %}
+        {% if admin_view.show_transition_history and original and not in_recovery_mode %}
+          {% transition_history original %}
+        {% endif %}
       </div>
 
-    </div>
+      {% block submit_buttons_bottom %}{% ralph_submit_row %}{% endblock %}
+    </form>
   </div>
 {% endblock %}
 {% block extra_scripts %}
@@ -101,4 +96,3 @@
     })(ralph.jQuery);
   </script>
 {% endblock %}
-

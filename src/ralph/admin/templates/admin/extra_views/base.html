@@ -6,16 +6,12 @@
       <div class="large-2 small-2 columns">
         <h1 class="ellipsis-hidden">{{ object }}</h1>
       </div>
-    </div>
-    <div class="row">
-      <div class="large-2 small-2 columns no-right-padding elevate">
+      <div class="large-10 small-10 columns">
         {% block tabs %}{% endblock %}
       </div>
-      <div class="large-10 small-10 columns content">
-        <div class="content-inner">
-          {% block view_content %}{% endblock %}          
-        </div>
-      </div>
+    </div>
+    <div class="row content">
+      {% block view_content %}{% endblock %}
     </div>
   </div>
 {% endblock %}
