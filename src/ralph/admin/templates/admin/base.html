@@ -1,4 +1,4 @@
-{% load ralph_tags i18n staticfiles sitetree admin_list cache cache_tags %}
+{% load ralph_tags i18n staticfiles sitetree admin_list cache %}
 <!DOCTYPE html>
 {% get_current_language as LANGUAGE_CODE %}
 {% get_current_language_bidi as LANGUAGE_BIDI %}
@@ -25,7 +25,7 @@
               <a href="#"><span>Menu</span></a>
             </li>
           </ul>
-          {% cache_fragment 3600 header_menu opts.app_label opts.model_name prefix=header_menu_cache_prefix %}
+          {% cache 3600 header_menu opts.app_label opts.model_name request.user.modified %}
           <!-- cache -->
           {% spaceless %}
             <section class="top-bar-section">
