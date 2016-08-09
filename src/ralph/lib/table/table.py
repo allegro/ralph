@@ -84,9 +84,9 @@ class Table(object):
         """
         Returns the value for the given field name.
 
-        Looking in:
-             If the field is type Choices returns choice name
-             else returns the value of row
+        Looking in:
+            If the field is type Choices returns choice name
+            else returns the value of row
 
         :param item: row from dict
         :param field: field name

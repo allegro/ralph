@@ -95,11 +95,14 @@ class AdminViewBase(type):
     def __new__(cls, name, bases, attrs):
         base_template = 'admin/extra_views/base_admin_change.html'
         empty_fieldset = (('__empty__', {'fields': []}),)
-        admin_whitelist = ['inlines', 'fieldsets']
+
+        new_class = super().__new__(cls, name, bases, attrs)
+        admin_whitelist = ['inlines', 'fieldsets', 'readonly_fields']
+        if hasattr(new_class, 'admin_attribute_list_to_copy'):
+            admin_whitelist.extend(new_class.admin_attribute_list_to_copy)
         admin_attrs = {
             key: attrs.pop(key, []) for key in admin_whitelist
         }
-        new_class = super().__new__(cls, name, bases, attrs)
 
         # create admin class
         admin_attrs['change_form_template'] = base_template
@@ -113,7 +116,9 @@ class AdminViewBase(type):
                 continue
             for field in admin_whitelist + ['change_form_template']:
                 admin_attrs[field] = (
-                    admin_attrs[field] or getattr(base_admin_class, field, None)
+                    admin_attrs[field] or getattr(
+                        base_admin_class, field, None
+                    )
                 )
         admin_attrs['fieldsets'] = admin_attrs['fieldsets'] or empty_fieldset
         new_class.admin_class = type('AdminView', (RalphAdmin,), admin_attrs)

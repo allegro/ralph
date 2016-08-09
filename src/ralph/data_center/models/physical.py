@@ -328,10 +328,9 @@ class NetworkableBaseObject(models.Model):
             network__racks=self.rack_id
         ).distinct())
 
-    def _get_available_networks(self):
-        return list(Network.objects.filter(
-            racks=self.rack_id
-        ).distinct())
+    def _get_available_networks(self, as_query=False):
+        qry = Network.objects.filter(racks=self.rack_id).distinct()
+        return qry if as_query else list(qry)
 
     class Meta:
         abstract = True
