@@ -25,7 +25,7 @@
               <a href="#"><span>Menu</span></a>
             </li>
           </ul>
-          {% cache 86400 header_menu opts.app_label opts.model_name request.user.cache_param %}
+          {% cache 86400 header_menu opts.app_label opts.model_name request.user.permissions_hash %}
           <!-- cache -->
           {% spaceless %}
             <section class="top-bar-section">

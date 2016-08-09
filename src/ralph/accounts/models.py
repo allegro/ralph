@@ -183,7 +183,7 @@ class RalphUser(
         return '{} <i>{}</i>'.format(str(self), self.department)
 
     @property
-    def cache_param(self):
+    def permissions_hash(self):
         """Property used in template as a param to cache invalidation."""
         perms_set = self.get_all_permissions()
         key = '{}:{}'.format(self.id, urlquote(perms_set))
