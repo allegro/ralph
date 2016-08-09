@@ -64,7 +64,6 @@ class Team(NamedMixin):
     pass
 
 
-# TODO: add TimeStampMixin?
 class RalphUser(
     PermByFieldMixin,
     AbstractUser,
