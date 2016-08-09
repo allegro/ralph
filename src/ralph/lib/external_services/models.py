@@ -201,6 +201,7 @@ class Job(TimeStampMixin):
             _dumped_params=cls.prepare_params(**kwargs),
             **(defaults or {})
         )
+        # commit transaction to allow worker to fetch it using job id
         transaction.commit()
         service.run_async(job_id=obj.id)
         return obj.id, obj
