@@ -412,6 +412,10 @@ class DataCenterAsset(
         ('model__name', 'Model'),
     ]
 
+    def get_networks(self):
+        return '<table><tr><td>asdasd</td></tr></table>'
+    get_networks.allow_tags = True
+
     class Meta:
         verbose_name = _('data center asset')
         verbose_name_plural = _('data center assets')
