@@ -131,7 +131,6 @@ MYSQL_OPTIONS = {
     'sql_mode': 'TRADITIONAL',
     'charset': 'utf8',
     'init_command': """
-    SET storage_engine=INNODB;
     SET character_set_connection=utf8,collation_connection=utf8_unicode_ci;
     SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
     """
