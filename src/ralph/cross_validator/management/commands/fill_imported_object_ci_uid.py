@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from django.core.management.base import BaseCommand
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.management.base import BaseCommand
 
-from ralph.data_importer.models import ImportedObjects
 from ralph.cross_validator.ralph2.device import Asset
+from ralph.data_importer.models import ImportedObjects
 
 logger = logging.getLogger(__name__)
 
