@@ -37,7 +37,7 @@ class ActiveDeploymentMessageMixin(object):
         obj = self.get_object(request, object_id)
         if obj:
             current_transitions = TransitionJob.get_transitions_for_object(
-                obj=obj, only_active=True
+                obj=obj
             )
         if current_transitions:
             current_transition = current_transitions.first()
