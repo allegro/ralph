@@ -193,6 +193,7 @@ class CloudProjectViewSet(RalphAPIViewSet):
 class VirtualServerTypeViewSet(RalphAPIViewSet):
     queryset = VirtualServerType.objects.all()
     serializer_class = VirtualServerTypeSerializer
+    filter_fields = ['name']
 
 
 class VirtualServerFilterSet(NetworkableObjectFilters):
