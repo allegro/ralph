@@ -81,7 +81,9 @@
         {% if not bulk_edit %}
           {% block filters %}
             {% if cl.has_filters %}
-              {% cache 3600 filters request.user request.path %}
+              {% cache 86400 filters opts.app_label opts.model_name request.user.cache_param %}
+                <!-- cache -->
+                {% spaceless %}
                 <div class="small-2 columns sidebar actions-and-filters">
                   {% admin_actions %}
                   <div class="filters">
@@ -97,6 +99,8 @@
                     <input type="button" class="button" id="filter-button" value="Filter" />
                   </div>
                 </div>
+                {% endspaceless %}
+                <!-- end cache -->
               {% endcache %}
             {% endif %}
           {% endblock %}

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import hashlib
 
 from dj.choices import Country, Gender
 from django.conf import settings
@@ -6,6 +7,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils.encoding import force_bytes
+from django.utils.http import urlquote
 from django.utils.translation import ugettext_lazy as _
 from rest_framework.authtoken.models import Token
 
@@ -179,6 +182,13 @@ class RalphUser(
     @property
     def autocomplete_str(self):
         return '{} <i>{}</i>'.format(str(self), self.department)
+
+    @property
+    def cache_param(self):
+        """Property used in tamplate as a param to cache invalidation."""
+        perms_set = self.get_all_permissions()
+        key = '{}:{}'.format(self.id, urlquote(perms_set))
+        return hashlib.md5(force_bytes(key)).hexdigest()
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)

@@ -25,7 +25,7 @@
               <a href="#"><span>Menu</span></a>
             </li>
           </ul>
-          {% cache 3600 header_menu opts.app_label opts.model_name request.user.modified %}
+          {% cache 86400 header_menu opts.app_label opts.model_name request.user.cache_param %}
           <!-- cache -->
           {% spaceless %}
             <section class="top-bar-section">
@@ -53,18 +53,18 @@
                 {% block nav-global %}{% endblock %}
             </section>
           {% endspaceless %}
-          {% endcache %}
           <!-- end cache -->
+          {% endcache %}
         </nav>
         {% block breadcrumbs %}
           {% if original.modified %}
+            {% cache 86400 breadcrumbs opts.app_label opts.model_name original.modified %}
             <!-- cache -->
-            {% cache 3600 breadcrumbs opts.app_label opts.model_name original.modified %}
               {% spaceless %}
                 {% sitetree_breadcrumbs from "ralph_admin" template "admin/breadcrumbs_foundation.html" %}
               {% endspaceless %}
-            {% endcache %}
             <!-- end cache -->
+            {% endcache %}
           {% else %}
               {% sitetree_breadcrumbs from "ralph_admin" template "admin/breadcrumbs_foundation.html" %}
           {% endif %}
