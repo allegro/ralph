@@ -4,7 +4,7 @@ from ralph.admin import RalphTabularInline
 from ralph.admin.m2m import RalphTabularM2MInline
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.assets.models.components import Ethernet
-from ralph.lib.table import Table
+from ralph.lib.table import TableWithUrl
 from ralph.networks.forms import NetworkForm, NetworkInlineFormset
 from ralph.networks.models import Network
 
@@ -37,33 +37,28 @@ class NetworkView(RalphDetailViewAdmin):
     name = 'network'
     label = 'Network'
     url_name = 'network'
-    admin_attribute_list_to_copy = ['networks', 'network_envs']
-    readonly_fields = ('networks', 'network_envs')
-
-    def networks(self, instance):
-        return Table(
-            instance._get_available_networks_qry(),
-            ['name'],
-        ).render()
-    networks.short_description = "Networks"
-
-    def network_envs(self, instance):
-        return Table(
-            instance._get_available_network_environments_qry(),
-            ['name'],
-        ).render()
-    network_envs.short_description = "Network Envs"
-
-    fieldsets = (
-        (_('Basic info'), {
-            'fields': (
-                'networks', 'network_envs',
-            )
-        }),
-    )
+    admin_attribute_list_to_copy = ['network_data',]
+    readonly_fields = ('network_data',)
     inlines = [
         NetworkInline,
     ]
+    fields = ('network_data', )
+
+    def network_data(self, instance):
+        return TableWithUrl(
+            instance._get_available_networks(as_query=True),
+            ['name', 'address', 'network_environment'],
+            url_field='name',
+        ).render()
+    network_data.short_description = "Network data"
+    network_data.allow_tags = True
+    fieldsets = (
+        (_('Basic info'), {
+            'fields': (
+                'network_data',
+            )
+        }),
+    )
 
 
 class NetworkWithTerminatorsView(NetworkView):
