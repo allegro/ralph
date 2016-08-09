@@ -188,7 +188,7 @@ class RalphUser(
         Property used in template as a param to cache invalidation.
         Hash for caching is calculated from user ID and its permissions.
         """
-        perms_set = self.get_all_permissions()
+        perms_set = sorted(self.get_all_permissions())
         key = '{}:{}'.format(self.id, urlquote(perms_set))
         return hashlib.md5(force_bytes(key)).hexdigest()
 
