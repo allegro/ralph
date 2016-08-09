@@ -95,15 +95,33 @@ class AdminViewBase(type):
     def __new__(cls, name, bases, attrs):
         base_template = 'admin/extra_views/base_admin_change.html'
         empty_fieldset = (('__empty__', {'fields': []}),)
-        admin_whitelist = ['inlines', 'fieldsets']
+
+        new_class = super().__new__(cls, name, bases, attrs)
+        admin_whitelist = ['inlines', 'fieldsets', 'readonly_fields',]
+        #TODO:: rm it
+        #if name == 'NetworkView':
+        #    import ipdb
+        #    ipdb.set_trace()
+        if hasattr(new_class, 'admin_attribute_list_to_copy'):
+            admin_whitelist.extend(new_class.admin_attribute_list_to_copy)
         admin_attrs = {
             key: attrs.pop(key, []) for key in admin_whitelist
         }
-        new_class = super().__new__(cls, name, bases, attrs)
+
+
+        #admin_attribute_list_to_copy = []
+        #admin_whitelist = ['inlines', 'fieldsets', 'readonly_fields', 'address_report']
+        ##admin_whitelist.extend(??)
+
+        #admin_attrs = {
+        #    key: attrs.pop(key, []) for key in admin_whitelist
+        #}
+        #new_class = super().__new__(cls, name, bases, attrs)
+
 
         # create admin class
         admin_attrs['change_form_template'] = base_template
-        # rewrite admin fields from bases
+        # rewrite admin fieldsk from bases
         for base in bases:
             base_admin_class = getattr(base, 'admin_class', None)
             if (
@@ -155,6 +173,14 @@ class RalphDetailView(
 
 class RalphDetailViewAdmin(RalphDetailView):
     """This class helps to display standard model admin in tab."""
+
+    #TODO:: rmit
+    # attr names up to be copied to django admin view
+    # eg. ModelAdmin.readonly_fields
+    # (see: https://docs.djangoproject.com/ja/1.9/ref/contrib/admin/#django.contrib.admin.ModelAdmin.readonly_fields)
+    # defined as functions should be included here
+    admin_attribute_list_to_copy = []
+
     def dispatch(self, request, model, pk, *args, **kwargs):
         self.object = get_object_or_404(model, pk=pk)
         self.views = kwargs['views']

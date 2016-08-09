@@ -320,15 +320,21 @@ class NetworkableBaseObject(models.Model):
         logger.warning('Network-environment not provided for {}'.format(self))
         return ''
 
-    def _get_available_network_environments(self):
-        return list(NetworkEnvironment.objects.filter(
+    def _get_available_network_environments_qry(self):
+        return NetworkEnvironment.objects.filter(
             network__racks=self.rack_id
-        ).distinct())
+        ).distinct()
+
+    def _get_available_network_environments(self):
+        return list(self._get_available_network_environments_qry())
+
+    def _get_available_networks_qry(self):
+        return Network.objects.filter(
+            racks=self.rack_id
+        ).distinct()
 
     def _get_available_networks(self):
-        return list(Network.objects.filter(
-            racks=self.rack_id
-        ).distinct())
+        return list(_get_available_networks_qry())
 
     class Meta:
         abstract = True
