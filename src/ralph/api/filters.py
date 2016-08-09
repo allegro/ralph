@@ -188,12 +188,13 @@ class LookupFilterBackend(BaseFilterBackend):
             ))
             if lookup in field_lookups:
                 if lookup == 'isnull':
-                    value_old = value
-                    value = BOOL_VALUES.get(value, value_old)
-                    if value == value_old:
+                    if value not in BOOL_VALUES:
                         logger.debug(
                             'Unknown value for isnull filter: {}'.format(value)
                         )
+                        return {}
+                    else:
+                        value = BOOL_VALUES[value]
                 result = {'{}__{}'.format(model_field_name, lookup): value}
         return result
 
