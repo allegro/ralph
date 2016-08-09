@@ -184,7 +184,7 @@ class TestLookupFilterBackend(RalphTestCase):
             request, Bar.objects.all(), bvs)
         ), 4)
 
-    def test_a_query_filters_isnull(self):
+    def test_query_filters_isnull(self):
         request = self.request_factory.get('/api/bar')
         bvs = BarViewSet()
 
