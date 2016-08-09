@@ -19,24 +19,9 @@
   {% endfor %}
 {% endblock %}
 
-
-
 {% block after_related_objects %}
-
-<h5>Networks</h5>
-{% for network in view.network_data.networks %}
-  {{ network }}<br />
-{% endfor  %}
-
-<h5>Network Environments</h5>
-{% for env in view.network_data.network_environments %}
-  {{ env }}<br />
-{% endfor  %}
-
+  {% network_data view.dc_host %}
 {% endblock %}
-
-
-
 
 {% block object-tools %}
 {% endblock %}

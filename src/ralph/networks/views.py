@@ -15,35 +15,6 @@ class NetworkInline(RalphTabularInline):
     exclude = ['model']
 
 
-
-
-
-#TODO:: rm it
-#from django import forms
-#from ralph.networks.models import Network
-#from django.forms.models import BaseInlineFormSet
-#class NetworkForm2(forms.ModelForm):
-#    class Meta:
-#        model = Network
-#        fields = [
-#            'remarks',
-#        ]
-#class NetworkInlineFormset2(BaseInlineFormSet):
-#    pass
-#class XXXInline(RalphTabularInline):
-#    form = NetworkForm2
-#    formset = NetworkInlineFormset2
-#    model = Network
-#    #exclude = ['model']
-#
-#    #def get_queryset(self, request):
-#    #    pass
-#    #    import ipdb
-#    #    ipdb.set_trace()
-
-
-
-
 class NetworkTerminatorReadOnlyInline(RalphTabularM2MInline):
     model = Network
     extra = 0
@@ -74,18 +45,11 @@ class NetworkView(RalphDetailViewAdmin):
 class NetworkWithTerminatorsView(NetworkView):
     inlines = [
         NetworkInline,
-        #XXXInline,
         NetworkTerminatorReadOnlyInline,
     ]
     template_name = 'data_center/datacenterasset/networks.html'
 
     def dispatch(self, request, model, pk, *args, **kwargs):
         result = super().dispatch(request, model, pk, *args, **kwargs)
-        self.network_data = self.network_data()
+        self.dc_host = self.object
         return result
-
-    def network_data(self, **kwargs):
-        return {
-            'networks': self.object._get_available_networks(),
-            'network_envs': self.object._get_available_network_environments(),
-        }

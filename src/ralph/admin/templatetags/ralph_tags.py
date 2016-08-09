@@ -125,3 +125,11 @@ def raven_js():
         'sentry_dsn': SENTRY_JS_DSN,
         'sentry_js_config': SENTRY_JS_CONFIG
     }
+
+
+@register.inclusion_tag('admin/templatetags/network_data.html')
+def network_data(dc_host):
+    return {
+        'networks': dc_host._get_available_networks(),
+        'network_envs': dc_host._get_available_network_environments(),
+    }
