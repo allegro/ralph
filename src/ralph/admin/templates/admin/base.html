@@ -29,7 +29,7 @@
           <!-- cache -->
           {% spaceless %}
             <section class="top-bar-section">
-               {% sitetree_menu from "ralph_admin" include "trunk" template "admin/menu_admin.html" %}
+              {% sitetree_menu from "ralph_admin" include "trunk" template "admin/menu_admin.html" %}
               <ul class="right">
                 <li class="has-form">
                   {% contextual_search_form search_url search_fields cl.opts.verbose_name %}
@@ -51,6 +51,7 @@
                   {% endif %}
                 {% endblock %}
                 {% block nav-global %}{% endblock %}
+              </ul>
             </section>
           {% endspaceless %}
           <!-- end cache -->
