@@ -626,6 +626,8 @@ class TransitionJob(Job):
 
     @classmethod
     def get_transitions_for_object(cls, obj, only_active=False):
+        if obj is None:
+            return None
         ct = ContentType.objects.get_for_model(obj.__class__)
         return cls.objects.filter(object_id=obj.pk, content_type=ct).active()
 

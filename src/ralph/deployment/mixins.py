@@ -33,10 +33,12 @@ def get_actions_statuses_as_html(transition):
 
 class ActiveDeploymentMessageMixin(object):
     def changeform_view(self, request, object_id, *args, **kwargs):
+        current_transitions = None
         obj = self.get_object(request, object_id)
-        current_transitions = TransitionJob.get_transitions_for_object(
-            obj=obj, only_active=True
-        )
+        if obj:
+            current_transitions = TransitionJob.get_transitions_for_object(
+                obj=obj, only_active=True
+            )
         if current_transitions:
             current_transition = current_transitions.first()
             # TODO: separeted view
