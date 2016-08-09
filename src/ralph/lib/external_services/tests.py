@@ -3,7 +3,7 @@ import json
 
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory, TestCase, TransactionTestCase
 
 from ralph.lib.external_services.models import Job, JobStatus
 from ralph.tests.models import Bar, Foo
@@ -72,7 +72,7 @@ class JobDumpParamsTestCase(TestCase):
         self.assertEqual(result, self.sample_obj)
 
 
-class JobRunTestCase(TestCase):
+class JobRunTestCase(TransactionTestCase):
     def setUp(self):
         self.foo = Foo.objects.create(bar='bar')
         self.request_factory = RequestFactory()
