@@ -31,17 +31,17 @@
         </tbody>
       </table>
     </td>
-    <td{% if not show_kill %} colspan="2"{% endif %}>
+    <td>
       {% history_for_object job object as history_items %}
       {% for value in history_items %}
         {{ value.0 }}: <strong>{{ value.1 }}</strong><br />
       {% endfor %}
     </td>
-    {% if show_kill %}
     <td width="10px">
-      <button class="tiny button alert" onclick="javascript:if (confirm('{% trans 'Are you sure you want to kill transition job?' %}')) location.href='{% url 'kill_transition_job' job.id %}'">kill</button>
+      {% if show_kill %}
+        <button class="tiny button alert" onclick="javascript:if (confirm('{% trans 'Are you sure you want to kill transition job?' %}')) location.href='{% url 'kill_transition_job' job.id %}'">kill</button>
+      {% endif %}
     </td>
-    {% endif %}
   </tr>
 {% endfor %}
 
