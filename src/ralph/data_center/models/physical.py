@@ -291,12 +291,18 @@ class NetworkableBaseObject(models.Model):
             * find networks which are "connected" to rack assigned to me
             * find all (distinct) network environments assigned to these
               networks
+            * filter networks by ips currently assigned to object,
             * return first founded network environment if there is any,
               otherwise return `None`
         """
         if self.rack_id:
+            # TODO: better handling (when server in multiple environments)
             return NetworkEnvironment.objects.filter(
-                network__racks=self.rack
+                network__racks=self.rack,
+                # filter env by ips assigned to current object
+                network__in=self.ipaddresses.filter(
+                    is_management=False
+                ).values_list('network', flat=True)
             ).distinct().first()
 
     @property
