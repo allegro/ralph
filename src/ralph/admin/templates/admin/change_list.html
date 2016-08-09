@@ -81,7 +81,8 @@
         {% if not bulk_edit %}
           {% block filters %}
             {% if cl.has_filters %}
-              {% cache 86400 filters opts.app_label opts.model_name request.user.permissions_hash %}
+              {# TODO: request.user.permissions_hash if filters respect permissions #}
+              {% cache 86400 filters opts.app_label opts.model_name %}
                 <!-- cache -->
                 {% spaceless %}
                 <div class="small-2 columns sidebar actions-and-filters">

@@ -59,7 +59,7 @@ RALPH_INTERNAL_SERVICES.update({
 })
 
 CACHES = {
-    'default': {
+    'template_fragments': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     }
 }
