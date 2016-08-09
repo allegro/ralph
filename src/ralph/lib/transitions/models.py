@@ -11,7 +11,7 @@ from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import FieldDoesNotExist
+from django.core.exceptions import FieldDoesNotExist, ValidationError
 from django.db import models, transaction
 from django.db.models.base import ModelBase
 from django.db.models.signals import (
@@ -175,6 +175,7 @@ def _check_instances_for_transition(
             for instance, error_details in error.items():
                 errors[instance].append(error_details)
 
+    # allow for only one async transition at a time
     if transition.is_async and check_async_job:
         for instance in instances:
             if TransitionJob.objects.filter(
@@ -202,6 +203,30 @@ def _check_action_with_instances(instances, transition):
     for func in transition.get_pure_actions():
         validation_func = getattr(func, 'validation', lambda x: True)
         validation_func(instances)
+
+
+def _transition_data_validation(instances, transition, data):
+    """
+    Run additional data validation using transition instances. It's using
+    `validation` option assigned to transition field.
+
+    Returns: nested dict with action name on first level, field name on second
+        level and list of errors as values, ex.
+        `{'action_name': {'field_name': ['Some error', 'Other error']}}`
+    """
+    errors = defaultdict(lambda: defaultdict(list))
+    for action in transition.actions.all():
+        func = getattr(transition.model_cls, action.name)
+        action_fields = func.form_fields
+        for field_name, options in action_fields.items():
+            validation = options.get(
+                'validation', lambda instances, data: True
+            )
+            try:
+                validation(instances, _prepare_action_data(action, data))
+            except ValidationError as e:
+                errors[action.name][field_name].append(e)
+    return errors
 
 
 def _check_user_perm_for_transition(user, transition):
@@ -348,7 +373,6 @@ def run_field_transition(
         first_instance, transition_obj_or_name, field
     )
     _check_instances_for_transition(instances, transition)
-    _check_action_with_instances(instances, transition)
     attachment = None
     history_kwargs = defaultdict(dict)
     shared_params = defaultdict(dict)

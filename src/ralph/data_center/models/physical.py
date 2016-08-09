@@ -699,4 +699,7 @@ if settings.HERMES_HOST_UPDATE_TOPIC_NAME:
 
     @receiver(post_save, sender=DataCenterAsset)
     def post_save_dc_asset(sender, instance, **kwargs):
-        return publish_host_update(instance)
+        # temporary, until Ralph2 sync is turned on
+        # see ralph.ralph2_sync.admin for details
+        if getattr(instance, '_handle_post_save', True):
+            return publish_host_update(instance)

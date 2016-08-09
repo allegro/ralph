@@ -25,6 +25,7 @@ from ralph.lib.permissions.views import PermissionViewMetaClass
 from ralph.lib.transitions.exceptions import TransitionNotAllowedError
 from ralph.lib.transitions.models import (
     _check_instances_for_transition,
+    _transition_data_validation,
     run_transition,
     Transition,
     TransitionJob
@@ -123,7 +124,8 @@ class TransitionViewMixin(object):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'] = self.get_form()
+        if 'form' not in context:
+            context['form'] = self.get_form()
         context['transition'] = self.transition
         context['back_url'] = self.get_success_url()
         context['objects'] = self.objects
@@ -139,7 +141,7 @@ class TransitionViewMixin(object):
         return ParamsForm(**form_kwargs)
 
     def form_invalid(self, form):
-        context = self.get_context_data()
+        context = self.get_context_data(form=form)
         return self.render_to_response(context)
 
     def form_valid(self, form=None):
@@ -222,9 +224,19 @@ class TransitionViewMixin(object):
 
         form = self.get_form()
         if form.is_valid():
-            return self.form_valid(form)
-        else:
-            return self.form_invalid(form)
+            # additional data validation
+            form_errors = _transition_data_validation(
+                self.objects, self.transition, form.cleaned_data
+            )
+            if form_errors:
+                for action, action_errors in form_errors.items():
+                    for field_name, field_errors in action_errors.items():
+                        form.add_error(
+                            action + '__' + field_name, field_errors
+                        )
+            else:
+                return self.form_valid(form)
+        return self.form_invalid(form)
 
     def get_async_transitions_awaiter_url(self, job_ids):
         return '{}?{}'.format(

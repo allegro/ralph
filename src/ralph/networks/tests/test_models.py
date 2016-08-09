@@ -381,24 +381,25 @@ class NetworkEnvironmentTest(RalphTestCase):
         network_env = NetworkEnvironmentFactory(
             hostname_template_prefix=prefix,
             hostname_template_postfix=postfix,
+            hostname_template_counter_length=6,
             use_hostname_counter=False
         )
         self.assertEqual(
             network_env.next_hostname_without_model_counter(),
-            'test.00001.ralph.pl'
+            'test.000001.ralph.pl'
         )
-        for i in ['00009', '00001', '00008', '00007', '00050', '00044']:
+        for i in ['000009', '000001', '000008', '000007', '000050', '000044']:
             DataCenterAssetFactory(hostname="".join([prefix, i, postfix]))
         self.assertEqual(
             network_env.next_hostname_without_model_counter(),
-            'test.00051.ralph.pl'
+            'test.000051.ralph.pl'
         )
-        for i in ['00019', '00011', '00098', '00053', '00444']:
+        for i in ['000019', '000011', '000098', '000053', '000444']:
             VirtualServerFactory(hostname="".join([prefix, i, postfix]))
 
         self.assertEqual(
             network_env.next_hostname_without_model_counter(),
-            'test.00445.ralph.pl'
+            'test.000445.ralph.pl'
         )
 
 

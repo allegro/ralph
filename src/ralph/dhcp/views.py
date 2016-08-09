@@ -166,7 +166,9 @@ class DHCPEntriesView(
         context = super().get_context_data(**kwargs)
         context.update({
             'last_modified': self.last_modified,
-            'entries': DHCPEntry.objects.filter(network__in=self.networks),
+            'entries': DHCPEntry.objects.filter(
+                network__in=self.networks
+            ).order_by('hostname'),
         })
         return context
 
