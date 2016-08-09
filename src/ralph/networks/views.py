@@ -37,7 +37,7 @@ class NetworkView(RalphDetailViewAdmin):
     name = 'network'
     label = 'Network'
     url_name = 'network'
-    admin_attribute_list_to_copy = ['network_data',]
+    admin_attribute_list_to_copy = ['network_data']
     readonly_fields = ('network_data',)
     inlines = [
         NetworkInline,
