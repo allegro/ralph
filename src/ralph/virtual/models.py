@@ -309,8 +309,14 @@ if settings.HERMES_HOST_UPDATE_TOPIC_NAME:
 
     @receiver(models.signals.post_save, sender=CloudHost)
     def post_save_cloud_host(sender, instance, **kwargs):
-        return publish_host_update(instance)
+        # temporary, until Ralph2 sync is turned on
+        # see ralph.ralph2_sync.admin for details
+        if getattr(instance, '_handle_post_save', True):
+            return publish_host_update(instance)
 
     @receiver(models.signals.post_save, sender=VirtualServer)
     def post_save_virtual_server(sender, instance, **kwargs):
-        return publish_host_update(instance)
+        # temporary, until Ralph2 sync is turned on
+        # see ralph.ralph2_sync.admin for details
+        if getattr(instance, '_handle_post_save', True):
+            return publish_host_update(instance)

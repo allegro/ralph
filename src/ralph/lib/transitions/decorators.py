@@ -14,6 +14,9 @@ def transition_action(method=None, **kwargs):
         func.run_after = kwargs.get('run_after', [])
         func.help_text = kwargs.get('help_text', '')
         func.precondition = kwargs.get('precondition', lambda instances: {})
+        func.additional_validation = kwargs.get(
+            'additional_validation', lambda instances, data: {}
+        )
         func.disable_save_object = kwargs.get('disable_save_object', False)
         func.only_one_action = kwargs.get('only_one_action', False)
         func.is_async = kwargs.get('is_async', False)

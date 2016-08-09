@@ -25,6 +25,7 @@ from functools import partial
 
 from django import forms
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
@@ -385,6 +386,25 @@ def assign_new_hostname(cls, instances, network_environment, **kwargs):
             _assign_hostname(instance, new_hostname, net_env)
 
 
+def check_ipaddress_unique(instances, data):
+    """
+    Validate if custom (other) IP is already assigned to another (base) object.
+    """
+    if data['ip_or_network']['value'] == OTHER:
+        assert len(instances) == 1
+        instance = instances[0]
+        address = data['ip_or_network'][OTHER]
+        try:
+            ip = IPAddress.objects.get(address=address)
+        except IPAddress.DoesNotExist:
+            pass
+        else:
+            if ip.ethernet and ip.ethernet.base_object_id != instance.pk:
+                raise ValidationError(
+                    'IP {} is already assigned to other object!'.format(address)
+                )
+
+
 @deployment_action(
     verbose_name=_('Assign new IP address and create DHCP entries'),
     form_fields={
@@ -396,8 +416,7 @@ def assign_new_hostname(cls, instances, network_environment, **kwargs):
             ),
             'choices': next_free_ip_choices,
             'exclude_from_history': True,
-            # TODO: validation for IP address (in other field) if not used
-            # by other object
+            'validation': check_ipaddress_unique,
         },
         'ethernet': {
             'field': forms.ChoiceField(label=_('MAC Address')),

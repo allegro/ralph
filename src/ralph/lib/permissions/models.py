@@ -2,7 +2,7 @@ import operator
 
 from django.contrib.auth.management import _get_all_permissions
 from django.core import exceptions
-from django.db import DEFAULT_DB_ALIAS, models, router
+from django.db import DEFAULT_DB_ALIAS, models, router, transaction
 from django.db.models.base import ModelBase
 from django.utils.translation import ugettext_lazy as _
 
@@ -292,6 +292,7 @@ class PermissionsForObjectMixin(models.Model, metaclass=PermissionsBase):
         abstract = True
 
 
+@transaction.atomic
 def create_permissions(
     app_config, verbosity=2, interactive=True, using=DEFAULT_DB_ALIAS, **kwargs
 ):
@@ -333,10 +334,10 @@ def create_permissions(
             )
             perms = Permission.objects.using(using).filter(
                 content_type=concrete_ctype,
-                codename__startswith=klass._meta.model_name
+                codename__endswith=klass._meta.model_name
             )
             if perms:
-                perms.update(content_type=ctypes)
+                perms.update(content_type=ctype)
         ctypes.add(ctype)
         for perm in _get_all_permissions(klass._meta, ctype):
             searched_perms.append((ctype, perm))

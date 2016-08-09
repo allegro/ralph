@@ -215,6 +215,7 @@ class DCHostFilterSet(NetworkableObjectFilters):
         model = models.BaseObject
 
 
+# TODO: move to data_center and use DCHost proxy model
 class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     queryset = models.BaseObject.polymorphic_objects
     serializer_class = serializers.DCHostSerializer
@@ -227,12 +228,15 @@ class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         'service_env', 'service_env__service', 'service_env__environment',
         'configuration_path', 'configuration_path__module'
     ]
-    prefetch_related = base_object_descendant_prefetch_related + [
+    prefetch_related = [
         'tags',
-        'memory_set',
         Prefetch(
             'ethernet_set',
             queryset=models.Ethernet.objects.select_related('ipaddress')
+        ),
+        Prefetch(
+            'custom_fields',
+            queryset=CustomFieldValue.objects.select_related('custom_field')
         ),
     ]
     extended_filter_fields = {
