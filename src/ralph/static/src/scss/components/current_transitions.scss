@@ -3,6 +3,17 @@
         .label { width:100%; }
     }
     table tr {
+        .info-header {
+            background-color: $info-color;
+            font-weight: bold;
+            border-top-width: 2px;
+        }
+        &:first-child .info-header {
+            border-top-width: 1px;
+        }
+        .empty {
+            font-style: italic;
+        }
         .date {
             font-size: .8rem;
             color: #999;
