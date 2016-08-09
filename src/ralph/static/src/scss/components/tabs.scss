@@ -65,7 +65,7 @@
             }
             a {
                 margin-left: 3px;
-                border: 1px solid #ccc;
+                border: 1px solid $tabs-border-color;
                 text-align: left;
                 padding-left: 10px;
                 padding-right: 2px;
@@ -74,10 +74,10 @@
             a:hover {
                 margin-left: 0;
                 margin-top: 3px;
-                border-top: 1px solid #ccc;
-                border-left: 4px solid #FF9800;
+                border-top: 1px solid $tabs-border-color;
+                border-left: 4px solid $mdc-orange-500;
                 border-right-color: transparent;
-                background-color: #fafafa;
+                background-color: $tabs-content-bg-color;
             }
             i {
                 width:15px;
