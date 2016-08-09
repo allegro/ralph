@@ -145,7 +145,7 @@ class _BaseTestDeploymentActionsTestCase(object):
 
     def test_assign_new_hostname(self):
         self._prepare_rack()
-        next_free_hostname = self.instance.get_next_free_hostname()
+        next_free_hostname = 'server_10001.mydc.net'
         history = {self.instance.pk: {}}
         self.instance.__class__.assign_new_hostname(
             [self.instance], {'value': self.net_env.id}, history_kwargs=history
