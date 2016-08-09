@@ -68,21 +68,35 @@ class ImportedIdFilterBackend(BaseFilterBackend):
     Filter by imported object id
     """
     def filter_queryset(self, request, queryset, view):
-        imported_object_id = request.query_params.get(
-            '_imported_object_id'
-        )
-        if imported_object_id:
-            try:
-                imported_obj = ImportedObjects.objects.get(
-                    content_type=ContentType.objects.get_for_model(
-                        queryset.model
-                    ),
-                    old_object_pk=imported_object_id,
+        for param_name, field_name, use_content_type in [
+            ('_imported_object_id', 'old_object_pk', True),
+            ('_ralph2_ci_uid', 'old_ci_uid', False),
+        ]:
+            param_value = request.query_params.get(param_name)
+            if param_value:
+                logger.debug(
+                    'Processing imported id query param {}:{}'.format(
+                        param_name, param_value
+                    )
                 )
-            except ImportedObjects.DoesNotExist:
-                return queryset.model.objects.none()
-            else:
-                queryset = queryset.filter(pk=imported_obj.object_pk)
+                query_params = {field_name: param_value}
+                if use_content_type:
+                    query_params['content_type'] = ContentType.objects.get_for_model(  # noqa
+                        queryset.model
+                    )
+                try:
+                    imported_obj = ImportedObjects.objects.get(**query_params)
+                except ImportedObjects.DoesNotExist:
+                    return queryset.model.objects.none()
+                except ImportedObjects.MultipleObjectsReturned:
+                    logger.error(
+                        'Multiple objects returned for filter {}: {}'.format(
+                            param_name, param_value
+                        )
+                    )
+                    return queryset.model.objects.none()
+                else:
+                    queryset = queryset.filter(pk=imported_obj.object_pk)
         return queryset
 
 
