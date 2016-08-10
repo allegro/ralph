@@ -519,6 +519,7 @@ BASE_OBJECTS_FACTORIES = {
     VIP: VIPFactory,
     VirtualServer: VirtualServerFactory,
     Cluster: ClusterFactory,
+    ConfigurationClass: ConfigurationClassFactory,
 }
 
 
