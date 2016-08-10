@@ -188,7 +188,7 @@ class RalphUser(
         Hash for caching is calculated from user ID and its permissions.
         """
         perms_set = frozenset(self.get_all_permissions())
-        key = ':'.join((self.id, hash(perms_set)))
+        key = ':'.join((str(self.id), str(hash(perms_set))))
         return hashlib.md5(force_bytes(key)).hexdigest()
 
 
