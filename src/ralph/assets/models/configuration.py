@@ -63,11 +63,12 @@ class ConfigurationClass(AdminAbsoluteUrlMixin, BaseObject):
         help_text=_('ex. puppet class'),
         validators=[dir_file_name_validator],
     )
-    path = models.TextField(
+    path = models.CharField(
         verbose_name=_('path'),
         blank=True,
         default='',
         editable=False,
+        max_length=511,  # 255 form module name, '/' and 255 from class name
         help_text=_('path is constructed from name of module and name of class')
     )
     module = models.ForeignKey(
