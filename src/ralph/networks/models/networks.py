@@ -3,12 +3,10 @@ import ipaddress
 import logging
 import socket
 import struct
-from itertools import chain
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
-from django.db.models import Q
 from django.db.models.signals import post_migrate
 from django.db.utils import ProgrammingError
 from django.dispatch import receiver
@@ -265,6 +263,20 @@ class Network(
         verbose_name=_('DNS servers'),
         blank=True,
     )
+    reserved_from_beginning = models.PositiveIntegerField(
+        help_text=_(
+            'Number of addresses to be omitted in DHCP automatic assignment'
+            'counted from the first IP in range (excluding network address)'
+        ),
+        default=settings.DEFAULT_NETWORK_BOTTOM_MARGIN,
+    )
+    reserved_from_end = models.PositiveIntegerField(
+        help_text=_(
+            'Number of addresses to be omitted in DHCP automatic assignment'
+            'counted from the last IP in range (excluding broadcast address)'
+        ),
+        default=settings.DEFAULT_NETWORK_TOP_MARGIN,
+    )
 
     @property
     def network(self):
@@ -313,29 +325,15 @@ class Network(
     def _has_address_changed(self):
         return self.address != self._old_address
 
-    def _get_reserved_count(self, ips, margin_num):
-        if not ips or ips[0] != margin_num:
-            return 0
-        reserved_count = 1
-        for num1, num2 in zip(ips, ips[1:]):
-            if abs(num2 - num1) != 1:
-                break
-            reserved_count += 1
-        return reserved_count
-
     @property
     def reserved_bottom(self):
-        reserved = IPAddress.objects.filter(
-            network=self, status=IPAddressStatus.reserved
-        ).values_list('number', flat=True).order_by('number')
-        return self._get_reserved_count(reserved, self.min_ip + 1)
+        # DEPRECATED
+        return self.reserved_from_beginning
 
     @property
     def reserved_top(self):
-        reserved = IPAddress.objects.filter(
-            network=self, status=IPAddressStatus.reserved
-        ).values_list('number', flat=True).order_by('-number')
-        return self._get_reserved_count(reserved, self.max_ip - 1)
+        # DEPRECATED
+        return self.reserved_from_end
 
     class Meta:
         verbose_name = _('network')
@@ -361,6 +359,8 @@ class Network(
             >>> network.min_ip, network.max_ip, network.gateway
             (3232235776, 3232236031, None)
         """
+        # TODO: gateway status? reserved? or maybe regular ip field instead of
+        # PK?
         if self.gateway_id and not self.gateway.is_gateway:
             self.gateway.is_gateway = True
             self.gateway.status = IPAddressStatus.reserved
@@ -462,48 +462,25 @@ class Network(
     def get_immediate_subnetworks(self):
         return self.get_children()
 
-    def reserve_margin_addresses(self, bottom_count=0, top_count=0):
-        ips = []
-        existing_ips = set(IPAddress.objects.filter(
-            Q(
-                number__gte=self.min_ip + 1,
-                number__lte=self.min_ip + bottom_count + 1
-            ) |
-            Q(number__gte=self.max_ip - top_count, number__lte=self.max_ip)
-        ).values_list('number', flat=True))
-        to_create = set(chain.from_iterable([
-            range(int(self.min_ip + 1), int(self.min_ip + bottom_count + 1)),
-            range(int(self.max_ip - top_count), int(self.max_ip))
-        ]))
-        to_create = to_create - existing_ips
-        for ip_as_int in to_create:
-            ips.append(IPAddress(
-                address=str(ipaddress.ip_address(ip_as_int)),
-                number=ip_as_int,
-                network=self,
-                status=IPAddressStatus.reserved
-            ))
-        IPAddress.objects.bulk_create(ips)
-        # TODO: handle decreasing count
-        return len(to_create), existing_ips - to_create
-
     def get_first_free_ip(self):
         used_ips = set(IPAddress.objects.filter(
             number__range=(self.min_ip, self.max_ip)
         ).values_list(
             'number', flat=True
         ))
-        min_ip = int(self.min_ip if self.netmask == 31 else self.min_ip + 1)
-        max_ip = int(self.max_ip + 1 if self.netmask == 31 else self.max_ip)
-        ip_as_int = None
-        for ip_as_int in range(min_ip, max_ip):
-            if ip_as_int not in used_ips:
+        # add one to omit network address
+        min_ip = int(self.min_ip + 1 + self.reserved_from_beginning)
+        # subtract 1 to omit broadcast address
+        max_ip = int(self.max_ip - 1 - self.reserved_from_end)
+        free_ip_as_int = None
+        for free_ip_as_int in range(min_ip, max_ip + 1):
+            if free_ip_as_int not in used_ips:
                 break
         # TODO: do it better
-        last = ip_as_int in used_ips
+        last = free_ip_as_int in used_ips
         return (
-            ipaddress.ip_address(ip_as_int)
-            if ip_as_int and not last else None
+            ipaddress.ip_address(free_ip_as_int)
+            if free_ip_as_int and not last else None
         )
 
     def issue_next_free_ip(self):

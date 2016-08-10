@@ -8,7 +8,7 @@ from ralph.assets.models import Ethernet
 from ralph.data_center.models import DataCenterAsset
 from ralph.data_center.tests.factories import DataCenterAssetFactory
 from ralph.networks.forms import validate_is_management
-from ralph.networks.models import IPAddress, IPAddressStatus
+from ralph.networks.models import IPAddress
 from ralph.networks.tests.factories import IPAddressFactory
 from ralph.tests import RalphTestCase
 
@@ -82,22 +82,6 @@ class TestDataCenterAssetForm(RalphTestCase):
         self.assertEqual(response.status_code, 302)
         self.dca.refresh_from_db()
         self.assertEqual(self.dca.management_ip, '10.20.30.40')
-        self.assertEqual(self.dca.management_hostname, 'qwerty.mydc.net')
-
-    def test_enter_reserved_mgmt_ip_should_pass(self):
-        IPAddressFactory(
-            is_management=False, address='10.20.30.41',
-            ethernet=None, status=IPAddressStatus.reserved,
-        )
-        data = self._get_initial_data()
-        data.update({
-            'management_ip': '10.20.30.41',
-            'management_hostname': 'qwerty.mydc.net',
-        })
-        response = self.client.post(self.dca.get_absolute_url(), data)
-        self.assertEqual(response.status_code, 302)
-        self.dca.refresh_from_db()
-        self.assertEqual(self.dca.management_ip, '10.20.30.41')
         self.assertEqual(self.dca.management_hostname, 'qwerty.mydc.net')
 
     def test_enter_duplicated_mgmt_ip_should_not_pass(self):

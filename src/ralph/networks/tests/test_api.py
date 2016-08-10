@@ -4,7 +4,6 @@ from rest_framework import status
 
 from ralph.api.tests._base import RalphAPITestCase
 from ralph.assets.tests.factories import EthernetFactory
-from ralph.networks.models import IPAddressStatus
 from ralph.networks.tests.factories import IPAddressFactory, NetworkFactory
 
 
@@ -70,7 +69,6 @@ class IPAddressAPITests(RalphAPITestCase):
             'hostname': 'another-hostname',
             'is_management': True,
             'is_gateway': True,
-            'status': 'reserved',
             'ethernet': self.eth.id,
             'dhcp_expose': True,
         }
@@ -84,7 +82,6 @@ class IPAddressAPITests(RalphAPITestCase):
         self.assertTrue(self.ip1.dhcp_expose)
         self.assertTrue(self.ip1.is_gateway)
         self.assertEqual(self.ip1.ethernet, self.eth)
-        self.assertEqual(self.ip1.status, IPAddressStatus.reserved)
 
     def test_change_ip_address_already_occupied_should_not_pass(self):
         data = {'address': '127.0.0.2'}

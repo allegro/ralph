@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 
-from ralph.networks.models import IPAddress, IPAddressStatus
+from ralph.networks.models import IPAddress
 
 
 class WithManagementIPMixin(object):
@@ -88,13 +88,7 @@ class WithManagementIPMixin(object):
         ip = self._get_management_ip()
         if ip:
             eth = ip.ethernet
-            # remove IP only if it's status is different than reserved
-            if ip.status != IPAddressStatus.reserved:
-                ip.delete()
-            else:
-                ip.is_management = False
-                ip.ethernet = None
-                ip.save()
+            ip.delete()
             eth.delete()
 
     @property
