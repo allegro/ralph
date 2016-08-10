@@ -1,3 +1,5 @@
+@import 'functions';
+
 .tabs {
     vertical-align: middle;
     margin-bottom: -1px;
@@ -88,7 +90,6 @@
 
     }
 }
-
 .elevate {
     z-index: 3;
 }
@@ -103,8 +104,15 @@
     padding-left: 0;
 }
 #content-main .content {
-    min-height: 364px;
+    margin-bottom: -1px;
+    min-height: 100%;
 }
 .content .content-inner {
     padding: 0 1.33333rem;
+}
+.flex {
+    @include display-flex();
+}
+.right-col {
+    margin-bottom: -1px;
 }
