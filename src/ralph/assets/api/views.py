@@ -121,6 +121,8 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
             'virtualserver__hostname',
             'cloudhost__hostname',
             'cluster__hostname',
+            'configurationclass__path',
+            'serviceenvironment__service__name',
         ],
         'hostname': [
             'asset__hostname',
@@ -199,6 +201,8 @@ class ConfigurationClassViewSet(RalphAPIViewSet):
     queryset = models.ConfigurationClass.objects.all()
     serializer_class = serializers.ConfigurationClassSerializer
     filter_fields = ('module', 'module__name', 'class_name', 'path')
+    select_related = ['module']
+    prefetch_related = ['tags']
 
 
 class BaseObjectViewSetMixin(object):
