@@ -548,6 +548,7 @@ class BaseObjectAPITests(RalphAPITestCase):
         self.ip = IPAddressFactory(
             ethernet=EthernetFactory(base_object=self.dc_asset)
         )
+        self.service = ServiceEnvironmentFactory(service__name='myservice')
 
     def test_get_base_objects_list(self):
         url = reverse('baseobject-list')
@@ -726,6 +727,24 @@ class BaseObjectAPITests(RalphAPITestCase):
                     response.data.get('object_type'), obj.content_type.model
                 )
         self.assertEqual(count, len(BASE_OBJECTS_FACTORIES))
+
+    def test_filter_by_configurationclass_path(self):
+        url = '{}?{}'.format(
+            reverse('baseobject-list'), urlencode(
+                {'name__startswith': 'mod1/cls'}
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 1)
+
+    def test_filter_by_service_env_service_name(self):
+        url = '{}?{}'.format(
+            reverse('baseobject-list'), urlencode(
+                {'name__startswith': 'myserv'}
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 1)
 
 
 class DCHostAPITests(RalphAPITestCase):
