@@ -14,6 +14,7 @@ from ralph.data_center.tests.factories import (
 from ralph.lib.transitions.conf import TRANSITION_ORIGINAL_STATUS
 from ralph.lib.transitions.tests import TransitionTestCase
 from ralph.networks.tests.factories import (
+    IPAddressFactory,
     NetworkEnvironmentFactory,
     NetworkFactory
 )
