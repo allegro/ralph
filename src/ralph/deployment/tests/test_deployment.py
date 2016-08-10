@@ -1,3 +1,4 @@
+import datetime
 from unittest import mock
 
 from ddt import data, ddt, unpack
@@ -15,7 +16,8 @@ from ralph.deployment.deployment import (
     autocomplete_service_env,
     check_ipaddress_unique
 )
-from ralph.networks.models.networks import IPAddress
+from ralph.dhcp.models import DHCPServer
+from ralph.networks.models.networks import IPAddress, IPAddressStatus, Network
 from ralph.networks.tests.factories import (
     IPAddressFactory,
     NetworkEnvironmentFactory,
@@ -101,6 +103,31 @@ class _BaseTestDeploymentActionsTestCase(object):
                 self.instance
             )
         )
+
+    def test_a_dhcp_servers_wait(self):
+        start_date = datetime.datetime(2016, 8, 5, 1, 1, 1)
+        end_date = datetime.datetime(2016, 8, 5, 1, 1, 2)
+        net = Network.objects.create(
+            name='net', address='192.169.58.0/24',
+            network_environment=NetworkEnvironmentFactory()
+        )
+        ip = IPAddress.objects.create(
+            address='192.169.58.1', status=IPAddressStatus.reserved
+        )
+        DHCPServer.objects.create(
+            ip='10.0.0.1',
+            network_environment=net.network_environment,
+            last_synchronized=end_date
+        )
+        kwargs = {
+            'shared_params': {
+                'dhcp_entry_created_date': start_date,
+                'ip_addresses': {
+                    self.instance.pk: ip
+                }
+            }
+        }
+        self.instance.__class__.wait_for_dhcp_servers([self.instance], **kwargs)
 
     def test_clean_ipaddresses(self):
         ip = IPAddressFactory(ethernet__base_object=self.instance)
