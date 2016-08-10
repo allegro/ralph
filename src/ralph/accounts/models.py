@@ -8,7 +8,6 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.encoding import force_bytes
-from django.utils.http import urlquote
 from django.utils.translation import ugettext_lazy as _
 from rest_framework.authtoken.models import Token
 
@@ -188,8 +187,8 @@ class RalphUser(
         Property used in template as a param to cache invalidation.
         Hash for caching is calculated from user ID and its permissions.
         """
-        perms_set = sorted(self.get_all_permissions())
-        key = '{}:{}'.format(self.id, urlquote(perms_set))
+        perms_set = frozenset(self.get_all_permissions())
+        key = ':'.join((self.id, hash(perms_set)))
         return hashlib.md5(force_bytes(key)).hexdigest()
 
 
