@@ -3,11 +3,14 @@ from ipaddress import ip_address, ip_network
 from ddt import data, ddt, unpack
 from django.core.exceptions import ValidationError
 from django.db.models import F
+from django.test import RequestFactory
 
 from ralph.admin.helpers import CastToInteger
 from ralph.assets.models import AssetLastHostname
 from ralph.assets.tests.factories import EthernetFactory
 from ralph.data_center.tests.factories import DataCenterAssetFactory
+from ralph.networks.admin import NetworkAdmin
+from ralph.networks.filters import NetworkClassFilter
 from ralph.networks.models.choices import IPAddressStatus
 from ralph.networks.models.networks import IPAddress, Network
 from ralph.networks.tests.factories import (
@@ -490,3 +493,55 @@ class IPAddressTest(RalphTestCase):
             msg='Cannot change ethernet when exposing in DHCP'
         ):
             self.ip.clean()
+
+
+class TestNetworkClassFilter(RalphTestCase):
+
+    def setUp(self):
+        from ralph.networks.tests.factories import NetworkFactory
+        self.factory = RequestFactory()
+        self.request = self.factory.get('/')
+        self.private_network = NetworkFactory(
+            name='private_network',
+            address='10.0.0.0/8'
+        )
+        self.public_network = NetworkFactory(
+            name='public_network',
+            address='5.0.0.0/21'
+        )
+
+    def test_finds_private_nets_when_param_private(self):
+        filter_ = NetworkClassFilter(
+            field=Network._meta.get_field('address'),
+            request=self.request,
+            params={'address': 'private'},
+            model=Network,
+            model_admin=NetworkAdmin,
+            field_path='address'
+        )
+        queryset = filter_.queryset(None, Network.objects.all())
+        self.assertEqual(queryset.count(), 1)
+
+    def test_finds_public_nets_when_param_public(self):
+        filter_ = NetworkClassFilter(
+            field=Network._meta.get_field('address'),
+            request=self.request,
+            params={'address': 'public'},
+            model=Network,
+            model_admin=NetworkAdmin,
+            field_path='address'
+        )
+        queryset = filter_.queryset(None, Network.objects.all())
+        self.assertEqual(queryset.count(), 1)
+
+    def test_finds_all_nets_when_no_param(self):
+        filter_ = NetworkClassFilter(
+            field=Network._meta.get_field('address'),
+            request=self.request,
+            params={},
+            model=Network,
+            model_admin=NetworkAdmin,
+            field_path='address'
+        )
+        queryset = filter_.queryset(None, Network.objects.all())
+        self.assertEqual(queryset.count(), 2)

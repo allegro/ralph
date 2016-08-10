@@ -1,5 +1,6 @@
 import ipaddress
 
+from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.filters import ChoicesListFilter, TextListFilter
@@ -59,9 +60,16 @@ class NetworkClassFilter(ChoicesListFilter):
 
     def queryset(self, request, queryset):
         if not self.value():
-            pass
-        elif self.value().lower() == 'private':
-            queryset = queryset.filter(address__in=PRIVATE_NETWORK_CIDRS)
+            return queryset
+
+        filter_ = Q()
+        for private_cidr in PRIVATE_NETWORK_CIDRS:
+            network = ipaddress.ip_network(private_cidr)
+            min_ip = int(network.network_address)
+            max_ip = int(network.broadcast_address)
+            filter_ |= Q(min_ip__gte=min_ip, max_ip__lte=max_ip)
+        if self.value().lower() == 'private':
+            queryset = queryset.filter(filter_)
         elif self.value().lower() == 'public':
             queryset = queryset.exclude(address__in=PRIVATE_NETWORK_CIDRS)
         return queryset
