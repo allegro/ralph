@@ -53,3 +53,7 @@ if os.environ.get('USE_REDIS_CACHE'):
             ),
         },
     }
+    if bool_from_env('RALPH_DISABLE_CACHE_FRAGMENTS', False):
+        CACHES['template_fragments'] = {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        }
