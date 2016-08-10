@@ -10,6 +10,17 @@ PRIVATE_NETWORK_CIDRS = [
 ]
 
 
+def get_private_network_filter():
+    filter_ = Q()
+    for private_cidr in PRIVATE_NETWORK_CIDRS:
+        network = ipaddress.ip_network(private_cidr)
+        min_ip = int(network.network_address)
+        max_ip = int(network.broadcast_address)
+        filter_ |= Q(min_ip__gte=min_ip, max_ip__lte=max_ip)
+    return filter_
+PRIVATE_NETWORK_FILTER = get_private_network_filter()
+
+
 class IPRangeFilter(TextListFilter):
 
     def __init__(self, *args, **kwargs):
@@ -61,15 +72,8 @@ class NetworkClassFilter(ChoicesListFilter):
     def queryset(self, request, queryset):
         if not self.value():
             return queryset
-
-        filter_ = Q()
-        for private_cidr in PRIVATE_NETWORK_CIDRS:
-            network = ipaddress.ip_network(private_cidr)
-            min_ip = int(network.network_address)
-            max_ip = int(network.broadcast_address)
-            filter_ |= Q(min_ip__gte=min_ip, max_ip__lte=max_ip)
         if self.value().lower() == 'private':
-            queryset = queryset.filter(filter_)
+            queryset = queryset.filter(PRIVATE_NETWORK_FILTER)
         elif self.value().lower() == 'public':
-            queryset = queryset.exclude(address__in=PRIVATE_NETWORK_CIDRS)
+            queryset = queryset.exclude(PRIVATE_NETWORK_FILTER)
         return queryset
