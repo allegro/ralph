@@ -5,7 +5,7 @@
     <ul>
       <li
         class="has-tip tip-bottom {% if name == '' %} active {% endif %}"
-        title="{{ view.label }}"
+        {% if view.label %}title="{{ view.label }}"{% endif %}
         data-tooltip
         aria-haspopup="true"
         data-options="show_on:small"

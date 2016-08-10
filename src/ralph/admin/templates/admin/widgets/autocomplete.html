@@ -3,7 +3,7 @@
   name="{{name}}"
   {{ attrs }}
   value="{{ value }}"
-  {{multi}}
+  {% if multi %}{{ multi }}{% endif %}
   query-ajax-url="{{ data_suggest_url }}"
   detailsurl="{{ data_details_url }}"
   related-url="{{ related_url }}"

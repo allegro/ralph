@@ -51,9 +51,9 @@ def views_tabs(context, views, name=None, obj=None):
 def contextual_search_form(context, search_url, search_fields, verbose_name):
     context.update({
         'search_url': search_url,
-        'search_fields': search_fields,
+        'search_fields': search_fields or '',
         'search_var': SEARCH_VAR,
-        'verbose_name': verbose_name.lower(),
+        'verbose_name': verbose_name.lower() if verbose_name else '',
     })
     return context
 

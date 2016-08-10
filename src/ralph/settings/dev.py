@@ -40,6 +40,7 @@ TEMPLATES = [
                 'django.template.loaders.app_directories.Loader',
                 'ralph.lib.template.loaders.AppTemplateLoader',
             ],
+            'string_if_invalid': TEMPLATE_STRING_IF_INVALID
         },
     },
 ]

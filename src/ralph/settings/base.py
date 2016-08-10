@@ -105,6 +105,8 @@ MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = 'ralph.urls'
 URLCONF_MODULES = [ROOT_URLCONF]
 
+# TODO: add some checker
+TEMPLATE_STRING_IF_INVALID = 'ERROR: undefined template variable [%s] not found or variable raised exception'  # noqa
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -121,6 +123,7 @@ TEMPLATES = [
                     'ralph.lib.template.loaders.AppTemplateLoader',
                 ]),
             ],
+            'string_if_invalid': TEMPLATE_STRING_IF_INVALID
         },
     },
 ]
