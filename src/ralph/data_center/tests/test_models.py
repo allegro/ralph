@@ -211,29 +211,46 @@ class DataCenterAssetTest(RalphTestCase):
     # =========================================================================
     # network environment
     # =========================================================================
-    def _prepare_rack(self, dc_asset, network_address, rack=None):
+    def _prepare_rack(self, dc_asset, address, network_address, rack=None):
         self.rack = rack or RackFactory()
         self.net_env = NetworkEnvironmentFactory(
             hostname_template_prefix='server_1',
+            hostname_template_postfix='.mydc.net',
+        )
+        self.net_env2 = NetworkEnvironmentFactory(
+            hostname_template_prefix='server_2',
             hostname_template_postfix='.mydc.net',
         )
         self.net = NetworkFactory(
             network_environment=self.net_env,
             address=network_address,
         )
+        self.net2 = NetworkFactory(
+            network_environment=self.net_env2,
+            address='10.20.30.0/24',
+        )
         self.net.racks.add(self.rack)
+        self.net2.racks.add(self.rack)
         dc_asset.rack = self.rack
         dc_asset.save()
+        IPAddressFactory(
+            ethernet__base_object=self.dc_asset, address=address
+        )
 
     def test_network_environment(self):
-        self._prepare_rack(self.dc_asset, '192.168.1.0/24')
+        self._prepare_rack(self.dc_asset, '192.168.1.11', '192.168.1.0/24')
+
         self.assertEqual(self.dc_asset.network_environment, self.net_env)
+
+    def test_network_environment_null(self):
+        self._prepare_rack(self.dc_asset, '192.168.1.11', '192.222.1.0/24')
+        self.assertIsNone(self.dc_asset.network_environment)
 
     # =========================================================================
     # next free hostname
     # =========================================================================
     def test_get_next_free_hostname(self):
-        self._prepare_rack(self.dc_asset, '192.168.1.0/24')
+        self._prepare_rack(self.dc_asset, '192.168.1.11', '192.168.1.0/24')
         self.assertEqual(
             self.dc_asset.get_next_free_hostname(),
             'server_10001.mydc.net'
@@ -248,7 +265,7 @@ class DataCenterAssetTest(RalphTestCase):
         self.assertEqual(self.dc_asset.get_next_free_hostname(), '')
 
     def test_issue_next_free_hostname(self):
-        self._prepare_rack(self.dc_asset, '192.168.1.0/24')
+        self._prepare_rack(self.dc_asset, '192.168.1.11', '192.168.1.0/24')
         self.assertEqual(
             self.dc_asset.issue_next_free_hostname(),
             'server_10001.mydc.net'
