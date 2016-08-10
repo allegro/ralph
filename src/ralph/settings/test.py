@@ -58,6 +58,15 @@ RALPH_INTERNAL_SERVICES.update({
     }
 })
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    },
+    'template_fragments': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
 
 SKIP_MIGRATIONS = os.environ.get('SKIP_MIGRATIONS', None)
 if SKIP_MIGRATIONS:
