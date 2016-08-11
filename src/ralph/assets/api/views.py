@@ -106,6 +106,15 @@ base_object_descendant_prefetch_related = [
 class BaseObjectDescendantViewSetMixin(RalphAPIViewSet):
     prefetch_related = base_object_descendant_prefetch_related
 
+BASE_OBJECT_NAME_FILTER_FIELDS = [
+    'asset__hostname',
+    'virtualserver__hostname',
+    'cloudhost__hostname',
+    'cluster__hostname',
+    'configurationclass__path',
+    'serviceenvironment__service__name',
+]
+
 
 class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
     queryset = models.BaseObject.polymorphic_objects.all()
@@ -116,14 +125,8 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
         'content_type'
     ]
     extended_filter_fields = {
-        'name': [
-            'asset__hostname',
-            'virtualserver__hostname',
-            'cloudhost__hostname',
-            'cluster__hostname',
-            'configurationclass__path',
-            'serviceenvironment__service__name',
-        ],
+        'name': BASE_OBJECT_NAME_FILTER_FIELDS,
+        '__str__': BASE_OBJECT_NAME_FILTER_FIELDS,
         'hostname': [
             'asset__hostname',
             'virtualserver__hostname',
