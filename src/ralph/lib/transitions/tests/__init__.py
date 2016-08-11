@@ -6,18 +6,13 @@ from ralph.lib.transitions.forms import TransitionForm
 from ralph.lib.transitions.models import (
     Action,
     Transition,
-    update_models_attrs,
+    TransitionModel,
 )
 
 from ralph.tests.models import Order
 
 
 class TransitionTestCaseMixin(object):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        update_models_attrs()
-
     def _get_form(self, obj=None):
         class Form(TransitionForm):
             if obj:
@@ -28,7 +23,7 @@ class TransitionTestCaseMixin(object):
         self, model, name, actions=None, field='status',
         source=None, target=None, **kwargs
     ):
-        transition_model = model.transition_models[field]
+        transition_model = TransitionModel.get_for_field(model, field)
         transition_kwargs = dict(name=name, model=transition_model, **kwargs)
         if source:
             transition_kwargs['source'] = source
