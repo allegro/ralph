@@ -353,3 +353,9 @@ class TestRender(TestCase):
         deploy = _get_deployment()
         result = _render_configuration('{{service_uid}}', deploy)
         self.assertEqual(result, deploy.obj.service_env.service.uid)
+
+    def test_none_service_uid_renders_as_None(self):
+        deploy = _get_deployment()
+        deploy.obj.service_env = None
+        result = _render_configuration('{{service_uid}}', deploy)
+        self.assertEqual(result, 'None')
