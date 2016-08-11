@@ -56,6 +56,24 @@ class PrebootItem(NamedMixin, Polymorphic, metaclass=PolymorphicBase):
         return '<i>{}</i> {}'.format(self.get_type_display(), self.name)
 
 
+CONFIGURATION_HELP_TEXT = """
+All newline characters will be converted to Unix \\n newlines.
+You can use {{variables}} in the body.
+Available variables:
+<br>    - configuration_path,
+<br>    - dc,
+<br>    - deployment_id,
+<br>    - domain,
+<br>    - done_url,
+<br>    - hostname,
+<br>    - initrd,
+<br>    - kernel,
+<br>    - kickstart,
+<br>    - ralph_instance,
+<br>    - service_env,
+""".strip()
+
+
 class PrebootConfiguration(PrebootItem):
     type = models.PositiveIntegerField(
         verbose_name=_('type'),
@@ -65,12 +83,7 @@ class PrebootConfiguration(PrebootItem):
     configuration = models.TextField(
         _('configuration'),
         blank=True,
-        help_text=_(
-            'All newline characters will be converted to Unix \\n '
-            'newlines. You can use {{variables}} in the body. '
-            'Available variables: ralph_instance, deployment_id, kickstart, '
-            'initrd, kernel, dc, done_url.'
-        ),
+        help_text=_(CONFIGURATION_HELP_TEXT),
     )
 
     class Meta:
