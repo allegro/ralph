@@ -10,6 +10,7 @@ pages:
       - Quickstart: user/quickstart.md
       - Advanced guide: user/guide.md
       - DCIM: user/dcim.md
+      - Deployment: user/deployment.md
       - Domains management: user/domains.md
       - Custom fields: user/custom_fields.md
       - Dashboards: user/dashboards.md
