@@ -60,17 +60,17 @@ CONFIGURATION_HELP_TEXT = """
 All newline characters will be converted to Unix \\n newlines.
 You can use {{variables}} in the body.
 Available variables:
-<br>    - configuration_path,
-<br>    - dc,
-<br>    - deployment_id,
-<br>    - domain,
-<br>    - done_url,
-<br>    - hostname,
-<br>    - initrd,
-<br>    - kernel,
-<br>    - kickstart,
-<br>    - ralph_instance,
-<br>    - service_env,
+<br>    - configuration_path
+<br>    - dc
+<br>    - deployment_id
+<br>    - domain
+<br>    - done_url
+<br>    - hostname
+<br>    - initrd
+<br>    - kernel
+<br>    - kickstart
+<br>    - ralph_instance
+<br>    - service_env
 """.strip()
 
 
