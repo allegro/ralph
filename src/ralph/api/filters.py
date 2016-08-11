@@ -71,6 +71,7 @@ class ImportedIdFilterBackend(BaseFilterBackend):
         for param_name, field_name, use_content_type in [
             ('_imported_object_id', 'old_object_pk', True),
             ('_ralph2_ci_uid', 'old_ci_uid', False),
+            ('_ralph2_ci_uid__startswith', 'old_ci_uid__startswith', False),
         ]:
             param_value = request.query_params.get(param_name)
             if param_value:
@@ -84,19 +85,17 @@ class ImportedIdFilterBackend(BaseFilterBackend):
                     query_params['content_type'] = ContentType.objects.get_for_model(  # noqa
                         queryset.model
                     )
+                logger.debug(
+                    'Filtering imported object by {}'.format(query_params)
+                )
                 try:
-                    imported_obj = ImportedObjects.objects.get(**query_params)
+                    imported_objects_pks = ImportedObjects.objects.filter(
+                        **query_params
+                    ).values_list('object_pk', flat=True)
                 except ImportedObjects.DoesNotExist:
                     return queryset.model.objects.none()
-                except ImportedObjects.MultipleObjectsReturned:
-                    logger.error(
-                        'Multiple objects returned for filter {}: {}'.format(
-                            param_name, param_value
-                        )
-                    )
-                    return queryset.model.objects.none()
                 else:
-                    queryset = queryset.filter(pk=imported_obj.object_pk)
+                    queryset = queryset.filter(pk__in=imported_objects_pks)
         return queryset
 
 
