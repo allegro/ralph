@@ -14,23 +14,11 @@
                 },
                 templateUrl: '/static/partials/rack/rack.html',
                 link: function(scope, element) {
-                    console.log("SCOPE", scope);
-
                     var $ = jQuery;
 
-                    var REDIRECT_URL = "/data_center/datacenterasset/add/?rack={rack_id}&position={position}&orientation={orientation}";
+                    var REDIRECT_URL = "/data_center/datacenterasset/add/";
                     var ORIENTATION_FRONT = 1;
                     var ORIENTATION_BACK = 2;
-
-                    function build_url(templ, fields) {
-                        var key, val, regEx;
-                        Object.keys(fields).forEach(function(key) {
-                            val = fields[key];
-                            regEx = new RegExp("{" + key + "}", "gi");
-                            templ = templ.replace(regEx, val);
-                        });
-                        return templ;
-                    }
 
                     var $rack = $(element).find('div.rack');
                     var $devices = $rack.find('.devices');
@@ -84,11 +72,10 @@
                     });
 
                     function gotoAssetWizard(rack_id, position, orientation, is_ctrl) {
-                        var url = build_url(REDIRECT_URL, {
-                            rack_id: rack_id,
+                        var url = REDIRECT_URL + '?' + $.param({
+                            rack: rack_id,
                             position: position,
                             orientation: orientation
-
                         });
                         if(!is_ctrl) {
                             location.href = url;
