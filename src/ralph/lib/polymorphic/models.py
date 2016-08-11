@@ -190,6 +190,3 @@ class Polymorphic(models.Model):
     @property
     def last_descendant(self):
         return self.content_type.get_object_for_this_type(pk=self.pk)
-
-    def __str__(self):
-        return str(self.last_descendant)
