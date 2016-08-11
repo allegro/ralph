@@ -8,6 +8,23 @@
 {% block extrahead %}
   {{ block.super }}
   <link rel="stylesheet" type="text/css" href="{% static 'vendor/css/loading-bar.min.css' %}" />
+  <style>
+    .insert-device-btn {
+      position: absolute;
+      width:100%;
+      left: 0;
+      border: 1px solid #FF9800;
+      background: -webkit-repeating-linear-gradient(-45deg, #FF9800, #FF9800 10px, transparent 10px, transparent 20px);
+      background: repeating-linear-gradient(-45deg, #FF9800, #FF9800 10px, transparent 10px, transparent 20px);
+      color: white;
+      text-align: center;
+      padding: 1px;
+      font-size: 14px;
+    }
+    .insert-device-btn i {
+      pointer-events: none;
+    }
+  </style>
 {% endblock %}
 
 {% block extra_scripts %}
