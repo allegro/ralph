@@ -95,7 +95,7 @@ class TransitionActionTest(TransitionTestCase):
     def test_sync_api(self):
         response = self.api_client.post(
             reverse(
-                'transition-view',
+                'transitions-view',
                 args=(self.transition_1.id, self.bo.pk)
             ),
             self.prepare_api_data()
@@ -112,7 +112,7 @@ class TransitionActionTest(TransitionTestCase):
         data['user'] = ''
         response = self.api_client.post(
             reverse(
-                'transition-view',
+                'transitions-view',
                 args=(self.transition_1.id, self.bo.pk)
             ),
             data
@@ -165,7 +165,7 @@ class TransitionActionTest(TransitionTestCase):
     def test_async_api(self):
         response = self.api_client.post(
             reverse(
-                'transition-view',
+                'transitions-view',
                 args=(self.transition_2.id, self.bo.pk)
             ),
             self.prepare_api_data()
@@ -230,7 +230,7 @@ class TransitionActionTest(TransitionTestCase):
     def test_api_options(self):
         request = self.api_client.options(
             reverse(
-                'transition-view',
+                'transitions-view',
                 args=(self.transition_1.id, self.bo.pk)
             )
         )

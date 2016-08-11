@@ -92,16 +92,72 @@ class _BaseDeploymentTransitionTestCase(object):
             target=str(TRANSITION_ORIGINAL_STATUS[0])
         )[1]
 
-    def test_assign_new_hostname_through_api(self):
+    def _get_transition_view_url(
+        self, url_name, instance_id, transition_id=None, transition_name=None,
+        app_label=None, model=None
+    ):
+        if app_label and model:
+            args = (
+                app_label,
+                model,
+                instance_id,
+                transition_name if transition_name else transition_id
+            )
+        else:
+            args = (
+                transition_id,
+                instance_id
+            )
+        return reverse(url_name, args=args)
+
+    @unpack
+    @data(
+        (
+            lambda t: t._get_transition_view_url, 'transition-view',
+            False, False
+        ),
+        (
+            lambda t: t._get_transition_view_url, 'transitions-view',
+            False, False
+        ),
+        (
+            lambda t: t._get_transition_view_url, 'transitions-by-id-view',
+            True, True
+        ),
+        (
+            lambda t: t._get_transition_view_url, 'transitions-by-name-view',
+            True, False
+        ),
+    )
+    def test_assign_new_hostname_through_api(
+        self, data_func, url_name, new_transition, transition_by_id
+    ):
         self._prepare_assign_new_hostname_transition()
+        if new_transition:
+            if transition_by_id:
+                kwargs = {
+                    'transition_id': self.assign_new_hostname_transition.id
+                }
+            else:
+                kwargs = {
+                    'transition_name': self.assign_new_hostname_transition.name
+                }
+            url = data_func(self)(
+                url_name,
+                self.instance.pk,
+                app_label=self.instance._meta.app_label,
+                model=self.instance._meta.model_name,
+                **kwargs
+            )
+        else:
+            url = data_func(self)(
+                url_name,
+                self.instance.pk,
+                self.assign_new_hostname_transition.id
+            )
+
         response = self.api_client.post(
-            reverse(
-                'transition-view',
-                args=(
-                    self.assign_new_hostname_transition.id,
-                    self.instance.pk
-                )
-            ),
+            url,
             {'network_environment': self.net_env.pk}
         )
         self.assertEqual(response.status_code, 201)
@@ -110,7 +166,7 @@ class _BaseDeploymentTransitionTestCase(object):
         # another request
         response = self.api_client.post(
             reverse(
-                'transition-view',
+                'transitions-view',
                 args=(
                     self.assign_new_hostname_transition.id,
                     self.instance.pk
@@ -125,7 +181,7 @@ class _BaseDeploymentTransitionTestCase(object):
         self._prepare_assign_new_hostname_transition()
         response = self.api_client.post(
             reverse(
-                'transition-view',
+                'transitions-view',
                 args=(
                     self.assign_new_hostname_transition.id,
                     self.instance.pk
@@ -147,7 +203,7 @@ class _BaseDeploymentTransitionTestCase(object):
         self._prepare_assign_new_hostname_transition()
         response = self.api_client.post(
             reverse(
-                'transition-view',
+                'transitions-view',
                 args=(
                     self.assign_new_hostname_transition.id,
                     self.instance.pk
@@ -161,7 +217,7 @@ class _BaseDeploymentTransitionTestCase(object):
         # another request
         response = self.api_client.post(
             reverse(
-                'transition-view',
+                'transitions-view',
                 args=(
                     self.assign_new_hostname_transition.id,
                     self.instance.pk
@@ -176,7 +232,7 @@ class _BaseDeploymentTransitionTestCase(object):
         self._prepare_assign_new_hostname_transition()
         response = self.api_client.post(
             reverse(
-                'transition-view',
+                'transitions-view',
                 args=(
                     self.assign_new_hostname_transition.id,
                     self.instance.pk
@@ -347,7 +403,7 @@ class _BaseDeploymentTransitionTestCase(object):
         self._prepare_create_dhcp_entries_transition()
         response = self.api_client.post(
             reverse(
-                'transition-view',
+                'transitions-view',
                 args=(
                     self.create_dhcp_entries_transition.id,
                     self.instance.pk
@@ -367,7 +423,7 @@ class _BaseDeploymentTransitionTestCase(object):
         eth = EthernetFactory().pk
         response = self.api_client.post(
             reverse(
-                'transition-view',
+                'transitions-view',
                 args=(
                     self.create_dhcp_entries_transition.id,
                     self.instance.pk
@@ -393,7 +449,7 @@ class _BaseDeploymentTransitionTestCase(object):
         )
         response = self.api_client.post(
             reverse(
-                'transition-view',
+                'transitions-view',
                 args=(
                     self.create_dhcp_entries_transition.id,
                     self.instance.pk
