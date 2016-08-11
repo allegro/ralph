@@ -1,7 +1,9 @@
 import factory
 from factory.django import DjangoModelFactory
 
+from ralph.data_center.tests.factories import DataCenterAssetFullFactory
 from ralph.deployment.models import Preboot, PrebootConfiguration
+from ralph.deployment.models import Deployment
 
 
 class PrebootFactory(DjangoModelFactory):
@@ -18,3 +20,8 @@ class PrebootConfigurationFactory(DjangoModelFactory):
 
     class Meta:
         model = PrebootConfiguration
+
+
+def _get_deployment():
+    obj = DataCenterAssetFullFactory()
+    return Deployment(obj=obj)

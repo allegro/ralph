@@ -43,6 +43,7 @@ def _render_configuration(configuration, deployment):
     template = Template(configuration)
     ralph_instance = settings.RALPH_INSTANCE
     context = Context({
+        'configuration_path': str(deployment.obj.configuration_path),
         'ralph_instance': ralph_instance,
         'deployment_id': deployment.id,
         'kickstart': ralph_instance + reverse('deployment_kickstart', kwargs={
@@ -62,6 +63,7 @@ def _render_configuration(configuration, deployment):
             if deployment.obj.network_environment else ''
         ),
         'hostname': deployment.obj.hostname,
+        'service_env': str(deployment.obj.service_env),
         'done_url': ralph_instance + reverse('deployment_done', kwargs={
             'deployment_id': deployment.id,
         })

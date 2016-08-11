@@ -16,8 +16,10 @@ from ralph.deployment.deployment import (
     autocomplete_service_env,
     check_ipaddress_unique
 )
+from ralph.deployment.views import _render_configuration
 from ralph.dhcp.models import DHCPServer
 from ralph.networks.models.networks import IPAddress, IPAddressStatus, Network
+from ralph.deployment.tests.factories import _get_deployment
 from ralph.networks.tests.factories import (
     IPAddressFactory,
     NetworkEnvironmentFactory,
@@ -306,3 +308,27 @@ class AutocompleteFunctionsTestCase(TestCase):
         self.assertEqual(
             asset.service_env.pk, autocomplete_service_env([], [asset])
         )
+
+
+class TestRender(TestCase):
+    def test_hostname_is_rendered(self):
+        deploy = _get_deployment()
+        result = _render_configuration('{{hostname}}', deploy)
+        self.assertEqual(result, deploy.obj.hostname)
+
+    def test_data_center_is_rendered(self):
+        deploy = _get_deployment()
+        result = _render_configuration('{{dc}}', deploy)
+        self.assertEqual(
+            result, deploy.obj.rack.server_room.data_center.name
+        )
+
+    def test_configuration_path_is_rendered(self):
+        deploy = _get_deployment()
+        result = _render_configuration('{{configuration_path}}', deploy)
+        self.assertEqual(result, str(deploy.obj.configuration_path))
+
+    def test_service_env_is_rendered(self):
+        deploy = _get_deployment()
+        result = _render_configuration('{{service_env}}', deploy)
+        self.assertEqual(result, str(deploy.obj.service_env))
