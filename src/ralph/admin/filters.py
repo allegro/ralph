@@ -538,7 +538,7 @@ class LiquidatedStatusFilter(SimpleListFilter):
 def register_custom_filters():
     """
     Register custom filters for the Django admin.
-    
+
     This function is called in AppConfig.ready() (ralph.admin.apps).
     """
     field_filter_mapper = [
