@@ -44,6 +44,14 @@ def _render_configuration(configuration, deployment):
     ralph_instance = settings.RALPH_INSTANCE
     context = Context({
         'configuration_path': str(deployment.obj.configuration_path),
+        'configuration_class_name': (
+            deployment.obj.configuration_path.class_name if
+            deployment.obj.configuration_path else None
+        ),
+        'configuration_module': (
+            deployment.obj.configuration_path.module.name if
+            deployment.obj.configuration_path else None
+        ),
         'ralph_instance': ralph_instance,
         'deployment_id': deployment.id,
         'kickstart': ralph_instance + reverse('deployment_kickstart', kwargs={
@@ -60,10 +68,14 @@ def _render_configuration(configuration, deployment):
         'dc': deployment.obj.rack.server_room.data_center.name,
         'domain': (
             deployment.obj.network_environment.domain
-            if deployment.obj.network_environment else ''
+            if deployment.obj.network_environment else None
         ),
         'hostname': deployment.obj.hostname,
         'service_env': str(deployment.obj.service_env),
+        'service_uid': (
+            deployment.obj.service_env.service.uid if
+            deployment.obj.service_env else None
+        ),
         'done_url': ralph_instance + reverse('deployment_done', kwargs={
             'deployment_id': deployment.id,
         })

@@ -2,8 +2,7 @@ import factory
 from factory.django import DjangoModelFactory
 
 from ralph.data_center.tests.factories import DataCenterAssetFullFactory
-from ralph.deployment.models import Preboot, PrebootConfiguration
-from ralph.deployment.models import Deployment
+from ralph.deployment.models import Deployment, Preboot, PrebootConfiguration
 
 
 class PrebootFactory(DjangoModelFactory):

@@ -60,6 +60,8 @@ CONFIGURATION_HELP_TEXT = """
 All newline characters will be converted to Unix \\n newlines.
 You can use {{variables}} in the body.
 Available variables:
+<br>    - configuration_class_name
+<br>    - configuration_module
 <br>    - configuration_path
 <br>    - dc
 <br>    - deployment_id
@@ -71,6 +73,7 @@ Available variables:
 <br>    - kickstart
 <br>    - ralph_instance
 <br>    - service_env
+<br>    - service_uid
 """.strip()
 
 

@@ -25,17 +25,20 @@ Ad. `Configuration` field:
 This field allows you to write `kickstart` (or `iPXE`) configuration.
 It's possible to include variables from Ralph. These are:
 
-    - configuration_path
-    - dc
-    - deployment_id
-    - domain
-    - done_url
-    - hostname
-    - initrd
-    - kernel
-    - kickstart
-    - ralph_instance
-    - service_env
+    - configuration_class_name (eg. 'www')
+    - configuration_module (eg. 'ralph')
+    - configuration_path (eg. 'ralph/www')
+    - dc (eg. 'data-center1')
+    - deployment_id (eg. 'ea9ea3a0-1c4d-42b7-a19b-922000abe9f7')
+    - domain (eg. 'dc1')
+    - done_url (eg. 'http://127.0.0.1:8000/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/mark_as_done')
+    - hostname (eg. 'ralph0.allegro.pl')
+    - initrd (eg. 'http://127.0.0.1:8000/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/initrd')
+    - kernel (eg. 'http://127.0.0.1:8000/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/kernel')
+    - kickstart (eg. 'http://127.0.0.1:8000/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/kickstart')
+    - ralph_instance (eg. 'http://127.0.0.1:8000')
+    - service_env (eg. 'Backup systems - prod')
+    - service_uid (eg. 'sc-0')
 
 
 ### Example:

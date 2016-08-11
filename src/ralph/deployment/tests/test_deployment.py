@@ -16,10 +16,10 @@ from ralph.deployment.deployment import (
     autocomplete_service_env,
     check_ipaddress_unique
 )
+from ralph.deployment.tests.factories import _get_deployment
 from ralph.deployment.views import _render_configuration
 from ralph.dhcp.models import DHCPServer
 from ralph.networks.models.networks import IPAddress, IPAddressStatus, Network
-from ralph.deployment.tests.factories import _get_deployment
 from ralph.networks.tests.factories import (
     IPAddressFactory,
     NetworkEnvironmentFactory,
@@ -328,7 +328,28 @@ class TestRender(TestCase):
         result = _render_configuration('{{configuration_path}}', deploy)
         self.assertEqual(result, str(deploy.obj.configuration_path))
 
+    def test_configuration_class_is_rendered(self):
+        deploy = _get_deployment()
+        result = _render_configuration(
+            '{{configuration_class_name}}', deploy
+        )
+        self.assertEqual(
+            result, deploy.obj.configuration_path.class_name
+        )
+
+    def test_configuration_module_is_rendered(self):
+        deploy = _get_deployment()
+        result = _render_configuration('{{configuration_module}}', deploy)
+        self.assertEqual(
+            result, deploy.obj.configuration_path.module.name
+        )
+
     def test_service_env_is_rendered(self):
         deploy = _get_deployment()
         result = _render_configuration('{{service_env}}', deploy)
         self.assertEqual(result, str(deploy.obj.service_env))
+
+    def test_service_uid_is_rendered(self):
+        deploy = _get_deployment()
+        result = _render_configuration('{{service_uid}}', deploy)
+        self.assertEqual(result, deploy.obj.service_env.service.uid)
