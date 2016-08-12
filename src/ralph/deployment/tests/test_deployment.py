@@ -359,3 +359,38 @@ class TestRender(TestCase):
         deploy.obj.service_env = None
         result = _render_configuration('{{service_uid}}', deploy)
         self.assertEqual(result, 'None')
+
+
+@ddt
+class TestRenderSlash(TestCase):
+    @override_settings(RALPH_INSTANCE='http://127.0.0.1:8000/')
+    @unpack
+    @data(
+        ('{{done_url}}', 'http://127.0.0.1:8000/deployment/{}/mark_as_done'),
+        ('{{initrd}}', 'http://127.0.0.1:8000/deployment/{}/initrd'),
+        ('{{kernel}}', 'http://127.0.0.1:8000/deployment/{}/kernel'),
+        ('{{kickstart}}', 'http://127.0.0.1:8000/deployment/{}/kickstart'),
+        ('{{ralph_instance}}', 'http://127.0.0.1:8000/'),
+    )
+    def test_single_slash_when_ralph_instance_has_one(
+        self, template_content, ok_url,
+    ):
+        deploy = _get_deployment()
+        result = _render_configuration(template_content, deploy)
+        self.assertEqual(result, ok_url.format(deploy.id))
+
+    @override_settings(RALPH_INSTANCE='http://127.0.0.1:8000')
+    @unpack
+    @data(
+        ('{{done_url}}', 'http://127.0.0.1:8000/deployment/{}/mark_as_done'),
+        ('{{initrd}}', 'http://127.0.0.1:8000/deployment/{}/initrd'),
+        ('{{kernel}}', 'http://127.0.0.1:8000/deployment/{}/kernel'),
+        ('{{kickstart}}', 'http://127.0.0.1:8000/deployment/{}/kickstart'),
+        ('{{ralph_instance}}', 'http://127.0.0.1:8000'),
+    )
+    def test_single_slash_when_ralph_instance_has_no_slash(
+        self, template_content, ok_url,
+    ):
+        deploy = _get_deployment()
+        result = _render_configuration(template_content, deploy)
+        self.assertEqual(result, ok_url.format(deploy.id))

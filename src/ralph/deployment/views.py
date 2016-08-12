@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urljoin
 
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
@@ -54,17 +55,27 @@ def _render_configuration(configuration, deployment):
         ),
         'ralph_instance': ralph_instance,
         'deployment_id': deployment.id,
-        'kickstart': ralph_instance + reverse('deployment_kickstart', kwargs={
-            'deployment_id': deployment.id,
-        }),
-        'initrd': ralph_instance + reverse('deployment_files', kwargs={
-            'deployment_id': deployment.id,
-            'file_type': 'initrd'
-        }),
-        'kernel': ralph_instance + reverse('deployment_files', kwargs={
-            'deployment_id': deployment.id,
-            'file_type': 'kernel'
-        }),
+        'kickstart': urljoin(
+            ralph_instance,
+            reverse(
+                'deployment_kickstart',
+                kwargs={'deployment_id': deployment.id}
+            ),
+        ),
+        'initrd': urljoin(
+            ralph_instance,
+            reverse(
+                'deployment_files',
+                kwargs={'deployment_id': deployment.id, 'file_type': 'initrd'}
+            )
+        ),
+        'kernel': urljoin(
+            ralph_instance,
+            reverse(
+                'deployment_files',
+                kwargs={'deployment_id': deployment.id, 'file_type': 'kernel'}
+            ),
+        ),
         'dc': deployment.obj.rack.server_room.data_center.name,
         'domain': (
             deployment.obj.network_environment.domain
@@ -76,9 +87,13 @@ def _render_configuration(configuration, deployment):
             deployment.obj.service_env.service.uid if
             deployment.obj.service_env else None
         ),
-        'done_url': ralph_instance + reverse('deployment_done', kwargs={
-            'deployment_id': deployment.id,
-        })
+        'done_url': urljoin(
+            ralph_instance,
+            reverse(
+                'deployment_done',
+                kwargs={'deployment_id': deployment.id}
+            )
+        ),
     })
     return template.render(context)
 
