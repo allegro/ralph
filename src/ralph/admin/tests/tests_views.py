@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+from ddt import ddt, data, unpack
 from importlib import import_module
 
+from django.apps import apps
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import connections
 from django.test import RequestFactory, TestCase
@@ -8,103 +11,100 @@ from django.test.utils import CaptureQueriesContext
 
 from ralph.admin.sites import ralph_site
 
-FACTORY_MAP = {
-    'django.contrib.auth.models.Group': 'ralph.accounts.tests.factories.GroupFactory',  # noqa
-    'ralph.accounts.models.RalphUser': 'ralph.accounts.tests.factories.UserFactory',  # noqa
-    'ralph.accounts.models.Region': 'ralph.accounts.tests.factories.RegionFactory',  # noqa
-    'ralph.accounts.models.Team': 'ralph.accounts.tests.factories.TeamFactory',
-    'ralph.assets.models.assets.AssetHolder': 'ralph.assets.tests.factories.AssetHolderFactory',  # noqa
-    'ralph.assets.models.assets.AssetModel': 'ralph.assets.tests.factories.BackOfficeAssetModelFactory',  # noqa
-    'ralph.assets.models.assets.BudgetInfo': 'ralph.assets.tests.factories.BudgetInfoFactory',  # noqa
-    'ralph.assets.models.assets.BusinessSegment': 'ralph.assets.tests.factories.BusinessSegmentFactory',  # noqa
-    'ralph.assets.models.assets.Category': 'ralph.assets.tests.factories.CategoryFactory',  # noqa
-    'ralph.assets.models.assets.Environment': 'ralph.assets.tests.factories.EnvironmentFactory',  # noqa
-    'ralph.assets.models.assets.Manufacturer': 'ralph.assets.tests.factories.ManufacturerFactory',  # noqa
-    'ralph.assets.models.assets.ProfitCenter': 'ralph.assets.tests.factories.ProfitCenterFactory',  # noqa
-    'ralph.assets.models.assets.Service': 'ralph.assets.tests.factories.ServiceFactory',  # noqa
-    'ralph.assets.models.assets.ServiceEnvironment': 'ralph.assets.tests.factories.ServiceEnvironmentFactory',  # noqa
-    'ralph.assets.models.base.BaseObject': 'ralph.assets.tests.factories.BaseObjectFactory',  # noqa
-    'ralph.assets.models.components.ComponentModel': 'ralph.assets.tests.factories.ComponentModelFactory',  # noqa
-    'ralph.assets.models.components.Ethernet': 'ralph.assets.tests.factories.EthernetFactory',  # noqa
-    'ralph.assets.models.configuration.ConfigurationClass': 'ralph.assets.tests.factories.ConfigurationClassFactory',  # noqa
-    'ralph.assets.models.configuration.ConfigurationModule': 'ralph.assets.tests.factories.ConfigurationModuleFactory',  # noqa
-    'ralph.back_office.models.BackOfficeAsset': 'ralph.back_office.tests.factories.BackOfficeAssetFactory',  # noqa
-    'ralph.back_office.models.OfficeInfrastructure': 'ralph.back_office.tests.factories.OfficeInfrastructureFactory',  # noqa
-    'ralph.back_office.models.Warehouse': 'ralph.back_office.tests.factories.WarehouseFactory',  # noqa
-    'ralph.dashboards.models.Dashboard': 'ralph.dashboards.tests.factories.DashboardFactory',  # noqa
-    'ralph.dashboards.models.Graph': 'ralph.dashboards.tests.factories.GraphFactory',  # noqa
-    'ralph.data_center.models.components.DiskShare': 'ralph.data_center.tests.factories.DiskShareFactory',  # noqa
-    'ralph.data_center.models.components.DiskShareMount': 'ralph.data_center.tests.factories.DiskShareMountFactory',  # noqa
-    'ralph.data_center.models.hosts.DCHost': 'ralph.data_center.tests.factories.DataCenterAssetFullFactory',  # noqa
-    'ralph.data_center.models.physical.Accessory': 'ralph.data_center.tests.factories.AccessoryFactory',  # noqa
-    'ralph.data_center.models.physical.DataCenter': 'ralph.data_center.tests.factories.DataCenterFactory',  # noqa
-    'ralph.data_center.models.physical.DataCenterAsset': 'ralph.data_center.tests.factories.DataCenterAssetFullFactory',  # noqa
-    'ralph.data_center.models.physical.Rack': 'ralph.data_center.tests.factories.RackFactory',  # noqa
-    'ralph.data_center.models.physical.RackAccessory': 'ralph.data_center.tests.factories.RackAccessoryFactory',  # noqa
-    'ralph.data_center.models.physical.ServerRoom': 'ralph.data_center.tests.factories.ServerRoomFactory',  # noqa
-    'ralph.data_center.models.virtual.Cluster': 'ralph.data_center.tests.factories.ClusterFactory',  # noqa
-    'ralph.data_center.models.virtual.ClusterType': 'ralph.data_center.tests.factories.ClusterTypeFactory',  # noqa
-    'ralph.data_center.models.virtual.Database': 'ralph.data_center.tests.factories.DatabaseFactory',  # noqa
-    'ralph.data_center.models.virtual.VIP': 'ralph.data_center.tests.factories.VIPFactory',  # noqa
-    'ralph.deployment.models.Preboot': 'ralph.deployment.tests.factories.PrebootFactory',  # noqa
-    'ralph.deployment.models.PrebootConfiguration': 'ralph.deployment.tests.factories.PrebootConfigurationFactory',  # noqa
-    'ralph.dhcp.models.DHCPServer': 'ralph.dhcp.tests.factories.DHCPServerFactory',  # noqa
-    'ralph.dhcp.models.DNSServer': 'ralph.dhcp.tests.factories.DNSServerFactory',  # noqa
-    'ralph.domains.models.domains.Domain': 'ralph.domains.tests.factories.DomainFactory',  # noqa
-    'ralph.domains.models.domains.DomainContract': 'ralph.domains.tests.factories.DomainContractFactory',  # noqa
-    'ralph.domains.models.domains.DomainRegistrant': 'ralph.domains.tests.factories.DomainRegistrantFactory',  # noqa
-    'ralph.licences.models.Licence': 'ralph.licences.tests.factories.LicenceFactory',  # noqa
-    'ralph.licences.models.LicenceType': 'ralph.licences.tests.factories.LicenceTypeFactory',  # noqa
-    'ralph.licences.models.Software': 'ralph.licences.tests.factories.SoftwareFactory',  # noqa
-    'ralph.networks.models.networks.DiscoveryQueue': 'ralph.networks.tests.factories.DiscoveryQueueFactory',  # noqa
-    'ralph.networks.models.networks.IPAddress': 'ralph.networks.tests.factories.IPAddressFactory',  # noqa
-    'ralph.networks.models.networks.NetworkEnvironment': 'ralph.networks.tests.factories.NetworkEnvironmentFactory',  # noqa
-    'ralph.networks.models.networks.NetworkKind': 'ralph.networks.tests.factories.NetworkKindFactory',  # noqa
-    'ralph.operations.models.Change': 'ralph.operations.tests.factories.ChangeFactory',  # noqa
-    'ralph.operations.models.Failure': 'ralph.operations.tests.factories.FailureFactory',  # noqa
-    'ralph.operations.models.Incident': 'ralph.operations.tests.factories.IncidentFactory',  # noqa
-    'ralph.operations.models.Operation': 'ralph.operations.tests.factories.OperationFactory',  # noqa
-    'ralph.operations.models.OperationType': 'ralph.operations.tests.factories.OperationTypeFactory',  # noqa
-    'ralph.operations.models.Problem': 'ralph.operations.tests.factories.ProblemFactory',  # noqa
-    'ralph.reports.models.Report': 'ralph.reports.factories.ReportFactory',
-    'ralph.reports.models.ReportLanguage': 'ralph.reports.factories.ReportLanguageFactory',  # noqa
-    'ralph.supports.models.Support': 'ralph.supports.tests.factories.SupportFactory',  # noqa
-    'ralph.supports.models.SupportType': 'ralph.supports.tests.factories.SupportTypeFactory',  # noqa
-    'ralph.virtual.models.CloudFlavor': 'ralph.virtual.tests.factories.CloudFlavorFactory',  # noqa
-    'ralph.virtual.models.CloudHost': 'ralph.virtual.tests.factories.CloudHostFullFactory',  # noqa
-    'ralph.virtual.models.CloudProject': 'ralph.virtual.tests.factories.CloudProjectFactory',  # noqa
-    'ralph.virtual.models.CloudProvider': 'ralph.virtual.tests.factories.CloudProviderFactory',  # noqa
-    'ralph.virtual.models.VirtualServer': 'ralph.virtual.tests.factories.VirtualServerFullFactory',  # noqa
-    'ralph.virtual.models.VirtualServerType': 'ralph.virtual.tests.factories.VirtualServerTypeFactory',  # noqa
-}
 
-EXCLUDE_MODELS = [
-    'django.contrib.contenttypes.models.ContentType',
-    'ralph.assets.models.assets.Asset',
-    'ralph.assets.models.base.BaseObject',  # TODO: Add in the future
-    'ralph.assets.models.components.GenericComponent',
-    'ralph.cross_validator.models.CrossValidationResult',
-    'ralph.cross_validator.models.CrossValidationRun',
-    'ralph.data_center.models.physical.Connection',
-    'ralph.deployment.models.Deployment',
-    'ralph.deployment.models.PrebootFile',
-    'ralph.deployment.models.PrebootItem',
-    'ralph.lib.custom_fields.models.CustomField',
-    'ralph.lib.transitions.models.TransitionModel',
-    'ralph.networks.models.networks.DiscoveryQueue',
-    'ralph.networks.models.networks.Network',  # TODO: Add in the future
-    'ralph.tests.models.Bar',
-    'ralph.tests.models.Car',
-    'ralph.tests.models.Car2',
-    'ralph.tests.models.Foo',
-    'ralph.tests.models.Manufacturer',
-    'ralph.tests.models.Order',
-    'ralph.tests.models.PolymorphicTestModel'
-]
+FACTORY_MAP = {
+    'auth.Group': 'accounts.GroupFactory',
+    'accounts.RalphUser': 'UserFactory',
+    'accounts.Region': 'RegionFactory',
+    'accounts.Team': 'TeamFactory',
+    'assets.AssetHolder': 'AssetHolderFactory',
+    'assets.AssetModel': 'BackOfficeAssetModelFactory',
+    'assets.BudgetInfo': 'BudgetInfoFactory',
+    'assets.BusinessSegment': 'BusinessSegmentFactory',
+    'assets.Category': 'CategoryFactory',
+    'assets.Environment': 'EnvironmentFactory',
+    'assets.Manufacturer': 'ManufacturerFactory',
+    'assets.ProfitCenter': 'ProfitCenterFactory',
+    'assets.Service': 'ServiceFactory',
+    'assets.ServiceEnvironment': 'ServiceEnvironmentFactory',
+    'assets.BaseObject': 'BaseObjectFactory',
+    'assets.ComponentModel': 'ComponentModelFactory',
+    'assets.Ethernet': 'EthernetFactory',
+    'assets.ConfigurationClass': 'ConfigurationClassFactory',
+    'assets.ConfigurationModule': 'ConfigurationModuleFactory',
+    'back_office.BackOfficeAsset': 'BackOfficeAssetFactory',
+    'back_office.OfficeInfrastructure': 'OfficeInfrastructureFactory',
+    'back_office.Warehouse': 'WarehouseFactory',
+    'dashboards.Dashboard': 'DashboardFactory',
+    'dashboards.Graph': 'GraphFactory',
+    'data_center.DiskShare': 'DiskShareFactory',
+    'data_center.DiskShareMount': 'DiskShareMountFactory',
+    'data_center.DCHost': 'DataCenterAssetFullFactory',
+    'data_center.Accessory': 'AccessoryFactory',
+    'data_center.DataCenter': 'DataCenterFactory',
+    'data_center.DataCenterAsset': 'DataCenterAssetFullFactory',
+    'data_center.Rack': 'RackFactory',
+    'data_center.RackAccessory': 'RackAccessoryFactory',
+    'data_center.ServerRoom': 'ServerRoomFactory',
+    'data_center.Cluster': 'ClusterFactory',
+    'data_center.ClusterType': 'ClusterTypeFactory',
+    'data_center.Database': 'DatabaseFactory',
+    'data_center.VIP': 'VIPFactory',
+    'deployment.Preboot': 'PrebootFactory',
+    'deployment.PrebootConfiguration': 'PrebootConfigurationFactory',
+    'dhcp.DHCPServer': 'DHCPServerFactory',
+    'dhcp.DNSServer': 'DNSServerFactory',
+    'domains.Domain': 'DomainFactory',
+    'domains.DomainContract': 'DomainContractFactory',
+    'domains.DomainRegistrant': 'DomainRegistrantFactory',
+    'licences.Licence': 'LicenceFactory',
+    'licences.LicenceType': 'LicenceTypeFactory',
+    'licences.Software': 'SoftwareFactory',
+    # TODO: add missing factory
+    # networks.DiscoveryQueue': 'DiscoveryQueueFactory',
+    'networks.IPAddress': 'IPAddressFactory',
+    'networks.NetworkEnvironment': 'NetworkEnvironmentFactory',
+    'networks.NetworkKind': 'NetworkKindFactory',
+    'operations.Change': 'ChangeFactory',
+    'operations.Failure': 'FailureFactory',
+    'operations.Incident': 'IncidentFactory',
+    'operations.Operation': 'OperationFactory',
+    'operations.OperationType': 'OperationTypeFactory',
+    'operations.Problem': 'ProblemFactory',
+    'reports.Report': 'ReportFactory',
+    'reports.ReportLanguage': 'ReportLanguageFactory',
+    'supports.Support': 'SupportFactory',
+    'supports.SupportType': 'SupportTypeFactory',
+    'virtual.CloudFlavor': 'CloudFlavorFactory',
+    'virtual.CloudHost': 'CloudHostFullFactory',
+    'virtual.CloudProject': 'CloudProjectFactory',
+    'virtual.CloudProvider': 'CloudProviderFactory',
+    'virtual.VirtualServer': 'VirtualServerFullFactory',
+    'virtual.VirtualServerType': 'VirtualServerTypeFactory',
+}
 
 SQL_QUERY_LIMIT = 30
 
 
+def _get_factory_from_path(app_label, factory_name):
+    bits = factory_name.split('.')
+    app = app_label
+    if len(bits) == 2:
+        app = bits[0]
+        factory_name = bits[1]
+    module_path = 'ralph.{}.tests.factories'.format(app)
+    module = import_module(module_path)
+    return getattr(module, factory_name)
+
+
+def _get_model_and_factory_from_path(model_path, factory):
+    app_label, model_name = model_path.split('.')
+    model = apps.get_model(app_label, model_name)
+    factory = _get_factory_from_path(app_label, factory)
+    return model, factory
+
+
+@ddt
 class ViewsTest(TestCase):
 
     def setUp(self):
@@ -114,36 +114,48 @@ class ViewsTest(TestCase):
         )
         self.request.session = {}
 
-    def test_numbers_of_sql_query_and_response_status_is_200(self):
-        for model, model_admin in ralph_site._registry.items():
-            query_count = 0
-            model_class_path = '{}.{}'.format(model.__module__, model.__name__)
-            if model_class_path in EXCLUDE_MODELS:
-                continue
+    @unpack
+    @data(*FACTORY_MAP.items())
+    def test_numbers_of_sql_query_and_response_status_is_200(self, model, factory):
+        model, factory_model = _get_model_and_factory_from_path(model, factory)
+        model_admin = ralph_site._registry[model]
 
-            module_path, factory_class = FACTORY_MAP[model_class_path].rsplit(
-                '.', 1
-            )
-            module = import_module(module_path)
-            factory_model = getattr(module, factory_class)
+        # Create 10 records:
+        factory_model.create_batch(10)
 
-            # Create 10 records:
-            factory_model.create_batch(10)
+        with CaptureQueriesContext(connections['default']) as cqc:
+            change_list = model_admin.changelist_view(self.request)
+            self.assertEqual(change_list.status_code, 200)
+            query_count = len(cqc)
 
-            with CaptureQueriesContext(connections['default']) as cqc:
-                change_list = model_admin.changelist_view(self.request)
-                self.assertEqual(change_list.status_code, 200)
-                query_count = len(cqc)
+        # Create next 10 records:
+        factory_model.create_batch(10)
 
-            # Create next 10 records:
-            factory_model.create_batch(10)
+        with CaptureQueriesContext(connections['default']) as cqc:
+            change_list = model_admin.changelist_view(self.request)
+            self.assertEqual(query_count, len(cqc))
+            self.assertFalse(len(cqc) > SQL_QUERY_LIMIT)
 
-            with CaptureQueriesContext(connections['default']) as cqc:
-                change_list = model_admin.changelist_view(self.request)
-                self.assertEqual(query_count, len(cqc))
-                self.assertFalse(len(cqc) > SQL_QUERY_LIMIT)
+        change_form = model_admin.changeform_view(
+            self.request, object_id=None
+        )
+        self.assertEqual(change_form.status_code, 200)
 
-            change_form = model_admin.changeform_view(
-                self.request, object_id=None
-            )
-            self.assertEqual(change_form.status_code, 200)
+    @unpack
+    @data(*FACTORY_MAP.items())
+    def test_variables(self, model, factory):
+        model, factory_model = _get_model_and_factory_from_path(model, factory)
+        model_admin = ralph_site._registry[model]
+        obj = factory_model()
+        change_list_response = model_admin.changelist_view(self.request)
+        change_list_content = change_list_response.render().content
+        self.assertFalse(
+            settings.TEMPLATE_STRING_IF_INVALID in str(change_list_content)
+        )
+        changeform_view_response = model_admin.changeform_view(
+            self.request, str(obj.pk)
+        )
+        changeform_view_content = changeform_view_response.render().content
+        self.assertFalse(
+            settings.TEMPLATE_STRING_IF_INVALID in str(change_list_content)
+        )

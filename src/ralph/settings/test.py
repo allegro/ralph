@@ -68,6 +68,8 @@ CACHES = {
     }
 }
 
+TEMPLATES[0]['OPTIONS']['string_if_invalid'] = TEMPLATE_STRING_IF_INVALID
+
 SKIP_MIGRATIONS = os.environ.get('SKIP_MIGRATIONS', None)
 if SKIP_MIGRATIONS:
     print('skipping migrations')
