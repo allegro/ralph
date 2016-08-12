@@ -26,6 +26,7 @@ from ralph.networks.tests.factories import (
     NetworkKindFactory
 )
 from ralph.ralph2_sync.publishers import (
+    delete_virtual_server_in_ralph2,
     sync_dc_asset_to_ralph2,
     sync_model_to_ralph2,
     sync_network_to_ralph2,
@@ -258,6 +259,23 @@ class VirtualServerPublisherTestCase(TestCase):
             'venture_role_id': None,
             'custom_fields': {},
         })
+
+
+@override_settings(RALPH2_HERMES_SYNC_ENABLED=True)
+class VirtualServerDeletePublisherTestCase(TestCase):
+    def setUp(self):
+        self.old_vs_id = 123
+        self.vs = VirtualServerFactory()
+        ImportedObjects.create(
+            self.vs, self.old_vs_id
+        )
+
+    @override_settings(RALPH2_HERMES_SYNC_FUNCTIONS=[
+        'delete_virtual_server_in_ralph2'
+    ])
+    def test_delete(self):
+        result = delete_virtual_server_in_ralph2(VirtualServer, self.vs)
+        self.assertEqual(result, {'id': self.vs.id, 'ralph2_id': '123'})
 
 
 @override_settings(RALPH2_HERMES_SYNC_ENABLED=True)
