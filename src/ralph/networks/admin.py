@@ -12,7 +12,11 @@ from ralph.assets.models import BaseObject
 from ralph.data_importer import resources
 from ralph.lib.mixins.admin import ParentChangeMixin
 from ralph.lib.table import TableWithUrl
-from ralph.networks.filters import IPRangeFilter, NetworkRangeFilter
+from ralph.networks.filters import (
+    IPRangeFilter,
+    NetworkClassFilter,
+    NetworkRangeFilter
+)
 from ralph.networks.models.networks import (
     DiscoveryQueue,
     IPAddress,
@@ -112,9 +116,10 @@ class NetworkAdmin(RalphMPTTAdmin):
         'subnetworks_count', 'ipaddresses_count'
     ]
     list_filter = [
-        'network_environment', 'kind', 'dhcp_broadcast', 'racks', 'terminators',
-        'service_env', ('parent', RelatedAutocompleteFieldListFilter),
-        ('min_ip', NetworkRangeFilter)
+        'network_environment', 'kind', 'dhcp_broadcast', 'racks',
+        'terminators', 'service_env',
+        ('parent', RelatedAutocompleteFieldListFilter),
+        ('min_ip', NetworkRangeFilter), ('address', NetworkClassFilter),
     ]
     list_select_related = ['kind', 'network_environment']
     raw_id_fields = ['racks', 'gateway', 'terminators', 'service_env']

@@ -195,6 +195,7 @@ class Network(
         help_text=_('Presented as string (e.g. 192.168.0.0/24)'),
         unique=True
     )
+    address._filter_title = _('Network Class')
     gateway = models.ForeignKey(
         'IPAddress', verbose_name=_('Gateway address'), null=True, blank=True,
         related_name='gateway_network'

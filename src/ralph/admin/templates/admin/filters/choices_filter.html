@@ -3,7 +3,7 @@
 {% block filter_content %}
     <select class="filter" name="{{ choices.0.parameter_name }}">
       {% for choice in choices %}
-        <option value="{{ choice.value }}"{% if choice.selected %} selected{% endif %}>
+        <option value="{{ choice.value }}"{% if choice.selected %} selected {% endif %}>
           {{ choice.display }}
         </option>
       {% endfor %}

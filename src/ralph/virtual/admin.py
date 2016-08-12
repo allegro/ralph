@@ -52,8 +52,11 @@ class VirtualServerTypeForm(RalphAdmin):
 class VirtualServerForm(RalphAdminForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['parent'].label = _('Hypervisor')
-        self.fields['parent'].required = True
+        if 'parent' in self.fields:
+            self.fields['parent'].required = True
+
+    class Meta:
+        labels = {'parent': _('Hypervisor')}
 
 
 class VirtualServerNetworkView(NetworkView):

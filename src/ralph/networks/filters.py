@@ -1,8 +1,24 @@
 import ipaddress
 
+from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin.filters import TextListFilter
+from ralph.admin.filters import ChoicesListFilter, TextListFilter
+
+PRIVATE_NETWORK_CIDRS = [
+    '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16',
+]
+
+
+def get_private_network_filter():
+    filter_ = Q()
+    for private_cidr in PRIVATE_NETWORK_CIDRS:
+        network = ipaddress.ip_network(private_cidr)
+        min_ip = int(network.network_address)
+        max_ip = int(network.broadcast_address)
+        filter_ |= Q(min_ip__gte=min_ip, max_ip__lte=max_ip)
+    return filter_
+PRIVATE_NETWORK_FILTER = get_private_network_filter()
 
 
 class IPRangeFilter(TextListFilter):
@@ -44,4 +60,20 @@ class NetworkRangeFilter(TextListFilter):
             max_ip = int(network.broadcast_address)
 
             queryset = queryset.filter(min_ip__gte=min_ip, max_ip__lte=max_ip)
+        return queryset
+
+
+class NetworkClassFilter(ChoicesListFilter):
+    _choices_list = [
+        ('private', _('Private')),
+        ('public', _('Public')),
+    ]
+
+    def queryset(self, request, queryset):
+        if not self.value():
+            return queryset
+        if self.value().lower() == 'private':
+            queryset = queryset.filter(PRIVATE_NETWORK_FILTER)
+        elif self.value().lower() == 'public':
+            queryset = queryset.exclude(PRIVATE_NETWORK_FILTER)
         return queryset
