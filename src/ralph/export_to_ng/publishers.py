@@ -73,12 +73,12 @@ def ralph3_sync(model, topic=None):
 
 
 @publisher(topic='ralph2_sync_ack', auto_publish_result=True)
-def publish_sync_ack_to_ralph3(obj, ralph3_id):
+def publish_sync_ack_to_ralph3(obj, ralph3_id, model=None):
     """
     Publish ACK to Ralph3 that some object was updated.
     """
     return {
-        'model': obj._meta.object_name,
+        'model': model or obj._meta.object_name,
         'id': obj.id,
         'ralph3_id': ralph3_id,
     }

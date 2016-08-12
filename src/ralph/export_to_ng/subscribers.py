@@ -327,7 +327,7 @@ def sync_virtual_server_to_ralph2(data):
     _handle_custom_fields(data, vs)
     _handle_ips(data, vs)
     if created:
-        publish_sync_ack_to_ralph3(vs, data['id'])
+        publish_sync_ack_to_ralph3(vs, data['id'], 'VirtualServer')
 
 
 @sync_subscriber(
@@ -458,3 +458,14 @@ def sync_network_to_ralph2(data):
     if created:
         publish_sync_ack_to_ralph3(net, data['id'])
     return net
+
+
+@sync_subscriber(
+    topic='delete_virtual_server_in_ralph2',
+    disable_publishers=[sync_virtual_server_to_ralph3]
+)
+def delete_virtual_server_in_ralph2(data):
+    if data.get('ralph2_id'):
+        dev = Device.objects.get(id=data['ralph2_id'])
+        dev.deleted = True
+        dev.save(priority=SAVE_PRIORITY)
