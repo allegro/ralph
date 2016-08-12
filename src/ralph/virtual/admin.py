@@ -98,6 +98,7 @@ class VirtualServerAdmin(
     if settings.ENABLE_DNSAAS_INTEGRATION:
         change_views += [VirtualServerDNSView]
 
+    show_transition_history = True
     # TODO: add the same tabs as in DCAsset
     class ClusterBaseObjectInline(RalphTabularInline):
         model = BaseObjectCluster
