@@ -22,6 +22,7 @@ from ralph.lib.mixins.models import (
     NamedMixin,
     TimeStampMixin
 )
+from ralph.lib.permissions import PermByFieldMixin
 from ralph.networks.fields import IPNetwork
 from ralph.networks.models.choices import IPAddressStatus
 
@@ -35,7 +36,7 @@ class NetworkKind(NamedMixin, models.Model):
         ordering = ('name',)
 
 
-class NetworkEnvironment(TimeStampMixin, NamedMixin, models.Model):
+class NetworkEnvironment(PermByFieldMixin, TimeStampMixin, NamedMixin, models.Model):
     data_center = models.ForeignKey(
         'data_center.DataCenter',
         verbose_name=_('data center')
@@ -176,6 +177,7 @@ class Network(
     TimeStampMixin,
     NetworkMixin,
     MPTTModel,
+    # PermByFieldMixin
     models.Model
 ):
     """
@@ -524,6 +526,7 @@ class IPAddressQuerySet(models.QuerySet):
 
 
 class IPAddress(
+    PermByFieldMixin,
     AdminAbsoluteUrlMixin,
     LastSeenMixin,
     TimeStampMixin,

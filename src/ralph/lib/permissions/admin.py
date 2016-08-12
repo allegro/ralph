@@ -4,6 +4,7 @@ from copy import deepcopy
 
 from django import forms
 from django.core.exceptions import FieldDoesNotExist, ValidationError
+from django.contrib.admin import helpers
 from django.db.models.query import QuerySet
 
 from ralph.lib.mixins.forms import RequestFormMixin
@@ -71,6 +72,34 @@ class PermissionPerFieldAdminMixin(object):
             fieldset[1]['fields'] = fields
             new_fieldsets.append(fieldset)
         return new_fieldsets
+
+    def get_inline_formsets(
+        self, request, formsets, inline_instances, obj=None
+    ):
+        inline_admin_formsets = []
+        for inline, formset in zip(inline_instances, formsets):
+            fieldsets = list(inline.get_fieldsets(request, obj))
+            if issubclass(inline.model, PermByFieldMixin):
+                readonly = []
+                for field in inline.opts.fields:
+                    can_view = inline.model.has_access_to_field(
+                        field.name, request.user, action='view'
+                    )
+                    can_change = inline.model.has_access_to_field(
+                        field.name, request.user, action='change'
+                    )
+                    if not can_change and can_view:
+                        readonly.append(field.name)
+            else:
+                readonly = list(inline.get_readonly_fields(request, obj))
+
+            prepopulated = dict(inline.get_prepopulated_fields(request, obj))
+            inline_admin_formset = helpers.InlineAdminFormSet(
+                inline, formset, fieldsets, prepopulated, readonly,
+                model_admin=self,
+            )
+            inline_admin_formsets.append(inline_admin_formset)
+        return inline_admin_formsets
 
     def get_readonly_fields(self, request, obj=None):
         """Return read only fields respects user permissions."""
