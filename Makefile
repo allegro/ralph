@@ -11,7 +11,7 @@ collectstatic:
 	ralph collectstatic --noinput
 
 install:
-	pip install -e . --use-mirrors --allow-all-external --allow-unverified ipaddr --allow-unverified postmarkup --allow-unverified pysphere --find-links=https://pypi.python.org/pypi/pysphere/0.1.8
+	pip install -e . --allow-all-external --allow-unverified ipaddr --allow-unverified postmarkup --allow-unverified pysphere --find-links=https://pypi.python.org/pypi/pysphere/0.1.8
 
 test-unittests:
 	DJANGO_SETTINGS_PROFILE=test-ralph coverage run --source=ralph --omit='*migrations*,*tests*,*__init__*,*wsgi.py,*__main__*,*settings*,*manage.py,src/ralph/util/demo/*' '$(VIRTUAL_ENV)/bin/ralph' test ralph
