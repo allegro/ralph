@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from ddt import ddt, data, unpack
 from importlib import import_module
 
+from ddt import ddt, data, unpack
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
