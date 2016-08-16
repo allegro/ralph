@@ -361,6 +361,28 @@ class NetworkEnvironmentTest(RalphTestCase):
             'test.000445.ralph.pl'
         )
 
+    def test_use_hostname_counter_updates_last_hostname_counter(self):
+        prefix = 'test.'
+        postfix = '.ralph.pl'
+        network_env = NetworkEnvironmentFactory(
+            hostname_template_prefix=prefix,
+            hostname_template_postfix=postfix,
+            hostname_template_counter_length=6,
+            use_hostname_counter=False,
+        )
+        current = 1
+        DataCenterAssetFactory(hostname="".join([
+            prefix, str(current), postfix
+        ]))
+        ok_next_hostname = 'test.00000{}.ralph.pl'.format(current + 1)
+
+        self.assertEqual(network_env.next_free_hostname, ok_next_hostname)
+
+        network_env.use_hostname_counter = True
+        network_env.save()
+
+        self.assertEqual(network_env.next_free_hostname, ok_next_hostname)
+
 
 class IPAddressTest(RalphTestCase):
     def setUp(self):

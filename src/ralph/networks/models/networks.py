@@ -7,7 +7,7 @@ import struct
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
-from django.db.models.signals import post_migrate
+from django.db.models.signals import post_migrate, pre_save
 from django.db.utils import ProgrammingError
 from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
@@ -96,12 +96,14 @@ class NetworkEnvironment(TimeStampMixin, NamedMixin, models.Model):
         Retrieve next free hostname
         """
         if self.use_hostname_counter:
-            return AssetLastHostname.get_next_free_hostname(
+            result = AssetLastHostname.get_next_free_hostname(
                 self.hostname_template_prefix,
                 self.hostname_template_postfix,
                 self.hostname_template_counter_length
             )
-        return self.next_hostname_without_model_counter()
+        else:
+            result = self.next_hostname_without_model_counter()
+        return result
 
     def issue_next_free_hostname(self):
         """
@@ -114,12 +116,12 @@ class NetworkEnvironment(TimeStampMixin, NamedMixin, models.Model):
             ).formatted_hostname(self.hostname_template_counter_length)
         return self.next_hostname_without_model_counter()
 
-    def next_hostname_without_model_counter(self):
+    def current_counter_without_model(self):
         """
-        Return hostname based on already added hostnames
+        Return current counter based on already added hostnames
 
         Returns:
-            hostname string
+            counter int
         """
         from ralph.data_center.models.physical import DataCenterAsset
         from ralph.data_center.models.virtual import Cluster
@@ -139,13 +141,31 @@ class NetworkEnvironment(TimeStampMixin, NamedMixin, models.Model):
                         -len(self.hostname_template_postfix)
                     ]
                 )
-        counter = 1
+
+        counter = 0
         if hostnames:
-            hostnames = sorted(hostnames, reverse=True)
-            counter = int(hostnames[0]) + 1
+            counter = int(sorted(hostnames, reverse=True)[0])
+        return counter
+
+    def next_counter_without_model(self):
+        """
+        Return next counter based on already added hostnames
+
+        Returns:
+            counter int
+        """
+        return self.current_counter_without_model() + 1
+
+    def next_hostname_without_model_counter(self):
+        """
+        Return hostname based on already added hostnames
+
+        Returns:
+            hostname string
+        """
         hostname = AssetLastHostname(
             prefix=self.hostname_template_prefix,
-            counter=counter,
+            counter=self.next_counter_without_model(),
             postfix=self.hostname_template_postfix
         )
         return hostname.formatted_hostname(
@@ -719,3 +739,20 @@ def rebuild_handler(sender, **kwargs):
             # this may happen during unapplying initial migration for networks
             # app
             logger.warning('ProgrammingError during Network rebuilding')
+
+
+@receiver(pre_save, sender=NetworkEnvironment)
+def update_counter(sender, instance, **kwargs):
+    if not instance.id:
+        return
+
+    orig = NetworkEnvironment.objects.get(id=instance.id)
+    if instance.use_hostname_counter != orig.use_hostname_counter:
+        counter = AssetLastHostname(
+            prefix=instance.hostname_template_prefix,
+            counter=instance.current_counter_without_model(),
+            postfix=instance.hostname_template_postfix,
+            #TODO:: would it work without set it here?
+            #instance.hostname_template_counter_length,
+        )
+        counter.save()
