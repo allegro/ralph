@@ -30,6 +30,7 @@ from ralph.discovery.tests.util import (
 )
 from ralph.dnsedit.models import DHCPEntry
 from ralph.export_to_ng.subscribers import (
+    delete_virtual_server_in_ralph2,
     sync_dc_asset_to_ralph2_handler,
     sync_network_to_ralph2,
     sync_stacked_switch_to_ralph2,
@@ -513,6 +514,16 @@ class VirtualServerTestCase(TestCase):
         self.assertTrue(
             vs.ethernet_set.filter(mac='AABBCCDDEEFF').exists()
         )
+
+    def test_delete_virtual_servr(self):
+        vs = self.create_test_virtual_server()
+        data = {
+            'id': 1234,
+            'ralph2_id': vs.id,
+        }
+        delete_virtual_server_in_ralph2(data)
+        vs = vs.__class__.admin_objects.get(id=vs.id)
+        self.assertTrue(vs.deleted)
 
 
 class StackedSwitchSyncTestCase(TestCase):
