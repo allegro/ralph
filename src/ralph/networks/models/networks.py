@@ -747,12 +747,13 @@ def update_counter(sender, instance, **kwargs):
         return
 
     orig = NetworkEnvironment.objects.get(id=instance.id)
-    if instance.use_hostname_counter != orig.use_hostname_counter:
-        counter = AssetLastHostname(
+    if (
+        instance.use_hostname_counter and not orig.use_hostname_counter
+    ):
+        obj, created = AssetLastHostname.objects.update_or_create(
             prefix=instance.hostname_template_prefix,
-            counter=instance.current_counter_without_model(),
             postfix=instance.hostname_template_postfix,
-            #TODO:: would it work without set it here?
-            #instance.hostname_template_counter_length,
+            defaults={
+                'counter': instance.current_counter_without_model(),
+            }
         )
-        counter.save()
