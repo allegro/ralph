@@ -97,6 +97,102 @@
     })(django.jQuery);
 
     (function($) {
+        var tooltipEventSystem = {
+            listeners: {},
+            hideTimeouts: {},
+            proxyFunctions: {
+                'show': {
+                    old: null
+                },
+                'hide': {
+                    old: null
+                }
+            },
+            addListener: function(evtName, listenerFunc) {
+                var self = this;
+                if(self.listeners[evtName] === undefined) {
+                    self.listeners[evtName] = [];
+                }
+                self.listeners[evtName].push(listenerFunc);
+            },
+            triggerListeners: function(evtName, args) {
+                var self = this;
+                var cancelEvent = false;
+                if(self.listeners[evtName] !== undefined) {
+                    var listeners = self.listeners[evtName];
+                    var i;
+                    for(i = 0; i < listeners.length; i += 1) {
+                        var listener = listeners[i];
+                        /*
+                            Cancel event only if one of the listeners returns false
+                        */
+                        var result = (listener.apply(self, args) === false) ? false : true;
+                        if(!result) {
+                            cancelEvent = true;
+                        }
+                    }
+                }
+                return cancelEvent;
+            },
+            initEventSystem: function() {
+                var self = this;
+                Object.keys(self.proxyFunctions).forEach(function(funcName) {
+                    self.proxyFunctions[funcName].old = self[funcName];
+                    self[funcName] = function() {
+                        var cancelEvent = self.triggerListeners(funcName, arguments);
+                        /*
+                            If the event is not cancelled, call the original function
+                        */
+                        if(!cancelEvent) {
+                            self.proxyFunctions[funcName].old.apply(self, arguments);
+                        }
+                    };
+                });
+            },
+            clearHideTimeout: function(target) {
+                var self = this;
+                var tooltip = self.getTip(target);
+                var tipId = tooltip.attr("id");
+                clearTimeout(self.hideTimeouts[tipId]);
+            },
+            startHideTimeout: function(target) {
+                var self = this;
+                var tooltip = self.getTip(target);
+                var tipId = tooltip.attr("id");
+                clearTimeout(self.hideTimeouts[tipId]);
+                
+                var timeoutDelay = self.settings.hover_delay || 500;
+                self.hideTimeouts[tipId] = setTimeout(function() {
+                    self.proxyFunctions['hide'].old.call(self, target);
+                }, timeoutDelay);
+            }
+        };
+        $.extend(Foundation.libs.tooltip, tooltipEventSystem);
+        Foundation.libs.tooltip.initEventSystem();
+
+        Foundation.libs.tooltip.addListener('hide', function(target) {
+            var self = this;
+            var $tip = self.getTip(target);
+
+            self.startHideTimeout(target);
+
+            function mouseover() {
+                self.clearHideTimeout(target);
+            }
+
+            function mouseout() {
+                self.startHideTimeout(target);
+            }
+
+            target.on('mouseover', mouseover);
+            target.on('mouseout', mouseout);
+            $tip.on('mouseover', mouseover);
+            $tip.on('mouseout', mouseout);
+
+            //Stop event from executing
+            return false;
+        });
+
         $('li.has-dropdown').on('mouseover', function() {
             var $this = $(this);
             var parent = $(".top-bar");
@@ -110,7 +206,6 @@
                     $drop.css('visibility', 'hidden');
                 }
             });
-
         });
 
         $(document).foundation();
