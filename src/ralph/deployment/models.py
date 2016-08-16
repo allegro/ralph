@@ -79,7 +79,6 @@ All newline characters will be converted to Unix \\n newlines.
 """.format(ralph_instance=settings.RALPH_INSTANCE.rstrip('/')).strip()  # noqa
 
 
-
 class PrebootConfiguration(PrebootItem):
     type = models.PositiveIntegerField(
         verbose_name=_('type'),
