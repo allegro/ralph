@@ -276,7 +276,7 @@ class _BaseTestDeploymentActionsTestCase(object):
             }}
         )
 
-    def test_ip_outside_defined_network_raise_validation_error(self):
+    def test_ip_outside_defined_networks_raise_validation_error(self):
         IPAddressFactory(
             address='10.20.30.40', ethernet__base_object=self.instance
         )

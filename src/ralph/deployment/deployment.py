@@ -3,7 +3,7 @@
 Transition actions for deployment
 
 Deployment order:
-* cleaning
+    * cleaning
     * clean hostname
     * clean IP addresses
     * clean DNS entries
@@ -427,9 +427,9 @@ def check_ip_from_defined_network(address):
     Validate if `address` belongs to any network already added
     """
     ip = ipaddress.ip_address(address)
-    try:
-        Network.objects.get(min_ip__lte=int(ip), max_ip__gte=int(ip))
-    except Network.DoesNotExist:
+    if not Network.objects.filter(
+        min_ip__lte=int(ip), max_ip__gte=int(ip)
+    ):
         raise ValidationError(
             'IP {} doesn\'t belong to any network!'.format(address)
         )
