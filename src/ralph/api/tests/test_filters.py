@@ -67,6 +67,7 @@ class TestLookupFilterBackend(RalphTestCase):
         self.client.login(username='test', password='test')
 
         Bar.objects.create(
+            id=999999,
             name='Bar11',
             date=date(2015, 3, 1),
             price=Decimal('21.4'),
@@ -183,6 +184,20 @@ class TestLookupFilterBackend(RalphTestCase):
         self.assertEqual(len(self.lookup_filter.filter_queryset(
             request, Bar.objects.all(), bvs)
         ), 4)
+
+    def test_query_filters_autofield(self):
+        request = self.request_factory.get('/api/bar')
+        bvs = BarViewSet()
+        request.query_params = QueryDict(urlencode({'id__startswith': '99999'}))
+        bvs.request = request
+        self.assertEqual(len(self.lookup_filter.filter_queryset(
+            request, Bar.objects.all(), bvs)
+        ), 1)
+
+        request.query_params = QueryDict(urlencode({'id__exact': '999999'}))
+        self.assertEqual(len(self.lookup_filter.filter_queryset(
+            request, Bar.objects.all(), bvs)
+        ), 1)
 
     def test_query_filters_isnull(self):
         request = self.request_factory.get('/api/bar')

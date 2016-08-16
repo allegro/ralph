@@ -144,6 +144,7 @@ class LookupFilterBackend(BaseFilterBackend):
     # allowed lookups depending on field type (using Django's __ convention)
     # for other types of fields, only strict lookup is allowed
     field_type_lookups = {
+        # TODO: in and range filters are not working (some iterable is required)
         models.IntegerField: {
             'lte', 'gte', 'lt', 'gt', 'exact', 'in', 'range', 'isnull'
         },
@@ -161,6 +162,9 @@ class LookupFilterBackend(BaseFilterBackend):
         },
         models.DecimalField: {
             'lte', 'gte', 'lt', 'gt', 'exact', 'in', 'range', 'isnull'
+        },
+        models.AutoField: {
+            'startswith', 'exact'
         }
     }
 

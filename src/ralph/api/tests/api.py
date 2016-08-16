@@ -81,6 +81,7 @@ class CarViewSet(RalphAPIViewSet):
 class BarViewSet(RalphAPIViewSet):
     queryset = Bar.objects.all()
     serializer_class = BarSerializer
+    filter_fields = ['id']
 
 
 router = RalphRouter()

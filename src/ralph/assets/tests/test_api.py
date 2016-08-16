@@ -535,6 +535,7 @@ class BaseObjectAPITests(RalphAPITestCase):
             parent=self.conf_module_1, name='mod1'
         )
         self.conf_class_1 = ConfigurationClassFactory(
+            id=999999,
             module=self.conf_module_2, class_name='cls1'
         )
         self.dc_asset = DataCenterAssetFactory(
@@ -684,6 +685,30 @@ class BaseObjectAPITests(RalphAPITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(len(response.data['results']), 1)
         self.assertEqual(response.data['results'][0]['id'], self.dc_asset.id)
+
+    def test_filter_by_id_startswith(self):
+        url = '{}?{}'.format(
+            reverse('baseobject-list'), urlencode(
+                {'id__startswith': '99999'}
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(
+            response.data['results'][0]['id'], self.conf_class_1.id
+        )
+
+    def test_filter_by_id_exact(self):
+        url = '{}?{}'.format(
+            reverse('baseobject-list'), urlencode(
+                {'id__exact': '999999'}
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(
+            response.data['results'][0]['id'], self.conf_class_1.id
+        )
 
     def test_tags(self):
         url = '{}?{}'.format(
