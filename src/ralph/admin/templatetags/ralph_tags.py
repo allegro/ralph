@@ -38,7 +38,7 @@ def views_tabs(context, views, name=None, obj=None):
     if obj:
         for view in views:
             codename = '{}.{}'.format(
-                obj._meta.app_label, view.permision_codename
+                obj._meta.app_label, view.permission_codename
             )
             if context.request.user.has_perm(codename):
                 result.append(view)

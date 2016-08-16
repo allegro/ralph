@@ -1,4 +1,4 @@
-from django.conf.urls import include, url
+from django.conf.urls import url
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.core.urlresolvers import reverse
@@ -47,7 +47,7 @@ class PermissionsByFieldTestCase(TestCase):
 
     def test_codename(self):
         self.assertEqual(
-            SimplePermissionView.permision_codename,
+            SimplePermissionView.permission_codename,
             self.codename
         )
 

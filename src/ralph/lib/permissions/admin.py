@@ -4,6 +4,7 @@ from copy import deepcopy
 
 from django import forms
 from django.core.exceptions import FieldDoesNotExist, ValidationError
+from django.contrib.admin import helpers
 from django.db.models.query import QuerySet
 
 from ralph.lib.mixins.forms import RequestFormMixin
@@ -16,6 +17,9 @@ logger = logging.getLogger(__name__)
 
 
 class PermissionPerFieldAdminMixin(object):
+
+    formset_readonly = {}
+
     def _has_access_to_field(self, field_name, request):
         """
         Check if user has access to field
@@ -109,6 +113,50 @@ class PermissionPerFieldAdminMixin(object):
             if self._has_access_to_field(field, request)
         ]
         return list_display
+
+    def get_inline_instances(self, request, obj=None):
+        inlines = super().get_inline_instances(request, obj)
+        new_inlines = []
+        for inline in inlines:
+            permissions = []
+            for action in ['view', 'change']:
+                codename = '{}_{}'.format(
+                    getattr(inline, '{}_permission_codename'.format(action)),
+                    self.model.__name__.lower()
+                )
+                permissions.append('{}.{}'.format(
+                    self.model._meta.app_label, codename
+                ))
+            if any([request.user.has_perm(perm) for perm in permissions]):
+                new_inlines.append(inline)
+
+        return new_inlines
+
+    def get_inline_formsets(
+        self, request, formsets, inline_instances, obj=None
+    ):
+        inline_admin_formsets = []
+        for inline, formset in zip(inline_instances, formsets):
+            fieldsets = list(inline.get_fieldsets(request, obj))
+
+            change_codename = '{}_{}'.format(
+                inline.change_permission_codename, self.model.__name__.lower()
+            )
+            change_permission = '{}.{}'.format(
+                self.model._meta.app_label, change_codename
+            )
+            if request.user.has_perm(change_permission):
+                readonly = list(inline.get_readonly_fields(request, obj))
+            else:
+                readonly = formset.form._meta.fields
+
+            prepopulated = dict(inline.get_prepopulated_fields(request, obj))
+            inline_admin_formset = helpers.InlineAdminFormSet(
+                inline, formset, fieldsets, prepopulated, readonly,
+                model_admin=self,
+            )
+            inline_admin_formsets.append(inline_admin_formset)
+        return inline_admin_formsets
 
 
 class PermissionsPerObjectFormMixin(RequestFormMixin):

@@ -31,7 +31,10 @@ from ralph.lib.permissions.admin import (
     PermissionsPerObjectFormMixin
 )
 from ralph.lib.permissions.models import PermByFieldMixin
-from ralph.lib.permissions.views import PermissionViewMetaClass
+from ralph.lib.permissions.views import (
+    PermissionInlineViewMetaClass,
+    PermissionViewMetaClass
+)
 from ralph.ralph2_sync.admin import Ralph2SyncAdminMixin
 
 logger = logging.getLogger(__name__)
@@ -390,9 +393,28 @@ class RalphMPTTAdmin(MPTTModelAdmin, RalphAdmin):
     form = RalphMPTTAdminForm
 
 
-class RalphInlineMixin(object):
+PermissionInlineMetaClass = type(
+    'PermissionInlineMetaClass', (
+        PermissionInlineViewMetaClass,
+        forms.MediaDefiningClass
+    ), {}
+)
+
+
+class RalphInlineMixin(object, metaclass=PermissionInlineMetaClass):
     # display change link for inline row in popup
     change_link_url_params = '_popup=1'
+
+    def get_formset(self, request, obj=None, **kwargs):
+        from django import forms
+        class InlineModelForm(forms.ModelForm):
+            def save(self, commit=True):
+                # TODO save not readonly fields!
+                super().save(commit)
+
+        InlineModelForm.parent = self
+        self.form = InlineModelForm
+        return super().get_formset(request, obj=None, **kwargs)
 
 
 class RalphTabularInline(
