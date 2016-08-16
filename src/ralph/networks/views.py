@@ -37,25 +37,32 @@ class NetworkView(RalphDetailViewAdmin):
     name = 'network'
     label = 'Network'
     url_name = 'network'
-    admin_attribute_list_to_copy = ['network_data']
-    readonly_fields = ('network_data',)
+    admin_attribute_list_to_copy = ['available_networks']
+    readonly_fields = ('available_networks',)
     inlines = [
         NetworkInline,
     ]
-    fields = ('network_data', )
+    fields = ('available_networks', )
 
-    def network_data(self, instance):
-        return TableWithUrl(
-            instance._get_available_networks(as_query=True),
-            ['name', 'address', 'network_environment'],
-            url_field='name',
-        ).render()
-    network_data.short_description = "Network data"
-    network_data.allow_tags = True
+    def available_networks(self, instance):
+        networks = instance._get_available_networks(
+            as_query=True
+        ).select_related('network_environment')
+        if networks:
+            result = TableWithUrl(
+                networks,
+                ['name', 'address', 'network_environment'],
+                url_field='name',
+            ).render()
+        else:
+            result = '&ndash;'
+        return result
+    available_networks.short_description = _('Available networks')
+    available_networks.allow_tags = True
     fieldsets = (
-        (_('Basic info'), {
+        (_(''), {
             'fields': (
-                'network_data',
+                'available_networks',
             )
         }),
     )
