@@ -4,7 +4,7 @@ from functools import wraps
 
 import pyhermes
 from django.conf import settings
-from django.db.models.signals import post_save
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from ralph.assets.models import (
@@ -41,7 +41,7 @@ def _get_venture_and_role_from_configuration_path(configuration_path):
     return venture_id, venture_role_id
 
 
-def ralph2_sync(model):
+def ralph2_sync(model, signal=post_save):
     """
     Decorator for synchronizers with Ralph2. Decorated function should return
     dict with event data. Decorated function name is used as a topic name and
@@ -51,7 +51,7 @@ def ralph2_sync(model):
         @wraps(func)
         # connect to post_save signal for a model
         @receiver(
-            post_save, sender=model, dispatch_uid=func.__name__,
+            signal, sender=model, dispatch_uid=func.__name__,
         )
         # register publisher
         @pyhermes.publisher(topic=func.__name__)
@@ -330,3 +330,14 @@ def sync_network_to_ralph2(sender, instance=None, created=False, **kwargs):
         'racks': list(map(_get_obj_id_ralph_2, instance.racks.all())),
     }
     return data
+
+
+@ralph2_sync(VirtualServer, signal=post_delete)
+def delete_virtual_server_in_ralph2(sender, instance=None, created=False, **kwargs):  # noqa
+    ralph2_id = _get_obj_id_ralph_2(instance)
+    if ralph2_id:
+        data = {
+            'id': instance.id,
+            'ralph2_id': ralph2_id,
+        }
+        return data
