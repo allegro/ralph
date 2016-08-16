@@ -283,16 +283,12 @@ class DataCenterAssetTest(RalphTestCase):
     # available networks
     # =========================================================================
     def test_get_available_networks(self):
-        self._prepare_rack(self.dc_asset, '192.168.1.0/24')
-        self.net1 = self.net
-        self._prepare_rack(
-            self.dc_asset, '192.168.2.0/24', rack=self.dc_asset.rack
-        )
+        self._prepare_rack(self.dc_asset, '192.168.1.1', '192.168.1.0/24')
         self.net3 = NetworkFactory(address='192.168.3.0/24')
 
         self.assertCountEqual(
             self.dc_asset._get_available_networks(),
-            [self.net1, self.net]
+            [self.net, self.net2]
         )
 
     def test_get_available_networks_no_rack(self):
