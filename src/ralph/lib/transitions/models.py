@@ -414,7 +414,7 @@ def get_available_transitions_for_field(instance, field, user=None):
         return []
     transitions = Transition.objects.filter(
         model=instance.transition_models[field],
-    )
+    ).select_related('model', 'model__content_type').prefetch_related('actions')
     result = []
     for transition in transitions:
         # check if source field value is in values available for this transition
