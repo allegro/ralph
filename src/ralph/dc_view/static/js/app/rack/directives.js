@@ -14,97 +14,37 @@
                 },
                 templateUrl: '/static/partials/rack/rack.html',
                 link: function(scope, element) {
-                    var $ = jQuery;
-
-                    var REDIRECT_URL = "/data_center/datacenterasset/add/";
-                    var ORIENTATION_FRONT = 1;
-                    var ORIENTATION_BACK = 2;
-
-                    var $rack = $(element).find('div.rack');
-                    var $devices = $rack.find('.devices');
-                    var elemHtml = [
-                        '<div class="insert-device-btn" title="Click with CTRL key pressed to open in new tab">',
-                            '<i class="fa fa-plus"></i>',
-                        '</div>'
-                    ];
-                    elemHtml = elemHtml.join("");
-
-                    $devices.on('mouseover', function() {
-                        var $device = $(this);
-                        if($device.find(".insert-device-btn").length === 0) {
-                            var buttonRef = $(elemHtml).appendTo($device);
-                            buttonRef.click(function(e) {
-                                var $btn = $(this);
-                                var position = $btn.attr('data-current-position');
-                                var orientation = (scope.side == 'front') ? ORIENTATION_FRONT : ORIENTATION_BACK;
-                                gotoAssetWizard(scope.info.id, position, orientation, e.ctrlKey);
-                            });
-                        } else {
-                            $device.find(".insert-device-btn").show();
-                        }
-                    })
-                    .on('mousemove', function(event) {
-                        var $device = $(this);
-                        var $parent = $device.parents("div.rack");
-                        var position_y = event.pageY - $device.offset().top;
-                        var $btn = $device.find(".insert-device-btn");
-                        var maxRows = scope.info.max_u_height;
-                        var rowHeight = $parent.find(".listing-u").first().find(".position").first().outerHeight();
-                        var rowId = Math.floor(position_y / rowHeight);
-                        var rackSlotId = maxRows - rowId;
-                        if(canAddAssetAt(rackSlotId)) {
-                            var newTop = rowId * rowHeight;
-                            $btn.attr('data-current-position', rackSlotId);
-                            $btn.css({
-                                top: newTop + 'px'
-                            });
-                        }
-                    })
-                    .on('mouseout', function(e) {
-                        var $device = $(this);
-                        var toElement = $(e.toElement || e.relatedTarget);
-
-                        var isTargetDevice = (toElement.is(".device") || toElement.parents(".device").length > 0);
-                        var hideCondition = (toElement.parents(".devices").length === 0) || isTargetDevice;
-                        if(hideCondition) {
-                            $device.find(".insert-device-btn").hide();
+                    element.on('mousemove', function(event) {
+                        if (event.target.className === 'devices') {
+                            var free_position = scope.info.max_u_height - Math.floor(event.offsetY / 25);
+                            scope.$broadcast('hover-on-empty-space', {'position': free_position});
                         }
                     });
-
-                    function gotoAssetWizard(rack_id, position, orientation, is_ctrl) {
-                        var url = REDIRECT_URL + '?' + $.param({
-                            rack: rack_id,
-                            position: position,
-                            orientation: orientation
-                        });
-                        if(!is_ctrl) {
-                            location.href = url;
-                        } else {
-                            window.open(url);
+                    element.on('mouseout', function() {
+                        if (event.target.className !== 'devices') {
+                            scope.$broadcast('hover-on-empty-space', {'position': 0});
                         }
-                    }
-
-                    function canAddAssetAt(y) {
-                        if(y < 0 || y > scope.info.max_u_height) {
-                            return false;
-                        }
-                        var can = true;
-                        angular.forEach(scope.devices, function(device) {
-                            var devPosition = device.position || scope.info.max_u_height;
-                            var devHeight = device.height || 1;
-                            var deviceMaxRow = devPosition + devHeight;
-                            var i;
-                            for(i = devPosition; i < deviceMaxRow; i += 1) {
-                                if(i == y) {
-                                    can = false;
-                                    return false;
-                                }
-                            }
-                        });
-                        return can;
-                    }
+                    });
                 }
             };
+        })
+        .directive('addItem', function () {
+            return {
+                restrict: 'E',
+                template: [
+                    '<div ng-class="{hide: position == 0}" class="device add-btn height-u-1 position-u-{{ position }}" title="Click with CTRL key pressed to open in new tab">',
+                        '<i class="fa fa-plus"></i>',
+                    '</div>'
+                ].join('\n'),
+                link: function(scope, element, attr) {
+                    scope.position = 0;
+                    scope.$on('hover-on-empty-space', function(event, data) {
+                        scope.$apply(function () {
+                            scope.position = data.position;
+                        })
+                    });
+                }
+            }
         })
         .directive('deviceItem', function () {
             return {

@@ -190,6 +190,19 @@
                         border-bottom: 1px solid white;
                         border-top: 1px solid white;
                     }
+                    &.add-btn {
+                        $btn-bgcolor: #FF9800;
+                        border-color: darken($btn-bgcolor, 5%);
+                        background: -webkit-repeating-linear-gradient(-45deg, $btn-bgcolor, $btn-bgcolor 10px, transparent 10px, transparent 20px);
+                        background: repeating-linear-gradient(-45deg, $btn-bgcolor, $btn-bgcolor 10px, transparent 10px, transparent 20px);
+                        color: white;
+                        text-align: center;
+                        padding: 1px;
+                        font-size: 14px;
+                        i {
+                            pointer-events: none;
+                        }
+                    }
                     &.accessory {
                         background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAK0lEQVQYV2NkIBIwEqmOAVnhfxyawGrQFaLbANI82BRi8w+GG/GGFNHhCAARkQoLdFrYLgAAAABJRU5ErkJggg==) repeat-x;
                         background-color: #fff;
