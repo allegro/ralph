@@ -101,6 +101,16 @@ class RalphMPTTAdminForm(RalphAdminFormMixin, MPTTAdminForm):
     pass
 
 
+class RedirectSearchToObjectMixin(object):
+    def changelist_view(self, request, *args, **kwargs):
+        response = super().changelist_view(request, *args, **kwargs)
+        cl = response.context_data['cl']
+        filtered_results = bool(request.GET.items())
+        if filtered_results and cl.result_count == 1:
+            messages.info(request, _('Found exactly one result.'))
+            return HttpResponseRedirect(cl.result_list[0].get_absolute_url())
+        return response
+
 class RalphAdminChecks(admin.checks.ModelAdminChecks):
     def _check_form(self, cls, model):
         """
@@ -374,6 +384,7 @@ class ProxyModelsPermissionsMixin(object):
 
 
 class RalphAdmin(
+    RedirectSearchToObjectMixin,
     ProxyModelsPermissionsMixin,
     PermissionAdminMixin,
     RalphAdminImportExportMixin,
