@@ -14,6 +14,7 @@ from ralph.data_center.tests.factories import (
 )
 from ralph.deployment.deployment import (
     autocomplete_service_env,
+    check_if_network_environment_exists,
     validate_ip_address
 )
 from ralph.deployment.tests.factories import _get_deployment
@@ -288,6 +289,18 @@ class _BaseTestDeploymentActionsTestCase(object):
                     'value': '__other__', '__other__': '10.20.30.40'
                 }}
             )
+
+    def test_instance_is_in_any_network_env_should_pass(self):
+        self._prepare_rack()
+        self.assertEqual(
+            check_if_network_environment_exists([self.instance]), {}
+        )
+
+    def test_instance_is_not_in_any_network_env_should_not_pass(self):
+        self.assertEqual(
+            check_if_network_environment_exists([self.instance]),
+            {self.instance: 'Network environment not found.'}
+        )
 
 
 class DataCenterAssetDeploymentActionsTestCase(
