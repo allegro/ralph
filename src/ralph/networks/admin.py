@@ -125,7 +125,8 @@ class NetworkAdmin(RalphMPTTAdmin):
     raw_id_fields = ['racks', 'gateway', 'terminators', 'service_env']
     resource_class = resources.NetworkResource
     readonly_fields = [
-        'show_subnetworks', 'show_addresses', 'show_parent_networks'
+        'show_subnetworks', 'show_addresses', 'show_parent_networks',
+        'show_first_free_ip',
     ]
 
     add_message = _('Network added to <a href="{}" _target="blank">{}</a>')
@@ -142,7 +143,8 @@ class NetworkAdmin(RalphMPTTAdmin):
         }),
         (_('Relations'), {
             'fields': [
-                'show_parent_networks', 'show_subnetworks', 'show_addresses'
+                'show_first_free_ip', 'show_parent_networks',
+                'show_subnetworks', 'show_addresses'
             ]
         })
     )
@@ -189,6 +191,14 @@ class NetworkAdmin(RalphMPTTAdmin):
         return ' <br /> '.join(nodes_link)
     show_parent_networks.short_description = _('Parent networks')
     show_parent_networks.allow_tags = True
+
+    def show_first_free_ip(self, network):
+        if not network or not network.pk:
+            return '&ndash;'
+        free_ip = network.get_first_free_ip()
+        return str(free_ip) if free_ip else '&ndash;'
+    show_first_free_ip.short_description = _('First free IP')
+    show_first_free_ip.allow_tags = True
 
     def show_subnetworks(self, network):
         if not network or not network.pk:
