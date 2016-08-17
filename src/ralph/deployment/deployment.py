@@ -238,7 +238,7 @@ def check_if_network_environment_exists(instances):
     """
     errors = {}
     for instance in instances:
-        if not instance.network_environment:
+        if not instance._get_available_network_environments():
             errors[instance] = _('Network environment not found.')
     return errors
 
