@@ -330,13 +330,18 @@ class NetworkableBaseObject(models.Model):
         return ''
 
     def _get_available_network_environments(self):
-        return list(NetworkEnvironment.objects.filter(
-            network__racks=self.rack_id
-        ).distinct())
+        if self.rack_id:
+            return list(NetworkEnvironment.objects.filter(
+                network__racks=self.rack_id
+            ).distinct())
+        return NetworkEnvironment.objects.none()
 
     def _get_available_networks(self, as_query=False):
-        qry = Network.objects.filter(racks=self.rack_id).distinct()
-        return qry if as_query else list(qry)
+        if self.rack_id:
+            query = Network.objects.filter(racks=self.rack_id).distinct()
+        else:
+            query = Network.objects.none()
+        return query if as_query else list(query)
 
     class Meta:
         abstract = True

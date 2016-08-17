@@ -280,6 +280,23 @@ class DataCenterAssetTest(RalphTestCase):
         self.assertEqual(self.dc_asset.issue_next_free_hostname(), '')
 
     # =========================================================================
+    # available networks
+    # =========================================================================
+    def test_get_available_networks(self):
+        self._prepare_rack(self.dc_asset, '192.168.1.1', '192.168.1.0/24')
+        self.net3 = NetworkFactory(address='192.168.3.0/24')
+
+        self.assertCountEqual(
+            self.dc_asset._get_available_networks(),
+            [self.net, self.net2]
+        )
+
+    def test_get_available_networks_no_rack(self):
+        NetworkFactory(address='192.168.1.0/24')
+        NetworkFactory(address='192.168.2.0/24')
+        self.assertEqual(self.dc_asset._get_available_networks(), [])
+
+    # =========================================================================
     # other
     # =========================================================================
     def test_change_rack_in_descendants(self):
