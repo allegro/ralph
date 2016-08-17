@@ -3,7 +3,7 @@
 Transition actions for deployment
 
 Deployment order:
-* cleaning
+    * cleaning
     * clean hostname
     * clean IP addresses
     * clean DNS entries
@@ -18,6 +18,7 @@ Deployment order:
 * Wait for ping
 
 """
+import ipaddress
 import logging
 import time
 from datetime import datetime
@@ -397,23 +398,41 @@ def assign_new_hostname(cls, instances, network_environment, **kwargs):
             _assign_hostname(instance, new_hostname, net_env)
 
 
-def check_ipaddress_unique(instances, data):
-    """
-    Validate if custom (other) IP is already assigned to another (base) object.
-    """
+def validate_ip_address(instances, data):
     if data['ip_or_network']['value'] == OTHER:
         assert len(instances) == 1
         instance = instances[0]
         address = data['ip_or_network'][OTHER]
-        try:
-            ip = IPAddress.objects.get(address=address)
-        except IPAddress.DoesNotExist:
-            pass
-        else:
-            if ip.ethernet and ip.ethernet.base_object_id != instance.pk:
-                raise ValidationError(
-                    'IP {} is already assigned to other object!'.format(address)
-                )
+        check_ip_from_defined_network(address)
+        check_ipaddress_unique(instance, address)
+
+
+def check_ipaddress_unique(instance, address):
+    """
+    Validate if `address` is already assigned to another (base) object.
+    """
+    try:
+        ip = IPAddress.objects.get(address=address)
+    except IPAddress.DoesNotExist:
+        pass
+    else:
+        if ip.ethernet and ip.ethernet.base_object_id != instance.pk:
+            raise ValidationError(
+                'IP {} is already assigned to other object!'.format(address)
+            )
+
+
+def check_ip_from_defined_network(address):
+    """
+    Validate if `address` belongs to any network already added
+    """
+    ip = ipaddress.ip_address(address)
+    if not Network.objects.filter(
+        min_ip__lte=int(ip), max_ip__gte=int(ip)
+    ):
+        raise ValidationError(
+            'IP {} doesn\'t belong to any network!'.format(address)
+        )
 
 
 @deployment_action(
@@ -427,7 +446,7 @@ def check_ipaddress_unique(instances, data):
             ),
             'choices': next_free_ip_choices,
             'exclude_from_history': True,
-            'validation': check_ipaddress_unique,
+            'validation': validate_ip_address,
         },
         'ethernet': {
             'field': forms.ChoiceField(label=_('MAC Address')),

@@ -14,7 +14,7 @@ from ralph.data_center.tests.factories import (
 )
 from ralph.deployment.deployment import (
     autocomplete_service_env,
-    check_ipaddress_unique
+    validate_ip_address
 )
 from ralph.dhcp.models import DHCPServer
 from ralph.networks.models.networks import IPAddress, IPAddressStatus, Network
@@ -248,21 +248,44 @@ class _BaseTestDeploymentActionsTestCase(object):
     def test_check_ipaddress_unique_with_occupied_ip_should_raise_validation_error(self):  # noqa
         IPAddressFactory(address='10.20.30.40')
         with self.assertRaises(ValidationError):
-            check_ipaddress_unique(
+            validate_ip_address(
                 [self.instance], {'ip_or_network': {
                     'value': '__other__', '__other__': '10.20.30.40'
                 }}
             )
 
     def test_check_ipaddress_unique_with_ip_assigned_to_the_same_object_should_pass(self):
+        NetworkFactory(address='10.20.30.0/24')
         IPAddressFactory(
             address='10.20.30.40', ethernet__base_object=self.instance
         )
-        check_ipaddress_unique(
+        validate_ip_address(
             [self.instance], {'ip_or_network': {
                 'value': '__other__', '__other__': '10.20.30.40'
             }}
         )
+
+    def test_ip_inside_defined_network_should_pass(self):
+        NetworkFactory(address='10.20.30.0/24')
+        IPAddressFactory(
+            address='10.20.30.40', ethernet__base_object=self.instance
+        )
+        validate_ip_address(
+            [self.instance], {'ip_or_network': {
+                'value': '__other__', '__other__': '10.20.30.40'
+            }}
+        )
+
+    def test_ip_outside_defined_networks_raise_validation_error(self):
+        IPAddressFactory(
+            address='10.20.30.40', ethernet__base_object=self.instance
+        )
+        with self.assertRaises(ValidationError):
+            validate_ip_address(
+                [self.instance], {'ip_or_network': {
+                    'value': '__other__', '__other__': '10.20.30.40'
+                }}
+            )
 
 
 class DataCenterAssetDeploymentActionsTestCase(
