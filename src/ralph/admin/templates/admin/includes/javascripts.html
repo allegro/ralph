@@ -97,6 +97,21 @@
     })(django.jQuery);
 
     (function($) {
+        $('li.has-dropdown').on('mouseover', function() {
+            var $this = $(this);
+            var parent = $(".top-bar");
+            var $thisdrop = $this.find(".dropdown").first();
+            $thisdrop.css('visibility', 'visible');
+            var dropdowns = parent.find("li.has-dropdown .dropdown");
+            dropdowns.each(function() {
+                var $drop = $(this);
+                if(!$drop.is($thisdrop)) {
+                    $drop.css('visibility', 'hidden');
+                }
+            });
+
+        });
+
         $(document).foundation();
     })(ralph.jQuery);
 </script>

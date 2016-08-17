@@ -85,6 +85,27 @@ select {
 .result-list {
     overflow-x: auto;
 }
+
 .tooltip {
     max-width: 600px;
+}
+
+.top-bar {
+  .top-bar-section {
+    li.has-dropdown {
+
+      &.hover, &.not-click {
+        > .dropdown {
+          transition: clip 0s .5s linear;
+        }
+      }
+
+      &.hover, &.not-click:hover {
+        > .dropdown {
+          clip: rect(0px, 1000px, 1000px, 0px);
+          transition: clip 0s 0s linear;
+        }
+      }
+    }
+  }
 }
