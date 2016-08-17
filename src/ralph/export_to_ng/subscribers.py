@@ -467,5 +467,20 @@ def sync_network_to_ralph2(data):
 def delete_virtual_server_in_ralph2(data):
     if data.get('ralph2_id'):
         dev = Device.objects.get(id=data['ralph2_id'])
+        logger.warning('Cleaning virtual server: {}'.format(dev))
+        dev.remarks += dev.name
+        dev.name = ''
         dev.deleted = True
         dev.save(priority=SAVE_PRIORITY)
+        for ip in dev.ipaddress_set.all():
+            try:
+                dhcp_entry = DHCPEntry.objects.get(ip=ip.address)
+            except DHCPEntry.DoesNotExist:
+                pass
+            else:
+                logger.warning('Removing DHCP entry: {} / {}'.format(
+                    dhcp_entry.mac, dhcp_entry.ip
+                ))
+                dhcp_entry.delete()
+            logger.warning('Removing IP address: {}'.format(ip))
+            ip.delete()
