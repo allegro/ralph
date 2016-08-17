@@ -2,6 +2,7 @@ import logging
 import os
 
 from dj.choices import Choices
+from django.conf import settings
 from django.db import models
 from django.db.models import F
 from django.db.models.manager import Manager
@@ -56,6 +57,28 @@ class PrebootItem(NamedMixin, Polymorphic, metaclass=PolymorphicBase):
         return '<i>{}</i> {}'.format(self.get_type_display(), self.name)
 
 
+CONFIGURATION_HELP_TEXT = """
+All newline characters will be converted to Unix \\n newlines.
+<br>You can use {{variables}} in the body.
+<br>Available variables:
+
+<br>  - configuration_class_name (eg. 'www')
+<br>  - configuration_module (eg. 'ralph')
+<br>  - configuration_path (eg. 'ralph/www')
+<br>  - dc (eg. 'data-center1')
+<br>  - deployment_id (eg. 'ea9ea3a0-1c4d-42b7-a19b-922000abe9f7')
+<br>  - domain (eg. 'dc1.mydc.net')
+<br>  - done_url (eg. '{ralph_instance}/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/mark_as_done')
+<br>  - hostname (eg. 'ralph123.dc1.mydc.net')
+<br>  - initrd (eg. '{ralph_instance}/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/initrd')
+<br>  - kernel (eg. '{ralph_instance}/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/kernel')
+<br>  - kickstart (eg. '{ralph_instance}/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/kickstart')
+<br>  - ralph_instance (eg. '{ralph_instance}')
+<br>  - service_env (eg. 'Backup systems - prod')
+<br>  - service_uid (eg. 'sc-123')
+""".format(ralph_instance=settings.RALPH_INSTANCE.rstrip('/')).strip()  # noqa
+
+
 class PrebootConfiguration(PrebootItem):
     type = models.PositiveIntegerField(
         verbose_name=_('type'),
@@ -65,12 +88,7 @@ class PrebootConfiguration(PrebootItem):
     configuration = models.TextField(
         _('configuration'),
         blank=True,
-        help_text=_(
-            'All newline characters will be converted to Unix \\n '
-            'newlines. You can use {{variables}} in the body. '
-            'Available variables: ralph_instance, deployment_id, kickstart, '
-            'initrd, kernel, dc, done_url.'
-        ),
+        help_text=_(CONFIGURATION_HELP_TEXT),
     )
 
     class Meta:
