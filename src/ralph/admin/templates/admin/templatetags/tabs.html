@@ -5,7 +5,7 @@
     <ul>
       <li
         class="has-tip tip-bottom {% if name == '' %} active {% endif %}"
-        title="{{ view.label }}"
+        {% if view.label %}title="{{ view.label }}"{% endif %}
         data-tooltip
         aria-haspopup="true"
         data-options="show_on:small"
@@ -15,29 +15,31 @@
         </a>
       </li>
       {% for view in views %}
-        <li
-          class="has-tip tip-bottom {% if name == view.name %} active {% endif %}"
-          title="{{ view.label }}"
-          data-tooltip
-          aria-haspopup="true"
-          data-options="show_on:small"
-        >
-          <a href="
-            {% if object.id %}
-              {% url view.url_with_namespace object.id %}
-            {% else %}
-              {% url view.url_with_namespace %}
-            {% endif %}
-            " title="{{ view.label }}"
-            class="ellipsis-hidden"
-          />
-            {% if view.icon %}
-              <i class="fa fa-{{ view.icon }}"></i>
-            {% endif %}
-            <span class="tab-label">{{ view.label }}</span>
-            {# TODO: show some badge (ex. currently running transitions ) #}
-          </a>
-        </li>
+        {% if view.url_with_namespace %}
+          <li
+            class="has-tip tip-bottom {% if name == view.name %} active {% endif %}"
+            title="{{ view.label }}"
+            data-tooltip
+            aria-haspopup="true"
+            data-options="show_on:small"
+          >
+            <a href="
+              {% if object.id %}
+                {% url view.url_with_namespace object.id %}
+              {% else %}
+                {% url view.url_with_namespace %}
+              {% endif %}
+              " title="{{ view.label }}"
+              class="ellipsis-hidden"
+            />
+              {% if view.icon %}
+                <i class="fa fa-{{ view.icon }}"></i>
+              {% endif %}
+              <span class="tab-label">{{ view.label }}</span>
+              {# TODO: show some badge (ex. currently running transitions ) #}
+            </a>
+          </li>
+        {% endif %}
       {% endfor %}
     </ul>
   </div>

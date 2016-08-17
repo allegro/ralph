@@ -8,6 +8,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.encoding import force_bytes
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from rest_framework.authtoken.models import Token
 
@@ -181,7 +182,7 @@ class RalphUser(
     def autocomplete_str(self):
         return '{} <i>{}</i>'.format(str(self), self.department)
 
-    @property
+    @cached_property
     def permissions_hash(self):
         """
         Property used in template as a param to cache invalidation.

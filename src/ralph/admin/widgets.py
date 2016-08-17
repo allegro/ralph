@@ -234,6 +234,7 @@ class AutocompleteWidget(forms.TextInput):
                 force_text(v) for v in value
             )
         else:
+            attrs['multi'] = ''
             value = value or ""
 
         search_fields = self.get_search_fields()
@@ -265,7 +266,7 @@ class AutocompleteWidget(forms.TextInput):
             'name': name or "",
             'value': value,
             'attrs': flatatt(attrs),
-            'related_url': related_url,
+            'related_url': related_url or '',
             'search_fields_info': search_fields_info,
         })
 
@@ -274,6 +275,7 @@ class AutocompleteWidget(forms.TextInput):
         can_add = self.admin_site._registry[self.rel_to].has_add_permission(
             self.request
         )
+        context['add_related_url'] = ''
         if not is_polymorphic and can_add:
             context['add_related_url'] = self.get_related_url(info, 'add')
         template = loader.get_template('admin/widgets/autocomplete.html')
