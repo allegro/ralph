@@ -1,5 +1,6 @@
 import logging
 
+from django.db.models import Count
 from django.http import (
     HttpResponse,
     HttpResponseBadRequest,
@@ -162,13 +163,32 @@ class DHCPEntriesView(
             return None
         return max(last_items)
 
+    def _filter_dhcp_entries(self, entries):
+        """
+        Exclude entries with duplicated hostnames.
+        """
+        duplicated_hostnames = [e['hostname'] for e in entries.values(
+            'hostname'
+        ).annotate(c=Count('id')).filter(c__gt=1)]
+        for hostname in duplicated_hostnames:
+            logger.error(
+                'Duplicated hostname for DHCP entry: {}'.format(hostname)
+            )
+        return entries.exclude(hostname__in=duplicated_hostnames)
+
+    def _get_dhcp_entries(self, networks):
+        """
+        Returns filtered DHCP entries for given networks.
+        """
+        return self._filter_dhcp_entries(DHCPEntry.objects.filter(
+            network__in=networks
+        ).order_by('hostname'))
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
             'last_modified': self.last_modified,
-            'entries': DHCPEntry.objects.filter(
-                network__in=self.networks
-            ).order_by('hostname'),
+            'entries': self._get_dhcp_entries(self.networks),
         })
         return context
 

@@ -6,6 +6,7 @@ from django.utils.http import http_date
 
 from ralph.assets.tests.factories import EthernetFactory
 from ralph.data_center.tests.factories import DataCenterAssetFactory
+from ralph.dhcp.models import DHCPEntry
 from ralph.dhcp.views import DHCPEntriesView
 from ralph.networks.models.networks import Network
 from ralph.networks.tests.factories import IPAddressFactory, NetworkFactory
@@ -117,5 +118,33 @@ class DHCPEntriesViewTest(TestCase):
         network = NetworkFactory(address='192.168.1.0/24')
         with self.assertNumQueries(5):
             self.view.get_last_modified(
-               Network.objects.filter(id__in=[network.id])
+                Network.objects.filter(id__in=[network.id])
             )
+
+    def test_filter_duplicated_hostnames(self):
+        network = NetworkFactory(address='192.168.1.0/24')
+        asset = DataCenterAssetFactory()
+        ethernet = EthernetFactory(base_object=asset)
+        ethernet.save()
+        IPAddressFactory(
+            hostname='host1.mydc.net', address='192.168.1.2', ethernet=ethernet,
+            dhcp_expose=True
+        )
+        ethernet2 = EthernetFactory()
+        ethernet2.save()
+        IPAddressFactory(
+            hostname='host1.mydc.net', address='192.168.1.3',
+            ethernet=ethernet2, dhcp_expose=True
+        )
+        ethernet3 = EthernetFactory()
+        ethernet3.save()
+        ip = IPAddressFactory(
+            hostname='host2.mydc.net', address='192.168.1.4',
+            ethernet=ethernet3, dhcp_expose=True
+        )
+        entries = self.view._get_dhcp_entries(
+            Network.objects.filter(id__in=[network.id])
+        )
+        self.assertEqual(DHCPEntry.objects.count(), 3)
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries[0].pk, ip.pk)
