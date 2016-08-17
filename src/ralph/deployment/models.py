@@ -59,7 +59,7 @@ class PrebootItem(NamedMixin, Polymorphic, metaclass=PolymorphicBase):
 
 CONFIGURATION_HELP_TEXT = """
 All newline characters will be converted to Unix \\n newlines.
-<br>You can use {{variables}} in the body.
+<br>You can use {{{{variables}}}} in the body.
 <br>Available variables:
 
 <br>  - configuration_class_name (eg. 'www')
