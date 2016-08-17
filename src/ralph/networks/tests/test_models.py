@@ -370,11 +370,14 @@ class NetworkEnvironmentTest(RalphTestCase):
             hostname_template_counter_length=6,
             use_hostname_counter=False,
         )
-        current = 1
+        current = 10
         DataCenterAssetFactory(hostname="".join([
             prefix, str(current), postfix
         ]))
-        ok_next_hostname = 'test.00000{}.ralph.pl'.format(current + 1)
+        ok_next_hostname = 'test.{host_num:0{fill}}.ralph.pl'.format(
+            host_num=current + 1,
+            fill=network_env.hostname_template_counter_length,
+        )
 
         self.assertEqual(network_env.next_free_hostname, ok_next_hostname)
 
