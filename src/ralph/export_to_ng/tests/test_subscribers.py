@@ -517,6 +517,12 @@ class VirtualServerTestCase(TestCase):
 
     def test_delete_virtual_servr(self):
         vs = self.create_test_virtual_server()
+        IPAddress.objects.create(address='10.20.30.40', device=vs)
+        IPAddress.objects.create(address='10.20.30.42', device=vs)
+        vs.ethernet_set.create(mac='aa:bb:cc:dd:ee:ff')
+        vs.ethernet_set.create(mac='aa:bb:cc:dd:ee:00')
+        DHCPEntry.objects.create(ip='10.20.30.40', mac='aa:bb:cc:dd:ee:ff')
+        DHCPEntry.objects.create(ip='10.20.30.42', mac='aa:bb:cc:dd:ee:00')
         data = {
             'id': 1234,
             'ralph2_id': vs.id,
@@ -524,6 +530,13 @@ class VirtualServerTestCase(TestCase):
         delete_virtual_server_in_ralph2(data)
         vs = vs.__class__.admin_objects.get(id=vs.id)
         self.assertTrue(vs.deleted)
+        self.assertEqual(
+            DHCPEntry.objects.filter(
+                ip__in=['10.20.30.40', '10.20.30.42']
+            ).count(),
+            0
+        )
+        self.assertEqual(vs.ipaddress.count(), 0)
 
 
 class StackedSwitchSyncTestCase(TestCase):
