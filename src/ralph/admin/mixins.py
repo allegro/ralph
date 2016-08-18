@@ -54,6 +54,36 @@ def get_inline_media():
     )
 
 
+def initialize_search_form(model, context, fields_from_model=True):
+    """
+    Add to template's context extra variables (search_fields,
+    search_url) which are used by search form.
+
+    Args:
+        context (dict): context from view
+        fields_from_model (bool): if True (by default) then fetching
+            field name from database model, otherwise fetching from
+            admin model (search_field)
+    """
+    model_admin = ralph_site._registry[model]
+    verbose_search_fields = []
+    admin_search_fields = model_admin.search_fields
+    if fields_from_model:
+        for field_name in admin_search_fields:
+            field = get_field_by_relation_path(model, field_name)
+            verbose_search_fields.append(field.verbose_name)
+    else:
+        verbose_search_fields = admin_search_fields[:]
+    context['search_fields'] = set(verbose_search_fields)
+    context['model_verbose_name'] = model._meta.verbose_name
+    context['search_url'] = reverse(
+        'admin:{app_label}_{model_name}_changelist'.format(
+            app_label=model._meta.app_label,
+            model_name=model._meta.model_name,
+        )
+    )
+
+
 class RalphAutocompleteMixin(object):
     raw_id_override_parent = {}
 
@@ -171,30 +201,7 @@ class RalphAdminMixin(Ralph2SyncAdminMixin, RalphAutocompleteMixin):
             return None
 
     def _initialize_search_form(self, extra_context, fields_from_model=True):
-        """
-        Add to template's context extra variables (search_fields,
-        search_url) which are used by search form.
-
-        Args:
-            extra_context (dict): context from view
-            fields_from_model (bool): if True (by default) then fetching
-                field name from database model, otherwise fetching from
-                admin model (search_field)
-        """
-        model_admin = ralph_site._registry[self.model]
-        search_fields = model_admin.search_fields if not fields_from_model else []  # noqa
-        if fields_from_model:
-            for field_name in self.search_fields:
-                field = get_field_by_relation_path(self.model, field_name)
-                search_fields.append(field.verbose_name)
-        extra_context['search_fields'] = set(search_fields)
-        extra_context['model_verbose_name'] = self.model._meta.verbose_name
-        extra_context['search_url'] = reverse(
-            'admin:{app_label}_{model_name}_changelist'.format(
-                app_label=self.model._meta.app_label,
-                model_name=self.model._meta.model_name,
-            )
-        )
+        initialize_search_form(self.model, extra_context, fields_from_model)
 
     def changelist_view(self, request, extra_context=None):
         """Override change list from django."""
