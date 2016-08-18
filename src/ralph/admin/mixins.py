@@ -22,6 +22,7 @@ from reversion import VersionAdmin
 from ralph.admin import widgets
 from ralph.admin.autocomplete import AjaxAutocompleteMixin
 from ralph.admin.helpers import get_field_by_relation_path
+from ralph.admin.sites import ralph_site
 from ralph.admin.views.main import BULK_EDIT_VAR, BULK_EDIT_VAR_IDS
 from ralph.helpers import add_request_to_form
 from ralph.lib.mixins.fields import TicketIdField, TicketIdFieldWidget
@@ -180,7 +181,8 @@ class RalphAdminMixin(Ralph2SyncAdminMixin, RalphAutocompleteMixin):
                 field name from database model, otherwise fetching from
                 admin model (search_field)
         """
-        search_fields = self.search_fields if not fields_from_model else []
+        model_admin = ralph_site._registry[self.model]
+        search_fields = model_admin.search_fields if not fields_from_model else []  # noqa
         if fields_from_model:
             for field_name in self.search_fields:
                 field = get_field_by_relation_path(self.model, field_name)
@@ -247,7 +249,7 @@ class RalphAdminMixin(Ralph2SyncAdminMixin, RalphAutocompleteMixin):
                 views.append(view)
             extra_context['change_views'] = views
         extra_context['header_obj_name'] = self.model._meta.verbose_name
-        self._initialize_search_form(extra_context)
+        self._initialize_search_form(extra_context, fields_from_model=False)
         extra_context['admin_view'] = self
         return super(RalphAdminMixin, self).changeform_view(
             request, object_id, form_url, extra_context
