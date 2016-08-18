@@ -37,12 +37,14 @@
       {% endif %}
     </div>
     <div class="row flex">
-      <div class="large-1 small-1 columns no-horizontal-padding elevate">
-          {% block tabs %}
-            {% views_tabs change_views '' original %}
-          {% endblock %}
-      </div>
-      <div class="large-11 small-11 columns no-left-padding right-col">
+      {% if change_views %}
+        <div class="small-1 columns no-horizontal-padding elevate">
+            {% block tabs %}
+              {% views_tabs change_views '' original %}
+            {% endblock %}
+        </div>
+      {% endif %}
+      <div class="small-{% if change_views %}11{% else %}12{% endif %} columns no-left-padding right-col">
         <div class="row content">
           <form {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.model_name }}_form" novalidate>{% csrf_token %}
           {% block form_top %}{% endblock %}

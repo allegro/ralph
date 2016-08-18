@@ -8,12 +8,14 @@
       </div>
     </div>
     <div class="row flex">
-      <div class="large-1 small-1 columns no-horizontal-padding elevate">
-        {% block tabs %}{% endblock %}
-      </div>
-      <div class="large-11 small-11 columns content">
+      {% if change_views %}
+        <div class="small-1 columns no-horizontal-padding elevate">
+          {% block tabs %}{% endblock %}
+        </div>
+      {% endif %}
+      <div class="small-{% if change_views %}11{% else %}12{% endif %} columns content">
         <div class="content-inner">
-          {% block view_content %}{% endblock %}          
+          {% block view_content %}{% endblock %}
         </div>
       </div>
     </div>
