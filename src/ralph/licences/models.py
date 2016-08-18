@@ -26,7 +26,12 @@ _SELECT_USED_LICENCES_QUERY = """
 """
 
 
-class LicenceType(PermByFieldMixin, NamedMixin, models.Model):
+class LicenceType(
+    AdminAbsoluteUrlMixin,
+    PermByFieldMixin,
+    NamedMixin,
+    models.Model
+):
 
     """The type of a licence"""
 
@@ -35,7 +40,12 @@ class LicenceType(PermByFieldMixin, NamedMixin, models.Model):
         return cls(name=string_name)
 
 
-class Software(PermByFieldMixin, NamedMixin, models.Model):
+class Software(
+    AdminAbsoluteUrlMixin,
+    PermByFieldMixin,
+    NamedMixin,
+    models.Model
+):
 
     """The category of the licensed software"""
     _allow_in_dashboard = True

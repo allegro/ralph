@@ -16,7 +16,7 @@ from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
 from ralph.lib.polymorphic.models import PolymorphicQuerySet
 
 
-class SupportType(NamedMixin, models.Model):
+class SupportType(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
     """The type of a support"""
 
 

@@ -1,6 +1,7 @@
 from django.db import models
 
 from ralph.assets.models.base import BaseObject
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 
 
 class DCHostManager(models.Manager):
@@ -8,7 +9,7 @@ class DCHostManager(models.Manager):
         return BaseObject.polymorphic_objects.dc_hosts()
 
 
-class DCHost(BaseObject):
+class DCHost(AdminAbsoluteUrlMixin, BaseObject):
     objects = DCHostManager()
 
     class Meta:

@@ -11,7 +11,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import Ethernet
 from ralph.lib.external_services.models import JobQuerySet
-from ralph.lib.mixins.models import NamedMixin
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
 from ralph.lib.polymorphic.models import Polymorphic, PolymorphicBase
 from ralph.lib.transitions.models import TransitionJob
 
@@ -45,7 +45,12 @@ def preboot_file_name(instance, filename):
     )
 
 
-class PrebootItem(NamedMixin, Polymorphic, metaclass=PolymorphicBase):
+class PrebootItem(
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    Polymorphic,
+    metaclass=PolymorphicBase
+):
     description = models.TextField(
         verbose_name=_('description'),
         blank=True,
@@ -118,7 +123,7 @@ class PrebootFile(PrebootItem):
         verbose_name_plural = _('preboot files')
 
 
-class Preboot(NamedMixin):
+class Preboot(AdminAbsoluteUrlMixin, NamedMixin):
     items = models.ManyToManyField(
         PrebootItem,
         blank=True,
@@ -175,7 +180,7 @@ class DeploymentManager(Manager.from_queryset(JobQuerySet)):
         )
 
 
-class Deployment(TransitionJob):
+class Deployment(AdminAbsoluteUrlMixin, TransitionJob):
     objects = DeploymentManager()
 
     class Meta:

@@ -32,7 +32,11 @@ from ralph.assets.utils import move_parents_models
 from ralph.attachments.helpers import add_attachment_from_disk
 from ralph.lib.external_services import ExternalService, obj_to_dict
 from ralph.lib.mixins.fields import NullableCharField
-from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
+from ralph.lib.mixins.models import (
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    TimeStampMixin
+)
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
 from ralph.licences.models import BaseObjectLicence, Licence
@@ -47,7 +51,12 @@ if not ASSET_HOSTNAME_TEMPLATE:
 logger = logging.getLogger(__name__)
 
 
-class Warehouse(NamedMixin, TimeStampMixin, models.Model):
+class Warehouse(
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    TimeStampMixin,
+    models.Model
+):
     _allow_in_dashboard = True
     stocktaking_enabled = models.BooleanField(default=False)
     stocktaking_tag_suffix = models.CharField(max_length=8, default='')
@@ -69,7 +78,12 @@ class BackOfficeAssetStatus(Choices):
     reserved = _("reserved")
 
 
-class OfficeInfrastructure(NamedMixin, TimeStampMixin, models.Model):
+class OfficeInfrastructure(
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    TimeStampMixin,
+    models.Model
+):
 
     class Meta:
         verbose_name = _('Office Infrastructure')

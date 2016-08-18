@@ -36,7 +36,7 @@ from ralph.lib.external_services.models import (
     JOB_NOT_ENDED_STATUSES,
     JobQuerySet
 )
-from ralph.lib.mixins.models import TimeStampMixin
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 from ralph.lib.transitions.conf import (
     DEFAULT_ASYNC_TRANSITION_SERVICE_NAME,
     TRANSITION_ATTR_TAG,
@@ -449,7 +449,7 @@ class TransitionWorkflowBase(ModelBase):
         return new_class
 
 
-class TransitionModel(models.Model):
+class TransitionModel(AdminAbsoluteUrlMixin, models.Model):
     content_type = models.ForeignKey(ContentType)
     field_name = models.CharField(max_length=50)
 

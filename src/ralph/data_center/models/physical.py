@@ -120,7 +120,7 @@ class ServerRoomManager(models.Manager):
         return super().get_queryset().select_related('data_center')
 
 
-class ServerRoom(NamedMixin.NonUnique, models.Model):
+class ServerRoom(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
     _allow_in_dashboard = True
 
     data_center = models.ForeignKey(DataCenter, verbose_name=_("data center"))
@@ -140,7 +140,7 @@ class ServerRoom(NamedMixin.NonUnique, models.Model):
         return '{} ({})'.format(self.name, self.data_center.name)
 
 
-class Accessory(NamedMixin):
+class Accessory(AdminAbsoluteUrlMixin, NamedMixin):
 
     class Meta:
         verbose_name = _('accessory')
@@ -677,7 +677,7 @@ class DataCenterAsset(
                 instances[i] = back_office_asset
 
 
-class Connection(models.Model):
+class Connection(AdminAbsoluteUrlMixin, models.Model):
     outbound = models.ForeignKey(
         'DataCenterAsset',
         verbose_name=_('connected to device'),

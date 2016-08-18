@@ -6,13 +6,15 @@ from copy import copy
 
 from django import forms
 from django.conf import settings
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.admin.templatetags.admin_static import static
 from django.contrib.auth import get_permission_codename
 from django.contrib.contenttypes.admin import GenericTabularInline
+from django.core import checks
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.http import HttpResponseRedirect
+from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
 from import_export.admin import ImportExportModelAdmin
 from import_export.widgets import ForeignKeyWidget
@@ -26,6 +28,7 @@ from ralph.admin.views.main import BULK_EDIT_VAR, BULK_EDIT_VAR_IDS
 from ralph.helpers import add_request_to_form
 from ralph.lib.mixins.fields import TicketIdField, TicketIdFieldWidget
 from ralph.lib.mixins.forms import RequestFormMixin
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 from ralph.lib.permissions.admin import (
     PermissionAdminMixin,
     PermissionsPerObjectFormMixin
@@ -104,14 +107,33 @@ class RalphMPTTAdminForm(RalphAdminFormMixin, MPTTAdminForm):
 class RedirectSearchToObjectMixin(object):
     def changelist_view(self, request, *args, **kwargs):
         response = super().changelist_view(request, *args, **kwargs)
-        cl = response.context_data['cl']
-        filtered_results = bool(request.GET.items())
-        if filtered_results and cl.result_count == 1:
-            messages.info(request, _('Found exactly one result.'))
-            return HttpResponseRedirect(cl.result_list[0].get_absolute_url())
+        context_data = getattr(response, 'context_data', None)
+        cl = context_data.get('cl') if context_data else None
+        if not context_data or not cl or not hasattr(cl, 'result_count'):
+            return response
+        filtered_results = list(request.GET.keys())
+        ordering = 'o' in filtered_results
+        if filtered_results and not ordering and cl.result_count == 1:
+            obj = cl.result_list[0]
+            if issubclass(obj.__class__, AdminAbsoluteUrlMixin):
+                messages.info(request, _('Found exactly one result.'))
+                return HttpResponseRedirect(
+                    cl.result_list[0].get_absolute_url()
+                )
         return response
 
+
 class RalphAdminChecks(admin.checks.ModelAdminChecks):
+    exclude_models = (
+        ('auth', 'Group'.lower()),
+        ('assets', 'BaseObject'.lower()),
+    )
+
+    def check(self, cls, model, **kwargs):
+        errors = super().check(cls, model, **kwargs)
+        errors.extend(self._check_absolute_url(cls, model))
+        return errors
+
     def _check_form(self, cls, model):
         """
         Check if form subclasses RalphAdminFormMixin
@@ -128,6 +150,26 @@ class RalphAdminChecks(admin.checks.ModelAdminChecks):
                 id='admin.E016'
             )
         return result
+
+    def _check_absolute_url(self, cls, model):
+        """
+        Check if model inherit from AdminAbsoluteUrlMixin
+        """
+        opts = model._meta
+        if (opts.app_label, opts.model_name) in self.exclude_models:
+            return []
+        msg = "The model '{}' must inherit from 'AdminAbsoluteUrlMixin'."
+        hint = 'Add AdminAbsoluteUrlMixin from ralph.lib.mixns.models to model.'  # noqa
+        if not issubclass(model, AdminAbsoluteUrlMixin):
+            return [
+                checks.Error(
+                    msg.format(model),
+                    hint=hint,
+                    obj=model,
+                    id='admin.E101',
+                ),
+            ]
+        return []
 
 
 class RalphAdminMixin(Ralph2SyncAdminMixin, RalphAutocompleteMixin):
