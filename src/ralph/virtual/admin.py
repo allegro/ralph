@@ -72,7 +72,7 @@ class VirtualServerAdmin(
     RalphAdmin
 ):
     form = VirtualServerForm
-    search_fields = ['hostname', 'sn']
+    search_fields = ['hostname', 'sn', 'ethernet_set__ipaddress__hostname']
     list_filter = [
         'sn', 'hostname', 'service_env', IPFilter,
         'parent', TagsListFilter,

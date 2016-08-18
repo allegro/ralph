@@ -71,6 +71,7 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         'bios_version',
     ]
     additional_filter_class = DataCenterAssetFilterSet
+    exclude_filter_fields = ['configuration_path']
 
 
 class AccessoryViewSet(RalphAPIViewSet):

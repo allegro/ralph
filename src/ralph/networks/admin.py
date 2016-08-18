@@ -248,9 +248,11 @@ class NetworkAdmin(RalphMPTTAdmin):
 
 @register(IPAddress)
 class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
-    search_fields = ['address']
+    search_fields = ['address', 'hostname']
     ordering = ['number']
-    list_filter = ['is_public', 'is_management', ('address', IPRangeFilter)]
+    list_filter = [
+        'hostname', 'is_public', 'is_management', ('address', IPRangeFilter)
+    ]
     list_display = [
         'ip_address', 'hostname', 'base_object_link', 'is_gateway',
         'is_public'
