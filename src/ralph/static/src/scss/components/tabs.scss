@@ -1,3 +1,5 @@
+@import 'functions';
+
 .tabs {
     vertical-align: middle;
     margin-bottom: -1px;
@@ -46,4 +48,71 @@
     .tabs ul li a .tab-label {
         display: inline;
     }
+}
+
+.tabs.vertical {
+    margin-right: -1px;
+    ul {
+        display: block;
+        li {
+            display: block;
+            margin-right: 0;
+            margin-top: 0;
+            &:first-of-type a {
+                margin-top: 0;
+            }
+            &.active:first-of-type a,
+            &:first-of-type a:hover {
+                margin-top: 0;
+            }
+            a {
+                margin-left: 3px;
+                border: 1px solid $tabs-border-color;
+                text-align: left;
+                padding-left: 10px;
+                padding-right: 2px;
+            }
+            &.active a,
+            a:hover {
+                margin-left: 0;
+                margin-top: 3px;
+                border-top: 1px solid $tabs-border-color;
+                border-left: 4px solid $mdc-orange-500;
+                border-right-color: transparent;
+                background-color: $tabs-content-bg-color;
+            }
+            i {
+                width:15px;
+                text-align: center;
+                margin-right: 2px;
+            }
+        }
+
+    }
+}
+.elevate {
+    z-index: 3;
+}
+.no-horizontal-padding {
+    padding-left: 0;
+    padding-right: 0;
+}
+.no-right-padding {
+    padding-right: 0;
+}
+.no-left-padding {
+    padding-left: 0;
+}
+#content-main .content {
+    margin-bottom: -1px;
+    min-height: 100%;
+}
+.content .content-inner {
+    padding: 0 1.33333rem;
+}
+.flex {
+    @include display-flex();
+}
+.right-col {
+    margin-bottom: -1px;
 }
