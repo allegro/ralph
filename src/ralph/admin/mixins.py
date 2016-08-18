@@ -186,6 +186,7 @@ class RalphAdminMixin(Ralph2SyncAdminMixin, RalphAutocompleteMixin):
                 field = get_field_by_relation_path(self.model, field_name)
                 search_fields.append(field.verbose_name)
         extra_context['search_fields'] = set(search_fields)
+        extra_context['model_verbose_name'] = self.model._meta.verbose_name
         extra_context['search_url'] = reverse(
             'admin:{app_label}_{model_name}_changelist'.format(
                 app_label=self.model._meta.app_label,
