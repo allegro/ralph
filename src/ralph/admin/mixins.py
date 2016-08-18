@@ -8,6 +8,7 @@ from django import forms
 from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.admin.templatetags.admin_static import static
+from django.contrib.admin.views.main import ORDER_VAR
 from django.contrib.auth import get_permission_codename
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.core import checks
@@ -112,7 +113,7 @@ class RedirectSearchToObjectMixin(object):
         if not context_data or not cl or not hasattr(cl, 'result_count'):
             return response
         filtered_results = list(request.GET.keys())
-        ordering = 'o' in filtered_results
+        ordering = ORDER_VAR in filtered_results
         if filtered_results and not ordering and cl.result_count == 1:
             obj = cl.result_list[0]
             if issubclass(obj.__class__, AdminAbsoluteUrlMixin):
