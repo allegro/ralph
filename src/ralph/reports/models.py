@@ -3,7 +3,11 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.attachments.helpers import get_file_path
-from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
+from ralph.lib.mixins.models import (
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    TimeStampMixin
+)
 
 
 def get_report_file_path(instance, filename):
@@ -12,11 +16,16 @@ def get_report_file_path(instance, filename):
     )
 
 
-class Report(NamedMixin, TimeStampMixin, models.Model):
+class Report(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
     pass
 
 
-class ReportLanguage(NamedMixin, TimeStampMixin, models.Model):
+class ReportLanguage(
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    TimeStampMixin,
+    models.Model
+):
     default = models.BooleanField()
 
     def clean(self):

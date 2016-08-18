@@ -26,7 +26,12 @@ class OperationStatus(Choices):
     closed = _('closed')
 
 
-class OperationType(MPTTModel, NamedMixin, models.Model):
+class OperationType(
+    AdminAbsoluteUrlMixin,
+    MPTTModel,
+    NamedMixin,
+    models.Model
+):
     parent = TreeForeignKey(
         'self',
         null=True,

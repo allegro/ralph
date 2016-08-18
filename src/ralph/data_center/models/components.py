@@ -6,6 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.assets.models.assets import Asset
 from ralph.assets.models.components import Component
 from ralph.lib.mixins.fields import NullableCharField
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 
 
 @python_2_unicode_compatible
@@ -40,7 +41,7 @@ class DiskShare(Component):
 
 
 @python_2_unicode_compatible
-class DiskShareMount(models.Model):
+class DiskShareMount(AdminAbsoluteUrlMixin, models.Model):
     share = models.ForeignKey(DiskShare, verbose_name=_("share"))
     asset = models.ForeignKey(
         Asset, verbose_name=_('asset'), null=True, blank=True,

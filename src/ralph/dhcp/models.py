@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 from ralph.networks.models.networks import IPAddress, NetworkEnvironment
 
 
@@ -29,7 +30,7 @@ class DHCPEntry(IPAddress):
         proxy = True
 
 
-class DHCPServer(models.Model):
+class DHCPServer(AdminAbsoluteUrlMixin, models.Model):
     ip = models.GenericIPAddressField(
         verbose_name=_('IP address'), unique=True
     )
@@ -49,7 +50,7 @@ class DHCPServer(models.Model):
         return cls.objects.filter(ip=ip).update(last_synchronized=time)
 
 
-class DNSServer(models.Model):
+class DNSServer(AdminAbsoluteUrlMixin, models.Model):
     ip_address = models.GenericIPAddressField(
         verbose_name=_('IP address'),
         unique=True,

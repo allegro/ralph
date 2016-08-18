@@ -6,10 +6,19 @@ from django_extensions.db.fields.json import JSONField
 
 from ralph.dashboards.filter_parser import FilterParser
 from ralph.dashboards.renderers import HorizontalBar, PieChart, VerticalBar
-from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
+from ralph.lib.mixins.models import (
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    TimeStampMixin
+)
 
 
-class Dashboard(NamedMixin, TimeStampMixin, models.Model):
+class Dashboard(
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    TimeStampMixin,
+    models.Model
+):
     active = models.BooleanField(default=True)
     description = models.CharField('description', max_length=250, blank=True)
     graphs = models.ManyToManyField('Graph', blank=True)
@@ -31,7 +40,7 @@ class ChartType(Choices):
     pie_chart = _('Pie Chart').extra(renderer=PieChart)
 
 
-class Graph(NamedMixin, TimeStampMixin, models.Model):
+class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
     description = models.CharField('description', max_length=250, blank=True)
     model = models.ForeignKey(ContentType)
     aggregate_type = models.PositiveIntegerField(choices=AggregateType())

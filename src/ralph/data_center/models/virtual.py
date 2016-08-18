@@ -17,7 +17,7 @@ from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
 from ralph.lib.transitions.fields import TransitionField
 
 
-class Database(BaseObject):
+class Database(AdminAbsoluteUrlMixin, BaseObject):
     class Meta:
         verbose_name = _('database')
         verbose_name_plural = _('databases')
@@ -26,7 +26,7 @@ class Database(BaseObject):
         return 'Database: {}'.format(self.service_env)
 
 
-class VIP(BaseObject):
+class VIP(AdminAbsoluteUrlMixin, BaseObject):
     class Meta:
         verbose_name = _('VIP')
         verbose_name_plural = _('VIPs')
@@ -35,7 +35,7 @@ class VIP(BaseObject):
         return 'VIP: {}'.format(self.service_env)
 
 
-class ClusterType(NamedMixin, models.Model):
+class ClusterType(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
     show_master_summary = models.BooleanField(
         default=False,
         help_text=_(

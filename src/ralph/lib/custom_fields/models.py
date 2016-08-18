@@ -10,7 +10,7 @@ from django.db import models
 from django.utils.text import capfirst, slugify
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.lib.mixins.models import TimeStampMixin
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 
 CUSTOM_FIELD_VALUE_MAX_LENGTH = 1000
 
@@ -41,7 +41,7 @@ class CustomFieldTypes(Choices):
     CHOICE = CHOICE_CHOICE
 
 
-class CustomField(TimeStampMixin, models.Model):
+class CustomField(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
     name = models.CharField(max_length=255, unique=True)
     attribute_name = models.SlugField(
         max_length=255, editable=False, unique=True,

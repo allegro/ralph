@@ -31,13 +31,13 @@ from ralph.networks.models.networks import IPAddress
 logger = logging.getLogger(__name__)
 
 
-class CloudProvider(NamedMixin):
+class CloudProvider(AdminAbsoluteUrlMixin, NamedMixin):
     class Meta:
         verbose_name = _('Cloud provider')
         verbose_name_plural = _('Cloud providers')
 
 
-class CloudFlavor(BaseObject):
+class CloudFlavor(AdminAbsoluteUrlMixin, BaseObject):
     name = models.CharField(_('name'), max_length=255)
     cloudprovider = models.ForeignKey(CloudProvider)
     cloudprovider._autocomplete = False
@@ -217,6 +217,7 @@ class VirtualComponent(Component):
 
 
 class VirtualServerType(
+    AdminAbsoluteUrlMixin,
     NamedMixin,
     TimeStampMixin,
     models.Model

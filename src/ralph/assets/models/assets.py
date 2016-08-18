@@ -30,20 +30,27 @@ from ralph.lib.permissions import PermByFieldMixin
 logger = logging.getLogger(__name__)
 
 
-class AssetHolder(NamedMixin.NonUnique, TimeStampMixin, models.Model):
+class AssetHolder(
+    AdminAbsoluteUrlMixin,
+    NamedMixin.NonUnique,
+    TimeStampMixin,
+    models.Model
+):
     pass
 
 
-class BusinessSegment(NamedMixin, models.Model):
+class BusinessSegment(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
     pass
 
 
-class ProfitCenter(NamedMixin, models.Model):
+class ProfitCenter(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
     business_segment = models.ForeignKey(BusinessSegment)
     description = models.TextField(blank=True)
 
 
-class Environment(NamedMixin, TimeStampMixin, models.Model):
+class Environment(
+    AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model
+):
     pass
 
 
@@ -86,7 +93,11 @@ class Service(
         return cls._default_manager.filter(active=True)
 
 
-class ServiceEnvironment(AutocompleteTooltipMixin, BaseObject):
+class ServiceEnvironment(
+    AdminAbsoluteUrlMixin,
+    AutocompleteTooltipMixin,
+    BaseObject
+):
     service = models.ForeignKey(Service)
     environment = models.ForeignKey(Environment)
 
@@ -119,7 +130,12 @@ class ServiceEnvironment(AutocompleteTooltipMixin, BaseObject):
         return cls._default_manager.filter(service__active=True)
 
 
-class Manufacturer(NamedMixin, TimeStampMixin, models.Model):
+class Manufacturer(
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    TimeStampMixin,
+    models.Model
+):
     _allow_in_dashboard = True
 
 
@@ -196,7 +212,13 @@ class AssetModel(
         return self._get_layout_class(self.visualization_layout_back)
 
 
-class Category(MPTTModel, NamedMixin.NonUnique, TimeStampMixin, models.Model):
+class Category(
+    AdminAbsoluteUrlMixin,
+    MPTTModel,
+    NamedMixin.NonUnique,
+    TimeStampMixin,
+    models.Model
+):
     _allow_in_dashboard = True
 
     code = models.CharField(max_length=4, blank=True, default='')
@@ -288,7 +310,12 @@ class AssetLastHostname(models.Model):
         return self.formatted_hostname()
 
 
-class BudgetInfo(NamedMixin, TimeStampMixin, models.Model):
+class BudgetInfo(
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    TimeStampMixin,
+    models.Model
+):
 
     class Meta:
         verbose_name = _('Budget info')

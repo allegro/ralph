@@ -28,14 +28,19 @@ from ralph.networks.models.choices import IPAddressStatus
 logger = logging.getLogger(__name__)
 
 
-class NetworkKind(NamedMixin, models.Model):
+class NetworkKind(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
     class Meta:
         verbose_name = _('network kind')
         verbose_name_plural = _('network kinds')
         ordering = ('name',)
 
 
-class NetworkEnvironment(TimeStampMixin, NamedMixin, models.Model):
+class NetworkEnvironment(
+    AdminAbsoluteUrlMixin,
+    TimeStampMixin,
+    NamedMixin,
+    models.Model
+):
     data_center = models.ForeignKey(
         'data_center.DataCenter',
         verbose_name=_('data center')
@@ -502,7 +507,8 @@ class Network(
         return nets
 
 
-class DiscoveryQueue(NamedMixin, models.Model):
+# TODO: remove
+class DiscoveryQueue(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
 
     class Meta:
         verbose_name = _('discovery queue')

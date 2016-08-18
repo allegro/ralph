@@ -28,7 +28,7 @@ def has_region(user):
     return models.Q(id__in=user.regions_ids)
 
 
-class Region(PermissionsForObjectMixin, NamedMixin):
+class Region(AdminAbsoluteUrlMixin, PermissionsForObjectMixin, NamedMixin):
     country = models.PositiveIntegerField(
         verbose_name=_('country'),
         choices=Country(),
@@ -59,7 +59,7 @@ class Regionalizable(PermissionsForObjectMixin):
         has_access = object_has_region
 
 
-class Team(NamedMixin):
+class Team(AdminAbsoluteUrlMixin, NamedMixin):
     pass
 
 
