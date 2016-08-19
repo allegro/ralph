@@ -510,7 +510,7 @@ class BulkEditChangeListMixin(object):
             # separate read-only and editable fields
             bulk_list_display = self.bulk_edit_list
             bulk_list_edit = self.bulk_edit_list
-            if isinstance(self.model, PermByFieldMixin):
+            if issubclass(self.model, PermByFieldMixin):
                 bulk_list_display = [
                     field for field in self.bulk_edit_list
                     if self.model.has_access_to_field(
