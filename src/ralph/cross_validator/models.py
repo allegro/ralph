@@ -31,7 +31,9 @@ class CrossValidationRun(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
         super().save(*args, **kwargs)
 
 
-class CrossValidationResult(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
+class CrossValidationResult(
+    AdminAbsoluteUrlMixin, TimeStampMixin, models.Model
+):
     i_am_your_father = True
 
     run = models.ForeignKey(CrossValidationRun)
