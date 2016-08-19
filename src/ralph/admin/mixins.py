@@ -110,7 +110,12 @@ class RedirectSearchToObjectMixin(object):
         response = super().changelist_view(request, *args, **kwargs)
         context_data = getattr(response, 'context_data', None)
         cl = context_data.get('cl') if context_data else None
-        if not context_data or not cl or not hasattr(cl, 'result_count'):
+        if (
+            not context_data or
+            not cl or
+            not hasattr(cl, 'result_count') or
+            not settings.REDIRECT_TO_DETAIL_VIEW_IF_ONE_SEARCH_RESULT
+        ):
             return response
         filtered_results = list(request.GET.keys())
         ordering = ORDER_VAR in filtered_results
