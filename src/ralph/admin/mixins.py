@@ -128,6 +128,7 @@ class RalphAdminChecks(admin.checks.ModelAdminChecks):
     exclude_models = (
         ('auth', 'Group'.lower()),
         ('assets', 'BaseObject'.lower()),
+        ('contenttypes', 'ContentType'.lower())
     )
 
     def check(self, cls, model, **kwargs):
