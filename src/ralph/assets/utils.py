@@ -21,7 +21,10 @@ class DNSaaSPublisherMixin:
             if not purpose or not content:
                 continue
             data.append({
-                'ips': [ip.address for ip in self.ipaddresses],
+                'ips': [
+                    ip.address for ip in self.ipaddresses if
+                    not ip.is_management
+                ],
                 'purpose': purpose,
                 'content': content,
             })

@@ -128,6 +128,11 @@ class TestPublisher(TestCase):
             base_object=self.dc_asset,
             ethernet=EthernetFactory(base_object=self.dc_asset),
         )
+        IPAddressFactory(
+            base_object=self.dc_asset,
+            ethernet=EthernetFactory(base_object=self.dc_asset),
+            is_management=True,
+        )
         self.virtual_server = VirtualServerFactory(
             hostname='s000.local',
             configuration_path__class_name='worker',
