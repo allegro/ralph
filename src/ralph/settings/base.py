@@ -100,6 +100,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'threadlocals.middleware.ThreadLocalMiddleware',
 )
 
 ROOT_URLCONF = 'ralph.urls'

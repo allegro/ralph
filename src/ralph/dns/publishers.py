@@ -12,12 +12,19 @@ from ralph.virtual.models import VirtualServer
 
 def _publish_data_to_dnsaaas(obj):
     publish_data = []
+    current_user = get_current_user()
+    username = current_user.username if current_user else ''
     for data in obj.get_auto_txt_data():
-        current_user = get_current_user()
-        data['owner'] = current_user.username if current_user else ''
+        data['owner'] = username
         data['target_owner'] = settings.DNSAAS_OWNER
         publish_data.append(data)
     return publish_data
+
+
+def _send_once(instance):
+    # run without condition when ralph2 sync is killed
+    if getattr(instance, '_handle_post_save', True):
+        publish_data_to_dnsaaas(instance)
 
 
 if settings.DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME:
@@ -30,12 +37,12 @@ if settings.DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME:
 
     @receiver(post_save, sender=DataCenterAsset)
     def post_save_dc_asset(sender, instance, **kwargs):
-        publish_data_to_dnsaaas(instance)
+        _send_once(instance)
 
     @receiver(post_save, sender=Cluster)
     def post_save_cluster(sender, instance, **kwargs):
-        publish_data_to_dnsaaas(instance)
+        _send_once(instance)
 
     @receiver(post_save, sender=VirtualServer)
     def post_save_virtual_server(sender, instance, **kwargs):
-        publish_data_to_dnsaaas(instance)
+        _send_once(instance)
