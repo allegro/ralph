@@ -22,9 +22,8 @@ def _publish_data_to_dnsaaas(obj):
 
 
 def _send_once(instance):
-    """Rm it when ralph2 sync is killed"""
+    # run without condition when ralph2 sync is killed
     if getattr(instance, '_handle_post_save', True):
-        print("TIMES")
         publish_data_to_dnsaaas(instance)
 
 
