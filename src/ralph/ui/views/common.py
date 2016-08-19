@@ -198,11 +198,14 @@ class AdminMenu(Menu):
 class UserMenu(Menu):
 
     def __init__(self, request, **kwargs):
+        view_name = ''
+        if not settings.HIDE_RALPH_MENU:
+            view_name = 'user_preference'
         self.module = MenuItem(
             '{}'.format(request.user),
             name='user_preference',
             fugue_icon='fugue-user',
-            view_name='user_preference',
+            view_name=view_name,
             pull_right=True,
         )
         super(UserMenu, self).__init__(request, **kwargs)
@@ -224,12 +227,17 @@ class MenuMixin(object):
     sidebar_item_name = None
 
     def dispatch(self, request, *args, **kwargs):
-        self.menus = [ralph_menu(request)]
+        self.menus = []
+        if not settings.HIDE_RALPH_MENU:
+            self.menus = [ralph_menu(request)]
+
         self.menus.append(LogoutMenu(request))
         self.menus.append(UserMenu(request))
-        if request.user.is_staff:
+        if not settings.HIDE_RALPH_MENU and request.user.is_staff:
             self.menus.append(AdminMenu(request))
         for app in pluggableapp.app_dict.values():
+            if app.kw['name'] != 'ralph_scrooge':
+                continue
             if (
                 not isinstance(app, RalphModule) or
                 app.module_name in settings.HIDE_MENU or
@@ -1480,7 +1488,9 @@ class VhostRedirectView(RedirectView):
         host = self.request.META.get(
             'HTTP_X_FORWARDED_HOST', self.request.META['HTTP_HOST'])
         user_url = get_user_home_page_url(self.request.user)
-        if host == settings.DASHBOARD_SITE_DOMAIN:
+        if settings.HOME_REDIRECT_URL:
+            self.url = settings.HOME_REDIRECT_URL
+        elif host == settings.DASHBOARD_SITE_DOMAIN:
             self.url = '/ventures/'
         else:
             self.url = user_url
