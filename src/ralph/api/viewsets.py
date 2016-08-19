@@ -38,6 +38,9 @@ class AdminSearchFieldsMixin(object):
     def _set_admin_search_fields(self):
         admin_site = ralph_site._registry.get(self.queryset.model)
         filter_fields = list(getattr(self, 'filter_fields', None) or [])
+        exclude_fields = getattr(
+            self, 'exclude_filter_fields', []
+        )
         if admin_site and not self._skip_admin_search_fields:
             filter_fields.extend(admin_site.search_fields or [])
         if admin_site and not self._skip_admin_list_filter:
@@ -46,6 +49,8 @@ class AdminSearchFieldsMixin(object):
                     f_name = f[0]
                 else:
                     f_name = f
+                if f_name in exclude_fields:
+                    continue
                 if inspect.isclass(f) and issubclass(f, SimpleListFilter):
                     if not hasattr(f, 'field'):
                         continue
