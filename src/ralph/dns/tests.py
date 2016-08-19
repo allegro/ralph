@@ -5,6 +5,7 @@ from django.test import override_settings, TestCase
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.data_center.models.virtual import BaseObjectCluster
+from ralph.assets.tests.factories import EthernetFactory
 from ralph.dns.dnsaas import DNSaaS
 from ralph.dns.forms import DNSRecordForm, RecordType
 from ralph.dns.publishers import _publish_data_to_dnsaaas
@@ -13,6 +14,7 @@ from ralph.dns.views import (
     DNSaaSIntegrationNotEnabledError,
     DNSView
 )
+from ralph.networks.tests.factories import IPAddressFactory
 from ralph.virtual.models import VirtualServer
 from ralph.virtual.tests.factories import VirtualServerFactory
 
@@ -122,6 +124,10 @@ class TestPublisher(TestCase):
             configuration_path__class_name='www',
             configuration_path__module__name='ralph',
         )
+        IPAddressFactory(
+            base_object=self.dc_asset,
+            ethernet=EthernetFactory(base_object=self.dc_asset),
+        )
         self.virtual_server = VirtualServerFactory(
             hostname='s000.local',
             configuration_path__class_name='worker',
@@ -144,6 +150,10 @@ class TestPublisher(TestCase):
         )
         # refresh virtual server to get parent as BaseObject, not
         # DataCenterAsset
+        IPAddressFactory(
+            base_object=self.virtual_server,
+            ethernet=EthernetFactory(base_object=self.virtual_server),
+        )
         self.virtual_server = VirtualServer.objects.get(
             pk=self.virtual_server.id
         )
@@ -176,42 +186,46 @@ class TestPublisher(TestCase):
         )
 
         self.cluster = ClusterFactory._meta.model.objects.get(pk=cluster)
+        IPAddressFactory(
+            base_object=self.cluster,
+            ethernet=EthernetFactory(base_object=self.cluster),
+        )
 
     def test_dc_asset_gets_data_ok(self):
         data = _publish_data_to_dnsaaas(self.dc_asset)
         self.assertEqual(data, [{
             'content': 'www',
-            'name': 'ralph0.allegro.pl',
+            'ips': [ip.address for ip in self.dc_asset.ipaddresses],
             'owner': '',
             'target_owner': 'ralph',
             'purpose': 'VENTURE'
         }, {
             'content': 'ralph',
-            'name': 'ralph0.allegro.pl',
+            'ips': [ip.address for ip in self.dc_asset.ipaddresses],
             'owner': '',
             'target_owner': 'ralph',
             'purpose': 'ROLE',
         }, {
             'content': 'ralph/www',
-            'name': 'ralph0.allegro.pl',
+            'ips': [ip.address for ip in self.dc_asset.ipaddresses],
             'owner': '',
             'target_owner': 'ralph',
             'purpose': 'CONFIGURATION_PATH',
         }, {
             'content': 'service - test',
-            'name': 'ralph0.allegro.pl',
+            'ips': [ip.address for ip in self.dc_asset.ipaddresses],
             'owner': '',
             'target_owner': 'ralph',
             'purpose': 'SERVICE_ENV',
         }, {
             'content': '[ATS] Asus DL360',
-            'name': 'ralph0.allegro.pl',
+            'ips': [ip.address for ip in self.dc_asset.ipaddresses],
             'owner': '',
             'target_owner': 'ralph',
             'purpose': 'MODEL'
         }, {
             'content': 'DC1 / Server Room A / Rack #100 / 1 / 1',
-            'name': 'ralph0.allegro.pl',
+            'ips': [ip.address for ip in self.dc_asset.ipaddresses],
             'owner': '',
             'target_owner': 'ralph',
             'purpose': 'LOCATION'
@@ -221,37 +235,37 @@ class TestPublisher(TestCase):
         data = _publish_data_to_dnsaaas(self.virtual_server)
         self.assertEqual(data, [{
             'content': 'worker',
-            'name': 's000.local',
+            'ips': [ip.address for ip in self.virtual_server.ipaddresses],
             'owner': '',
             'target_owner': 'ralph',
             'purpose': 'VENTURE'
         }, {
             'content': 'auth',
-            'name': 's000.local',
+            'ips': [ip.address for ip in self.virtual_server.ipaddresses],
             'owner': '',
             'target_owner': 'ralph',
             'purpose': 'ROLE'
         }, {
             'content': 'auth/worker',
-            'name': 's000.local',
+            'ips': [ip.address for ip in self.virtual_server.ipaddresses],
             'owner': '',
             'target_owner': 'ralph',
             'purpose': 'CONFIGURATION_PATH',
         }, {
             'content': 'service - prod',
-            'name': 's000.local',
+            'ips': [ip.address for ip in self.virtual_server.ipaddresses],
             'owner': '',
             'target_owner': 'ralph',
             'purpose': 'SERVICE_ENV',
         }, {
             'content': '[Database Machine] Brother DL380p',
-            'name': 's000.local',
+            'ips': [ip.address for ip in self.virtual_server.ipaddresses],
             'owner': '',
             'target_owner': 'ralph',
             'purpose': 'MODEL'
         }, {
             'content': 'DC2 / Server Room B / Rack #101 / 1 / 1 / parent',
-            'name': 's000.local',
+            'ips': [ip.address for ip in self.virtual_server.ipaddresses],
             'owner': '',
             'target_owner': 'ralph',
             'purpose': 'LOCATION'
@@ -261,37 +275,37 @@ class TestPublisher(TestCase):
         data = _publish_data_to_dnsaaas(self.cluster)
         self.assertEqual(data, [{
             'content': 'www',
-            'name': '',
+            'ips': [ip.address for ip in self.cluster.ipaddresses],
             'owner': '',
             'target_owner': 'ralph',
             'purpose': 'VENTURE'
         }, {
             'content': 'ralph',
-            'name': '',
+            'ips': [ip.address for ip in self.cluster.ipaddresses],
             'owner': '',
             'target_owner': 'ralph',
             'purpose': 'ROLE'
         }, {
             'content': 'ralph/www',
-            'name': '',
+            'ips': [ip.address for ip in self.cluster.ipaddresses],
             'owner': '',
             'target_owner': 'ralph',
             'purpose': 'CONFIGURATION_PATH',
         }, {
             'content': 'service - preprod',
-            'name': '',
+            'ips': [ip.address for ip in self.cluster.ipaddresses],
             'owner': '',
             'target_owner': 'ralph',
             'purpose': 'SERVICE_ENV',
         }, {
             'content': 'Application',
-            'name': '',
+            'ips': [ip.address for ip in self.cluster.ipaddresses],
             'owner': '',
             'target_owner': 'ralph',
             'purpose': 'MODEL'
         }, {
             'content': 'DC2 / Server Room B / Rack #101 / 1',
-            'name': '',
+            'ips': [ip.address for ip in self.cluster.ipaddresses],
             'owner': '',
             'target_owner': 'ralph',
             'purpose': 'LOCATION'

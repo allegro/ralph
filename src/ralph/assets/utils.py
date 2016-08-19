@@ -21,7 +21,7 @@ class DNSaaSPublisherMixin:
             if not purpose:
                 continue
             data.append({
-                'name': self.hostname or '',
+                'ips': [ip.address for ip in self.ipaddresses],
                 'purpose': purpose,
                 'content': content,
             })
