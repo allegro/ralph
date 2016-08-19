@@ -4,8 +4,8 @@ from unittest.mock import patch
 from django.test import override_settings, TestCase
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.assets.tests.factories import EthernetFactory
+from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.dns.dnsaas import DNSaaS
 from ralph.dns.forms import DNSRecordForm, RecordType
 from ralph.dns.publishers import _publish_data_to_dnsaaas

@@ -18,7 +18,7 @@ class DNSaaSPublisherMixin:
             purpose = settings.DNSAAS_AUTO_TXT_RECORD_PURPOSE_MAP.get(
                 purpose_name, None
             )
-            if not purpose:
+            if not purpose or not content:
                 continue
             data.append({
                 'ips': [ip.address for ip in self.ipaddresses],
