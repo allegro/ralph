@@ -4,7 +4,7 @@ from django.db import models
 from django_extensions.db.fields.json import JSONField
 
 from ralph.data_importer.models import ImportedObjects as ImportedObject
-from ralph.lib.mixins.models import TimeStampMixin
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 
 
 def _remap_result(result):
@@ -16,7 +16,7 @@ def _remap_result(result):
     }
 
 
-class CrossValidationRun(TimeStampMixin, models.Model):
+class CrossValidationRun(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
     i_am_your_father = True
 
     checked_count = models.PositiveIntegerField(default=0)
@@ -31,7 +31,9 @@ class CrossValidationRun(TimeStampMixin, models.Model):
         super().save(*args, **kwargs)
 
 
-class CrossValidationResult(TimeStampMixin, models.Model):
+class CrossValidationResult(
+    AdminAbsoluteUrlMixin, TimeStampMixin, models.Model
+):
     i_am_your_father = True
 
     run = models.ForeignKey(CrossValidationRun)
