@@ -68,7 +68,7 @@ class CloudHostFactory(DjangoModelFactory):
         CloudProviderFactory,
         name='openstack',
     )
-    host_id = factory.Iterator(['host_id1', 'host_id2', 'host_id3'])
+    host_id = factory.Iterator(['host_id1', 'host_id2', 'host_id3', 'host_id4'])
     parent = factory.SubFactory(CloudProjectFactory)
     configuration_path = factory.SubFactory(ConfigurationClassFactory)
     service_env = factory.SubFactory(ServiceEnvironmentFactory)
@@ -79,6 +79,8 @@ class CloudHostFactory(DjangoModelFactory):
 
 
 class CloudHostFullFactory(CloudHostFactory):
+    hypervisor = factory.SubFactory(DataCenterAssetFactory)
+
     @factory.post_generation
     def post_tags(self, create, extracted, **kwargs):
         self.tags.add('abc, cde', 'xyz')

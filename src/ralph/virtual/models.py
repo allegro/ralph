@@ -3,6 +3,7 @@ import logging
 
 from dj.choices import Choices
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.dispatch import receiver
@@ -211,6 +212,14 @@ class CloudHost(AdminAbsoluteUrlMixin, BaseObject):
         except AttributeError:
             return None
 
+    def get_location(self):
+        location = []
+        if self.hypervisor_id:
+            location = self.hypervisor.get_location()
+            if self.hypervisor.hostname:
+                location.append(self.hypervisor.hostname)
+        return location
+
 
 class VirtualComponent(Component):
     pass
@@ -241,7 +250,7 @@ class VirtualServer(
     BaseObject
 ):
     # parent field for VirtualServer is hypervisor!
-    # TODO: limit parent to DataCenterAsset
+    # TODO: limit parent to DataCenterAsset and CloudHost
     status = TransitionField(
         default=VirtualServerStatus.new.id,
         choices=VirtualServerStatus(),
@@ -271,12 +280,18 @@ class VirtualServer(
         return self.parent.last_descendant if self.parent_id else None
 
     def get_location(self):
-        if self.polymorphic_parent:
-            location = self.polymorphic_parent.get_location()
-            if self.polymorphic_parent.hostname:
-                location.append(self.polymorphic_parent.hostname)
+        if (
+            self.parent_id and
+            self.parent.content_type_id == ContentType.objects.get_for_model(
+                DataCenterAsset
+            ).id
+        ):
+            parent = self.parent.asset.datacenterasset
+            location = parent.get_location()
+            if parent.hostname:
+                location.append(parent.hostname)
         else:
-            location = None
+            location = []
         return location
 
     @property

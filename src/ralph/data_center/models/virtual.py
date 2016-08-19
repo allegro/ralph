@@ -84,7 +84,7 @@ class Cluster(
         return '{} ({})'.format(self.name or self.hostname, self.type)
 
     def get_location(self):
-        return self.masters[0].get_location() if self.masters else None
+        return self.masters[0].get_location() if self.masters else []
 
     @property
     def model(self):

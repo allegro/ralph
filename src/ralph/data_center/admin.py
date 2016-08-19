@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.admin import SimpleListFilter
 from django.contrib.admin.views.main import ChangeList
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
@@ -537,6 +537,33 @@ class DCHostAdmin(RalphAdmin):
         )
 
     def show_location(self, obj):
-        return getattr(obj, 'location', '')
+        if hasattr(obj, 'get_location'):
+            return ' / '.join(obj.get_location())
+        return ''
     show_location.short_description = _('Location')
     show_location.allow_tags = True
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # location
+        polymorphic_select_related = dict(
+            DataCenterAsset=[
+                'rack__server_room__data_center', 'model'
+            ],
+            VirtualServer=[
+                'parent__asset__datacenterasset__rack__server_room__data_center',  # noqa
+            ],
+            CloudHost=[
+                'hypervisor__rack__server_room__data_center'
+            ]
+        )
+        qs = qs.polymorphic_select_related(**polymorphic_select_related)
+        qs = qs.polymorphic_prefetch_related(Cluster=[
+            Prefetch(
+                'baseobjectcluster_set__base_object',
+                queryset=BaseObject.polymorphic_objects.polymorphic_select_related(  # noqa
+                    **polymorphic_select_related
+                )
+            )
+        ])
+        return qs

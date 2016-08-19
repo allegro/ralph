@@ -64,7 +64,9 @@ class ClusterTypeFactory(DjangoModelFactory):
 
 class ClusterFactory(DjangoModelFactory):
 
-    name = factory.Iterator(['Databases', 'Applications'])
+    name = factory.Iterator(
+        ['Databases', 'Applications', 'Switch', 'Load balancer']
+    )
     type = factory.SubFactory(ClusterTypeFactory)
     configuration_path = factory.SubFactory(ConfigurationClassFactory)
     service_env = factory.SubFactory(ServiceEnvironmentFactory)
