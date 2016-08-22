@@ -8,7 +8,7 @@
     "gulp-autoprefixer": "~2.3.1",
     "gulp-bower": "0.0.10",
     "gulp-rename": "~1.2.2",
-    "gulp-sass": "~2.3.2",
+    "gulp-sass": "~2.2.0",
     "gulp-sourcemaps": "^1.6.0",
     "jshint": "~2.8.0",
     "run-sequence": "~1.1.0",
