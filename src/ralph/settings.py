@@ -811,3 +811,5 @@ NG_EXPORTER = {
     # non-conflicting. this is achieved by adding below constant
     'discovery_datacenter_constant': 1000,
 }
+HIDE_RALPH_MENU = False
+HOME_REDIRECT_URL = None
