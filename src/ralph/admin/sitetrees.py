@@ -102,19 +102,24 @@ sitetrees = [
             perms_mode_all=False,
             children=[
                 section(_('All hosts'), 'data_center', 'DCHost'),
+                ralph_item(
+                    title=_('DC Visualization'),
+                    url='dc_view',
+                    access_by_perms='accounts.can_view_extra_serverroomview'
+                ),
                 section(_('Hardware'), 'data_center', 'DataCenterAsset'),
-                section(_('Racks'), 'data_center', 'Rack'),
-                section(_('Cloud projects'), 'virtual', 'CloudProject'),
-                section(_('Cloud hosts'), 'virtual', 'CloudHost'),
-                section(_('Data Centers'), 'data_center', 'DataCenter'),
-                section(_('Databases'), 'data_center', 'Database'),
-                section(_('Disk Shares'), 'data_center', 'DiskShare'),
-                section(_('Accessories'), 'data_center', 'Accessory'),
-                section(_('Rack Accessories'), 'data_center', 'RackAccessory'),
-                section(_('Server Rooms'), 'data_center', 'ServerRoom'),
-                section(_('VIPs'), 'data_center', 'VIP'),
                 section(_('Virtual Servers'), 'virtual', 'VirtualServer'),
                 section(_('Clusters'), 'data_center', 'cluster'),
+                section(_('Cloud hosts'), 'virtual', 'CloudHost'),
+                section(_('Cloud projects'), 'virtual', 'CloudProject'),
+                section(_('Data Centers'), 'data_center', 'DataCenter'),
+                section(_('Racks'), 'data_center', 'Rack'),
+                section(_('Rack Accessories'), 'data_center', 'RackAccessory'),
+                section(_('Accessories'), 'data_center', 'Accessory'),
+                section(_('Databases'), 'data_center', 'Database'),
+                section(_('Disk Shares'), 'data_center', 'DiskShare'),
+                section(_('Server Rooms'), 'data_center', 'ServerRoom'),
+                section(_('VIPs'), 'data_center', 'VIP'),
                 section(_('Preboots'), 'deployment', 'Preboot'),
                 section(
                     _('Preboot configuration'), 'deployment',
@@ -122,11 +127,6 @@ sitetrees = [
                 ),
                 section(_('Preboot files'), 'deployment', 'PrebootFile'),
             ],
-        ),
-        ralph_item(
-            title=_('DC Visualization'),
-            url='dc_view',
-            access_by_perms='accounts.can_view_extra_serverroomview'
         ),
         ralph_item(
             title=_('Back Office'),

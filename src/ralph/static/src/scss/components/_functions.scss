@@ -73,3 +73,10 @@
     -moz-box-sizing: $box-sizing;
     box-sizing: $box-sizing;
 }
+@mixin display-flex() {
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+}

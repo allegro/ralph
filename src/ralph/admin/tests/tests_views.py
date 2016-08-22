@@ -2,11 +2,13 @@
 from importlib import import_module
 
 from django.contrib.auth import get_user_model
+from django.core.urlresolvers import reverse
 from django.db import connections
 from django.test import RequestFactory, TestCase
 from django.test.utils import CaptureQueriesContext
 
 from ralph.admin.sites import ralph_site
+from ralph.tests.models import Foo
 
 FACTORY_MAP = {
     'django.contrib.auth.models.Group': 'ralph.accounts.tests.factories.GroupFactory',  # noqa
@@ -147,3 +149,33 @@ class ViewsTest(TestCase):
                 self.request, object_id=None
             )
             self.assertEqual(change_form.status_code, 200)
+
+
+class ViewMixinTest(TestCase):
+    def setUp(self):
+        password = 'secret'
+        self.user = get_user_model().objects.create_superuser(
+            'test', 'test@test.test', password
+        )
+        self.client.login(
+            username=self.user.username,
+            password=password
+        )
+
+    def test_redirect_when_one_result_after_searching(self):
+        model = Foo
+        obj = model.objects.create(bar='test1')
+        info = model._meta.app_label, model._meta.model_name
+        url = reverse('admin:{}_{}_changelist'.format(*info))
+        url += '?bar={}'.format(obj.bar)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.endswith(obj.get_absolute_url()))
+
+    def test_do_not_redirect_when_is_not_filtering(self):
+        model = Foo
+        model.objects.create(bar='test#1')
+        info = model._meta.app_label, model._meta.model_name
+        url = reverse('admin:{}_{}_changelist'.format(*info))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)

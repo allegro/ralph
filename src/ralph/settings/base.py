@@ -100,6 +100,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'threadlocals.middleware.ThreadLocalMiddleware',
 )
 
 ROOT_URLCONF = 'ralph.urls'
@@ -344,6 +345,11 @@ MY_EQUIPMENT_SHOW_BUYOUT_DATE = bool_from_env('MY_EQUIPMENT_SHOW_BUYOUT_DATE')
 
 # Sets URL shown to user if they declare that they dp not have specific asset.
 MISSING_ASSET_REPORT_URL = os.environ.get('MISSING_ASSET_REPORT_URL', None)
+
+# Redirect to result detail view if there is only one in search result list
+REDIRECT_TO_DETAIL_VIEW_IF_ONE_SEARCH_RESULT = bool_from_env(
+    'REDIRECT_TO_DETAIL_VIEW_IF_ONE_SEARCH_RESULT', True
+)
 
 # Stocktaking tagging config - each variable describes individual tag.
 # To disable tag set it to None or, in case of date tag, set variable to '0'.

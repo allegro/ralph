@@ -16,6 +16,7 @@ from ralph.lib.permissions import PermByFieldMixin
 
 
 class DomainRegistrant(
+    AdminAbsoluteUrlMixin,
     PermByFieldMixin,
     NamedMixin,
     TimeStampMixin,

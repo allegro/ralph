@@ -39,6 +39,7 @@ class BarsM2MInline(RalphTabularM2MInline):
 @register(Foo)
 class FooAdmin(RalphAdmin):
     inlines = [BarsM2MInline]
+    list_filter = ['bar']
 
 
 @register(Car2)

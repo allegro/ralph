@@ -641,7 +641,8 @@ def assign_configuration_path(cls, instances, configuration_path, **kwargs):
     },
     is_async=True,
     run_after=[
-        'assign_new_hostname', 'create_dhcp_entries', 'wait_for_dhcp_servers'
+        'assign_new_hostname', 'create_dhcp_entries', 'wait_for_dhcp_servers',
+        'create_dns_entries',
     ],
 )
 def deploy(cls, instances, **kwargs):

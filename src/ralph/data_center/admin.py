@@ -137,7 +137,7 @@ class ClusterTypeAdmin(RalphAdmin):
 @register(Cluster)
 class ClusterAdmin(CustomFieldValueAdminMixin, RalphAdmin):
 
-    search_fields = ['name', 'hostname']
+    search_fields = ['name', 'hostname', 'ethernet_set__ipaddress__hostname']
     fieldsets = (
         (_('Basic info'), {
             'fields': (
@@ -310,14 +310,18 @@ class DataCenterAssetAdmin(
     bulk_edit_list = [
         'hostname', 'status', 'barcode', 'model', 'sn', 'invoice_date',
         'invoice_no', 'rack', 'orientation', 'position', 'slot_no', 'price',
-        'provider', 'service_env', 'tags'
+        'provider', 'service_env', 'configuration_path', 'tags'
     ]
     bulk_edit_no_fillable = ['barcode', 'sn']
-    search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
+    search_fields = [
+        'barcode', 'sn', 'hostname', 'invoice_no', 'order_no',
+        'ethernet_set__ipaddress__address', 'ethernet_set__ipaddress__hostname'
+    ]
     list_filter = [
         'status', 'barcode', 'sn', 'hostname', 'invoice_no', 'invoice_date',
         'order_no', 'model__name',
         ('model__category', RelatedAutocompleteFieldListFilter), 'service_env',
+        'configuration_path',
         ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
         'depreciation_end_date', 'force_depreciation', 'remarks',
         'budget_info', 'rack', 'rack__server_room',
@@ -481,13 +485,16 @@ class DCHostAdmin(RalphAdmin):
         'asset__hostname',
         'cloudhost__hostname',
         'cluster__hostname',
-        'virtualserver__hostname'
+        'virtualserver__hostname',
+        'ethernet_set__ipaddress__address',
+        'ethernet_set__ipaddress__hostname'
     ]
     list_display = [
         'get_hostname',
         'content_type',
         'service_env',
         'configuration_path',
+        'show_location',
         'remarks',
     ]
     # TODO: sn
@@ -528,3 +535,8 @@ class DCHostAdmin(RalphAdmin):
         return super()._initialize_search_form(
             extra_context, fields_from_model=False
         )
+
+    def show_location(self, obj):
+        return getattr(obj, 'location', '')
+    show_location.short_description = _('Location')
+    show_location.allow_tags = True

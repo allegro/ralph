@@ -15,7 +15,11 @@ from ralph.assets.models.choices import (
     FibreChannelCardSpeed
 )
 from ralph.lib.mixins.fields import MACAddressField, NullableCharField
-from ralph.lib.mixins.models import NamedMixin, TimeStampMixin
+from ralph.lib.mixins.models import (
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    TimeStampMixin
+)
 
 MAC_RE = re.compile(r'^\s*([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}\s*$')
 MAC_ERROR_MSG = "'%(value)s' is not a valid MAC address."
@@ -25,7 +29,12 @@ mac_validator = RegexValidator(regex=MAC_RE, message=MAC_ERROR_MSG)
 # TODO(xor-xor): As discussed with @mkurek, this class should be removed,
 # but since it is used in some cloud-related functionality, it will be
 # removed later.
-class ComponentModel(AutocompleteTooltipMixin, NamedMixin, models.Model):
+class ComponentModel(
+    AdminAbsoluteUrlMixin,
+    AutocompleteTooltipMixin,
+    NamedMixin,
+    models.Model
+):
     speed = models.PositiveIntegerField(
         verbose_name=_('speed (MHz)'),
         default=0,
@@ -65,7 +74,7 @@ class ComponentModel(AutocompleteTooltipMixin, NamedMixin, models.Model):
         return self.name
 
 
-class Component(TimeStampMixin, models.Model):
+class Component(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
     base_object = models.ForeignKey(BaseObject, related_name='%(class)s_set')
     # TODO(xor-xor): This field should be removed along with ComponentModel
     # class.
