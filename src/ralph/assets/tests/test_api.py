@@ -803,12 +803,12 @@ class DCHostAPITests(RalphAPITestCase):
         )
         self.virtual.update_custom_field('test_cf', 'def')
         se = ServiceEnvironmentFactory(service__uid='sc-333')
-        # this will create additional DataCenterAsset (hypervisor)
         self.cloud_host = CloudHostFullFactory(
             configuration_path__module__name='ralph3',
             service_env=se,
             parent__service_env=se,
-            hostname='aaaa'
+            hostname='aaaa',
+            hypervisor=self.dc_asset
         )
         self.cloud_host.ip_addresses = ['10.20.30.40']
         self.cloud_host.update_custom_field('test_cf', 'xyz')
@@ -818,7 +818,7 @@ class DCHostAPITests(RalphAPITestCase):
         with self.assertNumQueries(11):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 4)
+        self.assertEqual(response.data['count'], 3)
 
     def test_filter_by_type_dc_asset(self):
         url = '{}?{}'.format(
@@ -827,7 +827,7 @@ class DCHostAPITests(RalphAPITestCase):
         )
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 2)
+        self.assertEqual(response.data['count'], 1)
         dca = response.data['results'][0]
         self.assertEqual(dca['hostname'], self.dc_asset.hostname)
         self.assertEqual(len(dca['ethernet']), 3)
