@@ -383,6 +383,9 @@ ZABBIX_IMPORT_HOSTS = False
 #such as Piwik, Google Analytics. Default: none - no tracking at all.
 TRACKING_CODE = None
 
+HIDE_RALPH_MENU = False
+HOME_REDIRECT_URL = None
+
 ENABLE_HERMES_INTEGRATION = False
 HERMES = {
     'ENABLED': ENABLE_HERMES_INTEGRATION
@@ -811,5 +814,3 @@ NG_EXPORTER = {
     # non-conflicting. this is achieved by adding below constant
     'discovery_datacenter_constant': 1000,
 }
-HIDE_RALPH_MENU = False
-HOME_REDIRECT_URL = None
