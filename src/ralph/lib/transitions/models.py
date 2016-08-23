@@ -189,7 +189,7 @@ def _check_instances_for_transition(
                     )
                 )
                 errors[instance].append(
-                    'Another async transition for this object is already stared'
+                    'Another async transition for this object is already started'  # noqa
                 )
 
     if errors:
