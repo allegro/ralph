@@ -547,7 +547,7 @@ class BaseObjectHostnameFilter(SimpleListFilter):
             Q(hostname__icontains=self.value()) |
             Q(ethernet_set__ipaddress__hostname__icontains=self.value())
         ]
-        return queryset.filter(*queries)
+        return queryset.filter(*queries).distinct()
 
     def lookups(self, request, model_admin):
         return (
