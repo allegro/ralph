@@ -37,7 +37,7 @@ class DomainStatus(Choices):
 
 class Domain(BaseObject, AdminAbsoluteUrlMixin):
     name = models.CharField(
-        verbose_name=_('Domain name'),
+        verbose_name=_('domain name'),
         help_text=_('Full domain name'),
         unique=True,
         max_length=255

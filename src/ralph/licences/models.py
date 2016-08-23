@@ -166,22 +166,22 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
         on_delete=models.PROTECT,
     )
     number_bought = models.IntegerField(
-        verbose_name=_('Number of purchased items'),
+        verbose_name=_('number of purchased items'),
     )
     sn = models.TextField(
-        verbose_name=_('SN / Key'),
+        verbose_name=_('SN / key'),
         null=True,
         blank=True,
     )
     niw = models.CharField(
         max_length=200,
-        verbose_name=_('Inventory number'),
+        verbose_name=_('inventory number'),
         null=False,
         unique=True,
         default='N/A',
     )
     invoice_date = models.DateField(
-        verbose_name=_('Invoice date'),
+        verbose_name=_('invoice date'),
         null=True,
         blank=True,
     )
@@ -205,7 +205,7 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
     )
     base_objects = models.ManyToManyField(
         BaseObject,
-        verbose_name=_('Assigned base objects'),
+        verbose_name=_('assigned base objects'),
         through='BaseObjectLicence',
         related_name='+',
     )
@@ -219,7 +219,7 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
         max_length=128, db_index=True, null=True, blank=True
     )
     license_details = models.CharField(
-        verbose_name=_('License details'),
+        verbose_name=_('license details'),
         max_length=1024,
         blank=True,
         default='',

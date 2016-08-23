@@ -133,7 +133,11 @@ class CloudProject(AdminAbsoluteUrlMixin, BaseObject):
     cloudprovider = models.ForeignKey(CloudProvider)
     cloudprovider._autocomplete = False
 
-    project_id = models.CharField(unique=True, max_length=100)
+    project_id = models.CharField(
+        verbose_name=_('project ID'),
+        unique=True,
+        max_length=100
+    )
     name = models.CharField(max_length=100)
 
     def __str__(self):
@@ -159,8 +163,15 @@ class CloudHost(AdminAbsoluteUrlMixin, BaseObject):
     cloudprovider = models.ForeignKey(CloudProvider)
     cloudprovider._autocomplete = False
 
-    host_id = models.CharField(unique=True, max_length=100)
-    hostname = models.CharField(max_length=100)
+    host_id = models.CharField(
+        verbose_name=_('host ID'),
+        unique=True,
+        max_length=100
+    )
+    hostname = models.CharField(
+        verbose_name=_('hostname'),
+        max_length=100
+    )
     hypervisor = models.ForeignKey(DataCenterAsset, blank=True, null=True)
     image_name = models.CharField(max_length=255, null=True, blank=True)
 

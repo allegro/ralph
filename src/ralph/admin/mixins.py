@@ -12,6 +12,7 @@ from django.contrib.admin.views.main import ORDER_VAR
 from django.contrib.auth import get_permission_codename
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.core import checks
+from django.core.exceptions import FieldDoesNotExist
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.http import HttpResponseRedirect
@@ -25,6 +26,7 @@ from reversion import VersionAdmin
 from ralph.admin import widgets
 from ralph.admin.autocomplete import AjaxAutocompleteMixin
 from ralph.admin.helpers import get_field_by_relation_path
+from ralph.admin.sites import ralph_site
 from ralph.admin.views.main import BULK_EDIT_VAR, BULK_EDIT_VAR_IDS
 from ralph.helpers import add_request_to_form
 from ralph.lib.mixins.fields import TicketIdField, TicketIdFieldWidget
@@ -54,6 +56,34 @@ def get_inline_media():
     ])
     return forms.Media(
         js=[static('%s' % url) for url in js],
+    )
+
+
+def initialize_search_form(model, context):
+    """
+    Add extra variables (search_fields, search_url) which are used by
+    search form to template's context.
+
+    Args:
+        context (dict): context from view
+    """
+    model_admin = ralph_site._registry[model]
+    verbose_search_fields = []
+    admin_search_fields = model_admin.search_fields
+    for field_name in admin_search_fields:
+        try:
+            field = get_field_by_relation_path(model, field_name)
+        except FieldDoesNotExist:
+            verbose_search_fields.append(field_name.split('__')[-1])
+        else:
+            verbose_search_fields.append(field.verbose_name)
+    context['search_fields'] = sorted(set(verbose_search_fields))
+    context['model_verbose_name'] = model._meta.verbose_name
+    context['search_url'] = reverse(
+        'admin:{app_label}_{model_name}_changelist'.format(
+            app_label=model._meta.app_label,
+            model_name=model._meta.model_name,
+        )
     )
 
 
@@ -228,29 +258,8 @@ class RalphAdminMixin(Ralph2SyncAdminMixin, RalphAutocompleteMixin):
         else:
             return None
 
-    def _initialize_search_form(self, extra_context, fields_from_model=True):
-        """
-        Add to template's context extra variables (search_fields,
-        search_url) which are used by search form.
-
-        Args:
-            extra_context (dict): context from view
-            fields_from_model (bool): if True (by default) then fetching
-                field name from database model, otherwise fetching from
-                admin model (search_field)
-        """
-        search_fields = self.search_fields if not fields_from_model else []
-        if fields_from_model:
-            for field_name in self.search_fields:
-                field = get_field_by_relation_path(self.model, field_name)
-                search_fields.append(field.verbose_name)
-        extra_context['search_fields'] = set(search_fields)
-        extra_context['search_url'] = reverse(
-            'admin:{app_label}_{model_name}_changelist'.format(
-                app_label=self.model._meta.app_label,
-                model_name=self.model._meta.model_name,
-            )
-        )
+    def _initialize_search_form(self, extra_context):
+        initialize_search_form(self.model, extra_context)
 
     def changelist_view(self, request, extra_context=None):
         """Override change list from django."""

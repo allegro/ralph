@@ -35,11 +35,9 @@
             <!-- end cache -->
             {% endcache %}
             <ul class="right">
-              {% if cl.opts %}
-                <li class="has-form">
-                  {% contextual_search_form search_url search_fields cl.opts.verbose_name %}
-                </li>
-              {% endif %}
+              <li class="has-form">
+                {% contextual_search_form search_url search_fields model_verbose_name %}
+              </li>
               {% block usertools %}
                 {% if has_permission %}
                   {% block welcome-msg %}
