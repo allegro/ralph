@@ -807,7 +807,8 @@ class DCHostAPITests(RalphAPITestCase):
             configuration_path__module__name='ralph3',
             service_env=se,
             parent__service_env=se,
-            hostname='aaaa'
+            hostname='aaaa',
+            hypervisor=self.dc_asset
         )
         self.cloud_host.ip_addresses = ['10.20.30.40']
         self.cloud_host.update_custom_field('test_cf', 'xyz')
