@@ -97,7 +97,7 @@ class DCHostHostnameFilter(SimpleListFilter):
             Q(**{'{}__icontains'.format(field): self.value()})
             for field in fields
         ]
-        return queryset.filter(reduce(operator.or_, queries))
+        return queryset.filter(reduce(operator.or_, queries)).distinct()
 
     def lookups(self, request, model_admin):
         return (
