@@ -771,6 +771,15 @@ class BaseObjectAPITests(RalphAPITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(len(response.data['results']), 1)
 
+    def test_filter_by_service_env_env_name(self):
+        url = '{}?{}'.format(
+            reverse('baseobject-list'), urlencode(
+                {'env': 'prod'}
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 1)
+
 
 class DCHostAPITests(RalphAPITestCase):
     def setUp(self):
@@ -800,6 +809,7 @@ class DCHostAPITests(RalphAPITestCase):
             parent=self.dc_asset,
             configuration_path__module__name='ralph2',
             service_env__service__uid='sc-222',
+            service_env__environment__name='some_env',
         )
         self.virtual.update_custom_field('test_cf', 'def')
         se = ServiceEnvironmentFactory(service__uid='sc-333')
@@ -929,6 +939,14 @@ class DCHostAPITests(RalphAPITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(len(response.data['results']), 1)
         self.assertEqual(response.data['results'][0]['id'], self.dc_asset.id)
+
+    def test_filter_by_env_name(self):
+        url = '{}?{}'.format(
+            reverse('dchost-list'), urlencode({'env': 'some_env'})
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
 
 
 class ConfigurationModuleAPITests(RalphAPITestCase):
