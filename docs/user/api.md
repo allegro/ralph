@@ -161,3 +161,83 @@ Ralph API supports multiple query filers:
 * filter by tags using `tag` query param. Multiple tags could be specified in url query. Example: `<URL>?tag=abc&tag=def&tag=123`
 
 > Fields lookups work with extended filters in `BaseObject` too, ex. `<URL>/base-objects/?name__startswith=s123`
+
+
+## Transitions API
+
+List of available transition for the selected model
+
+```GET /api/data_center/datacenterasset/46/transitions/```
+
+Results in:
+
+```JSON
+{
+    "count": 2,
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "id": 5,
+            "url": "<URL>/api/transitions/5/",
+            "source": [
+                "new",
+                "in use",
+                "free",
+                "damaged",
+                "liquidated",
+                "to deploy"
+            ],
+            "target": "Keep orginal status",
+            "name": "Change rack",
+            "run_asynchronously": true,
+            "async_service_name": "ASYNC_TRANSITIONS",
+            "model": "<URL>/api/transitions-model/2/",
+            "actions": [
+                "<URL>/api/transitions-action/22/"
+            ]
+        },
+...
+```
+
+List of POST parameters to run transition for transition:
+
+```OPTIONS <URL>/api/virtual/virtualserver/767/transitions/Initialization/```
+
+Results in:
+
+```JSON
+{
+  "name": "Transition",
+  "description": "Transition API endpoint for selected model.\n\nExample:\n    OPTIONS: /api/<app_label>/<model>/<pk>/transitions/<transition_name>\n    or <transiton_id>",
+  "renders": [
+    "application/json",
+    "text/html",
+    "application/xml"
+  ],
+  "parses": [
+    "application/json",
+    "application/x-www-form-urlencoded",
+    "multipart/form-data",
+    "application/xml"
+  ],
+  "actions": {
+    "POST": {
+      "network_environment": {
+        "type": "choice",
+        "required": true,
+        "read_only": false,
+        "label": "Network environment",
+        "choices": [
+          {
+            "display_name": "aa0003bb (testowa)",
+            "value": "1"
+          },
+          {
+            "display_name": "Other",
+            "value": "__other__"
+          }
+        ]
+      },
+	...
+```

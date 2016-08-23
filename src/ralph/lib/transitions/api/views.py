@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from django import forms
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError as DRFValidationError
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -72,22 +74,37 @@ class TransitionViewSet(RalphReadOnlyAPIViewSet):
     queryset = Transition.objects.all()
     serializer_class = TransitionSerializer
     prefetch_related = ['actions']
+    select_related = ['model', 'model__content_type']
 
 
-class TransitionView(APIView):
+class AvailableTransitionViewSet(TransitionViewSet):
+    """
+    Available transitions for object.
 
-    def dispatch(self, request, transition_pk, obj_pk, *args, **kwargs):
-        self.transition = Transition.objects.get(
-            pk=transition_pk
+    Example:
+        GET: /api/<app_label>/<model>/<object_pk>/transitions
+    """
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(
+            model__content_type__model=self.kwargs['model'],
+            model__content_type__app_label=self.kwargs['app_label']
         )
+        return queryset
+
+
+class TransitionViewMixin(APIView):
+
+    def initial(self, request, *args, **kwargs):
         self.obj = self.transition.model.content_type.get_object_for_this_type(
-            pk=obj_pk
+            pk=kwargs['obj_pk']
         )
         self.objects = [self.obj]
         self.actions, self.return_attachment = collect_actions(
             self.obj, self.transition
         )
-        return super().dispatch(request, *args, **kwargs)
+        super().initial(request, *args, **kwargs)
 
     def get_fields(self):
         fields = {}
@@ -179,3 +196,41 @@ class TransitionView(APIView):
             ]
             status_code = status.HTTP_202_ACCEPTED
         return Response(result, status=status_code)
+
+
+class TransitionView(TransitionViewMixin):
+    """
+    Transition API endpoint for selected model.
+
+    Example:
+        OPTIONS: /api/<app_label>/<model>/<pk>/transitions/<transition_name>
+        or <transiton_id>
+    """
+
+    def initial(self, request, *args, **kwargs):
+        try:
+            filters = {
+                'model__content_type__model': kwargs['model'],
+                'model__content_type__app_label': kwargs['app_label'],
+            }
+            if kwargs.get('transition_pk'):
+                filters['pk'] = kwargs['transition_pk']
+            elif kwargs.get('transition_name'):
+                filters['name'] = kwargs['transition_name']
+
+            self.transition = Transition.objects.get(**filters)
+        except ObjectDoesNotExist:
+            raise NotFound('Transition not found!')
+        super().initial(request, *args, **kwargs)
+
+
+class TransitionByIdView(TransitionViewMixin):
+
+    def initial(self, request, *args, **kwargs):
+        try:
+            self.transition = Transition.objects.get(
+                pk=kwargs['transition_pk']
+            )
+        except ObjectDoesNotExist:
+            raise NotFound('Transition not found!')
+        super().initial(request, *args, **kwargs)
