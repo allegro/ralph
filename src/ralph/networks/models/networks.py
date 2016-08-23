@@ -586,6 +586,7 @@ class IPAddress(
         null=True,
         blank=True,
         default=None,
+        db_index=True
         # TODO: unique
     )
     number = models.DecimalField(
