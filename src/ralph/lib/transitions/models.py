@@ -659,7 +659,6 @@ def update_models_attrs(sender, **kwargs):
     """
     if sender.name == 'ralph.' + Transition._meta.app_label:
         for model, field_names in _transitions_fields.items():
-            ContentType.objects.get_for_model(model)
             content_type = ContentType.objects.get_for_model(model)
             for field_name in field_names:
                 transition_model, _ = TransitionModel.objects.get_or_create(
