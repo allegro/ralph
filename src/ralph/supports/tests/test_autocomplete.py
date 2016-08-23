@@ -36,7 +36,7 @@ class SupportAutocompleteTest(TestCase, ClientMixin):
             'Asset type: all\n'
             'Producer: {producer}\n'
             'Supplier: supplier1\n'
-            'Serial no: {serial_no}\n'
+            'Serial number: {serial_no}\n'
             'Support type: type1\n'
         ).format(
             date_to=self.support.date_to,
