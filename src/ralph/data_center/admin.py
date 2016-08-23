@@ -532,9 +532,7 @@ class DCHostAdmin(RalphAdmin):
         self.opts = BaseObject._meta
 
     def _initialize_search_form(self, extra_context, fields_from_model=True):
-        return super()._initialize_search_form(
-            extra_context, fields_from_model=False
-        )
+        return super()._initialize_search_form(extra_context)
 
     def show_location(self, obj):
         return getattr(obj, 'location', '')

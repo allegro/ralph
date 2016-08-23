@@ -154,11 +154,7 @@ class RalphDetailView(
         context['change_views'] = self.views
         context['media'] = get_inline_media()
         context['summary_fields'] = self.summary_fields or []
-        initialize_search_form(
-            self.object.__class__,
-            context,
-            fields_from_model=False
-        )
+        initialize_search_form(self.object.__class__, context)
         return context
 
     @classmethod

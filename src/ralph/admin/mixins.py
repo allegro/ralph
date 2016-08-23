@@ -58,26 +58,20 @@ def get_inline_media():
     )
 
 
-def initialize_search_form(model, context, fields_from_model=True):
+def initialize_search_form(model, context):
     """
-    Add to template's context extra variables (search_fields,
-    search_url) which are used by search form.
+    Add extra variables (search_fields, search_url) which are used by
+    search form to template's context.
 
     Args:
         context (dict): context from view
-        fields_from_model (bool): if True (by default) then fetching
-            field name from database model, otherwise fetching from
-            admin model (search_field)
     """
     model_admin = ralph_site._registry[model]
     verbose_search_fields = []
     admin_search_fields = model_admin.search_fields
-    if fields_from_model:
-        for field_name in admin_search_fields:
-            field = get_field_by_relation_path(model, field_name)
-            verbose_search_fields.append(field.verbose_name)
-    else:
-        verbose_search_fields = admin_search_fields[:]
+    for field_name in admin_search_fields:
+        field = get_field_by_relation_path(model, field_name)
+        verbose_search_fields.append(field.verbose_name)
     context['search_fields'] = set(verbose_search_fields)
     context['model_verbose_name'] = model._meta.verbose_name
     context['search_url'] = reverse(
@@ -259,8 +253,8 @@ class RalphAdminMixin(Ralph2SyncAdminMixin, RalphAutocompleteMixin):
         else:
             return None
 
-    def _initialize_search_form(self, extra_context, fields_from_model=True):
-        initialize_search_form(self.model, extra_context, fields_from_model)
+    def _initialize_search_form(self, extra_context):
+        initialize_search_form(self.model, extra_context)
 
     def changelist_view(self, request, extra_context=None):
         """Override change list from django."""
@@ -315,7 +309,7 @@ class RalphAdminMixin(Ralph2SyncAdminMixin, RalphAutocompleteMixin):
                 views.append(view)
             extra_context['change_views'] = views
         extra_context['header_obj_name'] = self.model._meta.verbose_name
-        self._initialize_search_form(extra_context, fields_from_model=False)
+        self._initialize_search_form(extra_context)
         extra_context['admin_view'] = self
         return super(RalphAdminMixin, self).changeform_view(
             request, object_id, form_url, extra_context
