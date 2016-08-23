@@ -58,6 +58,7 @@ class OpenstackModelsTestCase(RalphAPITestCase):
             parent=self.cloud_project,
             cloudflavor=self.cloud_flavor
         )
+        self.cloud_host2 = CloudHostFactory()
 
         self.test_cpu = ComponentModel.objects.create(
             name='vcpu1',
