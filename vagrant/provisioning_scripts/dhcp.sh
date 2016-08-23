@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo apt-get install isc-dhcp-server
+sudo apt-get install -y isc-dhcp-server
 
 ETH='eth1'
 IP=`/sbin/ifconfig $ETH | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}'`
