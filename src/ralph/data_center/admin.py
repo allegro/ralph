@@ -11,6 +11,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import (
+    BaseObjectHostnameFilter,
     ChoicesListFilter,
     IPFilter,
     LiquidatedStatusFilter,
@@ -88,7 +89,8 @@ class DCHostHostnameFilter(SimpleListFilter):
             'asset__hostname',
             'cloudhost__hostname',
             'cluster__hostname',
-            'virtualserver__hostname'
+            'virtualserver__hostname',
+            'ethernet_set__ipaddress__hostname'
         ]
         # TODO: simple if hostname would be in one model
         queries = [
@@ -152,7 +154,8 @@ class ClusterAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     list_display = ['id', 'name', 'hostname', 'type']
     list_select_related = ['type']
     list_filter = [
-        'name', 'type', 'service_env', 'configuration_path', 'status'
+        'name', BaseObjectHostnameFilter, 'type', 'service_env',
+        'configuration_path', 'status'
     ]
     if settings.ENABLE_DNSAAS_INTEGRATION:
         change_views = [ClusterDNSView]
