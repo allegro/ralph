@@ -71,7 +71,7 @@ class CloudFlavor(AdminAbsoluteUrlMixin, BaseObject):
         # use cached components if already prefetched (using prefetch_related)
         # otherwise, perform regular SQL query
         try:
-            components = self._prefetched_objects_cache['virtualcomponent']
+            components = self._prefetched_objects_cache['virtualcomponent_set']
         except (KeyError, AttributeError):
             return self.virtualcomponent_set.filter(
                 model__type=model_type
