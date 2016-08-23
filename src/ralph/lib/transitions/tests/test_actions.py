@@ -223,7 +223,7 @@ class TransitionActionTest(TransitionTestCase):
             )
         )
         self.assertIn(
-            'Another async transition for this object is already stared',
+            'Another async transition for this object is already started',
             str(list(request.context['messages'])[1])
         )
 
@@ -245,7 +245,7 @@ class TransitionActionTest(TransitionTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data, {
             'non_field_errors': [
-                'Another async transition for this object is already stared'
+                'Another async transition for this object is already started'
             ]
         })
 
