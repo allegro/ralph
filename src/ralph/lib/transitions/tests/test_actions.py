@@ -3,7 +3,7 @@ from dj.choices import Country
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
-from django.test import Client
+from django.test import Client, TransactionTestCase
 from rest_framework.test import APIClient
 
 from ralph.accounts.tests.factories import UserFactory
@@ -16,11 +16,14 @@ from ralph.back_office.tests.factories import (
 )
 from ralph.lib.external_services.models import JobStatus
 from ralph.lib.transitions.models import TransitionJob, TransitionsHistory
-from ralph.lib.transitions.tests import TransitionTestCase
+from ralph.lib.transitions.tests import (
+    TransitionTestCase,
+    TransitionTestCaseMixin
+)
 from ralph.licences.tests.factories import LicenceFactory
 
 
-class TransitionActionTest(TransitionTestCase):
+class TransitionActionTestMixin(object):
     def setUp(self):
         super().setUp()
         self.warehouse_1 = WarehouseFactory(name='api_test')
@@ -92,6 +95,8 @@ class TransitionActionTest(TransitionTestCase):
             object_id=object_id
         ).last()
 
+
+class TransitionActionTest(TransitionActionTestMixin, TransitionTestCase):
     def test_sync_api(self):
         response = self.api_client.post(
             reverse(
@@ -162,6 +167,36 @@ class TransitionActionTest(TransitionTestCase):
             ['This field is required.']
         )
 
+    def test_api_options(self):
+        request = self.api_client.options(
+            reverse(
+                'transition-view',
+                args=(self.transition_1.id, self.bo.pk)
+            )
+        )
+        self.assertEqual(request.status_code, 200)
+        self.assertEqual(
+            request.data['actions']['POST'][
+                'remarks'
+            ]['type'], 'string'
+        )
+        self.assertEqual(
+            request.data['actions']['POST'][
+                'loan_end_date'
+            ]['type'], 'date'
+        )
+        self.assertEqual(
+            request.data['actions']['POST'][
+                'country'
+            ]['type'], 'choice'
+        )
+
+
+class TestAsyncActions(
+    TransitionActionTestMixin,
+    TransitionTestCaseMixin,
+    TransactionTestCase
+):
     def test_async_api(self):
         response = self.api_client.post(
             reverse(
@@ -248,27 +283,3 @@ class TransitionActionTest(TransitionTestCase):
                 'Another async transition for this object is already started'
             ]
         })
-
-    def test_api_options(self):
-        request = self.api_client.options(
-            reverse(
-                'transitions-view',
-                args=(self.transition_1.id, self.bo.pk)
-            )
-        )
-        self.assertEqual(request.status_code, 200)
-        self.assertEqual(
-            request.data['actions']['POST'][
-                'remarks'
-            ]['type'], 'string'
-        )
-        self.assertEqual(
-            request.data['actions']['POST'][
-                'loan_end_date'
-            ]['type'], 'date'
-        )
-        self.assertEqual(
-            request.data['actions']['POST'][
-                'country'
-            ]['type'], 'choice'
-        )

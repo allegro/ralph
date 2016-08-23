@@ -12,7 +12,8 @@ from ralph.lib.transitions.models import (
     _check_and_get_transition,
     _create_graph_from_actions,
     run_field_transition,
-    Transition
+    Transition,
+    TransitionModel
 )
 from ralph.lib.transitions.tests import TransitionTestCase
 from ralph.tests.models import Foo, Order, OrderStatus
@@ -125,7 +126,7 @@ class TransitionsTest(TransitionTestCase):
         order = Order.objects.create(status=OrderStatus.to_send.id)
         Transition.objects.create(
             name=transition_name,
-            model=order.transition_models['status'],
+            model=TransitionModel.get_for_field(order, 'status'),
             source=[OrderStatus.to_send.id],
             target=OrderStatus.sended.id,
         )
@@ -147,7 +148,7 @@ class TransitionsTest(TransitionTestCase):
         order = Order.objects.create()
         transition = Transition.objects.create(
             name='send',
-            model=order.transition_models['status'],
+            model=TransitionModel.get_for_field(order, 'status'),
             source=[OrderStatus.new.id],
             target=OrderStatus.sended.id,
         )
@@ -178,7 +179,7 @@ class TransitionsTest(TransitionTestCase):
         order = Order.objects.create()
         transition = Transition.objects.create(
             name='send',
-            model=order.transition_models['status'],
+            model=TransitionModel.get_for_field(order, 'status'),
             source=[OrderStatus.to_send.id],
             target=OrderStatus.sended.id,
         )

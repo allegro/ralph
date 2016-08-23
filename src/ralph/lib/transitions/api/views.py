@@ -31,7 +31,7 @@ from ralph.lib.transitions.models import (
     TransitionJob,
     TransitionModel
 )
-from ralph.lib.transitions.views import collect_actions
+from ralph.lib.transitions.views import collect_actions, NonAtomicView
 
 FIELD_MAP = {
     forms.CharField: (serializers.CharField, [
@@ -99,7 +99,7 @@ class AvailableTransitionViewSet(TransitionViewSet):
         return queryset
 
 
-class TransitionViewMixin(APIView):
+class TransitionViewMixin(NonAtomicView, APIView):
 
     def initial(self, request, *args, **kwargs):
         self.obj = self.transition.model.content_type.get_object_for_this_type(

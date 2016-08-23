@@ -4,6 +4,7 @@ from django import forms
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.db.models.loading import get_model
+from django.db.transaction import atomic, non_atomic_requests
 from django.http import (
     Http404,
     HttpResponseBadRequest,
@@ -12,6 +13,7 @@ from django.http import (
 )
 from django.shortcuts import get_object_or_404
 from django.utils.datastructures import MultiValueDict
+from django.utils.decorators import classonlymethod
 from django.utils.http import urlencode
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -42,7 +44,18 @@ def collect_actions(obj, transition):
     return actions, any(return_attachment)
 
 
-class TransitionViewMixin(object):
+class NonAtomicView(object):
+    @classonlymethod
+    def as_view(cls, **initkwargs):
+        """
+        Don't run (async) request for transition atomically. When job is
+        scheduled to worker, transaction has to be already commited, to allow
+        worker to fetch Job from database.
+        """
+        return non_atomic_requests(super().as_view(**initkwargs))
+
+
+class TransitionViewMixin(NonAtomicView, object):
     template_name = 'transitions/run_transition.html'
 
     def _objects_are_valid(self):
@@ -146,9 +159,11 @@ class TransitionViewMixin(object):
 
     def form_valid(self, form=None):
         if self.transition.is_async:
+            # commited manually in Job.run
             return self._run_async_transition(form)
         else:
-            return self._run_synchronous_transition(form)
+            with atomic():
+                return self._run_synchronous_transition(form)
 
     def _run_async_transition(self, form):
         job_ids = run_transition(

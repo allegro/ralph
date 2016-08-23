@@ -143,10 +143,10 @@ def _check_and_get_transition(obj, transition, field):
             'Model {} not found in registry'.format(obj.__class__)
         )
     if isinstance(transition, str):
-        transition_model = obj.transition_models[field]
         transition = Transition.objects.get(
             name=transition,
-            model=transition_model,
+            model__content_type=ContentType.objects.get_for_model(obj),
+            model__field_name=field
         )
     return transition
 
@@ -410,10 +410,9 @@ def get_available_transitions_for_field(instance, field, user=None):
     """
     Returns list of all available transitions for field.
     """
-    if not hasattr(instance, 'transition_models'):
-        return []
     transitions = Transition.objects.filter(
-        model=instance.transition_models[field],
+        model__content_type=ContentType.objects.get_for_model(instance),
+        model__field_name=field,
     ).select_related('model', 'model__content_type').prefetch_related('actions')
     result = []
     for transition in transitions:
@@ -459,6 +458,13 @@ class TransitionModel(AdminAbsoluteUrlMixin, models.Model):
 
     def __str__(self):
         return '{} {}'.format(self.content_type, self.field_name)
+
+    @classmethod
+    def get_for_field(cls, model, field_name):
+        return cls._default_manager.get(
+            content_type=ContentType.objects.get_for_model(model),
+            field_name=field_name
+        )
 
 
 class Transition(models.Model):
@@ -647,22 +653,21 @@ class TransitionJobAction(TimeStampMixin):
     # TODO: add retries field and max retries param for async action
 
 
-def update_models_attrs():
+def update_models_attrs(sender, **kwargs):
     """
-    Add to class new attribute `transition_models` which is dict with all
-    transitionable models (key) and fields (value as list).
+    Create TransitionModel for each model which has TransitionField.
     """
-    for model, field_names in _transitions_fields.items():
-        ContentType.objects.get_for_model(model)
-        content_type = ContentType.objects.get_for_model(model)
-        transition_models = {}
-        for field_name in field_names:
-            transition_model, _ = TransitionModel.objects.get_or_create(
-                content_type=content_type,
-                field_name=field_name
-            )
-            transition_models[field_name] = transition_model
-        setattr(model, 'transition_models', transition_models)
+    if sender.name == 'ralph.' + Transition._meta.app_label:
+        for model, field_names in _transitions_fields.items():
+            content_type = ContentType.objects.get_for_model(model)
+            for field_name in field_names:
+                transition_model, _ = TransitionModel.objects.get_or_create(
+                    content_type=content_type,
+                    field_name=field_name
+                )
+
+
+post_migrate.connect(update_models_attrs)
 
 
 def update_transitions_after_migrate(**kwargs):
