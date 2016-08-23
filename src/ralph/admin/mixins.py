@@ -12,6 +12,7 @@ from django.contrib.admin.views.main import ORDER_VAR
 from django.contrib.auth import get_permission_codename
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.core import checks
+from django.core.exceptions import FieldDoesNotExist
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.http import HttpResponseRedirect
@@ -70,8 +71,12 @@ def initialize_search_form(model, context):
     verbose_search_fields = []
     admin_search_fields = model_admin.search_fields
     for field_name in admin_search_fields:
-        field = get_field_by_relation_path(model, field_name)
-        verbose_search_fields.append(field.verbose_name)
+        try:
+            field = get_field_by_relation_path(model, field_name)
+        except FieldDoesNotExist:
+            verbose_search_fields.append(field_name.split('__')[-1])
+        else:
+            verbose_search_fields.append(field.verbose_name)
     context['search_fields'] = sorted(set(verbose_search_fields))
     context['model_verbose_name'] = model._meta.verbose_name
     context['search_url'] = reverse(
