@@ -138,6 +138,7 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
         'price': ['asset__price'],
         'ip': ['ethernet_set__ipaddress__address'],
         'service': ['service_env__service__uid', 'service_env__service__name'],
+        'env': ['service_env__environment__name'],
     }
     additional_filter_class = BaseObjectFilterSet
 
@@ -228,7 +229,7 @@ class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     serializer_class = serializers.DCHostSerializer
     http_method_names = ['get', 'options', 'head']
     filter_fields = [
-        'id', 'service_env', 'service_env', 'service_env__service__uid',
+        'id', 'service_env', 'service_env__service__uid',
         'content_type',
     ]
     select_related = [
@@ -260,6 +261,7 @@ class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         'ip': ['ethernet_set__ipaddress__address'],
         'service': ['service_env__service__uid', 'service_env__service__name'],
         'object_type': ['content_type__model'],
+        'env': ['service_env__environment__name'],
     }
     additional_filter_class = DCHostFilterSet
 
