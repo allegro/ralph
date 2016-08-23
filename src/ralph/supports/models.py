@@ -69,7 +69,11 @@ class Support(
     asset_type = models.PositiveSmallIntegerField(
         choices=ObjectModelType(), default=ObjectModelType.all.id,
     )
-    contract_id = models.CharField(max_length=50, blank=False)
+    contract_id = models.CharField(
+        verbose_name=_('contract ID'),
+        max_length=50,
+        blank=False
+    )
     description = models.CharField(max_length=100, blank=True)
     price = models.DecimalField(
         max_digits=10, decimal_places=2, default=0, null=True, blank=True,
@@ -88,10 +92,21 @@ class Support(
     )
     producer = models.CharField(max_length=100, blank=True)
     supplier = models.CharField(max_length=100, blank=True)
-    serial_no = models.CharField(max_length=100, blank=True)
-    invoice_no = models.CharField(max_length=100, blank=True, db_index=True)
+    serial_no = models.CharField(
+        verbose_name=_('serial number'),
+        max_length=100,
+        blank=True
+    )
+    invoice_no = models.CharField(
+        verbose_name=_('invoice number'),
+        max_length=100,
+        blank=True,
+        db_index=True
+    )
     invoice_date = models.DateField(
-        null=True, blank=True, verbose_name=_('Invoice date'),
+        verbose_name=_('invoice date'),
+        null=True,
+        blank=True
     )
     period_in_months = models.IntegerField(null=True, blank=True)
     property_of = models.ForeignKey(

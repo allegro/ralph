@@ -581,7 +581,7 @@ class IPAddress(
         null=False,
     )
     hostname = NullableCharField(
-        verbose_name=_('Hostname'),
+        verbose_name=_('hostname'),
         max_length=255,
         null=True,
         blank=True,

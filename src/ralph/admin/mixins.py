@@ -72,7 +72,7 @@ def initialize_search_form(model, context):
     for field_name in admin_search_fields:
         field = get_field_by_relation_path(model, field_name)
         verbose_search_fields.append(field.verbose_name)
-    context['search_fields'] = set(verbose_search_fields)
+    context['search_fields'] = sorted(set(verbose_search_fields))
     context['model_verbose_name'] = model._meta.verbose_name
     context['search_url'] = reverse(
         'admin:{app_label}_{model_name}_changelist'.format(

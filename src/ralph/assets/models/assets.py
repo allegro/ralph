@@ -356,16 +356,18 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         default=None,
         max_length=200,
         null=True,
-        verbose_name=_('Inventory number'),
+        verbose_name=_('inventory number'),
     )
     required_support = models.BooleanField(default=False)
 
     order_no = models.CharField(
+        verbose_name=_('order number'),
         blank=True,
         max_length=50,
         null=True,
     )
     invoice_no = models.CharField(
+        verbose_name=_('invoice number'),
         blank=True,
         db_index=True,
         max_length=128,
