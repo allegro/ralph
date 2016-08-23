@@ -40,6 +40,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             rack=self.rack,
             position=10,
             model=self.model,
+            service_env__environment__name='some_env'
         )
         self.dc_asset.service_env.service.business_owners = [self.user1]
         self.dc_asset.service_env.service.technical_owners = [self.user2]
@@ -238,6 +239,14 @@ class DataCenterAssetAPITests(RalphAPITestCase):
                 self.dc_asset.service_env.service.name,
             )
         )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['count'], 1
+        )
+
+    def test_filter_by_env_name(self):
+        url = reverse('datacenterasset-list') + '?env=some_env'
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(

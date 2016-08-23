@@ -214,7 +214,8 @@ class BaseObjectViewSetMixin(object):
     Base class for viewsets that inherits from BaseObject
     """
     extended_filter_fields = {
-        'service': ['service_env__service__uid', 'service_env__service__name']
+        'service': ['service_env__service__uid', 'service_env__service__name'],
+        'env': ['service_env__environment__name'],
     }
 
 

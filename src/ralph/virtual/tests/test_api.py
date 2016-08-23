@@ -9,6 +9,7 @@ from ralph.assets.models.components import ComponentModel
 from ralph.assets.tests.factories import (
     EnvironmentFactory,
     EthernetFactory,
+    ServiceEnvironmentFactory,
     ServiceFactory
 )
 from ralph.data_center.tests.factories import (
@@ -306,7 +307,9 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         self.hypervisor = DataCenterAssetFactory()
         self.cluster = ClusterFactory()
         self.type = VirtualServerType.objects.create(name='XEN')
-        self.virtual_server = VirtualServerFullFactory()
+        self.virtual_server = VirtualServerFullFactory(
+            service_env__environment__name='some_env'
+        )
         self.virtual_server.service_env.service.business_owners = [self.user1]
         self.virtual_server.service_env.service.technical_owners = [self.user2]
         self.virtual_server.service_env.save()
@@ -461,6 +464,14 @@ class VirtualServerAPITestCase(RalphAPITestCase):
                 self.virtual_server.service_env.service.name,
             )
         )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['count'], 1
+        )
+
+    def test_filter_by_env_name(self):
+        url = reverse('virtualserver-list') + '?env=some_env'
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
