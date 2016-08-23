@@ -7,6 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.admin import RalphAdmin, RalphAdminForm, RalphTabularInline, register
 
 from ralph.admin.filters import (
+    BaseObjectHostnameFilter,
     IPFilter,
     TagsListFilter,
     TreeRelatedAutocompleteFilterWithDescendants
@@ -74,7 +75,7 @@ class VirtualServerAdmin(
     form = VirtualServerForm
     search_fields = ['hostname', 'sn', 'ethernet_set__ipaddress__hostname']
     list_filter = [
-        'sn', 'hostname', 'service_env', IPFilter,
+        BaseObjectHostnameFilter, 'sn', 'service_env', IPFilter,
         'parent', TagsListFilter,
         ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants)  # noqa
     ]
@@ -184,7 +185,8 @@ class CloudHostAdmin(CustomFieldValueAdminMixin, RalphAdmin):
                     'get_cloudproject', 'cloudflavor_name', 'host_id',
                     'created', 'image_name', 'get_tags']
     list_filter = [
-        'cloudprovider', 'service_env', 'cloudflavor', TagsListFilter
+        BaseObjectHostnameFilter, 'cloudprovider', 'service_env',
+        'cloudflavor', TagsListFilter
     ]
     list_select_related = [
         'cloudflavor', 'cloudprovider', 'parent__cloudproject',
@@ -194,7 +196,10 @@ class CloudHostAdmin(CustomFieldValueAdminMixin, RalphAdmin):
                        'get_cloudproject', 'get_cloudprovider',
                        'get_cpu', 'get_disk', 'get_hypervisor', 'get_memory',
                        'modified', 'parent', 'service_env', 'image_name']
-    search_fields = ['cloudflavor__name', 'hostname', 'host_id']
+    search_fields = [
+        'cloudflavor__name', 'host_id',
+        'hostname', 'ethernet_set__ipaddress__hostname'
+    ]
     raw_id_override_parent = {'parent': CloudProject}
     inlines = [CloudNetworkInline]
     change_views = [

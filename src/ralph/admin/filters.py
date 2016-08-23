@@ -535,6 +535,32 @@ class LiquidatedStatusFilter(SimpleListFilter):
         return queryset
 
 
+class BaseObjectHostnameFilter(SimpleListFilter):
+    title = _('Hostname')
+    parameter_name = 'hostname'
+    template = 'admin/filters/text_filter.html'
+
+    def queryset(self, request, queryset):
+        if not self.value():
+            return queryset
+        queries = [
+            Q(hostname__icontains=self.value()) |
+            Q(ethernet_set__ipaddress__hostname__icontains=self.value())
+        ]
+        return queryset.filter(*queries)
+
+    def lookups(self, request, model_admin):
+        return (
+            (1, _('Hostname')),
+        )
+
+    def choices(self, cl):
+        yield {
+            'selected': self.value(),
+            'parameter_name': self.parameter_name,
+        }
+
+
 def register_custom_filters():
     """
     Register custom filters for the Django admin.
