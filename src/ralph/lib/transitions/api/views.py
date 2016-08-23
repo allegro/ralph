@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
+import itertools
+
 from django import forms
 from django.core.urlresolvers import reverse
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.response import Response
+from rest_framework.settings import api_settings
 from rest_framework.views import APIView
 
 from ralph.api import RalphReadOnlyAPIViewSet
@@ -16,7 +19,9 @@ from ralph.lib.transitions.api.serializers import (
     TransitionModelSerializer,
     TransitionSerializer
 )
+from ralph.lib.transitions.exceptions import TransitionNotAllowedError
 from ralph.lib.transitions.models import (
+    _check_instances_for_transition,
     _transition_data_validation,
     Action,
     run_transition,
@@ -158,9 +163,20 @@ class TransitionView(APIView):
                     ]
             raise DRFValidationError(api_errors)
 
+    def _check_instances(self):
+        try:
+            _check_instances_for_transition(self.objects, self.transition)
+        except TransitionNotAllowedError as e:
+            raise DRFValidationError({
+                api_settings.NON_FIELD_ERRORS_KEY: list(itertools.chain(
+                    *e.errors.values()
+                ))
+            })
+
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer_class()(data=request.data)
         serializer.is_valid(raise_exception=True)
+        self._check_instances()
         self._run_additional_validation(serializer.validated_data)
         result = {}
         data = self.add_function_name_to_data(serializer.validated_data)

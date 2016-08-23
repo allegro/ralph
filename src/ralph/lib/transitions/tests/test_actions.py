@@ -227,6 +227,28 @@ class TransitionActionTest(TransitionTestCase):
             str(list(request.context['messages'])[1])
         )
 
+    def test_async_api_running_new_when_another_in_progress_should_return_error(self):  # noqa
+        # mock another async job running
+        TransitionJob.objects.create(
+            obj=self.bo,
+            transition=self.transition_2,
+            status=JobStatus.STARTED,
+            service_name='ASYNC',
+        )
+        response = self.api_client.post(
+            reverse(
+                'transition-view',
+                args=(self.transition_2.id, self.bo.pk)
+            ),
+            self.prepare_api_data()
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data, {
+            'non_field_errors': [
+                'Another async transition for this object is already stared'
+            ]
+        })
+
     def test_api_options(self):
         request = self.api_client.options(
             reverse(
