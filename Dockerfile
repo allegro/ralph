@@ -15,6 +15,10 @@ ENV RALPH_STATIC=/root/static
 ENV RALPH_DOCS=$RALPH_DIR/docs
 ENV SCRIPTS_PATH=/root
 
+# node configs
+ENV NPM_CONFIG_LOGLEVEL info
+ENV NODE_VERSION 4.5.0
+
 ADD docker/* $SCRIPTS_PATH/
 
 # basic provisioning
