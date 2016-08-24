@@ -23,6 +23,7 @@ from taggit.managers import TaggableManager
 
 from ralph.admin.autocomplete import AUTOCOMPLETE_EMPTY_VALUE
 from ralph.admin.helpers import get_field_by_relation_path
+from ralph.lib.mixins.fields import MACAddressField
 
 SEARCH_OR_SEPARATORS_REGEX = re.compile(r'[;|]')
 SEARCH_AND_SEPARATORS_REGEX = re.compile(r'[&]')
@@ -502,6 +503,37 @@ class IPFilter(SimpleListFilter):
                     ethernet_set__ipaddress__address=self.value()
                 )
         return queryset
+
+
+class MacAddressFilter(SimpleListFilter):
+    title = _('MAC Address')
+    parameter_name = 'mac'
+    template = 'admin/filters/text_filter.html'
+
+    def lookups(self, request, model_admin):
+        return (
+            (1, _('MAC Address')),
+        )
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if not value:
+            return queryset
+
+        try:
+            value = MACAddressField.normalize(value)
+        except ValueError:
+            _add_incorrect_value_message(request, self.title)
+            raise IncorrectLookupParameters()
+        queryset = queryset.filter(ethernet_set__mac=value)
+
+        return queryset
+
+    def choices(self, cl):
+        yield {
+            'selected': self.value(),
+            'parameter_name': self.parameter_name,
+        }
 
 
 class LiquidatedStatusFilter(SimpleListFilter):
