@@ -110,7 +110,7 @@
             },
             addListener: function(evtName, listenerFunc) {
                 var self = this;
-                if(self.listeners[evtName] === undefined) {
+                if (typeof(self.listeners[evtName]) === 'undefined') {
                     self.listeners[evtName] = [];
                 }
                 self.listeners[evtName].push(listenerFunc);
@@ -118,16 +118,16 @@
             triggerListeners: function(evtName, args) {
                 var self = this;
                 var cancelEvent = false;
-                if(self.listeners[evtName] !== undefined) {
+                if (typeof(self.listeners[evtName]) !== 'undefined') {
                     var listeners = self.listeners[evtName];
                     var i;
-                    for(i = 0; i < listeners.length; i += 1) {
+                    for (i = 0; i < listeners.length; i += 1) {
                         var listener = listeners[i];
                         /*
                             Cancel event only if one of the listeners returns false
                         */
                         var result = (listener.apply(self, args) === false) ? false : true;
-                        if(!result) {
+                        if (!result) {
                             cancelEvent = true;
                         }
                     }
@@ -140,10 +140,9 @@
                     self.proxyFunctions[funcName].old = self[funcName];
                     self[funcName] = function() {
                         var cancelEvent = self.triggerListeners(funcName, arguments);
-                        /*
-                            If the event is not cancelled, call the original function
-                        */
-                        if(!cancelEvent) {
+                        
+                        // if event is not canceled
+                        if (!cancelEvent) {
                             self.proxyFunctions[funcName].old.apply(self, arguments);
                         }
                     };
@@ -188,7 +187,7 @@
             $tip.on('mouseover', mouseover);
             $tip.on('mouseout', mouseout);
 
-            //Stop event from executing
+            // Stop event from executing
             return false;
         });
 
