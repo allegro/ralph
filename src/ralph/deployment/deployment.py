@@ -371,7 +371,7 @@ def remove_from_dhcp_entries(cls, instances, ipaddress, **kwargs):
             'exclude_from_history': True,
         },
     },
-    run_after=['clean_dns', 'clean_dhcp'],
+    run_after=['clean_dns', 'clean_dhcp', 'clean_hostname'],
 )
 def assign_new_hostname(cls, instances, network_environment, **kwargs):
     """
