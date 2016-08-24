@@ -15,6 +15,7 @@ from ralph.admin.filters import (
     ChoicesListFilter,
     IPFilter,
     LiquidatedStatusFilter,
+    MacAddressFilter,
     RelatedAutocompleteFieldListFilter,
     TagsListFilter,
     TreeRelatedAutocompleteFilterWithDescendants
@@ -326,6 +327,7 @@ class DataCenterAssetAdmin(
         ('model__category', RelatedAutocompleteFieldListFilter), 'service_env',
         'configuration_path',
         ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
+        MacAddressFilter,
         'depreciation_end_date', 'force_depreciation', 'remarks',
         'budget_info', 'rack', 'rack__server_room',
         'rack__server_room__data_center', 'position', 'property_of',
@@ -507,6 +509,7 @@ class DCHostAdmin(RalphAdmin):
         'service_env',
         'configuration_path',
         ('content_type', DCHostTypeListFilter),
+        MacAddressFilter,
         IPFilter,
     ]
     list_select_related = [

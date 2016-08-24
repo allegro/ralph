@@ -9,6 +9,7 @@ from ralph.admin import RalphAdmin, RalphAdminForm, RalphTabularInline, register
 from ralph.admin.filters import (
     BaseObjectHostnameFilter,
     IPFilter,
+    MacAddressFilter,
     TagsListFilter,
     TreeRelatedAutocompleteFilterWithDescendants
 )
@@ -76,7 +77,7 @@ class VirtualServerAdmin(
     search_fields = ['hostname', 'sn', 'ethernet_set__ipaddress__hostname']
     list_filter = [
         BaseObjectHostnameFilter, 'sn', 'service_env', IPFilter,
-        'parent', TagsListFilter,
+        'parent', TagsListFilter, MacAddressFilter,
         ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants)  # noqa
     ]
     list_display = [
