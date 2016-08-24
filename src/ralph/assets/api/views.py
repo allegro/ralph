@@ -113,6 +113,7 @@ BASE_OBJECT_NAME_FILTER_FIELDS = [
     'cluster__hostname',
     'configurationclass__path',
     'serviceenvironment__service__name',
+    'cloudproject__name',
 ]
 
 
