@@ -37,12 +37,23 @@ class NetworkView(RalphDetailViewAdmin):
     name = 'network'
     label = 'Network'
     url_name = 'network'
-    admin_attribute_list_to_copy = ['available_networks']
-    readonly_fields = ('available_networks',)
+    admin_attribute_list_to_copy = ['available_networks', 'available_environments']
+    readonly_fields = ('available_networks', 'available_environments')
     inlines = [
         NetworkInline,
     ]
-    fields = ('available_networks', )
+    fieldsets = (
+        (_(''), {
+            'fields': (
+                'available_networks',
+            )
+        }),
+        (_(''), {
+            'fields': (
+                'available_environments',
+            )
+        }),
+    )
 
     def available_networks(self, instance):
         networks = instance._get_available_networks(
@@ -51,7 +62,7 @@ class NetworkView(RalphDetailViewAdmin):
         if networks:
             result = TableWithUrl(
                 networks,
-                ['name', 'address', 'network_environment'],
+                ['name', 'address', 'network_environment', 'get_first_free_ip'],
                 url_field='name',
             ).render()
         else:
@@ -59,13 +70,20 @@ class NetworkView(RalphDetailViewAdmin):
         return result
     available_networks.short_description = _('Available networks')
     available_networks.allow_tags = True
-    fieldsets = (
-        (_(''), {
-            'fields': (
-                'available_networks',
-            )
-        }),
-    )
+
+    def available_environments(self, instance):
+        network_envs = instance._get_available_network_environments(as_query=True)
+        if network_envs:
+            result = TableWithUrl(
+                network_envs,
+                [('name', 'Environment'), 'get_next_free_hostname'],
+                url_field='name',
+            ).render()
+        else:
+            result = '&ndash;'
+        return result
+    available_environments.short_description = _('Available network environments')
+    available_environments.allow_tags = True
 
 
 class NetworkWithTerminatorsView(NetworkView):
