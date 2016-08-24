@@ -512,7 +512,7 @@ class DataCenterAsset(
                 {'rack': self.rack_id},
                 self.rack.name
             )
-        ] if self.rack else []
+        ] if self.rack and self.rack.server_room else []
 
         if self.position:
             result.append(str(position))
