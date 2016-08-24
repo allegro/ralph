@@ -171,7 +171,8 @@ class CloudHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     save_serializer_class = SaveCloudHostSerializer
     select_related = [
         'parent', 'parent__cloudproject', 'cloudprovider', 'hypervisor',
-        'service_env__service', 'service_env__environment', 'content_type'
+        'service_env__service', 'service_env__environment', 'content_type',
+        'configuration_path__module',
     ]
     prefetch_related = base_object_descendant_prefetch_related + [
         'tags', 'cloudflavor__virtualcomponent_set__model', 'licences',

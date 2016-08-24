@@ -58,6 +58,7 @@ class OpenstackModelsTestCase(RalphAPITestCase):
             parent=self.cloud_project,
             cloudflavor=self.cloud_flavor
         )
+        self.cloud_host2 = CloudHostFactory()
 
         self.test_cpu = ComponentModel.objects.create(
             name='vcpu1',
@@ -89,11 +90,18 @@ class OpenstackModelsTestCase(RalphAPITestCase):
             model=self.test_disk,
         )
 
-    @data('cloudflavor', 'cloudhost', 'cloudproject', 'cloudprovider')
+    @data('cloudflavor', 'cloudproject', 'cloudprovider')
     def test_get_list(self, field):
         url = reverse(field + '-list')
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_cloudhost_list(self):
+        url = reverse('cloudhost-list')
+        with self.assertNumQueries(12):
+            response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
 
     @unpack
     @data(
