@@ -47,8 +47,8 @@ FIELD_MAP = {
     forms.ModelMultipleChoiceField: (ModelMultipleChoiceField, [
         'initial', 'required', 'choices'
     ]),
-    forms.ModelChoiceField: (serializers.ChoiceField, [
-        'initial', 'required', 'choices'
+    forms.ModelChoiceField: (serializers.PrimaryKeyRelatedField, [
+        'initial', 'required', 'queryset'
     ]),
     forms.ChoiceField: (serializers.ChoiceField, [
         'initial', 'required', 'choices'
