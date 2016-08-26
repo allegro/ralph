@@ -10,7 +10,6 @@ $rem-base: $base-font-size;
 $body-bg: #fff;
 $global-radius: 0;
 
-// $primary-color: #EF6C00;
 $primary-color: $mdc-blue-600;
 
 $success-color: #43A047;
@@ -51,7 +50,7 @@ $fieldset-bg-color: rgb(246, 246, 246);
 $fieldset-margin: rem-calc(20 0);
 
 
-$topbar-bg-color: #1775c8;
+$topbar-bg-color: $primary-color;
 $topbar-bg: $topbar-bg-color;
 $topbar-dropdown-bg: $topbar-bg-color;
 $topbar-dropdown-bg: $topbar-bg-color;
