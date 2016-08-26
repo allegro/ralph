@@ -38,7 +38,7 @@ class SaveSecurityScanSerializer(RalphAPISaveSerializer):
 
         # external_id to local_id
         if 'external_vulnerabilities' in data:
-            external_ids = data.getlist('external_vulnerabilities')
+            external_ids = data.get('external_vulnerabilities', [])
             converted = Vulnerability.objects.filter(
                 external_vulnerability_id__in=external_ids)
             if len(converted) != len(external_ids):
@@ -49,9 +49,9 @@ class SaveSecurityScanSerializer(RalphAPISaveSerializer):
                     ', '.join(unknown)
                 )
                 errors['external_vulnerability'] = msg
-            merged_vulnerabilities = data.getlist('vulnerabilities') or []
+            merged_vulnerabilities = data.get('vulnerabilities', [])
             merged_vulnerabilities.extend([c.id for c in converted])
-            data.setlist('vulnerabilities', merged_vulnerabilities)
+            data['vulnerabilities'] = merged_vulnerabilities
 
         host_ip = data.get('host_ip', None)
         if host_ip:
