@@ -37,7 +37,9 @@ class NetworkView(RalphDetailViewAdmin):
     name = 'network'
     label = 'Network'
     url_name = 'network'
-    admin_attribute_list_to_copy = ['available_networks', 'available_environments']
+    admin_attribute_list_to_copy = [
+        'available_networks', 'available_environments'
+    ]
     readonly_fields = ('available_networks', 'available_environments')
     inlines = [
         NetworkInline,
@@ -72,7 +74,9 @@ class NetworkView(RalphDetailViewAdmin):
     available_networks.allow_tags = True
 
     def available_environments(self, instance):
-        network_envs = instance._get_available_network_environments(as_query=True)
+        network_envs = instance._get_available_network_environments(
+            as_query=True
+        )
         if network_envs:
             result = TableWithUrl(
                 network_envs,
@@ -82,7 +86,9 @@ class NetworkView(RalphDetailViewAdmin):
         else:
             result = '&ndash;'
         return result
-    available_environments.short_description = _('Available network environments')
+    available_environments.short_description = _(
+        'Available network environments'
+    )
     available_environments.allow_tags = True
 
 
