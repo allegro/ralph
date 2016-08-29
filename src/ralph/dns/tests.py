@@ -4,7 +4,10 @@ from unittest.mock import patch
 from django.test import override_settings, TestCase
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.assets.tests.factories import EthernetFactory
+from ralph.assets.tests.factories import (
+    ConfigurationClassFactory,
+    EthernetFactory
+)
 from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.dns.dnsaas import DNSaaS
 from ralph.dns.forms import DNSRecordForm, RecordType
@@ -135,8 +138,10 @@ class TestPublisher(TestCase):
         )
         self.virtual_server = VirtualServerFactory(
             hostname='s000.local',
-            configuration_path__class_name='worker',
-            configuration_path__module__name='auth',
+            configuration_path=ConfigurationClassFactory(
+                class_name='worker',
+                module__name='auth'
+            ),
             service_env__service__name='service',
             service_env__environment__name='prod',
             parent=DataCenterAssetFactory(

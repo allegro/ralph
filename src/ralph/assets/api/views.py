@@ -111,6 +111,7 @@ BASE_OBJECT_NAME_FILTER_FIELDS = [
     'virtualserver__hostname',
     'cloudhost__hostname',
     'cluster__hostname',
+    'cluster__name',
     'configurationclass__path',
     'serviceenvironment__service__name',
     'cloudproject__name',
