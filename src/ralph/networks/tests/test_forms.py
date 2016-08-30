@@ -260,7 +260,7 @@ class NetworkInlineTestCase(RalphTestCase):
         response = self.client.post(self.obj1.get_absolute_url(), data)
         self.assertEqual(response.status_code, 200)
         self.assertIn(
-            'Only one managment IP address can be assigned to this asset',
+            'Only one management IP address can be assigned to this asset',
             response.context_data['errors']
         )
 

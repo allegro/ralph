@@ -28,7 +28,7 @@ def validate_is_management(forms):
     count_management_ip = is_management.count(True)
     if is_management and count_management_ip > 1:
         raise ValidationError((
-            'Only one managment IP address can be assigned '
+            'Only one management IP address can be assigned '
             'to this asset'
         ))
 
@@ -202,7 +202,7 @@ class SimpleNetworkForm(forms.ModelForm):
 
 
 class SimpleNetworkWithManagementIPForm(SimpleNetworkForm):
-    is_management = forms.BooleanField(label='Is managment', required=False)
+    is_management = forms.BooleanField(label='Is management', required=False)
 
     ip_fields = ['hostname', 'address', 'is_management']
 
