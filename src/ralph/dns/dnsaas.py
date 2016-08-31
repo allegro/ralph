@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import logging
 from urllib.parse import urlencode, urljoin
 
@@ -17,7 +18,8 @@ class DNSaaS:
     def __init__(self, headers=None):
         self.session = requests.Session()
         _headers = {
-            'Authorization': 'Token {}'.format(settings.DNSAAS_TOKEN)
+            'Authorization': 'Token {}'.format(settings.DNSAAS_TOKEN),
+            'Content-Type': 'application/json'
         }
         if headers is not None:
             _headers.update(headers)
@@ -194,7 +196,7 @@ class DNSaaS:
         return self._post(url, data)
 
     def _post(self, url, data):
-        response = self.session.post(url, data=data)
+        response = self.session.post(url, data=json.dumps(data))
         return self._request2result(response)
 
     def delete_dns_record(self, record_id):
