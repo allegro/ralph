@@ -218,7 +218,7 @@ class DNSaaS:
         elif request.status_code != 204:
             return request.json()
 
-    def send_ipaddress_data(self, ip, update_data):
-        logger.info('Send update data about {}: {}'.format(ip, update_data))
+    def send_ipaddress_data(self, update_data):
+        logger.info('Send update data: {}'.format(update_data))
         url = self.build_url('ip')
-        print(self._post(url, update_data)
+        self._post(url, update_data)
