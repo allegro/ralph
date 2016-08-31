@@ -31,8 +31,8 @@ class VIPProtocol(Choices):
     _ = Choices.Choice
 
     unknown = _('unknown')
-    tcp = _('TCP')
-    http = _('HTTP')
+    TCP = _('TCP')
+    HTTP = _('HTTP')
 
 
 class VIP(AdminAbsoluteUrlMixin, BaseObject):
@@ -45,7 +45,7 @@ class VIP(AdminAbsoluteUrlMixin, BaseObject):
         return self.name
 
     name = models.CharField(_('name'), max_length=255, blank=True, null=True)
-    ip = models.GenericIPAddressField(verbose_name=_('IP address'), null=True)
+    ip = models.ForeignKey(IPAddress, blank=True, null=True, default=None)
     port = models.PositiveIntegerField(verbose_name=_('port'), default=0)
     protocol = models.PositiveIntegerField(
         verbose_name=_('protocol'), choices=VIPProtocol(),
