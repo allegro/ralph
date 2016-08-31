@@ -216,6 +216,7 @@ class DNSaaS:
         elif request.status_code != 204:
             return request.json()
 
-    def send_ipaddress_data(self, data):
-        # TODO: send data to dedicated endpoint
-        logger.warning('Not implemented yet')
+    def send_ipaddress_data(self, ip, update_data):
+        logger.info('Send update data about {}: {}'.format(ip, update_data))
+        url = self.build_url('ip')
+        self.session.post(url, data=update_data)

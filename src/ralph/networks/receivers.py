@@ -9,5 +9,7 @@ def send_ipaddress_to_dnsaas(instance, created, *args, **kwargs):
             'new': instance.__dict__[key]
         }
         for key in keys
+        if instance._previous_state[key] != instance.__dict__[key]
     }
-    DNSaaS().send_ipaddress_data(data_to_send)
+    if data_to_send:
+        DNSaaS().send_ipaddress_data(instance.address, data_to_send)
