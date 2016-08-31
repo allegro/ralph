@@ -90,7 +90,7 @@ def validate_event_data(data):
         err = 'invalid port "{}"'.format(port)
         errors.append(err)
     if not protocol:
-        err = 'missing name'
+        err = 'missing protocol'
         errors.append(err)
     if not service_uid:
         err = 'missing service UID'
