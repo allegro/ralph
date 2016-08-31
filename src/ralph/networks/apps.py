@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 
 from ralph.apps import RalphAppConfig
 
@@ -15,3 +15,9 @@ class Networks(RalphAppConfig):
             receiver=send_ipaddress_to_dnsaas,
             sender=self.get_model('IPAddress')
         )
+        post_delete.connect(
+            receiver=send_ipaddress_to_dnsaas,
+            sender=self.get_model('IPAddress'),
+            delete=True
+        )
+

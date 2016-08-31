@@ -1,7 +1,7 @@
 from ralph.dns.dnsaas import DNSaaS
 
 
-def send_ipaddress_to_dnsaas(instance, created, *args, **kwargs):
+def send_ipaddress_to_dnsaas(instance, *args, **kwargs):
     keys = ['address', 'hostname']
     data_to_send = {
         key: {
@@ -11,8 +11,6 @@ def send_ipaddress_to_dnsaas(instance, created, *args, **kwargs):
         for key in keys
         if instance._previous_state[key] != instance.__dict__[key]
     }
-    if data_to_send:
+     if data_to_send:
         data_to_send['ip'] = instance._previous_state['address']
-        DNSaaS().send_ipaddress_data(
-            instance._previous_state['address'], data_to_send
-        )
+        DNSaaS().send_ipaddress_data(data_to_send)
