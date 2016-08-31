@@ -18,6 +18,5 @@ class Networks(RalphAppConfig):
         post_delete.connect(
             receiver=send_ipaddress_to_dnsaas,
             sender=self.get_model('IPAddress'),
-            delete=True
         )
 
