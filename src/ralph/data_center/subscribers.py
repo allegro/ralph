@@ -105,13 +105,9 @@ def validate_event_data(data):
 
 
 def get_vip(ip, port, protocol):
-    """Fetches a VIP designated by ip, port and protocol (all three of these
-    should be given as strings). There should be at most one such VIP.
+    """Fetches a VIP designated by ip, port and protocol. There should be at
+    most one such VIP.
     """
-    ip, _ = IPAddress.objects.get_or_create(address=ip)
-    protocol = getattr(
-        VIPProtocol, protocol.upper(), VIPProtocol.unknown
-    )
     try:
         vip = VIP.objects.get(ip=ip, port=port, protocol=protocol)
     except VIP.DoesNotExist:
@@ -133,12 +129,19 @@ def handle_create_vip_event(data):
         logger.error(msg.format('; '.join(errors)))
         return
 
-    vip = get_vip(data['ip'], data['port'], data['protocol'])
+    # Check if VIP already exists.
+    ip = IPAddress.objects.get(address=data['ip'])
+    protocol = getattr(
+        VIPProtocol, data['protocol'].upper(), VIPProtocol.unknown
+    )
+    vip = get_vip(ip, data['port'], protocol)
     if vip:
         msg = ('VIP designated by IP address {}, port {} and protocol {} '
                'already exists. Ignoring received event.')
-        logger.warning(msg.format(data['ip'], data['port'], data['protocol']))
+        logger.warning(msg.format(ip.address, data['port'], protocol.name))
         return
+
+    # Create it.
     cluster_type, _ = ClusterType.objects.get_or_create(
         name=data['load_balancer_type']
     )
@@ -156,12 +159,9 @@ def handle_create_vip_event(data):
                'does not exist. Ignoring received create event.')
         logger.error(msg.format(data['service']['uid'], data['environment']))
         return
-    protocol = getattr(
-        VIPProtocol, data['protocol'].upper(), VIPProtocol.unknown
-    )  # XXX
     vip = VIP(
         name = data['name'],
-        ip = IPAddress.objects.get(address=data['ip']),  # XXX
+        ip = ip,
         port = data['port'],
         protocol = protocol,
         parent = cluster,
@@ -175,8 +175,8 @@ def handle_create_vip_event(data):
     topic='updateVipEvent',
 )
 def handle_update_vip_event(data):
-    # TODO(xor-xor): Since update event doesn't contain any changes yet,
-    # it will be ignored for now. Remember to remove return below when
+    # TODO(xor-xor): Since update event doesn't contain any changes yet, it
+    # will be silently ignored for now. Remember to remove return below when
     # this will get changed.
     return
     errors = validate_event_data(data)
@@ -188,11 +188,15 @@ def handle_update_vip_event(data):
         logger.error(msg.format('; '.join(errors)))
         return
 
-    vip = get_vip(data['ip'], data['port'], data['protocol'])
+    ip = IPAddress.objects.get(address=data['ip'])
+    protocol = getattr(
+        VIPProtocol, data['protocol'].upper(), VIPProtocol.unknown
+    )
+    vip = get_vip(ip.address, data['port'], protocol.name)
     if vip is None:
         msg = ("VIP designated by IP address {}, port {} and protocol {} "
                "doesn't exist. Ignoring received update event.")
-        logger.warning(msg.format(data['ip'], data['port'], data['protocol']))
+        logger.warning(msg.format(ip.address, data['port'], protocol.name))
         return
     # TODO(xor-xor): when update event will contain changes (currently it
     # doesn't), add update logic here.
@@ -211,18 +215,24 @@ def handle_delete_vip_event(data):
         )
         return
 
-    vip = get_vip(data['ip'], data['port'], data['protocol'])
+    ip = IPAddress.objects.get(address=data['ip'])
+    protocol = getattr(
+        VIPProtocol, data['protocol'].upper(), VIPProtocol.unknown
+    )
+    vip = get_vip(ip, data['port'], protocol)
     if vip is None:
         msg = ("VIP designated by IP address {}, port {} and protocol {} "
                "doesn't exist. Ignoring received delete event.")
-        logger.warning(msg.format(data['ip'], data['port'], data['protocol']))
+        logger.warning(msg.format(ip.address, data['port'], protocol.name))
         return
     vip.delete()
     logger.debug('VIP {} deleted successfully.'.format(vip.name))
-    if not VIP.objects.filter(ip__address=data['ip']).exists():
-        IPAddress.objects.get(address=data['ip']).delete()
+
+    # Delete IP address associated with it, but only when no other VIP uses it.
+    if not VIP.objects.filter(ip=ip).exists():
+        ip.delete()
         msg = (
             'IP address {} has been deleted since it is no longer being used '
             'by any VIP.'
         )
-        logger.info(msg.format(data['ip']))
+        logger.info(msg.format(ip.address))
