@@ -10,13 +10,16 @@ class Networks(RalphAppConfig):
     def ready(self):
         if not settings.ENABLE_DNSAAS_INTEGRATION:
             return
-        from ralph.networks.receivers import send_ipaddress_to_dnsaas
+        from ralph.networks.receivers import (
+            delete_dns_record,
+            update_dns_record
+        )
+        ip_model = self.get_model('IPAddress')
         post_save.connect(
-            receiver=send_ipaddress_to_dnsaas,
-            sender=self.get_model('IPAddress')
+            receiver=update_dns_record,
+            sender=ip_model
         )
         post_delete.connect(
-            receiver=send_ipaddress_to_dnsaas,
-            sender=self.get_model('IPAddress'),
+            receiver=delete_dns_record,
+            sender=ip_model,
         )
-

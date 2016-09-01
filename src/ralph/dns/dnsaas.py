@@ -220,5 +220,5 @@ class DNSaaS:
 
     def send_ipaddress_data(self, update_data):
         logger.info('Send update data: {}'.format(update_data))
-        url = self.build_url('ip')
+        url = self.build_url('ip_record')
         self._post(url, update_data)
