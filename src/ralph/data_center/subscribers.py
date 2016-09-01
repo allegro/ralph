@@ -66,6 +66,9 @@ class sync_subscriber(pyhermes.subscriber):
 
 
 def validate_event_data(data):
+    """Performs some basic sanity checks (e.g. missing values) on the incoming
+    event data. Returns list of errors (if any).
+    """
     name = data['name']
     ip = data['ip']
     port = data['port']
@@ -101,28 +104,40 @@ def validate_event_data(data):
     return errors
 
 
+def get_vip(ip, port, protocol):
+    """Fetches a VIP designated by ip, port and protocol (all three of these
+    should be given as strings). There should be at most one such VIP.
+    """
+    ip, _ = IPAddress.objects.get_or_create(address=ip)
+    protocol = getattr(
+        VIPProtocol, protocol.upper(), VIPProtocol.unknown
+    )
+    try:
+        vip = VIP.objects.get(ip=ip, port=port, protocol=protocol)
+    except VIP.DoesNotExist:
+        return None
+    else:
+        return vip
+
+
 @sync_subscriber(
     topic='createVipEvent',
 )
 def handle_create_vip_event(data):
     errors = validate_event_data(data)
     if errors:
-        msg = 'Error(s) detected in event data: {}. Ignoring received event.'
+        msg = (
+            'Error(s) detected in event data: {}. Ignoring received create '
+            'event.'
+        )
         logger.error(msg.format('; '.join(errors)))
         return
 
-    ip, _ = IPAddress.objects.get_or_create(address=data['ip'])
-    protocol = getattr(
-        VIPProtocol, data['protocol'].upper(), VIPProtocol.unknown
-    )
-    if VIP.objects.filter(
-            ip=ip,
-            port=data['port'],
-            protocol=protocol,
-    ).exists():
+    vip = get_vip(data['ip'], data['port'], data['protocol'])
+    if vip:
         msg = ('VIP designated by IP address {}, port {} and protocol {} '
                'already exists. Ignoring received event.')
-        logger.warning(msg.format(ip.address, data['port'], protocol.name))
+        logger.warning(msg.format(data['ip'], data['port'], data['protocol']))
         return
     cluster_type, _ = ClusterType.objects.get_or_create(
         name=data['load_balancer_type']
@@ -138,12 +153,15 @@ def handle_create_vip_event(data):
         )
     except ServiceEnvironment.DoesNotExist:
         msg = ('ServiceEnvironment for service UID "{}" and environment "{}" '
-               'does not exist. Ignoring received event.')
+               'does not exist. Ignoring received create event.')
         logger.error(msg.format(data['service']['uid'], data['environment']))
         return
+    protocol = getattr(
+        VIPProtocol, data['protocol'].upper(), VIPProtocol.unknown
+    )  # XXX
     vip = VIP(
         name = data['name'],
-        ip = ip,
+        ip = IPAddress.objects.get(address=data['ip']),  # XXX
         port = data['port'],
         protocol = protocol,
         parent = cluster,
@@ -154,41 +172,57 @@ def handle_create_vip_event(data):
 
 
 @sync_subscriber(
+    topic='updateVipEvent',
+)
+def handle_update_vip_event(data):
+    # TODO(xor-xor): Since update event doesn't contain any changes yet,
+    # it will be ignored for now. Remember to remove return below when
+    # this will get changed.
+    return
+    errors = validate_event_data(data)
+    if errors:
+        msg = (
+            'Error(s) detected in event data: {}. Ignoring received update '
+            'event.'
+        )
+        logger.error(msg.format('; '.join(errors)))
+        return
+
+    vip = get_vip(data['ip'], data['port'], data['protocol'])
+    if vip is None:
+        msg = ("VIP designated by IP address {}, port {} and protocol {} "
+               "doesn't exist. Ignoring received update event.")
+        logger.warning(msg.format(data['ip'], data['port'], data['protocol']))
+        return
+    # TODO(xor-xor): when update event will contain changes (currently it
+    # doesn't), add update logic here.
+
+
+@sync_subscriber(
     topic='deleteVipEvent',
 )
 def handle_delete_vip_event(data):
     errors = validate_event_data(data)
     if errors:
-        msg = 'Error(s) detected in event data: {}. Ignoring received event.'
         logger.error(msg.format('; '.join(errors)))
+        msg = (
+            'Error(s) detected in event data: {}. Ignoring received delete '
+            'event.'
+        )
         return
 
-    # if VIP.objects.filter(
-    #         ip=ip,
-    #         port=data['port'],
-    #         protocol=protocol,
-    # ).exists():
-
-
-@sync_subscriber(
-    topic='updateVipEvent',
-)
-def handle_update_vip_event(data):
-    errors = validate_event_data(data)
-    if errors:
-        msg = 'Error(s) detected in event data: {}. Ignoring received event.'
-        logger.error(msg.format('; '.join(errors)))
+    vip = get_vip(data['ip'], data['port'], data['protocol'])
+    if vip is None:
+        msg = ("VIP designated by IP address {}, port {} and protocol {} "
+               "doesn't exist. Ignoring received delete event.")
+        logger.warning(msg.format(data['ip'], data['port'], data['protocol']))
         return
-
-    # if VIP.objects.filter(
-    #         ip=ip,
-    #         port=data['port'],
-    #         protocol=protocol,
-    # ).exists():
-
-
-@sync_subscriber(
-    topic='refreshVipEvent',
-)
-def handle_refresh_vip_event(data):
-    pass
+    vip.delete()
+    logger.debug('VIP {} deleted successfully.'.format(vip.name))
+    if not VIP.objects.filter(ip__address=data['ip']).exists():
+        IPAddress.objects.get(address=data['ip']).delete()
+        msg = (
+            'IP address {} has been deleted since it is no longer being used '
+            'by any VIP.'
+        )
+        logger.info(msg.format(data['ip']))
