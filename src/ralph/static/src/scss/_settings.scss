@@ -49,23 +49,22 @@ $fieldset-border-color: #eee;
 $fieldset-bg-color: rgb(246, 246, 246);
 $fieldset-margin: rem-calc(20 0);
 
-
 $topbar-bg-color: $primary-color;
 $topbar-bg: $topbar-bg-color;
-$topbar-dropdown-bg: $topbar-bg-color;
-$topbar-dropdown-bg: $topbar-bg-color;
-$topbar-dropdown-link-bg: $topbar-bg-color;
 
-
-$topbar-height: rem-calc(40);
-$topbar-margin-bottom: 0;
-$topbar-link-color-hover: #fff;
-$topbar-link-bg-hover: lighten($topbar-bg-color, 5%);
+$topbar-dropdown-bg: $topbar-bg-color;
 $topbar-dropdown-link-color: #fff;
-$topbar-dropdown-link-bg-hover: lighten($topbar-bg-color, 5%);
+$topbar-dropdown-link-color-hover: #fff;
 $topbar-dropdown-label-color: #fff;
+$topbar-dropdown-link-bg: $topbar-bg-color;
+$topbar-dropdown-link-bg-hover: lighten($topbar-bg-color, 8%);
+$topbar-height: rem-calc(40);
+$topbar-link-bg-hover: lighten($topbar-bg-color, 5%);
+$topbar-link-bg-active: darken($topbar-bg-color, 10%);
+$topbar-link-bg-active-hover: darken($topbar-bg-color, 5%);
+$topbar-link-color-hover: #fff;
+$topbar-margin-bottom: 0;
 $topbar-menu-link-color-toggled: rgba(255,255,255,0.6);
-$topbar-menu-icon-color-toggled: $topbar-menu-link-color-toggled;
 
 $f-dropdown-max-width: 280px;
 
