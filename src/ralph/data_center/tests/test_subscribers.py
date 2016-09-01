@@ -1,12 +1,20 @@
 # -*- coding: utf-8 -*-
 
+import logging
 from copy import deepcopy
 
 from django.test import TestCase
 
+from ralph.data_center.models import VIP, VIPProtocol
 from ralph.data_center.subscribers import (
+    handle_create_vip_event,
+    handle_delete_vip_event,
     validate_event_data,
 )
+
+from ralph.assets.tests.factories import ServiceEnvironmentFactory
+from ralph.data_center.tests.factories import VIPFactory
+
 
 EVENT_DATA = {
     "non_http": False,
@@ -93,29 +101,57 @@ class ValidateEventDataTestCase(TestCase):
 
 class HandleCreateVIPEventTestCase(TestCase):
 
+    def setUp(self):
+        logging.disable(logging.INFO)
+        self.data = deepcopy(EVENT_DATA)
+
     def test_create_when_vip_already_exists(self):
-        pass
+        vip = VIPFactory()
+        self.data['ip'] = vip.ip.address
+        self.data['port'] = vip.port
+        self.data['protocol'] = VIPProtocol.from_id(vip.protocol).name
+
+        vips = VIP.objects.all()
+        self.assertEqual(vips.count(), 1)
+        modified_before = vips[0].modified
+        handle_create_vip_event(self.data)
+        vips = VIP.objects.all()
+        self.assertEqual(vips.count(), 1)
+        self.assertEqual(vips[0].modified, modified_before)
 
     def test_create_when_service_env_does_not_exist(self):
-        pass
+        self.data['service']['uid'] = 'non-existing-uid'
+        handle_create_vip_event(self.data)
+        self.assertEqual(VIP.objects.count(), 0)
 
     def test_create_with_valid_event_data(self):
-        pass
+        service_env = ServiceEnvironmentFactory()
+        self.data['service']['uid'] = service_env.service.uid
+        self.data['environment'] = service_env.environment.name
+        self.assertEqual(VIP.objects.count(), 0)
+        handle_create_vip_event(self.data)
+        self.assertEqual(VIP.objects.count(), 1)
 
     def test_create_with_invalid_event_data(self):
-        pass
+        self.data['service'] = None
+        self.assertEqual(VIP.objects.count(), 0)
+        handle_create_vip_event(self.data)
+        self.assertEqual(VIP.objects.count(), 0)
+
+    def tearDown(self):
+        logging.disable(logging.NOTSET)
 
 
 class HandleDeleteVIPEventTestCase(TestCase):
 
-    def test_create_when_vip_already_exists(self):
+    def test_delete_when_vip_already_exists(self):
         pass
 
-    def test_create_when_service_env_does_not_exist(self):
+    def test_delete_when_service_env_does_not_exist(self):
         pass
 
-    def test_create_with_valid_event_data(self):
+    def test_delete_with_valid_event_data(self):
         pass
 
-    def test_create_with_invalid_event_data(self):
+    def test_delete_with_invalid_event_data(self):
         pass
