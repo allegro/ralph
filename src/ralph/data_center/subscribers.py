@@ -5,12 +5,7 @@ import pyhermes
 from django.core.exceptions import ValidationError
 
 from ralph.assets.models.assets import ServiceEnvironment
-from ralph.data_center.models import (
-    Cluster,
-    ClusterType,
-    VIP,
-    VIPProtocol,
-)
+from ralph.data_center.models import Cluster, ClusterType, VIP, VIPProtocol
 from ralph.networks.models.networks import IPAddress
 
 logger = logging.getLogger(__name__)

@@ -36,7 +36,7 @@ from ralph.data_center.models.virtual import (
     ClusterType,
     Database,
     VIP,
-    VIPProtocol,
+    VIPProtocol
 )
 
 date_now = datetime.now().date()

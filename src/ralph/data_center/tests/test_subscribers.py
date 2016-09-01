@@ -5,14 +5,14 @@ from copy import deepcopy
 
 from django.test import TestCase
 
+from ralph.assets.tests.factories import ServiceEnvironmentFactory
 from ralph.data_center.models import VIP, VIPProtocol
 from ralph.data_center.subscribers import (
     handle_create_vip_event,
     handle_delete_vip_event,
-    validate_event_data,
+    validate_event_data
 )
 
-from ralph.assets.tests.factories import ServiceEnvironmentFactory
 from ralph.data_center.tests.factories import VIPFactory
 
 
