@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import json
 import logging
 from urllib.parse import urlencode, urljoin
 
@@ -118,7 +117,7 @@ class DNSaaS:
             ),
             'owner': settings.DNSAAS_OWNER
         }
-        request = self.session.patch(url, data=data)
+        request = self.session.patch(url, json=data)
         if request.status_code == 500:
             return {
                 'non_field_errors': [_('Internal Server Error from DNSAAS')]
@@ -196,7 +195,7 @@ class DNSaaS:
         return self._post(url, data)
 
     def _post(self, url, data):
-        response = self.session.post(url, data=json.dumps(data))
+        response = self.session.post(url, json=data)
         return self._request2result(response)
 
     def delete_dns_record(self, record_id):
