@@ -272,6 +272,9 @@ class BaseObjectAdmin(RalphAdmin):
     def repr(self, obj):
         return '{}: {}'.format(obj.content_type, obj)
 
+    def has_add_permission(self, request):
+        return False
+
 
 @register(AssetHolder)
 class AssetHolderAdmin(RalphAdmin):

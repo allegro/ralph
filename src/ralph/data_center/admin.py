@@ -520,6 +520,9 @@ class DCHostAdmin(RalphAdmin):
         'service_env__service',
     ]
 
+    def has_add_permission(self, request):
+        return False
+
     def get_changelist(self, request, **kwargs):
         return DCHostChangeList
 
