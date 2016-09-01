@@ -19,6 +19,6 @@
     &.finished  { @include status-transition-label($success-color); }
     &.failed    { @include status-transition-label($alert-color); }
     &.started   { @include status-transition-label($warning-color); }
-    &.freezed   { @include status-transition-label($primary-color); }
+    &.frozen   { @include status-transition-label($primary-color); }
     &.killed    { @include status-transition-label($alert-color); }
 }

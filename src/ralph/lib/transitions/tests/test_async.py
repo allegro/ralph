@@ -121,7 +121,7 @@ class AsyncTransitionsTest(TransitionTestCaseMixin, TransactionTestCase):
         for job_id, async_order in zip(job_ids, async_orders):
             job = TransitionJob.objects.get(pk=job_id)
             async_order.refresh_from_db()
-            self.assertEqual(job.status, JobStatus.FREEZED)
+            self.assertEqual(job.status, JobStatus.FROZEN)
 
         # unfreeze
         for job_id in job_ids:

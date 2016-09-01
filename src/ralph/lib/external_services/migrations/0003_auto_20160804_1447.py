@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='job',
             name='status',
-            field=models.PositiveIntegerField(verbose_name='job status', default=1, choices=[(1, 'queued'), (2, 'finished'), (3, 'failed'), (4, 'started'), (5, 'freezed'), (6, 'killed')]),
+            field=models.PositiveIntegerField(verbose_name='job status', default=1, choices=[(1, 'queued'), (2, 'finished'), (3, 'failed'), (4, 'started'), (5, 'frozen'), (6, 'killed')]),
         ),
     ]
