@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
-from contextlib import ExitStack
-from functools import wraps
 
 import pyhermes
 from django.core.exceptions import ValidationError
-from django.db import OperationalError, transaction
 
 from ralph.assets.models.assets import ServiceEnvironment
 from ralph.data_center.models import (
@@ -15,54 +12,8 @@ from ralph.data_center.models import (
     VIPProtocol,
 )
 from ralph.networks.models.networks import IPAddress
-from ralph.ralph2_sync.helpers import WithSignalDisabled
 
 logger = logging.getLogger(__name__)
-
-
-def _get_publisher_signal_info(func):
-    """
-    Return signal info for publisher in format accepted by `WithSignalDisabled`.
-    """
-    return {
-        'dispatch_uid': func._signal_dispatch_uid,
-        'sender': func._signal_model,
-        'signal': func._signal_type,
-        'receiver': func,
-    }
-
-
-# XXX remove/rename stuff related to ralph2 sync
-class sync_subscriber(pyhermes.subscriber):
-    """
-    Log additional exception when sync has failed.
-    """
-    def __init__(self, topic, disable_publishers=None):
-        self.disable_publishers = disable_publishers or []
-        super().__init__(topic)
-
-    def _get_wrapper(self, func):
-        @wraps(func)
-        @transaction.atomic
-        def exception_wrapper(*args, **kwargs):
-            # disable selected publisher signals during handling subcriber
-            with ExitStack() as stack:
-                for publisher in self.disable_publishers:
-                    stack.enter_context(WithSignalDisabled(
-                        **_get_publisher_signal_info(publisher)
-                    ))
-                try:
-                    return func(*args, **kwargs)
-                except (OperationalError, ) as e:
-                    logger.exception(
-                        'Exception during syncing: {}'.format(str(e))
-                    )
-                    raise  # return 500 to retry on hermes
-                except Exception as e:
-                    logger.exception(
-                        'Exception during syncing {}'.format(str(e))
-                    )
-        return exception_wrapper
 
 
 def validate_event_data(data):
@@ -105,10 +56,8 @@ def validate_event_data(data):
 
 
 def get_vip(ip, port, protocol):
-    """Fetches a VIP designated by ip, port and protocol. There should be at
-    most one such VIP.
-    """
     try:
+        # There should be *at most* one such VIP.
         vip = VIP.objects.get(ip=ip, port=port, protocol=protocol)
     except VIP.DoesNotExist:
         return None
@@ -116,7 +65,7 @@ def get_vip(ip, port, protocol):
         return vip
 
 
-@sync_subscriber(
+@pyhermes.subscriber(
     topic='createVipEvent',
 )
 def handle_create_vip_event(data):
@@ -130,7 +79,7 @@ def handle_create_vip_event(data):
         return
 
     # Check if VIP already exists.
-    ip = IPAddress.objects.get(address=data['ip'])
+    ip, _ = IPAddress.objects.get_or_create(address=data['ip'])
     protocol = getattr(
         VIPProtocol, data['protocol'].upper(), VIPProtocol.unknown
     )
@@ -171,7 +120,7 @@ def handle_create_vip_event(data):
     logger.debug('VIP {} created successfully.'.format(vip.name))
 
 
-@sync_subscriber(
+@pyhermes.subscriber(
     topic='updateVipEvent',
 )
 def handle_update_vip_event(data):
@@ -188,7 +137,7 @@ def handle_update_vip_event(data):
         logger.error(msg.format('; '.join(errors)))
         return
 
-    ip = IPAddress.objects.get(address=data['ip'])
+    ip,  = IPAddress.objects.get_or_create(address=data['ip'])
     protocol = getattr(
         VIPProtocol, data['protocol'].upper(), VIPProtocol.unknown
     )
@@ -202,7 +151,7 @@ def handle_update_vip_event(data):
     # doesn't), add update logic here.
 
 
-@sync_subscriber(
+@pyhermes.subscriber(
     topic='deleteVipEvent',
 )
 def handle_delete_vip_event(data):
@@ -215,7 +164,7 @@ def handle_delete_vip_event(data):
         )
         return
 
-    ip = IPAddress.objects.get(address=data['ip'])
+    ip, _ = IPAddress.objects.get_or_create(address=data['ip'])
     protocol = getattr(
         VIPProtocol, data['protocol'].upper(), VIPProtocol.unknown
     )
