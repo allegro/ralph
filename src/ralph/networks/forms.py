@@ -33,7 +33,51 @@ def validate_is_management(forms):
         ))
 
 
-class SimpleNetworkForm(forms.ModelForm):
+class EthernetLockDeleteForm(forms.ModelForm):
+    ip_fields = []
+
+    class Meta:
+        model = Ethernet
+        fields = ['mac', 'model_name', 'label', 'speed']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # assign ip attached to ethernet
+        try:
+            self.ip = self.instance.ipaddress
+        except AttributeError:
+            self.ip = None
+        else:
+            for field in self.ip_fields:
+                self.fields[field].initial = self.ip.__dict__[field]
+
+        # make fields readonly if row (mac, ip, hostname) exposed in DHCP
+        if self._dhcp_expose_should_lock_fields:
+            for field_name in DHCP_EXPOSE_LOCKED_FIELDS:
+                try:
+                    field = self.fields[field_name]
+                except KeyError:
+                    pass
+                else:
+                    if isinstance(field, forms.BooleanField):
+                        field.widget.attrs['disabled'] = True
+                    field.widget.attrs['readonly'] = True
+
+    @property
+    def _dhcp_expose_should_lock_fields(self):
+        """
+        Return True if row should be locked for changes if it's exposed in DHCP.
+        """
+        return (
+            settings.DHCP_ENTRY_FORBID_CHANGE and
+            self.instance and
+            self.instance.pk and
+            self.ip and
+            self.ip.dhcp_expose
+        )
+
+
+class SimpleNetworkForm(EthernetLockDeleteForm):
     """
     This form handles both Ethernet and IPAddress models.
 
@@ -63,38 +107,6 @@ class SimpleNetworkForm(forms.ModelForm):
         fields = [
             'hostname', 'address', 'mac',
         ]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # assign ip attached to ethernet
-        try:
-            self.ip = self.instance.ipaddress
-        except AttributeError:
-            self.ip = None
-        else:
-            for field in self.ip_fields:
-                self.fields[field].initial = self.ip.__dict__[field]
-
-        # make fields readonly if row (mac, ip, hostname) exposed in DHCP
-        if self._dhcp_expose_should_lock_fields:
-            for field_name in DHCP_EXPOSE_LOCKED_FIELDS:
-                field = self.fields[field_name]
-                if isinstance(field, forms.BooleanField):
-                    field.widget.attrs['disabled'] = True
-                field.widget.attrs['readonly'] = True
-
-    @property
-    def _dhcp_expose_should_lock_fields(self):
-        """
-        Return True if row should be locked for changes if it's exposed in DHCP.
-        """
-        return (
-            settings.DHCP_ENTRY_FORBID_CHANGE and
-            self.instance and
-            self.instance.pk and
-            self.ip and
-            self.ip.dhcp_expose
-        )
 
     def _validate_ip_uniquness(self, address):
         """
@@ -215,7 +227,7 @@ class NetworkForm(SimpleNetworkWithManagementIPForm):
     class Meta:
         model = Ethernet
         fields = [
-            'hostname', 'address', 'mac', 'is_management', 'label', 'speed',
+            'hostname', 'address', 'mac', 'is_management', 'label',
             'dhcp_expose'
         ]
 
