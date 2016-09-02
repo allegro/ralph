@@ -146,7 +146,7 @@ class ViewsTest(TestCase):
                 self.assertFalse(len(cqc) > SQL_QUERY_LIMIT)
 
             change_form = model_admin.changeform_view(
-                self.request, object_id=None
+                self.request, object_id=model.objects.first()
             )
             self.assertEqual(change_form.status_code, 200)
 
