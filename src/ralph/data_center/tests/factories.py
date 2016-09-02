@@ -236,7 +236,10 @@ class VIPFactory(DjangoModelFactory):
     port = FuzzyInteger(1024, 49151)
     protocol = factory.Iterator([VIPProtocol.TCP.id, VIPProtocol.HTTP.id])
     service_env = factory.SubFactory(ServiceEnvironmentFactory)
-    # XXX @mkurek - do we need 'parent' field here as well..?
 
     class Meta:
         model = VIP
+
+
+class VIPFullFactory(VIPFactory):
+    parent = factory.SubFactory(Cluster)

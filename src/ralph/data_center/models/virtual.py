@@ -30,12 +30,18 @@ class Database(AdminAbsoluteUrlMixin, BaseObject):
 class VIPProtocol(Choices):
     _ = Choices.Choice
 
-    unknown = _('unknown')
     TCP = _('TCP')
-    HTTP = _('HTTP')
+    UDP = _('UDP')
 
 
 class VIP(AdminAbsoluteUrlMixin, BaseObject):
+    name = models.CharField(_('name'), max_length=255)
+    ip = models.ForeignKey(IPAddress)
+    port = models.PositiveIntegerField(verbose_name=_('port'), default=0)
+    protocol = models.PositiveIntegerField(
+        verbose_name=_('protocol'), choices=VIPProtocol(),
+    )
+
     class Meta:
         verbose_name = _('VIP')
         verbose_name_plural = _('VIPs')
@@ -43,14 +49,6 @@ class VIP(AdminAbsoluteUrlMixin, BaseObject):
 
     def __str__(self):
         return self.name
-
-    name = models.CharField(_('name'), max_length=255, blank=True, null=True)
-    ip = models.ForeignKey(IPAddress, blank=True, null=True, default=None)
-    port = models.PositiveIntegerField(verbose_name=_('port'), default=0)
-    protocol = models.PositiveIntegerField(
-        verbose_name=_('protocol'), choices=VIPProtocol(),
-        default=VIPProtocol.unknown.id,
-    )
 
 
 class ClusterType(AdminAbsoluteUrlMixin, NamedMixin, models.Model):

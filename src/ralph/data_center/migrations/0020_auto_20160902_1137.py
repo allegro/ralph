@@ -15,12 +15,14 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='vip',
             name='ip',
-            field=models.ForeignKey(default=None, to='networks.IPAddress', blank=True, null=True),
+            field=models.ForeignKey(to='networks.IPAddress', default=1),
+            preserve_default=False,
         ),
         migrations.AddField(
             model_name='vip',
             name='name',
-            field=models.CharField(verbose_name='name', null=True, max_length=255, blank=True),
+            field=models.CharField(max_length=255, verbose_name='name', default=''),
+            preserve_default=False,
         ),
         migrations.AddField(
             model_name='vip',
@@ -30,7 +32,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='vip',
             name='protocol',
-            field=models.PositiveIntegerField(verbose_name='protocol', default=1, choices=[(1, 'unknown'), (2, 'TCP'), (3, 'HTTP')]),
+            field=models.PositiveIntegerField(choices=[(1, 'TCP'), (2, 'UDP')], verbose_name='protocol', default=1),
+            preserve_default=False,
         ),
         migrations.AlterUniqueTogether(
             name='vip',

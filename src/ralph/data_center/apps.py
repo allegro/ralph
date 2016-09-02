@@ -2,7 +2,7 @@ from django.conf import settings
 from ralph.apps import RalphAppConfig
 
 
-class DataCenter(RalphAppConfig):
+class DataCenterConfig(RalphAppConfig):
 
     name = 'ralph.data_center'
 
