@@ -59,7 +59,11 @@ class Warehouse(
 ):
     _allow_in_dashboard = True
     stocktaking_enabled = models.BooleanField(default=False)
-    stocktaking_tag_suffix = models.CharField(max_length=8, default='')
+    stocktaking_tag_suffix = models.CharField(
+        max_length=8,
+        default='',
+        blank=True
+    )
 
 
 class BackOfficeAssetStatus(Choices):

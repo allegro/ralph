@@ -109,11 +109,15 @@ class InventoryTagView(View):
         asset = get_object_or_404(BackOfficeAsset, id=request.POST['asset_id'])
 
         region_stocktaking_enabled = request.user.regions.filter(
-                        stocktaking_enabled=True
-                    ).exists()
-        if(asset.user_id != request.user.id
-                or not (asset.warehouse.stocktaking_enabled
-                        or region_stocktaking_enabled)):
+            stocktaking_enabled=True
+        ).exists()
+        if(
+            asset.user_id != request.user.id or
+            not (
+                asset.warehouse.stocktaking_enabled or
+                region_stocktaking_enabled
+            )
+        ):
             return HttpResponseForbidden()
 
         if request.POST['answer'] == 'yes':
@@ -143,10 +147,10 @@ class CurrentUserInfoView(UserInfoMixin, RalphBaseTemplateView):
             asset_fields += ['report_failure']
 
         warehouse_stocktaking_enabled = BackOfficeAsset.objects.filter(
-                user=self.request.user, warehouse__stocktaking_enabled=True
+            user=self.request.user, warehouse__stocktaking_enabled=True
         ).exists()
-        region_stocktaking_enabled = self.request.user.regions.filter(
-            stocktaking_enabled=True
+        region_stocktaking_enabled = BackOfficeAsset.objects.filter(
+            user=self.request.user, region__stocktaking_enabled=True
         ).exists()
 
         if warehouse_stocktaking_enabled or region_stocktaking_enabled:

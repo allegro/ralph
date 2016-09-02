@@ -4,11 +4,12 @@ from ralph.admin import RalphTabularInline
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.assets.models.components import (
     Disk,
+    Ethernet,
     FibreChannelCard,
-    GenericComponent,
     Memory,
     Processor
 )
+from ralph.networks.forms import EthernetLockDeleteForm, NetworkInlineFormset
 
 
 class ComponentsAdminView(RalphDetailViewAdmin):
@@ -16,11 +17,6 @@ class ComponentsAdminView(RalphDetailViewAdmin):
     name = 'components'
     label = _('Components')
     url_name = 'components'
-
-    class GenericComponentInline(RalphTabularInline):
-        model = GenericComponent
-        raw_id_fields = ('model',)
-        extra = 1
 
     class MemoryInline(RalphTabularInline):
         model = Memory
@@ -53,10 +49,19 @@ class ComponentsAdminView(RalphDetailViewAdmin):
         )
         extra = 1
 
+    class EthernetInline(RalphTabularInline):
+        model = Ethernet
+        fields = (
+            'mac', 'model_name', 'label', 'speed'
+        )
+        extra = 1
+        formset = NetworkInlineFormset
+        form = EthernetLockDeleteForm
+
     inlines = [
-        GenericComponentInline,
+        EthernetInline,
         MemoryInline,
-        FibreChannelCardInline,
         ProcessorInline,
         DiskInline,
+        FibreChannelCardInline,
     ]
