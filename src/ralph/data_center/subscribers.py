@@ -76,8 +76,10 @@ def handle_create_vip_event(data):
     protocol = VIPProtocol.from_name(data['protocol'].upper())
     vip = get_vip(ip, data['port'], protocol)
     if vip:
-        msg = ('VIP designated by IP address {}, port {} and protocol {} '
-               'already exists. Ignoring received event.')
+        msg = (
+            'VIP designated by IP address {}, port {} and protocol {} '
+            'already exists. Ignoring received event.'
+        )
         logger.warning(msg.format(ip.address, data['port'], protocol.name))
         return
 
@@ -91,15 +93,18 @@ def handle_create_vip_event(data):
     )
     if ip_created:
         eth = Ethernet.objects.create(base_object=cluster)
-        eth.ipaddress = ip
+        ip.ethernet = eth
+        ip.save()
     try:
         service_env = ServiceEnvironment.objects.get(
             service__uid=data['service']['uid'],
             environment__name=data['environment'],
         )
     except ServiceEnvironment.DoesNotExist:
-        msg = ('ServiceEnvironment for service UID "{}" and environment "{}" '
-               'does not exist. Ignoring received create event.')
+        msg = (
+            'ServiceEnvironment for service UID "{}" and environment "{}" '
+            'does not exist. Ignoring received create event.'
+        )
         logger.error(msg.format(data['service']['uid'], data['environment']))
         return
     vip = VIP(
@@ -140,8 +145,10 @@ def handle_update_vip_event(data):
     protocol = VIPProtocol.from_name(data['protocol'].upper())
     vip = get_vip(ip.address, data['port'], protocol.name)
     if vip is None:
-        msg = ("VIP designated by IP address {}, port {} and protocol {} "
-               "doesn't exist. Ignoring received update event.")
+        msg = (
+            "VIP designated by IP address {}, port {} and protocol {} "
+            "doesn't exist. Ignoring received update event."
+        )
         logger.warning(msg.format(ip.address, data['port'], protocol.name))
         return
     # TODO(xor-xor): when update event will contain changes (currently it
@@ -161,22 +168,43 @@ def handle_delete_vip_event(data):
         )
         return
 
-    ip, _ = IPAddress.objects.get_or_create(address=data['ip'])
+    try:
+        ip = IPAddress.objects.get(address=data['ip'])
+    except IPAddress.DoesNotExist:
+        msg = (
+            "IP address {} doesn't exist. Ignoring received delete VIP event."
+        )
+        logger.error(msg.format(data['ip']))
+        return
     protocol = VIPProtocol.from_name(data['protocol'].upper())
     vip = get_vip(ip, data['port'], protocol)
     if vip is None:
-        msg = ("VIP designated by IP address {}, port {} and protocol {} "
-               "doesn't exist. Ignoring received delete event.")
+        msg = (
+            "VIP designated by IP address {}, port {} and protocol {} "
+            "doesn't exist. Ignoring received delete event."
+        )
         logger.warning(msg.format(ip.address, data['port'], protocol.name))
         return
     vip.delete()
     logger.info('VIP {} deleted successfully.'.format(vip.name))
 
-    # Delete IP address associated with it, but only when no other VIP uses it.
+    # Delete IP address associated with it (along with its Ethernet), but only
+    # when this IP is not used anymore by other VIP(s).
     if not VIP.objects.filter(ip=ip).exists():
+        eth_deleted = False
+        if ip.ethernet is not None:
+            ip.ethernet.delete()
+            eth_deleted = True
         ip.delete()
-        msg = (
-            'IP address {} has been deleted since it is no longer being used '
-            'by any VIP.'
-        )
+        if eth_deleted:
+            msg = (
+                'IP address {} has been deleted (along with Ethernet '
+                'associated with it) since it is no longer being used by any '
+                'VIP.'
+            )
+        else:
+            msg = (
+                'IP address {} has been deleted since it is no longer being '
+                'used by any VIP.'
+            )
         logger.info(msg.format(ip.address))
