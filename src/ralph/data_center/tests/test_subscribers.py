@@ -10,7 +10,7 @@ from ralph.data_center.models import VIP, VIPProtocol
 from ralph.data_center.subscribers import (
     handle_create_vip_event,
     handle_delete_vip_event,
-    validate_event_data
+    validate_vip_event_data
 )
 
 from ralph.data_center.tests.factories import VIPFactory
@@ -41,59 +41,59 @@ class ValidateEventDataTestCase(TestCase):
 
     def test_missing_name(self):
         self.data['name'] = None
-        errors = validate_event_data(self.data)
+        errors = validate_vip_event_data(self.data)
         self.assertEqual(len(errors), 1)
         self.assertIn('missing name', errors)
 
     def test_invalid_ip_address(self):
         self.data['ip'] = '10.20.30.40.50'
-        errors = validate_event_data(self.data)
+        errors = validate_vip_event_data(self.data)
         self.assertEqual(len(errors), 1)
         self.assertIn('invalid IP address "10.20.30.40.50"', errors)
 
         self.data['ip'] = None
-        errors = validate_event_data(self.data)
+        errors = validate_vip_event_data(self.data)
         self.assertEqual(len(errors), 1)
         self.assertIn('invalid IP address "None"', errors)
 
     def test_invalid_port(self):
         self.data['port'] = 80
-        errors = validate_event_data(self.data)
+        errors = validate_vip_event_data(self.data)
         self.assertEqual(len(errors), 1)
         self.assertIn('invalid port "80"', errors)
 
         self.data['port'] = None
-        errors = validate_event_data(self.data)
+        errors = validate_vip_event_data(self.data)
         self.assertEqual(len(errors), 1)
         self.assertIn('invalid port "None"', errors)
 
     def test_missing_protocol(self):
         self.data['protocol'] = None
-        errors = validate_event_data(self.data)
+        errors = validate_vip_event_data(self.data)
         self.assertEqual(len(errors), 1)
         self.assertIn('missing protocol', errors)
 
     def test_missing_service_uid(self):
         self.data['service']['uid'] = None
-        errors = validate_event_data(self.data)
+        errors = validate_vip_event_data(self.data)
         self.assertEqual(len(errors), 1)
         self.assertIn('missing service UID', errors)
 
         self.data['service'] = None
-        errors = validate_event_data(self.data)
+        errors = validate_vip_event_data(self.data)
         self.assertEqual(len(errors), 1)
         self.assertIn('missing service UID', errors)
 
     def test_missing_environment(self):
         self.data['environment'] = None
-        errors = validate_event_data(self.data)
+        errors = validate_vip_event_data(self.data)
         self.assertEqual(len(errors), 1)
         self.assertIn('missing environment', errors)
 
     def test_if_errors_aggregate(self):
         self.data['service'] = None
         self.data['environment'] = None
-        errors = validate_event_data(self.data)
+        errors = validate_vip_event_data(self.data)
         self.assertEqual(len(errors), 2)
         self.assertIn('missing service UID', errors)
         self.assertIn('missing environment', errors)
@@ -102,7 +102,7 @@ class ValidateEventDataTestCase(TestCase):
 class HandleCreateVIPEventTestCase(TestCase):
 
     def setUp(self):
-        logging.disable(logging.INFO)
+        logging.disable(logging.CRITICAL)
         self.data = deepcopy(EVENT_DATA)
 
     def test_create_when_vip_already_exists(self):
@@ -144,6 +144,9 @@ class HandleCreateVIPEventTestCase(TestCase):
 
 class HandleDeleteVIPEventTestCase(TestCase):
 
+    def setUp(self):
+        logging.disable(logging.CRITICAL)
+
     def test_delete_when_vip_already_exists(self):
         pass
 
@@ -155,3 +158,9 @@ class HandleDeleteVIPEventTestCase(TestCase):
 
     def test_delete_with_invalid_event_data(self):
         pass
+
+    def test_ip_with_eth_being_deleted_when_no_longer_used(self):
+        pass
+
+    def tearDown(self):
+        logging.disable(logging.NOTSET)

@@ -234,7 +234,7 @@ class VIPFactory(DjangoModelFactory):
     # IPAddressFactory is given as string to avoid circular imports here.
     ip = factory.SubFactory('ralph.networks.tests.factories.IPAddressFactory')
     port = FuzzyInteger(1024, 49151)
-    protocol = factory.Iterator([VIPProtocol.TCP.id, VIPProtocol.HTTP.id])
+    protocol = factory.Iterator([VIPProtocol.TCP.id, VIPProtocol.UDP.id])
     service_env = factory.SubFactory(ServiceEnvironmentFactory)
 
     class Meta:
