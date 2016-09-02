@@ -227,6 +227,12 @@ class VirtualServerViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         'service_env__service__id',
     ]
     additional_filter_class = VirtualServerFilterSet
+    extended_filter_fields = dict(
+        list(BaseObjectViewSetMixin.extended_filter_fields.items()) +
+        list(dict(
+            hypervisor_service=['parent__service_env__service__uid'],
+        ).items())
+    )
 
 
 router.register(r'cloud-flavors', CloudFlavorViewSet)

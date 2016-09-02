@@ -48,7 +48,6 @@ class NetworkInlineTestCase(RalphTestCase):
             '0-address': self.ip1.address,
             '0-mac': self.eth1.mac,
             '0-label': '',
-            '0-speed': self.eth1.speed,
             '0-is_management': 'on',
 
             '1-base_object': self.obj1.id,
@@ -56,7 +55,6 @@ class NetworkInlineTestCase(RalphTestCase):
             '1-address': '127.0.0.2',
             '1-mac': '10:20:30:40:50:60',
             '1-label': 'eth1',
-            '1-speed': EthernetSpeed.s100gbit.id,
         }
         data = {
             'hostname': self.obj1.hostname,
@@ -70,7 +68,6 @@ class NetworkInlineTestCase(RalphTestCase):
         self.assertFalse(ip.is_management)
         self.assertFalse(ip.dhcp_expose)
         self.assertEqual(ip.ethernet.mac, '10:20:30:40:50:60')
-        self.assertEqual(ip.ethernet.speed, EthernetSpeed.s100gbit.id)
         self.assertEqual(ip.ethernet.label, 'eth1')
         self.assertEqual(ip.ethernet.base_object.pk, self.obj1.pk)
 
@@ -84,13 +81,11 @@ class NetworkInlineTestCase(RalphTestCase):
             '0-address': self.ip1.address,
             '0-mac': self.eth1.mac,
             '0-label': '',
-            '0-speed': self.eth1.speed,
             '0-is_management': 'on',
 
             '1-base_object': self.obj1.id,
             '1-mac': '10:20:30:40:50:60',
             '1-label': 'eth1',
-            '1-speed': EthernetSpeed.s100gbit.id,
         }
         data = {
             'hostname': self.obj1.hostname,
@@ -100,7 +95,6 @@ class NetworkInlineTestCase(RalphTestCase):
         response = self.client.post(self.obj1.get_absolute_url(), data)
         self.assertEqual(response.status_code, 302)
         eth = Ethernet.objects.get(mac='10:20:30:40:50:60')
-        self.assertEqual(eth.speed, EthernetSpeed.s100gbit.id)
         self.assertEqual(eth.label, 'eth1')
         self.assertEqual(eth.base_object.pk, self.obj1.pk)
         # ip should not be created
@@ -117,13 +111,11 @@ class NetworkInlineTestCase(RalphTestCase):
             '0-address': self.ip1.address,
             '0-mac': self.eth1.mac,
             '0-label': '',
-            '0-speed': self.eth1.speed,
             '0-is_management': 'on',
 
             '1-base_object': self.obj1.id,
             '1-hostname': 'def',
             '1-address': '127.0.0.2',
-            '1-speed': EthernetSpeed.unknown.id,
         }
         data = {
             'hostname': self.obj1.hostname,
@@ -137,7 +129,6 @@ class NetworkInlineTestCase(RalphTestCase):
         self.assertFalse(ip.is_management)
         self.assertFalse(ip.dhcp_expose)
         self.assertFalse(bool(ip.ethernet.mac))  # mac is either None or ''
-        self.assertEqual(ip.ethernet.speed, EthernetSpeed.unknown.id)
         self.assertFalse(bool(ip.ethernet.label))
         self.assertEqual(ip.ethernet.base_object.pk, self.obj1.pk)
 
@@ -152,18 +143,15 @@ class NetworkInlineTestCase(RalphTestCase):
             '0-address': self.ip1.address,
             '0-mac': self.eth1.mac,
             '0-label': '',
-            '0-speed': self.eth1.speed,
             '0-is_management': 'on',
 
             '1-base_object': self.obj1.id,
             '1-hostname': 'def',
             '1-address': '127.0.0.2',
-            '1-speed': EthernetSpeed.unknown.id,
 
             '2-base_object': self.obj1.id,
             '2-hostname': 'def',
             '2-address': '127.0.0.3',
-            '2-speed': EthernetSpeed.unknown.id,
         }
         data = {
             'hostname': self.obj1.hostname,
@@ -183,12 +171,10 @@ class NetworkInlineTestCase(RalphTestCase):
             '0-address': self.ip1.address,
             '0-mac': self.eth1.mac,
             '0-label': '',
-            '0-speed': self.eth1.speed,
             '0-is_management': 'on',
 
             '1-base_object': self.obj1.id,
             '1-label': 'eth1',
-            '1-speed': EthernetSpeed.unknown.id,
         }
         data = {
             'hostname': self.obj1.hostname,
@@ -210,14 +196,12 @@ class NetworkInlineTestCase(RalphTestCase):
             '0-address': self.ip1.address,
             '0-mac': self.eth1.mac,
             '0-label': '',
-            '0-speed': self.eth1.speed,
             '0-is_management': 'on',
 
             '1-base_object': self.obj1.id,
             '1-hostname': 'def',
             '1-mac': '11:12:13:14:15:16',
             '1-address': self.ip2.address,  # duplicated ip!
-            '1-speed': EthernetSpeed.unknown.id,
         }
         data = {
             'hostname': self.obj1.hostname,
@@ -241,7 +225,6 @@ class NetworkInlineTestCase(RalphTestCase):
             '0-address': self.ip1.address,
             '0-mac': self.eth1.mac,
             '0-label': '',
-            '0-speed': self.eth1.speed,
             '0-is_management': 'on',
 
             '1-hostname': 'def',
@@ -249,7 +232,6 @@ class NetworkInlineTestCase(RalphTestCase):
             '1-address': '127.0.0.2',
             '1-mac': '',
             '1-label': '',
-            '1-speed': EthernetSpeed.unknown.id,
             '1-is_management': 'on',
         }
         data = {
@@ -274,7 +256,6 @@ class NetworkInlineTestCase(RalphTestCase):
             '0-address': self.ip1.address,
             '0-mac': self.eth1.mac,
             '0-label': '',
-            '0-speed': self.eth1.speed,
             '0-is_management': 'on',
 
             '1-hostname': 'def',
@@ -282,7 +263,6 @@ class NetworkInlineTestCase(RalphTestCase):
             '1-address': '',
             '1-mac': '10:20:30:40:50:60',
             '1-label': '',
-            '1-speed': EthernetSpeed.unknown.id,
         }
         data = {
             'hostname': self.obj1.hostname,
@@ -335,7 +315,6 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
             '0-id': self.eth1.id,
             '0-base_object': self.obj1.id,
             '0-label': 'eth10',
-            '0-speed': EthernetSpeed.s100gbit.id,
             # readonly fields modification!
             '0-hostname': 's222.dc.local',
             '0-address': '127.1.1.1',
@@ -358,7 +337,6 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
         self.assertEqual(self.eth1.mac, '10:20:30:40:50:60')
         # other fields could be changed
         self.assertEqual(self.eth1.label, 'eth10')
-        self.assertEqual(self.eth1.speed, EthernetSpeed.s100gbit.id)
 
     def test_dhcp_expose_delete_should_not_work(self):
         self.ip1.dhcp_expose = True
@@ -369,7 +347,6 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
             '0-id': self.eth1.id,
             '0-base_object': self.obj1.id,
             '0-label': 'eth10',
-            '0-speed': EthernetSpeed.s100gbit.id,
             '0-hostname': 's222.dc.local',
             '0-address': '127.1.1.1',
             '0-mac': '11:11:11:11:11:11',
@@ -396,14 +373,12 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
             '0-id': self.eth1.id,
             '0-base_object': self.obj1.id,
             '0-label': 'eth10',
-            '0-speed': EthernetSpeed.s100gbit.id,
 
             '1-base_object': self.obj1.id,
             '1-hostname': 'def',
             '1-address': '127.0.0.2',
             '1-mac': '10:10:10:10:10:10',
             '1-label': 'eth10',
-            '1-speed': EthernetSpeed.unknown.id,
             '1-dhcp_expose': 'on',
         }
         data = {
@@ -417,7 +392,6 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
         self.assertEqual(ip.hostname, 'def')
         self.assertTrue(ip.dhcp_expose)
         self.assertEqual(ip.ethernet.mac, '10:10:10:10:10:10')
-        self.assertEqual(ip.ethernet.speed, EthernetSpeed.unknown.id)
         self.assertEqual(ip.ethernet.label, 'eth10')
         self.assertEqual(ip.ethernet.base_object.pk, self.obj1.pk)
 
@@ -428,7 +402,6 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
             '0-id': self.eth1.id,
             '0-base_object': self.obj1.id,
             '0-label': 'eth10',
-            '0-speed': EthernetSpeed.s100gbit.id,
             '0-hostname': 's11.dc.local',
             '0-address': '127.0.0.1',
             '0-mac': '10:20:30:40:50:60',
@@ -445,7 +418,6 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
         self.assertEqual(ip.hostname, 's11.dc.local')
         self.assertTrue(ip.dhcp_expose)
         self.assertEqual(ip.ethernet.mac, '10:20:30:40:50:60')
-        self.assertEqual(ip.ethernet.speed, EthernetSpeed.s100gbit.id)
         self.assertEqual(ip.ethernet.label, 'eth10')
         self.assertEqual(ip.ethernet.base_object.pk, self.obj1.pk)
 
@@ -458,14 +430,12 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
             '0-id': self.eth1.id,
             '0-base_object': self.obj1.id,
             '0-label': 'eht10',
-            '0-speed': EthernetSpeed.s100gbit.id,
 
             '1-base_object': self.obj1.id,
             '1-hostname': '',
             '1-address': '',
             '1-mac': '10:10:10:10:10:10',
             '1-label': 'eth10',
-            '1-speed': EthernetSpeed.unknown.id,
             '1-dhcp_expose': 'on',
         }
         data = {
@@ -489,14 +459,12 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
             '0-id': self.eth1.id,
             '0-base_object': self.obj1.id,
             '0-label': 'eht10',
-            '0-speed': EthernetSpeed.s100gbit.id,
 
             '1-base_object': self.obj1.id,
             '1-hostname': 'def',
             '1-address': '127.0.0.2',
             '1-mac': '',
             '1-label': 'eth10',
-            '1-speed': EthernetSpeed.unknown.id,
             '1-dhcp_expose': 'on',
         }
         data = {
@@ -520,14 +488,12 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
             '0-id': self.eth1.id,
             '0-base_object': self.obj1.id,
             '0-label': 'eht10',
-            '0-speed': EthernetSpeed.s100gbit.id,
 
             '1-base_object': self.obj1.id,
             '1-hostname': '',
             '1-address': '127.0.0.2',
             '1-mac': '10:10:10:10:10:10',
             '1-label': 'eth10',
-            '1-speed': EthernetSpeed.unknown.id,
             '1-dhcp_expose': 'on',
         }
         data = {
@@ -549,7 +515,6 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
             '0-id': self.eth1.id,
             '0-base_object': self.obj1.id,
             '0-label': 'eht10',
-            '0-speed': EthernetSpeed.s100gbit.id,
             '0-hostname': '',
             '0-address': '',
             '0-mac': '10:10:10:10:10:10',
@@ -574,7 +539,6 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
             '0-id': self.eth1.id,
             '0-base_object': self.obj1.id,
             '0-label': 'eht10',
-            '0-speed': EthernetSpeed.s100gbit.id,
             '0-hostname': 'def',
             '0-address': '127.0.0.2',
             '0-mac': '',
@@ -599,7 +563,6 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
             '0-id': self.eth1.id,
             '0-base_object': self.obj1.id,
             '0-label': 'eht10',
-            '0-speed': EthernetSpeed.s100gbit.id,
             '0-hostname': '',
             '0-address': '127.0.0.2',
             '0-mac': '10:10:10:10:10:10',
