@@ -12,8 +12,9 @@ from ralph.data_center.subscribers import (
     handle_delete_vip_event,
     validate_vip_event_data
 )
-
 from ralph.data_center.tests.factories import VIPFactory
+from ralph.networks.models.networks import Ethernet, IPAddress
+from ralph.networks.tests.factories import IPAddressFactory
 
 
 EVENT_DATA = {
@@ -146,21 +147,71 @@ class HandleDeleteVIPEventTestCase(TestCase):
 
     def setUp(self):
         logging.disable(logging.CRITICAL)
+        self.data = deepcopy(EVENT_DATA)
 
-    def test_delete_when_vip_already_exists(self):
-        pass
+    def test_delete_when_ip_does_not_exist(self):
+        vip = VIPFactory()
+        ip = IPAddressFactory()
+        self.data['ip'] = ip.address
+        ip.delete()
+        self.data['port'] = vip.port
+        self.data['protocol'] = VIPProtocol.from_id(vip.protocol).name
 
-    def test_delete_when_service_env_does_not_exist(self):
-        pass
+        self.assertEqual(VIP.objects.count(), 1)
+        handle_delete_vip_event(self.data)
+        self.assertEqual(VIP.objects.count(), 1)
 
     def test_delete_with_valid_event_data(self):
-        pass
+        vip = VIPFactory()
+        self.data['ip'] = vip.ip.address
+        self.data['port'] = vip.port
+        self.data['protocol'] = VIPProtocol.from_id(vip.protocol).name
+
+        self.assertEqual(VIP.objects.count(), 1)
+        handle_delete_vip_event(self.data)
+        self.assertEqual(VIP.objects.count(), 0)
 
     def test_delete_with_invalid_event_data(self):
-        pass
+        vip = VIPFactory()
+        self.data['ip'] = vip.ip.address
+        self.data['port'] = vip.port
+        self.data['protocol'] = VIPProtocol.from_id(vip.protocol).name
+
+        self.data['service'] = None
+        self.assertEqual(VIP.objects.count(), 1)
+        handle_delete_vip_event(self.data)
+        self.assertEqual(VIP.objects.count(), 1)
 
     def test_ip_with_eth_being_deleted_when_no_longer_used(self):
-        pass
+        vip = VIPFactory()
+        self.data['ip'] = vip.ip.address
+        self.data['port'] = vip.port
+        self.data['protocol'] = VIPProtocol.from_id(vip.protocol).name
+
+        self.assertEqual(VIP.objects.count(), 1)
+        self.assertEqual(IPAddress.objects.count(), 1)
+        self.assertEqual(Ethernet.objects.count(), 1)
+        handle_delete_vip_event(self.data)
+        self.assertEqual(VIP.objects.count(), 0)
+        self.assertEqual(IPAddress.objects.count(), 0)
+        self.assertEqual(Ethernet.objects.count(), 0)
+
+    def test_ip_with_eth_not_being_deleted_when_still_used_by_some_vip(self):
+        vip = VIPFactory()
+        self.data['ip'] = vip.ip.address
+        self.data['port'] = vip.port
+        self.data['protocol'] = VIPProtocol.from_id(vip.protocol).name
+        vip2 = VIPFactory()
+        vip2.ip = vip.ip
+        vip2.save()
+
+        self.assertEqual(VIP.objects.count(), 2)
+        self.assertEqual(IPAddress.objects.count(), 2)
+        self.assertEqual(Ethernet.objects.count(), 2)
+        handle_delete_vip_event(self.data)
+        self.assertEqual(VIP.objects.count(), 1)
+        self.assertEqual(IPAddress.objects.count(), 2)
+        self.assertEqual(Ethernet.objects.count(), 2)
 
     def tearDown(self):
         logging.disable(logging.NOTSET)
