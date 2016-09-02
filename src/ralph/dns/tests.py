@@ -329,7 +329,7 @@ class TestDNSaaS(TestCase):
         request = RequestStub()
         dns = DNSaaS()
 
-        result = dns._request2result(request)
+        result = dns._response2result(request)
 
         self.assertEqual(
             result,
