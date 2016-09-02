@@ -17,7 +17,8 @@ class DNSaaS:
     def __init__(self, headers=None):
         self.session = requests.Session()
         _headers = {
-            'Authorization': 'Token {}'.format(settings.DNSAAS_TOKEN)
+            'Authorization': 'Token {}'.format(settings.DNSAAS_TOKEN),
+            'Content-Type': 'application/json'
         }
         if headers is not None:
             _headers.update(headers)
@@ -116,7 +117,7 @@ class DNSaaS:
             ),
             'owner': settings.DNSAAS_OWNER
         }
-        response = self.session.patch(url, data=data)
+        response = self.session.patch(url, json=data)
         if response.status_code == 500:
             return {
                 'non_field_errors': [_('Internal Server Error from DNSAAS')]
@@ -194,7 +195,7 @@ class DNSaaS:
         return self._post(url, data)
 
     def _post(self, url, data):
-        response = self.session.post(url, data=data)
+        response = self.session.post(url, json=data)
         return self._response2result(response)
 
     def delete_dns_record(self, record_id):
