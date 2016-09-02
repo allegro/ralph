@@ -108,12 +108,12 @@ def handle_create_vip_event(data):
         logger.error(msg.format(data['service']['uid'], data['environment']))
         return
     vip = VIP(
-        name = data['name'],
-        ip = ip,
-        port = data['port'],
-        protocol = protocol,
-        parent = cluster,
-        service_env = service_env,
+        name=data['name'],
+        ip=ip,
+        port=data['port'],
+        protocol=protocol,
+        parent=cluster,
+        service_env=service_env,
     )
     vip.save()
     logger.debug('VIP {} created successfully.'.format(vip.name))
@@ -161,11 +161,11 @@ def handle_update_vip_event(data):
 def handle_delete_vip_event(data):
     errors = validate_vip_event_data(data)
     if errors:
-        logger.error(msg.format('; '.join(errors)))
         msg = (
             'Error(s) detected in event data: {}. Ignoring received delete '
             'event.'
         )
+        logger.error(msg.format('; '.join(errors)))
         return
 
     try:
