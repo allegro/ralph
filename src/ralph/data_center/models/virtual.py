@@ -48,7 +48,11 @@ class VIP(AdminAbsoluteUrlMixin, BaseObject):
         unique_together = ('ip', 'port', 'protocol')
 
     def __str__(self):
-        return self.name
+        return "IP: {}, port: {}, protocol: {}".format(
+            self.ip,
+            self.port,
+            VIPProtocol.from_id(self.protocol).name,
+        )
 
 
 class ClusterType(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
