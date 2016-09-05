@@ -31,11 +31,11 @@ class JobStatus(Choices):
     FINISHED = _('finished')
     FAILED = _('failed')
     STARTED = _('started')
-    FREEZED = _('freezed')
+    FROZEN = _('frozen')
     KILLED = _('killed')
 
 JOB_NOT_ENDED_STATUSES = set(
-    [JobStatus.QUEUED, JobStatus.STARTED, JobStatus.FREEZED]
+    [JobStatus.QUEUED, JobStatus.STARTED, JobStatus.FROZEN]
 )
 
 
@@ -88,11 +88,11 @@ class Job(TimeStampMixin):
         return self.status in JOB_NOT_ENDED_STATUSES
 
     @property
-    def is_freezed(self):
+    def is_frozen(self):
         """
-        Return True if job is freezed.
+        Return True if job is frozen.
         """
-        return self.status == JobStatus.FREEZED
+        return self.status == JobStatus.FROZEN
 
     @property
     def is_killed(self):
@@ -144,7 +144,7 @@ class Job(TimeStampMixin):
     def freeze(self):
         self._update_dumped_params()
         logger.info('Freezing job {}'.format(self))
-        self.status = JobStatus.FREEZED
+        self.status = JobStatus.FROZEN
         self.save()
 
     def unfreeze(self):

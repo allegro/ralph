@@ -14,6 +14,7 @@ from ralph.admin.filters import (
     TreeRelatedAutocompleteFilterWithDescendants
 )
 from ralph.assets.models.components import Ethernet
+from ralph.assets.views import ComponentsAdminView
 from ralph.cross_validator.views import ShowDiffMessageMixin
 from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.deployment.mixins import ActiveDeploymentMessageMixin
@@ -65,6 +66,10 @@ class VirtualServerNetworkView(NetworkView):
     pass
 
 
+class VirtualServerComponentsView(ComponentsAdminView):
+    pass
+
+
 @register(VirtualServer)
 class VirtualServerAdmin(
     ActiveDeploymentMessageMixin,
@@ -94,6 +99,7 @@ class VirtualServerAdmin(
     ]
 
     change_views = [
+        VirtualServerComponentsView,
         VirtualServerNetworkView,
         VirtaulServerSecurityInfoView,
     ]

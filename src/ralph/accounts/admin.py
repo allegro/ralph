@@ -137,15 +137,13 @@ class AssetList(Table):
     report_failure.title = ''
 
     def confirm_ownership(self, item):
-        region_stocktaking_enabled = item.user.regions.filter(
-            stocktaking_enabled=True
-        ).exists()
         has_inv_tag = any(
             [n.startswith(settings.INVENTORY_TAG) for n in item.tags.names()]
         )
-
-        if not (item.warehouse.stocktaking_enabled
-                or region_stocktaking_enabled):
+        if not (
+            item.warehouse.stocktaking_enabled or
+            item.region.stocktaking_enabled
+        ):
             return ''
         elif settings.INVENTORY_TAG_MISSING in item.tags.names():
             return _(

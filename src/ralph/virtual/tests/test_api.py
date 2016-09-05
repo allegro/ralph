@@ -316,8 +316,10 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         self.cluster = ClusterFactory()
         self.type = VirtualServerType.objects.create(name='XEN')
         self.virtual_server = VirtualServerFullFactory(
-            service_env__environment__name='some_env'
+            service_env__environment__name='some_env',
         )
+        self.virtual_server.parent.service_env.service.uid = 's-12345'
+        self.virtual_server.parent.service_env.service.save()
         self.virtual_server.service_env.service.business_owners = [self.user1]
         self.virtual_server.service_env.service.technical_owners = [self.user2]
         self.virtual_server.service_env.save()
@@ -484,4 +486,15 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.data['count'], 1
+        )
+
+    def test_filter_by_hypervisor_service(self):
+        url = reverse('virtualserver-list') + '?hypervisor_service=s-12345'
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['count'], 1
+        )
+        self.assertEqual(
+            response.data['results'][0]['id'], self.virtual_server.id
         )

@@ -228,7 +228,9 @@ class Processor(Component):
         verbose_name_plural = _('processors')
 
     def __str__(self):
-        return self.model_name
+        return '{}: {} cores ({} MHz)'.format(
+            self.model_name, self.cores, self.speed
+        )
 
 
 class Disk(Component):

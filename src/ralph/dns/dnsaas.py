@@ -60,8 +60,8 @@ class DNSaaS:
         Returns:
             list of records
         """
-        request = self.session.get(url)
-        json_data = request.json()
+        response = self.session.get(url)
+        json_data = response.json()
         api_results = json_data.get('results', [])
         if json_data.get('next', None):
             _api_results = self.get_api_result(json_data['next'])
@@ -118,13 +118,13 @@ class DNSaaS:
             ),
             'owner': settings.DNSAAS_OWNER
         }
-        request = self.session.patch(url, data=data)
-        if request.status_code == 500:
+        response = self.session.patch(url, json=data)
+        if response.status_code == 500:
             return {
                 'non_field_errors': [_('Internal Server Error from DNSAAS')]
             }
-        elif request.status_code != 200:
-            return request.json()
+        elif response.status_code != 200:
+            return response.json()
 
     @cache(skip_first=True)
     def get_domain(self, domain_name):
@@ -142,12 +142,12 @@ class DNSaaS:
         if result:
             return result[0]['id']
 
-    def _request2result(self, request):
-        if request.status_code == 500:
+    def _response2result(self, response):
+        if response.status_code == 500:
             return {
                 'non_field_errors': [_('Internal Server Error from DNSAAS')]
             }
-        elif request.status_code == 202:
+        elif response.status_code == 202:
             logger.error(
                 "User '{}' has insufficient permission".format(
                     settings.DNSAAS_OWNER
@@ -158,8 +158,8 @@ class DNSaaS:
                     _("Your request couldn't be handled, try later.")
                 ]
             }
-        elif request.status_code != 201:
-            return request.json()
+        elif response.status_code != 201:
+            return response.json()
 
     def create_dns_record(self, record):
         """
@@ -196,8 +196,8 @@ class DNSaaS:
         return self._post(url, data)
 
     def _post(self, url, data):
-        response = self.session.post(url, data=json.dumps(data))
-        return self._request2result(response)
+        response = self.session.post(url, json=data)
+        return self._response2result(response)
 
     def delete_dns_record(self, record_id):
         """
@@ -210,13 +210,13 @@ class DNSaaS:
             Validation error from API or None if delete correct
         """
         url = self.build_url('records', id=record_id)
-        request = self.session.delete(url)
-        if request.status_code == 500:
+        response = self.session.delete(url)
+        if response.status_code == 500:
             return {
                 'non_field_errors': [_('Internal Server Error from DNSAAS')]
             }
-        elif request.status_code != 204:
-            return request.json()
+        elif response.status_code != 204:
+            return response.json()
 
     def send_ipaddress_data(self, update_data):
         logger.info('Send update data: {}'.format(update_data))

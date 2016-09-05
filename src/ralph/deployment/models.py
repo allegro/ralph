@@ -201,9 +201,9 @@ class Deployment(AdminAbsoluteUrlMixin, TransitionJob):
     @classmethod
     def mark_as_done(cls, deployment_id):
         deployment = cls.objects.get(id=deployment_id)
-        if deployment.is_freezed:
+        if deployment.is_frozen:
             deployment.unfreeze()
         else:
             logger.warning(
-                'Deployment {} was already unfreezed'.format(deployment)
+                'Deployment {} was already unfrozen'.format(deployment)
             )

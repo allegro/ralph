@@ -406,6 +406,8 @@ class NetworkPublisherTestCase(TestCase):
         self.assertCountEqual(
             result.pop('dns_servers'), ['1.2.3.4', '4.3.2.1']
         )
+        racks = sorted(result.pop('racks'))
+        self.assertEqual(racks, ['11', '12'])
         self.assertEqual(result, {
             'id': self.net.id,
             'ralph2_id': '10',
@@ -419,5 +421,4 @@ class NetworkPublisherTestCase(TestCase):
             'reserved_top': 5,
             'network_environment': '2222',
             'kind': '1111',
-            'racks': ['11', '12'],
         })
