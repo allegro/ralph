@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import logging
 from copy import deepcopy
 
 from django.test import TestCase
@@ -103,7 +102,6 @@ class ValidateEventDataTestCase(TestCase):
 class HandleCreateVIPEventTestCase(TestCase):
 
     def setUp(self):
-        logging.disable(logging.CRITICAL)
         self.data = deepcopy(EVENT_DATA)
 
     def test_create_when_vip_already_exists(self):
@@ -139,14 +137,10 @@ class HandleCreateVIPEventTestCase(TestCase):
         handle_create_vip_event(self.data)
         self.assertEqual(VIP.objects.count(), 0)
 
-    def tearDown(self):
-        logging.disable(logging.NOTSET)
-
 
 class HandleDeleteVIPEventTestCase(TestCase):
 
     def setUp(self):
-        logging.disable(logging.CRITICAL)
         self.data = deepcopy(EVENT_DATA)
 
     def test_delete_when_ip_does_not_exist(self):
@@ -212,6 +206,3 @@ class HandleDeleteVIPEventTestCase(TestCase):
         self.assertEqual(VIP.objects.count(), 1)
         self.assertEqual(IPAddress.objects.count(), 2)
         self.assertEqual(Ethernet.objects.count(), 2)
-
-    def tearDown(self):
-        logging.disable(logging.NOTSET)
