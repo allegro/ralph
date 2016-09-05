@@ -107,15 +107,11 @@ class InventoryTagView(View):
 
     def post(self, request, *args, **kwargs):
         asset = get_object_or_404(BackOfficeAsset, id=request.POST['asset_id'])
-
-        region_stocktaking_enabled = request.user.regions.filter(
-            stocktaking_enabled=True
-        ).exists()
         if(
             asset.user_id != request.user.id or
             not (
                 asset.warehouse.stocktaking_enabled or
-                region_stocktaking_enabled
+                asset.region.stocktaking_enabled
             )
         ):
             return HttpResponseForbidden()
