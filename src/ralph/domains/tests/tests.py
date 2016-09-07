@@ -7,15 +7,15 @@ from ralph.domains.tests.factories import DomainFactory
 
 
 class TestDomainValidation(TestCase):
-    def test_pass_when_type_not_none_and_value(self):
+    def test_pass_when_type_redirect_and_value(self):
         domain = DomainFactory(
             website_type=WebsiteType.redirect.id, website_url='www.allegro.pl',
         )
         domain.clean()
 
-    def test_raise_error_when_type_not_none_and_not_value(self):
+    def test_raise_error_when_type_redirect_and_no_value(self):
         domain = DomainFactory(
-            website_type=WebsiteType.direct.id, website_url='',
+            website_type=WebsiteType.redirect.id, website_url='',
         )
         with self.assertRaises(ValidationError):
             domain.clean()
@@ -32,3 +32,15 @@ class TestDomainValidation(TestCase):
         )
         with self.assertRaises(ValidationError):
             domain.clean()
+
+    def test_pass_when_type_direct_and_value(self):
+        domain = DomainFactory(
+            website_type=WebsiteType.direct.id, website_url='www.allegro.pl',
+        )
+        domain.clean()
+
+    def test_pass_when_type_direct_and_no_value(self):
+        domain = DomainFactory(
+            website_type=WebsiteType.direct.id, website_url='',
+        )
+        domain.clean()

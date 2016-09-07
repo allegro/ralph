@@ -104,9 +104,8 @@ class Domain(BaseObject, AdminAbsoluteUrlMixin):
                 )
             })
         elif (
-            self.website_type in {
-                WebsiteType.redirect.id, WebsiteType.direct.id
-            } and not self.website_url
+            self.website_type == WebsiteType.redirect.id and
+            not self.website_url
         ):
             raise ValidationError({
                 'website_url': _(
