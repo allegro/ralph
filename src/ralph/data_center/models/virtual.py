@@ -39,7 +39,9 @@ class VIP(AdminAbsoluteUrlMixin, BaseObject):
     ip = models.ForeignKey(IPAddress)
     port = models.PositiveIntegerField(verbose_name=_('port'), default=0)
     protocol = models.PositiveIntegerField(
-        verbose_name=_('protocol'), choices=VIPProtocol(),
+        verbose_name=_('protocol'),
+        choices=VIPProtocol(),
+        default=VIPProtocol.TCP.id,
     )
 
     class Meta:
