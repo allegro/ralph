@@ -27,7 +27,8 @@ class DomainAdmin(AttachmentsMixin, RalphAdmin):
     ]
     list_filter = [
         'name', 'service_env', 'domain_status', 'business_segment',
-        ('domaincontract__expiration_date', DateListFilter)
+        ('domaincontract__expiration_date', DateListFilter), 'website_type',
+        'website_url',
 
     ]
     list_display = [
@@ -40,7 +41,8 @@ class DomainAdmin(AttachmentsMixin, RalphAdmin):
     fieldsets = (
         (_('Basic info'), {
             'fields': (
-                'name', 'remarks', 'domain_status',
+                'name', 'remarks', 'domain_status', 'website_type',
+                'website_url',
             )
         }),
         (_('Ownership info'), {
