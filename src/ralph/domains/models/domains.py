@@ -80,7 +80,7 @@ class Domain(BaseObject, AdminAbsoluteUrlMixin):
         help_text=_("Company which receives invoice for the domain")
     )
     website_type = models.PositiveIntegerField(
-        default=WebsiteType.none.id,
+        default=WebsiteType.direct.id,
         choices=WebsiteType(),
         help_text=_("Type of website which domain refers to.")
     )

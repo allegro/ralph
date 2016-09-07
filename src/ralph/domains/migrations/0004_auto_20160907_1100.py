@@ -14,11 +14,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='domain',
             name='website_type',
-            field=models.PositiveIntegerField(help_text='Type of website which domain refers to.', default=1, choices=[(1, 'None'), (2, 'Redirect'), (3, 'Direct')]),
+            field=models.PositiveIntegerField(default=3, help_text='Type of website which domain refers to.', choices=[(1, 'None'), (2, 'Redirect'), (3, 'Direct')]),
         ),
         migrations.AddField(
             model_name='domain',
             name='website_url',
-            field=models.URLField(max_length=255, blank=True, null=True, help_text='Website url which website type refers to.'),
+            field=models.URLField(help_text='Website url which website type refers to.', max_length=255, blank=True, null=True),
         ),
     ]
