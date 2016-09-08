@@ -5,12 +5,12 @@ command-line interface for Ralph. Its goal is to serve as a "Swiss Army knife"
 for all the Ralph's functionality that is reasonable enough for bringing it from
 web GUI to your terminal.
 
-At this moment, you can use it for discovering MAC addresses of your hardware
-(with `scan` command), but we are going to extend the functionality in the
-future (see [Ideas for Future Development][development-ideas]). This ability to
-discover MAC addresses is essential if you want to deploy your hosts from Ralph
-(of course, you can enter all this data to Ralph manually, but `ralph-cli`
-greatly facilitates this process).
+At this moment, you can use it for discovering components of your hardware (with
+`scan` command), but we are going to extend the functionality in the future (see
+[Ideas for Future Development][development-ideas]). It's worth mentioning that
+`ralph-cli` also has the ability to discover MAC addresses, which is essential
+if you want to deploy your hosts from Ralph (of course, you can enter all this
+data to Ralph manually, but `ralph-cli` greatly facilitates this process).
 
 If you want to start using it, please refer to [its documentation][docs] -
 especially to [Quickstart][] section and maybe [Key Concepts][] section as well,
