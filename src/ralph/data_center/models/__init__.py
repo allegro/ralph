@@ -26,6 +26,7 @@ from ralph.data_center.models.virtual import (
     ClusterType,
     Database,
     VIP,
+    VIPProtocol,
 )
 
 __all__ = [
@@ -50,4 +51,5 @@ __all__ = [
     'RackOrientation',
     'ServerRoom',
     'VIP',
+    'VIPProtocol',
 ]

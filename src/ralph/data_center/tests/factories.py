@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import factory
 from factory.django import DjangoModelFactory
-from factory.fuzzy import FuzzyDecimal
+from factory.fuzzy import FuzzyDecimal, FuzzyInteger
 
 from ralph.assets.models.choices import AssetSource
 from ralph.assets.tests.factories import (
@@ -31,7 +31,13 @@ from ralph.data_center.models.physical import (
     RackAccessory,
     ServerRoom
 )
-from ralph.data_center.models.virtual import Cluster, ClusterType, Database, VIP
+from ralph.data_center.models.virtual import (
+    Cluster,
+    ClusterType,
+    Database,
+    VIP,
+    VIPProtocol
+)
 
 date_now = datetime.now().date()
 
@@ -224,7 +230,16 @@ class DatabaseFactory(DjangoModelFactory):
 
 
 class VIPFactory(DjangoModelFactory):
+    name = factory.Sequence(lambda n: 'ralph-test{}.local'.format(n))
+    # IPAddressFactory is given as string to avoid circular imports here.
+    ip = factory.SubFactory('ralph.networks.tests.factories.IPAddressFactory')
+    port = FuzzyInteger(1024, 49151)
+    protocol = factory.Iterator([VIPProtocol.TCP.id, VIPProtocol.UDP.id])
     service_env = factory.SubFactory(ServiceEnvironmentFactory)
 
     class Meta:
         model = VIP
+
+
+class VIPFullFactory(VIPFactory):
+    parent = factory.SubFactory(Cluster)

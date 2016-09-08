@@ -46,7 +46,11 @@ ROOT_URLCONF = 'ralph.urls.test'
 # see `ralph.tests.mixins.ReloadUrlsMixin` for details
 URLCONF_MODULES = ['ralph.urls.base', ROOT_URLCONF]
 
-LOGGING['loggers']['ralph'].update({'level': 'DEBUG', 'handlers': ['console']})
+# Uncomment lines below if you want some additional output from loggers
+# during tests.
+# LOGGING['loggers']['ralph'].update(
+#     {'level': 'DEBUG', 'handlers': ['console']}
+# )
 
 
 RQ_QUEUES['ralph_job_test'] = dict(ASYNC=False, **REDIS_CONNECTION)
