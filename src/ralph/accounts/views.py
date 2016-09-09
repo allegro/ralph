@@ -131,7 +131,7 @@ class CurrentUserInfoView(UserInfoMixin, RalphBaseTemplateView):
         context = super().get_context_data(**kwargs)
         context['my_equipment_links'] = self.get_links()
         asset_fields = [
-            ('barcode', _('Barcode / Inventory Number')),
+            ('user', 'barcode', _('Barcode / Inventory Number')),
             'model__category__name', 'model__manufacturer__name',
             'model__name', ('sn', _('Serial Number')), 'invoice_date', 'status'
         ]
@@ -186,3 +186,7 @@ class CurrentUserInfoView(UserInfoMixin, RalphBaseTemplateView):
 
     def get_user(self):
         return self.request.user
+
+    def get_asset_queryset(self):
+        qs = super().get_asset_queryset()
+        return qs.select_related('user')
