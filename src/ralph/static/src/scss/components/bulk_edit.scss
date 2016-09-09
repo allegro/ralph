@@ -1,5 +1,8 @@
-.bulk-edit {
+.bulk-edit #content-main {
     overflow-x: auto;
+    .with-tabs {
+        margin-bottom: 60px;
+    }
     .vTextField, .vURLField, select {
         min-width: 180px;
     }
