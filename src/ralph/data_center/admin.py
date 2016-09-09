@@ -357,13 +357,13 @@ class DataCenterAssetAdmin(
         (_('Basic info'), {
             'fields': (
                 'hostname', 'model', 'status', 'barcode', 'sn', 'niw',
-                'required_support', 'remarks', 'parent', 'tags', 'property_of',
+                'required_support', 'remarks', 'tags', 'property_of',
                 'firmware_version', 'bios_version',
             )
         }),
         (_('Location Info'), {
             'fields': (
-                'rack', 'position', 'orientation', 'slot_no',
+                'parent', 'rack', 'position', 'orientation', 'slot_no',
                 'management_ip', 'management_hostname',
             )
         }),
