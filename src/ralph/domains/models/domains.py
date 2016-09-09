@@ -2,6 +2,7 @@
 
 from dj.choices import Choices
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -33,6 +34,14 @@ class DomainStatus(Choices):
     pending_transfer = _('Pending transfer away')
     lapsed = _('Lapsed (inactive)')
     transfered_away = _('Transfered away')
+
+
+class WebsiteType(Choices):
+    _ = Choices.Choice
+
+    none = _('None')
+    redirect = _('Redirect')
+    direct = _('Direct')
 
 
 class Domain(BaseObject, AdminAbsoluteUrlMixin):
@@ -70,9 +79,39 @@ class Domain(BaseObject, AdminAbsoluteUrlMixin):
         null=True,
         help_text=_("Company which receives invoice for the domain")
     )
+    website_type = models.PositiveIntegerField(
+        default=WebsiteType.direct.id,
+        choices=WebsiteType(),
+        help_text=_("Type of website which domain refers to.")
+    )
+    website_url = models.URLField(
+        max_length=255, blank=True, null=True,
+        help_text=_("Website url which website type refers to.")
+    )
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        super().clean()
+        if (
+            self.website_type == WebsiteType.none.id and
+            self.website_url
+        ):
+            raise ValidationError({
+                'website_url': _(
+                    'Website url should be empty for this website type'
+                )
+            })
+        elif (
+            self.website_type == WebsiteType.redirect.id and
+            not self.website_url
+        ):
+            raise ValidationError({
+                'website_url': _(
+                    'Website url should be filled for this website type'
+                )
+            })
 
 
 class DomainContract(
