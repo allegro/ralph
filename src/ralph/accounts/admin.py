@@ -153,7 +153,7 @@ class AssetList(Table):
             return _(
                 '<div class="small-12 columns label success">confirmed</div>'
             )
-        else:
+        elif item.user == self.request.user:
             return '<a class="small-6 columns label success" href="{}">{}</a>' \
                     '<a class="small-6 columns label alert" href="{}">' \
                     '{}</a>'.format(
@@ -168,6 +168,8 @@ class AssetList(Table):
                         ),
                         _('no')
                     )
+        else:
+            return _('<i>Only asset\'s user can confirm.</i>')
     confirm_ownership.title = _('Do you have it?')
 
 
