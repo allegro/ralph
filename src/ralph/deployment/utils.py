@@ -66,5 +66,6 @@ def _render_configuration(configuration, deployment, disable_reverse=False):
                 kwargs={'deployment_id': deployment.id}
             )
         ),
+        'mac': deployment.params.get('create_dhcp_entries__ethernet')['mac'],
     })
     return template.render(context)
