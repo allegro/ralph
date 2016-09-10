@@ -22,11 +22,13 @@
         <span class="help-text">
           <i
             class="fa fa-lg fa-info-circle has-tip tip-top"
+            aria-hidden="true"
             data-tooltip
             aria-haspopup="true"
             title="{{ admin_field.help_text | escape }}"
           >
           </i>
+          <span class="show-for-sr">{{ admin_field.help_text }}</span>
         </span>
       {% endif %}
     </div>

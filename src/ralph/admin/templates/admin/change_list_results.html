@@ -24,13 +24,13 @@
                 <a href="{{ header.url_primary }}">
                   {{ header.text|capfirst }}
                   {% if header.sort_priority > 0 %}
-                    <i class="sort-icon fa fa-sort-{% if header.ascending %}asc{% else %}desc{% endif %}"></i>
+                    <i class="sort-icon fa fa-sort-{% if header.ascending %}asc{% else %}desc{% endif %}" aria-hidden="true"></i>
                   {% endif %}
                 </a>
                 {% if header.sort_priority > 0 %}
                   <div class="sortoptions">
                     <a class="sortremove" href="{{ header.url_remove }}" title="{% trans "Remove from sorting" %}">
-                      <i class="fa fa-times"></i>
+                      <i class="fa fa-times" aria-hidden="true"></i>
                     </a>
                   </div>
                 {% endif %}

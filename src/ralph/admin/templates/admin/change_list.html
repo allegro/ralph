@@ -38,7 +38,7 @@
               {% url cl.opts|admin_urlname:'add' as add_url %}
               <a class="button success small addLink" href="{% add_preserved_filters add_url is_popup to_field %}">
                 {% blocktrans with cl.opts.verbose_name as name %}
-                  <i class="fa fa-plus"></i> Add {{ name }}
+                  <i class="fa fa-plus" aria-hidden="true"></i> Add {{ name }}
                 {% endblocktrans %}
               </a>
             {% endif %}
@@ -52,7 +52,7 @@
                     {% if not is_popup %}
                       <li>
                         <a href="{{recoverlist_url}}" class="recoverlink">
-                          <i class="fa fa-retweet"></i>
+                          <i class="fa fa-retweet" aria-hidden="true"></i>
                           {% blocktrans with cl.opts.verbose_name_plural|escape as name %}
                             Recover deleted {{name}}
                           {% endblocktrans %}
