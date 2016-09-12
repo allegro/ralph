@@ -15,7 +15,7 @@ def _render_configuration(configuration, deployment, disable_reverse=False):
 
     template = Template(configuration)
     ralph_instance = settings.RALPH_INSTANCE
-    ethernet = deployment.params.get('create_dhcp_entries__ethernet'),
+    ethernet = deployment.params.get('create_dhcp_entries__ethernet')
     context = Context({
         'configuration_path': str(deployment.obj.configuration_path),
         'configuration_class_name': (
