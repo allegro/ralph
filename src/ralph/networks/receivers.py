@@ -12,7 +12,8 @@ def update_dns_record(instance, created, *args, **kwargs):
         }
     }
     data_to_send['action'] = 'add' if created else 'update'
-    DNSaaS().send_ipaddress_data(data_to_send)
+    if data_to_send['old']['hostname'] is not None:
+        DNSaaS().send_ipaddress_data(data_to_send)
 
 
 def delete_dns_record(instance, *args, **kwargs):
