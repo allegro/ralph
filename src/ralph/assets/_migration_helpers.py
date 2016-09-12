@@ -233,8 +233,7 @@ class InheritFromBaseObject(migrations.SeparateDatabaseAndState):
         ]
 
         database_operations = [
-            # RenameFieldWithFKDrop(
-            migrations.RenameField(
+            RenameFieldWithFKDrop(
                 model_name=model_name.lower(),
                 old_name='id',
                 new_name='baseobject_ptr_id'
