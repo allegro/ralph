@@ -39,7 +39,7 @@ class VulnerabilityFactory(DjangoModelFactory):
 
     name = factory.Sequence(lambda n: 'vulnserability %d' % n)
     patch_deadline = factory.LazyAttribute(
-        lambda o: datetime.now() + timedelta(days=10)
+        lambda o: (datetime.now() + timedelta(days=10)).replace(microsecond=0)
     )
     risk = Risk.low
     external_vulnerability_id = factory.Sequence(lambda n: n)
