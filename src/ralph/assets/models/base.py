@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.attachments.models import AttachmentItem
 from ralph.lib.custom_fields.models import WithCustomFieldsMixin
 from ralph.lib.mixins.models import TaggableMixin, TimeStampMixin
 from ralph.lib.permissions import PermByFieldMixin
@@ -57,6 +59,7 @@ class BaseObject(
     metaclass=BaseObjectMeta
 ):
     polymorphic_objects = BaseObjectPolymorphicQuerySet.as_manager()
+    attachments = GenericRelation(AttachmentItem)
 
     """Base object mixin."""
     # TODO: dynamically limit parent basing on model

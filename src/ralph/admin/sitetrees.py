@@ -242,6 +242,13 @@ sitetrees = [
                     ),
                 ),
                 ralph_item(
+                    title=_('Assets - supports'),
+                    url='assets-supports',
+                    access_by_perms=(
+                        'accounts.can_view_extra_assetsupportsreport'
+                    ),
+                ),
+                ralph_item(
                     title=_('Failures'),
                     url='failures-report',
                     access_by_perms=(
