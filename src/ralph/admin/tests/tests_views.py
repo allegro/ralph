@@ -104,6 +104,11 @@ EXCLUDE_MODELS = [
     'ralph.tests.models.PolymorphicTestModel'
 ]
 
+EXCLUDE_ADD_VIEW = [
+    'ralph.assets.models.base.BaseObject',
+    'ralph.data_center.models.hosts.DCHost'
+]
+
 SQL_QUERY_LIMIT = 30
 
 
@@ -145,8 +150,13 @@ class ViewsTest(TestCase):
                 self.assertEqual(query_count, len(cqc))
                 self.assertFalse(len(cqc) > SQL_QUERY_LIMIT)
 
+            if model_class_path not in EXCLUDE_ADD_VIEW:
+                change_form = model_admin.changeform_view(
+                    self.request, object_id=None
+                )
+                self.assertEqual(change_form.status_code, 200)
             change_form = model_admin.changeform_view(
-                self.request, object_id=None
+                self.request, object_id=str(model.objects.first().id)
             )
             self.assertEqual(change_form.status_code, 200)
 
