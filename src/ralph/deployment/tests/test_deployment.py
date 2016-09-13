@@ -18,7 +18,7 @@ from ralph.deployment.deployment import (
     validate_ip_address
 )
 from ralph.deployment.tests.factories import _get_deployment
-from ralph.deployment.views import _render_configuration
+from ralph.deployment.utils import _render_configuration
 from ralph.dhcp.models import DHCPServer
 from ralph.networks.models.networks import IPAddress, IPAddressStatus, Network
 from ralph.networks.tests.factories import (
