@@ -26,7 +26,7 @@ from ralph.data_importer.widgets import (
     UserManyToManyWidget,
     UserWidget
 )
-from ralph.domains.models.domains import Domain
+from ralph.domains.models.domains import Domain, DomainContract
 from ralph.licences.models import (
     BaseObjectLicence,
     Licence,
@@ -579,6 +579,16 @@ class BudgetInfoResource(RalphModelResource):
 
     class Meta:
         model = assets.BudgetInfo
+
+
+class DomainContractResource(RalphModelResource):
+    domain = fields.Field(
+        column_name='domain',
+        attribute='domain',
+        widget=widgets.ForeignKeyWidget(Domain, 'name'),
+    )
+    class Meta:
+        model = DomainContract
 
 
 class DomainResource(RalphModelResource):
