@@ -8,10 +8,13 @@
 {% block content %}
     <div class="row">
         <div class="small-8 large-8 columns">
-            {% cache 60 summary %}
-                {% ralph_summary %}
-            {% endcache %}
-            <div class="capacities module">
+            <div class="summary module row">
+                {% cache 60 summary %}
+                    {% ralph_summary %}
+                {% endcache %}
+            </div>
+            {% my_services request.user %}
+            <div class="capacities module row">
                 {% cache 60 dc_capacity %}
                     {% dc_capacity data_centers %}
                 {% endcache %}
