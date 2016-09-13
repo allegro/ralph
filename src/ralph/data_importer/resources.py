@@ -26,7 +26,7 @@ from ralph.data_importer.widgets import (
     UserManyToManyWidget,
     UserWidget
 )
-from ralph.domains.models.domains import Domain
+from ralph.domains.models.domains import Domain, DomainContract
 from ralph.licences.models import (
     BaseObjectLicence,
     Licence,
@@ -581,11 +581,24 @@ class BudgetInfoResource(RalphModelResource):
         model = assets.BudgetInfo
 
 
+class DomainContractResource(RalphModelResource):
+    domain = fields.Field(
+        column_name='domain',
+        attribute='domain',
+        widget=widgets.ForeignKeyWidget(Domain, 'name'),
+    )
+
+    class Meta:
+        model = DomainContract
+
+
 class DomainResource(RalphModelResource):
     business_segment = fields.Field(
         column_name='business_segment',
         attribute='business_segment',
-        widget=widgets.ForeignKeyWidget(assets.BusinessSegment),
+        widget=widgets.ForeignKeyWidget(
+            assets.BusinessSegment, 'name',
+        ),
     )
     business_owner = fields.Field(
         column_name='business_owner',
@@ -610,6 +623,7 @@ class DomainResource(RalphModelResource):
 
     class Meta:
         model = Domain
+        exclude = ('baseobject_ptr',)
 
 
 class OperationTypeResource(RalphModelResource):
