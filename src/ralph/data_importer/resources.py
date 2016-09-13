@@ -587,6 +587,7 @@ class DomainContractResource(RalphModelResource):
         attribute='domain',
         widget=widgets.ForeignKeyWidget(Domain, 'name'),
     )
+
     class Meta:
         model = DomainContract
 
