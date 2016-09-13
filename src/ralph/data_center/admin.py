@@ -363,7 +363,7 @@ class DataCenterAssetAdmin(
         }),
         (_('Location Info'), {
             'fields': (
-                'parent', 'rack', 'position', 'orientation', 'slot_no',
+                'rack', 'position', 'orientation', 'slot_no', 'parent',
                 'management_ip', 'management_hostname',
             )
         }),
