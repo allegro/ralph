@@ -610,6 +610,7 @@ class DomainResource(RalphModelResource):
 
     class Meta:
         model = Domain
+        exclude = ('baseobject_ptr',)
 
 
 class OperationTypeResource(RalphModelResource):
