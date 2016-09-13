@@ -595,7 +595,9 @@ class DomainResource(RalphModelResource):
     business_segment = fields.Field(
         column_name='business_segment',
         attribute='business_segment',
-        widget=widgets.ForeignKeyWidget(assets.BusinessSegment),
+        widget=widgets.ForeignKeyWidget(
+            assets.BusinessSegment, 'name',
+        ),
     )
     business_owner = fields.Field(
         column_name='business_owner',
