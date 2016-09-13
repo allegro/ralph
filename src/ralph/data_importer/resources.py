@@ -619,22 +619,6 @@ class DomainResource(RalphModelResource):
         attribute='service_env',
         widget=AssetServiceEnvWidget(assets.ServiceEnvironment),
     )
-    nearest_expiration_date = fields.Field(readonly=True)
-    nearest_expiration_registrant = fields.Field(readonly=True)
-
-    def dehydrate_nearest_expiration_date(self, domain):
-        contract = domain.domaincontract_set.order_by(
-            'expiration_date'
-        ).first()
-        expiration_date = contract.expiration_date if contract else ''
-        return str(expiration_date or '')
-
-    def dehydrate_nearest_expiration_registrant(self, domain):
-        contract = domain.domaincontract_set.order_by(
-            'expiration_date'
-        ).first()
-        registrant = contract.registrant if contract else ''
-        return str(registrant or '')
 
     class Meta:
         model = Domain
