@@ -3,6 +3,7 @@ import factory
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 
+from ralph.admin.helpers import get_content_type_for_model
 from ralph.assets.models.choices import ObjectModelType
 from ralph.assets.tests.factories import (
     CategoryFactory,
@@ -27,12 +28,11 @@ from ralph.reports.views import (
     CategoryModelStatusReport,
     LicenceRelationsReport
 )
+from ralph.supports.models import BaseObjectsSupport
+from ralph.supports.tests.factories import SupportFactory
 from ralph.tests import RalphTestCase
 from ralph.tests.factories import UserFactory
 from ralph.tests.mixins import ClientMixin
-from ralph.supports.models import BaseObjectsSupport
-from ralph.supports.tests.factories import SupportFactory
-
 
 class TestReportCategoryTreeView(ClientMixin, RalphTestCase):
 
@@ -263,7 +263,9 @@ class TestAssetsSupportsReport(RalphTestCase):
             __file__, user
         )
         self.attachment_item = AttachmentItem.objects.attach(
-            self.support.pk, self.support.content_type, [self.attachment]
+            self.support.pk,
+            get_content_type_for_model(self.support),
+            [self.attachment]
         )
 
     def test_asset_relation(self):
@@ -286,7 +288,7 @@ class TestAssetsSupportsReport(RalphTestCase):
                 str(self.dc_1.invoice_date), str(self.dc_1.invoice_no),
                 self.dc_1.property_of.name, self.support.name,
                 self.support.contract_id, str(self.support.date_to),
-                reverse('serve_attachment', kwargs={
+                'http://127.0.0.1:8000' + reverse('serve_attachment', kwargs={
                     'id': self.attachment.id,
                     'filename': self.attachment.original_filename
                 })
@@ -297,7 +299,7 @@ class TestAssetsSupportsReport(RalphTestCase):
                 str(self.dc_2.invoice_date), str(self.dc_2.invoice_no),
                 self.dc_2.property_of.name, self.support.name,
                 self.support.contract_id, str(self.support.date_to),
-                reverse('serve_attachment', kwargs={
+                'http://127.0.0.1:8000' + reverse('serve_attachment', kwargs={
                     'id': self.attachment.id,
                     'filename': self.attachment.original_filename
                 })
@@ -307,14 +309,14 @@ class TestAssetsSupportsReport(RalphTestCase):
 
     def test_num_queries_dc(self):
         assets_support_report = AssetSupportsReport()
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(4):
             list(assets_support_report.prepare(
                 DataCenterAsset)
             )
 
     def test_num_queries_bo(self):
         assets_support_report = AssetSupportsReport()
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(4):
             list(assets_support_report.prepare(
                 BackOfficeAsset)
             )
