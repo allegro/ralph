@@ -34,6 +34,7 @@ from ralph.tests import RalphTestCase
 from ralph.tests.factories import UserFactory
 from ralph.tests.mixins import ClientMixin
 
+
 class TestReportCategoryTreeView(ClientMixin, RalphTestCase):
 
     def setUp(self):
