@@ -6,10 +6,10 @@ def update_dns_record(instance, created, *args, **kwargs):
     data_to_send = {
         'old': {
             key: instance._previous_state[key] for key in keys
-        }
+        },
         'new': {
             key: instance.__dict__[key] for key in keys
-        },
+        }
     }
     data_to_send['action'] = 'add' if created else 'update'
     if data_to_send['old']['hostname'] is not None:
