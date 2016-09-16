@@ -200,7 +200,7 @@ class DNSaaS:
 
     def delete_dns_record(self, record_id):
         """
-        Delete record in DNSAAS
+        Delete record in DNSAAS.
 
         Args:
             record_ids: ID's to delete
@@ -217,7 +217,32 @@ class DNSaaS:
         elif response.status_code != 204:
             return response.json()
 
-    def send_ipaddress_data(self, update_data):
-        logger.info('Send update data: {}'.format(update_data))
+    def send_ipaddress_data(self, ip_record_data):
+        """
+        Send data about IP address and hostname.
+
+        Args:
+            ip_record_data: dict contains keys: new, old, action
+                Structure of parameter:
+                ``
+                {
+                    'old': {
+                        'address': 127.0.0.1,
+                        'hostname': 'localhost.local'
+                    }
+                    'new': {
+                        'address': 127.0.0.1,
+                        'hostname': 'localhost'
+                    },
+                    'action': 'update'
+                }
+                ``
+                ``old`` and ``new`` contains previous and next state of
+                IP address record (in Ralph).
+        Returns:
+            JSON response from API
+        """
+        logger.info('Send update data: {}'.format(ip_record_data))
         url = self.build_url('ip_record')
-        self._post(url, update_data)
+        response = self._post(url, ip_record_data)
+        return response.json()
