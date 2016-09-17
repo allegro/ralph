@@ -94,11 +94,11 @@ class SecurityScanAPITests(RalphAPITestCase):
         data = {
             'last_scan_date': (
                 datetime.now() + timedelta(days=10)
-            ).isoformat(),
+            ).replace(microsecond=0).isoformat(),
             'scan_status': ScanStatus.error.name,
             'next_scan_date': (
                 datetime.now() + timedelta(days=15)
-            ).isoformat(),
+            ).replace(microsecond=0).isoformat(),
             'details_url': self.security_scan.details_url + '-new',
             'rescan_url': self.security_scan.rescan_url + '-new',
             'host_ip': ip.address,
@@ -148,7 +148,9 @@ class VulnerabilityAPITests(RalphAPITestCase):
         self.assertEqual(response.data['name'], self.vulnerability.name)
         self.assertEqual(
             response.data['patch_deadline'],
-            self.vulnerability.patch_deadline.isoformat(),
+            self.vulnerability.patch_deadline.replace(
+                microsecond=0
+            ).isoformat(),
         )
         self.assertEqual(response.data['risk'], Risk.low.name)
         self.assertEqual(
@@ -162,7 +164,7 @@ class VulnerabilityAPITests(RalphAPITestCase):
             'name': "vulnerability name",
             'patch_deadline': (
                 datetime.now() + timedelta(days=10)
-            ).isoformat(),
+            ).replace(microsecond=0).isoformat(),
             'risk': Risk.low.name,
             'external_vulnerability_id': 100,
         }
@@ -186,7 +188,7 @@ class VulnerabilityAPITests(RalphAPITestCase):
             'name': self.vulnerability.name + ' new',
             'patch_deadline': (
                 self.vulnerability.patch_deadline + timedelta(days=3)
-            ).isoformat(),
+            ).replace(microsecond=0).isoformat(),
             'risk': Risk.high.name,
             'external_vulnerability_id': self.vulnerability.external_vulnerability_id + 10  # noqa
         }

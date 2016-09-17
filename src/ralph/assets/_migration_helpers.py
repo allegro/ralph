@@ -3,9 +3,11 @@ from __future__ import unicode_literals
 
 import logging
 from collections import defaultdict
+from contextlib import ContextDecorator
 from functools import partial
 
 from django.db import connection, migrations, models
+from django.db.backends.base.schema import _related_non_m2m_objects
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +113,89 @@ def _foreign_key_check_wrap(operations):
     return operations
 
 
+class DropAndCreateForeignKey(ContextDecorator):
+    """
+    Drop FK to old_field before migration operation and recreate FK (to the new
+    field) after migration operation.
+    """
+    def __init__(self, old_field, new_field, schema_editor):
+        self.old_field = old_field
+        self.new_field = new_field
+        self.schema_editor = schema_editor
+
+    def __enter__(self):
+        # copy from django.db.backends.base.schema.BaseDatabaseSchemaEditor._alter_field  # noqa
+        # drop any FK pointing to old_field
+        for _old_rel, new_rel in _related_non_m2m_objects(
+            self.old_field, self.new_field
+        ):
+            rel_fk_names = self.schema_editor._constraint_names(
+                new_rel.related_model, [new_rel.field.column], foreign_key=True
+            )
+            for fk_name in rel_fk_names:
+                logger.debug('Dropping FK to {} ({})'.format(
+                    new_rel.field, fk_name
+                ))
+                self.schema_editor.execute(
+                    self.schema_editor._delete_constraint_sql(
+                        self.schema_editor.sql_delete_fk,
+                        new_rel.related_model,
+                        fk_name
+                    )
+                )
+
+    def __exit__(self, *exc):
+        # copy from django.db.backends.base.schema.BaseDatabaseSchemaEditor._alter_field  # noqa
+        # (re)create any FK pointing to the new field
+        for rel in self.new_field.model._meta.related_objects:
+            if not rel.many_to_many:
+                logger.debug('Recreating FK to {}'.format(rel.field))
+                self.schema_editor.execute(
+                    self.schema_editor._create_fk_sql(
+                        rel.related_model, rel.field, "_fk"
+                    )
+                )
+
+
+class RenameFieldWithFKDrop(migrations.RenameField):
+    """
+    Rename field with dropping any FK pointing to it before actual renaming
+    and recreating them after renaming.
+
+    It's especially usefull for MySQL 5.5, where renaming field that is
+    referenced by another table is not supported (errno 150). The workaround
+    here is to drop FK first, then rename field, and then recreate FK. It's
+    supported fully since MySQL 5.6.6.
+
+    Resources:
+    https://code.djangoproject.com/ticket/24995
+    https://github.com/django/django/pull/4881
+    http://dev.mysql.com/doc/refman/5.5/en/create-table-foreign-keys.html
+    http://stackoverflow.com/questions/2014498/renaming-foreign-key-columns-in-mysql  # noqa
+    """
+    def database_forwards(
+        self, app_label, schema_editor, from_state, to_state
+    ):
+        to_model = to_state.apps.get_model(app_label, self.model_name)
+        if self.allow_migrate_model(schema_editor.connection.alias, to_model):
+            from_model = from_state.apps.get_model(app_label, self.model_name)
+            old_field = from_model._meta.get_field(self.old_name)
+            new_field = to_model._meta.get_field(self.new_name)
+            with DropAndCreateForeignKey(old_field, new_field, schema_editor):
+                schema_editor.alter_field(from_model, old_field, new_field)
+
+    def database_backwards(
+        self, app_label, schema_editor, from_state, to_state
+    ):
+        to_model = to_state.apps.get_model(app_label, self.model_name)
+        if self.allow_migrate_model(schema_editor.connection.alias, to_model):
+            from_model = from_state.apps.get_model(app_label, self.model_name)
+            old_field = from_model._meta.get_field(self.new_name)
+            new_field = to_model._meta.get_field(self.old_name)
+            with DropAndCreateForeignKey(old_field, new_field, schema_editor):
+                schema_editor.alter_field(from_model, old_field, new_field)
+
+
 class InheritFromBaseObject(migrations.SeparateDatabaseAndState):
     """
     Handle migrating model to inherit from BaseObject.
@@ -148,7 +233,7 @@ class InheritFromBaseObject(migrations.SeparateDatabaseAndState):
         ]
 
         database_operations = [
-            migrations.RenameField(
+            RenameFieldWithFKDrop(
                 model_name=model_name.lower(),
                 old_name='id',
                 new_name='baseobject_ptr_id'
