@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 import factory
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 
+from ralph.admin.helpers import get_content_type_for_model
 from ralph.assets.models.choices import ObjectModelType
 from ralph.assets.tests.factories import (
     CategoryFactory,
     DataCenterAssetModelFactory,
     ManufacturerFactory
 )
+from ralph.attachments.models import Attachment, AttachmentItem
 from ralph.back_office.models import BackOfficeAsset
+from ralph.back_office.tests.factories import BackOfficeAssetFactory
 from ralph.data_center.models.physical import DataCenterAsset
 from ralph.data_center.tests.factories import DataCenterAssetFactory
 from ralph.licences.models import BaseObjectLicence
@@ -19,11 +23,15 @@ from ralph.licences.tests.factories import (
 from ralph.reports.models import ReportLanguage
 from ralph.reports.views import (
     AssetRelationsReport,
+    AssetSupportsReport,
     CategoryModelReport,
     CategoryModelStatusReport,
     LicenceRelationsReport
 )
+from ralph.supports.models import BaseObjectsSupport
+from ralph.supports.tests.factories import SupportFactory
 from ralph.tests import RalphTestCase
+from ralph.tests.factories import UserFactory
 from ralph.tests.mixins import ClientMixin
 
 
@@ -238,6 +246,81 @@ class TestReportAssetAndLicence(RalphTestCase):
         ]
 
         self.assertEqual(report_result, result)
+
+
+class TestAssetsSupportsReport(RalphTestCase):
+    def setUp(self):
+        self.dc_1 = DataCenterAssetFactory()
+        self.dc_2 = DataCenterAssetFactory()
+        self.bo_1 = BackOfficeAssetFactory()
+        self.bo_2 = BackOfficeAssetFactory()
+        self.support = SupportFactory()
+        for obj in [self.dc_1, self.dc_2, self.bo_1, self.bo_2]:
+            BaseObjectsSupport.objects.create(
+                support=self.support, baseobject=obj
+            )
+        user = UserFactory()
+        self.attachment = Attachment.objects.create_from_file_path(
+            __file__, user
+        )
+        self.attachment_item = AttachmentItem.objects.attach(
+            self.support.pk,
+            get_content_type_for_model(self.support),
+            [self.attachment]
+        )
+
+    def test_asset_relation(self):
+        asset_supports = AssetSupportsReport()
+        report_result = list(asset_supports.prepare(DataCenterAsset))
+        result = [
+            [
+                'baseobject__id', 'baseobject__asset__barcode',
+                'baseobject__asset__sn',
+                'baseobject__asset__datacenterasset__hostname',
+                'baseobject__service_env__service__name',
+                'baseobject__asset__invoice_date',
+                'baseobject__asset__invoice_no',
+                'baseobject__asset__property_of', 'support__name',
+                'support__contract_id', 'support__date_to', 'attachments',
+            ],
+            [
+                str(self.dc_1.id), self.dc_1.barcode, self.dc_1.sn,
+                self.dc_1.hostname, self.dc_1.service_env.service.name,
+                str(self.dc_1.invoice_date), str(self.dc_1.invoice_no),
+                self.dc_1.property_of.name, self.support.name,
+                self.support.contract_id, str(self.support.date_to),
+                'http://127.0.0.1:8000' + reverse('serve_attachment', kwargs={
+                    'id': self.attachment.id,
+                    'filename': self.attachment.original_filename
+                })
+            ],
+            [
+                str(self.dc_2.id), self.dc_2.barcode, self.dc_2.sn,
+                self.dc_2.hostname, self.dc_2.service_env.service.name,
+                str(self.dc_2.invoice_date), str(self.dc_2.invoice_no),
+                self.dc_2.property_of.name, self.support.name,
+                self.support.contract_id, str(self.support.date_to),
+                'http://127.0.0.1:8000' + reverse('serve_attachment', kwargs={
+                    'id': self.attachment.id,
+                    'filename': self.attachment.original_filename
+                })
+            ]
+        ]
+        self.assertCountEqual(report_result, result)
+
+    def test_num_queries_dc(self):
+        assets_support_report = AssetSupportsReport()
+        with self.assertNumQueries(4):
+            list(assets_support_report.prepare(
+                DataCenterAsset)
+            )
+
+    def test_num_queries_bo(self):
+        assets_support_report = AssetSupportsReport()
+        with self.assertNumQueries(4):
+            list(assets_support_report.prepare(
+                BackOfficeAsset)
+            )
 
 
 class TestReportLanguage(RalphTestCase):

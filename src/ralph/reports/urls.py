@@ -39,4 +39,9 @@ urlpatterns = [
         views.FailureReport.as_view(),
         name='failures-report'
     ),
+    url(
+        r'^supports_report/?$',
+        views.AssetSupportsReport.as_view(),
+        name='assets-supports'
+    ),
 ]

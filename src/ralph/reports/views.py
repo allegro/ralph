@@ -2,6 +2,9 @@
 import logging
 
 import tablib
+from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
+from django.core.urlresolvers import reverse
 from django.db.models import Count, Prefetch
 from django.http import HttpResponse
 from django.utils.encoding import smart_str
@@ -16,6 +19,7 @@ from ralph.data_center.models.physical import DataCenter, DataCenterAsset
 from ralph.licences.models import BaseObjectLicence, Licence, LicenceUser
 from ralph.operations.models import Failure, OperationType
 from ralph.reports.base import ReportContainer
+from ralph.supports.models import BaseObjectsSupport
 
 logger = logging.getLogger(__name__)
 
@@ -364,6 +368,92 @@ class AssetRelationsReport(BaseRelationsReport):
         Return comma-separated list of tags for object
         """
         return ','.join(sorted(map(str, obj.tags.all())))
+
+
+class AssetSupportsReport(BaseRelationsReport):
+    name = _('Asset - supports')
+    description = _('Assets with assigned supports')
+    filename = 'asset_supports.csv'
+    extra_headers = ['attachments']
+    # TODO(mkurek): allow for fields aliases in headers (ex. use tuple with
+    # (field_name, header_name))
+    # TODO(mkurek): unify these reports
+    dc_headers = [
+        'baseobject__id', 'baseobject__asset__barcode', 'baseobject__asset__sn',
+        'baseobject__asset__datacenterasset__hostname',
+        'baseobject__service_env__service__name',
+        'baseobject__asset__invoice_date', 'baseobject__asset__invoice_no',
+        'baseobject__asset__property_of', 'support__name',
+        'support__contract_id', 'support__date_to',
+    ]
+    dc_select_related = [
+        'baseobject__asset__datacenterasset',
+    ]
+    bo_headers = [
+        'baseobject__id', 'baseobject__asset__barcode', 'baseobject__asset__sn',
+        'baseobject__asset__invoice_date', 'baseobject__asset__invoice_no',
+        'baseobject__asset__property_of', 'support__name',
+        'support__contract_id', 'support__date_to',
+    ]
+    bo_select_related = [
+        'baseobject__asset__backofficeasset',
+    ]
+
+    def prepare(self, model, *args, **kwargs):
+        queryset = BaseObjectsSupport.objects.select_related(
+            'support',
+            'baseobject__asset__property_of',
+            'baseobject__service_env__service',
+        ).prefetch_related(
+            # AttachmentItem is attached to BaseObject (by content type),
+            # so we need to prefetch attachments through base object of support
+            'support__baseobject_ptr__attachments__attachment'
+        )
+        headers = []
+        select_related = []
+        if model._meta.object_name == 'DataCenterAsset':
+            headers = self.dc_headers
+            select_related = self.dc_select_related
+            queryset = queryset.filter(
+                baseobject__content_type=ContentType.objects.get_for_model(
+                    DataCenterAsset
+                )
+            )
+        elif model._meta.object_name == 'BackOfficeAsset':
+            headers = self.bo_headers
+            select_related = self.bo_select_related
+            queryset = queryset.filter(
+                baseobject__content_type=ContentType.objects.get_for_model(
+                    BackOfficeAsset
+                )
+            )
+
+        yield headers + self.extra_headers
+        for bos in queryset.select_related(*select_related):
+            row = [str(getattr_dunder(bos, column)) for column in headers]
+            row += self.get_extra_columns(bos)
+            yield row
+
+    def get_extra_columns(self, obj):
+        """
+        Call extra methods for object.
+        """
+        return [self._get_attachment_urls(obj.support.baseobject_ptr)]
+
+    def _get_attachment_urls(self, obj):
+        """
+        Return semicolon-separated list of attachments for object
+        """
+        return '; '.join([
+            '{}{}'.format(
+                settings.RALPH_INSTANCE,
+                reverse('serve_attachment', kwargs={
+                    'id': attachment_item.attachment.id,
+                    'filename': attachment_item.attachment.original_filename
+                })
+            )
+            for attachment_item in obj.attachments.all()
+        ])
 
 
 class LicenceRelationsReport(BaseRelationsReport):
