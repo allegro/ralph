@@ -245,4 +245,6 @@ class DNSaaS:
         logger.info('Send update data: {}'.format(ip_record_data))
         url = self.build_url('ip_record')
         response = self._post(url, ip_record_data)
+        if response.status_code >= 400:
+            logger.info('DNSaaS returned {}'.format(response.status_code))
         return response.json()
