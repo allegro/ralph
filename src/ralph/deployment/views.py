@@ -130,6 +130,8 @@ def done_ping(request, deployment_id):
     Returns:
         HttpResponse: document with 'marked' sentence
     """
+    preboot = _get_preboot(deployment_id)
+    preboot.increment_used_counter()
     ip = get_client_ip(request)
     Deployment.mark_as_done(deployment_id)
     logger.info(
