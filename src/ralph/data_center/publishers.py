@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from copy import deepcopy
+
 import pyhermes
 from django.conf import settings
 
@@ -6,7 +8,12 @@ from django.conf import settings
 def _get_host_data(instance):
     from ralph.assets.api.serializers import DCHostSerializer
     serializer = DCHostSerializer(instance=instance)
-    return serializer.data
+    if hasattr(serializer.instance, '_previous_state'):
+        data = deepcopy(serializer.data)
+        data['_previous_state'] = serializer.instance._previous_state
+    else:
+        data = serializer.data
+    return data
 
 if settings.HERMES_HOST_UPDATE_TOPIC_NAME:
     @pyhermes.publisher(

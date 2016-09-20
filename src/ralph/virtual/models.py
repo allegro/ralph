@@ -24,6 +24,7 @@ from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     NamedMixin,
+    PreviousStateMixin,
     TimeStampMixin
 )
 from ralph.lib.transitions.fields import TransitionField
@@ -151,7 +152,8 @@ def update_service_env_on_cloudproject_save(sender, instance, **kwargs):
         instance.children.all().update(service_env=instance.service_env)
 
 
-class CloudHost(AdminAbsoluteUrlMixin, BaseObject):
+class CloudHost(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
+
     def save(self, *args, **kwargs):
         try:
             self.service_env = self.parent.service_env
@@ -237,6 +239,7 @@ class VirtualComponent(Component):
 
 
 class VirtualServerType(
+    PreviousStateMixin,
     AdminAbsoluteUrlMixin,
     NamedMixin,
     TimeStampMixin,
@@ -255,6 +258,7 @@ class VirtualServerStatus(Choices):
 
 
 class VirtualServer(
+    PreviousStateMixin,
     DNSaaSPublisherMixin,
     AdminAbsoluteUrlMixin,
     NetworkableBaseObject,
