@@ -8,7 +8,7 @@ with many development *bells and whistles* included.
 
 ## Debian/Ubuntu package - recommended
 
-Make sure, your installation is clean Ubuntu 14.04, without any other packages installed, 
+Make sure, your installation is clean Ubuntu 14.04, without any other packages installed,
 and `apt-transport-https` installed.
 
     sudo apt-get update && apt-get install apt-transport-https
@@ -47,12 +47,12 @@ cat ~/.profile
     export DATABASE_PASSWORD=somepassword
     export DATABASE_HOST=127.0.0.1
     export PATH=/opt/ralph/ralph-core/bin/:$PATH
+    export RALPH_DEBUG=1
 
 ### Initialization
-1. edit: `/opt/ralph/ralph-core/lib/python3.4/site-packages/ralph/settings/prod.py` and set: `DEBUG = True`
-2. Type `ralph migrate` to create tables in your database.
-3. Type `ralph sitetree_resync_apps` to reload menu.
-4. Type `ralph createsuperuser` to add new user.
+1. Type `ralph migrate` to create tables in your database.
+2. Type `ralph sitetree_resync_apps` to reload menu.
+3. Type `ralph createsuperuser` to add new user.
 
 Run your ralph instance with `ralph runserver 0.0.0.0:8000`
 

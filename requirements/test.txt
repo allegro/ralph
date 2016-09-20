@@ -5,7 +5,6 @@ coverage
 coveralls
 ddt
 django-plainpasswordhasher
-factory-boy
 flake8
 sphinx
 flake8-debugger
