@@ -32,7 +32,7 @@ from ralph.data_center.models.choices import (
     RackOrientation
 )
 from ralph.data_center.models.mixins import WithManagementIPMixin
-from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, PreviousStateMixin
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
 from ralph.networks.models import IPAddress, Network, NetworkEnvironment
@@ -348,6 +348,7 @@ class NetworkableBaseObject(models.Model):
 
 
 class DataCenterAsset(
+    PreviousStateMixin,
     DNSaaSPublisherMixin,
     WithManagementIPMixin,
     NetworkableBaseObject,
