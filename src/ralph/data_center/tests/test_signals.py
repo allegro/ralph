@@ -32,4 +32,4 @@ class TestPublishing(TestCase):
         for obj_name in ['cloud_host', 'dc_asset', 'virtual_server']:
             data = _get_host_data(getattr(self, obj_name))
             results.append('_previous_state' in data)
-        self.assertEqual(results, [True]*3)
+        self.assertEqual(results, [True] * 3)

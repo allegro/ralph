@@ -105,12 +105,12 @@ class TaggableMixin(models.Model):
 
 
 class PreviousStateMixin(models.Model):
-    dirty_fields = []
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        fields = self.dirty_fields or [f.name for f in self._meta.get_fields()]
+        fields = [f.name for f in self._meta.get_fields()]
         self._previous_state = {
             k: v for k, v in self.__dict__.items() if k in fields
         }
+
     class Meta:
         abstract = True
