@@ -20,6 +20,7 @@ from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     LastSeenMixin,
     NamedMixin,
+    PreviousStateMixin,
     TimeStampMixin
 )
 from ralph.networks.fields import IPNetwork
@@ -553,6 +554,7 @@ class IPAddress(
     AdminAbsoluteUrlMixin,
     LastSeenMixin,
     TimeStampMixin,
+    PreviousStateMixin,
     NetworkMixin,
     models.Model
 ):
