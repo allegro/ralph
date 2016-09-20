@@ -239,7 +239,6 @@ class VirtualComponent(Component):
 
 
 class VirtualServerType(
-    PreviousStateMixin,
     AdminAbsoluteUrlMixin,
     NamedMixin,
     TimeStampMixin,
