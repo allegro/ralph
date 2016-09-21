@@ -81,7 +81,13 @@ class AssetModelResource(RalphModelResource):
         return assets.AssetModel.objects.annotate(assets_count=Count('assets'))
 
     def dehydrate_assets_count(self, model):
-        return model.assets_count
+        # check if model has `assets_count` attribute first (it's only included
+        # when using annotated queryset above)
+        return (
+            model.assets_count
+            if hasattr(model, 'assets_count')
+            else model.assets.count()
+        )
 
 
 class CategoryResource(RalphModelResource):
