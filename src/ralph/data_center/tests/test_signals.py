@@ -1,3 +1,5 @@
+import json
+
 from django.test import TestCase
 
 from ralph.data_center.publishers import _get_host_data
@@ -33,3 +35,14 @@ class TestPublishing(TestCase):
             data = _get_host_data(getattr(self, obj_name))
             results.append('_previous_state' in data)
         self.assertEqual(results, [True] * 3)
+
+    def test_sending_data_doesnt_raise_json_error(self):
+        for obj_name in ['cloud_host', 'dc_asset', 'virtual_server']:
+            json.dumps(_get_host_data(self.dc_asset))
+
+    def test_sending_data_includes_only_selected_fields(self):
+        data = _get_host_data(self.dc_asset)
+        self.assertEqual(
+            list(data['_previous_state'].keys()),
+            self.dc_asset.previous_dc_host_update_fields,
+        )

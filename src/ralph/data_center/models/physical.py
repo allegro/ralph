@@ -356,6 +356,7 @@ class DataCenterAsset(
     Asset
 ):
     _allow_in_dashboard = True
+    previous_dc_host_update_fields = ['hostname']
 
     rack = models.ForeignKey(Rack, null=True, blank=True)
     status = TransitionField(
