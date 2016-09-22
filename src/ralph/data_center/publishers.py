@@ -10,7 +10,10 @@ def _get_host_data(instance):
     serializer = DCHostSerializer(instance=instance)
     if hasattr(serializer.instance, '_previous_state'):
         data = deepcopy(serializer.data)
-        data['_previous_state'] = serializer.instance._previous_state
+        data['_previous_state'] = {
+            k: v for k, v in serializer.instance._previous_state.items()
+            if k in serializer.instance.previous_dc_host_update_fields
+        }
     else:
         data = serializer.data
     return data

@@ -153,6 +153,7 @@ def update_service_env_on_cloudproject_save(sender, instance, **kwargs):
 
 
 class CloudHost(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
+    previous_dc_host_update_fields = ['hostname']
 
     def save(self, *args, **kwargs):
         try:
@@ -288,6 +289,8 @@ class VirtualServer(
     )
     # TODO: remove this field
     cluster = models.ForeignKey(Cluster, blank=True, null=True)
+
+    previous_dc_host_update_fields = ['hostname']
 
     @cached_property
     def polymorphic_parent(self):
