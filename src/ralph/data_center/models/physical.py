@@ -329,12 +329,14 @@ class NetworkableBaseObject(models.Model):
         logger.warning('Network-environment not provided for {}'.format(self))
         return ''
 
-    def _get_available_network_environments(self):
+    def _get_available_network_environments(self, as_query=False):
         if self.rack_id:
-            return list(NetworkEnvironment.objects.filter(
+            query = NetworkEnvironment.objects.filter(
                 network__racks=self.rack_id
-            ).distinct())
-        return NetworkEnvironment.objects.none()
+            ).distinct()
+        else:
+            query = NetworkEnvironment.objects.none()
+        return query if as_query else list(query)
 
     def _get_available_networks(self, as_query=False):
         if self.rack_id:

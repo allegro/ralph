@@ -111,6 +111,10 @@ class NetworkEnvironment(
             result = self.next_hostname_without_model_counter()
         return result
 
+    def get_next_free_hostname(self):
+        return self.next_free_hostname
+    get_next_free_hostname.title = _('Next free hostname')
+
     def issue_next_free_hostname(self):
         """
         Retrieve and reserve next free hostname
@@ -509,6 +513,7 @@ class Network(
             ipaddress.ip_address(free_ip_as_int)
             if free_ip_as_int and not last else None
         )
+    get_first_free_ip.title = _('Next free IP')
 
     def issue_next_free_ip(self):
         # TODO: exception when any free IP found

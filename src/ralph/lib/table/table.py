@@ -74,9 +74,12 @@ class Table(object):
                 try:
                     name = getattr(self, field).title
                 except AttributeError:
-                    name = get_field_title_by_relation_path(
-                        self.queryset.model, field
-                    )
+                    try:
+                        name = get_field_title_by_relation_path(
+                            self.queryset.model, field
+                        )
+                    except FieldDoesNotExist:
+                        name = getattr(self.queryset.model, field).title
                 headers.append({'value': name})
         return headers
 
