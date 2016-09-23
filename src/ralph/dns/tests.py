@@ -322,11 +322,16 @@ class TestPublisher(TestCase):
         }])
 
 
+class RequestStub():
+    status_code = None
+
+    def __init__(self, code):
+        self.status_code = code
+
+
 class TestDNSaaS(TestCase):
     def test_user_get_info_when_dnsaas_user_has_no_perm(self):
-        class RequestStub():
-            status_code = 202
-        request = RequestStub()
+        request = RequestStub(202)
         dns = DNSaaS()
 
         result = dns._response2result(request)
@@ -337,6 +342,19 @@ class TestDNSaaS(TestCase):
                 _("Your request couldn't be handled, try later.")
             ]},
         )
+
+    def test_user_get_info_when_??(self):
+        request = RequestStub(0)
+        dns = DNSaaS()
+
+        result = dns._response2result(request)
+
+        #self.assertEqual(
+        #    result,
+        #    {'non_field_errors': [
+        #        _("Your request couldn't be handled, try later.")
+        #    ]},
+        #)
 
 
 class TestDNSForm(TestCase):
