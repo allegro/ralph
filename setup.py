@@ -69,7 +69,7 @@ setup(
         'rq>=0.3.7',
         'rq-scheduler==0.3.6',
         'setproctitle==1.1.8',
-        'South==0.7.6',
+        'South==1.0.2',
         'splunk-sdk==0.8.0',
         'SQLAlchemy==0.7.8',
         'null==0.6.1',
