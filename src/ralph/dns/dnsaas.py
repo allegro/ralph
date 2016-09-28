@@ -192,11 +192,21 @@ class DNSaaS:
             'domain': domain,
             'owner': settings.DNSAAS_OWNER
         }
-        return self._post(url, data)
+        return self._post(url, data)[1]
 
     def _post(self, url, data):
+        """
+        Send post data to URL.
+
+        Args:
+            url: str endpoint url
+            data: dict to send
+
+        Returns:
+            tuple (response status code, dict data)
+        """
         response = self.session.post(url, json=data)
-        return self._response2result(response)
+        return response.status_code, self._response2result(response)
 
     def delete_dns_record(self, record_id):
         """
@@ -244,7 +254,10 @@ class DNSaaS:
         """
         logger.info('Send update data: {}'.format(ip_record_data))
         url = self.build_url('ip_record')
-        response = self._post(url, ip_record_data)
-        if response.status_code >= 400:
-            logger.error('DNSaaS returned {}'.format(response.status_code))
-        return response.json()
+        status_code, response_data = self._post(url, ip_record_data)
+        if status_code >= 400:
+            logger.error(
+                'DNSaaS returned {} data: {}'.format(
+                    status_code, str(response_data)
+                )
+            )
