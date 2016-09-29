@@ -352,6 +352,7 @@ class DataCenterAssetAdmin(
     ]
     raw_id_override_parent = {'parent': DataCenterAsset}
     _invoice_report_name = 'invoice-data-center-asset'
+    readonly_fields = ['get_created_date']
 
     fieldsets = (
         (_('Basic info'), {
@@ -378,7 +379,7 @@ class DataCenterAssetAdmin(
                 'order_no', 'invoice_date', 'invoice_no', 'task_url', 'price',
                 'depreciation_rate', 'depreciation_end_date',
                 'force_depreciation', 'source', 'provider', 'delivery_date',
-                'budget_info',
+                'budget_info', 'get_created_date',
             )
         }),
     )
@@ -396,6 +397,15 @@ class DataCenterAssetAdmin(
         return obj.location
     show_location.short_description = _('Location')
     show_location.allow_tags = True
+
+    def get_created_date(self, obj):
+        """
+        Return created date for asset (since created is blacklisted by
+        permissions, it cannot be displayed directly, because only superuser
+        will see it)
+        """
+        return obj.created or '-'
+    get_created_date.short_description = _('Created at')
 
 
 @register(ServerRoom)
