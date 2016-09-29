@@ -1,9 +1,10 @@
 from ipaddress import ip_address, ip_network
+from mock import patch
 
 from ddt import data, ddt, unpack
 from django.core.exceptions import ValidationError
 from django.db.models import F
-from django.test import RequestFactory
+from django.test import RequestFactory, override_settings
 
 from ralph.admin.helpers import CastToInteger
 from ralph.assets.models import AssetLastHostname
@@ -209,6 +210,33 @@ class NetworkTest(RalphTestCase):
         for ip in used:
             IPAddress.objects.create(address=ip, network=net)
         self.assertEqual(net.get_first_free_ip(), first_free)
+
+    @unpack
+    @data(
+        ('192.168.1.0/24', True, ['192.168.1.1', '192.168.1.2'], None),  # noqa
+        ('192.168.1.0/24', False, ['192.168.1.1', '192.168.1.2'], ip_address('192.168.1.1')),  # noqa
+    )
+    def test_get_first_free_ip_respect_DNSaaS(
+        self, network_addr, dnsaas_enabled, records, first_free
+    ):
+
+        def is_in_dnsaas_mocked(ip):
+            print('Check', ip)
+            if not dnsaas_enabled:
+                return False
+            return str(ip) in records
+        patcher = patch(
+            'ralph.networks.models.networks.is_in_dnsaas', is_in_dnsaas_mocked
+        )
+        net = Network.objects.create(
+            address=network_addr,
+            reserved_from_beginning=0,
+            reserved_from_end=0,
+        )
+        with override_settings(ENABLE_DNSAAS_INTEGRATION=dnsaas_enabled):
+            patcher.start()
+            self.assertEqual(net.get_first_free_ip(), first_free)
+            patcher.stop()
 
     def test_sub_network_should_assign_automatically(self):
         net = Network.objects.create(
