@@ -213,8 +213,9 @@ class NetworkTest(RalphTestCase):
 
     @unpack
     @data(
-        ('192.168.1.0/24', True, ['192.168.1.1', '192.168.1.2'], None),  # noqa
-        ('192.168.1.0/24', False, ['192.168.1.1', '192.168.1.2'], ip_address('192.168.1.1')),  # noqa
+        ('192.168.1.0/30', True, ['192.168.1.1', '192.168.1.2'], None),
+        ('192.168.1.0/30', True, ['192.168.1.1'], ip_address('192.168.1.2')),
+        ('192.168.1.0/30', False, ['192.168.1.1', '192.168.1.2'], ip_address('192.168.1.1')),  # noqa
     )
     def test_get_first_free_ip_respect_DNSaaS(
         self, network_addr, dnsaas_enabled, records, first_free
