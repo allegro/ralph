@@ -513,12 +513,18 @@ class Network(
         for free_ip_as_int in range(min_ip, max_ip + 1):
             if free_ip_as_int not in used_ips:
                 break
+        if free_ip_as_int is None:
+            return None
         next_free_ip = ipaddress.ip_address(free_ip_as_int)
-        while is_in_dnsaas(next_free_ip) and free_ip_as_int <= max_ip:
+        while (
+            is_in_dnsaas(next_free_ip) and
+            free_ip_as_int in used_ips and
+            free_ip_as_int <= max_ip
+        ):
             logger.error('IP {} is already in DNS'.format(next_free_ip))
             free_ip_as_int += 1
             next_free_ip = ipaddress.ip_address(free_ip_as_int)
-        is_last_ip_in_network = free_ip_as_int == max_ip
+        is_last_ip_in_network = free_ip_as_int == max_ip or None
         return (
             next_free_ip if not is_last_ip_in_network else None
         )
