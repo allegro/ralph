@@ -221,7 +221,6 @@ class NetworkTest(RalphTestCase):
     ):
 
         def is_in_dnsaas_mocked(ip):
-            print('Check', ip)
             if not dnsaas_enabled:
                 return False
             return str(ip) in records
