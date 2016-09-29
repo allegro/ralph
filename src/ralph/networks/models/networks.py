@@ -14,6 +14,7 @@ from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
 from ralph.assets.models import AssetLastHostname, Ethernet
+from ralph.dns.dnsaas import dnsaas_client
 from ralph.lib import network as network_tools
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
@@ -27,6 +28,15 @@ from ralph.networks.fields import IPNetwork
 from ralph.networks.models.choices import IPAddressStatus
 
 logger = logging.getLogger(__name__)
+
+
+def is_in_dnsaas(ip):
+    if not settings.ENABLE_DNSAAS_INTEGRATION:
+        return False
+    url = dnsaas_client.build_url(
+        'records', get_params=[('content', ip), ('type', 'A')]
+    )
+    return len(dnsaas_client.get_api_result(url)) > 0
 
 
 class NetworkKind(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
@@ -502,13 +512,11 @@ class Network(
         free_ip_as_int = None
         for free_ip_as_int in range(min_ip, max_ip + 1):
             if free_ip_as_int not in used_ips:
-                break
-        # TODO: do it better
-        last = free_ip_as_int in used_ips
-        return (
-            ipaddress.ip_address(free_ip_as_int)
-            if free_ip_as_int and not last else None
-        )
+                next_free_ip = ipaddress.ip_address(free_ip_as_int)
+                if is_in_dnsaas(next_free_ip):
+                    logger.error('IP {} is already in DNS'.format(next_free_ip))
+                else:
+                    return next_free_ip
 
     def issue_next_free_ip(self):
         # TODO: exception when any free IP found
