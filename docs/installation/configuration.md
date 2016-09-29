@@ -38,7 +38,7 @@ AUTH_LDAP_USER_SEARCH = LDAPSearch(AUTH_LDAP_USER_SEARCH_BASE,
 AUTH_LDAP_USER_ATTR_MAP = {
   "first_name": "givenName",
   "last_name": "sn",
-  "email": "mail"
+  "email": "mail",
   "company": "company",
   "manager": "manager",
   "department": "department",
