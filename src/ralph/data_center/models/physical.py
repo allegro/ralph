@@ -8,7 +8,11 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
-from django.core.validators import RegexValidator
+from django.core.validators import (
+    MaxValueValidator,
+    MinValueValidator,
+    RegexValidator
+)
 from django.db import models, transaction
 from django.db.models import Q
 from django.db.models.signals import post_save
@@ -129,10 +133,18 @@ class ServerRoom(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
     visualization_cols_num = models.PositiveIntegerField(
         verbose_name=_('visualization grid columns number'),
         default=20,
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(100)  # is correlate with $grid-count
+        ]
     )
     visualization_rows_num = models.PositiveIntegerField(
         verbose_name=_('visualization grid rows number'),
         default=20,
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(100)  # is correlate with $grid-count
+        ]
     )
     objects = ServerRoomManager()
 
