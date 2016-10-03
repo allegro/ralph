@@ -8,6 +8,7 @@ from django.db.models import Count, Sum
 from django.template import Library
 from django.utils.text import slugify
 
+from ralph.assets.models.assets import Service
 from ralph.data_center.models import (
     DataCenter,
     DataCenterAsset,
@@ -109,3 +110,27 @@ def ralph_summary():
 
         })
     return {'results': results}
+
+
+@register.inclusion_tag('admin/templatetags/my_services.html')
+def my_services(user):
+    return {
+        'services': Service.objects.prefetch_related(
+            'serviceenvironment_set__environment',
+            'serviceenvironment_set__baseobject_set__content_type'
+        ).filter(technical_owners=user)
+    }
+
+
+@register.inclusion_tag('admin/templatetags/objects_summary.html')
+def get_objects_summary(service_env, content_type, objects):
+    from django.core.urlresolvers import reverse
+    opts = content_type.model_class()._meta
+    url = reverse(
+        'admin:{}_{}_changelist'.format(opts.app_label, opts.model_name)
+    )
+    return {
+        'url': '{}?service_env={}'.format(url, service_env.id),
+        'name': opts.verbose_name,
+        'count': len(objects),
+    }

@@ -40,14 +40,17 @@
     & > .row {
         margin-top: 10px;
     }
-    .module {
+    .row.module {
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 10px;
         h2 {
             color: #555;
             font-size: 1.5rem;
+            text-align: left;
         }
-    }
-    .capacities {
-        border-bottom: 1px solid #ddd;
+        &:last-child {
+            border-bottom: none;
+        }
     }
     .recent-actions {
         .actionlist {

@@ -1,0 +1,44 @@
+{% load cache i18n dashboard_tags %}
+
+{% if services %}
+  {% cache 60 my_services request.user %}
+    <div class="services module row">
+      <table class="full">
+        <h2>{% trans "My services" %}</h2>
+        <thead>
+          <tr>
+            <th>{% trans "Service" %}</th>
+            <th>{% trans "Environment" %}</th>
+            <th>{% trans "Assets count" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for service in services %}
+            <tr>
+              <td rowspan="{{ service.serviceenvironment_set.count|add:"1" }}">
+                <a href="{% url 'admin:data_center_dchost_changelist' %}?service_env={% for service_env in service.serviceenvironment_set.all %}{{ service_env.id }}{% if not forloop.last %},{% endif %}{% endfor %}">{{ service }}</a>
+              </td>
+            </tr>
+            {% for service_env in service.serviceenvironment_set.all %}
+            <tr>
+              <td>
+                <a href="{% url 'admin:data_center_dchost_changelist' %}?service_env={{ service_env.id }}">
+                  {{ service_env.environment }} ({{ service_env.baseobject_set.count }})
+                </a>
+              </td>
+              <td>
+                {% regroup service_env.baseobject_set.all by content_type as content_types %}
+                {% for type in content_types %}
+                  <ul>
+                    <li>{% get_objects_summary service_env type.grouper type.list %}</li>
+                  </ul>
+                {% endfor %}
+              </td>
+            </tr>
+            {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endcache %}
+{% endif %}
