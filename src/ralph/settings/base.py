@@ -280,6 +280,17 @@ REST_FRAMEWORK = {
     'ALLOWED_VERSIONS': ('v1',)
 }
 
+API_THROTTLING = bool_from_env('API_THROTTLING', default=False)
+if API_THROTTLING:
+    REST_FRAMEWORK.update({
+        'DEFAULT_THROTTLE_CLASSES': (
+            'rest_framework.throttling.UserRateThrottle',
+        ),
+        'DEFAULT_THROTTLE_RATES': {
+            'user': os.environ.get('API_THROTTLING_USER', '5000/hour')
+        }
+    })
+
 REDIS_CONNECTION = {
     'HOST': os.environ.get('REDIS_HOST', 'localhost'),
     'PORT': os.environ.get('REDIS_PORT', '6379'),

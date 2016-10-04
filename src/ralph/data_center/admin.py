@@ -95,7 +95,7 @@ class DCHostHostnameFilter(SimpleListFilter):
         ]
         # TODO: simple if hostname would be in one model
         queries = [
-            Q(**{'{}__icontains'.format(field): self.value()})
+            Q(**{'{}__icontains'.format(field): self.value().strip()})
             for field in fields
         ]
         return queryset.filter(reduce(operator.or_, queries)).distinct()

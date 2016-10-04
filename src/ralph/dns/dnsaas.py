@@ -144,7 +144,7 @@ class DNSaaS:
     def _response2result(self, response):
         if response.status_code == 500:
             return {
-                'non_field_errors': [_('Internal Server Error from DNSAAS')]
+                'non_field_errors': ['Internal Server Error from DNSAAS']
             }
         elif response.status_code == 202:
             logger.error(
@@ -154,7 +154,7 @@ class DNSaaS:
             )
             return {
                 'non_field_errors': [
-                    _("Your request couldn't be handled, try later.")
+                    "Your request couldn't be handled, try later."
                 ]
             }
         elif response.status_code != 201:
@@ -257,8 +257,8 @@ class DNSaaS:
         status_code, response_data = self._post(url, ip_record_data)
         if status_code >= 400:
             logger.error(
-                'DNSaaS returned {} data: {}'.format(
-                    status_code, str(response_data)
+                'DNSaaS returned {} data: {}, send_data: {}'.format(
+                    status_code, str(response_data), ip_record_data
                 )
             )
 
