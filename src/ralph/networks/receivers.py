@@ -1,7 +1,10 @@
 from ralph.dns.dnsaas import DNSaaS
+from ralph.virtual.models import CloudHost
 
 
 def update_dns_record(instance, created, *args, **kwargs):
+    if isinstance(instance.ethernet.base_object, CloudHost):
+        return
     keys = ['address', 'hostname']
     data_to_send = {
         'old': {
@@ -17,6 +20,8 @@ def update_dns_record(instance, created, *args, **kwargs):
 
 
 def delete_dns_record(instance, *args, **kwargs):
+    if isinstance(instance.ethernet.base_object, CloudHost):
+        return
     DNSaaS().send_ipaddress_data({
         'address': instance.address,
         'hostname': instance.hostname,
