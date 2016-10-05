@@ -7,7 +7,7 @@
         <div class="pdu left">
             <pdu-item pdu="item" ng-repeat="item in pdus|filter:{orientation:'left'}" style="order: {{ $index }}"></pdu-item>
         </div>
-        <div class="devices">
+        <div class="devices" ng-class="{reverse: rack_listing_order_reverse}">
             <device-item device="item" side="side" ng-repeat="item in devices"></device-item>
         </div>
         <div class="pdu right">

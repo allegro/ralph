@@ -57,6 +57,7 @@
     @include generate-position($max-u);
 }
 
+.racks .rack .wrapper .devices.reverse .device,
 .racks .rack .wrapper .listing-u.reverse .position {
     @include generate-position($max-u, true);
 }

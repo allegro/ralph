@@ -342,7 +342,7 @@ RALPH_INTERNAL_SERVICES = {
 # DC view
 # =============================================================================
 
-RACK_LISTING_REVERSE = False
+RACK_LISTING_REVERSE = True
 
 # =============================================================================
 # Deployment

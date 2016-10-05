@@ -1,6 +1,6 @@
 from django.conf.urls import url
 
-from ralph.dc_view.views.ui import SettingsForAngularView, ServerRoomView
+from ralph.dc_view.views.ui import ServerRoomView, SettingsForAngularView
 
 urlpatterns = [
     url(
