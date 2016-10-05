@@ -4,7 +4,7 @@
     angular
         .module('common.filters', [])
         .filter('range', function () {
-            return function (input, start, stop) {
+            return function (input, stop) {
                 var stop = parseInt(stop)
                 for (var i = 0; i < stop; i++) {
                     input.push(i);

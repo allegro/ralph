@@ -15,7 +15,6 @@
                 templateUrl: '/static/partials/rack/rack.html',
                 link: function(scope) {
                     scope.rack_listing_order_reverse = SETTINGS.RACK_LISTING_REVERSE;
-                    console.log(SETTINGS.RACK_LISTING_REVERSE);
                 }
             };
         }])
@@ -46,7 +45,6 @@
                 restrict: 'E',
                 templateUrl: '/static/partials/rack/listing.html',
                 link: function (scope) {
-                    scope.start = 0;
                     scope.u_range = [];
                     scope.$on('change_active_item', function(event, item){
                         scope.u_range = [];
