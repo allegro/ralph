@@ -5,7 +5,7 @@
         .module('common.filters', [])
         .filter('range', function () {
             return function (input, stop) {
-                var stop = parseInt(stop)
+                stop = parseInt(stop)
                 for (var i = 0; i < stop; i++) {
                     input.push(i);
                 }
