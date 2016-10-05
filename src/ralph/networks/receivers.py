@@ -4,7 +4,7 @@ from ralph.virtual.models import CloudHost
 
 def update_dns_record(instance, created, *args, **kwargs):
     if (
-        instance.ethernet and
+        not instance.ethernet or
         isinstance(instance.ethernet.base_object, CloudHost)
     ):
         return
