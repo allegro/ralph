@@ -57,6 +57,10 @@
     @include generate-position($max-u);
 }
 
+.racks .rack .wrapper .listing-u.reverse .position {
+    @include generate-position($max-u, true);
+}
+
 .racks .rack .wrapper .devices .device.height-u-0 {
     z-index: 10000;
     background-color: #f33;

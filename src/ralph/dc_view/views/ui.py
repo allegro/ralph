@@ -1,3 +1,6 @@
+import json
+
+from django.conf import settings
 from django.db.models import Count
 
 from ralph.admin.mixins import RalphTemplateView
@@ -13,4 +16,16 @@ class ServerRoomView(RalphTemplateView):
             rooms_count=Count('serverroom')
         ).filter(rooms_count__gt=0)
         context['site_header'] = "Ralph 3"
+        return context
+
+
+class SettingsForAngularView(RalphTemplateView):
+    content_type = 'application/javascript'
+    template_name = 'dc_view/settings_for_angular.js'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['settings'] = json.dumps({
+            'RACK_LISTING_REVERSE': settings.RACK_LISTING_REVERSE,
+        })
         return context

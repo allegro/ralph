@@ -3,7 +3,7 @@
 
     angular
         .module('rack.directives', [])
-        .directive('rack', function () {
+        .directive('rack', ['SETTINGS', function (SETTINGS) {
             return {
                 restrict: 'E',
                 scope: {
@@ -13,8 +13,11 @@
                     info: '='
                 },
                 templateUrl: '/static/partials/rack/rack.html',
+                link: function(scope) {
+                    scope.rack_listing_order_reverse = SETTINGS.RACK_LISTING_ORDER_REVERSE;
+                }
             };
-        })
+        }])
         .directive('deviceItem', function () {
             return {
                 restrict: 'E',
@@ -42,6 +45,8 @@
                 restrict: 'E',
                 templateUrl: '/static/partials/rack/listing.html',
                 link: function (scope) {
+                    scope.start = 0;
+                    scope.stop = scope.info.max_u_height;
                     scope.u_range = [];
                     scope.$on('change_active_item', function(event, item){
                         scope.u_range = [];
