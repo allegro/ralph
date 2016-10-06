@@ -118,7 +118,8 @@ def my_services(user):
         'services': Service.objects.prefetch_related(
             'serviceenvironment_set__environment',
             'serviceenvironment_set__baseobject_set__content_type'
-        ).filter(technical_owners=user)
+        ).filter(technical_owners=user),
+        'user': user
     }
 
 
