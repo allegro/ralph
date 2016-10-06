@@ -1,7 +1,9 @@
 {% load cache i18n dashboard_tags %}
 
 {% if services %}
-  {% cache 60 my_services request.user %}
+  <!-- user cache key: {{ request.user.permissions_hash }} -->
+  {% cache 60 my_services request.user.permissions_hash %}
+    <!-- cache -->
     <div class="services module row">
       <table class="full">
         <h2>{% trans "My services" %}</h2>
@@ -40,5 +42,6 @@
         </tbody>
       </table>
     </div>
+    <!-- end cache -->
   {% endcache %}
 {% endif %}
