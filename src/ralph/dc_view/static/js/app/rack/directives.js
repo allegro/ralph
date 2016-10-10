@@ -14,7 +14,7 @@
                 },
                 templateUrl: '/static/partials/rack/rack.html',
                 link: function(scope) {
-                    scope.reverse_ordering = SETTINGS.RACK_LISTING_NUMBERING_UP_TO_BOTTOM;
+                    scope.reverse_ordering = SETTINGS.RACK_LISTING_NUMBERING_TOP_TO_BOTTOM;
                 }
             };
         }])

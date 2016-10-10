@@ -342,7 +342,7 @@ RALPH_INTERNAL_SERVICES = {
 # DC view
 # =============================================================================
 
-RACK_LISTING_NUMBERING_UP_TO_BOTTOM = False
+RACK_LISTING_NUMBERING_TOP_TO_BOTTOM = False
 
 # =============================================================================
 # Deployment
