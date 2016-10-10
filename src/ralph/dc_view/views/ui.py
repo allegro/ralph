@@ -26,6 +26,6 @@ class SettingsForAngularView(RalphTemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['settings'] = json.dumps({
-            'RACK_LISTING_REVERSE': settings.RACK_LISTING_REVERSE,
+            'RACK_LISTING_NUMBERING_UP_TO_BOTTOM': settings.RACK_LISTING_NUMBERING_UP_TO_BOTTOM,  # noqa
         })
         return context
