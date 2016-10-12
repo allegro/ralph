@@ -5,6 +5,7 @@ from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import RalphAPISaveSerializer
+from ralph.assets.models import Ethernet
 from ralph.networks.models.networks import IPAddress
 from ralph.security.models import SecurityScan, Vulnerability
 
@@ -71,7 +72,9 @@ class SaveSecurityScanSerializer(RalphAPISaveSerializer):
         if errors:
             raise serializers.ValidationError(errors)
         data['base_object'] = base_object.pk
-        result = super(SaveSecurityScanSerializer, self).to_internal_value(data)
+        result = super(
+            SaveSecurityScanSerializer, self
+        ).to_internal_value(data)
         return result
 
 
@@ -80,6 +83,19 @@ class SecurityScanViewSet(RalphAPIViewSet):
     serializer_class = SecurityScanSerializer
     save_serializer_class = SaveSecurityScanSerializer
 
+    def _filter_by_ip(self, queryset):
+        ip = self.request.query_params.get('ip', None)
+        if ip is not None:
+            bo_ids = Ethernet.objects.filter(
+                ipaddress__address=ip
+            ).values_list('base_object_id', flat=True)
+            queryset = queryset.filter(base_object__in=bo_ids)
+        return queryset
+
+    def get_queryset(self):
+        queryset = SecurityScan.objects.all()
+        queryset = self._filter_by_ip(queryset)
+        return queryset
 
 router.register(r'vulnerabilities', VulnerabilityViewSet)
 router.register(r'security-scans', SecurityScanViewSet)
