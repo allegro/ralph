@@ -88,10 +88,6 @@ class SecurityScanViewSet(RalphAPIViewSet):
     serializer_class = SecurityScanSerializer
     save_serializer_class = SaveSecurityScanSerializer
 
-    def get_queryset(self):
-        queryset = SecurityScan.objects.all()
-        return queryset
-
     additional_filter_class = IPFilter
 
 router.register(r'vulnerabilities', VulnerabilityViewSet)
