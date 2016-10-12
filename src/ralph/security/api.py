@@ -6,7 +6,6 @@ from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import RalphAPISaveSerializer
-from ralph.assets.models import Ethernet
 from ralph.networks.models.networks import IPAddress
 from ralph.security.models import SecurityScan, Vulnerability
 

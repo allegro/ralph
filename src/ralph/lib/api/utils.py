@@ -3,9 +3,8 @@ from collections import OrderedDict
 
 from django.core.urlresolvers import NoReverseMatch
 from django.utils.encoding import force_text
-
 from rest_framework.metadata import SimpleMetadata
-from rest_framework.relations import RelatedField, ManyRelatedField
+from rest_framework.relations import ManyRelatedField, RelatedField
 from rest_framework.reverse import reverse
 
 logger = logging.getLogger(__name__)
