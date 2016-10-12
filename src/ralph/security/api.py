@@ -72,9 +72,7 @@ class SaveSecurityScanSerializer(RalphAPISaveSerializer):
         if errors:
             raise serializers.ValidationError(errors)
         data['base_object'] = base_object.pk
-        result = super(
-            SaveSecurityScanSerializer, self
-        ).to_internal_value(data)
+        result = super().to_internal_value(data)
         return result
 
 
