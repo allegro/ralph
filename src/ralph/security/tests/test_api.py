@@ -27,6 +27,27 @@ class SecurityScanAPITests(RalphAPITestCase):
             response.data['count'], SecurityScan.objects.count()
         )
 
+    def test_get_security_scan_for_ip(self):
+        ip1 = IPAddressFactory(address="192.168.128.1")
+        self.security_scan1 = SecurityScanFactory(
+            base_object=ip1.ethernet.base_object
+        )
+        ip2 = IPAddressFactory(address="192.168.128.2")
+        self.security_scan2 = SecurityScanFactory(
+            base_object=ip2.ethernet.base_object
+        )
+        response = self.client.get(
+            reverse('securityscan-list') + '?' + 'ip={}'.format(ip1.address),
+            format='json'
+        )
+        self.assertEqual(response.data['count'], 1)
+        self.assertTrue(
+            # check if base_object got correct id
+            response.data['results'][0]['base_object'].endswith(
+                '/{}/'.format(ip1.base_object.id)
+            )
+        )
+
     def test_get_security_scan_details(self):
         url = reverse('securityscan-detail', args=(self.security_scan.id,))
         response = self.client.get(url, format='json')
