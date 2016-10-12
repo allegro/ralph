@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
 
+import django_filters
 from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
@@ -76,24 +77,22 @@ class SaveSecurityScanSerializer(RalphAPISaveSerializer):
         return result
 
 
+class IPFilter(django_filters.FilterSet):
+    ip = django_filters.CharFilter(
+        name='base_object__ethernet_set__ipaddress__address'
+    )
+
+
 class SecurityScanViewSet(RalphAPIViewSet):
     queryset = SecurityScan.objects.all()
     serializer_class = SecurityScanSerializer
     save_serializer_class = SaveSecurityScanSerializer
 
-    def _filter_by_ip(self, queryset):
-        ip = self.request.query_params.get('ip', None)
-        if ip is not None:
-            bo_ids = Ethernet.objects.filter(
-                ipaddress__address=ip
-            ).values_list('base_object_id', flat=True)
-            queryset = queryset.filter(base_object__in=bo_ids)
-        return queryset
-
     def get_queryset(self):
         queryset = SecurityScan.objects.all()
-        queryset = self._filter_by_ip(queryset)
         return queryset
+
+    additional_filter_class = IPFilter
 
 router.register(r'vulnerabilities', VulnerabilityViewSet)
 router.register(r'security-scans', SecurityScanViewSet)
