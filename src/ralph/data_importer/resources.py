@@ -285,6 +285,14 @@ class DataCenterAssetResource(RalphModelResource):
         widget=NullStringWidget(),
     )
 
+    def before_import_row(self, row, **kwargs):
+        self._management_ip = row['management_ip']
+        del row['management_ip']
+
+    def after_save_instance(self, instance, using_transactions, dry_run):
+        instance.management_ip = self._management_ip
+        instance.save()
+
     class Meta:
         model = physical.DataCenterAsset
         select_related = (
