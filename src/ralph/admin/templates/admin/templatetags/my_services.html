@@ -1,8 +1,8 @@
 {% load cache i18n dashboard_tags %}
 
 {% if services %}
-  <!-- user cache key: {{ request.user.permissions_hash }} -->
-  {% cache 60 my_services request.user.permissions_hash %}
+  <!-- user cache key: {{ user.permissions_hash }} -->
+  {% cache 60 my_services user.permissions_hash %}
     <!-- cache -->
     <div class="services module row">
       <table class="full">

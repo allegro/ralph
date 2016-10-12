@@ -17,7 +17,7 @@ class PrebootConfigurationForm(RalphAdminFormMixin, forms.ModelForm):
         is_valid = super().is_valid()
         try:
             _render_configuration(
-                self.cleaned_data['configuration'], MagicMock(),
+                self.cleaned_data.get('configuration', ''), MagicMock(),
                 disable_reverse=True
             )
         except TemplateSyntaxError as error:
