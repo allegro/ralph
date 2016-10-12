@@ -5,7 +5,7 @@ from django.core.urlresolvers import NoReverseMatch
 from django.utils.encoding import force_text
 
 from rest_framework.metadata import SimpleMetadata
-from rest_framework.relations import RelatedField
+from rest_framework.relations import RelatedField, ManyRelatedField
 from rest_framework.reverse import reverse
 
 logger = logging.getLogger(__name__)
@@ -78,6 +78,17 @@ class RalphApiMetadata(SimpleMetadata):
                     field_info['url'] = get_list_view_url_for_model(
                         model
                     )
+                except NoReverseMatch:
+                    logger.warning('Reverse for {} not found'.format(model))
+        elif isinstance(field, ManyRelatedField):
+            # for ManyRelatedField just return url to resource
+            try:
+                model = field.child_relation.queryset.model
+            except AttributeError:
+                pass
+            else:
+                try:
+                    field_info['url'] = get_list_view_url_for_model(model)
                 except NoReverseMatch:
                     logger.warning('Reverse for {} not found'.format(model))
         # otherwise act as usual
