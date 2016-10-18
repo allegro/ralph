@@ -348,11 +348,16 @@ class NetworkableBaseObject(models.Model):
             ).distinct())
         return NetworkEnvironment.objects.none()
 
-    def _get_available_networks(self, as_query=False):
+    def _get_available_networks(
+        self, as_query=False, is_broadcasted_in_dhcp=False
+    ):
         if self.rack_id:
             query = Network.objects.filter(racks=self.rack_id).distinct()
         else:
             query = Network.objects.none()
+        if is_broadcasted_in_dhcp:
+            query = query.filter(dhcp_broadcast=True)
+
         return query if as_query else list(query)
 
     class Meta:

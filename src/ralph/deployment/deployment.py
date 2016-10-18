@@ -138,7 +138,9 @@ def next_free_ip_choices(actions, objects):
     """
     networks = []
     for obj in objects:
-        networks.append(set(obj._get_available_networks()))
+        networks.append(set(obj._get_available_networks(
+            is_broadcasted_in_dhcp=True
+        )))
     # get common part
     networks = set.intersection(*networks)
     ips = [
