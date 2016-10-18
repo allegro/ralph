@@ -291,6 +291,16 @@ class DataCenterAssetTest(RalphTestCase):
             [self.net, self.net2]
         )
 
+    def test_get_available_networks_is_broadcasted_in_dhcp(self):
+        self._prepare_rack(self.dc_asset, '192.168.1.1', '192.168.1.0/24')
+        self.net3 = NetworkFactory(
+            address='192.168.3.0/24', dhcp_broadcast=True
+        )
+        self.assertCountEqual(
+            self.dc_asset._get_available_networks(is_broadcasted_in_dhcp=True),
+            [self.net, self.net2]
+        )
+
     def test_get_available_networks_no_rack(self):
         NetworkFactory(address='192.168.1.0/24')
         NetworkFactory(address='192.168.2.0/24')
