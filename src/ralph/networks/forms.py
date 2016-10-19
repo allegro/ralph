@@ -152,15 +152,15 @@ class SimpleNetworkForm(EthernetLockDeleteForm):
             return self.ip.dhcp_expose
         dhcp_expose = self.cleaned_data['dhcp_expose']
         if dhcp_expose:
-            if not self.cleaned_data['address']:
+            if not self.cleaned_data.get('address'):
                 raise ValidationError(
                     _('Cannot expose in DHCP without IP address'),
                 )
-            if not self.cleaned_data['hostname']:
+            if not self.cleaned_data.get('hostname'):
                 raise ValidationError(
                     _('Cannot expose in DHCP without hostname'),
                 )
-            if not self.cleaned_data['mac']:
+            if not self.cleaned_data.get('mac'):
                 raise ValidationError(
                     _('Cannot expose in DHCP without MAC address'),
                 )
