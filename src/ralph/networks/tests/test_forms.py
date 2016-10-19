@@ -450,6 +450,39 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
             any([msg in err for err in response.context_data['errors']])
         )
 
+    def test_dhcp_expose_with_address_exist_for_new_record_should_not_pass(self):
+        self.ip1.dhcp_expose = True
+        self.ip1.save()
+        inline_data = {
+            'TOTAL_FORMS': 2,
+            'INITIAL_FORMS': 1,
+            '0-id': self.eth1.id,
+            '0-base_object': self.obj1.id,
+            '0-label': 'eht10',
+
+            '1-base_object': self.obj1.id,
+            '1-hostname': '',
+            '1-address': self.ip1.address,
+            '1-mac': '10:10:10:10:10:10',
+            '1-label': 'eth10',
+            '1-dhcp_expose': 'on',
+        }
+        data = {
+            'hostname': self.obj1.hostname,
+            'id': self.obj1.id,
+        }
+        data.update(self._prepare_inline_data(inline_data))
+        response = self.client.post(self.obj1.get_absolute_url(), data)
+        self.assertEqual(response.status_code, 200)
+        error_messages = [
+            'Cannot expose in DHCP without IP address',
+            'Address {} already exist'.format(self.ip1.address)
+        ]
+        for msg in error_messages:
+            self.assertTrue(
+                any([msg in err for err in response.context_data['errors']])
+            )
+
     def test_dhcp_expose_without_mac_for_new_record_should_not_pass(self):
         self.ip1.dhcp_expose = True
         self.ip1.save()
