@@ -13,7 +13,38 @@
                     info: '='
                 },
                 templateUrl: '/static/partials/rack/rack.html',
+                link: function(scope, element) {
+                    element.on('mousemove', function(event) {
+                        if (event.target.className === 'devices') {
+                            var free_position = scope.info.max_u_height - Math.floor(event.offsetY / 25);
+                            scope.$broadcast('hover-on-empty-space', {'position': free_position});
+                        }
+                    });
+                    element.on('mouseout', function() {
+                        if (event.target.className !== 'devices') {
+                            scope.$broadcast('hover-on-empty-space', {'position': 0});
+                        }
+                    });
+                }
             };
+        })
+        .directive('addItem', function () {
+            return {
+                restrict: 'E',
+                template: [
+                    '<div ng-class="{hide: position == 0}" class="device add-btn height-u-1 position-u-{{ position }}" title="Click with CTRL key pressed to open in new tab">',
+                        '<i class="fa fa-plus"></i>',
+                    '</div>'
+                ].join('\n'),
+                link: function(scope, element, attr) {
+                    scope.position = 0;
+                    scope.$on('hover-on-empty-space', function(event, data) {
+                        scope.$apply(function () {
+                            scope.position = data.position;
+                        })
+                    });
+                }
+            }
         })
         .directive('deviceItem', function () {
             return {
