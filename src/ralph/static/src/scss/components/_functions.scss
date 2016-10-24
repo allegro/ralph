@@ -52,10 +52,14 @@
     }
 }
 
-@mixin generate-position($n) {
+@mixin generate-position($n, $reverse: false) {
+    $attr: 'bottom';
+    @if $reverse == true {
+        $attr: 'top';
+    }
     @for $i from 0 through $n {
         &.position-u-#{$i} {
-            bottom: $u-height * ($i - 1);
+            #{$attr}: $u-height * ($i - 1);
         }
     }
 }
