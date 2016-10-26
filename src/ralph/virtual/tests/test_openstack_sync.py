@@ -142,3 +142,9 @@ class TestOpenstackSync(RalphTestCase):
             CloudHost.objects.get,
             host_id='host_id1',
         )
+
+    def test_delete_cloud_instance_cleanup_ip(self):
+        ips_count = IPAddress.objects.count()
+        self.cmd._cleanup_servers({}, self.cloud_project.project_id)
+        # cloud instance in cloud_project had 2 ip addresses
+        self.assertEqual(IPAddress.objects.count(), ips_count - 2)

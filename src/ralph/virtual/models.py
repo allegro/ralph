@@ -207,6 +207,7 @@ class CloudHost(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
                         'another asset'
                     ) % (ip, self.hostname))
             except ObjectDoesNotExist:
+                logger.info('Creating new IP {} for {}'.format(ip, self))
                 new_ip = IPAddress(
                     ethernet=Ethernet.objects.create(base_object=self),
                     address=ip
@@ -214,6 +215,8 @@ class CloudHost(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
                 new_ip.save()
 
         to_delete = set(self.ip_addresses) - set(value)
+        for ip in to_delete:
+            logger.warning('Deleting {} from {}'.format(ip, self))
         Ethernet.objects.filter(
             base_object=self, ipaddress__address__in=to_delete
         ).delete()
