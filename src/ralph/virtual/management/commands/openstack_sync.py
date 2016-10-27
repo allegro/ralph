@@ -187,7 +187,7 @@ class Command(BaseCommand):
                     'id': server['id'],
                     'flavor_id': flavor_id,
                     'tag': site['tag'],
-                    'ips': [],
+                    'ips': {},
                     'created': server['created'],
                     'hypervisor': server['OS-EXT-SRV-ATTR:hypervisor_hostname'],
                     'image': image_name,
@@ -199,12 +199,15 @@ class Command(BaseCommand):
                     ):
                         continue
                     for ip in server['addresses'][zone]:
-                        new_server['ips'].append(ip['addr'])
+                        addr = ip['addr']
+                        # fetch FQDN from DNS by IP address
+                        hostname = network.hostname(addr)
+                        logger.debug('Get IP {} ({}) for {}'.format(
+                            addr, hostname, server['id']
+                        ))
+                        new_server['ips'][addr] = hostname
                         if not new_server['hostname']:
-                            # fetch FQDN from DNS by IP address
-                            new_server['hostname'] = network.hostname(
-                                ip['addr']
-                            )
+                            new_server['hostname'] = hostname
                 # fallback to default behavior if FQDN could not be fetched
                 # from DNS
                 new_server['hostname'] = (
@@ -255,9 +258,9 @@ class Command(BaseCommand):
         ).select_related(
             'hypervisor', 'parent', 'parent__cloudproject',
         ).prefetch_related('tags'):
-            ips = server.ethernet_set.select_related('ipaddress').values_list(
-                'ipaddress__address', flat=True
-            )
+            ips = dict(server.ethernet_set.select_related('ipaddress').values_list(
+                'ipaddress__address', 'ipaddress__hostname'
+            ))
             new_server = {
                 'hostname': server.hostname,
                 'hypervisor': server.hypervisor,
@@ -381,7 +384,7 @@ class Command(BaseCommand):
             obj.tags.add(openstack_server['tag'])
 
         # add/remove IPs
-        if set(openstack_server['ips']) != set(ralph_server['ips']):
+        if openstack_server['ips'] != ralph_server['ips']:
             modified = True
             with transaction.atomic(), revisions.create_revision():
                 obj.ip_addresses = openstack_server['ips']
@@ -417,7 +420,11 @@ class Command(BaseCommand):
                 self.ralph_projects[project_id]['servers'].keys(
                 ) - servers.keys()
             ):
-                self._delete_object(CloudHost.objects.get(host_id=server_id))
+                host = CloudHost.objects.get(host_id=server_id)
+                logger.warning('Removing CloudHost {} ({})'.format(
+                    server_id, host.hostname
+                ))
+                self._delete_object(host)
                 self.summary['del_instances'] += 1
         except KeyError:
             pass
