@@ -301,7 +301,9 @@ class BaseObjectLicence(models.Model):
         verbose_name=_('Asset'),
         limit_models=[
             'back_office.BackOfficeAsset',
-            'data_center.DataCenterAsset'
+            'data_center.DataCenterAsset',
+            'virtual.VirtualServer',
+            'data_center.Cluster',
         ]
     )
     quantity = models.PositiveIntegerField(default=1)

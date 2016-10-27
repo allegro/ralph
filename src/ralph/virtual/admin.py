@@ -5,7 +5,6 @@ from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphAdminForm, RalphTabularInline, register
-
 from ralph.admin.filters import (
     BaseObjectHostnameFilter,
     IPFilter,
@@ -14,12 +13,13 @@ from ralph.admin.filters import (
     TreeRelatedAutocompleteFilterWithDescendants
 )
 from ralph.assets.models.components import Ethernet
-from ralph.assets.views import ComponentsAdminView
+from ralph.assets.views import ComponentsAdminView, RalphDetailViewAdmin
 from ralph.cross_validator.views import ShowDiffMessageMixin
 from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.deployment.mixins import ActiveDeploymentMessageMixin
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
+from ralph.licences.models import BaseObjectLicence
 from ralph.networks.forms import SimpleNetworkForm
 from ralph.networks.views import NetworkView
 from ralph.security.views import SecurityInfo
@@ -70,6 +70,20 @@ class VirtualServerComponentsView(ComponentsAdminView):
     pass
 
 
+class VirtualServerLicencesView(RalphDetailViewAdmin):
+    icon = 'key'
+    name = 'virtual_licences'
+    label = _('Licences')
+    url_name = 'licences'
+
+    class VirtualServerLicenceInline(RalphTabularInline):
+        model = BaseObjectLicence
+        raw_id_fields = ('licence',)
+        extra = 1
+
+    inlines = [VirtualServerLicenceInline]
+
+
 @register(VirtualServer)
 class VirtualServerAdmin(
     ActiveDeploymentMessageMixin,
@@ -102,6 +116,7 @@ class VirtualServerAdmin(
         VirtualServerComponentsView,
         VirtualServerNetworkView,
         VirtaulServerSecurityInfoView,
+        VirtualServerLicencesView,
     ]
     if settings.ENABLE_DNSAAS_INTEGRATION:
         change_views += [VirtualServerDNSView]
