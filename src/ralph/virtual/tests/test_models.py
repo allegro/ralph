@@ -92,6 +92,36 @@ class OpenstackModelsTestCase(RalphTestCase):
         # two IPs were removed, two were added
         self.assertEqual(IPAddress.objects.count(), ips_count + 2)
 
+    def test_ip_hostname_update(self):
+        ip_addresses = {
+            '10.0.0.1': 'hostname1.mydc.net',
+            '10.0.0.2': 'hostname2.mydc.net',
+        }
+        ip_addresses2 = {
+            '10.0.0.1': 'hostname3.mydc.net',
+            '10.0.0.3': 'hostname4.mydc.net',
+        }
+        self.cloud_host.ip_addresses = ip_addresses
+        self.assertEqual(set(self.cloud_host.ip_addresses), set(ip_addresses))
+        self.assertEqual(
+            IPAddress.objects.get(address='10.0.0.1').hostname,
+            'hostname1.mydc.net'
+        )
+        self.assertEqual(
+            IPAddress.objects.get(address='10.0.0.2').hostname,
+            'hostname2.mydc.net'
+        )
+        self.cloud_host.ip_addresses = ip_addresses2
+        self.assertEqual(
+            IPAddress.objects.get(address='10.0.0.1').hostname,
+            'hostname3.mydc.net'
+        )
+        self.assertEqual(
+            IPAddress.objects.get(address='10.0.0.3').hostname,
+            'hostname4.mydc.net'
+        )
+        self.assertEqual(set(self.cloud_host.ip_addresses), set(ip_addresses2))
+
     def test_service_env_inheritance_on_project_change(self):
         self.cloud_project.service_env = self.service_env[0]
         self.cloud_project.save()
