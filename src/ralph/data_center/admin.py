@@ -131,6 +131,20 @@ class ClusterNetworkInline(RalphTabularInline):
     exclude = ['model']
 
 
+class ClusterLicencesView(RalphDetailViewAdmin):
+    icon = 'key'
+    name = 'cluster_licences'
+    label = _('Licences')
+    url_name = 'licences'
+
+    class ClusterLicenceInline(RalphTabularInline):
+        model = BaseObjectLicence
+        raw_id_fields = ('licence',)
+        extra = 1
+
+    inlines = [ClusterLicenceInline]
+
+
 @register(ClusterType)
 class ClusterTypeAdmin(RalphAdmin):
 
@@ -158,8 +172,9 @@ class ClusterAdmin(CustomFieldValueAdminMixin, RalphAdmin):
         'name', BaseObjectHostnameFilter, 'type', 'service_env',
         'configuration_path', 'status'
     ]
+    change_views = [ClusterLicencesView]
     if settings.ENABLE_DNSAAS_INTEGRATION:
-        change_views = [ClusterDNSView]
+        change_views += [ClusterDNSView]
 
     class ClusterBaseObjectInline(RalphTabularInline):
         model = BaseObjectCluster
