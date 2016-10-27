@@ -1,12 +1,29 @@
+from django.contrib.contenttypes.models import ContentType
+
 from ralph.dns.dnsaas import DNSaaS
 from ralph.virtual.models import CloudHost
 
+INVALID_MODELS = [CloudHost]
+
+
+def _should_send_dnsaas_request(ip_instance):
+    """
+    Return True if update/delete info should be sent to DNSaaS.
+
+    Data should be sent if IP address has base object assigned (through
+    Ethernet) and it's not CloudHost.
+    """
+    eth = ip_instance.ethernet
+    invalid_content_types = ContentType.objects.get_for_models(
+        *INVALID_MODELS
+    ).values()
+    return (
+        eth and eth.base_object.content_type not in invalid_content_types
+    )
+
 
 def update_dns_record(instance, created, *args, **kwargs):
-    if (
-        not instance.ethernet or
-        isinstance(instance.ethernet.base_object, CloudHost)
-    ):
+    if not _should_send_dnsaas_request(instance):
         return
     keys = ['address', 'hostname']
     data_to_send = {
@@ -23,10 +40,7 @@ def update_dns_record(instance, created, *args, **kwargs):
 
 
 def delete_dns_record(instance, *args, **kwargs):
-    if (
-        instance.ethernet and
-        isinstance(instance.ethernet.base_object, CloudHost)
-    ):
+    if not _should_send_dnsaas_request(instance):
         return
     DNSaaS().send_ipaddress_data({
         'address': instance.address,
