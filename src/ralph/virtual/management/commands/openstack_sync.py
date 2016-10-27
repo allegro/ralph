@@ -258,9 +258,11 @@ class Command(BaseCommand):
         ).select_related(
             'hypervisor', 'parent', 'parent__cloudproject',
         ).prefetch_related('tags'):
-            ips = dict(server.ethernet_set.select_related('ipaddress').values_list(
-                'ipaddress__address', 'ipaddress__hostname'
-            ))
+            ips = dict(
+                server.ethernet_set.select_related('ipaddress').values_list(
+                    'ipaddress__address', 'ipaddress__hostname'
+                )
+            )
             new_server = {
                 'hostname': server.hostname,
                 'hypervisor': server.hypervisor,
