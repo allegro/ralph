@@ -4,6 +4,7 @@ from ralph.assets.models.assets import ServiceEnvironment
 from ralph.assets.models.choices import ComponentType
 from ralph.assets.models.components import ComponentModel
 from ralph.assets.tests.factories import EnvironmentFactory, ServiceFactory
+from ralph.networks.models import IPAddress
 from ralph.tests import RalphTestCase
 from ralph.virtual.models import CloudHost, VirtualComponent
 from ralph.virtual.tests.factories import (
@@ -80,12 +81,16 @@ class OpenstackModelsTestCase(RalphTestCase):
         self.assertEqual(getattr(self.cloud_flavor, key), value)
 
     def test_check_cloudhost_ip_addresses_setter(self):
+        ips_count = IPAddress.objects.count()
         ip_addresses = ['10.0.0.1', '10.0.0.2']
         ip_addresses2 = ['10.31.0.1', '10.30.0.0']
         self.cloud_host.ip_addresses = ip_addresses
         self.assertEqual(set(self.cloud_host.ip_addresses), set(ip_addresses))
+        self.assertEqual(IPAddress.objects.count(), ips_count + 2)
         self.cloud_host.ip_addresses = ip_addresses2
         self.assertEqual(set(self.cloud_host.ip_addresses), set(ip_addresses2))
+        # two IPs were removed, two were added
+        self.assertEqual(IPAddress.objects.count(), ips_count + 2)
 
     def test_service_env_inheritance_on_project_change(self):
         self.cloud_project.service_env = self.service_env[0]
