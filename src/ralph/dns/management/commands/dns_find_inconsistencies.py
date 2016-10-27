@@ -55,6 +55,36 @@ class Command(BaseCommand):
         Returns two nested dicts, where key on the first level is record type,
         and key-values on the second level are name-content and content-name
         respectively.
+
+        Example output:
+        (
+            # regular order: name -> [content]
+            {
+                'A': {
+                    'myserver.mydc.net': ['1.2.3.4', '5.6.7.8'],
+                    'myserver2.mydc.net': ['10.20.30.40']
+                },
+                'PTR': {
+                    '4.3.2.1.in-addr.arpa': ['myserver.mydc.net'],
+                    '8.7.5.6.in-addr.arpa': ['myserver.mydc.net'],
+                    '40.30.20.10.in-addr.arpa': ['myserver2.mydc.net']
+                }
+            },
+            # reversed order: content -> [name]
+            {
+                'A': {
+                    '1.2.3.4': ['myserver.mydc.net'],
+                    '5.6.7.8': ['myserver.mydc.net'],
+                    '10.20.30.40': ['myserver2.mydc.net']
+                },
+                'PTR': {
+                    'myserver.mydc.net': [
+                        '4.3.2.1.in-addr.arpa', '8.7.5.6.in-addr.arpa'
+                    ],
+                    'myserver2.mydc.net': ['40.30.20.10.in-addr.arpa']
+                }
+            }
+        )
         """
         url = self.dns.build_url(
             'records',
@@ -151,7 +181,7 @@ class Command(BaseCommand):
             ),
         ]:
             result = func(ips, dns, dns_rev)
-            print(TEMPLATE.format(
+            self.stdout.write(TEMPLATE.format(
                 description=description,
                 headers='\t'.join(headers),
                 content='\n'.join(
