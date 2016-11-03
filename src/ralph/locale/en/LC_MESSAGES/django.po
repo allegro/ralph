@@ -277,7 +277,7 @@ msgstr ""
 #, python-format
 msgid ""
 "\n"
-"                  <i class=\"fa fa-plus\"></i> Add %(name)s\n"
+"                  <i class=\"fa fa-plus\" aria-hidden=\"true\"></i> Add %(name)s\n"
 "                "
 msgstr ""
 

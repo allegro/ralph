@@ -8,7 +8,8 @@
     }
   </style>
   <template>
-    <i id="icon" title="[[tip]]" class="fa fa-info-circle"></i>
+    <i id="icon" title="[[tip]]" class="fa fa-info-circle" aria-hidden="true"></i>
+    <span class="show-for-sr">[[tip]]</span>
   </template>
   <script>
     Polymer({

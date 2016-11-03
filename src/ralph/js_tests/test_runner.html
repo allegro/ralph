@@ -15,12 +15,14 @@
         <div class="item-wrapper">
           <div class="item">
             <span class="title has-tip" data-tooltip title="Test"></span>
-            <i class="fa fa-times delete"></i>
+            <i class="fa fa-times delete" aria-hidden="true"></i>
+            <span class="show-for-sr">Delete</span>
           </div>
         </div>
         <input class="input" type="text">
         <div class="status">
-          <i class="loader fa fa-refresh fa-spin"></i>
+          <i class="loader fa fa-refresh fa-spin" aria-hidden="true"></i>
+          <span class="show-for-sr">Loading</span>
         </div>
       </div>
       <ul class="suggest-list">
