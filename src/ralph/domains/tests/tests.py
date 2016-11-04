@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
+
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
@@ -58,36 +60,35 @@ class TestDomainUpdateInDNSaaS(TestCase):
 
         self.assertEqual(domain.name, result['domain_name'])
 
-    def test_domain_update_returns_service_name(self):
-        domain = DomainFactory()
-
-        result = _publish_domain_to_dnsaaas(domain)
-
-        self.assertEqual(domain.service.name, result['service_name'])
-
-    def test_domain_update_returns_service_uid(self):
-        domain = DomainFactory()
-
-        result = _publish_domain_to_dnsaaas(domain)
-
-        self.assertEqual(domain.service.uid, result['service_uid'])
-
     def test_domain_update_returns_business_owners(self):
-        domain = DomainFactory()
+        domain = DomainFactory(technical_owner=None)
 
         result = _publish_domain_to_dnsaaas(domain)
 
         self.assertEqual(
-            [domain.business_owner.username],
-            result['business_owners']
+            [{
+                'username': domain.business_owner.username,
+                'ownership_type': settings.DNSAAS_OWNERS_TYPES['BO'],
+            }],
+            result['owners']
         )
 
     def test_domain_update_returns_technical_owners(self):
-        domain = DomainFactory()
+        domain = DomainFactory(business_owner=None)
 
         result = _publish_domain_to_dnsaaas(domain)
 
         self.assertEqual(
-            [domain.technical_owner.username],
-            result['technical_owners']
+            [{
+                'username': domain.technical_owner.username,
+                'ownership_type': settings.DNSAAS_OWNERS_TYPES['TO'],
+            }],
+            result['owners']
         )
+
+    def test_domain_update_returns_empty_dict_when_no_owners(self):
+        domain = DomainFactory(business_owner=None, technical_owner=None)
+
+        result = _publish_domain_to_dnsaaas(domain)
+
+        self.assertEqual(result, {})
