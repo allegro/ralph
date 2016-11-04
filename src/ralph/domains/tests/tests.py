@@ -4,6 +4,7 @@ from django.test import TestCase
 
 from ralph.domains.models.domains import WebsiteType
 from ralph.domains.tests.factories import DomainFactory
+from ralph.domains.publishers import _publish_domain_to_dnsaaas
 
 
 class TestDomainValidation(TestCase):
@@ -44,3 +45,49 @@ class TestDomainValidation(TestCase):
             website_type=WebsiteType.direct.id, website_url='',
         )
         domain.clean()
+
+
+class TestDomainUpdateInDNSaaS(TestCase):
+    def setUp(self):
+        pass
+
+    def test_domain_update_returns_domain_name(self):
+        domain = DomainFactory()
+
+        result = _publish_domain_to_dnsaaas(domain)
+
+        self.assertEqual(domain.name, result['domain_name'])
+
+    def test_domain_update_returns_service_name(self):
+        domain = DomainFactory()
+
+        result = _publish_domain_to_dnsaaas(domain)
+
+        self.assertEqual(domain.service.name, result['service_name'])
+
+    def test_domain_update_returns_service_uid(self):
+        domain = DomainFactory()
+
+        result = _publish_domain_to_dnsaaas(domain)
+
+        self.assertEqual(domain.service.uid, result['service_uid'])
+
+    def test_domain_update_returns_business_owners(self):
+        domain = DomainFactory()
+
+        result = _publish_domain_to_dnsaaas(domain)
+
+        self.assertEqual(
+            [domain.business_owner.username],
+            result['business_owners']
+        )
+
+    def test_domain_update_returns_technical_owners(self):
+        domain = DomainFactory()
+
+        result = _publish_domain_to_dnsaaas(domain)
+
+        self.assertEqual(
+            [domain.technical_owner.username],
+            result['technical_owners']
+        )
