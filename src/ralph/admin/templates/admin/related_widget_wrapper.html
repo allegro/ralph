@@ -7,14 +7,14 @@
       <a class="related-widget-wrapper-link change-related" id="change_id_{{ name }}"
           data-href-template="{{ change_related_template_url }}?{{ url_params }}"
           title="{% blocktrans %}Change selected {{ model }}{% endblocktrans %}">
-          <i class="fa fa-pencil fa-lg"></i>
+          <i class="fa fa-pencil fa-lg" aria-hidden="true"></i>
       </a>
       {% endif %}
       {% if can_add_related %}
       <a class="related-widget-wrapper-link add-related" id="add_id_{{ name }}"
           href="{{ add_related_url }}?{{ url_params }}"
           title="{% blocktrans %}Add another {{ model }}{% endblocktrans %}">
-          <i class="fa fa-plus-circle fa-lg"></i>
+          <i class="fa fa-plus-circle fa-lg" aria-hidden="true"></i>
       </a>
       {% endif %}
     {% endblock %}

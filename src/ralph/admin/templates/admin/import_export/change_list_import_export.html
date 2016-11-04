@@ -4,12 +4,12 @@
 {% block object-tools-items %}
   <li>
     <a href="import/" class="import_link">
-      <i class="fa fa-upload"></i> {% trans "Import" %}
+      <i class="fa fa-upload" aria-hidden="true"></i> {% trans "Import" %}
     </a>
   </li>
   <li>
     <a href="export/{{ cl.get_query_string }}" class="export_link">
-      <i class="fa fa-download"></i> {% trans "Export" %}
+      <i class="fa fa-download" aria-hidden="true"></i> {% trans "Export" %}
     </a>
   </li>
   {{ block.super }}

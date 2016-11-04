@@ -63,7 +63,7 @@
                       <div class="original hide">
                         {% if inline_admin_form.original and inline_admin_form.model_admin.show_change_link and inline_admin_form.model_admin.has_registered_model %}
                           <a href="{% url inline_admin_form.model_admin.opts|admin_urlname:'change' inline_admin_form.original.pk|admin_urlquote %}?{{ inline_admin_form.model_admin.change_link_url_params }}" class="inlinechangelink change-related" title="{% trans 'Change' %}">
-                            <i class="fa fa-pencil fa-lg"></i>
+                            <i class="fa fa-pencil fa-lg" aria-hidden="true"></i>
                           </a>
                         {% endif %}
                         {% if inline_admin_form.needs_explicit_pk_field %}
