@@ -67,7 +67,7 @@ class TestDomainUpdateInDNSaaS(TestCase):
         self.assertEqual(
             [{
                 'username': domain.business_owner.username,
-                'ownership_type': settings.DNSAAS_OWNERS_TYPES['BO'],
+                'ownership_type': settings.DOMAIN_OWNER_TYPE['BO'],
             }],
             result['owners']
         )
@@ -80,7 +80,7 @@ class TestDomainUpdateInDNSaaS(TestCase):
         self.assertEqual(
             [{
                 'username': domain.technical_owner.username,
-                'ownership_type': settings.DNSAAS_OWNERS_TYPES['TO'],
+                'ownership_type': settings.DOMAIN_OWNER_TYPE['TO'],
             }],
             result['owners']
         )

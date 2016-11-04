@@ -17,12 +17,12 @@ def _publish_domain_to_dnsaaas(domain):
     if domain.business_owner:
         owners.append({
             'username': domain.business_owner.username,
-            'ownership_type': settings.DNSAAS_OWNERS_TYPES['BO'],
+            'ownership_type': settings.DOMAIN_OWNER_TYPE['BO'],
         })
     if domain.technical_owner:
         owners.append({
             'username': domain.technical_owner.username,
-            'ownership_type': settings.DNSAAS_OWNERS_TYPES['TO'],
+            'ownership_type': settings.DOMAIN_OWNER_TYPE['TO'],
         })
 
     if not owners:
@@ -36,14 +36,14 @@ def _publish_domain_to_dnsaaas(domain):
     return domain_data
 
 
-if settings.DNSAAS_DOMAIN_SERVICE_UPDATE_TOPIC:
+if settings.DOMAIN_DATA_UPDATE_TOPIC:
     @pyhermes.publisher(
-        topic=settings.DNSAAS_DOMAIN_SERVICE_UPDATE_TOPIC,
+        topic=settings.DOMAIN_DATA_UPDATE_TOPIC,
         auto_publish_result=True
     )
-    def publish_domain_data_to_dnsaas(obj):
+    def publish_domain_data(obj):
         return _publish_domain_to_dnsaaas(obj)
 
     @receiver(post_save, sender=Domain)
     def post_save_domain(sender, instance, **kwargs):
-        publish_domain_data_to_dnsaas(instance)
+        publish_domain_data(instance)
