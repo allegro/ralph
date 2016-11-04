@@ -48,7 +48,7 @@ class TestDomainValidation(TestCase):
         domain.clean()
 
 
-class TestDomainUpdateInDNSaaS(TestCase):
+class TestDomainUpdateSignal(TestCase):
     def setUp(self):
         pass
 
