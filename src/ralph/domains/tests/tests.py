@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
-
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from ralph.domains.models.domains import WebsiteType
-from ralph.domains.tests.factories import DomainFactory
 from ralph.domains.publishers import _publish_domain_to_dnsaaas
+from ralph.domains.tests.factories import DomainFactory
 
 
 class TestDomainValidation(TestCase):
