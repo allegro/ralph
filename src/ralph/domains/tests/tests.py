@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from ralph.domains.models.domains import WebsiteType
-from ralph.domains.publishers import _publish_domain_to_dnsaaas
+from ralph.domains.publishers import _publish_domain_data
 from ralph.domains.tests.factories import DomainFactory
 
 
@@ -55,14 +55,14 @@ class TestDomainUpdateInDNSaaS(TestCase):
     def test_domain_update_returns_domain_name(self):
         domain = DomainFactory()
 
-        result = _publish_domain_to_dnsaaas(domain)
+        result = _publish_domain_data(domain)
 
         self.assertEqual(domain.name, result['domain_name'])
 
     def test_domain_update_returns_business_owners(self):
         domain = DomainFactory(technical_owner=None)
 
-        result = _publish_domain_to_dnsaaas(domain)
+        result = _publish_domain_data(domain)
 
         self.assertEqual(
             [{
@@ -75,7 +75,7 @@ class TestDomainUpdateInDNSaaS(TestCase):
     def test_domain_update_returns_technical_owners(self):
         domain = DomainFactory(business_owner=None)
 
-        result = _publish_domain_to_dnsaaas(domain)
+        result = _publish_domain_data(domain)
 
         self.assertEqual(
             [{
@@ -88,6 +88,6 @@ class TestDomainUpdateInDNSaaS(TestCase):
     def test_domain_update_returns_empty_dict_when_no_owners(self):
         domain = DomainFactory(business_owner=None, technical_owner=None)
 
-        result = _publish_domain_to_dnsaaas(domain)
+        result = _publish_domain_data(domain)
 
         self.assertEqual(result, {})

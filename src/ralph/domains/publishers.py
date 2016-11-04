@@ -12,7 +12,7 @@ from ralph.domains.models import Domain
 logger = logging.getLogger(__name__)
 
 
-def _publish_domain_to_dnsaaas(domain):
+def _publish_domain_data(domain):
     owners = []
     if domain.business_owner:
         owners.append({
@@ -42,7 +42,7 @@ if settings.DOMAIN_DATA_UPDATE_TOPIC:
         auto_publish_result=True
     )
     def publish_domain_data(obj):
-        return _publish_domain_to_dnsaaas(obj)
+        return _publish_domain_data(obj)
 
     @receiver(post_save, sender=Domain)
     def post_save_domain(sender, instance, **kwargs):
