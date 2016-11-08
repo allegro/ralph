@@ -49,9 +49,6 @@ class TestDomainValidation(TestCase):
 
 
 class TestDomainUpdateSignal(TestCase):
-    def setUp(self):
-        pass
-
     def test_domain_update_returns_domain_name(self):
         domain = DomainFactory()
 
