@@ -85,9 +85,18 @@ class TestDomainUpdateSignal(TestCase):
             result['owners']
         )
 
-    def test_domain_update_returns_empty_dict_when_no_owners(self):
+    def test_domain_update_returns_empty_owners_when_no_owners(self):
         domain = DomainFactory(business_owner=None, technical_owner=None)
 
         result = _publish_domain_data(domain)
 
-        self.assertEqual(result, {})
+        self.assertEqual(result['owners'], [])
+
+    def test_domain_update_returns_service_uid(self):
+        domain = DomainFactory()
+
+        result = _publish_domain_data(domain)
+
+        self.assertEqual(
+            domain.service.uid, result['service_uid']
+        )

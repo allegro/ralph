@@ -25,12 +25,9 @@ def _publish_domain_data(domain):
             'ownership_type': settings.DOMAIN_OWNER_TYPE['TO'],
         })
 
-    if not owners:
-        logger.debug('no owners for domain: {}'.format(domain.id))
-        return {}
-
     domain_data = {
         'domain_name': domain.name,
+        'service_uid': domain.service.uid,
         'owners': owners,
     }
     return domain_data
