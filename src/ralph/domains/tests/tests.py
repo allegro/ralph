@@ -97,3 +97,12 @@ class TestDomainUpdateSignal(TestCase):
         self.assertEqual(
             domain.service.uid, result['service_uid']
         )
+
+    def test_domain_update_returns_empty_when_no_service(self):
+        domain = DomainFactory()
+        domain.service_env = None
+        domain.save()
+
+        result = _publish_domain_data(domain)
+
+        self.assertEqual(result['service_uid'], '')
