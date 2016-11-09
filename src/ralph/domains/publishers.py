@@ -27,7 +27,7 @@ def _publish_domain_data(domain):
 
     domain_data = {
         'domain_name': domain.name,
-        'service_uid': domain.service.uid,
+        'service_uid': domain.service.uid if domain.service else '',
         'owners': owners,
     }
     return domain_data
