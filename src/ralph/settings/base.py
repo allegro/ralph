@@ -432,6 +432,14 @@ if ENABLE_DNSAAS_INTEGRATION:
     )
 DNSAAS_AUTO_UPDATE_HOST_DNS = bool_from_env('DNSAAS_AUTO_UPDATE_HOST_DNS')
 
+DOMAIN_DATA_UPDATE_TOPIC = os.environ.get(
+    'DOMAIN_DATA_UPDATE_TOPIC', None
+)
+DOMAIN_OWNER_TYPE = {
+    'BO': 'Business Owner',
+    'TO': 'Technical Owner',
+}
+
 
 ENABLE_HERMES_INTEGRATION = bool_from_env('ENABLE_HERMES_INTEGRATION')
 HERMES = json.loads(os.environ.get('HERMES', '{}'))

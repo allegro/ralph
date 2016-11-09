@@ -86,3 +86,7 @@ class BaseObject(
             'class'
         )
     )
+
+    @property
+    def service(self):
+        return self.service_env.service if self.service_env else None
