@@ -30,10 +30,13 @@ def _publish_domain_data(domain):
         'service_uid': domain.service.uid if domain.service else '',
         'owners': owners,
     }
+    logger.info(domain_data)
     return domain_data
 
 
 if settings.DOMAIN_DATA_UPDATE_TOPIC:
+    logger.info('registered: {}'.format(settings.DOMAIN_DATA_UPDATE_TOPIC))
+
     @pyhermes.publisher(
         topic=settings.DOMAIN_DATA_UPDATE_TOPIC,
         auto_publish_result=True
