@@ -272,6 +272,9 @@ class TestAssetsSupportsReport(RalphTestCase):
     def test_asset_relation(self):
         asset_supports = AssetSupportsReport()
         report_result = list(asset_supports.prepare(DataCenterAsset))
+        price_per_object = (
+            self.support.price / self.support.baseobjectssupport_set.count()
+        )
         result = [
             [
                 'baseobject__id', 'baseobject__asset__barcode',
@@ -281,7 +284,9 @@ class TestAssetsSupportsReport(RalphTestCase):
                 'baseobject__asset__invoice_date',
                 'baseobject__asset__invoice_no',
                 'baseobject__asset__property_of', 'support__name',
-                'support__contract_id', 'support__date_to', 'attachments',
+                'support__contract_id', 'support__date_to',
+                'support__date_from', 'support__invoice_date',
+                'support__price', 'supprt_price_per_object', 'attachments',
             ],
             [
                 str(self.dc_1.id), self.dc_1.barcode, self.dc_1.sn,
@@ -289,6 +294,9 @@ class TestAssetsSupportsReport(RalphTestCase):
                 str(self.dc_1.invoice_date), str(self.dc_1.invoice_no),
                 self.dc_1.property_of.name, self.support.name,
                 self.support.contract_id, str(self.support.date_to),
+                str(self.support.date_from), str(self.support.invoice_date),
+                '{0:.2f}'.format(self.support.price),
+                '{0:.2f}'.format(price_per_object),
                 'http://127.0.0.1:8000' + reverse('serve_attachment', kwargs={
                     'id': self.attachment.id,
                     'filename': self.attachment.original_filename
@@ -300,6 +308,9 @@ class TestAssetsSupportsReport(RalphTestCase):
                 str(self.dc_2.invoice_date), str(self.dc_2.invoice_no),
                 self.dc_2.property_of.name, self.support.name,
                 self.support.contract_id, str(self.support.date_to),
+                str(self.support.date_from), str(self.support.invoice_date),
+                '{0:.2f}'.format(self.support.price),
+                '{0:.2f}'.format(price_per_object),
                 'http://127.0.0.1:8000' + reverse('serve_attachment', kwargs={
                     'id': self.attachment.id,
                     'filename': self.attachment.original_filename
@@ -310,14 +321,14 @@ class TestAssetsSupportsReport(RalphTestCase):
 
     def test_num_queries_dc(self):
         assets_support_report = AssetSupportsReport()
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(5):
             list(assets_support_report.prepare(
                 DataCenterAsset)
             )
 
     def test_num_queries_bo(self):
         assets_support_report = AssetSupportsReport()
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(5):
             list(assets_support_report.prepare(
                 BackOfficeAsset)
             )

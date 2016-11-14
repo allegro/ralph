@@ -374,7 +374,7 @@ class AssetSupportsReport(BaseRelationsReport):
     name = _('Asset - supports')
     description = _('Assets with assigned supports')
     filename = 'asset_supports.csv'
-    extra_headers = ['attachments']
+    extra_headers = ['supprt_price_per_object', 'attachments']
     # TODO(mkurek): allow for fields aliases in headers (ex. use tuple with
     # (field_name, header_name))
     # TODO(mkurek): unify these reports
@@ -385,6 +385,7 @@ class AssetSupportsReport(BaseRelationsReport):
         'baseobject__asset__invoice_date', 'baseobject__asset__invoice_no',
         'baseobject__asset__property_of', 'support__name',
         'support__contract_id', 'support__date_to',
+        'support__date_from', 'support__invoice_date', 'support__price'
     ]
     dc_select_related = [
         'baseobject__asset__datacenterasset',
@@ -394,6 +395,7 @@ class AssetSupportsReport(BaseRelationsReport):
         'baseobject__asset__invoice_date', 'baseobject__asset__invoice_no',
         'baseobject__asset__property_of', 'support__name',
         'support__contract_id', 'support__date_to',
+        'support__date_from', 'support__invoice_date', 'support__price'
     ]
     bo_select_related = [
         'baseobject__asset__backofficeasset',
@@ -403,11 +405,12 @@ class AssetSupportsReport(BaseRelationsReport):
         queryset = BaseObjectsSupport.objects.select_related(
             'support',
             'baseobject__asset__property_of',
-            'baseobject__service_env__service',
+            'baseobject__service_env__service'
         ).prefetch_related(
             # AttachmentItem is attached to BaseObject (by content type),
             # so we need to prefetch attachments through base object of support
-            'support__baseobject_ptr__attachments__attachment'
+            'support__baseobject_ptr__attachments__attachment',
+            'support__baseobjectssupport_set',
         )
         headers = []
         select_related = []
@@ -438,7 +441,21 @@ class AssetSupportsReport(BaseRelationsReport):
         """
         Call extra methods for object.
         """
-        return [self._get_attachment_urls(obj.support.baseobject_ptr)]
+        return [
+            self._get_supprt_price_per_object(obj.support),
+            self._get_attachment_urls(obj.support.baseobject_ptr)
+        ]
+
+    def _get_supprt_price_per_object(self, obj):
+        """
+        Return support price per base objects.
+        """
+        # Intentional used len(), so that django for the count()
+        # performs additional SQL query.
+        bo_count = len(obj.baseobjectssupport_set.all())
+        if bo_count > 0 and obj.price > 0:
+            return '{0:.2f}'.format(obj.price / bo_count)
+        return '0.00'
 
     def _get_attachment_urls(self, obj):
         """
