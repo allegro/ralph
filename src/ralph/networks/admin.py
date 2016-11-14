@@ -279,7 +279,8 @@ class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
         }),
         (_('Additional info'), {
             'fields': [
-                'hostname', 'is_management', 'is_public', 'is_gateway'
+                'hostname', 'is_management', 'is_public', 'is_gateway',
+                'dhcp_expose'
             ]
         }),
     )
