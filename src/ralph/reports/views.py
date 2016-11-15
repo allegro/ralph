@@ -453,7 +453,7 @@ class AssetSupportsReport(BaseRelationsReport):
         # Intentional used len(), so that django for the count()
         # performs additional SQL query.
         bo_count = len(obj.baseobjectssupport_set.all())
-        if bo_count > 0 and obj.price > 0:
+        if bo_count > 0 and obj.price and obj.price > 0:
             return '{0:.2f}'.format(obj.price / bo_count)
         return '0.00'
 
