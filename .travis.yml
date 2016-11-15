@@ -34,7 +34,7 @@ python:
     # - "3.5"  # temporary removed to speedup biuld (python3.4 should be now used on production)
 
 before_install:
-    - pip install flake8 isort
+    - pip install flake8==3.0.4 isort
     - make flake
     - export RALPH_VERSION=$(cat VERSION)
     - export REDIS_PORT=6379

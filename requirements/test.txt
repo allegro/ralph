@@ -5,7 +5,7 @@ coverage
 coveralls
 ddt
 django-plainpasswordhasher
-flake8
+flake8==3.0.4
 sphinx
-flake8-debugger
-flake8-print
+flake8-debugger==1.4.0
+flake8-print==2.0.2
