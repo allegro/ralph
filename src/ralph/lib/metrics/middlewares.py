@@ -62,9 +62,10 @@ class RequestMetricsMiddleware(object):
         processing_time = int(
             (time.time() - request._request_start_time) * 1000
         )
-        logger.info('Processing time [ms]: {}'.format(processing_time), extra={
-            'processing_time': processing_time, **common_log_params
-        })
+        logger.info(
+            'Processing time [ms]: {}'.format(processing_time),
+            extra=dict(processing_time=processing_time, **common_log_params)
+        )
         processing_timer = Metrology.timer(processing_time_metric_name)
         processing_timer.update(processing_time)  # in miliseconds
 
@@ -75,18 +76,20 @@ class RequestMetricsMiddleware(object):
             queries_time += float(q.get('time', 0.0)) * 1000
             queries_count += 1
 
-        logger.info('DB queries count: {}'.format(queries_count), extra={
-            'db_queries_count': queries_count, **common_log_params
-        })
+        logger.info(
+            'DB queries count: {}'.format(queries_count),
+            extra=dict(db_queries_count=queries_count, **common_log_params)
+        )
         db_queries_count_metric_name = METRIC_NAME_TMPL.format(
             prefix=DB_QUERIES_COUNT_METRIC_PREFIX, **common_log_params
         )
         db_queries_counter = Metrology.meter(db_queries_count_metric_name)
         db_queries_counter.mark(value=queries_count)
 
-        logger.info('DB queries time [ms]: {}'.format(queries_time), extra={
-            'db_queries_time': queries_time, **common_log_params
-        })
+        logger.info(
+            'DB queries time [ms]: {}'.format(queries_time),
+            extra=dict(db_queries_time=queries_time, **common_log_params)
+        )
         db_queries_time_metric_name = METRIC_NAME_TMPL.format(
             prefix=DB_QUERIES_TIME_METRIC_PREFIX, **common_log_params
         )
