@@ -12,6 +12,7 @@ from ralph.data_center.tests.factories import (
     ClusterFactory,
     ClusterTypeFactory,
     DataCenterAssetFactory,
+    DataCenterAssetModelFactory,
     RackFactory
 )
 from ralph.networks.models import IPAddress
@@ -90,6 +91,18 @@ class DataCenterAssetTest(RalphTestCase):
         slot_no_field = self.dc_asset._meta.get_field_by_name('slot_no')[0]
         with self.assertRaises(ValidationError):
             slot_no_field.clean(slot_no, self.dc_asset)
+
+    def test_should_raise_validation_error_when_slot_no_is_busy(self):
+        model = DataCenterAssetModelFactory(has_parent=True)
+        DataCenterAssetFactory(
+            parent=self.dc_asset, slot_no=1, model=model
+        )
+        dc_asset = DataCenterAssetFactory(
+            parent=self.dc_asset, model=model
+        )
+        dc_asset.slot_no = 1
+        with self.assertRaises(ValidationError):
+            dc_asset.clean()
 
     def test_should_raise_validation_error_when_empty_slot_no_on_blade(self):
         dc_asset = DataCenterAssetFactory(model__has_parent=True)

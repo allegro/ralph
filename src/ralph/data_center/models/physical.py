@@ -18,6 +18,7 @@ from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.functional import cached_property
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Region
@@ -602,6 +603,26 @@ class DataCenterAsset(
                         'Slot number cannot be filled when asset is not blade'
                     )
                 })
+            if self.parent:
+                dc_asset_with_slot_no = DataCenterAsset.objects.filter(
+                    parent=self.parent, slot_no=self.slot_no
+                ).exclude(pk=self.pk).first()
+                if dc_asset_with_slot_no:
+                    message = mark_safe(
+                        (
+                            'Slot is already occupied by: '
+                            '<a href="{}" target="_blank">{}</a>'
+                        ).format(
+                            reverse(
+                                'admin:data_center_datacenterasset_change',
+                                args=[dc_asset_with_slot_no.id]
+                            ),
+                            dc_asset_with_slot_no
+                        )
+                    )
+                    raise ValidationError({
+                        'slot_no': message
+                    })
 
     def clean(self):
         # TODO: this should be default logic of clean method;
