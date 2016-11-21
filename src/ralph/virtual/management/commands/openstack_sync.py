@@ -291,8 +291,7 @@ class Command(BaseCommand):
                     name=provider_name,
                 )
                 self._save_object(
-                    self.cloud_provider,
-                    'Add {} CloudProvider'.format(self.openstack_provider_name)
+                    cloud_provider, 'Add {} CloudProvider'.format(provider_name)
                 )
             return cloud_provider
         self.cloud_provider = _get_or_create(self.openstack_provider_name)
