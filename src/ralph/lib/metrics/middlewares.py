@@ -41,7 +41,7 @@ class RequestMetricsMiddleware(object):
     """
 
     def process_request(self, request):
-        request._request_start_time = time.time()
+        request._request_start_time = time.monotonic()
 
     def _collect_metrics(self, request, response):
         try:
@@ -60,7 +60,7 @@ class RequestMetricsMiddleware(object):
             prefix=PROCESSING_TIME_METRIC_PREFIX, **common_log_params
         )
         processing_time = int(
-            (time.time() - request._request_start_time) * 1000
+            (time.monotonic() - request._request_start_time) * 1000
         )
         logger.info(
             'Processing time [ms]: {}'.format(processing_time),
