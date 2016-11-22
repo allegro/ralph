@@ -39,7 +39,7 @@ except ImportError:
     nova_client_exists = False
 
 
-DEFAULT_OPENSTACK_PROVIDER_NAME = 'openstack'
+DEFAULT_OPENSTACK_PROVIDER_NAME = settings.DEFAULT_OPENSTACK_PROVIDER_NAME
 
 
 class EmptyListError(Exception):

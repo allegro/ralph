@@ -379,7 +379,9 @@ INVENTORY_TAG_APPEND_DATE = bool_from_env('INVENTORY_TAG_APPEND_DATE', True)
 MAP_IMPORTED_ID_TO_NEW_ID = False
 
 OPENSTACK_INSTANCES = json.loads(os.environ.get('OPENSTACK_INSTANCES', '[]'))
-
+DEFAULT_OPENSTACK_PROVIDER_NAME = os.environ.get(
+    'DEFAULT_OPENSTACK_PROVIDER_NAME', 'openstack'
+)
 # issue tracker url for Operations urls (issues ids) - should end with /
 ISSUE_TRACKER_URL = os.environ.get('ISSUE_TRACKER_URL', '')
 
