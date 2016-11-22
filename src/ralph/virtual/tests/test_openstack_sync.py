@@ -2,6 +2,7 @@
 from datetime import datetime
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.test.utils import override_settings
 
 from ralph.assets.models.components import ComponentModel
 from ralph.assets.tests.factories import DataCenterAssetModelFactory
@@ -13,6 +14,7 @@ from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
     CloudProject,
+    CloudProvider,
     VirtualComponent
 )
 from ralph.virtual.tests.factories import (
@@ -148,3 +150,49 @@ class TestOpenstackSync(RalphTestCase):
         self.cmd._cleanup_servers({}, self.cloud_project.project_id)
         # cloud instance in cloud_project had 2 ip addresses
         self.assertEqual(IPAddress.objects.count(), ips_count - 2)
+
+    @override_settings(OPENSTACK_INSTANCES=[
+        {
+            'username': 'root',
+            'password': 'root',
+            'tenant_name': 'admin',
+            'version': '2.0',
+            'auth_url': 'http://10.20.30.41:1111/v2.0/',
+            'tag': 'my_os',
+            'network_regex': '.*',
+        },
+        {
+            'username': 'root',
+            'password': 'root',
+            'tenant_name': 'admin2',
+            'version': '2.0',
+            'auth_url': 'http://10.20.30.42:1111/v2.0/',
+            'tag': 'my_os_2',
+            'network_regex': '.*',
+            'provider': 'openstack',
+        },
+        {
+            'username': 'root',
+            'password': 'root',
+            'tenant_name': 'admin3',
+            'version': '2.0',
+            'auth_url': 'http://10.20.30.43:1111/v2.0/',
+            'tag': 'my_os_3',
+            'network_regex': '.*',
+            'provider': 'my-own-openstack'
+        },
+    ])
+    def test_non_default_provider(self):
+        tenants = [
+            os['tenant_name'] for os in self.cmd._get_instances_from_settings()
+        ]
+        self.assertCountEqual(tenants, ['admin', 'admin2'])
+        self.cmd.openstack_provider_name = 'my-own-openstack'
+        self.cmd._get_cloud_provider()
+        self.assertTrue(
+            CloudProvider.objects.filter(name='my-own-openstack').exists()
+        )
+        tenants = [
+            os['tenant_name'] for os in self.cmd._get_instances_from_settings()
+        ]
+        self.assertCountEqual(tenants, ['admin3'])
