@@ -104,6 +104,18 @@ class DataCenterAssetTest(RalphTestCase):
         with self.assertRaises(ValidationError):
             dc_asset.clean()
 
+    def test_should_pass_when_slot_no_is_busy_but_different_orientation(self):
+        model = DataCenterAssetModelFactory(has_parent=True)
+        DataCenterAssetFactory(
+            parent=self.dc_asset, slot_no=1, model=model,
+            orientation=Orientation.back,
+        )
+        dc_asset = DataCenterAssetFactory(
+            parent=self.dc_asset, model=model
+        )
+        dc_asset.slot_no = 1
+        dc_asset._validate_slot_no()
+
     def test_should_raise_validation_error_when_empty_slot_no_on_blade(self):
         dc_asset = DataCenterAssetFactory(model__has_parent=True)
         dc_asset.slot_no = ''

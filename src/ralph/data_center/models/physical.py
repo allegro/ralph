@@ -605,7 +605,8 @@ class DataCenterAsset(
                 })
             if self.parent:
                 dc_asset_with_slot_no = DataCenterAsset.objects.filter(
-                    parent=self.parent, slot_no=self.slot_no
+                    parent=self.parent, slot_no=self.slot_no,
+                    orientation=self.orientation,
                 ).exclude(pk=self.pk).first()
                 if dc_asset_with_slot_no:
                     message = mark_safe(
