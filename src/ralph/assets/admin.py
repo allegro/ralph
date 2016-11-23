@@ -151,6 +151,20 @@ class ServiceBaseObjects(RalphDetailView):
         )
         return context
 
+    def get_object(self, model, pk):
+        if pk.isdigit():
+            query = {'pk': pk}
+        else:
+            query = {'uid': pk}
+
+        return model.objects.get(**query)
+
+    @classmethod
+    def get_url_pattern(cls, model):
+        return r'^{}/{}/(?P<pk>[\w-]+)/{}/$'.format(
+            model._meta.app_label, model._meta.model_name, cls.url_name
+        )
+
 
 @register(Service)
 class ServiceAdmin(RalphAdmin):
