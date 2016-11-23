@@ -2,6 +2,7 @@
 from copy import copy
 
 from django.core.exceptions import ImproperlyConfigured
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 
 from ralph.admin.mixins import (
@@ -144,8 +145,14 @@ class RalphDetailView(
     extra_view_base_template = 'admin/extra_views/base_change.html'
     summary_fields = None
 
+    def get_object(self, model, pk):
+        return model.objects.get(pk=pk)
+
     def dispatch(self, request, model, pk, *args, **kwargs):
-        self.object = get_object_or_404(model, pk=pk)
+        try:
+            self.object = self.get_object(model, pk)
+        except model.DoesNotExist:
+            raise Http404
         return super().dispatch(request, model, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
