@@ -408,6 +408,7 @@ class TestRenderSlash(TestCase):
         ('{{done_url}}', 'http://127.0.0.1:8000/deployment/{}/mark_as_done'),
         ('{{initrd}}', 'http://127.0.0.1:8000/deployment/{}/initrd'),
         ('{{kernel}}', 'http://127.0.0.1:8000/deployment/{}/kernel'),
+        ('{{netboot}}', 'http://127.0.0.1:8000/deployment/{}/netboot'),
         ('{{kickstart}}', 'http://127.0.0.1:8000/deployment/{}/kickstart'),
         ('{{ralph_instance}}', 'http://127.0.0.1:8000/'),
     )
@@ -424,6 +425,7 @@ class TestRenderSlash(TestCase):
         ('{{done_url}}', 'http://127.0.0.1:8000/deployment/{}/mark_as_done'),
         ('{{initrd}}', 'http://127.0.0.1:8000/deployment/{}/initrd'),
         ('{{kernel}}', 'http://127.0.0.1:8000/deployment/{}/kernel'),
+        ('{{netboot}}', 'http://127.0.0.1:8000/deployment/{}/netboot'),
         ('{{kickstart}}', 'http://127.0.0.1:8000/deployment/{}/kickstart'),
         ('{{ralph_instance}}', 'http://127.0.0.1:8000'),
     )

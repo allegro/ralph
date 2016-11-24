@@ -49,6 +49,13 @@ def _render_configuration(configuration, deployment, disable_reverse=False):
                 kwargs={'deployment_id': deployment.id, 'file_type': 'kernel'}
             ),
         ),
+        'netboot': urljoin(
+            ralph_instance,
+            url(
+                'deployment_files',
+                kwargs={'deployment_id': deployment.id, 'file_type': 'netboot'}
+            ),
+        ),
         'dc': deployment.obj.rack.server_room.data_center.name,
         'domain': (
             deployment.obj.network_environment.domain
