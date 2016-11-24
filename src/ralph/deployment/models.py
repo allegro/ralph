@@ -24,6 +24,7 @@ class PrebootItemType(Choices):
     LINUX = Choices.Group(0)
     kernel = _('kernel')
     initrd = _('initrd')
+    netboot = _('netboot')
 
     CONFIGURATION = Choices.Group(40)
     ipxe = _('iPXE')
@@ -77,6 +78,7 @@ All newline characters will be converted to Unix \\n newlines.
 <br>  - hostname (eg. 'ralph123.dc1.mydc.net')
 <br>  - initrd (eg. '{ralph_instance}/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/initrd')
 <br>  - kernel (eg. '{ralph_instance}/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/kernel')
+<br>  - netboot (eg. '{ralph_instance}/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/netboot')
 <br>  - kickstart (eg. '{ralph_instance}/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/kickstart')
 <br>  - ralph_instance (eg. '{ralph_instance}')
 <br>  - service_env (eg. 'Backup systems - prod')

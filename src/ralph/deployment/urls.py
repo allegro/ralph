@@ -19,7 +19,7 @@ urlpatterns = [
         name='deployment_kickstart'
     ),
     url(
-        r'^(?P<deployment_id>[-\w]+)/(?P<file_type>kernel|initrd)$',
+        r'^(?P<deployment_id>[-\w]+)/(?P<file_type>kernel|initrd|netboot)$',
         files,
         name='deployment_files'
     ),

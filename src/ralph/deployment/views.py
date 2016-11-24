@@ -101,7 +101,7 @@ def files(request, file_type, deployment_id):
     """Redirect client to server with static.
 
     Args:
-        file_type (choices): kernel|initrd - type of file
+        file_type (choices): kernel|initrd|netboot - type of file
         deployment_id (string): deployment's UUID
 
     Returns:
