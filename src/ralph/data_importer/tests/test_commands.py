@@ -12,8 +12,6 @@ from ralph.assets.models.assets import (
     Service,
     ServiceEnvironment
 )
-from ralph.networks.models import IPAddress
-
 from ralph.assets.models.choices import ObjectModelType
 from ralph.back_office.models import BackOfficeAsset, Warehouse
 from ralph.data_center.models import DataCenterAsset
@@ -22,6 +20,7 @@ from ralph.data_center.tests.factories import DataCenterFactory, RackFactory
 from ralph.data_importer.management.commands import importer
 from ralph.data_importer.models import ImportedObjects
 from ralph.data_importer.resources import AssetModelResource
+from ralph.networks.models import IPAddress
 
 
 class DataImporterTestCase(TestCase):
@@ -308,7 +307,7 @@ class DataImporterTestCase(TestCase):
         ).exists())
 
 
-    def test_data_center_asset_is_imported_when_ip_management_is_not_existing(
+    def test_data_center_asset_is_imported_when_ip_management_is_missing(
         self
     ):
         RackFactory()
@@ -336,7 +335,7 @@ class DataImporterTestCase(TestCase):
             '10.0.0.103'
         )
 
-    def test_data_center_asset_is_imported_when_ip_management_is_exsisting(
+    def test_data_center_asset_is_imported_when_ip_management_exists(
         self
     ):
         IPAddress.objects.create(address='10.0.0.103')
