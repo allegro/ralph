@@ -253,6 +253,25 @@ class IPAddressResource(RalphModelResource):
         return False
 
 
+class MyWidget(widgets.ManyToManyWidget):
+    #TODO::expalin why many to many but not
+    def clean(self, value):
+        try:
+            ip = networks.IPAddress.objects.get(address=value)
+        except networks.IPAddres.DoesNotExist:
+            ip = networks.IPAddress.objects.create(address=value)
+        qry = networks.IPAddress.objects.filter(id=ip.id)
+        print('clean', qry)
+        return qry
+
+    def render(self, value):
+        if not value:
+            return ''
+        #TODO:: make rest of examples working
+        #ids = [smart_text(getattr(obj, self.field)) for obj in value.all()]
+        #kreturn self.separator.join(ids)
+
+
 class DataCenterAssetResource(RalphModelResource):
     parent = fields.Field(
         column_name='parent',
@@ -282,7 +301,9 @@ class DataCenterAssetResource(RalphModelResource):
     management_ip = fields.Field(
         column_name='management_ip',
         attribute='management_ip',
-        widget=NullStringWidget(),
+        #widget=widgets.ManyToManyWidget(model=networks.IPAddress),
+        widget=MyWidget(model=networks.IPAddress),
+        #widget=NullStringWidget(),
     )
 
     class Meta:

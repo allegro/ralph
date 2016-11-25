@@ -74,6 +74,13 @@ class WithManagementIPMixin(object):
 
     @management_ip.setter
     def management_ip(self, value):
+        #TODO:: explain it
+        from django.db.models import QuerySet
+        if isinstance(value, QuerySet):
+            value = value.get()
+        if isinstance(value, IPAddress):
+            value = value.address
+
         current_mgmt = self.management_ip
         # if new management ip value is different than previous, remove previous
         # IP entry to not try to change it's value
