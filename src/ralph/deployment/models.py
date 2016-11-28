@@ -29,6 +29,8 @@ class PrebootItemType(Choices):
     CONFIGURATION = Choices.Group(40)
     ipxe = _('iPXE')
     kickstart = _('kickstart')
+    preseed = _('preseed')
+    script = _('script')
 
     OTHER = Choices.Group(100)
     other = _('other')
@@ -80,6 +82,8 @@ All newline characters will be converted to Unix \\n newlines.
 <br>  - kernel (eg. '{ralph_instance}/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/kernel')
 <br>  - netboot (eg. '{ralph_instance}/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/netboot')
 <br>  - kickstart (eg. '{ralph_instance}/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/kickstart')
+<br>  - preseed (eg. '{ralph_instance}/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/preseed')
+<br>  - script (eg. '{ralph_instance}/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/script')
 <br>  - ralph_instance (eg. '{ralph_instance}')
 <br>  - service_env (eg. 'Backup systems - prod')
 <br>  - service_uid (eg. 'sc-123')

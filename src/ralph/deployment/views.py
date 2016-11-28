@@ -66,23 +66,24 @@ def ipxe(request, deployment_id=None):
     return HttpResponse(configuration, content_type='text/plain')
 
 
-def kickstart(request, deployment_id):
-    """View returns rendered kickstart configuration.
+def config(request, deployment_id, config_type):
+    """View returns rendered config configuration.
 
     Args:
         deployment_id (string): deployment's UUID
+        config_type (choices): kickstart|preseed|script - type of config
 
     Returns:
-        HttpResponse: rendered kickstart
+        HttpResponse: rendered config
 
     Raises:
         Http404: if deployment with specified UUID doesn't exist
     """
     preboot = _get_preboot(deployment_id)
-    configuration = preboot.get_configuration('kickstart')
+    configuration = preboot.get_configuration(config_type)
     if configuration is None:
-        logger.warning('Kickstart for deployment {} doesn\'t exist'.format(
-            deployment_id
+        logger.warning('{} for deployment {} doesn\'t exist'.format(
+            config_type, deployment_id
         ))
         raise Http404
     deployment = get_object_or_404_with_message(
