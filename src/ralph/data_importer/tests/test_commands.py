@@ -307,7 +307,62 @@ class DataImporterTestCase(TestCase):
         ).exists())
 
 
-    def test_data_center_asset_is_imported_when_ip_management_is_missing(
+class IPManagementTestCase(TestCase):
+    def setUp(self):  # noqa
+        self.base_dir = os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__))
+        )
+
+        asset_model = AssetModel()
+        asset_model.name = "asset_model_1"
+        asset_model.type = ObjectModelType.back_office
+        asset_model.save()
+        asset_content_type = ContentType.objects.get_for_model(AssetModel)
+        ImportedObjects.objects.create(
+            content_type=asset_content_type,
+            object_pk=asset_model.pk,
+            old_object_pk=1
+        )
+
+        warehouse = Warehouse()
+        warehouse.name = "warehouse_1"
+        warehouse.save()
+
+        warehouse_content_type = ContentType.objects.get_for_model(Warehouse)
+        ImportedObjects.objects.create(
+            content_type=warehouse_content_type,
+            object_pk=warehouse.pk,
+            old_object_pk=1
+        )
+
+        environment = Environment()
+        environment.name = "environment_1"
+        environment.save()
+
+        service = Service()
+        service.name = "service_1"
+        service.save()
+
+        service_environment = ServiceEnvironment()
+        service_environment.environment = environment
+        service_environment.service = service
+        service_environment.save()
+
+        region = Region(name='region_1')
+        region.save()
+        region_content_type = ContentType.objects.get_for_model(region)
+        ImportedObjects.objects.create(
+            content_type=region_content_type,
+            object_pk=region.pk,
+            old_object_pk=1
+        )
+
+        user_model = get_user_model()
+        for user in ('iron.man', 'superman', 'james.bond', 'sherlock.holmes'):
+            user_model.objects.create(username=user)
+
+
+    def test_data_center_asset_is_imported_when_ip_management_is_created(
         self
     ):
         RackFactory()
@@ -335,7 +390,7 @@ class DataImporterTestCase(TestCase):
             '10.0.0.103'
         )
 
-    def test_data_center_asset_is_imported_when_ip_management_exists(
+    def test_data_center_asset_is_imported_when_ip_management_is_reused(
         self
     ):
         IPAddress.objects.create(address='10.0.0.103')
@@ -362,4 +417,24 @@ class DataImporterTestCase(TestCase):
         self.assertTrue(
             DataCenterAsset.objects.get().ethernet_set.get().ipaddress.address,
             '10.0.0.103'
+        )
+
+    def test_data_center_asset_is_imported_when_ip_management_is_blank(
+        self
+    ):
+        RackFactory()
+
+        xlsx_path = os.path.join(
+            self.base_dir, 'tests/samples/management_ip_blank.csv'
+        )
+        management.call_command(
+            'importer',
+            xlsx_path,
+            type='file',
+            model_name='DataCenterAsset',
+            map_imported_id_to_new_id=False,
+        )
+
+        self.assertTrue(
+            DataCenterAsset.objects.get(hostname='EMC1-3')
         )

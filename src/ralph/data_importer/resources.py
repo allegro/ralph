@@ -258,10 +258,11 @@ class MyWidget(widgets.ManyToManyWidget):
     def clean(self, value):
         try:
             ip = networks.IPAddress.objects.get(address=value)
-        except networks.IPAddres.DoesNotExist:
+        except networks.IPAddress.DoesNotExist:
             ip = networks.IPAddress.objects.create(address=value)
         qry = networks.IPAddress.objects.filter(id=ip.id)
-        print('clean', qry)
+        #qry = value
+        print('\nclean', qry)
         return qry
 
     def render(self, value):
