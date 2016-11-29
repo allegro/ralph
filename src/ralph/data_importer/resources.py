@@ -21,8 +21,8 @@ from ralph.data_importer.widgets import (
     BaseObjectManyToManyWidget,
     BaseObjectWidget,
     ImportedForeignKeyWidget,
+    IPManagementWidget,
     ManyToManyThroughWidget,
-    NullStringWidget,
     UserManyToManyWidget,
     UserWidget
 )
@@ -282,7 +282,7 @@ class DataCenterAssetResource(RalphModelResource):
     management_ip = fields.Field(
         column_name='management_ip',
         attribute='management_ip',
-        widget=NullStringWidget(),
+        widget=IPManagementWidget(model=networks.IPAddress),
     )
 
     class Meta:

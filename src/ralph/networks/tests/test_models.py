@@ -1,6 +1,6 @@
 from ipaddress import ip_address, ip_network
 
-from mock import patch
+from unittest.mock import patch
 
 from ddt import data, ddt, unpack
 from django.core.exceptions import ValidationError

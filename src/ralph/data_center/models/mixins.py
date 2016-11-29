@@ -74,6 +74,11 @@ class WithManagementIPMixin(object):
 
     @management_ip.setter
     def management_ip(self, value):
+        if not value:
+            # this if allows to import datacenter without management ip
+            del self.management_ip
+            return
+
         current_mgmt = self.management_ip
         # if new management ip value is different than previous, remove previous
         # IP entry to not try to change it's value
