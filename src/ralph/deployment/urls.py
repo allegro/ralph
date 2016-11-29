@@ -14,7 +14,7 @@ urlpatterns = [
         name='deployment_ipxe'
     ),
     url(
-        r'^(?P<deployment_id>[-\w]+)/(?P<config_type>kickstart|preseed|script)$',
+        r'^(?P<deployment_id>[-\w]+)/(?P<config_type>kickstart|preseed|script)$',  # noqa: E501
         config,
         name='deployment_config'
     ),
