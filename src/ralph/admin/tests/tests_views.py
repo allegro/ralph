@@ -147,7 +147,11 @@ class ViewsTest(TestCase):
 
             with CaptureQueriesContext(connections['default']) as cqc:
                 change_list = model_admin.changelist_view(self.request)
-                self.assertEqual(query_count, len(cqc))
+                self.assertEqual(
+                    query_count,
+                    len(cqc),
+                    'Different query count for {}'.format(model_class_path)
+                )
                 self.assertFalse(len(cqc) > SQL_QUERY_LIMIT)
 
             if model_class_path not in EXCLUDE_ADD_VIEW:
