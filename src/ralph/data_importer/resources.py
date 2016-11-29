@@ -256,14 +256,7 @@ class IPAddressResource(RalphModelResource):
 class MyWidget(widgets.ManyToManyWidget):
     #TODO::expalin why many to many but not
     def clean(self, value):
-        try:
-            ip = networks.IPAddress.objects.get(address=value)
-        except networks.IPAddress.DoesNotExist:
-            ip = networks.IPAddress.objects.create(address=value)
-        qry = networks.IPAddress.objects.filter(id=ip.id)
-        #qry = value
-        print('\nclean', qry)
-        return qry
+        return value
 
     def render(self, value):
         if not value:
