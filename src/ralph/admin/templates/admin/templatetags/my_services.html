@@ -29,7 +29,7 @@
                 </a>
               </td>
               <td>
-                {% regroup service_env.baseobject_set.all by content_type as content_types %}
+                {% regroup service_env.baseobject_set.all by content_type_id as content_types %}
                 {% for type in content_types %}
                   <ul>
                     <li>{% get_objects_summary service_env type.grouper type.list %}</li>
