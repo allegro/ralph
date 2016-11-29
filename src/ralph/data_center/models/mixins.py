@@ -76,6 +76,7 @@ class WithManagementIPMixin(object):
     def management_ip(self, value):
         if not value:
             # this if allows to import datacenter without management ip
+            del self.management_ip
             return
 
         current_mgmt = self.management_ip
