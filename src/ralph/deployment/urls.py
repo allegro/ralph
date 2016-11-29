@@ -1,6 +1,6 @@
 from django.conf.urls import url
 
-from ralph.deployment.views import done_ping, files, ipxe, kickstart
+from ralph.deployment.views import config, done_ping, files, ipxe
 
 urlpatterns = [
     url(
@@ -14,9 +14,9 @@ urlpatterns = [
         name='deployment_ipxe'
     ),
     url(
-        r'^(?P<deployment_id>[-\w]+)/kickstart$',
-        kickstart,
-        name='deployment_kickstart'
+        r'^(?P<deployment_id>[-\w]+)/(?P<config_type>kickstart|preseed|script)$',  # noqa: E501
+        config,
+        name='deployment_config'
     ),
     url(
         r'^(?P<deployment_id>[-\w]+)/(?P<file_type>kernel|initrd|netboot)$',

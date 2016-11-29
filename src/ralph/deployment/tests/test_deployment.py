@@ -410,6 +410,8 @@ class TestRenderSlash(TestCase):
         ('{{kernel}}', 'http://127.0.0.1:8000/deployment/{}/kernel'),
         ('{{netboot}}', 'http://127.0.0.1:8000/deployment/{}/netboot'),
         ('{{kickstart}}', 'http://127.0.0.1:8000/deployment/{}/kickstart'),
+        ('{{preseed}}', 'http://127.0.0.1:8000/deployment/{}/preseed'),
+        ('{{script}}', 'http://127.0.0.1:8000/deployment/{}/script'),
         ('{{ralph_instance}}', 'http://127.0.0.1:8000/'),
     )
     def test_single_slash_when_ralph_instance_has_one(
@@ -427,6 +429,8 @@ class TestRenderSlash(TestCase):
         ('{{kernel}}', 'http://127.0.0.1:8000/deployment/{}/kernel'),
         ('{{netboot}}', 'http://127.0.0.1:8000/deployment/{}/netboot'),
         ('{{kickstart}}', 'http://127.0.0.1:8000/deployment/{}/kickstart'),
+        ('{{preseed}}', 'http://127.0.0.1:8000/deployment/{}/preseed'),
+        ('{{script}}', 'http://127.0.0.1:8000/deployment/{}/script'),
         ('{{ralph_instance}}', 'http://127.0.0.1:8000'),
     )
     def test_single_slash_when_ralph_instance_has_no_slash(

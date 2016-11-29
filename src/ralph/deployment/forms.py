@@ -28,7 +28,9 @@ class PrebootConfigurationForm(RalphAdminFormMixin, forms.ModelForm):
     def clean_configuration(self):
         configuration_type = self.cleaned_data.get('type')
         configuration = self.cleaned_data.get('configuration')
-        if configuration_type == PrebootItemType.kickstart.id:
+        if configuration_type in (
+            PrebootItemType.kickstart.id, PrebootItemType.preseed.id
+        ):
             if 'done_url' not in configuration:
                 raise forms.ValidationError(
                     'Please specify {{ done_url }} (e.g. curl {{ done_url }})'

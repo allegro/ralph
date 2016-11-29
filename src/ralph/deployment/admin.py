@@ -31,6 +31,8 @@ class PrebootConfigurationAdmin(PrebootItemAdmin):
             )
         }),
     )
+    list_filter = ['type']
+    list_display = ['name', 'type', 'description']
 
 
 @register(PrebootFile)
@@ -47,6 +49,8 @@ class PrebootFileAdmin(PrebootItemAdmin):
             )
         }),
     )
+    list_filter = ['type']
+    list_display = ['name', 'type', 'description']
 
 
 @register(Preboot)
@@ -65,6 +69,9 @@ class PrebootAdmin(RalphAdmin):
             )
         }),
     )
+    list_display = ['name', 'description', 'used_counter']
+    search_fields = ['name', 'description']
+    list_filter = ['name']
 
 
 @register(Deployment)
