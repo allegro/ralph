@@ -31,8 +31,6 @@ def _publish_domain_data(domain):
         'owners': owners,
     }
     logger.info(domain_data)
-    from pprint import pprint
-    pprint(domain_data)
     return domain_data
 
 
