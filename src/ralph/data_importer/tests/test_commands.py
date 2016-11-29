@@ -16,14 +16,16 @@ from ralph.assets.models.choices import ObjectModelType
 from ralph.back_office.models import BackOfficeAsset, Warehouse
 from ralph.data_center.models import DataCenterAsset
 from ralph.data_center.models.physical import DataCenter, Rack, ServerRoom
-from ralph.data_center.tests.factories import DataCenterFactory, RackFactory
+from ralph.data_center.tests.factories import DataCenterFactory
 from ralph.data_importer.management.commands import importer
 from ralph.data_importer.models import ImportedObjects
 from ralph.data_importer.resources import AssetModelResource
 from ralph.networks.models import IPAddress
 
 
-class DataImporterMixin(object):
+class DataImporterTestCase(TestCase):
+    """TestCase data importer command."""
+
     def setUp(self):  # noqa
         self.base_dir = os.path.dirname(
             os.path.dirname(os.path.abspath(__file__))
@@ -76,11 +78,6 @@ class DataImporterMixin(object):
         user_model = get_user_model()
         for user in ('iron.man', 'superman', 'james.bond', 'sherlock.holmes'):
             user_model.objects.create(username=user)
-
-
-class DataImporterTestCase(DataImporterMixin, TestCase):
-
-    """TestCase data importer command."""
 
     def test_get_resource(self):
         """Test get resources method."""
@@ -309,65 +306,20 @@ class DataImporterTestCase(DataImporterMixin, TestCase):
         ).exists())
 
 
-class IPManagementTestCase(DataImporterMixin, TestCase):
-    def setUp(self):  # noqa
+class IPManagementTestCase(TestCase):
+    def setUp(self):
         self.base_dir = os.path.dirname(
             os.path.dirname(os.path.abspath(__file__))
         )
-
         asset_model = AssetModel()
+        asset_model.id = 1  # required by csvs file
         asset_model.name = "asset_model_1"
-        asset_model.type = ObjectModelType.back_office
+        asset_model.type = ObjectModelType.all
         asset_model.save()
-        asset_content_type = ContentType.objects.get_for_model(AssetModel)
-        ImportedObjects.objects.create(
-            content_type=asset_content_type,
-            object_pk=asset_model.pk,
-            old_object_pk=1
-        )
-
-        warehouse = Warehouse()
-        warehouse.name = "warehouse_1"
-        warehouse.save()
-
-        warehouse_content_type = ContentType.objects.get_for_model(Warehouse)
-        ImportedObjects.objects.create(
-            content_type=warehouse_content_type,
-            object_pk=warehouse.pk,
-            old_object_pk=1
-        )
-
-        environment = Environment()
-        environment.name = "environment_1"
-        environment.save()
-
-        service = Service()
-        service.name = "service_1"
-        service.save()
-
-        service_environment = ServiceEnvironment()
-        service_environment.environment = environment
-        service_environment.service = service
-        service_environment.save()
-
-        region = Region(name='region_1')
-        region.save()
-        region_content_type = ContentType.objects.get_for_model(region)
-        ImportedObjects.objects.create(
-            content_type=region_content_type,
-            object_pk=region.pk,
-            old_object_pk=1
-        )
-
-        user_model = get_user_model()
-        for user in ('iron.man', 'superman', 'james.bond', 'sherlock.holmes'):
-            user_model.objects.create(username=user)
-
 
     def test_data_center_asset_is_imported_when_ip_management_is_created(
         self
     ):
-        RackFactory()
         xlsx_path = os.path.join(
             self.base_dir,
             'tests/samples/management_ip_existing.csv'
@@ -396,7 +348,6 @@ class IPManagementTestCase(DataImporterMixin, TestCase):
         self
     ):
         IPAddress.objects.create(address='10.0.0.103')
-        RackFactory()
         self.assertTrue(
             IPAddress.objects.filter(address='10.0.0.103').exists()
         )
@@ -424,8 +375,6 @@ class IPManagementTestCase(DataImporterMixin, TestCase):
     def test_data_center_asset_is_imported_when_ip_management_is_blank(
         self
     ):
-        RackFactory()
-
         xlsx_path = os.path.join(
             self.base_dir, 'tests/samples/management_ip_blank.csv'
         )
