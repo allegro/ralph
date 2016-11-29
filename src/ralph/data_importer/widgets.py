@@ -241,3 +241,22 @@ class AssetServiceEnvWidget(widgets.ForeignKeyWidget):
             value.service.name,
             value.environment.name
         )
+
+
+class IPManagementWidget(widgets.ManyToManyWidget):
+    """
+    Widget for IPManagement field during DataCenterAsset import.
+
+    Why ManyToMany?
+    The concept is this: use ManyToManyWidget (which are skipped by
+    django-import-export until DataCenterAsset is created)
+    Explanation:
+    When importing `DataCenterAsset` `django-import-export` fails on management
+    ip. This because management ip is seperate model which can't be created
+    wihtout DataCenterAsset (and DataCenterAsset is the result of importing).
+    """
+    def clean(self, value):
+        return value
+
+    def render(self, value):
+        return value or ''

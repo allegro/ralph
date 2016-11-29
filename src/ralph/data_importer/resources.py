@@ -21,6 +21,7 @@ from ralph.data_importer.widgets import (
     BaseObjectManyToManyWidget,
     BaseObjectWidget,
     ImportedForeignKeyWidget,
+    IPManagementWidget,
     ManyToManyThroughWidget,
     NullStringWidget,
     UserManyToManyWidget,
@@ -253,19 +254,6 @@ class IPAddressResource(RalphModelResource):
         return False
 
 
-class MyWidget(widgets.ManyToManyWidget):
-    #TODO::expalin why many to many but not
-    def clean(self, value):
-        return value
-
-    def render(self, value):
-        if not value:
-            return ''
-        #TODO:: make rest of examples working
-        #ids = [smart_text(getattr(obj, self.field)) for obj in value.all()]
-        #kreturn self.separator.join(ids)
-
-
 class DataCenterAssetResource(RalphModelResource):
     parent = fields.Field(
         column_name='parent',
@@ -295,9 +283,7 @@ class DataCenterAssetResource(RalphModelResource):
     management_ip = fields.Field(
         column_name='management_ip',
         attribute='management_ip',
-        #widget=widgets.ManyToManyWidget(model=networks.IPAddress),
-        widget=MyWidget(model=networks.IPAddress),
-        #widget=NullStringWidget(),
+        widget=IPManagementWidget(model=networks.IPAddress),
     )
 
     class Meta:

@@ -23,10 +23,7 @@ from ralph.data_importer.resources import AssetModelResource
 from ralph.networks.models import IPAddress
 
 
-class DataImporterTestCase(TestCase):
-
-    """TestCase data importer command."""
-
+class DataImporterMixin(object):
     def setUp(self):  # noqa
         self.base_dir = os.path.dirname(
             os.path.dirname(os.path.abspath(__file__))
@@ -79,6 +76,11 @@ class DataImporterTestCase(TestCase):
         user_model = get_user_model()
         for user in ('iron.man', 'superman', 'james.bond', 'sherlock.holmes'):
             user_model.objects.create(username=user)
+
+
+class DataImporterTestCase(DataImporterMixin, TestCase):
+
+    """TestCase data importer command."""
 
     def test_get_resource(self):
         """Test get resources method."""
@@ -307,7 +309,7 @@ class DataImporterTestCase(TestCase):
         ).exists())
 
 
-class IPManagementTestCase(TestCase):
+class IPManagementTestCase(DataImporterMixin, TestCase):
     def setUp(self):  # noqa
         self.base_dir = os.path.dirname(
             os.path.dirname(os.path.abspath(__file__))
