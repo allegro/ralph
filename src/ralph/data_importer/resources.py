@@ -23,6 +23,7 @@ from ralph.data_importer.widgets import (
     ImportedForeignKeyWidget,
     ManyToManyThroughWidget,
     NullStringWidget,
+    RackWidget,
     UserManyToManyWidget,
     UserWidget
 )
@@ -272,7 +273,7 @@ class DataCenterAssetResource(RalphModelResource):
     rack = fields.Field(
         column_name='rack',
         attribute='rack',
-        widget=ImportedForeignKeyWidget(physical.Rack),
+        widget=RackWidget(physical.Rack),
     )
     budget_info = fields.Field(
         column_name='budget_info',
