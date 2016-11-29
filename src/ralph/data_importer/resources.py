@@ -23,7 +23,6 @@ from ralph.data_importer.widgets import (
     ImportedForeignKeyWidget,
     IPManagementWidget,
     ManyToManyThroughWidget,
-    NullStringWidget,
     UserManyToManyWidget,
     UserWidget
 )
