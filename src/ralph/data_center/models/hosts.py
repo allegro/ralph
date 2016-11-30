@@ -10,6 +10,7 @@ class DCHostManager(models.Manager):
 
 
 class DCHost(AdminAbsoluteUrlMixin, BaseObject):
+    _allow_in_dashboard = True
     objects = DCHostManager()
 
     class Meta:
