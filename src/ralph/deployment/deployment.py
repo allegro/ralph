@@ -240,6 +240,23 @@ def _get_non_mgmt_ethernets(instance):
     ).order_by('mac')
 
 
+def check_if_deployment_is_available(instances):
+    """
+    Check if deployment is available.
+    """
+    errors = {}
+    for instance in instances:
+        if (
+            isinstance(instance, DataCenterAsset) and
+            not instance.model.category.allow_deployment
+        ):
+            errors[instance] = _((
+                'Deployment is not available for this asset'
+                ' with category: %(category)s.'
+            ) % {'category': instance.model.category.name})
+    return errors
+
+
 def check_mac_address(instances):
     """
     Verify, that each instance has at least one non-management MAC.
@@ -766,6 +783,7 @@ def assign_configuration_path(cls, instances, configuration_path, **kwargs):
         'assign_new_hostname', 'create_dhcp_entries', 'wait_for_dhcp_servers',
         'create_dns_entries',
     ],
+    precondition=check_if_deployment_is_available
 )
 def deploy(cls, instances, **kwargs):
     """
