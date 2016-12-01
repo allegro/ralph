@@ -386,13 +386,16 @@ def _post_transition_instance_processing(
 
 @transaction.atomic
 def run_field_transition(
-    instances, transition, field, data={}, **kwargs
+    instances, transition_obj_or_name, field, data={}, **kwargs
 ):
     """
     Execute all actions assigned to the selected transition.
     """
     first_instance = instances[0]
     _compare_instances_types(instances)
+    transition = _check_and_get_transition(
+        first_instance, transition_obj_or_name, field
+    )
     _check_instances_for_transition(instances, transition)
     attachment = None
     history_kwargs = defaultdict(dict)
