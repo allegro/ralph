@@ -473,3 +473,13 @@ RALPH2_HERMES_ROLE_PROPERTY_WHITELIST = json.loads(
 ENABLE_SAVE_DESCENDANTS_DURING_NETWORK_SYNC = bool_from_env(
     'ENABLE_SAVE_DESCENDANTS_DURING_NETWORK_SYNC', True
 )
+
+
+# METRICS
+MEASURE_JOBS_STATS = False
+
+
+# overwrite this function to use metrics reporter in RQ worker
+# it should return instance of `metrology.reporter.base.Reporter`
+def GET_REPORTER():
+    pass

@@ -25,6 +25,7 @@ from django.utils.functional import curry
 from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields.json import JSONField
+from metrology import Metrology
 
 from ralph.admin.helpers import (
     get_content_type_for_model,
@@ -257,6 +258,14 @@ def _order_actions_by_requirements(actions, instance):
         yield actions_by_name[action]
 
 
+JOBS_METRIC_PREFIX = getattr(
+    settings, 'JOBS_METRIC_PREFIX', 'jobs.synchronous_transitions'
+)
+METRIC_NAME_TMPL = getattr(
+    settings, 'JOBS_METRIC_NAME_TMPL', '{prefix}.{job_name}.{action}'
+)
+
+
 def run_transition(instances, transition_obj_or_name, field, data={}, **kwargs):
     """
     Main function to run transition (async or synchronous).
@@ -278,9 +287,24 @@ def run_transition(instances, transition_obj_or_name, field, data={}, **kwargs):
             job_ids.append(job_id)
         return job_ids
     else:
-        return run_field_transition(
-            instances, transition_obj_or_name, field, data, **kwargs
-        )
+        status = False
+        try:
+            status, attachment = run_field_transition(
+                instances, transition, field, data, **kwargs
+            )
+            return status, attachment
+        finally:
+            if settings.MEASURE_JOBS_STATS:
+                metric_name = METRIC_NAME_TMPL.format(
+                    prefix=JOBS_METRIC_PREFIX,
+                    job_name=transition._get_metric_name(),
+                    action='success' if status else 'failed'
+                )
+                logger.info('New job event: {}'.format(metric_name), extra={
+                    'metric_name': metric_name
+                })
+                counter = Metrology.meter(metric_name)
+                counter.mark()
 
 
 def _prepare_action_data(
@@ -362,16 +386,13 @@ def _post_transition_instance_processing(
 
 @transaction.atomic
 def run_field_transition(
-    instances, transition_obj_or_name, field, data={}, **kwargs
+    instances, transition, field, data={}, **kwargs
 ):
     """
     Execute all actions assigned to the selected transition.
     """
     first_instance = instances[0]
     _compare_instances_types(instances)
-    transition = _check_and_get_transition(
-        first_instance, transition_obj_or_name, field
-    )
     _check_instances_for_transition(instances, transition)
     attachment = None
     history_kwargs = defaultdict(dict)
@@ -524,6 +545,12 @@ class Transition(models.Model):
             if _check_user_perm_for_transition(user, transition)
         ]
 
+    def _get_metric_name(self):
+        return '{}.{}'.format(
+            self.name,
+            self.model.content_type.model
+        )
+
     def get_pure_actions(self):
         return [
             getattr(self.model_cls, action.name)
@@ -591,6 +618,12 @@ class TransitionJob(Job):
     # TODO: field?
 
     objects = JobQuerySet.as_manager()
+
+    def _get_metric_name(self):
+        return '{}.{}'.format(
+            self.service_name,
+            self.transition._get_metric_name(),
+        )
 
     @classmethod
     def run(
