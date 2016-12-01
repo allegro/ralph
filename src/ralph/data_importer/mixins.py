@@ -35,7 +35,10 @@ class ImportForeignKeyMeta(type):
                 attribute=field.attribute,
                 readonly=True
             )
-            if isinstance(field.widget, widgets.ForeignKeyWidget):
+            # skip str field if pointer implicitly
+            if getattr(field, '_skip_str_field', False):
+                continue
+            elif isinstance(field.widget, widgets.ForeignKeyWidget):
                 field_params['widget'] = ExportForeignKeyStrWidget()
             elif isinstance(field.widget, ManyToManyThroughWidget):
                 field_params['widget'] = ExportManyToManyStrTroughWidget(
