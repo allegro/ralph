@@ -5,6 +5,8 @@ from django.test.utils import CaptureQueriesContext
 
 from ralph.accounts.tests.factories import UserFactory
 from ralph.admin import ralph_site
+from ralph.data_center.models import DataCenterAsset
+from ralph.data_center.tests.factories import DataCenterAssetFullFactory
 from ralph.licences.models import Licence
 from ralph.licences.tests.factories import (
     BackOfficeAssetLicenceFactory,
@@ -88,5 +90,16 @@ class SupportExporterTestCase(SimulateAdminExportTestCase):
             BackOfficeAssetSupportFactory.create_batch(3, support=support)
             DataCenterAssetSupportFactory.create_batch(2, support=support)
 
-    def test_licence_export_queries_count(self):
+    def test_support_export_queries_count(self):
         self._test_queries_count(func=lambda: self._export(Support))
+
+
+class DataCenterAssetExporterTestCase(SimulateAdminExportTestCase):
+    def _init(self, num=10):
+        self.data_center_assets = DataCenterAssetFullFactory.create_batch(num)
+
+    def test_data_center_asset_export(self):
+        self._init(10)
+        export_data = self._export(DataCenterAsset)
+        # check if management ip is properly exported
+        self.assertNotEqual(export_data.dict[0]['management_ip'], '')

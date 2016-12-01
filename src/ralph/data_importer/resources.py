@@ -284,6 +284,8 @@ class DataCenterAssetResource(RalphModelResource):
         attribute='management_ip',
         widget=IPManagementWidget(model=networks.IPAddress),
     )
+    # no need for str field - management_ip will be exported as str
+    management_ip._skip_str_field = True
 
     class Meta:
         model = physical.DataCenterAsset
