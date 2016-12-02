@@ -51,7 +51,7 @@ class BackOfficeAssetFactory(DjangoModelFactory):
     force_depreciation = False
     office_infrastructure = factory.SubFactory(OfficeInfrastructureFactory)
     sn = factory.Faker('ssn')
-    barcode = factory.Sequence(lambda n: str(n + 10**8))
+    barcode = factory.Sequence(lambda n: 'bo' + str(n + 10**8))
     order_no = factory.Sequence(lambda n: 'Order number ' + str(n))
     budget_info = factory.SubFactory(BudgetInfoFactory)
     invoice_date = date_now - timedelta(days=15)
