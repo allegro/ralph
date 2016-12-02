@@ -12,19 +12,19 @@ from django.db import models, transaction
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields.json import JSONField
-from metrology import Metrology
 
 from ralph.lib.external_services.base import InternalService
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import TimeStampMixin
+from ralph.lib.metrics import mark
 
 logger = logging.getLogger(__name__)
 
-JOBS_METRIC_PREFIX = getattr(
-    settings, 'JOBS_METRIC_PREFIX', 'jobs'
+EXTERNAL_JOBS_METRIC_PREFIX = getattr(
+    settings, 'EXTERNAL_JOBS_METRIC_PREFIX', 'jobs'
 )
-METRIC_NAME_TMPL = getattr(
-    settings, 'JOBS_METRIC_NAME_TMPL', '{prefix}.{job_name}.{action}'
+EXTERNAL_JOBS_METRIC_NAME_TMPL = getattr(
+    settings, 'EXTERNAL_JOBS_METRIC_NAME_TMPL', '{prefix}.{job_name}.{action}'
 )
 
 
@@ -60,16 +60,12 @@ class JobQuerySet(models.QuerySet):
 def collect_metrics(action):
     def wrapper(func):
         def wrapped(job, *args, **kwargs):
-            if settings.MEASURE_JOBS_STATS:
-                metric_name = METRIC_NAME_TMPL.format(
-                    prefix=JOBS_METRIC_PREFIX, job_name=job._get_metric_name(),
-                    action=action
-                )
-                logger.info('New job event: {}'.format(metric_name), extra={
-                    'metric_name': metric_name
-                })
-                counter = Metrology.meter(metric_name)
-                counter.mark()
+            metric_name = EXTERNAL_JOBS_METRIC_NAME_TMPL.format(
+                prefix=EXTERNAL_JOBS_METRIC_PREFIX,
+                job_name=job._get_metric_name(),
+                action=action
+            )
+            mark(metric_name)
             return func(job, *args, **kwargs)
         return wrapped
     return wrapper

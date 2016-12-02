@@ -25,7 +25,6 @@ from django.utils.functional import curry
 from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields.json import JSONField
-from metrology import Metrology
 
 from ralph.admin.helpers import (
     get_content_type_for_model,
@@ -37,6 +36,7 @@ from ralph.lib.external_services.models import (
     JOB_NOT_ENDED_STATUSES,
     JobQuerySet
 )
+from ralph.lib.metrics import mark
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 from ralph.lib.transitions.conf import (
     DEFAULT_ASYNC_TRANSITION_SERVICE_NAME,
@@ -56,6 +56,16 @@ from ralph.lib.transitions.utils import (
 _transitions_fields = {}
 
 logger = logging.getLogger(__name__)
+
+
+SYNCHRONOUS_JOBS_METRIC_PREFIX = getattr(
+    settings, 'SYNCHRONOUS_JOBS_METRIC_PREFIX', 'jobs.synchronous_transitions'
+)
+SYNCHRONOUS_JOBS_METRIC_NAME_TMPL = getattr(
+    settings,
+    'SYNCHRONOUS_JOBS_METRIC_NAME_TMPL',
+    '{prefix}.{job_name}.{action}'
+)
 
 
 def _generate_transition_history(
@@ -258,14 +268,6 @@ def _order_actions_by_requirements(actions, instance):
         yield actions_by_name[action]
 
 
-JOBS_METRIC_PREFIX = getattr(
-    settings, 'JOBS_METRIC_PREFIX', 'jobs.synchronous_transitions'
-)
-METRIC_NAME_TMPL = getattr(
-    settings, 'JOBS_METRIC_NAME_TMPL', '{prefix}.{job_name}.{action}'
-)
-
-
 def run_transition(instances, transition_obj_or_name, field, data={}, **kwargs):
     """
     Main function to run transition (async or synchronous).
@@ -287,24 +289,21 @@ def run_transition(instances, transition_obj_or_name, field, data={}, **kwargs):
             job_ids.append(job_id)
         return job_ids
     else:
-        status = False
+        success = False
         try:
-            status, attachment = run_field_transition(
+            success, attachment = run_field_transition(
                 instances, transition, field, data, **kwargs
             )
-            return status, attachment
+            return success, attachment
         finally:
-            if settings.MEASURE_JOBS_STATS:
-                metric_name = METRIC_NAME_TMPL.format(
-                    prefix=JOBS_METRIC_PREFIX,
-                    job_name=transition._get_metric_name(),
-                    action='success' if status else 'failed'
-                )
-                logger.info('New job event: {}'.format(metric_name), extra={
-                    'metric_name': metric_name
-                })
-                counter = Metrology.meter(metric_name)
-                counter.mark()
+            # collect metrics (but only for synchronous transitions)
+            # async transitions metrics are collected on (Transition)Job level
+            metric_name = SYNCHRONOUS_JOBS_METRIC_NAME_TMPL.format(
+                prefix=SYNCHRONOUS_JOBS_METRIC_PREFIX,
+                job_name=transition._get_metric_name(),
+                action='success' if success else 'failed'
+            )
+            mark(metric_name)
 
 
 def _prepare_action_data(

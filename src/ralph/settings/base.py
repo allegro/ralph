@@ -476,7 +476,7 @@ ENABLE_SAVE_DESCENDANTS_DURING_NETWORK_SYNC = bool_from_env(
 
 
 # METRICS
-MEASURE_JOBS_STATS = False
+COLLECT_METRICS = False
 
 
 # overwrite this function to use metrics reporter in RQ worker
