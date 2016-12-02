@@ -5,6 +5,7 @@ from datetime import date
 
 from dateutil.parser import parse
 from dj.choices import Choices
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
@@ -13,10 +14,18 @@ from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields.json import JSONField
 
 from ralph.lib.external_services.base import InternalService
+from ralph.lib.metrics import mark
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import TimeStampMixin
 
 logger = logging.getLogger(__name__)
+
+EXTERNAL_JOBS_METRIC_PREFIX = getattr(
+    settings, 'EXTERNAL_JOBS_METRIC_PREFIX', 'jobs'
+)
+EXTERNAL_JOBS_METRIC_NAME_TMPL = getattr(
+    settings, 'EXTERNAL_JOBS_METRIC_NAME_TMPL', '{prefix}.{job_name}.{action}'
+)
 
 
 def _get_user_from_request(request):
@@ -34,6 +43,7 @@ class JobStatus(Choices):
     FROZEN = _('frozen')
     KILLED = _('killed')
 
+
 JOB_NOT_ENDED_STATUSES = set(
     [JobStatus.QUEUED, JobStatus.STARTED, JobStatus.FROZEN]
 )
@@ -45,6 +55,20 @@ class JobQuerySet(models.QuerySet):
 
     def inactive(self):
         return self.exclude(status__in=JOB_NOT_ENDED_STATUSES)
+
+
+def collect_metrics(action):
+    def wrapper(func):
+        def wrapped(job, *args, **kwargs):
+            metric_name = EXTERNAL_JOBS_METRIC_NAME_TMPL.format(
+                prefix=EXTERNAL_JOBS_METRIC_PREFIX,
+                job_name=job._get_metric_name(),
+                action=action
+            )
+            mark(metric_name)
+            return func(job, *args, **kwargs)
+        return wrapped
+    return wrapper
 
 
 class Job(TimeStampMixin):
@@ -114,6 +138,9 @@ class Job(TimeStampMixin):
             ))
         return self._params
 
+    def _get_metric_name(self):
+        return self.service_name
+
     def _update_dumped_params(self):
         # re-save job to store updated params in DB
         self._dumped_params = self.prepare_params(**self.params)
@@ -122,6 +149,7 @@ class Job(TimeStampMixin):
         ))
         self.save()
 
+    @collect_metrics('start')
     def start(self):
         """
         Mark job as started.
@@ -130,6 +158,7 @@ class Job(TimeStampMixin):
         self.status = JobStatus.STARTED
         self.save()
 
+    @collect_metrics('reschedule')
     def reschedule(self):
         """
         Reschedule the same job again.
@@ -141,23 +170,27 @@ class Job(TimeStampMixin):
         job = service.run_async(job_id=self.id)
         return job
 
+    @collect_metrics('freeze')
     def freeze(self):
         self._update_dumped_params()
         logger.info('Freezing job {}'.format(self))
         self.status = JobStatus.FROZEN
         self.save()
 
+    @collect_metrics('unfreeze')
     def unfreeze(self):
         logger.info('Unfreezing {}'.format(self))
         service = InternalService(self.service_name)
         job = service.run_async(job_id=self.id)
         return job
 
+    @collect_metrics('kill')
     def kill(self):
         logger.info('Kill job {}'.format(self))
         self.status = JobStatus.KILLED
         self.save()
 
+    @collect_metrics('fail')
     def fail(self, reason=''):
         """
         Mark job as failed.
@@ -167,6 +200,7 @@ class Job(TimeStampMixin):
         self.status = JobStatus.FAILED
         self.save()
 
+    @collect_metrics('success')
     def success(self):
         """
         Mark job as successfuly ended.

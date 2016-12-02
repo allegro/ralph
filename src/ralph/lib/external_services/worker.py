@@ -1,6 +1,8 @@
 from django.db import connection
 from rq import Worker
 
+from ralph.lib.metrics.reporter import MetricsReporter
+
 
 class RalphWorker(Worker):
     """
@@ -35,7 +37,8 @@ class RalphWorker(Worker):
         * https://dev.mysql.com/doc/refman/5.7/en/error-lost-connection.html
         * http://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_wait_timeout  # noqa
         """
-        connection.close_if_unusable_or_obsolete()
-        result = super().perform_job(*args, **kwargs)
-        connection.close_if_unusable_or_obsolete()
+        with MetricsReporter():
+            connection.close_if_unusable_or_obsolete()
+            result = super().perform_job(*args, **kwargs)
+            connection.close_if_unusable_or_obsolete()
         return result

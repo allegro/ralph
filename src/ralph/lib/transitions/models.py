@@ -36,6 +36,7 @@ from ralph.lib.external_services.models import (
     JOB_NOT_ENDED_STATUSES,
     JobQuerySet
 )
+from ralph.lib.metrics import mark
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 from ralph.lib.transitions.conf import (
     DEFAULT_ASYNC_TRANSITION_SERVICE_NAME,
@@ -55,6 +56,16 @@ from ralph.lib.transitions.utils import (
 _transitions_fields = {}
 
 logger = logging.getLogger(__name__)
+
+
+SYNCHRONOUS_JOBS_METRIC_PREFIX = getattr(
+    settings, 'SYNCHRONOUS_JOBS_METRIC_PREFIX', 'jobs.synchronous_transitions'
+)
+SYNCHRONOUS_JOBS_METRIC_NAME_TMPL = getattr(
+    settings,
+    'SYNCHRONOUS_JOBS_METRIC_NAME_TMPL',
+    '{prefix}.{job_name}.{action}'
+)
 
 
 def _generate_transition_history(
@@ -278,9 +289,21 @@ def run_transition(instances, transition_obj_or_name, field, data={}, **kwargs):
             job_ids.append(job_id)
         return job_ids
     else:
-        return run_field_transition(
-            instances, transition_obj_or_name, field, data, **kwargs
-        )
+        success = False
+        try:
+            success, attachment = run_field_transition(
+                instances, transition, field, data, **kwargs
+            )
+            return success, attachment
+        finally:
+            # collect metrics (but only for synchronous transitions)
+            # async transitions metrics are collected on (Transition)Job level
+            metric_name = SYNCHRONOUS_JOBS_METRIC_NAME_TMPL.format(
+                prefix=SYNCHRONOUS_JOBS_METRIC_PREFIX,
+                job_name=transition._get_metric_name(),
+                action='success' if success else 'failed'
+            )
+            mark(metric_name)
 
 
 def _prepare_action_data(
@@ -524,6 +547,12 @@ class Transition(models.Model):
             if _check_user_perm_for_transition(user, transition)
         ]
 
+    def _get_metric_name(self):
+        return '{}.{}'.format(
+            self.name,
+            self.model.content_type.model
+        )
+
     def get_pure_actions(self):
         return [
             getattr(self.model_cls, action.name)
@@ -591,6 +620,12 @@ class TransitionJob(Job):
     # TODO: field?
 
     objects = JobQuerySet.as_manager()
+
+    def _get_metric_name(self):
+        return '{}.{}'.format(
+            self.service_name,
+            self.transition._get_metric_name(),
+        )
 
     @classmethod
     def run(
