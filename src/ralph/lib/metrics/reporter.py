@@ -14,6 +14,10 @@ class MetricsReporter(object):
     This context manager provides starting metrology reporter when entering it
     and sending metrics when exiting.
 
+    To use this context manager, set `COLLECT_METRICS` in your settings to True
+    and overwrite `GET_REPORTER` function in settings to return proper
+    reporter for your needs.
+
     Example:
 
     with MetricsReporter():
@@ -40,7 +44,7 @@ class MetricsReporter(object):
                 self.reporter.start()
             else:
                 logger.warning(
-                    'Reporter not started - GET_REPOTER method returned None'
+                    'Reporter not started - GET_REPORTER method returned None'
                 )
 
     def _stop_reporter(self):

@@ -14,9 +14,9 @@ from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields.json import JSONField
 
 from ralph.lib.external_services.base import InternalService
+from ralph.lib.metrics import mark
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import TimeStampMixin
-from ralph.lib.metrics import mark
 
 logger = logging.getLogger(__name__)
 
