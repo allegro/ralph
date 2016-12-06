@@ -90,7 +90,9 @@ class DataCenterAssetForm(RalphAdminForm):
                     hostname_obj.get_absolute_url(), hostname_obj
                 )
         if hostname_msg:
-            exc = ValidationError({'management_hostname': mark_safe(msg)})
+            exc = ValidationError(
+                {'management_hostname': mark_safe(hostname_msg)}
+            )
             self._update_errors(exc)
 
     def _clean_mgmt_ip_mgmt_hostname(self):
