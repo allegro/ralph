@@ -83,7 +83,7 @@ class DataCenterAssetForm(RalphAdminForm):
             ip = ips[0]
             if ip.base_object and ip.base_object.pk != self.instance.pk:
                 hostname_obj = ip.base_object.last_descendant
-                hostname_msg = msg = _(
+                hostname_msg = _(
                     'Management hostname is already assigned to '
                     '<a target="_blank" href="{}">{}</a>'
                 ).format(
