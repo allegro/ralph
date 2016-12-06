@@ -27,6 +27,7 @@ class AsyncTransitionsTest(TransitionTestCaseMixin, TransactionTestCase):
 
     def test_run_action_during_async_transition(self):
         async_order = AsyncOrder.objects.create(name='test')
+        old_status_id = async_order.status
         _, transition, _ = self._create_transition(
             model=async_order, name='prepare',
             source=[OrderStatus.new.id], target=OrderStatus.to_send.id,
@@ -41,11 +42,12 @@ class AsyncTransitionsTest(TransitionTestCaseMixin, TransactionTestCase):
             data={'name': 'abc'}
         )[0]
         job = TransitionJob.objects.get(pk=job_id)
+
         async_order.refresh_from_db()
         self.assertEqual(job.status, JobStatus.FINISHED.id)
         self.assertEqual(async_order.counter, 2)
         self.assertEqual(async_order.name, 'abc')
-        # TODO: test status
+        self.assertNotEqual(async_order.status, old_status_id)
 
     def test_rescheduling_action_during_async_transition(self):
         async_order = AsyncOrder.objects.create(name='test')
