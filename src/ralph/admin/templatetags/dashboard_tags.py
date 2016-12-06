@@ -3,12 +3,13 @@ from collections import Counter, Iterable
 from itertools import cycle
 
 from django.apps import apps
+from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
-from django.db.models import Count, Sum
+from django.db.models import Count, Prefetch, Sum
 from django.template import Library
 from django.utils.text import slugify
 
-from ralph.assets.models.assets import Service
+from ralph.assets.models import BaseObject, Service, ServiceEnvironment
 from ralph.data_center.models import (
     DataCenter,
     DataCenterAsset,
@@ -116,15 +117,25 @@ def ralph_summary():
 def my_services(user):
     return {
         'services': Service.objects.prefetch_related(
+            Prefetch(
+                'serviceenvironment_set',
+                queryset=ServiceEnvironment.objects.prefetch_related(
+                    Prefetch(
+                        'baseobject_set',
+                        queryset=BaseObject.objects.order_by('content_type_id')
+                    )
+                )
+            ),
             'serviceenvironment_set__environment',
-            'serviceenvironment_set__baseobject_set__content_type'
-        ).filter(technical_owners=user)
+        ).filter(technical_owners=user, active=True),
+        'user': user
     }
 
 
 @register.inclusion_tag('admin/templatetags/objects_summary.html')
-def get_objects_summary(service_env, content_type, objects):
+def get_objects_summary(service_env, content_type_id, objects):
     from django.core.urlresolvers import reverse
+    content_type = ContentType.objects.get_for_id(content_type_id)
     opts = content_type.model_class()._meta
     url = reverse(
         'admin:{}_{}_changelist'.format(opts.app_label, opts.model_name)

@@ -4,7 +4,7 @@
     angular
         .module('common.directives', [])
         .directive('tooltip', ['$compile', function ($compile) {
-            var template = '<i data-tooltip aria-haspopup="true" title="{{ tip }}" class="has-tip fa fa-info-circle"></i>';
+            var template = '<i data-tooltip aria-haspopup="true" title="{{ tip }}" aria-hidden="true" class="has-tip fa fa-info-circle"></i><span class="show-for-sr">{{ tip }}</span>';
             return {
                 restrict: 'E',
                 transclude: true,

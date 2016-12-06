@@ -7,7 +7,7 @@ TODO
 ## Preboot configuration
 
 `Preboot configuration` allows you define custom files being executed during
-`Deployment`. Such as `kickstart` or `iPXE`.
+`Deployment`. Such as `kickstart`, `iPXE` or `preseed`.
 
 To define such `preboot configuration` you need to:
 - visit `Preboot configuration` (/deployment/prebootconfiguration/) page
@@ -22,7 +22,7 @@ To define such `preboot configuration` you need to:
 
 
 Ad. `Configuration` field:
-This field allows you to write `kickstart` (or `iPXE`) configuration.
+This field allows you to write `kickstart`, `preseed`, `iPXE` or some general `script` configuration.
 It's possible to include variables from Ralph. These are:
 
     - configuration_class_name (eg. 'www')
@@ -36,19 +36,19 @@ It's possible to include variables from Ralph. These are:
     - initrd (eg. 'http://127.0.0.1:8000/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/initrd')
     - kernel (eg. 'http://127.0.0.1:8000/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/kernel')
     - kickstart (eg. 'http://127.0.0.1:8000/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/kickstart')
+    - preseed (eg. 'http://127.0.0.1:8000/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/preseed')
+    - script (eg. 'http://127.0.0.1:8000/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/script')
     - ralph_instance (eg. 'http://127.0.0.1:8000')
     - service_env (eg. 'Backup systems - prod')
     - service_uid (eg. 'sc-123')
 
-Note:
-All above links (like: `http://127.0.0.1:8000/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/mark_as_done`)
-starts with `http://127.0.0.1:8000`.
-This is because default settings is
+To use particular variable, wrap it in `{{ }}` braces, for example `{{ domain }}`.
 
+
+> All above links (like: `http://127.0.0.1:8000/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/mark_as_done`) starts with `http://127.0.0.1:8000`. This is because default settings is
 ```
 RALPH_INSTANCE = 'http://127.0.0.1:8000'
 ```
-
 you should customise `RALPH_INSTANCE` variable to fit your set up.
 
 

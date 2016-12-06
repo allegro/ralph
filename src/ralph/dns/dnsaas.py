@@ -59,6 +59,7 @@ class DNSaaS:
         Returns:
             list of records
         """
+        logger.info('Calling DNSaaS: {}'.format(url))
         response = self.session.get(url)
         json_data = response.json()
         api_results = json_data.get('results', [])

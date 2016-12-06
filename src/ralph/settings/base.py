@@ -339,6 +339,12 @@ RALPH_INTERNAL_SERVICES = {
 }
 
 # =============================================================================
+# DC view
+# =============================================================================
+
+RACK_LISTING_NUMBERING_TOP_TO_BOTTOM = False
+
+# =============================================================================
 # Deployment
 # =============================================================================
 
@@ -373,7 +379,9 @@ INVENTORY_TAG_APPEND_DATE = bool_from_env('INVENTORY_TAG_APPEND_DATE', True)
 MAP_IMPORTED_ID_TO_NEW_ID = False
 
 OPENSTACK_INSTANCES = json.loads(os.environ.get('OPENSTACK_INSTANCES', '[]'))
-
+DEFAULT_OPENSTACK_PROVIDER_NAME = os.environ.get(
+    'DEFAULT_OPENSTACK_PROVIDER_NAME', 'openstack'
+)
 # issue tracker url for Operations urls (issues ids) - should end with /
 ISSUE_TRACKER_URL = os.environ.get('ISSUE_TRACKER_URL', '')
 
@@ -426,6 +434,14 @@ if ENABLE_DNSAAS_INTEGRATION:
     )
 DNSAAS_AUTO_UPDATE_HOST_DNS = bool_from_env('DNSAAS_AUTO_UPDATE_HOST_DNS')
 
+DOMAIN_DATA_UPDATE_TOPIC = os.environ.get(
+    'DOMAIN_DATA_UPDATE_TOPIC', None
+)
+DOMAIN_OWNER_TYPE = {
+    'BO': 'Business Owner',
+    'TO': 'Technical Owner',
+}
+
 
 ENABLE_HERMES_INTEGRATION = bool_from_env('ENABLE_HERMES_INTEGRATION')
 HERMES = json.loads(os.environ.get('HERMES', '{}'))
@@ -457,3 +473,13 @@ RALPH2_HERMES_ROLE_PROPERTY_WHITELIST = json.loads(
 ENABLE_SAVE_DESCENDANTS_DURING_NETWORK_SYNC = bool_from_env(
     'ENABLE_SAVE_DESCENDANTS_DURING_NETWORK_SYNC', True
 )
+
+
+# METRICS
+COLLECT_METRICS = False
+
+
+# overwrite this function to use metrics reporter in RQ worker
+# it should return instance of `metrology.reporter.base.Reporter`
+def GET_REPORTER():
+    pass

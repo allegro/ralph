@@ -1,9 +1,9 @@
 from ddt import data, ddt, unpack
+
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from django.test import Client
 from rest_framework.test import APIClient
-
 from ralph.assets.models import AssetLastHostname
 from ralph.assets.tests.factories import EthernetFactory
 from ralph.data_center.models import DataCenterAsset
@@ -86,6 +86,36 @@ class _BaseDeploymentTransitionTestCase(object):
         actions = ['assign_new_hostname']
         self.assign_new_hostname_transition = self._create_transition(
             self.model, 'assign hostname', actions, 'status',
+            source=list(dict(
+                self.model._meta.get_field('status').choices
+            ).keys()),
+            target=str(TRANSITION_ORIGINAL_STATUS[0])
+        )[1]
+
+    def _prepare_assign_new_ip_transition(self):
+        actions = ['assign_new_ip']
+        self.assign_assign_new_ip_transition = self._create_transition(
+            self.model, 'assign new ip', actions, 'status',
+            source=list(dict(
+                self.model._meta.get_field('status').choices
+            ).keys()),
+            target=str(TRANSITION_ORIGINAL_STATUS[0])
+        )[1]
+
+    def _prepare_assign_new_ip_with_dns_transition(self):
+        actions = ['assign_new_ip', 'assign_new_hostname']
+        self.assign_assign_new_ip_with_dns_transition = self._create_transition(
+            self.model, 'assign new ip with dns', actions, 'status',
+            source=list(dict(
+                self.model._meta.get_field('status').choices
+            ).keys()),
+            target=str(TRANSITION_ORIGINAL_STATUS[0])
+        )[1]
+
+    def _prepare_replace_ip_transition(self):
+        actions = ['replace_ip']
+        self.assign_replace_ip_transition = self._create_transition(
+            self.model, 'replace ip', actions, 'status',
             source=list(dict(
                 self.model._meta.get_field('status').choices
             ).keys()),
@@ -275,6 +305,98 @@ class _BaseDeploymentTransitionTestCase(object):
         )
         self.instance.refresh_from_db()
         self.assertEqual(self.instance.hostname, 'server_100012.mydc.net')
+
+    def test_assign_new_ip_through_gui(self):
+        self._prepare_assign_new_ip_transition()
+        network = self.instance._get_available_networks()[0]
+        ip = str(network.get_first_free_ip())
+        response = self.gui_client.post(
+            reverse(
+                self.transition_url_name,
+                args=(
+                    self.instance.id,
+                    self.assign_assign_new_ip_transition.id
+                )
+            ),
+            {
+                'assign_new_ip__network': network.id
+            },
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            response.redirect_chain[0][0],
+            reverse(self.redirect_url_name, args=(self.instance.id,))
+        )
+        self.instance.refresh_from_db()
+        self.assertTrue(
+            self.instance.ipaddresses.filter(
+                address=ip
+            ).exists()
+        )
+
+    def test_assign_new_ip_with_dns_through_gui(self):
+        self._prepare_assign_new_ip_with_dns_transition()
+        network = self.instance._get_available_networks()[0]
+        ip = str(network.get_first_free_ip())
+        response = self.gui_client.post(
+            reverse(
+                self.transition_url_name,
+                args=(
+                    self.instance.id,
+                    self.assign_assign_new_ip_with_dns_transition.id
+                )
+            ),
+            {
+                'assign_new_hostname__network_environment': '__other__',
+                'assign_new_hostname__network_environment__other__': 'hostname',  # noqa
+                'assign_new_ip__network': network.id,
+            },
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            response.redirect_chain[0][0],
+            reverse(self.redirect_url_name, args=(self.instance.id,))
+        )
+        self.instance.refresh_from_db()
+        self.assertTrue(
+            self.instance.ipaddresses.filter(
+                address=ip
+            ).exists()
+        )
+        self.assertEqual(self.instance.hostname, 'hostname')
+
+    def test_replace_ip_through_gui(self):
+        self._prepare_replace_ip_transition()
+        ethernet = EthernetFactory(base_object=self.instance)
+        ipaddress = IPAddressFactory(
+            address='10.20.30.1',
+            ethernet=ethernet,
+            hostname='test_hostname'
+        )
+        network = self.instance._get_available_networks()[0]
+        response = self.gui_client.post(
+            reverse(
+                self.transition_url_name,
+                args=(
+                    self.instance.id,
+                    self.assign_replace_ip_transition.id
+                )
+            ),
+            {
+                'replace_ip__ipaddress': ipaddress.id,
+                'replace_ip__network': network.id
+            },
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            response.redirect_chain[0][0],
+            reverse(self.redirect_url_name, args=(self.instance.id,))
+        )
+        ipaddress.refresh_from_db()
+        self.assertNotEqual(ipaddress.address, '10.20.30.1')
 
     def test_assign_new_hostname_through_gui_with_other_value(self):
         self._prepare_assign_new_hostname_transition()

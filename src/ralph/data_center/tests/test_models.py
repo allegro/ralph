@@ -12,6 +12,7 @@ from ralph.data_center.tests.factories import (
     ClusterFactory,
     ClusterTypeFactory,
     DataCenterAssetFactory,
+    DataCenterAssetModelFactory,
     RackFactory
 )
 from ralph.networks.models import IPAddress
@@ -90,6 +91,30 @@ class DataCenterAssetTest(RalphTestCase):
         slot_no_field = self.dc_asset._meta.get_field_by_name('slot_no')[0]
         with self.assertRaises(ValidationError):
             slot_no_field.clean(slot_no, self.dc_asset)
+
+    def test_should_raise_validation_error_when_slot_no_is_busy(self):
+        model = DataCenterAssetModelFactory(has_parent=True)
+        DataCenterAssetFactory(
+            parent=self.dc_asset, slot_no=1, model=model
+        )
+        dc_asset = DataCenterAssetFactory(
+            parent=self.dc_asset, model=model
+        )
+        dc_asset.slot_no = 1
+        with self.assertRaises(ValidationError):
+            dc_asset.clean()
+
+    def test_should_pass_when_slot_no_is_busy_but_different_orientation(self):
+        model = DataCenterAssetModelFactory(has_parent=True)
+        DataCenterAssetFactory(
+            parent=self.dc_asset, slot_no=1, model=model,
+            orientation=Orientation.back,
+        )
+        dc_asset = DataCenterAssetFactory(
+            parent=self.dc_asset, model=model
+        )
+        dc_asset.slot_no = 1
+        dc_asset._validate_slot_no()
 
     def test_should_raise_validation_error_when_empty_slot_no_on_blade(self):
         dc_asset = DataCenterAssetFactory(model__has_parent=True)
@@ -288,6 +313,16 @@ class DataCenterAssetTest(RalphTestCase):
 
         self.assertCountEqual(
             self.dc_asset._get_available_networks(),
+            [self.net, self.net2]
+        )
+
+    def test_get_available_networks_is_broadcasted_in_dhcp(self):
+        self._prepare_rack(self.dc_asset, '192.168.1.1', '192.168.1.0/24')
+        self.net3 = NetworkFactory(
+            address='192.168.3.0/24', dhcp_broadcast=True
+        )
+        self.assertCountEqual(
+            self.dc_asset._get_available_networks(is_broadcasted_in_dhcp=True),
             [self.net, self.net2]
         )
 

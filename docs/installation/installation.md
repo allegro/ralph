@@ -1,7 +1,7 @@
 # Installation guide
 
-For production, we provide both deb package and  docker(compose) image.
-We only support Ubuntu 14.04 Trusty distribution.
+For production, we provide both deb package and docker(compose) image.
+We only support Ubuntu 14.04 Trusty distribution on the AMD64 platform.
 
 On the other hand, if you are developer, we strongly suggest using our `Vagrant` inside the `vagrant` directory
 with many development *bells and whistles* included.

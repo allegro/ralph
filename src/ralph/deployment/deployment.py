@@ -138,7 +138,9 @@ def next_free_ip_choices(actions, objects):
     """
     networks = []
     for obj in objects:
-        networks.append(set(obj._get_available_networks()))
+        networks.append(set(obj._get_available_networks(
+            is_broadcasted_in_dhcp=True
+        )))
     # get common part
     networks = set.intersection(*networks)
     ips = [
@@ -148,6 +150,23 @@ def next_free_ip_choices(actions, objects):
         )
         for network in networks
     ]
+    return ips
+
+
+def next_free_ip_choices_wth_other_choice(actions, objects):
+    """
+    Generate choices with next free IP for each network common for every object.
+    If there is only one object in this transition, custom IP address could be
+    passed (OTHER opiton).
+
+    Args:
+        actions: Transition action list
+        objects: Django models objects
+
+    Returns:
+        list of tuples with next free IP choices
+    """
+    ips = next_free_ip_choices(actions, objects)
     # if there is only one object, allow for Other option typed by user
     if len(objects) == 1:
         ips += [(OTHER, _('Other'))]
@@ -219,6 +238,23 @@ def _get_non_mgmt_ethernets(instance):
     ).exclude(
         ipaddress__is_management=True
     ).order_by('mac')
+
+
+def check_if_deployment_is_available(instances):
+    """
+    Check if deployment is available.
+    """
+    errors = {}
+    for instance in instances:
+        if (
+            isinstance(instance, DataCenterAsset) and
+            not instance.model.category.allow_deployment
+        ):
+            errors[instance] = _((
+                'Deployment is not available for this asset'
+                ' with category: %(category)s.'
+            ) % {'category': instance.model.category.name})
+    return errors
 
 
 def check_mac_address(instances):
@@ -384,6 +420,10 @@ def assign_new_hostname(cls, instances, network_environment, **kwargs):
         kwargs['history_kwargs'][instance.pk]['hostname'] = '{}{}'.format(
             new_hostname, ' (from {})'.format(net_env) if net_env else ''
         )
+        kwargs['shared_params']['hostnames'][instance.pk] = new_hostname
+
+    if 'hostnames' not in kwargs['shared_params']:
+        kwargs['shared_params']['hostnames'] = {}
 
     if network_environment['value'] == OTHER:
         hostname = network_environment[OTHER]
@@ -436,15 +476,114 @@ def check_ip_from_defined_network(address):
 
 
 @deployment_action(
+    verbose_name=_('Assign new IP'),
+    form_fields={
+        'network': {
+            'field': forms.ChoiceField(
+                label=_('IP Address')
+            ),
+            'choices': next_free_ip_choices,
+            'exclude_from_history': True
+        },
+    },
+    run_after=['assign_new_hostname'],
+)
+def assign_new_ip(cls, instances, network, **kwargs):
+    for instance in instances:
+        network = Network.objects.get(pk=network)
+        ip = network.issue_next_free_ip()
+        logger.info('Assigning {} to {}'.format(ip, instance))
+        ethernet = Ethernet.objects.create(base_object=instance)
+        logger.info('Bounding {} to {} ethernet'.format(ip, ethernet))
+        ip.ethernet = ethernet
+
+        try:
+            hostname = kwargs['shared_params']['hostnames'].get(instance.pk)
+            if hostname:
+                ip.hostname = hostname
+        except KeyError:
+            pass
+
+        ip.save()
+
+
+def base_object_ip_choices(actions, objects):
+    ipaddresses = []
+    for instance in objects:
+        for ip in instance.ipaddresses:
+            ipaddresses.append(
+                [ip.id, '{} - {}'.format(ip.address, ip.hostname)]
+            )
+    return ipaddresses
+
+
+def base_object_network_choices(actions, objects):
+    networks = []
+    for instance in objects:
+        for network in instance._get_available_networks():
+            networks.append(
+                [network.id, network]
+            )
+    return networks
+
+
+def check_number_of_instance(instances):
+    """
+    Verify, if number of asset is equal to 1.
+
+    Args:
+        instances: Django model object instances
+    Returns:
+        errors: Dict
+    """
+    errors = {}
+    if len(instances) > 1:
+        errors[instances[0]] = _('You can choose only one asset')
+
+    return errors
+
+
+@deployment_action(
+    verbose_name=_('Replace IP'),
+    form_fields={
+        'ipaddress': {
+            'field': forms.ChoiceField(
+                label=_('IP Address'),
+            ),
+            'choices': base_object_ip_choices,
+            'exclude_from_history': True,
+        },
+        'network': {
+            'field': forms.ChoiceField(
+                label=_('Network'),
+            ),
+            'choices': base_object_network_choices,
+            'exclude_from_history': True,
+        },
+    },
+    precondition=check_number_of_instance
+)
+def replace_ip(cls, instances, ipaddress, network, **kwargs):
+    ip = IPAddress.objects.get(pk=ipaddress)
+    network = Network.objects.get(pk=network)
+    new_ip_address = str(network.get_first_free_ip())
+    logger.info(
+        'Replacing IP {} to {}'.format(ip.address, new_ip_address)
+    )
+    ip.address = new_ip_address
+    ip.save()
+
+
+@deployment_action(
     verbose_name=_('Assign new IP address and create DHCP entries'),
     form_fields={
         'ip_or_network': {
             'field': ChoiceFieldWithOtherOption(
                 label=_('IP Address'),
                 other_field=forms.GenericIPAddressField(),
-                auto_other_choice=False,
+                auto_other_choice=False
             ),
-            'choices': next_free_ip_choices,
+            'choices': next_free_ip_choices_wth_other_choice,
             'exclude_from_history': True,
             'validation': validate_ip_address,
         },
@@ -644,6 +783,7 @@ def assign_configuration_path(cls, instances, configuration_path, **kwargs):
         'assign_new_hostname', 'create_dhcp_entries', 'wait_for_dhcp_servers',
         'create_dns_entries',
     ],
+    precondition=check_if_deployment_is_available
 )
 def deploy(cls, instances, **kwargs):
     """

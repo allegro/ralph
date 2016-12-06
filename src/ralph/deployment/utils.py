@@ -31,8 +31,31 @@ def _render_configuration(configuration, deployment, disable_reverse=False):
         'kickstart': urljoin(
             ralph_instance,
             url(
-                'deployment_kickstart',
-                kwargs={'deployment_id': deployment.id}
+                'deployment_config',
+                kwargs={
+                    'deployment_id': deployment.id,
+                    'config_type': 'kickstart',
+                }
+            ),
+        ),
+        'preseed': urljoin(
+            ralph_instance,
+            url(
+                'deployment_config',
+                kwargs={
+                    'deployment_id': deployment.id,
+                    'config_type': 'preseed',
+                }
+            ),
+        ),
+        'script': urljoin(
+            ralph_instance,
+            url(
+                'deployment_config',
+                kwargs={
+                    'deployment_id': deployment.id,
+                    'config_type': 'script',
+                }
             ),
         ),
         'initrd': urljoin(
@@ -47,6 +70,13 @@ def _render_configuration(configuration, deployment, disable_reverse=False):
             url(
                 'deployment_files',
                 kwargs={'deployment_id': deployment.id, 'file_type': 'kernel'}
+            ),
+        ),
+        'netboot': urljoin(
+            ralph_instance,
+            url(
+                'deployment_files',
+                kwargs={'deployment_id': deployment.id, 'file_type': 'netboot'}
             ),
         ),
         'dc': deployment.obj.rack.server_room.data_center.name,

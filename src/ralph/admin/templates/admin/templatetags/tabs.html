@@ -11,7 +11,7 @@
         data-options="show_on:small"
       >
         <a href="{{ object.get_absolute_url }}" title="{% trans "Basic info" %}" class="ellipsis-hidden">
-          <i class="fa fa-info"></i> <span class="tab-label">{% trans "Basic info" %}</span>
+          <i class="fa fa-info" aria-hidden="true"></i> <span class="tab-label">{% trans "Basic info" %}</span>
         </a>
       </li>
       {% for view in views %}
@@ -32,7 +32,7 @@
             class="ellipsis-hidden"
           />
             {% if view.icon %}
-              <i class="fa fa-{{ view.icon }}"></i>
+              <i class="fa fa-{{ view.icon }}" aria-hidden="true"></i>
             {% endif %}
             <span class="tab-label">{{ view.label }}</span>
             {# TODO: show some badge (ex. currently running transitions ) #}

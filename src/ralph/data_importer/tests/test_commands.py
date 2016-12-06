@@ -14,15 +14,16 @@ from ralph.assets.models.assets import (
 )
 from ralph.assets.models.choices import ObjectModelType
 from ralph.back_office.models import BackOfficeAsset, Warehouse
+from ralph.data_center.models import DataCenterAsset
 from ralph.data_center.models.physical import DataCenter, Rack, ServerRoom
 from ralph.data_center.tests.factories import DataCenterFactory
 from ralph.data_importer.management.commands import importer
 from ralph.data_importer.models import ImportedObjects
 from ralph.data_importer.resources import AssetModelResource
+from ralph.networks.models import IPAddress
 
 
 class DataImporterTestCase(TestCase):
-
     """TestCase data importer command."""
 
     def setUp(self):  # noqa
@@ -303,3 +304,88 @@ class DataImporterTestCase(TestCase):
         self.assertTrue(Warehouse.objects.filter(
             name="From zip London"
         ).exists())
+
+
+class IPManagementTestCase(TestCase):
+    def setUp(self):
+        self.base_dir = os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__))
+        )
+        asset_model = AssetModel()
+        asset_model.id = 1  # required by csvs file
+        asset_model.name = "asset_model_1"
+        asset_model.type = ObjectModelType.all
+        asset_model.save()
+
+    def test_data_center_asset_is_imported_when_ip_management_is_created(
+        self
+    ):
+        xlsx_path = os.path.join(
+            self.base_dir,
+            'tests/samples/management_ip_existing.csv'
+        )
+        self.assertFalse(
+            IPAddress.objects.filter(address='10.0.0.103').exists()
+        )
+
+        management.call_command(
+            'importer',
+            xlsx_path,
+            type='file',
+            model_name='DataCenterAsset',
+            map_imported_id_to_new_id=False,
+        )
+
+        self.assertTrue(
+            DataCenterAsset.objects.get(hostname='EMC1-3')
+        )
+        self.assertTrue(
+            DataCenterAsset.objects.get().ethernet_set.get().ipaddress.address,
+            '10.0.0.103'
+        )
+
+    def test_data_center_asset_is_imported_when_ip_management_is_reused(
+        self
+    ):
+        IPAddress.objects.create(address='10.0.0.103')
+        self.assertTrue(
+            IPAddress.objects.filter(address='10.0.0.103').exists()
+        )
+
+        xlsx_path = os.path.join(
+            self.base_dir,
+            'tests/samples/management_ip_existing.csv'
+        )
+        management.call_command(
+            'importer',
+            xlsx_path,
+            type='file',
+            model_name='DataCenterAsset',
+            map_imported_id_to_new_id=False,
+        )
+
+        self.assertTrue(
+            DataCenterAsset.objects.get(hostname='EMC1-3')
+        )
+        self.assertTrue(
+            DataCenterAsset.objects.get().ethernet_set.get().ipaddress.address,
+            '10.0.0.103'
+        )
+
+    def test_data_center_asset_is_imported_when_ip_management_is_blank(
+        self
+    ):
+        xlsx_path = os.path.join(
+            self.base_dir, 'tests/samples/management_ip_blank.csv'
+        )
+        management.call_command(
+            'importer',
+            xlsx_path,
+            type='file',
+            model_name='DataCenterAsset',
+            map_imported_id_to_new_id=False,
+        )
+
+        self.assertTrue(
+            DataCenterAsset.objects.get(hostname='EMC1-3')
+        )

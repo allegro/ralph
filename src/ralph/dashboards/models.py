@@ -79,7 +79,7 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
         if annotate_filters:
             queryset = queryset.filter(**annotate_filters)
         return {
-            'labels': [q[self.params['labels']] for q in queryset],
+            'labels': [str(q[self.params['labels']]) for q in queryset],
             'series': [int(q['series']) for q in queryset],
         }
 

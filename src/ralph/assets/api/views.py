@@ -139,6 +139,7 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
         'barcode': ['asset__barcode'],
         'price': ['asset__price'],
         'ip': ['ethernet_set__ipaddress__address'],
+        'uid': ['serviceenvironment__service__uid'],
         'service': ['service_env__service__uid', 'service_env__service__name'],
         'env': ['service_env__environment__name'],
     }

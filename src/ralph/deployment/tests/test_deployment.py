@@ -178,7 +178,9 @@ class _BaseTestDeploymentActionsTestCase(object):
         next_free_hostname = 'server_10001.mydc.net'
         history = {self.instance.pk: {}}
         self.instance.__class__.assign_new_hostname(
-            [self.instance], {'value': self.net_env.id}, history_kwargs=history
+            [self.instance], {'value': self.net_env.id},
+            history_kwargs=history,
+            shared_params={'hostnames': {self.instance.pk: ''}}
         )
         self.assertEqual(self.instance.hostname, next_free_hostname)
         self.assertEqual(history, {
@@ -195,7 +197,8 @@ class _BaseTestDeploymentActionsTestCase(object):
         self.instance.__class__.assign_new_hostname(
             [self.instance],
             {'value': '__other__', '__other__': 's12345.mydc.net'},
-            history_kwargs=history
+            history_kwargs=history,
+            shared_params={'hostnames': {self.instance.pk: ''}}
         )
         self.assertEqual(self.instance.hostname, 's12345.mydc.net')
         self.assertEqual(history, {
@@ -405,7 +408,10 @@ class TestRenderSlash(TestCase):
         ('{{done_url}}', 'http://127.0.0.1:8000/deployment/{}/mark_as_done'),
         ('{{initrd}}', 'http://127.0.0.1:8000/deployment/{}/initrd'),
         ('{{kernel}}', 'http://127.0.0.1:8000/deployment/{}/kernel'),
+        ('{{netboot}}', 'http://127.0.0.1:8000/deployment/{}/netboot'),
         ('{{kickstart}}', 'http://127.0.0.1:8000/deployment/{}/kickstart'),
+        ('{{preseed}}', 'http://127.0.0.1:8000/deployment/{}/preseed'),
+        ('{{script}}', 'http://127.0.0.1:8000/deployment/{}/script'),
         ('{{ralph_instance}}', 'http://127.0.0.1:8000/'),
     )
     def test_single_slash_when_ralph_instance_has_one(
@@ -421,7 +427,10 @@ class TestRenderSlash(TestCase):
         ('{{done_url}}', 'http://127.0.0.1:8000/deployment/{}/mark_as_done'),
         ('{{initrd}}', 'http://127.0.0.1:8000/deployment/{}/initrd'),
         ('{{kernel}}', 'http://127.0.0.1:8000/deployment/{}/kernel'),
+        ('{{netboot}}', 'http://127.0.0.1:8000/deployment/{}/netboot'),
         ('{{kickstart}}', 'http://127.0.0.1:8000/deployment/{}/kickstart'),
+        ('{{preseed}}', 'http://127.0.0.1:8000/deployment/{}/preseed'),
+        ('{{script}}', 'http://127.0.0.1:8000/deployment/{}/script'),
         ('{{ralph_instance}}', 'http://127.0.0.1:8000'),
     )
     def test_single_slash_when_ralph_instance_has_no_slash(

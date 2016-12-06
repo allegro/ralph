@@ -193,8 +193,8 @@ class CloudHost(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
 
     @ip_addresses.setter
     def ip_addresses(self, value):
-        if set(self.ip_addresses) == set(value):
-            return
+        # value is a list (of ips) or dict (of ip:hostname pairs)
+        # when value is a dict, set will work on keys only
         for ip in set(value) - set(self.ip_addresses):
             try:
                 new_ip = IPAddress.objects.get(address=ip)
@@ -207,13 +207,32 @@ class CloudHost(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
                         'another asset'
                     ) % (ip, self.hostname))
             except ObjectDoesNotExist:
+                logger.info('Creating new IP {} for {}'.format(ip, self))
                 new_ip = IPAddress(
                     ethernet=Ethernet.objects.create(base_object=self),
                     address=ip
                 )
                 new_ip.save()
+        # refresh hostnames
+        if isinstance(value, dict):
+            for address, hostname in value.items():
+                try:
+                    ip = IPAddress.objects.get(address=address)
+                except IPAddress.DoesNotExist:
+                    logger.debug('IP {} not found'.format(address))
+                else:
+                    if ip.hostname != hostname:
+                        logger.info(
+                            'Setting {} for IP {} (previous value: {})'.format(
+                                hostname, address, ip.hostname
+                            )
+                        )
+                        ip.hostname = hostname
+                        ip.save()
 
         to_delete = set(self.ip_addresses) - set(value)
+        for ip in to_delete:
+            logger.warning('Deleting {} from {}'.format(ip, self))
         Ethernet.objects.filter(
             base_object=self, ipaddress__address__in=to_delete
         ).delete()

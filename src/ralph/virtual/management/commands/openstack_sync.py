@@ -9,7 +9,7 @@ import reversion as revisions
 from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.core.management.base import BaseCommand
-from django.db import transaction
+from django.db import IntegrityError, transaction
 
 from ralph.data_center.models.physical import DataCenterAsset
 from ralph.lib import network
@@ -23,7 +23,10 @@ from ralph.virtual.models import (
 logger = logging.getLogger(__name__)
 
 try:
-    from keystoneclient.v2_0 import client as ks
+    from keystoneclient.v2_0 import client as ks_v2_client
+    from keystoneclient.v3 import client as ks_v3_client
+    from keystoneauth1 import session as ks_session
+    from keystoneauth1.identity import v3 as ks_v3_identity
     keystone_client_exists = True
 except ImportError:
     keystone_client_exists = False
@@ -34,6 +37,9 @@ try:
     nova_client_exists = True
 except ImportError:
     nova_client_exists = False
+
+
+DEFAULT_OPENSTACK_PROVIDER_NAME = settings.DEFAULT_OPENSTACK_PROVIDER_NAME
 
 
 class EmptyListError(Exception):
@@ -51,6 +57,15 @@ class Command(BaseCommand):
         self.summary = defaultdict(int)
         self.openstack_projects = {}
         self.openstack_flavors = {}
+        self.openstack_provider_name = DEFAULT_OPENSTACK_PROVIDER_NAME
+
+    def add_arguments(self, parser):
+        super().add_arguments(parser)
+        parser.add_argument(
+            '--provider',
+            help='OpenStack provider name',
+            default=DEFAULT_OPENSTACK_PROVIDER_NAME,
+        )
 
     @staticmethod
     def _get_novaclient_connection(site):
@@ -62,6 +77,28 @@ class Command(BaseCommand):
             site['auth_url']
         )
         return nt
+
+    @staticmethod
+    def _get_keystone_client(site):
+        if site.get('keystone_version', '').startswith('3'):
+            auth = ks_v3_identity.Password(
+                auth_url=site.get('keystone_auth_url', site['auth_url']),
+                username=site['username'],
+                password=site['password'],
+                user_domain_name=site.get('user_domain_name', 'default'),
+                project_name=site['tenant_name'],
+                project_domain_name=site.get('project_domain_name', 'default'),
+            )
+            session = ks_session.Session(auth=auth)
+            client = ks_v3_client.Client(session=session, version=(3,))
+        else:
+            client = ks_v2_client.Client(
+                username=site['username'],
+                password=site['password'],
+                tenant_name=site['tenant_name'],
+                auth_url=site['auth_url'],
+            )
+        return client
 
     @staticmethod
     def _get_servers_list(nt, site):
@@ -132,19 +169,21 @@ class Command(BaseCommand):
             )
         return flavors
 
+    def _get_keystone_projects(self, keystone_client):
+        if keystone_client.version == 'v3':
+            projects_resource = keystone_client.projects
+        else:
+            projects_resource = keystone_client.tenants
+        yield from projects_resource.list()
+
     def _update_projects(self, site):
         """
         Returns a map tenant_id->tenant_name
         :rtype: dict
         """
-        keystone_client = ks.Client(
-            username=site['username'],
-            password=site['password'],
-            tenant_name=site['tenant_name'],
-            auth_url=site['auth_url'],
-        )
+        keystone_client = self._get_keystone_client(site)
 
-        for project in keystone_client.tenants.list():
+        for project in self._get_keystone_projects(keystone_client):
             if project.id not in self.openstack_projects:
                 self.openstack_projects[project.id] = {
                     'name': project.name,
@@ -153,8 +192,19 @@ class Command(BaseCommand):
                 }
             self.openstack_projects[project.id]['tags'].append(site['tag'])
 
+    def _get_instances_from_settings(self):
+        """
+        Filter instances from OPENSTACK_INSTANCES (from settings) and yield
+        only the ones matching current opeenstack provider.
+        """
+        for os_instance in settings.OPENSTACK_INSTANCES:
+            if os_instance.get(
+                'provider', DEFAULT_OPENSTACK_PROVIDER_NAME
+            ) == self.openstack_provider_name:
+                yield os_instance
+
     def _process_openstack_instances(self):
-        for site in settings.OPENSTACK_INSTANCES:
+        for site in self._get_instances_from_settings():
             logger.info('Processing {} ({})'.format(
                 site['auth_url'], site['tag']
             ))
@@ -187,7 +237,7 @@ class Command(BaseCommand):
                     'id': server['id'],
                     'flavor_id': flavor_id,
                     'tag': site['tag'],
-                    'ips': [],
+                    'ips': {},
                     'created': server['created'],
                     'hypervisor': server['OS-EXT-SRV-ATTR:hypervisor_hostname'],
                     'image': image_name,
@@ -199,12 +249,15 @@ class Command(BaseCommand):
                     ):
                         continue
                     for ip in server['addresses'][zone]:
-                        new_server['ips'].append(ip['addr'])
+                        addr = ip['addr']
+                        # fetch FQDN from DNS by IP address
+                        hostname = network.hostname(addr)
+                        logger.debug('Get IP {} ({}) for {}'.format(
+                            addr, hostname, server['id']
+                        ))
+                        new_server['ips'][addr] = hostname
                         if not new_server['hostname']:
-                            # fetch FQDN from DNS by IP address
-                            new_server['hostname'] = network.hostname(
-                                ip['addr']
-                            )
+                            new_server['hostname'] = hostname
                 # fallback to default behavior if FQDN could not be fetched
                 # from DNS
                 new_server['hostname'] = (
@@ -215,7 +268,7 @@ class Command(BaseCommand):
                         new_server
                     )
                 except KeyError:
-                    logger.error('Project {} not found for server {}'.format(
+                    logger.warning('Project {} not found for server {}'.format(
                         project_id, host_id,
                     ))
 
@@ -228,12 +281,23 @@ class Command(BaseCommand):
 
     def _get_cloud_provider(self):
         """Get or create cloud provider object"""
-        try:
-            self.cloud_provider = CloudProvider.objects.get(name='openstack')
-        except ObjectDoesNotExist:
-            self.cloud_provider = CloudProvider(name='openstack')
-            self._save_object(self.cloud_provider,
-                              'Add openstack CloudProvider')
+        def _get_or_create(provider_name):
+            try:
+                cloud_provider = CloudProvider.objects.get(
+                    name=provider_name,
+                )
+            except ObjectDoesNotExist:
+                cloud_provider = CloudProvider(
+                    name=provider_name,
+                )
+                self._save_object(
+                    cloud_provider, 'Add {} CloudProvider'.format(provider_name)
+                )
+            return cloud_provider
+        self.cloud_provider = _get_or_create(self.openstack_provider_name)
+        self.default_cloud_provider = _get_or_create(
+            DEFAULT_OPENSTACK_PROVIDER_NAME
+        )
 
     def _get_ralph_data(self):
         """Get configuration from ralph DB"""
@@ -242,21 +306,27 @@ class Command(BaseCommand):
         projects = CloudProject.objects.filter(
             cloudprovider=self.cloud_provider
         ).prefetch_related('tags')
-        for project in projects:
-            project_id = project.project_id
-            self.ralph_projects[project_id] = {
+
+        def _get_project_info(project):
+            return {
                 'name': project.name,
                 'servers': {},
                 'tags': project.tags.names(),
             }
 
+        for project in projects:
+            project_id = project.project_id
+            self.ralph_projects[project_id] = _get_project_info(project)
+
         for server in CloudHost.objects.filter(
-            parent__in=projects
+            cloudprovider=self.cloud_provider,
         ).select_related(
             'hypervisor', 'parent', 'parent__cloudproject',
         ).prefetch_related('tags'):
-            ips = server.ethernet_set.select_related('ipaddress').values_list(
-                'ipaddress__address', flat=True
+            ips = dict(
+                server.ethernet_set.select_related('ipaddress').values_list(
+                    'ipaddress__address', 'ipaddress__hostname'
+                )
             )
             new_server = {
                 'hostname': server.hostname,
@@ -267,6 +337,11 @@ class Command(BaseCommand):
             }
             host_id = server.host_id
             project_id = server.parent.cloudproject.project_id
+            # workaround for projects with the same id in multiple providers
+            if project_id not in self.ralph_projects:
+                self.ralph_projects[project_id] = _get_project_info(
+                    CloudProject.objects.get(project_id=project_id)
+                )
             self.ralph_projects[project_id]['servers'][host_id] = new_server
 
         for flavor in CloudFlavor.objects.filter(
@@ -281,7 +356,7 @@ class Command(BaseCommand):
             obj = DataCenterAsset.objects.get(hostname=host_name)
             return obj
         except (MultipleObjectsReturned, ObjectDoesNotExist):
-            logger.error('Hypervisor {} not found for {}'.format(
+            logger.warning('Hypervisor {} not found for {}'.format(
                 host_name, server_id,
             ))
             return None
@@ -295,7 +370,7 @@ class Command(BaseCommand):
         try:
             flavor = self._get_flavors()[openstack_server['flavor_id']]
         except KeyError:
-            logger.error(
+            logger.warning(
                 'Flavor {} not found for host {}'.format(
                     openstack_server['flavor_id'], openstack_server
                 )
@@ -335,7 +410,7 @@ class Command(BaseCommand):
         try:
             flavor = self._get_flavors()[openstack_server['flavor_id']]
         except KeyError:
-            logger.error(
+            logger.warning(
                 'Flavor {} not found for host {}'.format(
                     openstack_server['flavor_id'], openstack_server
                 )
@@ -381,7 +456,7 @@ class Command(BaseCommand):
             obj.tags.add(openstack_server['tag'])
 
         # add/remove IPs
-        if set(openstack_server['ips']) != set(ralph_server['ips']):
+        if openstack_server['ips'] != ralph_server['ips']:
             modified = True
             with transaction.atomic(), revisions.create_revision():
                 obj.ip_addresses = openstack_server['ips']
@@ -417,7 +492,11 @@ class Command(BaseCommand):
                 self.ralph_projects[project_id]['servers'].keys(
                 ) - servers.keys()
             ):
-                self._delete_object(CloudHost.objects.get(host_id=server_id))
+                host = CloudHost.objects.get(host_id=server_id)
+                logger.warning('Removing CloudHost {} ({})'.format(
+                    server_id, host.hostname
+                ))
+                self._delete_object(host)
                 self.summary['del_instances'] += 1
         except KeyError:
             pass
@@ -445,7 +524,18 @@ class Command(BaseCommand):
                 project_id=project_id,
                 cloudprovider=self.cloud_provider,
             )
-            self._save_object(project, 'Add project %s' % project.name)
+            try:
+                with transaction.atomic():
+                    self._save_object(project, 'Add project %s' % project.name)
+            except IntegrityError:
+                logger.warning(
+                    'Duplicated project ID ({}) for project {}'.format(
+                        project.project_id, project.name
+                    )
+                )
+                project = CloudProject.objects.get(
+                    project_id=project_id
+                )
             for tag in data['tags']:
                 project.tags.add(tag)
         self.summary['total_projects'] += 1
@@ -562,7 +652,9 @@ class Command(BaseCommand):
         if not hasattr(settings, 'OPENSTACK_INSTANCES'):
             logger.error('Nothing to sync')
             return
+        self.openstack_provider_name = options['provider']
         self.stdout.write("syncing...")
+
         self._get_cloud_provider()
         self._process_openstack_instances()
         self._get_ralph_data()

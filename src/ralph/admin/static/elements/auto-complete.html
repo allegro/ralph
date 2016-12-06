@@ -89,14 +89,14 @@ Example:
       on-keydown='_handleKeys'
       ></badge-input>
       <div id='icons'>
-        <i hidden$='{{hiddenSpinner}}' class="loader fa fa-refresh fa-spin"></i>
+        <i hidden$='{{hiddenSpinner}}' class="loader fa fa-refresh fa-spin" aria-hidden="true"></i>
         <i hidden$='{{hiddenAjaxError}}' class="has-tip fail fa
-          fa-exclamation" title="Something goes wrong..."></i>
+          fa-exclamation" title="Something goes wrong..." aria-hidden="true"></i>
         <a on-tap='showAdminPopup' href="[[relatedUrl]]" id="lookup_id_[[name]]">
-          <i class="fa fa-search"></i>
+          <i class="fa fa-search" aria-hidden="true"></i>
         </a>
         <a hidden="{{!addRelatedUrl}}" on-tap='showAdminPopup' id="add_id_[[name]]" href="[[addRelatedUrl]]">
-          <i class="fa fa-plus-circle"></i>
+          <i class="fa fa-plus-circle" aria-hidden="true"></i>
         </a>
         <tool-tip tip='[[searchTooltip]]'></tool-tip>
       </div>

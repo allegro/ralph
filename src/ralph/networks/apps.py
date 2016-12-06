@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import post_save, pre_delete
 
 from ralph.apps import RalphAppConfig
 
@@ -22,7 +22,7 @@ class Networks(RalphAppConfig):
             receiver=update_dns_record,
             sender=ip_model
         )
-        post_delete.connect(
+        pre_delete.connect(
             receiver=delete_dns_record,
             sender=ip_model,
         )

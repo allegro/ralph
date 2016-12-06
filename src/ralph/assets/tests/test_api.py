@@ -658,6 +658,19 @@ class BaseObjectAPITests(RalphAPITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(len(response.data['results']), 1)
 
+    def test_filter_by_uid(self):
+        url = '{}?{}'.format(
+            reverse('baseobject-list'), urlencode(
+                {'uid': self.dc_asset.service_env.service.uid}
+            )
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(
+            response.data['results'][0]['id'],
+            self.dc_asset.service_env.id
+        )
+
     def test_filter_by_service_name(self):
         url = '{}?{}'.format(
             reverse('baseobject-list'), urlencode(
