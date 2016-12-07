@@ -38,6 +38,7 @@ python:
 before_install:
     - pip install flake8==3.0.4 isort
     - make flake
+    - npm install -g gulp
     - export RALPH_VERSION=$(cat VERSION)
     - docker run -d -p "$REDIS_PORT:6379" redis:3.0;
     - export NEW_TAG=$RALPH_VERSION-snapshot-$(date "+%Y%m%d")-$TRAVIS_BUILD_NUMBER
