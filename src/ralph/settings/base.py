@@ -73,6 +73,7 @@ INSTALLED_APPS = (
     'ralph.lib.transitions',
     'ralph.lib.permissions',
     'ralph.lib.custom_fields',
+    'ralph.notifications',
     'rest_framework',
     'rest_framework.authtoken',
     'taggit',
@@ -473,7 +474,15 @@ RALPH2_HERMES_ROLE_PROPERTY_WHITELIST = json.loads(
 ENABLE_SAVE_DESCENDANTS_DURING_NETWORK_SYNC = bool_from_env(
     'ENABLE_SAVE_DESCENDANTS_DURING_NETWORK_SYNC', True
 )
+ENABLE_EMAIL_NOTIFICATION = bool_from_env('ENABLE_EMAIL_NOTIFICATION')
 
+EMAIL_HOST = os.environ.get('EMAIL_HOST', None)
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', None)
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', None)
+EMAIL_PORT = os.environ.get('EMAIL_PORT', 25)
+EMAIL_USE_TLS = bool_from_env('EMAIL_USE_TLS', False)
+
+EMAIL_FROM = os.environ.get('EMAIL_FROM', None)
 
 # METRICS
 COLLECT_METRICS = False

@@ -130,7 +130,7 @@ class CloudFlavor(AdminAbsoluteUrlMixin, BaseObject):
             self._set_component(disk)
 
 
-class CloudProject(AdminAbsoluteUrlMixin, BaseObject):
+class CloudProject(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
     cloudprovider = models.ForeignKey(CloudProvider)
     cloudprovider._autocomplete = False
 

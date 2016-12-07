@@ -1,0 +1,22 @@
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    </head>
+    <body bgcolor="#fff" style="background-color: #fff; font-family: Arial">
+        <table cellspacing="0" cellpadding="0" border="0" width="450px" align="left">
+            <tr>
+                <td>
+                    Ralph noticed some changes in {{ object }} See above for more information.
+                    <br /><br />
+                    Author {{ user.get_full_name }}
+                    <br />
+                    Service change from {{ old_service_env.service }} to {{ new_service_env.service }}
+                    <br /><br />
+                    Change timestamp {{ date }}
+                    <br />
+                    You receive this e-mail because you are marked as business/technical owner of the service this device belongs to.
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>
