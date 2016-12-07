@@ -14,7 +14,7 @@ REQUESTS_COUNTER_METRIC_PREFIX = getattr(
 
 METRIC_NAME_TMPL = getattr(
     settings,
-    'METRIC_NAME_TMPL',
+    'REQUESTS_METRIC_NAME_TMPL',
     '{prefix}.{url_name}.{request_method}.{status_code}'
 )
 
