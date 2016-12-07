@@ -85,3 +85,6 @@ if SKIP_MIGRATIONS:
             return "notmigrations"
 
     MIGRATION_MODULES = DisableMigrations()
+
+EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+ENABLE_EMAIL_NOTIFICATION = True
