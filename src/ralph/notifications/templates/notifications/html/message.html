@@ -6,7 +6,9 @@
         <table cellspacing="0" cellpadding="0" border="0" width="450px" align="left">
             <tr>
                 <td>
-                    Device : {{ object }} Service  was changed from {{ old_service_env.service }} to {{ new_service_env.service }}<br />
+                    Device : {{ object }} Service was changed. <br />
+                    Current service: {{ new_service_env.service }}<br />
+                    Old service: {{ old_service_env.service }} <br />
                     Author: {{ user.get_full_name }}<br />
                     <br />
                     If you want the datail information about this device pleas go to link: <a href="{{ object_url }}">{{ object_url }}</a><br />

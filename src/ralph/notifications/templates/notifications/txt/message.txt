@@ -1,4 +1,6 @@
-Device : {{ object }} Service  was changed from {{ old_service_env.service }} to {{ new_service_env.service }}
+Device : {{ object }} Service was changed.
+Current service: {{ new_service_env.service }}
+Old service: {{ old_service_env.service }}
 Author: {{ user.get_full_name }}
 
 If you want the datail information about this device pleas go to link: {{ object_url }}
