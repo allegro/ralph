@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+from urllib.parse import urljoin
+
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
-from django.utils import timezone
 from metrology import Metrology
 from threadlocals.threadlocals import get_current_user
 
@@ -27,14 +28,17 @@ def send_notification_for_model(sender, instance, **kwargs):
             owners.extend(list(getattr(old_service_env.service, field).all()))
             owners.extend(list(getattr(new_service_env.service, field).all()))
 
-        emails = [owner.email for owner in owners if owner.email]
+        emails = set([owner.email for owner in owners if owner.email])
         if emails:
             context = {
                 'old_service_env': old_service_env,
                 'new_service_env': new_service_env,
-                'date': timezone.now(),
                 'object': instance,
-                'user': get_current_user()
+                'user': get_current_user(),
+                'settings': settings,
+                'object_url': urljoin(
+                    settings.RALPH_HOST_URL, instance.get_absolute_url()
+                )
             }
             html_content = render_to_string(
                 'notifications/html/message.html',
@@ -44,9 +48,11 @@ def send_notification_for_model(sender, instance, **kwargs):
                 'notifications/txt/message.txt',
                 context
             )
-            subject = 'Changes in {}'.format(instance)
+            subject = 'Device has been assigned to Service: {} ({})'.format(
+                new_service_env.service, instance
+            )
             msg = EmailMultiAlternatives(
-                subject, text_content, settings.EMAIL_FROM, emails
+                subject, text_content, settings.EMAIL_FROM, list(emails)
             )
             msg.attach_alternative(html_content, "text/html")
             msg.send()

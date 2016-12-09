@@ -29,7 +29,9 @@ class NotificationTest(RalphTestCase):
         self.dca.save()
 
         self.assertEqual(
-            'Changes in {}'.format(self.dca),
+            'Device has been assigned to Service: {} ({})'.format(
+                new_service, self.dca
+            ),
             mail.outbox[0].subject
         )
         self.assertCountEqual(

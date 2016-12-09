@@ -483,6 +483,11 @@ EMAIL_PORT = os.environ.get('EMAIL_PORT', 25)
 EMAIL_USE_TLS = bool_from_env('EMAIL_USE_TLS', False)
 
 EMAIL_FROM = os.environ.get('EMAIL_FROM', None)
+EMAIL_MESSAGE_CONTACT_NAME = os.environ.get('EMAIL_MESSAGE_CONTACT_NAME', None)
+EMAIL_MESSAGE_CONTACT_EMAIL = os.environ.get(
+    'EMAIL_MESSAGE_CONTACT_EMAIL', None
+)
+RALPH_HOST_URL = os.environ.get('RALPH_HOST_URL', None)
 
 # METRICS
 COLLECT_METRICS = False
