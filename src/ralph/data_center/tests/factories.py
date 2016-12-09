@@ -139,7 +139,7 @@ class DataCenterAssetFactory(DjangoModelFactory):
     force_depreciation = False
     model = factory.SubFactory(DataCenterAssetModelFactory)
     sn = factory.Faker('ssn')
-    barcode = factory.Faker('ean8')
+    barcode = factory.Sequence(lambda n: 'dc' + str(n + 10**8))
     hostname = factory.Sequence(lambda n: 'ralph{}.allegro.pl'.format(n))
     order_no = factory.Sequence(lambda n: 'Order number ' + str(n))
     budget_info = factory.SubFactory(BudgetInfoFactory)
