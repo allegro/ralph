@@ -137,10 +137,16 @@ class DNSaaS:
         Return:
             Domain URL from API or False if not exists
         """
-        url = self.build_url('domains', get_params=[('name', domain_name)])
-        result = self.get_api_result(url)
-        if result:
-            return result[0]['id']
+        parts = domain_name.split('.')
+        while parts:
+            domain_name = '.'.join(parts)
+            url = self.build_url('domains', get_params=[('name', domain_name)])
+            result = self.get_api_result(url)
+            if result:
+                return result[0]['id']
+
+            parts = parts[1:]
+        return None
 
     def _response2result(self, response):
         if response.status_code == 500:
