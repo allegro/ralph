@@ -129,13 +129,13 @@ class DNSaaS:
     @cache(skip_first=True)
     def get_domain(self, domain_name):
         """
-        Return domain URL base on record name.
+        Return domain ID base on record name.
 
         Args:
             domain_name: Domain name
 
         Return:
-            Domain URL from API or False if not exists
+            Domain ID from API or None if not exists
         """
         parts = domain_name.split('.')
         while parts:
