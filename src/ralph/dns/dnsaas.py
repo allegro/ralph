@@ -129,18 +129,24 @@ class DNSaaS:
     @cache(skip_first=True)
     def get_domain(self, domain_name):
         """
-        Return domain URL base on record name.
+        Return domain ID base on record name.
 
         Args:
             domain_name: Domain name
 
         Return:
-            Domain URL from API or False if not exists
+            Domain ID from API or None if not exists
         """
-        url = self.build_url('domains', get_params=[('name', domain_name)])
-        result = self.get_api_result(url)
-        if result:
-            return result[0]['id']
+        parts = domain_name.split('.')
+        while parts:
+            domain_name = '.'.join(parts)
+            url = self.build_url('domains', get_params=[('name', domain_name)])
+            result = self.get_api_result(url)
+            if result:
+                return result[0]['id']
+
+            parts = parts[1:]
+        return None
 
     def _response2result(self, response):
         if response.status_code == 500:
