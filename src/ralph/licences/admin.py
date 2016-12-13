@@ -86,9 +86,9 @@ class LicenceAdmin(
     ]
     bulk_edit_list = [
         'manufacturer', 'licence_type', 'property_of', 'software',
-        'number_bought', 'invoice_date', 'valid_thru', 'order_no', 'price',
-        'accounting_id', 'provider', 'niw', 'sn', 'remarks', 'budget_info',
-        'region'
+        'number_bought', 'invoice_no', 'invoice_date', 'valid_thru',
+        'order_no', 'price', 'accounting_id', 'provider', 'niw', 'sn',
+        'remarks', 'budget_info', 'region'
     ]
     resource_class = resources.LicenceResource
     _invoice_report_name = 'invoice-licence'
