@@ -346,7 +346,8 @@ class DataCenterAssetAdmin(
         'depreciation_end_date', 'force_depreciation', 'remarks',
         'budget_info', 'rack', 'rack__server_room',
         'rack__server_room__data_center', 'position', 'property_of',
-        LiquidatedStatusFilter, IPFilter, TagsListFilter
+        LiquidatedStatusFilter, IPFilter, TagsListFilter,
+        'fibrechannelcard_set__wwn'
     ]
     date_hierarchy = 'created'
     list_select_related = [
