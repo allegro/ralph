@@ -12,6 +12,7 @@ class DataCenterAssetStatus(Choices):
     damaged = _('damaged')
     liquidated = _('liquidated')
     to_deploy = _('to deploy')
+    cleaned = _('cleaned')
 
 
 class Orientation(Choices):

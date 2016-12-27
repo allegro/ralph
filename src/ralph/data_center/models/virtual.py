@@ -13,7 +13,11 @@ from ralph.data_center.models.physical import (
     NetworkableBaseObject
 )
 from ralph.lib.mixins.fields import BaseObjectForeignKey, NullableCharField
-from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
+from ralph.lib.mixins.models import (
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    PreviousStateMixin
+)
 from ralph.lib.transitions.fields import TransitionField
 from ralph.networks.models.networks import IPAddress
 
@@ -75,6 +79,7 @@ class ClusterStatus(Choices):
 
 
 class Cluster(
+    PreviousStateMixin,
     DNSaaSPublisherMixin,
     AdminAbsoluteUrlMixin,
     WithManagementIPMixin,

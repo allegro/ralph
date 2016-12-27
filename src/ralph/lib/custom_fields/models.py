@@ -51,8 +51,7 @@ class CustomField(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
     type = models.PositiveIntegerField(
         choices=CustomFieldTypes(), default=CustomFieldTypes.STRING.id
     )
-    choices = models.CharField(
-        max_length=1024,
+    choices = models.TextField(
         null=True,
         blank=True,
         verbose_name=_('choices'),

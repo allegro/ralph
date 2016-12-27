@@ -1,0 +1,22 @@
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    </head>
+    <body bgcolor="#fff" style="background-color: #fff; font-family: Arial">
+        <table cellspacing="0" cellpadding="0" border="0" width="450px" align="left">
+            <tr>
+                <td>
+                    Device : {{ object }} Service was changed. <br />
+                    Current service: {{ new_service_env.service }}<br />
+                    Old service: {{ old_service_env.service }} <br />
+                    Author: {{ user.get_full_name }}<br />
+                    <br />
+                    If you want the datail information about this device pleas go to link: <a href="{{ object_url }}">{{ object_url }}</a><br />
+                    <br />
+                    You receive this e-mail because you are marked as business/technical owner of the service this device belongs/belonged to.<br />
+                    If you need additional information please contact : {{ settings.EMAIL_MESSAGE_CONTACT_NAME }} mail: <a href="mailto:{{ settings.EMAIL_MESSAGE_CONTACT_EMAIL }}">{{ settings.EMAIL_MESSAGE_CONTACT_EMAIL }}</a>
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>

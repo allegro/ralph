@@ -1,0 +1,39 @@
+{% load i18n transitions_tags %}
+<table>
+<thead>
+    <tr>
+        <th>{% trans "Job" %}</th>
+        <th>{% trans "User" %}</th>
+        {% if for_many_objects %}
+            <th>{% trans "Object" %}</th>
+        {% endif %}
+        <th>{% trans "Status" %}</th>
+        <th>{% trans "Transition actions" %}</th>
+        {% if show_action %}<th>{% trans "Actions" %}</th>{% endif %}
+    </tr>
+</thead>
+<tbody>
+    {% for job in jobs %}
+        <tr>
+            <td>{{ job.transition.name }}</td>
+            <td>{{ job.user }}</td>
+            {% if for_many_objects %}
+                <td><a href="{{ job.obj.get_absolute_url }}">{{ job.obj }}</a></td>
+            {% endif %}
+            <td>{{ job | choice_str:"status" }}</td>
+            <td>
+                <ul>
+                    {% for action in job.transition_job_actions.all %}
+                        <li>{{ action.action_name }} - {{ action | choice_str:"status" }} ({{ action.modified }})</li>
+                    {% endfor %}
+                </ul>
+            </td>
+            {% if show_action %}
+            <td>
+              <button class="tiny button alert" onclick="javascript:if (confirm('{% trans 'Are you sure you want to kill transition job?' %}')) location.href='{% url 'kill_transition_job' job.id %}'">kill</button>
+            </td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+</tbody>
+</table>

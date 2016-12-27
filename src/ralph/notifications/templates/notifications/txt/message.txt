@@ -1,0 +1,9 @@
+Device : {{ object }} Service was changed.
+Current service: {{ new_service_env.service }}
+Old service: {{ old_service_env.service }}
+Author: {{ user.get_full_name }}
+
+If you want the datail information about this device pleas go to link: {{ object_url }}
+
+You receive this e-mail because you are marked as business/technical owner of the service this device belongs/belonged to.
+If you need additional information please contact : {{ settings.EMAIL_MESSAGE_CONTACT_NAME }} mail: {{ settings.EMAIL_MESSAGE_CONTACT_EMAIL }}
