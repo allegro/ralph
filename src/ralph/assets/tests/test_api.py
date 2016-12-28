@@ -1134,7 +1134,8 @@ class EthernetAPITests(RalphAPITestCase):
             'is_management': self.ip.is_management,
             'url': self.get_full_url(
                 reverse('ipaddress-detail', args=(self.ip.id,))
-            )
+            ),
+            'ui_url': self.get_full_url(self.ip.get_absolute_url())
         })
 
     def test_cannot_delete_when_exposed_in_dhcp(self):
