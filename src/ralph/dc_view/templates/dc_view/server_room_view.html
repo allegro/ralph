@@ -5,6 +5,8 @@
   {% trans "Dc View" %}
 {% endblock %}
 
+{% block body_extra_attrs %} ng-app="serverRoomVisualizationApp"{% endblock %}
+
 {% block extrahead %}
   {{ block.super }}
   <link rel="stylesheet" type="text/css" href="{% static 'vendor/css/loading-bar.min.css' %}" />
@@ -15,10 +17,14 @@
   {% include 'dc_view/angular_scripts.html' %}
 {% endblock %}
 
+{% block breadcrumbs %}
+  <span ncy-breadcrumb></span>
+{% endblock %}
+
 {% block content %}
 <br />
 <div id="content-main" class="row">
-    <div class="large-12 columns" ng-app="serverRoomVisualizationApp">
+    <div class="large-12 columns">
         <div class="row visualization">
             <div class="large-2 small-3 columns">
               <div class="panel">

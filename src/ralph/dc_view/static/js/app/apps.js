@@ -18,14 +18,19 @@
 
             $urlRouterProvider.otherwise('/sr');
             $breadcrumbProvider.setOptions({
-                template: 'bootstrap2'
+                template: '<ul class="breadcrumbs">' +
+                '<li ng-repeat="step in steps" ng-class="{current: $last}" ng-switch="$last || !!step.abstract">' +
+                '<a ng-switch-when="false" href="{{step.ncyBreadcrumbLink}}">{{step.ncyBreadcrumbLabel}}</a>' +
+                '<span ng-switch-when="true">{{step.ncyBreadcrumbLabel}}</span>' +
+                '</li>'+
+                '</ul>'
             });
             $stateProvider
                 .state('server_room', {
                     url: '/sr',
                     templateUrl: '/static/partials/server_room/sr.html',
                     ncyBreadcrumb: {
-                        label: 'Server Rooms'
+                        label: 'DC Visualization'
                     }
                 })
                 .state('server_room.detail', {

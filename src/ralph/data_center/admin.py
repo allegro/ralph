@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.admin import SimpleListFilter
 from django.contrib.admin.views.main import ChangeList
 from django.contrib.contenttypes.models import ContentType
+from django.core.urlresolvers import reverse
 from django.db.models import Prefetch, Q
 from django.utils.translation import ugettext_lazy as _
 
@@ -20,6 +21,7 @@ from ralph.admin.filters import (
     TagsListFilter,
     TreeRelatedAutocompleteFilterWithDescendants
 )
+from ralph.admin.helpers import generate_html_link
 from ralph.admin.m2m import RalphTabularM2MInline
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
@@ -368,7 +370,7 @@ class DataCenterAssetAdmin(
     ]
     raw_id_override_parent = {'parent': DataCenterAsset}
     _invoice_report_name = 'invoice-data-center-asset'
-    readonly_fields = ['get_created_date']
+    readonly_fields = ['get_created_date', 'go_to_visualization']
 
     fieldsets = (
         (_('Basic info'), {
@@ -381,7 +383,7 @@ class DataCenterAssetAdmin(
         (_('Location Info'), {
             'fields': (
                 'rack', 'position', 'orientation', 'slot_no', 'parent',
-                'management_ip', 'management_hostname',
+                'management_ip', 'management_hostname', 'go_to_visualization'
             )
         }),
         (_('Usage info'), {
@@ -408,6 +410,19 @@ class DataCenterAssetAdmin(
         return getattr(
             settings, 'MULTIADD_DATA_CENTER_ASSET_FIELDS', None
         ) or multiadd_fields
+
+    def go_to_visualization(self, obj):
+        if not obj.rack:
+            return '&mdash;'
+        url = '{}#/sr/{}/rack/{}'.format(
+            reverse('dc_view'),
+            obj.rack.server_room_id,
+            obj.rack.id,
+        )
+        label = '&nbsp;/&nbsp;'.join(obj.get_location())
+        return generate_html_link(url, label=label, params={})
+    go_to_visualization.short_description = _('Visualization')
+    go_to_visualization.allow_tags = True
 
     def show_location(self, obj):
         return obj.location
