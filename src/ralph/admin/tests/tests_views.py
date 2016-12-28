@@ -27,7 +27,11 @@ FACTORY_MAP = {
     'ralph.assets.models.assets.ServiceEnvironment': 'ralph.assets.tests.factories.ServiceEnvironmentFactory',  # noqa
     'ralph.assets.models.base.BaseObject': 'ralph.assets.tests.factories.BaseObjectFactory',  # noqa
     'ralph.assets.models.components.ComponentModel': 'ralph.assets.tests.factories.ComponentModelFactory',  # noqa
+    'ralph.assets.models.components.Disk': 'ralph.assets.tests.factories.DiskFactory',  # noqa
     'ralph.assets.models.components.Ethernet': 'ralph.assets.tests.factories.EthernetFactory',  # noqa
+    'ralph.assets.models.components.FibreChannelCard': 'ralph.assets.tests.factories.FibreChannelCardFactory',  # noqa
+    'ralph.assets.models.components.Memory': 'ralph.assets.tests.factories.MemoryFactory',  # noqa
+    'ralph.assets.models.components.Processor': 'ralph.assets.tests.factories.ProcessorFactory',  # noqa
     'ralph.assets.models.configuration.ConfigurationClass': 'ralph.assets.tests.factories.ConfigurationClassFactory',  # noqa
     'ralph.assets.models.configuration.ConfigurationModule': 'ralph.assets.tests.factories.ConfigurationModuleFactory',  # noqa
     'ralph.back_office.models.BackOfficeAsset': 'ralph.back_office.tests.factories.BackOfficeAssetFactory',  # noqa

@@ -24,7 +24,6 @@ class CustomFieldsAPITests(RalphAPITestCase):
             email='email@email.pl'
         )
         self.client.force_authenticate(self.user)
-        self.maxDiff = None
 
     def test_get_custom_fields_list(self):
         url = reverse('customfield-list')
@@ -46,6 +45,9 @@ class CustomFieldsAPITests(RalphAPITestCase):
             'default_value': 'zxcvbn',
             'url': self.get_full_url(url),
             'type': CustomFieldTypes.CHOICE.desc,
+            'ui_url': self.get_full_url(
+                self.custom_field_choices.get_absolute_url()
+            ),
         })
 
     def test_create_custom_field(self):

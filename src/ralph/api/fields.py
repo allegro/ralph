@@ -1,6 +1,11 @@
 from collections import OrderedDict
 
-from rest_framework.fields import ChoiceField, Field, MultipleChoiceField
+from rest_framework.fields import (
+    ChoiceField,
+    Field,
+    MultipleChoiceField,
+    ReadOnlyField
+)
 
 
 class StrField(Field):
@@ -72,3 +77,17 @@ class ModelMultipleChoiceField(MultipleChoiceField):
         if data:
             return self.model.objects.filter(pk__in=data)
         return self.model.objects.none()
+
+
+class AbsoluteUrlField(ReadOnlyField):
+    """
+    A read-only field that returns full URL to object.
+    """
+
+    def get_attribute(self, obj):
+        request = self.context.get('request', None)
+        obj_url_func = getattr(obj, 'get_absolute_url', None)
+        value = ''
+        if request and obj_url_func:
+            value = request.build_absolute_uri(obj_url_func())
+        return value
