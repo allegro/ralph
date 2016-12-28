@@ -27,6 +27,19 @@ QUERY_REGEX = re.compile(r'[.| ]')
 logger = logging.getLogger(__name__)
 
 
+def get_results(queryset, can_edit):
+    return [
+        {
+            'pk': obj.pk,
+            '__str__': getattr(obj, 'autocomplete_str', str(obj)),
+            'edit_url': '{}?_popup=1'.format(
+                get_admin_url(obj, 'change')
+            ) if can_edit else None,
+            'tooltip': getattr(obj, 'autocomplete_tooltip', None)
+        } for obj in queryset
+    ]
+
+
 class JsonViewMixin(object):
     """
     A mixin that can be used to render a JSON response.
@@ -75,16 +88,8 @@ class SuggestView(JsonViewMixin, View):
     http_method_names = ['get']
 
     def get_results(self, user, can_edit):
-        return [
-            {
-                'pk': obj.pk,
-                '__str__': getattr(obj, 'autocomplete_str', str(obj)),
-                'edit_url': '{}?_popup=1'.format(
-                    get_admin_url(obj, 'change')
-                ) if can_edit else None,
-                'tooltip': getattr(obj, 'autocomplete_tooltip', None)
-            } for obj in self.get_queryset(user)
-        ]
+        return get_results(self.get_queryset(user), can_edit)
+
 
     def get(self, request, *args, **kwargs):
         """

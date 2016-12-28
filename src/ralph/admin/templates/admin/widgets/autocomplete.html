@@ -4,6 +4,7 @@
   {{ attrs }}
   value="{{ value }}"
   {{multi}}
+  prefetch-data='{{ prefetch_data | safe }}'
   query-ajax-url="{{ data_suggest_url }}"
   detailsurl="{{ data_details_url }}"
   related-url="{{ related_url }}"
