@@ -13,7 +13,7 @@
     <script src="{% static "vendor/js/webcomponents-lite.js" %}"></script>
     <link rel="import" href="{% static "elements/elements-min.html" %}">
   </head>
-  <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}">
+  <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}"{% block body_extra_attrs %}{% endblock %}>
     {% if not is_popup %}
       {% block main_nav %}
         <nav class="top-bar" data-topbar>
