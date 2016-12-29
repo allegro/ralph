@@ -78,19 +78,7 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'taggit',
     'taggit_serializer',
-    'ralph.ralph2_sync',
 )
-
-RALPH2_RALPH3_CROSS_VALIDATION_ENABLED = bool_from_env(
-    'RALPH2_RALPH3_CROSS_VALIDATION_ENABLED'
-)
-if RALPH2_RALPH3_CROSS_VALIDATION_ENABLED:
-    RALPH2_PREVIEW_PREFIX_URL = os.environ.get(
-        'RALPH2_PREVIEW_PREFIX_URL', 'http://ralph2.localhost/admin'
-    )
-    INSTALLED_APPS += (
-        'ralph.cross_validator',
-    )
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
@@ -458,19 +446,6 @@ if ENABLE_HERMES_INTEGRATION:
         'pyhermes.apps.django',
     )
 
-
-RALPH2_HERMES_SYNC_ENABLED = bool_from_env('RALPH2_HERMES_SYNC_ENABLED')
-RALPH2_HERMES_SYNC_FUNCTIONS = json.loads(
-    os.environ.get('RALPH2_HERMES_SYNC_FUNCTIONS', '[]')
-)
-
-# mapping model's name to type
-RALPH2_RALPH3_VIRTUAL_SERVER_TYPE_MAPPING = json.loads(
-    os.environ.get('RALPH2_RALPH3_VIRTUAL_SERVER_TYPE_MAPPING', '{}')
-)
-RALPH2_HERMES_ROLE_PROPERTY_WHITELIST = json.loads(
-    os.environ.get('RALPH2_HERMES_ROLE_PROPERTY_WHITELIST', '[]')
-)
 ENABLE_SAVE_DESCENDANTS_DURING_NETWORK_SYNC = bool_from_env(
     'ENABLE_SAVE_DESCENDANTS_DURING_NETWORK_SYNC', True
 )
