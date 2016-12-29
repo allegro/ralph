@@ -128,8 +128,6 @@ class BaseObjectsSupportAdmin(RalphAdmin):
     list_display_links = None
     actions = None
 
-    # TODO: disable import
-
     # disable edit view, adding and deleting objects from here
     def change_view(self, request, obj=None):
         opts = self.model._meta
@@ -150,8 +148,8 @@ class BaseObjectsSupportAdmin(RalphAdmin):
     def _get_support_type(self, obj):
         return generate_html_link(
             obj.support.get_absolute_url(),
-            params={},
             label=obj.support.support_type,
+            params={},
         )
     _get_support_type.short_description = _('support type')
     _get_support_type.admin_order_field = 'support__support_type'
@@ -185,8 +183,8 @@ class BaseObjectsSupportAdmin(RalphAdmin):
     def _get_asset_hostname(self, obj):
         return generate_html_link(
             obj.baseobject.get_absolute_url(),
-            params={},
             label=obj.baseobject.asset.hostname,
+            params={},
         )
     _get_asset_hostname.short_description = _('asset hostname')
     _get_asset_hostname.admin_order_field = 'baseobject__asset__hostname'
@@ -195,4 +193,4 @@ class BaseObjectsSupportAdmin(RalphAdmin):
     def _get_asset_service_env(self, obj):
         return obj.baseobject.service_env
     _get_asset_service_env.short_description = _('asset service env')
-    _get_asset_service_env.admin_order_field = 'baseobject__service_env__service__name'
+    _get_asset_service_env.admin_order_field = 'baseobject__service_env__service__name'  # noqa
