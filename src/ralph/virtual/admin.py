@@ -311,7 +311,7 @@ class CloudHostAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     get_cloudproject._permission_field = 'parent'
 
     def get_service(self, obj):
-        if self.service_env_id:
+        if obj.service_env_id:
             return '<a href="{}">{}</a>'.format(
                 reverse(
                     "admin:assets_service_change",
