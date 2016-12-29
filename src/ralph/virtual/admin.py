@@ -242,7 +242,10 @@ class CloudHostAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     )
 
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related('tags')
+        return super().get_queryset(request).prefetch_related(
+            'tags',
+            'ethernet_set__ipaddress'
+        )
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -288,9 +291,11 @@ class CloudHostAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     cloudflavor_name.allow_tags = True
 
     def get_ip_addresses(self, obj):
-        ips = obj.ethernet_set.values_list(
-            'ipaddress__address', flat=True
-        ).select_related('ipaddress').all()
+        ips = [
+            eth.ipaddress.address
+            for eth in obj.ethernet_set.all()
+            if eth.ipaddress
+        ]
         if not ips:
             return '&ndash;'
         return '\n'.join(ips)
