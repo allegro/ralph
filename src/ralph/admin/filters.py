@@ -365,10 +365,12 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
         value = self.value()
         results = {}
         if value:
+            values = value.split(',')
+            prepend_empty = self.empty_value in values
             queryset = self.field_model.objects.filter(
-                pk__in=value.split(',')
+                pk__in=values
             )
-            results = get_results(queryset, True)
+            results = get_results(queryset, True, prepend_empty)
         return json.dumps(results)
 
     def choices(self, cl):
