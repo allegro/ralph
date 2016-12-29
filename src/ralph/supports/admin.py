@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
@@ -7,9 +9,7 @@ from ralph.admin.filters import TagsListFilter
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.attachments.admin import AttachmentsMixin
-from django.core.urlresolvers import reverse
 from ralph.data_importer import resources
-from django.http import HttpResponseRedirect
 from ralph.supports.models import BaseObjectsSupport, Support, SupportType
 
 
