@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import copy
+import json
 import logging
 import os
 from collections import defaultdict
@@ -19,6 +21,7 @@ from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
+from ralph.admin.autocomplete import get_results
 from ralph.admin.helpers import get_field_by_relation_path
 
 ReadOnlyWidget = forms.TextInput(attrs={'readonly': 'readonly'})
@@ -142,6 +145,18 @@ class AutocompleteWidget(forms.TextInput):
         super().__init__(attrs)
 
     @property
+    def can_edit(self):
+        return self.admin_site._registry[self.rel_to].has_change_permission(
+            self.request
+        )
+
+    @property
+    def can_add(self):
+        return self.admin_site._registry[self.rel_to].has_add_permission(
+            self.request
+        )
+
+    @property
     def media(self):
         res = forms.Media(js=[
             os.path.join('src', 'js', 'ralph-autocomplete.js'),
@@ -161,6 +176,15 @@ class AutocompleteWidget(forms.TextInput):
             current_app=self.admin_site.name,
             args=args
         )
+
+    def get_prefetch_data(self, value):
+        results = {}
+        if value:
+            queryset = self.rel_to.objects.filter(
+                pk__in=value if self.multi else [value]
+            )
+            results = get_results(queryset, self.can_edit)
+        return json.dumps(results)
 
     def value_from_datadict(self, data, files, name):
         value = data.get(name)
@@ -224,6 +248,7 @@ class AutocompleteWidget(forms.TextInput):
         model_options = (
             self.rel_to._meta.app_label, self.rel_to._meta.model_name
         )
+        original_value = copy.copy(value)
         if attrs is None:
             attrs = {}
         attrs['name'] = name
@@ -267,14 +292,12 @@ class AutocompleteWidget(forms.TextInput):
             'attrs': flatatt(attrs),
             'related_url': related_url,
             'search_fields_info': search_fields_info,
+            'prefetch_data': self.get_prefetch_data(original_value)
         })
 
         info = (self.rel_to._meta.app_label, self.rel_to._meta.model_name)
         is_polymorphic = getattr(self.rel_to, 'is_polymorphic', False)
-        can_add = self.admin_site._registry[self.rel_to].has_add_permission(
-            self.request
-        )
-        if not is_polymorphic and can_add:
+        if not is_polymorphic and self.can_add:
             context['add_related_url'] = self.get_related_url(info, 'add')
         template = loader.get_template('admin/widgets/autocomplete.html')
         return template.render(context)
