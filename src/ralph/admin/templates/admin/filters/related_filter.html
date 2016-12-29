@@ -1,5 +1,5 @@
 {% extends "admin/filters/_filter_base.html" %}
 
 {% block filter_choices %}
-    {% include 'admin/widgets/autocomplete.html' with name=i.name value=i.value attrs=i.attrs search_fields_info=i.search_fields_info related_url=i.related_url %}
+    {% include 'admin/widgets/autocomplete.html' with name=i.name value=i.value attrs=i.attrs search_fields_info=i.search_fields_info related_url=i.related_url prefetch_data=i.prefetch_data %}
 {% endblock %}

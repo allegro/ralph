@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import ipaddress
+import json
 import re
 from datetime import datetime
 from functools import lru_cache
@@ -21,7 +22,7 @@ from mptt.fields import TreeForeignKey
 from mptt.settings import DEFAULT_LEVEL_INDICATOR
 from taggit.managers import TaggableManager
 
-from ralph.admin.autocomplete import AUTOCOMPLETE_EMPTY_VALUE
+from ralph.admin.autocomplete import AUTOCOMPLETE_EMPTY_VALUE, get_results
 from ralph.admin.helpers import get_field_by_relation_path
 from ralph.lib.mixins.fields import MACAddressField
 
@@ -360,6 +361,16 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
             ),
         )
 
+    def get_prefetch_data(self):
+        value = self.value()
+        results = {}
+        if value:
+            queryset = self.field_model.objects.filter(
+                pk__in=value.split(',')
+            )
+            results = get_results(queryset, True)
+        return json.dumps(results)
+
     def choices(self, cl):
         model_options = (
             self.field_model._meta.app_label, self.field_model._meta.model_name
@@ -387,6 +398,7 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
             'name': self.field_path,
             'related_url': self.get_related_url(),
             'search_fields_info': "Search by: {}".format(self.title),
+            'prefetch_data': self.get_prefetch_data(),
         },)
 
 

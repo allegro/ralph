@@ -90,7 +90,6 @@ class SuggestView(JsonViewMixin, View):
     def get_results(self, user, can_edit):
         return get_results(self.get_queryset(user), can_edit)
 
-
     def get(self, request, *args, **kwargs):
         """
         Returns serialized dict as JSON object.

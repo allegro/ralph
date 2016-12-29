@@ -305,8 +305,7 @@ Example:
 
       },
       updateBadges: function(evt, obj) {
-        if (obj.xhr) results = obj.xhr.response['results'];
-        else results = obj;
+        results = obj.xhr.response['results'];
         this.hiddenSpinner = true;
         var ids = this._getIds();
         var badgesData = []
@@ -320,8 +319,8 @@ Example:
         this.$['query-getter'].setBadges(badgesData);
       },
       reloadBadges: function() {
-        if(this.prefetchData !== null && this.prefetchData !== {}) {
-          this.updateBadges(null, this.prefetchData);
+        if(this.prefetchData !== null && Object.getOwnPropertyNames(this.prefetchData).length > 0) {
+          this.$['query-getter'].setBadges(this.prefetchData);
           this.prefetchData = null;
         }
         else {
