@@ -28,7 +28,7 @@ QUERY_REGEX = re.compile(r'[.| ]')
 logger = logging.getLogger(__name__)
 
 
-def get_results(queryset, can_edit, prepend_empty=True):
+def get_results(queryset, can_edit, prepend_empty=False):
     results = []
     if prepend_empty:
         results.append({
@@ -95,7 +95,7 @@ class SuggestView(JsonViewMixin, View):
     """
     http_method_names = ['get']
 
-    def get_results(self, user, can_edit, prepend_empty=True):
+    def get_results(self, user, can_edit, prepend_empty=False):
         return get_results(self.get_queryset(user), can_edit, prepend_empty)
 
     def get(self, request, *args, **kwargs):
