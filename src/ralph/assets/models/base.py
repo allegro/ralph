@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -90,3 +91,9 @@ class BaseObject(
     @property
     def service(self):
         return self.service_env.service if self.service_env else None
+
+    def get_absolute_url(self):
+        return reverse('admin:view_on_site', args=(
+            self.content_type_id,
+            self.pk
+        ))

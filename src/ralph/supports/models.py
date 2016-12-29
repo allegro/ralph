@@ -166,7 +166,10 @@ class Support(
         )
 
 
-class BaseObjectsSupport(models.Model):
+class BaseObjectsSupport(
+    AdminAbsoluteUrlMixin,
+    models.Model
+):
     support = models.ForeignKey(Support)
     baseobject = BaseObjectForeignKey(
         BaseObject,
