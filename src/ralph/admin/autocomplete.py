@@ -20,6 +20,7 @@ from ralph.admin.sites import ralph_site
 from ralph.lib.permissions.models import PermissionsForObjectMixin
 
 AUTOCOMPLETE_EMPTY_VALUE = '0'
+AUTOCOMPLETE_EMPTY_LABEL = '<i class="empty">empty</i>'
 QUERY_PARAM = 'q'
 DETAIL_PARAM = 'pk'
 QUERY_REGEX = re.compile(r'[.| ]')
@@ -27,8 +28,14 @@ QUERY_REGEX = re.compile(r'[.| ]')
 logger = logging.getLogger(__name__)
 
 
-def get_results(queryset, can_edit):
-    return [
+def get_results(queryset, can_edit, prepend_empty=True):
+    results = []
+    if prepend_empty:
+        results.append({
+            'pk': AUTOCOMPLETE_EMPTY_VALUE,
+            '__str__': AUTOCOMPLETE_EMPTY_LABEL,
+        })
+    results.extend([
         {
             'pk': obj.pk,
             '__str__': getattr(obj, 'autocomplete_str', str(obj)),
@@ -37,7 +44,8 @@ def get_results(queryset, can_edit):
             ) if can_edit else None,
             'tooltip': getattr(obj, 'autocomplete_tooltip', None)
         } for obj in queryset
-    ]
+    ])
+    return results
 
 
 class JsonViewMixin(object):
@@ -87,8 +95,8 @@ class SuggestView(JsonViewMixin, View):
     """
     http_method_names = ['get']
 
-    def get_results(self, user, can_edit):
-        return get_results(self.get_queryset(user), can_edit)
+    def get_results(self, user, can_edit, prepend_empty=True):
+        return get_results(self.get_queryset(user), can_edit, prepend_empty)
 
     def get(self, request, *args, **kwargs):
         """
@@ -126,13 +134,8 @@ class AjaxAutocompleteMixin(object):
                 return super().dispatch(request, *args, **kwargs)
 
             def get_results(self, user, can_edit):
-                results = super().get_results(user, can_edit)
-                if self.empty_value in self.values:
-                    idx = self.values.index(self.empty_value)
-                    results.insert(idx, {
-                        'pk': self.empty_value,
-                        '__str__': '<empty>',
-                    })
+                prepend_empty = self.empty_value in self.values
+                results = super().get_results(user, can_edit, prepend_empty)
                 return results
 
             def get_queryset(self, user):
@@ -225,12 +228,8 @@ class AutocompleteList(SuggestView):
         return queryset[:self.limit].values_list('pk', flat=True)
 
     def get_results(self, user, can_edit):
-        results = super().get_results(user, can_edit)
-        if self.request.GET.get('prepend-empty', 'false') == 'true':
-            results.insert(0, {
-                'pk': self.empty_value,
-                '__str__': '<empty>',
-            })
+        prepend_empty = self.request.GET.get('prepend-empty', 0) == 'true'
+        results = super().get_results(user, can_edit, prepend_empty)
         return results
 
     def get_queryset(self, user):
