@@ -74,6 +74,7 @@ FACTORY_MAP = {
     'ralph.operations.models.Problem': 'ralph.operations.tests.factories.ProblemFactory',  # noqa
     'ralph.reports.models.Report': 'ralph.reports.factories.ReportFactory',
     'ralph.reports.models.ReportLanguage': 'ralph.reports.factories.ReportLanguageFactory',  # noqa
+    'ralph.supports.models.BaseObjectsSupport': 'ralph.supports.tests.factories.BaseObjectsSupportFactory',  # noqa
     'ralph.supports.models.Support': 'ralph.supports.tests.factories.SupportFactory',  # noqa
     'ralph.supports.models.SupportType': 'ralph.supports.tests.factories.SupportTypeFactory',  # noqa
     'ralph.virtual.models.CloudFlavor': 'ralph.virtual.tests.factories.CloudFlavorFactory',  # noqa
