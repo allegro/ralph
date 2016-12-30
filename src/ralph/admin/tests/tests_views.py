@@ -112,7 +112,7 @@ EXCLUDE_MODELS = [
 EXCLUDE_ADD_VIEW = [
     'ralph.assets.models.base.BaseObject',
     'ralph.data_center.models.hosts.DCHost',
-    'ralph.supports.models.BaseObjectsSupport': 'ralph.supports.tests.factories.BaseObjectsSupportFactory',  # noqa
+    'ralph.supports.models.BaseObjectsSupport',
 ]
 
 SQL_QUERY_LIMIT = 30
