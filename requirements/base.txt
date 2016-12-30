@@ -4,7 +4,8 @@ Django==1.8.17
 dj.choices==0.10.0
 django-extensions==1.5.9
 django-filter==0.13.0
-django-import-export==0.4.2
+# bump to newer when https://github.com/django-import-export/django-import-export/pull/559 will be merged
+django-import-export==0.5.1
 django-mptt==0.8.6
 django-reversion==1.8.6
 django-rq==0.9.0
