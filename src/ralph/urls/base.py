@@ -29,10 +29,9 @@ api_urls = list(map(lambda u: url(r'^', include(u)), [
 # api views are registered in router)
 api_urls += [url(r'^', include(router.urls))]
 
-ralph_urls, ralph_app_name, ralph_namespace = admin.urls
 urlpatterns = [
     # override app_name (admin) with ralph (mainly for sitetree)
-    url(r'^', include((ralph_urls, 'ralph', ralph_namespace))),
+    url(r'^', include(admin.urls)),
     url(r'^api/', include(api_urls)),
     url(r'^api-token-auth/', views.obtain_auth_token),
     url(r'^', include('ralph.dc_view.urls.ui')),
@@ -48,3 +47,10 @@ urlpatterns = [
 
 if getattr(settings, 'ENABLE_HERMES_INTEGRATION', False):
     urlpatterns += url(r'^hermes/', include('pyhermes.apps.django.urls')),
+
+
+# monkey patch for sitetree until
+# https://github.com/idlesign/django-sitetree/issues/226 will be discussed
+# and resolved
+from sitetree.sitetreeapp import SiteTree  # noqa
+SiteTree.current_app_is_admin = lambda self: False
