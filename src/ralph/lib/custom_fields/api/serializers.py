@@ -1,9 +1,10 @@
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
+from ralph.api.serializers import RalphAPISaveSerializer, RalphAPISerializer
+
 from ..models import CustomField, CustomFieldValue
 from .fields import CustomFieldValueHyperlinkedIdentityField
-from ralph.api.serializers import RalphAPISaveSerializer, RalphAPISerializer
 
 
 class CustomFieldSimpleSerializer(RalphAPISerializer):

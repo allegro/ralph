@@ -3,9 +3,9 @@ from django.core.urlresolvers import reverse
 from django.db.models import Count
 from django.utils.html import mark_safe
 
-from .models import CrossValidationResult, CrossValidationRun
-
 from ralph.admin import RalphAdmin, register
+
+from .models import CrossValidationResult, CrossValidationRun
 
 
 def format_diff(pos, value):
