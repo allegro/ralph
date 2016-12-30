@@ -8,6 +8,7 @@ django-import-export==0.4.2
 django-mptt==0.8.7
 django-reversion==1.8.6
 django-rq==0.9.0
+django-sitetree==1.7.0
 django-taggit==0.17.1
 django-taggit-serializer==0.1.5
 django-threadlocals==0.8
@@ -26,5 +27,4 @@ six>=1.9.0
 sqlparse==0.1.16
 Unidecode==0.04.18
 tablib==0.11.2
-git+https://github.com/idlesign/django-sitetree.git@a626559c39ff1e865cde3441c44f42864c648dfb
 factory-boy
