@@ -74,6 +74,7 @@ FACTORY_MAP = {
     'ralph.operations.models.Problem': 'ralph.operations.tests.factories.ProblemFactory',  # noqa
     'ralph.reports.models.Report': 'ralph.reports.factories.ReportFactory',
     'ralph.reports.models.ReportLanguage': 'ralph.reports.factories.ReportLanguageFactory',  # noqa
+    'ralph.supports.models.BaseObjectsSupport': 'ralph.supports.tests.factories.BaseObjectsSupportFactory',  # noqa
     'ralph.supports.models.Support': 'ralph.supports.tests.factories.SupportFactory',  # noqa
     'ralph.supports.models.SupportType': 'ralph.supports.tests.factories.SupportTypeFactory',  # noqa
     'ralph.virtual.models.CloudFlavor': 'ralph.virtual.tests.factories.CloudFlavorFactory',  # noqa
@@ -110,7 +111,8 @@ EXCLUDE_MODELS = [
 
 EXCLUDE_ADD_VIEW = [
     'ralph.assets.models.base.BaseObject',
-    'ralph.data_center.models.hosts.DCHost'
+    'ralph.data_center.models.hosts.DCHost',
+    'ralph.supports.models.BaseObjectsSupport',
 ]
 
 SQL_QUERY_LIMIT = 30

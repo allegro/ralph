@@ -509,32 +509,32 @@ class DataCenterAsset(
         if self.is_blade:
             position = generate_html_link(
                 base_url,
-                {
+                label=position,
+                params={
                     'rack': self.rack_id,
                     'position__start': self.position,
                     'position__end': self.position
                 },
-                position,
             )
 
         result = [
             generate_html_link(
                 base_url,
-                {
+                label=self.rack.server_room.data_center.name,
+                params={
                     'rack__server_room__data_center':
                         self.rack.server_room.data_center_id
                 },
-                self.rack.server_room.data_center.name
             ),
             generate_html_link(
                 base_url,
-                {'rack__server_room': self.rack.server_room_id},
-                self.rack.server_room.name
+                label=self.rack.server_room.name,
+                params={'rack__server_room': self.rack.server_room_id},
             ),
             generate_html_link(
                 base_url,
-                {'rack': self.rack_id},
-                self.rack.name
+                label=self.rack.name,
+                params={'rack': self.rack_id},
             )
         ] if self.rack and self.rack.server_room else []
 

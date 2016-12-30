@@ -190,6 +190,7 @@ sitetrees = [
             children=[
                 section(_('Supports'), 'supports', 'Support'),
                 section(_('Types'), 'supports', 'SupportType'),
+                section(_('Assets supports'), 'supports', 'BaseObjectsSupport'),
             ]
         ),
         ralph_item(
