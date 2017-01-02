@@ -215,7 +215,7 @@ class CloudHostAdmin(CustomFieldValueAdminMixin, RalphAdmin):
         'service_env__service', 'service_env__environment'
     ]
     readonly_fields = ['cloudflavor_name', 'created', 'hostname', 'host_id',
-                       'get_cloudproject', 'get_cloudprovider',
+                       'get_cloudproject', 'get_cloudprovider', 'get_service',
                        'get_cpu', 'get_disk', 'get_hypervisor', 'get_memory',
                        'modified', 'parent', 'service_env', 'image_name']
     search_fields = [
@@ -233,7 +233,7 @@ class CloudHostAdmin(CustomFieldValueAdminMixin, RalphAdmin):
                        'get_cloudprovider', 'tags', 'remarks']
         }),
         ('Cloud Project', {
-            'fields': ['get_cloudproject', 'service_env'],
+            'fields': ['get_cloudproject', 'get_service'],
         }),
         ('Components', {
             'fields': ['cloudflavor_name', 'get_cpu', 'get_memory', 'get_disk',
@@ -242,7 +242,10 @@ class CloudHostAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     )
 
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related('tags')
+        return super().get_queryset(request).prefetch_related(
+            'tags',
+            'ethernet_set__ipaddress'
+        )
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -288,9 +291,11 @@ class CloudHostAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     cloudflavor_name.allow_tags = True
 
     def get_ip_addresses(self, obj):
-        ips = obj.ethernet_set.values_list(
-            'ipaddress__address', flat=True
-        ).select_related('ipaddress').all()
+        ips = [
+            eth.ipaddress.address
+            for eth in obj.ethernet_set.all()
+            if eth.ipaddress
+        ]
         if not ips:
             return '&ndash;'
         return '\n'.join(ips)
@@ -309,6 +314,21 @@ class CloudHostAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     get_cloudproject.admin_order_field = 'parent'
     get_cloudproject.allow_tags = True
     get_cloudproject._permission_field = 'parent'
+
+    def get_service(self, obj):
+        if obj.service_env_id:
+            return '<a href="{}">{}</a>'.format(
+                reverse(
+                    "admin:assets_service_change",
+                    args=(obj.service_env.service_id,)
+                ),
+                obj.service_env
+            )
+        return ''
+    get_service.short_description = _('Service env')
+    get_service.admin_order_field = 'service_env'
+    get_service.allow_tags = True
+    get_service._permission_field = 'service_env'
 
     def get_cpu(self, obj):
         return obj.cloudflavor.cores

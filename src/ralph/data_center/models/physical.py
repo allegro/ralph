@@ -446,11 +446,6 @@ class DataCenterAsset(
         verbose_name = _('data center asset')
         verbose_name_plural = _('data center assets')
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Saved current rack value to check if changed.
-        self._rack_id = self.rack_id
-
     def __str__(self):
         return '{} (BC: {} / SN: {})'.format(
             self.hostname or '-', self.barcode or '-', self.sn or '-'
@@ -461,9 +456,18 @@ class DataCenterAsset(
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        # When changing rack we search and save all descendants
-        if self.pk and self._rack_id != self.rack_id:
-            DataCenterAsset.objects.filter(parent=self).update(rack=self.rack)
+        if self.pk:
+            # When changing rack we search and save all descendants
+            if self._previous_state['rack_id'] != self.rack_id:
+                DataCenterAsset.objects.filter(
+                    parent=self
+                ).update(rack=self.rack)
+            # When changing position if is blade,
+            # we search and save all descendants
+            if self._previous_state['position'] != self.position:
+                DataCenterAsset.objects.filter(
+                    parent=self
+                ).update(position=self.position)
 
     def get_orientation_desc(self):
         return Orientation.name_from_id(self.orientation)
@@ -505,32 +509,32 @@ class DataCenterAsset(
         if self.is_blade:
             position = generate_html_link(
                 base_url,
-                {
+                label=position,
+                params={
                     'rack': self.rack_id,
                     'position__start': self.position,
                     'position__end': self.position
                 },
-                position,
             )
 
         result = [
             generate_html_link(
                 base_url,
-                {
+                label=self.rack.server_room.data_center.name,
+                params={
                     'rack__server_room__data_center':
                         self.rack.server_room.data_center_id
                 },
-                self.rack.server_room.data_center.name
             ),
             generate_html_link(
                 base_url,
-                {'rack__server_room': self.rack.server_room_id},
-                self.rack.server_room.name
+                label=self.rack.server_room.name,
+                params={'rack__server_room': self.rack.server_room_id},
             ),
             generate_html_link(
                 base_url,
-                {'rack': self.rack_id},
-                self.rack.name
+                label=self.rack.name,
+                params={'rack': self.rack_id},
             )
         ] if self.rack and self.rack.server_room else []
 

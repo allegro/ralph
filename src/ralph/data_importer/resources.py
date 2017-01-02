@@ -544,6 +544,29 @@ class BaseObjectsSupportResource(RalphModelResource):
         model = BaseObjectsSupport
 
 
+class BaseObjectsSupportRichResource(RalphModelResource):
+    class Meta:
+        model = BaseObjectsSupport
+        fields = (
+            'support__contract_id',
+            'support__support_type',
+            'support__serial_no',
+            'support__price',
+            'support__date_from',
+            'support__date_to',
+            'support__description',
+            'support__invoice_no',
+            'support__invoice_date',
+            'support__property_of',
+            'support__budget_info',
+            'baseobject__asset__hostname',
+            'baseobject__asset__barcode',
+            'baseobject__asset__sn',
+            'baseobject__service_env',
+            'baseobject__configuration_path',
+        )
+
+
 class RackAccessoryResource(RalphModelResource):
     accessory = fields.Field(
         column_name='accessory',

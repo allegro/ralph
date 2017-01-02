@@ -20,8 +20,12 @@ from ralph.assets.models.assets import (
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.components import (
     ComponentModel,
+    Disk,
     Ethernet,
-    GenericComponent
+    FibreChannelCard,
+    GenericComponent,
+    Memory,
+    Processor
 )
 from ralph.assets.models.configuration import (
     ConfigurationClass,
@@ -268,6 +272,11 @@ class GenericComponentAdmin(ComponentAdminMixin, RalphAdmin):
 @register(Ethernet)
 class EthernetAdmin(ComponentAdminMixin, RalphAdmin):
     search_fields = ['label', 'mac']
+
+
+@register(Disk, FibreChannelCard, Memory, Processor)
+class ComponentAdmin(ComponentAdminMixin, RalphAdmin):
+    pass
 
 
 @register(Asset)

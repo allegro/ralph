@@ -150,6 +150,10 @@ Example:
             return this.$['query-getter'];
           }
         },
+        prefetchData: {
+          type: Object,
+          value: null
+        },
         queryAjaxUrl: {
           type: String,
           value: null,
@@ -301,25 +305,32 @@ Example:
 
       },
       updateBadges: function(evt, obj) {
+        results = obj.xhr.response['results'];
         this.hiddenSpinner = true;
         var ids = this._getIds();
         var badgesData = []
-        for (var idx = 0; idx < obj.xhr.response['results'].length; idx++) {
+        for (var idx = 0; idx < results.length; idx++) {
           badgesData.push(null);
         }
-        for(idx = 0; idx < obj.xhr.response['results'].length; idx++) {
-          var item = obj.xhr.response['results'][idx];
+        for(idx = 0; idx < results.length; idx++) {
+          var item = results[idx];
           badgesData.splice(ids.indexOf(item.pk.toString()), 1, item);
         }
         this.$['query-getter'].setBadges(badgesData);
       },
       reloadBadges: function() {
-        this.$['by-id-ajax'].params = {
-          "pk": this.value
+        if(this.prefetchData !== null && Object.getOwnPropertyNames(this.prefetchData).length > 0) {
+          this.$['query-getter'].setBadges(this.prefetchData);
+          this.prefetchData = null;
         }
-        this.$['by-id-ajax'].generateRequest();
-        this.hiddenAjaxError = true;
-        this.hiddenSpinner = false;
+        else {
+          this.$['by-id-ajax'].params = {
+            "pk": this.value
+          }
+          this.$['by-id-ajax'].generateRequest();
+          this.hiddenAjaxError = true;
+          this.hiddenSpinner = false;
+        }
       },
       onBadgeRemove: function(evt, obj) {
         var ids = this._getIds();

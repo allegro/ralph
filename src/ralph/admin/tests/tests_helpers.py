@@ -58,8 +58,8 @@ class GenerateLinkTest(TestCase):
     def test_generate_html_link(self):
         url = generate_html_link(
             'http://test.com/',
-            {'param': 1},
-            'Name'
+            label='Name',
+            params={'param': 1},
         )
         self.assertEqual(
             url,

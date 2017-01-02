@@ -246,8 +246,19 @@
                     {
                         display: none;
                     }
+                    &.height-u-1, &.height-u-2 {
+                        .info, .children {
+                            width: 50%;
+                            float: left;
+                        }
+                        .children {
+                            position: relative;
+                            top: 0;
+                            bottom: 0;
+                            min-width: 50%;
+                        }
+                    }
                     &.height-u-2 .children {
-                        top: 1rem;
                         bottom: 0;
                         [class*="slot-"] {
                             .slot_no {
@@ -392,8 +403,18 @@
 .racks .rack.front .wrapper .devices .device {
     @include generate-layouts($devices-width-front);
 }
+.racks .rack.front .wrapper .devices .device {
+    &.height-u-1, &.height-u-2 {
+        @include generate-layouts($devices-width-front / 2);
+    }
+}
 .racks .rack.back .wrapper .devices .device {
     @include generate-layouts($devices-width-back);
+}
+.racks .rack.back .wrapper .devices .device {
+    &.height-u-1, &.height-u-2 {
+        @include generate-layouts($devices-width-back / 2);
+    }
 }
 
 @media all and (max-width: 1500px) {

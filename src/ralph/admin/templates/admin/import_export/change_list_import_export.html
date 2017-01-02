@@ -2,11 +2,13 @@
 {% load i18n %}
 
 {% block object-tools-items %}
+  {% if has_add_permission %}
   <li>
     <a href="import/" class="import_link">
       <i class="fa fa-upload" aria-hidden="true"></i> {% trans "Import" %}
     </a>
   </li>
+  {% endif %}
   <li>
     <a href="export/{{ cl.get_query_string }}" class="export_link">
       <i class="fa fa-download" aria-hidden="true"></i> {% trans "Export" %}

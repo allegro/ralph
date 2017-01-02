@@ -233,6 +233,31 @@ class DataCenterAssetTest(RalphTestCase):
         with self.assertRaises(ValidationError):
             self.dc_asset._validate_position()
 
+    def test_update_rack_when_parent_rack_is_change(self):
+        rack_1, rack_2 = RackFactory.create_batch(2)
+        parent_asset = DataCenterAssetFactory(
+            rack=rack_1,
+            model=DataCenterAssetModelFactory(has_parent=True)
+        )
+        dc_asset = DataCenterAssetFactory(parent=parent_asset)
+        parent_asset.rack = rack_2
+        parent_asset.save()
+        dc_asset.refresh_from_db()
+        self.assertEqual(dc_asset.rack_id, rack_2.id)
+
+    def test_update_position_when_parent_position_is_change(self):
+        rack = RackFactory()
+        parent_asset = DataCenterAssetFactory(
+            rack=rack,
+            position=1,
+            model=DataCenterAssetModelFactory(has_parent=True)
+        )
+        dc_asset = DataCenterAssetFactory(parent=parent_asset, position=2)
+        parent_asset.position = 4
+        parent_asset.save()
+        dc_asset.refresh_from_db()
+        self.assertEqual(dc_asset.position, 4)
+
     # =========================================================================
     # network environment
     # =========================================================================

@@ -87,7 +87,7 @@ def get_content_type_for_model(obj):
     return ContentType.objects.get_for_model(obj)
 
 
-def generate_html_link(base_url, params, label):
+def generate_html_link(base_url, label, params=None):
     """
     Generate html link.
 
@@ -106,9 +106,9 @@ def generate_html_link(base_url, params, label):
         >>> <a href="http://ralph.com/?param=value">Ralph</a>
     """
 
-    return '<a href="{base_url}?{params}">{label}</a>'.format(
+    return '<a href="{base_url}{params}">{label}</a>'.format(
         base_url=base_url,
-        params=urlencode(params),
+        params=('?' + urlencode(params or {})) if params else '',
         label=str(label).replace(' ', '&nbsp;')
     )
 

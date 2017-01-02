@@ -18,10 +18,9 @@ from taggit_serializer.serializers import (
     TaggitSerializer,
     TagListSerializerField
 )
-
-from ralph.api.fields import ReversedChoiceField
+from ralph.api.fields import AbsoluteUrlField, ReversedChoiceField
 from ralph.api.relations import RalphHyperlinkedRelatedField, RalphRelatedField
-from ralph.lib.mixins.models import TaggableMixin
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TaggableMixin
 from ralph.lib.permissions.api import (
     PermissionsPerFieldSerializerMixin,
     RelatedObjectsPermissionsSerializerMixin
@@ -66,6 +65,7 @@ class DeclaredFieldsMetaclass(serializers.SerializerMetaclass):
     def __new__(cls, name, bases, attrs):
         meta = attrs.get('Meta')
         model = getattr(meta, 'model', None)
+        fields = getattr(meta, 'fields', None)
         if (
             model and
             issubclass(model, TaggableMixin) and
@@ -75,6 +75,10 @@ class DeclaredFieldsMetaclass(serializers.SerializerMetaclass):
             attrs['prefetch_related'] = (
                 list(attrs.get('prefetch_related', [])) + ['tags']
             )
+
+        if model and issubclass(model, AdminAbsoluteUrlMixin) and fields:
+            attrs['ui_url'] = AbsoluteUrlField()
+            meta.fields += ('ui_url',)
         return super().__new__(cls, name, bases, attrs)
 
 
@@ -130,16 +134,16 @@ class RalphAPISerializerMixin(
         Bind every returned field to self (as a parent)
         """
         fields = super().get_fields(*args, **kwargs)
-        # assign parent to every field as self
-        for field_name, field in fields.items():
-            if not field.parent:
-                field.parent = self
         if (
             self.skip_url_when_no_request and
             not self.context.get('request') and
             api_settings.URL_FIELD_NAME in fields
         ):
             del fields[api_settings.URL_FIELD_NAME]
+
+        for field_name, field in fields.items():
+            if not field.parent:
+                field.parent = self
         return fields
 
     def build_field(self, field_name, info, model_class, nested_depth):

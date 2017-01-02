@@ -136,6 +136,8 @@ class RalphMPTTAdminForm(RalphAdminFormMixin, MPTTAdminForm):
 
 
 class RedirectSearchToObjectMixin(object):
+    redirect_to_detail_view_if_one_search_result = True
+
     def changelist_view(self, request, *args, **kwargs):
         response = super().changelist_view(request, *args, **kwargs)
         context_data = getattr(response, 'context_data', None)
@@ -144,7 +146,8 @@ class RedirectSearchToObjectMixin(object):
             not context_data or
             not cl or
             not hasattr(cl, 'result_count') or
-            not settings.REDIRECT_TO_DETAIL_VIEW_IF_ONE_SEARCH_RESULT
+            not settings.REDIRECT_TO_DETAIL_VIEW_IF_ONE_SEARCH_RESULT or
+            not self.redirect_to_detail_view_if_one_search_result
         ):
             return response
         filtered_results = list(request.GET.keys())
