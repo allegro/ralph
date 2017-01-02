@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.core.urlresolvers import reverse
+from django.db.models import Count
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
@@ -127,6 +128,12 @@ class BaseObjectsSupportAdmin(RalphAdmin):
 
     list_display_links = None
     actions = None
+
+    def get_queryset(self, request):
+        # fetch additional objects_count for exporter
+        return super().get_queryset(request).annotate(
+            objects_count=Count('support__baseobjectssupport')
+        )
 
     # disable edit view, adding and deleting objects from here
     def change_view(self, request, obj=None):
