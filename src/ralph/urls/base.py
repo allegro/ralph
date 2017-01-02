@@ -36,7 +36,6 @@ api_urls = list(map(lambda u: url(r'^', include(u)), [
 api_urls += [url(r'^', include(router.urls))]
 
 urlpatterns = [
-    # override app_name (admin) with ralph (mainly for sitetree)
     url(r'^', include(admin.urls)),
     url(r'^api/', include(api_urls)),
     url(r'^api-token-auth/', views.obtain_auth_token),
