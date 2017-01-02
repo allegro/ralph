@@ -151,14 +151,18 @@ class ViewsTest(TestCase):
             # Create next 10 records:
             factory_model.create_batch(10)
 
-            with CaptureQueriesContext(connections['default']) as cqc:
+            with CaptureQueriesContext(connections['default']) as cqc2:
                 change_list = model_admin.changelist_view(self.request)
                 self.assertEqual(
                     query_count,
-                    len(cqc),
-                    'Different query count for {}'.format(model_class_path)
+                    len(cqc2),
+                    'Different query count for {}: \n {} \nvs\n{}'.format(
+                        model_class_path,
+                        '\n'.join([q['sql'] for q in cqc.captured_queries]),
+                        '\n'.join([q['sql'] for q in cqc2.captured_queries]),
+                    )
                 )
-                self.assertFalse(len(cqc) > SQL_QUERY_LIMIT)
+                self.assertFalse(len(cqc2) > SQL_QUERY_LIMIT)
 
             if model_class_path not in EXCLUDE_ADD_VIEW:
                 change_form = model_admin.changeform_view(
