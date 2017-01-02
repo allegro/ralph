@@ -545,13 +545,19 @@ class BaseObjectsSupportResource(RalphModelResource):
 
 
 class BaseObjectsSupportRichResource(RalphModelResource):
+    price_per_object = fields.Field(
+        column_name='support__price_per_object',
+    )
+
     class Meta:
         model = BaseObjectsSupport
         fields = (
             'support__contract_id',
             'support__support_type',
             'support__serial_no',
+            'support__name',
             'support__price',
+            'price_per_object',
             'support__date_from',
             'support__date_to',
             'support__description',
@@ -564,6 +570,18 @@ class BaseObjectsSupportRichResource(RalphModelResource):
             'baseobject__asset__sn',
             'baseobject__service_env',
             'baseobject__configuration_path',
+        )
+
+    def get_queryset(self):
+        return super().get_queryset().annotate(
+            objects_count=Count('support__baseobjectssupport')
+        )
+
+    def dehydrate_price_per_object(self, bo_support):
+        support = bo_support.support
+        return str(
+            bo_support.objects_count / support.price
+            if support.price > 0 else 0
         )
 
 
