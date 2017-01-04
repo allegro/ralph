@@ -81,17 +81,6 @@ INSTALLED_APPS = (
     'ralph.ralph2_sync',
 )
 
-RALPH2_RALPH3_CROSS_VALIDATION_ENABLED = bool_from_env(
-    'RALPH2_RALPH3_CROSS_VALIDATION_ENABLED'
-)
-if RALPH2_RALPH3_CROSS_VALIDATION_ENABLED:
-    RALPH2_PREVIEW_PREFIX_URL = os.environ.get(
-        'RALPH2_PREVIEW_PREFIX_URL', 'http://ralph2.localhost/admin'
-    )
-    INSTALLED_APPS += (
-        'ralph.cross_validator',
-    )
-
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
