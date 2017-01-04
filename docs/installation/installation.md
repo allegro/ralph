@@ -11,12 +11,12 @@ with many development *bells and whistles* included.
 Make sure, your installation is clean Ubuntu 14.04, without any other packages installed,
 and `apt-transport-https` installed.
 
-    sudo apt-get update && apt-get install apt-transport-https
+    sudo apt-get update && sudo apt-get install apt-transport-https
 
 Now, add our official ralph repository:
 
     sudo apt-key adv --keyserver  hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
-    sudo sh -c "echo 'deb https://dl.bintray.com/vi4m/ralph wheezy main' >  /etc/apt/sources.list.d/vi4m_ralph.list"
+    sudo sh -c "echo 'deb [ arch=amd64 ] https://dl.bintray.com/vi4m/ralph wheezy main' >  /etc/apt/sources.list.d/vi4m_ralph.list"
 
 Then, just install ralph the traditional way:
 
