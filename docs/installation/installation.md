@@ -11,7 +11,7 @@ with many development *bells and whistles* included.
 Make sure, your installation is clean Ubuntu 14.04, without any other packages installed,
 and `apt-transport-https` installed.
 
-    sudo apt-get update && apt-get install apt-transport-https
+    sudo apt-get update && sudo apt-get install apt-transport-https
 
 Now, add our official ralph repository:
 
