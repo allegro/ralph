@@ -14,7 +14,6 @@ from ralph.admin.filters import (
 )
 from ralph.assets.models.components import Ethernet
 from ralph.assets.views import ComponentsAdminView, RalphDetailViewAdmin
-from ralph.cross_validator.views import ShowDiffMessageMixin
 from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.deployment.mixins import ActiveDeploymentMessageMixin
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
@@ -89,7 +88,6 @@ class VirtualServerAdmin(
     ActiveDeploymentMessageMixin,
     CustomFieldValueAdminMixin,
     TransitionAdminMixin,
-    ShowDiffMessageMixin,
     RalphAdmin
 ):
     form = VirtualServerForm

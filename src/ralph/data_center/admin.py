@@ -31,7 +31,6 @@ from ralph.assets.models.base import BaseObject
 from ralph.assets.models.components import Ethernet
 from ralph.assets.views import ComponentsAdminView
 from ralph.attachments.admin import AttachmentsMixin
-from ralph.cross_validator.views import ShowDiffMessageMixin
 from ralph.data_center.forms import DataCenterAssetForm
 from ralph.data_center.models.components import DiskShare, DiskShareMount
 from ralph.data_center.models.hosts import DCHost
@@ -295,7 +294,6 @@ class DataCenterAssetAdmin(
     AttachmentsMixin,
     AssetInvoiceReportMixin,
     CustomFieldValueAdminMixin,
-    ShowDiffMessageMixin,
     RalphAdmin,
 ):
     """Data Center Asset admin class."""
@@ -414,7 +412,7 @@ class DataCenterAssetAdmin(
     def go_to_visualization(self, obj):
         if not obj.rack:
             return '&mdash;'
-        url = '{}#/sr/{}/rack/{}'.format(
+        url = '{}#!/sr/{}/rack/{}'.format(
             reverse('dc_view'),
             obj.rack.server_room_id,
             obj.rack.id,

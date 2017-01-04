@@ -90,8 +90,6 @@ EXCLUDE_MODELS = [
     'ralph.assets.models.assets.Asset',
     'ralph.assets.models.base.BaseObject',  # TODO: Add in the future
     'ralph.assets.models.components.GenericComponent',
-    'ralph.cross_validator.models.CrossValidationResult',
-    'ralph.cross_validator.models.CrossValidationRun',
     'ralph.data_center.models.physical.Connection',
     'ralph.deployment.models.Deployment',
     'ralph.deployment.models.PrebootFile',

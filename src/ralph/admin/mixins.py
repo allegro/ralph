@@ -38,7 +38,6 @@ from ralph.lib.permissions.admin import (
 )
 from ralph.lib.permissions.models import PermByFieldMixin
 from ralph.lib.permissions.views import PermissionViewMetaClass
-from ralph.ralph2_sync.admin import Ralph2SyncAdminMixin
 
 logger = logging.getLogger(__name__)
 
@@ -212,7 +211,7 @@ class RalphAdminChecks(admin.checks.ModelAdminChecks):
         return []
 
 
-class RalphAdminMixin(Ralph2SyncAdminMixin, RalphAutocompleteMixin):
+class RalphAdminMixin(RalphAutocompleteMixin):
     """Ralph admin mixin."""
 
     list_views = None
