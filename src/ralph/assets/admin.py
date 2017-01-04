@@ -31,7 +31,6 @@ from ralph.assets.models.configuration import (
     ConfigurationClass,
     ConfigurationModule
 )
-from ralph.cross_validator.views import ShowDiffMessageMixin
 from ralph.data_importer import resources
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.table import Table, TableWithUrl
@@ -218,7 +217,6 @@ class ProfitCenterAdmin(RalphAdmin):
 @register(AssetModel)
 class AssetModelAdmin(
     CustomFieldValueAdminMixin,
-    ShowDiffMessageMixin,
     RalphAdmin
 ):
 
