@@ -180,7 +180,7 @@ class AutocompleteWidget(forms.TextInput):
     def get_prefetch_data(self, value):
         results = {}
         if value:
-            queryset = self.rel_to.objects.filter(
+            queryset = self.rel_to._default_manager.filter(
                 pk__in=value if self.multi else [value]
             )
             results = get_results(queryset, self.can_edit)
