@@ -367,7 +367,7 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
         if value:
             values = value.split(',')
             prepend_empty = self.empty_value in values
-            queryset = self.field_model.objects.filter(
+            queryset = self.field_model._default_manager.filter(
                 pk__in=values
             )
             results = get_results(queryset, True, prepend_empty)
