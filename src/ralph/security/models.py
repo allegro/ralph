@@ -62,4 +62,4 @@ class SecurityScan(
     details_url = models.URLField(max_length=255, blank=True)
     rescan_url = models.URLField(blank=True, verbose_name=_('Rescan url'))
     base_object = models.ForeignKey(BaseObject)
-    vulnerabilities = models.ManyToManyField(Vulnerability)
+    vulnerabilities = models.ManyToManyField(Vulnerability, blank=True)
