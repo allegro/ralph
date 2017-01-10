@@ -251,12 +251,24 @@ class TestExternalVulnerability(RalphAPITestCase):
             self.vulnerability.id, security_scan.vulnerabilities.get().id
         )
 
-    def test_create_scan_raise_error_when_both_vulnerabilities_empty(self):
+    def test_create_scan_by_duplicated_external_id_works(self):
+        self.data['external_vulnerabilities'] = [
+            self.vulnerability.external_vulnerability_id,
+            self.vulnerability.external_vulnerability_id
+        ]
+        response = self.client.post(
+            reverse('securityscan-list'), self.data, format='json'
+        )
+        security_scan = SecurityScan.objects.get(pk=response.data['id'])
+        self.assertEqual(security_scan.vulnerabilities.count(), 1)
+        self.assertEqual(
+            self.vulnerability.id, security_scan.vulnerabilities.get().id
+        )
+
+    def test_create_scan_works_when_both_vulnerabilities_empty(self):
         self.data['external_vulnerabilities'] = []
         response = self.client.post(
             reverse('securityscan-list'), self.data, format='json'
         )
-        self.assertEqual(
-            response.data,
-            {'vulnerabilities': ['This list may not be empty.']},
-        )
+        security_scan = SecurityScan.objects.get(pk=response.data['id'])
+        self.assertEqual(security_scan.vulnerabilities.count(), 0)

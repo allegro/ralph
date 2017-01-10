@@ -39,11 +39,11 @@ class SaveSecurityScanSerializer(RalphAPISaveSerializer):
 
         # external_id to local_id
         if 'external_vulnerabilities' in data:
-            external_ids = data.get('external_vulnerabilities', [])
+            external_ids = set(data.get('external_vulnerabilities', []))
             converted = Vulnerability.objects.filter(
                 external_vulnerability_id__in=external_ids)
             if len(converted) != len(external_ids):
-                unknown = set(external_ids) - set(
+                unknown = external_ids - set(
                     [str(v.external_vulnerability_id) for v in converted]
                 )
                 msg = "Unknow external_vulnerabilities: {}".format(
