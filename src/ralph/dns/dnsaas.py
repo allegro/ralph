@@ -164,8 +164,13 @@ class DNSaaS:
                     "Your request couldn't be handled, try later."
                 ]
             }
+        # TODO:: why this condition?
         elif response.status_code != 201:
+            import ipdb
+            ipdb.set_trace()
+            # try jsonify or simple message
             return response.json()
+
 
     def create_dns_record(self, record):
         """
