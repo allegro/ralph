@@ -94,10 +94,11 @@ base_object_descendant_prefetch_related = [
     Prefetch('licences', queryset=BaseObjectLicence.objects.select_related(
         *BaseObjectLicenceViewSet.select_related
     )),
-    Prefetch(
-        'custom_fields',
-        queryset=CustomFieldValue.objects.select_related('custom_field')
-    ),
+    'custom_fields',
+    # Prefetch(
+    #     'custom_fields',
+    #     queryset=CustomFieldValue.objects.select_related('custom_field')
+    # ),
     'service_env__service__business_owners',
     'service_env__service__technical_owners',
 ]

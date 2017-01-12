@@ -37,7 +37,7 @@ from ralph.lib.table import Table, TableWithUrl
 
 
 @register(ConfigurationClass)
-class ConfigurationClassAdmin(RalphAdmin):
+class ConfigurationClassAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     fields = ['class_name', 'module', 'path']
     readonly_fields = ['path']
     raw_id_fields = ['module']

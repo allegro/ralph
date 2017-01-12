@@ -441,6 +441,7 @@ class DataCenterAsset(
         ('location', 'Location'),
         ('model__name', 'Model'),
     ]
+    custom_fields_inheritance = ['configuration_path']
 
     class Meta:
         verbose_name = _('data center asset')
