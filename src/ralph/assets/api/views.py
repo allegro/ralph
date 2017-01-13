@@ -9,7 +9,6 @@ from ralph.api.utils import PolymorphicViewSetMixin
 from ralph.assets import models
 from ralph.assets.api import serializers
 from ralph.assets.api.filters import NetworkableObjectFilters
-from ralph.lib.custom_fields.models import CustomFieldValue
 from ralph.licences.api import BaseObjectLicenceViewSet
 from ralph.licences.models import BaseObjectLicence
 from ralph.networks.models import IPAddress
@@ -95,10 +94,6 @@ base_object_descendant_prefetch_related = [
         *BaseObjectLicenceViewSet.select_related
     )),
     'custom_fields',
-    # Prefetch(
-    #     'custom_fields',
-    #     queryset=CustomFieldValue.objects.select_related('custom_field')
-    # ),
     'service_env__service__business_owners',
     'service_env__service__technical_owners',
 ]
@@ -243,13 +238,10 @@ class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     ]
     prefetch_related = [
         'tags',
+        'custom_fields',
         Prefetch(
             'ethernet_set',
             queryset=models.Ethernet.objects.select_related('ipaddress')
-        ),
-        Prefetch(
-            'custom_fields',
-            queryset=CustomFieldValue.objects.select_related('custom_field')
         ),
     ]
     extended_filter_fields = {
