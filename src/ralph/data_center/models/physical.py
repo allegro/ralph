@@ -224,7 +224,7 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
         )
     )
     reverse_ordering = models.BooleanField(
-        default=False,
+        default=settings.RACK_LISTING_NUMBERING_TOP_TO_BOTTOM,
         help_text=_('Check if RU starts counting from top to bottom. Unchecked rack diagrams will start counting with 1 at the bottom'),
         verbose_name=_('RU order top to bottom'),
     )
