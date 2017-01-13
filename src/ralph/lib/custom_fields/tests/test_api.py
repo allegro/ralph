@@ -5,14 +5,16 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from ..models import CustomField, CustomFieldTypes, CustomFieldValue
-from .models import SomeModel
+from .models import ModelA, ModelB, SomeModel
 
 
 class CustomFieldsAPITests(APITestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.sm1 = SomeModel.objects.create(name='abc')
+        cls.a1 = ModelA.objects.create()
+        cls.b1 = ModelB.objects.create(a=cls.a1)
+        cls.sm1 = SomeModel.objects.create(name='abc', b=cls.b1)
         cls.sm2 = SomeModel.objects.create(name='def')
 
         cls.custom_field_str = CustomField.objects.create(
@@ -63,6 +65,54 @@ class CustomFieldsAPITests(APITestCase):
             'test_choice': 'qwerty',
         })
 
+    def test_get_customfields_with_inheritance_in_objects_list(self):
+        CustomFieldValue.objects.create(
+            object=self.a1,
+            custom_field=self.custom_field_choices,
+            value='asdfgh',
+        )
+        CustomFieldValue.objects.create(
+            object=self.b1,
+            custom_field=self.custom_field_str,
+            value='sample_value_b1',
+        )
+
+        url = reverse('somemodel-list')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+        cfvs = [obj['custom_fields'] for obj in response.data['results']]
+        self.assertCountEqual(cfvs, [
+            {
+                'test_str': 'sample_value',
+                'test_choice': 'asdfgh',
+            },
+            {
+                'test_str': 'sample_value2',
+                'test_choice': 'qwerty',
+            }
+        ])
+
+    def test_get_customfields_with_inheritance_in_object_resource(self):
+        CustomFieldValue.objects.create(
+            object=self.a1,
+            custom_field=self.custom_field_choices,
+            value='asdfgh',
+        )
+        CustomFieldValue.objects.create(
+            object=self.b1,
+            custom_field=self.custom_field_str,
+            value='sample_value_b1',
+        )
+
+        url = reverse('somemodel-detail', args=(self.sm1.id,))
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['custom_fields'], {
+            'test_str': 'sample_value',
+            'test_choice': 'asdfgh',
+        })
+
     def test_get_configuration_variables_in_object_resource(self):
         url = reverse('somemodel-detail', args=(self.sm2.id,))
         response = self.client.get(url, format='json')
@@ -85,6 +135,21 @@ class CustomFieldsAPITests(APITestCase):
             self.detail_view_name,
             kwargs={'pk': self.cfv1.pk, 'object_pk': self.cfv1.object_id}
         )))
+
+    def test_get_customfields_with_inheritance_for_single_object(self):
+        CustomFieldValue.objects.create(
+            object=self.a1,
+            custom_field=self.custom_field_choices,
+            value='qwerty',
+        )
+        self.assertEqual(self.sm1.custom_fields.count(), 2)
+        url = reverse(self.list_view_name, args=(self.sm1.id,))
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # besides that value of another CF is inherited, CFV assigned directly
+        # to this object is only one and this only one should be editable
+        # in context of this object
+        self.assertEqual(response.data['count'], 1)
 
     def test_get_customfields_for_single_object_options(self):
         url = reverse(self.list_view_name, args=(self.sm1.id,))

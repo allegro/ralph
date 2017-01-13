@@ -108,8 +108,8 @@ class CustomFieldValueAdminMaxinTestCase(TestCase):
         }
         data.update(self._prepare_inline_data(data_custom_fields))
         response = self.client.post(SomeModel.get_add_url(), data)
-        sm = SomeModel.objects.get(name='qwerty')
         self.assertEqual(response.status_code, 302)
+        sm = SomeModel.objects.get(name='qwerty')
         self.assertEqual(CustomFieldValue.objects.filter(
             object_id=sm.id,
             content_type=ContentType.objects.get_for_model(SomeModel),

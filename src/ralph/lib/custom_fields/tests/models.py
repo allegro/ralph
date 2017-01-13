@@ -5,8 +5,18 @@ from django.db import models
 from ..models import WithCustomFieldsMixin
 
 
+class ModelA(WithCustomFieldsMixin, models.Model):
+    pass
+
+
+class ModelB(WithCustomFieldsMixin, models.Model):
+    a = models.ForeignKey(ModelA, null=False)
+
+
 class SomeModel(WithCustomFieldsMixin, models.Model):
     name = models.CharField(max_length=20)
+    b = models.ForeignKey(ModelB, null=True, blank=True)
+    custom_fields_inheritance = ['b', 'b__a']
 
     def get_absolute_url(self):
         return reverse(
