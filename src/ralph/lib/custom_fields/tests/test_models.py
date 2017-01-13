@@ -60,10 +60,10 @@ class CustomFieldModelsTestCase(TestCase):
             {field_name: new_value}, self.sm1.custom_fields_as_dict
         )
 
-    def test_should_custom_fields_as_dict_run_2_queries(self):
+    def test_should_custom_fields_as_dict_run_1_query(self):
         self.sm1.update_custom_field(name='test_str', value='new_value')
         self.sm1.update_custom_field(name='test_choices', value='qwerty')
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(1):
             self.sm1.custom_fields_as_dict
 
 

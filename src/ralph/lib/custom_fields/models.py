@@ -11,7 +11,10 @@ from django.utils.text import capfirst, slugify
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
-from .fields import CustomFieldsWithInheritanceRelation
+from .fields import (
+    CustomFieldsWithInheritanceRelation,
+    CustomFieldValueQuerySet
+)
 
 CUSTOM_FIELD_VALUE_MAX_LENGTH = 1000
 
@@ -117,6 +120,11 @@ class CustomFieldValue(TimeStampMixin, models.Model):
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField(db_index=True)
     object = generic.GenericForeignKey('content_type', 'object_id')
+
+    objects = models.Manager()
+    # generic relation has to use specific manager (queryset)
+    # which handle inheritance
+    inherited_objects = CustomFieldValueQuerySet.as_manager()
 
     class Meta:
         unique_together = ('custom_field', 'content_type', 'object_id')

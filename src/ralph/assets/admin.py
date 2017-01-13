@@ -60,7 +60,7 @@ class ConfigurationClassAdmin(CustomFieldValueAdminMixin, RalphAdmin):
 
 
 @register(ConfigurationModule)
-class ConfigurationModuleAdmin(RalphMPTTAdmin):
+class ConfigurationModuleAdmin(CustomFieldValueAdminMixin, RalphMPTTAdmin):
     list_display = ['name']
     search_fields = ['name']
     readonly_fields = [
@@ -104,13 +104,13 @@ class ConfigurationModuleAdmin(RalphMPTTAdmin):
 
 
 @register(ServiceEnvironment)
-class ServiceEnvironmentAdmin(RalphAdmin):
+class ServiceEnvironmentAdmin(CustomFieldValueAdminMixin, RalphAdmin):
 
     search_fields = ['service__name', 'environment__name']
     list_select_related = ['service', 'environment']
     raw_id_fields = ['service', 'environment']
     resource_class = resources.ServiceEnvironmentResource
-    exclude = ('parent', 'service_env', 'content_type')
+    fields = ('service', 'environment', 'remarks', 'tags')
 
 
 class ServiceEnvironmentInline(RalphTabularInline):

@@ -44,6 +44,68 @@ class CustomFieldsWithInheritanceRelation(GenericRelation):
         )
 
 
+def _prioretitize_custom_field_values(objects, model, content_type):
+    """
+    Sort custom field values by priorities and leave the ones with
+    biggest priority for each custom field type.
+
+    Priority is defined as follows:
+    * the biggest priority has custom field defined directly for
+      instance
+    * then next priority has CFV from first field on
+      `custom_fields_inheritance` list, then second from this list and
+      so on
+    """
+    ct_priority = [content_type.id]
+    for field_path in model.custom_fields_inheritance:
+        field = get_field_by_relation_path(model, field_path)
+        content_type = ContentType.objects.get_for_model(field.rel.to)
+        ct_priority.append(content_type.id)
+    ct_priority = {
+        ct_id: index for (index, ct_id) in enumerate(ct_priority)
+    }
+    custom_fields_seen = set()
+    custom_fields_values_ids = set()
+    result = []
+    for cfv in sorted(
+        objects, key=lambda cfv: ct_priority[cfv.content_type_id]
+    ):
+        if cfv.custom_field_id in custom_fields_seen:
+            continue
+        custom_fields_seen.add(cfv.custom_field_id)
+        custom_fields_values_ids.add(cfv.id)
+        result.append(cfv)
+        yield cfv.id, cfv
+
+
+class CustomFieldValueQuerySet(models.QuerySet):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._prioretitize = False
+        self._prioretitize_model_or_instance = None
+
+    def prioretitize(self, model_or_instance):
+        self._prioretitize = True
+        self._prioretitize_model_or_instance = model_or_instance
+        return self
+
+    def iterator(self):
+        if self._prioretitize:
+            # set if to False to not fall into recursion when calling
+            # `_prioretitize_custom_field_values`
+            self._prioretitize = False
+            for cfv_id, cfv in _prioretitize_custom_field_values(
+                self,
+                self._prioretitize_model_or_instance,
+                ContentType.objects.get_for_model(
+                    self._prioretitize_model_or_instance
+                )
+            ):
+                yield cfv
+            return
+        yield from super().iterator()
+
+
 class ReverseGenericRelatedWithInheritanceObjectsDescriptor(
     ReverseGenericRelatedObjectsDescriptor
 ):
@@ -57,8 +119,8 @@ class ReverseGenericRelatedWithInheritanceObjectsDescriptor(
         if instance is None:
             return self
         rel_model = self.field.rel.to
-        superclass = rel_model._default_manager.__class__
         # difference here comparing to Django!
+        superclass = rel_model.inherited_objects.__class__
         RelatedManager = create_generic_related_manager_with_iheritance(
             superclass
         )
@@ -131,6 +193,8 @@ def create_generic_related_manager_with_iheritance(superclass):  # noqa: C901
             # and object_id to queryset filter
             for field_path in self.instance.custom_fields_inheritance:
                 # TODO: add some validator for it
+                # TODO: store fields in some field in meta, not "calculate"
+                # it every time
                 field = get_field_by_relation_path(self.instance, field_path)
                 content_type = ContentType.objects.get_for_model(field.rel.to)
                 value = getattr_dunder(self.instance, field_path)
@@ -146,53 +210,15 @@ def create_generic_related_manager_with_iheritance(superclass):  # noqa: C901
                     )
             return reduce(operator.or_, inheritance_filters)
 
-        def _prioretitize_custom_field_values(self, qs):
-            """
-            Sort custom field values by priorities and leave the ones with
-            biggest priority for each custom field type.
-
-            Priority is defined as follows:
-            * the biggest priority has custom field defined directly for
-              instance
-            * then next priority has CFV from first field on
-              `custom_fields_inheritance` list, then second from this list and
-              so on
-            """
-            ct_priority = [self.content_type.id]
-            for field_path in self.instance.custom_fields_inheritance:
-                field = get_field_by_relation_path(self.instance, field_path)
-                content_type = ContentType.objects.get_for_model(field.rel.to)
-                ct_priority.append(content_type.id)
-            ct_priority = {
-                ct_id: index for (index, ct_id) in enumerate(ct_priority)
-            }
-            custom_fields_seen = set()
-            custom_fields_values_ids = set()
-            result = []
-            for cfv in sorted(
-                qs, key=lambda cfv: ct_priority[cfv.content_type_id]
-            ):
-                if cfv.custom_field_id in custom_fields_seen:
-                    continue
-                custom_fields_seen.add(cfv.custom_field_id)
-                custom_fields_values_ids.add(cfv.id)
-                result.append(cfv)
-            return custom_fields_values_ids, result
-
         def get_queryset(self):
             try:
                 return self.instance._prefetched_objects_cache[
                     self.prefetch_cache_name
                 ]
             except (AttributeError, KeyError):
-                super_qs = super().get_queryset()
-                qs = super_qs.filter(
+                return super().get_queryset().filter(
                     *self.inheritance_filters
-                )
-                custom_field_values_ids = (
-                    self._prioretitize_custom_field_values(qs)[0]
-                )
-                return super_qs.filter(pk__in=custom_field_values_ids)
+                ).prioretitize(self.instance)
 
         def get_prefetch_queryset(self, instances, queryset=None):
             """
@@ -204,7 +230,9 @@ def create_generic_related_manager_with_iheritance(superclass):  # noqa: C901
             django.db.models.query:prefetch_one_level)
             """
             if queryset is None:
-                queryset = super().get_queryset()
+                queryset = super().get_queryset().select_related(
+                    'custom_field'
+                )
 
             queryset._add_hints(instance=instances[0])
             queryset = queryset.using(queryset._db or self._db)
@@ -289,12 +317,14 @@ def create_generic_related_manager_with_iheritance(superclass):  # noqa: C901
                         # content_type_id and object_id
                         pass
 
-                vals = self._prioretitize_custom_field_values(vals)[1]
+                vals = [
+                    v[1] for v in _prioretitize_custom_field_values(
+                        vals, self.instance, self.content_type
+                    )
+                ]
 
                 # store `CustomFieldValue`s of instance in cache
-                instance_custom_fields_queryset = getattr(
-                    obj, 'custom_fields'
-                ).all()
+                instance_custom_fields_queryset = obj.custom_fields.all()
                 instance_custom_fields_queryset._result_cache = vals
                 instance_custom_fields_queryset._prefetch_done = True
                 obj._prefetched_objects_cache[
