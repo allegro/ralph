@@ -3,7 +3,7 @@
 
     angular
         .module('rack.directives', [])
-        .directive('rack', ['SETTINGS', function (SETTINGS) {
+        .directive('rack', function () {
             return {
                 restrict: 'E',
                 scope: {
@@ -14,7 +14,7 @@
                 },
                 templateUrl: '/static/partials/rack/rack.html',
             };
-        }])
+        })
         .directive('deviceItem', function () {
             return {
                 restrict: 'E',

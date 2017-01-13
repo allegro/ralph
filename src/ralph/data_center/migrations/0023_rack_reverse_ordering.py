@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-from django.conf import settings
 
 
 class Migration(migrations.Migration):
@@ -15,6 +14,14 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='rack',
             name='reverse_ordering',
-            field=models.BooleanField(help_text='Check if RU starts counting from top to bottom. Unchecked rack diagrams will start counting with 1 at the bottom', verbose_name='RU order top to bottom', default=settings.RACK_LISTING_NUMBERING_TOP_TO_BOTTOM),
+            field=models.BooleanField(
+                help_text=(
+                    'Check if RU numbers count from top to bottom with '
+                    'position 1 starting at the top of the rack. If '
+                    'unchecked position 1is at the bottom of the rack'
+                ),
+                default=False,
+                verbose_name='RU order top to bottom',
+            ),
         ),
     ]
