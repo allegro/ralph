@@ -44,7 +44,7 @@ class CustomFieldsWithInheritanceRelation(GenericRelation):
         )
 
 
-def _prioretitize_custom_field_values(objects, model, content_type):
+def _prioritize_custom_field_values(objects, model, content_type):
     """
     Sort custom field values by priorities and leave the ones with
     biggest priority for each custom field type.
@@ -81,24 +81,24 @@ def _prioretitize_custom_field_values(objects, model, content_type):
 class CustomFieldValueQuerySet(models.QuerySet):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._prioretitize = False
-        self._prioretitize_model_or_instance = None
+        self._prioritize = False
+        self._prioritize_model_or_instance = None
 
-    def prioretitize(self, model_or_instance):
-        self._prioretitize = True
-        self._prioretitize_model_or_instance = model_or_instance
+    def prioritize(self, model_or_instance):
+        self._prioritize = True
+        self._prioritize_model_or_instance = model_or_instance
         return self
 
     def iterator(self):
-        if self._prioretitize:
+        if self._prioritize:
             # set if to False to not fall into recursion when calling
-            # `_prioretitize_custom_field_values`
-            self._prioretitize = False
-            for cfv_id, cfv in _prioretitize_custom_field_values(
+            # `_prioritize_custom_field_values`
+            self._prioritize = False
+            for cfv_id, cfv in _prioritize_custom_field_values(
                 self,
-                self._prioretitize_model_or_instance,
+                self._prioritize_model_or_instance,
                 ContentType.objects.get_for_model(
-                    self._prioretitize_model_or_instance
+                    self._prioritize_model_or_instance
                 )
             ):
                 yield cfv
@@ -121,7 +121,7 @@ class ReverseGenericRelatedWithInheritanceObjectsDescriptor(
         rel_model = self.field.rel.to
         # difference here comparing to Django!
         superclass = rel_model.inherited_objects.__class__
-        RelatedManager = create_generic_related_manager_with_iheritance(
+        RelatedManager = create_generic_related_manager_with_inheritance(
             superclass
         )
 
@@ -146,7 +146,7 @@ class ReverseGenericRelatedWithInheritanceObjectsDescriptor(
         return manager
 
 
-def create_generic_related_manager_with_iheritance(superclass):  # noqa: C901
+def create_generic_related_manager_with_inheritance(superclass):  # noqa: C901
     """
     Extension to Django's create_generic_related_manager.
 
@@ -218,7 +218,7 @@ def create_generic_related_manager_with_iheritance(superclass):  # noqa: C901
             except (AttributeError, KeyError):
                 return super().get_queryset().filter(
                     *self.inheritance_filters
-                ).prioretitize(self.instance)
+                ).prioritize(self.instance)
 
         def get_prefetch_queryset(self, instances, queryset=None):
             """
@@ -318,7 +318,7 @@ def create_generic_related_manager_with_iheritance(superclass):  # noqa: C901
                         pass
 
                 vals = [
-                    v[1] for v in _prioretitize_custom_field_values(
+                    v[1] for v in _prioritize_custom_field_values(
                         vals, self.instance, self.content_type
                     )
                 ]
