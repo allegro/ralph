@@ -29,6 +29,17 @@ class CustomFieldsWithInheritanceRelation(GenericRelation):
 
         custom_fields = CustomFieldsWithInheritanceRelation(CustomFieldValue)
         custom_fields_inheritance = ['city', 'city__country']
+
+    The priority of inheritance is as follows:
+    * the `CustomFieldValue`s (CFVs) set directyl on object has the highest
+      priority
+    * then CFVs set on first field on `custom_fields_inheritance` list,
+      then on second field on that list and so on
+
+    For the example above the priority is as follows:
+    * restaurant (highest)
+    * restaurant.city
+    * restaurant.city.country (lowest)
     """
     def contribute_to_class(self, cls, name, **kwargs):
         super().contribute_to_class(cls, name, **kwargs)
@@ -65,16 +76,12 @@ def _prioritize_custom_field_values(objects, model, content_type):
         ct_id: index for (index, ct_id) in enumerate(ct_priority)
     }
     custom_fields_seen = set()
-    custom_fields_values_ids = set()
-    result = []
     for cfv in sorted(
         objects, key=lambda cfv: ct_priority[cfv.content_type_id]
     ):
         if cfv.custom_field_id in custom_fields_seen:
             continue
         custom_fields_seen.add(cfv.custom_field_id)
-        custom_fields_values_ids.add(cfv.id)
-        result.append(cfv)
         yield cfv.id, cfv
 
 
