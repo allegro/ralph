@@ -32,12 +32,12 @@ class CustomFieldsWithInheritanceRelation(GenericRelation):
     """
     def contribute_to_class(self, cls, name, **kwargs):
         super().contribute_to_class(cls, name, **kwargs)
-        # use ReverseGenericRelatedWithInheritanceObjectsDescriptor
+        # use ReverseGenericRelatedObjectsWithInheritanceDescriptor
         # instead of ReverseGenericRelatedObjectsDescriptor
         setattr(
             cls,
             self.name,
-            ReverseGenericRelatedWithInheritanceObjectsDescriptor(
+            ReverseGenericRelatedObjectsWithInheritanceDescriptor(
                 self,
                 self.for_concrete_model
             )
@@ -106,7 +106,7 @@ class CustomFieldValueQuerySet(models.QuerySet):
         yield from super().iterator()
 
 
-class ReverseGenericRelatedWithInheritanceObjectsDescriptor(
+class ReverseGenericRelatedObjectsWithInheritanceDescriptor(
     ReverseGenericRelatedObjectsDescriptor
 ):
     def __get__(self, instance, instance_type=None):
