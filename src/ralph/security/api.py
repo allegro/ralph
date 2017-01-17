@@ -20,6 +20,9 @@ class VulnerabilitySerializer(RalphAPISerializer):
 class VulnerabilityViewSet(RalphAPIViewSet):
     queryset = Vulnerability.objects.all()
     serializer_class = VulnerabilitySerializer
+    filter_fields = [
+        'external_vulnerability_id',
+    ]
 
 
 class SecurityScanSerializer(RalphAPISerializer):
