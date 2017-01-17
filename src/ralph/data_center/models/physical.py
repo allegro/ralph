@@ -293,6 +293,11 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
 
 class NetworkableBaseObject(models.Model):
     # TODO: hostname field and not-abstract cls
+    custom_fields_inheritance = [
+        'configuration_path',
+        'configuration_path__module',
+        'service_env',
+    ]
 
     @cached_property
     def network_environment(self):

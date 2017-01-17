@@ -3,7 +3,7 @@ import six
 from dj.choices import Choices
 from django import forms
 from django.contrib.contenttypes import generic
-from django.contrib.contenttypes.fields import GenericRelation
+
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -11,6 +11,10 @@ from django.utils.text import capfirst, slugify
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
+from .fields import (
+    CustomFieldsWithInheritanceRelation,
+    CustomFieldValueQuerySet
+)
 
 CUSTOM_FIELD_VALUE_MAX_LENGTH = 1000
 
@@ -117,6 +121,11 @@ class CustomFieldValue(TimeStampMixin, models.Model):
     object_id = models.PositiveIntegerField(db_index=True)
     object = generic.GenericForeignKey('content_type', 'object_id')
 
+    objects = models.Manager()
+    # generic relation has to use specific manager (queryset)
+    # which handle inheritance
+    inherited_objects = CustomFieldValueQuerySet.as_manager()
+
     class Meta:
         unique_together = ('custom_field', 'content_type', 'object_id')
 
@@ -167,7 +176,8 @@ class CustomFieldValue(TimeStampMixin, models.Model):
 
 class WithCustomFieldsMixin(models.Model):
     # TODO: handle polymorphic in filters
-    custom_fields = GenericRelation(CustomFieldValue)
+    custom_fields = CustomFieldsWithInheritanceRelation(CustomFieldValue)
+    custom_fields_inheritance = []
 
     class Meta:
         abstract = True
