@@ -568,6 +568,7 @@ class BaseObjectsSupportRichResource(RalphModelResource):
             'baseobject__asset__hostname',
             'baseobject__asset__barcode',
             'baseobject__asset__sn',
+            'baseobject__asset__model',
             'baseobject__service_env',
             'baseobject__configuration_path',
         )
