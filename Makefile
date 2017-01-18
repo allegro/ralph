@@ -55,7 +55,7 @@ run:
 	dev_ralph runserver_plus 0.0.0.0:8000
 
 menu:
-	ralph sitetree_resync_apps
+	ralph sitetree_resync_apps ralph
 
 coveralls: install-docs docs coverage
 
