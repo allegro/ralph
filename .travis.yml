@@ -78,13 +78,13 @@ deploy:
         on:
             branch: ng
             python: 3.4
-            condition: $TEST_DB_ENGINE = psql && $DJANGO_VERSION = $DJANGO_CURRENT_VERSION
+            condition: $TRAVIS_EVENT_TYPE = cron && $TEST_DB_ENGINE = psql && $DJANGO_VERSION = $DJANGO_CURRENT_VERSION
     -   provider: script
         script: scripts/travis_deploy_bintray.sh
         on:
             branch: ng
             python: 3.4
-            condition: $TEST_DB_ENGINE = psql && $DJANGO_VERSION = $DJANGO_CURRENT_VERSION
+            condition: $TRAVIS_EVENT_TYPE = cron && $TEST_DB_ENGINE = psql && $DJANGO_VERSION = $DJANGO_CURRENT_VERSION
 
 notifications:
   webhooks:
