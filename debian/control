@@ -2,13 +2,12 @@ Source: ralph
 Section: python
 Priority: extra
 Maintainer: pylabs@allegrogroup.com
-Build-Depends: debhelper (>= 9), python
+Build-Depends: debhelper (>= 9), dh-virtualenv, git, libmysqlclient-dev, python3-virtualenv, python3 (>=3.4), python3-dev (>=3.4), libffi-dev
 Standards-Version: 3.9.5
 
 Package: ralph-core
 Architecture: amd64
-Pre-Depends: dpkg (>= 1.16.1), python3.4, ${misc:Pre-Depends}
-Depends: git,libmysqlclient-dev,python-virtualenv,python-dev,python3.4,python3.4-dev
+Pre-Depends: dpkg (>= 1.16.1), python (>=3.4), ${misc:Pre-Depends}
 Description: Ralph is an DCIM/CMDB - asset management for Data Centers/ Back Office.
 Homepage: http://ralph.allegrogroup.com
 Suggests: mysql-server, redis
