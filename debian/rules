@@ -6,6 +6,9 @@ export DH_VIRTUALENV_INSTALL_ROOT=/opt/ralph
 	dh $@ --with python-virtualenv
 
 override_dh_virtualenv:
+	npm install
+	node_modules/bower/bin/bower --allow-root install
+	node_modules/gulp/bin/gulp.js
 	dh_virtualenv --python /usr/bin/python3.4
 
 override_dh_shlibdeps:
