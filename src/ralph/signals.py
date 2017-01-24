@@ -3,7 +3,11 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
-def post_commit(func, model, prevent_multiple_calls=True):
+# TODO: make this working as a decorator, example:
+# @post_commit(MyModel)
+# def my_handler(instance):
+#    ...
+def post_commit(func, model, signal=post_save, prevent_multiple_calls=True):
     """
     Post commit signal for specific model.
 
@@ -29,7 +33,7 @@ def post_commit(func, model, prevent_multiple_calls=True):
     * if transaction is not started for current request, then this hook will
       behave as post_save (will be called immediately)
     """
-    @receiver(post_save, sender=model, weak=False)
+    @receiver(signal, sender=model, weak=False)
     def wrap(sender, instance, **kwargs):
         def wrapper():
             # prevent from calling the same func multiple times for single
