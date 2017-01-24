@@ -25,10 +25,9 @@ def _get_host_data(instance):
     auto_publish_result=False
 )
 def publish_host_update(instance):
-    if (
-        settings.HERMES_HOST_UPDATE_TOPIC_NAME and
-        not getattr(instance, '_host_update_published', False)
-    ):
+    """
+    Publish TOOD
+    """
+    if settings.HERMES_HOST_UPDATE_TOPIC_NAME:
         host_data = _get_host_data(instance)
         publish(settings.HERMES_HOST_UPDATE_TOPIC_NAME, host_data)
-        instance._host_update_published = True

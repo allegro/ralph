@@ -12,10 +12,8 @@ from django.core.validators import (
     MinValueValidator,
     RegexValidator
 )
-from django.db import connection, models, transaction
+from django.db import models, transaction
 from django.db.models import Q
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -41,6 +39,7 @@ from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, PreviousStateMixin
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
 from ralph.networks.models import IPAddress, Network, NetworkEnvironment
+from ralph.signals import post_commit
 
 logger = logging.getLogger(__name__)
 
@@ -763,11 +762,4 @@ class Connection(AdminAbsoluteUrlMixin, models.Model):
         )
 
 
-@receiver(post_save, sender=DataCenterAsset)
-def post_save_dc_asset(sender, instance, **kwargs):
-    def publish_host_update_call():
-        publish_host_update(instance)
-    # subscribe to on_commit hook, then call publishing host update (when
-    # all M2M relations will be updated)
-    # TODO: replace connection by transaction after upgrading to Django 1.9
-    connection.on_commit(publish_host_update_call)
+post_commit(publish_host_update, DataCenterAsset)

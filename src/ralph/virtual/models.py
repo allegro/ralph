@@ -4,7 +4,7 @@ import logging
 from dj.choices import Choices
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import connection, models
+from django.db import models
 from django.dispatch import receiver
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
@@ -29,6 +29,7 @@ from ralph.lib.mixins.models import (
 )
 from ralph.lib.transitions.fields import TransitionField
 from ralph.networks.models.networks import IPAddress
+from ralph.signals import post_commit
 
 logger = logging.getLogger(__name__)
 
@@ -356,21 +357,5 @@ class VirtualServer(
         return 'VirtualServer: {} ({})'.format(self.hostname, self.sn)
 
 
-@receiver(models.signals.post_save, sender=CloudHost)
-def post_save_cloud_host(sender, instance, **kwargs):
-    def publish_host_update_call():
-        publish_host_update(instance)
-    # subscribe to on_commit hook, then call publishing host update (when
-    # all M2M relations will be updated)
-    # TODO: replace connection by transaction after upgrading to Django 1.9
-    connection.on_commit(publish_host_update_call)
-
-
-@receiver(models.signals.post_save, sender=VirtualServer)
-def post_save_virtual_server(sender, instance, **kwargs):
-    def publish_host_update_call():
-        publish_host_update(instance)
-    # subscribe to on_commit hook, then call publishing host update (when
-    # all M2M relations will be updated)
-    # TODO: replace connection by transaction after upgrading to Django 1.9
-    connection.on_commit(publish_host_update_call)
+post_commit(publish_host_update, VirtualServer)
+post_commit(publish_host_update, CloudHost)

@@ -9,8 +9,8 @@ from threadlocals.threadlocals import get_current_user
 
 
 @Metrology.timer('notification')
-def send_notification_for_model(sender, instance, **kwargs):
-    ServiceEnvironment = sender.service_env.field.related_model
+def send_notification_for_model(instance):
+    ServiceEnvironment = instance._meta.get_field('service_env').related_model
     old_service_env_id = instance._previous_state['service_env_id']
     new_service_env_id = instance.service_env_id
     if old_service_env_id and old_service_env_id != new_service_env_id:
