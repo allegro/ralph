@@ -20,8 +20,4 @@ class NotificationConfig(RalphAppConfig):
             'virtual.CloudProject',
         ]
         for model in models:
-            # post_save.connect(
-            #     receiver=send_notification_for_model,
-            #     sender=model
-            # )
             post_commit(send_notification_for_model, model)

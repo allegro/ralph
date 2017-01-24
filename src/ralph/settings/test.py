@@ -15,15 +15,14 @@ if TEST_DB_ENGINE == 'mysql':
         DATABASES['default']['PASSWORD'] = None
 elif TEST_DB_ENGINE == 'psql':
     DATABASES['default'].update({
-        # TODO: change backend
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'transaction_hooks.backends.postgresql_psycopg2',
         'PORT': os.environ.get('DATABASE_PORT', 5432),
         'OPTIONS': {},
     })
 else:  # use sqlite as default
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
+            'ENGINE': 'transaction_hooks.backends.sqlite3',
             'NAME': ':memory:',
             'ATOMIC_REQUESTS': True,
         }

@@ -33,6 +33,7 @@ if settings.DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME:
     def publish_data_to_dnsaaas(obj):
         return _publish_data_to_dnsaaas(obj)
 
+    # TODO: consider changing it to `ralph.signals.post_commit`
     @receiver(post_save, sender=DataCenterAsset)
     def post_save_dc_asset(sender, instance, **kwargs):
         _send_once(instance)

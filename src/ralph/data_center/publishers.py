@@ -26,8 +26,9 @@ def _get_host_data(instance):
 )
 def publish_host_update(instance):
     """
-    Publish TOOD
+    Publish information about DC Host updates using DCHost API serializer.
     """
     if settings.HERMES_HOST_UPDATE_TOPIC_NAME:
         host_data = _get_host_data(instance)
+        # call publish directly to make testing easier
         publish(settings.HERMES_HOST_UPDATE_TOPIC_NAME, host_data)
