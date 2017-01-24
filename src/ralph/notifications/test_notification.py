@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.core import mail
+from django.test import TransactionTestCase
 
 from ralph.accounts.tests.factories import UserFactory
 from ralph.assets.tests.factories import (
@@ -7,10 +8,9 @@ from ralph.assets.tests.factories import (
     ServiceFactory
 )
 from ralph.data_center.tests.factories import DataCenterAssetFactory
-from ralph.tests import RalphTestCase
 
 
-class NotificationTest(RalphTestCase):
+class NotificationTest(TransactionTestCase):
 
     def test_notificaiton_change_service_in_datacenterasset(self):
         old_service = ServiceFactory(name='test')
