@@ -22,9 +22,7 @@ def _publish_data_to_dnsaaas(obj):
 
 
 def _send_once(instance):
-    # run without condition when ralph2 sync is killed
-    if getattr(instance, '_handle_post_save', True):
-        publish_data_to_dnsaaas(instance)
+    publish_data_to_dnsaaas(instance)
 
 
 if settings.DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME:

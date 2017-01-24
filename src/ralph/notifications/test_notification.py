@@ -25,7 +25,6 @@ class NotificationTest(RalphTestCase):
         self.dca.service_env = ServiceEnvironmentFactory(
             service=new_service
         )
-        self.dca._handle_post_save = True
         self.dca.save()
 
         self.assertEqual(
@@ -38,3 +37,9 @@ class NotificationTest(RalphTestCase):
             mail.outbox[0].to,
             ['test1@test.pl', 'test2@test.pl']
         )
+
+    def test_notificaiton_change_service_in_datacenterasset_through_admin(self):
+        assert False  # TODO
+
+    def test_notificaiton_change_service_in_datacenterasset_through_api(self):
+        assert False  # TODO

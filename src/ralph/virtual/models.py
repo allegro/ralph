@@ -2,10 +2,9 @@
 import logging
 
 from dj.choices import Choices
-from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import models
+from django.db import connection, models
 from django.dispatch import receiver
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
@@ -20,6 +19,7 @@ from ralph.data_center.models.physical import (
     NetworkableBaseObject
 )
 from ralph.data_center.models.virtual import Cluster
+from ralph.data_center.publishers import publish_host_update
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
@@ -356,19 +356,21 @@ class VirtualServer(
         return 'VirtualServer: {} ({})'.format(self.hostname, self.sn)
 
 
-if settings.HERMES_HOST_UPDATE_TOPIC_NAME:
-    from ralph.data_center.publishers import publish_host_update
+@receiver(models.signals.post_save, sender=CloudHost)
+def post_save_cloud_host(sender, instance, **kwargs):
+    def publish_host_update_call():
+        publish_host_update(instance)
+    # subscribe to on_commit hook, then call publishing host update (when
+    # all M2M relations will be updated)
+    # TODO: replace connection by transaction after upgrading to Django 1.9
+    connection.on_commit(publish_host_update_call)
 
-    @receiver(models.signals.post_save, sender=CloudHost)
-    def post_save_cloud_host(sender, instance, **kwargs):
-        # temporary, until Ralph2 sync is turned on
-        # see ralph.ralph2_sync.admin for details
-        if getattr(instance, '_handle_post_save', True):
-            return publish_host_update(instance)
 
-    @receiver(models.signals.post_save, sender=VirtualServer)
-    def post_save_virtual_server(sender, instance, **kwargs):
-        # temporary, until Ralph2 sync is turned on
-        # see ralph.ralph2_sync.admin for details
-        if getattr(instance, '_handle_post_save', True):
-            return publish_host_update(instance)
+@receiver(models.signals.post_save, sender=VirtualServer)
+def post_save_virtual_server(sender, instance, **kwargs):
+    def publish_host_update_call():
+        publish_host_update(instance)
+    # subscribe to on_commit hook, then call publishing host update (when
+    # all M2M relations will be updated)
+    # TODO: replace connection by transaction after upgrading to Django 1.9
+    connection.on_commit(publish_host_update_call)

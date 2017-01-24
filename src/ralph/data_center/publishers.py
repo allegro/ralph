@@ -3,6 +3,7 @@ from copy import deepcopy
 
 import pyhermes
 from django.conf import settings
+from pyhermes.publishing import publish
 
 
 def _get_host_data(instance):
@@ -18,9 +19,16 @@ def _get_host_data(instance):
         data = serializer.data
     return data
 
-if settings.HERMES_HOST_UPDATE_TOPIC_NAME:
-    @pyhermes.publisher(
-        topic=settings.HERMES_HOST_UPDATE_TOPIC_NAME, auto_publish_result=True
-    )
-    def publish_host_update(instance):
-        return _get_host_data(instance)
+
+@pyhermes.publisher(
+    topic=settings.HERMES_HOST_UPDATE_TOPIC_NAME or '',
+    auto_publish_result=False
+)
+def publish_host_update(instance):
+    if (
+        settings.HERMES_HOST_UPDATE_TOPIC_NAME and
+        not getattr(instance, '_host_update_published', False)
+    ):
+        host_data = _get_host_data(instance)
+        publish(settings.HERMES_HOST_UPDATE_TOPIC_NAME, host_data)
+        instance._host_update_published = True

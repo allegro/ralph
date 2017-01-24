@@ -15,6 +15,7 @@ if TEST_DB_ENGINE == 'mysql':
         DATABASES['default']['PASSWORD'] = None
 elif TEST_DB_ENGINE == 'psql':
     DATABASES['default'].update({
+        # TODO: change backend
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'PORT': os.environ.get('DATABASE_PORT', 5432),
         'OPTIONS': {},

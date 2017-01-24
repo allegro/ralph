@@ -5,7 +5,6 @@ from collections import namedtuple
 from itertools import chain
 
 from django import forms
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.core.validators import (
@@ -13,7 +12,7 @@ from django.core.validators import (
     MinValueValidator,
     RegexValidator
 )
-from django.db import models, transaction
+from django.db import connection, models, transaction
 from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -37,6 +36,7 @@ from ralph.data_center.models.choices import (
     RackOrientation
 )
 from ralph.data_center.models.mixins import WithManagementIPMixin
+from ralph.data_center.publishers import publish_host_update
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, PreviousStateMixin
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
@@ -763,12 +763,11 @@ class Connection(AdminAbsoluteUrlMixin, models.Model):
         )
 
 
-if settings.HERMES_HOST_UPDATE_TOPIC_NAME:
-    from ralph.data_center.publishers import publish_host_update
-
-    @receiver(post_save, sender=DataCenterAsset)
-    def post_save_dc_asset(sender, instance, **kwargs):
-        # temporary, until Ralph2 sync is turned on
-        # see ralph.ralph2_sync.admin for details
-        if getattr(instance, '_handle_post_save', True):
-            return publish_host_update(instance)
+@receiver(post_save, sender=DataCenterAsset)
+def post_save_dc_asset(sender, instance, **kwargs):
+    def publish_host_update_call():
+        publish_host_update(instance)
+    # subscribe to on_commit hook, then call publishing host update (when
+    # all M2M relations will be updated)
+    # TODO: replace connection by transaction after upgrading to Django 1.9
+    connection.on_commit(publish_host_update_call)
