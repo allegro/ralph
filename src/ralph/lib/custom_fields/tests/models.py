@@ -5,19 +5,7 @@ from django.db import models
 from ..models import WithCustomFieldsMixin
 
 
-class ModelA(WithCustomFieldsMixin, models.Model):
-    pass
-
-
-class ModelB(WithCustomFieldsMixin, models.Model):
-    a = models.ForeignKey(ModelA, null=False)
-
-
-class SomeModel(WithCustomFieldsMixin, models.Model):
-    name = models.CharField(max_length=20)
-    b = models.ForeignKey(ModelB, null=True, blank=True)
-    custom_fields_inheritance = ['b', 'b__a']
-
+class CustomFieldAdminAbsoluteUrlMixin(object):
     def get_absolute_url(self):
         return reverse(
             'cf_admin:{}_{}_change'.format(
@@ -30,3 +18,23 @@ class SomeModel(WithCustomFieldsMixin, models.Model):
         return reverse('cf_admin:{}_{}_add'.format(
             self._meta.app_label, self._meta.model_name
         ))
+
+
+class ModelA(
+    CustomFieldAdminAbsoluteUrlMixin, WithCustomFieldsMixin, models.Model
+):
+    pass
+
+
+class ModelB(
+    CustomFieldAdminAbsoluteUrlMixin, WithCustomFieldsMixin, models.Model
+):
+    a = models.ForeignKey(ModelA, null=False)
+
+
+class SomeModel(
+    CustomFieldAdminAbsoluteUrlMixin, WithCustomFieldsMixin, models.Model
+):
+    name = models.CharField(max_length=20)
+    b = models.ForeignKey(ModelB, null=True, blank=True)
+    custom_fields_inheritance = ['b', 'b__a']
