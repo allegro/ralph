@@ -8,6 +8,7 @@ from ralph.assets.tests.factories import (
     ServiceEnvironmentFactory,
     ServiceFactory
 )
+from ralph.data_center.models import DataCenterAsset
 from ralph.data_center.tests.factories import DataCenterAssetFactory
 
 
@@ -23,6 +24,10 @@ class NotificationTest(TransactionTestCase):
                 service=old_service
             )
         )
+
+        # fetch DCA to start with clean state in post_commit signals
+        # (ex. invalidate call to notification handler during creating of DCA)
+        self.dca = DataCenterAsset.objects.get(pk=self.dca.pk)
         self.dca.service_env = ServiceEnvironmentFactory(
             service=new_service
         )
