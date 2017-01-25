@@ -3,7 +3,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
-# TODO: make this working as a decorator, example:
+# TODO(mkurek): make this working as a decorator, example:
 # @post_commit(MyModel)
 # def my_handler(instance):
 #    ...
@@ -46,5 +46,6 @@ def post_commit(func, model, signal=post_save, prevent_multiple_calls=True):
                 func(instance)
                 setattr(instance, called_attr, True)
 
-        # TODO: replace connection by transaction after upgrading to Django 1.9
+        # TODO(mkurek): replace connection by transaction after upgrading to
+        # Django 1.9
         connection.on_commit(wrapper)
