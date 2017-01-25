@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -7,6 +8,8 @@ from django.template.loader import render_to_string
 from metrology import Metrology
 from threadlocals.threadlocals import get_current_user
 
+logger = logging.getLogger(__name__)
+
 
 @Metrology.timer('notification')
 def send_notification_for_model(instance):
@@ -14,6 +17,15 @@ def send_notification_for_model(instance):
     old_service_env_id = instance._previous_state['service_env_id']
     new_service_env_id = instance.service_env_id
     if old_service_env_id and old_service_env_id != new_service_env_id:
+        logger.info(
+            'Sending mail notification for {}'.format(instance),
+            extra={
+                'type': 'SEND_MAIL_NOTIFICATION_FOR_MODEL',
+                'instance_id': instance.id,
+                'content_type': instance.content_type.name,
+                'notification_type': 'service_change',
+            }
+        )
         old_service_env = ServiceEnvironment.objects.get(
             pk=old_service_env_id
         )
