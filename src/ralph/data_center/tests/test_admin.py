@@ -73,7 +73,7 @@ class DataCenterAssetAdminTest(TransactionTestCase):
             for (k, v) in d.items()
         }
 
-    def test_update_data_center_asset_check_mail_notifications(self):
+    def test_if_mail_notification_is_send_when_dca_is_updated_through_gui(self):
         old_service = ServiceFactory(name='test')
         new_service = ServiceFactory(name='prod')
         old_service.business_owners.add(UserFactory(email='test1@test.pl'))
@@ -110,7 +110,7 @@ class DataCenterAssetAdminTest(TransactionTestCase):
 
     @override_settings(HERMES_HOST_UPDATE_TOPIC_NAME='ralph.host_update')
     @mock.patch('ralph.data_center.publishers.publish')
-    def test_update_data_center_asset_check_publish_host_update(
+    def test_if_host_update_is_published_to_hermes_when_dca_is_updated_through_gui(  # noqa: E501
         self, publish_mock
     ):
         self.cfv1 = CustomFieldValue.objects.create(

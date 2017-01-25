@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.core import mail
+from django.db import transaction
 from django.test import TransactionTestCase
 
 from ralph.accounts.tests.factories import UserFactory
@@ -12,7 +13,7 @@ from ralph.data_center.tests.factories import DataCenterAssetFactory
 
 class NotificationTest(TransactionTestCase):
 
-    def test_notificaiton_change_service_in_datacenterasset(self):
+    def test_if_notification_is_send_when_data_center_asset_is_saved(self):
         old_service = ServiceFactory(name='test')
         new_service = ServiceFactory(name='prod')
         old_service.business_owners.add(UserFactory(email='test1@test.pl'))
@@ -25,8 +26,10 @@ class NotificationTest(TransactionTestCase):
         self.dca.service_env = ServiceEnvironmentFactory(
             service=new_service
         )
-        self.dca.save()
+        with transaction.atomic():
+            self.dca.save()
 
+        self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(
             'Device has been assigned to Service: {} ({})'.format(
                 new_service, self.dca
