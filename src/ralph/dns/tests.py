@@ -361,9 +361,6 @@ class TestPublishAutoTXTToDNSaaS(TransactionTestCase):
             is_management=True,
         )
 
-    def setUp(self):
-        self.maxDiff = None
-
     @override_settings(
         DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME='dnsaas_auto_txt_record'
     )
@@ -376,41 +373,39 @@ class TestPublishAutoTXTToDNSaaS(TransactionTestCase):
 
         self.assertEqual(publish_mock.call_count, 1)
         publish_data = publish_mock.call_args[0][1]
+        # owner could be non-deterministic, depending on order of tests
+        # and it's not part of this test to check its correctness
+        for data_dict in publish_data:
+            data_dict.pop('owner')
         self.assertCountEqual(publish_data, [
             {
                 'content': 'www',
                 'ips': [self.dc_ip.address],
-                'owner': '',
                 'target_owner': 'ralph',
                 'purpose': 'VENTURE'
             }, {
                 'content': 'ralph',
                 'ips': [self.dc_ip.address],
-                'owner': '',
                 'target_owner': 'ralph',
                 'purpose': 'ROLE',
             }, {
                 'content': 'ralph/www',
                 'ips': [self.dc_ip.address],
-                'owner': '',
                 'target_owner': 'ralph',
                 'purpose': 'CONFIGURATION_PATH',
             }, {
                 'content': 'service - test',
                 'ips': [self.dc_ip.address],
-                'owner': '',
                 'target_owner': 'ralph',
                 'purpose': 'SERVICE_ENV',
             }, {
                 'content': '[ATS] Asus DL360',
                 'ips': [self.dc_ip.address],
-                'owner': '',
                 'target_owner': 'ralph',
                 'purpose': 'MODEL'
             }, {
                 'content': 'DC1 / Server Room A / Rack #100 / 1 / 1',
                 'ips': [self.dc_ip.address],
-                'owner': '',
                 'target_owner': 'ralph',
                 'purpose': 'LOCATION'
             }
