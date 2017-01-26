@@ -454,7 +454,12 @@ class RackAccessoryInline(RalphTabularInline):
 class RackAdmin(RalphAdmin):
 
     exclude = ['accessories']
-    list_display = ['name', 'server_room_name', 'data_center_name']
+    list_display = [
+        'name',
+        'server_room_name',
+        'data_center_name',
+        'reverse_ordering',
+    ]
     list_filter = ['server_room__data_center']  # TODO use fk field in filter
     list_select_related = ['server_room', 'server_room__data_center']
     search_fields = ['name']

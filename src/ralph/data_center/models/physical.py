@@ -223,6 +223,15 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
             'has warehouse-kind role'
         )
     )
+    reverse_ordering = models.BooleanField(
+        default=settings.RACK_LISTING_NUMBERING_TOP_TO_BOTTOM,
+        help_text=_(
+            'Check if RU numbers count from top to bottom with position 1 '
+            'starting at the top of the rack. If unchecked position 1 is '
+            'at the bottom of the rack'
+        ),
+        verbose_name=_('RU order top to bottom'),
+    )
 
     class Meta:
         unique_together = ('name', 'server_room')

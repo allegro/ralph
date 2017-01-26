@@ -3,16 +3,16 @@
         {{ info.name }}
     </div>
     <div class="wrapper">
-        <listing class="listing-u left" ng-class="{reverse: reverse_ordering}"></listing>
+        <listing class="listing-u left" ng-class="{reverse: info.reverse_ordering}"></listing>
         <div class="pdu left">
             <pdu-item pdu="item" ng-repeat="item in pdus|filter:{orientation:'left'}" style="order: {{ $index }}"></pdu-item>
         </div>
-        <div class="devices" ng-class="{reverse: reverse_ordering}">
+        <div class="devices" ng-class="{reverse: info.reverse_ordering}">
             <device-item device="item" side="side" ng-repeat="item in devices"></device-item>
         </div>
         <div class="pdu right">
             <pdu-item pdu="item" ng-repeat="item in pdus|filter:{orientation:'right'}" style="order: {{ $index }}"></pdu-item>
         </div>
-        <listing class="listing-u right" ng-class="{reverse: reverse_ordering}"></listing>
+        <listing class="listing-u right" ng-class="{reverse: info.reverse_ordering}"></listing>
     </div>
 </div>

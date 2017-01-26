@@ -138,7 +138,7 @@ class RackBaseSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'name', 'server_room', 'max_u_height',
             'visualization_col', 'visualization_row', 'free_u', 'description',
-            'orientation'
+            'orientation', 'reverse_ordering'
         )
 
     def update(self, data):
