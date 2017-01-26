@@ -134,7 +134,9 @@ class ViewsTest(TestCase):
 
     @unpack
     @data(*ralph_site._registry.items())
-    def test_numbers(self, model, model_admin):
+    def test_numbers_of_sql_query_and_response_status_is_200(
+        self, model, model_admin
+    ):
             query_count = 0
             model_class_path = '{}.{}'.format(model.__module__, model.__name__)
             if model_class_path in EXCLUDE_MODELS:
