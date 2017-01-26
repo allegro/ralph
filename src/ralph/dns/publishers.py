@@ -2,14 +2,14 @@
 import logging
 
 import pyhermes
-from pyhermes import publish
 from django.conf import settings
+from pyhermes import publish
 from threadlocals.threadlocals import get_current_user
 
 from ralph.data_center.models.physical import DataCenterAsset
 from ralph.data_center.models.virtual import Cluster
-from ralph.virtual.models import VirtualServer
 from ralph.signals import post_commit
+from ralph.virtual.models import VirtualServer
 
 logger = logging.getLogger(__name__)
 
