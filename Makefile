@@ -38,7 +38,7 @@ test: clean
 
 flake: isort
 	flake8 src/ralph
-	flake8 src/ralph/settings --ignore=F405 --exclude=local.py
+	flake8 src/ralph/settings --ignore=F405 --exclude=*local.py
 	@cat scripts/flake.txt
 
 clean:
