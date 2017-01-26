@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from importlib import import_module
 
+from ddt import data, ddt, unpack
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db import connections
 from django.test import RequestFactory, TestCase
@@ -116,8 +118,8 @@ EXCLUDE_ADD_VIEW = [
 SQL_QUERY_LIMIT = 30
 
 
+@ddt
 class ViewsTest(TestCase):
-
     def setUp(self):
         self.request = RequestFactory().get('/')
         self.request.user = get_user_model().objects.create_superuser(
@@ -125,12 +127,18 @@ class ViewsTest(TestCase):
         )
         self.request.session = {}
 
-    def test_numbers_of_sql_query_and_response_status_is_200(self):
-        for model, model_admin in ralph_site._registry.items():
+        # fetch content types first
+        ContentType.objects.get_for_models(*ralph_site._registry.keys())
+
+    @unpack
+    @data(*ralph_site._registry.items())
+    def test_numbers_of_sql_query_and_response_status_is_200(
+        self, model, model_admin
+    ):
             query_count = 0
             model_class_path = '{}.{}'.format(model.__module__, model.__name__)
             if model_class_path in EXCLUDE_MODELS:
-                continue
+                return
 
             module_path, factory_class = FACTORY_MAP[model_class_path].rsplit(
                 '.', 1
@@ -149,14 +157,18 @@ class ViewsTest(TestCase):
             # Create next 10 records:
             factory_model.create_batch(10)
 
-            with CaptureQueriesContext(connections['default']) as cqc:
+            with CaptureQueriesContext(connections['default']) as cqc2:
                 change_list = model_admin.changelist_view(self.request)
                 self.assertEqual(
                     query_count,
-                    len(cqc),
-                    'Different query count for {}'.format(model_class_path)
+                    len(cqc2),
+                    'Different query count for {}: \n {} \nvs\n{}'.format(
+                        model_class_path,
+                        '\n'.join([q['sql'] for q in cqc.captured_queries]),
+                        '\n'.join([q['sql'] for q in cqc2.captured_queries]),
+                    )
                 )
-                self.assertFalse(len(cqc) > SQL_QUERY_LIMIT)
+                self.assertFalse(len(cqc2) > SQL_QUERY_LIMIT)
 
             if model_class_path not in EXCLUDE_ADD_VIEW:
                 change_form = model_admin.changeform_view(
