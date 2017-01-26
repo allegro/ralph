@@ -7,7 +7,7 @@ from django.dispatch import receiver
 # @post_commit(MyModel)
 # def my_handler(instance):
 #    ...
-def post_commit(func, model, signal=post_save, prevent_multiple_calls=True):
+def post_commit(func, model, signal=post_save, single_call=True):
     """
     Post commit signal for specific model.
 
@@ -38,13 +38,13 @@ def post_commit(func, model, signal=post_save, prevent_multiple_calls=True):
         def wrapper():
             # prevent from calling the same func multiple times for single
             # instance
-            called_attr = '_' + func.__name__ + '_called'
+            called_already_attr = '_' + func.__name__ + '_called'
             if (
-                not getattr(instance, called_attr, False) or
-                not prevent_multiple_calls
+                not getattr(instance, called_already_attr, False) or
+                not single_call
             ):
                 func(instance)
-                setattr(instance, called_attr, True)
+                setattr(instance, called_already_attr, True)
 
         # TODO(mkurek): replace connection by transaction after upgrading to
         # Django 1.9
