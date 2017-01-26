@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from importlib import import_module
 
+from ddt import ddt, data, unpack
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db import connections
 from django.test import RequestFactory, TestCase
@@ -118,8 +120,8 @@ EXCLUDE_ADD_VIEW = [
 SQL_QUERY_LIMIT = 30
 
 
+@ddt
 class ViewsTest(TestCase):
-
     def setUp(self):
         self.request = RequestFactory().get('/')
         self.request.user = get_user_model().objects.create_superuser(
@@ -127,12 +129,16 @@ class ViewsTest(TestCase):
         )
         self.request.session = {}
 
-    def test_numbers_of_sql_query_and_response_status_is_200(self):
-        for model, model_admin in ralph_site._registry.items():
+        # fetch content types first
+        ContentType.objects.get_for_models(*ralph_site._registry.keys())
+
+    @unpack
+    @data(*ralph_site._registry.items())
+    def test_numbers(self, model, model_admin):
             query_count = 0
             model_class_path = '{}.{}'.format(model.__module__, model.__name__)
             if model_class_path in EXCLUDE_MODELS:
-                continue
+                return
 
             module_path, factory_class = FACTORY_MAP[model_class_path].rsplit(
                 '.', 1
