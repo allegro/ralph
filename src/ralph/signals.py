@@ -39,9 +39,9 @@ def post_commit(func, model, signal=post_save, single_call=True):
             # prevent from calling the same func multiple times for single
             # instance
             called_already_attr = '_' + func.__name__ + '_called'
-            if (
-                not getattr(instance, called_already_attr, False) or
-                not single_call
+            if not (
+                getattr(instance, called_already_attr, False) and
+                single_call
             ):
                 func(instance)
                 setattr(instance, called_already_attr, True)
