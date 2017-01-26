@@ -86,7 +86,7 @@ class CustomFieldValueAdminMixin(object):
                 cfv.content_type_id == obj_content_type_id and
                 cfv.object_id == obj.pk
             ):
-                object = '<none>'
+                object = '-'
                 object_url = ''
             else:
                 object = '{}: {}'.format(
