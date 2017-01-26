@@ -361,6 +361,9 @@ class TestPublishAutoTXTToDNSaaS(TransactionTestCase):
             is_management=True,
         )
 
+    def setUp(self):
+        self.maxDiff = None
+
     @override_settings(
         DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME='dnsaas_auto_txt_record'
     )
