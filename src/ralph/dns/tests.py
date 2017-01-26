@@ -372,8 +372,8 @@ class TestPublishAutoTXTToDNSaaS(TransactionTestCase):
             dc_asset.save()
 
         self.assertEqual(publish_mock.call_count, 1)
-        # publish_data = publish_mock.call_args[0][1]
-        publish_mock.assert_called_once_with('dnsaas_auto_txt_record', [
+        publish_data = publish_mock.call_args[0][1]
+        self.assertCountEqual(publish_data, [
             {
                 'content': 'www',
                 'ips': [self.dc_ip.address],
