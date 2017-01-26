@@ -126,7 +126,7 @@ class CustomFieldInheritanceModelsTestCase(TestCase):
         self.assertEqual(custom_fields_values, [
             {
                 'name': 'test str',
-                'object': '<none>',
+                'object': '-',
                 'object_url': '',
                 'value': 'sample_value'
             },
