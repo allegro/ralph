@@ -46,5 +46,4 @@ if settings.DOMAIN_DATA_UPDATE_TOPIC:
 
     @receiver(post_save, sender=Domain)
     def post_save_domain(sender, instance, **kwargs):
-        if getattr(instance, '_handle_post_save', True):
-            publish_domain_data(instance)
+        publish_domain_data(instance)

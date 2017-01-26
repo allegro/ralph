@@ -28,12 +28,7 @@ class DataCenterAssetForm(RalphAdminForm):
         obj = super().save(*args, **kwargs)
         # save object to enable creating ethernet (and link it to
         # DataCenterAsset)
-
-        # stop post save signal (especially hermes sync with ralph2)
-        # TODO: remove this when ralph2 sync will be removed
-        obj._handle_post_save = False
         obj.save()
-        del obj._handle_post_save
 
         if (
             not self.cleaned_data['management_hostname'] and

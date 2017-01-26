@@ -2,7 +2,6 @@
 import logging
 
 from dj.choices import Choices
-from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
@@ -20,6 +19,7 @@ from ralph.data_center.models.physical import (
     NetworkableBaseObject
 )
 from ralph.data_center.models.virtual import Cluster
+from ralph.data_center.publishers import publish_host_update
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
@@ -29,6 +29,7 @@ from ralph.lib.mixins.models import (
 )
 from ralph.lib.transitions.fields import TransitionField
 from ralph.networks.models.networks import IPAddress
+from ralph.signals import post_commit
 
 logger = logging.getLogger(__name__)
 
@@ -356,19 +357,5 @@ class VirtualServer(
         return 'VirtualServer: {} ({})'.format(self.hostname, self.sn)
 
 
-if settings.HERMES_HOST_UPDATE_TOPIC_NAME:
-    from ralph.data_center.publishers import publish_host_update
-
-    @receiver(models.signals.post_save, sender=CloudHost)
-    def post_save_cloud_host(sender, instance, **kwargs):
-        # temporary, until Ralph2 sync is turned on
-        # see ralph.ralph2_sync.admin for details
-        if getattr(instance, '_handle_post_save', True):
-            return publish_host_update(instance)
-
-    @receiver(models.signals.post_save, sender=VirtualServer)
-    def post_save_virtual_server(sender, instance, **kwargs):
-        # temporary, until Ralph2 sync is turned on
-        # see ralph.ralph2_sync.admin for details
-        if getattr(instance, '_handle_post_save', True):
-            return publish_host_update(instance)
+post_commit(publish_host_update, VirtualServer)
+post_commit(publish_host_update, CloudHost)

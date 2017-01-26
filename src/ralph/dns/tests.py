@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 from unittest.mock import patch
 
-from django.test import override_settings, TestCase
+from django.db import transaction
+from django.test import override_settings, TestCase, TransactionTestCase
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.tests.factories import (
     ConfigurationClassFactory,
     EthernetFactory
 )
-from ralph.data_center.models.virtual import BaseObjectCluster
+from ralph.data_center.models import BaseObjectCluster, DataCenterAsset
 from ralph.dns.dnsaas import DNSaaS
 from ralph.dns.forms import DNSRecordForm, RecordType
-from ralph.dns.publishers import _publish_data_to_dnsaaas
+from ralph.dns.publishers import _get_txt_data_to_publish_to_dnsaas
 from ralph.dns.views import (
     add_errors,
     DNSaaSIntegrationNotEnabledError,
@@ -102,15 +103,17 @@ class TestDNSView(TestCase):
         DNSView()
 
 
-class TestPublisher(TestCase):
+class TestGetTXTDataToPublishToDNSaaS(TestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         from ralph.data_center.tests.factories import (
             ClusterFactory,
             DataCenterAssetFactory,
             RackFactory,
         )
-        self.dc_asset = DataCenterAssetFactory(
+        super().setUpClass()
+        cls.dc_asset = DataCenterAssetFactory(
             hostname='ralph0.allegro.pl',
             service_env__service__name='service',
             service_env__environment__name='test',
@@ -127,16 +130,16 @@ class TestPublisher(TestCase):
             configuration_path__class_name='www',
             configuration_path__module__name='ralph',
         )
-        self.dc_ip = IPAddressFactory(
-            base_object=self.dc_asset,
-            ethernet=EthernetFactory(base_object=self.dc_asset),
+        cls.dc_ip = IPAddressFactory(
+            base_object=cls.dc_asset,
+            ethernet=EthernetFactory(base_object=cls.dc_asset),
         )
         IPAddressFactory(
-            base_object=self.dc_asset,
-            ethernet=EthernetFactory(base_object=self.dc_asset),
+            base_object=cls.dc_asset,
+            ethernet=EthernetFactory(base_object=cls.dc_asset),
             is_management=True,
         )
-        self.virtual_server = VirtualServerFactory(
+        cls.virtual_server = VirtualServerFactory(
             hostname='s000.local',
             configuration_path=ConfigurationClassFactory(
                 class_name='worker',
@@ -160,12 +163,12 @@ class TestPublisher(TestCase):
         )
         # refresh virtual server to get parent as BaseObject, not
         # DataCenterAsset
-        self.vs_ip = IPAddressFactory(
-            base_object=self.virtual_server,
-            ethernet=EthernetFactory(base_object=self.virtual_server),
+        cls.vs_ip = IPAddressFactory(
+            base_object=cls.virtual_server,
+            ethernet=EthernetFactory(base_object=cls.virtual_server),
         )
-        self.virtual_server = VirtualServer.objects.get(
-            pk=self.virtual_server.id
+        cls.virtual_server = VirtualServer.objects.get(
+            pk=cls.virtual_server.id
         )
 
         cluster = ClusterFactory(
@@ -176,13 +179,13 @@ class TestPublisher(TestCase):
             service_env__service__name='service',
             service_env__environment__name='preprod',
         )
-        self.boc_1 = BaseObjectCluster.objects.create(
+        cls.boc_1 = BaseObjectCluster.objects.create(
             cluster=cluster,
             base_object=DataCenterAssetFactory(
                 rack=RackFactory(), position=1,
             )
         )
-        self.boc_2 = BaseObjectCluster.objects.create(
+        cls.boc_2 = BaseObjectCluster.objects.create(
             cluster=cluster,
             base_object=DataCenterAssetFactory(
                 rack=RackFactory(
@@ -195,14 +198,14 @@ class TestPublisher(TestCase):
             is_master=True
         )
 
-        self.cluster = ClusterFactory._meta.model.objects.get(pk=cluster)
-        self.cluster_ip = IPAddressFactory(
-            base_object=self.cluster,
-            ethernet=EthernetFactory(base_object=self.cluster),
+        cls.cluster = ClusterFactory._meta.model.objects.get(pk=cluster)
+        cls.cluster_ip = IPAddressFactory(
+            base_object=cls.cluster,
+            ethernet=EthernetFactory(base_object=cls.cluster),
         )
 
     def test_dc_asset_gets_data_ok(self):
-        data = _publish_data_to_dnsaaas(self.dc_asset)
+        data = _get_txt_data_to_publish_to_dnsaas(self.dc_asset)
         self.assertEqual(data, [{
             'content': 'www',
             'ips': [self.dc_ip.address],
@@ -242,7 +245,7 @@ class TestPublisher(TestCase):
         }])
 
     def test_virtual_server_gets_data_ok(self):
-        data = _publish_data_to_dnsaaas(self.virtual_server)
+        data = _get_txt_data_to_publish_to_dnsaas(self.virtual_server)
         self.assertEqual(data, [{
             'content': 'worker',
             'ips': [self.vs_ip.address],
@@ -282,7 +285,7 @@ class TestPublisher(TestCase):
         }])
 
     def test_cluster_gets_data_ok(self):
-        data = _publish_data_to_dnsaaas(self.cluster)
+        data = _get_txt_data_to_publish_to_dnsaas(self.cluster)
         self.assertEqual(data, [{
             'content': 'www',
             'ips': [self.cluster_ip.address],
@@ -320,6 +323,93 @@ class TestPublisher(TestCase):
             'target_owner': 'ralph',
             'purpose': 'LOCATION'
         }])
+
+
+class TestPublishAutoTXTToDNSaaS(TransactionTestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        from ralph.data_center.tests.factories import (
+            DataCenterAssetFactory,
+            RackFactory,
+        )
+        super().setUpClass()
+        cls.dc_asset = DataCenterAssetFactory(
+            hostname='ralph0.allegro.pl',
+            service_env__service__name='service',
+            service_env__environment__name='test',
+            model__name='DL360',
+            model__manufacturer__name='Asus',
+            model__category__name='ATS',
+            rack=RackFactory(
+                name='Rack #100',
+                server_room__name='Server Room A',
+                server_room__data_center__name='DC1',
+            ),
+            position=1,
+            slot_no='1',
+            configuration_path__class_name='www',
+            configuration_path__module__name='ralph',
+        )
+        cls.dc_ip = IPAddressFactory(
+            base_object=cls.dc_asset,
+            ethernet=EthernetFactory(base_object=cls.dc_asset),
+        )
+        IPAddressFactory(
+            base_object=cls.dc_asset,
+            ethernet=EthernetFactory(base_object=cls.dc_asset),
+            is_management=True,
+        )
+
+    @override_settings(
+        DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME='dnsaas_auto_txt_record'
+    )
+    @patch('ralph.dns.publishers.publish')
+    def test_publishing_auto_txt_data_when_dc_asset_updated(self, publish_mock):
+        # fetch clean instance
+        dc_asset = DataCenterAsset.objects.get(pk=self.dc_asset)
+        with transaction.atomic():
+            dc_asset.save()
+
+        self.assertEqual(publish_mock.call_count, 1)
+        publish_data = publish_mock.call_args[0][1]
+        # owner could be non-deterministic, depending on order of tests
+        # and it's not part of this test to check its correctness
+        for data_dict in publish_data:
+            data_dict.pop('owner')
+        self.assertCountEqual(publish_data, [
+            {
+                'content': 'www',
+                'ips': [self.dc_ip.address],
+                'target_owner': 'ralph',
+                'purpose': 'VENTURE'
+            }, {
+                'content': 'ralph',
+                'ips': [self.dc_ip.address],
+                'target_owner': 'ralph',
+                'purpose': 'ROLE',
+            }, {
+                'content': 'ralph/www',
+                'ips': [self.dc_ip.address],
+                'target_owner': 'ralph',
+                'purpose': 'CONFIGURATION_PATH',
+            }, {
+                'content': 'service - test',
+                'ips': [self.dc_ip.address],
+                'target_owner': 'ralph',
+                'purpose': 'SERVICE_ENV',
+            }, {
+                'content': '[ATS] Asus DL360',
+                'ips': [self.dc_ip.address],
+                'target_owner': 'ralph',
+                'purpose': 'MODEL'
+            }, {
+                'content': 'DC1 / Server Room A / Rack #100 / 1 / 1',
+                'ips': [self.dc_ip.address],
+                'target_owner': 'ralph',
+                'purpose': 'LOCATION'
+            }
+        ])
 
 
 class TestDNSaaS(TestCase):
