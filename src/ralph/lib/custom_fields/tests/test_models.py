@@ -3,6 +3,7 @@ from django import forms
 from django.test import TestCase
 
 from ..models import CustomField, CustomFieldTypes, CustomFieldValue
+from .admin import SomeModelAdmin
 from .models import ModelA, ModelB, SomeModel
 
 
@@ -117,3 +118,22 @@ class CustomFieldInheritanceModelsTestCase(TestCase):
         )
         sm1_custom_fields = list(self.sm1.custom_fields.all())
         self.assertCountEqual([self.cfv1, cfv4], sm1_custom_fields)
+
+    def test_admin_get_custom_fields_values_result(self):
+        custom_fields_values = SomeModelAdmin._get_custom_fields_values(
+            self.sm1
+        )
+        self.assertEqual(custom_fields_values, [
+            {
+                'name': 'test str',
+                'object': '-',
+                'object_url': '',
+                'value': 'sample_value'
+            },
+            {
+                'name': 'test str 2',
+                'object': 'model a: ModelA object',
+                'object_url': self.a1.get_absolute_url(),
+                'value': 'sample_value2'
+            }
+        ])

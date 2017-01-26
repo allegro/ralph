@@ -43,3 +43,56 @@
     });
     </script>
 {% endblock %}
+
+
+{% block row_div_definition %}
+  {% if custom_fields_values_summary %}
+    <div class="small-6 medium-6 large-6 columns">
+  {% else %}
+    {{ block.super }}
+  {% endif %}
+{% endblock %}
+
+
+{% block inline_extra %}
+  {% if custom_fields_values_summary %}
+    {# summary with (inherited) custom fields values #}
+    <div class="small-6 medium-6 large-6 columns">
+      <div class="inline-group">
+        <div class="tabular">
+          <fieldset class="module">
+           <h2>{{ inline_admin_formset.opts.verbose_name_plural|capfirst }} {% trans "summary" %}</h2>
+           <table>
+              <thead>
+                <tr>
+                  <th>{% trans "Custom field" %}</th>
+                  <th>{% trans "Value" %}</th>
+                  <th>{% trans "Inherited from" %}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for cfv in custom_fields_all %}
+                  <tr>
+                    <td>{{ cfv.name }}</td>
+                    <td>{{ cfv.value }}</td>
+                    <td>
+                      {% if cfv.object_url %}
+                        <a href="{{ cfv.object_url }}" target="_blank">
+                      {% endif %}
+                        {{ cfv.object }}
+                      {% if cfv.object_url %}
+                        </a>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </fieldset>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    {{ block.super }}
+  {% endif %}
+{% endblock %}

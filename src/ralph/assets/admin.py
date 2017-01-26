@@ -47,6 +47,7 @@ class ConfigurationClassAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     list_display = ['class_name', 'module', 'path', 'objects_count']
     list_select_related = ['module']
     list_filter = ['class_name', 'module']
+    show_custom_fields_values_summary = False
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -79,6 +80,7 @@ class ConfigurationModuleAdmin(CustomFieldValueAdminMixin, RalphMPTTAdmin):
             ]
         })
     )
+    show_custom_fields_values_summary = False
 
     def show_children_modules(self, module):
         if not module or not module.pk:
@@ -105,7 +107,7 @@ class ConfigurationModuleAdmin(CustomFieldValueAdminMixin, RalphMPTTAdmin):
 
 @register(ServiceEnvironment)
 class ServiceEnvironmentAdmin(CustomFieldValueAdminMixin, RalphAdmin):
-
+    show_custom_fields_values_summary = False
     search_fields = ['service__name', 'environment__name']
     list_select_related = ['service', 'environment']
     raw_id_fields = ['service', 'environment']
