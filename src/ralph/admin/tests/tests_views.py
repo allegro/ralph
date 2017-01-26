@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from importlib import import_module
 
-from ddt import ddt, data, unpack
+from ddt import data, ddt, unpack
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
