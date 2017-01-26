@@ -52,7 +52,6 @@ URLCONF_MODULES = ['ralph.urls.base', ROOT_URLCONF]
 #     {'level': 'DEBUG', 'handlers': ['console']}
 # )
 
-
 RQ_QUEUES['ralph_job_test'] = dict(ASYNC=False, **REDIS_CONNECTION)
 RQ_QUEUES['ralph_async_transitions']['ASYNC'] = False
 RALPH_INTERNAL_SERVICES.update({
@@ -88,3 +87,6 @@ if SKIP_MIGRATIONS:
 
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 ENABLE_EMAIL_NOTIFICATION = True
+
+ENABLE_HERMES_INTEGRATION = True
+HERMES['ENABLED'] = ENABLE_HERMES_INTEGRATION
