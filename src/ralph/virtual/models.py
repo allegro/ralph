@@ -134,6 +134,9 @@ class CloudFlavor(AdminAbsoluteUrlMixin, BaseObject):
 class CloudProject(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
     cloudprovider = models.ForeignKey(CloudProvider)
     cloudprovider._autocomplete = False
+    custom_fields_inheritance = [
+        'service_env',
+    ]
 
     project_id = models.CharField(
         verbose_name=_('project ID'),
@@ -155,6 +158,12 @@ def update_service_env_on_cloudproject_save(sender, instance, **kwargs):
 
 class CloudHost(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
     previous_dc_host_update_fields = ['hostname']
+    custom_fields_inheritance = [
+        'parent__cloudproject',
+        'configuration_path',
+        'configuration_path__module',
+        'service_env',
+    ]
 
     def save(self, *args, **kwargs):
         try:

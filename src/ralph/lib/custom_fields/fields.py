@@ -9,6 +9,7 @@ from django.contrib.contenttypes.fields import (
 )
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models
+from django.db.models.fields.related import OneToOneRel
 
 from ralph.admin.helpers import get_field_by_relation_path, getattr_dunder
 
@@ -203,7 +204,11 @@ def create_generic_related_manager_with_inheritance(superclass):  # noqa: C901
                 # TODO: store fields in some field in meta, not "calculate"
                 # it every time
                 field = get_field_by_relation_path(self.instance, field_path)
-                content_type = ContentType.objects.get_for_model(field.rel.to)
+                if isinstance(field, OneToOneRel):
+                    related_model = field.related_model
+                else:
+                    related_model = field.rel.to
+                content_type = ContentType.objects.get_for_model(related_model)
                 value = getattr_dunder(self.instance, field_path)
                 # filter only if related field has some value
                 if value:
