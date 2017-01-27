@@ -56,6 +56,11 @@ class CustomFieldsWithInheritanceRelation(GenericRelation):
         )
 
 
+def _get_content_type_from_field_path():
+    pass
+    # TODO
+
+
 def _prioritize_custom_field_values(objects, model, content_type):
     """
     Sort custom field values by priorities and leave the ones with
@@ -266,7 +271,11 @@ def create_generic_related_manager_with_inheritance(superclass):  # noqa: C901
             for field_path in self.instance.custom_fields_inheritance:
                 # assume that field is foreign key
                 field = get_field_by_relation_path(self.instance, field_path)
-                content_type = ContentType.objects.get_for_model(field.rel.to)
+                if isinstance(field, OneToOneRel):
+                    related_model = field.related_model
+                else:
+                    related_model = field.rel.to
+                content_type = ContentType.objects.get_for_model(related_model)
                 content_types.add(content_type)
                 # for each instance, get value of this dependent field
                 for instance in instances:
