@@ -234,7 +234,8 @@ class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     ]
     select_related = [
         'service_env', 'service_env__service', 'service_env__environment',
-        'configuration_path', 'configuration_path__module'
+        'configuration_path', 'configuration_path__module',
+        'parent__cloudproject',
     ]
     prefetch_related = [
         'tags',
