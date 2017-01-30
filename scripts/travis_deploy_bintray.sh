@@ -17,4 +17,8 @@ cd $SRC_DIR
 DEB_NAME=$(ls $SRC_DIR/../*.deb | sort -Vr | head -1)
 GENERIC_DEB_NAME=`basename $DEB_NAME`
 echo "Uploading $GENERIC_DEB_NAME"
-curl -T $DEB_NAME -u $BINTRAY_USER:$BINTRAY_APIKEY "https://api.bintray.com/content/$BINTRAY_USER/$BINTRAY_REPO_NAME/$BINTRAY_PACKAGE_NAME/$NEW_TAG/dists/wheezy/main/binary-amd64/$GENERIC_DEB_NAME;deb_distribution=wheezy;deb_component=main;deb_architecture=amd64?publish=1"
+
+for dist in jessie wheezy
+do
+    curl -T $DEB_NAME -u $BINTRAY_USER:$BINTRAY_APIKEY "https://api.bintray.com/content/$BINTRAY_USER/$BINTRAY_REPO_NAME/$BINTRAY_PACKAGE_NAME/$NEW_TAG/dists/$dist/main/binary-amd64/$GENERIC_DEB_NAME;deb_distribution=$dist;deb_component=main;deb_architecture=amd64?publish=1"
+done
