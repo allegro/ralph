@@ -113,9 +113,10 @@ class CustomFieldValueAdminMixin(object):
         )
         if self.show_custom_fields_values_summary and object_id:
             obj = self.get_object(request, unquote(object_id))
-            extra_context['custom_fields_all'] = self._get_custom_fields_values(
-                obj
-            )
+            if obj:
+                extra_context['custom_fields_all'] = (
+                    self._get_custom_fields_values(obj)
+                )
         return super().changeform_view(
             request, object_id, form_url, extra_context
         )
