@@ -137,3 +137,27 @@ class CustomFieldInheritanceModelsTestCase(TestCase):
                 'value': 'sample_value2'
             }
         ])
+
+    def test_admin_get_custom_fields_values_result_when_cfv_is_inherited(self):
+        CustomFieldValue.objects.create(
+            object=self.sm1,
+            custom_field=self.custom_field_str2,
+            value='sample_value11',
+        )
+        custom_fields_values = SomeModelAdmin._get_custom_fields_values(
+            self.sm1
+        )
+        self.assertEqual(custom_fields_values, [
+            {
+                'name': 'test str',
+                'object': '-',
+                'object_url': '',
+                'value': 'sample_value'
+            },
+            {
+                'name': 'test str 2',
+                'object': '-',
+                'object_url': '',
+                'value': 'sample_value11'
+            }
+        ])
