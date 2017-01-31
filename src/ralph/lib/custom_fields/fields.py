@@ -9,6 +9,7 @@ from django.contrib.contenttypes.fields import (
 )
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models
+from django.db.models.fields.related import OneToOneRel
 
 from ralph.admin.helpers import get_field_by_relation_path, getattr_dunder
 
@@ -55,6 +56,19 @@ class CustomFieldsWithInheritanceRelation(GenericRelation):
         )
 
 
+def _get_content_type_from_field_path(model, field_path):
+    # TODO: add some validator for it
+    # TODO: store fields in some field in meta, not "calculate"
+    # it every time
+    field = get_field_by_relation_path(model, field_path)
+    if isinstance(field, OneToOneRel):
+        related_model = field.related_model
+    else:
+        related_model = field.rel.to
+    content_type = ContentType.objects.get_for_model(related_model)
+    return content_type
+
+
 def _prioritize_custom_field_values(objects, model, content_type):
     """
     Sort custom field values by priorities and leave the ones with
@@ -69,8 +83,7 @@ def _prioritize_custom_field_values(objects, model, content_type):
     """
     ct_priority = [content_type.id]
     for field_path in model.custom_fields_inheritance:
-        field = get_field_by_relation_path(model, field_path)
-        content_type = ContentType.objects.get_for_model(field.rel.to)
+        content_type = _get_content_type_from_field_path(model, field_path)
         ct_priority.append(content_type.id)
     ct_priority = {
         ct_id: index for (index, ct_id) in enumerate(ct_priority)
@@ -199,11 +212,9 @@ def create_generic_related_manager_with_inheritance(superclass):  # noqa: C901
             # for each related field (foreign key), add it's content_type
             # and object_id to queryset filter
             for field_path in self.instance.custom_fields_inheritance:
-                # TODO: add some validator for it
-                # TODO: store fields in some field in meta, not "calculate"
-                # it every time
-                field = get_field_by_relation_path(self.instance, field_path)
-                content_type = ContentType.objects.get_for_model(field.rel.to)
+                content_type = _get_content_type_from_field_path(
+                    self.instance, field_path
+                )
                 value = getattr_dunder(self.instance, field_path)
                 # filter only if related field has some value
                 if value:
@@ -260,8 +271,9 @@ def create_generic_related_manager_with_inheritance(superclass):  # noqa: C901
             # process each dependent field from `custom_fields_inheritance`
             for field_path in self.instance.custom_fields_inheritance:
                 # assume that field is foreign key
-                field = get_field_by_relation_path(self.instance, field_path)
-                content_type = ContentType.objects.get_for_model(field.rel.to)
+                content_type = _get_content_type_from_field_path(
+                    self.instance, field_path
+                )
                 content_types.add(content_type)
                 # for each instance, get value of this dependent field
                 for instance in instances:
