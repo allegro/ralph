@@ -104,6 +104,13 @@ class CustomFieldValueQuerySet(models.QuerySet):
         self._prioritize = False
         self._prioritize_model_or_instance = None
 
+    def _clone(self, klass=None, setup=False, **kwargs):
+        kwargs.update({
+            '_prioritize': self._prioritize,
+            '_prioritize_model_or_instance': self._prioritize_model_or_instance,
+        })
+        return super()._clone(klass, setup, **kwargs)
+
     def prioritize(self, model_or_instance):
         self._prioritize = True
         self._prioritize_model_or_instance = model_or_instance
