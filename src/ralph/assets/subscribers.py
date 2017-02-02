@@ -11,6 +11,8 @@ from ralph.assets.models.base import BaseObject
 
 logger = logging.getLogger(__name__)
 
+ACTION_TYPE = 'PROCESS_HERMES_UPDATE_SERVICE_EVENT'
+
 
 def _update_service_owners(service, business_owners, technical_owners):
     """
@@ -65,8 +67,9 @@ def _update_service_environments(service, environments):
             logger.error(
                 'Can not delete service environment - it has assigned some base objects',  # noqa: E501
                 extra={
+                    'action_type': ACTION_TYPE,
                     'service_uid': service.uid,
-                    'service_env': service_env
+                    'service_name': service.name
                 }
             )
             return False
@@ -107,7 +110,14 @@ def update_service_handler(service_data):
             }
         )
     except Exception as e:
-        logger.exception(e, extra=service_data)
+        logger.exception(
+            e,
+            extra={
+                'action_type': ACTION_TYPE,
+                'service_uid': service_data['uid'],
+                'service_name': service_data['name']
+            }
+        )
     else:
         _update_service_owners(
             service=service,
@@ -126,7 +136,11 @@ def update_service_handler(service_data):
             'Synced service `{}` with UID `{}`.'.format(
                 service_data['name'], service_data['uid']
             ),
-            extra=service_data
+            extra={
+                'action_type': ACTION_TYPE,
+                'service_uid': service_data['uid'],
+                'service_name': service_data['name']
+            }
         )
 
 
@@ -142,17 +156,32 @@ def delete_service_handler(service_data):
         if BaseObject.objects.filter(service_env__in=service_envs).exists():
             logger.error(
                 'Can not delete service - it has assigned some base objects',
-                extra=service_data
+                extra={
+                    'action_type': ACTION_TYPE,
+                    'service_uid': service_data['uid'],
+                    'service_name': service_data['name']
+                }
             )
             return
 
         Service.objects.filter(uid=service_data['uid']).update(active=False)
     except Exception as e:
-        logger.exception(e, extra=service_data)
+        logger.exception(
+            e,
+            extra={
+                'action_type': ACTION_TYPE,
+                'service_uid': service_data['uid'],
+                'service_name': service_data['name']
+            }
+        )
     else:
         logger.info(
             'Service `{}` with UID `{}` deleted.'.format(
                 service_data['name'], service_data['uid']
             ),
-            extra=service_data
+            extra={
+                'action_type': ACTION_TYPE,
+                'service_uid': service_data['uid'],
+                'service_name': service_data['name']
+            }
         )

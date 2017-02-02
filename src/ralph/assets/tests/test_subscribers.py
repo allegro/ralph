@@ -8,6 +8,7 @@ from django.test import TestCase
 
 from ralph.accounts.tests.factories import UserFactory
 from ralph.assets.models import Service
+from ralph.assets.subscribers import ACTION_TYPE
 from ralph.assets.tests.factories import (
     ServiceEnvironmentFactory,
     ServiceFactory
@@ -128,8 +129,9 @@ class ServiceSubscribersTestCase(TestCase):
         mock_logger.error.assert_called_with(
             'Can not delete service environment - it has assigned some base objects',  # noqa: E501
             extra={
+                'action_type': ACTION_TYPE,
                 'service_uid': service.uid,
-                'service_env': service_env
+                'service_name': service.name
             }
         )
         service.refresh_from_db()
@@ -173,7 +175,11 @@ class ServiceSubscribersTestCase(TestCase):
         self.assertEqual(response.status_code, 204)
         mock_logger.error.assert_called_with(
             'Can not delete service - it has assigned some base objects',
-            extra=data
+            extra={
+                'action_type': ACTION_TYPE,
+                'service_uid': data['uid'],
+                'service_name': data['name']
+            }
         )
         service.refresh_from_db()
         self.assertTrue(service.active)
