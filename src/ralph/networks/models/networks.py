@@ -234,7 +234,7 @@ class Network(
     address._filter_title = _('Network Class')
     gateway = models.ForeignKey(
         'IPAddress', verbose_name=_('Gateway address'), null=True, blank=True,
-        related_name='gateway_network'
+        related_name='gateway_network', on_delete=models.SET_NULL,
     )
     remarks = models.TextField(
         verbose_name=_('remarks'),
