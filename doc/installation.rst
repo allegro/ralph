@@ -2,8 +2,8 @@
 Install / Upgrade Ralph
 =======================
 
-Prebuilt docker image - recommeneded option
-===========================================
+Prebuilt docker image - recommended option
+==========================================
 
 It is the easiest way to try out Ralph using pre-built docker image with the worker, database, and server all together.
 We decided to push new images from time to time when we decide it's stable enough to use.
@@ -69,34 +69,29 @@ Update the settings
 
 Some new features added to Ralph may require additional settings to work
 properly. In order to enable them in your settings, follow the instructions in
-the :doc:`change log <changes>` for the version you installed.
+the :doc:`change log <changes>` for the version you've installed.
 
 Example data
 ------------
 
-Ralph after instalation doesn't have any example data -- for this reason you
-can run special CLI command for generate some example data such as data for
-visualization.
+Docker image already has example data installed. But in other installation methods you might also want to have it. 
+By using examples you will quickly understand how Ralph works. You will get some networks, racks, assets, devices to start.
+We strongly recommend to do this.
 
-To generate some data run ``ralph make_demo_data`` and select right option
-from menu.
+To generate all the examples just run ``ralph make_demo_data``.
 
-Available params for command:
-  * ``--flush`` - flush the databases,
-  * ``-d fixture_name`` - execute defined fixture,
+You can also choose some preffered options:
+  * ``--flush`` - clear the database before adding fixtures,
+  * ``-d fixture_name`` - insert only choosen examples
+  * ``-i`` - interactive mode
 
 Example of use:
   * ``ralph make_demo_data --flush -d envs -d services`` - flush databases and execute defined fixtures,
-  * ``ralph make_demo_data --flush `` - interactive mode.
+  * ``ralph make_demo_data -i `` - interactive mode.
 
 
 Installing Ralph - advanced installation
 ========================================
-
-.. note::
-
-   Warning: The latest stable version on PyPi is very old (6 months old). Please help us testing new release using Docker Images.
-
 
 .. note::
 
@@ -106,6 +101,14 @@ Installing Ralph - advanced installation
    other databases supported by Django may be used as well. ``sqlite3`` is
    discouraged for larger deployments because it doesn't support concurrent
    writes which are very common on a distributed queue-based architecture.
+
+
+Introduction
+------------
+
+To better understand how to build and configure Ralph, just take a look at  `Ralph-docker <https://github.com/allegro/ralph-docker>`_.
+``init.sh`` file handles all db related tasks. Here `supervisord.conf <https://github.com/allegro/ralph-docker/blob/master/os/supervisord.conf>`_
+you will find how to run all required services. ``Dockerfile`` gathers all up. There are also other files which generate some demo data.
 
 
 Installing Python
@@ -340,16 +343,6 @@ In case you have newer pip (1.5.x or newer) use slightly longer command::
   (ralph)$ pip install ralph --use-mirrors --allow-all-external --allow-unverified ipaddr --allow-unverified postmarkup --allow-unverified pysphere
 
 That's it.
-
-Installing from sources (bleeding edge version)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Alternatively, to live on the bleeding edge, you can clone the Ralph git
-repository to ``project`` and install it manually::
-
-  (ralph)$ git clone git://github.com/allegro/ralph.git project
-  (ralph)$ cd project
-  (ralph)$ make install
 
 The last command will install numerous dependencies to the virtual environment
 we just created. It's important that we used an activated virtual environment
