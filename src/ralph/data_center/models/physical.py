@@ -15,6 +15,7 @@ from django.core.validators import (
 )
 from django.db import models, transaction
 from django.db.models import Q
+from django.db.models.fields.related import add_lazy_relation
 from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -300,13 +301,33 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
         )
 
 
+def add_custom_field_inheritance(field, model, cls):
+    pass
+    # TODO: zapisać info w meta i nadpisać metaklasę - analogicznie do base.py:276 - iteracja po bazowych klasach i wywołanie add_to_class z tym polem
+
+class CustomFieldsInheritance(dict):
+    def contribute_to_class(self, cls, name, virtual_only=False):
+        print('Contributing!!!')
+        for field_path, model in self.items():
+            add_lazy_relation(
+                cls, field_path, model, add_custom_field_inheritance
+            )
+
+
+class MyFK(models.ForeignKey):
+    def contribute_to_class(self, cls, name, virtual_only=False):
+        import ipdb; ipdb.set_trace()
+        return super().contribute_to_class(cls, name, virtual_only)
+
+
 class NetworkableBaseObject(models.Model):
     # TODO: hostname field and not-abstract cls
-    custom_fields_inheritance = [
-        'configuration_path',
-        'configuration_path__module',
-        'service_env',
-    ]
+    custom_fields_inheritance = CustomFieldsInheritance({
+        'configuration_path': 'assets.ConfigurationClass',
+        'configuration_path__module': 'assets.ConfigurationModule',
+        'service_env': 'assets.ServiceEnvironment',
+    })
+    tmp = MyFK('data_center.ServerRoom')
 
     @cached_property
     def network_environment(self):

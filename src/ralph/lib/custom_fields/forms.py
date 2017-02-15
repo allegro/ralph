@@ -1,18 +1,35 @@
 from django import forms
 from django.contrib.contenttypes.forms import BaseGenericInlineFormSet
 from django.contrib.contenttypes.models import ContentType
-from django.utils.translation import ugettext
+from django.utils.translation import ugettext, ugettext_lazy as _
 
 
 class CustomFieldValueForm(forms.ModelForm):
+    clear_children = forms.BooleanField(
+        initial=False, required=False, label=_('Clear children values?'),
+    )
+
+    class Meta:
+        fields = ['custom_field', 'value', 'clear_children']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._replace_value_field()
+        # TODO: add this, if sth
+        self.fields['clear_children']
 
     def _replace_value_field(self):
         # replace custom field value field with proper one (ex. select)
         if self.instance and self.instance.custom_field_id:
             self.fields['value'] = self.instance.custom_field.get_form_field()
+
+    def save(self, *args, **kwargs):
+        result = super().save(*args, **kwargs)
+        if self.cleaned_data['clear_children']:
+            self.instance.object.clear_children_custom_field_value(
+                self.instance.custom_field,
+            )
+        return result
 
 
 class CustomFieldValueFormSet(BaseGenericInlineFormSet):

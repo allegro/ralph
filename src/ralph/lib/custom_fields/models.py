@@ -201,3 +201,6 @@ class WithCustomFieldsMixin(models.Model):
         cfv, _ = self.custom_fields.get_or_create(custom_field=cf)
         cfv.value = value
         cfv.save(update_fields=['value'])
+
+    def clear_children_custom_field_value(self, custom_field):
+        print('Clearing')

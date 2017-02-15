@@ -161,3 +161,12 @@ class CustomFieldInheritanceModelsTestCase(TestCase):
                 'value': 'sample_value11'
             }
         ])
+
+    def test_cleaning_children_custom_field_values(self):
+        self.assertIn(
+            self.custom_field_str2.name, self.a1.custom_fields_as_dict
+        )
+        self.a1.clear_children_custom_field_value(self.custom_field_str2)
+        self.assertNotIn(
+            self.custom_field_str2.name, self.a1.custom_fields_as_dict
+        )
