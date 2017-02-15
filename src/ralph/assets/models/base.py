@@ -6,7 +6,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.attachments.models import AttachmentItem
-from ralph.lib.custom_fields.models import WithCustomFieldsMixin
+from ralph.lib.custom_fields.models import CustomFieldMeta, WithCustomFieldsMixin
 from ralph.lib.mixins.models import TaggableMixin, TimeStampMixin
 from ralph.lib.permissions import PermByFieldMixin
 from ralph.lib.permissions.models import PermissionsBase
@@ -21,6 +21,7 @@ BaseObjectMeta = type(
     'BaseObjectMeta', (
         PolymorphicBase,
         PermissionsBase,
+        CustomFieldMeta,
         TransitionWorkflowBase
     ), {}
 )

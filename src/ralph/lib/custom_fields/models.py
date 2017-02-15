@@ -1,3 +1,4 @@
+import logging
 import six
 
 from dj.choices import Choices
@@ -7,6 +8,7 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models.fields.related import add_lazy_relation
 from django.utils.text import capfirst, slugify
 from django.utils.translation import ugettext_lazy as _
 
@@ -15,6 +17,8 @@ from .fields import (
     CustomFieldsWithInheritanceRelation,
     CustomFieldValueQuerySet
 )
+
+logger = logging.getLogger(__name__)
 
 CUSTOM_FIELD_VALUE_MAX_LENGTH = 1000
 
@@ -174,7 +178,38 @@ class CustomFieldValue(TimeStampMixin, models.Model):
         super().clean()
 
 
-class WithCustomFieldsMixin(models.Model):
+class CustomFieldMeta(models.base.ModelBase):
+    cf_field_name = 'custom_fields_inheritance'
+
+    def __new__(cls, name, bases, attrs):
+        new_cls = super().__new__(cls, name, bases, attrs)
+        if hasattr(new_cls, cls.cf_field_name):
+            new_cls.add_to_class(
+                cls.cf_field_name, getattr(new_cls, cls.cf_field_name)
+            )
+        return new_cls
+
+
+def add_custom_field_inheritance(field_path, model, cls):
+    if not hasattr(model._meta, 'custom_fields_inheritance_by_model'):
+        model._meta.custom_fields_inheritance_by_model = {}
+    model._meta.custom_fields_inheritance_by_model[cls] = field_path
+
+    if not hasattr(cls._meta, 'custom_fields_inheritance_by_path'):
+        cls._meta.custom_fields_inheritance_by_path = {}
+    cls._meta.custom_fields_inheritance_by_path[field_path] = cls
+
+
+class CustomFieldsInheritance(dict):
+    def contribute_to_class(self, cls, name, virtual_only=False):
+        setattr(cls, name, self)
+        for field_path, model in self.items():
+            add_lazy_relation(
+                cls, field_path, model, add_custom_field_inheritance
+            )
+
+
+class WithCustomFieldsMixin(models.Model, metaclass=CustomFieldMeta):
     # TODO: handle polymorphic in filters
     custom_fields = CustomFieldsWithInheritanceRelation(CustomFieldValue)
     custom_fields_inheritance = []
@@ -203,4 +238,17 @@ class WithCustomFieldsMixin(models.Model):
         cfv.save(update_fields=['value'])
 
     def clear_children_custom_field_value(self, custom_field):
-        print('Clearing')
+        for model, field_path in self._meta.custom_fields_inheritance_by_model.items():
+            custom_fields_values_to_delete = CustomFieldValue.objects.filter(
+                custom_field=custom_field,
+                content_type=ContentType.objects.get_for_model(model),
+                object_id__in=model._default_manager.filter(
+                    **{field_path: self}
+                ).values_list('pk', flat=True),
+            )
+            logger.warning(
+                'Deleting {} CFVs for descendants of {} (by {})'.format(
+                    custom_fields_values_to_delete.count(), self, field_path
+                )
+            )
+            custom_fields_values_to_delete.delete()

@@ -132,6 +132,18 @@ class CustomFieldValueQuerySet(models.QuerySet):
             return
         yield from super().iterator()
 
+    def values(self, *fields):
+        # TODO: handle values and values_list (need to overwrite `iterator`
+        # using prioritizing)
+        raise NotImplementedError(
+            'CustomField queryset does not support values queryset'
+        )
+
+    def values_list(self, *fields):
+        raise NotImplementedError(
+            'CustomField queryset does not support values list queryset'
+        )
+
 
 class ReverseGenericRelatedObjectsWithInheritanceDescriptor(
     ReverseGenericRelatedObjectsDescriptor

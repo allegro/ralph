@@ -164,9 +164,20 @@ class CustomFieldInheritanceModelsTestCase(TestCase):
 
     def test_cleaning_children_custom_field_values(self):
         self.assertIn(
-            self.custom_field_str2.name, self.a1.custom_fields_as_dict
+            self.cfv1, list(self.sm1.custom_fields.all())
         )
+        self.a1.clear_children_custom_field_value(self.custom_field_str)
+        self.assertNotIn(self.cfv1, self.sm1.custom_fields.all())
+
+    def test_cleaning_children_custom_field_values_with_overwrite_from_ancestor(
+        self
+    ):
+        cfv4 = CustomFieldValue.objects.create(
+            object=self.sm1,
+            custom_field=self.custom_field_str2,
+            value='12345',
+        )
+        self.assertIn(cfv4, list(self.sm1.custom_fields.all()))
         self.a1.clear_children_custom_field_value(self.custom_field_str2)
-        self.assertNotIn(
-            self.custom_field_str2.name, self.a1.custom_fields_as_dict
-        )
+        self.assertIn(self.cfv3, self.sm1.custom_fields.all())
+        self.assertNotIn(cfv4, self.sm1.custom_fields.all())

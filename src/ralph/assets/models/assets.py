@@ -18,7 +18,7 @@ from ralph.assets.models.choices import (
     ModelVisualizationLayout,
     ObjectModelType
 )
-from ralph.lib.custom_fields.models import WithCustomFieldsMixin
+from ralph.lib.custom_fields.models import CustomFieldMeta, WithCustomFieldsMixin
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
@@ -26,6 +26,7 @@ from ralph.lib.mixins.models import (
     TimeStampMixin
 )
 from ralph.lib.permissions import PermByFieldMixin
+from ralph.lib.permissions.models import PermissionsBase
 
 logger = logging.getLogger(__name__)
 
@@ -139,13 +140,17 @@ class Manufacturer(
     _allow_in_dashboard = True
 
 
+AssetModelMeta = type('AssetModelMeta', (CustomFieldMeta, PermissionsBase), {})
+
+
 class AssetModel(
     PermByFieldMixin,
     NamedMixin.NonUnique,
     TimeStampMixin,
     AdminAbsoluteUrlMixin,
     WithCustomFieldsMixin,
-    models.Model
+    models.Model,
+    metaclass=AssetModelMeta
 ):
     # TODO: should type be determined based on category?
     _allow_in_dashboard = True
