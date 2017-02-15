@@ -10,7 +10,7 @@ from ralph.back_office.models import (
     OfficeInfrastructure,
     Warehouse
 )
-from ralph.data_center.models import physical
+from ralph.data_center.models import hosts, physical
 from ralph.data_importer.fields import ThroughField
 from ralph.data_importer.mixins import (
     ImportForeignKeyMeta,
@@ -729,3 +729,25 @@ class ConfigurationClassResource(RalphModelResource):
 
     class Meta:
         model = configuration.ConfigurationClass
+
+
+class DCHostResource(RalphModelResource):
+    hostname = fields.Field(
+        readonly=True,
+        column_name='hostname',
+        attribute='hostname',
+    )
+    service_env = fields.Field(
+        column_name='service_env',
+        attribute='service_env',
+        widget=AssetServiceEnvWidget(assets.ServiceEnvironment, 'name'),
+    )
+    ips = fields.Field(
+        column_name='ip_addresses',
+        attribute='ipaddresses',
+        widget=widgets.ManyToManyWidget(model=networks.IPAddress),
+    )
+
+    class Meta:
+        model = hosts.DCHost
+        exclude = ('parent',)
