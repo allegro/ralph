@@ -563,6 +563,7 @@ class DCHostAdmin(RalphAdmin):
         'service_env__environment',
         'service_env__service',
     ]
+    resource_class = resources.DCHostResource
 
     def has_add_permission(self, request):
         return False

@@ -196,6 +196,11 @@ class CloudHost(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
         return self.hostname
 
     @property
+    def ipaddresses(self):
+        # NetworkableBaseObject compatibility
+        return IPAddress.objects.filter(ethernet__base_object=self)
+
+    @property
     def ip_addresses(self):
         return self.ethernet_set.select_related('ipaddress').values_list(
             'ipaddress__address', flat=True
