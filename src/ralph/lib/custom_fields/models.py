@@ -201,6 +201,8 @@ def add_custom_field_inheritance(field_path, model, cls):
 class WithCustomFieldsMixin(models.Model, metaclass=CustomFieldMeta):
     # TODO: handle polymorphic in filters
     custom_fields = CustomFieldsWithInheritanceRelation(CustomFieldValue)
+    # mapping from field path (using Django __ convention) to model (provided
+    # as string location of app_label and model name)
     custom_fields_inheritance = {}
 
     class Meta:
@@ -229,6 +231,11 @@ class WithCustomFieldsMixin(models.Model, metaclass=CustomFieldMeta):
         cfv.save(update_fields=['value'])
 
     def clear_children_custom_field_value(self, custom_field):
+        """
+        For each model inheriting `custom_field` from self (in practice
+        for each model inheriting, which have this custom_field set to any
+        value), delete their `CustomFieldValue`s.
+        """
         for model, field_path in self._meta.custom_fields_inheritance_by_model.items():  # noqa: E501
             custom_fields_values_to_delete = CustomFieldValue.objects.filter(
                 custom_field=custom_field,

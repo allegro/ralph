@@ -69,8 +69,11 @@ class CustomFieldValueAdminMixin(object):
         ]
 
     def _get_custom_field_value_inline(self):
+        # check if any model is inheriting custom fields from current model
         if self.model._meta.custom_fields_inheritance_by_model:
-                return CustomFieldValueWithClearChildrenInline
+            # if yes, allow for clearing custom fields values of children
+            # objects
+            return CustomFieldValueWithClearChildrenInline
         return CustomFieldValueInline
 
     @staticmethod

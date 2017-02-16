@@ -29,6 +29,8 @@ class CustomFieldValueWithClearChildrenForm(CustomFieldValueForm):
 
     def save(self, *args, **kwargs):
         result = super().save(*args, **kwargs)
+        # clear custom fields values for particular custom field if
+        # clear_children is checked
         if self.cleaned_data['clear_children']:
             self.instance.object.clear_children_custom_field_value(
                 self.instance.custom_field,
