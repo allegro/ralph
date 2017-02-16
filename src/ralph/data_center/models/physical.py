@@ -36,7 +36,6 @@ from ralph.data_center.models.choices import (
 )
 from ralph.data_center.models.mixins import WithManagementIPMixin
 from ralph.data_center.publishers import publish_host_update
-from ralph.lib.custom_fields.models import CustomFieldsInheritance
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, PreviousStateMixin
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
@@ -303,11 +302,11 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
 
 class NetworkableBaseObject(models.Model):
     # TODO: hostname field and not-abstract cls
-    custom_fields_inheritance = CustomFieldsInheritance({
+    custom_fields_inheritance = {
         'configuration_path': 'assets.ConfigurationClass',
         'configuration_path__module': 'assets.ConfigurationModule',
         'service_env': 'assets.ServiceEnvironment',
-    })
+    }
 
     @cached_property
     def network_environment(self):

@@ -8,7 +8,6 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-
 from mptt.models import MPTTModel, TreeForeignKey
 
 from ralph.accounts.models import Team
@@ -18,7 +17,10 @@ from ralph.assets.models.choices import (
     ModelVisualizationLayout,
     ObjectModelType
 )
-from ralph.lib.custom_fields.models import CustomFieldMeta, WithCustomFieldsMixin
+from ralph.lib.custom_fields.models import (
+    CustomFieldMeta,
+    WithCustomFieldsMixin
+)
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,

@@ -7,7 +7,8 @@ from ralph.admin import RalphAdmin, register
 from ralph.admin.mixins import RalphGenericTabularInline
 from ralph.lib.custom_fields.forms import (
     CustomFieldValueForm,
-    CustomFieldValueFormSet
+    CustomFieldValueFormSet,
+    CustomFieldValueWithClearChildrenForm
 )
 from ralph.lib.custom_fields.models import CustomField, CustomFieldValue
 from ralph.lib.custom_fields.views import CustomFieldFormfieldView
@@ -51,6 +52,10 @@ class CustomFieldValueInline(RalphGenericTabularInline):
     template = 'custom_fields/edit_inline/tabular.html'
 
 
+class CustomFieldValueWithClearChildrenInline(CustomFieldValueInline):
+    form = CustomFieldValueWithClearChildrenForm
+
+
 class CustomFieldValueAdminMixin(object):
     # set to True if custom field values summary should be visible
     # if set to False, inline form with custom fields will be shown with 100%
@@ -59,7 +64,14 @@ class CustomFieldValueAdminMixin(object):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.inlines = list(self.inlines) + [CustomFieldValueInline]
+        self.inlines = list(self.inlines) + [
+            self._get_custom_field_value_inline()
+        ]
+
+    def _get_custom_field_value_inline(self):
+        if self.model._meta.custom_fields_inheritance_by_model:
+                return CustomFieldValueWithClearChildrenInline
+        return CustomFieldValueInline
 
     @staticmethod
     def _get_custom_fields_values(obj):

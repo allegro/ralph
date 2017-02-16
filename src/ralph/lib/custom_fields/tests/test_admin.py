@@ -4,13 +4,15 @@ from django.core.urlresolvers import reverse
 from django.test import RequestFactory, TestCase
 
 from ..models import CustomField, CustomFieldTypes, CustomFieldValue
-from .models import SomeModel
+from .models import ModelA, ModelB, SomeModel
 
 
 class CustomFieldValueAdminMaxinTestCase(TestCase):
     def setUp(self):
         self.inline_prefix = 'custom_fields-customfieldvalue-content_type-object_id-'  # noqa
-        self.sm1 = SomeModel.objects.create(name='abc')
+        self.a1 = ModelA.objects.create()
+        self.b1 = ModelB.objects.create(a=self.a1)
+        self.sm1 = SomeModel.objects.create(name='abc', b=self.b1)
         self.sm2 = SomeModel.objects.create(name='def')
 
         self.custom_field_str = CustomField.objects.create(
@@ -224,3 +226,19 @@ class CustomFieldValueAdminMaxinTestCase(TestCase):
             'value for particular custom field is possible).',
             response.context_data['errors'],
         )
+
+    def test_clearing_values_of_children_objects(self):
+        data = {}
+        data_custom_fields = {
+            'TOTAL_FORMS': 3,
+            'INITIAL_FORMS': 0,
+            '0-id': '',
+            '0-custom_field': self.custom_field_str.id,
+            '0-clear_children': 'on',
+            '0-value': 'sample_value333',
+        }
+        data.update(self._prepare_inline_data(data_custom_fields))
+        self.assertIn(self.cfv1, list(self.sm1.custom_fields.all()))
+        response = self.client.post(self.a1.get_absolute_url(), data)
+        self.assertEqual(response.status_code, 302)
+        self.assertNotIn(self.cfv1, list(self.sm1.custom_fields.all()))

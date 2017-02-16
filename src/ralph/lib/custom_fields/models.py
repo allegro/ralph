@@ -179,57 +179,48 @@ class CustomFieldValue(TimeStampMixin, models.Model):
 
 
 class CustomFieldMeta(models.base.ModelBase):
-    cf_field_name = 'custom_fields_inheritance'
-
     def __new__(cls, name, bases, attrs):
         new_cls = super().__new__(cls, name, bases, attrs)
-        if hasattr(new_cls, cls.cf_field_name):
-            new_cls.add_to_class(
-                cls.cf_field_name, getattr(new_cls, cls.cf_field_name)
+        new_cls._meta.custom_fields_inheritance_by_model = {}
+        new_cls._meta.custom_fields_inheritance_by_path = {}
+        # for each field in custom field inheritance, call
+        # `add_custom_field_inheritance` - it will be called lazy, only when
+        # model will be loaded
+        for field_path, model in new_cls.custom_fields_inheritance.items():
+            add_lazy_relation(
+                new_cls, field_path, model, add_custom_field_inheritance
             )
         return new_cls
 
 
 def add_custom_field_inheritance(field_path, model, cls):
-    if not hasattr(model._meta, 'custom_fields_inheritance_by_model'):
-        model._meta.custom_fields_inheritance_by_model = {}
     model._meta.custom_fields_inheritance_by_model[cls] = field_path
-
-    if not hasattr(cls._meta, 'custom_fields_inheritance_by_path'):
-        cls._meta.custom_fields_inheritance_by_path = {}
     cls._meta.custom_fields_inheritance_by_path[field_path] = cls
-
-
-class CustomFieldsInheritance(dict):
-    def contribute_to_class(self, cls, name, virtual_only=False):
-        setattr(cls, name, self)
-        for field_path, model in self.items():
-            add_lazy_relation(
-                cls, field_path, model, add_custom_field_inheritance
-            )
 
 
 class WithCustomFieldsMixin(models.Model, metaclass=CustomFieldMeta):
     # TODO: handle polymorphic in filters
     custom_fields = CustomFieldsWithInheritanceRelation(CustomFieldValue)
-    custom_fields_inheritance = []
+    custom_fields_inheritance = {}
 
     class Meta:
         abstract = True
 
     @property
     def custom_fields_as_dict(self):
-        return dict(self.custom_fields.values_list(
-            'custom_field__name', 'value'
-        ))
+        return {
+            cfv.custom_field.name: cfv.value
+            for cfv in self.custom_fields.select_related('custom_field')
+        }
 
     @property
     def custom_fields_configuration_variables(self):
-        return dict(self.custom_fields.filter(
-            custom_field__use_as_configuration_variable=True
-        ).values_list(
-            'custom_field__name', 'value'
-        ))
+        return {
+            cfv.custom_field.name: cfv.value
+            for cfv in self.custom_fields.filter(
+                custom_field__use_as_configuration_variable=True
+            ).select_related('custom_field')
+        }
 
     def update_custom_field(self, name, value):
         cf = CustomField.objects.get(name=name)
@@ -238,7 +229,7 @@ class WithCustomFieldsMixin(models.Model, metaclass=CustomFieldMeta):
         cfv.save(update_fields=['value'])
 
     def clear_children_custom_field_value(self, custom_field):
-        for model, field_path in self._meta.custom_fields_inheritance_by_model.items():
+        for model, field_path in self._meta.custom_fields_inheritance_by_model.items():  # noqa: E501
             custom_fields_values_to_delete = CustomFieldValue.objects.filter(
                 custom_field=custom_field,
                 content_type=ContentType.objects.get_for_model(model),
@@ -247,8 +238,9 @@ class WithCustomFieldsMixin(models.Model, metaclass=CustomFieldMeta):
                 ).values_list('pk', flat=True),
             )
             logger.warning(
-                'Deleting {} CFVs for descendants of {} (by {})'.format(
-                    custom_fields_values_to_delete.count(), self, field_path
+                'Deleting {} CFVs for descendants of {} ({} by {})'.format(
+                    custom_fields_values_to_delete.count(), self,
+                    model, field_path
                 )
             )
             custom_fields_values_to_delete.delete()

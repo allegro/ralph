@@ -2,7 +2,7 @@
 from django.core.urlresolvers import reverse
 from django.db import models
 
-from ..models import WithCustomFieldsMixin, CustomFieldsInheritance
+from ..models import WithCustomFieldsMixin
 
 
 class CustomFieldAdminAbsoluteUrlMixin(object):
@@ -37,7 +37,7 @@ class SomeModel(
 ):
     name = models.CharField(max_length=20)
     b = models.ForeignKey(ModelB, null=True, blank=True)
-    custom_fields_inheritance = CustomFieldsInheritance({
+    custom_fields_inheritance = {
         'b': 'ModelB',
         'b__a': 'ModelA',
-    })
+    }
