@@ -37,4 +37,7 @@ class SomeModel(
 ):
     name = models.CharField(max_length=20)
     b = models.ForeignKey(ModelB, null=True, blank=True)
-    custom_fields_inheritance = ['b', 'b__a']
+    custom_fields_inheritance = {
+        'b': 'ModelB',
+        'b__a': 'ModelA',
+    }

@@ -302,11 +302,11 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
 
 class NetworkableBaseObject(models.Model):
     # TODO: hostname field and not-abstract cls
-    custom_fields_inheritance = [
-        'configuration_path',
-        'configuration_path__module',
-        'service_env',
-    ]
+    custom_fields_inheritance = {
+        'configuration_path': 'assets.ConfigurationClass',
+        'configuration_path__module': 'assets.ConfigurationModule',
+        'service_env': 'assets.ServiceEnvironment',
+    }
 
     @cached_property
     def network_environment(self):

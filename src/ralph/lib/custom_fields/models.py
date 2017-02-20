@@ -1,3 +1,4 @@
+import logging
 import six
 
 from dj.choices import Choices
@@ -7,6 +8,7 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models.fields.related import add_lazy_relation
 from django.utils.text import capfirst, slugify
 from django.utils.translation import ugettext_lazy as _
 
@@ -15,6 +17,8 @@ from .fields import (
     CustomFieldsWithInheritanceRelation,
     CustomFieldValueQuerySet
 )
+
+logger = logging.getLogger(__name__)
 
 CUSTOM_FIELD_VALUE_MAX_LENGTH = 1000
 
@@ -174,30 +178,76 @@ class CustomFieldValue(TimeStampMixin, models.Model):
         super().clean()
 
 
-class WithCustomFieldsMixin(models.Model):
+class CustomFieldMeta(models.base.ModelBase):
+    def __new__(cls, name, bases, attrs):
+        new_cls = super().__new__(cls, name, bases, attrs)
+        new_cls._meta.custom_fields_inheritance_by_model = {}
+        new_cls._meta.custom_fields_inheritance_by_path = {}
+        # for each field in custom field inheritance, call
+        # `add_custom_field_inheritance` - it will be called lazy, only when
+        # model will be loaded
+        for field_path, model in new_cls.custom_fields_inheritance.items():
+            add_lazy_relation(
+                new_cls, field_path, model, add_custom_field_inheritance
+            )
+        return new_cls
+
+
+def add_custom_field_inheritance(field_path, model, cls):
+    model._meta.custom_fields_inheritance_by_model[cls] = field_path
+    cls._meta.custom_fields_inheritance_by_path[field_path] = cls
+
+
+class WithCustomFieldsMixin(models.Model, metaclass=CustomFieldMeta):
     # TODO: handle polymorphic in filters
     custom_fields = CustomFieldsWithInheritanceRelation(CustomFieldValue)
-    custom_fields_inheritance = []
+    # mapping from field path (using Django __ convention) to model (provided
+    # as string location of app_label and model name)
+    custom_fields_inheritance = {}
 
     class Meta:
         abstract = True
 
     @property
     def custom_fields_as_dict(self):
-        return dict(self.custom_fields.values_list(
-            'custom_field__name', 'value'
-        ))
+        return {
+            cfv.custom_field.name: cfv.value
+            for cfv in self.custom_fields.select_related('custom_field')
+        }
 
     @property
     def custom_fields_configuration_variables(self):
-        return dict(self.custom_fields.filter(
-            custom_field__use_as_configuration_variable=True
-        ).values_list(
-            'custom_field__name', 'value'
-        ))
+        return {
+            cfv.custom_field.name: cfv.value
+            for cfv in self.custom_fields.filter(
+                custom_field__use_as_configuration_variable=True
+            ).select_related('custom_field')
+        }
 
     def update_custom_field(self, name, value):
         cf = CustomField.objects.get(name=name)
         cfv, _ = self.custom_fields.get_or_create(custom_field=cf)
         cfv.value = value
         cfv.save(update_fields=['value'])
+
+    def clear_children_custom_field_value(self, custom_field):
+        """
+        For each model inheriting `custom_field` from self (in practice
+        for each model inheriting, which have this custom_field set to any
+        value), delete their `CustomFieldValue`s.
+        """
+        for model, field_path in self._meta.custom_fields_inheritance_by_model.items():  # noqa: E501
+            custom_fields_values_to_delete = CustomFieldValue.objects.filter(
+                custom_field=custom_field,
+                content_type=ContentType.objects.get_for_model(model),
+                object_id__in=model._default_manager.filter(
+                    **{field_path: self}
+                ).values_list('pk', flat=True),
+            )
+            logger.warning(
+                'Deleting {} CFVs for descendants of {} ({} by {})'.format(
+                    custom_fields_values_to_delete.count(), self,
+                    model, field_path
+                )
+            )
+            custom_fields_values_to_delete.delete()
