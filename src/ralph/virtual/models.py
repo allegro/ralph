@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+from collections import OrderedDict
 
 from dj.choices import Choices
 from django.contrib.contenttypes.models import ContentType
@@ -134,9 +135,9 @@ class CloudFlavor(AdminAbsoluteUrlMixin, BaseObject):
 class CloudProject(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
     cloudprovider = models.ForeignKey(CloudProvider)
     cloudprovider._autocomplete = False
-    custom_fields_inheritance = {
-        'service_env': 'assets.ServiceEnvironment',
-    }
+    custom_fields_inheritance = OrderedDict([
+        ('service_env', 'assets.ServiceEnvironment'),
+    ])
 
     project_id = models.CharField(
         verbose_name=_('project ID'),
@@ -158,12 +159,12 @@ def update_service_env_on_cloudproject_save(sender, instance, **kwargs):
 
 class CloudHost(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
     previous_dc_host_update_fields = ['hostname']
-    custom_fields_inheritance = {
-        'parent__cloudproject': 'virtual.CloudProject',
-        'configuration_path': 'assets.ConfigurationClass',
-        'configuration_path__module': 'assets.ConfigurationModule',
-        'service_env': 'assets.ServiceEnvironment',
-    }
+    custom_fields_inheritance = OrderedDict([
+        ('parent__cloudproject', 'virtual.CloudProject'),
+        ('configuration_path', 'assets.ConfigurationClass'),
+        ('configuration_path__module', 'assets.ConfigurationModule'),
+        ('service_env', 'assets.ServiceEnvironment'),
+    ])
 
     def save(self, *args, **kwargs):
         try:

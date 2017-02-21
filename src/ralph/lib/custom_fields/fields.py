@@ -29,7 +29,10 @@ class CustomFieldsWithInheritanceRelation(GenericRelation):
         city = models.ForeignKey(City)
 
         custom_fields = CustomFieldsWithInheritanceRelation(CustomFieldValue)
-        custom_fields_inheritance = ['city', 'city__country']
+        custom_fields_inheritance = OrderedDict([
+            ('city', 'City'),
+            ('city__country', 'Country'),
+        ])
 
     The priority of inheritance is as follows:
     * the `CustomFieldValue`s (CFVs) set directyl on object has the highest

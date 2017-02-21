@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import re
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 from itertools import chain
 
 from django import forms
@@ -302,11 +302,11 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
 
 class NetworkableBaseObject(models.Model):
     # TODO: hostname field and not-abstract cls
-    custom_fields_inheritance = {
-        'configuration_path': 'assets.ConfigurationClass',
-        'configuration_path__module': 'assets.ConfigurationModule',
-        'service_env': 'assets.ServiceEnvironment',
-    }
+    custom_fields_inheritance = OrderedDict([
+        ('configuration_path', 'assets.ConfigurationClass'),
+        ('configuration_path__module', 'assets.ConfigurationModule'),
+        ('service_env', 'assets.ServiceEnvironment'),
+    ])
 
     @cached_property
     def network_environment(self):

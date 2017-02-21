@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from collections import OrderedDict
+
 from django.core.urlresolvers import reverse
 from django.db import models
 
@@ -37,7 +39,7 @@ class SomeModel(
 ):
     name = models.CharField(max_length=20)
     b = models.ForeignKey(ModelB, null=True, blank=True)
-    custom_fields_inheritance = {
-        'b': 'ModelB',
-        'b__a': 'ModelA',
-    }
+    custom_fields_inheritance = OrderedDict([
+        ('b', 'ModelB'),
+        ('b__a', 'ModelA'),
+    ])
