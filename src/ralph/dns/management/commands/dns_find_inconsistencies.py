@@ -155,6 +155,26 @@ class Command(BaseCommand):
                 if ptr not in dns['PTR'] or hostname not in dns['PTR'][ptr]:
                     yield (ip, hostname, dns['PTR'].get(ptr))
 
+    def get_zombie_ptrs(self, ips, dns, dns_rev):
+        """
+        Return pairs of (ip, hostname) which has not properly configured PTR
+        records.
+        """
+        for hostname, ptrs in dns_rev['PTR'].items():
+            for ptr in ptrs:
+                ip = '.'.join(ptr.split('.')[3::-1])
+                if hostname not in dns['A'] or ip not in dns['A'][hostname]:
+                    yield ptr, hostname
+
+    def get_duplicated_ptrs(self, ips, dns, dns_rev):
+        """
+        Return pairs of (ip, hostname) which has not properly configured PTR
+        records.
+        """
+        for ptr, hostnames in dns['PTR'].items():
+            if len(hostnames) > 1:
+                yield ptr, hostnames
+
     def handle(self, **options):
         dns, dns_rev = self._fetch_dns_records()
         ips = self._get_ips()
@@ -178,6 +198,16 @@ class Command(BaseCommand):
                 self.check_ralph_ptrs,
                 ['IP', 'ralph hostname', 'PTR content'],
                 'Missing or wrong PTR records'
+            ),
+            (
+                self.get_zombie_ptrs,
+                ['PTR', 'hostname (content)'],
+                'Zombie PTR records'
+            ),
+            (
+                self.get_duplicated_ptrs,
+                ['PTR', 'hostnames'],
+                'Duplicated PTR records'
             ),
         ]:
             result = func(ips, dns, dns_rev)
