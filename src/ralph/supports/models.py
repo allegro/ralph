@@ -27,7 +27,7 @@ class SupportStatus(Choices):
     new = _("new")
     active = _("active")
     inactive = _("inactive")
-    
+
 SUPPORTS_RELATED_OBJECTS_PREFETCH_RELATED = [
     # prefetch all baseobjects related with support; this allows to call
     # [bos.base_object for bos in support.baseobjectssupport_set.all()]
