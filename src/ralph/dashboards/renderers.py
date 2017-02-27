@@ -37,9 +37,16 @@ class ChartistGraphRenderer(object):
     def render(self, context):
         if not context:
             context = {}
-        data = self.model.get_data()
-        options = self.get_options(data)
+        error = None
+        data = {}
+        try:
+            data = self.model.get_data()
+        except Exception as e:
+            error = str(e)
+        finally:
+            options = self.get_options(data)
         context.update({
+            'error': error,
             'graph': self.model,
             'options': json.dumps(options),
             'options_raw': options,
