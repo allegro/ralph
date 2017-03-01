@@ -3,7 +3,7 @@
   "repository": "allegro/ralph",
   "version": "3.0.0",
   "dependencies": {
-    "bower": "~1.4.1",
+    "bower": "~1.8.0",
     "gulp": "~3.9.0",
     "gulp-autoprefixer": "~2.3.1",
     "gulp-bower": "0.0.10",
