@@ -43,7 +43,7 @@ class GraphForm(RalphAdminForm):
         try:
             params_dict = json.loads(params)
         except ValueError as e:
-            raise forms.ValidationError(e.msg)
+            raise forms.ValidationError(str(e))
         if not params_dict.get('labels', None):
             raise forms.ValidationError('Please specify `labels` key')
         if not params_dict.get('series', None):
@@ -57,11 +57,40 @@ class GraphForm(RalphAdminForm):
             'params', 'active'
         ]
 
+    class Media:
+        js = (
+            'vendor/js/chartist.js',
+            'js/chartist-plugin-barlabels.js'
+        )
+
 
 @register(Graph)
 class GraphAdmin(RalphAdmin):
     form = GraphForm
     list_display = ['name', 'description', 'active']
+    readonly_fields = ['get_preview']
+    fieldsets = (
+        (None, {
+            'fields': (
+                'name',
+                'description',
+                'model',
+                'aggregate_type',
+                'chart_type',
+                'params',
+                'active'
+            )
+        }),
+        ('Preview', {
+            'fields': ('get_preview',),
+        }),
+    )
+
+    def get_preview(self, obj):
+        return obj.render(name='preview')
+
+    get_preview.allow_tags = True
+    get_preview.short_description = _('Graph')
 
 
 @register(Dashboard)
