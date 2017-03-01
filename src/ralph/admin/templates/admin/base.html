@@ -13,6 +13,7 @@
     <script type="text/javascript" src="{% static "admin/js/core.js" %}"></script>
     <script src="{% static "vendor/js/webcomponents-lite.js" %}"></script>
     <link rel="import" href="{% static "elements/elements-min.html" %}">
+    {% include 'admin/includes/javascripts.html' %}
   </head>
   <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}"{% block body_extra_attrs %}{% endblock %}>
     {% if not is_popup %}
@@ -92,7 +93,6 @@
       </div>
     </div>
     {% block javascripts %}
-      {% include 'admin/includes/javascripts.html' %}
       <!-- form media -->
       {{ media.js }}
       <!-- extra media -->

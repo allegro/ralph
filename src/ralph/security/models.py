@@ -32,6 +32,8 @@ class Vulnerability(
     TaggableMixin,
     models.Model,
 ):
+    _allow_in_dashboard = True
+
     name = models.CharField(
         verbose_name=_("name"),
         max_length=1024,
@@ -56,6 +58,8 @@ class SecurityScan(
     TaggableMixin,
     models.Model,
 ):
+    _allow_in_dashboard = True
+
     last_scan_date = models.DateTimeField()
     scan_status = models.PositiveIntegerField(choices=ScanStatus())
     next_scan_date = models.DateTimeField()
