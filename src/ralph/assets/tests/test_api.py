@@ -1039,9 +1039,9 @@ class ConfigurationModuleAPITests(RalphAPITestCase):
             'name': 'test_2'
         }
         response = self.client.patch(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.conf_module_2.refresh_from_db()
-        self.assertEqual(self.conf_module_2.name, 'test_2')
+        self.assertEqual(
+            response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED
+        )
 
 
 class ConfigurationClassAPITests(RalphAPITestCase):
@@ -1104,9 +1104,9 @@ class ConfigurationClassAPITests(RalphAPITestCase):
             'class_name': 'test_2'
         }
         response = self.client.patch(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.conf_class_1.refresh_from_db()
-        self.assertEqual(self.conf_class_1.class_name, 'test_2')
+        self.assertEqual(
+            response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED
+        )
 
 
 class EthernetAPITests(RalphAPITestCase):

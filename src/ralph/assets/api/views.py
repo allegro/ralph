@@ -198,6 +198,9 @@ class ConfigurationModuleViewSet(RalphAPIViewSet):
     serializer_class = serializers.ConfigurationModuleSerializer
     save_serializer_class = serializers.ConfigurationModuleSimpleSerializer
     filter_fields = ('parent', 'name')
+    # don't allow for ConfigurationModule updating or deleting as it might
+    # dissrupt configuration of many hosts!
+    http_method_names = ['get', 'post', 'options', 'head']
 
 
 class ConfigurationClassViewSet(RalphAPIViewSet):
@@ -206,6 +209,9 @@ class ConfigurationClassViewSet(RalphAPIViewSet):
     filter_fields = ('module', 'module__name', 'class_name', 'path')
     select_related = ['module']
     prefetch_related = ['tags']
+    # don't allow for ConfigurationClass updating or deleting as it might
+    # dissrupt configuration of many hosts!
+    http_method_names = ['get', 'post', 'options', 'head']
 
 
 class BaseObjectViewSetMixin(object):

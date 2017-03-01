@@ -59,6 +59,11 @@ class ConfigurationClassAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     objects_count.short_description = _('Objects count')
     objects_count.admin_order_field = 'objects_count'
 
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return self.readonly_fields + ['class_name', 'module']
+        return self.readonly_fields
+
 
 @register(ConfigurationModule)
 class ConfigurationModuleAdmin(CustomFieldValueAdminMixin, RalphMPTTAdmin):
@@ -103,6 +108,11 @@ class ConfigurationModuleAdmin(CustomFieldValueAdminMixin, RalphMPTTAdmin):
         ).render()
     show_children_classes.allow_tags = True
     show_children_classes.short_description = _('Children classes')
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return self.readonly_fields + ['name', 'parent']
+        return self.readonly_fields
 
 
 @register(ServiceEnvironment)
