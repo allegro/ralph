@@ -412,7 +412,7 @@ class DataCenterAssetAdmin(
     def go_to_visualization(self, obj):
         if not obj.rack:
             return '&mdash;'
-        url = '{}#!/sr/{}/rack/{}'.format(
+        url = '{}#/sr/{}/rack/{}'.format(
             reverse('dc_view'),
             obj.rack.server_room_id,
             obj.rack.id,
