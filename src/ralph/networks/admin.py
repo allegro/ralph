@@ -223,7 +223,7 @@ class NetworkAdmin(RalphMPTTAdmin):
                 'number'
             ).prefetch_related(
                 Prefetch(
-                    'base_object',
+                    'ethernet__base_object',
                     queryset=BaseObject.polymorphic_objects.all()
                 )
             ),
