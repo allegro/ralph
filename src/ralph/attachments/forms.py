@@ -1,4 +1,6 @@
 from django import forms
+from django.contrib import messages
+from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.helpers import get_content_type_for_model
 from ralph.attachments.models import Attachment, AttachmentItem
@@ -37,6 +39,8 @@ class AttachmentForm(RequestModelForm):
         # _parent_object is set in attachment.views.AttachmentsView
         #  get_formset method.
         if attachment:
+            # if file with the same MD5 is already saved, reuse it and
+            # attach it parent object
             content_type = get_content_type_for_model(
                 self._parent_object._meta.model
             )
@@ -48,7 +52,17 @@ class AttachmentForm(RequestModelForm):
                 AttachmentItem.objects.attach(
                     self._parent_object.pk, content_type, [attachment]
                 )
-                return None
+            elif not obj.pk:
+                # if another file with existing MD5 is uploaded for the same
+                # object, show warninig message
+                messages.add_message(
+                    self._request,
+                    messages.WARNING,
+                    _((
+                        'Another attachment with the same signature ({}) is '
+                        'already attached to this object'
+                    ).format(attachment.original_filename))
+                )
             return
         obj.md5 = md5
         obj.uploaded_by = self._request.user
