@@ -26,7 +26,9 @@ from ralph.admin.autocomplete import AUTOCOMPLETE_EMPTY_VALUE, get_results
 from ralph.admin.helpers import get_field_by_relation_path
 from ralph.lib.mixins.fields import MACAddressField
 
-SEARCH_OR_SEPARATORS_REGEX = re.compile(r'[;|]')
+SEARCH_OR_SEPARATORS = r';|'
+
+SEARCH_OR_SEPARATORS_REGEX = re.compile(r'[{}]'.format(SEARCH_OR_SEPARATORS))
 SEARCH_AND_SEPARATORS_REGEX = re.compile(r'[&]')
 
 

@@ -1,9 +1,12 @@
 import ipaddress
-
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin.filters import ChoicesListFilter, TextListFilter
+from ralph.admin.filters import (
+    ChoicesListFilter,
+    SEARCH_OR_SEPARATORS,
+    TextListFilter
+)
 
 PRIVATE_NETWORK_CIDRS = [
     '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16',
@@ -76,4 +79,46 @@ class NetworkClassFilter(ChoicesListFilter):
             queryset = queryset.filter(PRIVATE_NETWORK_FILTER)
         elif self.value().lower() == 'public':
             queryset = queryset.exclude(PRIVATE_NETWORK_FILTER)
+        return queryset
+
+
+class ContainsIPAddressFilter(TextListFilter):
+
+    title = _('Contains IP address')
+    parameter_name = 'contains_ip'
+
+    def __init__(self, field, request, params, model, model_admin, field_path):
+        super(ContainsIPAddressFilter, self).__init__(
+            field, request, params, model, model_admin, field_path
+        )
+        self.title = _('Contains IP address')
+
+    def queryset(self, request, queryset):
+        filter_str = self.value()
+        if not filter_str:
+            return queryset
+
+        # Replace all possible separators with spaces
+        filter_str = filter_str.translate(
+            str.maketrans(
+                SEARCH_OR_SEPARATORS,
+                ' ' * len(SEARCH_OR_SEPARATORS)
+            )
+        )
+
+        filter_query = Q()
+
+        for str_addr in filter_str.split(' '):
+            try:
+                address = int(ipaddress.ip_address(str_addr))
+            except ValueError:
+                return queryset
+
+            filter_query = filter_query | Q(
+                min_ip__lte=address,
+                max_ip__gte=address
+            )
+
+        queryset = queryset.filter(filter_query)
+
         return queryset
