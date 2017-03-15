@@ -7,6 +7,19 @@ from ralph.assets.tests.factories import EthernetFactory
 from ralph.networks.tests.factories import IPAddressFactory, NetworkFactory
 
 
+class NetworkTest(RalphAPITestCase):
+
+    def test_get_ip_list_filter_by_member_ip_single_ip_single_result(self):
+        net = NetworkFactory(address='10.42.42.0/24')
+
+        url = '{}?{}'.format(reverse('network-list'), 'max_ip=10.42.42.5')
+
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        assert 1 == 0
+
+
 class IPAddressAPITests(RalphAPITestCase):
     @classmethod
     def setUpClass(cls):
