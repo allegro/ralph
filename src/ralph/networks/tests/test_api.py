@@ -39,6 +39,13 @@ class IPAddressAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
 
+    def test_get_ip_list_filter_by_invalid_mac_400(self):
+        url = '{}?ethernet__mac={}'.format(
+            reverse('ipaddress-list'), '(none)'
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_get_ip_details(self):
         url = reverse('ipaddress-detail', args=(self.ip1.id,))
         response = self.client.get(url, format='json')
