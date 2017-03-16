@@ -20,6 +20,7 @@ class NetworkFiltersTestCase(TestCase):
             NetworkFactory(address='10.42.0.0/16'),
             NetworkFactory(address='10.42.42.42/32'),
             NetworkFactory(address='10.43.42.0/24'),
+            NetworkFactory(address='2001:db8:1234::/48')
         )
 
     def get_member_ip_filter(self, member_ip):
@@ -44,7 +45,19 @@ class NetworkFiltersTestCase(TestCase):
         self.assertEqual(1, len(results))
         self.assertEqual(expected_network, results.pop())
 
-    def test_filter_member_ip_range_overlap(self):
+    def test_filter_member_ipv6_single_result(self):
+        member_ip = '2001:db8:1234:0000:0000:0000:0000:0042'
+        expected_network = '2001:db8:1234::/48'
+
+        member_ip_filter = self.get_member_ip_filter(member_ip)
+        queryset = member_ip_filter.queryset(None, Network.objects.all())
+
+        results = [str(net.address) for net in queryset.all()]
+
+        self.assertEqual(1, len(results))
+        self.assertEqual(expected_network, results.pop())
+
+    def test_filter_member_ip_single_address_range_overlap(self):
         member_ip = '10.42.42.10'
         expected_networks = ['10.42.0.0/16', '10.42.42.0/24']
 
@@ -57,6 +70,49 @@ class NetworkFiltersTestCase(TestCase):
         self.assertEqual(2, len(results))
         self.assertEqual(expected_networks, results)
         
+    def test_filter_member_ip_multiple_address_semicolon_range_overlap(self):
+        member_ip = '10.42.42.10;10.43.42.10'
+        expected_networks = ['10.42.0.0/16', '10.42.42.0/24', '10.43.42.0/24']
+
+        member_ip_filter = self.get_member_ip_filter(member_ip)
+        queryset = member_ip_filter.queryset(None, Network.objects.all())
+
+        results = [str(net.address) for net in queryset.all()]
+        results.sort()
+
+        self.assertEqual(3, len(results))
+        self.assertEqual(expected_networks, results)
+
+    def test_filter_member_ip_multiple_address_ipv4_ipv6_range_overlap(self):
+        member_ip = '10.42.42.10;2001:db8:1234:0000:0000:0000:0000:0042'
+        expected_networks = [
+            '10.42.0.0/16',
+            '10.42.42.0/24',
+            '2001:db8:1234::/48'
+        ]
+
+        member_ip_filter = self.get_member_ip_filter(member_ip)
+        queryset = member_ip_filter.queryset(None, Network.objects.all())
+
+        results = [str(net.address) for net in queryset.all()]
+        results.sort()
+
+        self.assertEqual(3, len(results))
+        self.assertEqual(expected_networks, results)
+
+    def test_filter_member_ip_multiple_address_pipe_range_overlap(self):
+        member_ip = '10.42.42.10|10.43.42.10'
+        expected_networks = ['10.42.0.0/16', '10.42.42.0/24', '10.43.42.0/24']
+
+        member_ip_filter = self.get_member_ip_filter(member_ip)
+        queryset = member_ip_filter.queryset(None, Network.objects.all())
+
+        results = [str(net.address) for net in queryset.all()]
+        results.sort()
+
+        self.assertEqual(3, len(results))
+        self.assertEqual(expected_networks, results)
+
     def test_filter_member_ip_no_results(self):
         member_ip = '10.10.10.10'
 
@@ -75,7 +131,7 @@ class NetworkFiltersTestCase(TestCase):
 
         results = [str(net.address) for net in queryset.all()]
 
-        self.assertEqual(4, len(results))
+        self.assertEqual(5, len(results))
 
     def test_filter_member_invalid_input_raises_correct_valudation_error(self):
         member_ip = 'DEADBEEF'
