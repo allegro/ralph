@@ -313,6 +313,7 @@ FISHEYE_URL = ""
 FISHEYE_PROJECT_NAME = ""
 VMWARE_USER = None
 VMWARE_PASSWORD = None
+LDAP_SERVER_OBJECT_USER_CLASS = "user" # possible values: "user, person"
 
 ISSUETRACKERS = {
     'default': {
