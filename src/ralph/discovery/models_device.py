@@ -1023,6 +1023,18 @@ class Device(
     def url(self):
         return reverse('search', args=('info', self.id))
 
+    def serialize_location_data(self):
+        data = {
+            'barcode': self.barcode,
+            'dc': self.dc,
+            # 'server_room': 'default_server_room',
+            'rack': self.parent.name if self.parent else '',
+            'position': self.chassis_position,
+            'slot_number': self.position,
+            'orientation': self.orientation,
+        }
+        return data
+
 
 class Connection(db.Model):
 
