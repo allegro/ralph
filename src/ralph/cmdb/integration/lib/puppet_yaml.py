@@ -28,17 +28,6 @@ class PuppetResourceStatus(yaml.YAMLObject):
         pass
 
 
-class PuppetLog(yaml.YAMLObject):
-    yaml_tag = u'!ruby/object:Puppet::Util::Log'
-
-    def __init__(self, source, message, tags, time, level):
-        self.source = source
-        self.message = message
-        self.tags = tags
-        self.time = time
-        self.level = level
-
-
 class PuppetMetric(yaml.YAMLObject):
     yaml_tag = u'!ruby/object:Puppet::Util::Metric'
 

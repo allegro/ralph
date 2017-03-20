@@ -211,25 +211,6 @@ class ArchivedCIChangePuppet(AbstractCIChangePuppet):
     pass
 
 
-class AbstractPuppetLog(TimeTrackable):
-    source = models.CharField(max_length=100)
-    message = models.CharField(max_length=1024)
-    tags = models.CharField(max_length=100)
-    time = models.DateTimeField()
-    level = models.CharField(max_length=100)
-
-    class Meta:
-        abstract = True
-
-
-class PuppetLog(AbstractPuppetLog):
-    cichange = models.ForeignKey('CIChangePuppet')
-
-
-class ArchivedPuppetLog(AbstractPuppetLog):
-    cichange = models.ForeignKey('ArchivedCIChangePuppet')
-
-
 class CIEvent(TimeTrackable):
 
     ''' Abstract for CIProblem/CIIncident '''

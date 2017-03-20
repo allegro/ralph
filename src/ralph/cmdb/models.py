@@ -51,7 +51,6 @@ from ralph.cmdb.models_changes import (
     GitPathMapping,
 
     # puppet logger types
-    PuppetLog,
 
     CIEvent,
     CIProblem,
@@ -63,7 +62,6 @@ from ralph.cmdb.models_changes import (
     ArchivedCIChange,
     ArchivedCIChangeGit,
     ArchivedCIChangePuppet,
-    ArchivedPuppetLog,
 )
 
 from ralph.cmdb.models_audits import (
@@ -109,7 +107,6 @@ __all__ = [
     'GitPathMapping',
 
     # puppet logger types
-    'PuppetLog',
     'CIAttributeValue',
     'CIEvent',
     'CIProblem',
@@ -125,7 +122,6 @@ __all__ = [
     'ArchivedCIChange',
     'ArchivedCIChangeGit',
     'ArchivedCIChangePuppet',
-    'ArchivedPuppetLog',
 ]
 
 # hook signals, don't remove this.
