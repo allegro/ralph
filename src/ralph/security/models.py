@@ -67,3 +67,9 @@ class SecurityScan(
     rescan_url = models.URLField(blank=True, verbose_name=_('Rescan url'))
     base_object = models.ForeignKey(BaseObject)
     vulnerabilities = models.ManyToManyField(Vulnerability, blank=True)
+    last_security_scan = models.OneToOneField(
+        'SecurityScan',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
