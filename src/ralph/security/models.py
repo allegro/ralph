@@ -67,3 +67,10 @@ class SecurityScan(
     rescan_url = models.URLField(blank=True, verbose_name=_('Rescan url'))
     base_object = models.ForeignKey(BaseObject)
     vulnerabilities = models.ManyToManyField(Vulnerability, blank=True)
+
+    @property
+    def is_ok(self):
+        return self.scan_status == ScanStatus.ok.id
+
+    def has_vulnerabilities(self):
+        return self.vulnerabilities.all().exists()

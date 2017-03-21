@@ -5,6 +5,8 @@ from ralph.data_center.tests.factories import (
     ClusterFactory,
     DataCenterAssetFullFactory
 )
+from ralph.security.models import ScanStatus
+from ralph.security.tests.factories import SecurityScanFactory
 from ralph.tests.mixins import ClientMixin
 from ralph.virtual.tests.factories import (
     CloudHostFullFactory,
@@ -94,3 +96,63 @@ class DCHostViewTest(ClientMixin, TestCase):
             reverse('admin:data_center_dchost_changelist'),
         )
         self.assertContains(result, 'DC1 / SR1 / Rack #1')
+
+
+class DCHostScanStatusInListingTest(ClientMixin, TestCase):
+
+    def setUp(self):
+        self.login_as_user()
+        self.asset = DataCenterAssetFullFactory(
+            rack__name='Rack #1',
+            rack__server_room__name='SR1',
+            rack__server_room__data_center__name='DC1',
+        )
+
+    def test_listing_show_ok_icon_when_scan_succeed_and_no_vulnerabilities(
+        self
+    ):
+        SecurityScanFactory(
+            base_object=self.asset.baseobject_ptr, vulnerabilities=[],
+        )
+
+        result = self.client.get(
+            reverse('admin:data_center_dchost_changelist'),
+        )
+        self.assertContains(result, "Host is clean")
+        self.assertContains(result, "fa-check")
+
+    def test_listing_show_fail_icon_when_scan_succeed_and_vulnerabilities(self):
+        scan = SecurityScanFactory(base_object=self.asset.baseobject_ptr,)
+        self.assertTrue(scan.vulnerabilities.exists())
+
+        result = self.client.get(
+            reverse('admin:data_center_dchost_changelist'),
+        )
+        self.assertContains(result, "Found vulnerabilities: 1")
+        self.assertContains(result, "fa-times")
+
+    def test_listing_show_exclamation_icon_when_scan_failed(self):
+        SecurityScanFactory(
+            base_object=self.asset.baseobject_ptr,
+            scan_status=ScanStatus.fail.id,
+            vulnerabilities=[],
+        )
+
+        result = self.client.get(
+            reverse('admin:data_center_dchost_changelist'),
+        )
+        self.assertContains(result, "Scan failed.")
+        self.assertContains(result, "fa-exclamation")
+
+    def test_listing_show_exclamation_icon_when_scan_error(self):
+        SecurityScanFactory(
+            base_object=self.asset.baseobject_ptr,
+            scan_status=ScanStatus.error.id,
+            vulnerabilities=[],
+        )
+
+        result = self.client.get(
+            reverse('admin:data_center_dchost_changelist'),
+        )
+        self.assertContains(result, "Scan failed.")
+        self.assertContains(result, "fa-exclamation")

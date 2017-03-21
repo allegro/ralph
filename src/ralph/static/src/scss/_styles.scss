@@ -158,3 +158,13 @@ i.empty {
     color: #888;
     font-style: normal;
 }
+
+.field-scan_status {
+    text-align: center;
+}
+    .fa-check {
+        color: green;
+    }
+    .fa-times, .fa-exclamation {
+        color: red;
+    }

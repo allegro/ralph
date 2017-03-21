@@ -8,6 +8,7 @@ from django.contrib.admin.views.main import ChangeList
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db.models import Prefetch, Q
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
@@ -60,6 +61,7 @@ from ralph.networks.forms import SimpleNetworkWithManagementIPForm
 from ralph.networks.models.networks import Network
 from ralph.networks.views import NetworkWithTerminatorsView
 from ralph.operations.views import OperationViewReadOnlyForExisiting
+from ralph.security.models import SecurityScan
 from ralph.security.views import SecurityInfo
 from ralph.supports.models import BaseObjectsSupport
 
@@ -545,6 +547,7 @@ class DCHostAdmin(RalphAdmin):
         'configuration_path',
         'show_location',
         'remarks',
+        'scan_status',
     ]
     # TODO: sn
     # TODO: hostname, DC
@@ -594,6 +597,36 @@ class DCHostAdmin(RalphAdmin):
         return ''
     show_location.short_description = _('Location')
     show_location.allow_tags = True
+
+    def scan_status(self, obj):
+        scans = SecurityScan.objects.filter(base_object_id=obj.id)
+        if scans:
+            scan = scans.latest("last_scan_date")
+            if scan.is_ok:
+                if scan.has_vulnerabilities():
+                    icon_name, desc = "fa-times", _(
+                        "Scan succeed. Found vulnerabilities: {}".format(
+                            scan.vulnerabilities.count()
+                        )
+                    )
+                else:
+                    icon_name, desc = "fa-check", _(
+                        "Scan succeed. Host is clean so far."
+                    )
+            else:
+                icon_name, desc = "fa-exclamation", _(
+                    "Scan failed.".format(
+                        scan.vulnerabilities.count()
+                    )
+                )
+            html = '<i title="{desc}" class="fa {icon_name}" aria-hidden="true"></i>'.format(  # noqa
+                icon_name=icon_name,
+                desc=desc,
+            )
+        else:
+            html = '<span title="No scan so far">-</span>'
+        return mark_safe(html)
+    scan_status.short_description = _('Security scan')
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
