@@ -67,6 +67,7 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         'service_env__service__uid',
         'service_env__service__name',
         'service_env__service__id',
+        'service_env__environment__name',
         'firmware_version',
         'bios_version',
     ]
