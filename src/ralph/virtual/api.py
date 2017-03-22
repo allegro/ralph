@@ -145,7 +145,7 @@ class VirtualServerSerializer(ComponentSerializerMixin, BaseObjectSerializer):
 
 class VirtualServerSaveSerializer(RalphAPISaveSerializer):
     hypervisor = relations.PrimaryKeyRelatedField(
-        source='parent', queryset=DCHost.objects.all(),
+        source='parent', queryset=DCHost.objects,
     )
 
     class Meta:
