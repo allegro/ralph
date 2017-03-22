@@ -4,14 +4,19 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.views.extra import RalphDetailView
-from ralph.security.models import SecurityScan
 
 
 class ScanStatusInChangeListMixin(object):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.list_select_related += ['securityscan', ]
+
     def scan_status(self, obj):
-        scans = SecurityScan.objects.filter(base_object_id=obj.id)
-        if scans:
-            scan = scans.latest("last_scan_date")
+        try:
+            scan = obj.securityscan
+        except ObjectDoesNotExist:
+            html = '<span title="No scan so far">-</span>'
+        else:
             if scan.is_ok:
                 if scan.has_vulnerabilities():
                     icon_name, desc = "fa-times", _(
@@ -33,8 +38,6 @@ class ScanStatusInChangeListMixin(object):
                 icon_name=icon_name,
                 desc=desc,
             )
-        else:
-            html = '<span title="No scan so far">-</span>'
         return mark_safe(html)
     scan_status.short_description = _('Security scan')
 
