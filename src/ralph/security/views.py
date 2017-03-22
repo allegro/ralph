@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
@@ -48,7 +49,9 @@ class SecurityInfo(RalphDetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['security_scan'] = SecurityScan.objects.filter(
-            base_object=self.object
-        ).first()
+        try:
+            scan = self.object.securityscan
+        except ObjectDoesNotExist:
+            scan = None
+        context['security_scan'] = scan
         return context
