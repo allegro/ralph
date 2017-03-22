@@ -146,6 +146,39 @@ class SecurityScanAPITests(RalphAPITestCase):
             self.security_scan.vulnerabilities.get(), vulnerability,
         )
 
+    def test_posting_scan_replace_old_one_when_scan_already_exists(self):
+        ip = IPAddressFactory(address="192.168.128.66")
+        scan = SecurityScanFactory(base_object=ip.base_object)
+        data = {
+            'last_scan_date': (
+                datetime.now() + timedelta(days=10)
+            ).replace(microsecond=0).isoformat(),
+            'scan_status': ScanStatus.ok.name,
+            'next_scan_date': (
+                datetime.now() + timedelta(days=15)
+            ).replace(microsecond=0).isoformat(),
+            'details_url': "http://example.com",
+            'rescan_url': "http://example.com",
+            'host_ip': ip.address,
+            'vulnerabilities': [VulnerabilityFactory().id, ],
+        }
+        self.assertEqual(
+            SecurityScan.objects.get(base_object=ip.base_object.id).id,
+            scan.id,
+        )
+
+        response = self.client.post(
+            reverse('securityscan-list'),
+            data,
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertNotEqual(
+            SecurityScan.objects.get(base_object=ip.base_object.id).id,
+            scan.id,
+        )
+
 
 class VulnerabilityAPITests(RalphAPITestCase):
 

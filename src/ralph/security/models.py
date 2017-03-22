@@ -68,7 +68,5 @@ class SecurityScan(
     base_object = models.OneToOneField(
         BaseObject,
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
     )
     vulnerabilities = models.ManyToManyField(Vulnerability, blank=True)
