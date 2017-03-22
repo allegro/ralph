@@ -13,6 +13,7 @@ from ralph.data_importer import resources
 from ralph.lib.mixins.admin import ParentChangeMixin
 from ralph.lib.table import TableWithUrl
 from ralph.networks.filters import (
+    ContainsIPAddressFilter,
     IPRangeFilter,
     NetworkClassFilter,
     NetworkRangeFilter
@@ -120,6 +121,7 @@ class NetworkAdmin(RalphMPTTAdmin):
         'terminators', 'service_env',
         ('parent', RelatedAutocompleteFieldListFilter),
         ('min_ip', NetworkRangeFilter), ('address', NetworkClassFilter),
+        ('max_ip', ContainsIPAddressFilter)
     ]
     list_select_related = ['kind', 'network_environment']
     raw_id_fields = ['racks', 'gateway', 'terminators', 'service_env']

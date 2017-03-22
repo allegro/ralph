@@ -514,7 +514,9 @@ class Network(
             if free_ip_as_int not in used_ips:
                 next_free_ip = ipaddress.ip_address(free_ip_as_int)
                 if is_in_dnsaas(next_free_ip):
-                    logger.error('IP {} is already in DNS'.format(next_free_ip))
+                    logger.warning(
+                        'IP {} is already in DNS'.format(next_free_ip)
+                    )
                 else:
                     return next_free_ip
 

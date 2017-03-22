@@ -1,4 +1,4 @@
-Device : {{ object }} Service was changed.
+Device : {{ object }}{% if object.model %}({{ object.model }}) {% endif %} Service was changed.
 Current service: {{ new_service_env.service }}
 Old service: {{ old_service_env.service }}
 Author: {{ user.get_full_name }}

@@ -6,7 +6,7 @@
         <table cellspacing="0" cellpadding="0" border="0" width="450px" align="left">
             <tr>
                 <td>
-                    Device : {{ object }} Service was changed. <br />
+                    Device : {{ object }}{% if object.model %}({{ object.model }}) {% endif %} Service was changed. <br />
                     Current service: {{ new_service_env.service }}<br />
                     Old service: {{ old_service_env.service }} <br />
                     Author: {{ user.get_full_name }}<br />

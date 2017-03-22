@@ -2,6 +2,7 @@
 from collections import OrderedDict
 
 import django_filters
+from django.db import transaction
 from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
@@ -91,6 +92,18 @@ class SecurityScanViewSet(RalphAPIViewSet):
     save_serializer_class = SaveSecurityScanSerializer
 
     additional_filter_class = IPFilter
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        ip = IPAddress.objects.filter(address=self.request.data.get(
+            'host_ip', None)
+        ).first()
+        if ip:
+            # one scan can exist for ip (because there are linked by onetoone)
+            # so this removes old scan to allow updates by post
+            SecurityScan.objects.filter(base_object=ip.base_object.id).delete()
+        return super().create(request, *args, **kwargs)
+
 
 router.register(r'vulnerabilities', VulnerabilityViewSet)
 router.register(r'security-scans', SecurityScanViewSet)
