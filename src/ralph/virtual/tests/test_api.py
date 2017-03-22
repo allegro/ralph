@@ -313,6 +313,7 @@ class VirtualServerAPITestCase(RalphAPITestCase):
     def setUp(self):
         super().setUp()
         self.hypervisor = DataCenterAssetFactory()
+        self.cloud_hypervisor = CloudHostFactory()
         self.cluster = ClusterFactory()
         self.type = VirtualServerType.objects.create(name='XEN')
         self.virtual_server = VirtualServerFullFactory(
@@ -379,6 +380,25 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         virtual_server = VirtualServer.objects.get(pk=response.data['id'])
         self.assertEqual(virtual_server.hostname, data['hostname'])
         self.assertEqual(virtual_server.parent.id, self.hypervisor.id)
+        self.assertEqual(virtual_server.sn, data['sn'])
+
+    def test_create_virtual_server_with_cloud_host_as_parent(self):
+        virtual_server_count = VirtualServer.objects.count()
+        url = reverse('virtualserver-list')
+        data = {
+            'hostname': 's1234.local',
+            'type': self.type.id,
+            'sn': '143ed36a-3e86-457d-9e19-3dcfe4d5ed26',
+            'hypervisor': self.cloud_hypervisor.id,
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            VirtualServer.objects.count(), virtual_server_count + 1
+        )
+        virtual_server = VirtualServer.objects.get(pk=response.data['id'])
+        self.assertEqual(virtual_server.hostname, data['hostname'])
+        self.assertEqual(virtual_server.parent.id, self.cloud_hypervisor.id)
         self.assertEqual(virtual_server.sn, data['sn'])
 
     def test_patch_virtual_server(self):

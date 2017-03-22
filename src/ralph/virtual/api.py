@@ -18,7 +18,7 @@ from ralph.assets.api.views import (
 )
 from ralph.assets.models import Ethernet
 from ralph.data_center.api.serializers import DataCenterAssetSimpleSerializer
-from ralph.data_center.models import DataCenterAsset
+from ralph.data_center.models import DCHost
 from ralph.virtual.admin import VirtualServerAdmin
 from ralph.virtual.models import (
     CloudFlavor,
@@ -145,7 +145,7 @@ class VirtualServerSerializer(ComponentSerializerMixin, BaseObjectSerializer):
 
 class VirtualServerSaveSerializer(RalphAPISaveSerializer):
     hypervisor = relations.PrimaryKeyRelatedField(
-        source='parent', queryset=DataCenterAsset.objects.all(),
+        source='parent', queryset=DCHost.objects.all(),
     )
 
     class Meta:
