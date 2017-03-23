@@ -21,6 +21,8 @@ from django.db import models
 class PolymorphicQuerySet(models.QuerySet):
     _polymorphic_select_related = {}
     _polymorphic_prefetch_related = {}
+    _annotate_args = []
+    _annotate_kwargs = {}
 
     def iterator(self):
         """
@@ -81,11 +83,19 @@ class PolymorphicQuerySet(models.QuerySet):
                     model_query = model_query.prefetch_related(
                         *self._polymorphic_prefetch_related[model_name]
                     )
+                model_query = model_query.annotate(
+                    *self._annotate_args, **self._annotate_kwargs
+                )
                 for obj in model_query:
                     result_mapping[obj.pk] = obj
         # yield objects in original order
         for pk in pks_order:
             yield result_mapping[pk]
+
+    def annotate(self, *args, **kwargs):
+        self._annotate_args.extend(args)
+        self._annotate_kwargs.update(kwargs)
+        return super().annotate(*args, **kwargs)
 
     def _clone(self, *args, **kwargs):
         clone = super()._clone(*args, **kwargs)

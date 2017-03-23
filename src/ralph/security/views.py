@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Count
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
@@ -11,6 +12,13 @@ class ScanStatusInChangeListMixin(object):
         super().__init__(*args, **kwargs)
         self.list_select_related += ['securityscan', ]
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs = qs.annotate(
+            vulnerabilities_count=Count('securityscan__vulnerabilities')
+        )
+        return qs
+
     def scan_status(self, obj):
         try:
             scan = obj.securityscan
@@ -18,7 +26,7 @@ class ScanStatusInChangeListMixin(object):
             html = '<span title="No scan so far">-</span>'
         else:
             if scan.is_ok:
-                if scan.has_vulnerabilities():
+                if obj.vulnerabilities_count > 0:
                     icon_name, desc = "fa-times", _(
                         "Scan succeed. Found vulnerabilities: {}".format(
                             scan.vulnerabilities.count()
