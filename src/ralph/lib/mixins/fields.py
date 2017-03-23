@@ -76,6 +76,7 @@ class TicketIdField(NullableCharField):
         null=True,
         blank=True,
         max_length=200,
+        unique=True,
         *args, **kwargs
     ):
         super().__init__(
@@ -84,6 +85,7 @@ class TicketIdField(NullableCharField):
             null=null,
             blank=blank,
             max_length=max_length,
+            unique=unique,
             *args, **kwargs
         )
 
