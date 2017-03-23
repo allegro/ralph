@@ -348,9 +348,7 @@ class VirtualServer(
 
     @property
     def model(self):
-        return (
-            self.polymorphic_parent.model if self.polymorphic_parent else None
-        )
+        return self.type
 
     @cached_property
     def rack_id(self):
