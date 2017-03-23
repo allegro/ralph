@@ -7,7 +7,8 @@ from ralph.dhcp.models import DHCPServer, DNSServer
 
 @register(DHCPServer)
 class DHCPServerAdmin(RalphAdmin):
-    list_display = ['ip', 'last_synchronized_formatted']
+    list_display = ['ip', 'last_synchronized_formatted', 'network_environment']
+    list_select_related = ['network_environment']
     search_fields = ['ip']
 
     def last_synchronized_formatted(self, obj):
