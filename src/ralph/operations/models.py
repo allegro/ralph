@@ -24,6 +24,9 @@ class OperationStatus(Choices):
     in_progress = _('in progress')
     resolved = _('resolved')
     closed = _('closed')
+    reopened = _('reopened')
+    todo = _('todo')
+    blocked = _('blocked')
 
 
 class OperationType(
