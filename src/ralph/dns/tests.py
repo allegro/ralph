@@ -147,6 +147,7 @@ class TestGetTXTDataToPublishToDNSaaS(TestCase):
             ),
             service_env__service__name='service',
             service_env__environment__name='prod',
+            type__name='Xen',
             parent=DataCenterAssetFactory(
                 hostname='parent',
                 model__name='DL380p',
@@ -271,7 +272,7 @@ class TestGetTXTDataToPublishToDNSaaS(TestCase):
             'target_owner': 'ralph',
             'purpose': 'SERVICE_ENV',
         }, {
-            'content': '[Database Machine] Brother DL380p',
+            'content': 'Xen',
             'ips': [self.vs_ip.address],
             'owner': '',
             'target_owner': 'ralph',
