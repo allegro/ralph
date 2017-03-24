@@ -108,7 +108,7 @@ class DCHostScanStatusInListingTest(ClientMixin, TestCase):
             rack__server_room__data_center__name='DC1',
         )
 
-    def test_listing_show_ok_icon_when_scan_succeed_and_no_vulnerabilities(
+    def test_listing_show_ok_when_scan_succeed_and_no_vulnerabilities(
         self
     ):
         SecurityScanFactory(
@@ -118,20 +118,18 @@ class DCHostScanStatusInListingTest(ClientMixin, TestCase):
         result = self.client.get(
             reverse('admin:data_center_dchost_changelist'),
         )
-        self.assertContains(result, "Host is clean")
-        self.assertContains(result, "fa-check")
+        self.assertContains(result, "Host clean")
 
-    def test_listing_show_fail_icon_when_scan_succeed_and_vulnerabilities(self):
+    def test_listing_show_fail_when_scan_succeed_and_vulnerabilities(self):
         scan = SecurityScanFactory(base_object=self.asset.baseobject_ptr,)
         self.assertTrue(scan.vulnerabilities.exists())
 
         result = self.client.get(
             reverse('admin:data_center_dchost_changelist'),
         )
-        self.assertContains(result, "Found vulnerabilities: 1")
-        self.assertContains(result, "fa-times")
+        self.assertContains(result, "Got vulnerabilities: 1")
 
-    def test_listing_show_exclamation_icon_when_scan_failed(self):
+    def test_listing_show_failed_when_scan_failed(self):
         SecurityScanFactory(
             base_object=self.asset.baseobject_ptr,
             scan_status=ScanStatus.fail.id,
@@ -141,10 +139,9 @@ class DCHostScanStatusInListingTest(ClientMixin, TestCase):
         result = self.client.get(
             reverse('admin:data_center_dchost_changelist'),
         )
-        self.assertContains(result, "Scan failed.")
-        self.assertContains(result, "fa-exclamation")
+        self.assertContains(result, "Scan failed")
 
-    def test_listing_show_exclamation_icon_when_scan_error(self):
+    def test_listing_show_failed_icon_when_scan_error(self):
         SecurityScanFactory(
             base_object=self.asset.baseobject_ptr,
             scan_status=ScanStatus.error.id,
@@ -154,5 +151,4 @@ class DCHostScanStatusInListingTest(ClientMixin, TestCase):
         result = self.client.get(
             reverse('admin:data_center_dchost_changelist'),
         )
-        self.assertContains(result, "Scan failed.")
-        self.assertContains(result, "fa-exclamation")
+        self.assertContains(result, "Scan failed")

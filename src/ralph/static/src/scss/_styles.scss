@@ -159,13 +159,12 @@ i.empty {
     font-style: normal;
 }
 
-.field-scan_status {
-    text-align: center;
-
-    .fa-check {
-        color: green;
-    }
-    .fa-times, .fa-exclamation {
-        color: red;
-    }
+.success {
+    color: $success-color;
+}
+.warning {
+    color: $warning-color;
+}
+.alert {
+    color: $alert-color;
 }

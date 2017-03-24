@@ -74,6 +74,3 @@ class SecurityScan(
     @property
     def is_ok(self):
         return self.scan_status == ScanStatus.ok.id
-
-    def has_vulnerabilities(self):
-        return self.vulnerabilities.all().exists()

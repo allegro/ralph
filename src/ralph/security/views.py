@@ -19,33 +19,26 @@ class ScanStatusInChangeListMixin(object):
         )
         return qs
 
+    def _to_span(self, css, text):
+        return'<span class="{}">{}</span>'.format(css, text)
+
     def scan_status(self, obj):
         try:
             scan = obj.securityscan
         except ObjectDoesNotExist:
-            html = '<span title="No scan so far">-</span>'
+            html = self._to_span('', 'No scan')
         else:
             if scan.is_ok:
                 if obj.vulnerabilities_count > 0:
-                    icon_name, desc = "fa-times", _(
-                        "Scan succeed. Found vulnerabilities: {}".format(
-                            scan.vulnerabilities.count()
+                    html = self._to_span(
+                        "alert", "Got vulnerabilities: {}".format(
+                            obj.vulnerabilities_count
                         )
                     )
                 else:
-                    icon_name, desc = "fa-check", _(
-                        "Scan succeed. Host is clean so far."
-                    )
+                    html = self._to_span("success", "Host clean")
             else:
-                icon_name, desc = "fa-exclamation", _(
-                    "Scan failed.".format(
-                        scan.vulnerabilities.count()
-                    )
-                )
-            html = '<i title="{desc}" class="fa {icon_name}" aria-hidden="true"></i>'.format(  # noqa
-                icon_name=icon_name,
-                desc=desc,
-            )
+                html = self._to_span("warning", "Scan failed")
         return mark_safe(html)
     scan_status.short_description = _('Security scan')
 
