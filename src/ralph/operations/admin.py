@@ -40,7 +40,7 @@ class OperationAdminForm(RalphAdminForm):
 @register(Operation)
 class OperationAdmin(AttachmentsMixin, RalphAdmin):
     search_fields = ['title', 'description', 'ticket_id']
-    list_filter = ['type', 'status']
+    list_filter = ['type', 'status', 'asignee', 'ticket_id', 'base_objects']
     list_display = ['title', 'type', 'status', 'asignee', 'get_ticket_url']
     raw_id_fields = ['asignee', 'base_objects']
     resource_class = resources.OperationResource
