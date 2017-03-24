@@ -16,8 +16,8 @@
     {% table asset_details.get_table_content %}
     <form action={% url 'inventory_tag' %} method="POST">
       {% csrf_token %}
-      <input type="hidden" name="asset_id" value={{ asset_id }} />
-      <input type="hidden" name="answer" value={{ answer }} />
+      <input type="hidden" name="asset_id" value="{{ asset_id }}" />
+      <input type="hidden" name="answer" value="{{ answer }}" />
       <a href={% url 'current_user_info' %} class= "button small alert left">
           Cancel</a>
       <input type="submit" name="confirm_button" value="Yes"
