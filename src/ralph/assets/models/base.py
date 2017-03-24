@@ -69,10 +69,13 @@ class BaseObject(
     """Base object mixin."""
     # TODO: dynamically limit parent basing on model
     parent = models.ForeignKey(
-        'self', null=True, blank=True, related_name='children'
+        'self', null=True, blank=True, related_name='children',
+        on_delete=models.SET_NULL
     )
     remarks = models.TextField(blank=True)
-    service_env = models.ForeignKey('ServiceEnvironment', null=True)
+    service_env = models.ForeignKey(
+        'ServiceEnvironment', null=True, on_delete=models.PROTECT
+    )
 
     @property
     def _str_with_type(self):
@@ -89,7 +92,8 @@ class BaseObject(
         help_text=_(
             'path to configuration for this object, for example path to puppet '
             'class'
-        )
+        ),
+        on_delete=models.PROTECT
     )
 
     @property
