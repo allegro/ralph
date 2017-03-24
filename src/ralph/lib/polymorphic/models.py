@@ -105,6 +105,12 @@ class PolymorphicQuerySet(models.QuerySet):
         clone._polymorphic_prefetch_related = (
             self._polymorphic_prefetch_related.copy()
         )
+        clone._annotate_kwargs = (
+            self._annotate_kwargs.copy()
+        )
+        clone._annotate_args = (
+            self._annotate_args.copy()
+        )
         return clone
 
     def polymorphic_select_related(self, **kwargs):
