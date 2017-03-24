@@ -4,7 +4,9 @@ from django.db.models import Count
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.admin import RalphAdmin, register
 from ralph.admin.views.extra import RalphDetailView
+from ralph.security.models import Vulnerability
 
 
 class ScanStatusInChangeListMixin(object):
@@ -41,6 +43,12 @@ class ScanStatusInChangeListMixin(object):
                 html = self._to_span("warning", "Scan failed")
         return mark_safe(html)
     scan_status.short_description = _('Security scan')
+
+
+@register(Vulnerability)
+class Vulnerability(RalphAdmin):
+    search_fields = ['name', ]
+
 
 
 class SecurityInfo(RalphDetailView):

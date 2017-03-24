@@ -11,6 +11,7 @@ from django.db.models import Prefetch, Q
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin import filters
 from ralph.admin.filters import (
     BaseObjectHostnameFilter,
     ChoicesListFilter,
@@ -339,17 +340,19 @@ class DataCenterAssetAdmin(
         'ethernet_set__ipaddress__address', 'ethernet_set__ipaddress__hostname'
     ]
     list_filter = [
-        'status', 'barcode', 'sn', 'hostname', 'invoice_no', 'invoice_date',
-        'order_no', 'model__name',
-        ('model__category', RelatedAutocompleteFieldListFilter), 'service_env',
-        'configuration_path',
-        ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
-        MacAddressFilter,
-        'depreciation_end_date', 'force_depreciation', 'remarks',
-        'budget_info', 'rack', 'rack__server_room',
-        'rack__server_room__data_center', 'position', 'property_of',
-        LiquidatedStatusFilter, IPFilter, TagsListFilter,
-        'fibrechannelcard_set__wwn'
+        #TODO:: revert it
+        #'status', 'barcode', 'sn', 'hostname', 'invoice_no', 'invoice_date',
+        #'order_no', 'model__name',
+        #('model__category', RelatedAutocompleteFieldListFilter), 'service_env',
+        #'configuration_path',
+        #('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
+        #MacAddressFilter,
+        #'depreciation_end_date', 'force_depreciation', 'remarks',
+        #'budget_info', 'rack', 'rack__server_room',
+        #'rack__server_room__data_center', 'position', 'property_of',
+        #LiquidatedStatusFilter, IPFilter, TagsListFilter,
+        #'fibrechannelcard_set__wwn',
+        ('securityscan__vulnerabilities', filters.RelatedAutocompleteFieldListFilter),
     ]
     date_hierarchy = 'created'
     list_select_related = [
