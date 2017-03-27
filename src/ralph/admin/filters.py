@@ -226,7 +226,6 @@ class VulnerabilitesByPatchDeadline(DateListFilter):
                 filter['vulnerabilities__patch_deadline__gte'] = date_start
             if date_end:
                 filter['vulnerabilities__patch_deadline__lte'] = date_end
-            print(filter)
             base_objects_ids = SecurityScan.objects.filter(
                 **filter
             ).values_list('base_object_id', flat=True)
