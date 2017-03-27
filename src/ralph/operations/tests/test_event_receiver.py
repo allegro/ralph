@@ -1,9 +1,9 @@
 import json
 from os import path
 
-from ralph.tests import RalphTestCase
-from ralph.operations.models import Operation, OperationStatus
 from ralph.operations.changemanagement.subscribtions import receive_chm_event
+from ralph.operations.models import Operation, OperationStatus
+from ralph.tests import RalphTestCase
 
 
 class ChangesReceiverTestCase(RalphTestCase):

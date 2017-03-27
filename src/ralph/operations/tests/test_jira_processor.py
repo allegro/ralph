@@ -1,10 +1,10 @@
-from datetime import datetime
 import json
+from datetime import datetime
 from os import path
 
 from ralph.operations.changemanagement import jira
-from ralph.tests import RalphTestCase
 from ralph.operations.models import OperationStatus
+from ralph.tests import RalphTestCase
 
 
 class JiraProcessorTestCase(RalphTestCase):
