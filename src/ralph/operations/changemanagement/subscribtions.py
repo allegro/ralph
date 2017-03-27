@@ -1,8 +1,9 @@
-import pyhermes
-from django.db import transaction
-from django.contrib.auth import get_user_model
-from django.conf import settings
 from importlib import import_module
+
+import pyhermes
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.db import transaction
 
 
 def _safe_load_user(username):
