@@ -66,7 +66,7 @@ class JiraProcessorTestCase(RalphTestCase):
         self.assertEqual('SOMEPROJ-42', jira.get_ticket_id(self.jira_event))
 
     def test_get_operation_name(self):
-        self.assertEqual('Change-OP', jira.get_operation_name(self.jira_event))
+        self.assertEqual('Change', jira.get_operation_name(self.jira_event))
 
     def test_get_operation_status(self):
         self.assertEqual(
