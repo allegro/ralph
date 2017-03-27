@@ -7,11 +7,11 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.admin import RalphAdmin, RalphAdminForm, RalphTabularInline, register
 from ralph.admin.filters import (
     BaseObjectHostnameFilter,
-    DateListFilter,
     IPFilter,
     MacAddressFilter,
     TagsListFilter,
-    TreeRelatedAutocompleteFilterWithDescendants
+    TreeRelatedAutocompleteFilterWithDescendants,
+    VulnerabilitesByPatchDeadline
 )
 from ralph.assets.models.components import Ethernet
 from ralph.assets.views import ComponentsAdminView, RalphDetailViewAdmin
@@ -97,8 +97,8 @@ class VirtualServerAdmin(
     list_filter = [
         BaseObjectHostnameFilter, 'sn', 'service_env', IPFilter,
         'parent', TagsListFilter, MacAddressFilter,
-        ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants)  # noqa
-        ('securityscan__vulnerabilities__patch_deadline', DateListFilter),
+        ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
+        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),
     ]
     list_display = [
         'hostname', 'type', 'sn', 'service_env', 'configuration_path',
@@ -213,7 +213,7 @@ class CloudHostAdmin(
     list_filter = [
         BaseObjectHostnameFilter, 'cloudprovider', 'service_env',
         'cloudflavor', TagsListFilter,
-        ('securityscan__vulnerabilities__patch_deadline', DateListFilter),
+        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),
     ]
     list_select_related = [
         'cloudflavor', 'cloudprovider', 'parent__cloudproject',

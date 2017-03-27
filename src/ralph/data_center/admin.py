@@ -14,13 +14,13 @@ from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import (
     BaseObjectHostnameFilter,
     ChoicesListFilter,
-    DateListFilter,
     IPFilter,
     LiquidatedStatusFilter,
     MacAddressFilter,
     RelatedAutocompleteFieldListFilter,
     TagsListFilter,
-    TreeRelatedAutocompleteFilterWithDescendants
+    TreeRelatedAutocompleteFilterWithDescendants,
+    VulnerabilitesByPatchDeadline
 )
 from ralph.admin.helpers import generate_html_link
 from ralph.admin.m2m import RalphTabularM2MInline
@@ -351,7 +351,7 @@ class DataCenterAssetAdmin(
         'rack__server_room__data_center', 'position', 'property_of',
         LiquidatedStatusFilter, IPFilter, TagsListFilter,
         'fibrechannelcard_set__wwn',
-        ('securityscan__vulnerabilities__patch_deadline', DateListFilter),
+        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),
     ]
     date_hierarchy = 'created'
     list_select_related = [
@@ -560,7 +560,7 @@ class DCHostAdmin(ScanStatusInChangeListMixin, RalphAdmin):
         ('content_type', DCHostTypeListFilter),
         MacAddressFilter,
         IPFilter,
-        ('securityscan__vulnerabilities__patch_deadline', DateListFilter),
+        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),
     ]
     list_select_related = [
         'content_type',

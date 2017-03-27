@@ -177,6 +177,23 @@ class DateListFilter(BaseCustomFilter):
             for param in self.expected_parameters()
         ]
 
+    def to_python(self, date):
+        try:
+            date_start = datetime.strptime(
+                date[0], get_format('DATE_INPUT_FORMATS')[0]
+            )
+        except ValueError:
+            date_start = None
+
+        try:
+            date_end = datetime.strptime(
+                date[1], get_format('DATE_INPUT_FORMATS')[0]
+            )
+        except ValueError:
+            date_end = None
+
+        return date_start, date_end
+
     def queryset(self, request, queryset):
         if any(self.value()):
             date = self.value()
@@ -213,6 +230,21 @@ class DateListFilter(BaseCustomFilter):
                 get_format('DATE_INPUT_FORMATS')[0]
             )
         }
+
+
+class VulnerabilitesByPatchDeadline(DateListFilter):
+
+    def queryset(self, request, queryset):
+        from ralph.security.models import SecurityScan
+        if any(self.value()):
+            date_start, date_end = self.to_python(self.value())
+            if all([date_start, date_end]):
+                base_objects_ids = SecurityScan.objects.filter(
+                    vulnerabilities__patch_deadline__gte=date_start,
+                    vulnerabilities__patch_deadline__lte=date_end,
+                ).values_list('base_object_id', flat=True)
+                queryset = queryset.filter(id__in=base_objects_ids)
+        return queryset
 
 
 class NumberListFilter(DateListFilter):
