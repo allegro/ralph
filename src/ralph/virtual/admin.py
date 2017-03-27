@@ -98,7 +98,7 @@ class VirtualServerAdmin(
         BaseObjectHostnameFilter, 'sn', 'service_env', IPFilter,
         'parent', TagsListFilter, MacAddressFilter,
         ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
-        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),
+        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),  # noqa
     ]
     list_display = [
         'hostname', 'type', 'sn', 'service_env', 'configuration_path',
@@ -213,7 +213,7 @@ class CloudHostAdmin(
     list_filter = [
         BaseObjectHostnameFilter, 'cloudprovider', 'service_env',
         'cloudflavor', TagsListFilter,
-        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),
+        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),  # noqa
     ]
     list_select_related = [
         'cloudflavor', 'cloudprovider', 'parent__cloudproject',

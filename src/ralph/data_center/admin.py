@@ -351,7 +351,7 @@ class DataCenterAssetAdmin(
         'rack__server_room__data_center', 'position', 'property_of',
         LiquidatedStatusFilter, IPFilter, TagsListFilter,
         'fibrechannelcard_set__wwn',
-        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),
+        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),  # noqa
     ]
     date_hierarchy = 'created'
     list_select_related = [
@@ -560,7 +560,7 @@ class DCHostAdmin(ScanStatusInChangeListMixin, RalphAdmin):
         ('content_type', DCHostTypeListFilter),
         MacAddressFilter,
         IPFilter,
-        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),
+        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),  # noqa
     ]
     list_select_related = [
         'content_type',
