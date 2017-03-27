@@ -10,8 +10,7 @@ from django.core.urlresolvers import reverse
 from django.db.models import Prefetch, Q
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, RalphTabularInline, register
-from ralph.admin import filters
+from ralph.admin import filters, RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import (
     BaseObjectHostnameFilter,
     ChoicesListFilter,

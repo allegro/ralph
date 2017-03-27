@@ -7,7 +7,9 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.base import BaseObject
 from ralph.lib.mixins.models import (
-    AdminAbsoluteUrlMixin, TaggableMixin, TimeStampMixin,
+    AdminAbsoluteUrlMixin,
+    TaggableMixin,
+    TimeStampMixin
 )
 from ralph.lib.permissions import PermByFieldMixin
 
