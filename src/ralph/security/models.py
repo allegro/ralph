@@ -6,7 +6,11 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.base import BaseObject
-from ralph.lib.mixins.models import TaggableMixin, TimeStampMixin
+from ralph.lib.mixins.models import (
+    AdminAbsoluteUrlMixin,
+    TaggableMixin,
+    TimeStampMixin
+)
 from ralph.lib.permissions import PermByFieldMixin
 
 
@@ -27,6 +31,7 @@ class Risk(Choices):
 
 
 class Vulnerability(
+    AdminAbsoluteUrlMixin,
     PermByFieldMixin,
     TimeStampMixin,
     TaggableMixin,
@@ -50,6 +55,13 @@ class Vulnerability(
     @property
     def is_deadline_exceeded(self):
         return self.patch_deadline < datetime.now()
+
+    def __str__(self):
+        deadline = (
+            self.patch_deadline.isoformat().split('T')[0] if
+            self.patch_deadline else '-'
+        )
+        return "{} ({})".format(self.name, deadline)
 
 
 class SecurityScan(

@@ -211,6 +211,7 @@ class AutocompleteList(SuggestView):
         """
         Return IDs for related models.
         """
+        #TODO:: what if search_fileds are empty
         search_fields = ralph_site._registry[model].search_fields
         if not search_fields:
             return []

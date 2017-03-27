@@ -10,7 +10,7 @@ from django.core.urlresolvers import reverse
 from django.db.models import Prefetch, Q
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin import filters, RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import (
     BaseObjectHostnameFilter,
     ChoicesListFilter,
@@ -349,7 +349,11 @@ class DataCenterAssetAdmin(
         'budget_info', 'rack', 'rack__server_room',
         'rack__server_room__data_center', 'position', 'property_of',
         LiquidatedStatusFilter, IPFilter, TagsListFilter,
-        'fibrechannelcard_set__wwn'
+        'fibrechannelcard_set__wwn',
+        (
+            'securityscan__vulnerabilities',
+            filters.RelatedAutocompleteFieldListFilter
+        ),
     ]
     date_hierarchy = 'created'
     list_select_related = [
@@ -558,6 +562,10 @@ class DCHostAdmin(ScanStatusInChangeListMixin, RalphAdmin):
         ('content_type', DCHostTypeListFilter),
         MacAddressFilter,
         IPFilter,
+        (
+            'securityscan__vulnerabilities',
+            filters.RelatedAutocompleteFieldListFilter
+        ),
     ]
     list_select_related = [
         'content_type',
