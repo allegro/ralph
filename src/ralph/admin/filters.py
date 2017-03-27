@@ -220,14 +220,14 @@ class VulnerabilitesByPatchDeadline(DateListFilter):
     def queryset(self, request, queryset):
         from ralph.security.models import SecurityScan
         if any(self.value()):
-            filter = {}
+            filters = {}
             date_start, date_end = self.value()
             if date_start:
-                filter['vulnerabilities__patch_deadline__gte'] = date_start
+                filters['vulnerabilities__patch_deadline__gte'] = date_start
             if date_end:
-                filter['vulnerabilities__patch_deadline__lte'] = date_end
+                filters['vulnerabilities__patch_deadline__lte'] = date_end
             base_objects_ids = SecurityScan.objects.filter(
-                **filter
+                **filters
             ).values_list('base_object_id', flat=True)
             queryset = queryset.filter(id__in=base_objects_ids)
         return queryset
