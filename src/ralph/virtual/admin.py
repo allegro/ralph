@@ -9,6 +9,7 @@ from ralph.admin.filters import (
     BaseObjectHostnameFilter,
     IPFilter,
     MacAddressFilter,
+    RelatedAutocompleteFieldListFilter,
     TagsListFilter,
     TreeRelatedAutocompleteFilterWithDescendants,
     VulnerabilitesByPatchDeadline
@@ -99,6 +100,9 @@ class VirtualServerAdmin(
         'parent', TagsListFilter, MacAddressFilter,
         ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
         ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),  # noqa
+        (
+            'securityscan__vulnerabilities', RelatedAutocompleteFieldListFilter
+        ),
     ]
     list_display = [
         'hostname', 'type', 'sn', 'service_env', 'configuration_path',
@@ -214,6 +218,9 @@ class CloudHostAdmin(
         BaseObjectHostnameFilter, 'cloudprovider', 'service_env',
         'cloudflavor', TagsListFilter,
         ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),  # noqa
+        (
+            'securityscan__vulnerabilities', RelatedAutocompleteFieldListFilter
+        ),
     ]
     list_select_related = [
         'cloudflavor', 'cloudprovider', 'parent__cloudproject',
