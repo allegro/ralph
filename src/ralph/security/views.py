@@ -50,7 +50,6 @@ class Vulnerability(RalphAdmin):
     search_fields = ['name', ]
 
 
-
 class SecurityInfo(RalphDetailView):
 
     icon = 'lock'
