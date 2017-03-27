@@ -11,7 +11,8 @@ from ralph.admin.filters import (
     MacAddressFilter,
     RelatedAutocompleteFieldListFilter,
     TagsListFilter,
-    TreeRelatedAutocompleteFilterWithDescendants
+    TreeRelatedAutocompleteFilterWithDescendants,
+    VulnerabilitesByPatchDeadline
 )
 from ralph.assets.models.components import Ethernet
 from ralph.assets.views import ComponentsAdminView, RalphDetailViewAdmin
@@ -98,6 +99,7 @@ class VirtualServerAdmin(
         BaseObjectHostnameFilter, 'sn', 'service_env', IPFilter,
         'parent', TagsListFilter, MacAddressFilter,
         ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
+        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),  # noqa
         (
             'securityscan__vulnerabilities', RelatedAutocompleteFieldListFilter
         ),
@@ -215,6 +217,7 @@ class CloudHostAdmin(
     list_filter = [
         BaseObjectHostnameFilter, 'cloudprovider', 'service_env',
         'cloudflavor', TagsListFilter,
+        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),  # noqa
         (
             'securityscan__vulnerabilities', RelatedAutocompleteFieldListFilter
         ),
