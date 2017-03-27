@@ -9,8 +9,9 @@ from ralph.admin.filters import (
     BaseObjectHostnameFilter,
     IPFilter,
     MacAddressFilter,
+    RelatedAutocompleteFieldListFilter,
     TagsListFilter,
-    TreeRelatedAutocompleteFilterWithDescendants
+    TreeRelatedAutocompleteFilterWithDescendants,
 )
 from ralph.assets.models.components import Ethernet
 from ralph.assets.views import ComponentsAdminView, RalphDetailViewAdmin
@@ -96,7 +97,10 @@ class VirtualServerAdmin(
     list_filter = [
         BaseObjectHostnameFilter, 'sn', 'service_env', IPFilter,
         'parent', TagsListFilter, MacAddressFilter,
-        ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants)  # noqa
+        ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
+        (
+            'securityscan__vulnerabilities', RelatedAutocompleteFieldListFilter
+        ),
     ]
     list_display = [
         'hostname', 'type', 'sn', 'service_env', 'configuration_path',
@@ -211,6 +215,9 @@ class CloudHostAdmin(
     list_filter = [
         BaseObjectHostnameFilter, 'cloudprovider', 'service_env',
         'cloudflavor', TagsListFilter,
+        (
+            'securityscan__vulnerabilities', RelatedAutocompleteFieldListFilter
+        ),
     ]
     list_select_related = [
         'cloudflavor', 'cloudprovider', 'parent__cloudproject',
