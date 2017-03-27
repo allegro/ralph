@@ -5,6 +5,9 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
+from ralph.assets.models import BaseObject
+from ralph.operations.models import Operation, OperationType
+
 
 def _safe_load_user(username):
     """Loads an existing user or creates a new one."""
@@ -25,7 +28,6 @@ def _safe_load_user(username):
 
 def _safe_load_operation_type(operation_name):
     """Load operation type by its name. None, if not found."""
-    from ralph.operations.models import OperationType
 
     try:
         return OperationType.objects.get(name=operation_name)
@@ -36,8 +38,6 @@ def _safe_load_operation_type(operation_name):
 def _load_base_objects(object_ids):
     """Load base objects with the specified ids. [] if none is found."""
 
-    from ralph.assets.models import BaseObject
-
     return BaseObject.objects.filter(id__in=object_ids)
 
 
@@ -45,8 +45,6 @@ def _load_base_objects(object_ids):
 def record_operation(title, status, description, operation_name, ticket_id,
                      assignee_username=None, created_date=None,
                      update_date=None, resolution_date=None, bo_ids=None):
-
-    from ralph.operations.models import Operation
 
     operation_type = _safe_load_operation_type(operation_name)
 

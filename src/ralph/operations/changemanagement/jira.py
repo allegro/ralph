@@ -3,6 +3,8 @@ from datetime import timezone
 from dateutil.parser import parse as parse_datetime
 from django.conf import settings
 
+from ralph.operations.models import OperationStatus
+
 
 def get_title(event_data):
     return event_data['issue']['fields']['summary']
@@ -17,8 +19,6 @@ def get_ticket_id(event_data):
 
 
 def get_operation_status(event_data):
-    from ralph.operations.models import OperationStatus
-
     status_conf = settings.CHANGE_MGMT_OPERATION_STATUSES
     status_map = {
         status_conf['OPENED']: OperationStatus.opened,
