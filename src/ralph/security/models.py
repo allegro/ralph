@@ -70,3 +70,7 @@ class SecurityScan(
         on_delete=models.CASCADE,
     )
     vulnerabilities = models.ManyToManyField(Vulnerability, blank=True)
+
+    @property
+    def is_ok(self):
+        return self.scan_status == ScanStatus.ok.id

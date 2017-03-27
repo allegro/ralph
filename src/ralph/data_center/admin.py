@@ -60,7 +60,7 @@ from ralph.networks.forms import SimpleNetworkWithManagementIPForm
 from ralph.networks.models.networks import Network
 from ralph.networks.views import NetworkWithTerminatorsView
 from ralph.operations.views import OperationViewReadOnlyForExisiting
-from ralph.security.views import SecurityInfo
+from ralph.security.views import ScanStatusInChangeListMixin, SecurityInfo
 from ralph.supports.models import BaseObjectsSupport
 
 
@@ -287,6 +287,7 @@ class DataCenterAssetSecurityInfo(SecurityInfo):
 
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(
+    ScanStatusInChangeListMixin,
     ActiveDeploymentMessageMixin,
     MulitiAddAdminMixin,
     TransitionAdminMixin,
@@ -323,6 +324,7 @@ class DataCenterAssetAdmin(
         'show_location',
         'service_env',
         'configuration_path',
+        'scan_status',
     ]
     multiadd_summary_fields = list_display + ['rack']
     one_of_mulitvalue_required = ['sn', 'barcode']
@@ -528,7 +530,7 @@ class DCHostChangeList(ChangeList):
 
 
 @register(DCHost)
-class DCHostAdmin(RalphAdmin):
+class DCHostAdmin(ScanStatusInChangeListMixin, RalphAdmin):
     search_fields = [
         'remarks',
         'asset__hostname',
@@ -545,6 +547,7 @@ class DCHostAdmin(RalphAdmin):
         'configuration_path',
         'show_location',
         'remarks',
+        'scan_status',
     ]
     # TODO: sn
     # TODO: hostname, DC

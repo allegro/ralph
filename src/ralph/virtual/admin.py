@@ -21,7 +21,7 @@ from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
 from ralph.networks.forms import SimpleNetworkForm
 from ralph.networks.views import NetworkView
-from ralph.security.views import SecurityInfo
+from ralph.security.views import ScanStatusInChangeListMixin, SecurityInfo
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -85,6 +85,7 @@ class VirtualServerLicencesView(RalphDetailViewAdmin):
 
 @register(VirtualServer)
 class VirtualServerAdmin(
+    ScanStatusInChangeListMixin,
     ActiveDeploymentMessageMixin,
     CustomFieldValueAdminMixin,
     TransitionAdminMixin,
@@ -98,7 +99,8 @@ class VirtualServerAdmin(
         ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants)  # noqa
     ]
     list_display = [
-        'hostname', 'type', 'sn', 'service_env', 'configuration_path'
+        'hostname', 'type', 'sn', 'service_env', 'configuration_path',
+        'scan_status'
     ]
     raw_id_fields = ['parent', 'service_env', 'configuration_path']
     fields = [
@@ -200,13 +202,15 @@ class CloudNetworkInline(RalphTabularInline):
 
 
 @register(CloudHost)
-class CloudHostAdmin(CustomFieldValueAdminMixin, RalphAdmin):
+class CloudHostAdmin(
+    ScanStatusInChangeListMixin, CustomFieldValueAdminMixin, RalphAdmin
+):
     list_display = ['hostname', 'get_ip_addresses', 'service_env',
                     'get_cloudproject', 'cloudflavor_name', 'host_id',
-                    'created', 'image_name', 'get_tags']
+                    'created', 'image_name', 'get_tags', 'scan_status']
     list_filter = [
         BaseObjectHostnameFilter, 'cloudprovider', 'service_env',
-        'cloudflavor', TagsListFilter
+        'cloudflavor', TagsListFilter,
     ]
     list_select_related = [
         'cloudflavor', 'cloudprovider', 'parent__cloudproject',
