@@ -58,7 +58,7 @@ class Vulnerability(
 
     def __str__(self):
         deadline = (
-            self.patch_deadline.isoformat().split('T')[0] if
+            self.patch_deadline.strftime('%Y-%m-%d') if
             self.patch_deadline else '-'
         )
         return "{} ({})".format(self.name, deadline)
