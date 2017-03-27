@@ -149,7 +149,7 @@
             "customfield_10802": null,
             "issuetype": {
                 "self": "https://jira.example.com/rest/api/2/issuetype/20",
-                "name": "Change-OP",
+                "name": "Change",
                 "description": "Operational Change Issue Type for Support/Maintenance",
                 "id": "20",
                 "avatarId": 31010,

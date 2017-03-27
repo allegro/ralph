@@ -31,7 +31,7 @@ def _safe_load_operation_type(operation_name):
 
     try:
         return OperationType.objects.get(name=operation_name)
-    except OperationType.DoesNotExits:
+    except OperationType.DoesNotExist:
         return None
 
 
@@ -47,6 +47,10 @@ def record_operation(title, status, description, operation_name, ticket_id,
                      update_date=None, resolution_date=None, bo_ids=None):
 
     operation_type = _safe_load_operation_type(operation_name)
+
+    # NOTE(romcheg): Changes of an unknown type should not be recorded.
+    if operation_type is None:
+        return
 
     operation, _ = Operation.objects.update_or_create(
         ticket_id=ticket_id,
