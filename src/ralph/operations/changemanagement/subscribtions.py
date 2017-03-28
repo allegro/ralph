@@ -1,3 +1,4 @@
+import logging
 from importlib import import_module
 
 import pyhermes
@@ -9,6 +10,9 @@ from ralph.assets.models import BaseObject
 from ralph.operations.models import Operation, OperationType
 
 
+logger = logging.getLogger(__name__)
+
+
 def _safe_load_user(username):
     """Loads an existing user or creates a new one."""
 
@@ -17,11 +21,10 @@ def _safe_load_user(username):
 
     model = get_user_model()
 
-    user, created = model.objects.get_or_create(username=username)
-
-    if created:
-        user.is_active = False
-        user.save()
+    user, _ = model.objects.get_or_create(
+        username=username,
+        defaults={'is_active': False}
+    )
 
     return user
 
@@ -50,6 +53,10 @@ def record_operation(title, status, description, operation_name, ticket_id,
 
     # NOTE(romcheg): Changes of an unknown type should not be recorded.
     if operation_type is None:
+        logger.warning(
+            'Not recording operation with the '
+            'unknown type: {}.'.format(operation_name)
+        )
         return
 
     operation, _ = Operation.objects.update_or_create(
@@ -78,8 +85,8 @@ def receive_chm_event(event_data):
         change_processor = import_module(settings.CHANGE_MGMT_PROCESSOR)
 
         bo_ids = None
-        if settings.CHANGE_MGMT_BO_LOADER:
-            bo_loader = import_module(settings.CHANGE_MGMT_BO_LOADER)
+        if settings.CHANGE_MGMT_BASE_OBJECT_LOADER:
+            bo_loader = import_module(settings.CHANGE_MGMT_BASE_OBJECT_LOADER)
             bo_ids = bo_loader.get_baseobjects_ids(event_data)
 
         record_operation(
@@ -96,7 +103,12 @@ def receive_chm_event(event_data):
             resolution_date=change_processor.get_resolution_date(event_data),
             bo_ids=bo_ids
         )
-
+    except KeyError:
+        # Silence already logged errors.
+        pass
     except Exception as e:
-        # TODO(romcheg): Change this for something sensible
-        raise
+        logger.exception(
+            'Encountered an unexpected failure while handling a change '
+            'management event.',
+            exc_info=e
+        )

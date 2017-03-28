@@ -11,4 +11,3 @@ class RalphAdminConfig(RalphAppConfig):
     def ready(self):
         register_custom_filters()
         super().ready()
-        from ralph.operations.changemanagement.subscribtions import receive_chm_event  # noqa

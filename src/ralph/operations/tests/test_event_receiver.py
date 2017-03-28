@@ -48,3 +48,11 @@ class ChangesReceiverTestCase(RalphTestCase):
 
         with self.assertRaises(Operation.DoesNotExist):
             Operation.objects.get(ticket_id='SOMEPROJ-42')
+
+    def test_no_record_created_unknown_operation_status(self):
+        self.jira_event['issue']['fields']['status']['name'] = 'DEADBEEF'
+
+        receive_chm_event(self.jira_event)
+
+        with self.assertRaises(Operation.DoesNotExist):
+            Operation.objects.get(ticket_id='SOMEPROJ-42')

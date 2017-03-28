@@ -457,7 +457,9 @@ CHANGE_MGMT_OPERATION_STATUSES = {
     )
 }
 
-CHANGE_MGMT_BO_LOADER = os.getenv('CHANGE_MGMT_BO_LOADER', None)
+CHANGE_MGMT_BASE_OBJECT_LOADER = os.getenv(
+    'CHANGE_MGMT_BASE_OBJECT_LOADER', None
+)
 CHANGE_MGMT_PROCESSOR = os.getenv(
     'CHANGE_MGMT_PROCESSOR', 'ralph.operations.changemanagement.jira'
 )

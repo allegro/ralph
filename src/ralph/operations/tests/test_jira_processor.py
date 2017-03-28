@@ -73,3 +73,9 @@ class JiraProcessorTestCase(RalphTestCase):
             OperationStatus.opened,
             jira.get_operation_status(self.jira_event)
         )
+
+    def test_get_operation_status_bad_status_raises_KeyError(self):
+        self.jira_event['issue']['fields']['status']['name'] = 'DEADBEEF'
+
+        with self.assertRaises(KeyError):
+            jira.get_operation_status(self.jira_event)

@@ -1,9 +1,13 @@
+import logging
 from datetime import timezone
 
 from dateutil.parser import parse as parse_datetime
 from django.conf import settings
 
 from ralph.operations.models import OperationStatus
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_title(event_data):
@@ -30,7 +34,15 @@ def get_operation_status(event_data):
         status_conf['BLOCKED']: OperationStatus.blocked
     }
 
-    return status_map[event_data['issue']['fields']['status']['name']]
+    try:
+        status_str = event_data['issue']['fields']['status']['name']
+        return status_map[status_str]
+    except KeyError:
+        logger.error(
+            'Received an operation with unexpected '
+            'status: {}. Please check the settings.'.format(status_str)
+        )
+        raise
 
 
 def get_operation_name(event_data):
