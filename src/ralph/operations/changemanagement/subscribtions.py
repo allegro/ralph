@@ -10,6 +10,14 @@ from ralph.assets.models import BaseObject
 from ralph.operations.models import Operation, OperationType
 
 
+change_processor = import_module(settings.CHANGE_MGMT_PROCESSOR)
+base_object_loader = None
+
+if settings.CHANGE_MGMT_BASE_OBJECT_LOADER:
+    global base_object_loader
+    base_object_loader = import_module(settings.CHANGE_MGMT_BASE_OBJECT_LOADER)
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -47,7 +55,8 @@ def _load_base_objects(object_ids):
 @transaction.atomic
 def record_operation(title, status, description, operation_name, ticket_id,
                      assignee_username=None, created_date=None,
-                     update_date=None, resolution_date=None, bo_ids=None):
+                     update_date=None, resolution_date=None,
+                     base_object_ids=None):
 
     operation_type = _safe_load_operation_type(operation_name)
 
@@ -73,8 +82,8 @@ def record_operation(title, status, description, operation_name, ticket_id,
         )
     )
 
-    if bo_ids:
-        operation.base_objects = _load_base_objects(bo_ids)
+    if base_object_ids:
+        operation.base_objects = _load_base_objects(base_object_ids)
         operation.save()
 
 
@@ -82,13 +91,6 @@ def record_operation(title, status, description, operation_name, ticket_id,
 def receive_chm_event(event_data):
     """Process messages from the change management system."""
     try:
-        change_processor = import_module(settings.CHANGE_MGMT_PROCESSOR)
-
-        bo_ids = None
-        if settings.CHANGE_MGMT_BASE_OBJECT_LOADER:
-            bo_loader = import_module(settings.CHANGE_MGMT_BASE_OBJECT_LOADER)
-            bo_ids = bo_loader.get_baseobjects_ids(event_data)
-
         record_operation(
             title=change_processor.get_title(event_data),
             description=change_processor.get_description(event_data),
@@ -101,7 +103,10 @@ def receive_chm_event(event_data):
             created_date=change_processor.get_creation_date(event_data),
             update_date=change_processor.get_last_update_date(event_data),
             resolution_date=change_processor.get_resolution_date(event_data),
-            bo_ids=bo_ids
+            base_object_ids=(
+                base_object_loader.get_baseobjects_ids(event_data)
+                if base_object_loader is not None else None
+            )
         )
     except KeyError:
         # Silence already logged errors.
