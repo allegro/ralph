@@ -75,7 +75,7 @@ def record_operation(title, status, description, operation_name, ticket_id,
             description=description,
             status=status,
             type=operation_type,
-            asignee=_safe_load_user(assignee_username),
+            assignee=_safe_load_user(assignee_username),
             created_date=created_date,
             update_date=update_date,
             resolved_date=resolution_date

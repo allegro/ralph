@@ -19,7 +19,7 @@ class ChangesReceiverTestCase(RalphTestCase):
 
         op = Operation.objects.get(ticket_id='SOMEPROJ-42')
 
-        self.assertEqual('username.fortytwo', op.asignee.username)
+        self.assertEqual('username.fortytwo', op.assignee.username)
         self.assertEqual(OperationStatus.opened, op.status)
 
     def test_recorded_operation_gets_updated(self):
@@ -30,7 +30,7 @@ class ChangesReceiverTestCase(RalphTestCase):
 
         op = Operation.objects.get(ticket_id='SOMEPROJ-42')
         self.assertEqual(OperationStatus.opened, op.status)
-        self.assertEqual(None, op.asignee)
+        self.assertEqual(None, op.assignee)
 
         self.jira_event['issue']['fields']['assignee'] = assignee_bak
         self.jira_event['issue']['fields']['status']['name'] = 'Closed'
@@ -39,7 +39,7 @@ class ChangesReceiverTestCase(RalphTestCase):
 
         op = Operation.objects.get(ticket_id='SOMEPROJ-42')
         self.assertEqual(OperationStatus.closed, op.status)
-        self.assertEqual('username.fortytwo', op.asignee.username)
+        self.assertEqual('username.fortytwo', op.assignee.username)
 
     def test_no_record_created_unknown_operation_type(self):
         self.jira_event['issue']['fields']['issuetype']['name'] = 'DEADBEEF'

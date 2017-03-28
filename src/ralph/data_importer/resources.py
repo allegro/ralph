@@ -699,9 +699,9 @@ class OperationResource(RalphModelResource):
         widget=widgets.ManyToManyWidget(base.BaseObject),
         default=[],
     )
-    asignee = fields.Field(
-        column_name='asignee',
-        attribute='asignee',
+    assignee = fields.Field(
+        column_name='assignee',
+        attribute='assignee',
         widget=UserWidget(get_user_model()),
     )
 

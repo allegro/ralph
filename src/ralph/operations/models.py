@@ -72,10 +72,10 @@ class Operation(AdminAbsoluteUrlMixin, TaggableMixin, models.Model):
         verbose_name=_('status'), choices=OperationStatus(),
         default=OperationStatus.opened.id,
     )
-    asignee = models.ForeignKey(
+    assignee = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name='operations',
-        verbose_name=_('asignee'),
+        verbose_name=_('assignee'),
         null=True,
         blank=True,
         on_delete=models.PROTECT,
