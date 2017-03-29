@@ -22,6 +22,21 @@
       {% for plugin, options in plugins.items %}
         Chartist.plugins.{{ plugin }}({{ options }})(graph);
       {% endfor %}
+
+    function gotoByClick(evt) {
+      var metaStr = event.target.getAttribute("ct:meta")
+      meta = Chartist.deserialize(metaStr)
+      if (meta && 'clickUrl' in meta) {
+        window.location = meta.clickUrl;
+      }
+    }
+
+    var clickable = jQuery('.ct-point, .ct-bar, .ct-pie', '.ct-series');
+    $(document)
+      .on('click', clickable, function(event) {
+            gotoByClick(event);
+      });
+
     });
   }(ralph.jQuery))
 </script>

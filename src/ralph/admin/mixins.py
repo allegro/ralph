@@ -211,7 +211,22 @@ class RalphAdminChecks(admin.checks.ModelAdminChecks):
         return []
 
 
-class RalphAdminMixin(RalphAutocompleteMixin):
+class DashboardChangelistMixin(object):
+
+    def _is_graph_preview_view(self, request):
+        return request.GET.get('graph-query', '')
+
+    def get_list_filter(self, request):
+        from ralph.dashboards.admin_filters import ByGraphFilter
+        filters = super().get_list_filter(request) or []
+        is_graph_model = getattr(self.model, '_allow_in_dashboard', False)
+        if is_graph_model and ByGraphFilter not in filters:
+            filters.append(ByGraphFilter,)
+
+        return filters
+
+
+class RalphAdminMixin(DashboardChangelistMixin, RalphAutocompleteMixin):
     """Ralph admin mixin."""
 
     list_views = None
@@ -273,6 +288,9 @@ class RalphAdminMixin(RalphAutocompleteMixin):
         for view in self.list_views:
             views.append(view)
         extra_context['list_views'] = views
+        extra_context['is_graph_preview_view'] = self._is_graph_preview_view(
+            request
+        )
         if self.get_actions(request) or self.list_filter:
             extra_context['has_filters'] = True
 
