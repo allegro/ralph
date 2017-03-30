@@ -431,6 +431,47 @@ DOMAIN_OWNER_TYPE = {
     'TO': 'Technical Owner',
 }
 
+# Change management settings
+
+CHANGE_MGMT_OPERATION_STATUSES = {
+    'OPENED': os.getenv(
+        'CHANGE_MGMT_OPERATION_STATUS_OPENED', 'Open'
+    ),
+    'IN_PROGRESS': os.getenv(
+        'CHANGE_MGMT_OPERATION_STATUS_IN_PROGRESS', 'In Progress'
+    ),
+    'RESOLVED': os.getenv(
+        'CHANGE_MGMT_OPERATION_STATUS_RESOLVED', 'Resolved'
+    ),
+    'CLOSED': os.getenv(
+        'CHANGE_MGMT_OPERATION_STATUS_CLOSED', 'Closed'
+    ),
+    'REOPENED': os.getenv(
+        'CHANGE_MGMT_OPERATION_STATUS_REOPENED', 'Reopened'
+    ),
+    'TODO': os.getenv(
+        'CHANGE_MGMT_OPERATION_STATUS_TODO', 'Todo'
+    ),
+    'BLOCKED': os.getenv(
+        'CHANGE_MGMT_OPERATION_STATUS_BLOCKED', 'Blocked'
+    )
+}
+
+CHANGE_MGMT_BASE_OBJECT_LOADER = os.getenv(
+    'CHANGE_MGMT_BASE_OBJECT_LOADER', None
+)
+CHANGE_MGMT_PROCESSOR = os.getenv(
+    'CHANGE_MGMT_PROCESSOR', 'ralph.operations.changemanagement.jira'
+)
+
+HERMES_CHANGE_MGMT_TOPICS = {
+    'CHANGES': os.getenv(
+        'HERMES_CHANGE_MGMT_CHANGES_TOPIC', 'hermes.changemanagement.changes'
+    )
+}
+
+
+# Hermes settings
 
 ENABLE_HERMES_INTEGRATION = bool_from_env('ENABLE_HERMES_INTEGRATION')
 HERMES = json.loads(os.environ.get('HERMES', '{}'))

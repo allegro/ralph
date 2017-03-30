@@ -24,6 +24,9 @@ class OperationStatus(Choices):
     in_progress = _('in progress')
     resolved = _('resolved')
     closed = _('closed')
+    reopened = _('reopened')
+    todo = _('todo')
+    blocked = _('blocked')
 
 
 class OperationType(
@@ -77,7 +80,7 @@ class Operation(AdminAbsoluteUrlMixin, TaggableMixin, models.Model):
         blank=True,
         on_delete=models.PROTECT,
     )
-    ticket_id = TicketIdField()
+    ticket_id = TicketIdField(unique=True, verbose_name=_('ticket id'))
     created_date = models.DateTimeField(
         null=True, blank=True, verbose_name=_('created date'),
     )
