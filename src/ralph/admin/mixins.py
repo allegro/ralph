@@ -221,7 +221,7 @@ class DashboardChangelistMixin(object):
         filters = super().get_list_filter(request) or []
         is_graph_model = getattr(self.model, '_allow_in_dashboard', False)
         if is_graph_model and ByGraphFilter not in filters:
-            filters.append(ByGraphFilter,)
+            filters.append(ByGraphFilter)
 
         return filters
 
