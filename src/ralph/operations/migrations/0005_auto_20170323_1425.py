@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='operation',
             name='ticket_id',
-            field=ralph.lib.mixins.fields.TicketIdField(null=True, unique=True, max_length=200, verbose_name='ticket id', blank=True, help_text='External system ticket identifier'),
+            field=ralph.lib.mixins.fields.TicketIdField(null=True, unique=False, max_length=200, verbose_name='ticket id', blank=True, help_text='External system ticket identifier'),
         ),
     ]
