@@ -10,6 +10,7 @@ class ByGraphFilter(admin.SimpleListFilter):
     title = _('Graph ID')
     parameter_name = 'graph-query'
     sep = GRAPH_QUERY_SEP
+    template = 'admin/filters/by-graph.html'
 
     def lookups(self, request, model_admin):
         return (
