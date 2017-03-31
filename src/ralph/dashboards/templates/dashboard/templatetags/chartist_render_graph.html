@@ -22,6 +22,31 @@
       {% for plugin, options in plugins.items %}
         Chartist.plugins.{{ plugin }}({{ options }})(graph);
       {% endfor %}
+
+      graph.on("created", function () {
+        function gotUrl(meta) {
+          return ('clickUrl' in meta) ? true : false;
+        }
+
+        function redirectOnClick(item) {
+          var meta = Chartist.deserialize(item.getAttribute("ct:meta"));
+          if (meta && gotUrl(meta)) {
+            window.location = meta.clickUrl;
+          }
+        }
+
+        var clickable = jQuery('.ct-point, .ct-bar, .ct-pie', '.ct-series');
+        clickable.each(function() {
+          jQuery(this).on('click', function() {
+            redirectOnClick(event.target);
+          });
+
+          if (gotUrl(Chartist.deserialize(this.getAttribute("ct:meta")))) {
+            jQuery(this).css('cursor', 'pointer')
+          }
+        });
+      });
+
     });
   }(ralph.jQuery))
 </script>
