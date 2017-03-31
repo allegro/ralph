@@ -13,6 +13,7 @@ from ralph.lib.mixins.models import (
     TimeStampMixin
 )
 from ralph.lib.permissions import PermByFieldMixin
+from ralph.signals import post_commit
 
 
 class ScanStatus(Choices):
@@ -97,3 +98,5 @@ def scan_vulnerability_changed(sender, instance, **kwargs):
 m2m_changed.connect(
     scan_vulnerability_changed, sender=SecurityScan.vulnerabilities.through
 )
+
+post_commit(scan_vulnerability_changed, SecurityScan)
