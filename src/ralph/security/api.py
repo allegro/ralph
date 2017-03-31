@@ -79,12 +79,6 @@ class SaveSecurityScanSerializer(RalphAPISaveSerializer):
         result = super().to_internal_value(data)
         return result
 
-    def save(self, *args, **kwargs):
-        self.validated_data['is_patched'] = (
-            len(self.validated_data['vulnerabilities']) == 0
-        )
-        super().save(*args, **kwargs)
-
 
 class IPFilter(django_filters.FilterSet):
     ip = django_filters.CharFilter(

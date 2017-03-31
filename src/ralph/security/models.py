@@ -3,6 +3,7 @@ from datetime import datetime
 
 from dj.choices import Choices
 from django.db import models
+from django.db.models.signals import m2m_changed
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.base import BaseObject
@@ -87,3 +88,12 @@ class SecurityScan(
     @property
     def is_ok(self):
         return self.scan_status == ScanStatus.ok.id
+
+
+def scan_vulnerability_changed(sender, instance, **kwargs):
+    instance.is_patched = not instance.vulnerabilities.exists()
+    instance.save()
+
+m2m_changed.connect(
+    scan_vulnerability_changed, sender=SecurityScan.vulnerabilities.through
+)
