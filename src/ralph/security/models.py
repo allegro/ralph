@@ -82,6 +82,7 @@ class SecurityScan(
         on_delete=models.CASCADE,
     )
     vulnerabilities = models.ManyToManyField(Vulnerability, blank=True)
+    is_patched = models.BooleanField(default=False)
 
     @property
     def is_ok(self):
