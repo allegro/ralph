@@ -95,8 +95,4 @@ def scan_vulnerability_changed(sender, instance, **kwargs):
     instance.is_patched = not instance.vulnerabilities.exists()
     instance.save()
 
-m2m_changed.connect(
-    scan_vulnerability_changed, sender=SecurityScan.vulnerabilities.through
-)
-
 post_commit(scan_vulnerability_changed, SecurityScan)
