@@ -10,15 +10,14 @@ from ralph.assets.models import BaseObject
 from ralph.operations.models import Operation, OperationType
 
 
+logger = logging.getLogger(__name__)
+
+
 change_processor = import_module(settings.CHANGE_MGMT_PROCESSOR)
 base_object_loader = None
 
 if settings.CHANGE_MGMT_BASE_OBJECT_LOADER:
-    global base_object_loader
     base_object_loader = import_module(settings.CHANGE_MGMT_BASE_OBJECT_LOADER)
-
-
-logger = logging.getLogger(__name__)
 
 
 def _safe_load_user(username):
@@ -75,7 +74,7 @@ def record_operation(title, status, description, operation_name, ticket_id,
             description=description,
             status=status,
             type=operation_type,
-            asignee=_safe_load_user(assignee_username),
+            assignee=_safe_load_user(assignee_username),
             created_date=created_date,
             update_date=update_date,
             resolved_date=resolution_date
