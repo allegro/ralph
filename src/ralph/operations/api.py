@@ -26,7 +26,7 @@ class OperationViewSet(RalphAPIViewSet):
     queryset = Operation.objects.all().prefetch_related(
         Prefetch(
             lookup='base_objects',
-            queryset=BaseObject.objects.select_related('parent', 'tags')
+            queryset=BaseObject.objects.select_related('parent')
         )
     )
     serializer_class = OperationSerializer
