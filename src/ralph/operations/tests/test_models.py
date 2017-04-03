@@ -7,6 +7,8 @@ from ralph.tests import RalphTestCase
 
 
 class OperationModelsTestCase(RalphTestCase):
+    fixtures = ['operation_types']
+
     def setUp(self):
         self.failure = FailureFactory()
 
