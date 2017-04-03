@@ -8,13 +8,13 @@ import ralph.lib.mixins.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('operations', '0006_auto_20170323_1530'),
+        ('operations', '0008_auto_20170331_0952'),
     ]
 
     operations = [
         migrations.AlterField(
             model_name='operation',
             name='ticket_id',
-            field=ralph.lib.mixins.fields.TicketIdField(help_text='External system ticket identifier', max_length=200, blank=True, unique=True, verbose_name='ticket id', null=True),
+            field=ralph.lib.mixins.fields.TicketIdField(null=True, max_length=200, verbose_name='ticket id', unique=True, blank=True, help_text='External system ticket identifier'),
         ),
     ]
