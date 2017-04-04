@@ -42,7 +42,8 @@ class OperationAdmin(AttachmentsMixin, RalphAdmin):
     search_fields = ['title', 'description', 'ticket_id']
     list_filter = ['type', 'status', 'assignee', 'ticket_id', 'base_objects',
                    'created_date', 'update_date', 'resolved_date']
-    list_display = ['title', 'type', 'status', 'assignee', 'get_ticket_url']
+    list_display = ['title', 'type', 'created_date', 'status', 'assignee',
+                    'get_ticket_url']
     raw_id_fields = ['assignee', 'base_objects']
     resource_class = resources.OperationResource
     form = OperationAdminForm
