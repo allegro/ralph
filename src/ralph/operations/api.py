@@ -30,8 +30,10 @@ class OperationViewSet(RalphAPIViewSet):
         )
     )
     serializer_class = OperationSerializer
-    select_related = [
-        'type', 'assignee'
+    select_related = ['type', 'assignee']
+    filter_fields = [
+        'id', 'title', 'description', 'status', 'ticket_id', 'created_date',
+        'update_date', 'resolved_date', 'type__name'
     ]
 
 
