@@ -4,6 +4,7 @@ from datetime import timezone
 from dateutil.parser import parse as parse_datetime
 from django.conf import settings
 
+from ralph.operations.changemanagement.exceptions import IgnoreOperation
 from ralph.operations.models import OperationStatus
 
 
@@ -42,7 +43,7 @@ def get_operation_status(event_data):
             'Received an operation with unexpected '
             'status: {}. Please check the settings.'.format(status_str)
         )
-        raise
+        raise IgnoreOperation()
 
 
 def get_operation_name(event_data):

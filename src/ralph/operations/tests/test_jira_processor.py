@@ -3,6 +3,7 @@ from datetime import datetime
 from os import path
 
 from ralph.operations.changemanagement import jira
+from ralph.operations.changemanagement.exceptions import IgnoreOperation
 from ralph.operations.models import OperationStatus
 from ralph.tests import RalphTestCase
 
@@ -74,8 +75,8 @@ class JiraProcessorTestCase(RalphTestCase):
             jira.get_operation_status(self.jira_event)
         )
 
-    def test_get_operation_status_bad_status_raises_KeyError(self):
+    def test_get_operation_status_bad_status_raises_IgnoreOperation(self):
         self.jira_event['issue']['fields']['status']['name'] = 'DEADBEEF'
 
-        with self.assertRaises(KeyError):
+        with self.assertRaises(IgnoreOperation):
             jira.get_operation_status(self.jira_event)

@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 
 from ralph.assets.models import BaseObject
+from ralph.operations.changemanagement.exceptions import IgnoreOperation
 from ralph.operations.models import Operation, OperationType
 
 
@@ -107,9 +108,8 @@ def receive_chm_event(event_data):
                 if base_object_loader is not None else None
             )
         )
-    except KeyError:
-        # Silence already logged errors.
-        pass
+    except IgnoreOperation as e:
+        logger.warning(e.message)
     except Exception as e:
         logger.exception(
             'Encountered an unexpected failure while handling a change '

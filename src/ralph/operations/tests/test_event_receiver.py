@@ -1,6 +1,8 @@
 import json
 from os import path
+from unittest import mock
 
+from ralph.operations.changemanagement.exceptions import IgnoreOperation
 from ralph.operations.changemanagement.subscribtions import receive_chm_event
 from ralph.operations.models import Operation, OperationStatus
 from ralph.tests import RalphTestCase
@@ -44,6 +46,14 @@ class ChangesReceiverTestCase(RalphTestCase):
     def test_no_record_created_unknown_operation_type(self):
         self.jira_event['issue']['fields']['issuetype']['name'] = 'DEADBEEF'
 
+        receive_chm_event(self.jira_event)
+
+        with self.assertRaises(Operation.DoesNotExist):
+            Operation.objects.get(ticket_id='SOMEPROJ-42')
+
+    @mock.patch('ralph.operations.changemanagement.jira.get_ticket_id',
+                side_effect=IgnoreOperation())
+    def test_no_record_created_when_IgnoreOperation_is_rised(self, m_get):
         receive_chm_event(self.jira_event)
 
         with self.assertRaises(Operation.DoesNotExist):
