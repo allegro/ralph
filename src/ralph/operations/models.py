@@ -62,6 +62,7 @@ class OperationType(
 
 class Operation(AdminAbsoluteUrlMixin, TaggableMixin, models.Model):
     type = TreeForeignKey(OperationType, verbose_name=_('type'))
+    _allow_in_dashboard = True
     title = models.CharField(
         max_length=350, null=False, blank=False, verbose_name=_('title'),
     )
