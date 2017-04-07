@@ -7,26 +7,13 @@ sys.path.append(os.path.join(BASE_DIR, '..', '..', 'contrib', 'dhcp_agent'))
 
 DEBUG = False
 
-TEST_DB_ENGINE = os.environ.get('TEST_DB_ENGINE', 'sqlite')
-
-if TEST_DB_ENGINE == 'mysql':
-    # use default mysql settings
-    if not os.environ.get('DATABASE_PASSWORD'):
-        DATABASES['default']['PASSWORD'] = None
-elif TEST_DB_ENGINE == 'psql':
+TEST_DB_ENGINE = os.environ.get('TEST_DB_ENGINE', 'mysql')
+if TEST_DB_ENGINE == 'psql':
     DATABASES['default'].update({
         'ENGINE': 'transaction_hooks.backends.postgresql_psycopg2',
         'PORT': os.environ.get('DATABASE_PORT', 5432),
         'OPTIONS': {},
     })
-else:  # use sqlite as default
-    DATABASES = {
-        'default': {
-            'ENGINE': 'transaction_hooks.backends.sqlite3',
-            'NAME': ':memory:',
-            'ATOMIC_REQUESTS': True,
-        }
-    }
 
 INSTALLED_APPS += (
     'ralph.lib.mixins',

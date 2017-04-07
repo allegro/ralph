@@ -582,7 +582,7 @@ class BaseObjectsSupportRichResource(RalphModelResource):
         support = bo_support.support
         return str(
             bo_support.objects_count / support.price
-            if support.price > 0 else 0
+            if support.price else 0
         )
 
 

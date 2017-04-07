@@ -14,11 +14,12 @@ from ralph.licences.tests.factories import (
     LicenceFactory,
     LicenceUserFactory
 )
-from ralph.supports.models import Support
+from ralph.supports.models import BaseObjectsSupport, Support
 from ralph.supports.tests.factories import (
     BackOfficeAssetSupportFactory,
+    BaseObjectsSupportFactory,
     DataCenterAssetSupportFactory,
-    SupportFactory
+    SupportFactory,
 )
 
 
@@ -103,3 +104,13 @@ class DataCenterAssetExporterTestCase(SimulateAdminExportTestCase):
         export_data = self._export(DataCenterAsset)
         # check if management ip is properly exported
         self.assertNotEqual(export_data.dict[0]['management_ip'], '')
+
+
+class BaseObjectsSupportExporterTestCase(SimulateAdminExportTestCase):
+
+    def test_support_export_works_with_support_without_price(self):
+        support = SupportFactory(price=None)
+        BaseObjectsSupportFactory(support=support)
+        export_data = self._export(BaseObjectsSupport)
+        self.assertEqual(export_data.dict[0]['support__price'], '')
+        self.assertEqual(export_data.dict[0]['support__price_per_object'], '0')
