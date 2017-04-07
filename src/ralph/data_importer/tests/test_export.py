@@ -19,7 +19,7 @@ from ralph.supports.tests.factories import (
     BackOfficeAssetSupportFactory,
     BaseObjectsSupportFactory,
     DataCenterAssetSupportFactory,
-    SupportFactory,
+    SupportFactory
 )
 
 
