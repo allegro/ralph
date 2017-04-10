@@ -187,13 +187,13 @@ class TestReportAssetAndLicence(RalphTestCase):
                 'id', 'niw', 'barcode', 'sn', 'model__category__name',
                 'model__manufacturer__name', 'status',
                 'service_env__service__name', 'invoice_date', 'invoice_no',
-                'hostname', 'tags'
+                'hostname', 'rack', 'tags'
             ],
             [
                 str(self.dc_1.id), 'None', self.dc_1.barcode, self.dc_1.sn,
                 'Keyboard', 'M1', '1', self.dc_1.service_env.service.name,
                 str(self.dc_1.invoice_date), str(self.dc_1.invoice_no),
-                self.dc_1.hostname, 'tag1,tag2'
+                self.dc_1.hostname, str(self.dc_1.rack), 'tag1,tag2'
             ]
         ]
         self.assertEqual(report_result, result)
