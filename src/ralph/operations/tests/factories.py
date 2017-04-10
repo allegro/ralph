@@ -17,6 +17,10 @@ def get_operation_type(name):
     return OperationType.objects.get(name=name)
 
 
+def get_operation_status(name):
+    return OperationStatus.objects.get(name=name)
+
+
 class OperationTypeFactory(DjangoModelFactory):
 
     name = factory.Iterator(['Problem', 'Incident', 'Failure', 'Change'])
@@ -26,10 +30,19 @@ class OperationTypeFactory(DjangoModelFactory):
         django_get_or_create = ['name']
 
 
+class OperationStatusFactory(DjangoModelFactory):
+
+    name = factory.Iterator(['Open', 'Closed', 'Resolved', 'In Progress'])
+
+    class Meta:
+        model = OperationStatus
+        django_get_or_create = ['name']
+
+
 class OperationFactory(DjangoModelFactory):
 
     title = factory.Sequence(lambda n: 'Operation #%d' % n)
-    status = OperationStatus.opened
+    status = factory.LazyAttribute(lambda obj: get_operation_status('Open'))
     type = factory.LazyAttribute(lambda obj: get_operation_type('Change'))
 
     class Meta:

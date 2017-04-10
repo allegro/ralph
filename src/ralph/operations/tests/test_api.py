@@ -6,7 +6,7 @@ from ralph.operations.tests.factories import OperationFactory
 
 
 class OperationsAPITestCase(RalphAPITestCase):
-    fixtures = ['operation_types']
+    fixtures = ['operation_types', 'operation_statuses']
 
     def test_list_operations(self):
         num_operations = 10
@@ -34,5 +34,5 @@ class OperationsAPITestCase(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         received_op = response.data
-        self.assertEqual(received_op['status'], op.status.raw)
+        self.assertEqual(received_op['status']['name'], op.status.name)
         self.assertEqual(received_op['title'], op.title)

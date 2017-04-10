@@ -3,7 +3,7 @@ from django.db.models import Prefetch
 from ralph.accounts.api_simple import SimpleRalphUserSerializer
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.assets.models import BaseObject
-from ralph.operations.models import Operation, OperationType
+from ralph.operations.models import Operation, OperationStatus, OperationType
 
 
 class OperationTypeSerializer(RalphAPISerializer):
@@ -13,9 +13,17 @@ class OperationTypeSerializer(RalphAPISerializer):
         depth = 1
 
 
+class OperationStatusSerializer(RalphAPISerializer):
+
+    class Meta:
+        model = OperationStatus
+        depth = 1
+
+
 class OperationSerializer(RalphAPISerializer):
     type = OperationTypeSerializer()
     assignee = SimpleRalphUserSerializer()
+    status = OperationStatusSerializer()
 
     class Meta:
         model = Operation
@@ -30,7 +38,7 @@ class OperationViewSet(RalphAPIViewSet):
         )
     )
     serializer_class = OperationSerializer
-    select_related = ['type', 'assignee']
+    select_related = ['type', 'assignee', 'status']
     filter_fields = [
         'id', 'title', 'description', 'status', 'ticket_id', 'created_date',
         'update_date', 'resolved_date', 'type__name'
@@ -42,6 +50,12 @@ class OperationTypeViewSet(RalphAPIViewSet):
     serializer_class = OperationTypeSerializer
 
 
+class OperationStatusViewSet(RalphAPIViewSet):
+    queryset = OperationStatus.objects.all()
+    serializer_class = OperationStatusSerializer
+
+
 router.register(r'operation', OperationViewSet)
 router.register(r'operationtype', OperationTypeViewSet)
+router.register(r'operationstatus', OperationStatusViewSet)
 urlpatterns = []

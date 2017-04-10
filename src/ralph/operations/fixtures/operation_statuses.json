@@ -1,0 +1,51 @@
+[
+{
+    "fields": {
+        "name": "Open"
+    },
+    "pk": 1,
+    "model": "operations.operationstatus"
+},
+{
+    "fields": {
+        "name": "In Progress"
+    },
+    "pk": 2,
+    "model": "operations.operationstatus"
+},
+{
+    "fields": {
+        "name": "Resolved"
+    },
+    "pk": 3,
+    "model": "operations.operationstatus"
+},
+{
+    "fields": {
+        "name": "Closed"
+    },
+    "pk": 4,
+    "model": "operations.operationstatus"
+},
+{
+    "fields": {
+        "name": "Reopened"
+    },
+    "pk": 5,
+    "model": "operations.operationstatus"
+},
+{
+    "fields": {
+        "name": "Todo"
+    },
+    "pk": 6,
+    "model": "operations.operationstatus"
+},
+{
+    "fields": {
+        "name": "Blocked"
+    },
+    "pk": 7,
+    "model": "operations.operationstatus"
+}
+]

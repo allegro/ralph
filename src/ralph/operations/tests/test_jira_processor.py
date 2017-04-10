@@ -71,12 +71,6 @@ class JiraProcessorTestCase(RalphTestCase):
 
     def test_get_operation_status(self):
         self.assertEqual(
-            OperationStatus.opened,
+            'Open',
             jira.get_operation_status(self.jira_event)
         )
-
-    def test_get_operation_status_bad_status_raises_IgnoreOperation(self):
-        self.jira_event['issue']['fields']['status']['name'] = 'DEADBEEF'
-
-        with self.assertRaises(IgnoreOperation):
-            jira.get_operation_status(self.jira_event)
