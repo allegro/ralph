@@ -63,13 +63,19 @@ class Migration(migrations.Migration):
                     'id',
                     models.AutoField(
                         serialize=False, primary_key=True,
-                        auto_created=True, verbose_name='ID')
+                        auto_created=True, verbose_name='ID'
+                    )
                 ),
                 (
                     'name',
-                    models.CharField(max_length=255)
+                    models.CharField(
+                        verbose_name='name',
+                        max_length=255,
+                        unique=True
+                    )
                 ),
             ],
+            options={'ordering': ['name']}
         ),
         migrations.RunPython(load_old_operation_status, atomic=True),
         migrations.AlterField(
