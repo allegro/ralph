@@ -2,6 +2,7 @@
 import factory
 from factory.django import DjangoModelFactory
 
+from ralph.accounts.tests.factories import UserFactory
 from ralph.operations.models import (
     Change,
     Failure,
@@ -44,6 +45,7 @@ class OperationFactory(DjangoModelFactory):
     title = factory.Sequence(lambda n: 'Operation #%d' % n)
     status = factory.LazyAttribute(lambda obj: get_operation_status('Open'))
     type = factory.LazyAttribute(lambda obj: get_operation_type('Change'))
+    assignee = factory.SubFactory(UserFactory)
 
     class Meta:
         model = Operation
