@@ -10,7 +10,7 @@ from ralph.tests import RalphTestCase
 
 class ChangesReceiverTestCase(RalphTestCase):
 
-    fixtures = ['operation_statuses']
+    fixtures = ['operation_types', 'operation_statuses']
 
     def setUp(self):
         with open(
@@ -24,6 +24,7 @@ class ChangesReceiverTestCase(RalphTestCase):
         op = Operation.objects.get(ticket_id='SOMEPROJ-42')
 
         self.assertEqual('username.fortytwo', op.assignee.username)
+        self.assertEqual('username.fourtwenty', op.reporter.username)
         self.assertEqual('Open', op.status.name)
 
     def test_recorded_operation_gets_updated(self):

@@ -22,9 +22,19 @@ class JiraProcessorTestCase(RalphTestCase):
             jira.get_assignee_username(self.jira_event)
         )
 
-    def test_get_assiignee_username_no_assignee_returns_none(self):
+    def test_get_assignee_username_no_assignee_returns_none(self):
         self.jira_event['issue']['fields']['assignee'] = None
         self.assertIsNone(jira.get_assignee_username(self.jira_event))
+
+    def test_get_reporter_username(self):
+        self.assertEqual(
+            'username.fourtwenty',
+            jira.get_reporter_username(self.jira_event)
+        )
+
+    def test_get_reporter_username_no_reporter_returns_none(self):
+        self.jira_event['issue']['fields']['reporter'] = None
+        self.assertIsNone(jira.get_reporter_username(self.jira_event))
 
     def test_get_title(self):
         self.assertEqual(

@@ -34,6 +34,12 @@ class OperationSerializer(RalphAPISerializer):
         slug_field='username',
         queryset=RalphUser.objects.all()
     )
+    reporter = SlugRelatedField(
+        many=False,
+        read_only=False,
+        slug_field='username',
+        queryset=RalphUser.objects.all()
+    )
     status = SlugRelatedField(
         many=False,
         read_only=False,
@@ -55,11 +61,11 @@ class OperationViewSet(RalphAPIViewSet):
     )
     serializer_class = OperationSerializer
     save_serializer_class = OperationSerializer
-    select_related = ['type', 'assignee', 'status']
+    select_related = ['type', 'assignee', 'reporter', 'status']
     filter_fields = [
         'id', 'title', 'description', 'status', 'status', 'ticket_id',
         'created_date', 'update_date', 'resolved_date', 'type',
-        'assignee'
+        'assignee', 'reporter'
     ]
 
 
