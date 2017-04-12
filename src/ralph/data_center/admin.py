@@ -514,6 +514,7 @@ class VIPAdmin(RalphAdmin):
 
     search_fields = ['name', 'ip__address']
     raw_id_fields = ['ip', 'service_env', 'parent', 'configuration_path']
+    raw_id_override_parent = {'parent': Cluster}
     fields = (
         'name', 'ip', 'port', 'protocol', 'service_env', 'parent', 'remarks',
         'tags'
