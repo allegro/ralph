@@ -1,5 +1,5 @@
 db:
-  image: mysql:5.6
+  image: mysql:5.7
   environment:
     MYSQL_DATABASE: ralph_ng
     MYSQL_ROOT_PASSWORD: ralph_ng
@@ -7,6 +7,7 @@ db:
     MYSQL_PASSWORD: ralph_ng
   volumes_from:
     - data
+  command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 
 web:
   build: ralph
@@ -35,7 +36,7 @@ nginx:
     - web
 
 data:
-  image: mysql:5.6
+  image: mysql:5.7
   volumes:
     - /opt/static
     - /opt/media
