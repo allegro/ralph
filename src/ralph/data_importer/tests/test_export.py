@@ -1,3 +1,6 @@
+from decimal import Decimal
+
+from ddt import data, ddt, unpack
 from django.core.urlresolvers import reverse
 from django.db import connections
 from django.test import RequestFactory, TestCase
@@ -106,6 +109,7 @@ class DataCenterAssetExporterTestCase(SimulateAdminExportTestCase):
         self.assertNotEqual(export_data.dict[0]['management_ip'], '')
 
 
+@ddt
 class BaseObjectsSupportExporterTestCase(SimulateAdminExportTestCase):
 
     def test_support_export_works_with_support_without_price(self):
@@ -113,4 +117,23 @@ class BaseObjectsSupportExporterTestCase(SimulateAdminExportTestCase):
         BaseObjectsSupportFactory(support=support)
         export_data = self._export(BaseObjectsSupport)
         self.assertEqual(export_data.dict[0]['support__price'], '')
-        self.assertEqual(export_data.dict[0]['support__price_per_object'], '0')
+        self.assertEqual(
+            export_data.dict[0]['support__price_per_object'], '0.00'
+        )
+
+    @unpack
+    @data(
+        (Decimal('11477.95'), 11, Decimal('1043.45')),
+        (Decimal('10000'), 1, Decimal('10000.00')),
+        (Decimal('0.0'), 100, Decimal('0.00'))
+    )
+    def test_get_content_type_for_model(
+        self, support_price, objects_count, expected_price
+    ):
+        support = SupportFactory(price=support_price)
+        BaseObjectsSupportFactory.create_batch(objects_count, support=support)
+        export_data = self._export(BaseObjectsSupport)
+        self.assertEqual(
+            export_data.dict[0]['support__price_per_object'],
+            str(expected_price)
+        )

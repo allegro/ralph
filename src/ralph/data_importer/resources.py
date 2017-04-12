@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db.models import Count
@@ -580,9 +582,10 @@ class BaseObjectsSupportRichResource(RalphModelResource):
 
     def dehydrate_price_per_object(self, bo_support):
         support = bo_support.support
+        price = support.price or Decimal('0.00')
         return str(
-            bo_support.objects_count / support.price
-            if support.price else 0
+            round(price / bo_support.objects_count, 2)
+            if bo_support.objects_count > 0 else Decimal('0.00')
         )
 
 
