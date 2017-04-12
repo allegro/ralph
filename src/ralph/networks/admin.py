@@ -266,7 +266,7 @@ class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
         'hostname', 'is_public', 'is_management', ('address', IPRangeFilter)
     ]
     list_display = [
-        'ip_address', 'hostname', 'base_object_link', 'is_gateway',
+        'address', 'hostname', 'base_object_link', 'is_gateway',
         'is_public'
     ]
     readonly_fields = ['get_network_path', 'is_public']
