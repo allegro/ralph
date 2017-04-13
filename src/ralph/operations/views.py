@@ -47,8 +47,8 @@ class OperationInlineReadOnlyForExisting(OperationInline):
 
 class OperationInlineAddOnly(OperationInline):
     can_delete = False
-    verbose_name_plural = _('Add new Operations')
-    fields = ['title', 'description', 'type', 'ticket_id']
+    verbose_name_plural = _('Add new Operation')
+    fields = ['title', 'description', 'type', 'status', 'ticket_id']
 
     def has_change_permission(self, request, obj=None):
         return False

@@ -8,7 +8,7 @@ from django.db import transaction
 
 from ralph.assets.models import BaseObject
 from ralph.operations.changemanagement.exceptions import IgnoreOperation
-from ralph.operations.models import Operation, OperationType
+from ralph.operations.models import Operation, OperationStatus, OperationType
 
 
 logger = logging.getLogger(__name__)
@@ -46,6 +46,18 @@ def _safe_load_operation_type(operation_name):
         return None
 
 
+def _safe_load_status(status_name):
+    """Load operation status by its name. None, if not found."""
+    status, created = OperationStatus.objects.get_or_create(name=status_name)
+
+    if created:
+        logger.warning(
+            'Received an operation with a new status {}.'.format(status_name)
+        )
+
+    return status
+
+
 def _load_base_objects(object_ids):
     """Load base objects with the specified ids. [] if none is found."""
 
@@ -53,7 +65,7 @@ def _load_base_objects(object_ids):
 
 
 @transaction.atomic
-def record_operation(title, status, description, operation_name, ticket_id,
+def record_operation(title, status_name, description, operation_name, ticket_id,
                      assignee_username=None, created_date=None,
                      update_date=None, resolution_date=None,
                      base_object_ids=None):
@@ -73,7 +85,7 @@ def record_operation(title, status, description, operation_name, ticket_id,
         defaults=dict(
             title=title,
             description=description,
-            status=status,
+            status=_safe_load_status(status_name),
             type=operation_type,
             assignee=_safe_load_user(assignee_username),
             created_date=created_date,
@@ -95,7 +107,7 @@ def receive_chm_event(event_data):
             title=change_processor.get_title(event_data),
             description=change_processor.get_description(event_data),
             ticket_id=change_processor.get_ticket_id(event_data),
-            status=change_processor.get_operation_status(event_data),
+            status_name=change_processor.get_operation_status(event_data),
             operation_name=change_processor.get_operation_name(event_data),
             assignee_username=change_processor.get_assignee_username(
                 event_data

@@ -17,16 +17,8 @@ from ralph.lib.mixins.models import (
 )
 
 
-class OperationStatus(Choices):
-    _ = Choices.Choice
-
-    opened = _('open')
-    in_progress = _('in progress')
-    resolved = _('resolved')
-    closed = _('closed')
-    reopened = _('reopened')
-    todo = _('todo')
-    blocked = _('blocked')
+class OperationStatus(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
+    pass
 
 
 class OperationType(
@@ -69,9 +61,12 @@ class Operation(AdminAbsoluteUrlMixin, TaggableMixin, models.Model):
     description = models.TextField(
         verbose_name=_('description'), null=True, blank=True,
     )
-    status = models.PositiveIntegerField(
-        verbose_name=_('status'), choices=OperationStatus(),
-        default=OperationStatus.opened.id,
+    status = models.ForeignKey(
+        OperationStatus,
+        verbose_name=_('status'),
+        null=False,
+        blank=False,
+        on_delete=models.PROTECT
     )
     assignee = models.ForeignKey(
         settings.AUTH_USER_MODEL,
