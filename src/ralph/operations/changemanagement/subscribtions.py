@@ -66,8 +66,8 @@ def _load_base_objects(object_ids):
 
 @transaction.atomic
 def record_operation(title, status_name, description, operation_name, ticket_id,
-                     assignee_username=None, created_date=None,
-                     update_date=None, resolution_date=None,
+                     assignee_username=None, reporter_username=None,
+                     created_date=None, update_date=None, resolution_date=None,
                      base_object_ids=None):
 
     operation_type = _safe_load_operation_type(operation_name)
@@ -88,6 +88,7 @@ def record_operation(title, status_name, description, operation_name, ticket_id,
             status=_safe_load_status(status_name),
             type=operation_type,
             assignee=_safe_load_user(assignee_username),
+            reporter=_safe_load_user(reporter_username),
             created_date=created_date,
             update_date=update_date,
             resolved_date=resolution_date
@@ -110,6 +111,9 @@ def receive_chm_event(event_data):
             status_name=change_processor.get_operation_status(event_data),
             operation_name=change_processor.get_operation_name(event_data),
             assignee_username=change_processor.get_assignee_username(
+                event_data
+            ),
+            reporter_username=change_processor.get_reporter_username(
                 event_data
             ),
             created_date=change_processor.get_creation_date(event_data),

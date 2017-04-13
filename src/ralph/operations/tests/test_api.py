@@ -3,6 +3,7 @@ from rest_framework import status
 
 from ralph.accounts.tests.factories import UserFactory
 from ralph.api.tests._base import RalphAPITestCase
+from ralph.operations.models import Operation
 from ralph.operations.tests.factories import OperationFactory
 
 
@@ -39,13 +40,17 @@ class OperationsAPITestCase(RalphAPITestCase):
         self.assertEqual(received_op['title'], op.title)
 
     def test_operation_create(self):
-        user = UserFactory()
+        assignee = UserFactory()
+        reporter = UserFactory()
+
         op_data = {
              'title': 'deadbeef-title',
              'description': 'deadbeef-description',
              'status': 'Open',
              'type': 'Change',
-             'assignee': user.username
+             'ticket_id': 'DEADBEEF-42',
+             'assignee': assignee.username,
+             'reporter': reporter.username
         }
 
         resp = self.client.post(
@@ -55,3 +60,12 @@ class OperationsAPITestCase(RalphAPITestCase):
          )
 
         self.assertEqual(resp.status_code, 201)
+
+        op = Operation.objects.get(ticket_id=op_data['ticket_id'])
+
+        self.assertEqual(op_data['title'], op.title)
+        self.assertEqual(op_data['description'], op.description)
+        self.assertEqual(op_data['assignee'], op.assignee.username)
+        self.assertEqual(op_data['reporter'], op.reporter.username)
+        self.assertEqual(op_data['type'], op.type.name)
+        self.assertEqual(op_data['status'], op.status.name)

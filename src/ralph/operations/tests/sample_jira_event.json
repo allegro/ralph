@@ -245,16 +245,16 @@
             "customfield_11501": null,
             "reporter": {
                 "self": "https://jira.example.com/rest/api/2/user?username=username.fortytwo",
-                "name": "username.fortytwo",
-                "key": "username.fortytwo",
-                "displayName": "Username Fortytwo",
+                "name": "username.fourtwenty",
+                "key": "username.fourtwenty",
+                "displayName": "Username Fourtwenty",
                 "avatarUrls": {
-                    "32x32": "https://jira.example.com/secure/useravatar?size=medium&ownerId=username.fortytwo&avatarId=44502",
-                    "24x24": "https://jira.example.com/secure/useravatar?size=small&ownerId=username.fortytwo&avatarId=44502",
-                    "48x48": "https://jira.example.com/secure/useravatar?ownerId=username.fortytwo&avatarId=44502",
-                    "16x16": "https://jira.example.com/secure/useravatar?size=xsmall&ownerId=username.fortytwo&avatarId=44502"
+                    "32x32": "https://jira.example.com/secure/useravatar?size=medium&ownerId=username.fourtwenty&avatarId=44502",
+                    "24x24": "https://jira.example.com/secure/useravatar?size=small&ownerId=username.fourtwenty&avatarId=44502",
+                    "48x48": "https://jira.example.com/secure/useravatar?ownerId=username.fourtwenty&avatarId=44502",
+                    "16x16": "https://jira.example.com/secure/useravatar?size=xsmall&ownerId=username.fourtwenty&avatarId=44502"
                 },
-                "emailAddress": "username.fortytwo@example.com",
+                "emailAddress": "username.fourtwenty@example.com",
                 "timeZone": "Europe/Warsaw",
                 "active": true
             },

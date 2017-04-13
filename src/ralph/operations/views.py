@@ -8,8 +8,9 @@ from ralph.operations.models import Operation
 
 class OperationInline(RalphTabularM2MInline):
     model = Operation
-    raw_id_fields = ('assignee',)
-    fields = ['title', 'description', 'assignee', 'type', 'status', 'ticket_id']
+    raw_id_fields = ('assignee', 'reporter')
+    fields = ['title', 'description', 'reporter', 'type',
+              'status', 'ticket_id']
     extra = 1
     verbose_name = _('Operation')
 
@@ -27,7 +28,7 @@ class OperationInlineReadOnlyForExisting(OperationInline):
     show_change_link = True
     verbose_name_plural = _('Existing Operations')
     fields = [
-        'title', 'description', 'assignee', 'type', 'status', 'get_ticket_url'
+        'title', 'description', 'reporter', 'type', 'status', 'get_ticket_url'
     ]
 
     def get_readonly_fields(self, request, obj=None):

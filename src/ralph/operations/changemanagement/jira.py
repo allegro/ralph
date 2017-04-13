@@ -35,6 +35,14 @@ def get_assignee_username(event_data):
         return None
 
 
+def get_reporter_username(event_data):
+    try:
+        return event_data['issue']['fields']['reporter']['key']
+    except TypeError:
+        # NOTE(romcheg): This means the reporter is not specified.
+        return None
+
+
 def get_creation_date(event_data):
     return _safe_load_datetime(event_data, 'created')
 
