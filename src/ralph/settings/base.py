@@ -431,6 +431,12 @@ DOMAIN_OWNER_TYPE = {
     'TO': 'Technical Owner',
 }
 
+# Transitions settings
+
+# E.g.: pl (see: https://www.iso.org/iso-3166-country-codes.html)
+CHANGE_HOSTNAME_ACTION_DEFAULT_COUNTRY = None
+
+
 # Change management settings
 
 CHANGE_MGMT_OPERATION_STATUSES = {
