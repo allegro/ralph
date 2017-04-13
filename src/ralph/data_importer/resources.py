@@ -2,11 +2,11 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 from import_export import fields, resources, widgets
 
 from ralph.accounts.models import Region
-from ralph.assets.models import assets, base, configuration
+from ralph.assets.models import assets, base, BaseObject, configuration
 from ralph.back_office.models import (
     BackOfficeAsset,
     OfficeInfrastructure,
@@ -707,8 +707,23 @@ class OperationResource(RalphModelResource):
         attribute='assignee',
         widget=UserWidget(get_user_model()),
     )
+    reporter = fields.Field(
+        column_name='reporter',
+        attribute='reporter',
+        widget=UserWidget(get_user_model()),
+    )
 
     class Meta:
+        select_related = (
+            'assignee', 'reporter', 'type', 'status'
+        )
+        prefetch_related = (
+            'tags',
+            Prefetch(
+                lookup='base_objects',
+                queryset=BaseObject.objects.all()
+            )
+        )
         model = Operation
 
 
