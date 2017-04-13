@@ -18,5 +18,5 @@ class StatusFilter(ChoicesListFilter):
             return queryset
 
         return queryset.filter(
-            status__id=int(self.value())
+            status_id=int(self.value())
         )
