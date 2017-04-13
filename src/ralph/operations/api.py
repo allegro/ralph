@@ -1,6 +1,7 @@
 from django.db.models import Prefetch
+from rest_framework.serializers import SlugRelatedField
 
-from ralph.accounts.api_simple import SimpleRalphUserSerializer
+from ralph.accounts.models import RalphUser
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.assets.models import BaseObject
 from ralph.operations.models import Operation, OperationStatus, OperationType
@@ -21,9 +22,24 @@ class OperationStatusSerializer(RalphAPISerializer):
 
 
 class OperationSerializer(RalphAPISerializer):
-    type = OperationTypeSerializer()
-    assignee = SimpleRalphUserSerializer()
-    status = OperationStatusSerializer()
+    type = SlugRelatedField(
+        many=False,
+        read_only=False,
+        slug_field='name',
+        queryset=OperationType.objects.all()
+    )
+    assignee = SlugRelatedField(
+        many=False,
+        read_only=False,
+        slug_field='username',
+        queryset=RalphUser.objects.all()
+    )
+    status = SlugRelatedField(
+        many=False,
+        read_only=False,
+        slug_field='name',
+        queryset=OperationStatus.objects.all()
+    )
 
     class Meta:
         model = Operation
@@ -38,10 +54,12 @@ class OperationViewSet(RalphAPIViewSet):
         )
     )
     serializer_class = OperationSerializer
+    save_serializer_class = OperationSerializer
     select_related = ['type', 'assignee', 'status']
     filter_fields = [
-        'id', 'title', 'description', 'status', 'ticket_id', 'created_date',
-        'update_date', 'resolved_date', 'type__name'
+        'id', 'title', 'description', 'status', 'status', 'ticket_id',
+        'created_date', 'update_date', 'resolved_date', 'type',
+        'assignee'
     ]
 
 
