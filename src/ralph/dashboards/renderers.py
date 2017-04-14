@@ -1,7 +1,7 @@
 import json
 from urllib.parse import urlencode
 
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import NoReverseMatch, reverse
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 
@@ -78,12 +78,17 @@ class ChartistGraphRenderer(object):
         data = {}
         try:
             data = self.model.get_data()
-            click_urls = self._labels2urls(
-                self.model.model, self.model.id, data['labels']
-            )
-            data['series'] = self._series_with_urls(
-                data['series'], click_urls
-            )
+            try:
+                click_urls = self._labels2urls(
+                    self.model.model, self.model.id, data['labels']
+                )
+                data['series'] = self._series_with_urls(
+                    data['series'], click_urls
+                )
+            except NoReverseMatch:
+                # graph will be non-clickable when model is not exposed in
+                # admin
+                pass
         except Exception as e:
             error = str(e)
         finally:
