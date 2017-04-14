@@ -27,8 +27,8 @@ class DomainAdmin(AttachmentsMixin, RalphAdmin):
     ]
     list_filter = [
         'name', 'service_env', 'domain_status', 'business_segment',
-        ('domaincontract__expiration_date', DateListFilter), 'website_type',
-        'website_url',
+        'domain_holder', ('domaincontract__expiration_date', DateListFilter),
+        'website_type', 'website_url',
 
     ]
     list_display = [
