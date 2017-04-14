@@ -132,5 +132,5 @@ class PieChart(ChartistGraphRenderer):
     }
 
     def get_options(self, data):
-        self.options['total'] = sum(data['series'])
+        self.options['total'] = sum(s['value'] for s in data['series'])
         return super().get_options(data)
