@@ -44,6 +44,7 @@ def get_ventures():
             venture.business_segment else "",
             'profit_center': profit_center,
             'show_in_ralph': venture.show_in_ralph,
+            'is_service': venture.is_service,
         }
 
 
