@@ -1,0 +1,2267 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-05-29 17:01+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: account/admin.py:75
+msgid "groups"
+msgstr ""
+
+#: account/api_auth.py:16
+msgid "Access Denied"
+msgstr ""
+
+#: account/forms.py:25
+msgid "You will be redirected to this page after login into Ralph."
+msgstr ""
+
+#: account/models.py:34
+msgid "Default home page"
+msgstr ""
+
+#: account/models.py:35
+msgid "Ventures list"
+msgstr ""
+
+#: account/models.py:36
+msgid "Racks list"
+msgstr ""
+
+#: account/models.py:37
+msgid "Network list"
+msgstr ""
+
+#: account/models.py:38
+msgid "Reports"
+msgstr ""
+
+#: account/models.py:39
+msgid "Catalog"
+msgstr ""
+
+#: account/models.py:40
+msgid "CMDB timeline"
+msgstr ""
+
+#: account/models.py:47
+msgid "read data center structure"
+msgstr ""
+
+#: account/models.py:48
+msgid "edit ventures and roles"
+msgstr ""
+
+#: account/models.py:49
+msgid "create devices"
+msgstr ""
+
+#: account/models.py:50
+msgid "delete devices"
+msgstr ""
+
+#: account/models.py:51
+msgid "edit generic device info"
+msgstr ""
+
+#: account/models.py:52
+msgid "edit financial device info"
+msgstr ""
+
+#: account/models.py:53
+msgid "edit device purchase info"
+msgstr ""
+
+#: account/models.py:54
+msgid "run discovery"
+msgstr ""
+
+#: account/models.py:55
+msgid "read device management_info"
+msgstr ""
+
+#: account/models.py:56
+msgid "read network structure"
+msgstr ""
+
+#: account/models.py:57
+msgid "create configuration items"
+msgstr ""
+
+#: account/models.py:58
+msgid "edit configuration items"
+msgstr ""
+
+#: account/models.py:59
+msgid "edit configuration item relations"
+msgstr ""
+
+#: account/models.py:61
+msgid "read configuration item info generic"
+msgstr ""
+
+#: account/models.py:63
+msgid "read configuration item info Puppet reports"
+msgstr ""
+
+#: account/models.py:64
+msgid "read configuration item info GIT "
+msgstr ""
+
+#: account/models.py:65
+msgid "read configuration item info jira"
+msgstr ""
+
+#: account/models.py:66
+msgid "edit all device info in bulk"
+msgstr ""
+
+#: account/models.py:67
+msgid "edit domain name entries"
+msgstr ""
+
+#: account/models.py:68
+msgid "read domain name entries"
+msgstr ""
+
+#: account/models.py:69
+msgid "create new devices manually"
+msgstr ""
+
+#: account/models.py:70
+msgid "read deployment"
+msgstr ""
+
+#: account/models.py:73
+msgid "list venture devices"
+msgstr ""
+
+#: account/models.py:74
+msgid "list venture devices financial info"
+msgstr ""
+
+#: account/models.py:75
+msgid "read generic device info"
+msgstr ""
+
+#: account/models.py:76
+msgid "read financial device info"
+msgstr ""
+
+#: account/models.py:77
+msgid "read device purchase info"
+msgstr ""
+
+#: account/models.py:78
+msgid "read device history info"
+msgstr ""
+
+#: account/models.py:79
+msgid "read device reports"
+msgstr ""
+
+#: account/models.py:86 account/models.py:186
+msgid "profile"
+msgstr ""
+
+#: account/models.py:87
+msgid "profiles"
+msgstr ""
+
+#: account/models.py:193 discovery/models_component.py:206
+#: discovery/models_device.py:179
+msgid "group"
+msgstr ""
+
+#: account/models.py:198
+msgid "permission"
+msgstr ""
+
+#: account/models.py:201 business/models.py:148 business/models.py:284
+#: business/models.py:412 business/models.py:533 deployment/models.py:154
+#: discovery/models_device.py:434 discovery/models_network.py:532
+msgid "venture"
+msgstr ""
+
+#: account/models.py:208 business/models.py:296
+msgid "venture role"
+msgstr ""
+
+#: account/models.py:212
+msgid ""
+"if left empty, the permission applies to all roles within the selected "
+"venture"
+msgstr ""
+
+#: account/models.py:217
+msgid "bound permission"
+msgstr ""
+
+#: account/models.py:218
+msgid "bound permissions"
+msgstr ""
+
+#: account/views.py:28 account/views.py:99
+msgid "Home Page"
+msgstr ""
+
+#: account/views.py:32
+msgid "API Key"
+msgstr ""
+
+#: account/views.py:83 cmdb/views.py:383
+msgid "Changes saved."
+msgstr ""
+
+#: account/views.py:89
+msgid "User Preference"
+msgstr ""
+
+#: business/admin.py:103 business/admin.py:239
+msgid "members"
+msgstr ""
+
+#: business/admin.py:110
+msgid "venture_path"
+msgstr ""
+
+#: business/admin.py:253
+msgid "technical owners"
+msgstr ""
+
+#: business/admin.py:268
+msgid "business owners"
+msgstr ""
+
+#: business/models.py:34 deployment/models.py:107 deployment/models.py:148
+msgid "preboot"
+msgstr ""
+
+#: business/models.py:54
+msgid "symbol path"
+msgstr ""
+
+#: business/models.py:87 discovery/models_device.py:67
+#: discovery/models_device.py:464 discovery/models_network.py:77
+#: discovery/models_network.py:161 discovery/models_network.py:441
+msgid "data center"
+msgstr ""
+
+#: business/models.py:93
+msgid "parent venture"
+msgstr ""
+
+#: business/models.py:100 business/models.py:366 business/models.py:398
+msgid "symbol"
+msgstr ""
+
+#: business/models.py:106
+msgid "show in ralph"
+msgstr ""
+
+#: business/models.py:110
+msgid "this is part of infrastructure"
+msgstr ""
+
+#: business/models.py:115 discovery/models_device.py:141
+msgid "margin kind"
+msgstr ""
+
+#: business/models.py:123 business/models.py:512
+#: templates/business/show_venture.html:15
+msgid "department"
+msgstr ""
+
+#: business/models.py:131
+msgid "Business segment"
+msgstr ""
+
+#: business/models.py:139
+msgid "Profit center"
+msgstr ""
+
+#: business/models.py:145 discovery/models_device.py:477
+msgid "verified"
+msgstr ""
+
+#: business/models.py:149
+msgid "ventures"
+msgstr ""
+
+#: business/models.py:287
+msgid "parent role"
+msgstr ""
+
+#: business/models.py:297
+msgid "venture roles"
+msgstr ""
+
+#: business/models.py:377
+msgid "property type"
+msgstr ""
+
+#: business/models.py:378
+msgid "property types"
+msgstr ""
+
+#: business/models.py:384 business/models.py:419 business/models.py:534
+msgid "type"
+msgstr ""
+
+#: business/models.py:389 business/models.py:454 cmdb/models_ci.py:246
+#: cmdb/models_ci.py:254 cmdb/models_ci.py:262 cmdb/models_ci.py:274
+#: cmdb/models_ci.py:285 integration/models.py:27
+msgid "value"
+msgstr ""
+
+#: business/models.py:392
+msgid "property type value"
+msgstr ""
+
+#: business/models.py:393
+msgid "property type values"
+msgstr ""
+
+#: business/models.py:405 deployment/models.py:161
+#: discovery/models_device.py:458 integration/models.py:22
+msgid "role"
+msgstr ""
+
+#: business/models.py:425
+msgid "default value"
+msgstr ""
+
+#: business/models.py:432 business/models.py:442 business/models.py:449
+msgid "property"
+msgstr ""
+
+#: business/models.py:433
+msgid "properties"
+msgstr ""
+
+#: business/models.py:458
+msgid "property value"
+msgstr ""
+
+#: business/models.py:459
+msgid "property values"
+msgstr ""
+
+#: business/models.py:465
+msgid "acorn"
+msgstr ""
+
+#: business/models.py:466
+msgid "animal"
+msgstr ""
+
+#: business/models.py:467
+msgid "animal-dog"
+msgstr ""
+
+#: business/models.py:468
+msgid "animal-monkey"
+msgstr ""
+
+#: business/models.py:469
+msgid "auction-hammer"
+msgstr ""
+
+#: business/models.py:470
+msgid "bank"
+msgstr ""
+
+#: business/models.py:471
+msgid "bomb"
+msgstr ""
+
+#: business/models.py:472
+msgid "cactus"
+msgstr ""
+
+#: business/models.py:473
+msgid "cake"
+msgstr ""
+
+#: business/models.py:474
+msgid "cheese"
+msgstr ""
+
+#: business/models.py:475
+msgid "flower"
+msgstr ""
+
+#: business/models.py:476
+msgid "fruit"
+msgstr ""
+
+#: business/models.py:477
+msgid "fruit-grape"
+msgstr ""
+
+#: business/models.py:478
+msgid "fruit-lime"
+msgstr ""
+
+#: business/models.py:479
+msgid "fruit-orange"
+msgstr ""
+
+#: business/models.py:480
+msgid "glass"
+msgstr ""
+
+#: business/models.py:481
+msgid "hamburger"
+msgstr ""
+
+#: business/models.py:482
+msgid "ice-cream"
+msgstr ""
+
+#: business/models.py:483
+msgid "lollipop"
+msgstr ""
+
+#: business/models.py:484
+msgid "milk"
+msgstr ""
+
+#: business/models.py:485
+msgid "pearl-shell"
+msgstr ""
+
+#: business/models.py:486
+msgid "ribbon"
+msgstr ""
+
+#: business/models.py:487
+msgid "rubber-baloons"
+msgstr ""
+
+#: business/models.py:488
+msgid "shoe"
+msgstr ""
+
+#: business/models.py:489
+msgid "snowman"
+msgstr ""
+
+#: business/models.py:490
+msgid "sport"
+msgstr ""
+
+#: business/models.py:491
+msgid "sport-basketball"
+msgstr ""
+
+#: business/models.py:492
+msgid "sport-cricket"
+msgstr ""
+
+#: business/models.py:493
+msgid "sport-football"
+msgstr ""
+
+#: business/models.py:494
+msgid "sport-golf"
+msgstr ""
+
+#: business/models.py:495
+msgid "sport-tennis"
+msgstr ""
+
+#: business/models.py:496
+msgid "sport-soccer"
+msgstr ""
+
+#: business/models.py:497
+msgid "tie"
+msgstr ""
+
+#: business/models.py:498
+msgid "umbrella"
+msgstr ""
+
+#: business/models.py:499
+msgid "yin-yang"
+msgstr ""
+
+#: business/models.py:504 cmdb/models_ci.py:157
+#: discovery/models_network.py:120
+msgid "icon"
+msgstr ""
+
+#: business/models.py:513
+msgid "departments"
+msgstr ""
+
+#: business/models.py:520
+msgid "venture extra cost type"
+msgstr ""
+
+#: business/models.py:521
+msgid "venture extra cost types"
+msgstr ""
+
+#: business/models.py:528
+msgid "venture extra cost"
+msgstr ""
+
+#: business/models.py:529
+msgid "venture extra costs"
+msgstr ""
+
+#: business/models.py:535 discovery/models_device.py:384
+msgid "monthly cost"
+msgstr ""
+
+#: cmdb/forms.py:39
+msgid "Top lev."
+msgstr ""
+
+#: cmdb/forms.py:40
+msgid "Show inact."
+msgstr ""
+
+#: cmdb/models_audits.py:50
+msgid "created"
+msgstr ""
+
+#: cmdb/models_audits.py:51
+msgid "accepted"
+msgstr ""
+
+#: cmdb/models_audits.py:52
+msgid "rejected"
+msgstr ""
+
+#: cmdb/models_audits.py:53
+msgid "closed"
+msgstr ""
+
+#: cmdb/models_audits.py:75 cmdb/models_changes.py:87 deployment/models.py:131
+#: discovery/models_history.py:46 discovery/models_history.py:399
+#: dnsedit/models.py:70
+msgid "user"
+msgstr ""
+
+#: cmdb/models_audits.py:78 discovery/models_history.py:43
+#: discovery/models_history.py:385 dnsedit/models.py:68
+msgid "date"
+msgstr ""
+
+#: cmdb/models_audits.py:79
+msgid "external ticket key number"
+msgstr ""
+
+#: cmdb/models_changes.py:22
+msgid "Git Configuration"
+msgstr ""
+
+#: cmdb/models_changes.py:23
+msgid "Services reconfiguration"
+msgstr ""
+
+#: cmdb/models_changes.py:24
+msgid "Device attribute change"
+msgstr ""
+
+#: cmdb/models_changes.py:25
+msgid "Zabbix trigger"
+msgstr ""
+
+#: cmdb/models_changes.py:28
+msgid "CI attribute change"
+msgstr ""
+
+#: cmdb/models_changes.py:34
+msgid "Notice"
+msgstr ""
+
+#: cmdb/models_changes.py:35
+msgid "Warning"
+msgstr ""
+
+#: cmdb/models_changes.py:36
+msgid "Error"
+msgstr ""
+
+#: cmdb/models_changes.py:37
+msgid "Critical"
+msgstr ""
+
+#: cmdb/models_changes.py:43
+msgid "Incident"
+msgstr ""
+
+#: cmdb/models_changes.py:44
+msgid "OP Change"
+msgstr ""
+
+#: cmdb/models_changes.py:45
+msgid "Service Request"
+msgstr ""
+
+#: cmdb/models_changes.py:46
+msgid "Not registered"
+msgstr ""
+
+#: cmdb/models_changes.py:47
+msgid "Waiting for register"
+msgstr ""
+
+#: cmdb/models_changes.py:82 cmdb/models_changes.py:134
+#: cmdb/models_changes.py:169 cmdb/models_changes.py:197
+msgid "timestamp"
+msgstr ""
+
+#: cmdb/models_changes.py:100
+msgid "CI history change"
+msgstr ""
+
+#: cmdb/models_changes.py:101
+msgid "CI history changes"
+msgstr ""
+
+#: cmdb/models_changes.py:126 cmdb/models_ci.py:319
+msgid "content type"
+msgstr ""
+
+#: cmdb/models_changes.py:128 cmdb/models_ci.py:322
+msgid "object id"
+msgstr ""
+
+#: cmdb/models_ci.py:28
+msgid "Contains"
+msgstr ""
+
+#: cmdb/models_ci.py:29
+msgid "Requires"
+msgstr ""
+
+#: cmdb/models_ci.py:30
+msgid "Has role"
+msgstr ""
+
+#: cmdb/models_ci.py:36
+msgid "Active"
+msgstr ""
+
+#: cmdb/models_ci.py:37
+msgid "Inactive"
+msgstr ""
+
+#: cmdb/models_ci.py:38
+msgid "Waiting for deactivation"
+msgstr ""
+
+#: cmdb/models_ci.py:44
+msgid "Changed"
+msgstr ""
+
+#: cmdb/models_ci.py:45
+msgid "Reference"
+msgstr ""
+
+#: cmdb/models_ci.py:51
+msgid "Integer"
+msgstr ""
+
+#: cmdb/models_ci.py:52
+msgid "String"
+msgstr ""
+
+#: cmdb/models_ci.py:53
+msgid "Date"
+msgstr ""
+
+#: cmdb/models_ci.py:54
+msgid "Real"
+msgstr ""
+
+#: cmdb/models_ci.py:55
+msgid "Choice List"
+msgstr ""
+
+#: cmdb/models_ci.py:63
+msgid "Application"
+msgstr ""
+
+#: cmdb/models_ci.py:64
+msgid "Device"
+msgstr ""
+
+#: cmdb/models_ci.py:65
+msgid "Procedure"
+msgstr ""
+
+#: cmdb/models_ci.py:66
+msgid "Venture"
+msgstr ""
+
+#: cmdb/models_ci.py:67
+msgid "Venture Role"
+msgstr ""
+
+#: cmdb/models_ci.py:68
+msgid "Business Line"
+msgstr ""
+
+#: cmdb/models_ci.py:69
+msgid "Service"
+msgstr ""
+
+#: cmdb/models_ci.py:70
+msgid "Network"
+msgstr ""
+
+#: cmdb/models_ci.py:71
+msgid "Data Center"
+msgstr ""
+
+#: cmdb/models_ci.py:72
+msgid "Network Terminator"
+msgstr ""
+
+#: cmdb/models_ci.py:137
+msgid "fugue-applications-blue"
+msgstr ""
+
+#: cmdb/models_ci.py:138
+msgid "fugue-database"
+msgstr ""
+
+#: cmdb/models_ci.py:139
+msgid "fugue-blue-documents"
+msgstr ""
+
+#: cmdb/models_ci.py:140
+msgid "fugue-books-brown"
+msgstr ""
+
+#: cmdb/models_ci.py:141
+msgid "fugue-processor"
+msgstr ""
+
+#: cmdb/models_ci.py:142
+msgid "fugue-network-ip"
+msgstr ""
+
+#: cmdb/models_ci.py:143
+msgid "fugue-disc-share"
+msgstr ""
+
+#: cmdb/models_ci.py:144
+msgid "fugue-computer-network"
+msgstr ""
+
+#: cmdb/models_ci.py:153
+msgid "CI type"
+msgstr ""
+
+#: cmdb/models_ci.py:165
+msgid "CI layer"
+msgstr ""
+
+#: cmdb/models_ci.py:166
+msgid "CI layers"
+msgstr ""
+
+#: cmdb/models_ci.py:179
+msgid "Parent"
+msgstr ""
+
+#: cmdb/models_ci.py:181
+msgid "Child"
+msgstr ""
+
+#: cmdb/models_ci.py:185
+msgid "relation kind"
+msgstr ""
+
+#: cmdb/models_ci.py:208
+msgid "Name"
+msgstr ""
+
+#: cmdb/models_ci.py:212
+msgid "attribute kind"
+msgstr ""
+
+#: cmdb/models_ci.py:218
+msgid "options"
+msgstr ""
+
+#: cmdb/models_ci.py:298
+msgid "CI UID"
+msgstr ""
+
+#: cmdb/models_ci.py:303
+msgid "CI name"
+msgstr ""
+
+#: cmdb/models_ci.py:305
+msgid "Business service"
+msgstr ""
+
+#: cmdb/models_ci.py:308
+msgid "Technical service"
+msgstr ""
+
+#: cmdb/models_ci.py:312
+msgid "layers containing given CI"
+msgstr ""
+
+#: cmdb/models_ci.py:315 discovery/models_device.py:326
+msgid "barcode"
+msgstr ""
+
+#: cmdb/models_ci.py:329
+msgid "state"
+msgstr ""
+
+#: cmdb/models_ci.py:333
+msgid "status"
+msgstr ""
+
+#: cmdb/models_ci.py:346
+msgid "configuration item owners"
+msgstr ""
+
+#: cmdb/models_ci.py:474
+msgid "integer value "
+msgstr ""
+
+#: cmdb/models_ci.py:477
+msgid "string value"
+msgstr ""
+
+#: cmdb/models_ci.py:480
+msgid "date value"
+msgstr ""
+
+#: cmdb/models_ci.py:483
+msgid "float value"
+msgstr ""
+
+#: cmdb/models_ci.py:487
+msgid "choice value"
+msgstr ""
+
+#: cmdb/models_ci.py:523
+msgid "technical owner"
+msgstr ""
+
+#: cmdb/models_ci.py:524
+msgid "business owner"
+msgstr ""
+
+#: cmdb/models_ci.py:531
+msgid "type of ownership"
+msgstr ""
+
+#: cmdb/util.py:71
+msgid "Issue updated"
+msgstr ""
+
+#: cmdb/util.py:77 cmdb/views_changes.py:158
+msgid "Type"
+msgstr ""
+
+#: cmdb/util.py:84
+msgid "Status"
+msgstr ""
+
+#: cmdb/util.py:90
+msgid "Ci"
+msgstr ""
+
+#: cmdb/util.py:96
+msgid "Summary"
+msgstr ""
+
+#: cmdb/util.py:101
+msgid "Assignee"
+msgstr ""
+
+#: cmdb/util.py:106
+msgid "Description"
+msgstr ""
+
+#: cmdb/util.py:111
+msgid "Analysis"
+msgstr ""
+
+#: cmdb/util.py:116
+msgid "Problems"
+msgstr ""
+
+#: cmdb/util.py:121
+msgid "Planed start"
+msgstr ""
+
+#: cmdb/util.py:127
+msgid "Planed end"
+msgstr ""
+
+#: cmdb/views.py:388
+msgid "Correct the errors."
+msgstr ""
+
+#: cmdb/views.py:1060 cmdb/views.py:1123 cmdb/views.py:1189
+#: cmdb/views_changes.py:134 cmdb/views_changes.py:243
+#: cmdb/views_changes.py:292 cmdb/views_changes.py:341
+#: cmdb/views_changes.py:617
+msgid "You don't have permission to see that."
+msgstr ""
+
+#: cmdb/views_changes.py:140
+msgid "Time"
+msgstr ""
+
+#: cmdb/views_changes.py:146
+msgid "Comment"
+msgstr ""
+
+#: cmdb/views_changes.py:152
+msgid "Configuration Item"
+msgstr ""
+
+#: cmdb/views_changes.py:164
+msgid "Source"
+msgstr ""
+
+#: cmdb/views_changes.py:170
+msgid "Jira Ticket"
+msgstr ""
+
+#: cmdb/views_changes.py:176
+msgid "Details"
+msgstr ""
+
+#: cmdb/views_changes.py:629
+msgid "Configuration item"
+msgstr ""
+
+#: cmdb/views_changes.py:634
+msgid "Technical owners"
+msgstr ""
+
+#: cmdb/views_changes.py:639
+msgid "Business owners"
+msgstr ""
+
+#: cmdb/views_changes.py:659 cmdb/views_changes.py:662
+msgid "Change count"
+msgstr ""
+
+#: cmdb/views_changes.py:660
+msgid "Problem count"
+msgstr ""
+
+#: cmdb/views_changes.py:661
+msgid "Incident count"
+msgstr ""
+
+#: deployment/admin.py:65
+msgid "Move to archive"
+msgstr ""
+
+#: deployment/admin.py:90 deployment/models.py:98
+msgid "files"
+msgstr ""
+
+#: deployment/admin.py:109
+msgid "details"
+msgstr ""
+
+#: deployment/admin.py:113
+msgid "content"
+msgstr ""
+
+#: deployment/admin.py:115
+msgid "Fill either <b>file</b> or <b>raw config</b>."
+msgstr ""
+
+#: deployment/models.py:28
+msgid "open"
+msgstr ""
+
+#: deployment/models.py:29
+msgid "in progress"
+msgstr ""
+
+#: deployment/models.py:30
+msgid "done"
+msgstr ""
+
+#: deployment/models.py:37
+msgid "kernel"
+msgstr ""
+
+#: deployment/models.py:38
+msgid "initrd"
+msgstr ""
+
+#: deployment/models.py:41
+msgid "boot_ipxe"
+msgstr ""
+
+#: deployment/models.py:42
+msgid "kickstart"
+msgstr ""
+
+#: deployment/models.py:45
+msgid "other"
+msgstr ""
+
+#: deployment/models.py:54
+msgid "file type"
+msgstr ""
+
+#: deployment/models.py:59
+msgid "raw config"
+msgstr ""
+
+#: deployment/models.py:61
+msgid ""
+"All newline characters will be converted to Unix \\n newlines. You can use "
+"{{variables}} in the body. Available variables: filename, filetype, mac, ip, "
+"hostname, venture and venture_role."
+msgstr ""
+
+#: deployment/models.py:67
+msgid "file"
+msgstr ""
+
+#: deployment/models.py:74 deployment/models.py:101
+msgid "description"
+msgstr ""
+
+#: deployment/models.py:80
+msgid "preboot file"
+msgstr ""
+
+#: deployment/models.py:81
+msgid "preboot files"
+msgstr ""
+
+#: deployment/models.py:108
+msgid "preboots"
+msgstr ""
+
+#: deployment/models.py:118
+msgid "mass deployment"
+msgstr ""
+
+#: deployment/models.py:119
+msgid "mass deployments"
+msgstr ""
+
+#: deployment/models.py:136
+msgid "last status change"
+msgstr ""
+
+#: deployment/models.py:137
+msgid "the date of the last status change"
+msgstr ""
+
+#: deployment/models.py:145 discovery/admin.py:348
+#: discovery/models_history.py:485 discovery/models_history.py:526
+#: discovery/models_network.py:468 discovery/models_network.py:472
+#: discovery/models_network.py:540 dnsedit/admin.py:19 dnsedit/models.py:22
+#: dnsedit/models.py:25 dnsedit/models.py:39 dnsedit/models.py:50
+msgid "IP address"
+msgstr ""
+
+#: deployment/models.py:165
+msgid "done plugins"
+msgstr ""
+
+#: deployment/models.py:169
+msgid "is running"
+msgstr ""
+
+#: deployment/models.py:174
+msgid "initiated by mass deployment"
+msgstr ""
+
+#: deployment/models.py:192 deployment/models.py:213
+#: discovery/models_network.py:476 discovery/models_network.py:584
+msgid "hostname"
+msgstr ""
+
+#: deployment/models.py:198
+msgid "archived deployment"
+msgstr ""
+
+#: deployment/models.py:199
+msgid "archived deployments"
+msgstr ""
+
+#: deployment/models.py:219
+msgid "deployment"
+msgstr ""
+
+#: deployment/models.py:220
+msgid "deployments"
+msgstr ""
+
+#: discovery/admin.py:62 discovery/models_network.py:154
+#: discovery/models_network.py:431
+msgid "network terminators"
+msgstr ""
+
+#: discovery/admin.py:113
+msgid "You can use only this characters: [a-zA-Z0-9_-]"
+msgstr ""
+
+#: discovery/admin.py:121
+msgid "Please remove disallowed characters."
+msgstr ""
+
+#: discovery/admin.py:127
+msgid "Incorrect template structure. Please see example below."
+msgstr ""
+
+#: discovery/admin.py:166
+msgid "Either address or hostname must be provided."
+msgstr ""
+
+#: discovery/admin.py:243
+msgid "Model is required"
+msgstr ""
+
+#: discovery/models_component.py:112
+msgid "10 Mbps"
+msgstr ""
+
+#: discovery/models_component.py:113
+msgid "100 Mbps"
+msgstr ""
+
+#: discovery/models_component.py:114
+msgid "1 Gbps"
+msgstr ""
+
+#: discovery/models_component.py:115
+msgid "10 Gbps"
+msgstr ""
+
+#: discovery/models_component.py:118
+msgid "unknown speed"
+msgstr ""
+
+#: discovery/models_component.py:124 discovery/models_component.py:531
+msgid "processor"
+msgstr ""
+
+#: discovery/models_component.py:125 discovery/models_component.py:585
+#: discovery/models_component.py:770
+msgid "memory"
+msgstr ""
+
+#: discovery/models_component.py:126
+msgid "disk drive"
+msgstr ""
+
+#: discovery/models_component.py:127
+msgid "ethernet card"
+msgstr ""
+
+#: discovery/models_component.py:128
+msgid "expansion card"
+msgstr ""
+
+#: discovery/models_component.py:129
+msgid "fibre channel card"
+msgstr ""
+
+#: discovery/models_component.py:130 discovery/models_component.py:434
+msgid "disk share"
+msgstr ""
+
+#: discovery/models_component.py:131 discovery/models_device.py:90
+#: discovery/models_device.py:259
+msgid "unknown"
+msgstr ""
+
+#: discovery/models_component.py:132 discovery/models_device.py:65
+msgid "management"
+msgstr ""
+
+#: discovery/models_component.py:133
+msgid "power module"
+msgstr ""
+
+#: discovery/models_component.py:134
+msgid "cooling device"
+msgstr ""
+
+#: discovery/models_component.py:135
+msgid "media tray"
+msgstr ""
+
+#: discovery/models_component.py:136
+msgid "chassis"
+msgstr ""
+
+#: discovery/models_component.py:137
+msgid "backup"
+msgstr ""
+
+#: discovery/models_component.py:138 discovery/models_component.py:671
+#: discovery/models_component.py:672
+msgid "software"
+msgstr ""
+
+#: discovery/models_component.py:139 discovery/models_component.py:781
+msgid "operating system"
+msgstr ""
+
+#: discovery/models_component.py:144 discovery/models_device.py:147
+msgid "purchase price"
+msgstr ""
+
+#: discovery/models_component.py:149 discovery/models_component.py:200
+msgid "component type"
+msgstr ""
+
+#: discovery/models_component.py:155
+msgid "This price is per unit of size"
+msgstr ""
+
+#: discovery/models_component.py:158
+msgid "unit of size"
+msgstr ""
+
+#: discovery/models_component.py:164
+msgid "size modifier"
+msgstr ""
+
+#: discovery/models_component.py:169
+msgid "group of component models"
+msgstr ""
+
+#: discovery/models_component.py:170
+msgid "groups of component models"
+msgstr ""
+
+#: discovery/models_component.py:183 discovery/models_component.py:379
+#: discovery/models_component.py:419 discovery/models_component.py:519
+#: discovery/models_component.py:573 discovery/models_component.py:599
+#: discovery/models_component.py:626 discovery/models_component.py:627
+#: discovery/models_component.py:640 discovery/models_component.py:661
+#: discovery/models_component.py:768 discovery/models_device.py:168
+#: discovery/models_device.py:280 discovery/models_device.py:833
+#: integration/models.py:26
+msgid "name"
+msgstr ""
+
+#: discovery/models_component.py:185 discovery/models_component.py:521
+#: discovery/models_component.py:578
+msgid "speed (MHz)"
+msgstr ""
+
+#: discovery/models_component.py:190 discovery/models_component.py:524
+msgid "number of cores"
+msgstr ""
+
+#: discovery/models_component.py:195 discovery/models_component.py:423
+#: discovery/models_component.py:478 discovery/models_component.py:575
+#: discovery/models_component.py:605 discovery/models_component.py:716
+msgid "size (MiB)"
+msgstr ""
+
+#: discovery/models_component.py:216 discovery/models_history.py:390
+msgid "component model"
+msgstr ""
+
+#: discovery/models_component.py:217
+msgid "component models"
+msgstr ""
+
+#: discovery/models_component.py:337 discovery/models_component.py:468
+#: discovery/models_device.py:480 discovery/models_history.py:44
+#: discovery/models_network.py:494 dnsedit/models.py:72
+msgid "device"
+msgstr ""
+
+#: discovery/models_component.py:340 discovery/models_device.py:310
+msgid "model"
+msgstr ""
+
+#: discovery/models_component.py:383 discovery/models_component.py:596
+#: discovery/models_component.py:658
+msgid "vendor SN"
+msgstr ""
+
+#: discovery/models_component.py:387 discovery/models_device.py:340
+msgid "boot firmware"
+msgstr ""
+
+#: discovery/models_component.py:390 discovery/models_device.py:346
+msgid "hardware firmware"
+msgstr ""
+
+#: discovery/models_component.py:394 discovery/models_device.py:352
+msgid "diagnostics firmware"
+msgstr ""
+
+#: discovery/models_component.py:398 discovery/models_device.py:358
+msgid "management firmware"
+msgstr ""
+
+#: discovery/models_component.py:403
+msgid "generic component"
+msgstr ""
+
+#: discovery/models_component.py:404
+msgid "generic components"
+msgstr ""
+
+#: discovery/models_component.py:416
+msgid "share identifier"
+msgstr ""
+
+#: discovery/models_component.py:426
+msgid "size for snapshots (MiB)"
+msgstr ""
+
+#: discovery/models_component.py:429
+msgid "Volume serial"
+msgstr ""
+
+#: discovery/models_component.py:435
+msgid "disk shares"
+msgstr ""
+
+#: discovery/models_component.py:467
+msgid "share"
+msgstr ""
+
+#: discovery/models_component.py:470
+msgid "volume"
+msgstr ""
+
+#: discovery/models_component.py:474
+msgid "server"
+msgstr ""
+
+#: discovery/models_component.py:482
+msgid "is that a virtual server mount?"
+msgstr ""
+
+#: discovery/models_component.py:487
+msgid "disk share mount"
+msgstr ""
+
+#: discovery/models_component.py:488
+msgid "disk share mounts"
+msgstr ""
+
+#: discovery/models_component.py:527 discovery/models_component.py:581
+msgid "slot number"
+msgstr ""
+
+#: discovery/models_component.py:532
+msgid "processors"
+msgstr ""
+
+#: discovery/models_component.py:586
+msgid "memories"
+msgstr ""
+
+#: discovery/models_component.py:601
+msgid "mount point"
+msgstr ""
+
+#: discovery/models_component.py:609 discovery/models_component.py:773
+#: discovery/models_device.py:85
+msgid "storage"
+msgstr ""
+
+#: discovery/models_component.py:610
+msgid "storages"
+msgstr ""
+
+#: discovery/models_component.py:630
+msgid "fibre channel"
+msgstr ""
+
+#: discovery/models_component.py:631
+msgid "fibre channels"
+msgstr ""
+
+#: discovery/models_component.py:641 dnsedit/models.py:21
+msgid "MAC address"
+msgstr ""
+
+#: discovery/models_component.py:643
+msgid "speed"
+msgstr ""
+
+#: discovery/models_component.py:648
+msgid "ethernet"
+msgstr ""
+
+#: discovery/models_component.py:649
+msgid "ethernets"
+msgstr ""
+
+#: discovery/models_component.py:664
+msgid "path"
+msgstr ""
+
+#: discovery/models_component.py:667
+msgid "version"
+msgstr ""
+
+#: discovery/models_component.py:714
+msgid "day"
+msgstr ""
+
+#: discovery/models_component.py:720
+msgid "Splunk usage"
+msgstr ""
+
+#: discovery/models_component.py:721
+msgid "Splunk usages"
+msgstr ""
+
+#: discovery/models_component.py:770 discovery/models_component.py:773
+msgid "in MiB"
+msgstr ""
+
+#: discovery/models_component.py:777
+msgid "cores count"
+msgstr ""
+
+#: discovery/models_component.py:782
+msgid "operating systems"
+msgstr ""
+
+#: discovery/models_device.py:63 discovery/models_device.py:471
+msgid "rack"
+msgstr ""
+
+#: discovery/models_device.py:64
+msgid "blade system"
+msgstr ""
+
+#: discovery/models_device.py:66
+msgid "power distribution unit"
+msgstr ""
+
+#: discovery/models_device.py:70
+msgid "switch"
+msgstr ""
+
+#: discovery/models_device.py:71
+msgid "router"
+msgstr ""
+
+#: discovery/models_device.py:72
+msgid "load balancer"
+msgstr ""
+
+#: discovery/models_device.py:73
+msgid "firewall"
+msgstr ""
+
+#: discovery/models_device.py:74
+msgid "SMTP gateway"
+msgstr ""
+
+#: discovery/models_device.py:75
+msgid "Appliance"
+msgstr ""
+
+#: discovery/models_device.py:76
+msgid "switch stack"
+msgstr ""
+
+#: discovery/models_device.py:79
+msgid "rack server"
+msgstr ""
+
+#: discovery/models_device.py:80
+msgid "blade server"
+msgstr ""
+
+#: discovery/models_device.py:81
+msgid "virtual server"
+msgstr ""
+
+#: discovery/models_device.py:82
+msgid "cloud server"
+msgstr ""
+
+#: discovery/models_device.py:86
+msgid "fibre channel switch"
+msgstr ""
+
+#: discovery/models_device.py:87
+msgid "MogileFS storage"
+msgstr ""
+
+#: discovery/models_device.py:95
+msgid "deprecation time in months"
+msgstr ""
+
+#: discovery/models_device.py:100 discovery/models_device.py:134
+#: discovery/models_device.py:334 discovery/models_network.py:105
+#: discovery/models_network.py:150
+msgid "remarks"
+msgstr ""
+
+#: discovery/models_device.py:101 discovery/models_device.py:135
+msgid "additional information."
+msgstr ""
+
+#: discovery/models_device.py:108
+msgid "deprecation kind"
+msgstr ""
+
+#: discovery/models_device.py:109
+msgid "deprecation kinds"
+msgstr ""
+
+#: discovery/models_device.py:129
+msgid "margin in percents"
+msgstr ""
+
+#: discovery/models_device.py:142
+msgid "margin kinds"
+msgstr ""
+
+#: discovery/models_device.py:152 discovery/models_device.py:173
+msgid "device type"
+msgstr ""
+
+#: discovery/models_device.py:156
+msgid "number of slots"
+msgstr ""
+
+#: discovery/models_device.py:159
+msgid "group of device models"
+msgstr ""
+
+#: discovery/models_device.py:160
+msgid "groups of device models"
+msgstr ""
+
+#: discovery/models_device.py:186
+msgid "chassis size"
+msgstr ""
+
+#: discovery/models_device.py:192 discovery/models_history.py:386
+msgid "device model"
+msgstr ""
+
+#: discovery/models_device.py:193
+msgid "device models"
+msgstr ""
+
+#: discovery/models_device.py:221
+msgid "uptime in seconds"
+msgstr ""
+
+#: discovery/models_device.py:225
+msgid "uptime timestamp"
+msgstr ""
+
+#: discovery/models_device.py:228
+msgid "moment of the last uptime update"
+msgstr ""
+
+#: discovery/models_device.py:261
+msgid "1 day"
+msgstr ""
+
+#: discovery/models_device.py:263
+#, python-format
+msgid "%d days"
+msgstr ""
+
+#: discovery/models_device.py:284
+msgid "extra name"
+msgstr ""
+
+#: discovery/models_device.py:292
+msgid "physical parent device"
+msgstr ""
+
+#: discovery/models_device.py:301
+msgid "logical parent device"
+msgstr ""
+
+#: discovery/models_device.py:318
+msgid "serial number"
+msgstr ""
+
+#: discovery/models_device.py:335 discovery/models_network.py:106
+#: discovery/models_network.py:150
+msgid "Additional information."
+msgstr ""
+
+#: discovery/models_device.py:364
+msgid "manual price"
+msgstr ""
+
+#: discovery/models_device.py:369
+msgid "purchase date"
+msgstr ""
+
+#: discovery/models_device.py:374
+msgid "deprecation date"
+msgstr ""
+
+#: discovery/models_device.py:379
+msgid "quoted price"
+msgstr ""
+
+#: discovery/models_device.py:389
+msgid "warranty expiration"
+msgstr ""
+
+#: discovery/models_device.py:394
+msgid "support expiration"
+msgstr ""
+
+#: discovery/models_device.py:399
+msgid "support kind"
+msgstr ""
+
+#: discovery/models_device.py:407
+msgid "deprecation"
+msgstr ""
+
+#: discovery/models_device.py:415
+msgid "margin"
+msgstr ""
+
+#: discovery/models_device.py:422
+msgid "numeric position"
+msgstr ""
+
+#: discovery/models_device.py:427
+msgid "position"
+msgstr ""
+
+#: discovery/models_device.py:443
+msgid "management address"
+msgstr ""
+
+#: discovery/models_device.py:450
+msgid "old role"
+msgstr ""
+
+#: discovery/models_device.py:481
+msgid "devices"
+msgstr ""
+
+#: discovery/models_device.py:828
+msgid "load balancer pool"
+msgstr ""
+
+#: discovery/models_device.py:829
+msgid "load balancer pools"
+msgstr ""
+
+#: discovery/models_device.py:834 discovery/models_device.py:851
+msgid "load balancer device"
+msgstr ""
+
+#: discovery/models_device.py:836 discovery/models_device.py:848
+msgid "address"
+msgstr ""
+
+#: discovery/models_device.py:837 discovery/models_device.py:849
+msgid "port"
+msgstr ""
+
+#: discovery/models_device.py:840
+msgid "load balancer virtual server"
+msgstr ""
+
+#: discovery/models_device.py:841
+msgid "load balancer virtual servers"
+msgstr ""
+
+#: discovery/models_device.py:852
+msgid "enabled state"
+msgstr ""
+
+#: discovery/models_device.py:855
+msgid "load balancer pool membership"
+msgstr ""
+
+#: discovery/models_device.py:856
+msgid "load balancer pool memberships"
+msgstr ""
+
+#: discovery/models_history.py:57
+msgid "history change"
+msgstr ""
+
+#: discovery/models_history.py:58
+msgid "history changes"
+msgstr ""
+
+#: discovery/models_history.py:393
+msgid "device model group"
+msgstr ""
+
+#: discovery/models_history.py:397
+msgid "component model group"
+msgstr ""
+
+#: discovery/models_history.py:496
+msgid "discovery warning"
+msgstr ""
+
+#: discovery/models_history.py:497
+msgid "discovery warnings"
+msgstr ""
+
+#: discovery/models_network.py:80 discovery/models_network.py:449
+msgid "discovery queue"
+msgstr ""
+
+#: discovery/models_network.py:88
+msgid ""
+"E.g. h<200,299>.dc|h<400,499>.dc will produce: h200.dc h201.dc ... h299.dc "
+"h400.dc h401.dc"
+msgstr ""
+
+#: discovery/models_network.py:96
+msgid "The address for a TFTP server for DHCP."
+msgstr ""
+
+#: discovery/models_network.py:99
+msgid "domain"
+msgstr ""
+
+#: discovery/models_network.py:124 discovery/models_network.py:181
+msgid "network kind"
+msgstr ""
+
+#: discovery/models_network.py:125
+msgid "network kinds"
+msgstr ""
+
+#: discovery/models_network.py:131
+msgid "network address"
+msgstr ""
+
+#: discovery/models_network.py:132
+msgid "Presented as string (e.g. 192.168.0.0/24)"
+msgstr ""
+
+#: discovery/models_network.py:136
+msgid "gateway address"
+msgstr ""
+
+#: discovery/models_network.py:136 discovery/models_network.py:468
+msgid "Presented as string."
+msgstr ""
+
+#: discovery/models_network.py:140
+msgid "reserved"
+msgstr ""
+
+#: discovery/models_network.py:141
+msgid ""
+"Number of addresses to be omitted in the automatic determination process, "
+"counted from the first in range."
+msgstr ""
+
+#: discovery/models_network.py:145
+msgid "reserved (top margin)"
+msgstr ""
+
+#: discovery/models_network.py:146
+msgid ""
+"Number of addresses to be omitted in the automatic determination process, "
+"counted from the last in range."
+msgstr ""
+
+#: discovery/models_network.py:157
+msgid "VLAN number"
+msgstr ""
+
+#: discovery/models_network.py:167
+msgid "environment"
+msgstr ""
+
+#: discovery/models_network.py:173
+msgid "smallest IP number"
+msgstr ""
+
+#: discovery/models_network.py:177
+msgid "largest IP number"
+msgstr ""
+
+#: discovery/models_network.py:185
+msgid "racks"
+msgstr ""
+
+#: discovery/models_network.py:193
+msgid "Ignore addresses from this network"
+msgstr ""
+
+#: discovery/models_network.py:196
+msgid ""
+"Addresses from this network should never be assigned to any device, because "
+"they are not unique."
+msgstr ""
+
+#: discovery/models_network.py:202
+msgid "custom DNS servers"
+msgstr ""
+
+#: discovery/models_network.py:207
+msgid "Broadcast in DHCP configuration"
+msgstr ""
+
+#: discovery/models_network.py:212
+msgid "DHCP additional configuration"
+msgstr ""
+
+#: discovery/models_network.py:217
+msgid "last scan"
+msgstr ""
+
+#: discovery/models_network.py:407
+msgid "The address value specified is not a valid network."
+msgstr ""
+
+#: discovery/models_network.py:415 discovery/models_network.py:513
+msgid "network"
+msgstr ""
+
+#: discovery/models_network.py:416
+msgid "networks"
+msgstr ""
+
+#: discovery/models_network.py:430
+msgid "network terminator"
+msgstr ""
+
+#: discovery/models_network.py:442
+msgid "data centers"
+msgstr ""
+
+#: discovery/models_network.py:450
+msgid "discovery queues"
+msgstr ""
+
+#: discovery/models_network.py:472 dnsedit/models.py:25
+msgid "Presented as int."
+msgstr ""
+
+#: discovery/models_network.py:480
+msgid "name from SNMP"
+msgstr ""
+
+#: discovery/models_network.py:483
+msgid "SNMP community"
+msgstr ""
+
+#: discovery/models_network.py:487
+msgid "SNMP version"
+msgstr ""
+
+#: discovery/models_network.py:498
+msgid "family from HTTP"
+msgstr ""
+
+#: discovery/models_network.py:502
+msgid "This is a management address"
+msgstr ""
+
+#: discovery/models_network.py:506
+msgid "information from DNS TXT fields"
+msgstr ""
+
+#: discovery/models_network.py:510
+msgid "last puppet check"
+msgstr ""
+
+#: discovery/models_network.py:516
+msgid "last plugins"
+msgstr ""
+
+#: discovery/models_network.py:517
+msgid "dead ping count"
+msgstr ""
+
+#: discovery/models_network.py:518
+msgid "Buried from autoscan"
+msgstr ""
+
+#: discovery/models_network.py:526
+msgid "This is a public address"
+msgstr ""
+
+#: discovery/models_network.py:541
+msgid "IP addresses"
+msgstr ""
+
+#: discovery/models_network.py:588
+msgid "IP alias"
+msgstr ""
+
+#: discovery/models_network.py:589
+msgid "IP aliases"
+msgstr ""
+
+#: discovery/models_pricing.py:20
+msgid "Sum"
+msgstr ""
+
+#: discovery/models_pricing.py:21
+msgid "Average"
+msgstr ""
+
+#: discovery/models_pricing.py:22
+msgid "Minimum"
+msgstr ""
+
+#: discovery/models_pricing.py:23
+msgid "Maximum"
+msgstr ""
+
+#: discovery/models_util.py:18
+msgid "last seen"
+msgstr ""
+
+#: dnsedit/models.py:30
+msgid "DHCP entry"
+msgstr ""
+
+#: dnsedit/models.py:31
+msgid "DHCP entries"
+msgstr ""
+
+#: dnsedit/models.py:44
+msgid "DHCP Server"
+msgstr ""
+
+#: dnsedit/models.py:45
+msgid "DHCP Servers"
+msgstr ""
+
+#: dnsedit/models.py:54
+msgid "is default"
+msgstr ""
+
+#: dnsedit/models.py:60
+msgid "DNS Server"
+msgstr ""
+
+#: dnsedit/models.py:61
+msgid "DNS Servers"
+msgstr ""
+
+#: dnsedit/models.py:82
+msgid "DNS History entry"
+msgstr ""
+
+#: dnsedit/models.py:83
+msgid "DNS History entries"
+msgstr ""
+
+#: integration/models.py:16
+msgid "Custom"
+msgstr ""
+
+#: integration/models.py:17
+msgid "Zabbix"
+msgstr ""
+
+#: integration/models.py:23
+msgid "integration type"
+msgstr ""
+
+#: scan/tests/samples/choices.py:14
+msgid "simple"
+msgstr ""
+
+#: scan/tests/samples/choices.py:15
+msgid "not simple"
+msgstr ""
+
+#: scan/tests/samples/choices.py:16
+msgid "some difficult case"
+msgstr ""
+
+#: templates/admin/base.html:28
+msgid "Welcome,"
+msgstr ""
+
+#: templates/admin/base.html:32
+msgid "Documentation"
+msgstr ""
+
+#: templates/admin/base.html:33
+msgid "Report a problem"
+msgstr ""
+
+#: templates/admin/base.html:40
+msgid "Change password"
+msgstr ""
+
+#: templates/admin/base.html:47
+msgid "Log out"
+msgstr ""
+
+#: templates/admin/base.html:54 templates/admin/change_form.html:21
+msgid "Home"
+msgstr ""
+
+#: templates/admin/base_site.html:4 templates/admin/base_site.html.py:7
+msgid "Ralph"
+msgstr ""
+
+#: templates/admin/change_form.html:24
+msgid "Add"
+msgstr ""
+
+#: templates/admin/change_form.html:34
+msgid "History"
+msgstr ""
+
+#: templates/admin/change_form.html:35
+#: templates/admin/edit_inline/stacked.html:10
+#: templates/admin/edit_inline/tabular.html:29
+msgid "View on site"
+msgstr ""
+
+#: templates/admin/change_form.html:46
+msgid "Please correct the error below."
+msgid_plural "Please correct the errors below."
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/admin/edit_inline/stacked.html:72
+#: templates/admin/edit_inline/tabular.html:114
+#, python-format
+msgid "Add another %(verbose_name)s"
+msgstr ""
+
+#: templates/admin/edit_inline/stacked.html:75
+#: templates/admin/edit_inline/tabular.html:117
+msgid "Remove"
+msgstr ""
+
+#: templates/admin/edit_inline/tabular.html:16
+msgid "Delete?"
+msgstr ""
+
+#: templates/business/base_ventures.html:8
+#: templates/business/show_venture.html:5
+#: templates/business/show_ventures.html:23
+msgid "List of ventures"
+msgstr ""
+
+#: templates/business/show_venture.html:6
+msgid "Main page"
+msgstr ""
+
+#: templates/business/show_venture.html:18
+msgid "Main owners"
+msgstr ""
+
+#: templates/business/show_venture.html:19
+#: templates/business/show_venture.html:44
+msgid "Technical owners:"
+msgstr ""
+
+#: templates/business/show_venture.html:27
+#: templates/business/show_venture.html:37
+#: templates/business/show_venture.html:56
+#: templates/business/show_venture.html:66
+msgid "none"
+msgstr ""
+
+#: templates/business/show_venture.html:29
+#: templates/business/show_venture.html:58
+msgid "Business owners:"
+msgstr ""
+
+#: templates/business/show_venture.html:74
+msgid "More in this section"
+msgstr ""
+
+#: templates/business/show_ventures.html:5
+msgid "Ralph: List of Ventures"
+msgstr ""
+
+#: templates/business/show_ventures.html:10
+msgid "List of venture owners"
+msgstr ""
+
+#: templates/business/show_ventures.html:11
+msgid "Contact technical or business owners"
+msgstr ""
+
+#: templates/business/show_ventures.html:12
+msgid "Beta Release"
+msgstr ""
+
+#: templates/business/show_ventures.html:14
+msgid ""
+"<strong>Welcome.</strong> This tool is a part of Ralph. If anything doesn't "
+"work or you miss a feature please <a target=\"_blank\" href=\"/report-a-bug"
+"\">use the bug tracker</a>."
+msgstr ""
+
+#: templates/business/side_ventures.html:3
+msgid "Menu"
+msgstr ""
+
+#: ui/forms/devices.py:281
+msgid "You haven't selected any devices."
+msgstr ""
+
+#: ui/forms/network.py:49 ui/forms/network.py:53
+msgid "It's not a valid network address."
+msgstr ""
+
+#: ui/forms/network.py:69
+msgid ""
+"To broadcast this network in DHCP config you must also complete the "
+"`Gateway` field."
+msgstr ""
+
+#: ui/forms/search.py:30
+msgid "Enter \"none\" to search for empty fields"
+msgstr ""
+
+#: ui/forms/search.py:31
+msgid "Enter \"none\" or \"-\" to search for empty fields"
+msgstr ""
+
+#: ui/forms/search.py:33
+msgid ""
+"Enter \"package_name\" or \"package_name operator version\" to search "
+"software package. Operators list: \" > >= < <= == \" and \"^=\" for "
+"startswith version. Example: \"Apache<=2.4.4\""
+msgstr ""
+
+#: ui/templates/ui/report_margins.html:14
+msgid ""
+"This report allows you to compare current and simulated costs for selected "
+"venture within given time frame."
+msgstr ""
+
+#: ui/templates/ui/report_ventures.html:12
+msgid ""
+"This report provides detailed info regarding costs for all ventures within "
+"selected time frame (with the possibility to edit the ventures afterwards)."
+msgstr ""
+
+#: ui/views/common.py:467
+msgid "There are some errors in your form. See below for details."
+msgstr ""
+
+#: ui/views/common.py:1380
+msgid "You don't have permissions for bulk edit."
+msgstr ""
+
+#: ui/views/devices.py:106 ui/views/devices.py:180
+msgid "You don't have permission to view this."
+msgstr ""
+
+#: ui/views/devices.py:242
+msgid "Page is not 'last', nor can it be converted to an int"
+msgstr ""
+
+#: ui/views/devices.py:250
+#, python-format
+msgid "Invalid page (%(page_number)s)"
+msgstr ""
+
+#: ui/views/reports.py:86
+msgid "No ping since 1 day"
+msgstr ""
+
+#: ui/views/reports.py:91
+msgid "No ping since 3 days"
+msgstr ""
+
+#: ui/views/reports.py:96
+msgid "No ping since 7 days"
+msgstr ""
+
+#: ui/views/reports.py:101
+msgid "No purchase date"
+msgstr ""
+
+#: ui/views/reports.py:106
+msgid "No venture and role"
+msgstr ""
+
+#: ui/views/reports.py:113
+msgid "Deactivated support"
+msgstr ""
+
+#: ui/views/reports.py:120
+msgid "Support expires in 30 days"
+msgstr ""
+
+#: ui/views/reports.py:128
+msgid "Support expires in 60 days"
+msgstr ""
+
+#: ui/views/reports.py:136
+msgid "Support expires in 90 days"
+msgstr ""
+
+#: ui/views/reports.py:142
+msgid "Verified venture and role"
+msgstr ""
+
+#: ui/views/reports.py:146
+msgid "Deployment open"
+msgstr ""
+
+#: ui/views/reports.py:152
+msgid "Deployment in progress"
+msgstr ""
+
+#: ui/views/reports.py:158
+msgid "Deprecation devices"
+msgstr ""
+
+#: ui/views/reports.py:167
+msgid "Deprecation devices in 30"
+msgstr ""
+
+#: ui/views/reports.py:178
+msgid "Deprecation devices in 60"
+msgstr ""
+
+#: ui/views/reports.py:189
+msgid "Deprecation devices in 90"
+msgstr ""
+
+#: ui/views/reports.py:308 ui/views/reports.py:527 ui/views/reports.py:683
+#: ui/views/reports.py:742 ui/views/reports.py:1044
+msgid "You don't have permission to see reports."
+msgstr ""
