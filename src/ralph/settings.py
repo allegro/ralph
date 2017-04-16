@@ -220,6 +220,7 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 TIME_ZONE = 'Europe/Warsaw'
 LANGUAGE_CODE = 'en-us'
 CURRENCY = 'PLN'
+POWER_CONSUMPTION_UNIT = 'kWh'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
