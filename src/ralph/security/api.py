@@ -8,7 +8,7 @@ from rest_framework import serializers
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import RalphAPISaveSerializer
 from ralph.networks.models.networks import IPAddress
-from ralph.security.models import SecurityScan, Vulnerability, any_exceeded
+from ralph.security.models import any_exceeded, SecurityScan, Vulnerability
 
 
 class VulnerabilitySerializer(RalphAPISerializer):
