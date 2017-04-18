@@ -26,11 +26,13 @@ class OperationChangeList(RalphChangeList):
         filter_specs, filter_specs_exist, lookup_params, use_distinct = \
             super(RalphChangeList, self).get_filters(request)
 
+        filter_params = self.get_filters_params()
+
         return (
             filter_specs,
             filter_specs_exist,
             lookup_params,
-            use_distinct if lookup_params.get('base_objects') else False
+            use_distinct if filter_params.get('base_objects') else False
         )
 
 
