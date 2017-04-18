@@ -111,8 +111,9 @@ class SecurityScanAPITests(RalphAPITestCase):
 
     def test_create_scan_sets_is_patched_false_when_vulnerabilities(self):
         ip = IPAddressFactory(address="192.168.128.10")
-        vulnerability = VulnerabilityFactory()
-        print(vulnerability.id)
+        vulnerability = VulnerabilityFactory(
+            patch_deadline=datetime.now() - timedelta(days=10)
+        )
         data = {
             'last_scan_date': '2015-01-01T00:00:00',
             'scan_status': ScanStatus.ok.name,
