@@ -21,12 +21,14 @@ from ralph.operations.models import (
 class OperationChangeList(RalphChangeList):
 
     def get_filters(self, request):
-        filter_specs, bool_filter_specs__, lookup_params, use_distinct = \
+        """Avoid using DISTINCT clause when base object filter is not used."""
+
+        filter_specs, filter_specs, lookup_params, use_distinct = \
             super(RalphChangeList, self).get_filters(request)
 
         return (
             filter_specs,
-            bool_filter_specs__,
+            filter_specs,
             lookup_params,
             use_distinct if lookup_params.get('base_objects') else False
         )
