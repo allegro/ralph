@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from datetime import datetime
+
 from django.db import migrations, models
 from django.db.models import Count
 
@@ -8,14 +10,19 @@ from django.db.models import Count
 
 def update_is_patched(apps, schema_editor):
     SecurityScan = apps.get_model("security", "SecurityScan")
-    all_scans = SecurityScan.objects.count()
-    change_count = SecurityScan.objects.annotate(
-        vuls_count=Count('vulnerabilities')
-    ).filter(vuls_count=0).update(is_patched=True)
+    is_patched_ids = SecurityScan.vulnerabilities.through.objects.filter(
+        vulnerability__patch_deadline__gt=datetime.now()
+    ).values_list(
+        'securityscan_id', flat=True
+    ).distinct()
+
+    patched_scans = SecurityScan.objects.filter(id__in=is_patched_ids).update(
+        is_patched=True
+    )
 
     print()
-    print("All scans: {}".format(all_scans))
-    print("Scans marked as patched: {}".format(change_count))
+    print("All scans: {}".format(SecurityScan.objects.count()))
+    print("Scans marked as patched: {}".format(patched_scans))
 
 
 def reverse_func(apps, schema_editor):
