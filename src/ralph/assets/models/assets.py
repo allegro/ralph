@@ -334,7 +334,9 @@ class BudgetInfo(
 
 
 class Asset(AdminAbsoluteUrlMixin, BaseObject):
-    model = models.ForeignKey(AssetModel, related_name='assets')
+    model = models.ForeignKey(
+        AssetModel, related_name='assets', on_delete=models.PROTECT
+    )
     # TODO: unify hostname for DCA, VirtualServer, Cluster and CloudHost
     # (use another model?)
     hostname = NullableCharField(

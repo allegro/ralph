@@ -390,7 +390,9 @@ class DataCenterAsset(
     _allow_in_dashboard = True
     previous_dc_host_update_fields = ['hostname']
 
-    rack = models.ForeignKey(Rack, null=True, blank=True)
+    rack = models.ForeignKey(
+        Rack, null=True, blank=True, on_delete=models.PROTECT
+    )
     status = TransitionField(
         default=DataCenterAssetStatus.new.id,
         choices=DataCenterAssetStatus(),

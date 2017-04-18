@@ -7,18 +7,18 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 
 from ralph.assets.models import BaseObject
-from ralph.operations.models import Operation, OperationType
+from ralph.operations.changemanagement.exceptions import IgnoreOperation
+from ralph.operations.models import Operation, OperationStatus, OperationType
+
+
+logger = logging.getLogger(__name__)
 
 
 change_processor = import_module(settings.CHANGE_MGMT_PROCESSOR)
 base_object_loader = None
 
 if settings.CHANGE_MGMT_BASE_OBJECT_LOADER:
-    global base_object_loader
     base_object_loader = import_module(settings.CHANGE_MGMT_BASE_OBJECT_LOADER)
-
-
-logger = logging.getLogger(__name__)
 
 
 def _safe_load_user(username):
@@ -46,6 +46,18 @@ def _safe_load_operation_type(operation_name):
         return None
 
 
+def _safe_load_status(status_name):
+    """Load operation status by its name. None, if not found."""
+    status, created = OperationStatus.objects.get_or_create(name=status_name)
+
+    if created:
+        logger.warning(
+            'Received an operation with a new status {}.'.format(status_name)
+        )
+
+    return status
+
+
 def _load_base_objects(object_ids):
     """Load base objects with the specified ids. [] if none is found."""
 
@@ -53,9 +65,9 @@ def _load_base_objects(object_ids):
 
 
 @transaction.atomic
-def record_operation(title, status, description, operation_name, ticket_id,
-                     assignee_username=None, created_date=None,
-                     update_date=None, resolution_date=None,
+def record_operation(title, status_name, description, operation_name, ticket_id,
+                     assignee_username=None, reporter_username=None,
+                     created_date=None, update_date=None, resolution_date=None,
                      base_object_ids=None):
 
     operation_type = _safe_load_operation_type(operation_name)
@@ -73,9 +85,10 @@ def record_operation(title, status, description, operation_name, ticket_id,
         defaults=dict(
             title=title,
             description=description,
-            status=status,
+            status=_safe_load_status(status_name),
             type=operation_type,
-            asignee=_safe_load_user(assignee_username),
+            assignee=_safe_load_user(assignee_username),
+            reporter=_safe_load_user(reporter_username),
             created_date=created_date,
             update_date=update_date,
             resolved_date=resolution_date
@@ -95,9 +108,12 @@ def receive_chm_event(event_data):
             title=change_processor.get_title(event_data),
             description=change_processor.get_description(event_data),
             ticket_id=change_processor.get_ticket_id(event_data),
-            status=change_processor.get_operation_status(event_data),
+            status_name=change_processor.get_operation_status(event_data),
             operation_name=change_processor.get_operation_name(event_data),
             assignee_username=change_processor.get_assignee_username(
+                event_data
+            ),
+            reporter_username=change_processor.get_reporter_username(
                 event_data
             ),
             created_date=change_processor.get_creation_date(event_data),
@@ -108,9 +124,8 @@ def receive_chm_event(event_data):
                 if base_object_loader is not None else None
             )
         )
-    except KeyError:
-        # Silence already logged errors.
-        pass
+    except IgnoreOperation as e:
+        logger.warning(e.message)
     except Exception as e:
         logger.exception(
             'Encountered an unexpected failure while handling a change '

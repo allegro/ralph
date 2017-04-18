@@ -3,6 +3,7 @@ from datetime import datetime
 from os import path
 
 from ralph.operations.changemanagement import jira
+from ralph.operations.changemanagement.exceptions import IgnoreOperation
 from ralph.operations.models import OperationStatus
 from ralph.tests import RalphTestCase
 
@@ -21,9 +22,19 @@ class JiraProcessorTestCase(RalphTestCase):
             jira.get_assignee_username(self.jira_event)
         )
 
-    def test_get_assiignee_username_no_assignee_returns_none(self):
+    def test_get_assignee_username_no_assignee_returns_none(self):
         self.jira_event['issue']['fields']['assignee'] = None
         self.assertIsNone(jira.get_assignee_username(self.jira_event))
+
+    def test_get_reporter_username(self):
+        self.assertEqual(
+            'username.fourtwenty',
+            jira.get_reporter_username(self.jira_event)
+        )
+
+    def test_get_reporter_username_no_reporter_returns_none(self):
+        self.jira_event['issue']['fields']['reporter'] = None
+        self.assertIsNone(jira.get_reporter_username(self.jira_event))
 
     def test_get_title(self):
         self.assertEqual(
@@ -70,12 +81,6 @@ class JiraProcessorTestCase(RalphTestCase):
 
     def test_get_operation_status(self):
         self.assertEqual(
-            OperationStatus.opened,
+            'Open',
             jira.get_operation_status(self.jira_event)
         )
-
-    def test_get_operation_status_bad_status_raises_KeyError(self):
-        self.jira_event['issue']['fields']['status']['name'] = 'DEADBEEF'
-
-        with self.assertRaises(KeyError):
-            jira.get_operation_status(self.jira_event)

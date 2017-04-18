@@ -1,7 +1,12 @@
 import json
+from urllib.parse import urlencode
 
+from django.core.urlresolvers import NoReverseMatch, reverse
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
+
+
+GRAPH_QUERY_SEP = '|'
 
 
 class ChartistGraphRenderer(object):
@@ -14,6 +19,7 @@ class ChartistGraphRenderer(object):
         'chartPadding': 20,
     }
     plugins = {'ctBarLabels': {}}
+    graph_query_sep = GRAPH_QUERY_SEP
 
     def __init__(self, model):
         self.model = model
@@ -34,6 +40,37 @@ class ChartistGraphRenderer(object):
             options.update(self.options)
         return options
 
+    def _labels2urls(self, content_type, graph_id, labels):
+        base_url = reverse(
+            "admin:%s_%s_changelist" % (
+                content_type.app_label, content_type.model
+            )
+        )
+        urls = []
+        for label in labels:
+            url = '?'.join([
+                base_url,
+                urlencode({
+                    'graph-query': self.graph_query_sep.join([
+                        str(graph_id), label
+                    ])
+                }),
+            ])
+            urls.append(url)
+
+        return urls
+
+    def _series_with_urls(self, series, urls):
+        series_with_urls = []
+        for value, url in zip(series, urls):
+            series_with_urls.append({
+                'value': value,
+                'meta': {
+                    'clickUrl': url,
+                }
+            })
+        return series_with_urls
+
     def render(self, context):
         if not context:
             context = {}
@@ -41,6 +78,17 @@ class ChartistGraphRenderer(object):
         data = {}
         try:
             data = self.model.get_data()
+            try:
+                click_urls = self._labels2urls(
+                    self.model.model, self.model.id, data['labels']
+                )
+                data['series'] = self._series_with_urls(
+                    data['series'], click_urls
+                )
+            except NoReverseMatch:
+                # graph will be non-clickable when model is not exposed in
+                # admin
+                pass
         except Exception as e:
             error = str(e)
         finally:
@@ -89,5 +137,5 @@ class PieChart(ChartistGraphRenderer):
     }
 
     def get_options(self, data):
-        self.options['total'] = sum(data['series'])
+        self.options['total'] = sum(s['value'] for s in data['series'])
         return super().get_options(data)

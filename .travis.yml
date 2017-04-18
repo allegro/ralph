@@ -4,14 +4,14 @@ env:
     global:
         - DATABASE_USER=travis
         - DATABASE_PASSWORD=travis
-        - DJANGO_CURRENT_VERSION=1.8.17
+        - DJANGO_CURRENT_VERSION=1.8.18
         - RALPH2_RALPH3_CROSS_VALIDATION_ENABLED=1
         - REDIS_PORT=6379
         - DATABASE_PORT=5433
     matrix:
-        - DJANGO_VERSION=1.8.17 TEST_DB_ENGINE=mysql MYSQL_VERSION=5.6
-        - DJANGO_VERSION=1.8.17 TEST_DB_ENGINE=mysql MYSQL_VERSION=5.5
-        - DJANGO_VERSION=1.8.17 TEST_DB_ENGINE=psql
+        - DJANGO_VERSION=1.8.18 TEST_DB_ENGINE=mysql MYSQL_VERSION=5.6
+        - DJANGO_VERSION=1.8.18 TEST_DB_ENGINE=mysql MYSQL_VERSION=5.5
+        - DJANGO_VERSION=1.8.18 TEST_DB_ENGINE=psql
         # Django 1.9 build will not pass until #2132 will be merged
         # - DJANGO_VERSION=1.9 TEST_DB_ENGINE=sqlite
         # - DJANGO_VERSION=1.9 TEST_DB_ENGINE=mysql

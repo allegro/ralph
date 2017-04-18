@@ -5,11 +5,13 @@ from ralph.admin import RalphAdmin, RalphMPTTAdmin, register
 from ralph.admin.mixins import RalphAdminForm
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer import resources
+from ralph.operations.filters import StatusFilter
 from ralph.operations.models import (
     Change,
     Failure,
     Incident,
     Operation,
+    OperationStatus,
     OperationType,
     Problem
 )
@@ -26,6 +28,12 @@ class OperationTypeAdmin(RalphMPTTAdmin):
         return False
 
 
+@register(OperationStatus)
+class OperationStatusAdmin(RalphAdmin):
+    list_display = ('name',)
+    search_fields = ['name']
+
+
 class OperationAdminForm(RalphAdminForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -40,18 +48,22 @@ class OperationAdminForm(RalphAdminForm):
 @register(Operation)
 class OperationAdmin(AttachmentsMixin, RalphAdmin):
     search_fields = ['title', 'description', 'ticket_id']
-    list_filter = ['type', 'status', 'asignee', 'ticket_id', 'base_objects',
-                   'created_date', 'update_date', 'resolved_date']
-    list_display = ['title', 'type', 'status', 'asignee', 'get_ticket_url']
-    raw_id_fields = ['asignee', 'base_objects']
+    list_filter = ['type', ('status', StatusFilter), 'reporter',
+                   'assignee', 'ticket_id', 'base_objects', 'created_date',
+                   'update_date', 'resolved_date']
+    list_display = ['title', 'type', 'created_date', 'status', 'reporter',
+                    'get_ticket_url']
+    list_select_related = ('assignee', 'reporter', 'type', 'status')
+    raw_id_fields = ['assignee', 'reporter', 'base_objects']
     resource_class = resources.OperationResource
     form = OperationAdminForm
 
     fieldsets = (
         (_('Basic info'), {
             'fields': (
-                'type', 'title', 'status', 'asignee', 'description',
-                'ticket_id', 'created_date', 'update_date', 'resolved_date',
+                'type', 'title', 'status', 'reporter', 'assignee',
+                'description', 'ticket_id', 'created_date', 'update_date',
+                'resolved_date',
             )
         }),
         (_('Objects'), {

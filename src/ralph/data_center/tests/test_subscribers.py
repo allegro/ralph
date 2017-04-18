@@ -57,10 +57,15 @@ class ValidateEventDataTestCase(TestCase):
         self.assertIn('invalid IP address "None"', errors)
 
     def test_invalid_port(self):
-        self.data['port'] = 80
+        self.data['port'] = 65536
         errors = validate_vip_event_data(self.data)
         self.assertEqual(len(errors), 1)
-        self.assertIn('invalid port "80"', errors)
+        self.assertIn('invalid port "65536"', errors)
+
+        self.data['port'] = -1
+        errors = validate_vip_event_data(self.data)
+        self.assertEqual(len(errors), 1)
+        self.assertIn('invalid port "-1"', errors)
 
         self.data['port'] = None
         errors = validate_vip_event_data(self.data)

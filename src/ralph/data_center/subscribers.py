@@ -35,7 +35,7 @@ def validate_vip_event_data(data):
     except (TypeError, ValidationError):
         err = 'invalid IP address "{}"'.format(ip)
         errors.append(err)
-    if not port or port < 1024 or port > 49151:
+    if not port or port < 0 or port > 65535:
         err = 'invalid port "{}"'.format(port)
         errors.append(err)
     if not protocol:

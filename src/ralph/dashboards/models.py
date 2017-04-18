@@ -55,21 +55,27 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
                 annotate_filters.update({key: filters.pop(key)})
         return annotate_filters
 
-    def get_data(self):
-        model = self.model.model_class()
-        model_manager = model._default_manager
-        aggregate_type = AggregateType.from_id(self.aggregate_type)
-        queryset = model_manager.all()
+    def apply_parital_filtering(self, queryset):
         filters = self.params.get('filters', None)
         excludes = self.params.get('excludes', None)
-        annotate_filters = {}
         if filters:
-            annotate_filters = self.pop_annotate_filters(filters)
             queryset = FilterParser(queryset, filters).get_queryset()
         if excludes:
             queryset = FilterParser(
                 queryset, excludes, exclude_mode=True
             ).get_queryset()
+        return queryset
+
+    def get_data(self):
+        model = self.model.model_class()
+        model_manager = model._default_manager
+        aggregate_type = AggregateType.from_id(self.aggregate_type)
+        queryset = self.apply_parital_filtering(model_manager.all())
+        annotate_filters = {}
+        annotate_filters = self.pop_annotate_filters(
+            self.params.get('filters', None)
+        )
+
         aggregate_func = aggregate_type.aggregate_func
         queryset = queryset.values(
             self.params['labels']

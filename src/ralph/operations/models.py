@@ -17,16 +17,8 @@ from ralph.lib.mixins.models import (
 )
 
 
-class OperationStatus(Choices):
-    _ = Choices.Choice
-
-    opened = _('open')
-    in_progress = _('in progress')
-    resolved = _('resolved')
-    closed = _('closed')
-    reopened = _('reopened')
-    todo = _('todo')
-    blocked = _('blocked')
+class OperationStatus(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
+    pass
 
 
 class OperationType(
@@ -62,20 +54,32 @@ class OperationType(
 
 class Operation(AdminAbsoluteUrlMixin, TaggableMixin, models.Model):
     type = TreeForeignKey(OperationType, verbose_name=_('type'))
+    _allow_in_dashboard = True
     title = models.CharField(
         max_length=350, null=False, blank=False, verbose_name=_('title'),
     )
     description = models.TextField(
         verbose_name=_('description'), null=True, blank=True,
     )
-    status = models.PositiveIntegerField(
-        verbose_name=_('status'), choices=OperationStatus(),
-        default=OperationStatus.opened.id,
+    status = models.ForeignKey(
+        OperationStatus,
+        verbose_name=_('status'),
+        null=False,
+        blank=False,
+        on_delete=models.PROTECT
     )
-    asignee = models.ForeignKey(
+    assignee = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name='operations',
-        verbose_name=_('asignee'),
+        verbose_name=_('assignee'),
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+    )
+    reporter = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='reported_operations',
+        verbose_name=_('reporter'),
         null=True,
         blank=True,
         on_delete=models.PROTECT,

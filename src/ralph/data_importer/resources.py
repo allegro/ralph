@@ -1,10 +1,12 @@
+from decimal import Decimal
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 from import_export import fields, resources, widgets
 
 from ralph.accounts.models import Region
-from ralph.assets.models import assets, base, configuration
+from ralph.assets.models import assets, base, BaseObject, configuration
 from ralph.back_office.models import (
     BackOfficeAsset,
     OfficeInfrastructure,
@@ -580,9 +582,10 @@ class BaseObjectsSupportRichResource(RalphModelResource):
 
     def dehydrate_price_per_object(self, bo_support):
         support = bo_support.support
+        price = support.price or Decimal('0.00')
         return str(
-            bo_support.objects_count / support.price
-            if support.price > 0 else 0
+            round(price / bo_support.objects_count, 2)
+            if bo_support.objects_count > 0 else Decimal('0.00')
         )
 
 
@@ -699,13 +702,28 @@ class OperationResource(RalphModelResource):
         widget=widgets.ManyToManyWidget(base.BaseObject),
         default=[],
     )
-    asignee = fields.Field(
-        column_name='asignee',
-        attribute='asignee',
+    assignee = fields.Field(
+        column_name='assignee',
+        attribute='assignee',
+        widget=UserWidget(get_user_model()),
+    )
+    reporter = fields.Field(
+        column_name='reporter',
+        attribute='reporter',
         widget=UserWidget(get_user_model()),
     )
 
     class Meta:
+        select_related = (
+            'assignee', 'reporter', 'type', 'status'
+        )
+        prefetch_related = (
+            'tags',
+            Prefetch(
+                lookup='base_objects',
+                queryset=BaseObject.objects.all()
+            )
+        )
         model = Operation
 
 

@@ -2,9 +2,6 @@ import logging
 from datetime import timezone
 
 from dateutil.parser import parse as parse_datetime
-from django.conf import settings
-
-from ralph.operations.models import OperationStatus
 
 
 logger = logging.getLogger(__name__)
@@ -23,26 +20,7 @@ def get_ticket_id(event_data):
 
 
 def get_operation_status(event_data):
-    status_conf = settings.CHANGE_MGMT_OPERATION_STATUSES
-    status_map = {
-        status_conf['OPENED']: OperationStatus.opened,
-        status_conf['IN_PROGRESS']: OperationStatus.in_progress,
-        status_conf['RESOLVED']: OperationStatus.resolved,
-        status_conf['CLOSED']: OperationStatus.closed,
-        status_conf['REOPENED']: OperationStatus.reopened,
-        status_conf['TODO']: OperationStatus.todo,
-        status_conf['BLOCKED']: OperationStatus.blocked
-    }
-
-    try:
-        status_str = event_data['issue']['fields']['status']['name']
-        return status_map[status_str]
-    except KeyError:
-        logger.error(
-            'Received an operation with unexpected '
-            'status: {}. Please check the settings.'.format(status_str)
-        )
-        raise
+    return event_data['issue']['fields']['status']['name']
 
 
 def get_operation_name(event_data):
@@ -54,6 +32,14 @@ def get_assignee_username(event_data):
         return event_data['issue']['fields']['assignee']['key']
     except TypeError:
         # NOTE(romcheg): This means there is no assignee.
+        return None
+
+
+def get_reporter_username(event_data):
+    try:
+        return event_data['issue']['fields']['reporter']['key']
+    except TypeError:
+        # NOTE(romcheg): This means the reporter is not specified.
         return None
 
 
