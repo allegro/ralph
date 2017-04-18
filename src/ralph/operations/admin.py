@@ -3,6 +3,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphMPTTAdmin, register
 from ralph.admin.mixins import RalphAdminForm
+from ralph.admin.views.main import RalphChangeList
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer import resources
 from ralph.operations.filters import StatusFilter
@@ -15,6 +16,20 @@ from ralph.operations.models import (
     OperationType,
     Problem
 )
+
+
+class OperationChangeList(RalphChangeList):
+
+    def get_filters(self, request):
+        filter_specs, bool_filter_specs__, lookup_params, use_distinct = \
+            super(RalphChangeList, self).get_filters(request)
+
+        return (
+            filter_specs,
+            bool_filter_specs__,
+            lookup_params,
+            use_distinct if lookup_params.get('base_objects') else False
+        )
 
 
 @register(OperationType)
@@ -49,11 +64,11 @@ class OperationAdminForm(RalphAdminForm):
 class OperationAdmin(AttachmentsMixin, RalphAdmin):
     search_fields = ['title', 'description', 'ticket_id']
     list_filter = ['type', ('status', StatusFilter), 'reporter',
-                   'assignee', 'ticket_id', 'base_objects', 'created_date',
-                   'update_date', 'resolved_date']
+                   'assignee', 'ticket_id', 'created_date',
+                   'update_date', 'resolved_date', 'base_objects']
     list_display = ['title', 'type', 'created_date', 'status', 'reporter',
                     'get_ticket_url']
-    list_select_related = ('assignee', 'reporter', 'type', 'status')
+    list_select_related = ('reporter', 'type', 'status')
     raw_id_fields = ['assignee', 'reporter', 'base_objects']
     resource_class = resources.OperationResource
     form = OperationAdminForm
@@ -80,6 +95,9 @@ class OperationAdmin(AttachmentsMixin, RalphAdmin):
         )
     get_ticket_url.allow_tags = True
     get_ticket_url.short_description = _('ticket ID')
+
+    def get_changelist(self, request, **kwargs):
+        return OperationChangeList
 
 
 @register(Change)

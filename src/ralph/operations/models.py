@@ -6,6 +6,7 @@ from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 from django.forms import ValidationError
 from django.utils.translation import ugettext_lazy as _
+from django.utils.functional import cached_property
 from mptt.models import MPTTModel, TreeForeignKey
 
 from ralph.assets.models.base import BaseObject
@@ -131,10 +132,14 @@ class OperationDescendantManager(models.Manager):
         self._descendants_of = descendants_of
         super().__init__(*args, **kwargs)
 
+    @cached_property
+    def type_ids(self):
+        root = OperationType.objects.get(pk=self._descendants_of)
+        return root.get_descendants(include_self=True).values_list('id')
+
     def get_queryset(self, *args, **kwargs):
         queryset = super().get_queryset(*args, **kwargs)
-        root = OperationType.objects.get(pk=self._descendants_of)
-        return queryset.filter(type__in=root.get_descendants(include_self=True))
+        return queryset.filter(type__in=self.type_ids)
 
 
 class Change(Operation):
