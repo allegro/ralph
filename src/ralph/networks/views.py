@@ -73,3 +73,9 @@ class NetworkWithTerminatorsView(NetworkView):
         NetworkInline,
         NetworkTerminatorReadOnlyInline,
     ]
+    template_name = 'data_center/datacenterasset/networks.html'
+
+    def dispatch(self, request, model, pk, *args, **kwargs):
+        result = super().dispatch(request, model, pk, *args, **kwargs)
+        self.dc_host = self.object
+        return result
