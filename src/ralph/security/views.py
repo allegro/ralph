@@ -2,7 +2,7 @@
 from datetime import datetime
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Case, Count, When
+from django.db.models import Case, IntegerField, Sum, When
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
@@ -20,12 +20,14 @@ class ScanStatusInChangeListMixin(object):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         qs = qs.annotate(
-            vulnerabilities_count=Count(
+            exceeded_vulnerabilities_count=Sum(
                 Case(
                     When(
-                        securityscan__vulnerabilities__patch_deadline__gte=datetime.now(),
+                        securityscan__vulnerabilities__patch_deadline__lte=datetime.now(),  # noqa
                         then=1,
                     ),
+                    default=0,
+                    output_field=IntegerField(),
                 ),
             )
         )
@@ -44,7 +46,7 @@ class ScanStatusInChangeListMixin(object):
                 if not scan.is_patched:
                     html = self._to_span(
                         "alert", "Got vulnerabilities: {}".format(
-                            obj.vulnerabilities_count
+                            obj.exceeded_vulnerabilities_count
                         )
                     )
                 else:

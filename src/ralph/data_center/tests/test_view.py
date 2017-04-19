@@ -170,6 +170,7 @@ class DCHostScanStatusInListingTest(ClientMixin, TestCase):
             vulnerabilities=[
                 VulnerabilityFactory(patch_deadline=tomorrow()),
                 VulnerabilityFactory(patch_deadline=yesterday()),
+                VulnerabilityFactory(patch_deadline=yesterday()),
             ],
         )
         self.assertTrue(scan.vulnerabilities.exists())
@@ -177,7 +178,7 @@ class DCHostScanStatusInListingTest(ClientMixin, TestCase):
         result = self.client.get(
             reverse('admin:data_center_dchost_changelist'),
         )
-        self.assertContains(result, "Got vulnerabilities: 1")
+        self.assertContains(result, "Got vulnerabilities: 2")
 
     def test_listing_show_failed_when_scan_failed(self):
         SecurityScanFactory(
