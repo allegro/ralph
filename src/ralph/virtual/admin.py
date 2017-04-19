@@ -41,11 +41,11 @@ if settings.ENABLE_DNSAAS_INTEGRATION:
 
 
 class VirtaulServerSecurityInfoView(SecurityInfo):
-    url_name = 'security_virtualserver_security_info'
+    url_name = 'security_info'
 
 
 class CloudHostSecurityInfoView(SecurityInfo):
-    url_name = 'security_cloudhost_security_info'
+    url_name = 'security_info'
 
 
 @register(VirtualServerType)

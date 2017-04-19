@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
+
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Count
+from django.db.models import Case, Count, When
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, register
+from ralph.admin.helpers import get_admin_url
 from ralph.admin.views.extra import RalphDetailView
 from ralph.security.models import Vulnerability
 
@@ -17,8 +20,14 @@ class ScanStatusInChangeListMixin(object):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         qs = qs.annotate(
-            #TODO:: make counting only is_patched
-            vulnerabilities_count=Count('securityscan__vulnerabilities')
+            vulnerabilities_count=Count(
+                Case(
+                    When(
+                        securityscan__vulnerabilities__patch_deadline__gte=datetime.now(),
+                        then=1,
+                    ),
+                ),
+            )
         )
         return qs
 
@@ -42,6 +51,9 @@ class ScanStatusInChangeListMixin(object):
                     html = self._to_span("success", "Host clean")
             else:
                 html = self._to_span("warning", "Scan failed")
+            html = "<a href=\"{}\">{}</a>".format(
+                get_admin_url(obj, 'security_info'), html,
+            )
         return mark_safe(html)
     scan_status.short_description = _('Security scan')
 

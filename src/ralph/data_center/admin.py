@@ -283,7 +283,7 @@ class DataCenterAssetOperation(OperationViewReadOnlyForExisiting):
 
 
 class DataCenterAssetSecurityInfo(SecurityInfo):
-    url_name = 'datacenter_asset_security_info'
+    url_name = 'security_info'
 
 
 @register(DataCenterAsset)
