@@ -25,10 +25,6 @@ def update_is_patched(apps, schema_editor):
     print("Scans marked as patched: {}".format(patched_scans))
 
 
-def reverse_func(apps, schema_editor):
-    pass
-
-
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -36,5 +32,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(update_is_patched, reverse_func),
+        migrations.RunPython(update_is_patched, migrations.RunPython.noop),
     ]
