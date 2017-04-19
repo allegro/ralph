@@ -158,6 +158,7 @@ def update_service_env_on_cloudproject_save(sender, instance, **kwargs):
 
 
 class CloudHost(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
+    _allow_in_dashboard = True
     previous_dc_host_update_fields = ['hostname']
     custom_fields_inheritance = OrderedDict([
         ('parent__cloudproject', 'virtual.CloudProject'),
@@ -326,6 +327,7 @@ class VirtualServer(
     cluster = models.ForeignKey(Cluster, blank=True, null=True)
 
     previous_dc_host_update_fields = ['hostname']
+    _allow_in_dashboard = True
 
     @cached_property
     def polymorphic_parent(self):
