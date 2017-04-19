@@ -108,6 +108,53 @@ class SecurityScanAPITests(RalphAPITestCase):
         self.assertEqual(security_scan.vulnerabilities.count(), 1)
         self.assertEqual(security_scan.vulnerabilities.get(), vulnerability)
 
+
+    def test_create_scan_sets_is_patched_false_when_vulnerabilities(self):
+        ip = IPAddressFactory(address="192.168.128.10")
+        vulnerability = VulnerabilityFactory(
+            patch_deadline=datetime.now() - timedelta(days=10)
+        )
+        data = {
+            'last_scan_date': '2015-01-01T00:00:00',
+            'scan_status': ScanStatus.ok.name,
+            'next_scan_date': '2016-01-01T00:00:00',
+            'details_url': 'https://example.com/scan-deatils',
+            'rescan_url': 'https://example.com/rescan-url',
+            'host_ip': ip.address,
+            'vulnerabilities': [vulnerability.id, ],
+        }
+
+        url = reverse('securityscan-list')
+
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            SecurityScan.objects.get(pk=response.data['id']).is_patched,
+            False,
+        )
+
+    def test_create_scan_sets_is_patched_true_when_no_vulnerabilities(self):
+        ip = IPAddressFactory(address="192.168.128.10")
+        data = {
+            'last_scan_date': '2015-01-01T00:00:00',
+            'scan_status': ScanStatus.ok.name,
+            'next_scan_date': '2016-01-01T00:00:00',
+            'details_url': 'https://example.com/scan-deatils',
+            'rescan_url': 'https://example.com/rescan-url',
+            'host_ip': ip.address,
+            'vulnerabilities': [],
+        }
+        url = reverse('securityscan-list')
+
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            SecurityScan.objects.get(pk=response.data['id']).is_patched,
+            True,
+        )
+
     def test_patch_security_scan(self):
         ip = IPAddressFactory(address="192.168.128.66")
         url = reverse('securityscan-detail', args=(self.security_scan.id,))

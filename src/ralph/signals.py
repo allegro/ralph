@@ -17,6 +17,12 @@ def post_commit(func, model, signal=post_save, single_call=True):
     * it handles M2M relations (post_save is (usually) called when main model
       is saved, before related M2M instances are saved)
 
+    Writing tests:
+        Remember to make your TestCase inheriting from one of:
+            - TransactionTestCase (Django)
+            - APITransactionTestCase (Django Rest Framework)
+        Unless `on_commit` signal won't be called.
+
     Requirements:
     * you have to use database supporting transactions (ex. MySQL)
     * you have to use django-transaction-hooks
