@@ -17,6 +17,7 @@ class ScanStatusInChangeListMixin(object):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         qs = qs.annotate(
+            #TODO:: make counting only is_patched
             vulnerabilities_count=Count('securityscan__vulnerabilities')
         )
         return qs
@@ -31,7 +32,7 @@ class ScanStatusInChangeListMixin(object):
             html = self._to_span('', 'No scan')
         else:
             if scan.is_ok:
-                if obj.vulnerabilities_count > 0:
+                if not scan.is_patched:
                     html = self._to_span(
                         "alert", "Got vulnerabilities: {}".format(
                             obj.vulnerabilities_count
