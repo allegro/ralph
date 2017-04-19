@@ -93,6 +93,7 @@ class Cluster(
         null=True,
         blank=True,
         max_length=255,
+        db_index=True,
         verbose_name=_('hostname')
     )
     type = models.ForeignKey(ClusterType)
