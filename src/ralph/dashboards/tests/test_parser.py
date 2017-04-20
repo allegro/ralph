@@ -48,7 +48,7 @@ class ParserFiltersTest(SimpleTestCase):
         (['1'], Q(key='1')),
         (['1', '2'], Q(key='1') & Q(key='2')),
     )
-    def test_process_value(self, value, expect):
+    def test_process_value_as_list(self, value, expect):
         result = self.parser.filter_and('key', value)
         self.assertEqual(str(result[ARGS][0]), str(expect))
 
