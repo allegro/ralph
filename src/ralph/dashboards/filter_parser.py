@@ -11,6 +11,8 @@ FILTER_FROM_NOW = re.compile(r'([+-]?\d+)(\w)')
 
 class FilterParser(object):
 
+    or_sep = ','
+
     def __init__(self, queryset, filters_dict, exclude_mode=False):
         self.filters = filters_dict
         if exclude_mode:
@@ -40,7 +42,8 @@ class FilterParser(object):
         return reduce(op, [Q(**{key: v}) for v in value])
 
     def filter_or(self, key, value):
-        return [self._filter_operator(key, value, operator.or_)], {}
+        norm_val = value.split(self.or_sep)
+        return [self._filter_operator(key, norm_val, operator.or_)], {}
 
     def filter_and(self, key, value):
         return [self._filter_operator(key, value, operator.and_)], {}
