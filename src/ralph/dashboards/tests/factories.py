@@ -4,7 +4,6 @@ from django.contrib.contenttypes import models
 from factory.django import DjangoModelFactory
 
 from ralph.dashboards.models import AggregateType, ChartType, Dashboard, Graph
-from ralph.data_center.models.physical import DataCenterAsset
 
 
 class DashboardFactory(DjangoModelFactory):
@@ -18,7 +17,9 @@ class DashboardFactory(DjangoModelFactory):
 class GraphFactory(DjangoModelFactory):
 
     name = factory.Sequence(lambda n: 'graph {}'.format(n))
-    model = factory.Iterator(models.ContentType.objects.all())
+    model = factory.Iterator(
+        models.ContentType.objects.get(model='datacenterasset')
+    )
     aggregate_type = factory.Iterator([
         AggregateType.aggregate_max.id, AggregateType.aggregate_count.id,
         AggregateType.aggregate_sum.id
