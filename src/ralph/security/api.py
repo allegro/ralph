@@ -8,7 +8,7 @@ from rest_framework import serializers
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import RalphAPISaveSerializer
 from ralph.networks.models.networks import IPAddress
-from ralph.security.models import SecurityScan, Vulnerability
+from ralph.security.models import any_exceeded, SecurityScan, Vulnerability
 
 
 class VulnerabilitySerializer(RalphAPISerializer):
@@ -76,6 +76,9 @@ class SaveSecurityScanSerializer(RalphAPISaveSerializer):
         if errors:
             raise serializers.ValidationError(errors)
         data['base_object'] = base_object.pk
+        data['is_patched'] = not any_exceeded(
+            Vulnerability.objects.filter(id__in=data['vulnerabilities'])
+        )
         result = super().to_internal_value(data)
         return result
 
