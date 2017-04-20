@@ -22,6 +22,19 @@ def _should_send_dnsaas_request(ip_instance):
     )
 
 
+def _get_connected_service_uid(ip_instance):
+    """
+    Return connected with base object (through Ethernet) service UID or None if
+    IP address has not ethernet.
+    """
+
+    eth = ip_instance.ethernet
+    if eth:
+        service = eth.base_object.service
+        if service:
+            return service.uid
+
+
 def update_dns_record(instance, created, *args, **kwargs):
     if not _should_send_dnsaas_request(instance):
         return
@@ -32,7 +45,8 @@ def update_dns_record(instance, created, *args, **kwargs):
         },
         'new': {
             key: instance.__dict__[key] for key in keys
-        }
+        },
+        'service_uid': _get_connected_service_uid(instance)
     }
     data_to_send['action'] = 'add' if created else 'update'
     if data_to_send['old']['hostname'] is not None:
