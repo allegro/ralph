@@ -18,7 +18,7 @@ class GraphFactory(DjangoModelFactory):
 
     name = factory.Sequence(lambda n: 'graph {}'.format(n))
     model = factory.Iterator(
-        models.ContentType.objects.get(model='datacenterasset')
+        [models.ContentType.objects.get(model='datacenterasset')]
     )
     aggregate_type = factory.Iterator([
         AggregateType.aggregate_max.id, AggregateType.aggregate_count.id,
