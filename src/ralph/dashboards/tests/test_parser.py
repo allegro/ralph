@@ -8,9 +8,12 @@ from django.test import SimpleTestCase
 
 from ralph.dashboards.filter_parser import FilterParser
 from ralph.dashboards.models import Graph
+from ralph.dashboards.tests.factories import GraphFactory
+from ralph.data_center.tests.factories import DataCenterAssetFullFactory
 from ralph.tests.models import Bar
 
 ARGS, KWARGS = (0, 1)
+
 
 @ddt
 class ParserFiltersTest(SimpleTestCase):
@@ -68,3 +71,43 @@ class GraphModelTest(SimpleTestCase):
         result = graph.pop_annotate_filters(filters)
         self.assertEqual(len(result), length)
         self.assertEqual(len(orig_filters) - length, len(filters))
+
+    def _get_graph_params(self, update):
+        data = {
+            'filters': {},
+            'labels': 'barcode',
+            'series': 'barcode',
+        }
+        data.update(update)
+        return data
+
+    def test_key_limit_limits_records_when_present(self):
+        limit = 5
+        self.data_center_assets = DataCenterAssetFullFactory.create_batch(
+            2 * limit
+        )
+        graph = GraphFactory(params=self._get_graph_params({'limit': limit}))
+
+        qs = graph.build_queryset()
+
+        self.assertEqual(qs.count(), limit)
+
+    def test_key_sort_sorts_records_ascending_when_present(self):
+        self.data_center_assets = DataCenterAssetFullFactory.create_batch(10)
+        graph = GraphFactory(
+            params=self._get_graph_params({'sort': 'barcode'})
+        )
+
+        qs = graph.build_queryset()
+
+        self.assertTrue(qs.first()['barcode'] < qs.last()['barcode'])
+
+    def test_key_sort_sorts_records_descending_when_minus_present(self):
+        self.data_center_assets = DataCenterAssetFullFactory.create_batch(10)
+        graph = GraphFactory(
+            params=self._get_graph_params({'sort': '-barcode'})
+        )
+
+        qs = graph.build_queryset()
+
+        self.assertTrue(qs.first()['barcode'] > qs.last()['barcode'])

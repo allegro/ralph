@@ -66,24 +66,45 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
             ).get_queryset()
         return queryset
 
-    def get_data(self):
+    def apply_limit(self, queryset):
+        limit = self.params.get('limit', None)
+        return queryset[:limit]
+
+    def apply_sort(self, queryset):
+        order = self.params.get('sort', None)
+        if order:
+            return queryset.order_by(order)
+        return queryset
+
+    def build_queryset(self):
         model = self.model.model_class()
         model_manager = model._default_manager
         aggregate_type = AggregateType.from_id(self.aggregate_type)
+
         queryset = self.apply_parital_filtering(model_manager.all())
+
         annotate_filters = {}
         annotate_filters = self.pop_annotate_filters(
             self.params.get('filters', None)
         )
 
         aggregate_func = aggregate_type.aggregate_func
+
         queryset = queryset.values(
             self.params['labels']
         ).annotate(
             series=aggregate_func(self.params['series'])
         )
+
         if annotate_filters:
             queryset = queryset.filter(**annotate_filters)
+
+        queryset = self.apply_limit(queryset)
+        queryset = self.apply_sort(queryset)
+        return queryset
+
+    def get_data(self):
+        queryset = self.build_queryset()
         return {
             'labels': [str(q[self.params['labels']]) for q in queryset],
             'series': [int(q['series']) for q in queryset],
