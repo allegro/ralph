@@ -157,7 +157,10 @@ def update_service_env_on_cloudproject_save(sender, instance, **kwargs):
         instance.children.all().update(service_env=instance.service_env)
 
 
-class CloudHost(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
+class CloudHost(PreviousStateMixin,
+                AdminAbsoluteUrlMixin,
+                NetworkableBaseObject,
+                BaseObject):
     _allow_in_dashboard = True
     previous_dc_host_update_fields = ['hostname']
     custom_fields_inheritance = OrderedDict([
@@ -196,6 +199,16 @@ class CloudHost(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
 
     def __str__(self):
         return self.hostname
+
+    @cached_property
+    def rack_id(self):
+        return self.rack.id if self.rack else None
+
+    @cached_property
+    def rack(self):
+        if isinstance(self.hypervisor, DataCenterAsset):
+                return self.hypervisor.rack
+        return None
 
     @property
     def ipaddresses(self):
@@ -360,7 +373,10 @@ class VirtualServer(
     def rack(self):
         if self.parent_id:
             polymorphic_parent = self.polymorphic_parent.last_descendant
-            if isinstance(polymorphic_parent, DataCenterAsset):
+            if (
+                isinstance(polymorphic_parent, DataCenterAsset) or
+                isinstance(polymorphic_parent, CloudHost)
+            ):
                 return polymorphic_parent.rack
         return None
 

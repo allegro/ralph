@@ -8,12 +8,17 @@ from ralph.assets.tests.factories import (
     ServiceEnvironmentFactory,
     ServiceFactory
 )
+from ralph.data_center.tests.factories import (
+        DataCenterAssetFullFactory,
+        RackFactory
+)
 from ralph.lib.custom_fields.models import (
     CustomField,
     CustomFieldTypes,
     CustomFieldValue
 )
 from ralph.networks.models import IPAddress
+from ralph.networks.tests.factories import NetworkFactory
 from ralph.tests import RalphTestCase
 from ralph.virtual.models import CloudHost, VirtualComponent
 from ralph.virtual.tests.factories import (
@@ -23,6 +28,35 @@ from ralph.virtual.tests.factories import (
     CloudProviderFactory,
     VirtualServerFullFactory
 )
+
+
+# NOTE(romcheg): If at some point someone finds a better name for this
+#                they are welcome to propose it or change it oneself.
+class CommonCodeMixin(object):
+    """Provides common code required for this test module."""
+
+    def _generate_rack_with_networks(self, num_networks=5):
+
+        nets = [
+            NetworkFactory(
+                address='10.0.{}.0/24'.format(i)
+            )
+            for i in range(num_networks)
+        ]
+
+        rack = RackFactory()
+        for net in nets:
+            rack.network_set.add(net)
+
+        return rack, nets
+
+    def assertNetworksTheSame(self, expected_networks, actual_networks):
+        self.assertEqual(len(expected_networks), len(actual_networks))
+
+        exp_addresses = [n.address for n in expected_networks].sort()
+        act_addresses = [n.address for n in actual_networks].sort()
+
+        self.assertEqual(exp_addresses, act_addresses)
 
 
 @ddt
@@ -148,7 +182,7 @@ class OpenstackModelsTestCase(RalphTestCase):
         self.assertEqual(new_host.service_env, self.service_env[1])
 
 
-class CloudHostTestCase(RalphTestCase):
+class CloudHostTestCase(RalphTestCase, CommonCodeMixin):
     def setUp(self):
         self.service = ServiceFactory()
         self.service_env = ServiceEnvironmentFactory(service=self.service)
@@ -190,8 +224,17 @@ class CloudHostTestCase(RalphTestCase):
             {'test str': 'sample_value22'}
         )
 
+    def test_get_available_networks(self):
+        rack, nets = self._generate_rack_with_networks()
 
-class VirtualServerTestCase(RalphTestCase):
+        host = CloudHostFactory(
+            hypervisor=DataCenterAssetFullFactory(rack=rack)
+        )
+
+        self.assertNetworksTheSame(nets, host._get_available_networks())
+
+
+class VirtualServerTestCase(RalphTestCase, CommonCodeMixin):
     def setUp(self):
         self.vs = VirtualServerFullFactory()
         self.custom_field_str = CustomField.objects.create(
@@ -216,3 +259,23 @@ class VirtualServerTestCase(RalphTestCase):
             self.vs.custom_fields_as_dict,
             {'test str': 'sample_value'}
         )
+
+    def test_get_available_networks_dc_asset(self):
+        rack, nets = self._generate_rack_with_networks()
+
+        vm = VirtualServerFullFactory(
+            parent=DataCenterAssetFullFactory(rack=rack)
+        )
+
+        self.assertNetworksTheSame(nets, vm._get_available_networks())
+
+    def test_get_available_networks_cloud_host(self):
+        rack, nets = self._generate_rack_with_networks()
+
+        vm = VirtualServerFullFactory(
+            parent=CloudHostFactory(
+                       hypervisor=DataCenterAssetFullFactory(rack=rack)
+                   )
+        )
+
+        self.assertNetworksTheSame(nets, vm._get_available_networks())

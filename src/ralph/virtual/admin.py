@@ -207,6 +207,10 @@ class CloudNetworkInline(RalphTabularInline):
         return False
 
 
+class CloudHostNetworkView(NetworkView):
+    pass
+
+
 @register(CloudHost)
 class CloudHostAdmin(
     ScanStatusInChangeListMixin, CustomFieldValueAdminMixin, RalphAdmin
@@ -237,6 +241,7 @@ class CloudHostAdmin(
     raw_id_override_parent = {'parent': CloudProject}
     inlines = [CloudNetworkInline]
     change_views = [
+        CloudHostNetworkView,
         CloudHostSecurityInfoView
     ]
     fieldsets = (
