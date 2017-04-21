@@ -3,6 +3,7 @@ import logging
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import NoReverseMatch
+from django.utils.lru_cache import lru_cache
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
@@ -16,7 +17,14 @@ from ralph.security.models import Vulnerability
 logger = logging.getLogger(__name__)
 
 
+@lru_cache()
 def _url_name_for_change_view(obj, view_name):
+    """
+    Returns `url_name` attribute of view named by `view_name` or None
+
+    Takes registred ModelAdmin for `obj` and searches its `change_views` for
+    view with name `view_name`.  Then returns `url_name` for found view.
+    """
     obj_type = type(obj)
     if obj_type not in ralph_site._registry:
         return None
