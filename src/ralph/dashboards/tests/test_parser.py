@@ -76,7 +76,7 @@ class GraphModelTest(SimpleTestCase):
         data = {
             'filters': {},
             'labels': 'barcode',
-            'series': 'barcode',
+            'series': 'price',
         }
         data.update(update)
         return data
