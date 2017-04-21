@@ -162,7 +162,7 @@ class DCHostScanStatusInListingTest(ClientMixin, TestCase):
         result = self.client.get(
             reverse('admin:data_center_dchost_changelist'),
         )
-        self.assertContains(result, "Got vulnerabilities: 1")
+        self.assertContains(result, "Vulnerable")
 
     def test_listing_show_correct_vuls_count_when_scan_has_different_vuls(self):
         scan = SecurityScanFactory(
@@ -178,7 +178,7 @@ class DCHostScanStatusInListingTest(ClientMixin, TestCase):
         result = self.client.get(
             reverse('admin:data_center_dchost_changelist'),
         )
-        self.assertContains(result, "Got vulnerabilities: 2")
+        self.assertContains(result, "Vulnerable")
 
     def test_listing_show_failed_when_scan_failed(self):
         SecurityScanFactory(

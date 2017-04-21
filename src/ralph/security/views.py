@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
-from datetime import datetime
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import NoReverseMatch
-from django.db.models import Case, IntegerField, Sum, When
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
@@ -40,22 +38,6 @@ class ScanStatusInChangeListMixin(object):
         super().__init__(*args, **kwargs)
         self.list_select_related += ['securityscan', ]
 
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        qs = qs.annotate(
-            exceeded_vulnerabilities_count=Sum(
-                Case(
-                    When(
-                        securityscan__vulnerabilities__patch_deadline__lte=datetime.now(),  # noqa
-                        then=1,
-                    ),
-                    default=0,
-                    output_field=IntegerField(),
-                ),
-            )
-        )
-        return qs
-
     def _to_span(self, css, text):
         return'<span class="{}">{}</span>'.format(css, text)
 
@@ -67,11 +49,7 @@ class ScanStatusInChangeListMixin(object):
         else:
             if scan.is_ok:
                 if not scan.is_patched:
-                    html = self._to_span(
-                        "alert", "Got vulnerabilities: {}".format(
-                            obj.exceeded_vulnerabilities_count
-                        )
-                    )
+                    html = self._to_span("alert", "Vulnerable")
                 else:
                     html = self._to_span("success", "Host clean")
             else:
