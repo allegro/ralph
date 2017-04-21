@@ -18,17 +18,16 @@ logger = logging.getLogger(__name__)
 
 
 @lru_cache()
-def _url_name_for_change_view(obj, view_name):
+def _url_name_for_change_view(obj_class, view_name):
     """
     Returns `url_name` attribute of view named by `view_name` or None
 
-    Takes registred ModelAdmin for `obj` and searches its `change_views` for
-    view with name `view_name`.  Then returns `url_name` for found view.
+    Takes registred ModelAdmin for `obj_class` and searches its `change_views`
+    for view with name `view_name`.  Then returns `url_name` for found view.
     """
-    obj_type = type(obj)
-    if obj_type not in ralph_site._registry:
+    if obj_class not in ralph_site._registry:
         return None
-    model_admin = ralph_site._registry[obj_type]
+    model_admin = ralph_site._registry[obj_class]
     found_view = None
     for change_view in getattr(model_admin, 'change_views', []):
         if getattr(change_view, 'name', '') == view_name:
@@ -63,7 +62,7 @@ class ScanStatusInChangeListMixin(object):
             else:
                 html = self._to_span("warning", "Scan failed")
 
-            url_name = _url_name_for_change_view(obj, 'security_info')
+            url_name = _url_name_for_change_view(type(obj), 'security_info')
             if not url_name:
                 logger.error("No security view for obj of type: {}".format(
                     type(obj))
