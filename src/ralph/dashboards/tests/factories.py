@@ -15,9 +15,15 @@ class DashboardFactory(DjangoModelFactory):
         model = Dashboard
 
 
+def data_center_content_type():
+    return ContentType.objects.get_for_model(DataCenterAsset)
+
+
 class GraphFactory(DjangoModelFactory):
 
     name = factory.Sequence(lambda n: 'graph {}'.format(n))
+    # model is ContentType and should be lazy evaluated until it's populated
+    model = factory.LazyFunction(data_center_content_type)
     aggregate_type = factory.Iterator([
         AggregateType.aggregate_max.id, AggregateType.aggregate_count.id,
         AggregateType.aggregate_sum.id
@@ -30,6 +36,3 @@ class GraphFactory(DjangoModelFactory):
     class Meta:
         model = Graph
 
-    @property
-    def model(self):
-        return ContentType.objects.get_for_model(DataCenterAsset)
