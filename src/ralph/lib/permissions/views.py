@@ -48,9 +48,11 @@ class PermissionViewMetaClass(type):
         codename = 'can_view_extra_{}'.format(name.lower())
 
         attrs['permision_codename'] = codename
+        if 'dispatch' in attrs:
+            attrs = dict(attrs)
+            print('wrapping', name, attrs['dispatch'])
+            attrs['dispatch'] = view_permission_dispatch(attrs.pop('dispatch'))
         new_class = super().__new__(cls, name, bases, attrs)
-        dispatch = getattr(new_class, 'dispatch', None)
-        setattr(new_class, 'dispatch', view_permission_dispatch(dispatch))
         _permission_views.append((new_class, codename))
         return new_class
 
