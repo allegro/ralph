@@ -25,8 +25,8 @@ class PolymorphicQuerySet(models.QuerySet):
     _annotate_kwargs = {}
     _extra_args = []
     _extra_kwargs = {}
-    _filter_args = []
-    _filter_kwargs = {}
+    _polymorphic_filter_args = []
+    _polymorphic_filter_kwargs = {}
 
     def iterator(self):
         """
@@ -96,11 +96,12 @@ class PolymorphicQuerySet(models.QuerySet):
                 # additional (unnecessary) WHERE conditions. Consider for
                 # example extracting (somehow) joined tables from filter
                 # fields and put them into `select_related`
-                if self._filter_args or self._filter_kwargs:
+                if self._polymorphic_filter_args or self._polymorphic_filter_kwargs:
                     model_query = model_query.filter(
-                        *self._filter_args,
-                        **self._filter_kwargs
+                        *self._polymorphic_filter_args,
+                        **self._polymorphic_filter_kwargs
                     )
+
                 for obj in model_query:
                     result_mapping[obj.pk] = obj
         # yield objects in original order
@@ -116,11 +117,6 @@ class PolymorphicQuerySet(models.QuerySet):
         self._extra_args.extend(args)
         self._extra_kwargs.update(kwargs)
         return super().extra(*args, **kwargs)
-
-    def _filter_or_exclude(self, negate, *args, **kwargs):
-        self._filter_args.extend(args)
-        self._filter_kwargs.update(kwargs)
-        return super()._filter_or_exclude(negate, *args, **kwargs)
 
     def _clone(self, *args, **kwargs):
         clone = super()._clone(*args, **kwargs)
@@ -138,8 +134,10 @@ class PolymorphicQuerySet(models.QuerySet):
         )
         clone._extra_args = self._extra_args.copy()
         clone._extra_kwargs = self._extra_kwargs.copy()
-        clone._filter_args = self._filter_args.copy()
-        clone._filter_kwargs = self._filter_kwargs.copy()
+        clone._polymorphic_filter_args = self._polymorphic_filter_args.copy()
+        clone._polymorphic_filter_kwargs = (
+            self._polymorphic_filter_kwargs.copy()
+        )
         return clone
 
     def polymorphic_select_related(self, **kwargs):
@@ -167,6 +165,19 @@ class PolymorphicQuerySet(models.QuerySet):
         """
         obj = self._clone()
         obj._polymorphic_prefetch_related = kwargs
+        return obj
+
+    def polymorphic_filter(self, *args, **kwargs):
+        """
+        Extra filter for descendat model
+
+        Might be useful (as a workaround) for forcing join on descendant model
+        in some cases with prefetch_related with queryset with polymorphic
+        objects.
+        """
+        obj = self._clone()
+        obj._polymorphic_filter_args.extend(args)
+        obj._polymorphic_filter_kwargs.update(kwargs)
         return obj
 
 
