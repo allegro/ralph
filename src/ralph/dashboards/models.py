@@ -99,8 +99,8 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
         if annotate_filters:
             queryset = queryset.filter(**annotate_filters)
 
-        queryset = self.apply_limit(queryset)
         queryset = self.apply_sort(queryset)
+        queryset = self.apply_limit(queryset)
         return queryset
 
     def get_data(self):
