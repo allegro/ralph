@@ -2,6 +2,7 @@
 import logging
 from datetime import datetime
 
+from django.db import transaction
 from django.core.management.base import BaseCommand
 
 from ralph.security.models import SecurityScan
@@ -13,6 +14,7 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
     help = 'Update `is_patched` field on each SecurityScan'
 
+    @transaction.atomic
     def _update_is_patched(self):
 
         not_patched_ids = SecurityScan.vulnerabilities.through.objects.filter(
