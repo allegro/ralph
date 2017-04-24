@@ -1,6 +1,6 @@
 from dj.choices import Choices
 from django.contrib.contenttypes.models import ContentType
-from django.db import models
+from django.db import connection, models
 from django.db.models import Count, Max, Sum
 from django_extensions.db.fields.json import JSONField
 
@@ -38,6 +38,36 @@ class ChartType(Choices):
     vertical_bar = _('Verical Bar').extra(renderer=VerticalBar)
     horizontal_bar = _('Horizontal Bar').extra(renderer=HorizontalBar)
     pie_chart = _('Pie Chart').extra(renderer=PieChart)
+
+
+class FilteringLabels():
+    #TODO:: docs
+    sep = '|'
+
+    def __init__(self, connection, label_filter):
+        self.connection = connection
+        self.label_filter = label_filter
+        self.label, self.filters = self.parse(label_filter)
+
+    def parse(self, extra):
+        split = self.label_filter.split(self.sep)
+        if len(split) > 1:
+            label, *filters = split[0]
+        else:
+            label, filters = split[0], []
+
+        return label, filters
+
+    def filter_year(self, extra):
+        return self.connection.ops.date_trunc_sql('year', self.label)
+
+    def apply_filters(self, queryset):
+        extra = {}
+        for filter_name in self.filters:
+            filter_fn = getattr(self, 'filter_' + filter_name)()
+            extra[filter_name] = filter_fn
+        with_filters = queryset.extra(extra)
+        return with_filters
 
 
 class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
@@ -79,17 +109,44 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
     def build_queryset(self):
         model = self.model.model_class()
         model_manager = model._default_manager
-        aggregate_type = AggregateType.from_id(self.aggregate_type)
 
-        queryset = self.apply_parital_filtering(model_manager.all())
+        queryset = model_manager.all()
 
-        annotate_filters = {}
+
+        filtering_label = FilteringLabels(connection, self.params['labels'])
+        queryset = filtering_label.apply_filters(queryset)
+        print(queryset.query)
+        #from django.db import connection
+        #from django.db.models import Sum, Count
+        #from ralph.data_center.models import DataCenterAsset
+        #truncate_date = connection.ops.date_trunc_sql('year', 'securityscan__vulnerabilities__patch_deadline')
+        ##qs = DataCenterAsset.objects
+        #qs = DataCenterAsset.objects.extra({'year': truncate_date})
+
+        #res = qs.filter(
+        #    securityscan__vulnerabilities__patch_deadline__gte='2016-01-01',
+        #    securityscan__vulnerabilities__patch_deadline__lte='2017-01-01'
+        #).distinct().annotate(
+        #    Count('id')
+        #).values_list(
+        #    'securityscan__vulnerabilities__patch_deadline', flat=True
+        #).all()
+        #import ipdb
+        #ipdb.set_trace()
+
+
+
+
+
+
+        queryset = self.apply_parital_filtering(queryset)
+
         annotate_filters = self.pop_annotate_filters(
             self.params.get('filters', None)
         )
 
+        aggregate_type = AggregateType.from_id(self.aggregate_type)
         aggregate_func = aggregate_type.aggregate_func
-
         queryset = queryset.values(
             self.params['labels']
         ).annotate(
@@ -101,6 +158,11 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
 
         queryset = self.apply_sort(queryset)
         queryset = self.apply_limit(queryset)
+
+
+
+        print(queryset.query)
+        print(queryset.all())
         return queryset
 
     def get_data(self):

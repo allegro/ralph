@@ -111,3 +111,58 @@ class GraphModelTest(SimpleTestCase):
         qs = graph.build_queryset()
 
         self.assertTrue(qs.first()['barcode'] > qs.last()['barcode'])
+
+
+class LabelFilteringTest(SimpleTestCase):
+
+    def _get_graph_params(self, update):
+        data = {
+            'filters': {
+                'delivery_date__gte': '2016-01-01',
+                'delivery_date__lt': '2017-01-01',
+            },
+            'series': 'id',
+        }
+        data.update(update)
+        return data
+
+    def test_label_filtering_works_when_no_filters_in_label(self):
+        self.a_2016 = DataCenterAssetFullFactory.create_batch(
+            2, delivery_date='2015-01-01',
+        )
+        expected = DataCenterAssetFullFactory.create_batch(
+            1, delivery_date='2016-01-01',
+        )
+        self.a_2015 = DataCenterAssetFullFactory.create_batch(
+            3, delivery_date='2017-01-01',
+        )
+        graph = GraphFactory(
+            params=self._get_graph_params({
+                'labels': 'delivery_date',
+            })
+        )
+
+        qs = graph.build_queryset()
+
+        self.assertTrue(qs.get()['series'], expected[0].id)
+
+    def test_label_filtering_works_when_year_filter_in_label(self):
+        self.a_2016 = DataCenterAssetFullFactory.create_batch(
+            2, delivery_date='2015-01-01',
+        )
+        expected = DataCenterAssetFullFactory.create_batch(
+            1, delivery_date='2016-01-01',
+        )
+        self.a_2015 = DataCenterAssetFullFactory.create_batch(
+            3, delivery_date='2017-01-01',
+        )
+        graph = GraphFactory(
+            params=self._get_graph_params({
+                'labels|year': 'delivery_date',
+            })
+        )
+
+        qs = graph.build_queryset()
+
+        self.assertTrue(qs.get()['series'], expected[0].id)
+        #TODO:: check also year in OX
