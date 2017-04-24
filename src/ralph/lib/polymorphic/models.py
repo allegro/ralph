@@ -12,7 +12,6 @@ Example:
         <Model3: model3: test>
     ]
 """
-from copy import deepcopy
 from itertools import groupby
 
 from django.contrib.contenttypes.models import ContentType
@@ -138,9 +137,9 @@ class PolymorphicQuerySet(models.QuerySet):
             self._annotate_args.copy()
         )
         clone._extra_args = self._extra_args.copy()
-        clone._extra_kwargs = deepcopy(self._extra_kwargs)
+        clone._extra_kwargs = self._extra_kwargs.copy()
         clone._filter_args = self._filter_args.copy()
-        clone._filter_kwargs = deepcopy(self._filter_kwargs)
+        clone._filter_kwargs = self._filter_kwargs.copy()
         return clone
 
     def polymorphic_select_related(self, **kwargs):
