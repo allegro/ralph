@@ -12,6 +12,7 @@ Example:
         <Model3: model3: test>
     ]
 """
+from copy import deepcopy
 from itertools import groupby
 
 from django.contrib.contenttypes.models import ContentType
@@ -23,6 +24,10 @@ class PolymorphicQuerySet(models.QuerySet):
     _polymorphic_prefetch_related = {}
     _annotate_args = []
     _annotate_kwargs = {}
+    _extra_args = []
+    _extra_kwargs = {}
+    _filter_args = []
+    _filter_kwargs = {}
 
     def iterator(self):
         """
@@ -85,7 +90,18 @@ class PolymorphicQuerySet(models.QuerySet):
                     )
                 model_query = model_query.annotate(
                     *self._annotate_args, **self._annotate_kwargs
-                )
+                ).extra(*self._extra_args, **self._extra_kwargs)
+
+                # rewrite filters to properly handle joins between tables
+                # TODO(mkurek): handle it better since it will produce
+                # additional (unnecessary) WHERE conditions. Consider for
+                # example extracting (somehow) joined tables from filter
+                # fields and put them into `select_related`
+                if self._filter_args or self._filter_kwargs:
+                    model_query = model_query.filter(
+                        *self._filter_args,
+                        **self._filter_kwargs
+                    )
                 for obj in model_query:
                     result_mapping[obj.pk] = obj
         # yield objects in original order
@@ -96,6 +112,16 @@ class PolymorphicQuerySet(models.QuerySet):
         self._annotate_args.extend(args)
         self._annotate_kwargs.update(kwargs)
         return super().annotate(*args, **kwargs)
+
+    def extra(self, *args, **kwargs):
+        self._extra_args.extend(args)
+        self._extra_kwargs.update(kwargs)
+        return super().extra(*args, **kwargs)
+
+    def _filter_or_exclude(self, negate, *args, **kwargs):
+        self._filter_args.extend(args)
+        self._filter_kwargs.update(kwargs)
+        return super()._filter_or_exclude(negate, *args, **kwargs)
 
     def _clone(self, *args, **kwargs):
         clone = super()._clone(*args, **kwargs)
@@ -111,6 +137,10 @@ class PolymorphicQuerySet(models.QuerySet):
         clone._annotate_args = (
             self._annotate_args.copy()
         )
+        clone._extra_args = self._extra_args.copy()
+        clone._extra_kwargs = deepcopy(self._extra_kwargs)
+        clone._filter_args = self._filter_args.copy()
+        clone._filter_kwargs = deepcopy(self._filter_kwargs)
         return clone
 
     def polymorphic_select_related(self, **kwargs):
