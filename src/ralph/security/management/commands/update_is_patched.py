@@ -14,24 +14,26 @@ class Command(BaseCommand):
     help = 'Update `is_patched` field on each SecurityScan'
 
     def _update_is_patched(self):
-        # mark all as patched
-        patched = SecurityScan.objects.update(is_patched=True)
 
-        # mark as not patched
         not_patched_ids = SecurityScan.vulnerabilities.through.objects.filter(
             vulnerability__patch_deadline__lte=datetime.now()
         ).values_list(
             'securityscan_id', flat=True
         ).distinct()
+
+        # this ones are outdated
         not_patched = SecurityScan.objects.filter(
-            id__in=not_patched_ids
+            id__in=not_patched_ids,
+            is_patched=True,
         ).update(
             is_patched=False
         )
 
-        self.stdout.write("All scans: {}".format(patched))
-        self.stdout.write("Scans marked as patched: {}".format(
-            patched - not_patched)
+        self.stdout.write(
+            "All scans: {}".format(SecurityScan.objects.count())
+        )
+        self.stdout.write(
+            "Scans marked as vulnerable: {}".format(not_patched)
         )
 
     def handle(self, **options):
