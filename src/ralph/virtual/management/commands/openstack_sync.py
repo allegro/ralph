@@ -39,6 +39,13 @@ except ImportError:
     nova_client_exists = False
 
 
+try:
+    from ironicclient.client import get_client as get_ironic_client
+    ironic_client_exists = True
+except ImportError:
+    ironic_client_exists = False
+
+
 DEFAULT_OPENSTACK_PROVIDER_NAME = settings.DEFAULT_OPENSTACK_PROVIDER_NAME
 
 
@@ -361,6 +368,75 @@ class Command(BaseCommand):
             ))
             return None
 
+    def _match_physical_and_cloud_hosts(self):
+        """Connect CloudHosts and DC assets according to data from Ironic."""
+
+        provider = getattr(
+            settings, 'OPENSTACK_IRONIC_PROVIDER', 'openstack-ironic'
+        )
+        os_conf = next((conf for conf in settings.OPENSTACK_INSTANCES
+                        if conf['provider'] == provider), None)
+
+        if os_conf is None:
+            logger.error('Ironic is not configured.')
+            return
+
+        ironic_client = get_ironic_client(
+            api_version=os_conf['version'],
+            os_username=os_conf['username'],
+            os_password=os_conf['password'],
+            os_tenant_name=os_conf['tenant_name'],
+            os_auth_url=os_conf['auth_url']
+        )
+
+        nodes = ironic_client.node.list(
+            associated=True,
+            fields=['extra', 'instance_uuid']
+        )
+
+        not_found_message_tpl = (
+            '{} with the host id or serial number {} was not found. Check if '
+            'Ralph is synchronized with OpenStack or add it manually.'
+        )
+
+        for node in nodes:
+            try:
+                host = CloudHost.objects.get(host_id=node.instance_uuid)
+                asset = DataCenterAsset.objects.get(
+                    sn=node.extra['serial_number']
+                )
+            except DataCenterAsset.DoesNotExist:
+                logger.warning(
+                    not_found_message_tpl.format(
+                        'DC asset',
+                        node.extra['serial_number']
+                    )
+                )
+            except CloudHost.DoesNotExist:
+                logger.warning(
+                    not_found_message_tpl.format(
+                        'Cloud host',
+                        node.instance_uuid
+                    )
+                )
+            except DataCenterAsset.MultipleObjectsReturned:
+                logger.error(
+                    'Multiple DC assets were found for the serial number {}. '
+                    'Please match CloudHost {} manually.'.format(
+                        node.extra['serial_number'],
+                        host.id
+                    )
+                )
+            else:
+                logger.info(
+                    'Cloud host {} matched DC asset {}.'.format(
+                        host.id,
+                        asset.id
+                    )
+                )
+                host.hypervisor = asset
+                host.save()
+
     @lru_cache()
     def _get_flavors(self):
         return {fl.flavor_id: fl for fl in CloudFlavor.objects.all()}
@@ -588,6 +664,8 @@ class Command(BaseCommand):
         for project_id in self.openstack_projects:
             self._add_project(self.openstack_projects[project_id], project_id)
 
+        self._match_physical_and_cloud_hosts()
+
     def _cleanup(self):
         """
         Remove all projects and flavors that doesn't exist in openstack from
@@ -649,6 +727,9 @@ class Command(BaseCommand):
         if not keystone_client_exists:
             logger.error("keystoneclient module is not installed")
             raise ImportError("No module named keystoneclient")
+        if not ironic_client_exists:
+            logger.error("ironicclient module is not installed")
+            raise ImportError("No module named ironicclient")
         if not hasattr(settings, 'OPENSTACK_INSTANCES'):
             logger.error('Nothing to sync')
             return
