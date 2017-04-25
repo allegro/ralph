@@ -376,12 +376,8 @@ class Command(BaseCommand):
     def _match_physical_and_cloud_hosts(self):
         """Connect CloudHosts and DC assets according to data from Ironic."""
 
-        provider = getattr(
-            settings, 'OPENSTACK_IRONIC_PROVIDER', 'openstack-ironic'
-        )
-
         for os_conf in settings.OPENSTACK_INSTANCES:
-            if os_conf['provider'] != provider:
+            if os_conf['provider'] != self.openstack_provider_name:
                 continue
 
             ironic_client = get_ironic_client(
