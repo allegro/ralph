@@ -12,6 +12,7 @@ Example:
         <Model3: model3: test>
     ]
 """
+from collections import defaultdict
 from itertools import groupby
 
 from django.contrib.contenttypes.models import ContentType
@@ -64,7 +65,12 @@ class PolymorphicQuerySet(models.QuerySet):
                 pk__in=list(content_types_ids)
             )
         }
-        result_mapping = {}
+        # NOTICE: there might be multiple objects with the same ct_id and
+        # pk!! (ex. because of filters causing joins - ex. for prefetch related,
+        # when one object is attached to many others). We need to group them
+        # and return all of them (order is rather irrelevant then, because
+        # it's the same object).
+        result_mapping = defaultdict(list)
         for k, v in result:
             model = content_type_model_map[k]
             polymorphic_models = getattr(model, '_polymorphic_models', [])
@@ -96,17 +102,19 @@ class PolymorphicQuerySet(models.QuerySet):
                 # additional (unnecessary) WHERE conditions. Consider for
                 # example extracting (somehow) joined tables from filter
                 # fields and put them into `select_related`
-                if self._polymorphic_filter_args or self._polymorphic_filter_kwargs:
+                if (
+                    self._polymorphic_filter_args or
+                    self._polymorphic_filter_kwargs
+                ):
                     model_query = model_query.filter(
                         *self._polymorphic_filter_args,
                         **self._polymorphic_filter_kwargs
                     )
-
                 for obj in model_query:
-                    result_mapping[obj.pk] = obj
+                    result_mapping[obj.pk].append(obj)
         # yield objects in original order
         for pk in pks_order:
-            yield result_mapping[pk]
+            yield result_mapping[pk].pop()
 
     def annotate(self, *args, **kwargs):
         self._annotate_args.extend(args)

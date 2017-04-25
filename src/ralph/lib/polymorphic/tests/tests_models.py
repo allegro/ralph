@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import Prefetch
 from django.test import TestCase
 
 from ralph.lib.polymorphic.models import Polymorphic
@@ -7,6 +8,7 @@ from ralph.lib.polymorphic.tests.models import (
     PolymorphicModelBaseTest,
     PolymorphicModelTest,
     PolymorphicModelTest2,
+    SomeM2MModel,
     SomethingRelated
 )
 
@@ -89,3 +91,43 @@ class PolymorphicTestCase(TestCase):
     def test_polymorphic_queryset_use_regular_iterator(self):
         with self.assertNumQueries(1):
             list(PolymorphicModelTest.polymorphic_objects.all())
+
+    def test_m2m_with_prefetch_related_on_polymorphic_object(self):
+
+        sm2mm_1 = SomeM2MModel.objects.create(name='abc')
+        sm2mm_1.polymorphics = [self.pol_1, self.pol_2]
+        sm2mm_1 = SomeM2MModel.objects.get(name='abc')
+        sm2mm_2 = SomeM2MModel.objects.create(name='def')
+        sm2mm_2.polymorphics = [self.pol_2, self.pol_3]
+        with self.assertNumQueries(5):
+            # 5 queries:
+            # 1) SomeM2MModel
+            # 2) Content Types (usually cached, but turned off in tests)
+            # 3) PolymorphicModelBaseTest ids
+            # 4) PolymorphicModelTest based on 3)
+            # 5) PolymorphicModelTest2 based on 3)
+            result = {
+                sm.name: sm for sm in
+                SomeM2MModel.objects.prefetch_related(Prefetch(
+                    lookup='polymorphics',
+                    queryset=PolymorphicModelBaseTest.polymorphic_objects.polymorphic_filter(
+                        some_m2m__in=SomeM2MModel.objects.all()
+                    ).all(),
+                )).order_by('name')
+            }
+            self.assertCountEqual(
+                result['abc'].polymorphics.all(),
+                [self.pol_1, self.pol_2]
+            )
+            self.assertCountEqual(
+                [inst._meta.model for inst in result['abc'].polymorphics.all()],
+                [PolymorphicModelTest, PolymorphicModelTest]
+            )
+            self.assertCountEqual(
+                result['def'].polymorphics.all(),
+                [self.pol_2, self.pol_3]
+            )
+            self.assertCountEqual(
+                [inst._meta.model for inst in result['def'].polymorphics.all()],
+                [PolymorphicModelTest, PolymorphicModelTest2]
+            )
