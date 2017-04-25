@@ -145,6 +145,7 @@ class LabelFilteringTest(SimpleTestCase):
         qs = graph.build_queryset()
 
         self.assertTrue(qs.get()['series'], expected[0].id)
+        self.assertIn('delivery_date', qs.get())
 
     def test_label_filtering_works_when_year_filter_in_label(self):
         self.a_2016 = DataCenterAssetFullFactory.create_batch(
@@ -158,11 +159,11 @@ class LabelFilteringTest(SimpleTestCase):
         )
         graph = GraphFactory(
             params=self._get_graph_params({
-                'labels|year': 'delivery_date',
+                'labels': 'delivery_date|year',
             })
         )
 
         qs = graph.build_queryset()
 
         self.assertTrue(qs.get()['series'], expected[0].id)
-        #TODO:: check also year in OX
+        self.assertIn('year', qs.get())

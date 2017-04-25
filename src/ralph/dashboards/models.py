@@ -40,34 +40,40 @@ class ChartType(Choices):
     pie_chart = _('Pie Chart').extra(renderer=PieChart)
 
 
-class FilteringLabels():
-    #TODO:: docs
+class FilteringLabel:
+    """
+    Adds grouping-by-year feature to query based on `label_filter`
+    """
     sep = '|'
 
     def __init__(self, connection, label_filter):
         self.connection = connection
-        self.label_filter = label_filter
-        self.label, self.filters = self.parse(label_filter)
+        self.orig_label, self.label = self.parse(label_filter)
 
-    def parse(self, extra):
-        split = self.label_filter.split(self.sep)
-        if len(split) > 1:
-            label, *filters = split[0]
+    def parse(self, label_filter):
+        split = label_filter.split(self.sep)
+        if len(split) == 1:
+            orig_label, label = split[0], split[0]
+        elif len(split) == 2:
+            orig_label, label = split[0], split[1]
         else:
-            label, filters = split[0], []
+            raise ValueError("Only one filter supported")
+        return orig_label, label
 
-        return label, filters
+    @property
+    def has_filter(self):
+        return self.orig_label != self.label
 
-    def filter_year(self, extra):
-        return self.connection.ops.date_trunc_sql('year', self.label)
+    def filter_year(self):
+        field_name = self.orig_label.split('__')[-1]
+        return self.connection.ops.date_trunc_sql('year', field_name)
 
-    def apply_filters(self, queryset):
-        extra = {}
-        for filter_name in self.filters:
-            filter_fn = getattr(self, 'filter_' + filter_name)()
-            extra[filter_name] = filter_fn
-        with_filters = queryset.extra(extra)
-        return with_filters
+    def apply_filter(self, queryset):
+        if self.has_filter:
+            queryset = queryset.extra({
+                self.label: getattr(self, 'filter_' + self.label)()
+            })
+        return queryset
 
 
 class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
@@ -112,33 +118,8 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
 
         queryset = model_manager.all()
 
-
-        filtering_label = FilteringLabels(connection, self.params['labels'])
-        queryset = filtering_label.apply_filters(queryset)
-        print(queryset.query)
-        #from django.db import connection
-        #from django.db.models import Sum, Count
-        #from ralph.data_center.models import DataCenterAsset
-        #truncate_date = connection.ops.date_trunc_sql('year', 'securityscan__vulnerabilities__patch_deadline')
-        ##qs = DataCenterAsset.objects
-        #qs = DataCenterAsset.objects.extra({'year': truncate_date})
-
-        #res = qs.filter(
-        #    securityscan__vulnerabilities__patch_deadline__gte='2016-01-01',
-        #    securityscan__vulnerabilities__patch_deadline__lte='2017-01-01'
-        #).distinct().annotate(
-        #    Count('id')
-        #).values_list(
-        #    'securityscan__vulnerabilities__patch_deadline', flat=True
-        #).all()
-        #import ipdb
-        #ipdb.set_trace()
-
-
-
-
-
-
+        filtering_label = FilteringLabel(connection, self.params['labels'])
+        queryset = filtering_label.apply_filter(queryset)
         queryset = self.apply_parital_filtering(queryset)
 
         annotate_filters = self.pop_annotate_filters(
@@ -148,7 +129,7 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
         aggregate_type = AggregateType.from_id(self.aggregate_type)
         aggregate_func = aggregate_type.aggregate_func
         queryset = queryset.values(
-            self.params['labels']
+            filtering_label.label
         ).annotate(
             series=aggregate_func(self.params['series'])
         )
@@ -158,17 +139,13 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
 
         queryset = self.apply_sort(queryset)
         queryset = self.apply_limit(queryset)
-
-
-
-        print(queryset.query)
-        print(queryset.all())
         return queryset
 
     def get_data(self):
         queryset = self.build_queryset()
+        label = FilteringLabel(connection, self.params['labels']).label
         return {
-            'labels': [str(q[self.params['labels']]) for q in queryset],
+            'labels': [str(q[label]) for q in queryset],
             'series': [int(q['series']) for q in queryset],
         }
 
