@@ -32,7 +32,7 @@ from ralph.virtual.tests.factories import (
 
 # NOTE(romcheg): If at some point someone finds a better name for this
 #                they are welcome to propose it or change it oneself.
-class CommonCodeMixin(object):
+class NetworkableBaseObjectTestMixin(object):
     """Provides common code required for this test module."""
 
     def _generate_rack_with_networks(self, num_networks=5):
@@ -182,7 +182,7 @@ class OpenstackModelsTestCase(RalphTestCase):
         self.assertEqual(new_host.service_env, self.service_env[1])
 
 
-class CloudHostTestCase(RalphTestCase, CommonCodeMixin):
+class CloudHostTestCase(RalphTestCase, NetworkableBaseObjectTestMixin):
     def setUp(self):
         self.service = ServiceFactory()
         self.service_env = ServiceEnvironmentFactory(service=self.service)
@@ -234,7 +234,7 @@ class CloudHostTestCase(RalphTestCase, CommonCodeMixin):
         self.assertNetworksTheSame(nets, host._get_available_networks())
 
 
-class VirtualServerTestCase(RalphTestCase, CommonCodeMixin):
+class VirtualServerTestCase(RalphTestCase, NetworkableBaseObjectTestMixin):
     def setUp(self):
         self.vs = VirtualServerFullFactory()
         self.custom_field_str = CustomField.objects.create(

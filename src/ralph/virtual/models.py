@@ -206,8 +206,8 @@ class CloudHost(PreviousStateMixin,
 
     @cached_property
     def rack(self):
-        if isinstance(self.hypervisor, DataCenterAsset):
-                return self.hypervisor.rack
+        if self.hypervisor:
+            return self.hypervisor.rack
         return None
 
     @property
@@ -373,10 +373,7 @@ class VirtualServer(
     def rack(self):
         if self.parent_id:
             polymorphic_parent = self.polymorphic_parent.last_descendant
-            if (
-                isinstance(polymorphic_parent, DataCenterAsset) or
-                isinstance(polymorphic_parent, CloudHost)
-            ):
+            if (isinstance(polymorphic_parent, (DataCenterAsset, CloudHost))):
                 return polymorphic_parent.rack
         return None
 
