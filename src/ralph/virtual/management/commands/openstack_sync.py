@@ -75,8 +75,8 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             '--match-ironic-physical-hosts',
-            default=False,
-            help='Match physical hosts and baremetal instances',
+            action='store_true',
+            help='Match physical hosts and baremetal instances'
         )
 
     @staticmethod
