@@ -57,21 +57,21 @@ class GroupingLabel:
         elif len(split) == 2:
             orig_label, label = split[0], split[1]
         else:
-            raise ValueError("Only one filter supported")
+            raise ValueError("Only one group supported")
         return orig_label, label
 
     @property
-    def has_filter(self):
+    def has_group(self):
         return self.orig_label != self.label
 
-    def filter_year(self):
+    def group_year(self):
         field_name = self.orig_label.split('__')[-1]
         return self.connection.ops.date_trunc_sql('year', field_name)
 
-    def apply_filter(self, queryset):
-        if self.has_filter:
+    def apply_grouping(self, queryset):
+        if self.has_group:
             queryset = queryset.extra({
-                self.label: getattr(self, 'filter_' + self.label)()
+                self.label: getattr(self, 'group_' + self.label)()
             })
         return queryset
 
@@ -105,8 +105,8 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
     @property
     def has_grouping(self):
         labels = self.params.get('labels', '')
-        filtering_label = GroupingLabel(connection, labels)
-        return filtering_label.has_filter
+        grouping_label = GroupingLabel(connection, labels)
+        return grouping_label.has_group
 
     def apply_limit(self, queryset):
         limit = self.params.get('limit', None)
@@ -124,8 +124,8 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
 
         queryset = model_manager.all()
 
-        filtering_label = GroupingLabel(connection, self.params['labels'])
-        queryset = filtering_label.apply_filter(queryset)
+        grouping_label = GroupingLabel(connection, self.params['labels'])
+        queryset = grouping_label.apply_grouping(queryset)
         queryset = self.apply_parital_filtering(queryset)
 
         annotate_filters = self.pop_annotate_filters(
@@ -135,7 +135,7 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
         aggregate_type = AggregateType.from_id(self.aggregate_type)
         aggregate_func = aggregate_type.aggregate_func
         queryset = queryset.values(
-            filtering_label.label
+            grouping_label.label
         ).annotate(
             series=aggregate_func(self.params['series'])
         )
