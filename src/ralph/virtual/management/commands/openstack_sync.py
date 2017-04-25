@@ -73,6 +73,11 @@ class Command(BaseCommand):
             help='OpenStack provider name',
             default=DEFAULT_OPENSTACK_PROVIDER_NAME,
         )
+        parser.add_argument(
+            '--match-ironic-physical-hosts',
+            default=False,
+            help='Match physical hosts and baremetal instances',
+        )
 
     @staticmethod
     def _get_novaclient_connection(site):
@@ -410,13 +415,13 @@ class Command(BaseCommand):
             try:
                 host = CloudHost.objects.get(host_id=node.instance_uuid)
                 asset = DataCenterAsset.objects.get(
-                    sn=node.extra['serial_number']
+                    sn=node.extra.get('serial_number')
                 )
             except DataCenterAsset.DoesNotExist:
                 logger.warning(
                     not_found_message_tpl.format(
                         'DC asset',
-                        node.extra['serial_number']
+                        node.extra.get('serial_number')
                     )
                 )
             except CloudHost.DoesNotExist:
@@ -430,7 +435,7 @@ class Command(BaseCommand):
                 logger.error(
                     'Multiple DC assets were found for the serial number {}. '
                     'Please match CloudHost {} manually.'.format(
-                        node.extra['serial_number'],
+                        node.extra.get('serial_number'),
                         host.id
                     )
                 )
@@ -671,8 +676,6 @@ class Command(BaseCommand):
         for project_id in self.openstack_projects:
             self._add_project(self.openstack_projects[project_id], project_id)
 
-        self._match_physical_and_cloud_hosts()
-
     def _cleanup(self):
         """
         Remove all projects and flavors that doesn't exist in openstack from
@@ -728,13 +731,15 @@ class Command(BaseCommand):
         logger.info(msg)
 
     def handle(self, *args, **options):
+        match_ironic = options.get('match_ironic_physical_hosts')
+
         if not nova_client_exists:
             logger.error("novaclient module is not installed")
             raise ImportError("No module named novaclient")
         if not keystone_client_exists:
             logger.error("keystoneclient module is not installed")
             raise ImportError("No module named keystoneclient")
-        if not ironic_client_exists:
+        if match_ironic and not ironic_client_exists:
             logger.error("ironicclient module is not installed")
             raise ImportError("No module named ironicclient")
         if not hasattr(settings, 'OPENSTACK_INSTANCES'):
@@ -747,5 +752,9 @@ class Command(BaseCommand):
         self._process_openstack_instances()
         self._get_ralph_data()
         self._update_ralph()
+
+        if match_ironic:
+            self._match_physical_and_cloud_hosts()
+
         self._cleanup()
         self._print_summary()
