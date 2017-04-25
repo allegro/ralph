@@ -384,12 +384,8 @@ class Command(BaseCommand):
             if os_conf['provider'] != provider:
                 continue
 
-            # if os_conf is None:
-            #     logger.error('Ironic is not configured.')
-            #     return
-
             ironic_client = get_ironic_client(
-                api_version=os_conf['version'],
+                api_version=os_conf.get('ironic-api-version', '1'),
                 os_username=os_conf['username'],
                 os_password=os_conf['password'],
                 os_tenant_name=os_conf['tenant_name'],
