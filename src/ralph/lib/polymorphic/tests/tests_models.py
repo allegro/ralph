@@ -65,8 +65,18 @@ class PolymorphicTestCase(TestCase):
                 if isinstance(item, PolymorphicModelTest2):
                     item.another_related
 
-        self.assertIn('PolymorphicModelTest: {}'.format(self.pol_1.pk), result)
-        self.assertIn('PolymorphicModelTest2: {}'.format(self.pol_3.pk), result)
+        self.assertIn(
+            'PolymorphicModelTest: {} ({})'.format(
+                self.pol_1.name, self.pol_1.pk
+            ),
+            result
+        )
+        self.assertIn(
+            'PolymorphicModelTest2: {} ({})'.format(
+                self.pol_3.name, self.pol_3.pk
+            ),
+            result
+        )
 
     def test_polymorphic_queryset_with_select_related(self):
         with self.assertNumQueries(4):
