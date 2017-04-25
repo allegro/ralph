@@ -102,6 +102,12 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
             ).get_queryset()
         return queryset
 
+    @property
+    def has_grouping(self):
+        labels = self.params.get('labels', '')
+        filtering_label = FilteringLabel(connection, labels)
+        return filtering_label.has_filter
+
     def apply_limit(self, queryset):
         limit = self.params.get('limit', None)
         return queryset[:limit]
