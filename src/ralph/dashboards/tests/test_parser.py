@@ -194,7 +194,6 @@ class LabelGroupingTest(SimpleTestCase):
 
                 )
             )
-        print(expected.securityscan)
 
         graph = GraphFactory(
             params={
