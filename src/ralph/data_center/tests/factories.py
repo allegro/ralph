@@ -38,6 +38,7 @@ from ralph.data_center.models.virtual import (
     VIP,
     VIPProtocol
 )
+from ralph.security.tests.factories import SecurityScanFactory
 
 date_now = datetime.now().date()
 
@@ -160,6 +161,22 @@ class DataCenterAssetFactory(DjangoModelFactory):
 
     class Meta:
         model = DataCenterAsset
+
+    @factory.post_generation
+    def securityscan(self, create, extracted, **kwargs):
+        if not create:
+            # simple build, do nothing.
+            return
+
+        if extracted:
+            self.securityscan = extracted
+            self.securityscan.save()
+        elif extracted is None:
+            self.securityscan = SecurityScanFactory()
+            self.securityscan.save()
+        else:
+            # allow creating as empty
+            pass
 
 
 class DataCenterAssetFullFactory(DataCenterAssetFactory):

@@ -40,18 +40,18 @@ class ChartType(Choices):
     pie_chart = _('Pie Chart').extra(renderer=PieChart)
 
 
-class FilteringLabel:
+class GroupingLabel:
     """
-    Adds grouping-by-year feature to query based on `label_filter`
+    Adds grouping-by-year feature to query based on `label_group`
     """
     sep = '|'
 
-    def __init__(self, connection, label_filter):
+    def __init__(self, connection, label_group):
         self.connection = connection
-        self.orig_label, self.label = self.parse(label_filter)
+        self.orig_label, self.label = self.parse(label_group)
 
-    def parse(self, label_filter):
-        split = label_filter.split(self.sep)
+    def parse(self, label_group):
+        split = label_group.split(self.sep)
         if len(split) == 1:
             orig_label, label = split[0], split[0]
         elif len(split) == 2:
@@ -105,7 +105,7 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
     @property
     def has_grouping(self):
         labels = self.params.get('labels', '')
-        filtering_label = FilteringLabel(connection, labels)
+        filtering_label = GroupingLabel(connection, labels)
         return filtering_label.has_filter
 
     def apply_limit(self, queryset):
@@ -124,7 +124,7 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
 
         queryset = model_manager.all()
 
-        filtering_label = FilteringLabel(connection, self.params['labels'])
+        filtering_label = GroupingLabel(connection, self.params['labels'])
         queryset = filtering_label.apply_filter(queryset)
         queryset = self.apply_parital_filtering(queryset)
 
@@ -149,7 +149,7 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
 
     def get_data(self):
         queryset = self.build_queryset()
-        label = FilteringLabel(connection, self.params['labels']).label
+        label = GroupingLabel(connection, self.params['labels']).label
         return {
             'labels': [str(q[label]) for q in queryset],
             'series': [int(q['series']) for q in queryset],

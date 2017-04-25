@@ -9,7 +9,11 @@ from django.test import SimpleTestCase
 from ralph.dashboards.filter_parser import FilterParser
 from ralph.dashboards.models import Graph
 from ralph.dashboards.tests.factories import GraphFactory
-from ralph.data_center.tests.factories import DataCenterAssetFullFactory
+from ralph.data_center.tests.factories import (
+    DataCenterAssetFactory,
+    DataCenterAssetFullFactory
+)
+from ralph.security.tests.factories import SecurityScanFactory
 from ralph.tests.models import Bar
 
 ARGS, KWARGS = (0, 1)
@@ -113,7 +117,7 @@ class GraphModelTest(SimpleTestCase):
         self.assertTrue(qs.first()['barcode'] > qs.last()['barcode'])
 
 
-class LabelFilteringTest(SimpleTestCase):
+class LabelGroupingTest(SimpleTestCase):
 
     def _get_graph_params(self, update):
         data = {
@@ -126,7 +130,7 @@ class LabelFilteringTest(SimpleTestCase):
         data.update(update)
         return data
 
-    def test_label_filtering_works_when_no_filters_in_label(self):
+    def test_label_works_when_no_grouping_in_label(self):
         self.a_2016 = DataCenterAssetFullFactory.create_batch(
             2, delivery_date='2015-01-01',
         )
@@ -147,7 +151,7 @@ class LabelFilteringTest(SimpleTestCase):
         self.assertTrue(qs.get()['series'], expected[0].id)
         self.assertIn('delivery_date', qs.get())
 
-    def test_label_filtering_works_when_year_filter_in_label(self):
+    def test_label_works_when_year_grouping(self):
         self.a_2016 = DataCenterAssetFullFactory.create_batch(
             2, delivery_date='2015-01-01',
         )
@@ -167,3 +171,42 @@ class LabelFilteringTest(SimpleTestCase):
 
         self.assertTrue(qs.get()['series'], expected[0].id)
         self.assertIn('year', qs.get())
+
+    def test_label_works_when_year_grouping_on_foreign_key(self):
+        for _ in range(2):
+            DataCenterAssetFactory(
+                securityscan=SecurityScanFactory(
+                    last_scan_date='2015-01-01',
+
+                )
+            )
+        for _ in range(1):
+            expected = DataCenterAssetFactory(
+                securityscan=SecurityScanFactory(
+                    last_scan_date='2016-01-01',
+
+                )
+            )
+        for _ in range(3):
+            DataCenterAssetFactory(
+                securityscan=SecurityScanFactory(
+                    last_scan_date='2017-01-01',
+
+                )
+            )
+        print(expected.securityscan)
+
+        graph = GraphFactory(
+            params={
+                'filters': {
+                    'securityscan__last_scan_date__gte': '2016-01-01',
+                    'securityscan__last_scan_date__lt': '2017-01-01',
+                },
+                'series': 'id',
+                'labels': 'securityscan__last_scan_date|year',
+            }
+        )
+
+        qs = graph.build_queryset()
+
+        self.assertTrue(qs.get()['series'], expected.id)
