@@ -374,25 +374,32 @@ class Command(BaseCommand):
         provider = getattr(
             settings, 'OPENSTACK_IRONIC_PROVIDER', 'openstack-ironic'
         )
-        os_conf = next((conf for conf in settings.OPENSTACK_INSTANCES
-                        if conf['provider'] == provider), None)
 
-        if os_conf is None:
-            logger.error('Ironic is not configured.')
-            return
+        for os_conf in settings.OPENSTACK_INSTANCES:
+            if os_conf['provider'] != provider:
+                continue
 
-        ironic_client = get_ironic_client(
-            api_version=os_conf['version'],
-            os_username=os_conf['username'],
-            os_password=os_conf['password'],
-            os_tenant_name=os_conf['tenant_name'],
-            os_auth_url=os_conf['auth_url']
-        )
+            # if os_conf is None:
+            #     logger.error('Ironic is not configured.')
+            #     return
 
-        nodes = ironic_client.node.list(
-            associated=True,
-            fields=['extra', 'instance_uuid']
-        )
+            ironic_client = get_ironic_client(
+                api_version=os_conf['version'],
+                os_username=os_conf['username'],
+                os_password=os_conf['password'],
+                os_tenant_name=os_conf['tenant_name'],
+                os_auth_url=os_conf['auth_url']
+            )
+
+            nodes = ironic_client.node.list(
+                associated=True,
+                fields=['extra', 'instance_uuid']
+            )
+
+            self._match_nodes_to_hosts(nodes)
+
+    def _match_nodes_to_hosts(self, nodes):
+        """Match iornic nodes to hosts."""
 
         not_found_message_tpl = (
             '{} with the host id or serial number {} was not found. Check if '
