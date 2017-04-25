@@ -78,6 +78,12 @@ class Command(BaseCommand):
             action='store_true',
             help='Match physical hosts and baremetal instances'
         )
+        parser.add_argument(
+            '--node-serial-number-parameter',
+            type=str,
+            default='serial_number',
+            help="Extra parameter used to store node serial numbers in Ironic"
+        )
 
     @staticmethod
     def _get_novaclient_connection(site):
@@ -404,16 +410,18 @@ class Command(BaseCommand):
         )
 
         for node in nodes:
+            node_sn = node.extra[self.ironic_serial_number_param]
+
             try:
                 host = CloudHost.objects.get(host_id=node.instance_uuid)
                 asset = DataCenterAsset.objects.get(
-                    sn=node.extra.get('serial_number')
+                    sn=node_sn
                 )
             except DataCenterAsset.DoesNotExist:
                 logger.warning(
                     not_found_message_tpl.format(
                         'DC asset',
-                        node.extra.get('serial_number')
+                        node_sn
                     )
                 )
             except CloudHost.DoesNotExist:
@@ -426,9 +434,18 @@ class Command(BaseCommand):
             except DataCenterAsset.MultipleObjectsReturned:
                 logger.error(
                     'Multiple DC assets were found for the serial number {}. '
-                    'Please match CloudHost {} manually.'.format(
-                        node.extra.get('serial_number'),
+                    'Please match Cloud host {} manually.'.format(
+                        node_sn,
                         host.id
+                    )
+                )
+            except KeyError:
+                logger.warning(
+                    'Could not get serial number of the Ironic node {} using '
+                    'using {} extra parameter. Please check the configuration '
+                    'of the node and submit a proper extra parameter or match '
+                    'the node manually.'.format(
+                        node.uuid, self.ironic_serial_number_param
                     )
                 )
             else:
@@ -738,6 +755,9 @@ class Command(BaseCommand):
             logger.error('Nothing to sync')
             return
         self.openstack_provider_name = options['provider']
+        self.ironic_serial_number_param = options[
+            'node_serial_number_parameter'
+        ]
         self.stdout.write("syncing...")
 
         self._get_cloud_provider()
