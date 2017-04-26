@@ -30,6 +30,12 @@ from ralph.virtual.tests.samples.openstack_data import (
 )
 
 
+class FakeIronicNode(object):
+    def __init__(self, serial_number, instance_uuid):
+        self.extra = {'serial_number': serial_number}
+        self.instance_uuid = instance_uuid
+
+
 class TestOpenstackSync(RalphTestCase):
 
     def setUp(self):
@@ -196,3 +202,87 @@ class TestOpenstackSync(RalphTestCase):
             os['tenant_name'] for os in self.cmd._get_instances_from_settings()
         ]
         self.assertCountEqual(tenants, ['admin3'])
+
+    def test_match_cloud_hosts_all_matched(self):
+        asset_model = DataCenterAssetModelFactory()
+        num_assets = 10
+
+        assets = [
+            DataCenterAsset.objects.create(
+                hostname='hostname-{}'.format(i),
+                model=asset_model,
+                sn='SN{}'.format(i)
+            )
+            for i in range(num_assets)
+        ]
+        hosts = [
+            CloudHostFactory(host_id='fake-instance-uuid-{}'.format(i))
+            for i in range(num_assets)
+        ]
+
+        nodes = [
+            FakeIronicNode(serial_number=asset.sn, instance_uuid=host.host_id)
+            for asset, host in zip(assets, hosts)
+        ]
+
+        self.cmd._match_nodes_to_hosts(nodes)
+
+        updated_hosts = CloudHost.objects.filter(
+            id__in=[host.id for host in hosts]
+        )
+
+        for host in updated_hosts:
+            self.assertIsNotNone(host.hypervisor)
+
+        expected_serials = [asset.sn for asset in assets]
+        expected_serials.sort()
+
+        real_serials = [host.hypervisor.sn for host in updated_hosts]
+        real_serials.sort()
+
+        self.assertEqual(expected_serials, real_serials)
+
+    def test_match_cloud_hosts_host_not_found(self):
+        host = CloudHostFactory(host_id='foo')
+        node = FakeIronicNode(serial_number='SN0', instance_uuid='bar')
+        self.cmd._match_nodes_to_hosts([node])
+
+        updated_host = CloudHost.objects.get(pk=host.pk)
+        self.assertIsNone(updated_host.hypervisor)
+
+    def test_match_cloud_hosts_asset_not_found(self):
+        asset_model = DataCenterAssetModelFactory()
+        DataCenterAsset.objects.create(
+            hostname='hostname-1',
+            model=asset_model,
+            sn='FOO'
+        )
+
+        host = CloudHostFactory(host_id='buz')
+        node = FakeIronicNode(serial_number='BAR', instance_uuid=host.host_id)
+        self.cmd._match_nodes_to_hosts([node])
+
+        updated_host = CloudHost.objects.get(pk=host.pk)
+        self.assertIsNone(updated_host.hypervisor)
+
+    def test_match_cloud_hosts_asset_duplicate_sn(self):
+        asset_model = DataCenterAssetModelFactory()
+        assets = [
+            DataCenterAsset.objects.create(
+                hostname='hostname-{}'.format(i),
+                model=asset_model,
+                sn=None
+            )
+            for i in range(2)
+        ]
+
+        host = CloudHostFactory(host_id='bar')
+        node = FakeIronicNode(
+            serial_number=assets[0].sn,
+            instance_uuid=host.host_id
+        )
+
+        self.cmd._match_nodes_to_hosts([node])
+
+        updated_host = CloudHost.objects.get(pk=host.pk)
+        self.assertIsNone(updated_host.hypervisor)
