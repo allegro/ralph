@@ -122,7 +122,6 @@ class PolymorphicQuerySet(models.QuerySet):
             # see test cases in `PolymorphicTestCase` for examples.
             while result_mapping[pk]:
                 yield result_mapping[pk].pop()
-        return
 
     def annotate(self, *args, **kwargs):
         self._annotate_args.extend(args)
