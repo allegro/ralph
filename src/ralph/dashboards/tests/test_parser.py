@@ -172,28 +172,22 @@ class LabelGroupingTest(SimpleTestCase):
         self.assertTrue(qs.get()['series'], expected[0].id)
         self.assertIn('year', qs.get())
 
+    def _genenrate_dca_with_scan(self, count, date_str):
+        gen = []
+        for _ in range(count):
+            dca = DataCenterAssetFactory()
+            sc = SecurityScanFactory(
+                last_scan_date=date_str,
+            )
+            dca.securityscan = sc
+            sc.save()
+            gen.append(dca)
+        return gen
+
     def test_label_works_when_year_grouping_on_foreign_key(self):
-        for _ in range(2):
-            DataCenterAssetFactory(
-                securityscan=SecurityScanFactory(
-                    last_scan_date='2015-01-01',
-
-                )
-            )
-        for _ in range(1):
-            expected = DataCenterAssetFactory(
-                securityscan=SecurityScanFactory(
-                    last_scan_date='2016-01-01',
-
-                )
-            )
-        for _ in range(3):
-            DataCenterAssetFactory(
-                securityscan=SecurityScanFactory(
-                    last_scan_date='2017-01-01',
-
-                )
-            )
+        self._genenrate_dca_with_scan(2, '2015-01-01')
+        expected = self._genenrate_dca_with_scan(1, '2016-01-01')[0]
+        self._genenrate_dca_with_scan(3, '2017-01-01')
 
         graph = GraphFactory(
             params={
@@ -209,3 +203,4 @@ class LabelGroupingTest(SimpleTestCase):
         qs = graph.build_queryset()
 
         self.assertTrue(qs.get()['series'], expected.id)
+        self.assertIn('year', qs.get())
