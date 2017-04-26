@@ -120,7 +120,7 @@ class PolymorphicTestCase(TestCase):
                 sm.name: sm for sm in
                 SomeM2MModel.objects.prefetch_related(Prefetch(
                     lookup='polymorphics',
-                    queryset=PolymorphicModelBaseTest.polymorphic_objects.polymorphic_filter(
+                    queryset=PolymorphicModelBaseTest.polymorphic_objects.polymorphic_filter(  # noqa
                         some_m2m__in=SomeM2MModel.objects.all()
                     ).all(),
                 )).order_by('name')
@@ -140,4 +140,37 @@ class PolymorphicTestCase(TestCase):
             self.assertCountEqual(
                 [inst._meta.model for inst in result['def'].polymorphics.all()],
                 [PolymorphicModelTest, PolymorphicModelTest2]
+            )
+
+    def test_m2m_with_prefetch_related_on_polymorphic_object_with_subset(self):
+        """
+        Test if PolymorphicModelBaseTest instance is properly fetched in
+        prefetch_related when base model (SomeM2MModel in this case) is
+        filtered and polymorphic_filter still contains filter for all
+        SomeM2MModel objects.
+        """
+        sm2mm_1 = SomeM2MModel.objects.create(name='abc')
+        sm2mm_1.polymorphics = [self.pol_1, self.pol_2]
+        sm2mm_1 = SomeM2MModel.objects.get(name='abc')
+        sm2mm_2 = SomeM2MModel.objects.create(name='def')
+        sm2mm_2.polymorphics = [self.pol_2, self.pol_3]
+        sm2mm_3 = SomeM2MModel.objects.create(name='xyz')
+        sm2mm_3.polymorphics = [self.pol_2]
+        sm2mm_4 = SomeM2MModel.objects.create(name='qwerty')
+        sm2mm_4.polymorphics = [self.pol_2]
+        with self.assertNumQueries(4):
+            result = {
+                sm.name: sm for sm in
+                SomeM2MModel.objects.filter(name='xyz').prefetch_related(
+                    Prefetch(
+                        lookup='polymorphics',
+                        queryset=PolymorphicModelBaseTest.polymorphic_objects.polymorphic_filter(  # noqa
+                            some_m2m__in=SomeM2MModel.objects.all()
+                        ).all(),
+                    )
+                ).order_by('name')
+            }
+            self.assertCountEqual(
+                result['xyz'].polymorphics.all(),
+                [self.pol_2]
             )

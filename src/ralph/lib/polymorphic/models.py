@@ -114,7 +114,15 @@ class PolymorphicQuerySet(models.QuerySet):
                     result_mapping[obj.pk].append(obj)
         # yield objects in original order
         for pk in pks_order:
-            yield result_mapping[pk].pop()
+            # yield all objects with particular PK
+            # it might happen that there will be additional objects with
+            # particular PK comparing to original query. This might happen when
+            # "broad" polymorphic_filter is used with prefetch_related (and
+            # original model is filtered to get only subset of all objects)
+            # see test cases in `PolymorphicTestCase` for examples.
+            while result_mapping[pk]:
+                yield result_mapping[pk].pop()
+        return
 
     def annotate(self, *args, **kwargs):
         self._annotate_args.extend(args)
