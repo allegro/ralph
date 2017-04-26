@@ -4,7 +4,7 @@ import datetime
 from dateutil.relativedelta import relativedelta
 from ddt import data, ddt, unpack
 from django.db.models import Q
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, TestCase
 
 from ralph.dashboards.filter_parser import FilterParser
 from ralph.dashboards.models import AggregateType, Graph
@@ -117,7 +117,7 @@ class GraphModelTest(SimpleTestCase):
         self.assertTrue(qs.first()['barcode'] > qs.last()['barcode'])
 
 
-class LabelGroupingTest(SimpleTestCase):
+class LabelGroupingTest(TestCase):
 
     def _get_graph_params(self, update):
         data = {
@@ -131,13 +131,13 @@ class LabelGroupingTest(SimpleTestCase):
         return data
 
     def test_label_works_when_no_grouping_in_label(self):
-        self.a_2016 = DataCenterAssetFullFactory.create_batch(
+        self.a_2016 = DataCenterAssetFactory.create_batch(
             2, delivery_date='2015-01-01',
         )
-        expected = DataCenterAssetFullFactory.create_batch(
+        expected = DataCenterAssetFactory.create_batch(
             1, delivery_date='2016-01-01',
         )
-        self.a_2015 = DataCenterAssetFullFactory.create_batch(
+        self.a_2015 = DataCenterAssetFactory.create_batch(
             3, delivery_date='2017-01-01',
         )
         graph = GraphFactory(
@@ -153,13 +153,13 @@ class LabelGroupingTest(SimpleTestCase):
         self.assertIn('delivery_date', qs.get())
 
     def test_label_works_when_year_grouping(self):
-        self.a_2016 = DataCenterAssetFullFactory.create_batch(
+        self.a_2016 = DataCenterAssetFactory.create_batch(
             2, delivery_date='2015-01-01',
         )
-        expected = DataCenterAssetFullFactory.create_batch(
+        expected = DataCenterAssetFactory.create_batch(
             1, delivery_date='2016-01-01',
         )
-        self.a_2015 = DataCenterAssetFullFactory.create_batch(
+        self.a_2015 = DataCenterAssetFactory.create_batch(
             3, delivery_date='2017-01-01',
         )
         graph = GraphFactory(
@@ -188,7 +188,7 @@ class LabelGroupingTest(SimpleTestCase):
 
     def test_label_works_when_year_grouping_on_foreign_key(self):
         self._genenrate_dca_with_scan(2, '2015-01-01')
-        expected = self._genenrate_dca_with_scan(1, '2016-01-01')[0]
+        expected = self._genenrate_dca_with_scan(1, '2016-01-01')
         self._genenrate_dca_with_scan(3, '2017-01-01')
 
         graph = GraphFactory(
