@@ -4,12 +4,16 @@ import datetime
 from dateutil.relativedelta import relativedelta
 from ddt import data, ddt, unpack
 from django.db.models import Q
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, TestCase
 
 from ralph.dashboards.filter_parser import FilterParser
-from ralph.dashboards.models import Graph
+from ralph.dashboards.models import AggregateType, Graph
 from ralph.dashboards.tests.factories import GraphFactory
-from ralph.data_center.tests.factories import DataCenterAssetFullFactory
+from ralph.data_center.tests.factories import (
+    DataCenterAssetFactory,
+    DataCenterAssetFullFactory
+)
+from ralph.security.tests.factories import SecurityScanFactory
 from ralph.tests.models import Bar
 
 ARGS, KWARGS = (0, 1)
@@ -111,3 +115,95 @@ class GraphModelTest(SimpleTestCase):
         qs = graph.build_queryset()
 
         self.assertTrue(qs.first()['barcode'] > qs.last()['barcode'])
+
+
+class LabelGroupingTest(TestCase):
+
+    def _get_graph_params(self, update):
+        data = {
+            'filters': {
+                'delivery_date__gte': '2016-01-01',
+                'delivery_date__lt': '2017-01-01',
+            },
+            'series': 'id',
+        }
+        data.update(update)
+        return data
+
+    def test_label_works_when_no_grouping_in_label(self):
+        self.a_2016 = DataCenterAssetFactory.create_batch(
+            2, delivery_date='2015-01-01',
+        )
+        expected = DataCenterAssetFactory.create_batch(
+            1, delivery_date='2016-01-01',
+        )
+        self.a_2015 = DataCenterAssetFactory.create_batch(
+            3, delivery_date='2017-01-01',
+        )
+        graph = GraphFactory(
+            aggregate_type=AggregateType.aggregate_count.id,
+            params=self._get_graph_params({
+                'labels': 'delivery_date',
+            })
+        )
+
+        qs = graph.build_queryset()
+
+        self.assertEqual(qs.get()['series'], len(expected))
+        self.assertIn('delivery_date', qs.get())
+
+    def test_label_works_when_year_grouping(self):
+        self.a_2016 = DataCenterAssetFactory.create_batch(
+            2, delivery_date='2015-01-01',
+        )
+        expected = DataCenterAssetFactory.create_batch(
+            1, delivery_date='2016-01-01',
+        )
+        self.a_2015 = DataCenterAssetFactory.create_batch(
+            3, delivery_date='2017-01-01',
+        )
+        graph = GraphFactory(
+            aggregate_type=AggregateType.aggregate_count.id,
+            params=self._get_graph_params({
+                'labels': 'delivery_date|year',
+            })
+        )
+
+        qs = graph.build_queryset()
+
+        self.assertEqual(qs.get()['series'], len(expected))
+        self.assertIn('year', qs.get())
+
+    def _genenrate_dca_with_scan(self, count, date_str):
+        gen = []
+        for _ in range(count):
+            dca = DataCenterAssetFactory()
+            sc = SecurityScanFactory(
+                last_scan_date=date_str,
+            )
+            dca.securityscan = sc
+            sc.save()
+            gen.append(dca)
+        return gen
+
+    def test_label_works_when_year_grouping_on_foreign_key(self):
+        self._genenrate_dca_with_scan(2, '2015-01-01')
+        expected = self._genenrate_dca_with_scan(1, '2016-01-01')
+        self._genenrate_dca_with_scan(3, '2017-01-01')
+
+        graph = GraphFactory(
+            aggregate_type=AggregateType.aggregate_count.id,
+            params={
+                'filters': {
+                    'securityscan__last_scan_date__gte': '2016-01-01',
+                    'securityscan__last_scan_date__lt': '2017-01-01',
+                },
+                'series': 'id',
+                'labels': 'securityscan__last_scan_date|year',
+            }
+        )
+
+        qs = graph.build_queryset()
+
+        self.assertEqual(qs.get()['series'], len(expected))
+        self.assertIn('year', qs.get())
