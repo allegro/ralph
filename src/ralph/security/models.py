@@ -95,3 +95,7 @@ class SecurityScan(
     @property
     def is_ok(self):
         return self.scan_status == ScanStatus.ok.id
+
+    def update_is_patched(self):
+        """Updates `is_patched` field depending on vulnerabilities"""
+        self.is_patched = not any_exceeded(self.vulnerabilities.all())

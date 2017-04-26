@@ -20,6 +20,14 @@ from ralph.virtual.tests.factories import (
 )
 
 
+def tomorrow():
+    return datetime.now() + timedelta(days=1)
+
+
+def yesterday():
+    return datetime.now() + timedelta(days=-1)
+
+
 class DataCenterAssetViewTest(ClientMixin, TestCase):
     def test_changelist_view(self):
         self.login_as_user()
@@ -126,14 +134,51 @@ class DCHostScanStatusInListingTest(ClientMixin, TestCase):
         )
         self.assertContains(result, "Host clean")
 
-    def test_listing_show_fail_when_scan_succeed_and_vulnerabilities(self):
-        scan = SecurityScanFactory(base_object=self.asset.baseobject_ptr,)
+    def test_listing_show_ok_when_scan_succeed_and_vulnerability_before_deadline(
+        self
+    ):
+        SecurityScanFactory(
+            base_object=self.asset.baseobject_ptr,
+            vulnerabilities=[
+                VulnerabilityFactory(patch_deadline=tomorrow())
+            ],
+        )
+
+        result = self.client.get(
+            reverse('admin:data_center_dchost_changelist'),
+        )
+
+        self.assertContains(result, "Host clean")
+
+    def test_listing_show_fail_when_scan_succeed_and_got_exceeded_vulnerability(self):
+        scan = SecurityScanFactory(
+            base_object=self.asset.baseobject_ptr,
+            vulnerabilities=[
+                VulnerabilityFactory(patch_deadline=yesterday())
+            ],
+        )
         self.assertTrue(scan.vulnerabilities.exists())
 
         result = self.client.get(
             reverse('admin:data_center_dchost_changelist'),
         )
-        self.assertContains(result, "Got vulnerabilities: 1")
+        self.assertContains(result, "Vulnerable")
+
+    def test_listing_show_correct_vuls_count_when_scan_has_different_vuls(self):
+        scan = SecurityScanFactory(
+            base_object=self.asset.baseobject_ptr,
+            vulnerabilities=[
+                VulnerabilityFactory(patch_deadline=tomorrow()),
+                VulnerabilityFactory(patch_deadline=yesterday()),
+                VulnerabilityFactory(patch_deadline=yesterday()),
+            ],
+        )
+        self.assertTrue(scan.vulnerabilities.exists())
+
+        result = self.client.get(
+            reverse('admin:data_center_dchost_changelist'),
+        )
+        self.assertContains(result, "Vulnerable")
 
     def test_listing_show_failed_when_scan_failed(self):
         SecurityScanFactory(
