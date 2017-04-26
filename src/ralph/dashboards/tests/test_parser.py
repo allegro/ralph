@@ -13,7 +13,10 @@ from ralph.data_center.tests.factories import (
     DataCenterAssetFactory,
     DataCenterAssetFullFactory
 )
-from ralph.security.tests.factories import SecurityScanFactory
+from ralph.security.tests.factories import (
+    SecurityScanFactory,
+    VulnerabilityFactory
+)
 from ralph.tests.models import Bar
 
 ARGS, KWARGS = (0, 1)
@@ -206,4 +209,46 @@ class LabelGroupingTest(TestCase):
         qs = graph.build_queryset()
 
         self.assertEqual(qs.get()['series'], len(expected))
+        self.assertIn('year', qs.get())
+
+    def test_xxx(self):
+        SecurityScanFactory(
+            base_object=DataCenterAssetFactory().baseobject_ptr,
+            vulnerabilities=[
+                VulnerabilityFactory(patch_deadline='2015-01-01'),
+                VulnerabilityFactory(patch_deadline='2015-01-01'),
+            ]
+        )
+
+        SecurityScanFactory(
+            base_object=DataCenterAssetFactory().baseobject_ptr,
+            vulnerabilities=[
+                VulnerabilityFactory(patch_deadline='2016-01-01'),
+                VulnerabilityFactory(patch_deadline='2016-01-01'),
+            ]
+        )
+
+        SecurityScanFactory(
+            base_object=DataCenterAssetFactory().baseobject_ptr,
+            vulnerabilities=[
+                VulnerabilityFactory(patch_deadline='2017-01-01'),
+                VulnerabilityFactory(patch_deadline='2017-01-01'),
+            ]
+        )
+
+        graph = GraphFactory(
+            aggregate_type=AggregateType.aggregate_count.id,
+            params={
+                'filters': {
+                    'securityscan__vulnerabilities__patch_deadline__gte': '2016-01-01',  # noqa
+                    'securityscan__vulnerabilities__patch_deadline__lt': '2017-01-01',  # noqa
+                },
+                'series': 'id',
+                'labels': 'securityscan__vulnerabilities__patch_deadline|year',
+            }
+        )
+
+        qs = graph.build_queryset()
+
+        self.assertEqual(qs.get()['series'], 1)
         self.assertIn('year', qs.get())
