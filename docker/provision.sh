@@ -14,6 +14,6 @@ apt-get install -y --force-yes \
     python3.4-dev \
     python3-setuptools \
     build-essential \
-    wget \
+    wget
 easy_install3 pip
 pip3 install --upgrade setuptools
