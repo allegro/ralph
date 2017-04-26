@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.test import SimpleTestCase
 
 from ralph.dashboards.filter_parser import FilterParser
-from ralph.dashboards.models import Graph
+from ralph.dashboards.models import Graph, AggregateType
 from ralph.dashboards.tests.factories import GraphFactory
 from ralph.data_center.tests.factories import (
     DataCenterAssetFactory,
@@ -141,6 +141,7 @@ class LabelGroupingTest(SimpleTestCase):
             3, delivery_date='2017-01-01',
         )
         graph = GraphFactory(
+            aggregate_type=AggregateType.aggregate_count.id,
             params=self._get_graph_params({
                 'labels': 'delivery_date',
             })
@@ -148,7 +149,7 @@ class LabelGroupingTest(SimpleTestCase):
 
         qs = graph.build_queryset()
 
-        self.assertTrue(qs.get()['series'], expected[0].id)
+        self.assertEqual(qs.get()['series'], len(expected))
         self.assertIn('delivery_date', qs.get())
 
     def test_label_works_when_year_grouping(self):
@@ -162,6 +163,7 @@ class LabelGroupingTest(SimpleTestCase):
             3, delivery_date='2017-01-01',
         )
         graph = GraphFactory(
+            aggregate_type=AggregateType.aggregate_count.id,
             params=self._get_graph_params({
                 'labels': 'delivery_date|year',
             })
@@ -169,7 +171,7 @@ class LabelGroupingTest(SimpleTestCase):
 
         qs = graph.build_queryset()
 
-        self.assertTrue(qs.get()['series'], expected[0].id)
+        self.assertEqual(qs.get()['series'], len(expected))
         self.assertIn('year', qs.get())
 
     def _genenrate_dca_with_scan(self, count, date_str):
@@ -190,6 +192,7 @@ class LabelGroupingTest(SimpleTestCase):
         self._genenrate_dca_with_scan(3, '2017-01-01')
 
         graph = GraphFactory(
+            aggregate_type=AggregateType.aggregate_count.id,
             params={
                 'filters': {
                     'securityscan__last_scan_date__gte': '2016-01-01',
@@ -202,5 +205,5 @@ class LabelGroupingTest(SimpleTestCase):
 
         qs = graph.build_queryset()
 
-        self.assertTrue(qs.get()['series'], expected.id)
+        self.assertEqual(qs.get()['series'], len(expected))
         self.assertIn('year', qs.get())
