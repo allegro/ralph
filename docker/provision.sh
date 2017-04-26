@@ -12,6 +12,8 @@ apt-get install -y --force-yes \
     mysql-client \
     python3.4 \
     python3.4-dev \
-    python3-pip \
+    python3-setuptools \
+    build-essential \
     wget \
-    vim
+easy_install3 pip
+pip3 install --upgrade setuptools
