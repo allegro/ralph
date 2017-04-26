@@ -21,9 +21,10 @@ from ralph.data_importer.mixins import (
 from ralph.data_importer.widgets import (
     AssetServiceEnvWidget,
     BaseObjectManyToManyWidget,
+    BaseObjectServiceNamesM2MWidget,
     BaseObjectWidget,
-    ImportedForeignKeyWidget,
     IPManagementWidget,
+    ImportedForeignKeyWidget,
     ManyToManyThroughWidget,
     UserManyToManyWidget,
     UserWidget
@@ -699,7 +700,7 @@ class OperationResource(RalphModelResource):
     base_objects = fields.Field(
         column_name='base_objects',
         attribute='base_objects',
-        widget=widgets.ManyToManyWidget(base.BaseObject),
+        widget=widgets.ManyToManyWidget(model=base.BaseObject),
         default=[],
     )
     assignee = fields.Field(
@@ -712,6 +713,14 @@ class OperationResource(RalphModelResource):
         attribute='reporter',
         widget=UserWidget(get_user_model()),
     )
+    service_name = fields.Field(
+        column_name='base_objects_service_names',
+        attribute='base_objects',
+        widget=BaseObjectServiceNamesM2MWidget(model=base.BaseObject),
+        default=[],
+        readonly=True
+    )
+    service_name._skip_str_field = True
 
     class Meta:
         select_related = (
@@ -721,7 +730,16 @@ class OperationResource(RalphModelResource):
             'tags',
             Prefetch(
                 lookup='base_objects',
-                queryset=BaseObject.objects.all()
+                queryset=BaseObject.polymorphic_objects.polymorphic_filter(
+                    operations__in=Operation.objects.all()
+                ).select_related(
+                    'service_env',
+                    'service_env__service',
+                    'service_env__environment'
+                ).polymorphic_select_related(
+                    Cluster=['type'],
+                    ServiceEnvironment=['service', 'environment']
+                )
             )
         )
         model = Operation
