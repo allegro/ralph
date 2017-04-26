@@ -1,6 +1,6 @@
 from dj.choices import Choices
 from django.contrib.contenttypes.models import ContentType
-from django.db import models
+from django.db import connection, models
 from django.db.models import Count, Max, Sum
 from django_extensions.db.fields.json import JSONField
 
@@ -40,6 +40,42 @@ class ChartType(Choices):
     pie_chart = _('Pie Chart').extra(renderer=PieChart)
 
 
+class GroupingLabel:
+    """
+    Adds grouping-by-year feature to query based on `label_group`
+    """
+    sep = '|'
+
+    def __init__(self, connection, label_group):
+        self.connection = connection
+        self.orig_label, self.label = self.parse(label_group)
+
+    def parse(self, label_group):
+        split = label_group.split(self.sep)
+        if len(split) == 1:
+            orig_label, label = split[0], split[0]
+        elif len(split) == 2:
+            orig_label, label = split[0], split[1]
+        else:
+            raise ValueError("Only one group supported")
+        return orig_label, label
+
+    @property
+    def has_group(self):
+        return self.orig_label != self.label
+
+    def group_year(self):
+        field_name = self.orig_label.split('__')[-1]
+        return self.connection.ops.date_trunc_sql('year', field_name)
+
+    def apply_grouping(self, queryset):
+        if self.has_group:
+            queryset = queryset.extra({
+                self.label: getattr(self, 'group_' + self.label)()
+            })
+        return queryset
+
+
 class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
     description = models.CharField('description', max_length=250, blank=True)
     model = models.ForeignKey(ContentType)
@@ -66,6 +102,12 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
             ).get_queryset()
         return queryset
 
+    @property
+    def has_grouping(self):
+        labels = self.params.get('labels', '')
+        grouping_label = GroupingLabel(connection, labels)
+        return grouping_label.has_group
+
     def apply_limit(self, queryset):
         limit = self.params.get('limit', None)
         return queryset[:limit]
@@ -79,19 +121,21 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
     def build_queryset(self):
         model = self.model.model_class()
         model_manager = model._default_manager
-        aggregate_type = AggregateType.from_id(self.aggregate_type)
 
-        queryset = self.apply_parital_filtering(model_manager.all())
+        queryset = model_manager.all()
 
-        annotate_filters = {}
+        grouping_label = GroupingLabel(connection, self.params['labels'])
+        queryset = grouping_label.apply_grouping(queryset)
+        queryset = self.apply_parital_filtering(queryset)
+
         annotate_filters = self.pop_annotate_filters(
             self.params.get('filters', None)
         )
 
+        aggregate_type = AggregateType.from_id(self.aggregate_type)
         aggregate_func = aggregate_type.aggregate_func
-
         queryset = queryset.values(
-            self.params['labels']
+            grouping_label.label
         ).annotate(
             series=aggregate_func(self.params['series'])
         )
@@ -105,8 +149,9 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
 
     def get_data(self):
         queryset = self.build_queryset()
+        label = GroupingLabel(connection, self.params['labels']).label
         return {
-            'labels': [str(q[self.params['labels']]) for q in queryset],
+            'labels': [str(q[label]) for q in queryset],
             'series': [int(q['series']) for q in queryset],
         }
 
