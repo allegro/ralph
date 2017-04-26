@@ -23,8 +23,8 @@ from ralph.data_importer.widgets import (
     BaseObjectManyToManyWidget,
     BaseObjectServiceNamesM2MWidget,
     BaseObjectWidget,
-    IPManagementWidget,
     ImportedForeignKeyWidget,
+    IPManagementWidget,
     ManyToManyThroughWidget,
     UserManyToManyWidget,
     UserWidget

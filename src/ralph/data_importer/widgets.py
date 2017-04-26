@@ -265,6 +265,6 @@ class IPManagementWidget(widgets.ManyToManyWidget):
 class BaseObjectServiceNamesM2MWidget(widgets.ManyToManyWidget):
     def render(self, value):
         return self.separator.join([
-            bo.service.name  if bo.service else '-'
+            bo.service.name if bo.service else '-'
             for bo in value.all()
         ])
