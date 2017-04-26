@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.test import SimpleTestCase
 
 from ralph.dashboards.filter_parser import FilterParser
-from ralph.dashboards.models import Graph, AggregateType
+from ralph.dashboards.models import AggregateType, Graph
 from ralph.dashboards.tests.factories import GraphFactory
 from ralph.data_center.tests.factories import (
     DataCenterAssetFactory,
