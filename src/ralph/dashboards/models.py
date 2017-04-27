@@ -126,7 +126,7 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
         series_field, fn = _to_pair(self.params.get('series', ''), '|')
         if (series_field != fn) and (fn != 'distinct'):
             raise ValueError(
-                "Series supports Only `distinct` supported you put '{}'".format(fn)  # noqa
+                "Series supports Only `distinct` (you put '{}')".format(fn)  # noqa
             )
         if not series_field:
             raise ValueError("Field `series` can't be empty")
