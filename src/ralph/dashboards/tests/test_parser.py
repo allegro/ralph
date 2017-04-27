@@ -3,6 +3,7 @@ import datetime
 
 from dateutil.relativedelta import relativedelta
 from ddt import data, ddt, unpack
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.test import SimpleTestCase, TestCase
 
@@ -13,6 +14,7 @@ from ralph.data_center.tests.factories import (
     DataCenterAssetFactory,
     DataCenterAssetFullFactory
 )
+from ralph.security.models import Vulnerability
 from ralph.security.tests.factories import (
     SecurityScanFactory,
     VulnerabilityFactory
@@ -211,11 +213,10 @@ class LabelGroupingTest(TestCase):
         self.assertEqual(qs.get()['series'], len(expected))
         self.assertIn('year', qs.get())
 
-    def test_xxx(self):
+    def test_duplicates_works_when_used_in_series_value(self):
         SecurityScanFactory(
             base_object=DataCenterAssetFactory().baseobject_ptr,
             vulnerabilities=[
-                VulnerabilityFactory(patch_deadline='2015-01-01'),
                 VulnerabilityFactory(patch_deadline='2015-01-01'),
             ]
         )
@@ -224,15 +225,8 @@ class LabelGroupingTest(TestCase):
             base_object=DataCenterAssetFactory().baseobject_ptr,
             vulnerabilities=[
                 VulnerabilityFactory(patch_deadline='2016-01-01'),
-                VulnerabilityFactory(patch_deadline='2016-01-01'),
-            ]
-        )
-
-        SecurityScanFactory(
-            base_object=DataCenterAssetFactory().baseobject_ptr,
-            vulnerabilities=[
-                VulnerabilityFactory(patch_deadline='2017-01-01'),
-                VulnerabilityFactory(patch_deadline='2017-01-01'),
+                VulnerabilityFactory(patch_deadline='2016-02-02'),
+                VulnerabilityFactory(patch_deadline='2016-03-03'),
             ]
         )
 
@@ -240,16 +234,17 @@ class LabelGroupingTest(TestCase):
             aggregate_type=AggregateType.aggregate_count.id,
             params={
                 'filters': {
-                    'securityscan__vulnerabilities__patch_deadline__gte': '2016-01-01',  # noqa
-                    'securityscan__vulnerabilities__patch_deadline__lt': '2017-01-01',  # noqa
+                    'patch_deadline__gte': '2010-01-01',
+                    'securityscan__base_object__isnull': False,
                 },
-                'series': 'id',
-                'labels': 'securityscan__vulnerabilities__patch_deadline|year',
+                'series': 'securityscan|distinct',
+                'labels': 'patch_deadline|year',
             }
         )
+        graph.model = ContentType.objects.get_for_model(Vulnerability)
+        graph.save()
 
         qs = graph.build_queryset()
 
-        print(qs)
-        self.assertEqual(qs.get()['series'], 1)
-        self.assertIn('year', qs.get())
+        self.assertEqual(qs.all()[0]['series'], 1)
+        self.assertEqual(qs.all()[1]['series'], 1)
