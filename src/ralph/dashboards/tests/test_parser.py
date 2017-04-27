@@ -217,16 +217,32 @@ class LabelGroupingTest(TestCase):
         SecurityScanFactory(
             base_object=DataCenterAssetFactory().baseobject_ptr,
             vulnerabilities=[
-                VulnerabilityFactory(patch_deadline='2015-01-01'),
+                VulnerabilityFactory(
+                    patch_deadline=datetime.datetime.strptime(
+                        '2015-01-01', '%Y-%m-%d'
+                    )
+                ),
             ]
         )
 
         SecurityScanFactory(
             base_object=DataCenterAssetFactory().baseobject_ptr,
             vulnerabilities=[
-                VulnerabilityFactory(patch_deadline='2016-01-01'),
-                VulnerabilityFactory(patch_deadline='2016-02-02'),
-                VulnerabilityFactory(patch_deadline='2016-03-03'),
+                VulnerabilityFactory(
+                    patch_deadline=datetime.datetime.strptime(
+                        '2016-01-01', '%Y-%m-%d'
+                    )
+                ),
+                VulnerabilityFactory(
+                    patch_deadline=datetime.datetime.strptime(
+                        '2016-02-02', '%Y-%m-%d'
+                    )
+                ),
+                VulnerabilityFactory(
+                    patch_deadline=datetime.datetime.strptime(
+                        '2016-03-03', '%Y-%m-%d'
+                    )
+                ),
             ]
         )
 
