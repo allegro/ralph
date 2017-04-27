@@ -377,7 +377,10 @@ class Command(BaseCommand):
         """Connect CloudHosts and DC assets according to data from Ironic."""
 
         for os_conf in settings.OPENSTACK_INSTANCES:
-            if os_conf['provider'] != self.openstack_provider_name:
+            if (
+                os_conf.get('provider', DEFAULT_OPENSTACK_PROVIDER_NAME) !=
+                self.openstack_provider_name
+            ):
                 continue
 
             ironic_client = get_ironic_client(
