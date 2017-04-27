@@ -173,7 +173,6 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
 
         queryset = self.apply_sort(queryset)
         queryset = self.apply_limit(queryset)
-        print('queryset', queryset)
         return queryset
 
     def get_data(self):
