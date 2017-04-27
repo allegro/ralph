@@ -101,6 +101,7 @@ class ServiceEnvironment(
     AutocompleteTooltipMixin,
     BaseObject
 ):
+    _allow_in_dashboard = True
     service = models.ForeignKey(Service)
     environment = models.ForeignKey(Environment)
 
