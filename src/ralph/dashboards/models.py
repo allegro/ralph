@@ -40,6 +40,17 @@ class ChartType(Choices):
     pie_chart = _('Pie Chart').extra(renderer=PieChart)
 
 
+def _to_pair(text, sep):
+    split = text.split(sep)
+    if len(split) == 1:
+        orig_label, label = split[0], split[0]
+    elif len(split) == 2:
+        orig_label, label = split[0], split[1]
+    else:
+        raise ValueError("Only one group supported")
+    return orig_label, label
+
+
 class GroupingLabel:
     """
     Adds grouping-by-year feature to query based on `label_group`
@@ -51,14 +62,7 @@ class GroupingLabel:
         self.orig_label, self.label = self.parse(label_group)
 
     def parse(self, label_group):
-        split = label_group.split(self.sep)
-        if len(split) == 1:
-            orig_label, label = split[0], split[0]
-        elif len(split) == 2:
-            orig_label, label = split[0], split[1]
-        else:
-            raise ValueError("Only one group supported")
-        return orig_label, label
+        return _to_pair(label_group, self.sep)
 
     @property
     def has_group(self):
@@ -118,10 +122,36 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
             return queryset.order_by(order)
         return queryset
 
+    def _unpack_series(self):
+        series_field, fn = _to_pair(self.params.get('series', ''), '|')
+        if (series_field != fn) and (fn != 'distinct'):
+            raise ValueError(
+                "Series supports Only `distinct` supported you put '{}'".format(fn)  # noqa
+            )
+        if not series_field:
+            raise ValueError("Field `series` can't be empty")
+        return series_field, fn
+
+    def get_aggregation(self):
+        aggregate_type = AggregateType.from_id(self.aggregate_type)
+        aggregate_func = aggregate_type.aggregate_func
+        series_field, fn_name = self._unpack_series()
+        aggregate_fn_kwargs = {}
+        if fn_name == "distinct":
+            if self.aggregate_type != AggregateType.aggregate_count.id:
+                raise ValueError(
+                    "{} can by only used with {}".format(
+                        AggregateType.from_id(self.aggregate_type).desc,
+                        fn_name,
+                    )
+                )
+
+            aggregate_fn_kwargs['distinct'] = True
+        return aggregate_func(series_field, **aggregate_fn_kwargs)
+
     def build_queryset(self):
         model = self.model.model_class()
         model_manager = model._default_manager
-
         queryset = model_manager.all()
 
         grouping_label = GroupingLabel(connection, self.params['labels'])
@@ -132,12 +162,10 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
             self.params.get('filters', None)
         )
 
-        aggregate_type = AggregateType.from_id(self.aggregate_type)
-        aggregate_func = aggregate_type.aggregate_func
         queryset = queryset.values(
             grouping_label.label
         ).annotate(
-            series=aggregate_func(self.params['series'])
+            series=self.get_aggregation(),
         )
 
         if annotate_filters:
@@ -145,6 +173,7 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
 
         queryset = self.apply_sort(queryset)
         queryset = self.apply_limit(queryset)
+        print('queryset', queryset)
         return queryset
 
     def get_data(self):

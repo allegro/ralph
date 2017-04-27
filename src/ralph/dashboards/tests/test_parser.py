@@ -250,5 +250,6 @@ class LabelGroupingTest(TestCase):
 
         qs = graph.build_queryset()
 
+        print(qs)
         self.assertEqual(qs.get()['series'], 1)
         self.assertIn('year', qs.get())
