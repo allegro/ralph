@@ -35,7 +35,10 @@
           }
         }
 
-        var clickable = jQuery('.ct-point, .ct-bar, .ct-pie', '.ct-series');
+        var clickable = jQuery(
+          '.ct-slice-donut, .ct-point, .ct-bar, .ct-pie',
+          '.ct-series'
+        );
         clickable.each(function() {
           jQuery(this).on('click', function() {
             redirectOnClick(event.target);
