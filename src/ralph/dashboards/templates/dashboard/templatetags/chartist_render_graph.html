@@ -41,7 +41,8 @@
             redirectOnClick(event.target);
           });
 
-          if (gotUrl(Chartist.deserialize(this.getAttribute("ct:meta")))) {
+          var meta = this.getAttribute("ct:meta");
+          if (meta != null && gotUrl(Chartist.deserialize(meta))) {
             jQuery(this).css('cursor', 'pointer')
           }
         });

@@ -1,4 +1,5 @@
 import json
+import logging
 from urllib.parse import urlencode
 
 from django.core.urlresolvers import NoReverseMatch, reverse
@@ -6,6 +7,7 @@ from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 
 
+logger = logging.getLogger(__name__)
 GRAPH_QUERY_SEP = '|'
 
 
@@ -85,10 +87,10 @@ class ChartistGraphRenderer(object):
                 data['series'] = self._series_with_urls(
                     data['series'], click_urls
                 )
-            except NoReverseMatch:
+            except NoReverseMatch as e:
                 # graph will be non-clickable when model is not exposed in
                 # admin
-                pass
+                logger.error(e)
         except Exception as e:
             error = str(e)
         finally:
