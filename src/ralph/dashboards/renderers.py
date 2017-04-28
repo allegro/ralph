@@ -73,6 +73,20 @@ class ChartistGraphRenderer(object):
             })
         return series_with_urls
 
+    def post_data_hook(self, data):
+        try:
+            click_urls = self._labels2urls(
+                self.model.model, self.model.id, data['labels']
+            )
+            data['series'] = self._series_with_urls(
+                data['series'], click_urls
+            )
+        except NoReverseMatch as e:
+            # graph will be non-clickable when model is not exposed in
+            # admin
+            logger.error(e)
+        return data
+
     def render(self, context):
         if not context:
             context = {}
@@ -80,17 +94,7 @@ class ChartistGraphRenderer(object):
         data = {}
         try:
             data = self.model.get_data()
-            try:
-                click_urls = self._labels2urls(
-                    self.model.model, self.model.id, data['labels']
-                )
-                data['series'] = self._series_with_urls(
-                    data['series'], click_urls
-                )
-            except NoReverseMatch as e:
-                # graph will be non-clickable when model is not exposed in
-                # admin
-                logger.error(e)
+            data = self.post_data_hook(data)
         except Exception as e:
             error = str(e)
         finally:
@@ -141,3 +145,15 @@ class PieChart(ChartistGraphRenderer):
     def get_options(self, data):
         self.options['total'] = sum(s['value'] for s in data['series'])
         return super().get_options(data)
+
+    def include_values_in_labels(self, data):
+        for idx, pack in enumerate(zip(data['labels'], data['series'])):
+            label, series = pack
+            new_label = "{} ({})".format(label, series['value'])
+            data['labels'][idx] = new_label
+        return data
+
+    def post_data_hook(self, data):
+        super().post_data_hook(data)
+        data = self.include_values_in_labels(data)
+        return data
