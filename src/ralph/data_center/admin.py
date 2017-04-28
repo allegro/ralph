@@ -356,6 +356,7 @@ class DataCenterAssetAdmin(
             'securityscan__vulnerabilities',
             filters.RelatedAutocompleteFieldListFilter
         ),
+        'securityscan__is_patched',
     ]
     date_hierarchy = 'created'
     list_select_related = [
@@ -576,6 +577,7 @@ class DCHostAdmin(ScanStatusInChangeListMixin, RalphAdmin):
             'securityscan__vulnerabilities',
             filters.RelatedAutocompleteFieldListFilter
         ),
+        'securityscan__is_patched',
     ]
     list_select_related = [
         'content_type',

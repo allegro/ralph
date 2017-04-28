@@ -103,6 +103,7 @@ class VirtualServerAdmin(
         (
             'securityscan__vulnerabilities', RelatedAutocompleteFieldListFilter
         ),
+        'securityscan__is_patched',
     ]
     list_display = [
         'hostname', 'type', 'sn', 'service_env', 'configuration_path',
@@ -225,6 +226,7 @@ class CloudHostAdmin(
         (
             'securityscan__vulnerabilities', RelatedAutocompleteFieldListFilter
         ),
+        'securityscan__is_patched',
     ]
     list_select_related = [
         'cloudflavor', 'cloudprovider', 'parent__cloudproject',
