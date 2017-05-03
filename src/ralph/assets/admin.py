@@ -199,6 +199,7 @@ class ServiceAdmin(RalphAdmin):
 @register(Manufacturer)
 class ManufacturerAdmin(RalphAdmin):
 
+    fields = ('name', 'profit_center', 'cost_center')
     search_fields = ['name']
 
 
