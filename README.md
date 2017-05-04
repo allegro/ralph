@@ -1,7 +1,5 @@
 # Ralph-NG
 
-**This is new version under active development(BETA). Ralph 2.x version is still accessible under `develop` branch**
-
 Ralph is full-featured Asset Management, DCIM and CMDB system for data center and back office.
 
 Features:
@@ -12,19 +10,10 @@ Features:
 
 It is an Open Source project provided on Apache v2.0 License.
 
-[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/allegro/ralph?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Gitter](https://img.shields.io/gitter/room/gitterHQ/gitter.svg)](https://gitter.im/allegro/ralph?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/allegro/ralph.svg)](https://travis-ci.org/allegro/ralph)
 [![Coverage Status](https://coveralls.io/repos/allegro/ralph/badge.svg?branch=ng&service=github)](https://coveralls.io/github/allegro/ralph?branch=ng)
 [![Code Health](https://landscape.io/github/allegro/ralph/ng/landscape.svg?style=flat)](https://landscape.io/github/allegro/ralph/ng)
-
-## Documentation
-Visit our documentation on [readthedocs.org](http://ralph-ng.readthedocs.org)
-
-## Scrum Board
-
-[![Stories in Ready](https://badge.waffle.io/allegro/ralph.png?label=ready&title=Ready)](http://waffle.io/allegro/ralph)
-
-[![Throughput Graph](https://graphs.waffle.io/allegro/ralph/throughput.svg)](https://waffle.io/allegro/ralph/metrics)
 
 ## Installation
 
@@ -62,10 +51,7 @@ Or if you want to run in debug mode for detailed error messages and debug toolba
 
 will install it for you as well.
 
-
-
 ## Running
-
 
 Make sure virtualenv is activated. To start server in debug mode:
 
@@ -79,3 +65,15 @@ or if you don't want the debug output
 Ralph is available at `127.0.0.1:8000`.
 
 
+## Documentation
+Visit our documentation on [readthedocs.org](http://ralph-ng.readthedocs.org)
+
+## Getting help
+
+Ralph community will answer your questions on a chat: [![Gitter](https://img.shields.io/gitter/room/gitterHQ/gitter.svg)](https://gitter.im/allegro/ralph?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+## Scrum Board
+
+[![Stories in Ready](https://badge.waffle.io/allegro/ralph.png?label=ready&title=Ready)](http://waffle.io/allegro/ralph)
+
+[![Throughput Graph](https://graphs.waffle.io/allegro/ralph/throughput.svg)](https://waffle.io/allegro/ralph/metrics)
