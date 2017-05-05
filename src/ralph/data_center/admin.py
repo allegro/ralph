@@ -511,7 +511,6 @@ class DatabaseAdmin(RalphAdmin):
 
 @register(VIP)
 class VIPAdmin(RalphAdmin):
-
     search_fields = ['name', 'ip__address']
     raw_id_fields = ['ip', 'service_env', 'parent', 'configuration_path']
     raw_id_override_parent = {'parent': Cluster}
@@ -544,6 +543,7 @@ class DCHostChangeList(ChangeList):
 
 @register(DCHost)
 class DCHostAdmin(ScanStatusInChangeListMixin, RalphAdmin):
+    change_list_template = 'admin/data_center/dchost/change_list.html'
     search_fields = [
         'remarks',
         'asset__hostname',
