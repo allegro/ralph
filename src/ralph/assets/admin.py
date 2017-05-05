@@ -37,7 +37,7 @@ from ralph.lib.table import Table, TableWithUrl
 
 
 @register(ConfigurationClass)
-class ConfigurationClassAdmin(RalphAdmin):
+class ConfigurationClassAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     fields = ['class_name', 'module', 'path']
     readonly_fields = ['path']
     raw_id_fields = ['module']
@@ -47,6 +47,7 @@ class ConfigurationClassAdmin(RalphAdmin):
     list_display = ['class_name', 'module', 'path', 'objects_count']
     list_select_related = ['module']
     list_filter = ['class_name', 'module']
+    show_custom_fields_values_summary = False
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -58,9 +59,14 @@ class ConfigurationClassAdmin(RalphAdmin):
     objects_count.short_description = _('Objects count')
     objects_count.admin_order_field = 'objects_count'
 
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return self.readonly_fields + ['class_name', 'module']
+        return self.readonly_fields
+
 
 @register(ConfigurationModule)
-class ConfigurationModuleAdmin(RalphMPTTAdmin):
+class ConfigurationModuleAdmin(CustomFieldValueAdminMixin, RalphMPTTAdmin):
     list_display = ['name']
     search_fields = ['name']
     readonly_fields = [
@@ -79,6 +85,7 @@ class ConfigurationModuleAdmin(RalphMPTTAdmin):
             ]
         })
     )
+    show_custom_fields_values_summary = False
 
     def show_children_modules(self, module):
         if not module or not module.pk:
@@ -102,15 +109,20 @@ class ConfigurationModuleAdmin(RalphMPTTAdmin):
     show_children_classes.allow_tags = True
     show_children_classes.short_description = _('Children classes')
 
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return self.readonly_fields + ['name', 'parent']
+        return self.readonly_fields
+
 
 @register(ServiceEnvironment)
-class ServiceEnvironmentAdmin(RalphAdmin):
-
+class ServiceEnvironmentAdmin(CustomFieldValueAdminMixin, RalphAdmin):
+    show_custom_fields_values_summary = False
     search_fields = ['service__name', 'environment__name']
     list_select_related = ['service', 'environment']
     raw_id_fields = ['service', 'environment']
     resource_class = resources.ServiceEnvironmentResource
-    exclude = ('parent', 'service_env', 'content_type')
+    fields = ('service', 'environment', 'remarks', 'tags')
 
 
 class ServiceEnvironmentInline(RalphTabularInline):

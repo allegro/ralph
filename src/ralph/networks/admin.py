@@ -13,6 +13,7 @@ from ralph.data_importer import resources
 from ralph.lib.mixins.admin import ParentChangeMixin
 from ralph.lib.table import TableWithUrl
 from ralph.networks.filters import (
+    ContainsIPAddressFilter,
     IPRangeFilter,
     NetworkClassFilter,
     NetworkRangeFilter
@@ -120,6 +121,7 @@ class NetworkAdmin(RalphMPTTAdmin):
         'terminators', 'service_env',
         ('parent', RelatedAutocompleteFieldListFilter),
         ('min_ip', NetworkRangeFilter), ('address', NetworkClassFilter),
+        ('max_ip', ContainsIPAddressFilter)
     ]
     list_select_related = ['kind', 'network_environment']
     raw_id_fields = ['racks', 'gateway', 'terminators', 'service_env']
@@ -223,7 +225,7 @@ class NetworkAdmin(RalphMPTTAdmin):
                 'number'
             ).prefetch_related(
                 Prefetch(
-                    'base_object',
+                    'ethernet__base_object',
                     queryset=BaseObject.polymorphic_objects.all()
                 )
             ),
@@ -264,7 +266,7 @@ class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
         'hostname', 'is_public', 'is_management', ('address', IPRangeFilter)
     ]
     list_display = [
-        'ip_address', 'hostname', 'base_object_link', 'is_gateway',
+        'address', 'hostname', 'base_object_link', 'is_gateway',
         'is_public'
     ]
     readonly_fields = ['get_network_path', 'is_public']

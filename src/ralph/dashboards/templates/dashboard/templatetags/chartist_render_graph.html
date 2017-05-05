@@ -1,17 +1,56 @@
 <div class="graph">
   <h3>{{ graph.name }}</h3>
-  <div class="description">{{ graph.description }}</div>
-  <div class="wrapper">
-    <div class="render" id="{{ name }}"></div>
-  </div>
+  {% if error %}
+    <div class="alert-box alert">
+      {{ error }}
+    </div>
+  {% else %}
+    <div class="description">{{ graph.description }}</div>
+    <div class="wrapper">
+      <div class="render" id="{{ name }}"></div>
+    </div>
+  {% endif %}
 </div>
 
 <script>
-  var graph = new Chartist.{{ func | title }}('#{{ name }}', {
-    labels: {{ labels | safe }},
-    series: {% if not options_raw.distributeSeries %}[{% endif %}{{ series | safe }}{% if not options_raw.distributeSeries %}]{% endif %}
-    }, {{ options | safe }});
-  {% for plugin, options in plugins.items %}
-    Chartist.plugins.{{ plugin }}({{ options }})(graph);
-  {% endfor %}
+  (function($) {
+    $(document).ready(function() {
+      var graph = new Chartist.{{ func | title }}('#{{ name }}', {
+        labels: {{ labels | safe }},
+        series: {% if not options_raw.distributeSeries %}[{% endif %}{{ series | safe }}{% if not options_raw.distributeSeries %}]{% endif %}
+        }, {{ options | safe }});
+      {% for plugin, options in plugins.items %}
+        Chartist.plugins.{{ plugin }}({{ options }})(graph);
+      {% endfor %}
+
+      graph.on("created", function () {
+        function gotUrl(meta) {
+          return ('clickUrl' in meta) ? true : false;
+        }
+
+        function redirectOnClick(item) {
+          var meta = Chartist.deserialize(item.getAttribute("ct:meta"));
+          if (meta && gotUrl(meta)) {
+            window.location = meta.clickUrl;
+          }
+        }
+
+        var clickable = jQuery(
+          '.ct-slice-donut, .ct-point, .ct-bar, .ct-pie',
+          '.ct-series'
+        );
+        clickable.each(function() {
+          jQuery(this).on('click', function() {
+            redirectOnClick(event.target);
+          });
+
+          var meta = this.getAttribute("ct:meta");
+          if (meta != null && gotUrl(Chartist.deserialize(meta))) {
+            jQuery(this).css('cursor', 'pointer')
+          }
+        });
+      });
+
+    });
+  }(ralph.jQuery))
 </script>

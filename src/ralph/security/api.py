@@ -2,12 +2,13 @@
 from collections import OrderedDict
 
 import django_filters
+from django.db import transaction
 from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import RalphAPISaveSerializer
 from ralph.networks.models.networks import IPAddress
-from ralph.security.models import SecurityScan, Vulnerability
+from ralph.security.models import any_exceeded, SecurityScan, Vulnerability
 
 
 class VulnerabilitySerializer(RalphAPISerializer):
@@ -20,6 +21,9 @@ class VulnerabilitySerializer(RalphAPISerializer):
 class VulnerabilityViewSet(RalphAPIViewSet):
     queryset = Vulnerability.objects.all()
     serializer_class = VulnerabilitySerializer
+    filter_fields = [
+        'external_vulnerability_id',
+    ]
 
 
 class SecurityScanSerializer(RalphAPISerializer):
@@ -39,11 +43,11 @@ class SaveSecurityScanSerializer(RalphAPISaveSerializer):
 
         # external_id to local_id
         if 'external_vulnerabilities' in data:
-            external_ids = data.get('external_vulnerabilities', [])
+            external_ids = set(data.get('external_vulnerabilities', []))
             converted = Vulnerability.objects.filter(
                 external_vulnerability_id__in=external_ids)
             if len(converted) != len(external_ids):
-                unknown = set(external_ids) - set(
+                unknown = external_ids - set(
                     [str(v.external_vulnerability_id) for v in converted]
                 )
                 msg = "Unknow external_vulnerabilities: {}".format(
@@ -72,6 +76,9 @@ class SaveSecurityScanSerializer(RalphAPISaveSerializer):
         if errors:
             raise serializers.ValidationError(errors)
         data['base_object'] = base_object.pk
+        data['is_patched'] = not any_exceeded(
+            Vulnerability.objects.filter(id__in=data['vulnerabilities'])
+        )
         result = super().to_internal_value(data)
         return result
 
@@ -88,6 +95,18 @@ class SecurityScanViewSet(RalphAPIViewSet):
     save_serializer_class = SaveSecurityScanSerializer
 
     additional_filter_class = IPFilter
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        ip = IPAddress.objects.filter(address=self.request.data.get(
+            'host_ip', None)
+        ).first()
+        if ip:
+            # one scan can exist for ip (because there are linked by onetoone)
+            # so this removes old scan to allow updates by post
+            SecurityScan.objects.filter(base_object=ip.base_object.id).delete()
+        return super().create(request, *args, **kwargs)
+
 
 router.register(r'vulnerabilities', VulnerabilityViewSet)
 router.register(r'security-scans', SecurityScanViewSet)

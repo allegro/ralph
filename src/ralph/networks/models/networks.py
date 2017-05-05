@@ -234,7 +234,7 @@ class Network(
     address._filter_title = _('Network Class')
     gateway = models.ForeignKey(
         'IPAddress', verbose_name=_('Gateway address'), null=True, blank=True,
-        related_name='gateway_network'
+        related_name='gateway_network', on_delete=models.SET_NULL,
     )
     remarks = models.TextField(
         verbose_name=_('remarks'),
@@ -514,7 +514,9 @@ class Network(
             if free_ip_as_int not in used_ips:
                 next_free_ip = ipaddress.ip_address(free_ip_as_int)
                 if is_in_dnsaas(next_free_ip):
-                    logger.error('IP {} is already in DNS'.format(next_free_ip))
+                    logger.warning(
+                        'IP {} is already in DNS'.format(next_free_ip)
+                    )
                 else:
                     return next_free_ip
 

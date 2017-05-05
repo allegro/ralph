@@ -108,6 +108,53 @@ class SecurityScanAPITests(RalphAPITestCase):
         self.assertEqual(security_scan.vulnerabilities.count(), 1)
         self.assertEqual(security_scan.vulnerabilities.get(), vulnerability)
 
+
+    def test_create_scan_sets_is_patched_false_when_vulnerabilities(self):
+        ip = IPAddressFactory(address="192.168.128.10")
+        vulnerability = VulnerabilityFactory(
+            patch_deadline=datetime.now() - timedelta(days=10)
+        )
+        data = {
+            'last_scan_date': '2015-01-01T00:00:00',
+            'scan_status': ScanStatus.ok.name,
+            'next_scan_date': '2016-01-01T00:00:00',
+            'details_url': 'https://example.com/scan-deatils',
+            'rescan_url': 'https://example.com/rescan-url',
+            'host_ip': ip.address,
+            'vulnerabilities': [vulnerability.id, ],
+        }
+
+        url = reverse('securityscan-list')
+
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            SecurityScan.objects.get(pk=response.data['id']).is_patched,
+            False,
+        )
+
+    def test_create_scan_sets_is_patched_true_when_no_vulnerabilities(self):
+        ip = IPAddressFactory(address="192.168.128.10")
+        data = {
+            'last_scan_date': '2015-01-01T00:00:00',
+            'scan_status': ScanStatus.ok.name,
+            'next_scan_date': '2016-01-01T00:00:00',
+            'details_url': 'https://example.com/scan-deatils',
+            'rescan_url': 'https://example.com/rescan-url',
+            'host_ip': ip.address,
+            'vulnerabilities': [],
+        }
+        url = reverse('securityscan-list')
+
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            SecurityScan.objects.get(pk=response.data['id']).is_patched,
+            True,
+        )
+
     def test_patch_security_scan(self):
         ip = IPAddressFactory(address="192.168.128.66")
         url = reverse('securityscan-detail', args=(self.security_scan.id,))
@@ -144,6 +191,39 @@ class SecurityScanAPITests(RalphAPITestCase):
         self.assertEqual(self.security_scan.vulnerabilities.count(), 1)
         self.assertEqual(
             self.security_scan.vulnerabilities.get(), vulnerability,
+        )
+
+    def test_posting_scan_replace_old_one_when_scan_already_exists(self):
+        ip = IPAddressFactory(address="192.168.128.66")
+        scan = SecurityScanFactory(base_object=ip.base_object)
+        data = {
+            'last_scan_date': (
+                datetime.now() + timedelta(days=10)
+            ).replace(microsecond=0).isoformat(),
+            'scan_status': ScanStatus.ok.name,
+            'next_scan_date': (
+                datetime.now() + timedelta(days=15)
+            ).replace(microsecond=0).isoformat(),
+            'details_url': "http://example.com",
+            'rescan_url': "http://example.com",
+            'host_ip': ip.address,
+            'vulnerabilities': [VulnerabilityFactory().id, ],
+        }
+        self.assertEqual(
+            SecurityScan.objects.get(base_object=ip.base_object.id).id,
+            scan.id,
+        )
+
+        response = self.client.post(
+            reverse('securityscan-list'),
+            data,
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertNotEqual(
+            SecurityScan.objects.get(base_object=ip.base_object.id).id,
+            scan.id,
         )
 
 
@@ -251,12 +331,24 @@ class TestExternalVulnerability(RalphAPITestCase):
             self.vulnerability.id, security_scan.vulnerabilities.get().id
         )
 
-    def test_create_scan_raise_error_when_both_vulnerabilities_empty(self):
+    def test_create_scan_by_duplicated_external_id_works(self):
+        self.data['external_vulnerabilities'] = [
+            self.vulnerability.external_vulnerability_id,
+            self.vulnerability.external_vulnerability_id
+        ]
+        response = self.client.post(
+            reverse('securityscan-list'), self.data, format='json'
+        )
+        security_scan = SecurityScan.objects.get(pk=response.data['id'])
+        self.assertEqual(security_scan.vulnerabilities.count(), 1)
+        self.assertEqual(
+            self.vulnerability.id, security_scan.vulnerabilities.get().id
+        )
+
+    def test_create_scan_works_when_both_vulnerabilities_empty(self):
         self.data['external_vulnerabilities'] = []
         response = self.client.post(
             reverse('securityscan-list'), self.data, format='json'
         )
-        self.assertEqual(
-            response.data,
-            {'vulnerabilities': ['This list may not be empty.']},
-        )
+        security_scan = SecurityScan.objects.get(pk=response.data['id'])
+        self.assertEqual(security_scan.vulnerabilities.count(), 0)

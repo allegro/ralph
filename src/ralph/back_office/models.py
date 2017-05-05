@@ -434,6 +434,12 @@ class BackOfficeAsset(Regionalizable, Asset):
                 'field': forms.ChoiceField(
                     label=_('Country'),
                     choices=Country(),
+                    **{
+                        'initial': Country.from_name(
+                            settings.CHANGE_HOSTNAME_ACTION_DEFAULT_COUNTRY.lower()  # noqa: E501
+                        ).id
+                    }
+                    if settings.CHANGE_HOSTNAME_ACTION_DEFAULT_COUNTRY else {}
                 ),
             }
         },

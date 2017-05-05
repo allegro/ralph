@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
-from django.db.models.signals import post_save
+
 from ralph.apps import RalphAppConfig
 from ralph.notifications.sender import send_notification_for_model
+from ralph.signals import post_commit
 
 
 class NotificationConfig(RalphAppConfig):
@@ -19,7 +20,4 @@ class NotificationConfig(RalphAppConfig):
             'virtual.CloudProject',
         ]
         for model in models:
-            post_save.connect(
-                receiver=send_notification_for_model,
-                sender=model
-            )
+            post_commit(send_notification_for_model, model)

@@ -9,7 +9,6 @@ from ralph.api.utils import PolymorphicViewSetMixin
 from ralph.assets import models
 from ralph.assets.api import serializers
 from ralph.assets.api.filters import NetworkableObjectFilters
-from ralph.lib.custom_fields.models import CustomFieldValue
 from ralph.licences.api import BaseObjectLicenceViewSet
 from ralph.licences.models import BaseObjectLicence
 from ralph.networks.models import IPAddress
@@ -94,10 +93,7 @@ base_object_descendant_prefetch_related = [
     Prefetch('licences', queryset=BaseObjectLicence.objects.select_related(
         *BaseObjectLicenceViewSet.select_related
     )),
-    Prefetch(
-        'custom_fields',
-        queryset=CustomFieldValue.objects.select_related('custom_field')
-    ),
+    'custom_fields',
     'service_env__service__business_owners',
     'service_env__service__technical_owners',
 ]
@@ -202,6 +198,9 @@ class ConfigurationModuleViewSet(RalphAPIViewSet):
     serializer_class = serializers.ConfigurationModuleSerializer
     save_serializer_class = serializers.ConfigurationModuleSimpleSerializer
     filter_fields = ('parent', 'name')
+    # don't allow for ConfigurationModule updating or deleting as it might
+    # dissrupt configuration of many hosts!
+    http_method_names = ['get', 'post', 'options', 'head']
 
 
 class ConfigurationClassViewSet(RalphAPIViewSet):
@@ -210,6 +209,9 @@ class ConfigurationClassViewSet(RalphAPIViewSet):
     filter_fields = ('module', 'module__name', 'class_name', 'path')
     select_related = ['module']
     prefetch_related = ['tags']
+    # don't allow for ConfigurationClass updating or deleting as it might
+    # dissrupt configuration of many hosts!
+    http_method_names = ['get', 'post', 'options', 'head']
 
 
 class BaseObjectViewSetMixin(object):
@@ -238,17 +240,15 @@ class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     ]
     select_related = [
         'service_env', 'service_env__service', 'service_env__environment',
-        'configuration_path', 'configuration_path__module'
+        'configuration_path', 'configuration_path__module',
+        'parent__cloudproject',
     ]
     prefetch_related = [
         'tags',
+        'custom_fields',
         Prefetch(
             'ethernet_set',
             queryset=models.Ethernet.objects.select_related('ipaddress')
-        ),
-        Prefetch(
-            'custom_fields',
-            queryset=CustomFieldValue.objects.select_related('custom_field')
         ),
     ]
     extended_filter_fields = {

@@ -1,6 +1,6 @@
 -r openstack.txt
 -r hermes.txt
-Django==1.8.17
+Django==1.8.18
 dj.choices==0.11.0
 django-extensions==1.7.5
 django-filter==0.13.0
@@ -8,9 +8,11 @@ django-import-export==0.4.2
 django-mptt==0.8.7
 django-reversion==1.8.6
 django-rq==0.9.0
+django-sitetree==1.7.0
 django-taggit==0.17.1
 django-taggit-serializer==0.1.5
 django-threadlocals==0.8
+django-transaction-hooks==0.2  # it's merged to Django 1.9 - remove this when Django version will be bumped to 1.9
 djangorestframework==3.2.2
 djangorestframework_xml==1.2.0
 drf-nested-routers==0.11.1
@@ -26,5 +28,4 @@ six>=1.9.0
 sqlparse==0.1.16
 Unidecode==0.04.18
 tablib==0.11.2
-git+https://github.com/idlesign/django-sitetree.git@a626559c39ff1e865cde3441c44f42864c648dfb
 factory-boy

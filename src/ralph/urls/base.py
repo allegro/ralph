@@ -1,9 +1,15 @@
 from django.conf import settings
 from django.conf.urls import include, url
 from rest_framework.authtoken import views
+from sitetree.sitetreeapp import SiteTree  # noqa
 
 from ralph.admin import ralph_site as admin
 from ralph.api import router
+
+# monkey patch for sitetree until
+# https://github.com/idlesign/django-sitetree/issues/226 will be discussed
+# and resolved
+SiteTree.current_app_is_admin = lambda self: False
 
 # import custom urls from each api module
 # notice that each module should have `urlpatters` variable defined
@@ -16,6 +22,7 @@ api_urls = list(map(lambda u: url(r'^', include(u)), [
     'ralph.dc_view.urls.api',
     'ralph.dhcp.api',
     'ralph.domains.api',
+    'ralph.operations.api',
     'ralph.supports.api',
     'ralph.security.api',
     'ralph.networks.api',

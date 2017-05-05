@@ -99,7 +99,8 @@ class TestRestAssetInfoPerRack(TestCase):
                 'free_u': self.rack_1.get_free_u(),
                 'description': '{}'.format(self.rack_1.description),
                 'orientation': '{}'.format(self.rack_1.get_orientation_desc()),
-                'rack_admin_url': self.rack_1.get_absolute_url()
+                'rack_admin_url': self.rack_1.get_absolute_url(),
+                'reverse_ordering': self.rack_1.reverse_ordering
             },
             'devices':
             [

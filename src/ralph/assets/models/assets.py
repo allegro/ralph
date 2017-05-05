@@ -8,7 +8,6 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-
 from mptt.models import MPTTModel, TreeForeignKey
 
 from ralph.accounts.models import Team
@@ -18,7 +17,10 @@ from ralph.assets.models.choices import (
     ModelVisualizationLayout,
     ObjectModelType
 )
-from ralph.lib.custom_fields.models import WithCustomFieldsMixin
+from ralph.lib.custom_fields.models import (
+    CustomFieldMeta,
+    WithCustomFieldsMixin
+)
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
@@ -26,6 +28,7 @@ from ralph.lib.mixins.models import (
     TimeStampMixin
 )
 from ralph.lib.permissions import PermByFieldMixin
+from ralph.lib.permissions.models import PermissionsBase
 
 logger = logging.getLogger(__name__)
 
@@ -98,6 +101,7 @@ class ServiceEnvironment(
     AutocompleteTooltipMixin,
     BaseObject
 ):
+    _allow_in_dashboard = True
     service = models.ForeignKey(Service)
     environment = models.ForeignKey(Environment)
 
@@ -139,13 +143,17 @@ class Manufacturer(
     _allow_in_dashboard = True
 
 
+AssetModelMeta = type('AssetModelMeta', (CustomFieldMeta, PermissionsBase), {})
+
+
 class AssetModel(
     PermByFieldMixin,
     NamedMixin.NonUnique,
     TimeStampMixin,
     AdminAbsoluteUrlMixin,
     WithCustomFieldsMixin,
-    models.Model
+    models.Model,
+    metaclass=AssetModelMeta
 ):
     # TODO: should type be determined based on category?
     _allow_in_dashboard = True
@@ -327,7 +335,9 @@ class BudgetInfo(
 
 
 class Asset(AdminAbsoluteUrlMixin, BaseObject):
-    model = models.ForeignKey(AssetModel, related_name='assets')
+    model = models.ForeignKey(
+        AssetModel, related_name='assets', on_delete=models.PROTECT
+    )
     # TODO: unify hostname for DCA, VirtualServer, Cluster and CloudHost
     # (use another model?)
     hostname = NullableCharField(

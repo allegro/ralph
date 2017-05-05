@@ -1,16 +1,18 @@
+from decimal import Decimal
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 from import_export import fields, resources, widgets
 
 from ralph.accounts.models import Region
-from ralph.assets.models import assets, base, configuration
+from ralph.assets.models import assets, base, BaseObject, configuration
 from ralph.back_office.models import (
     BackOfficeAsset,
     OfficeInfrastructure,
     Warehouse
 )
-from ralph.data_center.models import physical
+from ralph.data_center.models import hosts, physical
 from ralph.data_importer.fields import ThroughField
 from ralph.data_importer.mixins import (
     ImportForeignKeyMeta,
@@ -19,6 +21,7 @@ from ralph.data_importer.mixins import (
 from ralph.data_importer.widgets import (
     AssetServiceEnvWidget,
     BaseObjectManyToManyWidget,
+    BaseObjectServiceNamesM2MWidget,
     BaseObjectWidget,
     ImportedForeignKeyWidget,
     IPManagementWidget,
@@ -568,6 +571,7 @@ class BaseObjectsSupportRichResource(RalphModelResource):
             'baseobject__asset__hostname',
             'baseobject__asset__barcode',
             'baseobject__asset__sn',
+            'baseobject__asset__model',
             'baseobject__service_env',
             'baseobject__configuration_path',
         )
@@ -579,9 +583,10 @@ class BaseObjectsSupportRichResource(RalphModelResource):
 
     def dehydrate_price_per_object(self, bo_support):
         support = bo_support.support
+        price = support.price or Decimal('0.00')
         return str(
-            bo_support.objects_count / support.price
-            if support.price > 0 else 0
+            round(price / bo_support.objects_count, 2)
+            if bo_support.objects_count > 0 else Decimal('0.00')
         )
 
 
@@ -695,16 +700,48 @@ class OperationResource(RalphModelResource):
     base_objects = fields.Field(
         column_name='base_objects',
         attribute='base_objects',
-        widget=widgets.ManyToManyWidget(base.BaseObject),
+        widget=widgets.ManyToManyWidget(model=base.BaseObject),
         default=[],
     )
-    asignee = fields.Field(
-        column_name='asignee',
-        attribute='asignee',
+    assignee = fields.Field(
+        column_name='assignee',
+        attribute='assignee',
         widget=UserWidget(get_user_model()),
     )
+    reporter = fields.Field(
+        column_name='reporter',
+        attribute='reporter',
+        widget=UserWidget(get_user_model()),
+    )
+    service_name = fields.Field(
+        column_name='base_objects_service_names',
+        attribute='base_objects',
+        widget=BaseObjectServiceNamesM2MWidget(model=base.BaseObject),
+        default=[],
+        readonly=True
+    )
+    service_name._skip_str_field = True
 
     class Meta:
+        select_related = (
+            'assignee', 'reporter', 'type', 'status'
+        )
+        prefetch_related = (
+            'tags',
+            Prefetch(
+                lookup='base_objects',
+                queryset=BaseObject.polymorphic_objects.polymorphic_filter(
+                    operations__in=Operation.objects.all()
+                ).select_related(
+                    'service_env',
+                    'service_env__service',
+                    'service_env__environment'
+                ).polymorphic_select_related(
+                    Cluster=['type'],
+                    ServiceEnvironment=['service', 'environment']
+                )
+            )
+        )
         model = Operation
 
 
@@ -728,3 +765,25 @@ class ConfigurationClassResource(RalphModelResource):
 
     class Meta:
         model = configuration.ConfigurationClass
+
+
+class DCHostResource(RalphModelResource):
+    hostname = fields.Field(
+        readonly=True,
+        column_name='hostname',
+        attribute='hostname',
+    )
+    service_env = fields.Field(
+        column_name='service_env',
+        attribute='service_env',
+        widget=AssetServiceEnvWidget(assets.ServiceEnvironment, 'name'),
+    )
+    ips = fields.Field(
+        column_name='ip_addresses',
+        attribute='ipaddresses',
+        widget=widgets.ManyToManyWidget(model=networks.IPAddress),
+    )
+
+    class Meta:
+        model = hosts.DCHost
+        exclude = ('parent',)

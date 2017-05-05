@@ -1,0 +1,218 @@
+[
+{
+    "pk": 1,
+    "model": "operations.operationtype",
+    "fields": {
+        "lft": 1,
+        "name": "Change",
+        "level": 0,
+        "rght": 4,
+        "parent": null,
+        "tree_id": 1
+    }
+},
+{
+    "pk": 101,
+    "model": "operations.operationtype",
+    "fields": {
+        "lft": 1,
+        "name": "Incident",
+        "level": 0,
+        "rght": 2,
+        "parent": null,
+        "tree_id": 2
+    }
+},
+{
+    "pk": 201,
+    "model": "operations.operationtype",
+    "fields": {
+        "lft": 1,
+        "name": "Problem",
+        "level": 0,
+        "rght": 2,
+        "parent": null,
+        "tree_id": 3
+    }
+},
+{
+    "pk": 301,
+    "model": "operations.operationtype",
+    "fields": {
+        "lft": 1,
+        "name": "Failure",
+        "level": 0,
+        "rght": 32,
+        "parent": null,
+        "tree_id": 4
+    }
+},
+{
+    "pk": 302,
+    "model": "operations.operationtype",
+    "fields": {
+        "lft": 2,
+        "name": "Hardware Failure",
+        "level": 1,
+        "rght": 31,
+        "parent": 301,
+        "tree_id": 4
+    }
+},
+{
+    "pk": 303,
+    "model": "operations.operationtype",
+    "fields": {
+        "lft": 3,
+        "name": "Disk",
+        "level": 2,
+        "rght": 4,
+        "parent": 302,
+        "tree_id": 4
+    }
+},
+{
+    "pk": 304,
+    "model": "operations.operationtype",
+    "fields": {
+        "lft": 25,
+        "name": "Controller",
+        "level": 2,
+        "rght": 26,
+        "parent": 302,
+        "tree_id": 4
+    }
+},
+{
+    "pk": 305,
+    "model": "operations.operationtype",
+    "fields": {
+        "lft": 23,
+        "name": "RAM",
+        "level": 2,
+        "rght": 24,
+        "parent": 302,
+        "tree_id": 4
+    }
+},
+{
+    "pk": 306,
+    "model": "operations.operationtype",
+    "fields": {
+        "lft": 17,
+        "name": "Eth card",
+        "level": 2,
+        "rght": 22,
+        "parent": 302,
+        "tree_id": 4
+    }
+},
+{
+    "pk": 307,
+    "model": "operations.operationtype",
+    "fields": {
+        "lft": 18,
+        "name": "Eth card 1Gb",
+        "level": 3,
+        "rght": 19,
+        "parent": 306,
+        "tree_id": 4
+    }
+},
+{
+    "pk": 308,
+    "model": "operations.operationtype",
+    "fields": {
+        "lft": 20,
+        "name": "Eth card 10Gb",
+        "level": 3,
+        "rght": 21,
+        "parent": 306,
+        "tree_id": 4
+    }
+},
+{
+    "pk": 309,
+    "model": "operations.operationtype",
+    "fields": {
+        "lft": 15,
+        "name": "Management Module",
+        "level": 2,
+        "rght": 16,
+        "parent": 302,
+        "tree_id": 4
+    }
+},
+{
+    "pk": 310,
+    "model": "operations.operationtype",
+    "fields": {
+        "lft": 13,
+        "name": "Power supply",
+        "level": 2,
+        "rght": 14,
+        "parent": 302,
+        "tree_id": 4
+    }
+},
+{
+    "pk": 311,
+    "model": "operations.operationtype",
+    "fields": {
+        "lft": 11,
+        "name": "Fan",
+        "level": 2,
+        "rght": 12,
+        "parent": 302,
+        "tree_id": 4
+    }
+},
+{
+    "pk": 312,
+    "model": "operations.operationtype",
+    "fields": {
+        "lft": 9,
+        "name": "SFP",
+        "level": 2,
+        "rght": 10,
+        "parent": 302,
+        "tree_id": 4
+    }
+},
+{
+    "pk": 313,
+    "model": "operations.operationtype",
+    "fields": {
+        "lft": 7,
+        "name": "Motherboard",
+        "level": 2,
+        "rght": 8,
+        "parent": 302,
+        "tree_id": 4
+    }
+},
+{
+    "pk": 314,
+    "model": "operations.operationtype",
+    "fields": {
+        "lft": 5,
+        "name": "Firmware upgrade",
+        "level": 2,
+        "rght": 6,
+        "parent": 302,
+        "tree_id": 4
+    }
+},
+{
+    "pk": 315,
+    "model": "operations.operationtype",
+    "fields": {
+        "lft": 27,
+        "name": "Backplane",
+        "level": 2,
+        "rght": 28,
+        "parent": 302,
+        "tree_id": 4
+    }
+}
+]

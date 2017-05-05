@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import re
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 from itertools import chain
 
 from django import forms
@@ -15,8 +15,6 @@ from django.core.validators import (
 )
 from django.db import models, transaction
 from django.db.models import Q
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -37,10 +35,12 @@ from ralph.data_center.models.choices import (
     RackOrientation
 )
 from ralph.data_center.models.mixins import WithManagementIPMixin
+from ralph.data_center.publishers import publish_host_update
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, PreviousStateMixin
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
 from ralph.networks.models import IPAddress, Network, NetworkEnvironment
+from ralph.signals import post_commit
 
 logger = logging.getLogger(__name__)
 
@@ -223,6 +223,15 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
             'has warehouse-kind role'
         )
     )
+    reverse_ordering = models.BooleanField(
+        default=settings.RACK_LISTING_NUMBERING_TOP_TO_BOTTOM,
+        help_text=_(
+            'Check if RU numbers count from top to bottom with position 1 '
+            'starting at the top of the rack. If unchecked position 1 is '
+            'at the bottom of the rack'
+        ),
+        verbose_name=_('RU order top to bottom'),
+    )
 
     class Meta:
         unique_together = ('name', 'server_room')
@@ -293,6 +302,11 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
 
 class NetworkableBaseObject(models.Model):
     # TODO: hostname field and not-abstract cls
+    custom_fields_inheritance = OrderedDict([
+        ('configuration_path', 'assets.ConfigurationClass'),
+        ('configuration_path__module', 'assets.ConfigurationModule'),
+        ('service_env', 'assets.ServiceEnvironment'),
+    ])
 
     @cached_property
     def network_environment(self):
@@ -376,7 +390,9 @@ class DataCenterAsset(
     _allow_in_dashboard = True
     previous_dc_host_update_fields = ['hostname']
 
-    rack = models.ForeignKey(Rack, null=True, blank=True)
+    rack = models.ForeignKey(
+        Rack, null=True, blank=True, on_delete=models.PROTECT
+    )
     status = TransitionField(
         default=DataCenterAssetStatus.new.id,
         choices=DataCenterAssetStatus(),
@@ -749,12 +765,4 @@ class Connection(AdminAbsoluteUrlMixin, models.Model):
         )
 
 
-if settings.HERMES_HOST_UPDATE_TOPIC_NAME:
-    from ralph.data_center.publishers import publish_host_update
-
-    @receiver(post_save, sender=DataCenterAsset)
-    def post_save_dc_asset(sender, instance, **kwargs):
-        # temporary, until Ralph2 sync is turned on
-        # see ralph.ralph2_sync.admin for details
-        if getattr(instance, '_handle_post_save', True):
-            return publish_host_update(instance)
+post_commit(publish_host_update, DataCenterAsset)

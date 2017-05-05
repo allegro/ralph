@@ -44,7 +44,7 @@ class WebsiteType(Choices):
     direct = _('Direct')
 
 
-class Domain(BaseObject, AdminAbsoluteUrlMixin):
+class Domain(AdminAbsoluteUrlMixin, BaseObject):
     name = models.CharField(
         verbose_name=_('domain name'),
         help_text=_('Full domain name'),

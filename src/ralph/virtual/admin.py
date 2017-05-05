@@ -9,8 +9,10 @@ from ralph.admin.filters import (
     BaseObjectHostnameFilter,
     IPFilter,
     MacAddressFilter,
+    RelatedAutocompleteFieldListFilter,
     TagsListFilter,
-    TreeRelatedAutocompleteFilterWithDescendants
+    TreeRelatedAutocompleteFilterWithDescendants,
+    VulnerabilitesByPatchDeadline
 )
 from ralph.assets.models.components import Ethernet
 from ralph.assets.views import ComponentsAdminView, RalphDetailViewAdmin
@@ -21,7 +23,7 @@ from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
 from ralph.networks.forms import SimpleNetworkForm
 from ralph.networks.views import NetworkView
-from ralph.security.views import SecurityInfo
+from ralph.security.views import ScanStatusInChangeListMixin, SecurityInfo
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -85,6 +87,7 @@ class VirtualServerLicencesView(RalphDetailViewAdmin):
 
 @register(VirtualServer)
 class VirtualServerAdmin(
+    ScanStatusInChangeListMixin,
     ActiveDeploymentMessageMixin,
     CustomFieldValueAdminMixin,
     TransitionAdminMixin,
@@ -95,10 +98,15 @@ class VirtualServerAdmin(
     list_filter = [
         BaseObjectHostnameFilter, 'sn', 'service_env', IPFilter,
         'parent', TagsListFilter, MacAddressFilter,
-        ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants)  # noqa
+        ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
+        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),  # noqa
+        (
+            'securityscan__vulnerabilities', RelatedAutocompleteFieldListFilter
+        ),
     ]
     list_display = [
-        'hostname', 'type', 'sn', 'service_env', 'configuration_path'
+        'hostname', 'type', 'sn', 'service_env', 'configuration_path',
+        'scan_status'
     ]
     raw_id_fields = ['parent', 'service_env', 'configuration_path']
     fields = [
@@ -199,14 +207,24 @@ class CloudNetworkInline(RalphTabularInline):
         return False
 
 
+class CloudHostNetworkView(NetworkView):
+    pass
+
+
 @register(CloudHost)
-class CloudHostAdmin(CustomFieldValueAdminMixin, RalphAdmin):
+class CloudHostAdmin(
+    ScanStatusInChangeListMixin, CustomFieldValueAdminMixin, RalphAdmin
+):
     list_display = ['hostname', 'get_ip_addresses', 'service_env',
                     'get_cloudproject', 'cloudflavor_name', 'host_id',
-                    'created', 'image_name', 'get_tags']
+                    'created', 'image_name', 'get_tags', 'scan_status']
     list_filter = [
         BaseObjectHostnameFilter, 'cloudprovider', 'service_env',
-        'cloudflavor', TagsListFilter
+        'cloudflavor', TagsListFilter,
+        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),  # noqa
+        (
+            'securityscan__vulnerabilities', RelatedAutocompleteFieldListFilter
+        ),
     ]
     list_select_related = [
         'cloudflavor', 'cloudprovider', 'parent__cloudproject',
@@ -223,6 +241,7 @@ class CloudHostAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     raw_id_override_parent = {'parent': CloudProject}
     inlines = [CloudNetworkInline]
     change_views = [
+        CloudHostNetworkView,
         CloudHostSecurityInfoView
     ]
     fieldsets = (

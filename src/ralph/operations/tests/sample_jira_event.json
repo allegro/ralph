@@ -1,0 +1,295 @@
+{
+    "issue_event_type_name": "issue_updated",
+    "webhookEvent": "jira:issue_updated",
+    "user": {
+        "self": "https://jira.example.com/rest/api/2/user?username=username.fortytwo",
+        "name": "username.fortytwo",
+        "key": "username.fortytwo",
+        "displayName": "Username Fortytwo",
+        "avatarUrls": {
+            "32x32": "https://jira.example.com/secure/useravatar?size=medium&ownerId=username.fortytwo&avatarId=44502",
+            "24x24": "https://jira.example.com/secure/useravatar?size=small&ownerId=username.fortytwo&avatarId=44502",
+            "48x48": "https://jira.example.com/secure/useravatar?ownerId=username.fortytwo&avatarId=44502",
+            "16x16": "https://jira.example.com/secure/useravatar?size=xsmall&ownerId=username.fortytwo&avatarId=44502"
+        },
+        "emailAddress": "username.fortytwo@example.com",
+        "timeZone": "Europe/Warsaw",
+        "active": true
+    },
+    "timestamp": 1490009623877,
+    "issue": {
+        "self": "https://jira.example.com/rest/api/2/issue/1960071",
+        "fields": {
+            "resolutiondate": null,
+            "customfield_11606": "Restoring previous configuration from backup (stored on rancid servers) ",
+            "timespent": null,
+            "customfield_11401": null,
+            "lastViewed": "2017-03-20T12:29:01.739+0100",
+            "customfield_11625": null,
+            "environment": null,
+            "project": {
+                "self": "https://jira.example.com/rest/api/2/project/35801",
+                "name": "LBaaS Technical Queue",
+                "key": "LBAASTQ",
+                "id": "35801",
+                "projectCategory": {
+                    "self": "https://jira.example.com/rest/api/2/projectCategory/10001",
+                    "name": "Projects",
+                    "description": "It is a space to conduct a project. ",
+                    "id": "10001"
+                },
+                "avatarUrls": {
+                    "32x32": "https://jira.example.com/secure/projectavatar?size=medium&pid=35801&avatarId=22305",
+                    "24x24": "https://jira.example.com/secure/projectavatar?size=small&pid=35801&avatarId=22305",
+                    "48x48": "https://jira.example.com/secure/projectavatar?pid=35801&avatarId=22305",
+                    "16x16": "https://jira.example.com/secure/projectavatar?size=xsmall&pid=35801&avatarId=22305"
+                }
+            },
+            "customfield_14600": [],
+            "customfield_14300": null,
+            "comment": {
+                "total": 0,
+                "maxResults": 0,
+                "startAt": 0,
+                "comments": []
+            },
+            "timeestimate": null,
+            "customfield_10601": null,
+            "customfield_11618": null,
+            "customfield_13700": null,
+            "aggregatetimeestimate": null,
+            "timeoriginalestimate": null,
+            "customfield_10702": null,
+            "customfield_13300": {
+                "self": "https://jira.example.com/rest/api/2/customFieldOption/15605",
+                "id": "15605",
+                "value": "Low"
+            },
+            "customfield_10400": null,
+            "customfield_15100": null,
+            "aggregatetimespent": null,
+            "customfield_10500": null,
+            "customfield_15101": null,
+            "customfield_11603": null,
+            "worklog": {
+                "total": 0,
+                "maxResults": 20,
+                "startAt": 0,
+                "worklogs": []
+            },
+            "customfield_11602": "2017-03-20T10:10:00.000+0100",
+            "customfield_13403": null,
+            "versions": [],
+            "issuelinks": [],
+            "customfield_10513": [
+                {
+                    "self": "https://jira.example.com/rest/api/2/customFieldOption/21605",
+                    "id": "21605",
+                    "value": "Load balancing (F5)"
+                }
+            ],
+            "customfield_13404": null,
+            "customfield_11611": {
+                "self": "https://jira.example.com/rest/api/2/customFieldOption/10943",
+                "id": "10943",
+                "value": "Infrastructure/DB Servers"
+            },
+            "customfield_11607": null,
+            "customfield_10503": null,
+            "timetracking": {},
+            "customfield_11300": null,
+            "customfield_15000": null,
+            "summary": "THIS IS THE SUMMARY",
+            "customfield_11624": null,
+            "created": "2017-03-20T10:10:40.000+0100",
+            "customfield_10600": null,
+            "customfield_10003": null,
+            "customfield_13900": null,
+            "customfield_11400": null,
+            "resolution": null,
+            "aggregatetimeoriginalestimate": null,
+            "customfield_13803": null,
+            "assignee": {
+                "self": "https://jira.example.com/rest/api/2/user?username=username.fortytwo",
+                "name": "username.fortytwo",
+                "key": "username.fortytwo",
+                "displayName": "Username Fortytwo",
+                "avatarUrls": {
+                    "32x32": "https://jira.example.com/secure/useravatar?size=medium&ownerId=username.fortytwo&avatarId=44502",
+                    "24x24": "https://jira.example.com/secure/useravatar?size=small&ownerId=username.fortytwo&avatarId=44502",
+                    "48x48": "https://jira.example.com/secure/useravatar?ownerId=username.fortytwo&avatarId=44502",
+                    "16x16": "https://jira.example.com/secure/useravatar?size=xsmall&ownerId=username.fortytwo&avatarId=44502"
+                },
+                "emailAddress": "username.fortytwo@example.com",
+                "timeZone": "Europe/Warsaw",
+                "active": true
+            },
+            "customfield_13406": null,
+            "customfield_10300": null,
+            "customfield_14301": null,
+            "fixVersions": [],
+            "customfield_13405": null,
+            "customfield_10004": "9223372036854775807",
+            "customfield_13200": null,
+            "customfield_14800": null,
+            "customfield_10100": null,
+            "customfield_10002": null,
+            "customfield_15001": null,
+            "customfield_11619": null,
+            "customfield_10302": null,
+            "progress": {
+                "total": 0,
+                "progress": 0
+            },
+            "customfield_10800": null,
+            "customfield_13400": null,
+            "customfield_13603": null,
+            "customfield_10502": null,
+            "customfield_13602": null,
+            "customfield_10802": null,
+            "issuetype": {
+                "self": "https://jira.example.com/rest/api/2/issuetype/20",
+                "name": "Change",
+                "description": "Operational Change Issue Type for Support/Maintenance",
+                "id": "20",
+                "avatarId": 31010,
+                "iconUrl": "https://jira.example.com/secure/viewavatar?size=xsmall&avatarId=31010&avatarType=issuetype",
+                "subtask": false
+            },
+            "customfield_11623": null,
+            "customfield_10510": null,
+            "components": [],
+            "customfield_14500": "2|i13fbr:",
+            "customfield_11621": "Tests are not possible due to lack of tests environment for services ",
+            "creator": {
+                "self": "https://jira.example.com/rest/api/2/user?username=username.fortytwo",
+                "name": "username.fortytwo",
+                "key": "username.fortytwo",
+                "displayName": "Username Fortytwo",
+                "avatarUrls": {
+                    "32x32": "https://jira.example.com/secure/useravatar?size=medium&ownerId=username.fortytwo&avatarId=44502",
+                    "24x24": "https://jira.example.com/secure/useravatar?size=small&ownerId=username.fortytwo&avatarId=44502",
+                    "48x48": "https://jira.example.com/secure/useravatar?ownerId=username.fortytwo&avatarId=44502",
+                    "16x16": "https://jira.example.com/secure/useravatar?size=xsmall&ownerId=username.fortytwo&avatarId=44502"
+                },
+                "emailAddress": "username.fortytwo@example.com",
+                "timeZone": "Europe/Warsaw",
+                "active": true
+            },
+            "customfield_12300": null,
+            "subtasks": [],
+            "customfield_10301": null,
+            "status": {
+                "self": "https://jira.example.com/rest/api/2/status/1",
+                "name": "Open",
+                "description": "The issue is open and ready for the assignee to start work on it.",
+                "id": "1",
+                "statusCategory": {
+                    "self": "https://jira.example.com/rest/api/2/statuscategory/2",
+                    "colorName": "blue-gray",
+                    "name": "To Do",
+                    "key": "new",
+                    "id": 2
+                },
+                "iconUrl": "https://jira.example.com/images/icons/statuses/open.png"
+            },
+            "priority": {
+                "self": "https://jira.example.com/rest/api/2/priority/4",
+                "name": "Minor",
+                "iconUrl": "https://jira.example.com/images/icons/priorities/minor.svg",
+                "id": "4"
+            },
+            "updated": "2017-03-20T12:33:44.000+0100",
+            "labels": [
+                "net",
+                "seba",
+                "small",
+                "test-label"
+            ],
+            "customfield_12601": [
+                {
+                    "self": "https://jira.example.com/rest/api/2/user?username=username.fortytwo",
+                    "name": "username.fortytwo",
+                    "key": "username.fortytwo",
+                    "displayName": "Username Fortytwo",
+                    "avatarUrls": {
+                        "32x32": "https://jira.example.com/secure/useravatar?size=medium&ownerId=username.fortytwo&avatarId=44502",
+                        "24x24": "https://jira.example.com/secure/useravatar?size=small&ownerId=username.fortytwo&avatarId=44502",
+                        "48x48": "https://jira.example.com/secure/useravatar?ownerId=username.fortytwo&avatarId=44502",
+                        "16x16": "https://jira.example.com/secure/useravatar?size=xsmall&ownerId=username.fortytwo&avatarId=44502"
+                    },
+                    "emailAddress": "username.fortytwo@example.com",
+                    "timeZone": "Europe/Warsaw",
+                    "active": true
+                }
+            ],
+            "attachment": [],
+            "customfield_12700": null,
+            "customfield_11600": null,
+            "customfield_13000": null,
+            "workratio": -1,
+            "votes": {
+                "self": "https://jira.example.com/rest/api/2/issue/SOMEPROJ-42/votes",
+                "hasVoted": false,
+                "votes": 0
+            },
+            "customfield_11601": "2017-03-31T10:10:00.000+0200",
+            "customfield_12100": null,
+            "customfield_10504": null,
+            "customfield_13100": "{hide-templates=[true]}",
+            "watches": {
+                "self": "https://jira.example.com/rest/api/2/issue/SOMEPROJ-42/watchers",
+                "isWatching": true,
+                "watchCount": 1
+            },
+            "customfield_11501": null,
+            "reporter": {
+                "self": "https://jira.example.com/rest/api/2/user?username=username.fortytwo",
+                "name": "username.fourtwenty",
+                "key": "username.fourtwenty",
+                "displayName": "Username Fourtwenty",
+                "avatarUrls": {
+                    "32x32": "https://jira.example.com/secure/useravatar?size=medium&ownerId=username.fourtwenty&avatarId=44502",
+                    "24x24": "https://jira.example.com/secure/useravatar?size=small&ownerId=username.fourtwenty&avatarId=44502",
+                    "48x48": "https://jira.example.com/secure/useravatar?ownerId=username.fourtwenty&avatarId=44502",
+                    "16x16": "https://jira.example.com/secure/useravatar?size=xsmall&ownerId=username.fourtwenty&avatarId=44502"
+                },
+                "emailAddress": "username.fourtwenty@example.com",
+                "timeZone": "Europe/Warsaw",
+                "active": true
+            },
+            "customfield_10000": null,
+            "customfield_15200": "com.atlassian.servicedesk.plugins.approvals.internal.customfield.ApprovalsCFValue@7f528b38",
+            "customfield_11622": null,
+            "customfield_11615": null,
+            "customfield_12801": {
+                "self": "https://jira.example.com/rest/api/2/customFieldOption/12101",
+                "id": "12101",
+                "value": "Low"
+            },
+            "description": "THAT IS A TEST TICKET",
+            "aggregateprogress": {
+                "total": 0,
+                "progress": 0
+            },
+            "duedate": null,
+            "customfield_10807": null,
+            "customfield_10001": null
+        },
+        "key": "SOMEPROJ-42",
+        "id": "1960071"
+    },
+    "changelog": {
+        "id": "11858052",
+        "items": [
+            {
+                "to": null,
+                "toString": "THAT IS A TEST TICKET",
+                "fromString": "PREVIOUS DESCRIPTION",
+                "field": "description",
+                "from": null,
+                "fieldtype": "jira"
+            }
+        ]
+    }
+}

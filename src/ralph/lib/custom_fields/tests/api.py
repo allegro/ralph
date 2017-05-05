@@ -14,10 +14,11 @@ class SomeModelSerializer(
 ):
     class Meta:
         model = SomeModel
+        fields = ('id', 'custom_fields', 'configuration_variables')
 
 
 class SomeModelViewset(viewsets.ModelViewSet):
-    queryset = SomeModel.objects.all()
+    queryset = SomeModel.objects.prefetch_related('custom_fields')
     serializer_class = SomeModelSerializer
     filter_backends = (
         viewsets.ModelViewSet.filter_backends + [CustomFieldsFilterBackend]

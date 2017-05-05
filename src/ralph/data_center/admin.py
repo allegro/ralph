@@ -10,7 +10,7 @@ from django.core.urlresolvers import reverse
 from django.db.models import Prefetch, Q
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin import filters, RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import (
     BaseObjectHostnameFilter,
     ChoicesListFilter,
@@ -19,7 +19,8 @@ from ralph.admin.filters import (
     MacAddressFilter,
     RelatedAutocompleteFieldListFilter,
     TagsListFilter,
-    TreeRelatedAutocompleteFilterWithDescendants
+    TreeRelatedAutocompleteFilterWithDescendants,
+    VulnerabilitesByPatchDeadline
 )
 from ralph.admin.helpers import generate_html_link
 from ralph.admin.m2m import RalphTabularM2MInline
@@ -60,7 +61,7 @@ from ralph.networks.forms import SimpleNetworkWithManagementIPForm
 from ralph.networks.models.networks import Network
 from ralph.networks.views import NetworkWithTerminatorsView
 from ralph.operations.views import OperationViewReadOnlyForExisiting
-from ralph.security.views import SecurityInfo
+from ralph.security.views import ScanStatusInChangeListMixin, SecurityInfo
 from ralph.supports.models import BaseObjectsSupport
 
 
@@ -287,6 +288,7 @@ class DataCenterAssetSecurityInfo(SecurityInfo):
 
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(
+    ScanStatusInChangeListMixin,
     ActiveDeploymentMessageMixin,
     MulitiAddAdminMixin,
     TransitionAdminMixin,
@@ -323,6 +325,7 @@ class DataCenterAssetAdmin(
         'show_location',
         'service_env',
         'configuration_path',
+        'scan_status',
     ]
     multiadd_summary_fields = list_display + ['rack']
     one_of_mulitvalue_required = ['sn', 'barcode']
@@ -347,7 +350,12 @@ class DataCenterAssetAdmin(
         'budget_info', 'rack', 'rack__server_room',
         'rack__server_room__data_center', 'position', 'property_of',
         LiquidatedStatusFilter, IPFilter, TagsListFilter,
-        'fibrechannelcard_set__wwn'
+        'fibrechannelcard_set__wwn',
+        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),  # noqa
+        (
+            'securityscan__vulnerabilities',
+            filters.RelatedAutocompleteFieldListFilter
+        ),
     ]
     date_hierarchy = 'created'
     list_select_related = [
@@ -412,7 +420,7 @@ class DataCenterAssetAdmin(
     def go_to_visualization(self, obj):
         if not obj.rack:
             return '&mdash;'
-        url = '{}#!/sr/{}/rack/{}'.format(
+        url = '{}#/sr/{}/rack/{}'.format(
             reverse('dc_view'),
             obj.rack.server_room_id,
             obj.rack.id,
@@ -454,7 +462,12 @@ class RackAccessoryInline(RalphTabularInline):
 class RackAdmin(RalphAdmin):
 
     exclude = ['accessories']
-    list_display = ['name', 'server_room_name', 'data_center_name']
+    list_display = [
+        'name',
+        'server_room_name',
+        'data_center_name',
+        'reverse_ordering',
+    ]
     list_filter = ['server_room__data_center']  # TODO use fk field in filter
     list_select_related = ['server_room', 'server_room__data_center']
     search_fields = ['name']
@@ -498,7 +511,14 @@ class DatabaseAdmin(RalphAdmin):
 
 @register(VIP)
 class VIPAdmin(RalphAdmin):
-    pass
+
+    search_fields = ['name', 'ip__address']
+    raw_id_fields = ['ip', 'service_env', 'parent', 'configuration_path']
+    raw_id_override_parent = {'parent': Cluster}
+    fields = (
+        'name', 'ip', 'port', 'protocol', 'service_env', 'parent', 'remarks',
+        'tags'
+    )
 
 
 @register(Connection)
@@ -523,7 +543,7 @@ class DCHostChangeList(ChangeList):
 
 
 @register(DCHost)
-class DCHostAdmin(RalphAdmin):
+class DCHostAdmin(ScanStatusInChangeListMixin, RalphAdmin):
     search_fields = [
         'remarks',
         'asset__hostname',
@@ -540,6 +560,7 @@ class DCHostAdmin(RalphAdmin):
         'configuration_path',
         'show_location',
         'remarks',
+        'scan_status',
     ]
     # TODO: sn
     # TODO: hostname, DC
@@ -550,6 +571,11 @@ class DCHostAdmin(RalphAdmin):
         ('content_type', DCHostTypeListFilter),
         MacAddressFilter,
         IPFilter,
+        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),  # noqa
+        (
+            'securityscan__vulnerabilities',
+            filters.RelatedAutocompleteFieldListFilter
+        ),
     ]
     list_select_related = [
         'content_type',
@@ -558,6 +584,7 @@ class DCHostAdmin(RalphAdmin):
         'service_env__environment',
         'service_env__service',
     ]
+    resource_class = resources.DCHostResource
 
     def has_add_permission(self, request):
         return False

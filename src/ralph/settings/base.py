@@ -121,14 +121,14 @@ MYSQL_OPTIONS = {
     'sql_mode': 'TRADITIONAL',
     'charset': 'utf8',
     'init_command': """
-    SET storage_engine=INNODB;
+    SET default_storage_engine=INNODB;
     SET character_set_connection=utf8,collation_connection=utf8_unicode_ci;
     SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
     """
 }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'transaction_hooks.backends.mysql',
         'NAME': os.environ.get('DATABASE_NAME', 'ralph_ng'),
         'USER': os.environ.get('DATABASE_USER', 'ralph_ng'),
         'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'ralph_ng') or None,
@@ -431,6 +431,53 @@ DOMAIN_OWNER_TYPE = {
     'TO': 'Technical Owner',
 }
 
+# Transitions settings
+
+# E.g.: pl (see: https://www.iso.org/iso-3166-country-codes.html)
+CHANGE_HOSTNAME_ACTION_DEFAULT_COUNTRY = None
+
+
+# Change management settings
+
+CHANGE_MGMT_OPERATION_STATUSES = {
+    'OPENED': os.getenv(
+        'CHANGE_MGMT_OPERATION_STATUS_OPENED', 'Open'
+    ),
+    'IN_PROGRESS': os.getenv(
+        'CHANGE_MGMT_OPERATION_STATUS_IN_PROGRESS', 'In Progress'
+    ),
+    'RESOLVED': os.getenv(
+        'CHANGE_MGMT_OPERATION_STATUS_RESOLVED', 'Resolved'
+    ),
+    'CLOSED': os.getenv(
+        'CHANGE_MGMT_OPERATION_STATUS_CLOSED', 'Closed'
+    ),
+    'REOPENED': os.getenv(
+        'CHANGE_MGMT_OPERATION_STATUS_REOPENED', 'Reopened'
+    ),
+    'TODO': os.getenv(
+        'CHANGE_MGMT_OPERATION_STATUS_TODO', 'Todo'
+    ),
+    'BLOCKED': os.getenv(
+        'CHANGE_MGMT_OPERATION_STATUS_BLOCKED', 'Blocked'
+    )
+}
+
+CHANGE_MGMT_BASE_OBJECT_LOADER = os.getenv(
+    'CHANGE_MGMT_BASE_OBJECT_LOADER', None
+)
+CHANGE_MGMT_PROCESSOR = os.getenv(
+    'CHANGE_MGMT_PROCESSOR', 'ralph.operations.changemanagement.jira'
+)
+
+HERMES_CHANGE_MGMT_TOPICS = {
+    'CHANGES': os.getenv(
+        'HERMES_CHANGE_MGMT_CHANGES_TOPIC', 'hermes.changemanagement.changes'
+    )
+}
+
+
+# Hermes settings
 
 ENABLE_HERMES_INTEGRATION = bool_from_env('ENABLE_HERMES_INTEGRATION')
 HERMES = json.loads(os.environ.get('HERMES', '{}'))
@@ -440,6 +487,21 @@ HERMES['ENABLED'] = ENABLE_HERMES_INTEGRATION
 HERMES_HOST_UPDATE_TOPIC_NAME = os.environ.get(
     'HERMES_HOST_UPDATE_TOPIC_NAME', None
 )
+
+HERMES_SERVICE_TOPICS = {
+    'CREATE': os.environ.get(
+        'SERVICE_CREATE_HERMES_TOPIC_NAME', 'hermes.service.create'
+    ),
+    'DELETE': os.environ.get(
+        'SERVICE_DELETE_HERMES_TOPIC_NAME', 'hermes.service.delete'
+    ),
+    'UPDATE': os.environ.get(
+        'SERVICE_UPDATE_HERMES_TOPIC_NAME', 'hermes.service.update'
+    ),
+    'REFRESH': os.environ.get(
+        'SERVICE_REFRESH_HERMES_TOPIC_NAME', 'hermes.service.refresh'
+    )
+}
 
 if ENABLE_HERMES_INTEGRATION:
     INSTALLED_APPS += (

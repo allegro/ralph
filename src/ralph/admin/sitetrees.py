@@ -263,6 +263,7 @@ sitetrees = [
                 section(_('Failures'), 'operations', 'Failure'),
                 section(_('All'), 'operations', 'Operation'),
                 section(_('Types'), 'operations', 'OperationType'),
+                section(_('Statuses'), 'operations', 'OperationStatus'),
             ]
         ),
         ralph_item(

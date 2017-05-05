@@ -6,7 +6,10 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.attachments.models import AttachmentItem
-from ralph.lib.custom_fields.models import WithCustomFieldsMixin
+from ralph.lib.custom_fields.models import (
+    CustomFieldMeta,
+    WithCustomFieldsMixin
+)
 from ralph.lib.mixins.models import TaggableMixin, TimeStampMixin
 from ralph.lib.permissions import PermByFieldMixin
 from ralph.lib.permissions.models import PermissionsBase
@@ -21,6 +24,7 @@ BaseObjectMeta = type(
     'BaseObjectMeta', (
         PolymorphicBase,
         PermissionsBase,
+        CustomFieldMeta,
         TransitionWorkflowBase
     ), {}
 )
@@ -65,10 +69,13 @@ class BaseObject(
     """Base object mixin."""
     # TODO: dynamically limit parent basing on model
     parent = models.ForeignKey(
-        'self', null=True, blank=True, related_name='children'
+        'self', null=True, blank=True, related_name='children',
+        on_delete=models.SET_NULL
     )
     remarks = models.TextField(blank=True)
-    service_env = models.ForeignKey('ServiceEnvironment', null=True)
+    service_env = models.ForeignKey(
+        'ServiceEnvironment', null=True, on_delete=models.PROTECT
+    )
 
     @property
     def _str_with_type(self):
@@ -85,7 +92,8 @@ class BaseObject(
         help_text=_(
             'path to configuration for this object, for example path to puppet '
             'class'
-        )
+        ),
+        on_delete=models.PROTECT
     )
 
     @property

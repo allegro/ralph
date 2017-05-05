@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
+from collections import OrderedDict
 
 from dj.choices import Choices
-from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
@@ -20,6 +20,7 @@ from ralph.data_center.models.physical import (
     NetworkableBaseObject
 )
 from ralph.data_center.models.virtual import Cluster
+from ralph.data_center.publishers import publish_host_update
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
@@ -29,6 +30,7 @@ from ralph.lib.mixins.models import (
 )
 from ralph.lib.transitions.fields import TransitionField
 from ralph.networks.models.networks import IPAddress
+from ralph.signals import post_commit
 
 logger = logging.getLogger(__name__)
 
@@ -133,6 +135,9 @@ class CloudFlavor(AdminAbsoluteUrlMixin, BaseObject):
 class CloudProject(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
     cloudprovider = models.ForeignKey(CloudProvider)
     cloudprovider._autocomplete = False
+    custom_fields_inheritance = OrderedDict([
+        ('service_env', 'assets.ServiceEnvironment'),
+    ])
 
     project_id = models.CharField(
         verbose_name=_('project ID'),
@@ -152,8 +157,18 @@ def update_service_env_on_cloudproject_save(sender, instance, **kwargs):
         instance.children.all().update(service_env=instance.service_env)
 
 
-class CloudHost(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
+class CloudHost(PreviousStateMixin,
+                AdminAbsoluteUrlMixin,
+                NetworkableBaseObject,
+                BaseObject):
+    _allow_in_dashboard = True
     previous_dc_host_update_fields = ['hostname']
+    custom_fields_inheritance = OrderedDict([
+        ('parent__cloudproject', 'virtual.CloudProject'),
+        ('configuration_path', 'assets.ConfigurationClass'),
+        ('configuration_path__module', 'assets.ConfigurationModule'),
+        ('service_env', 'assets.ServiceEnvironment'),
+    ])
 
     def save(self, *args, **kwargs):
         try:
@@ -184,6 +199,21 @@ class CloudHost(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
 
     def __str__(self):
         return self.hostname
+
+    @cached_property
+    def rack_id(self):
+        return self.rack.id if self.rack else None
+
+    @cached_property
+    def rack(self):
+        if self.hypervisor:
+            return self.hypervisor.rack
+        return None
+
+    @property
+    def ipaddresses(self):
+        # NetworkableBaseObject compatibility
+        return IPAddress.objects.filter(ethernet__base_object=self)
 
     @property
     def ip_addresses(self):
@@ -310,6 +340,7 @@ class VirtualServer(
     cluster = models.ForeignKey(Cluster, blank=True, null=True)
 
     previous_dc_host_update_fields = ['hostname']
+    _allow_in_dashboard = True
 
     @cached_property
     def polymorphic_parent(self):
@@ -332,9 +363,7 @@ class VirtualServer(
 
     @property
     def model(self):
-        return (
-            self.polymorphic_parent.model if self.polymorphic_parent else None
-        )
+        return self.type
 
     @cached_property
     def rack_id(self):
@@ -344,7 +373,7 @@ class VirtualServer(
     def rack(self):
         if self.parent_id:
             polymorphic_parent = self.polymorphic_parent.last_descendant
-            if isinstance(polymorphic_parent, DataCenterAsset):
+            if (isinstance(polymorphic_parent, (DataCenterAsset, CloudHost))):
                 return polymorphic_parent.rack
         return None
 
@@ -356,19 +385,5 @@ class VirtualServer(
         return 'VirtualServer: {} ({})'.format(self.hostname, self.sn)
 
 
-if settings.HERMES_HOST_UPDATE_TOPIC_NAME:
-    from ralph.data_center.publishers import publish_host_update
-
-    @receiver(models.signals.post_save, sender=CloudHost)
-    def post_save_cloud_host(sender, instance, **kwargs):
-        # temporary, until Ralph2 sync is turned on
-        # see ralph.ralph2_sync.admin for details
-        if getattr(instance, '_handle_post_save', True):
-            return publish_host_update(instance)
-
-    @receiver(models.signals.post_save, sender=VirtualServer)
-    def post_save_virtual_server(sender, instance, **kwargs):
-        # temporary, until Ralph2 sync is turned on
-        # see ralph.ralph2_sync.admin for details
-        if getattr(instance, '_handle_post_save', True):
-            return publish_host_update(instance)
+post_commit(publish_host_update, VirtualServer)
+post_commit(publish_host_update, CloudHost)

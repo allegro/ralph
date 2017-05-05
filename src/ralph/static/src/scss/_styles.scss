@@ -158,3 +158,13 @@ i.empty {
     color: #888;
     font-style: normal;
 }
+
+.success {
+    color: $success-color;
+}
+.warning {
+    color: $warning-color;
+}
+.alert {
+    color: $alert-color;
+}

@@ -5,11 +5,14 @@ sudo apt-get update
 ## INSTALL dependencies
 # Install MySQL Server in a Non-Interactive mode. NO PASSWORD for root
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    build-essential \
     git \
+    libffi-dev \
     libldap2-dev \
     libmysqlclient-dev \
     libmysqld-dev \
     libsasl2-dev \
+    libssl-dev \
     make \
     mysql-server-5.6 \
     python3.4 \

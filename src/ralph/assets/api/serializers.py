@@ -175,7 +175,9 @@ class ServiceEnvironmentSimpleSerializer(RalphAPISerializer):
 
 
 class ServiceEnvironmentSerializer(
-    TypeFromContentTypeSerializerMixin, RalphAPISerializer
+    TypeFromContentTypeSerializerMixin,
+    WithCustomFieldsSerializerMixin,
+    RalphAPISerializer
 ):
     __str__ = StrField(show_type=True)
     business_owners = SimpleRalphUserSerializer(
@@ -266,7 +268,10 @@ class ConfigurationModuleSimpleSerializer(RalphAPISerializer):
         fields = ('id', 'url', 'name', 'parent', 'support_team')
 
 
-class ConfigurationModuleSerializer(ConfigurationModuleSimpleSerializer):
+class ConfigurationModuleSerializer(
+    WithCustomFieldsSerializerMixin,
+    ConfigurationModuleSimpleSerializer
+):
     children_modules = serializers.HyperlinkedRelatedField(
         view_name='configurationmodule-detail',
         many=True,
@@ -276,7 +281,7 @@ class ConfigurationModuleSerializer(ConfigurationModuleSimpleSerializer):
 
     class Meta(ConfigurationModuleSimpleSerializer.Meta):
         fields = ConfigurationModuleSimpleSerializer.Meta.fields + (
-            'children_modules',
+            'children_modules', 'custom_fields'
         )
 
 
@@ -292,7 +297,9 @@ class ConfigurationClassSimpleSerializer(RalphAPISerializer):
 
 
 class ConfigurationClassSerializer(
-    TypeFromContentTypeSerializerMixin, RalphAPISerializer
+    TypeFromContentTypeSerializerMixin,
+    WithCustomFieldsSerializerMixin,
+    RalphAPISerializer
 ):
     __str__ = StrField(show_type=True)
     module = ConfigurationModuleSimpleSerializer()

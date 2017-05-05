@@ -1,7 +1,9 @@
 {% load i18n admin_urls admin_static admin_modify %}
 
 <div class="row">
-  <div class="small-12 medium-12 large-12 columns">
+  {% block row_div_definition %}
+    <div class="small-12 medium-12 large-12 columns">
+  {% endblock %}
     <div class="inline-group" id="{{ inline_admin_formset.formset.prefix }}-group">
       <div class="tabular inline-related {% if forloop.last %}last-related{% endif %}" data-prefix="{{ inline_admin_formset.formset.prefix|escapejs }}" data-add-text="{% filter escapejs %}{% blocktrans with inline_admin_formset.opts.verbose_name|capfirst as verbose_name %}Add another {{ verbose_name }}{% endblocktrans %}{% endfilter %}" data-delete-text="{% filter escapejs %}{% trans 'Remove' %}{% endfilter %}" data-group-id="{{ inline_admin_formset.formset.prefix|escapejs }}">
         {{ inline_admin_formset.formset.management_form }}
@@ -91,6 +93,9 @@
       </div>
     </div>
   </div>
+  {% block inline_extra %}
+
+  {% endblock %}
 </div>
 
 {% block extra_scripts %}

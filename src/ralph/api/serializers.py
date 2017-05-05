@@ -76,9 +76,10 @@ class DeclaredFieldsMetaclass(serializers.SerializerMetaclass):
                 list(attrs.get('prefetch_related', [])) + ['tags']
             )
 
-        if model and issubclass(model, AdminAbsoluteUrlMixin) and fields:
+        if model and issubclass(model, AdminAbsoluteUrlMixin):
             attrs['ui_url'] = AbsoluteUrlField()
-            meta.fields += ('ui_url',)
+            if fields:
+                meta.fields += ('ui_url',)
         return super().__new__(cls, name, bases, attrs)
 
 

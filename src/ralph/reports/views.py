@@ -323,11 +323,12 @@ class AssetRelationsReport(BaseRelationsReport):
     dc_headers = [
         'id', 'niw', 'barcode', 'sn', 'model__category__name',
         'model__manufacturer__name', 'status', 'service_env__service__name',
-        'invoice_date', 'invoice_no', 'hostname'
+        'invoice_date', 'invoice_no', 'hostname', 'rack'
     ]
     dc_select_related = [
         'model', 'model__category', 'service_env', 'service_env__service',
-        'model__manufacturer'
+        'model__manufacturer', 'rack', 'rack__server_room',
+        'rack__server_room__data_center'
     ]
     bo_headers = [
         'id', 'niw', 'barcode', 'sn', 'model__category__name',

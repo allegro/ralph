@@ -4,14 +4,14 @@ env:
     global:
         - DATABASE_USER=travis
         - DATABASE_PASSWORD=travis
-        - DJANGO_CURRENT_VERSION=1.8.12
+        - DJANGO_CURRENT_VERSION=1.8.18
         - RALPH2_RALPH3_CROSS_VALIDATION_ENABLED=1
         - REDIS_PORT=6379
         - DATABASE_PORT=5433
     matrix:
-        - DJANGO_VERSION=1.8.12 TEST_DB_ENGINE=mysql MYSQL_VERSION=5.6
-        - DJANGO_VERSION=1.8.12 TEST_DB_ENGINE=mysql MYSQL_VERSION=5.5
-        - DJANGO_VERSION=1.8.12 TEST_DB_ENGINE=psql
+        - DJANGO_VERSION=1.8.18 TEST_DB_ENGINE=mysql MYSQL_VERSION=5.6
+        - DJANGO_VERSION=1.8.18 TEST_DB_ENGINE=mysql MYSQL_VERSION=5.5
+        - DJANGO_VERSION=1.8.18 TEST_DB_ENGINE=psql
         # Django 1.9 build will not pass until #2132 will be merged
         # - DJANGO_VERSION=1.9 TEST_DB_ENGINE=sqlite
         # - DJANGO_VERSION=1.9 TEST_DB_ENGINE=mysql
@@ -53,9 +53,10 @@ install:
     - npm install
     - make js-hint
     - gulp
-    - make install-test
+    - make install-dev
     - pip install coveralls
     - pip install django==$DJANGO_VERSION
+    - pip install -rrequirements/openstack.txt
 
 script:
     - python contrib/dhcp_agent/test.py
@@ -69,7 +70,7 @@ after_success:
 before_deploy:
     - sudo add-apt-repository -y ppa:spotify-jyrki/dh-virtualenv
     - sudo apt-get update
-    - sudo apt-get install -y devscripts python-virtualenv git equivs dh-virtualenv
+    - sudo apt-get install -y devscripts python-virtualenv git equivs dh-virtualenv libmysqlclient-dev python3-dev libffi-dev nodejs nodejs-legacy
     - make build-package
 
 deploy:
@@ -78,13 +79,13 @@ deploy:
         on:
             branch: ng
             python: 3.4
-            condition: $TEST_DB_ENGINE = psql && $DJANGO_VERSION = $DJANGO_CURRENT_VERSION
+            condition: $TRAVIS_EVENT_TYPE = cron && $TEST_DB_ENGINE = psql && $DJANGO_VERSION = $DJANGO_CURRENT_VERSION
     -   provider: script
         script: scripts/travis_deploy_bintray.sh
         on:
             branch: ng
             python: 3.4
-            condition: $TEST_DB_ENGINE = psql && $DJANGO_VERSION = $DJANGO_CURRENT_VERSION
+            condition: $TRAVIS_EVENT_TYPE = cron && $TEST_DB_ENGINE = psql && $DJANGO_VERSION = $DJANGO_CURRENT_VERSION
 
 notifications:
   webhooks:
