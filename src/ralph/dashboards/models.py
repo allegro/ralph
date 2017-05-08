@@ -1,7 +1,7 @@
 from dj.choices import Choices
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models
-from django.db.models import Count, Max, Sum
+from django.db.models import Count, IntegerField, Max, Sum
 from django_extensions.db.fields.json import JSONField
 
 from ralph.dashboards.filter_parser import FilterParser
@@ -25,11 +25,26 @@ class Dashboard(
     interval = models.PositiveSmallIntegerField(default=60)
 
 
+def ratio_handler(queryset, series):
+    if not isinstance(series, list):
+        raise ValueError('Ratio aggregation requires series to be list')
+    if len(series) != 2:
+        raise ValueError(
+            'Ratio aggregation requires series to be list of size 2'
+        )
+    return (
+        Sum(series[0], output_field=IntegerField()) / Count(series[1]) * 100.0
+    )
+
+
 class AggregateType(Choices):
     _ = Choices.Choice
     aggregate_count = _('Count').extra(aggregate_func=Count)
     aggregate_max = _('Max').extra(aggregate_func=Max)
     aggregate_sum = _('Sum').extra(aggregate_func=Sum)
+    aggregate_ratio = _('Ratio').extra(
+        aggregate_func=Count, handler=ratio_handler
+    )
 
 
 class ChartType(Choices):
@@ -122,8 +137,10 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
             return queryset.order_by(order)
         return queryset
 
-    def _unpack_series(self):
-        series_field, fn = _to_pair(self.params.get('series', ''), '|')
+    def _unpack_series(self, series):
+        if not isinstance(series, str):
+            raise ValueError('Series should be string')
+        series_field, fn = _to_pair(series, '|')
         if (series_field != fn) and (fn != 'distinct'):
             raise ValueError(
                 "Series supports Only `distinct` (you put '{}')".format(fn)  # noqa
@@ -135,7 +152,14 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
     def get_aggregation(self):
         aggregate_type = AggregateType.from_id(self.aggregate_type)
         aggregate_func = aggregate_type.aggregate_func
-        series_field, fn_name = self._unpack_series()
+        # aggregate choice might have defined custom handler
+        handler = getattr(
+            aggregate_type, 'handler', self._default_aggregation_handler
+        )
+        return handler(aggregate_func, self.params.get('series', ''))
+
+    def _default_aggregation_handler(self, aggregate_func, series):
+        series_field, fn_name = self._unpack_series(series)
         aggregate_fn_kwargs = {}
         if fn_name == "distinct":
             if self.aggregate_type != AggregateType.aggregate_count.id:
@@ -156,18 +180,16 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
 
         grouping_label = GroupingLabel(connection, self.params['labels'])
         queryset = grouping_label.apply_grouping(queryset)
-        queryset = self.apply_parital_filtering(queryset)
-
+        # pop filters which are applied on annotated queryset
         annotate_filters = self.pop_annotate_filters(
-            self.params.get('filters', None)
+            self.params.get('filters', {})
         )
-
+        queryset = self.apply_parital_filtering(queryset)
         queryset = queryset.values(
             grouping_label.label
         ).annotate(
             series=self.get_aggregation(),
         )
-
         if annotate_filters:
             queryset = queryset.filter(**annotate_filters)
 
