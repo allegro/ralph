@@ -8,6 +8,7 @@ from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.assets.invoice_report import InvoiceReportMixin
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer import resources
+from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.licences.models import (
     BaseObjectLicence,
     Licence,
@@ -50,6 +51,7 @@ class LicenceUserView(RalphDetailViewAdmin):
 
 @register(Licence)
 class LicenceAdmin(
+    CustomFieldValueAdminMixin,
     AttachmentsMixin,
     BulkEditChangeListMixin,
     InvoiceReportMixin,
