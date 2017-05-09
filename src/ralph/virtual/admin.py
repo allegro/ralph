@@ -92,12 +92,13 @@ class VirtualServerAdmin(
     CustomFieldValueAdminMixin,
     TransitionAdminMixin,
     RalphAdmin
-):
+    ):
     form = VirtualServerForm
     search_fields = ['hostname', 'sn', 'ethernet_set__ipaddress__hostname']
     list_filter = [
         BaseObjectHostnameFilter, 'sn', 'service_env', IPFilter,
         'parent', TagsListFilter, MacAddressFilter,
+        ('configuration_path', TreeRelatedAutocompleteFilterWithDescendants),
         ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
         ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),  # noqa
         (
@@ -222,6 +223,8 @@ class CloudHostAdmin(
     list_filter = [
         BaseObjectHostnameFilter, 'cloudprovider', 'service_env',
         'cloudflavor', TagsListFilter,
+        ('configuration_path', TreeRelatedAutocompleteFilterWithDescendants),
+        ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
         ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),  # noqa
         (
             'securityscan__vulnerabilities', RelatedAutocompleteFieldListFilter
