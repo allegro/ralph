@@ -1,7 +1,7 @@
 from dj.choices import Choices
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models
-from django.db.models import Case, Count, IntegerField, Max, Q, Sum, When, Value
+from django.db.models import Case, Count, IntegerField, Max, Q, Sum, Value, When
 from django_extensions.db.fields.json import JSONField
 
 from ralph.dashboards.filter_parser import FilterParser
