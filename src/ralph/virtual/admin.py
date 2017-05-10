@@ -92,7 +92,7 @@ class VirtualServerAdmin(
     CustomFieldValueAdminMixin,
     TransitionAdminMixin,
     RalphAdmin
-    ):
+):
     form = VirtualServerForm
     search_fields = ['hostname', 'sn', 'ethernet_set__ipaddress__hostname']
     list_filter = [
