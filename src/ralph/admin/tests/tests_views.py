@@ -24,6 +24,7 @@ FACTORY_MAP = {
     'ralph.assets.models.assets.Category': 'ralph.assets.tests.factories.CategoryFactory',  # noqa
     'ralph.assets.models.assets.Environment': 'ralph.assets.tests.factories.EnvironmentFactory',  # noqa
     'ralph.assets.models.assets.Manufacturer': 'ralph.assets.tests.factories.ManufacturerFactory',  # noqa
+    'ralph.assets.models.assets.ManufacturerKind': 'ralph.assets.tests.factories.ManufacturerKindFactory',  # noqa
     'ralph.assets.models.assets.ProfitCenter': 'ralph.assets.tests.factories.ProfitCenterFactory',  # noqa
     'ralph.assets.models.assets.Service': 'ralph.assets.tests.factories.ServiceFactory',  # noqa
     'ralph.assets.models.assets.ServiceEnvironment': 'ralph.assets.tests.factories.ServiceEnvironmentFactory',  # noqa
