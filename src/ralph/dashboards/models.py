@@ -1,7 +1,7 @@
 from dj.choices import Choices
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models
-from django.db.models import Count, IntegerField, Max, Sum
+from django.db.models import Case, Count, IntegerField, Max, Q, Sum, When, Value
 from django_extensions.db.fields.json import JSONField
 
 from ralph.dashboards.filter_parser import FilterParser
@@ -32,8 +32,15 @@ def ratio_handler(queryset, series):
         raise ValueError(
             'Ratio aggregation requires series to be list of size 2'
         )
+    # postgres does not support Sum with boolean field so we need to use
+    # Case-When with integer values here
     return (
-        Sum(series[0], output_field=IntegerField()) / Count(series[1]) * 100.0
+        Sum(Case(
+            When(Q(**{series[0]: True}), then=Value(1)),
+            When(Q(**{series[0]: False}), then=Value(0)),
+            default=Value(0),
+            output_field=IntegerField()
+        )) / Count(series[1]) * 100.0
     )
 
 
