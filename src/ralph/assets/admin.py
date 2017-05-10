@@ -13,6 +13,7 @@ from ralph.assets.models.assets import (
     Category,
     Environment,
     Manufacturer,
+    ManufacturerKind,
     ProfitCenter,
     Service,
     ServiceEnvironment
@@ -194,6 +195,12 @@ class ServiceAdmin(RalphAdmin):
     ]
     resource_class = resources.ServiceResource
     change_views = [ServiceBaseObjects]
+
+
+@register(ManufacturerKind)
+class ManufacturerKindAdmin(RalphAdmin):
+
+    search_fields = ['name']
 
 
 @register(Manufacturer)
