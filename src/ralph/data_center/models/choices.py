@@ -11,9 +11,9 @@ class DataCenterAssetStatus(Choices):
     free = _('free')
     damaged = _('damaged')
     liquidated = _('liquidated')
-    pre_liquidated = _("pre liquidated")
     to_deploy = _('to deploy')
     cleaned = _('cleaned')
+    pre_liquidated = _("pre liquidated")
 
 
 class Orientation(Choices):

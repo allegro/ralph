@@ -493,3 +493,20 @@ class ClusterTest(RalphTestCase):
 
     def test_masters(self):
         self.assertEqual(self.cluster_1.masters, [self.master])
+
+
+class TestDataCenterAssetStatuses(RalphTestCase):
+    def test_status_ids_are_consistent(self):
+        """
+        Tests that adding choice keeps ids the same (choices should be
+        appended)
+        """
+        statuses = DataCenterAssetStatus()
+        self.assertEqual(
+            statuses,
+            [
+                (1, 'new'), (2, 'in use'), (3, 'free'), (4, 'damaged'),
+                (5, 'liquidated'), (6, 'pre liquidated'), (7, 'to deploy'),
+                (8, 'cleaned')
+            ]
+        )
