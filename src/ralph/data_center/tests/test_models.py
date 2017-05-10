@@ -506,7 +506,7 @@ class TestDataCenterAssetStatuses(RalphTestCase):
             statuses,
             [
                 (1, 'new'), (2, 'in use'), (3, 'free'), (4, 'damaged'),
-                (5, 'liquidated'), (6, 'pre liquidated'), (7, 'to deploy'),
-                (8, 'cleaned')
+                (5, 'liquidated'), (6, 'to deploy'), (7, 'cleaned'),
+                (8, 'pre liquidated')
             ]
         )
