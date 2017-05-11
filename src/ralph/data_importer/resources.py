@@ -290,6 +290,14 @@ class DataCenterAssetResource(RalphModelResource):
     # no need for str field - management_ip will be exported as str
     management_ip._skip_str_field = True
 
+    def before_import_row(self, row, **kwargs):
+        self._management_ip = row['management_ip']
+        del row['management_ip']
+
+    def after_save_instance(self, instance, using_transactions, dry_run):
+        instance.management_ip = self._management_ip
+        instance.save()
+
     class Meta:
         model = physical.DataCenterAsset
         select_related = (
