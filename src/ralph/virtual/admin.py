@@ -222,7 +222,7 @@ class CloudHostAdmin(
                     'created', 'image_name', 'get_tags', 'scan_status']
     list_filter = [
         BaseObjectHostnameFilter, 'cloudprovider', 'service_env',
-        'cloudflavor', TagsListFilter,
+        'cloudflavor', TagsListFilter, 'hypervisor',
         'configuration_path__path',
         ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
         ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),  # noqa
