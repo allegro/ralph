@@ -70,22 +70,22 @@ after_success:
 before_deploy:
     - sudo add-apt-repository -y ppa:spotify-jyrki/dh-virtualenv
     - sudo apt-get update
-    - sudo apt-get install -y devscripts python-virtualenv git equivs dh-virtualenv libmysqlclient-dev python3-dev libffi-dev nodejs nodejs-legacy
+    - sudo apt-get install -y devscripts python-virtualenv git equivs dh-virtualenv libmysqlclient-dev python3-dev libffi-dev nodejs
     - make build-package
 
 deploy:
     -   provider: script
         script: scripts/travis_deploy_docker.sh
-        on:
-            branch: ng
-            python: 3.4
-            condition: $TRAVIS_EVENT_TYPE = cron && $TEST_DB_ENGINE = psql && $DJANGO_VERSION = $DJANGO_CURRENT_VERSION
+        # on:
+        #     branch: ng
+        #     python: 3.4
+        #     condition: $TRAVIS_EVENT_TYPE = cron && $TEST_DB_ENGINE = psql && $DJANGO_VERSION = $DJANGO_CURRENT_VERSION
     -   provider: script
         script: scripts/travis_deploy_bintray.sh
-        on:
-            branch: ng
-            python: 3.4
-            condition: $TRAVIS_EVENT_TYPE = cron && $TEST_DB_ENGINE = psql && $DJANGO_VERSION = $DJANGO_CURRENT_VERSION
+        # on:
+        #     branch: ng
+        #     python: 3.4
+        #     condition: $TRAVIS_EVENT_TYPE = cron && $TEST_DB_ENGINE = psql && $DJANGO_VERSION = $DJANGO_CURRENT_VERSION
 
 notifications:
   webhooks:
