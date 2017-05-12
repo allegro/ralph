@@ -40,7 +40,7 @@ def ratio_handler(queryset, series):
             When(Q(**{series[0]: False}), then=Value(0)),
             default=Value(0),
             output_field=IntegerField()
-        )) / Count(series[1]) * 100.0
+        )) * 100.0 / Count(series[1])
     )
 
 
