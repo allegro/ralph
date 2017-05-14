@@ -7,7 +7,7 @@ Standards-Version: 3.9.5
 
 Package: ralph-core
 Architecture: amd64
-Pre-Depends: dpkg (>= 1.16.1), python (>=3.4), ${misc:Pre-Depends}
+Pre-Depends: dpkg (>= 1.16.1), python3 (>=3.4), ${misc:Pre-Depends}
 Description: Ralph is an DCIM/CMDB - asset management for Data Centers/ Back Office.
 Homepage: http://ralph.allegrogroup.com
 Suggests: mysql-server, redis
