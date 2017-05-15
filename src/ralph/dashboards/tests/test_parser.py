@@ -7,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.test import SimpleTestCase, TestCase
 
+from ralph.assets.tests.factories import ServiceEnvironmentFactory
 from ralph.dashboards.filter_parser import FilterParser
 from ralph.dashboards.models import AggregateType, Graph
 from ralph.dashboards.tests.factories import GraphFactory
@@ -212,6 +213,38 @@ class LabelGroupingTest(TestCase):
 
         self.assertEqual(qs.get()['series'], len(expected))
         self.assertIn('year', qs.get())
+
+    def test_ratio_aggregation(self):
+        service_env = ServiceEnvironmentFactory(service__name='sample-service')
+        vulnerability = VulnerabilityFactory(
+            patch_deadline=datetime.date(2015, 1, 1)
+        )
+        for is_patched in [True, False]:
+            for _ in range(3):
+                dca = DataCenterAssetFactory(service_env=service_env)
+                if is_patched:
+                    ss = SecurityScanFactory(vulnerabilities=[])
+                else:
+                    ss = SecurityScanFactory(vulnerabilities=[vulnerability])
+                dca.securityscan = ss
+                ss.save()
+                dca.save()
+        graph = GraphFactory(
+            aggregate_type=AggregateType.aggregate_ratio.id,
+            params={
+                'series': ['securityscan__is_patched', 'id'],
+                'labels': 'service_env__service__name',
+                'filters': {
+                    'series__gt': 0,
+                }
+            }
+        )
+
+        qs = graph.build_queryset()
+        self.assertEqual(qs.get(), {
+            'series': 50,
+            'service_env__service__name': 'sample-service'
+        })
 
     def test_duplicates_works_when_used_in_series_value(self):
         SecurityScanFactory(
