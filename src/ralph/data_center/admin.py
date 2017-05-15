@@ -343,7 +343,7 @@ class DataCenterAssetAdmin(
         'status', 'barcode', 'sn', 'hostname', 'invoice_no', 'invoice_date',
         'order_no', 'model__name',
         ('model__category', RelatedAutocompleteFieldListFilter), 'service_env',
-        'configuration_path',
+        'configuration_path__path',
         ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
         MacAddressFilter,
         'depreciation_end_date', 'force_depreciation', 'remarks',
@@ -568,7 +568,8 @@ class DCHostAdmin(ScanStatusInChangeListMixin, RalphAdmin):
     list_filter = [
         DCHostHostnameFilter,
         'service_env',
-        'configuration_path',
+        'configuration_path__path',
+        ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
         ('content_type', DCHostTypeListFilter),
         MacAddressFilter,
         IPFilter,
