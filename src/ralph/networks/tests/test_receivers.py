@@ -43,5 +43,6 @@ class IPAddressReceiversTestCase(RalphTestCase):
             'new': {
                 'address': self.dc_asset_ip.address,
                 'hostname': 'myhost.mydc.net',
-            }
+            },
+            'service_uid': self.dc_asset_ip.ethernet.base_object.service.uid
         })
