@@ -167,7 +167,7 @@ class DNSaaS:
         elif response.status_code != 201:
             return response.json()
 
-    def create_dns_record(self, record):
+    def create_dns_record(self, record, service=None):
         """
         Create new DNS record.
 
@@ -199,6 +199,8 @@ class DNSaaS:
             'domain': domain,
             'owner': settings.DNSAAS_OWNER
         }
+        if service:
+            data['service_uid'] = service.uid
         return self._post(url, data)[1]
 
     def _post(self, url, data):
@@ -239,7 +241,7 @@ class DNSaaS:
         Send data about IP address and hostname.
 
         Args:
-            ip_record_data: dict contains keys: new, old, action
+            ip_record_data: dict contains keys: new, old, service_uid, action
                 Structure of parameter:
                 ``
                 {
@@ -251,6 +253,7 @@ class DNSaaS:
                         'address': 127.0.0.1,
                         'hostname': 'localhost'
                     },
+                    'service_uid': 'xxx-123',
                     'action': 'update'
                 }
                 ``

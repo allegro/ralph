@@ -343,7 +343,7 @@ class DataCenterAssetAdmin(
         'status', 'barcode', 'sn', 'hostname', 'invoice_no', 'invoice_date',
         'order_no', 'model__name',
         ('model__category', RelatedAutocompleteFieldListFilter), 'service_env',
-        'configuration_path',
+        'configuration_path__path',
         ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
         MacAddressFilter,
         'depreciation_end_date', 'force_depreciation', 'remarks',
@@ -356,6 +356,7 @@ class DataCenterAssetAdmin(
             'securityscan__vulnerabilities',
             filters.RelatedAutocompleteFieldListFilter
         ),
+        'securityscan__is_patched',
     ]
     date_hierarchy = 'created'
     list_select_related = [
@@ -511,7 +512,6 @@ class DatabaseAdmin(RalphAdmin):
 
 @register(VIP)
 class VIPAdmin(RalphAdmin):
-
     search_fields = ['name', 'ip__address']
     raw_id_fields = ['ip', 'service_env', 'parent', 'configuration_path']
     raw_id_override_parent = {'parent': Cluster}
@@ -544,6 +544,7 @@ class DCHostChangeList(ChangeList):
 
 @register(DCHost)
 class DCHostAdmin(ScanStatusInChangeListMixin, RalphAdmin):
+    change_list_template = 'admin/data_center/dchost/change_list.html'
     search_fields = [
         'remarks',
         'asset__hostname',
@@ -567,7 +568,8 @@ class DCHostAdmin(ScanStatusInChangeListMixin, RalphAdmin):
     list_filter = [
         DCHostHostnameFilter,
         'service_env',
-        'configuration_path',
+        'configuration_path__path',
+        ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
         ('content_type', DCHostTypeListFilter),
         MacAddressFilter,
         IPFilter,
@@ -576,6 +578,7 @@ class DCHostAdmin(ScanStatusInChangeListMixin, RalphAdmin):
             'securityscan__vulnerabilities',
             filters.RelatedAutocompleteFieldListFilter
         ),
+        'securityscan__is_patched',
     ]
     list_select_related = [
         'content_type',

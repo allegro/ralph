@@ -1,7 +1,7 @@
 from dj.choices import Choices
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models
-from django.db.models import Count, Max, Sum
+from django.db.models import Case, Count, IntegerField, Max, Q, Sum, Value, When
 from django_extensions.db.fields.json import JSONField
 
 from ralph.dashboards.filter_parser import FilterParser
@@ -25,11 +25,33 @@ class Dashboard(
     interval = models.PositiveSmallIntegerField(default=60)
 
 
+def ratio_handler(queryset, series):
+    if not isinstance(series, list):
+        raise ValueError('Ratio aggregation requires series to be list')
+    if len(series) != 2:
+        raise ValueError(
+            'Ratio aggregation requires series to be list of size 2'
+        )
+    # postgres does not support Sum with boolean field so we need to use
+    # Case-When with integer values here
+    return (
+        Sum(Case(
+            When(Q(**{series[0]: True}), then=Value(1)),
+            When(Q(**{series[0]: False}), then=Value(0)),
+            default=Value(0),
+            output_field=IntegerField()
+        )) * 100.0 / Count(series[1])
+    )
+
+
 class AggregateType(Choices):
     _ = Choices.Choice
     aggregate_count = _('Count').extra(aggregate_func=Count)
     aggregate_max = _('Max').extra(aggregate_func=Max)
     aggregate_sum = _('Sum').extra(aggregate_func=Sum)
+    aggregate_ratio = _('Ratio').extra(
+        aggregate_func=Count, handler=ratio_handler
+    )
 
 
 class ChartType(Choices):
@@ -38,6 +60,17 @@ class ChartType(Choices):
     vertical_bar = _('Verical Bar').extra(renderer=VerticalBar)
     horizontal_bar = _('Horizontal Bar').extra(renderer=HorizontalBar)
     pie_chart = _('Pie Chart').extra(renderer=PieChart)
+
+
+def _to_pair(text, sep):
+    split = text.split(sep)
+    if len(split) == 1:
+        orig_label, label = split[0], split[0]
+    elif len(split) == 2:
+        orig_label, label = split[0], split[1]
+    else:
+        raise ValueError("Only one group supported")
+    return orig_label, label
 
 
 class GroupingLabel:
@@ -51,14 +84,7 @@ class GroupingLabel:
         self.orig_label, self.label = self.parse(label_group)
 
     def parse(self, label_group):
-        split = label_group.split(self.sep)
-        if len(split) == 1:
-            orig_label, label = split[0], split[0]
-        elif len(split) == 2:
-            orig_label, label = split[0], split[1]
-        else:
-            raise ValueError("Only one group supported")
-        return orig_label, label
+        return _to_pair(label_group, self.sep)
 
     @property
     def has_group(self):
@@ -118,28 +144,59 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
             return queryset.order_by(order)
         return queryset
 
+    def _unpack_series(self, series):
+        if not isinstance(series, str):
+            raise ValueError('Series should be string')
+        series_field, fn = _to_pair(series, '|')
+        if (series_field != fn) and (fn != 'distinct'):
+            raise ValueError(
+                "Series supports Only `distinct` (you put '{}')".format(fn)  # noqa
+            )
+        if not series_field:
+            raise ValueError("Field `series` can't be empty")
+        return series_field, fn
+
+    def get_aggregation(self):
+        aggregate_type = AggregateType.from_id(self.aggregate_type)
+        aggregate_func = aggregate_type.aggregate_func
+        # aggregate choice might have defined custom handler
+        handler = getattr(
+            aggregate_type, 'handler', self._default_aggregation_handler
+        )
+        return handler(aggregate_func, self.params.get('series', ''))
+
+    def _default_aggregation_handler(self, aggregate_func, series):
+        series_field, fn_name = self._unpack_series(series)
+        aggregate_fn_kwargs = {}
+        if fn_name == "distinct":
+            if self.aggregate_type != AggregateType.aggregate_count.id:
+                raise ValueError(
+                    "{} can by only used with {}".format(
+                        AggregateType.from_id(self.aggregate_type).desc,
+                        fn_name,
+                    )
+                )
+
+            aggregate_fn_kwargs['distinct'] = True
+        return aggregate_func(series_field, **aggregate_fn_kwargs)
+
     def build_queryset(self):
         model = self.model.model_class()
         model_manager = model._default_manager
-
         queryset = model_manager.all()
 
         grouping_label = GroupingLabel(connection, self.params['labels'])
         queryset = grouping_label.apply_grouping(queryset)
-        queryset = self.apply_parital_filtering(queryset)
-
+        # pop filters which are applied on annotated queryset
         annotate_filters = self.pop_annotate_filters(
-            self.params.get('filters', None)
+            self.params.get('filters', {})
         )
-
-        aggregate_type = AggregateType.from_id(self.aggregate_type)
-        aggregate_func = aggregate_type.aggregate_func
+        queryset = self.apply_parital_filtering(queryset)
         queryset = queryset.values(
             grouping_label.label
         ).annotate(
-            series=aggregate_func(self.params['series'])
+            series=self.get_aggregation(),
         )
-
         if annotate_filters:
             queryset = queryset.filter(**annotate_filters)
 

@@ -101,6 +101,7 @@ class ServiceEnvironment(
     AutocompleteTooltipMixin,
     BaseObject
 ):
+    _allow_in_dashboard = True
     service = models.ForeignKey(Service)
     environment = models.ForeignKey(Environment)
 
@@ -133,6 +134,10 @@ class ServiceEnvironment(
         return cls._default_manager.filter(service__active=True)
 
 
+class ManufacturerKind(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
+    pass
+
+
 class Manufacturer(
     AdminAbsoluteUrlMixin,
     NamedMixin,
@@ -140,6 +145,12 @@ class Manufacturer(
     models.Model
 ):
     _allow_in_dashboard = True
+    manufacturer_kind = models.ForeignKey(
+        ManufacturerKind, verbose_name=_('manufacturer kind'),
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
 
 
 AssetModelMeta = type('AssetModelMeta', (CustomFieldMeta, PermissionsBase), {})

@@ -11,6 +11,7 @@ from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer import resources
+from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.supports.models import BaseObjectsSupport, Support, SupportType
 
 
@@ -34,6 +35,7 @@ class BaseObjectSupportView(RalphDetailViewAdmin):
 @register(Support)
 class SupportAdmin(
     AttachmentsMixin,
+    CustomFieldValueAdminMixin,
     BulkEditChangeListMixin,
     RalphAdmin
 ):
