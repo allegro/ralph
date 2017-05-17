@@ -85,6 +85,13 @@ class Command(BaseCommand):
             help="Extra parameter used to store node serial numbers in Ironic"
         )
 
+        parser.add_argument(
+            '--asset-serial-number-parameter',
+            type=str,
+            default='sn',
+            help="Parameter used to store asset serial numbers in Ralph"
+        )
+
     @staticmethod
     def _get_novaclient_connection(site):
         nt = novac.Client(
@@ -415,7 +422,7 @@ class Command(BaseCommand):
             try:
                 host = CloudHost.objects.get(host_id=node.instance_uuid)
                 asset = DataCenterAsset.objects.get(
-                    sn=node_sn
+                    **{self.ralph_serial_number_param: node_sn}
                 )
             except DataCenterAsset.DoesNotExist:
                 logger.warning(
@@ -757,6 +764,9 @@ class Command(BaseCommand):
         self.openstack_provider_name = options['provider']
         self.ironic_serial_number_param = options[
             'node_serial_number_parameter'
+        ]
+        self.ralph_serial_number_param = options[
+            'asset_serial_number_parameter'
         ]
         self.stdout.write("syncing...")
 
