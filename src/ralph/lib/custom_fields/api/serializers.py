@@ -57,9 +57,43 @@ class CustomFieldValueSerializerMixin(object):
         }
 
 
+from django.core import exceptions
+from rest_framework.exceptions import ValidationError
+class Xxx(serializers.PrimaryKeyRelatedField):
+    alt_lookup_field = None
+
+    def __init__(self, **kwargs):
+        self.alt_lookup_field = kwargs.pop('alt_lookup_field', None)
+        assert self.alt_lookup_field != None, "alt_lookup_field is required"
+        super().__init__(**kwargs)
+
+    def to_internal_value(self, data):
+        filters = {
+            self.alt_lookup_field: data
+        }
+        try:
+            print('data', data)
+            data = self.get_queryset().get(**filters).id
+        except exceptions.MultipleObjectsReturned as e:
+            msg = 'Multiple objects found for {}={}'.format(
+                self.alt_lookup_field, data
+            )
+            raise ValidationError(msg)
+        except exceptions.ObjectDoesNotExist as e:
+            msg = 'Can\'t find object with {}={}'.format(
+                self.alt_lookup_field, data
+            )
+            raise ValidationError(msg)
+        return super().to_internal_value(data)
+
+
 class CustomFieldValueSaveSerializer(
     CustomFieldValueSerializerMixin, RalphAPISaveSerializer
 ):
+    custom_field = Xxx(
+        queryset=CustomField.objects.all(), alt_lookup_field='attribute_name',
+    )
+
     def to_internal_value(self, data):
         result = super().to_internal_value(data)
         # rewrite content type id and object id (grabbed from url) to validated
