@@ -88,6 +88,7 @@ FACTORY_MAP = {
     'ralph.virtual.models.VirtualServer': 'ralph.virtual.tests.factories.VirtualServerFullFactory',  # noqa
     'ralph.virtual.models.VirtualServerType': 'ralph.virtual.tests.factories.VirtualServerTypeFactory',  # noqa
     'ralph.security.models.Vulnerability': 'ralph.security.tests.factories.VulnerabilityFactory',  # noqa
+    'ralph.security.models.SecurityScan': 'ralph.security.tests.factories.SecurityScanFactory',  # noqa
 }
 
 EXCLUDE_MODELS = [

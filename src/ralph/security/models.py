@@ -69,6 +69,7 @@ class Vulnerability(
 
 
 class SecurityScan(
+    AdminAbsoluteUrlMixin,
     PermByFieldMixin,
     TimeStampMixin,
     TaggableMixin,
@@ -99,3 +100,10 @@ class SecurityScan(
     def update_is_patched(self):
         """Updates `is_patched` field depending on vulnerabilities"""
         self.is_patched = not any_exceeded(self.vulnerabilities.all())
+
+    def __str__(self):
+        return "{} {} ({})".format(
+            self.last_scan_date.strftime('%Y-%m-%d'),
+            ScanStatus.from_id(self.scan_status).desc,
+            self.base_object.content_type,
+        )
