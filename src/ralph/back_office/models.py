@@ -642,4 +642,6 @@ class BackOfficeAsset(Regionalizable, Asset):
         cls, instances, request=None, **kwargs
     ):
         for instance in instances:
-            instance._try_assign_hostname(commit=False, force=False, request=request)
+            instance._try_assign_hostname(
+                commit=False, force=False, request=request
+            )
