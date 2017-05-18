@@ -638,6 +638,13 @@ class BackOfficeAsset(Regionalizable, Asset):
                 # RunTransitionView.get_success_url()
                 instances[i] = data_center_asset
 
+    @classmethod
+    @transition_action()
+    def assign_hostname(cls, instances, **kwargs):
+        print(instances)
+        for instance in instances:
+            instance._try_assign_hostname(commit=False)
+
 
 @receiver(pre_save, sender=BackOfficeAsset)
 def hostname_assigning(sender, instance, raw, using, **kwargs):

@@ -345,6 +345,31 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             request=self.request
         )
 
+    def test_assign_hostname(self):
+        self.bo_asset = BackOfficeAssetFactory(
+            model=self.model,
+            hostname='',
+            region=self.region_us,
+        )
+        _, transition, _ = self._create_transition(
+            model=self.bo_asset,
+            name='assign_hostname',
+            source=[BackOfficeAssetStatus.new.id],
+            target=BackOfficeAssetStatus.used.id,
+            actions=['assign_hostname']
+        )
+        self.assertFalse(self.bo_asset.hostname)
+
+        run_field_transition(
+            [self.bo_asset],
+            field='status',
+            transition_obj_or_name=transition,
+            data={},
+            request=self.request
+        )
+
+        self.assertTrue(self.bo_asset.hostname)
+
     def try_change_status_to_in_progress_during_transition(self):
         _, transition, _ = self._create_transition(
             model=self.bo_asset,
