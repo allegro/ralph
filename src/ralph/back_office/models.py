@@ -13,7 +13,6 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models, transaction
-from django.dispatch import receiver
 from django.forms import ValidationError
 from django.template import Context, Template
 from django.utils import timezone
@@ -639,6 +638,6 @@ class BackOfficeAsset(Regionalizable, Asset):
 
     @classmethod
     @transition_action()
-    def assign_hostname(cls, instances, **kwargs):
+    def assign_hostname(cls, instances, request=None, **kwargs):
         for instance in instances:
-            instance._try_assign_hostname(commit=False)
+            instance._try_assign_hostname(commit=False, force=False, request=request)
