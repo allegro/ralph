@@ -13,7 +13,6 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models, transaction
-from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.forms import ValidationError
 from django.template import Context, Template
@@ -642,32 +641,4 @@ class BackOfficeAsset(Regionalizable, Asset):
     @transition_action()
     def assign_hostname(cls, instances, **kwargs):
         for instance in instances:
-            instance._try_assign_hostname(commit=False)
-
-
-@receiver(pre_save, sender=BackOfficeAsset)
-def hostname_assigning(sender, instance, raw, using, **kwargs):
-    """Hostname is assigned for new assets with in_progress status or
-    edited assets when status has changed to in_progress.
-    """
-    if getattr(settings, 'BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME', None):
-        if instance.status == BackOfficeAssetStatus.in_progress:
-            if instance.pk:
-                try:
-                    bo_asset = BackOfficeAsset.objects.get(pk=instance.pk)
-                except BackOfficeAsset.DoesNotExist:
-                    # Can not assign a new hostname, because there are
-                    # not yet saved the object.
-                    logger.info(
-                        'Back office asset does not exists for pk: {}'.format(
-                            instance.pk
-                        )
-                    )
-                    return
-                if bo_asset.status == BackOfficeAssetStatus.in_progress:
-                    return
-            logger.info((
-                'Status of {} changed to in_progress. Trying to assign new '
-                'hostname'
-            ).format(instance))
             instance._try_assign_hostname(commit=False)
