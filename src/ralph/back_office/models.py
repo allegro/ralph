@@ -641,7 +641,6 @@ class BackOfficeAsset(Regionalizable, Asset):
     @classmethod
     @transition_action()
     def assign_hostname(cls, instances, **kwargs):
-        print(instances)
         for instance in instances:
             instance._try_assign_hostname(commit=False)
 
