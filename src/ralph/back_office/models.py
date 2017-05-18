@@ -638,6 +638,8 @@ class BackOfficeAsset(Regionalizable, Asset):
 
     @classmethod
     @transition_action()
-    def assign_hostname(cls, instances, request=None, **kwargs):
+    def assign_hostname_if_empty_or_country_not_match(
+        cls, instances, request=None, **kwargs
+    ):
         for instance in instances:
             instance._try_assign_hostname(commit=False, force=False, request=request)

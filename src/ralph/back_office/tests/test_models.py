@@ -354,10 +354,10 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
         )
         _, transition, _ = self._create_transition(
             model=self.bo_asset,
-            name='assign_hostname',
+            name='assign_hostname_if_empty_or_country_not_match',
             source=[BackOfficeAssetStatus.new.id],
             target=BackOfficeAssetStatus.used.id,
-            actions=['assign_hostname']
+            actions=['assign_hostname_if_empty_or_country_not_match']
         )
         self.assertEquals(self.bo_asset.hostname, hostname)
 
@@ -381,10 +381,10 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
         )
         _, transition, _ = self._create_transition(
             model=self.bo_asset,
-            name='assign_hostname',
+            name='assign_hostname_if_empty_or_country_not_match',
             source=[BackOfficeAssetStatus.new.id],
             target=BackOfficeAssetStatus.used.id,
-            actions=['assign_hostname']
+            actions=['assign_hostname_if_empty_or_country_not_match']
         )
         self.assertEquals(self.bo_asset.hostname, hostname)
 
