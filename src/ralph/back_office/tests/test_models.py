@@ -217,14 +217,6 @@ class TestBackOfficeAsset(RalphTestCase):
         bo_asset_2._try_assign_hostname(commit=True)
         self.assertEqual(bo_asset_2.hostname, 'abcd')
 
-    def test_try_assign_hostname_when_status_in_progress(self):
-        self.bo_asset.status = BackOfficeAssetStatus.new
-        self.bo_asset.save()
-
-        self.bo_asset.status = BackOfficeAssetStatus.in_progress
-        self.bo_asset.save()
-        self.assertEqual(self.bo_asset.hostname, 'POLPC01001')
-
     def test_get_autocomplete_queryset(self):
         queryset = BackOfficeAsset.get_autocomplete_queryset()
         self.assertEquals(1, queryset.count())
