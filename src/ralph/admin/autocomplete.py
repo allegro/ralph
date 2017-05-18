@@ -268,4 +268,5 @@ class AutocompleteList(SuggestView):
                 queryset = self.model._get_objects_for_user(
                     user, queryset
                 )
+        queryset = queryset.distinct()
         return queryset[:self.limit]
