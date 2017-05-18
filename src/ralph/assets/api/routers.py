@@ -13,6 +13,7 @@ from ralph.assets.api.views import (
     EnvironmentViewSet,
     EthernetViewSet,
     FibreChannelCardViewSet,
+    ManufacturerKindViewSet,
     ManufacturerViewSet,
     MemoryViewSet,
     ProcessorViewSet,
@@ -35,6 +36,7 @@ router.register(r'fibre-channel-cards', FibreChannelCardViewSet)
 router.register(r'ethernets', EthernetViewSet)
 router.register(r'memory', MemoryViewSet)
 router.register(r'manufacturers', ManufacturerViewSet)
+router.register(r'manufacturer-kind', ManufacturerKindViewSet)
 router.register(r'processors', ProcessorViewSet)
 router.register(r'profit-centers', ProfitCenterViewSet)
 router.register(r'services-environments', ServiceEnvironmentViewSet)
