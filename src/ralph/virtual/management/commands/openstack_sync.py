@@ -449,7 +449,7 @@ class Command(BaseCommand):
             except KeyError:
                 logger.warning(
                     'Could not get serial number of the Ironic node {} using '
-                    'using {} extra parameter. Please check the configuration '
+                    '{} extra parameter. Please check the configuration '
                     'of the node and submit a proper extra parameter or match '
                     'the node manually.'.format(
                         node.uuid, self.ironic_serial_number_param
