@@ -71,6 +71,7 @@ class TestOpenstackSync(RalphTestCase):
         self.cmd.openstack_flavors = OPENSTACK_FLAVOR
         self.cmd._get_ralph_data()
         self.cmd.ironic_serial_number_param = 'serial_number'
+        self.cmd.ralph_serial_number_param = 'sn'
 
     def test_check_get_ralph_data(self):
         ralph = self.cmd.ralph_projects
