@@ -68,22 +68,24 @@ class Xxx(serializers.PrimaryKeyRelatedField):
         super().__init__(**kwargs)
 
     def to_internal_value(self, data):
-        filters = {
-            self.alt_lookup_field: data
-        }
         try:
-            print('data', data)
-            data = self.get_queryset().get(**filters).id
-        except exceptions.MultipleObjectsReturned as e:
-            msg = 'Multiple objects found for {}={}'.format(
-                self.alt_lookup_field, data
-            )
-            raise ValidationError(msg)
-        except exceptions.ObjectDoesNotExist as e:
-            msg = 'Can\'t find object with {}={}'.format(
-                self.alt_lookup_field, data
-            )
-            raise ValidationError(msg)
+            data = int(data)
+        except ValueError:
+            filters = {
+                self.alt_lookup_field: data
+            }
+            try:
+                data = self.get_queryset().get(**filters).id
+            except exceptions.MultipleObjectsReturned as e:
+                msg = 'Multiple objects found for {}={}'.format(
+                    self.alt_lookup_field, data
+                )
+                raise ValidationError(msg)
+            except exceptions.ObjectDoesNotExist as e:
+                msg = 'Can\'t find object with {}={}'.format(
+                    self.alt_lookup_field, data
+                )
+                raise ValidationError(msg)
         return super().to_internal_value(data)
 
 
