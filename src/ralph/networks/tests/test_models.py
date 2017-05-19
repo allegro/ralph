@@ -341,7 +341,7 @@ class NetworkEnvironmentTest(RalphTestCase):
         self.assertEqual(ne.issue_next_free_hostname(), 's12300005.dc.local')
         self.assertEqual(ne3.issue_next_free_hostname(), 's100001.dc.local')
 
-    def test_issue_next_hostname_hostname_taken(self):
+    def test_issue_next_hostname_when_a_few_next_hostnames_are_taken(self):
         hostname_model_factories = [
                 ClusterFactory,
                 DataCenterAssetFactory,
@@ -387,7 +387,7 @@ class NetworkEnvironmentTest(RalphTestCase):
         self.assertEqual(ne.next_free_hostname, 's12300001.dc.local')
         self.assertEqual(ne.next_free_hostname, 's12300001.dc.local')
 
-    def test_get_next_hostname_conciders_other_models(self):
+    def test_get_next_hostname_considers_other_models(self):
         hostname_model_factories = [
                 ClusterFactory,
                 DataCenterAssetFactory,
