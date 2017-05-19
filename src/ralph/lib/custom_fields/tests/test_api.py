@@ -204,9 +204,8 @@ class CustomFieldsAPITests(APITestCase):
         self.assertEqual(cfv.custom_field, self.custom_field_choices)
         self.assertEqual(cfv.value, 'qwerty')
 
-
-    #TODO::
     def test_add_new_customfield_value_by_attribute_name(self):
+        expected = 'new-value'
         cf = CustomField.objects.create(
             name='by-attr', type=CustomFieldTypes.STRING, default_value='v'
         )
@@ -214,19 +213,14 @@ class CustomFieldsAPITests(APITestCase):
         print(url, cf.attribute_name)
         data = {
             'custom_field': cf.attribute_name,
-            #'custom_field': cf.id,
-            'value': 'new-value',
+            'value': expected,
         }
 
         response = self.client.post(url, data=data, format='json')
-        print(response.content)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        #cfv = CustomFieldValue.objects.get(pk=response.data['id'])
-        #self.assertEqual(cfv.object, self.sm1)
-        #self.assertEqual(cfv.custom_field, self.custom_field_choices)
-        #self.assertEqual(cfv.value, 'qwerty')
-
+        cfv = CustomFieldValue.objects.get(pk=response.data['id'])
+        self.assertEqual(cfv.value, expected)
 
     def test_add_new_customfield_value_with_duplicated_customfield_should_not_pass(self):  # noqa
         url = reverse(self.list_view_name, args=(self.sm1.id,))
