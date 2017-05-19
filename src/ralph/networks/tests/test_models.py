@@ -1,5 +1,4 @@
 from ipaddress import ip_address, ip_network
-
 from unittest.mock import patch
 
 from ddt import data, ddt, unpack
@@ -10,7 +9,10 @@ from django.test import override_settings, RequestFactory
 from ralph.admin.helpers import CastToInteger
 from ralph.assets.models import AssetLastHostname
 from ralph.assets.tests.factories import EthernetFactory
-from ralph.data_center.tests.factories import DataCenterAssetFactory
+from ralph.data_center.tests.factories import (
+    ClusterFactory,
+    DataCenterAssetFactory
+)
 from ralph.networks.admin import NetworkAdmin
 from ralph.networks.filters import NetworkClassFilter
 from ralph.networks.models.choices import IPAddressStatus
@@ -339,6 +341,28 @@ class NetworkEnvironmentTest(RalphTestCase):
         self.assertEqual(ne.issue_next_free_hostname(), 's12300005.dc.local')
         self.assertEqual(ne3.issue_next_free_hostname(), 's100001.dc.local')
 
+    def test_issue_next_hostname_hostname_taken(self):
+        hostname_model_factories = [
+                ClusterFactory,
+                DataCenterAssetFactory,
+                IPAddressFactory,
+                VirtualServerFactory,
+        ]
+
+        for i, model_factory in enumerate(hostname_model_factories):
+            model_factory(hostname='s1230000{}.dc.local'.format(i))
+
+        ne = NetworkEnvironmentFactory(
+            hostname_template_prefix='s123',
+            hostname_template_postfix='.dc.local',
+            hostname_template_counter_length=5,
+        )
+
+        self.assertEqual(
+            ne.issue_next_free_hostname(),
+            's1230000{}.dc.local'.format(len(hostname_model_factories))
+        )
+
     def test_issue_next_hostname_overflow(self):
         alhg = AssetLastHostname.objects.create(
             prefix='s123',
@@ -362,6 +386,31 @@ class NetworkEnvironmentTest(RalphTestCase):
         # check if hostname is not increased
         self.assertEqual(ne.next_free_hostname, 's12300001.dc.local')
         self.assertEqual(ne.next_free_hostname, 's12300001.dc.local')
+
+    def test_get_next_hostname_conciders_other_models(self):
+        hostname_model_factories = [
+                ClusterFactory,
+                DataCenterAssetFactory,
+                IPAddressFactory,
+                VirtualServerFactory,
+        ]
+
+        for i, model_factory in enumerate(hostname_model_factories):
+            model_factory(hostname='s1230000{}.dc.local'.format(i))
+
+        ne = NetworkEnvironmentFactory(
+            hostname_template_prefix='s123',
+            hostname_template_postfix='.dc.local',
+            hostname_template_counter_length=5,
+        )
+
+        expected_hostname = 's1230000{}.dc.local'.format(
+            len(hostname_model_factories)
+        )
+
+        # check if hostname is not increased
+        self.assertEqual(ne.next_free_hostname, expected_hostname)
+        self.assertEqual(ne.next_free_hostname, expected_hostname)
 
     def test_next_hostname_without_counter(self):
         prefix = 'test.'
