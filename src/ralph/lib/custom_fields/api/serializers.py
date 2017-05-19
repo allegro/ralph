@@ -4,7 +4,7 @@ from rest_framework import serializers
 from ralph.api.serializers import (
     AdditionalLookupRelatedField,
     RalphAPISaveSerializer,
-    RalphAPISerializer,
+    RalphAPISerializer
 )
 
 from ..models import CustomField, CustomFieldValue
