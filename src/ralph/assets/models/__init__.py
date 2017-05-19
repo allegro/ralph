@@ -8,6 +8,7 @@ from ralph.assets.models.assets import (
     Category,
     Environment,
     Manufacturer,
+    ManufacturerKind,
     ProfitCenter,
     Service,
     ServiceEnvironment
@@ -56,6 +57,7 @@ __all__ = [
     'FibreChannelCard',
     'GenericComponent',
     'Manufacturer',
+    'ManufacturerKind',
     'Memory',
     'ModelVisualizationLayout',
     'ObjectModelType',

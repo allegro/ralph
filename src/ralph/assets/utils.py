@@ -20,14 +20,18 @@ class DNSaaSPublisherMixin:
             )
             if not purpose or not content:
                 continue
-            data.append({
+            update_def = {
                 'ips': [
                     ip.address for ip in self.ipaddresses if
                     not ip.is_management
                 ],
                 'purpose': purpose,
                 'content': content,
-            })
+            }
+            service = self.service
+            if service:
+                update_def['service_uid'] = service.uid
+            data.append(update_def)
         return data
 
 

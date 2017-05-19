@@ -217,14 +217,6 @@ class TestBackOfficeAsset(RalphTestCase):
         bo_asset_2._try_assign_hostname(commit=True)
         self.assertEqual(bo_asset_2.hostname, 'abcd')
 
-    def test_try_assign_hostname_when_status_in_progress(self):
-        self.bo_asset.status = BackOfficeAssetStatus.new
-        self.bo_asset.save()
-
-        self.bo_asset.status = BackOfficeAssetStatus.in_progress
-        self.bo_asset.save()
-        self.assertEqual(self.bo_asset.hostname, 'POLPC01001')
-
     def test_get_autocomplete_queryset(self):
         queryset = BackOfficeAsset.get_autocomplete_queryset()
         self.assertEquals(1, queryset.count())
@@ -344,6 +336,59 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             data={'assign_owner__owner': self.user_pl.id},
             request=self.request
         )
+
+    def test_assign_hostname_assigns_hostname_when_its_empty(self):
+        hostname = ''
+        self.bo_asset = BackOfficeAssetFactory(
+            model=self.model,
+            hostname=hostname,
+            region=self.region_us,
+        )
+        _, transition, _ = self._create_transition(
+            model=self.bo_asset,
+            name='assign_hostname_if_empty_or_country_not_match',
+            source=[BackOfficeAssetStatus.new.id],
+            target=BackOfficeAssetStatus.used.id,
+            actions=['assign_hostname_if_empty_or_country_not_match']
+        )
+        self.assertEquals(self.bo_asset.hostname, hostname)
+
+        run_field_transition(
+            [self.bo_asset],
+            field='status',
+            transition_obj_or_name=transition,
+            data={},
+            request=self.request
+        )
+
+        self.assertNotEquals(self.bo_asset.hostname, hostname)
+
+    def test_assign_hostname_skips_hostname_when_its_already_set(self):
+        # hostname must include country-code to be skipped during assigning
+        hostname = 'the-same-hostname-across-transitions-{}'.format('USA')
+        self.bo_asset = BackOfficeAssetFactory(
+            model=self.model,
+            hostname=hostname,
+            region=self.region_us,
+        )
+        _, transition, _ = self._create_transition(
+            model=self.bo_asset,
+            name='assign_hostname_if_empty_or_country_not_match',
+            source=[BackOfficeAssetStatus.new.id],
+            target=BackOfficeAssetStatus.used.id,
+            actions=['assign_hostname_if_empty_or_country_not_match']
+        )
+        self.assertEquals(self.bo_asset.hostname, hostname)
+
+        run_field_transition(
+            [self.bo_asset],
+            field='status',
+            transition_obj_or_name=transition,
+            data={},
+            request=self.request
+        )
+
+        self.assertEquals(self.bo_asset.hostname, hostname)
 
     def try_change_status_to_in_progress_during_transition(self):
         _, transition, _ = self._create_transition(
