@@ -27,6 +27,7 @@ from ralph.lib.mixins.models import (
 from ralph.networks.fields import IPNetwork
 from ralph.networks.models.choices import IPAddressStatus
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -107,29 +108,55 @@ class NetworkEnvironment(
         ordering = ('name',)
 
     @property
+    def HOSTNAME_MODELS(self):
+        from ralph.data_center.models.virtual import Cluster
+        from ralph.data_center.models.physical import DataCenterAsset
+        from ralph.virtual.models import VirtualServer
+
+        return (DataCenterAsset, VirtualServer, Cluster, IPAddress)
+
+    @property
     def next_free_hostname(self):
         """
         Retrieve next free hostname
         """
         if self.use_hostname_counter:
-            result = AssetLastHostname.get_next_free_hostname(
-                self.hostname_template_prefix,
-                self.hostname_template_postfix,
-                self.hostname_template_counter_length
+            return AssetLastHostname.get_next_free_hostname(
+                    self.hostname_template_prefix,
+                    self.hostname_template_postfix,
+                    self.hostname_template_counter_length,
+                    self.check_hostname_is_available
             )
         else:
             result = self.next_hostname_without_model_counter()
         return result
+
+    def check_hostname_is_available(self, hostname):
+
+        if not hostname:
+            return False
+
+        for model_class in self.HOSTNAME_MODELS:
+            if model_class.objects.filter(hostname=hostname).exists():
+                return False
+
+        return True
 
     def issue_next_free_hostname(self):
         """
         Retrieve and reserve next free hostname
         """
         if self.use_hostname_counter:
-            return AssetLastHostname.increment_hostname(
-                self.hostname_template_prefix,
-                self.hostname_template_postfix,
-            ).formatted_hostname(self.hostname_template_counter_length)
+            hostname = None
+
+            while not self.check_hostname_is_available(hostname):
+                hostname = AssetLastHostname.increment_hostname(
+                    self.hostname_template_prefix,
+                    self.hostname_template_postfix,
+                ).formatted_hostname(self.hostname_template_counter_length)
+
+            return hostname
+
         return self.next_hostname_without_model_counter()
 
     def current_counter_without_model(self):
@@ -139,13 +166,8 @@ class NetworkEnvironment(
         Returns:
             counter int
         """
-        from ralph.data_center.models.physical import DataCenterAsset
-        from ralph.data_center.models.virtual import Cluster
-        from ralph.virtual.models import VirtualServer
-
-        hostname_models = [DataCenterAsset, VirtualServer, Cluster, IPAddress]
         hostnames = []
-        for model_class in hostname_models:
+        for model_class in self.HOSTNAME_MODELS:
             item = model_class.objects.filter(
                 hostname__startswith=self.hostname_template_prefix,
                 hostname__endswith=self.hostname_template_postfix
