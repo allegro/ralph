@@ -210,7 +210,6 @@ class CustomFieldsAPITests(APITestCase):
             name='by-attr', type=CustomFieldTypes.STRING, default_value='v'
         )
         url = reverse(self.list_view_name, args=(self.sm1.id,))
-        print(url, cf.attribute_name)
         data = {
             'custom_field': cf.attribute_name,
             'value': expected,
