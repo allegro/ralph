@@ -1,7 +1,11 @@
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
-from ralph.api.serializers import RalphAPISaveSerializer, RalphAPISerializer
+from ralph.api.serializers import (
+    AdditionalLookupRelatedField,
+    RalphAPISaveSerializer,
+    RalphAPISerializer
+)
 
 from ..models import CustomField, CustomFieldValue
 from .fields import CustomFieldValueHyperlinkedIdentityField
@@ -60,6 +64,11 @@ class CustomFieldValueSerializerMixin(object):
 class CustomFieldValueSaveSerializer(
     CustomFieldValueSerializerMixin, RalphAPISaveSerializer
 ):
+
+    custom_field = AdditionalLookupRelatedField(
+        queryset=CustomField.objects.all(), lookup_fields=['attribute_name'],
+    )
+
     def to_internal_value(self, data):
         result = super().to_internal_value(data)
         # rewrite content type id and object id (grabbed from url) to validated
