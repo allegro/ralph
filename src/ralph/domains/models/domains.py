@@ -49,7 +49,7 @@ class DomainType(Choices):
 
     business = _('Business')
     business_security = _('Business security')
-    technical = _('technical')
+    technical = _('Technical')
 
 
 class DomainCategory(

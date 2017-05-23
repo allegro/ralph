@@ -173,8 +173,8 @@ sitetrees = [
                 section(_('Contracts'), 'domains', 'DomainContract'),
                 section(_('Registrants'), 'domains', 'DomainRegistrant'),
                 section(_('Owners'), 'accounts', 'RalphUser'),
-                section(_('DNS Provider'), 'domains', 'DNSProvider'),
-                section(_('Domain Category'), 'domains', 'DomainCategory'),
+                section(_('DNS Providers'), 'domains', 'DNSProvider'),
+                section(_('Domain Categories'), 'domains', 'DomainCategory'),
             ]
         ),
         ralph_item(
