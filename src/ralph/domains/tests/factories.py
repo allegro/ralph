@@ -5,7 +5,9 @@ from factory.django import DjangoModelFactory
 from ralph.accounts.tests.factories import UserFactory
 from ralph.assets.tests.factories import ServiceEnvironmentFactory
 from ralph.domains.models import (
+    DNSProvider,
     Domain,
+    DomainCategory,
     DomainContract,
     DomainRegistrant,
     DomainStatus
@@ -22,6 +24,20 @@ class DomainFactory(DjangoModelFactory):
 
     class Meta:
         model = Domain
+
+
+class DNSProviderFactory(DjangoModelFactory):
+    name = factory.Sequence(lambda n: 'dns-provider{}'.format(n))
+
+    class Meta:
+        model = DNSProvider
+
+
+class DomainCategoryFactory(DjangoModelFactory):
+    name = factory.Sequence(lambda n: 'domain-contract{}'.format(n))
+
+    class Meta:
+        model = DomainCategory
 
 
 class DomainContractFactory(DjangoModelFactory):
