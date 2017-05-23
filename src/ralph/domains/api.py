@@ -2,11 +2,7 @@
 from ralph.accounts.api import RalphUserSimpleSerializer
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.assets.api.serializers import BaseObjectSerializer
-from ralph.domains.models import (
-    DNSProvider,
-    Domain,
-    DomainCategory,
-)
+from ralph.domains.models import DNSProvider, Domain, DomainCategory
 
 
 class DomainSerializer(BaseObjectSerializer):
