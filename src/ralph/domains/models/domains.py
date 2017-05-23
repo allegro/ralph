@@ -47,7 +47,6 @@ class WebsiteType(Choices):
 class DomainType(Choices):
     _ = Choices.Choice
 
-    none = _('None')
     business = _('Business')
     business_security = _('Business security')
     technical = _('technical')
