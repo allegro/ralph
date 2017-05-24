@@ -108,8 +108,8 @@ class BackOfficeAssetAdmin(
         'user', 'owner', 'user__segment', 'user__company', 'user__department',
         'user__employee_id', 'property_of', 'invoice_no', 'invoice_date',
         'order_no', 'provider', 'budget_info', 'depreciation_rate',
-        'depreciation_end_date',
-        'force_depreciation', LiquidatedStatusFilter, TagsListFilter
+        'depreciation_end_date', 'force_depreciation', LiquidatedStatusFilter,
+        TagsListFilter
     ]
     date_hierarchy = 'created'
     list_select_related = [
