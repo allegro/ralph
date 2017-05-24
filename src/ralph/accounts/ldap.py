@@ -21,11 +21,15 @@ LDAPSettings.defaults['GROUP_MAPPING'] = {}
 
 @receiver(populate_user)
 def staff_superuser_populate(sender, user, ldap_user, **kwargs):
-    user.is_superuser = 'superuser' in ldap_user.group_names
+    user.is_superuser = True if 'superuser' in ldap_user.group_names \
+        else user.is_superuser
+
     # only staff users will have access to ralph now,
     # because ralph using django admin panel
-    user.is_staff = 'active' in ldap_user.group_names
-    user.is_active = 'active' in ldap_user.group_names
+    user.is_staff = True if 'active' in ldap_user.group_names \
+        else user.is_staff
+    user.is_active = True if 'active' in ldap_user.group_names \
+        else user.is_active
 
 
 def mirror_groups(self):
