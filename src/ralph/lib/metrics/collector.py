@@ -36,7 +36,7 @@ if statsd is None:
                 'collected'
             )
 
-        def timing(self, *args, **kwargs):
+        def timer(self, *args, **kwargs):
             return TimerMock()
 
         def _mock(self, *args, **kwargs):
