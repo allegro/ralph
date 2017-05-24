@@ -528,9 +528,3 @@ RALPH_HOST_URL = os.environ.get('RALPH_HOST_URL', None)
 
 # METRICS
 COLLECT_METRICS = False
-
-
-# overwrite this function to use metrics reporter in RQ worker
-# it should return instance of `metrology.reporter.base.Reporter`
-def GET_REPORTER():
-    pass
