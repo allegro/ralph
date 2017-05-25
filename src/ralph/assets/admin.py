@@ -206,7 +206,10 @@ class ManufacturerKindAdmin(RalphAdmin):
 @register(Manufacturer)
 class ManufacturerAdmin(RalphAdmin):
 
-    search_fields = ['name']
+    search_fields = ['name', ]
+    list_filter = [
+        'manufacturer_kind',
+    ]
 
 
 @register(BudgetInfo)
