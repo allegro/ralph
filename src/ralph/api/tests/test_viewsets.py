@@ -81,9 +81,8 @@ class TestRalphViewset(RalphTestCase):
 
     def test_options_filtering(self):
         response = self.client.options('/api/manufacturers/')
-        self.assertEqual(
-            set(response.data['filtering']),
-            set(['name', 'manufacturer_kind']),
+        self.assertCountEqual(
+            response.data['filtering'], ['name', 'manufacturer_kind'],
         )
 
 
