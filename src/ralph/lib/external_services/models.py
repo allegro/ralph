@@ -14,7 +14,7 @@ from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields.json import JSONField
 
 from ralph.lib.external_services.base import InternalService
-from ralph.lib.metrics import mark
+from ralph.lib.metrics import statsd
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import TimeStampMixin
 
@@ -65,7 +65,7 @@ def collect_metrics(action):
                 job_name=job._get_metric_name(),
                 action=action
             )
-            mark(metric_name)
+            statsd.incr(metric_name)
             return func(job, *args, **kwargs)
         return wrapped
     return wrapper
