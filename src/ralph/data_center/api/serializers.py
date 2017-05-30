@@ -2,6 +2,7 @@
 from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer
+from ralph.api.serializers import RalphAPISaveSerializer
 from ralph.assets.api.serializers import (
     AssetSerializer,
     BaseObjectSerializer,
@@ -116,11 +117,22 @@ class DataCenterAssetSimpleSerializer(RalphAPISerializer):
 
 
 class DataCenterAssetSerializer(ComponentSerializerMixin, AssetSerializer):
-    rack = SimpleRackSerializer()
+    rack = SimpleRackSerializer(required=True, allow_null=False)
 
     class Meta(AssetSerializer.Meta):
         model = DataCenterAsset
         depth = 2
+
+
+class DataCenterAssetSaveSerializer(RalphAPISaveSerializer):
+    rack = serializers.PrimaryKeyRelatedField(
+        allow_null=False,
+        required=True,
+        queryset=Rack.objects.all()
+    )
+
+    class Meta(object):
+        model = DataCenterAsset
 
 
 class DatabaseSerializer(BaseObjectSerializer):

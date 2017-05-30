@@ -104,6 +104,39 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         self.assertEqual(dc_asset.service_env, self.service_env)
         self.assertEqual(dc_asset.rack, self.rack)
 
+    def test_create_data_center_asset_without_rack(self):
+        url = reverse('datacenterasset-list')
+        data = {
+            'hostname': '12345',
+            'barcode': '12345',
+            'model': self.model.id,
+            'position': 12,
+            'service_env': self.service_env.id,
+            'force_depreciation': False,
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {
+            'rack': ['This field is required.'],
+        })
+
+    def test_create_data_center_asset_with_rack_null(self):
+        url = reverse('datacenterasset-list')
+        data = {
+            'hostname': '12345',
+            'barcode': '12345',
+            'rack': None,
+            'model': self.model.id,
+            'position': 12,
+            'service_env': self.service_env.id,
+            'force_depreciation': False,
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {
+            'rack': ['This field may not be null.'],
+        })
+
     def test_create_data_center_with_tags(self):
         url = reverse('datacenterasset-list')
         data = {
