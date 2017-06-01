@@ -44,6 +44,34 @@ class WebsiteType(Choices):
     direct = _('Direct')
 
 
+class DomainType(Choices):
+    _ = Choices.Choice
+
+    business = _('Business')
+    business_security = _('Business security')
+    technical = _('Technical')
+
+
+class DomainCategory(
+    AdminAbsoluteUrlMixin,
+    PermByFieldMixin,
+    NamedMixin,
+    TimeStampMixin,
+    models.Model,
+):
+    pass
+
+
+class DNSProvider(
+    AdminAbsoluteUrlMixin,
+    PermByFieldMixin,
+    NamedMixin,
+    TimeStampMixin,
+    models.Model,
+):
+    pass
+
+
 class Domain(AdminAbsoluteUrlMixin, BaseObject):
     name = models.CharField(
         verbose_name=_('domain name'),
@@ -79,6 +107,10 @@ class Domain(AdminAbsoluteUrlMixin, BaseObject):
         null=True,
         help_text=_("Company which receives invoice for the domain")
     )
+    domain_type = models.PositiveIntegerField(
+        default=DomainType.business.id,
+        choices=DomainType(),
+    )
     website_type = models.PositiveIntegerField(
         default=WebsiteType.direct.id,
         choices=WebsiteType(),
@@ -87,6 +119,13 @@ class Domain(AdminAbsoluteUrlMixin, BaseObject):
     website_url = models.URLField(
         max_length=255, blank=True, null=True,
         help_text=_("Website url which website type refers to.")
+    )
+    domain_category = models.ForeignKey(
+        DomainCategory, blank=True, null=True,
+    )
+    dns_provider = models.ForeignKey(
+        DNSProvider, blank=True, null=True,
+        help_text=_("Provider which keeps domain's DNS")
     )
 
     def __str__(self):

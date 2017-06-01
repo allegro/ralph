@@ -1,7 +1,7 @@
-from .reporter import MetricsReporter
+from .collector import statsd
 from .utils import mark
 
 __all__ = [
     'mark',
-    'MetricsReporter',
+    'statsd',
 ]

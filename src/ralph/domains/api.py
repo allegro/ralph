@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from ralph.accounts.api import RalphUserSimpleSerializer
-from ralph.api import RalphAPIViewSet, router
+from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.assets.api.serializers import BaseObjectSerializer
-from ralph.domains.models import Domain
+from ralph.domains.models import DNSProvider, Domain, DomainCategory
 
 
 class DomainSerializer(BaseObjectSerializer):
@@ -23,5 +23,28 @@ class DomainViewSet(RalphAPIViewSet):
     ]
     prefetch_related = ['tags']
 
+
+class DNSProviderSerializer(RalphAPISerializer):
+    class Meta:
+        model = DNSProvider
+
+
+class DNSProviderViewSet(RalphAPIViewSet):
+    queryset = DNSProvider.objects.all()
+    serializer_class = DNSProviderSerializer
+
+
+class DomainCategorySerializer(RalphAPISerializer):
+    class Meta:
+        model = DomainCategory
+
+
+class DomainCategoryViewSet(RalphAPIViewSet):
+    queryset = DomainCategory.objects.all()
+    serializer_class = DomainCategorySerializer
+
+
 router.register(r'domains', DomainViewSet)
+router.register(r'dns-provider', DNSProviderViewSet)
+router.register(r'domain-category', DomainCategoryViewSet)
 urlpatterns = []

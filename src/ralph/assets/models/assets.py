@@ -315,15 +315,23 @@ class AssetLastHostname(models.Model):
             return obj
 
     @classmethod
-    def get_next_free_hostname(cls, prefix, postfix, fill=5):
+    def get_next_free_hostname(
+        cls, prefix, postfix, fill=5, availability_checker=None, _counter=1
+    ):
         try:
             last_hostname = cls.objects.get(prefix=prefix, postfix=postfix)
-            # last used hostname is stored in DB so we need to increment it by
-            # one
-            last_hostname.counter += 1
         except cls.DoesNotExist:
-            last_hostname = cls(prefix=prefix, postfix=postfix)
-        return last_hostname.formatted_hostname(fill=fill)
+            last_hostname = cls(prefix=prefix, postfix=postfix, counter=0)
+
+        last_hostname.counter += _counter
+        hostname = last_hostname.formatted_hostname(fill=fill)
+
+        if availability_checker is None or availability_checker(hostname):
+            return hostname
+        else:
+            return cls.get_next_free_hostname(
+                prefix, postfix, fill, availability_checker, _counter + 1
+            )
 
     def __str__(self):
         return self.formatted_hostname()

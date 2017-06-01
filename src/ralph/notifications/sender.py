@@ -5,13 +5,14 @@ from urllib.parse import urljoin
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
-from metrology import Metrology
 from threadlocals.threadlocals import get_current_user
+
+from ralph.lib.metrics import statsd
 
 logger = logging.getLogger(__name__)
 
 
-@Metrology.timer('notification')
+@statsd.timer('notification')
 def send_notification_for_model(instance):
     ServiceEnvironment = instance._meta.get_field('service_env').related_model
     old_service_env_id = instance._previous_state['service_env_id']

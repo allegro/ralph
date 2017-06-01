@@ -24,6 +24,7 @@ from ralph.assets.models import (
     ConfigurationModule,
     Environment,
     Manufacturer,
+    ManufacturerKind,
     ProfitCenter,
     Service,
     ServiceEnvironment
@@ -196,6 +197,11 @@ class ServiceEnvironmentSerializer(
 class ManufacturerSerializer(RalphAPISerializer):
     class Meta:
         model = Manufacturer
+
+
+class ManufacturerKindSerializer(RalphAPISerializer):
+    class Meta:
+        model = ManufacturerKind
 
 
 class CategorySerializer(RalphAPISerializer):

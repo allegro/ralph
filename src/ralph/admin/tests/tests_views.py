@@ -59,7 +59,9 @@ FACTORY_MAP = {
     'ralph.deployment.models.PrebootConfiguration': 'ralph.deployment.tests.factories.PrebootConfigurationFactory',  # noqa
     'ralph.dhcp.models.DHCPServer': 'ralph.dhcp.tests.factories.DHCPServerFactory',  # noqa
     'ralph.dhcp.models.DNSServer': 'ralph.dhcp.tests.factories.DNSServerFactory',  # noqa
+    'ralph.domains.models.domains.DNSProvider': 'ralph.domains.tests.factories.DNSProviderFactory',  # noqa
     'ralph.domains.models.domains.Domain': 'ralph.domains.tests.factories.DomainFactory',  # noqa
+    'ralph.domains.models.domains.DomainCategory': 'ralph.domains.tests.factories.DomainCategoryFactory',  # noqa
     'ralph.domains.models.domains.DomainContract': 'ralph.domains.tests.factories.DomainContractFactory',  # noqa
     'ralph.domains.models.domains.DomainRegistrant': 'ralph.domains.tests.factories.DomainRegistrantFactory',  # noqa
     'ralph.licences.models.Licence': 'ralph.licences.tests.factories.LicenceFactory',  # noqa
