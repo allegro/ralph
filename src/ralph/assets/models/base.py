@@ -41,12 +41,9 @@ class HostFilterMixin(object):
         * VirtualServer
         * CloudHost
         """
-        from ralph.data_center.models import Cluster, DataCenterAsset
-        from ralph.virtual.models import CloudHost, VirtualServer
+        from ralph.assets.utils import get_host_content_types
         return self.filter(
-            content_type__in=ContentType.objects.get_for_models(
-                Cluster, DataCenterAsset, VirtualServer, CloudHost
-            ).values()
+            content_type__in=get_host_content_types()
         )
 
 
