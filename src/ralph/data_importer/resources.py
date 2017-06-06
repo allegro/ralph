@@ -262,6 +262,12 @@ class DataCenterAssetResource(RalphModelResource):
         attribute='parent',
         widget=ImportedForeignKeyWidget(physical.DataCenterAsset),
     )
+    parent._exclude_in_select_related = True
+    parent_management_ip = fields.Field(
+        readonly=True,
+        column_name='parent_management_ip',
+        attribute='parent_management_ip',
+    )
     service_env = fields.Field(
         column_name='service_env',
         attribute='service_env',
@@ -297,7 +303,14 @@ class DataCenterAssetResource(RalphModelResource):
             'rack__server_room__data_center',
         )
         prefetch_related = (
+            Prefetch(
+                'parent',
+                queryset=BaseObject.polymorphic_objects.prefetch_related(
+                    'ethernet_set__ipaddress'
+                )
+            ),
             'tags',
+            'ethernet_set__ipaddress',
         )
         exclude = ('content_type', 'asset_ptr', 'baseobject_ptr', 'connections')
 
@@ -306,6 +319,21 @@ class DataCenterAssetResource(RalphModelResource):
 
     def dehydrate_depreciation_rate(self, dc_asset):
         return str(dc_asset.depreciation_rate)
+
+    def _get_management_ip(self, dc_asset):
+        if dc_asset:
+            # find first management_ip here
+            # notice that dc_asset.management_ip property could not be used
+            # here, because it will omit prefetch_related cache
+            for eth in dc_asset.ethernet_set.all():
+                if eth.ipaddress and eth.ipaddress.is_management:
+                    return eth.ipaddress
+
+    def dehydrate_management_ip(self, dc_asset):
+        return str(self._get_management_ip(dc_asset))
+
+    def dehydrate_parent_management_ip(self, dc_asset):
+        return str(self._get_management_ip(dc_asset.parent))
 
 
 class ConnectionResource(RalphModelResource):

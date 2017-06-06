@@ -72,7 +72,7 @@ class SimulateAdminExportTestCase(TestCase):
             1,
             msg='Different queries count: {}'.format(queries_counts)
         )
-        self.assertLess(queries_counts.pop(), max_queries)
+        self.assertLessEqual(queries_counts.pop(), max_queries)
 
 
 class LicenceExporterTestCase(SimulateAdminExportTestCase):
@@ -101,12 +101,36 @@ class SupportExporterTestCase(SimulateAdminExportTestCase):
 class DataCenterAssetExporterTestCase(SimulateAdminExportTestCase):
     def _init(self, num=10):
         self.data_center_assets = DataCenterAssetFullFactory.create_batch(num)
+        self.data_center_assets_map = {}
+        for i, dca in enumerate(self.data_center_assets, start=num * 2):
+            dca.parent = DataCenterAssetFullFactory()
+            dca.parent.management_ip = '10.20.30.{}'.format(i)
+            dca.save()
+            self.data_center_assets_map[dca.id] = dca
+            self.data_center_assets_map[dca.parent.id] = dca.parent
 
     def test_data_center_asset_export(self):
         self._init(10)
         export_data = self._export(DataCenterAsset)
         # check if management ip is properly exported
         self.assertNotEqual(export_data.dict[0]['management_ip'], '')
+
+    def test_data_center_asset_export_with_parent_queries_count(self):
+        self._test_queries_count(func=lambda: self._export(
+            DataCenterAsset
+        ))
+
+    def test_data_center_asset_export_with_parent(self):
+        self._init(10)
+        export_data = self._export(
+            DataCenterAsset, filters={'parent__isnull': False}
+        )
+        # check if parent management ip is properly exported
+        self.assertNotEqual(export_data.dict[0]['parent_management_ip'], '')
+        dca_0_parent = self.data_center_assets_map[
+            int(export_data.dict[0]['parent'])
+        ]
+        self.assertEqual(export_data.dict[0]['parent_str'], str(dca_0_parent))
 
 
 @ddt
