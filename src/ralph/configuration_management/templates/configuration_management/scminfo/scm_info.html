@@ -1,0 +1,31 @@
+{% extends BASE_TEMPLATE %}
+{% load i18n %}
+
+{% block bodyclass %}scm-tab{% endblock%}
+
+{% block view_content %}
+
+
+<h1>{% trans "SCM status information" %}</h1>
+  {% if scm_scan %}
+    <table>
+      <tr>
+        <td>{% trans "Last scan date" %}</td>
+        <td>{{ scm_scan.last_scan_date|date:"o-m-d" }}</td>
+      </tr>
+      <tr>
+        <td>{% trans "Scan status" %}</td>
+        <td>{{ scm_scan.get_scan_status_display }}</td>
+      </tr>
+      <tr>
+        <td>{% trans "Details" %}</td>
+        <td><a href="{{ scm_tool_url|default:"#" }}">{{ scm_tool_url|default:"-" }}</a></td>
+      </tr>
+    </table>
+
+  {% else %}
+    <p>{% trans "The status of the software configuration management is not verified yet." %}</p>
+  {% endif %}
+
+
+{% endblock %}
