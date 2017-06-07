@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from ..models import CustomField, CustomFieldTypes, CustomFieldValue
+from ..signals import api_post_create, api_post_update
 from .models import ModelA, ModelB, SomeModel
 
 
@@ -204,6 +205,26 @@ class CustomFieldsAPITests(APITestCase):
         self.assertEqual(cfv.custom_field, self.custom_field_choices)
         self.assertEqual(cfv.value, 'qwerty')
 
+    def test_add_new_customfield_value_should_send_api_post_create_signal(self):  # noqa: E501
+        self._sig_called_with_instance = None
+
+        def listener(sender, instance, **kwargs):
+            self._sig_called_with_instance = instance
+
+        api_post_create.connect(listener)
+
+        url = reverse(self.list_view_name, args=(self.sm1.id,))
+        data = {
+            'value': 'qwerty',
+            'custom_field': self.custom_field_choices.id,
+        }
+        response = self.client.post(url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIsNotNone(self._sig_called_with_instance)
+        self.assertEqual(
+            self._sig_called_with_instance.id, response.data['id']
+        )
+
     def test_add_new_customfield_value_by_attribute_name(self):
         expected = 'new-value'
         cf = CustomField.objects.create(
@@ -262,6 +283,29 @@ class CustomFieldsAPITests(APITestCase):
         self.assertEqual(self.cfv1.object, self.sm1)
         self.assertEqual(self.cfv1.custom_field, self.custom_field_str)
         self.assertEqual(self.cfv1.value, 'ytrewq')
+
+    def test_update_customfield_value_should_send_api_post_update_signal(self):
+        self._sig_called_with_instance = None
+
+        def listener(sender, instance, **kwargs):
+            self._sig_called_with_instance = instance
+
+        api_post_update.connect(listener)
+
+        url = reverse(
+            self.detail_view_name,
+            kwargs={'pk': self.cfv1.pk, 'object_pk': self.cfv1.object_id}
+        )
+        data = {
+            'value': 'abc',
+            'custom_field': self.custom_field_str.id,
+        }
+        response = self.client.put(url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsNotNone(self._sig_called_with_instance)
+        self.assertEqual(
+            self._sig_called_with_instance.id, response.data['id']
+        )
 
     def test_update_customfield_value_with_duplicated_customfield_should_not_pass(self):  # noqa
         url = reverse(

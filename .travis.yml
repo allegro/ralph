@@ -36,7 +36,7 @@ python:
     # - "3.5"  # temporary removed to speedup biuld (python3.4 should be now used on production)
 
 before_install:
-    - pip install flake8==3.0.4 isort
+    - pip install flake8==3.0.4 isort==4.2.5
     - make flake
     - npm install -g gulp
     - export RALPH_VERSION=$(cat VERSION)

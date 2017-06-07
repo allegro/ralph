@@ -8,6 +8,7 @@ from ralph.api.serializers import (
 )
 
 from ..models import CustomField, CustomFieldValue
+from ..signals import api_post_create, api_post_update
 from .fields import CustomFieldValueHyperlinkedIdentityField
 
 
@@ -77,6 +78,16 @@ class CustomFieldValueSaveSerializer(
             if key in data:
                 result[key] = data[key]
         return result
+
+    def create(self, validated_data):
+        instance = super().create(validated_data)
+        api_post_create.send(sender=instance.__class__, instance=instance)
+        return instance
+
+    def update(self, instance, validated_data):
+        instance = super().update(instance, validated_data)
+        api_post_update.send(sender=instance.__class__, instance=instance)
+        return instance
 
     def _extra_instance_validation(self, instance):
         super()._extra_instance_validation(instance)
