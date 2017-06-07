@@ -400,9 +400,11 @@ class RalphAdminImportExportMixin(ImportExportModelAdmin):
         resource = self.get_export_resource_class()
         fk_fields = []
         for name, field in resource.fields.items():
-            if isinstance(field.widget, ForeignKeyWidget):
+            if (
+                isinstance(field.widget, ForeignKeyWidget) and
+                not getattr(field, '_exclude_in_select_related', False)
+            ):
                 fk_fields.append(field.attribute)
-
         if fk_fields:
             queryset = queryset.select_related(*fk_fields)
         resource_select_related = getattr(resource._meta, 'select_related', [])
