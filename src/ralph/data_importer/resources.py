@@ -326,8 +326,11 @@ class DataCenterAssetResource(RalphModelResource):
             # notice that dc_asset.management_ip property could not be used
             # here, because it will omit prefetch_related cache
             for eth in dc_asset.ethernet_set.all():
-                if eth.ipaddress and eth.ipaddress.is_management:
-                    return eth.ipaddress
+                try:
+                    if eth.ipaddress and eth.ipaddress.is_management:
+                        return eth.ipaddress
+                except physical.IPAddress.DoesNotExist:
+                    pass
 
     def dehydrate_management_ip(self, dc_asset):
         return str(self._get_management_ip(dc_asset))
