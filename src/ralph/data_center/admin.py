@@ -26,6 +26,7 @@ from ralph.admin.helpers import generate_html_link
 from ralph.admin.m2m import RalphTabularM2MInline
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
+from ralph.admin.views.main import RalphChangeList
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.assets.invoice_report import AssetInvoiceReportMixin
 from ralph.assets.models.base import BaseObject
@@ -286,7 +287,7 @@ class DataCenterAssetSecurityInfo(SecurityInfo):
     url_name = 'datacenter_asset_security_info'
 
 
-class DataCenterAssetChangeList(ChangeList):
+class DataCenterAssetChangeList(RalphChangeList):
     def get_ordering(self, request, queryset):
         """Adds extra ordering params for ordering by location."""
 
