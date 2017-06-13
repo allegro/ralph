@@ -117,7 +117,7 @@ class DataCenterAssetSimpleSerializer(RalphAPISerializer):
 
 
 class DataCenterAssetSerializer(ComponentSerializerMixin, AssetSerializer):
-    rack = SimpleRackSerializer(required=True, allow_null=False)
+    rack = SimpleRackSerializer()
 
     class Meta(AssetSerializer.Meta):
         model = DataCenterAsset
