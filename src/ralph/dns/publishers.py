@@ -4,7 +4,6 @@ import logging
 import pyhermes
 from django.conf import settings
 from pyhermes import publish
-from threadlocals.threadlocals import get_current_user
 
 from ralph.data_center.models.physical import DataCenterAsset
 from ralph.data_center.models.virtual import Cluster
@@ -16,10 +15,8 @@ logger = logging.getLogger(__name__)
 
 def _get_txt_data_to_publish_to_dnsaas(obj):
     publish_data = []
-    current_user = get_current_user()
-    username = current_user.username if current_user else ''
     for data in obj.get_auto_txt_data():
-        data['owner'] = username
+        data['owner'] = settings.DNSAAS_OWNER
         data['target_owner'] = settings.DNSAAS_OWNER
         publish_data.append(data)
     return publish_data

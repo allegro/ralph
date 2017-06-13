@@ -210,42 +210,42 @@ class TestGetTXTDataToPublishToDNSaaS(TestCase):
         self.assertEqual(data, [{
             'content': 'www',
             'ips': [self.dc_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'VENTURE',
             'service_uid': self.dc_asset.service.uid
         }, {
             'content': 'ralph',
             'ips': [self.dc_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'ROLE',
             'service_uid': self.dc_asset.service.uid
         }, {
             'content': 'ralph/www',
             'ips': [self.dc_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'CONFIGURATION_PATH',
             'service_uid': self.dc_asset.service.uid
         }, {
             'content': 'service - test',
             'ips': [self.dc_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'SERVICE_ENV',
             'service_uid': self.dc_asset.service.uid
         }, {
             'content': '[ATS] Asus DL360',
             'ips': [self.dc_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'MODEL',
             'service_uid': self.dc_asset.service.uid
         }, {
             'content': 'DC1 / Server Room A / Rack #100 / 1 / 1',
             'ips': [self.dc_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'LOCATION',
             'service_uid': self.dc_asset.service.uid
@@ -258,31 +258,31 @@ class TestGetTXTDataToPublishToDNSaaS(TestCase):
         self.assertEqual(data, [{
             'content': 'www',
             'ips': [self.dc_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'VENTURE'
         }, {
             'content': 'ralph',
             'ips': [self.dc_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'ROLE'
         }, {
             'content': 'ralph/www',
             'ips': [self.dc_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'CONFIGURATION_PATH'
         }, {
             'content': '[ATS] Asus DL360',
             'ips': [self.dc_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'MODEL'
         }, {
             'content': 'DC1 / Server Room A / Rack #100 / 1 / 1',
             'ips': [self.dc_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'LOCATION'
         }])
@@ -292,42 +292,42 @@ class TestGetTXTDataToPublishToDNSaaS(TestCase):
         self.assertEqual(data, [{
             'content': 'worker',
             'ips': [self.vs_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'VENTURE',
             'service_uid': self.virtual_server.service.uid
         }, {
             'content': 'auth',
             'ips': [self.vs_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'ROLE',
             'service_uid': self.virtual_server.service.uid
         }, {
             'content': 'auth/worker',
             'ips': [self.vs_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'CONFIGURATION_PATH',
             'service_uid': self.virtual_server.service.uid
         }, {
             'content': 'service - prod',
             'ips': [self.vs_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'SERVICE_ENV',
             'service_uid': self.virtual_server.service.uid
         }, {
             'content': 'Xen',
             'ips': [self.vs_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'MODEL',
             'service_uid': self.virtual_server.service.uid
         }, {
             'content': 'DC2 / Server Room B / Rack #101 / 1 / 1 / parent',
             'ips': [self.vs_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'LOCATION',
             'service_uid': self.virtual_server.service.uid
@@ -340,31 +340,31 @@ class TestGetTXTDataToPublishToDNSaaS(TestCase):
         self.assertEqual(data, [{
             'content': 'worker',
             'ips': [self.vs_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'VENTURE'
         }, {
             'content': 'auth',
             'ips': [self.vs_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'ROLE'
         }, {
             'content': 'auth/worker',
             'ips': [self.vs_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'CONFIGURATION_PATH'
         }, {
             'content': 'Xen',
             'ips': [self.vs_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'MODEL'
         }, {
             'content': 'DC2 / Server Room B / Rack #101 / 1 / 1 / parent',
             'ips': [self.vs_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'LOCATION'
         }])
@@ -374,42 +374,42 @@ class TestGetTXTDataToPublishToDNSaaS(TestCase):
         self.assertEqual(data, [{
             'content': 'www',
             'ips': [self.cluster_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'VENTURE',
             'service_uid': self.cluster.service.uid
         }, {
             'content': 'ralph',
             'ips': [self.cluster_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'ROLE',
             'service_uid': self.cluster.service.uid
         }, {
             'content': 'ralph/www',
             'ips': [self.cluster_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'CONFIGURATION_PATH',
             'service_uid': self.cluster.service.uid
         }, {
             'content': 'service - preprod',
             'ips': [self.cluster_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'SERVICE_ENV',
             'service_uid': self.cluster.service.uid
         }, {
             'content': 'Application',
             'ips': [self.cluster_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'MODEL',
             'service_uid': self.cluster.service.uid
         }, {
             'content': 'DC2 / Server Room B / Rack #101 / 1',
             'ips': [self.cluster_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'LOCATION',
             'service_uid': self.cluster.service.uid
@@ -422,31 +422,31 @@ class TestGetTXTDataToPublishToDNSaaS(TestCase):
         self.assertEqual(data, [{
             'content': 'www',
             'ips': [self.cluster_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'VENTURE'
         }, {
             'content': 'ralph',
             'ips': [self.cluster_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'ROLE'
         }, {
             'content': 'ralph/www',
             'ips': [self.cluster_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'CONFIGURATION_PATH'
         }, {
             'content': 'Application',
             'ips': [self.cluster_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'MODEL'
         }, {
             'content': 'DC2 / Server Room B / Rack #101 / 1',
             'ips': [self.cluster_ip.address],
-            'owner': '',
+            'owner': 'ralph',
             'target_owner': 'ralph',
             'purpose': 'LOCATION'
         }])
