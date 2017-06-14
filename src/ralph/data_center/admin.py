@@ -4,7 +4,7 @@ from functools import reduce
 
 from django.conf import settings
 from django.contrib.admin import SimpleListFilter
-from django.contrib.admin.views.main import ChangeList
+from django.contrib.admin.views.main import ChangeList, ORDER_VAR
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db.models import Prefetch, Q
@@ -26,6 +26,7 @@ from ralph.admin.helpers import generate_html_link
 from ralph.admin.m2m import RalphTabularM2MInline
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
+from ralph.admin.views.main import RalphChangeList
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.assets.invoice_report import AssetInvoiceReportMixin
 from ralph.assets.models.base import BaseObject
@@ -286,6 +287,41 @@ class DataCenterAssetSecurityInfo(SecurityInfo):
     url_name = 'datacenter_asset_security_info'
 
 
+class DataCenterAssetChangeList(RalphChangeList):
+    def get_ordering(self, request, queryset):
+        """Adds extra ordering params for ordering by location."""
+
+        # NOTE(romcheg): slot_no is added by Django Admin automatically.
+        location_fields = [
+            'rack__server_room__data_center__name',
+            'rack__server_room__name',
+            'rack__name',
+            'position',
+        ]
+
+        ordering = super(DataCenterAssetChangeList, self).get_ordering(
+            request, queryset
+        )
+
+        params = self.params
+        if ORDER_VAR in params:
+
+            order_params = params[ORDER_VAR].split('.')
+            for insert_index, p in enumerate(order_params):
+                try:
+                    none, pfx, idx = p.rpartition('-')
+                    if self.list_display[int(idx)] == 'show_location':
+
+                        ordering[insert_index:insert_index] = [
+                            '{}{}'.format(pfx, field)
+                            for field in location_fields
+                        ]
+                except (IndexError, ValueError):
+                    continue  # Invalid ordering specified, skip it.
+
+        return ordering
+
+
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(
     ScanStatusInChangeListMixin,
@@ -436,6 +472,11 @@ class DataCenterAssetAdmin(
     show_location.short_description = _('Location')
     show_location.allow_tags = True
 
+    # NOTE(romcheg): Django Admin can only order custom fields by one field.
+    #                The rest of the ordering is configured in
+    #                DataCenterAssetChangeList.get_ordering()
+    show_location.admin_order_field = 'slot_no'
+
     def get_created_date(self, obj):
         """
         Return created date for asset (since created is blacklisted by
@@ -444,6 +485,9 @@ class DataCenterAssetAdmin(
         """
         return obj.created or '-'
     get_created_date.short_description = _('Created at')
+
+    def get_changelist(self, request, **kwargs):
+        return DataCenterAssetChangeList
 
 
 @register(ServerRoom)
