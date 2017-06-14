@@ -48,7 +48,7 @@ class SCMScanViewSet(RalphAPIViewSet):
             reduce(operator.or_, queries)
         ).distinct().first()
 
-    def set(self, request, hostname):
+    def create(self, request, hostname):
         """Sets a SCM scan record for an object having matching hostname."""
 
         bo = self.get_baseobject(hostname)
@@ -81,7 +81,7 @@ router.register('scm-scan', SCMScanViewSet)
 urlpatterns = [
     url(
             r'^scm-scan/(?P<hostname>[\w\.-]+)',
-            SCMScanViewSet.as_view({'post': 'set'}),
+            SCMScanViewSet.as_view({'post': 'create'}),
             name='scm-scan-post'
     )
 ]

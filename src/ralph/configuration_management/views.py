@@ -1,12 +1,12 @@
 import logging
 
 from django.conf import settings
-from django.contrib.admin import FieldListFilter
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import NoReverseMatch
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.admin.filters import custom_title_filter
 from ralph.admin.helpers import get_admin_url
 from ralph.admin.views.extra import RalphDetailView
 from ralph.configuration_management.models import SCMScanStatus
@@ -57,24 +57,13 @@ class SCMScanStatusInChangeListMixin(object):
         self.list_filter += [
             (
                 'scmscan__scan_status',
-                self.custom_title_filter('SCM scan status')
+                custom_title_filter('SCM scan status')
             ),
             (
                 'scmscan__last_scan_date',
-                self.custom_title_filter('Last SCM scan date')
+                custom_title_filter('Last SCM scan date')
             )
         ]
-
-    # NOTE(romcheg): This could be probably moved to a common place.
-    def custom_title_filter(self, title):
-
-        class CustomTitledFilter(FieldListFilter):
-            def __new__(cls, *args, **kwargs):
-                filter_instance = FieldListFilter.create(*args, **kwargs)
-                filter_instance.title = title
-                return filter_instance
-
-        return CustomTitledFilter
 
     def _to_span(self, css, text):
         return'<span class="{}">{}</span>'.format(css, text)
