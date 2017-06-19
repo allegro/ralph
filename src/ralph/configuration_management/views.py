@@ -9,7 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.admin.filters import custom_title_filter
 from ralph.admin.helpers import get_admin_url
 from ralph.admin.views.extra import RalphDetailView
-from ralph.configuration_management.models import SCMScanStatus
+from ralph.configuration_management.models import SCMCheckResult
 # NOTE(romcheg): These functions could be moved to a common place
 from ralph.security.views import _linkify, _url_name_for_change_view
 
@@ -17,7 +17,7 @@ from ralph.security.views import _linkify, _url_name_for_change_view
 logger = logging.getLogger(__name__)
 
 
-class SCMScanInfo(RalphDetailView):
+class SCMCheckInfo(RalphDetailView):
 
     icon = 'cogs'
     label = 'SCM info'
@@ -28,10 +28,10 @@ class SCMScanInfo(RalphDetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         try:
-            scan = self.object.scmscan
+            check = self.object.scmstatuscheck
         except ObjectDoesNotExist:
-            scan = None
-        context['scm_scan'] = scan
+            check = None
+        context['scm_check'] = check
 
         hostname = getattr(self.object, 'hostname', None)
 
@@ -43,7 +43,7 @@ class SCMScanInfo(RalphDetailView):
         return context
 
 
-class SCMScanStatusInChangeListMixin(object):
+class SCMStatusCheckInChangeListMixin(object):
 
     icon_no_scan = '-'
     icon_scan_ok = '<i class="fa fa-check-circle" aria-hidden="true"></i>'
@@ -53,14 +53,14 @@ class SCMScanStatusInChangeListMixin(object):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.list_select_related += ['scmscan', ]
+        self.list_select_related += ['scmstatuscheck', ]
         self.list_filter += [
             (
-                'scmscan__scan_status',
+                'scmstatuscheck__check_result',
                 custom_title_filter('SCM scan status')
             ),
             (
-                'scmscan__last_scan_date',
+                'scmstatuscheck__last_checked',
                 custom_title_filter('Last SCM scan date')
             )
         ]
@@ -68,15 +68,15 @@ class SCMScanStatusInChangeListMixin(object):
     def _to_span(self, css, text):
         return'<span class="{}">{}</span>'.format(css, text)
 
-    def scm_scan_status(self, obj):
+    def scm_status_check(self, obj):
         try:
-            scan = obj.scmscan
+            scmstatuscheck = obj.scmstatuscheck
         except ObjectDoesNotExist:
             html = self._to_span('', self.icon_no_scan)
         else:
-            if scan.scan_status == SCMScanStatus.ok:
+            if scmstatuscheck.check_result == SCMCheckResult.scm_ok:
                 html = self._to_span("success", self.icon_scan_ok)
-            elif scan.scan_status == SCMScanStatus.error:
+            elif scmstatuscheck.check_result == SCMCheckResult.scm_error:
                     html = self._to_span("alert", self.icon_scan_error)
             else:
                 html = self._to_span("warning", self.icon_scan_fail)
@@ -96,4 +96,4 @@ class SCMScanStatusInChangeListMixin(object):
                         "cant reverse url for: {}, {}".format(obj, url_name)
                     )
         return mark_safe(html)
-    scm_scan_status.short_description = _('SCM scan')
+    scm_status_check.short_description = _('SCM status')

@@ -7,15 +7,15 @@
 
 
 <h1>{% trans "SCM status information" %}</h1>
-  {% if scm_scan %}
+  {% if scm_check %}
     <table>
       <tr>
-        <td>{% trans "Last scan date" %}</td>
-        <td>{{ scm_scan.last_scan_date|date:"o-m-d" }}</td>
+        <td>{% trans "Last checked" %}</td>
+        <td>{{ scm_check.last_checked|date:"o-m-d" }}</td>
       </tr>
       <tr>
-        <td>{% trans "Scan status" %}</td>
-        <td>{{ scm_scan.get_scan_status_display }}</td>
+        <td>{% trans "SCM status" %}</td>
+        <td>{{ scm_check.get_check_result_display }}</td>
       </tr>
       <tr>
         <td>{% trans "Details" %}</td>

@@ -12,13 +12,13 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='SCMScan',
+            name='SCMStatusCheck',
             fields=[
-                ('id', models.AutoField(serialize=False, verbose_name='ID', primary_key=True, auto_created=True)),
+                ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
                 ('created', models.DateTimeField(auto_now_add=True, verbose_name='date created')),
                 ('modified', models.DateTimeField(auto_now=True, verbose_name='last modified')),
-                ('last_scan_date', models.DateTimeField(verbose_name='Last SCM scan date')),
-                ('scan_status', models.PositiveIntegerField(choices=[(1, 'ok'), (2, 'fail'), (3, 'error')], verbose_name='SCM scan status')),
+                ('last_checked', models.DateTimeField(verbose_name='Last SCM check')),
+                ('check_result', models.PositiveIntegerField(choices=[(1, 'scm_ok'), (2, 'check_failed'), (3, 'scm_error')], verbose_name='SCM check result')),
                 ('base_object', models.OneToOneField(to='assets.BaseObject')),
             ],
             options={

@@ -3,13 +3,13 @@ from datetime import datetime
 import factory
 from factory.django import DjangoModelFactory
 
-from ralph.configuration_management.models import SCMScan, SCMScanStatus
+from ralph.configuration_management.models import SCMCheckResult, SCMStatusCheck
 
 
-class SCMScanFactory(DjangoModelFactory):
+class SCMStatusCheckFactory(DjangoModelFactory):
 
-    last_scan_date = factory.LazyFunction(datetime.now)
-    scan_status = SCMScanStatus.ok
+    last_checked = factory.LazyFunction(datetime.now)
+    check_result = SCMCheckResult.scm_ok
 
     class Meta:
-        model = SCMScan
+        model = SCMStatusCheck

@@ -9,23 +9,23 @@ from rest_framework.response import Response
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import RalphAPISaveSerializer
 from ralph.assets.models import BaseObject
-from ralph.configuration_management.models import SCMScan
+from ralph.configuration_management.models import SCMStatusCheck
 
 
 class SCMScanSerializer(RalphAPISerializer):
     class Meta:
-        model = SCMScan
+        model = SCMStatusCheck
 
 
 class SCMScanSaveSerializer(RalphAPISaveSerializer):
 
     class Meta:
-        fields = ('last_scan_date', 'scan_status')
-        model = SCMScan
+        fields = ('last_checked', 'check_result')
+        model = SCMStatusCheck
 
 
 class SCMScanViewSet(RalphAPIViewSet):
-    queryset = SCMScan.objects.all()
+    queryset = SCMStatusCheck.objects.all()
     serializer_class = SCMScanSerializer
     save_serializer_class = SCMScanSaveSerializer
 
@@ -63,11 +63,11 @@ class SCMScanViewSet(RalphAPIViewSet):
         serializer.is_valid(raise_exception=True)
 
         update_data = {
-            'last_scan_date': serializer.validated_data['last_scan_date'],
-            'scan_status': serializer.validated_data['scan_status']
+            'last_checked': serializer.validated_data['last_checked'],
+            'check_result': serializer.validated_data['check_result']
         }
 
-        scan, created = SCMScan.objects.update_or_create(
+        scan, created = SCMStatusCheck.objects.update_or_create(
             base_object_id=bo.id,
             defaults=update_data
         )

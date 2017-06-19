@@ -7,15 +7,15 @@ from ralph.lib.mixins.models import TimeStampMixin
 from ralph.lib.permissions import PermByFieldMixin
 
 
-class SCMScanStatus(Choices):
+class SCMCheckResult(Choices):
     _ = Choices.Choice
 
-    ok = _("ok")
-    fail = _("fail")
-    error = _("error")
+    scm_ok = _("OK")
+    check_failed = _("Check failed")
+    scm_error = _("Error")
 
 
-class SCMScan(
+class SCMStatusCheck(
     PermByFieldMixin,
     TimeStampMixin,
     models.Model
@@ -23,13 +23,13 @@ class SCMScan(
     """Represents software configuration management scan."""
 
     base_object = models.OneToOneField(BaseObject, on_delete=models.CASCADE)
-    last_scan_date = models.DateTimeField(
+    last_checked = models.DateTimeField(
         blank=False, null=False,
-        verbose_name=_("Last SCM scan date")
+        verbose_name=_("Last SCM check")
     )
-    scan_status = models.PositiveIntegerField(
-        choices=SCMScanStatus(),
+    check_result = models.PositiveIntegerField(
+        choices=SCMCheckResult(),
         blank=False,
         null=False,
-        verbose_name=_("SCM scan status")
+        verbose_name=_("SCM check result")
     )

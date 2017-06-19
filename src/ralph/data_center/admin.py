@@ -34,8 +34,8 @@ from ralph.assets.models.components import Ethernet
 from ralph.assets.views import ComponentsAdminView
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.configuration_management.views import (
-    SCMScanInfo,
-    SCMScanStatusInChangeListMixin
+    SCMCheckInfo,
+    SCMStatusCheckInChangeListMixin
 )
 from ralph.data_center.forms import DataCenterAssetForm
 from ralph.data_center.models.components import DiskShare, DiskShareMount
@@ -326,13 +326,13 @@ class DataCenterAssetChangeList(RalphChangeList):
         return ordering
 
 
-class DataCenterAssetSCMInfo(SCMScanInfo):
+class DataCenterAssetSCMInfo(SCMCheckInfo):
     url_name = 'datacenterasset_scm_info'
 
 
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(
-    SCMScanStatusInChangeListMixin,
+    SCMStatusCheckInChangeListMixin,
     ScanStatusInChangeListMixin,
     ActiveDeploymentMessageMixin,
     MulitiAddAdminMixin,
@@ -372,7 +372,7 @@ class DataCenterAssetAdmin(
         'service_env',
         'configuration_path',
         'scan_status',
-        'scm_scan_status'
+        'scm_status_check'
     ]
     multiadd_summary_fields = list_display + ['rack']
     one_of_mulitvalue_required = ['sn', 'barcode']
@@ -597,13 +597,13 @@ class DCHostChangeList(ChangeList):
         return result.get_absolute_url()
 
 
-class DCHostSCMInfo(SCMScanInfo):
+class DCHostSCMInfo(SCMCheckInfo):
     url_name = 'dchost_scm_info'
 
 
 @register(DCHost)
 class DCHostAdmin(
-    SCMScanStatusInChangeListMixin,
+    SCMStatusCheckInChangeListMixin,
     ScanStatusInChangeListMixin,
     RalphAdmin
 ):
@@ -625,7 +625,7 @@ class DCHostAdmin(
         'show_location',
         'remarks',
         'scan_status',
-        'scm_scan_status'
+        'scm_status_check'
     ]
     # TODO: sn
     # TODO: hostname, DC
