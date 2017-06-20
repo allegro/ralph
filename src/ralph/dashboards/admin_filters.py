@@ -28,7 +28,7 @@ class ByGraphFilter(admin.SimpleListFilter):
             if graph_item == 'None':
                 graph_item = None
             graph = get_object_or_404(Graph, pk=graph_pk)
-            queryset = graph.apply_parital_filtering(queryset)
+            queryset = graph.apply_parital_filtering(queryset).distinct()
             if not graph.has_grouping:
                 queryset = queryset.filter(
                     **{graph.params['labels']: graph_item}
