@@ -526,7 +526,7 @@ EMAIL_MESSAGE_CONTACT_EMAIL = os.environ.get(
     'EMAIL_MESSAGE_CONTACT_EMAIL', None
 )
 
-SCM_TOOL_URL = os.getenv('SCM_TOOL_URL', None)
+SCM_TOOL_URL = os.getenv('SCM_TOOL_URL', '')
 
 RALPH_HOST_URL = os.environ.get('RALPH_HOST_URL', None)
 

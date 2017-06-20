@@ -46,10 +46,7 @@ class SCMCheckInfo(RalphDetailView):
 class SCMStatusCheckInChangeListMixin(object):
 
     icon_no_scan = '-'
-    icon_scan_ok = '<i class="fa fa-check-circle" aria-hidden="true"></i>'
-    icon_scan_error = ('<i class="fa fa-exclamation-triangle" '
-                       'aria-hidden="true"></i>')
-    icon_scan_fail = '<i class="fa fa-question-circle" aria-hidden="true"></i>'
+    icon_scan = '<i class="fa {}" aria-hidden="true"></i>'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -74,12 +71,12 @@ class SCMStatusCheckInChangeListMixin(object):
         except ObjectDoesNotExist:
             html = self._to_span('', self.icon_no_scan)
         else:
-            if scmstatuscheck.check_result == SCMCheckResult.scm_ok:
-                html = self._to_span("success", self.icon_scan_ok)
-            elif scmstatuscheck.check_result == SCMCheckResult.scm_error:
-                    html = self._to_span("alert", self.icon_scan_error)
-            else:
-                html = self._to_span("warning", self.icon_scan_fail)
+            check_result = SCMCheckResult.from_id(scmstatuscheck.check_result)
+
+            html = self._to_span(
+                check_result.alert,
+                self.icon_scan.format(check_result.icon_class)
+            )
 
             url_name = _url_name_for_change_view(type(obj), 'scm_info')
 

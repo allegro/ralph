@@ -10,9 +10,15 @@ from ralph.lib.permissions import PermByFieldMixin
 class SCMCheckResult(Choices):
     _ = Choices.Choice
 
-    scm_ok = _("OK")
-    check_failed = _("Check failed")
-    scm_error = _("Error")
+    scm_ok = _("OK").extra(alert='success', icon_class='fa-check-circle')
+    check_failed = _("Check failed").extra(
+        alert='warning',
+        icon_class='fa-question-circle'
+    )
+    scm_error = _("Error").extra(
+        alert='alert',
+        icon_class='fa-exclamation-triangle'
+    )
 
 
 class SCMStatusCheck(
