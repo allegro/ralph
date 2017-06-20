@@ -33,6 +33,10 @@ from ralph.assets.models.base import BaseObject
 from ralph.assets.models.components import Ethernet
 from ralph.assets.views import ComponentsAdminView
 from ralph.attachments.admin import AttachmentsMixin
+from ralph.configuration_management.views import (
+    SCMCheckInfo,
+    SCMStatusCheckInChangeListMixin
+)
 from ralph.data_center.forms import DataCenterAssetForm
 from ralph.data_center.models.components import DiskShare, DiskShareMount
 from ralph.data_center.models.hosts import DCHost
@@ -322,8 +326,13 @@ class DataCenterAssetChangeList(RalphChangeList):
         return ordering
 
 
+class DataCenterAssetSCMInfo(SCMCheckInfo):
+    url_name = 'datacenterasset_scm_info'
+
+
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(
+    SCMStatusCheckInChangeListMixin,
     ScanStatusInChangeListMixin,
     ActiveDeploymentMessageMixin,
     MulitiAddAdminMixin,
@@ -341,6 +350,7 @@ class DataCenterAssetAdmin(
         DataCenterAssetComponents,
         DataCenterAssetNetworkView,
         DataCenterAssetSecurityInfo,
+        DataCenterAssetSCMInfo,
         DataCenterAssetLicence,
         DataCenterAssetSupport,
         DataCenterAssetOperation,
@@ -362,6 +372,7 @@ class DataCenterAssetAdmin(
         'service_env',
         'configuration_path',
         'scan_status',
+        'scm_status_check'
     ]
     multiadd_summary_fields = list_display + ['rack']
     one_of_mulitvalue_required = ['sn', 'barcode']
@@ -586,8 +597,16 @@ class DCHostChangeList(ChangeList):
         return result.get_absolute_url()
 
 
+class DCHostSCMInfo(SCMCheckInfo):
+    url_name = 'dchost_scm_info'
+
+
 @register(DCHost)
-class DCHostAdmin(ScanStatusInChangeListMixin, RalphAdmin):
+class DCHostAdmin(
+    SCMStatusCheckInChangeListMixin,
+    ScanStatusInChangeListMixin,
+    RalphAdmin
+):
     change_list_template = 'admin/data_center/dchost/change_list.html'
     search_fields = [
         'remarks',
@@ -606,6 +625,7 @@ class DCHostAdmin(ScanStatusInChangeListMixin, RalphAdmin):
         'show_location',
         'remarks',
         'scan_status',
+        'scm_status_check'
     ]
     # TODO: sn
     # TODO: hostname, DC

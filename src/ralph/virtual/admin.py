@@ -16,6 +16,10 @@ from ralph.admin.filters import (
 )
 from ralph.assets.models.components import Ethernet
 from ralph.assets.views import ComponentsAdminView, RalphDetailViewAdmin
+from ralph.configuration_management.views import (
+    SCMCheckInfo,
+    SCMStatusCheckInChangeListMixin
+)
 from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.deployment.mixins import ActiveDeploymentMessageMixin
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
@@ -85,8 +89,13 @@ class VirtualServerLicencesView(RalphDetailViewAdmin):
     inlines = [VirtualServerLicenceInline]
 
 
+class VirtualServerSCMInfo(SCMCheckInfo):
+    url_name = 'virtualserver_scm_info'
+
+
 @register(VirtualServer)
 class VirtualServerAdmin(
+    SCMStatusCheckInChangeListMixin,
     ScanStatusInChangeListMixin,
     ActiveDeploymentMessageMixin,
     CustomFieldValueAdminMixin,
@@ -108,7 +117,7 @@ class VirtualServerAdmin(
     ]
     list_display = [
         'hostname', 'type', 'sn', 'service_env', 'configuration_path',
-        'scan_status'
+        'scan_status', 'scm_status_check'
     ]
     raw_id_fields = ['parent', 'service_env', 'configuration_path']
     fields = [
@@ -123,6 +132,7 @@ class VirtualServerAdmin(
     change_views = [
         VirtualServerComponentsView,
         VirtualServerNetworkView,
+        VirtualServerSCMInfo,
         VirtaulServerSecurityInfoView,
         VirtualServerLicencesView,
     ]
@@ -213,13 +223,19 @@ class CloudHostNetworkView(NetworkView):
     pass
 
 
+class CloudHostSCMInfo(SCMCheckInfo):
+    url_name = 'cloudhost_scm_info'
+
+
 @register(CloudHost)
 class CloudHostAdmin(
-    ScanStatusInChangeListMixin, CustomFieldValueAdminMixin, RalphAdmin
+    SCMStatusCheckInChangeListMixin, ScanStatusInChangeListMixin,
+    CustomFieldValueAdminMixin, RalphAdmin
 ):
     list_display = ['hostname', 'get_ip_addresses', 'service_env',
                     'get_cloudproject', 'cloudflavor_name', 'host_id',
-                    'created', 'image_name', 'get_tags', 'scan_status']
+                    'created', 'image_name', 'get_tags', 'scan_status',
+                    'scm_status_check']
     list_filter = [
         BaseObjectHostnameFilter, 'cloudprovider', 'service_env',
         'cloudflavor', TagsListFilter, 'hypervisor',
@@ -247,6 +263,7 @@ class CloudHostAdmin(
     inlines = [CloudNetworkInline]
     change_views = [
         CloudHostNetworkView,
+        CloudHostSCMInfo,
         CloudHostSecurityInfoView
     ]
     fieldsets = (
