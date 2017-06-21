@@ -14,7 +14,7 @@ class TestSCMScanAPI(RalphAPITestCase):
         v_server = VirtualServerFullFactory()
 
         url = reverse(
-            'scm-scan-post',
+            'scm-info-post',
             kwargs={'hostname': v_server.hostname}
         )
 
@@ -47,7 +47,7 @@ class TestSCMScanAPI(RalphAPITestCase):
         )
 
         url = reverse(
-            'scm-scan-post',
+            'scm-info-post',
             kwargs={'hostname': v_server.hostname}
         )
 
@@ -82,7 +82,7 @@ class TestSCMScanAPI(RalphAPITestCase):
         v_server = VirtualServerFullFactory()
 
         url = reverse(
-            'scm-scan-post',
+            'scm-info-post',
             kwargs={'hostname': v_server.hostname}
         )
 
@@ -108,7 +108,7 @@ class TestSCMScanAPI(RalphAPITestCase):
 
     def test_post_wrong_hostname_returns_404(self):
         url = reverse(
-            'scm-scan-post',
+            'scm-info-post',
             kwargs={'hostname': 'deadbeef.local'}
         )
 
@@ -125,7 +125,7 @@ class TestSCMScanAPI(RalphAPITestCase):
         v_server_2 = VirtualServerFullFactory()
 
         url = reverse(
-            'scm-scan-post',
+            'scm-info-post',
             kwargs={'hostname': v_server_1.hostname}
         )
 
