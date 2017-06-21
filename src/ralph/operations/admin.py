@@ -67,9 +67,9 @@ class OperationAdminForm(RalphAdminForm):
 @register(Operation)
 class OperationAdmin(AttachmentsMixin, RalphAdmin):
     search_fields = ['title', 'description', 'ticket_id']
-    list_filter = ['type', ('status', StatusFilter), 'reporter',
-                   'assignee', 'ticket_id', 'created_date',
-                   'update_date', 'resolved_date', 'base_objects']
+    list_filter = ['type', ('status', StatusFilter), 'reporter', 'assignee',
+                   'created_date', 'update_date', 'resolved_date',
+                   'base_objects']
     list_display = ['title', 'type', 'created_date', 'status', 'reporter',
                     'get_ticket_url']
     list_select_related = ('reporter', 'type', 'status')
