@@ -12,22 +12,22 @@ from ralph.assets.models import BaseObject
 from ralph.configuration_management.models import SCMStatusCheck
 
 
-class SCMScanSerializer(RalphAPISerializer):
+class SCMInfoSerializer(RalphAPISerializer):
     class Meta:
         model = SCMStatusCheck
 
 
-class SCMScanSaveSerializer(RalphAPISaveSerializer):
+class SCMInfoSaveSerializer(RalphAPISaveSerializer):
 
     class Meta:
         fields = ('last_checked', 'check_result')
         model = SCMStatusCheck
 
 
-class SCMScanViewSet(RalphAPIViewSet):
+class SCMInfoSet(RalphAPIViewSet):
     queryset = SCMStatusCheck.objects.all()
-    serializer_class = SCMScanSerializer
-    save_serializer_class = SCMScanSaveSerializer
+    serializer_class = SCMInfoSerializer
+    save_serializer_class = SCMInfoSaveSerializer
 
     select_related = ['base_object']
 
@@ -77,11 +77,11 @@ class SCMScanViewSet(RalphAPIViewSet):
         return Response(self.serializer_class(scan).data, status=res_status)
 
 
-router.register('scm-scan', SCMScanViewSet)
+router.register('scm-info', SCMInfoSet)
 urlpatterns = [
     url(
-            r'^scm-scan/(?P<hostname>[\w\.-]+)',
-            SCMScanViewSet.as_view({'post': 'create'}),
-            name='scm-scan-post'
+            r'^scm-info/(?P<hostname>[\w\.-]+)',
+            SCMInfoSet.as_view({'post': 'create'}),
+            name='scm-info-post'
     )
 ]
