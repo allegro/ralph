@@ -24,7 +24,7 @@ class SCMInfoSaveSerializer(RalphAPISaveSerializer):
         model = SCMStatusCheck
 
 
-class SCMInfoSet(RalphAPIViewSet):
+class SCMInfoViewSet(RalphAPIViewSet):
     queryset = SCMStatusCheck.objects.all()
     serializer_class = SCMInfoSerializer
     save_serializer_class = SCMInfoSaveSerializer
@@ -77,11 +77,11 @@ class SCMInfoSet(RalphAPIViewSet):
         return Response(self.serializer_class(scan).data, status=res_status)
 
 
-router.register('scm-info', SCMInfoSet)
+router.register('scm-info', SCMInfoViewSet)
 urlpatterns = [
     url(
             r'^scm-info/(?P<hostname>[\w\.-]+)',
-            SCMInfoSet.as_view({'post': 'create'}),
+            SCMInfoViewSet.as_view({'post': 'create'}),
             name='scm-info-post'
     )
 ]
