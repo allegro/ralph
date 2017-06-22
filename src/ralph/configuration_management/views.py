@@ -94,3 +94,4 @@ class SCMStatusCheckInChangeListMixin(object):
                     )
         return mark_safe(html)
     scm_status_check.short_description = _('SCM status')
+    scm_status_check.admin_order_field = 'scmstatuscheck'
