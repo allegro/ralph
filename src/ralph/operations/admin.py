@@ -99,6 +99,7 @@ class OperationAdmin(AttachmentsMixin, RalphAdmin):
         )
     get_ticket_url.allow_tags = True
     get_ticket_url.short_description = _('ticket ID')
+    get_ticket_url.admin_order_field = 'ticket_id'
 
     def get_changelist(self, request, **kwargs):
         return OperationChangeList
