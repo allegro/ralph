@@ -1,7 +1,9 @@
+from dj.choices.fields import ChoiceField
 from django.contrib import admin
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.admin.helpers import get_field_by_relation_path
 from ralph.dashboards.models import Graph
 from ralph.dashboards.renderers import GRAPH_QUERY_SEP
 
@@ -28,7 +30,26 @@ class ByGraphFilter(admin.SimpleListFilter):
             if graph_item == 'None':
                 graph_item = None
             graph = get_object_or_404(Graph, pk=graph_pk)
+
             queryset = graph.apply_parital_filtering(queryset).distinct()
+
+            field = get_field_by_relation_path(
+                queryset.model,
+                graph.params['labels']
+            )
+
+            if isinstance(field, ChoiceField):
+                choices = field.choice_class()
+
+                try:
+                    graph_item = [
+                        i[0] for i in choices if i[1] == graph_item
+                    ].pop()
+                except IndexError:
+                    # NOTE(romcheg): Choice not found for the filter value.
+                    #                Leaving it as is.
+                    pass
+
             if not graph.has_grouping:
                 queryset = queryset.filter(
                     **{graph.params['labels']: graph_item}
