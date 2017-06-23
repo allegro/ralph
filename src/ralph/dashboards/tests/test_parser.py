@@ -8,9 +8,14 @@ from django.db.models import Q
 from django.test import SimpleTestCase, TestCase
 
 from ralph.assets.tests.factories import ServiceEnvironmentFactory
+from ralph.configuration_management.models import SCMCheckResult
+from ralph.configuration_management.tests.factories import SCMStatusCheckFactory
+from ralph.dashboards.admin_filters import ByGraphFilter
 from ralph.dashboards.filter_parser import FilterParser
 from ralph.dashboards.models import AggregateType, Graph
 from ralph.dashboards.tests.factories import GraphFactory
+from ralph.data_center.admin import DataCenterAdmin
+from ralph.data_center.models import DataCenterAsset
 from ralph.data_center.tests.factories import (
     DataCenterAssetFactory,
     DataCenterAssetFullFactory
@@ -81,6 +86,59 @@ class GraphModelTest(SimpleTestCase):
         result = graph.pop_annotate_filters(filters)
         self.assertEqual(len(result), length)
         self.assertEqual(len(orig_filters) - length, len(filters))
+
+    def test_get_data_for_choices_field_returns_names(self):
+        test_data = {
+            SCMCheckResult.scm_ok: 3,
+            SCMCheckResult.check_failed: 2,
+            SCMCheckResult.scm_error: 1
+        }
+
+        data_center_assets = DataCenterAssetFullFactory.create_batch(10)
+        scm_checks = []
+
+        dca_number = 0
+        for check_result in test_data:
+            for i in range(test_data[check_result]):
+                scm_checks.append(
+                    SCMStatusCheckFactory(
+                        check_result=check_result,
+                        base_object=data_center_assets[dca_number]
+                    )
+                )
+                dca_number += 1
+
+        graph = GraphFactory(
+            params=self._get_graph_params(
+                {
+                    "filters": {},
+                    "labels": "scmstatuscheck__check_result",
+                    "series": "id",
+                    "sort": "series"
+                }
+            )
+        )
+
+        for check_result in test_data:
+            graph_filter = ByGraphFilter(
+                None,
+                {'graph-query': '{}|{}'.format(graph.pk, check_result.raw)},
+                DataCenterAsset,
+                DataCenterAdmin
+            )
+            qs = graph_filter.queryset(None, DataCenterAsset.objects.all())
+
+            self.assertEqual(len(qs), test_data[check_result])
+
+        graph_filter = ByGraphFilter(
+            None,
+            {'graph-query': '{}|{}'.format(graph.pk, None)},
+            DataCenterAsset,
+            DataCenterAdmin
+        )
+        qs = graph_filter.queryset(None, DataCenterAsset.objects.all())
+
+        self.assertEqual(len(qs), len(data_center_assets) - dca_number)
 
     def _get_graph_params(self, update):
         data = {

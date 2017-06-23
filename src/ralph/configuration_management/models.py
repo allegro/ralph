@@ -1,4 +1,5 @@
 from dj.choices import Choices
+from dj.choices.fields import ChoiceField
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -33,8 +34,8 @@ class SCMStatusCheck(
         blank=False, null=False,
         verbose_name=_("Last SCM check")
     )
-    check_result = models.PositiveIntegerField(
-        choices=SCMCheckResult(),
+    check_result = ChoiceField(
+        choices=SCMCheckResult,
         blank=False,
         null=False,
         verbose_name=_("SCM check result")
