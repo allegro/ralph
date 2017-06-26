@@ -51,7 +51,7 @@ class SimulateAdminExportTestCase(TestCase):
         file_format = RawFormat()
         queryset = admin_class.get_export_queryset(request)
         export_data = admin_class.get_export_data(file_format, queryset)
-        return export_data
+        return next(export_data)
 
     def _init(self, num=10):
         pass
