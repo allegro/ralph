@@ -214,6 +214,28 @@ class LabelGroupingTest(TestCase):
         self.assertEqual(qs.get()['series'], len(expected))
         self.assertIn('year', qs.get())
 
+    def test_label_works_when_month_grouping_on_foreign_key(self):
+        self._genenrate_dca_with_scan(2, '2015-01-01')
+        expected = self._genenrate_dca_with_scan(1, '2016-01-01')
+        self._genenrate_dca_with_scan(3, '2017-01-01')
+
+        graph = GraphFactory(
+            aggregate_type=AggregateType.aggregate_count.id,
+            params={
+                'filters': {
+                    'securityscan__last_scan_date__gte': '2016-01-01',
+                    'securityscan__last_scan_date__lt': '2017-01-01',
+                },
+                'series': 'id',
+                'labels': 'securityscan__last_scan_date|month',
+            }
+        )
+
+        qs = graph.build_queryset()
+
+        self.assertEqual(qs.get()['series'], len(expected))
+        self.assertIn('month', qs.get())
+
     def test_ratio_aggregation(self):
         service_env = ServiceEnvironmentFactory(service__name='sample-service')
         vulnerability = VulnerabilityFactory(

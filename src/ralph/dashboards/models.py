@@ -90,9 +90,15 @@ class GroupingLabel:
     def has_group(self):
         return self.orig_label != self.label
 
-    def group_year(self):
+    def _group_by_part_of_date(self, date_part):
         field_name = self.orig_label.split('__')[-1]
-        return self.connection.ops.date_trunc_sql('year', field_name)
+        return self.connection.ops.date_trunc_sql(date_part, field_name)
+
+    def group_year(self):
+        return self._group_by_part_of_date('year')
+
+    def group_month(self):
+        return self._group_by_part_of_date('month')
 
     def apply_grouping(self, queryset):
         if self.has_group:

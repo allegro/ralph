@@ -59,6 +59,15 @@ of two values for ``series``:
 }
 ```
 
+### Grouping by date
+``series`` allows for aggregating based on part of the date, like ``year`` or
+``month``:
+```json
+{
+    "labels": "service_env__service__name",
+    "series": "created|year",
+}
+```
 
 ## Special filters and fields
 Special filters are some helpers to
