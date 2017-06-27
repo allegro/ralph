@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from dj.choices import Choices
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models
@@ -78,6 +80,8 @@ class GroupingLabel:
     Adds grouping-by-year feature to query based on `label_group`
     """
     sep = '|'
+    date_fields = ['year', 'month', 'day', 'hour', 'minute', 'second']
+    date_format = ('%Y-', '%m', '-%d', ' %H:', '%i', ':%s')
 
     def __init__(self, connection, label_group):
         self.connection = connection
@@ -94,18 +98,27 @@ class GroupingLabel:
         field_name = self.orig_label.split('__')[-1]
         return self.connection.ops.date_trunc_sql(date_part, field_name)
 
-    def group_year(self):
-        return self._group_by_part_of_date('year')
-
-    def group_month(self):
-        return self._group_by_part_of_date('month')
-
     def apply_grouping(self, queryset):
         if self.has_group:
-            queryset = queryset.extra({
-                self.label: getattr(self, 'group_' + self.label)()
-            })
+            if self.label in self.date_fields:
+                queryset = queryset.extra({
+                    self.label: self._group_by_part_of_date(self.label)
+                })
+            else:
+                queryset = queryset.extra({
+                    self.label: getattr(self, 'group_' + self.label)()
+                })
         return queryset
+
+    def _format_part_of_date(self, value):
+        i = self.date_fields.index(self.label) + 1
+        format_str = ''.join([f for f in self.date_format[:i]])
+        return value.strftime(format_str)
+
+    def format_label(self, value):
+        if self.has_group:
+            value = self._format_part_of_date(value)
+        return value
 
 
 class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
@@ -212,9 +225,10 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
 
     def get_data(self):
         queryset = self.build_queryset()
-        label = GroupingLabel(connection, self.params['labels']).label
+        grouping_label = GroupingLabel(connection, self.params['labels'])
+        label = grouping_label.label
         return {
-            'labels': [str(q[label]) for q in queryset],
+            'labels': [grouping_label.format_label(q[label]) for q in queryset],
             'series': [int(q['series']) for q in queryset],
         }
 
