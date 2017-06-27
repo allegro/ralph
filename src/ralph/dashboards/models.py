@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from dj.choices import Choices
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models
