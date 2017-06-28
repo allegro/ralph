@@ -1,7 +1,9 @@
-FROM ubuntu:14.04
+FROM ubuntu:xenial
 MAINTAINER PyLabs pylabs@allegrogroup.com
 
 # set UTF-8 locale
+RUN apt-get clean && apt-get update
+RUN apt-get install locales
 RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
@@ -9,7 +11,7 @@ ENV LC_ALL en_US.UTF-8
 
 # set paths
 ENV RALPH_DIR=/opt/ralph
-ENV RALPH_EXEC=ralph
+ENV RALPH_EXEC=dev_ralph
 ENV RALPH_LOGGING_FILE_PATH=/root/logs/runtime.log
 ENV RALPH_STATIC=/root/static
 ENV RALPH_DOCS=$RALPH_DIR/docs
