@@ -116,7 +116,7 @@ class GroupingLabel:
     def format_label(self, value):
         if self.has_group:
             value = self._format_part_of_date(value)
-        return value
+        return str(value)
 
 
 class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
