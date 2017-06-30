@@ -11,7 +11,7 @@ ENV LC_ALL en_US.UTF-8
 
 # set paths
 ENV RALPH_DIR=/opt/ralph
-ENV RALPH_EXEC=dev_ralph
+ENV RALPH_EXEC=ralph
 ENV RALPH_LOGGING_FILE_PATH=/root/logs/runtime.log
 ENV RALPH_STATIC=/root/static
 ENV RALPH_DOCS=$RALPH_DIR/docs
