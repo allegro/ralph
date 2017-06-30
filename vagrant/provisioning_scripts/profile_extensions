@@ -1,6 +1,6 @@
 # Add automatic activation to user .profile file
-source ~/bin/activate
-source ~/src/ralph/scripts/ralph_bash_completion.sh
+source ~/venv/bin/activate
+source ~/ralph/scripts/ralph_bash_completion.sh
 
-export PATH=$PATH:~/src/ralph/node_modules/.bin
+export PATH=$PATH:~/ralph/node_modules/.bin
 export DJANGO_SETTINGS_MODULE=ralph.settings.local

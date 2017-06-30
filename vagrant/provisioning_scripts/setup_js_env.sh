@@ -1,17 +1,33 @@
 #!/bin/bash
-set -e
 
-sudo apt-get update
-sudo apt-get install -y \
-    nodejs \
-    npm
+NODEJS_VERSION=${NODEJS_VERSION:-"6.9.2"}
 
-# node-debian bug walkaround: debian `node` is called `nodejs`, but npm requires to have `node`
-sudo ln -s /usr/bin/nodejs /usr/bin/node
+cleanup_js() {
+    rm -rf "$RALPH_DIR/node_moduled"
+    rm -rf "$RALPH_DIR/bower_components"
+}
 
-cd ~/src/ralph
-# update npm
-sudo npm install -g npm
 
-npm install
-gulp
+install_node() {
+    sudo npm install -g n
+    sudo n "$NODEJS_VERSION"
+}
+
+
+install_js_packages() {
+    pushd "$RALPH_DIR"
+    npm install
+    npm install gulp
+
+    "$RALPH_DIR/node_modules/.bin/gulp"
+    popd
+}
+
+
+provision_js() {
+    echo "Starting configuration of Ralph's frontend."
+    cleanup_js || true
+    install_node
+    install_js_packages
+    echo "Configuration of Ralph's frontend succeeded."
+}

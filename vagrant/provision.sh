@@ -1,55 +1,41 @@
 #!/bin/bash
-set -e
-sudo apt-get update
+set -eu
 
-## INSTALL dependencies
-# Install MySQL Server in a Non-Interactive mode. NO PASSWORD for root
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    build-essential \
-    git \
-    libffi-dev \
-    libldap2-dev \
-    libmysqlclient-dev \
-    libmysqld-dev \
-    libsasl2-dev \
-    libssl-dev \
-    make \
-    mysql-server-5.6 \
-    python3.4 \
-    python3.4-dev \
-    python3.4-venv \
-    python3-pip \
-    redis-server
+# Common use settings
+VM_USER=${VM_USER:-ubuntu}
+HOME_DIR="/home/$VM_USER"
+RALPH_DIR=${RALPH_DIR:-"$HOME_DIR/ralph"}
+RALPH_VENV=${RALPH_VENV:-"$HOME_DIR/venv"}
+RALPH_PROFILE_EXTENSIONS=${RALPH_PROFILE_EXTENSIONS:-"$RALPH_DIR/vagrant/provisioning_scripts/profile_extensions"}
+USER_PROFILE_PATH=${USER_PROFILE_PATH:-"$HOME_DIR/.profile"}
 
-sudo pip3 install virtualenv
-virtualenv .
-. bin/activate
+# Deployment variables
+RALPH_API_KEY=${RALPH_API_KEY:-"api_key"}
+RALPH_SRV_DIR=${RALPH_SRV_DIR:-"/srv/www"}
+RALPH_TFTP_DIR=${RALPH_TFTP_DIR:-"/opt/tftp"}
 
-curl https://bootstrap.pypa.io/get-pip.py | python
+# Database settings
+RALPH_DB_NAME=${RALPH_DB_NAME:-"ralph_ng"}
+RALPH_DB_USER_NAME=${RALPH_DB_USER_NAME:-"ralph_ng"}
+RALPH_DB_USER_PASS=${RALPH_DB_USER_PASS:-"ralph_ng"}
+MYSQL_CONF_D=${MYSQL_CONF_D:-"/etc/mysql/conf.d/"}
 
-cd src/ralph/
-make install-dev
+# System settings
+SYSTEMD_SERVICES_DIR=${SYSTEMD_SERVICES_DIR:-"/etc/systemd/system"}
 
-cat ~/src/ralph/vagrant/provisioning_scripts/profile_extensions >> ~/.profile
-source ~/.profile
+# Networking settings
+RALPH_DHCP_INTERFACE=${RALPH_DHCP_INTERFACE:-"eth1"}
 
-# create local settings file
-SETTINGS_LOCAL_PATH=~/src/ralph/src/ralph/settings/local.py
-if [ ! -f $SETTINGS_LOCAL_PATH ]; then
-    echo "from ralph.settings.dev import *  # noqa" > $SETTINGS_LOCAL_PATH
-fi
 
-# CREATE db
-./vagrant/provisioning_scripts/init_mysql.sh
+for f in $(ls $RALPH_DIR/vagrant/provisioning_scripts/*.sh); do
+    source $f
+done
 
-# final setups
-./vagrant/provisioning_scripts/setup_js_env.sh
 
-# install LibreOffice and dependencies
-./vagrant/provisioning_scripts/libre_office.sh
-
-# install DHCP server
-./vagrant/provisioning_scripts/dhcp.sh
-
-# configure environment for deployment
-./vagrant/provisioning_scripts/deployment.sh
+provision_packages
+provision_pyenv
+provision_database
+provision_js
+provision_soffice
+provision_dhcp
+provision_deployment

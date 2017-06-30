@@ -1,9 +1,15 @@
 # -*- mode: ruby -*-
+unless Vagrant.has_plugin?("vagrant-reload")
+  raise 'Please run vagrant plugin install vagrant-reload.'
+end
 
 Vagrant.configure(2) do |config|
-  config.vm.box = "ubuntu/trusty64"
+  config.vm.box = "ubuntu/xenial64"
   config.vm.hostname = "ralph-dev"
-  config.vm.synced_folder "../", "/home/vagrant/src/ralph"
+  config.vm.synced_folder "../", "/home/ubuntu/ralph", type: "rsync",
+      rsync__exclude: ["node_modules", "../.git", "../bower_components"]
+  config.vm.provision :shell, path: "configure_kernel.sh", privileged: true
+  config.vm.provision :reload
   config.vm.provision :shell, path: "provision.sh", privileged: false
   config.vm.network "forwarded_port", guest: 8000, host: 8000
   config.vm.network "forwarded_port", guest: 19360, host: 1936  # for Sublime Text Anaconda plugin
