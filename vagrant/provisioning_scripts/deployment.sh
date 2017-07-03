@@ -25,7 +25,8 @@ setup_dhcp_agent() {
     cp "$dhcp_agent_src" "$dhcp_agent_dst"
     chmod +x "$dhcp_agent_dst"
 
-    sudo sed -i "s/RALPH_API_KEY/$RALPH_API_KEY/g" "$crontab_file"
+    sudo sed -i -e "s/RALPH_API_KEY/$RALPH_API_KEY/g" "$crontab_file"
+    sudo sed -i -e "s/RALPH_VM_USER/$VM_USER/g" "$crontab_file"
     sudo crontab "$crontab_file"
 }
 

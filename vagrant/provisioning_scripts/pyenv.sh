@@ -28,8 +28,13 @@ install_ralph() {
 setup_user_env() {
     local settings_local_path="$RALPH_DIR/src/ralph/settings/local.py"
     local ralph_local_settings="from ralph.settings.dev import *  # noqa"
+    printf -v ralph_dir_escaped  "%q" $"RALPH_DIR"
 
     cat "$RALPH_PROFILE_EXTENSIONS" > "$USER_PROFILE_PATH"
+
+    sed -i "s~RALPH_DIR~$RALPH_DIR~g" "$USER_PROFILE_PATH"
+    sed -i "s~RALPH_VENV~$RALPH_VENV~g" "$USER_PROFILE_PATH"
+
     source "$USER_PROFILE_PATH"
 
     # create local settings file
