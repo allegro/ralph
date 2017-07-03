@@ -19,11 +19,13 @@ create_database() {
 
 setup_ralph_database() {
     dev_ralph migrate
+    dev_ralph createsuperuser --noinput --username "$RALPH_SUPERUSER_NAME" --email "$RALPH_SUPERUSER_NAME@example.net"
 
-    dev_ralph createsuperuser --noinput --username ralph --email ralph@allegrogroup.com
-    python "$RALPH_DIR/vagrant/provisioning_scripts/createsuperuser.py"
+    RALPH_SUPERUSER_NAME="$RALPH_SUPERUSER_NAME" \
+        RALPH_SUPERUSER_PASSWORD="$RALPH_SUPERUSER_PASSWORD" \
+        python "$RALPH_DIR/vagrant/provisioning_scripts/createsuperuser.py"
 
-    pushd $RALPH_DIR
+    pushd "$RALPH_DIR"
     make menu
     popd
 }
