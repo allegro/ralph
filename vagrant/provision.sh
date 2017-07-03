@@ -34,10 +34,17 @@ for f in $(ls $RALPH_DIR/vagrant/provisioning_scripts/*.sh); do
 done
 
 
-provision_packages
-provision_pyenv
-provision_database
-provision_frontend
-provision_soffice
-provision_dhcp
-provision_deployment
+do_provision_all() {
+    provision_packages
+    provision_pyenv
+    provision_database
+    provision_frontend
+    provision_soffice
+    provision_dhcp
+    provision_deployment
+}
+
+
+if [[ ${1:-""} == "do-provision" ]]; then
+    do_provision_all
+fi
