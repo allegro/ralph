@@ -24,7 +24,7 @@ install_js_packages() {
 }
 
 
-provision_js() {
+provision_frontend() {
     echo "Starting configuration of Ralph's frontend."
     cleanup_js || true
     install_node

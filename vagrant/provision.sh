@@ -28,14 +28,14 @@ RALPH_DHCP_INTERFACE=${RALPH_DHCP_INTERFACE:-"eth1"}
 
 
 for f in $(ls $RALPH_DIR/vagrant/provisioning_scripts/*.sh); do
-    source $f
+    source "$f"
 done
 
 
 provision_packages
 provision_pyenv
 provision_database
-provision_js
+provision_frontend
 provision_soffice
 provision_dhcp
 provision_deployment
