@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphAdminForm, RalphTabularInline, register
@@ -14,6 +14,7 @@ from ralph.admin.filters import (
     TreeRelatedAutocompleteFilterWithDescendants,
     VulnerabilitesByPatchDeadline
 )
+from ralph.assets.models import BaseObject
 from ralph.assets.models.components import Ethernet
 from ralph.assets.views import ComponentsAdminView, RalphDetailViewAdmin
 from ralph.configuration_management.views import (
@@ -117,7 +118,7 @@ class VirtualServerAdmin(
     ]
     list_display = [
         'hostname', 'type', 'sn', 'service_env', 'configuration_path',
-        'scan_status', 'scm_status_check'
+        'get_parent', 'scan_status', 'scm_status_check'
     ]
     raw_id_fields = ['parent', 'service_env', 'configuration_path']
     fields = [
@@ -126,7 +127,7 @@ class VirtualServerAdmin(
     ]
     list_select_related = [
         'service_env__service', 'service_env__environment', 'type',
-        'configuration_path__module'
+        'configuration_path__module',
     ]
 
     change_views = [
@@ -150,6 +151,24 @@ class VirtualServerAdmin(
         verbose_name = _('Base Object')
 
     inlines = [ClusterBaseObjectInline]
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.prefetch_related(
+            Prefetch(
+                'parent',
+                queryset=BaseObject.polymorphic_objects.all()
+            ),
+        )
+
+    def get_parent(self, obj):
+        if not obj.parent_id:
+            return '-'
+        return '<a href="{}">{}</a>'.format(
+            obj.parent.get_absolute_url(), obj.parent.hostname
+        )
+    get_parent.short_description = _('Parent')
+    get_parent.allow_tags = True
 
 
 class CloudHostTabularInline(RalphTabularInline):
