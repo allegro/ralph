@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 
 from ralph.api.tests._base import RalphAPITestCase
@@ -38,6 +39,44 @@ class TestSCMScanAPI(RalphAPITestCase):
             resp.data.get('last_checked'),
             data['last_checked']
         )
+
+    def test_delete_scm_status_record(self):
+        v_server = VirtualServerFullFactory()
+        existing_scan = SCMStatusCheckFactory(
+            base_object=v_server.baseobject_ptr,
+            check_result=SCMCheckResult.scm_ok
+        )
+
+        url = reverse(
+            'scm-info-post',
+            kwargs={'hostname': v_server.hostname}
+        )
+
+        resp = self.client.delete(url)
+        self.assertEqual(resp.status_code, 204)
+
+        with self.assertRaises(ObjectDoesNotExist):
+            SCMStatusCheck.objects.get(pk=existing_scan.pk)
+
+    def test_delete_wrong_hostname_returns_404(self):
+        url = reverse(
+            'scm-info-post',
+            kwargs={'hostname': 'deadbeef.local'}
+        )
+
+        resp = self.client.delete(url)
+        self.assertEqual(resp.status_code, 404)
+
+    def test_delete_non_existing_scm_status_record_returns_404(self):
+        v_server = VirtualServerFullFactory()
+
+        url = reverse(
+            'scm-info-post',
+            kwargs={'hostname': v_server.hostname}
+        )
+
+        resp = self.client.delete(url)
+        self.assertEqual(resp.status_code, 404)
 
     def test_post_by_hostname_updates_scm_status_record(self):
         v_server = VirtualServerFullFactory()
