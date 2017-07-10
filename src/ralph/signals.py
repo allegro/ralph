@@ -44,12 +44,7 @@ def post_commit(func, model, signal=post_save, single_call=True):
         def wrapper():
             # prevent from calling the same func multiple times for single
             # instance
-            try:
-                func_name = func.__name__
-            except AttributeError:
-                # for partials
-                func_name = func.func.__name__
-            called_already_attr = '_' + func_name + '_called'
+            called_already_attr = '_' + func.__name__ + '_called'
             if not (
                 getattr(instance, called_already_attr, False) and
                 single_call

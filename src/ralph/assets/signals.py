@@ -1,6 +1,6 @@
 
 import logging
-from functools import partial
+from functools import partial, wraps
 
 from django.contrib.admin.utils import get_model_from_relation
 
@@ -39,7 +39,13 @@ for model_path in [
     logger.debug('Setting up handler for {} change of BaseObject'.format(
         model.__name__,
     ))
-    post_commit(partial(
-        publish_host_update_from_related_model,
-        field_path=model_path
-    ), model)
+    post_commit(
+        # use wraps for keep magic attributes of func like __name__
+        wraps(publish_host_update_from_related_model)(
+            partial(
+                publish_host_update_from_related_model,
+                field_path=model_path
+            )
+        ),
+        model
+    )
