@@ -7,8 +7,8 @@ from ralph.assets.models import ConfigurationClass, Ethernet
 from ralph.assets.signals import custom_field_change
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
 from ralph.data_center.tests.factories import (
-    ConfigurationClassFactory,
     ClusterFactory,
+    ConfigurationClassFactory,
     DataCenterAssetFactory
 )
 from ralph.lib.custom_fields.models import (
@@ -18,10 +18,7 @@ from ralph.lib.custom_fields.models import (
 )
 from ralph.networks.models import IPAddress
 from ralph.tests import RalphTestCase
-from ralph.virtual.tests.factories import (
-    CloudHostFactory,
-    VirtualServerFactory
-)
+from ralph.virtual.tests.factories import CloudHostFactory, VirtualServerFactory
 
 
 @ddt
