@@ -29,10 +29,10 @@ api_post_update.connect(custom_field_change)
 
 # trigger publish_host_update when related model change
 for model_path in [
-    'ethernet_set',
-    'ethernet_set__ipaddress',
     'configuration_path',
     'configuration_path__module',
+    'ethernet_set',
+    'ethernet_set__ipaddress',
 ]:
     field = get_field_by_relation_path(BaseObject, model_path)
     model = get_model_from_relation(field)
