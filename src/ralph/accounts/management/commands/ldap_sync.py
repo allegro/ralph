@@ -84,9 +84,12 @@ def get_nested_groups():
             )
             logger.info('{} fetched'.format(ralph_group_name))
             group_users[ralph_group_name] = set([
-                u[1][settings.AUTH_LDAP_USER_USERNAME_ATTR][0].decode('utf-8')  # noqa
+                u[1][settings.AUTH_LDAP_USER_USERNAME_ATTR][0].decode('utf-8').lower()  # noqa
                 for u in users
             ])
+            logger.info('Users in nested group {}: {}'.format(
+                ralph_group_name, group_users[ralph_group_name]
+            ))
             for username in group_users[ralph_group_name]:
                 # notice group DN here, not Django group name!
                 users_groups[username].add(ldap_group_name)

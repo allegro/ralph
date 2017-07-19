@@ -32,6 +32,42 @@ OK, after save go our new dashboard object. Now we can see item (``DC Capacity``
 Final result:
 ![link-dashboard-final](/img/dashboard-final-dc.png "Final dashboard")
 
+## Aggregating options
+
+### distinct
+``series`` allows for aggregating by distinct value. To use it, extend ``series`` query using ``|distinct`` modifier:
+```json
+{
+    "labels": "name",
+    "series": "serverroom__rack|distinct",
+    "filters": {
+        "series__lt": 5
+    },
+}
+```
+
+### Ratio
+``series`` allows for calculating ratio of two aggregated fields. Set ``Aggregate type`` of graph to ``Ratio`` and use list
+of two values for ``series``:
+```json
+{
+    "labels": "service_env__service__name",
+    "series": [
+        "securityscan__is_patched",
+        "id"
+    ]
+}
+```
+
+### Grouping by date
+``series`` allows for aggregating based on part of the date, like ``year`` or
+``month``:
+```json
+{
+    "labels": "service_env__service__name",
+    "series": "created|year",
+}
+```
 
 ## Special filters and fields
 Special filters are some helpers to
@@ -78,10 +114,4 @@ The filter above limit query to objects which created from one year ago to now. 
   - ``m`` - months,
   - ``d`` - days,
 
-
-
-# TODO
-
-  - free assets aggregate by model name with invoice date from 2 years ago
-  - from GET params to dashboard
-  - len(params) > 3
+<!-- (TODO(mkurek): describe limit, sort) -->

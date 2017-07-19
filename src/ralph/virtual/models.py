@@ -188,7 +188,7 @@ class CloudHost(PreviousStateMixin,
     )
     hostname = models.CharField(
         verbose_name=_('hostname'),
-        max_length=100
+        max_length=255
     )
     hypervisor = models.ForeignKey(DataCenterAsset, blank=True, null=True)
     image_name = models.CharField(max_length=255, null=True, blank=True)

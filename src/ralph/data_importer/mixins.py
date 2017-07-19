@@ -52,7 +52,22 @@ class ImportForeignKeyMeta(type):
                 )
             else:
                 continue
-            update_fields.append((field_name, fields.Field(**field_params)))
+            new_field = fields.Field(**field_params)
+            # rewrite field extra attributes
+            for extra_param_name in [
+                # if set to True, foreign key will not be added automatically
+                # to `select_related` - usefull when it's need to be fetched
+                # using `prefetch_related` (ex. for `parent` field with more
+                # logic in fetching it)
+                '_exclude_in_select_related'
+            ]:
+                if hasattr(field, extra_param_name):
+                    setattr(
+                        new_field,
+                        extra_param_name,
+                        getattr(field, extra_param_name)
+                    )
+            update_fields.append((field_name, new_field))
         export_class.fields = OrderedDict(update_fields)
         new_class.export_class = export_class
         return new_class

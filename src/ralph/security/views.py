@@ -7,11 +7,11 @@ from django.utils.lru_cache import lru_cache
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, register
+from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.helpers import get_admin_url
 from ralph.admin.sites import ralph_site
 from ralph.admin.views.extra import RalphDetailView
-from ralph.security.models import Vulnerability
+from ralph.security.models import SecurityScan, Vulnerability
 
 
 logger = logging.getLogger(__name__)
@@ -80,8 +80,30 @@ class ScanStatusInChangeListMixin(object):
 
 
 @register(Vulnerability)
-class Vulnerability(RalphAdmin):
+class VulnerabilityAdmin(RalphAdmin):
     search_fields = ['name', ]
+
+
+class VulnerabilitiesInline(RalphTabularInline):
+    verbose_name = "Vulnerability"
+    verbose_name_plural = "Vulnerabilities"
+    model = SecurityScan.vulnerabilities.through
+    raw_id_fields = ('vulnerability',)
+
+
+@register(SecurityScan)
+class SecurityScan(RalphAdmin):
+    fields = (
+        'last_scan_date', 'scan_status', 'next_scan_date', 'details_url',
+        'rescan_url',
+    )
+    list_select_related = (
+        'base_object', 'base_object__content_type',
+    )
+
+    inlines = [
+        VulnerabilitiesInline,
+    ]
 
 
 class SecurityInfo(RalphDetailView):

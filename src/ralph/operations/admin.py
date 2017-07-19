@@ -67,9 +67,9 @@ class OperationAdminForm(RalphAdminForm):
 @register(Operation)
 class OperationAdmin(AttachmentsMixin, RalphAdmin):
     search_fields = ['title', 'description', 'ticket_id']
-    list_filter = ['type', ('status', StatusFilter), 'reporter',
-                   'assignee', 'ticket_id', 'created_date',
-                   'update_date', 'resolved_date', 'base_objects']
+    list_filter = ['type', ('status', StatusFilter), 'reporter', 'assignee',
+                   'created_date', 'update_date', 'resolved_date',
+                   'base_objects']
     list_display = ['title', 'type', 'created_date', 'status', 'reporter',
                     'get_ticket_url']
     list_select_related = ('reporter', 'type', 'status')
@@ -99,6 +99,7 @@ class OperationAdmin(AttachmentsMixin, RalphAdmin):
         )
     get_ticket_url.allow_tags = True
     get_ticket_url.short_description = _('ticket ID')
+    get_ticket_url.admin_order_field = 'ticket_id'
 
     def get_changelist(self, request, **kwargs):
         return OperationChangeList

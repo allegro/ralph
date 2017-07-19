@@ -57,3 +57,14 @@ if os.environ.get('USE_REDIS_CACHE'):
         CACHES['template_fragments'] = {
             'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
         }
+
+
+if bool_from_env('COLLECT_METRICS'):
+    COLLECT_METRICS = True
+    STATSD_HOST = os.environ.get('STATSD_HOST')
+    STATSD_PORT = os.environ.get('STATSD_PORT')
+    STATSD_PREFIX = os.environ.get('STATSD_PREFIX')
+    STATSD_MAXUDPSIZE = int(os.environ.get('STATSD_MAXUDPSIZE', 512))
+    MIDDLEWARE_CLASSES = (
+        'ralph.lib.metrics.middlewares.RequestMetricsMiddleware',
+    ) + MIDDLEWARE_CLASSES

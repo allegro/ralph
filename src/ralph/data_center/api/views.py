@@ -15,6 +15,7 @@ from ralph.data_center.api.serializers import (
     ClusterSerializer,
     ClusterTypeSerializer,
     DatabaseSerializer,
+    DataCenterAssetSaveSerializer,
     DataCenterAssetSerializer,
     DataCenterSerializer,
     RackAccessorySerializer,
@@ -45,6 +46,7 @@ class DataCenterAssetFilterSet(NetworkableObjectFilters):
 class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     queryset = DataCenterAsset.objects.all()
     serializer_class = DataCenterAssetSerializer
+    save_serializer_class = DataCenterAssetSaveSerializer
     select_related = DataCenterAssetAdmin.list_select_related + [
         'service_env', 'service_env__service', 'service_env__environment',
         'rack', 'rack__server_room', 'rack__server_room__data_center',

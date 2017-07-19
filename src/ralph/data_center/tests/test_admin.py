@@ -11,7 +11,10 @@ from ralph.assets.tests.factories import (
     ServiceFactory
 )
 from ralph.data_center.models import DataCenterAsset
-from ralph.data_center.tests.factories import DataCenterAssetFactory
+from ralph.data_center.tests.factories import (
+    DataCenterAssetFactory,
+    RackFactory
+)
 from ralph.lib.custom_fields.models import (
     CustomField,
     CustomFieldTypes,
@@ -31,7 +34,11 @@ class DataCenterAssetAdminTest(TransactionTestCase):
         result = self.client.login(username='root', password='password')
         self.assertEqual(result, True)
         self.factory = RequestFactory()
-        self.dca = DataCenterAssetFactory(hostname='ralph1.allegro.pl')
+        self.dca = DataCenterAssetFactory(
+            hostname='ralph1.allegro.pl',
+            rack=RackFactory(),
+            position=1
+        )
         self.custom_fields_inline_prefix = 'custom_fields-customfieldvalue-content_type-object_id-'  # noqa
         self.custom_field_str = CustomField.objects.create(
             name='test_str', type=CustomFieldTypes.STRING, default_value='xyz'
@@ -50,6 +57,8 @@ class DataCenterAssetAdminTest(TransactionTestCase):
             'hostname': self.dca.hostname,
             'model': self.dca.model_id,
             'orientation': self.dca.orientation,
+            'rack': self.dca.rack.pk,
+            'position': self.dca.position,
             'service_env': self.dca.service_env_id,
             'status': self.dca.status,
             'depreciation_rate': self.dca.depreciation_rate,

@@ -11,6 +11,7 @@ from ralph.assets.models.assets import (
     Category,
     Environment,
     Manufacturer,
+    ManufacturerKind,
     ProfitCenter,
     Service,
     ServiceEnvironment
@@ -136,6 +137,17 @@ class BudgetInfoFactory(DjangoModelFactory):
 
     class Meta:
         model = BudgetInfo
+        django_get_or_create = ['name']
+
+
+class ManufacturerKindFactory(DjangoModelFactory):
+
+    name = factory.Iterator([
+        'kind-a', 'kind-b', 'kind-c',
+    ])
+
+    class Meta:
+        model = ManufacturerKind
         django_get_or_create = ['name']
 
 

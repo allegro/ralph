@@ -715,12 +715,15 @@ def create_dns_entries(cls, instances, **kwargs):
     for instance in instances:
         # TODO: use dedicated param instead of history_kwargs
         ip = kwargs['history_kwargs'][instance.pk]['ip']
-        dnsaas.create_dns_record({
-            'name': instance.hostname,
-            'type': RecordType.a.id,
-            'content': ip,
-            'ptr': True,
-        })
+        dnsaas.create_dns_record(
+            record={
+                'name': instance.hostname,
+                'type': RecordType.a.id,
+                'content': ip,
+                'ptr': True,
+            },
+            service=instance.service
+        )
 
 
 @deployment_action(

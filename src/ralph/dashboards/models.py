@@ -1,7 +1,7 @@
 from dj.choices import Choices
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models
-from django.db.models import Count, Max, Sum
+from django.db.models import Case, Count, IntegerField, Max, Q, Sum, Value, When
 from django_extensions.db.fields.json import JSONField
 
 from ralph.dashboards.filter_parser import FilterParser
@@ -25,11 +25,33 @@ class Dashboard(
     interval = models.PositiveSmallIntegerField(default=60)
 
 
+def ratio_handler(queryset, series):
+    if not isinstance(series, list):
+        raise ValueError('Ratio aggregation requires series to be list')
+    if len(series) != 2:
+        raise ValueError(
+            'Ratio aggregation requires series to be list of size 2'
+        )
+    # postgres does not support Sum with boolean field so we need to use
+    # Case-When with integer values here
+    return (
+        Sum(Case(
+            When(Q(**{series[0]: True}), then=Value(1)),
+            When(Q(**{series[0]: False}), then=Value(0)),
+            default=Value(0),
+            output_field=IntegerField()
+        )) * 100.0 / Count(series[1])
+    )
+
+
 class AggregateType(Choices):
     _ = Choices.Choice
     aggregate_count = _('Count').extra(aggregate_func=Count)
     aggregate_max = _('Max').extra(aggregate_func=Max)
     aggregate_sum = _('Sum').extra(aggregate_func=Sum)
+    aggregate_ratio = _('Ratio').extra(
+        aggregate_func=Count, handler=ratio_handler
+    )
 
 
 class ChartType(Choices):
@@ -56,6 +78,8 @@ class GroupingLabel:
     Adds grouping-by-year feature to query based on `label_group`
     """
     sep = '|'
+    date_fields = ['year', 'month', 'day', 'hour', 'minute', 'second']
+    date_format = ('%Y-', '%m', '-%d', ' %H:', '%i', ':%s')
 
     def __init__(self, connection, label_group):
         self.connection = connection
@@ -68,16 +92,31 @@ class GroupingLabel:
     def has_group(self):
         return self.orig_label != self.label
 
-    def group_year(self):
+    def _group_by_part_of_date(self, date_part):
         field_name = self.orig_label.split('__')[-1]
-        return self.connection.ops.date_trunc_sql('year', field_name)
+        return self.connection.ops.date_trunc_sql(date_part, field_name)
 
     def apply_grouping(self, queryset):
         if self.has_group:
-            queryset = queryset.extra({
-                self.label: getattr(self, 'group_' + self.label)()
-            })
+            if self.label in self.date_fields:
+                queryset = queryset.extra({
+                    self.label: self._group_by_part_of_date(self.label)
+                })
+            else:
+                queryset = queryset.extra({
+                    self.label: getattr(self, 'group_' + self.label)()
+                })
         return queryset
+
+    def _format_part_of_date(self, value):
+        i = self.date_fields.index(self.label) + 1
+        format_str = ''.join([f for f in self.date_format[:i]])
+        return value.strftime(format_str)
+
+    def format_label(self, value):
+        if self.has_group:
+            value = self._format_part_of_date(value)
+        return str(value)
 
 
 class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
@@ -122,8 +161,10 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
             return queryset.order_by(order)
         return queryset
 
-    def _unpack_series(self):
-        series_field, fn = _to_pair(self.params.get('series', ''), '|')
+    def _unpack_series(self, series):
+        if not isinstance(series, str):
+            raise ValueError('Series should be string')
+        series_field, fn = _to_pair(series, '|')
         if (series_field != fn) and (fn != 'distinct'):
             raise ValueError(
                 "Series supports Only `distinct` (you put '{}')".format(fn)  # noqa
@@ -135,7 +176,14 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
     def get_aggregation(self):
         aggregate_type = AggregateType.from_id(self.aggregate_type)
         aggregate_func = aggregate_type.aggregate_func
-        series_field, fn_name = self._unpack_series()
+        # aggregate choice might have defined custom handler
+        handler = getattr(
+            aggregate_type, 'handler', self._default_aggregation_handler
+        )
+        return handler(aggregate_func, self.params.get('series', ''))
+
+    def _default_aggregation_handler(self, aggregate_func, series):
+        series_field, fn_name = self._unpack_series(series)
         aggregate_fn_kwargs = {}
         if fn_name == "distinct":
             if self.aggregate_type != AggregateType.aggregate_count.id:
@@ -156,18 +204,16 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
 
         grouping_label = GroupingLabel(connection, self.params['labels'])
         queryset = grouping_label.apply_grouping(queryset)
-        queryset = self.apply_parital_filtering(queryset)
-
+        # pop filters which are applied on annotated queryset
         annotate_filters = self.pop_annotate_filters(
-            self.params.get('filters', None)
+            self.params.get('filters', {})
         )
-
+        queryset = self.apply_parital_filtering(queryset)
         queryset = queryset.values(
             grouping_label.label
         ).annotate(
             series=self.get_aggregation(),
         )
-
         if annotate_filters:
             queryset = queryset.filter(**annotate_filters)
 
@@ -177,9 +223,10 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
 
     def get_data(self):
         queryset = self.build_queryset()
-        label = GroupingLabel(connection, self.params['labels']).label
+        grouping_label = GroupingLabel(connection, self.params['labels'])
+        label = grouping_label.label
         return {
-            'labels': [str(q[label]) for q in queryset],
+            'labels': [grouping_label.format_label(q[label]) for q in queryset],
             'series': [int(q['series']) for q in queryset],
         }
 

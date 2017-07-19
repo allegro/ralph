@@ -1,0 +1,18 @@
+{% extends "admin/change_list.html" %}
+
+{% load i18n %}
+
+{% block result_list %}
+  {% if cl.result_count %}
+    {{ block.super }}
+  {% else %}
+    <div data-alert class="alert-box info">
+      {% trans "Nothing to display. Please add some objects like:" %}
+      <ul>
+        <li><a href="{% url 'admin:data_center_datacenterasset_add' %}">Hardware</a></li>
+        <li><a href="{% url 'admin:virtual_virtualserver_add' %}">Virtual server</a></li>
+        <li><a href="{% url 'admin:virtual_cloudhost_add' %}">Cloud host</a></li>
+      </ul>
+    </div>
+  {% endif %}
+{% endblock %}

@@ -173,6 +173,8 @@ sitetrees = [
                 section(_('Contracts'), 'domains', 'DomainContract'),
                 section(_('Registrants'), 'domains', 'DomainRegistrant'),
                 section(_('Owners'), 'accounts', 'RalphUser'),
+                section(_('DNS Providers'), 'domains', 'DNSProvider'),
+                section(_('Domain Categories'), 'domains', 'DomainCategory'),
             ]
         ),
         ralph_item(
@@ -285,6 +287,7 @@ sitetrees = [
                 section(_('Asset model'), 'assets', 'AssetModel'),
                 section(_('Asset category'), 'assets', 'Category'),
                 section(_('Manufacturer'), 'assets', 'Manufacturer'),
+                section(_('Manufacturer Kind'), 'assets', 'Manufacturerkind'),
                 section(_('Business segment'), 'assets', 'BusinessSegment'),
                 section(_('Profit center'), 'assets', 'ProfitCenter'),
                 section(_('Service'), 'assets', 'Service'),

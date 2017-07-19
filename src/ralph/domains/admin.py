@@ -8,7 +8,9 @@ from ralph.admin.filters import DateListFilter
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer.resources import DomainContractResource, DomainResource
 from ralph.domains.models.domains import (
+    DNSProvider,
     Domain,
+    DomainCategory,
     DomainContract,
     DomainRegistrant
 )
@@ -29,6 +31,7 @@ class DomainAdmin(AttachmentsMixin, RalphAdmin):
         'name', 'service_env', 'domain_status', 'business_segment',
         'domain_holder', ('domaincontract__expiration_date', DateListFilter),
         'website_type', 'website_url',
+        'dns_provider', 'domain_category', 'domain_type',
 
     ]
     list_display = [
@@ -42,7 +45,8 @@ class DomainAdmin(AttachmentsMixin, RalphAdmin):
         (_('Basic info'), {
             'fields': (
                 'name', 'remarks', 'domain_status', 'website_type',
-                'website_url',
+                'website_url', 'domain_category', 'domain_type',
+                'dns_provider',
             )
         }),
         (_('Ownership info'), {
@@ -98,4 +102,14 @@ class DomainContractAdmin(AttachmentsMixin, RalphAdmin):
 
 @register(DomainRegistrant)
 class DomainRegistrantAdmin(RalphAdmin):
+    pass
+
+
+@register(DomainCategory)
+class DomainCategory(RalphAdmin):
+    pass
+
+
+@register(DNSProvider)
+class DNSProviderAdmin(RalphAdmin):
     pass

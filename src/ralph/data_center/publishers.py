@@ -42,4 +42,19 @@ def publish_host_update(instance):
         )
         host_data = _get_host_data(instance)
         # call publish directly to make testing easier
+        logger.info('Publishing DCHost update', extra={
+            'publish_data': host_data,
+        })
         publish(settings.HERMES_HOST_UPDATE_TOPIC_NAME, host_data)
+
+
+def publish_host_update_from_related_model(instance, field_path):
+    from ralph.data_center.models import DCHost
+    updated_instances = DCHost.objects.filter(
+        **{field_path: instance}
+    )
+    logger.info('Publishing host update for {} instances'.format(
+        updated_instances.count()
+    ))
+    for instance in updated_instances:
+        publish_host_update(instance)

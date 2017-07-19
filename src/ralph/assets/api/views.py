@@ -72,6 +72,11 @@ class ManufacturerViewSet(RalphAPIViewSet):
     serializer_class = serializers.ManufacturerSerializer
 
 
+class ManufacturerKindViewSet(RalphAPIViewSet):
+    queryset = models.ManufacturerKind.objects.all()
+    serializer_class = serializers.ManufacturerKindSerializer
+
+
 class CategoryViewSet(RalphAPIViewSet):
     queryset = models.Category.objects.all()
     serializer_class = serializers.CategorySerializer

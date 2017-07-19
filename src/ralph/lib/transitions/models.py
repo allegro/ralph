@@ -36,7 +36,7 @@ from ralph.lib.external_services.models import (
     JOB_NOT_ENDED_STATUSES,
     JobQuerySet
 )
-from ralph.lib.metrics import mark
+from ralph.lib.metrics import statsd
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 from ralph.lib.transitions.conf import (
     DEFAULT_ASYNC_TRANSITION_SERVICE_NAME,
@@ -303,7 +303,7 @@ def run_transition(instances, transition_obj_or_name, field, data={}, **kwargs):
                 job_name=transition._get_metric_name(),
                 action='success' if success else 'failed'
             )
-            mark(metric_name)
+            statsd.incr(metric_name)
 
 
 def _prepare_action_data(
