@@ -1,10 +1,12 @@
-{% if attachment %}
+{% if attachments %}
   <script type="text/javascript">
-    (function($){
-      var $iframe = $('<iframe>')
-          .hide()
-          .prop('src', '{{ attachment }}')
-          .appendTo('body');
-    })(ralph.jQuery)
+    {% for attachment in attachments %}
+      (function($){
+        var $iframe = $('<iframe>')
+            .hide()
+            .prop('src', '{{ attachment }}')
+            .appendTo('body');
+      })(ralph.jQuery);
+    {% endfor %}
   </script>
 {% endif %}

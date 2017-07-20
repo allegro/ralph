@@ -46,7 +46,7 @@ class TransitionFormTest(TransitionTestCase):
             order_status + [TRANSITION_ORIGINAL_STATUS[1]]
         )
 
-    def test_should_raise_vaild_error_when_user_checked_two_or_more_actions_with_attachment(self):  # noqa
+    def test_should_pass_when_user_checked_two_or_more_actions_with_attachment(self):  # noqa
         transition_model, transition, actions = self._create_transition(
             Order, 'test'
         )
@@ -58,9 +58,4 @@ class TransitionFormTest(TransitionTestCase):
             'actions': list(actions.values_list('id', flat=True))
         }
         form = self._get_form(transition_model)(data, instance=transition)
-        self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {
-            'actions': [
-                'Please select at most one action which return attachment.'
-            ]
-        })
+        self.assertTrue(form.is_valid())

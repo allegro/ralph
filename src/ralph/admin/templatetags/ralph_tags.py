@@ -23,8 +23,8 @@ SENTRY_JS_CONFIG = getattr(settings, 'SENTRY_JS_CONFIG')
 )
 def download_attachment(context):
     return {
-        'attachment': context.request.session.pop(
-            'attachment_to_download', None
+        'attachments': context.request.session.pop(
+            'attachment_to_download', []
         )
     }
 

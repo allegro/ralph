@@ -89,11 +89,6 @@ class TransitionForm(forms.ModelForm):
                 one_action_name = getattr(action, 'verbose_name', '')
             any_async_action |= action.is_async
 
-        if attachment_counter > 1:
-            msg = _(
-                'Please select at most one action which return attachment.'
-            )
-            self.add_error('actions', msg)
         if one_action and len(actions_items) > 1:
             msg = _(
                 (
