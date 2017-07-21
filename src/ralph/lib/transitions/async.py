@@ -80,7 +80,7 @@ def _perform_async_transition(transition_job):
         tja.action_name for tja in executed_actions
         if tja.status != TransitionJobActionStatus.STARTED
     ])
-    attachment = None
+    attachments = []
     # TODO: move this to transition (sth like
     # `for action in transition.get_actions(obj)`)
     for action in _order_actions_by_requirements(transition.actions.all(), obj):
@@ -130,7 +130,7 @@ def _perform_async_transition(transition_job):
                     freeze = True
                 else:
                     if isinstance(result, Attachment):
-                        attachment = result
+                        attachments.append(result)
         except Exception as e:
             logger.exception(e)
             tja.status = TransitionJobActionStatus.FAILED
@@ -149,6 +149,6 @@ def _perform_async_transition(transition_job):
     _post_transition_instance_processing(
         obj, transition, transition_job.params['data'],
         history_kwargs=transition_job.params['history_kwargs'],
-        user=transition_job.user, attachment=attachment,
+        user=transition_job.user, attachments=attachments,
     )
     transition_job.success()

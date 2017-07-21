@@ -592,7 +592,6 @@ class TransitionsHistory(TimeStampMixin):
     target = models.CharField(max_length=50, blank=True, null=True)
     object_id = models.IntegerField(db_index=True)
     logged_user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    # attachment = models.ForeignKey(Attachment, blank=True, null=True)
     attachments = models.ManyToManyField(Attachment)
     kwargs = JSONField()
     actions = JSONField()
