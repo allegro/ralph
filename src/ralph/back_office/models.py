@@ -272,6 +272,7 @@ class BackOfficeAsset(Regionalizable, Asset):
                 )
             }
         },
+        run_after=['unassign_user']
     )
     def assign_user(cls, instances, **kwargs):
         user = get_user_model().objects.get(pk=int(kwargs['user']))
@@ -315,6 +316,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             'hostname might be generated for asset (only for particular model '
             'categories and only if owner\'s country has changed)'
         ),
+        run_after=['unassign_owner']
     )
     def assign_owner(cls, instances, **kwargs):
         owner = get_user_model().objects.get(pk=int(kwargs['owner']))
@@ -528,7 +530,7 @@ class BackOfficeAsset(Regionalizable, Asset):
         form_fields={
             'report_language': {
                 'field': forms.ModelChoiceField(
-                    label=_('Report language'),
+                    label=_('Report language (release)'),
                     queryset=ReportLanguage.objects.all().order_by('-default'),
                     empty_label=None
                 ),
@@ -549,7 +551,7 @@ class BackOfficeAsset(Regionalizable, Asset):
         form_fields={
             'report_language': {
                 'field': forms.ModelChoiceField(
-                    label=_('Report language'),
+                    label=_('Report language (return)'),
                     queryset=ReportLanguage.objects.all().order_by('-default'),
                     empty_label=None
                 ),
@@ -570,7 +572,7 @@ class BackOfficeAsset(Regionalizable, Asset):
         form_fields={
             'report_language': {
                 'field': forms.ModelChoiceField(
-                    label=_('Report language'),
+                    label=_('Report language (loan)'),
                     queryset=ReportLanguage.objects.all().order_by('-default'),
                     empty_label=None
                 ),
