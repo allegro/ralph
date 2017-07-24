@@ -21,10 +21,10 @@ SENTRY_JS_CONFIG = getattr(settings, 'SENTRY_JS_CONFIG')
 @register.inclusion_tag(
     'admin/templatetags/download_attachment.html', takes_context=True
 )
-def download_attachment(context):
+def download_attachments(context):
     return {
-        'attachments': context.request.session.pop(
-            'attachment_to_download', []
+        'attachments_to_download': context.request.session.pop(
+            'attachments_to_download', []
         )
     }
 

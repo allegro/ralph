@@ -1,6 +1,6 @@
-{% if attachments %}
+{% if attachments_to_download %}
   <script type="text/javascript">
-    {% for attachment in attachments %}
+    {% for attachment in attachments_to_download %}
       (function($){
         var $iframe = $('<iframe>')
             .hide()
