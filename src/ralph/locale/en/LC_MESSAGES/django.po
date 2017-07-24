@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-08-21 11:20+0200\n"
+"POT-Creation-Date: 2017-07-24 14:53+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,275 +17,692 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/ralph/accounts/admin.py:17
+#: accounts/admin.py:86
+msgid "go to asset"
+msgstr ""
+
+#: accounts/admin.py:88 accounts/admin.py:186 assets/admin.py:141
+#: dashboards/admin.py:104
+msgid "Link"
+msgstr ""
+
+#: accounts/admin.py:94
+msgid "Buyout date"
+msgstr ""
+
+#: accounts/admin.py:134
+msgid "Report failure"
+msgstr ""
+
+#: accounts/admin.py:150
+msgid "<div class=\"small-12 columns label alert\">missing</div>"
+msgstr ""
+
+#: accounts/admin.py:154
+msgid "<div class=\"small-12 columns label success\">confirmed</div>"
+msgstr ""
+
+#: accounts/admin.py:164
+msgid "yes"
+msgstr ""
+
+#: accounts/admin.py:169
+msgid "no"
+msgstr ""
+
+#: accounts/admin.py:172
+msgid "<i>Only asset's user can confirm.</i>"
+msgstr ""
+
+#: accounts/admin.py:173
+msgid "Do you have it?"
+msgstr ""
+
+#: accounts/admin.py:184
+msgid "go to licence"
+msgstr ""
+
+#: accounts/admin.py:229 deployment/admin.py:28 deployment/admin.py:46
+#: deployment/admin.py:66 networks/admin.py:282
+msgid "Additional info"
+msgstr ""
+
+#: accounts/admin.py:239
+#: admin/templates/admin/templatetags/transition_history.html:7
+msgid "Transition history"
+msgstr ""
+
+#: accounts/admin.py:265 accounts/templates/ralphuser/user_profile.html:14
 msgid "Personal info"
 msgstr ""
 
-#: src/ralph/accounts/admin.py:20
+#: accounts/admin.py:268
 msgid "Permissions"
 msgstr ""
 
-#: src/ralph/accounts/admin.py:26
+#: accounts/admin.py:274
 msgid "Important dates"
 msgstr ""
 
-#: src/ralph/accounts/admin.py:29
+#: accounts/admin.py:277 accounts/templates/ralphuser/user_profile.html:34
 msgid "Profile"
 msgstr ""
 
-#: src/ralph/accounts/admin.py:34
+#: accounts/admin.py:282 accounts/templates/ralphuser/user_profile.html:54
 msgid "Job info"
 msgstr ""
 
-#: src/ralph/accounts/apps.py:8
-msgid "Accounts"
+#: accounts/admin.py:316
+msgid "LDAP mapping"
 msgstr ""
 
-#: src/ralph/accounts/models.py:12
-msgid "gender"
-msgstr ""
-
-#: src/ralph/accounts/models.py:17
-msgid "country"
-msgstr ""
-
-#: src/ralph/accounts/models.py:22
-msgid "city"
-msgstr ""
-
-#: src/ralph/accounts/models.py:27
-msgid "company"
-msgstr ""
-
-#: src/ralph/accounts/models.py:32
-msgid "employee id"
-msgstr ""
-
-#: src/ralph/accounts/models.py:37
-msgid "profit center"
-msgstr ""
-
-#: src/ralph/accounts/models.py:42
-msgid "cost center"
-msgstr ""
-
-#: src/ralph/accounts/models.py:47
-msgid "department"
-msgstr ""
-
-#: src/ralph/accounts/models.py:52
-msgid "manager"
-msgstr ""
-
-#: src/ralph/accounts/models.py:57
-msgid "location"
-msgstr ""
-
-#: src/ralph/accounts/models.py:62
-msgid "segment"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:58
-msgid "Add"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:81
-msgid "Data Center"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:86 src/ralph/admin/sitetrees.py:110
-msgid "Hardware"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:87
-msgid "Racks"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:88
-msgid "Cloud projects"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:89
-msgid "Data Centers"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:90
-msgid "Databases"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:91
-msgid "Disk Shares"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:92
-msgid "Rack Accessories"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:93
-msgid "Server Rooms"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:94 src/ralph/data_center/models/virtual.py:16
-msgid "VIPs"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:95
-msgid "Virtual Servers"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:96
-msgid "IP Addresses"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:100
-msgid "DC Visualization"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:105
-msgid "Back Office"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:111
-msgid "Warehouses"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:115
-msgid "Licenses"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:120
-msgid "Licences"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:121 src/ralph/admin/sitetrees.py:132
-msgid "Types"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:122
-msgid "Categories"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:126 src/ralph/admin/sitetrees.py:131
-msgid "Supports"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:136
-#: src/ralph/reports/templates/reports/report_detail.html:5
-msgid "Reports"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:140
-msgid "Category model"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:144
-msgid "Category model status"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:148
-msgid "Manufacturer category model"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:152
-msgid "Status model"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:158
-msgid "Settings"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:163
-msgid "Asset model"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:164
-msgid "Asset category"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:165
-#: src/ralph/back_office/templates/backofficeasset/bo_asset_licence.html:11
-#: src/ralph/data_center/templates/data_center/datacenterasset/dc_asset_licences.html:11
-msgid "Manufacturer"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:166
-msgid "Service"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:167
-msgid "Environment"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:169
-msgid "Service Environment"
-msgstr ""
-
-#: src/ralph/admin/sitetrees.py:171
+#: accounts/admin.py:326 admin/sitetrees.py:306
 msgid "Users list"
 msgstr ""
 
-#: src/ralph/admin/sitetrees.py:172
+#: accounts/apps.py:9
+msgid "Accounts"
+msgstr ""
+
+#: accounts/models.py:33 accounts/models.py:79
+msgid "country"
+msgstr ""
+
+#: accounts/models.py:74
+msgid "gender"
+msgstr ""
+
+#: accounts/models.py:84
+msgid "city"
+msgstr ""
+
+#: accounts/models.py:89
+msgid "company"
+msgstr ""
+
+#: accounts/models.py:94
+msgid "employee id"
+msgstr ""
+
+#: accounts/models.py:99
+msgid "profit center"
+msgstr ""
+
+#: accounts/models.py:104
+msgid "cost center"
+msgstr ""
+
+#: accounts/models.py:109
+msgid "department"
+msgstr ""
+
+#: accounts/models.py:114
+msgid "manager"
+msgstr ""
+
+#: accounts/models.py:119
+msgid "location"
+msgstr ""
+
+#: accounts/models.py:124
+msgid "segment"
+msgstr ""
+
+#: accounts/templates/ralphuser/inventory_tag_confirmation.html:5
+msgid "Asset possession confirmation"
+msgstr ""
+
+#: accounts/templates/ralphuser/inventory_tag_confirmation.html:12
+msgid "Are you sure you have following item?"
+msgstr ""
+
+#: accounts/templates/ralphuser/inventory_tag_confirmation.html:14
+msgid "Are you sure you don't have this item?"
+msgstr ""
+
+#: accounts/templates/ralphuser/my_equipment.html:8
+#: accounts/templates/ralphuser/user_additional_info.html:7
+msgid "Assigned assets"
+msgstr ""
+
+#: accounts/templates/ralphuser/my_equipment.html:11
+#: accounts/templates/ralphuser/user_additional_info.html:11
+msgid "Assigned licences"
+msgstr ""
+
+#: accounts/templates/ralphuser/user_profile.html:5
+#: accounts/templates/ralphuser/user_profile.html:9
+#: admin/templates/admin/partials/userlinks.html:3
+msgid "My profile"
+msgstr ""
+
+#: accounts/templates/ralphuser/user_profile.html:18
+msgid "Username"
+msgstr ""
+
+#: accounts/templates/ralphuser/user_profile.html:20
+msgid "Full name"
+msgstr ""
+
+#: accounts/templates/ralphuser/user_profile.html:26
+msgid "API Token"
+msgstr ""
+
+#: accounts/templates/ralphuser/user_profile.html:38 back_office/models.py:435
+msgid "Country"
+msgstr ""
+
+#: accounts/templates/ralphuser/user_profile.html:40
+msgid "City"
+msgstr ""
+
+#: accounts/templates/ralphuser/user_profile.html:46
+msgid "Gender"
+msgstr ""
+
+#: accounts/templates/ralphuser/user_profile.html:58
+msgid "Company"
+msgstr ""
+
+#: accounts/templates/ralphuser/user_profile.html:60 admin/sitetrees.py:292
+msgid "Profit center"
+msgstr ""
+
+#: accounts/templates/ralphuser/user_profile.html:62
+msgid "Cost center"
+msgstr ""
+
+#: accounts/templates/ralphuser/user_profile.html:64
+msgid "Department"
+msgstr ""
+
+#: accounts/templates/ralphuser/user_profile.html:70
+msgid "Manager"
+msgstr ""
+
+#: accounts/templates/ralphuser/user_profile.html:72 data_center/admin.py:483
+#: data_center/admin.py:688
+msgid "Location"
+msgstr ""
+
+#: accounts/templates/ralphuser/user_profile.html:74
+msgid "Segment"
+msgstr ""
+
+#: accounts/templates/ralphuser/user_profile.html:83
+msgid "Preferences"
+msgstr ""
+
+#: accounts/templates/ralphuser/user_profile.html:94
+msgid "Change language"
+msgstr ""
+
+#: accounts/templates/ralphuser/user_transition_history.html:5
+msgid "User transition history"
+msgstr ""
+
+#: accounts/views.py:46 accounts/views.py:134
+msgid "Barcode / Inventory Number"
+msgstr ""
+
+#: accounts/views.py:48 accounts/views.py:136
+msgid "Serial Number"
+msgstr ""
+
+#: accounts/views.py:101
+msgid "Successfully tagged asset"
+msgstr ""
+
+#: accounts/views.py:165
+msgid "Inventory Number"
+msgstr ""
+
+#: admin/fields.py:29
+msgid ""
+"Field can't be empty. Please put the item OR items separated by new line or "
+"comma."
+msgstr ""
+
+#: admin/fields.py:39
+msgid "There are duplicates in field."
+msgstr ""
+
+#: admin/fields.py:57
+msgid "Enter a valid number."
+msgstr ""
+
+#: admin/fields.py:119
+#, python-format
+msgid "Fill at least on of %(v)s in each row"
+msgstr ""
+
+#: admin/fields.py:146
+msgid "Following items already exist: "
+msgstr ""
+
+#: admin/filters.py:57 admin/filters.py:512 networks/filters.py:32
+#, python-format
+msgid "Incorrect value in \"%(field_name)s\" filter"
+msgstr ""
+
+#: admin/filters.py:136 admin/sitetrees.py:266 admin/widgets.py:83
+#: reports/views.py:76
+msgid "All"
+msgstr ""
+
+#: admin/filters.py:156
+msgid "Yes"
+msgstr ""
+
+#: admin/filters.py:157
+msgid "No"
+msgstr ""
+
+#: admin/filters.py:310 admin/filters.py:317 virtual/admin.py:314
+#: virtual/admin.py:432
+msgid "Tags"
+msgstr ""
+
+#: admin/filters.py:522 admin/filters.py:528
+msgid "IP"
+msgstr ""
+
+#: admin/filters.py:552 admin/filters.py:558 deployment/deployment.py:591
+msgid "MAC Address"
+msgstr ""
+
+#: admin/filters.py:584 admin/filters.py:594
+msgid "show liquidated"
+msgstr ""
+
+#: admin/filters.py:614 admin/filters.py:629 data_center/admin.py:89
+#: data_center/admin.py:112 data_center/admin.py:672
+#: deployment/deployment.py:402 virtual/admin.py:187 virtual/admin.py:326
+msgid "Hostname"
+msgstr ""
+
+#. Translators: Model verbose name and instance
+#. representation, suitable to be an item in a
+#. list.
+#: admin/m2m.py:268
+#, python-format
+msgid "%(class_name)s %(instance)s"
+msgstr ""
+
+#: admin/m2m.py:275
+msgid "and"
+msgstr ""
+
+#: admin/m2m.py:278
+#, python-format
+msgid ""
+"Deleting %(class_name)s %(instance)s would require deleting the following "
+"protected related objects: %(related_objects)s"
+msgstr ""
+
+#: admin/mixins.py:157
+msgid "Found exactly one result."
+msgstr ""
+
+#: admin/sitetrees.py:66
+msgid "Add {}"
+msgstr ""
+
+#: admin/sitetrees.py:92 data_center/admin.py:540
+msgid "Data Center"
+msgstr ""
+
+#: admin/sitetrees.py:97
+msgid "All hosts"
+msgstr ""
+
+#: admin/sitetrees.py:99
+msgid "DC Visualization"
+msgstr ""
+
+#: admin/sitetrees.py:103 admin/sitetrees.py:130
+msgid "Hardware"
+msgstr ""
+
+#: admin/sitetrees.py:104
+msgid "Virtual Servers"
+msgstr ""
+
+#: admin/sitetrees.py:105
+msgid "Clusters"
+msgstr ""
+
+#: admin/sitetrees.py:106 virtual/models.py:198
+msgid "Cloud hosts"
+msgstr ""
+
+#: admin/sitetrees.py:107
+msgid "Cloud projects"
+msgstr ""
+
+#: admin/sitetrees.py:108
+msgid "Data Centers"
+msgstr ""
+
+#: admin/sitetrees.py:109
+msgid "Racks"
+msgstr ""
+
+#: admin/sitetrees.py:110
+msgid "Rack Accessories"
+msgstr ""
+
+#: admin/sitetrees.py:111
+msgid "Accessories"
+msgstr ""
+
+#: admin/sitetrees.py:112
+msgid "Databases"
+msgstr ""
+
+#: admin/sitetrees.py:113
+msgid "Disk Shares"
+msgstr ""
+
+#: admin/sitetrees.py:114
+msgid "Server Rooms"
+msgstr ""
+
+#: admin/sitetrees.py:115 data_center/models/virtual.py:53
+msgid "VIPs"
+msgstr ""
+
+#: admin/sitetrees.py:116
+msgid "Preboots"
+msgstr ""
+
+#: admin/sitetrees.py:118
+msgid "Preboot configuration"
+msgstr ""
+
+#: admin/sitetrees.py:121
+msgid "Preboot files"
+msgstr ""
+
+#: admin/sitetrees.py:125
+msgid "Back Office"
+msgstr ""
+
+#: admin/sitetrees.py:131
+msgid "Warehouses"
+msgstr ""
+
+#: admin/sitetrees.py:133 back_office/models.py:92
+msgid "Office Infrastructures"
+msgstr ""
+
+#: admin/sitetrees.py:140 admin/sitetrees.py:145
+msgid "Networks"
+msgstr ""
+
+#: admin/sitetrees.py:147
+msgid "Network environments"
+msgstr ""
+
+#: admin/sitetrees.py:149
+msgid "Network kind"
+msgstr ""
+
+#: admin/sitetrees.py:150 virtual/admin.py:210 virtual/admin.py:360
+msgid "IP Addresses"
+msgstr ""
+
+#: admin/sitetrees.py:151 dhcp/models.py:44
+msgid "DHCP Servers"
+msgstr ""
+
+#: admin/sitetrees.py:152 dhcp/models.py:66
+msgid "DNS Servers"
+msgstr ""
+
+#: admin/sitetrees.py:156
+msgid "Licenses"
+msgstr ""
+
+#: admin/sitetrees.py:161 data_center/admin.py:144 data_center/admin.py:269
+#: virtual/admin.py:82
+msgid "Licences"
+msgstr ""
+
+#: admin/sitetrees.py:162 admin/sitetrees.py:187 admin/sitetrees.py:267
+msgid "Types"
+msgstr ""
+
+#: admin/sitetrees.py:163
+msgid "Software"
+msgstr ""
+
+#: admin/sitetrees.py:167 admin/sitetrees.py:172
+msgid "Domains"
+msgstr ""
+
+#: admin/sitetrees.py:173
+msgid "Contracts"
+msgstr ""
+
+#: admin/sitetrees.py:174
+msgid "Registrants"
+msgstr ""
+
+#: admin/sitetrees.py:175
+msgid "Owners"
+msgstr ""
+
+#: admin/sitetrees.py:176
+msgid "DNS Providers"
+msgstr ""
+
+#: admin/sitetrees.py:177
+msgid "Domain Categories"
+msgstr ""
+
+#: admin/sitetrees.py:181 admin/sitetrees.py:186 back_office/admin.py:34
+#: data_center/admin.py:253
+msgid "Supports"
+msgstr ""
+
+#: admin/sitetrees.py:188
+msgid "Assets supports"
+msgstr ""
+
+#: admin/sitetrees.py:192 reports/templates/reports/report_detail.html:5
+msgid "Reports"
+msgstr ""
+
+#: admin/sitetrees.py:198
+msgid "Category model"
+msgstr ""
+
+#: admin/sitetrees.py:205
+msgid "Category model status"
+msgstr ""
+
+#: admin/sitetrees.py:212
+msgid "Manufacturer category model"
+msgstr ""
+
+#: admin/sitetrees.py:220
+msgid "Status model"
+msgstr ""
+
+#: admin/sitetrees.py:227 reports/views.py:319
+msgid "Asset - relations"
+msgstr ""
+
+#: admin/sitetrees.py:234 reports/views.py:478
+msgid "Licence - relations"
+msgstr ""
+
+#: admin/sitetrees.py:241
+msgid "Assets - supports"
+msgstr ""
+
+#: admin/sitetrees.py:248 admin/sitetrees.py:265 reports/views.py:583
+msgid "Failures"
+msgstr ""
+
+#: admin/sitetrees.py:257 operations/views.py:63
+msgid "Operations"
+msgstr ""
+
+#: admin/sitetrees.py:262
+msgid "Changes"
+msgstr ""
+
+#: admin/sitetrees.py:263
+msgid "Problems"
+msgstr ""
+
+#: admin/sitetrees.py:264
+msgid "Incidents"
+msgstr ""
+
+#: admin/sitetrees.py:268
+msgid "Statuses"
+msgstr ""
+
+#: admin/sitetrees.py:272 admin/sitetrees.py:277
+msgid "Dashboards"
+msgstr ""
+
+#: admin/sitetrees.py:278
+msgid "Graphs"
+msgstr ""
+
+#: admin/sitetrees.py:282
+msgid "Settings"
+msgstr ""
+
+#: admin/sitetrees.py:287
+msgid "Asset model"
+msgstr ""
+
+#: admin/sitetrees.py:288
+msgid "Asset category"
+msgstr ""
+
+#: admin/sitetrees.py:289
+msgid "Manufacturer"
+msgstr ""
+
+#: admin/sitetrees.py:290
+msgid "Manufacturer Kind"
+msgstr ""
+
+#: admin/sitetrees.py:291
+msgid "Business segment"
+msgstr ""
+
+#: admin/sitetrees.py:293
+#: admin/templates/admin/templatetags/my_services.html:12
+msgid "Service"
+msgstr ""
+
+#: admin/sitetrees.py:294
+#: admin/templates/admin/templatetags/my_services.html:13
+msgid "Environment"
+msgstr ""
+
+#: admin/sitetrees.py:295 assets/models/assets.py:348
+msgid "Budget info"
+msgstr ""
+
+#: admin/sitetrees.py:297
+msgid "Service Environment"
+msgstr ""
+
+#: admin/sitetrees.py:300
+msgid "Configuration modules"
+msgstr ""
+
+#: admin/sitetrees.py:303
+msgid "Configuration classes"
+msgstr ""
+
+#: admin/sitetrees.py:305
+msgid "Asset holder"
+msgstr ""
+
+#: admin/sitetrees.py:307
 msgid "Groups list"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/actions.html:4
+#: admin/sitetrees.py:308
+msgid "Regions"
+msgstr ""
+
+#: admin/sitetrees.py:309
+#: lib/transitions/templates/transitions/templatetags/available_transitions.html:7
+msgid "Transitions"
+msgstr ""
+
+#: admin/sitetrees.py:310
+msgid "Report template"
+msgstr ""
+
+#: admin/sitetrees.py:311
+msgid "Custom fields"
+msgstr ""
+
+#: admin/templates/admin/actions.html:5
+#: admin/templates/admin/templatetags/transition_history.html:18
+#: lib/transitions/templates/transitions/_transition_jobs_table.html:12
+#: lib/transitions/templates/transitions/current_transitions.html:27
 msgid "Actions"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/actions.html:9
+#: admin/templates/admin/actions.html:10
 msgid "Run the selected action"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/actions.html:10
+#: admin/templates/admin/actions.html:11
 msgid "Go"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/actions.html:20
-msgid "Click here to select the objects across all pages"
+#: admin/templates/admin/change_form.html:13
+#: admin/templates/admin/multi_add.html:53
+msgid "Add"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/actions.html:20
-#, python-format
-msgid "Select all %(total_count)s %(module_name)s"
-msgstr ""
-
-#: src/ralph/admin/templates/admin/actions.html:23
-msgid "Clear selection"
-msgstr ""
-
-#: src/ralph/admin/templates/admin/change_form.html:36
+#: admin/templates/admin/change_form.html:27
 msgid "History"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/change_form.html:54
-#: src/ralph/admin/templates/admin/change_list.html:81
-#: src/ralph/admin/templates/admin/login.html:22
+#: admin/templates/admin/change_form.html:61
+#: admin/templates/admin/change_list.html:73
+#: admin/templates/admin/login.html:26
 msgid "Please correct the error below."
 msgstr ""
 
-#: src/ralph/admin/templates/admin/change_form.html:56
-#: src/ralph/admin/templates/admin/change_list.html:83
-#: src/ralph/admin/templates/admin/login.html:22
+#: admin/templates/admin/change_form.html:63
+#: admin/templates/admin/change_list.html:75
+#: admin/templates/admin/login.html:26
 msgid "Please correct the errors below."
 msgstr ""
 
-#: src/ralph/admin/templates/admin/change_list.html:42
+#: admin/templates/admin/change_list.html:34
 msgid "Back to list"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/change_list.html:48
+#: admin/templates/admin/change_list.html:40
 #, python-format
 msgid ""
 "\n"
-"                  <i class=\"fa fa-plus\" aria-hidden=\"true\"></i> Add %(name)s\n"
+"                  <i class=\"fa fa-plus\" aria-hidden=\"true\"></i> Add "
+"%(name)s\n"
 "                "
 msgstr ""
 
-#: src/ralph/admin/templates/admin/change_list.html:55
-msgid "Options"
+#: admin/templates/admin/change_list.html:47
+msgid "Other actions"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/change_list.html:64
+#: admin/templates/admin/change_list.html:56
 #, python-format
 msgid ""
 "\n"
@@ -293,11 +710,23 @@ msgid ""
 "                          "
 msgstr ""
 
-#: src/ralph/admin/templates/admin/change_list_results.html:30
+#: admin/templates/admin/change_list_results.html:32
 msgid "Remove from sorting"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/delete_confirmation.html:8
+#: admin/templates/admin/change_list_results.html:63
+msgid "Nothing to display."
+msgstr ""
+
+#: admin/templates/admin/change_list_results.html:65
+#, python-format
+msgid ""
+"\n"
+"        You can <a href=\"%(add_url)s\">add first %(name)s</a>.\n"
+"      "
+msgstr ""
+
+#: admin/templates/admin/delete_confirmation.html:8
 #, python-format
 msgid ""
 "Deleting the %(object_name)s '%(escaped_object)s' would result in deleting "
@@ -305,14 +734,14 @@ msgid ""
 "following types of objects:"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/delete_confirmation.html:15
+#: admin/templates/admin/delete_confirmation.html:15
 #, python-format
 msgid ""
 "Deleting the %(object_name)s '%(escaped_object)s' would require deleting the "
 "following protected related objects:"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/delete_confirmation.html:23
+#: admin/templates/admin/delete_confirmation.html:23
 #, python-format
 msgid ""
 "\n"
@@ -321,22 +750,23 @@ msgid ""
 "      "
 msgstr ""
 
-#: src/ralph/admin/templates/admin/delete_confirmation.html:29
-#: src/ralph/admin/templates/admin/delete_selected_confirmation.html:30
+#: admin/templates/admin/delete_confirmation.html:29
+#: admin/templates/admin/delete_selected_confirmation.html:30
+#: assets/admin.py:151 operations/admin.py:88
 msgid "Objects"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/delete_confirmation.html:36
-#: src/ralph/admin/templates/admin/delete_selected_confirmation.html:41
+#: admin/templates/admin/delete_confirmation.html:36
+#: admin/templates/admin/delete_selected_confirmation.html:41
 msgid "Yes, I'm sure"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/delete_confirmation.html:37
-#: src/ralph/admin/templates/admin/delete_selected_confirmation.html:42
+#: admin/templates/admin/delete_confirmation.html:37
+#: admin/templates/admin/delete_selected_confirmation.html:42
 msgid "No, take me back"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/delete_selected_confirmation.html:7
+#: admin/templates/admin/delete_selected_confirmation.html:7
 #, python-format
 msgid ""
 "Deleting the selected %(objects_name)s would result in deleting related "
@@ -344,14 +774,14 @@ msgid ""
 "types of objects:"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/delete_selected_confirmation.html:14
+#: admin/templates/admin/delete_selected_confirmation.html:14
 #, python-format
 msgid ""
 "Deleting the selected %(objects_name)s would require deleting the following "
 "protected related objects:"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/delete_selected_confirmation.html:22
+#: admin/templates/admin/delete_selected_confirmation.html:22
 #, python-format
 msgid ""
 "\n"
@@ -360,1021 +790,2577 @@ msgid ""
 "      "
 msgstr ""
 
-#: src/ralph/admin/templates/admin/edit_inline/tabular.html:4
+#: admin/templates/admin/edit_inline/tabular.html:8
 #, python-format
 msgid "Add another %(verbose_name)s"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/edit_inline/tabular.html:4
+#: admin/templates/admin/edit_inline/tabular.html:8
 msgid "Remove"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/edit_inline/tabular.html:22
+#: admin/templates/admin/edit_inline/tabular.html:26
 msgid "Delete?"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/edit_inline/tabular.html:44
+#: admin/templates/admin/edit_inline/tabular.html:67
 msgid "Change"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/edit_inline/tabular.html:50
-msgid "View on site"
+#: admin/templates/admin/edit_inline/tabular_m2m.html:5
+msgid "Delete assignment?"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/filter.html:3
+#: admin/templates/admin/filters/_filter_base.html:7
 #, python-format
 msgid ""
 "\n"
-"    By %(filter_title)s\n"
-"  "
+"        %(filter_title)s\n"
+"      "
 msgstr ""
 
-#: src/ralph/admin/templates/admin/import_export/change_list_import_export.html:7
+#: admin/templates/admin/import_export/change_list_import_export.html:8
 msgid "Import"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/import_export/change_list_import_export.html:12
+#: admin/templates/admin/import_export/change_list_import_export.html:14
 msgid "Export"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/includes/object_delete_summary.html:3
+#: admin/templates/admin/includes/object_delete_summary.html:3
 msgid "Summary"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/login.html:54
+#: admin/templates/admin/index.html:25
+msgid "My Recent Actions"
+msgstr ""
+
+#: admin/templates/admin/index.html:29
+msgid "None available"
+msgstr ""
+
+#: admin/templates/admin/index.html:43
+msgid "Unknown content"
+msgstr ""
+
+#: admin/templates/admin/login.html:49
+msgid "Please login"
+msgstr ""
+
+#: admin/templates/admin/login.html:51
 msgid "Log in"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/login.html:60
+#: admin/templates/admin/login.html:57
 msgid "Forgotten your password or username?"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/object_history.html:12
-#: src/ralph/admin/templates/reversion/object_history.html:14
+#: admin/templates/admin/multi_add.html:5
+msgid "Bulk adding:"
+msgstr ""
+
+#: admin/templates/admin/multi_add.html:12
+msgid "This object will be multiplied"
+msgstr ""
+
+#: admin/templates/admin/multi_add.html:17
+msgid "Please add multiple values separated with comma, new line or pipe"
+msgstr ""
+
+#: admin/templates/admin/multi_add.html:47
+msgid "Cancel"
+msgstr ""
+
+#: admin/templates/admin/object_history.html:12
+#: admin/templates/reversion/object_history.html:14
 msgid "Date/time"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/object_history.html:13
-#: src/ralph/admin/templates/reversion/object_history.html:15
+#: admin/templates/admin/object_history.html:13
+#: admin/templates/reversion/object_history.html:15 back_office/models.py:268
+#: back_office/models.py:460
+#: lib/transitions/templates/transitions/_transition_jobs_table.html:6
 msgid "User"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/object_history.html:14
-#: src/ralph/back_office/templates/backofficeasset/components.html:14
-#: src/ralph/data_center/templates/data_center/datacenterasset/components.html:14
+#: admin/templates/admin/object_history.html:14
+#: back_office/templates/backofficeasset/components.html:14
+#: data_center/templates/data_center/datacenterasset/components.html:14
 msgid "Action"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/object_history.html:28
-#: src/ralph/admin/templates/reversion/object_history.html:37
+#: admin/templates/admin/object_history.html:28
+#: admin/templates/reversion/object_history.html:37
 msgid ""
 "This object doesn't have a change history. It probably wasn't added via this "
 "admin site."
 msgstr ""
 
-#: src/ralph/admin/templates/admin/pagination.html:17
+#: admin/templates/admin/pagination.html:21
 msgid "Show all"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/pagination.html:22
-#: src/ralph/admin/templates/admin/submit_line.html:15
+#: admin/templates/admin/pagination.html:26
+#: admin/templates/admin/submit_line.html:28 dns/templates/dns/dns_edit.html:36
 msgid "Save"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/partials/userlinks.html:4
+#: admin/templates/admin/partials/userlinks.html:6
+msgid "My equipment"
+msgstr ""
+
+#: admin/templates/admin/partials/userlinks.html:10
 msgid "Change password"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/partials/userlinks.html:8
+#: admin/templates/admin/partials/userlinks.html:14
 msgid "Log out"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/related_widget_wrapper.html:9
-#: src/ralph/admin/templates/admin/widgets/autocomplete.html:10
+#: admin/templates/admin/related_widget_wrapper.html:9
 #, python-format
 msgid "Change selected %(model)s"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/related_widget_wrapper.html:16
-#: src/ralph/admin/templates/admin/widgets/autocomplete.html:24
+#: admin/templates/admin/related_widget_wrapper.html:16
 #, python-format
 msgid "Add another %(model)s"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/related_widget_wrapper.html:23
+#: admin/templates/admin/search_form.html:7
 #, python-format
-msgid "Delete selected %(model)s"
+msgid "Search %(verbose_name)s by"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/search_form.html:8
-#: src/ralph/admin/templates/admin/widgets/autocomplete.html:16
-msgid "Search by"
-msgstr ""
-
-#: src/ralph/admin/templates/admin/search_form.html:12
-msgid "Search"
-msgstr ""
-
-#: src/ralph/admin/templates/admin/submit_line.html:7
+#: admin/templates/admin/submit_line.html:8
+#: attachments/templates/attachments/attachments.html:15
+#: dns/templates/dns/dns_edit.html:40
 msgid "Delete"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/submit_line.html:20
-msgid "Save as new"
+#: admin/templates/admin/submit_line.html:18
+msgid "Duplicate"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/submit_line.html:25
-msgid "Save and add another"
+#: admin/templates/admin/submit_line.html:22
+msgid "Bulk add"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/submit_line.html:30
-msgid "Save and continue editing"
+#: admin/templates/admin/templatetags/my_services.html:9
+msgid "My services"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/templatetags/tabs.html:8
-#: src/ralph/back_office/admin.py:40 src/ralph/data_center/admin.py:91
-#: src/ralph/licences/admin.py:66
+#: admin/templates/admin/templatetags/my_services.html:14 assets/admin.py:263
+msgid "Assets count"
+msgstr ""
+
+#: admin/templates/admin/templatetags/ralph_summary.html:12
+msgid "Show"
+msgstr ""
+
+#: admin/templates/admin/templatetags/tabs.html:13
+#: admin/templates/admin/templatetags/tabs.html:14 assets/admin.py:78
+#: back_office/admin.py:141 data_center/admin.py:166 data_center/admin.py:430
+#: deployment/admin.py:23 deployment/admin.py:41 deployment/admin.py:61
+#: domains/admin.py:45 domains/admin.py:88
+#: lib/transitions/templates/transitions/current_transitions.html:18
+#: licences/admin.py:104 networks/admin.py:34 networks/admin.py:138
+#: networks/admin.py:277 operations/admin.py:81 supports/admin.py:71
 msgid "Basic info"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/widgets/autocomplete.html:32
-msgid "Something goes wrong..."
+#: admin/templates/admin/templatetags/transition_history.html:13
+#: attachments/templates/attachments/attachments.html:14
+msgid "Date"
 msgstr ""
 
-#: src/ralph/admin/templates/admin/widgets/autocomplete.html:37
-msgid "No results"
+#: admin/templates/admin/templatetags/transition_history.html:14
+#: lib/transitions/templates/transitions/current_transitions.html:19
+msgid "Author"
 msgstr ""
 
-#: src/ralph/admin/templates/reversion/object_history.html:7
+#: admin/templates/admin/templatetags/transition_history.html:15
+#: lib/transitions/templates/transitions/current_transitions.html:20
+msgid "Transition"
+msgstr ""
+
+#: admin/templates/admin/templatetags/transition_history.html:16
+msgid "Source"
+msgstr ""
+
+#: admin/templates/admin/templatetags/transition_history.html:17
+msgid "Target"
+msgstr ""
+
+#: admin/templates/admin/templatetags/transition_history.html:19
+#: lib/transitions/templates/transitions/current_transitions.html:26
+msgid "Data"
+msgstr ""
+
+#: admin/templates/admin/templatetags/transition_history.html:20
+msgid "Attachment"
+msgstr ""
+
+#: admin/templates/admin/templatetags/transition_history.html:65
+msgid "Transition history is empty"
+msgstr ""
+
+#: admin/templates/reversion/object_history.html:7
 msgid ""
 "Choose a date from the list below to revert to a previous version of this "
 "object."
 msgstr ""
 
-#: src/ralph/admin/templates/reversion/object_history.html:16
+#: admin/templates/reversion/object_history.html:16
 msgid "Comment"
 msgstr ""
 
-#: src/ralph/admin/widgets.py:75 src/ralph/reports/views.py:173
-msgid "All"
+#: admin/views/multiadd.py:142
+#, python-format
+msgid "Saved %(count)d object(s): %(objects)s"
 msgstr ""
 
-#: src/ralph/assets/models/assets.py:98
+#: api/tests/test_fields.py:15 api/tests/test_serializers.py:22
+msgid "foo11"
+msgstr ""
+
+#: api/tests/test_fields.py:16 api/tests/test_serializers.py:23
+msgid "bar22"
+msgstr ""
+
+#: assets/admin.py:60
+msgid "Objects count"
+msgstr ""
+
+#: assets/admin.py:83 networks/admin.py:146
+msgid "Relations"
+msgstr ""
+
+#: assets/admin.py:100
+msgid "Children modules"
+msgstr ""
+
+#: assets/admin.py:111
+msgid "Children classes"
+msgstr ""
+
+#: assets/admin.py:139
+msgid "Go to object"
+msgstr ""
+
+#: assets/admin.py:145
+msgid "object"
+msgstr ""
+
+#: assets/admin.py:164 assets/models/assets.py:172 deployment/models.py:95
+#: deployment/models.py:115 operations/models.py:57
 msgid "type"
 msgstr ""
 
-#: src/ralph/assets/models/assets.py:107
+#: assets/admin.py:165 networks/models/networks.py:286
+msgid "environment"
+msgstr ""
+
+#: assets/invoice_report.py:44
+msgid "Invoice report"
+msgstr ""
+
+#: assets/invoice_report.py:84
+msgid "Selected items have different"
+msgstr ""
+
+#: assets/models/assets.py:149
+msgid "manufacturer kind"
+msgstr ""
+
+#: assets/models/assets.py:181
 msgid "Power consumption"
 msgstr ""
 
-#: src/ralph/assets/models/assets.py:112
+#: assets/models/assets.py:185
 msgid "Height of device"
 msgstr ""
 
-#: src/ralph/assets/models/assets.py:117
+#: assets/models/assets.py:190
 msgid "Cores count"
 msgstr ""
 
-#: src/ralph/assets/models/assets.py:122
+#: assets/models/assets.py:194
 msgid "visualization layout of front side"
 msgstr ""
 
-#: src/ralph/assets/models/assets.py:128
+#: assets/models/assets.py:200
 msgid "visualization layout of back side"
 msgstr ""
 
-#: src/ralph/assets/models/assets.py:137
-#: src/ralph/assets/models/components.py:47
+#: assets/models/assets.py:209 assets/models/components.py:83
 msgid "model"
 msgstr ""
 
-#: src/ralph/assets/models/assets.py:138
+#: assets/models/assets.py:210
 msgid "models"
 msgstr ""
 
-#: src/ralph/assets/models/assets.py:165
-msgid "category"
-msgstr ""
-
-#: src/ralph/assets/models/assets.py:166
-msgid "categories"
-msgstr ""
-
-#: src/ralph/assets/models/assets.py:216
-msgid "hostname"
-msgstr ""
-
-#: src/ralph/assets/models/assets.py:222
-msgid "SN"
-msgstr ""
-
-#: src/ralph/assets/models/assets.py:231
-msgid "barcode"
-msgstr ""
-
-#: src/ralph/assets/models/assets.py:238
-#: src/ralph/back_office/templates/backofficeasset/bo_asset_licence.html:9
-#: src/ralph/data_center/templates/data_center/datacenterasset/dc_asset_licences.html:9
-#: src/ralph/licences/models.py:91
-msgid "Inventory number"
-msgstr ""
-
-#: src/ralph/assets/models/assets.py:245 src/ralph/supports/models.py:48
-msgid "status"
-msgstr ""
-
-#: src/ralph/assets/models/assets.py:279
+#: assets/models/assets.py:258 assets/models/assets.py:424
 msgid ""
 "This value is in percentage. For example value: \"100\" means it depreciates "
 "during a year. Value: \"25\" means it depreciates during 4 years, and so "
 "on... ."
 msgstr ""
 
-#: src/ralph/assets/models/assets.py:360
+#: assets/models/assets.py:266 deployment/deployment.py:256
+msgid "category"
+msgstr ""
+
+#: assets/models/assets.py:267
+msgid "categories"
+msgstr ""
+
+#: assets/models/assets.py:349
+msgid "Budgets info"
+msgstr ""
+
+#: assets/models/assets.py:366 data_center/models/virtual.py:96
+#: networks/models/networks.py:618 virtual/models.py:190 virtual/models.py:328
+msgid "hostname"
+msgstr ""
+
+#: assets/models/assets.py:372 virtual/models.py:333
+msgid "SN"
+msgstr ""
+
+#: assets/models/assets.py:381
+msgid "barcode"
+msgstr ""
+
+#: assets/models/assets.py:388 licences/models.py:178
+msgid "inventory number"
+msgstr ""
+
+#: assets/models/assets.py:393
+msgid "order number"
+msgstr ""
+
+#: assets/models/assets.py:399 supports/models.py:101
+msgid "invoice number"
+msgstr ""
+
+#: assets/models/assets.py:516
 msgid "SN or BARCODE field is required"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:9
+#: assets/models/base.py:88
+msgid "configuration path"
+msgstr ""
+
+#: assets/models/base.py:90
+msgid "path to configuration for this object, for example path to puppet class"
+msgstr ""
+
+#: assets/models/choices.py:9
 msgid "for contractor"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:10
+#: assets/models/choices.py:10
 msgid "sectional"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:11
+#: assets/models/choices.py:11
 msgid "for dashboards"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:12
+#: assets/models/choices.py:12
 msgid "for events"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:13
+#: assets/models/choices.py:13
 msgid "for tests"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:14
+#: assets/models/choices.py:14
 msgid "others"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:21 src/ralph/supports/models.py:22
-msgid "new"
-msgstr ""
-
-#: src/ralph/assets/models/choices.py:22
-msgid "in progress"
-msgstr ""
-
-#: src/ralph/assets/models/choices.py:23
-msgid "waiting for release"
-msgstr ""
-
-#: src/ralph/assets/models/choices.py:24
-msgid "in use"
-msgstr ""
-
-#: src/ralph/assets/models/choices.py:25
-msgid "loan"
-msgstr ""
-
-#: src/ralph/assets/models/choices.py:26
-msgid "damaged"
-msgstr ""
-
-#: src/ralph/assets/models/choices.py:27
-msgid "liquidated"
-msgstr ""
-
-#: src/ralph/assets/models/choices.py:28
-msgid "in service"
-msgstr ""
-
-#: src/ralph/assets/models/choices.py:29
-msgid "in repair"
-msgstr ""
-
-#: src/ralph/assets/models/choices.py:30
-msgid "scm_ok"
-msgstr ""
-
-#: src/ralph/assets/models/choices.py:31
-msgid "to deploy"
-msgstr ""
-
-#: src/ralph/assets/models/choices.py:37
+#: assets/models/choices.py:20
 msgid "shipment"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:38
+#: assets/models/choices.py:21
 msgid "salvaged"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:44
+#: assets/models/choices.py:27
 msgid "back office"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:45
-#: src/ralph/data_center/models/networks.py:83
-#: src/ralph/data_center/models/networks.py:181
-#: src/ralph/data_center/models/physical.py:98
+#: assets/models/choices.py:28 data_center/models/physical.py:131
+#: data_center/models/physical.py:133 networks/models/networks.py:58
 msgid "data center"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:46
+#: assets/models/choices.py:29
 msgid "part"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:47
+#: assets/models/choices.py:30
 msgid "all"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:53
+#: assets/models/choices.py:36
 msgid "N/A"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:54
-msgid "1x2"
+#: assets/models/choices.py:37
+msgid "1 row x 2 columns"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:55
-msgid "2x8"
+#: assets/models/choices.py:38
+msgid "2 rows x 8 columns"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:56
-msgid "2x16 (A/B)"
+#: assets/models/choices.py:39
+msgid "2 rows x 16 columns (A/B)"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:57
-msgid "4x2"
+#: assets/models/choices.py:42
+msgid "4 rows x 2 columns"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:63
+#: assets/models/choices.py:43
+msgid "2 rows x 4 columns"
+msgstr ""
+
+#: assets/models/choices.py:44
+msgid "2 rows x 2 columns"
+msgstr ""
+
+#: assets/models/choices.py:45
+msgid "1 rows x 14 columns"
+msgstr ""
+
+#: assets/models/choices.py:46
+msgid "2 rows x 1 columns"
+msgstr ""
+
+#: assets/models/choices.py:52 assets/models/components.py:227
 msgid "processor"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:64
+#: assets/models/choices.py:53 assets/models/components.py:188
+#: assets/models/components.py:189
 msgid "memory"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:65
+#: assets/models/choices.py:54
 msgid "disk drive"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:66
+#: assets/models/choices.py:55
 msgid "ethernet card"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:67
+#: assets/models/choices.py:56
 msgid "expansion card"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:68
+#: assets/models/choices.py:57 assets/models/components.py:213
 msgid "fibre channel card"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:69
-#: src/ralph/data_center/models/components.py:35
+#: assets/models/choices.py:58 data_center/models/components.py:36
 msgid "disk share"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:70
+#: assets/models/choices.py:59
 msgid "unknown"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:71
+#: assets/models/choices.py:60
 msgid "management"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:72
+#: assets/models/choices.py:61
 msgid "power module"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:73
+#: assets/models/choices.py:62
 msgid "cooling device"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:74
+#: assets/models/choices.py:63
 msgid "media tray"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:75
+#: assets/models/choices.py:64
 msgid "chassis"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:76
+#: assets/models/choices.py:65
 msgid "backup"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:77
+#: assets/models/choices.py:66
 msgid "software"
 msgstr ""
 
-#: src/ralph/assets/models/choices.py:78
+#: assets/models/choices.py:67
 msgid "operating system"
 msgstr ""
 
-#: src/ralph/assets/models/components.py:13
+#: assets/models/choices.py:73
+msgid "10 Mbps"
+msgstr ""
+
+#: assets/models/choices.py:74
+msgid "100 Mbps"
+msgstr ""
+
+#: assets/models/choices.py:75
+msgid "1 Gbps"
+msgstr ""
+
+#: assets/models/choices.py:76
+msgid "10 Gbps"
+msgstr ""
+
+#: assets/models/choices.py:77
+msgid "40 Gbps"
+msgstr ""
+
+#: assets/models/choices.py:78
+msgid "100 Gbps"
+msgstr ""
+
+#: assets/models/choices.py:81 assets/models/choices.py:95
+msgid "unknown speed"
+msgstr ""
+
+#: assets/models/choices.py:87
+msgid "1 Gbit"
+msgstr ""
+
+#: assets/models/choices.py:88
+msgid "2 Gbit"
+msgstr ""
+
+#: assets/models/choices.py:89
+msgid "4 Gbit"
+msgstr ""
+
+#: assets/models/choices.py:90
+msgid "8 Gbit"
+msgstr ""
+
+#: assets/models/choices.py:91
+msgid "16 Gbit"
+msgstr ""
+
+#: assets/models/choices.py:92
+msgid "32 Gbit"
+msgstr ""
+
+#: assets/models/components.py:39 assets/models/components.py:184
+#: assets/models/components.py:222
 msgid "speed (MHz)"
 msgstr ""
 
-#: src/ralph/assets/models/components.py:18
+#: assets/models/components.py:44
 msgid "number of cores"
 msgstr ""
 
-#: src/ralph/assets/models/components.py:23
-#: src/ralph/data_center/models/components.py:21
-#: src/ralph/data_center/models/components.py:54
+#: assets/models/components.py:49 assets/models/components.py:182
+#: data_center/models/components.py:22 data_center/models/components.py:55
 msgid "size (MiB)"
 msgstr ""
 
-#: src/ralph/assets/models/components.py:28
+#: assets/models/components.py:54
 msgid "component type"
 msgstr ""
 
-#: src/ralph/assets/models/components.py:36
+#: assets/models/components.py:70
 msgid "component model"
 msgstr ""
 
-#: src/ralph/assets/models/components.py:37
+#: assets/models/components.py:71
 msgid "component models"
 msgstr ""
 
-#: src/ralph/assets/models/components.py:60
+#: assets/models/components.py:90
+msgid "model name"
+msgstr ""
+
+#: assets/models/components.py:99 assets/models/components.py:114
 msgid "label"
 msgstr ""
 
-#: src/ralph/assets/models/components.py:64
+#: assets/models/components.py:103
 msgid "vendor SN"
 msgstr ""
 
-#: src/ralph/assets/models/components.py:69
+#: assets/models/components.py:108
 msgid "generic component"
 msgstr ""
 
-#: src/ralph/assets/models/components.py:70
+#: assets/models/components.py:109
 msgid "generic components"
 msgstr ""
 
-#: src/ralph/back_office/admin.py:47
-msgid "User Info"
+#: assets/models/components.py:117
+msgid "MAC address"
 msgstr ""
 
-#: src/ralph/back_office/admin.py:52
-msgid "Financial Info"
+#: assets/models/components.py:121 assets/models/components.py:201
+msgid "speed"
 msgstr ""
 
-#: src/ralph/back_office/models.py:28
-msgid "Loan end date"
+#: assets/models/components.py:125 assets/models/components.py:197
+#: assets/models/components.py:246 data_center/models/physical.py:426
+msgid "firmware version"
 msgstr ""
 
-#: src/ralph/back_office/models.py:32
-msgid "Back Office Asset"
+#: assets/models/components.py:130
+msgid "ethernet"
 msgstr ""
 
-#: src/ralph/back_office/models.py:33
-msgid "Back Office Assets"
+#: assets/models/components.py:131
+msgid "ethernets"
 msgstr ""
 
-#: src/ralph/back_office/templates/backofficeasset/bo_asset_licence.html:8
-#: src/ralph/data_center/templates/data_center/datacenterasset/dc_asset_licences.html:8
-msgid "Licence  Type"
+#: assets/models/components.py:145
+msgid "MAC cannot be empty if record is exposed in DHCP"
 msgstr ""
 
-#: src/ralph/back_office/templates/backofficeasset/bo_asset_licence.html:12
-#: src/ralph/data_center/templates/data_center/datacenterasset/dc_asset_licences.html:12
-msgid "Software Category"
+#: assets/models/components.py:208
+msgid "WWN"
 msgstr ""
 
-#: src/ralph/back_office/templates/backofficeasset/bo_asset_licence.html:13
-#: src/ralph/data_center/templates/data_center/datacenterasset/dc_asset_licences.html:13
-#: src/ralph/licences/models.py:82
-msgid "Number of purchased items"
+#: assets/models/components.py:214
+msgid "fibre channel cards"
 msgstr ""
 
-#: src/ralph/back_office/templates/backofficeasset/bo_asset_licence.html:14
-#: src/ralph/data_center/templates/data_center/datacenterasset/dc_asset_licences.html:14
-msgid "Used"
+#: assets/models/components.py:228
+msgid "processors"
 msgstr ""
 
-#: src/ralph/back_office/templates/backofficeasset/bo_asset_licence.html:15
-#: src/ralph/data_center/templates/data_center/datacenterasset/dc_asset_licences.html:15
-#: src/ralph/licences/models.py:97 src/ralph/supports/models.py:58
-msgid "Invoice date"
+#: assets/models/components.py:237
+msgid "size (GiB)"
 msgstr ""
 
-#: src/ralph/back_office/templates/backofficeasset/bo_asset_licence.html:16
-#: src/ralph/data_center/templates/data_center/datacenterasset/dc_asset_licences.html:16
-msgid "Invoice no."
+#: assets/models/components.py:239 supports/models.py:96
+msgid "serial number"
 msgstr ""
 
-#: src/ralph/back_office/templates/backofficeasset/bo_asset_licence.html:17
-#: src/ralph/data_center/templates/data_center/datacenterasset/dc_asset_licences.html:17
-msgid "Valid thru"
+#: assets/models/components.py:243 data_center/models/physical.py:420
+msgid "slot number"
 msgstr ""
 
-#: src/ralph/back_office/templates/backofficeasset/bo_asset_licence.html:18
-#: src/ralph/data_center/templates/data_center/datacenterasset/dc_asset_licences.html:18
-msgid "Created"
+#: assets/models/components.py:251
+msgid "disk"
 msgstr ""
 
-#: src/ralph/back_office/templates/backofficeasset/components.html:8
-#: src/ralph/back_office/templates/backofficeasset/software.html:8
-#: src/ralph/data_center/templates/data_center/datacenterasset/components.html:8
-#: src/ralph/data_center/templates/data_center/datacenterasset/security_info.html:10
-#: src/ralph/data_center/templates/data_center/datacenterasset/software.html:8
-msgid "Label"
+#: assets/models/components.py:252
+msgid "disks"
 msgstr ""
 
-#: src/ralph/back_office/templates/backofficeasset/components.html:9
-#: src/ralph/data_center/templates/data_center/datacenterasset/components.html:9
-msgid "Model"
-msgstr ""
-
-#: src/ralph/back_office/templates/backofficeasset/components.html:10
-#: src/ralph/data_center/templates/data_center/datacenterasset/components.html:10
-msgid "Serial number"
-msgstr ""
-
-#: src/ralph/back_office/templates/backofficeasset/components.html:11
-#: src/ralph/data_center/templates/data_center/datacenterasset/components.html:11
-msgid "Speed"
-msgstr ""
-
-#: src/ralph/back_office/templates/backofficeasset/components.html:12
-#: src/ralph/data_center/templates/data_center/datacenterasset/components.html:12
-msgid "Size"
-msgstr ""
-
-#: src/ralph/back_office/templates/backofficeasset/components.html:13
-#: src/ralph/data_center/templates/data_center/datacenterasset/components.html:13
-msgid "Count"
-msgstr ""
-
-#: src/ralph/back_office/templates/backofficeasset/software.html:9
-#: src/ralph/data_center/templates/data_center/datacenterasset/security_info.html:11
-#: src/ralph/data_center/templates/data_center/datacenterasset/software.html:9
-msgid "Version"
-msgstr ""
-
-#: src/ralph/data_center/admin.py:97
-msgid "Location Info"
-msgstr ""
-
-#: src/ralph/data_center/admin.py:102
-msgid "Usage info"
-msgstr ""
-
-#: src/ralph/data_center/admin.py:108
-msgid "Financial & Order Info"
-msgstr ""
-
-#: src/ralph/data_center/models/choices.py:10
-msgid "front"
-msgstr ""
-
-#: src/ralph/data_center/models/choices.py:11
-msgid "back"
-msgstr ""
-
-#: src/ralph/data_center/models/choices.py:12
-msgid "middle"
-msgstr ""
-
-#: src/ralph/data_center/models/choices.py:15
-#: src/ralph/data_center/models/choices.py:38
-msgid "left"
-msgstr ""
-
-#: src/ralph/data_center/models/choices.py:16
-#: src/ralph/data_center/models/choices.py:39
-msgid "right"
-msgstr ""
-
-#: src/ralph/data_center/models/choices.py:36
-msgid "top"
-msgstr ""
-
-#: src/ralph/data_center/models/choices.py:37
-msgid "bottom"
-msgstr ""
-
-#: src/ralph/data_center/models/choices.py:45
-msgid "network connection"
-msgstr ""
-
-#: src/ralph/data_center/models/components.py:14
-msgid "share identifier"
-msgstr ""
-
-#: src/ralph/data_center/models/components.py:17
-#: src/ralph/lib/mixins/models.py:10 src/ralph/lib/mixins/models.py:20
+#: assets/models/configuration.py:31 data_center/models/components.py:18
+#: data_center/models/virtual.py:42 data_center/models/virtual.py:90
+#: lib/mixins/models.py:13 lib/mixins/models.py:24 security/models.py:47
+#: virtual/models.py:45
 msgid "name"
 msgstr ""
 
-#: src/ralph/data_center/models/components.py:24
-msgid "size for snapshots (MiB)"
+#: assets/models/configuration.py:33
+msgid "module name (ex. directory name in puppet)"
 msgstr ""
 
-#: src/ralph/data_center/models/components.py:27
-msgid "Volume serial"
+#: assets/models/configuration.py:38
+msgid "parent module"
 msgstr ""
 
-#: src/ralph/data_center/models/components.py:36
-msgid "disk shares"
+#: assets/models/configuration.py:47
+msgid "team"
 msgstr ""
 
-#: src/ralph/data_center/models/components.py:44
-msgid "share"
+#: assets/models/configuration.py:55
+msgid "configuration module"
 msgstr ""
 
-#: src/ralph/data_center/models/components.py:46
-#: src/ralph/data_center/models/networks.py:464
-msgid "asset"
+#: assets/models/configuration.py:74
+msgid "class name"
 msgstr ""
 
-#: src/ralph/data_center/models/components.py:50
-msgid "volume"
+#: assets/models/configuration.py:76
+msgid "ex. puppet class"
 msgstr ""
 
-#: src/ralph/data_center/models/components.py:69
-msgid "disk share mount"
+#: assets/models/configuration.py:80
+msgid "path"
 msgstr ""
 
-#: src/ralph/data_center/models/components.py:70
-msgid "disk share mounts"
+#: assets/models/configuration.py:85
+msgid "path is constructed from name of module and name of class"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:72
-#: src/ralph/data_center/models/networks.py:213
-msgid "network kind"
+#: assets/models/configuration.py:95
+msgid "configuration class"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:73
-msgid "network kinds"
+#: assets/views.py:18
+msgid "Components"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:87
-#: src/ralph/data_center/models/networks.py:456
-msgid "discovery queue"
+#: attachments/templates/attachments/attachments.html:12
+msgid "File"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:93
-msgid "hosts naming template"
+#: attachments/templates/attachments/attachments.html:13
+msgid "Description"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:96
-msgid ""
-"E.g. h<200,299>.dc|h<400,499>.dc will produce: h200.dc h201.dc ... h299.dc "
-"h400.dc h401.dc"
+#: back_office/admin.py:41 data_center/admin.py:260
+msgid "Support"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:101
-msgid "next server"
+#: back_office/admin.py:51 back_office/admin.py:58 back_office/models.py:310
+msgid "Licence"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:105
-msgid "The address for a TFTP server for DHCP."
+#: back_office/admin.py:148
+msgid "User Info"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:108
-msgid "domain"
+#: back_office/admin.py:153
+msgid "Financial Info"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:114
-#: src/ralph/data_center/models/networks.py:164
-msgid "remarks"
+#: back_office/admin.py:181
+msgid "licences"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:115
-#: src/ralph/data_center/models/networks.py:165
-msgid "Additional information."
+#: back_office/models.py:70 data_center/models/choices.py:9
+#: supports/models.py:27 tests/models.py:24 virtual/models.py:303
+msgid "new"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:132
-msgid "network address"
+#: back_office/models.py:71 operations/migrations/0010_auto_20170410_1031.py:16
+msgid "in progress"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:133
-msgid "Presented as string (e.g. 192.168.0.0/24)"
+#: back_office/models.py:72
+msgid "waiting for release"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:138
-msgid "gateway address"
+#: back_office/models.py:73 data_center/models/choices.py:10
+#: data_center/models/virtual.py:77 virtual/models.py:304
+msgid "in use"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:139
-#: src/ralph/data_center/models/networks.py:472
-msgid "Presented as string."
+#: back_office/models.py:74
+msgid "loan"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:145
-msgid "gateway as int"
+#: back_office/models.py:75 data_center/models/choices.py:12
+msgid "damaged"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:152
+#: back_office/models.py:76 data_center/models/choices.py:13
+#: virtual/models.py:306
+msgid "liquidated"
+msgstr ""
+
+#: back_office/models.py:77
+msgid "in service"
+msgstr ""
+
+#: back_office/models.py:78
+msgid "installed"
+msgstr ""
+
+#: back_office/models.py:79 data_center/models/choices.py:11
+msgid "free"
+msgstr ""
+
+#: back_office/models.py:80 networks/models/choices.py:8
 msgid "reserved"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:154
+#: back_office/models.py:91
+msgid "Office Infrastructure"
+msgstr ""
+
+#: back_office/models.py:119
+msgid "user not assigned"
+msgstr ""
+
+#: back_office/models.py:164 back_office/models.py:353
+msgid "Loan end date"
+msgstr ""
+
+#: back_office/models.py:178
+msgid "Back Office Asset"
+msgstr ""
+
+#: back_office/models.py:179
+msgid "Back Office Assets"
+msgstr ""
+
+#: back_office/models.py:202
+#, python-format
+msgid "%(imei)s is not IMEI format"
+msgstr ""
+
+#: back_office/models.py:286 back_office/models.py:464
+msgid "Owner"
+msgstr ""
+
+#: back_office/models.py:294
 msgid ""
-"Number of addresses to be omitted in the automatic determination process, "
-"counted from the first in range."
+"During this transition owner will be assigned as well as new hostname might "
+"be generated for asset (only for particular model categories and only if "
+"owner's country has changed)"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:158
-msgid "reserved (top margin)"
+#: back_office/models.py:373 data_center/models/physical.py:713
+msgid "Warehouse"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:159
+#: back_office/models.py:387
+msgid "Office infrastructure"
+msgstr ""
+
+#: back_office/models.py:403
+msgid "Remarks"
+msgstr ""
+
+#: back_office/models.py:417
+msgid "task URL"
+msgstr ""
+
+#: back_office/models.py:525
+msgid "Document autogenerated by {} transition."
+msgstr ""
+
+#: back_office/models.py:533
+msgid "Release report language"
+msgstr ""
+
+#: back_office/models.py:554
+msgid "Return report language"
+msgstr ""
+
+#: back_office/models.py:575
+msgid "Loan report language"
+msgstr ""
+
+#: back_office/models.py:593
+msgid "Convert to DataCenter Asset"
+msgstr ""
+
+#: back_office/models.py:598
+msgid "Rack"
+msgstr ""
+
+#: back_office/models.py:603
+msgid "Position"
+msgstr ""
+
+#: back_office/models.py:606
+#: back_office/templates/backofficeasset/components.html:9
+#: data_center/templates/data_center/datacenterasset/components.html:9
+msgid "Model"
+msgstr ""
+
+#: back_office/models.py:611 virtual/admin.py:386
+msgid "Service env"
+msgstr ""
+
+#: back_office/templates/backofficeasset/components.html:8
+#: back_office/templates/backofficeasset/software.html:8
+#: data_center/templates/data_center/datacenterasset/components.html:8
+#: data_center/templates/data_center/datacenterasset/software.html:8
+msgid "Label"
+msgstr ""
+
+#: back_office/templates/backofficeasset/components.html:10
+#: data_center/templates/data_center/datacenterasset/components.html:10
+msgid "Serial number"
+msgstr ""
+
+#: back_office/templates/backofficeasset/components.html:11
+#: data_center/templates/data_center/datacenterasset/components.html:11
+msgid "Speed"
+msgstr ""
+
+#: back_office/templates/backofficeasset/components.html:12
+#: data_center/templates/data_center/datacenterasset/components.html:12
+msgid "Size"
+msgstr ""
+
+#: back_office/templates/backofficeasset/components.html:13
+#: dashboards/models.py:49
+#: data_center/templates/data_center/datacenterasset/components.html:13
+msgid "Count"
+msgstr ""
+
+#: back_office/templates/backofficeasset/software.html:9
+#: data_center/templates/data_center/datacenterasset/software.html:9
+msgid "Version"
+msgstr ""
+
+#: configuration_management/models.py:14
+msgid "OK"
+msgstr ""
+
+#: configuration_management/models.py:15
+msgid "Check failed"
+msgstr ""
+
+#: configuration_management/models.py:19
+msgid "Error"
+msgstr ""
+
+#: configuration_management/models.py:35
+msgid "Last SCM check"
+msgstr ""
+
+#: configuration_management/models.py:41
+msgid "SCM check result"
+msgstr ""
+
+#: configuration_management/templates/configuration_management/scminfo/scm_info.html:9
+msgid "SCM status information"
+msgstr ""
+
+#: configuration_management/templates/configuration_management/scminfo/scm_info.html:13
+msgid "Last checked"
+msgstr ""
+
+#: configuration_management/templates/configuration_management/scminfo/scm_info.html:17
+#: configuration_management/views.py:96
+msgid "SCM status"
+msgstr ""
+
+#: configuration_management/templates/configuration_management/scminfo/scm_info.html:21
+msgid "Details"
+msgstr ""
+
+#: configuration_management/templates/configuration_management/scminfo/scm_info.html:27
 msgid ""
-"Number of addresses to be omitted in the automatic determination process, "
-"counted from the last in range."
+"The status of the software configuration management for this host is unknown."
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:171
-#: src/ralph/data_center/models/networks.py:449
-msgid "network terminators"
+#: dashboards/admin.py:93
+msgid "Graph"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:174
-msgid "VLAN number"
+#: dashboards/admin.py:101
+msgid "<a href=\"{}\" target=\"_blank\">Dashboard</a>"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:187
-msgid "racks"
+#: dashboards/admin_filters.py:12
+msgid "Graph ID"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:192
-msgid "environment"
+#: dashboards/models.py:50
+msgid "Max"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:198
-msgid "smallest IP number"
+#: dashboards/models.py:51
+msgid "Sum"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:205
-msgid "largest IP number"
+#: dashboards/models.py:52
+msgid "Ratio"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:220
-msgid "Ignore addresses from this network"
+#: dashboards/models.py:60
+msgid "Verical Bar"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:223
+#: dashboards/models.py:61
+msgid "Horizontal Bar"
+msgstr ""
+
+#: dashboards/models.py:62
+msgid "Pie Chart"
+msgstr ""
+
+#: data_center/admin.py:191 virtual/admin.py:151
+msgid "Base Object"
+msgstr ""
+
+#: data_center/admin.py:203
+msgid "Master Info"
+msgstr ""
+
+#: data_center/admin.py:221
+msgid "Master info"
+msgstr ""
+
+#: data_center/admin.py:234 networks/views.py:23
+msgid "Terminators of"
+msgstr ""
+
+#: data_center/admin.py:437
+msgid "Location Info"
+msgstr ""
+
+#: data_center/admin.py:443
+msgid "Usage info"
+msgstr ""
+
+#: data_center/admin.py:449
+msgid "Financial & Order Info"
+msgstr ""
+
+#: data_center/admin.py:478
+msgid "Visualization"
+msgstr ""
+
+#: data_center/admin.py:498
+msgid "Created at"
+msgstr ""
+
+#: data_center/admin.py:535
+msgid "Server room"
+msgstr ""
+
+#: data_center/forms.py:58
 msgid ""
-"Addresses from this network should never be assigned to any device, because "
-"they are not unique."
+"Management IP is already assigned to <a target=\"_blank\" href=\"{}\">{}</a>"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:228
-msgid "Broadcast in DHCP configuration"
+#: data_center/forms.py:76
+msgid "Management hostname is already used"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:233
-msgid "DHCP additional configuration"
+#: data_center/forms.py:82
+msgid ""
+"Management hostname is already assigned to <a target=\"_blank\" href="
+"\"{}\">{}</a>"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:239
-msgid "network"
+#: data_center/forms.py:99
+msgid "Management IP could not be empty when management hostname is passed"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:240
-msgid "networks"
+#: data_center/models/choices.py:14 virtual/models.py:305
+msgid "to deploy"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:448
-msgid "network terminator"
+#: data_center/models/choices.py:15
+msgid "cleaned"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:457
-msgid "discovery queues"
+#: data_center/models/choices.py:16
+msgid "pre liquidated"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:471
-#: src/ralph/data_center/models/networks.py:479
-#: src/ralph/data_center/models/networks.py:495
-msgid "IP address"
+#: data_center/models/choices.py:23
+msgid "front"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:480
-msgid "Presented as int."
+#: data_center/models/choices.py:24
+msgid "back"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:485
-msgid "This is a management address"
+#: data_center/models/choices.py:25
+msgid "middle"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:489
-msgid "This is a public address"
+#: data_center/models/choices.py:28 data_center/models/choices.py:51
+msgid "left"
 msgstr ""
 
-#: src/ralph/data_center/models/networks.py:496
-msgid "IP addresses"
+#: data_center/models/choices.py:29 data_center/models/choices.py:52
+msgid "right"
 msgstr ""
 
-#: src/ralph/data_center/models/physical.py:75
+#: data_center/models/choices.py:49
+msgid "top"
+msgstr ""
+
+#: data_center/models/choices.py:50
+msgid "bottom"
+msgstr ""
+
+#: data_center/models/choices.py:58
+msgid "network connection"
+msgstr ""
+
+#: data_center/models/components.py:15
+msgid "share identifier"
+msgstr ""
+
+#: data_center/models/components.py:25
+msgid "size for snapshots (MiB)"
+msgstr ""
+
+#: data_center/models/components.py:28
+msgid "Volume serial"
+msgstr ""
+
+#: data_center/models/components.py:37
+msgid "disk shares"
+msgstr ""
+
+#: data_center/models/components.py:45
+msgid "share"
+msgstr ""
+
+#: data_center/models/components.py:47
+msgid "asset"
+msgstr ""
+
+#: data_center/models/components.py:51
+msgid "volume"
+msgstr ""
+
+#: data_center/models/components.py:70
+msgid "disk share mount"
+msgstr ""
+
+#: data_center/models/components.py:71
+msgid "disk share mounts"
+msgstr ""
+
+#: data_center/models/physical.py:135
 msgid "visualization grid columns number"
 msgstr ""
 
-#: src/ralph/data_center/models/physical.py:79
+#: data_center/models/physical.py:143
 msgid "visualization grid rows number"
 msgstr ""
 
-#: src/ralph/data_center/models/physical.py:107
+#: data_center/models/physical.py:159
 msgid "accessory"
 msgstr ""
 
-#: src/ralph/data_center/models/physical.py:108
+#: data_center/models/physical.py:160
 msgid "accessories"
 msgstr ""
 
-#: src/ralph/data_center/models/physical.py:126
+#: data_center/models/physical.py:178
 msgid "rack accessories"
 msgstr ""
 
-#: src/ralph/data_center/models/physical.py:142
+#: data_center/models/physical.py:195 data_center/models/physical.py:200
 msgid "server room"
 msgstr ""
 
-#: src/ralph/data_center/models/physical.py:147
+#: data_center/models/physical.py:202 deployment/models.py:58
+#: deployment/models.py:139 operations/models.py:63
 msgid "description"
 msgstr ""
 
-#: src/ralph/data_center/models/physical.py:156
+#: data_center/models/physical.py:211
 msgid "column number on visualization grid"
 msgstr ""
 
-#: src/ralph/data_center/models/physical.py:160
+#: data_center/models/physical.py:215
 msgid "row number on visualization grid"
 msgstr ""
 
-#: src/ralph/data_center/models/physical.py:216
+#: data_center/models/physical.py:222
+msgid ""
+"Uncheck if position is optional for this rack (ex. when rack has warehouse-"
+"kind role"
+msgstr ""
+
+#: data_center/models/physical.py:229
+msgid ""
+"Check if RU numbers count from top to bottom with position 1 starting at the "
+"top of the rack. If unchecked position 1 is at the bottom of the rack"
+msgstr ""
+
+#: data_center/models/physical.py:233
+msgid "RU order top to bottom"
+msgstr ""
+
+#: data_center/models/physical.py:407
 msgid "Fill it if asset is blade server"
 msgstr ""
 
-#: src/ralph/data_center/models/physical.py:223
+#: data_center/models/physical.py:414
 msgid ""
 "Slot number should be a number from range 1-16 with an optional postfix 'A' "
 "or 'B' (e.g. '16A')"
 msgstr ""
 
-#: src/ralph/data_center/models/physical.py:229
-msgid "slot number"
+#: data_center/models/physical.py:432
+msgid "BIOS version"
 msgstr ""
 
-#: src/ralph/data_center/models/physical.py:234
-msgid "Path to configuration for e.g. puppet, chef."
-msgstr ""
-
-#: src/ralph/data_center/models/physical.py:236
-msgid "configuration path"
-msgstr ""
-
-#: src/ralph/data_center/models/physical.py:248
+#: data_center/models/physical.py:444
 msgid "source"
 msgstr ""
 
-#: src/ralph/data_center/models/physical.py:255
+#: data_center/models/physical.py:462
 msgid "data center asset"
 msgstr ""
 
-#: src/ralph/data_center/models/physical.py:256
+#: data_center/models/physical.py:463
 msgid "data center assets"
 msgstr ""
 
-#: src/ralph/data_center/models/physical.py:351
+#: data_center/models/physical.py:692
+msgid "Change rack"
+msgstr ""
+
+#: data_center/models/physical.py:708
+msgid "Convert to BackOffice Asset"
+msgstr ""
+
+#: data_center/models/physical.py:718
+msgid "Region"
+msgstr ""
+
+#: data_center/models/physical.py:744
 msgid "connected to device"
 msgstr ""
 
-#: src/ralph/data_center/models/physical.py:357
+#: data_center/models/physical.py:750
 msgid "connected device"
 msgstr ""
 
-#: src/ralph/data_center/models/physical.py:363
+#: data_center/models/physical.py:756
 msgid "connection type"
 msgstr ""
 
-#: src/ralph/data_center/models/virtual.py:9
+#: data_center/models/virtual.py:27
 msgid "database"
 msgstr ""
 
-#: src/ralph/data_center/models/virtual.py:10
+#: data_center/models/virtual.py:28
 msgid "databases"
 msgstr ""
 
-#: src/ralph/data_center/models/virtual.py:15
+#: data_center/models/virtual.py:37
+msgid "TCP"
+msgstr ""
+
+#: data_center/models/virtual.py:38
+msgid "UDP"
+msgstr ""
+
+#: data_center/models/virtual.py:44
+msgid "port"
+msgstr ""
+
+#: data_center/models/virtual.py:46
+msgid "protocol"
+msgstr ""
+
+#: data_center/models/virtual.py:52
 msgid "VIP"
 msgstr ""
 
-#: src/ralph/data_center/models/virtual.py:21
-msgid "Virtual server (VM)"
+#: data_center/models/virtual.py:68
+msgid ""
+"show master information on cluster page, ex. hostname, model, location etc."
 msgstr ""
 
-#: src/ralph/data_center/models/virtual.py:22
-msgid "Virtual servers (VM)"
+#: data_center/models/virtual.py:78
+msgid "for deploy"
 msgstr ""
 
-#: src/ralph/data_center/templates/data_center/datacenterasset/security_info.html:29
-msgid "Path"
-msgstr ""
-
-#: src/ralph/data_center/templates/data_center/datacenterasset/security_info.html:48
-msgid "Critical Patch Update"
-msgstr ""
-
-#: src/ralph/data_center/templates/data_center/datacenterasset/security_info.html:49
-msgid "Latest Version/Date"
-msgstr ""
-
-#: src/ralph/dc_view/templates/dc_view/data_center_view.html:5
-msgid "Dc View"
-msgstr ""
-
-#: src/ralph/dc_view/templates/dc_view/data_center_view.html:25
-msgid "Data centers"
-msgstr ""
-
-#: src/ralph/lib/mixins/models.py:31
-msgid "date created"
-msgstr ""
-
-#: src/ralph/lib/mixins/models.py:35
-msgid "last modified"
-msgstr ""
-
-#: src/ralph/lib/mixins/models.py:49
-msgid "last seen"
-msgstr ""
-
-#: src/ralph/lib/permissions/models.py:78
-msgid "Can change {} field"
-msgstr ""
-
-#: src/ralph/lib/permissions/models.py:82
-msgid "Can view {} field"
-msgstr ""
-
-#: src/ralph/licences/admin.py:73
-msgid "Financial info"
-msgstr ""
-
-#: src/ralph/licences/models.py:47
-msgid "software categories"
-msgstr ""
-
-#: src/ralph/licences/models.py:69
-msgid "Should be like 'per processor' or 'per machine' and so on. "
-msgstr ""
-
-#: src/ralph/licences/models.py:85
-msgid "SN / Key"
-msgstr ""
-
-#: src/ralph/licences/models.py:115
-msgid "Any value to help your accounting department identify this licence"
-msgstr ""
-
-#: src/ralph/licences/models.py:121
+#: data_center/models/virtual.py:101
 msgid "Assigned base objects"
 msgstr ""
 
-#: src/ralph/licences/models.py:135
-msgid "Additional remarks"
+#: data_center/models/virtual.py:155
+msgid "At least one of name or hostname is required"
 msgstr ""
 
-#: src/ralph/licences/models.py:142
-msgid "License details"
+#: data_center/templates/admin/data_center/dchost/change_list.html:10
+msgid "Nothing to display. Please add some objects like:"
 msgstr ""
 
-#: src/ralph/reports/templates/reports/report_detail.html:12
+#: data_center/templates/admin/data_center/network/change_form.html:9
+#, python-format
+msgid "Add next IP (%(next_free_ip)s)"
+msgstr ""
+
+#: dc_view/templates/dc_view/server_room_view.html:5
+msgid "Dc View"
+msgstr ""
+
+#: dc_view/templates/dc_view/server_room_view.html:31
+msgid "Server rooms"
+msgstr ""
+
+#: deployment/deployment.py:49
+msgid "<NEXT FREE>"
+msgstr ""
+
+#: deployment/deployment.py:122 deployment/deployment.py:172
+#: lib/mixins/api.py:14 lib/mixins/forms.py:58
+msgid "Other"
+msgstr ""
+
+#: deployment/deployment.py:198
+msgid "use first"
+msgstr ""
+
+#: deployment/deployment.py:267
+msgid "Non-management MAC address not found"
+msgstr ""
+
+#: deployment/deployment.py:278
+msgid "Network environment not found."
+msgstr ""
+
+#: deployment/deployment.py:286
+msgid "Clean hostname"
+msgstr ""
+
+#: deployment/deployment.py:300
+msgid "Clean DNS entries"
+msgstr ""
+
+#: deployment/deployment.py:339
+msgid "Clean IP addresses"
+msgstr ""
+
+#: deployment/deployment.py:357
+msgid "Clean DHCP entries"
+msgstr ""
+
+#: deployment/deployment.py:374
+msgid "Remove from DHCP entries"
+msgstr ""
+
+#: deployment/deployment.py:377
+msgid "DHCP Entry"
+msgstr ""
+
+#: deployment/deployment.py:398
+msgid "Assign new hostname"
+msgstr ""
+
+#: deployment/deployment.py:479
+msgid "Assign new IP"
+msgstr ""
+
+#: deployment/deployment.py:483 deployment/deployment.py:551
+#: deployment/deployment.py:582
+msgid "IP Address"
+msgstr ""
+
+#: deployment/deployment.py:541
+msgid "You can choose only one asset"
+msgstr ""
+
+#: deployment/deployment.py:547
+msgid "Replace IP"
+msgstr ""
+
+#: deployment/deployment.py:558 networks/admin.py:303
+msgid "Network"
+msgstr ""
+
+#: deployment/deployment.py:578
+msgid "Assign new IP address and create DHCP entries"
+msgstr ""
+
+#: deployment/deployment.py:678
+msgid "Wait for DHCP servers"
+msgstr ""
+
+#: deployment/deployment.py:705
+msgid "Create DNS entries"
+msgstr ""
+
+#: deployment/deployment.py:730
+msgid "Change service-env"
+msgstr ""
+
+#: deployment/deployment.py:733
+msgid "Service-environment"
+msgstr ""
+
+#: deployment/deployment.py:750
+msgid "Change configuration_path"
+msgstr ""
+
+#: deployment/deployment.py:753
+msgid "Configuration path"
+msgstr ""
+
+#: deployment/deployment.py:774
+msgid "Apply preboot"
+msgstr ""
+
+#: deployment/deployment.py:778
+msgid "Preboot"
+msgstr ""
+
+#: deployment/deployment.py:800
+msgid "Wait for ping"
+msgstr ""
+
+#: deployment/models.py:25
+msgid "kernel"
+msgstr ""
+
+#: deployment/models.py:26
+msgid "initrd"
+msgstr ""
+
+#: deployment/models.py:27
+msgid "netboot"
+msgstr ""
+
+#: deployment/models.py:30
+msgid "iPXE"
+msgstr ""
+
+#: deployment/models.py:31
+msgid "kickstart"
+msgstr ""
+
+#: deployment/models.py:32
+msgid "preseed"
+msgstr ""
+
+#: deployment/models.py:33
+msgid "script"
+msgstr ""
+
+#: deployment/models.py:36
+msgid "other"
+msgstr ""
+
+#: deployment/models.py:100
+msgid "configuration"
+msgstr ""
+
+#: deployment/models.py:106 deployment/models.py:107
+msgid "preboot configuration"
+msgstr ""
+
+#: deployment/models.py:120
+msgid "file"
+msgstr ""
+
+#: deployment/models.py:128
+msgid "preboot file"
+msgstr ""
+
+#: deployment/models.py:129
+msgid "preboot files"
+msgstr ""
+
+#: deployment/models.py:136
+msgid "files"
+msgstr ""
+
+#: deployment/models.py:147
+msgid "preboot"
+msgstr ""
+
+#: deployment/models.py:148
+msgid "preboots"
+msgstr ""
+
+#: dhcp/admin.py:15
+msgid "{} ({} ago)"
+msgstr ""
+
+#: dhcp/models.py:35 dhcp/models.py:55 networks/admin.py:318
+#: networks/models/networks.py:611 networks/models/networks.py:626
+#: networks/models/networks.py:658
+msgid "IP address"
+msgstr ""
+
+#: dhcp/models.py:43
+msgid "DHCP Server"
+msgstr ""
+
+#: dhcp/models.py:59
+msgid "is default"
+msgstr ""
+
+#: dhcp/models.py:65
+msgid "DNS Server"
+msgstr ""
+
+#: dns/dnsaas.py:124 dns/dnsaas.py:234
+msgid "Internal Server Error from DNSAAS"
+msgstr ""
+
+#: dns/dnsaas.py:188
+msgid "Domain not found."
+msgstr ""
+
+#: dns/forms.py:10
+msgid "A"
+msgstr ""
+
+#: dns/forms.py:11
+msgid "TXT"
+msgstr ""
+
+#: dns/forms.py:12
+msgid "CNAME"
+msgstr ""
+
+#: dns/forms.py:23
+#: security/templates/security/securityinfo/security_info.html:38
+msgid "Name"
+msgstr ""
+
+#: dns/forms.py:26
+msgid ""
+"Actual name of a record. Must not end in a '.' and be fully qualified - it "
+"is not relative to the name of the domain!"
+msgstr ""
+
+#: dns/forms.py:32
+msgid "Record type"
+msgstr ""
+
+#: dns/forms.py:36
+msgid "Content"
+msgstr ""
+
+#: dns/forms.py:39
+msgid ""
+"The 'right hand side' of a DNS record. For an A record, this is the IP "
+"address"
+msgstr ""
+
+#: dns/forms.py:45
+msgid "PTR"
+msgstr ""
+
+#: dns/forms.py:56
+msgid "Only A type record can be PTR"
+msgstr ""
+
+#: dns/templates/dns/dns_edit.html:7
+msgid "DNS edit"
+msgstr ""
+
+#: dns/templates/dns/dns_edit.html:40
+msgid "Are you sure to delete?"
+msgstr ""
+
+#: dns/templates/dns/dns_edit.html:50
+msgid "Add at least one IP address to fetch DNS records."
+msgstr ""
+
+#: dns/tests.py:560
+msgid "Your request couldn't be handled, try later."
+msgstr ""
+
+#: dns/views.py:98
+msgid "DNS record has been deleted."
+msgstr ""
+
+#: dns/views.py:106
+msgid "DNS record has been updated."
+msgstr ""
+
+#: dns/views.py:114
+msgid "DNS record has been created."
+msgstr ""
+
+#: domains/admin.py:52
+msgid "Ownership info"
+msgstr ""
+
+#: domains/admin.py:94 licences/admin.py:110
+msgid "Financial info"
+msgstr ""
+
+#: domains/models/domains.py:32
+msgid "Active"
+msgstr ""
+
+#: domains/models/domains.py:33
+msgid "Pending lapse"
+msgstr ""
+
+#: domains/models/domains.py:34
+msgid "Pending transfer away"
+msgstr ""
+
+#: domains/models/domains.py:35
+msgid "Lapsed (inactive)"
+msgstr ""
+
+#: domains/models/domains.py:36
+msgid "Transfered away"
+msgstr ""
+
+#: domains/models/domains.py:42
+msgid "None"
+msgstr ""
+
+#: domains/models/domains.py:43
+msgid "Redirect"
+msgstr ""
+
+#: domains/models/domains.py:44
+msgid "Direct"
+msgstr ""
+
+#: domains/models/domains.py:50
+msgid "Business"
+msgstr ""
+
+#: domains/models/domains.py:51
+msgid "Business security"
+msgstr ""
+
+#: domains/models/domains.py:52
+msgid "Technical"
+msgstr ""
+
+#: domains/models/domains.py:77
+msgid "domain name"
+msgstr ""
+
+#: domains/models/domains.py:78
+msgid "Full domain name"
+msgstr ""
+
+#: domains/models/domains.py:88
+msgid "Business segment for a domain"
+msgstr ""
+
+#: domains/models/domains.py:95
+msgid "Business contact person for a domain"
+msgstr ""
+
+#: domains/models/domains.py:102
+msgid "Technical contact person for a domain"
+msgstr ""
+
+#: domains/models/domains.py:108
+msgid "Company which receives invoice for the domain"
+msgstr ""
+
+#: domains/models/domains.py:117
+msgid "Type of website which domain refers to."
+msgstr ""
+
+#: domains/models/domains.py:121
+msgid "Website url which website type refers to."
+msgstr ""
+
+#: domains/models/domains.py:128
+msgid "Provider which keeps domain's DNS"
+msgstr ""
+
+#: domains/models/domains.py:142
+msgid "Website url should be empty for this website type"
+msgstr ""
+
+#: domains/models/domains.py:151
+msgid "Website url should be filled for this website type"
+msgstr ""
+
+#: domains/models/domains.py:167
+msgid "Price for domain renewal for given period"
+msgstr ""
+
+#: domains/models/domains.py:168
+msgid "Price"
+msgstr ""
+
+#: lib/custom_fields/forms.py:24
+msgid "Clear children values?"
+msgstr ""
+
+#: lib/custom_fields/forms.py:64
+msgid ""
+"Please correct the duplicate data for custom fields (only one value for "
+"particular custom field is possible)."
+msgstr ""
+
+#: lib/custom_fields/models.py:56
+msgid "field name used in API. It's slugged name of the field"
+msgstr ""
+
+#: lib/custom_fields/models.py:65
+msgid "choices"
+msgstr ""
+
+#: lib/custom_fields/models.py:66
+msgid "available choices for `choices list` separated by |"
+msgstr ""
+
+#: lib/custom_fields/models.py:70
+msgid "for boolean use \"true\" or \"false\""
+msgstr ""
+
+#: lib/custom_fields/models.py:78
+msgid ""
+"When set, this variable will be exposed in API in \"configuration_variables"
+"\" section. You could use this later in configuration management tool like "
+"Puppet or Ansible."
+msgstr ""
+
+#: lib/custom_fields/models.py:118
+msgid "key"
+msgstr ""
+
+#: lib/custom_fields/models.py:168
+msgid "Custom field of the same type already exists for this object."
+msgstr ""
+
+#: lib/custom_fields/templates/custom_fields/edit_inline/tabular.html:64
+msgid "summary"
+msgstr ""
+
+#: lib/custom_fields/templates/custom_fields/edit_inline/tabular.html:68
+msgid "Custom field"
+msgstr ""
+
+#: lib/custom_fields/templates/custom_fields/edit_inline/tabular.html:69
+#: lib/transitions/templates/transitions/run_transition.html:27
+msgid "Value"
+msgstr ""
+
+#: lib/custom_fields/templates/custom_fields/edit_inline/tabular.html:70
+msgid "Inherited from"
+msgstr ""
+
+#: lib/external_services/models.py:39
+msgid "queued"
+msgstr ""
+
+#: lib/external_services/models.py:40 lib/transitions/models.py:610
+msgid "finished"
+msgstr ""
+
+#: lib/external_services/models.py:41 lib/transitions/models.py:611
+msgid "failed"
+msgstr ""
+
+#: lib/external_services/models.py:42 lib/transitions/models.py:609
+msgid "started"
+msgstr ""
+
+#: lib/external_services/models.py:43
+msgid "frozen"
+msgstr ""
+
+#: lib/external_services/models.py:44
+msgid "killed"
+msgstr ""
+
+#: lib/external_services/models.py:80
+msgid "job status"
+msgstr ""
+
+#: lib/mixins/fields.py:74 operations/admin.py:101 operations/views.py:46
+msgid "ticket ID"
+msgstr ""
+
+#: lib/mixins/fields.py:75
+msgid "External system ticket identifier"
+msgstr ""
+
+#: lib/mixins/fields.py:220
+#, python-format
+msgid "'%(value)s' is not a valid MAC address."
+msgstr ""
+
+#: lib/mixins/models.py:36
+msgid "date created"
+msgstr ""
+
+#: lib/mixins/models.py:40
+msgid "last modified"
+msgstr ""
+
+#: lib/mixins/models.py:54
+msgid "last seen"
+msgstr ""
+
+#: lib/permissions/api.py:115
+msgid "You cannot update readonly field."
+msgstr ""
+
+#: lib/permissions/models.py:166
+msgid "Can view {} field"
+msgstr ""
+
+#: lib/permissions/models.py:172
+msgid "Can change {} field"
+msgstr ""
+
+#: lib/transitions/forms.py:108
+msgid "Please provide async service name for asynchronous transition"
+msgstr ""
+
+#: lib/transitions/forms.py:112
+msgid " (At least one of chosen actions is asynchronous)"
+msgstr ""
+
+#: lib/transitions/models.py:182
+msgid "wrong source status"
+msgstr ""
+
+#: lib/transitions/models.py:499
+msgid ""
+"Run this transition in the background (this could be enforced if you choose "
+"at least one asynchronous action)"
+msgstr ""
+
+#: lib/transitions/models.py:506
+msgid ""
+"Name of asynchronous (internal) service to run this transition. Fill this "
+"field only if you want to run this transition in the background."
+msgstr ""
+
+#: lib/transitions/models.py:684
+msgid "transition action status"
+msgstr ""
+
+#: lib/transitions/templates/transitions/_transition_jobs_table.html:5
+msgid "Job"
+msgstr ""
+
+#: lib/transitions/templates/transitions/_transition_jobs_table.html:8
+#: lib/transitions/templates/transitions/current_transitions.html:22
+msgid "Object"
+msgstr ""
+
+#: lib/transitions/templates/transitions/_transition_jobs_table.html:10
+#: lib/transitions/templates/transitions/current_transitions.html:24
+msgid "Status"
+msgstr ""
+
+#: lib/transitions/templates/transitions/_transition_jobs_table.html:11
+#: lib/transitions/templates/transitions/current_transitions.html:25
+msgid "Transition actions"
+msgstr ""
+
+#: lib/transitions/templates/transitions/_transition_jobs_table.html:33
+#: lib/transitions/templates/transitions/_transition_jobs_table_body.html:42
+msgid "Are you sure you want to kill transition job?"
+msgstr ""
+
+#: lib/transitions/templates/transitions/_transition_jobs_table_body.html:7
+msgid "Created date"
+msgstr ""
+
+#: lib/transitions/templates/transitions/current_transitions.html:32
+msgid "Current transition"
+msgstr ""
+
+#: lib/transitions/templates/transitions/current_transitions.html:39
+msgid "Nothing to do."
+msgstr ""
+
+#: lib/transitions/templates/transitions/current_transitions.html:45
+msgid "Finished transitions"
+msgstr ""
+
+#: lib/transitions/templates/transitions/current_transitions.html:52
+msgid "Nothing to display"
+msgstr ""
+
+#: lib/transitions/templates/transitions/run_transition.html:5
+#: lib/transitions/templates/transitions/run_transition.html:10
+msgid "Tranisition"
+msgstr ""
+
+#: lib/transitions/templates/transitions/run_transition.html:26
+msgid "Option"
+msgstr ""
+
+#: lib/transitions/templates/transitions/run_transition.html:38
+msgid "Cancel transition"
+msgstr ""
+
+#: lib/transitions/templates/transitions/run_transition.html:43
+msgid "Run transition"
+msgstr ""
+
+#: lib/transitions/templates/transitions/templatetags/available_transitions.html:15
+msgid "This transition will be run without any confirmation."
+msgstr ""
+
+#: lib/transitions/views.py:190
+msgid "Transitions performed successfully"
+msgstr ""
+
+#: lib/transitions/views.py:212
+msgid "Some assets are not valid"
+msgstr ""
+
+#: licences/admin.py:24 licences/admin.py:32 supports/admin.py:21
+#: supports/admin.py:29
+msgid "Assignments"
+msgstr ""
+
+#: licences/admin.py:31 supports/admin.py:28
+msgid "assignments"
+msgstr ""
+
+#: licences/admin.py:41
+msgid "Assigned to users"
+msgstr ""
+
+#: licences/models.py:68
+msgid "software categories"
+msgstr ""
+
+#: licences/models.py:155
+msgid "Should be like 'per processor' or 'per machine' and so on. "
+msgstr ""
+
+#: licences/models.py:169
+msgid "number of purchased items"
+msgstr ""
+
+#: licences/models.py:172
+msgid "SN / key"
+msgstr ""
+
+#: licences/models.py:184 supports/models.py:107
+msgid "invoice date"
+msgstr ""
+
+#: licences/models.py:202
+msgid "Any value to help your accounting department identify this licence"
+msgstr ""
+
+#: licences/models.py:208
+msgid "assigned base objects"
+msgstr ""
+
+#: licences/models.py:222
+msgid "license details"
+msgstr ""
+
+#: licences/models.py:301 supports/models.py:176
+msgid "Asset"
+msgstr ""
+
+#: licences/models.py:328
+msgid "Asset region is in a different region than licence."
+msgstr ""
+
+#: networks/admin.py:40
+msgid "Hostnames"
+msgstr ""
+
+#: networks/admin.py:81 networks/admin.py:324
+msgid "Linked object"
+msgstr ""
+
+#: networks/admin.py:134
+msgid "Network added to <a href=\"{}\" _target=\"blank\">{}</a>"
+msgstr ""
+
+#: networks/admin.py:135
+msgid ""
+"Network reassigned from network <a href=\"{}\" target=\"_blank\">{}</a> to "
+"<a href=\"{}\" target=\"_blank\">{}</a>"
+msgstr ""
+
+#: networks/admin.py:171
+msgid "Network address"
+msgstr ""
+
+#: networks/admin.py:176
+msgid "Subnetworks count"
+msgstr ""
+
+#: networks/admin.py:181
+msgid "IPAddress count"
+msgstr ""
+
+#: networks/admin.py:194
+msgid "Parent networks"
+msgstr ""
+
+#: networks/admin.py:202
+msgid "First free IP"
+msgstr ""
+
+#: networks/admin.py:215
+msgid "Subnetworks"
+msgstr ""
+
+#: networks/admin.py:236
+msgid "Addresses"
+msgstr ""
+
+#: networks/admin.py:290
+msgid "IP added to <a href=\"{}\" _target=\"blank\">{}</a>"
+msgstr ""
+
+#: networks/admin.py:291
+msgid ""
+"IP reassigned from network <a href=\"{}\" target=\"_blank\">{}</a> to <a "
+"href=\"{}\" target=\"_blank\">{}</a>"
+msgstr ""
+
+#: networks/filters.py:42
+msgid "IP range"
+msgstr ""
+
+#: networks/filters.py:64
+msgid "Network range"
+msgstr ""
+
+#: networks/filters.py:82
+msgid "Private"
+msgstr ""
+
+#: networks/filters.py:83
+msgid "Public"
+msgstr ""
+
+#: networks/filters.py:98 networks/filters.py:105
+msgid "Contains IP address"
+msgstr ""
+
+#: networks/forms.py:120
+#, python-format
+msgid "Address %(ip)s already exist."
+msgstr ""
+
+#: networks/forms.py:157
+msgid "Cannot expose in DHCP without IP address"
+msgstr ""
+
+#: networks/forms.py:161
+msgid "Cannot expose in DHCP without hostname"
+msgstr ""
+
+#: networks/forms.py:165
+msgid "Cannot expose in DHCP without MAC address"
+msgstr ""
+
+#: networks/forms.py:175
+msgid "At least one of {} is required"
+msgstr ""
+
+#: networks/forms.py:223 networks/models/networks.py:653
+msgid "Expose in DHCP"
+msgstr ""
+
+#: networks/models/choices.py:7
+msgid "used (fixed address in DHCP)"
+msgstr ""
+
+#: networks/models/choices.py:8
+msgid "Exclude from DHCP"
+msgstr ""
+
+#: networks/models/networks.py:45 networks/models/networks.py:306
+msgid "network kind"
+msgstr ""
+
+#: networks/models/networks.py:46
+msgid "network kinds"
+msgstr ""
+
+#: networks/models/networks.py:62 networks/models/networks.py:567
+msgid "discovery queue"
+msgstr ""
+
+#: networks/models/networks.py:68
+msgid "hostname template counter length"
+msgstr ""
+
+#: networks/models/networks.py:72
+msgid "hostname template prefix"
+msgstr ""
+
+#: networks/models/networks.py:76
+msgid "hostname template postfix"
+msgstr ""
+
+#: networks/models/networks.py:79
+msgid ""
+"This value will be used as a postfix when generating new hostname in this "
+"network environment. For example, when prefix is \"s1\", postfix is \".mydc."
+"net\" and counter length is 4, following  hostnames will be generated: "
+"s10000.mydc.net, s10001.mydc.net, .., s19999.mydc.net."
+msgstr ""
+
+#: networks/models/networks.py:87
+msgid "domain"
+msgstr ""
+
+#: networks/models/networks.py:91
+msgid "Used in DHCP configuration."
+msgstr ""
+
+#: networks/models/networks.py:94 networks/models/networks.py:262
+msgid "remarks"
+msgstr ""
+
+#: networks/models/networks.py:95 networks/models/networks.py:263
+msgid "Additional information."
+msgstr ""
+
+#: networks/models/networks.py:252
+msgid "network address"
+msgstr ""
+
+#: networks/models/networks.py:253
+msgid "Presented as string (e.g. 192.168.0.0/24)"
+msgstr ""
+
+#: networks/models/networks.py:256
+msgid "Network Class"
+msgstr ""
+
+#: networks/models/networks.py:258
+msgid "Gateway address"
+msgstr ""
+
+#: networks/models/networks.py:270
+msgid "network terminators"
+msgstr ""
+
+#: networks/models/networks.py:274
+msgid "VLAN number"
+msgstr ""
+
+#: networks/models/networks.py:281
+msgid "racks"
+msgstr ""
+
+#: networks/models/networks.py:293
+msgid "smallest IP number"
+msgstr ""
+
+#: networks/models/networks.py:299
+msgid "largest IP number"
+msgstr ""
+
+#: networks/models/networks.py:312
+msgid "Broadcast in DHCP configuration"
+msgstr ""
+
+#: networks/models/networks.py:322
+msgid "DNS servers"
+msgstr ""
+
+#: networks/models/networks.py:327
+msgid ""
+"Number of addresses to be omitted in DHCP automatic assignmentcounted from "
+"the first IP in range (excluding network address)"
+msgstr ""
+
+#: networks/models/networks.py:334
+msgid ""
+"Number of addresses to be omitted in DHCP automatic assignmentcounted from "
+"the last IP in range (excluding broadcast address)"
+msgstr ""
+
+#: networks/models/networks.py:398
+msgid "network"
+msgstr ""
+
+#: networks/models/networks.py:399
+msgid "networks"
+msgstr ""
+
+#: networks/models/networks.py:568
+msgid "discovery queues"
+msgstr ""
+
+#: networks/models/networks.py:612
+msgid "Presented as string."
+msgstr ""
+
+#: networks/models/networks.py:627
+msgid "Presented as int."
+msgstr ""
+
+#: networks/models/networks.py:635
+msgid "Is management address"
+msgstr ""
+
+#: networks/models/networks.py:639
+msgid "Is public"
+msgstr ""
+
+#: networks/models/networks.py:644
+msgid "Is gateway"
+msgstr ""
+
+#: networks/models/networks.py:659
+msgid "IP addresses"
+msgstr ""
+
+#: networks/views.py:60
+msgid "Available networks"
+msgstr ""
+
+#: operations/migrations/0010_auto_20170410_1031.py:15
+msgid "open"
+msgstr ""
+
+#: operations/migrations/0010_auto_20170410_1031.py:17
+msgid "resolved"
+msgstr ""
+
+#: operations/migrations/0010_auto_20170410_1031.py:18
+msgid "closed"
+msgstr ""
+
+#: operations/migrations/0010_auto_20170410_1031.py:19
+msgid "reopened"
+msgstr ""
+
+#: operations/migrations/0010_auto_20170410_1031.py:20
+msgid "todo"
+msgstr ""
+
+#: operations/migrations/0010_auto_20170410_1031.py:21
+msgid "blocked"
+msgstr ""
+
+#: operations/models.py:43
+msgid "change"
+msgstr ""
+
+#: operations/models.py:46
+msgid "incident"
+msgstr ""
+
+#: operations/models.py:49
+msgid "problem"
+msgstr ""
+
+#: operations/models.py:52
+msgid "failure"
+msgstr ""
+
+#: operations/models.py:53
+msgid "hardware failure"
+msgstr ""
+
+#: operations/models.py:60
+msgid "title"
+msgstr ""
+
+#: operations/models.py:67 supports/models.py:88
+msgid "status"
+msgstr ""
+
+#: operations/models.py:75
+msgid "assignee"
+msgstr ""
+
+#: operations/models.py:83
+msgid "reporter"
+msgstr ""
+
+#: operations/models.py:88
+msgid "ticket id"
+msgstr ""
+
+#: operations/models.py:90
+msgid "created date"
+msgstr ""
+
+#: operations/models.py:93
+msgid "updated date"
+msgstr ""
+
+#: operations/models.py:96
+msgid "resolved date"
+msgstr ""
+
+#: operations/models.py:99
+msgid "objects"
+msgstr ""
+
+#: operations/views.py:15
+msgid "Operation"
+msgstr ""
+
+#: operations/views.py:29
+msgid "Existing Operations"
+msgstr ""
+
+#: operations/views.py:51
+msgid "Add new Operation"
+msgstr ""
+
+#: reports/forms.py:16
+msgid "Please select exactly one default item."
+msgstr ""
+
+#: reports/models.py:36
+msgid "Only one language can be default."
+msgstr ""
+
+#: reports/templates/reports/report_detail.html:13
 msgid "Last update:"
 msgstr ""
 
-#: src/ralph/reports/templates/reports/report_detail.html:16
+#: reports/templates/reports/report_detail.html:18
 msgid "Filter"
 msgstr ""
 
-#: src/ralph/reports/views.py:50
-msgid "Category - model"
+#: reports/templates/reports/report_relations.html:7
+msgid "download report"
 msgstr ""
 
-#: src/ralph/reports/views.py:73
-msgid "Category - model - status"
-msgstr ""
-
-#: src/ralph/reports/views.py:103
-msgid "Manufactured - category - model"
-msgstr ""
-
-#: src/ralph/reports/views.py:140
-msgid "Status - model"
-msgstr ""
-
-#: src/ralph/reports/views.py:178
+#: reports/views.py:81
 msgid "Only data center"
 msgstr ""
 
-#: src/ralph/reports/views.py:183
+#: reports/views.py:86
 msgid "Only back office"
+msgstr ""
+
+#: reports/views.py:193
+msgid "Category - model"
+msgstr ""
+
+#: reports/views.py:194
+msgid "Number of assets in each model category."
+msgstr ""
+
+#: reports/views.py:216
+msgid "Category - model - status"
+msgstr ""
+
+#: reports/views.py:217
+msgid "Number of assets in each status in the model category."
+msgstr ""
+
+#: reports/views.py:247
+msgid "Manufactured - category - model"
+msgstr ""
+
+#: reports/views.py:248
+msgid "Number of assets in each manufacturer."
+msgstr ""
+
+#: reports/views.py:284
+msgid "Status - model"
+msgstr ""
+
+#: reports/views.py:285
+msgid "Number of assets in each the asset status."
+msgstr ""
+
+#: reports/views.py:320
+msgid "Asset list of information about the user, owner, model."
+msgstr ""
+
+#: reports/views.py:375
+msgid "Asset - supports"
+msgstr ""
+
+#: reports/views.py:376
+msgid "Assets with assigned supports"
+msgstr ""
+
+#: reports/views.py:480
+msgid "List of licenses assigned to assets and users."
+msgstr ""
+
+#: reports/views.py:584
+msgid "Failure types for each manufacturer."
+msgstr ""
+
+#: security/models.py:24
+msgid "ok"
+msgstr ""
+
+#: security/models.py:25
+msgid "fail"
+msgstr ""
+
+#: security/models.py:26
+msgid "error"
+msgstr ""
+
+#: security/models.py:32
+msgid "low"
+msgstr ""
+
+#: security/models.py:33
+msgid "medium"
+msgstr ""
+
+#: security/models.py:34
+msgid "high"
+msgstr ""
+
+#: security/models.py:56
+msgid "Id of vulnerability from external system"
+msgstr ""
+
+#: security/models.py:84
+msgid "Rescan url"
+msgstr ""
+
+#: security/templates/security/securityinfo/security_info.html:9
+#: security/views.py:79
+msgid "Security scan"
+msgstr ""
+
+#: security/templates/security/securityinfo/security_info.html:13
+msgid "last scan date"
+msgstr ""
+
+#: security/templates/security/securityinfo/security_info.html:17
+msgid "scan status"
+msgstr ""
+
+#: security/templates/security/securityinfo/security_info.html:21
+msgid "next scan date"
+msgstr ""
+
+#: security/templates/security/securityinfo/security_info.html:25
+msgid "details"
+msgstr ""
+
+#: security/templates/security/securityinfo/security_info.html:29
+msgid "request for a scan"
+msgstr ""
+
+#: security/templates/security/securityinfo/security_info.html:34
+msgid "Vulnerabilities"
+msgstr ""
+
+#: security/templates/security/securityinfo/security_info.html:39
+msgid "Risk"
+msgstr ""
+
+#: security/templates/security/securityinfo/security_info.html:40
+msgid "Patch deadline"
+msgstr ""
+
+#: security/templates/security/securityinfo/security_info.html:57
+msgid "No vulnerabilities found for this scan"
+msgstr ""
+
+#: security/templates/security/securityinfo/security_info.html:61
+msgid "No scan so far"
+msgstr ""
+
+#: supports/admin.py:78
+msgid "Contract info"
+msgstr ""
+
+#: supports/admin.py:163
+msgid "support type"
+msgstr ""
+
+#: supports/admin.py:169
+msgid "support contract id"
+msgstr ""
+
+#: supports/admin.py:174
+msgid "support name"
+msgstr ""
+
+#: supports/admin.py:179
+msgid "support price"
+msgstr ""
+
+#: supports/admin.py:184
+msgid "support date from"
+msgstr ""
+
+#: supports/admin.py:189
+msgid "support date to"
+msgstr ""
+
+#: supports/admin.py:198
+msgid "asset hostname"
+msgstr ""
+
+#: supports/admin.py:204
+msgid "asset service env"
+msgstr ""
+
+#: supports/models.py:73
+msgid "contract ID"
+msgstr ""
+
+#: tests/admin.py:36
+msgid "Bars"
+msgstr ""
+
+#: tests/models.py:25
+msgid "to_send"
+msgstr ""
+
+#: tests/models.py:26
+msgid "sended"
+msgstr ""
+
+#: virtual/admin.py:68 virtual/admin.py:200 virtual/admin.py:337
+msgid "Hypervisor"
+msgstr ""
+
+#: virtual/admin.py:170
+msgid "Parent"
+msgstr ""
+
+#: virtual/admin.py:192 virtual/admin.py:331
+msgid "Not set"
+msgstr ""
+
+#: virtual/admin.py:318 virtual/admin.py:476 virtual/models.py:40
+msgid "Cloud provider"
+msgstr ""
+
+#: virtual/admin.py:347
+msgid "Cloud Flavor"
+msgstr ""
+
+#: virtual/admin.py:371
+msgid "Cloud Project"
+msgstr ""
+
+#: virtual/admin.py:393 virtual/admin.py:436
+msgid "vCPU cores"
+msgstr ""
+
+#: virtual/admin.py:397 virtual/admin.py:440
+msgid "RAM size (MiB)"
+msgstr ""
+
+#: virtual/admin.py:401 virtual/admin.py:444
+msgid "Disk size (GiB)"
+msgstr ""
+
+#: virtual/admin.py:448 virtual/admin.py:481
+msgid "instances count"
+msgstr ""
+
+#: virtual/models.py:41
+msgid "Cloud providers"
+msgstr ""
+
+#: virtual/models.py:143
+msgid "project ID"
+msgstr ""
+
+#: virtual/models.py:185
+msgid "host ID"
+msgstr ""
+
+#: virtual/models.py:197
+msgid "Cloud host"
+msgstr ""
+
+#: virtual/models.py:381
+msgid "Virtual server (VM)"
+msgstr ""
+
+#: virtual/models.py:382
+msgid "Virtual servers (VM)"
 msgstr ""
