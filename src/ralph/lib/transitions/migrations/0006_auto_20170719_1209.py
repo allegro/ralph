@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from zipfile import ZipFile
 
 from django.db import migrations, models
 
@@ -12,13 +13,21 @@ def rewrite_forward(apps, schema_editor):
 
 
 def rewrite_rewind(apps, schema_editor):
+    attachments_backup = '/tmp/attachments_backup.zip'
     TransitionsHistory = apps.get_model('transitions', 'TransitionsHistory')
+    attachemnts = ZipFile(attachments_backup, 'w')
+    attachments_count = 0
     for th in TransitionsHistory.objects.all():
         for i, attachment in enumerate(th.attachments.all()):
             if i == 0:
                 th.attachment = attachment
             else:
-                print('Attachment {} for transition history ({}) will be lost.'.format(attachment.file.url, th.transition_name))  # noqa
+                print('\tadd to zip - attachment {} for transition history ({})'.format(attachment.file.url, th.transition_name))  # noqa
+                attachemnts.write(attachment.file.path)
+                attachments_count += 1
+    if attachments_count:
+        attachemnts.close()
+        print('Backup of attachments saved. Please copy {} to safe place.'.format(attachments_backup))  # noqa
 
 
 class Migration(migrations.Migration):

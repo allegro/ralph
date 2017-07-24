@@ -530,7 +530,7 @@ class BackOfficeAsset(Regionalizable, Asset):
         form_fields={
             'report_language': {
                 'field': forms.ModelChoiceField(
-                    label=_('Report language (release)'),
+                    label=_('Release report language'),
                     queryset=ReportLanguage.objects.all().order_by('-default'),
                     empty_label=None
                 ),
@@ -551,7 +551,7 @@ class BackOfficeAsset(Regionalizable, Asset):
         form_fields={
             'report_language': {
                 'field': forms.ModelChoiceField(
-                    label=_('Report language (return)'),
+                    label=_('Return report language'),
                     queryset=ReportLanguage.objects.all().order_by('-default'),
                     empty_label=None
                 ),
@@ -572,7 +572,7 @@ class BackOfficeAsset(Regionalizable, Asset):
         form_fields={
             'report_language': {
                 'field': forms.ModelChoiceField(
-                    label=_('Report language (loan)'),
+                    label=_('Loan report language'),
                     queryset=ReportLanguage.objects.all().order_by('-default'),
                     empty_label=None
                 ),
