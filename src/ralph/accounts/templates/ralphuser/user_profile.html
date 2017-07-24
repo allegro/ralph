@@ -7,13 +7,13 @@
 
 {% block content %}
 <h1>{% trans "My profile" %}</h1>
-<br />
+
 <div id="content-main" class="row">
-  <div class="large-12 columns">
+  <div class="large-6 columns">
     <fieldset>
       <legend>{% trans "Personal info" %}</legend>
       <div class="row">
-        <div class="small-3 columns">
+        <div class="small-6 columns">
           <dl>
             <dt>{% trans "Username" %}</dt>
             <dd>{{ request.user.username }}</dd>
@@ -21,19 +21,19 @@
             <dd>{{ request.user.get_full_name }}</dd>
           </dl>
         </div>
-        <div class="small-3 columns end">
+        <div class="small-6 columns end">
           <dl>
             <dt>{% trans "API Token" %}</dt>
             <dd>{{ request.user.api_token_key }}</dd>
           </dl>
         </div>
       </div>
-
     </fieldset>
+
     <fieldset>
       <legend>{% trans "Profile" %}</legend>
       <div class="row">
-        <div class="small-3 columns">
+        <div class="small-6 columns">
           <dl>
             <dt>{% trans "Country" %}</dt>
             <dd>{{ request.user.get_country_display }}</dd>
@@ -41,7 +41,7 @@
             <dd>{{ request.user.get_city_display }}</dd>
           </dl>
         </div>
-        <div class="small-3 columns end">
+        <div class="small-6 columns end">
           <dl>
             <dt>{% trans "Gender" %}</dt>
             <dd>{{ request.user.get_gender_display }}</dd>
@@ -49,10 +49,11 @@
         </div>
       </div>
     </fieldset>
+
     <fieldset>
       <legend>{% trans "Job info" %}</legend>
       <div class="row">
-        <div class="small-3 columns">
+        <div class="small-6 columns">
           <dl>
             <dt>{% trans "Company" %}</dt>
             <dd>{{ request.user.company }}</dd>
@@ -64,7 +65,7 @@
             <dd>{{ request.user.department }}</dd>
           </dl>
         </div>
-        <div class="small-3 columns end">
+        <div class="small-6 columns end">
           <dl>
             <dt>{% trans "Manager" %}</dt>
             <dd>{{ request.user.manager }}</dd>
@@ -75,6 +76,23 @@
           </dl>
         </div>
       </div>
+    </fieldset>
+  </div>
+  <div class="large-6 columns">
+    <fieldset>
+      <legend>{% trans "Preferences" %}</legend>
+      {% get_current_language as LANGUAGE_CODE %}
+      {% get_available_languages as LANGUAGES %}
+      <form action="{% url 'set_language' %}" method="post">{% csrf_token %}
+        <input name="next" type="hidden" value="." />
+          {% csrf_token %}
+          <select name="language">
+            {% for lang in LANGUAGES %}
+              <option value="{{ lang.0 }}"{% if lang.0 == LANGUAGE_CODE %} selected{% endif %}>{{ lang.1 }}</option>
+            {% endfor %}
+          </select>
+        <button>{% trans "Change language" %}</button>
+      </form>
     </fieldset>
   </div>
 </div>
