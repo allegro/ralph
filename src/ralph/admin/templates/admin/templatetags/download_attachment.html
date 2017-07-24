@@ -1,10 +1,12 @@
-{% if attachment %}
+{% if attachments_to_download %}
   <script type="text/javascript">
-    (function($){
-      var $iframe = $('<iframe>')
-          .hide()
-          .prop('src', '{{ attachment }}')
-          .appendTo('body');
-    })(ralph.jQuery)
+    {% for attachment in attachments_to_download %}
+      (function($){
+        var $iframe = $('<iframe>')
+            .hide()
+            .prop('src', '{{ attachment }}')
+            .appendTo('body');
+      })(ralph.jQuery);
+    {% endfor %}
   </script>
 {% endif %}

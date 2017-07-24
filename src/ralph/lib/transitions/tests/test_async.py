@@ -94,8 +94,8 @@ class AsyncTransitionsTest(TransitionTestCaseMixin, TransactionTestCase):
                 th.actions,
                 [
                     "Assign user",
-                    "Long runnign action",
-                    "Another long runnign action"
+                    "Long running action",
+                    "Another long running action"
                 ]
             )
 
@@ -147,7 +147,7 @@ class AsyncTransitionsTest(TransitionTestCaseMixin, TransactionTestCase):
                 th.actions,
                 [
                     "Assign user",
-                    "Long runnign action",
+                    "Long running action",
                     "Freezing action"
                 ]
             )

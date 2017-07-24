@@ -69,7 +69,7 @@ SYNCHRONOUS_JOBS_METRIC_NAME_TMPL = getattr(
 
 
 def _generate_transition_history(
-    instance, transition, user, attachment, history_kwargs, action_names, field
+    instance, transition, user, attachments, history_kwargs, action_names, field
 ):
     """Return history object (without saving it) based on parameters."""
     field_value = getattr(instance, field, None)
@@ -87,17 +87,18 @@ def _generate_transition_history(
     except ValueError:
         source = None
 
-    return TransitionsHistory(
+    transition_history = TransitionsHistory.objects.create(
         transition_name=transition.name,
         content_type=get_content_type_for_model(instance._meta.model),
         object_id=instance.pk,
         logged_user=user,
-        attachment=attachment,
         kwargs=history_kwargs,
         actions=action_names,
         source=source,
         target=target
     )
+    transition_history.attachments.add(*attachments)
+    return transition_history
 
 
 def _get_history_dict(data, instance, runned_funcs):
@@ -346,7 +347,7 @@ def _save_instance_after_transition(instance, transition, user=None):
 
 
 def _create_instance_history_entry(
-    instance, transition, data, history_kwargs, user=None, attachment=None
+    instance, transition, data, history_kwargs, user=None, attachments=None
 ):
     funcs = transition.get_pure_actions()
     action_names = [str(getattr(
@@ -356,27 +357,26 @@ def _create_instance_history_entry(
     )) for func in funcs]
     history = _get_history_dict(data, instance, funcs)
     history.update(history_kwargs.get(instance.pk, {}))
-    transition_history = _generate_transition_history(
+    _generate_transition_history(
         instance=instance,
         transition=transition,
         user=user,
-        attachment=attachment,
+        attachments=attachments,
         history_kwargs=history,
         action_names=action_names,
         field=transition.model.field_name
     )
-    transition_history.save()
 
 
 def _post_transition_instance_processing(
-    instance, transition, data, history_kwargs, user=None, attachment=None
+    instance, transition, data, history_kwargs, user=None, attachments=None
 ):
     # change transition field (ex. status) if not keeping orignial
     if not int(transition.target) == TRANSITION_ORIGINAL_STATUS[0]:
         setattr(instance, transition.model.field_name, int(transition.target))
     _create_instance_history_entry(
         instance, transition, data, history_kwargs,
-        user=user, attachment=attachment
+        user=user, attachments=attachments
     )
     _save_instance_after_transition(
         instance, transition, user
@@ -396,7 +396,7 @@ def run_field_transition(
         first_instance, transition_obj_or_name, field
     )
     _check_instances_for_transition(instances, transition)
-    attachment = None
+    attachments = []
     history_kwargs = defaultdict(dict)
     shared_params = defaultdict(dict)
     for action in _order_actions_by_requirements(
@@ -420,13 +420,13 @@ def run_field_transition(
             return False, None
 
         if isinstance(result, Attachment):
-            attachment = result
+            attachments.append(result)
     for instance in instances:
         _post_transition_instance_processing(
             instance, transition, data, history_kwargs=history_kwargs,
-            user=kwargs['request'].user, attachment=attachment,
+            user=kwargs['request'].user, attachments=attachments,
         )
-    return True, attachment
+    return True, attachments
 
 
 def get_available_transitions_for_field(instance, field, user=None):
@@ -592,7 +592,7 @@ class TransitionsHistory(TimeStampMixin):
     target = models.CharField(max_length=50, blank=True, null=True)
     object_id = models.IntegerField(db_index=True)
     logged_user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    attachment = models.ForeignKey(Attachment, blank=True, null=True)
+    attachments = models.ManyToManyField(Attachment)
     kwargs = JSONField()
     actions = JSONField()
 

@@ -50,6 +50,7 @@ urlpatterns = [
     url(r'^dhcp/', include('ralph.dhcp.urls')),
     url(r'^deployment/', include('ralph.deployment.urls')),
     url(r'^', include('ralph.lib.transitions.urls')),
+    url(r'^i18n/', include('django.conf.urls.i18n')),
 ]
 
 if getattr(settings, 'ENABLE_HERMES_INTEGRATION', False):

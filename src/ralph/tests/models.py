@@ -122,7 +122,7 @@ class AsyncOrder(
 
     @classmethod
     @transition_action(
-        verbose_name='Long runnign action',
+        verbose_name='Long running action',
         form_fields={
             'name': {
                 'field': forms.CharField(label='name'),
@@ -139,7 +139,7 @@ class AsyncOrder(
 
     @classmethod
     @transition_action(
-        verbose_name='Another long runnign action',
+        verbose_name='Another long running action',
         form_fields={
             'foo': {
                 'field': forms.CharField(label='Foo'),
