@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='asset',
             name='buyout_date',
-            field=models.DateField(blank=True, null=True),
+            field=models.DateField(blank=True, db_index=True, null=True),
         ),
     ]

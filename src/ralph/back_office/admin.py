@@ -94,7 +94,8 @@ class BackOfficeAssetAdmin(
     ]
     list_display = [
         'status', 'barcode', 'purchase_order', 'model', 'user', 'warehouse',
-        'sn', 'hostname', 'invoice_date', 'invoice_no', 'region', 'property_of'
+        'sn', 'hostname', 'invoice_date', 'invoice_no', 'region',
+        'property_of', 'buyout_date_display'
     ]
     multiadd_summary_fields = list_display
 
@@ -108,8 +109,8 @@ class BackOfficeAssetAdmin(
         'user', 'owner', 'user__segment', 'user__company', 'user__department',
         'user__employee_id', 'property_of', 'invoice_no', 'invoice_date',
         'order_no', 'provider', 'budget_info', 'depreciation_rate',
-        'depreciation_end_date', 'force_depreciation', LiquidatedStatusFilter,
-        TagsListFilter
+        'depreciation_end_date', 'force_depreciation', 'buyout_date',
+        LiquidatedStatusFilter, TagsListFilter
     ]
     date_hierarchy = 'created'
     list_select_related = [
@@ -162,6 +163,13 @@ class BackOfficeAssetAdmin(
     def licences(self, obj):
         return ''
     licences.short_description = 'licences'
+
+    def buyout_date_display(self, obj):
+        if obj.model.category.show_buyout_date:
+            return obj.buyout_date
+        return None
+    buyout_date_display.short_description = _('buyout date')
+    buyout_date_display.admin_order_field = 'buyout_date'
 
     def get_changelist_form(self, request, **kwargs):
         """

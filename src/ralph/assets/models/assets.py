@@ -434,7 +434,7 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         default=False,
     )
     depreciation_end_date = models.DateField(blank=True, null=True)
-    buyout_date = models.DateField(blank=True, null=True)
+    buyout_date = models.DateField(blank=True, null=True, db_index=True)
     task_url = models.URLField(
         blank=True,
         help_text=('External workflow system URL'),
