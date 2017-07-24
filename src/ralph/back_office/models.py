@@ -282,27 +282,6 @@ class BackOfficeAsset(Regionalizable, Asset):
     @classmethod
     @transition_action(
         form_fields={
-            'licences': {
-                'field': forms.ModelMultipleChoiceField(
-                    queryset=Licence.objects.all(), label=_('Licence'),
-                    required=False,
-                ),
-                'autocomplete_field': 'licence',
-                'autocomplete_model': 'licences.BaseObjectLicence',
-                'widget_options': {'multi': True},
-            }
-        }
-    )
-    def assign_licence(cls, instances, **kwargs):
-        for instance in instances:
-            for obj in kwargs['licences']:
-                BaseObjectLicence.objects.get_or_create(
-                    base_object=instance, licence_id=obj.id,
-                )
-
-    @classmethod
-    @transition_action(
-        form_fields={
             'owner': {
                 'field': forms.CharField(label=_('Owner')),
                 'autocomplete_field': 'owner',
@@ -322,6 +301,27 @@ class BackOfficeAsset(Regionalizable, Asset):
         owner = get_user_model().objects.get(pk=int(kwargs['owner']))
         for instance in instances:
             instance.owner = owner
+
+    @classmethod
+    @transition_action(
+        form_fields={
+            'licences': {
+                'field': forms.ModelMultipleChoiceField(
+                    queryset=Licence.objects.all(), label=_('Licence'),
+                    required=False,
+                ),
+                'autocomplete_field': 'licence',
+                'autocomplete_model': 'licences.BaseObjectLicence',
+                'widget_options': {'multi': True},
+            }
+        }
+    )
+    def assign_licence(cls, instances, **kwargs):
+        for instance in instances:
+            for obj in kwargs['licences']:
+                BaseObjectLicence.objects.get_or_create(
+                    base_object=instance, licence_id=obj.id,
+                )
 
     @classmethod
     @transition_action(
