@@ -178,7 +178,7 @@ class TransitionViewMixin(NonAtomicView, object):
         )
 
     def _run_synchronous_transition(self, form):
-        status, attachment = run_transition(
+        status, attachments = run_transition(
             instances=self.objects,
             transition_obj_or_name=self.transition,
             field=self.transition.model.field_name,
@@ -197,13 +197,12 @@ class TransitionViewMixin(NonAtomicView, object):
                 ))
             )
             return self.form_invalid(form)
-
-        if attachment:
-            url = reverse(
+        if attachments:
+            urls = [reverse(
                 'serve_attachment',
                 args=(attachment.id, attachment.original_filename)
-            )
-            self.request.session['attachment_to_download'] = url
+            ) for attachment in attachments]
+            self.request.session['attachment_to_download'] = urls
         return HttpResponseRedirect(self.get_success_url())
 
     def _is_valid(self):

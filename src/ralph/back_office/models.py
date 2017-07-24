@@ -272,11 +272,35 @@ class BackOfficeAsset(Regionalizable, Asset):
                 )
             }
         },
+        run_after=['unassign_user']
     )
     def assign_user(cls, instances, **kwargs):
         user = get_user_model().objects.get(pk=int(kwargs['user']))
         for instance in instances:
             instance.user = user
+
+    @classmethod
+    @transition_action(
+        form_fields={
+            'owner': {
+                'field': forms.CharField(label=_('Owner')),
+                'autocomplete_field': 'owner',
+                'default_value': partial(
+                    autocomplete_if_release_report, field_name='owner'
+                )
+            }
+        },
+        help_text=_(
+            'During this transition owner will be assigned as well as new '
+            'hostname might be generated for asset (only for particular model '
+            'categories and only if owner\'s country has changed)'
+        ),
+        run_after=['unassign_owner']
+    )
+    def assign_owner(cls, instances, **kwargs):
+        owner = get_user_model().objects.get(pk=int(kwargs['owner']))
+        for instance in instances:
+            instance.owner = owner
 
     @classmethod
     @transition_action(
@@ -298,28 +322,6 @@ class BackOfficeAsset(Regionalizable, Asset):
                 BaseObjectLicence.objects.get_or_create(
                     base_object=instance, licence_id=obj.id,
                 )
-
-    @classmethod
-    @transition_action(
-        form_fields={
-            'owner': {
-                'field': forms.CharField(label=_('Owner')),
-                'autocomplete_field': 'owner',
-                'default_value': partial(
-                    autocomplete_if_release_report, field_name='owner'
-                )
-            }
-        },
-        help_text=_(
-            'During this transition owner will be assigned as well as new '
-            'hostname might be generated for asset (only for particular model '
-            'categories and only if owner\'s country has changed)'
-        ),
-    )
-    def assign_owner(cls, instances, **kwargs):
-        owner = get_user_model().objects.get(pk=int(kwargs['owner']))
-        for instance in instances:
-            instance.owner = owner
 
     @classmethod
     @transition_action(
@@ -528,7 +530,7 @@ class BackOfficeAsset(Regionalizable, Asset):
         form_fields={
             'report_language': {
                 'field': forms.ModelChoiceField(
-                    label=_('Report language'),
+                    label=_('Release report language'),
                     queryset=ReportLanguage.objects.all().order_by('-default'),
                     empty_label=None
                 ),
@@ -549,7 +551,7 @@ class BackOfficeAsset(Regionalizable, Asset):
         form_fields={
             'report_language': {
                 'field': forms.ModelChoiceField(
-                    label=_('Report language'),
+                    label=_('Return report language'),
                     queryset=ReportLanguage.objects.all().order_by('-default'),
                     empty_label=None
                 ),
@@ -570,7 +572,7 @@ class BackOfficeAsset(Regionalizable, Asset):
         form_fields={
             'report_language': {
                 'field': forms.ModelChoiceField(
-                    label=_('Report language'),
+                    label=_('Loan report language'),
                     queryset=ReportLanguage.objects.all().order_by('-default'),
                     empty_label=None
                 ),
