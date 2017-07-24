@@ -202,7 +202,7 @@ class TransitionViewMixin(NonAtomicView, object):
                 'serve_attachment',
                 args=(attachment.id, attachment.original_filename)
             ) for attachment in attachments]
-            self.request.session['attachment_to_download'] = urls
+            self.request.session['attachments_to_download'] = urls
         return HttpResponseRedirect(self.get_success_url())
 
     def _is_valid(self):
