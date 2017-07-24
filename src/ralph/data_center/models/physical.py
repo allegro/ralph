@@ -391,7 +391,7 @@ class DataCenterAsset(
     previous_dc_host_update_fields = ['hostname']
 
     rack = models.ForeignKey(
-        Rack, null=True, blank=True, on_delete=models.PROTECT
+        Rack, null=True, blank=False, on_delete=models.PROTECT
     )
     status = TransitionField(
         default=DataCenterAssetStatus.new.id,

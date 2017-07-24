@@ -2,8 +2,8 @@ import logging
 import time
 
 from django.conf import settings
-from django.utils.text import slugify
-from metrology import Metrology
+
+from .collector import statsd
 
 PROCESSING_TIME_METRIC_PREFIX = getattr(
     settings, 'PROCESSING_TIME_METRIC_PREFIX', 'processing_time'
@@ -17,19 +17,25 @@ METRIC_NAME_TMPL = getattr(
     'REQUESTS_METRIC_NAME_TMPL',
     '{prefix}.{url_name}.{request_method}.{status_code}'
 )
+ALL_URLS_METRIC_NAME_TMPL = getattr(
+    settings,
+    'REQUESTS_ALL_URLS_METRIC_NAME_TMPL',
+    '{prefix}_all_urls.{request_method}'
+)
+UNKNOWN_URL_NAME = 'unknown'
 
 logger = logging.getLogger(__name__)
 
 
 class RequestMetricsMiddleware(object):
     """
-    Middleware reporting request metrics (such as processing time) to metrology
+    Middleware reporting request metrics (such as processing time) to statsd
 
     How to use it:
     * add this middleware at the beginning of MIDDLEWARE_CLASSES in your
       settings
-    * define and start Metrology reporter in you Django settings (more details
-      here: https://metrology.readthedocs.io/en/latest/)
+    * configure statsd in your settings:
+      http://statsd.readthedocs.io/en/v3.2.1/configure.html#in-django
     """
 
     def process_request(self, request):
@@ -39,7 +45,10 @@ class RequestMetricsMiddleware(object):
         try:
             url_name = request.resolver_match.url_name
         except AttributeError:
-            url_name = slugify(request.path)
+            logger.warning(
+                'URL resolver not found', extra={'path': request.path}
+            )
+            url_name = UNKNOWN_URL_NAME
 
         common_log_params = {
             'request_method': request.method,
@@ -51,22 +60,20 @@ class RequestMetricsMiddleware(object):
         processing_time_metric_name = METRIC_NAME_TMPL.format(
             prefix=PROCESSING_TIME_METRIC_PREFIX, **common_log_params
         )
+        processing_time_all_urls_metric_name = ALL_URLS_METRIC_NAME_TMPL.format(
+            prefix=PROCESSING_TIME_METRIC_PREFIX, **common_log_params
+        )
         processing_time = int(
             (time.monotonic() - request._request_start_time) * 1000
         )
-        logger.info(
-            'Processing time [ms]: {}'.format(processing_time),
-            extra=dict(processing_time=processing_time, **common_log_params)
-        )
-        processing_timer = Metrology.timer(processing_time_metric_name)
-        processing_timer.update(processing_time)  # in miliseconds
+        statsd.timing(processing_time_metric_name, processing_time)
+        statsd.timing(processing_time_all_urls_metric_name, processing_time)
 
         # requests counter
         requests_counter_metric_name = METRIC_NAME_TMPL.format(
             prefix=REQUESTS_COUNTER_METRIC_PREFIX, **common_log_params
         )
-        requests_counter = Metrology.meter(requests_counter_metric_name)
-        requests_counter.mark()
+        statsd.incr(requests_counter_metric_name)
 
     def process_response(self, request, response):
         try:

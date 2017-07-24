@@ -53,6 +53,7 @@ INSTALLED_APPS = (
     'ralph.assets',
     'ralph.attachments',
     'ralph.back_office',
+    'ralph.configuration_management',
     'ralph.dashboards',
     'ralph.data_center',
     'ralph.dhcp',
@@ -524,13 +525,10 @@ EMAIL_MESSAGE_CONTACT_NAME = os.environ.get('EMAIL_MESSAGE_CONTACT_NAME', None)
 EMAIL_MESSAGE_CONTACT_EMAIL = os.environ.get(
     'EMAIL_MESSAGE_CONTACT_EMAIL', None
 )
+
+SCM_TOOL_URL = os.getenv('SCM_TOOL_URL', '')
+
 RALPH_HOST_URL = os.environ.get('RALPH_HOST_URL', None)
 
 # METRICS
 COLLECT_METRICS = False
-
-
-# overwrite this function to use metrics reporter in RQ worker
-# it should return instance of `metrology.reporter.base.Reporter`
-def GET_REPORTER():
-    pass

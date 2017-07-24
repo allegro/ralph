@@ -24,6 +24,7 @@ FACTORY_MAP = {
     'ralph.assets.models.assets.Category': 'ralph.assets.tests.factories.CategoryFactory',  # noqa
     'ralph.assets.models.assets.Environment': 'ralph.assets.tests.factories.EnvironmentFactory',  # noqa
     'ralph.assets.models.assets.Manufacturer': 'ralph.assets.tests.factories.ManufacturerFactory',  # noqa
+    'ralph.assets.models.assets.ManufacturerKind': 'ralph.assets.tests.factories.ManufacturerKindFactory',  # noqa
     'ralph.assets.models.assets.ProfitCenter': 'ralph.assets.tests.factories.ProfitCenterFactory',  # noqa
     'ralph.assets.models.assets.Service': 'ralph.assets.tests.factories.ServiceFactory',  # noqa
     'ralph.assets.models.assets.ServiceEnvironment': 'ralph.assets.tests.factories.ServiceEnvironmentFactory',  # noqa
@@ -58,7 +59,9 @@ FACTORY_MAP = {
     'ralph.deployment.models.PrebootConfiguration': 'ralph.deployment.tests.factories.PrebootConfigurationFactory',  # noqa
     'ralph.dhcp.models.DHCPServer': 'ralph.dhcp.tests.factories.DHCPServerFactory',  # noqa
     'ralph.dhcp.models.DNSServer': 'ralph.dhcp.tests.factories.DNSServerFactory',  # noqa
+    'ralph.domains.models.domains.DNSProvider': 'ralph.domains.tests.factories.DNSProviderFactory',  # noqa
     'ralph.domains.models.domains.Domain': 'ralph.domains.tests.factories.DomainFactory',  # noqa
+    'ralph.domains.models.domains.DomainCategory': 'ralph.domains.tests.factories.DomainCategoryFactory',  # noqa
     'ralph.domains.models.domains.DomainContract': 'ralph.domains.tests.factories.DomainContractFactory',  # noqa
     'ralph.domains.models.domains.DomainRegistrant': 'ralph.domains.tests.factories.DomainRegistrantFactory',  # noqa
     'ralph.licences.models.Licence': 'ralph.licences.tests.factories.LicenceFactory',  # noqa
@@ -87,6 +90,7 @@ FACTORY_MAP = {
     'ralph.virtual.models.VirtualServer': 'ralph.virtual.tests.factories.VirtualServerFullFactory',  # noqa
     'ralph.virtual.models.VirtualServerType': 'ralph.virtual.tests.factories.VirtualServerTypeFactory',  # noqa
     'ralph.security.models.Vulnerability': 'ralph.security.tests.factories.VulnerabilityFactory',  # noqa
+    'ralph.security.models.SecurityScan': 'ralph.security.tests.factories.SecurityScanFactory',  # noqa
 }
 
 EXCLUDE_MODELS = [

@@ -5,7 +5,6 @@ apt-get update
 
 apt-get install -y --force-yes \
     git \
-    libffi-dev \
     libldap2-dev \
     libmysqlclient-dev \
     libsasl2-dev \

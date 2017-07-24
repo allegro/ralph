@@ -107,7 +107,7 @@ class DNSView(RalphDetailView):
                     )
             else:
                 errors = self.dnsaas.create_dns_record(
-                    posted_form.cleaned_data
+                    posted_form.cleaned_data, service=self.object.service
                 )
                 if not errors:
                     messages.success(

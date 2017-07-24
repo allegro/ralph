@@ -4,7 +4,7 @@ from functools import reduce
 
 from django.conf import settings
 from django.contrib.admin import SimpleListFilter
-from django.contrib.admin.views.main import ChangeList
+from django.contrib.admin.views.main import ChangeList, ORDER_VAR
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db.models import Prefetch, Q
@@ -26,12 +26,17 @@ from ralph.admin.helpers import generate_html_link
 from ralph.admin.m2m import RalphTabularM2MInline
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.views.extra import RalphDetailViewAdmin
+from ralph.admin.views.main import RalphChangeList
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.assets.invoice_report import AssetInvoiceReportMixin
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.components import Ethernet
 from ralph.assets.views import ComponentsAdminView
 from ralph.attachments.admin import AttachmentsMixin
+from ralph.configuration_management.views import (
+    SCMCheckInfo,
+    SCMStatusCheckInChangeListMixin
+)
 from ralph.data_center.forms import DataCenterAssetForm
 from ralph.data_center.models.components import DiskShare, DiskShareMount
 from ralph.data_center.models.hosts import DCHost
@@ -286,8 +291,48 @@ class DataCenterAssetSecurityInfo(SecurityInfo):
     url_name = 'datacenter_asset_security_info'
 
 
+class DataCenterAssetChangeList(RalphChangeList):
+    def get_ordering(self, request, queryset):
+        """Adds extra ordering params for ordering by location."""
+
+        # NOTE(romcheg): slot_no is added by Django Admin automatically.
+        location_fields = [
+            'rack__server_room__data_center__name',
+            'rack__server_room__name',
+            'rack__name',
+            'position',
+        ]
+
+        ordering = super(DataCenterAssetChangeList, self).get_ordering(
+            request, queryset
+        )
+
+        params = self.params
+        if ORDER_VAR in params:
+
+            order_params = params[ORDER_VAR].split('.')
+            for insert_index, p in enumerate(order_params):
+                try:
+                    none, pfx, idx = p.rpartition('-')
+                    if self.list_display[int(idx)] == 'show_location':
+
+                        ordering[insert_index:insert_index] = [
+                            '{}{}'.format(pfx, field)
+                            for field in location_fields
+                        ]
+                except (IndexError, ValueError):
+                    continue  # Invalid ordering specified, skip it.
+
+        return ordering
+
+
+class DataCenterAssetSCMInfo(SCMCheckInfo):
+    url_name = 'datacenterasset_scm_info'
+
+
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(
+    SCMStatusCheckInChangeListMixin,
     ScanStatusInChangeListMixin,
     ActiveDeploymentMessageMixin,
     MulitiAddAdminMixin,
@@ -305,6 +350,7 @@ class DataCenterAssetAdmin(
         DataCenterAssetComponents,
         DataCenterAssetNetworkView,
         DataCenterAssetSecurityInfo,
+        DataCenterAssetSCMInfo,
         DataCenterAssetLicence,
         DataCenterAssetSupport,
         DataCenterAssetOperation,
@@ -326,6 +372,7 @@ class DataCenterAssetAdmin(
         'service_env',
         'configuration_path',
         'scan_status',
+        'scm_status_check'
     ]
     multiadd_summary_fields = list_display + ['rack']
     one_of_mulitvalue_required = ['sn', 'barcode']
@@ -343,7 +390,7 @@ class DataCenterAssetAdmin(
         'status', 'barcode', 'sn', 'hostname', 'invoice_no', 'invoice_date',
         'order_no', 'model__name',
         ('model__category', RelatedAutocompleteFieldListFilter), 'service_env',
-        'configuration_path',
+        'configuration_path__path',
         ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
         MacAddressFilter,
         'depreciation_end_date', 'force_depreciation', 'remarks',
@@ -356,6 +403,7 @@ class DataCenterAssetAdmin(
             'securityscan__vulnerabilities',
             filters.RelatedAutocompleteFieldListFilter
         ),
+        'securityscan__is_patched',
     ]
     date_hierarchy = 'created'
     list_select_related = [
@@ -435,6 +483,11 @@ class DataCenterAssetAdmin(
     show_location.short_description = _('Location')
     show_location.allow_tags = True
 
+    # NOTE(romcheg): Django Admin can only order custom fields by one field.
+    #                The rest of the ordering is configured in
+    #                DataCenterAssetChangeList.get_ordering()
+    show_location.admin_order_field = 'slot_no'
+
     def get_created_date(self, obj):
         """
         Return created date for asset (since created is blacklisted by
@@ -443,6 +496,9 @@ class DataCenterAssetAdmin(
         """
         return obj.created or '-'
     get_created_date.short_description = _('Created at')
+
+    def get_changelist(self, request, **kwargs):
+        return DataCenterAssetChangeList
 
 
 @register(ServerRoom)
@@ -511,8 +567,12 @@ class DatabaseAdmin(RalphAdmin):
 
 @register(VIP)
 class VIPAdmin(RalphAdmin):
-
     search_fields = ['name', 'ip__address']
+    list_display = ['name', 'ip', 'port', 'protocol', 'service_env']
+    list_filter = ['ip', 'port', 'protocol', 'service_env', 'parent']
+    list_select_related = [
+        'ip', 'service_env__service', 'service_env__environment'
+    ]
     raw_id_fields = ['ip', 'service_env', 'parent', 'configuration_path']
     raw_id_override_parent = {'parent': Cluster}
     fields = (
@@ -542,8 +602,17 @@ class DCHostChangeList(ChangeList):
         return result.get_absolute_url()
 
 
+class DCHostSCMInfo(SCMCheckInfo):
+    url_name = 'dchost_scm_info'
+
+
 @register(DCHost)
-class DCHostAdmin(ScanStatusInChangeListMixin, RalphAdmin):
+class DCHostAdmin(
+    SCMStatusCheckInChangeListMixin,
+    ScanStatusInChangeListMixin,
+    RalphAdmin
+):
+    change_list_template = 'admin/data_center/dchost/change_list.html'
     search_fields = [
         'remarks',
         'asset__hostname',
@@ -561,13 +630,15 @@ class DCHostAdmin(ScanStatusInChangeListMixin, RalphAdmin):
         'show_location',
         'remarks',
         'scan_status',
+        'scm_status_check'
     ]
     # TODO: sn
     # TODO: hostname, DC
     list_filter = [
         DCHostHostnameFilter,
         'service_env',
-        'configuration_path',
+        'configuration_path__path',
+        ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
         ('content_type', DCHostTypeListFilter),
         MacAddressFilter,
         IPFilter,
@@ -576,6 +647,7 @@ class DCHostAdmin(ScanStatusInChangeListMixin, RalphAdmin):
             'securityscan__vulnerabilities',
             filters.RelatedAutocompleteFieldListFilter
         ),
+        'securityscan__is_patched',
     ]
     list_select_related = [
         'content_type',

@@ -6,7 +6,10 @@ from django.test import RequestFactory
 
 from ralph.assets.models import Ethernet
 from ralph.data_center.models import DataCenterAsset
-from ralph.data_center.tests.factories import DataCenterAssetFactory
+from ralph.data_center.tests.factories import (
+    DataCenterAssetFactory,
+    RackFactory
+)
 from ralph.networks.forms import validate_is_management
 from ralph.networks.models import IPAddress
 from ralph.networks.tests.factories import IPAddressFactory
@@ -42,8 +45,8 @@ class NetworkLineFormsetTest(RalphTestCase):
 
 class TestDataCenterAssetForm(RalphTestCase):
     def setUp(self):
-        self.dca = DataCenterAssetFactory()
-        self.dca1 = DataCenterAssetFactory()
+        self.dca = DataCenterAssetFactory(rack=RackFactory(), position=1)
+        self.dca1 = DataCenterAssetFactory(rack=RackFactory(), position=2)
 
         self.user = get_user_model().objects.create_superuser(
             username='root',
@@ -59,9 +62,11 @@ class TestDataCenterAssetForm(RalphTestCase):
         data = {
             'barcode': dca.barcode,
             'depreciation_rate': 25,
+            'rack': dca.rack.pk,
             'hostname': dca.hostname,
             'model': dca.model.pk,
             'orientation': 1,
+            'position': dca.position,
             'service_env': dca.service_env.pk,
             'sn': dca.sn,
             'status': 1,

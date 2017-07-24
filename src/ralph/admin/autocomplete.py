@@ -196,15 +196,19 @@ class AutocompleteList(SuggestView):
                         Q(**{'{}__icontains'.format(field): value})
                         for field in search_fields
                     ]
-                    queryset = queryset.filter(
-                        reduce(operator.or_, query_filters)
-                    )
+                    if query_filters:
+                        queryset = queryset.filter(
+                            reduce(operator.or_, query_filters)
+                        )
         else:
             query_filters = [
                 Q(**{'{}__icontains'.format(field): query})
                 for field in search_fields
             ]
-            queryset = queryset.filter(reduce(operator.or_, query_filters))
+            if query_filters:
+                queryset = queryset.filter(
+                    reduce(operator.or_, query_filters)
+                )
         return queryset
 
     def get_base_ids(self, model, value):
@@ -268,4 +272,5 @@ class AutocompleteList(SuggestView):
                 queryset = self.model._get_objects_for_user(
                     user, queryset
                 )
+        queryset = queryset.distinct()
         return queryset[:self.limit]

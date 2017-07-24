@@ -1,9 +1,14 @@
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
-from ralph.api.serializers import RalphAPISaveSerializer, RalphAPISerializer
+from ralph.api.serializers import (
+    AdditionalLookupRelatedField,
+    RalphAPISaveSerializer,
+    RalphAPISerializer
+)
 
 from ..models import CustomField, CustomFieldValue
+from ..signals import api_post_create, api_post_update
 from .fields import CustomFieldValueHyperlinkedIdentityField
 
 
@@ -60,6 +65,11 @@ class CustomFieldValueSerializerMixin(object):
 class CustomFieldValueSaveSerializer(
     CustomFieldValueSerializerMixin, RalphAPISaveSerializer
 ):
+
+    custom_field = AdditionalLookupRelatedField(
+        queryset=CustomField.objects.all(), lookup_fields=['attribute_name'],
+    )
+
     def to_internal_value(self, data):
         result = super().to_internal_value(data)
         # rewrite content type id and object id (grabbed from url) to validated
@@ -68,6 +78,16 @@ class CustomFieldValueSaveSerializer(
             if key in data:
                 result[key] = data[key]
         return result
+
+    def create(self, validated_data):
+        instance = super().create(validated_data)
+        api_post_create.send(sender=instance.__class__, instance=instance)
+        return instance
+
+    def update(self, instance, validated_data):
+        instance = super().update(instance, validated_data)
+        api_post_update.send(sender=instance.__class__, instance=instance)
+        return instance
 
     def _extra_instance_validation(self, instance):
         super()._extra_instance_validation(instance)

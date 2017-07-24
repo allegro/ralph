@@ -247,7 +247,8 @@ class _BaseTestDeploymentActionsTestCase(object):
                 'domain': 1,
                 'name': 's12345.mydc.net',
                 'content': '10.20.30.40',
-                'owner': 'ralph'
+                'owner': 'ralph',
+                'service_uid': self.instance.service.uid
             }
         )
 

@@ -655,7 +655,7 @@ msgid "in repair"
 msgstr ""
 
 #: src/ralph/assets/models/choices.py:30
-msgid "ok"
+msgid "scm_ok"
 msgstr ""
 
 #: src/ralph/assets/models/choices.py:31

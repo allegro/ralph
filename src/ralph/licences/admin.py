@@ -8,6 +8,7 @@ from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.assets.invoice_report import InvoiceReportMixin
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer import resources
+from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.licences.models import (
     BaseObjectLicence,
     Licence,
@@ -50,6 +51,7 @@ class LicenceUserView(RalphDetailViewAdmin):
 
 @register(Licence)
 class LicenceAdmin(
+    CustomFieldValueAdminMixin,
     AttachmentsMixin,
     BulkEditChangeListMixin,
     InvoiceReportMixin,
@@ -68,8 +70,8 @@ class LicenceAdmin(
     list_filter = [
         'niw', 'sn', 'remarks', 'software', 'property_of',
         'licence_type', 'valid_thru', 'order_no', 'invoice_no', 'invoice_date',
-        'budget_info', 'manufacturer', 'region', 'office_infrastructure',
-        TagsListFilter
+        'budget_info', 'manufacturer', 'manufacturer__manufacturer_kind',
+        'region', 'office_infrastructure', TagsListFilter
     ]
     date_hierarchy = 'created'
     list_display = [

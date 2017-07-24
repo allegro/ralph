@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 
 
@@ -20,14 +21,18 @@ class DNSaaSPublisherMixin:
             )
             if not purpose or not content:
                 continue
-            data.append({
+            update_def = {
                 'ips': [
                     ip.address for ip in self.ipaddresses if
                     not ip.is_management
                 ],
                 'purpose': purpose,
                 'content': content,
-            })
+            }
+            service = self.service
+            if service:
+                update_def['service_uid'] = service.uid
+            data.append(update_def)
         return data
 
 
@@ -66,3 +71,20 @@ def move_parents_models(from_obj, to_obj, exclude_copy_fields=None):
         from_obj.delete()
     finally:
         from_obj._meta.parents = parents
+
+
+def get_host_content_types():
+    """
+    Returns hosts content types.
+
+    Proper content types:
+    * Cluster
+    * DataCenterAsset
+    * VirtualServer
+    * CloudHost
+    """
+    from ralph.data_center.models import Cluster, DataCenterAsset
+    from ralph.virtual.models import CloudHost, VirtualServer
+    return ContentType.objects.get_for_models(
+        Cluster, DataCenterAsset, VirtualServer, CloudHost
+    ).values()
