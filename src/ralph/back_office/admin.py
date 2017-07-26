@@ -10,8 +10,8 @@ from ralph.admin.sites import ralph_site
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.admin.widgets import AutocompleteWidget
-from ralph.assets.invoice_report import AssetInvoiceReportMixin
 from ralph.assets.filters import BuyoutDateFilter
+from ralph.assets.invoice_report import AssetInvoiceReportMixin
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.back_office.models import (
     BackOfficeAsset,
