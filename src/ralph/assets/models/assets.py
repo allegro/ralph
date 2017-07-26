@@ -434,6 +434,7 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         default=False,
     )
     depreciation_end_date = models.DateField(blank=True, null=True)
+    buyout_date = models.DateField(blank=True, null=True, db_index=True)
     task_url = models.URLField(
         blank=True,
         help_text=('External workflow system URL'),
@@ -457,8 +458,7 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
     def __str__(self):
         return self.hostname or ''
 
-    @property
-    def buyout_date(self):
+    def calculate_buyout_date(self):
         """
         Get buyout date.
 
@@ -531,4 +531,6 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
             if value == '':
                 value = None
             setattr(self, unique_field, value)
+
+        self.buyout_date = self.calculate_buyout_date()
         return super(Asset, self).save(*args, **kwargs)
