@@ -30,10 +30,6 @@ def update_buyout_date(apps, schema_editor):
         asset.save(update_fields=['buyout_date'])
 
 
-def noop(apps, schema_editor):
-    pass
-
-
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -47,6 +43,6 @@ class Migration(migrations.Migration):
             field=models.DateField(blank=True, db_index=True, null=True),
         ),
         migrations.RunPython(
-            update_buyout_date, reverse_code=noop
+            update_buyout_date, reverse_code=migrations.RunPython.noop
         ),
     ]

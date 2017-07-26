@@ -11,6 +11,7 @@ from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.admin.widgets import AutocompleteWidget
 from ralph.assets.invoice_report import AssetInvoiceReportMixin
+from ralph.assets.filters import BuyoutDateFilter
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.back_office.models import (
     BackOfficeAsset,
@@ -109,8 +110,9 @@ class BackOfficeAssetAdmin(
         'user', 'owner', 'user__segment', 'user__company', 'user__department',
         'user__employee_id', 'property_of', 'invoice_no', 'invoice_date',
         'order_no', 'provider', 'budget_info', 'depreciation_rate',
-        'depreciation_end_date', 'force_depreciation', 'buyout_date',
-        LiquidatedStatusFilter, TagsListFilter
+        'depreciation_end_date', 'force_depreciation',
+        ('buyout_date', BuyoutDateFilter), LiquidatedStatusFilter,
+        TagsListFilter
     ]
     date_hierarchy = 'created'
     list_select_related = [
