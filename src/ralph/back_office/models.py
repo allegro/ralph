@@ -314,7 +314,8 @@ class BackOfficeAsset(Regionalizable, Asset):
                 'autocomplete_model': 'licences.BaseObjectLicence',
                 'widget_options': {'multi': True},
             }
-        }
+        },
+        run_after=['unassign_licences']
     )
     def assign_licence(cls, instances, **kwargs):
         for instance in instances:

@@ -30,6 +30,6 @@ class TransitionAdminTest(ClientMixin, ReloadUrlsMixin, TransitionTestCase):
             args=(order.pk, transition.pk,)
         )
         self.login_as_user()
-        self.assertFalse(self.client.session.get('attachment_to_download'))
+        self.assertFalse(self.client.session.get('attachments_to_download'))
         self.client.post(transition_url)
-        self.assertTrue(self.client.session.get('attachment_to_download'))
+        self.assertTrue(self.client.session.get('attachments_to_download'))
