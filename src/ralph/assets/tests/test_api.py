@@ -33,6 +33,8 @@ from ralph.assets.tests.factories import (
 )
 from ralph.back_office.models import BackOfficeAsset
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
+from ralph.configuration_management.models import SCMCheckResult
+from ralph.configuration_management.tests.factories import SCMStatusCheckFactory
 from ralph.data_center.models import Cluster, Database, DataCenterAsset, VIP
 from ralph.data_center.tests.factories import (
     ClusterFactory,
@@ -648,6 +650,44 @@ class BaseObjectAPITests(RalphAPITestCase):
         )
         response = self.client.get(url, format='json')
         self.assertEqual(len(response.data['results']), 1)
+
+    def test_filter_by_scm_status_check_result(self):
+        status_checks = {
+            SCMCheckResult.scm_error: 2,
+            SCMCheckResult.scm_ok: 1,
+            SCMCheckResult.check_failed: 3
+        }
+        objects = []
+        for obj_type in (CloudHostFactory,
+                         DataCenterAssetFactory,
+                         VirtualServerFactory):
+            for _ in range(2):
+                objects.append(obj_type())
+
+        for check_result in status_checks:
+            for i in range(status_checks[check_result]):
+                SCMStatusCheckFactory(
+                    base_object=objects.pop().baseobject_ptr,
+                    check_result=check_result
+                )
+
+            url = '{}?{}'.format(
+                reverse('baseobject-list'), urlencode(
+                    {'scmstatuscheck__check_result': check_result.numerator}
+                )
+            )
+            response = self.client.get(url, format='json')
+            self.assertEqual(
+                len(response.data['results']),
+                status_checks[check_result]
+            )
+
+            for obj in response.data['results']:
+                self.assertIn('scmstatuscheck', obj)
+                self.assertEqual(
+                    obj['scmstatuscheck']['check_result'],
+                    check_result.raw
+                )
 
     def test_filter_by_service_uid(self):
         url = '{}?{}'.format(

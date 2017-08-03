@@ -10,6 +10,7 @@ from ralph.assets.api.serializers import (
     NetworkComponentSerializerMixin,
     OwnersFromServiceEnvSerializerMixin
 )
+from ralph.configuration_management.api import SCMInfoSerializer
 from ralph.data_center.models import (
     Accessory,
     BaseObjectCluster,
@@ -118,6 +119,7 @@ class DataCenterAssetSimpleSerializer(RalphAPISerializer):
 
 class DataCenterAssetSerializer(ComponentSerializerMixin, AssetSerializer):
     rack = SimpleRackSerializer()
+    scmstatuscheck = SCMInfoSerializer()
 
     class Meta(AssetSerializer.Meta):
         model = DataCenterAsset
