@@ -73,7 +73,7 @@ class RalphUser(
     gender = models.PositiveIntegerField(
         verbose_name=_('gender'),
         choices=Gender(),
-        default=Gender.male.id,
+        default=Gender.unspecified.id,
     )
     country = models.PositiveIntegerField(
         verbose_name=_('country'),
