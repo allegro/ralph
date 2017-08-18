@@ -397,7 +397,7 @@ class Network(
     class Meta:
         verbose_name = _('network')
         verbose_name_plural = _('networks')
-        unique_together = ('min_ip', 'max_ip')
+        #unique_together = ('min_ip', 'max_ip')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
