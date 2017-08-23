@@ -2,9 +2,7 @@
 import unittest
 from datetime import date
 
-from dj.choices import Gender
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from rest_framework import status
@@ -105,11 +103,6 @@ class RalphUserAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], RalphUser.objects.count())
 
-    def test_user_gender_is_unspecified_by_default(self):
-            user = get_user_model().objects.create(username='testuser42')
-
-            self.assertEqual(user.gender, Gender.unspecified)
-
     def test_get_user_details(self):
         region = Region.objects.create(name='EU')
         self.user1.regions.add(region)
@@ -124,7 +117,6 @@ class RalphUserAPITests(RalphAPITestCase):
         self.assertEqual(response.data['first_name'], self.user1.first_name)
         self.assertEqual(response.data['last_name'], self.user1.last_name)
         self.assertEqual(response.data['regions'][0]['id'], region.id)
-        self.assertEqual(response.data['gender'], Gender.unspecified.raw)
         self.assertEqual(
             response.data['assets_as_owner'][0]['id'], bo_asset_as_owner.id
         )
