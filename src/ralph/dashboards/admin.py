@@ -90,7 +90,7 @@ class GraphAdmin(RalphAdmin):
 
     def get_readonly_fields(self, *args, **kwargs):
         readonly_fields = super().get_readonly_fields(*args, **kwargs)
-        if not settings.COLLECT_GRAPHS:
+        if not settings.ALLOW_PUSH_GRAPHS_DATA_TO_STATSD:
             readonly_fields.append('push_to_statsd')
         return readonly_fields
 

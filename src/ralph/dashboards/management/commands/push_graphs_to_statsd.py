@@ -5,6 +5,7 @@ import textwrap
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.utils.text import slugify
 
 from ralph.dashboards.models import Graph
 from ralph.lib.metrics import statsd
@@ -15,11 +16,8 @@ STATSD_PATH = '{}.{{}}.{{}}'.format(PREFIX)
 
 
 def normalize(s):
-    allowed = list(string.ascii_letters + string.digits) + ['_']
-    s = s.lower()
-    s = s.replace(' ', '_')
-    s = s.replace('-', '_')
-    return ''.join([c for c in s if c in allowed])
+    s = slugify(s)
+    return s.replace('-', '_')
 
 
 class Command(BaseCommand):
@@ -31,6 +29,6 @@ class Command(BaseCommand):
         for graph in graphs:
             graph_data = graph.get_data()
             graph_name = normalize(graph.name)
-            for row in zip(graph_data['labels'], graph_data['series']):
-                path = STATSD_PATH.format(graph_name, normalize(row[0]))
-                statsd.gauge(path, row[1])
+            for label, value in zip(graph_data['labels'], graph_data['series']):
+                path = STATSD_PATH.format(graph_name, normalize(label))
+                statsd.gauge(path, value)

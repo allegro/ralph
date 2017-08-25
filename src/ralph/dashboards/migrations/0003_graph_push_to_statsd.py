@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='graph',
             name='push_to_statsd',
-            field=models.BooleanField(default=False),
+            field=models.BooleanField(default=False, help_text="Push graph's data to statsd."),
         ),
     ]
