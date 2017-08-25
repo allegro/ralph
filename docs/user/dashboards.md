@@ -3,7 +3,7 @@
 The dashboard provide basic mechanism for displaying data via bar or pie charts.
 
 # Integration with statsd
-Each graph can push data to statsd. You must add ``STATSD_GRAPHS_PREFIX`` to yours settings and set ``COLLECT_GRAPHS`` to ``True``. Next, check ``Push to statsd`` on concrete graph and use Ralph's management command ``push_graphs_to_statsd`` to push your data to statsd.
+Each graph can push data to statsd. You must add ``STATSD_GRAPHS_PREFIX`` to yours settings and set ``ALLOW_PUSH_GRAPHS_DATA_TO_STATSD`` and ``COLLECT_METRICS`` to ``True``. Next, check ``Push to statsd`` on concrete graph and use Ralph's management command ``push_graphs_to_statsd`` to push your data to statsd.
 
 
 ## Getting started

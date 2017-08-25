@@ -90,7 +90,11 @@ class GraphAdmin(RalphAdmin):
 
     def get_readonly_fields(self, *args, **kwargs):
         readonly_fields = super().get_readonly_fields(*args, **kwargs)
-        if not settings.ALLOW_PUSH_GRAPHS_DATA_TO_STATSD:
+        allow_push_graphs_data_to_statsd = (
+            not settings.ALLOW_PUSH_GRAPHS_DATA_TO_STATSD and
+            not settings.COLLECT_METRICS
+        )
+        if allow_push_graphs_data_to_statsd:
             readonly_fields.append('push_to_statsd')
         return readonly_fields
 

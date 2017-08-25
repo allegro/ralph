@@ -69,10 +69,10 @@ if bool_from_env('COLLECT_METRICS'):
         'ralph.lib.metrics.middlewares.RequestMetricsMiddleware',
     ) + MIDDLEWARE_CLASSES
 
-ALLOW_PUSH_GRAPHS_DATA_TO_STATSD = bool_from_env(
-    'ALLOW_PUSH_GRAPHS_DATA_TO_STATSD'
-)
-if ALLOW_PUSH_GRAPHS_DATA_TO_STATSD:
-    STATSD_GRAPHS_PREFIX = os.environ.get(
-        'STATSD_GRAPHS_PREFIX', 'ralph.graphs'
+    ALLOW_PUSH_GRAPHS_DATA_TO_STATSD = bool_from_env(
+        'ALLOW_PUSH_GRAPHS_DATA_TO_STATSD'
     )
+    if ALLOW_PUSH_GRAPHS_DATA_TO_STATSD:
+        STATSD_GRAPHS_PREFIX = os.environ.get(
+            'STATSD_GRAPHS_PREFIX', 'ralph.graphs'
+        )
