@@ -71,4 +71,6 @@ if bool_from_env('COLLECT_METRICS'):
 
 COLLECT_GRAPHS = bool_from_env('COLLECT_GRAPHS')
 if COLLECT_GRAPHS:
-    STATSD_GRAPHS_PREFIX = os.environ.get('STATSD_GRAPHS_PREFIX', 'ralph.graphs')
+    STATSD_GRAPHS_PREFIX = os.environ.get(
+        'STATSD_GRAPHS_PREFIX', 'ralph.graphs'
+    )
