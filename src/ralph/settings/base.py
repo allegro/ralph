@@ -533,3 +533,5 @@ RALPH_HOST_URL = os.environ.get('RALPH_HOST_URL', None)
 
 # METRICS
 COLLECT_METRICS = False
+COLLECT_GRAPHS = True
+STATSD_GRAPHS_PREFIX = 'ralph.graphs'

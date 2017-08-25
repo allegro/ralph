@@ -68,3 +68,7 @@ if bool_from_env('COLLECT_METRICS'):
     MIDDLEWARE_CLASSES = (
         'ralph.lib.metrics.middlewares.RequestMetricsMiddleware',
     ) + MIDDLEWARE_CLASSES
+
+COLLECT_GRAPHS = bool_from_env('COLLECT_GRAPHS')
+if COLLECT_GRAPHS:
+    STATSD_GRAPHS_PREFIX = os.environ.get('STATSD_GRAPHS_PREFIX', 'ralph.graphs')

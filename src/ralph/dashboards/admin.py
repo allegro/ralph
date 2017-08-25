@@ -2,6 +2,7 @@ import json
 from itertools import groupby
 
 from django import forms
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
@@ -78,13 +79,20 @@ class GraphAdmin(RalphAdmin):
                 'aggregate_type',
                 'chart_type',
                 'params',
-                'active'
+                'active',
+                'push_to_statsd',
             )
         }),
         ('Preview', {
             'fields': ('get_preview',),
         }),
     )
+
+    def get_readonly_fields(self, *args, **kwargs):
+        readonly_fields = super().get_readonly_fields(*args, **kwargs)
+        if not settings.COLLECT_GRAPHS:
+            readonly_fields.append('push_to_statsd')
+        return readonly_fields
 
     def get_preview(self, obj):
         return obj.render(name='preview')
