@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from django.utils.text import slugify
 
 from ralph.dashboards.models import Graph
-from ralph.lib.metrics import statsd
+from ralph.lib.metrics import build_statsd_client
 
 logger = logging.getLogger(__name__)
 PREFIX = settings.STATSD_GRAPHS_PREFIX
@@ -24,6 +24,7 @@ class Command(BaseCommand):
     help = textwrap.dedent(__doc__).strip()
 
     def handle(self, *args, **kwargs):
+        statsd = build_statsd_client(prefix=STATSD_PATH)
         graphs = Graph.objects.filter(push_to_statsd=True)
         for graph in graphs:
             graph_data = graph.get_data()
