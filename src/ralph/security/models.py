@@ -46,7 +46,13 @@ class Vulnerability(
     name = models.CharField(
         verbose_name=_("name"),
         max_length=1024,
-        unique=False)
+        unique=False
+    )
+    short_name = models.CharField(
+        verbose_name=_("short name"),
+        max_length=1024,
+        unique=False
+    )
     patch_deadline = models.DateTimeField(null=True, blank=True)
     risk = models.PositiveIntegerField(choices=Risk(), null=True, blank=True)
     external_vulnerability_id = models.IntegerField(
