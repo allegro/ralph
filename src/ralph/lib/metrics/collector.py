@@ -2,15 +2,32 @@ import logging
 from contextlib import ContextDecorator
 
 from django.conf import settings
+from statsd import StatsClient
+from statsd import defaults
 
 logger = logging.getLogger(__name__)
 statsd = None
 
-if settings.COLLECT_METRICS:
-    try:
-        from statsd.defaults.django import statsd
-    except ImportError:  # statsd not installed
-        pass
+HOST = getattr(settings, 'STATSD_HOST', defaults.HOST)
+PORT = getattr(settings, 'STATSD_PORT', defaults.PORT)
+PREFIX = getattr(settings, 'STATSD_PREFIX', defaults.PREFIX)
+MAXUDPSIZE = getattr(settings, 'STATSD_MAXUDPSIZE', defaults.MAXUDPSIZE)
+IPV6 = getattr(settings, 'STATSD_IPV6', defaults.IPV6)
+
+
+def build_statsd_client(
+    host=HOST, port=PORT, prefix=PREFIX, maxudpsize=MAXUDPSIZE, ipv6=IPV6
+):
+    return StatsClient(
+        host=host,
+        port=port,
+        prefix=prefix,
+        maxudpsize=maxudpsize,
+        ipv6=ipv6
+    )
+
+if settings.COLLECT_METRICS and statsd is None:
+    statsd = build_statsd_client()
 
 if statsd is None:
     # mock statsd client to be able to use it without checking every time
