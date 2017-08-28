@@ -126,6 +126,10 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
     chart_type = models.PositiveIntegerField(choices=ChartType())
     params = JSONField(blank=True)
     active = models.BooleanField(default=True)
+    push_to_statsd = models.BooleanField(
+        default=False,
+        help_text='Push graph\'s data to statsd.'
+    )
 
     def pop_annotate_filters(self, filters):
         annotate_filters = {}

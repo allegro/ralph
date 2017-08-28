@@ -125,7 +125,7 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
     http_method_names = ['get', 'options', 'head']
     filter_fields = [
         'id', 'service_env', 'service_env', 'service_env__service__uid',
-        'content_type'
+        'content_type', 'scmstatuscheck__check_result'
     ]
     extended_filter_fields = {
         'name': BASE_OBJECT_NAME_FILTER_FIELDS,

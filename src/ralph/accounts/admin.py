@@ -276,7 +276,7 @@ class RalphUserAdmin(UserAdmin, RalphAdmin):
         }),
         (_('Profile'), {
             'fields': (
-                'gender', 'country', 'city'
+                'country', 'city'
             )
         }),
         (_('Job info'), {

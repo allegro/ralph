@@ -17,6 +17,7 @@ from ralph.assets.api.views import (
     BaseObjectViewSetMixin
 )
 from ralph.assets.models import Ethernet
+from ralph.configuration_management.api import SCMInfoSerializer
 from ralph.data_center.api.serializers import DataCenterAssetSimpleSerializer
 from ralph.data_center.models import DCHost
 from ralph.virtual.admin import VirtualServerAdmin
@@ -106,6 +107,7 @@ class CloudHostSerializer(
     parent = CloudProjectSimpleSerializer(source='cloudproject')
     cloudflavor = CloudFlavorSimpleSerializer()
     service_env = ServiceEnvironmentSimpleSerializer()
+    scmstatuscheck = SCMInfoSerializer()
 
     class Meta(BaseObjectSerializer.Meta):
         model = CloudHost
@@ -137,6 +139,7 @@ class VirtualServerSerializer(ComponentSerializerMixin, BaseObjectSerializer):
     # TODO: cast BaseObject to DataCenterAsset for hypervisor field
     hypervisor = DataCenterAssetSimpleSerializer(source='parent')
     # TODO: clusters
+    scmstatuscheck = SCMInfoSerializer()
 
     class Meta(BaseObjectSerializer.Meta):
         model = VirtualServer

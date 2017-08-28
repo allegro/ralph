@@ -150,8 +150,8 @@ LOGIN_URL = '/login/'
 LANGUAGE_CODE = 'en-us'
 LOCALE_PATHS = (os.path.join(BASE_DIR, 'locale'), )
 TIME_ZONE = 'Europe/Warsaw'
-USE_I18N = True
-USE_L10N = True
+USE_I18N = bool_from_env('USE_I18N', True)
+USE_L10N = bool_from_env('USE_L10N', True)
 USE_TZ = False
 
 STATIC_URL = '/static/'
@@ -533,3 +533,5 @@ RALPH_HOST_URL = os.environ.get('RALPH_HOST_URL', None)
 
 # METRICS
 COLLECT_METRICS = False
+ALLOW_PUSH_GRAPHS_DATA_TO_STATSD = False
+STATSD_GRAPHS_PREFIX = 'ralph.graphs'

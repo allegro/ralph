@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import hashlib
 
-from dj.choices import Country, Gender
+from dj.choices import Country
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -70,11 +70,6 @@ class RalphUser(
     AutocompleteTooltipMixin
 ):
 
-    gender = models.PositiveIntegerField(
-        verbose_name=_('gender'),
-        choices=Gender(),
-        default=Gender.male.id,
-    )
     country = models.PositiveIntegerField(
         verbose_name=_('country'),
         choices=Country(),
@@ -170,7 +165,7 @@ class RalphUser(
 
     def save(self, *args, **kwargs):
         # set default values if None provided
-        for field in ('gender', 'country'):
+        for field in ('country',):
             val = getattr(self, field)
             if val is None:
                 val = self._meta.get_field_by_name(field)[0].default
