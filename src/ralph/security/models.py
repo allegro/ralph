@@ -50,8 +50,7 @@ class Vulnerability(
     )
     short_name = models.CharField(
         verbose_name=_("short name"),
-        max_length=1024,
-        unique=False
+        max_length=1024
     )
     patch_deadline = models.DateTimeField(null=True, blank=True)
     risk = models.PositiveIntegerField(choices=Risk(), null=True, blank=True)
