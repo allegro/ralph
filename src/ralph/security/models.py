@@ -48,8 +48,8 @@ class Vulnerability(
         max_length=1024,
         unique=False
     )
-    short_name = models.CharField(
-        verbose_name=_("short name"),
+    display_name = models.CharField(
+        verbose_name=_("display name"),
         max_length=1024
     )
     patch_deadline = models.DateTimeField(null=True, blank=True)
