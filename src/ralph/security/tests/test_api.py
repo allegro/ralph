@@ -263,7 +263,7 @@ class VulnerabilityAPITests(RalphAPITestCase):
         url = reverse('vulnerability-list')
         data = {
             'name': "vulnerability name",
-            'short_name': "name",
+            'display_name': "name",
             'patch_deadline': (
                 datetime.now() + timedelta(days=10)
             ).replace(microsecond=0).isoformat(),
