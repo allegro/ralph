@@ -31,6 +31,7 @@ class TimerMock(ContextDecorator):
     def stop(self, *args, **kwargs):
         pass
 
+
 class StatsdMockClient(object):
     def __init__(self, *args, **kwargs):
         logger.warning(
@@ -54,7 +55,6 @@ if STATSD_IS_INSTALLED:
     PREFIX = getattr(settings, 'STATSD_PREFIX', defaults.PREFIX)
     MAXUDPSIZE = getattr(settings, 'STATSD_MAXUDPSIZE', defaults.MAXUDPSIZE)
     IPV6 = getattr(settings, 'STATSD_IPV6', defaults.IPV6)
-
 
     def build_statsd_client(
         host=HOST, port=PORT, prefix=PREFIX, maxudpsize=MAXUDPSIZE, ipv6=IPV6
