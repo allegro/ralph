@@ -6,7 +6,7 @@ from django.conf import settings
 STATSD_IS_INSTALLED = False
 try:
     from statsd import defaults, StatsClient
-    STATSD_IS_INSTALLED = False
+    STATSD_IS_INSTALLED = True
 except ImportError:
     pass
 
@@ -71,5 +71,5 @@ else:
         return StatsdMockClient()
 
 
-if settings.COLLECT_METRICS and statsd is None:
+if statsd is None:
     statsd = build_statsd_client()
