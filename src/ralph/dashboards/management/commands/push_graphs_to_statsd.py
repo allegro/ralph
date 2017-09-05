@@ -29,4 +29,4 @@ class Command(BaseCommand):
             graph_name = normalize(graph.name)
             for label, value in zip(graph_data['labels'], graph_data['series']):
                 path = '.'.join((graph_name, normalize(label)))
-                statsd.gauge(path, value*100)
+                statsd.gauge(path, value)
