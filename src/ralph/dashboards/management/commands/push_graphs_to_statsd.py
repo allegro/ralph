@@ -11,7 +11,7 @@ from ralph.lib.metrics import build_statsd_client
 
 logger = logging.getLogger(__name__)
 PREFIX = settings.STATSD_GRAPHS_PREFIX
-PATH = '{{}}.{{}}'.format(PREFIX)
+PATH = '{}.{}'
 
 
 def normalize(s):
