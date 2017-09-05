@@ -10,8 +10,6 @@ from ralph.dashboards.models import Graph
 from ralph.lib.metrics import build_statsd_client
 
 logger = logging.getLogger(__name__)
-PREFIX = settings.STATSD_GRAPHS_PREFIX
-PATH = '{}.{}'
 
 
 def normalize(s):
@@ -30,5 +28,5 @@ class Command(BaseCommand):
             graph_data = graph.get_data()
             graph_name = normalize(graph.name)
             for label, value in zip(graph_data['labels'], graph_data['series']):
-                path = PATH.format(graph_name, normalize(label))
-                statsd.gauge(path, value)
+                path = '.'.join((graph_name, normalize(label)))
+                statsd.gauge(path, value*100)
