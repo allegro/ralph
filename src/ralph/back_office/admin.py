@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django import forms
+from django.conf import settings
 from django.db.models.loading import get_model
 from django.utils.translation import ugettext_lazy as _
 
@@ -67,7 +68,10 @@ class BackOfficeAssetAdminForm(RalphAdmin.form):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if 'hostname' in self.fields:
+        if (
+            'hostname' in self.fields and
+            settings.BACKOFFICE_HOSTNAME_FIELD_READONLY
+        ):
             self.fields['hostname'].widget.attrs['readonly'] = True
 
 
