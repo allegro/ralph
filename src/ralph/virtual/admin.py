@@ -123,7 +123,7 @@ class VirtualServerAdmin(
     raw_id_fields = ['parent', 'service_env', 'configuration_path']
     fields = [
         'hostname', 'type', 'status', 'sn', 'service_env',
-        'configuration_path', 'parent', 'tags'
+        'configuration_path', 'parent', 'remarks', 'tags'
     ]
     list_select_related = [
         'service_env__service', 'service_env__environment', 'type',
