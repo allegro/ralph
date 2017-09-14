@@ -35,7 +35,7 @@ def is_in_dnsaas(ip):
     if not settings.ENABLE_DNSAAS_INTEGRATION:
         return False
     url = dnsaas_client.build_url(
-        'records', get_params=[('content', ip), ('type', 'A')]
+        'records', get_params=[('ip', ip), ('type', 'A')]
     )
     return len(dnsaas_client.get_api_result(url)) > 0
 
