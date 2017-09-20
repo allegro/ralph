@@ -1,0 +1,20 @@
+<script type="text/javascript">
+  (function($) {
+    $(function () {
+      "use strict";
+      $('#id_model').bind("autocomplete-update", function(evt) {
+        var url = '{% url 'assetmodel-list' %}' + $(this).val();
+        $.ajax({
+          url: url,
+        }).done(function(data) {
+          if (data.category.depreciation_rate) {
+            $('#id_depreciation_rate').val(
+              data.category.depreciation_rate
+            );
+          }
+        });
+      });
+      $('form#{{ opts.model_name }}_form :input:visible:enabled:first').focus();
+    });
+  })(ralph.jQuery);
+</script>
