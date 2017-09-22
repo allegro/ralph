@@ -35,7 +35,7 @@ class ByGraphFilter(admin.SimpleListFilter):
 
             field = get_field_by_relation_path(
                 queryset.model,
-                graph.params['labels']
+                graph.params['labels'].split(self.sep)[0]
             )
 
             if isinstance(field, ChoiceField):
