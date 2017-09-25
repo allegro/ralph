@@ -49,6 +49,8 @@ class ByGraphFilter(admin.SimpleListFilter):
                     # NOTE(romcheg): Choice not found for the filter value.
                     #                Leaving it as is.
                     pass
+            else:
+                graph_item = field.to_python(graph_item)
 
             if not graph.has_grouping:
                 queryset = queryset.filter(
