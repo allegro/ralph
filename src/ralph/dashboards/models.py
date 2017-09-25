@@ -115,7 +115,7 @@ class GroupingLabel:
 
     def format_label(self, value):
         if self.has_group:
-            value = self._format_part_of_date(value)
+            value = self._format_part_of_date(value).strip('-').strip(':')
         return str(value)
 
 
@@ -201,27 +201,30 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
             aggregate_fn_kwargs['distinct'] = True
         return aggregate_func(series_field, **aggregate_fn_kwargs)
 
-    def build_queryset(self):
+    def build_queryset(self, annotated=True):
         model = self.model.model_class()
         model_manager = model._default_manager
         queryset = model_manager.all()
 
         grouping_label = GroupingLabel(connection, self.params['labels'])
-        queryset = grouping_label.apply_grouping(queryset)
+        if annotated:
+            queryset = grouping_label.apply_grouping(queryset)
         # pop filters which are applied on annotated queryset
         annotate_filters = self.pop_annotate_filters(
             self.params.get('filters', {})
         )
         queryset = self.apply_parital_filtering(queryset)
-        queryset = queryset.values(
-            grouping_label.label
-        ).annotate(
-            series=self.get_aggregation(),
-        )
+        if annotated:
+            queryset = queryset.values(
+                grouping_label.label
+            ).annotate(
+                series=self.get_aggregation(),
+            )
         if annotate_filters:
             queryset = queryset.filter(**annotate_filters)
 
-        queryset = self.apply_sort(queryset)
+        if annotated:
+            queryset = self.apply_sort(queryset)
         queryset = self.apply_limit(queryset)
         return queryset
 
