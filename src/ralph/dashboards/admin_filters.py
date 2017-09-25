@@ -49,6 +49,6 @@ class ByGraphFilter(admin.SimpleListFilter):
             elif isinstance(field, BooleanField):
                 graph_item = field.to_python(graph_item)
             queryset = queryset.filter(
-                **{'__'.join(graph.params['labels'].split('|')): graph_item}
+                **{graph.params['labels'].replace(self.sep, '__'): graph_item}
             )
         return queryset
