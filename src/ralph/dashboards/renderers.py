@@ -19,6 +19,7 @@ class ChartistGraphRenderer(object):
     _default_options = {
         'distributeSeries': False,
         'chartPadding': 20,
+        'height': '350px'
     }
     plugins = {'ctBarLabels': {}}
     graph_query_sep = GRAPH_QUERY_SEP
