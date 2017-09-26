@@ -27,7 +27,8 @@ Below short description of these fields:
   - ``labels`` - which field in model are string representation,
   - ``series`` - aggregate by this field,
   - ``filters`` - filter query by conditions, Django ORM-like lookup (visit [Django documentation](https://docs.djangoproject.com/en/1.8/ref/models/querysets/#id4) for more information),
-  - ``excludes`` - excludes items from results - opposite to ``filters``.
+  - ``excludes`` - excludes items from results - opposite to ``filters``,
+  - ``aggregate_expression`` - by default is ``series``, you can override this value by correct aggregate expression (e.g. ``*`` or path to field).
 
 OK, after save go our new dashboard object. Now we can see item (``DC Capacity``) in ``Graphs`` fields - select them. After save go to ``Dashboards > Dashboards`` in list view click ``Link``.
 ![link-to-dashboard](/img/dashboard-link.png "Link")
@@ -118,3 +119,4 @@ The filter above limit query to objects which created from one year ago to now. 
   - ``d`` - days,
 
 <!-- (TODO(mkurek): describe limit, sort) -->
+<!-- (TODO(aadamski): describe aggregate functions) -->
