@@ -40,6 +40,7 @@ from ralph.configuration_management.api import SCMInfoSerializer
 from ralph.lib.custom_fields.api import WithCustomFieldsSerializerMixin
 from ralph.licences.api_simple import SimpleBaseObjectLicenceSerializer
 from ralph.networks.api_simple import IPAddressSimpleSerializer
+from ralph.security.api import SecurityScanSerializer
 
 
 class TypeFromContentTypeSerializerMixin(RalphAPISerializer):
@@ -436,6 +437,7 @@ class ComponentSerializerMixin(NetworkComponentSerializerMixin):
 
 class DCHostSerializer(ComponentSerializerMixin, BaseObjectSerializer):
     hostname = fields.CharField()
+    securityscan = SecurityScanSerializer()
 
     class Meta:
         model = BaseObject
@@ -443,5 +445,5 @@ class DCHostSerializer(ComponentSerializerMixin, BaseObjectSerializer):
             'id', 'url', 'ethernet', 'ipaddresses', 'custom_fields',
             '__str__', 'tags', 'service_env', 'configuration_path', 'hostname',
             'created', 'modified', 'remarks', 'parent', 'object_type',
-            'configuration_variables',
+            'configuration_variables', 'securityscan',
         ]
