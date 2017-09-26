@@ -391,6 +391,6 @@ class LabelGroupingTest(TestCase):
             })
         )
         qs = graph.build_queryset()
-        self.assertEqual(qs.get()['series'], len(assets_num))
-        for item in qs.get():
+        self.assertEqual(qs.all(), len(assets_num))
+        for item in qs.all():
             self.assertEqual(item['series'], 0)
