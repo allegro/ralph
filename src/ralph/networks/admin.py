@@ -124,7 +124,9 @@ class NetworkAdmin(RalphMPTTAdmin):
         ('max_ip', ContainsIPAddressFilter)
     ]
     list_select_related = ['kind', 'network_environment']
-    raw_id_fields = ['racks', 'gateway', 'terminators', 'service_env']
+    raw_id_fields = [
+        'racks', 'gateway', 'terminators', 'service_env', 'dns_servers_group'
+    ]
     resource_class = resources.NetworkResource
     readonly_fields = [
         'show_subnetworks', 'show_addresses', 'show_parent_networks',
@@ -138,7 +140,7 @@ class NetworkAdmin(RalphMPTTAdmin):
         (_('Basic info'), {
             'fields': [
                 'name', 'address', 'gateway', 'remarks', 'terminators', 'vlan',
-                'racks', 'network_environment', 'dns_servers', 'kind',
+                'racks', 'network_environment', 'dns_servers_group', 'dns_servers', 'kind',
                 'service_env', 'dhcp_broadcast', 'reserved_from_beginning',
                 'reserved_from_end',
             ]

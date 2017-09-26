@@ -60,10 +60,24 @@ class DNSServerGroup(NamedMixin, AdminAbsoluteUrlMixin, models.Model):
         verbose_name = _('DNS Server Group')
         verbose_name_plural = _('DNS Server Groups')
 
+    def __str__(self):
+        servers = DNSServerGroupOrder.objects.select_related(
+            'dns_server'
+        ).filter(
+            dns_server_group=self
+        ).values_list(
+            'dns_server__ip_address', flat=True
+        )
+        return '{} ({})'.format(self.name, ', '.join(servers))
+
 
 class DNSServerGroupOrder(models.Model):
-    dns_server_group = models.ForeignKey('DNSServerGroup')
-    dns_server = models.ForeignKey('DNSServer')
+    dns_server_group = models.ForeignKey(
+        'DNSServerGroup', related_name='server_group_order'
+    )
+    dns_server = models.ForeignKey(
+        'DNSServer', related_name='server_group_order'
+    )
     order = models.PositiveIntegerField(editable=True, db_index=True)
 
     class Meta:

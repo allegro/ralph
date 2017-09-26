@@ -322,6 +322,11 @@ class Network(
         verbose_name=_('DNS servers'),
         blank=True,
     )
+    dns_servers_group = models.ForeignKey(
+        'dhcp.DNSServerGroup',
+        null=True,
+        blank=True,
+    )
     reserved_from_beginning = models.PositiveIntegerField(
         help_text=_(
             'Number of addresses to be omitted in DHCP automatic assignment'
@@ -393,6 +398,17 @@ class Network(
     def reserved_top(self):
         # DEPRECATED
         return self.reserved_from_end
+
+    @property
+    def dns_servers_in_order(self):
+        servers = None
+        if self.dns_servers_group:
+            servers = DNSServer.objects.filter(
+                server_group_order__dns_server_group=self.dns_servers_group
+            ).order_by(
+                'server_group_order__order'
+            )
+        return servers
 
     class Meta:
         verbose_name = _('network')

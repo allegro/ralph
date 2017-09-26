@@ -2,7 +2,12 @@ from django.template.defaultfilters import date, timesince_filter
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
-from ralph.dhcp.models import DHCPServer, DNSServer, DNSServerGroup, DNSServerGroupOrder
+from ralph.dhcp.models import (
+    DHCPServer,
+    DNSServer,
+    DNSServerGroup,
+    DNSServerGroupOrder,
+)
 
 
 @register(DHCPServer)
@@ -31,5 +36,6 @@ class DNSServerGroupOrderInline(RalphTabularInline):
 
 @register(DNSServerGroup)
 class DNSServerGroupAdmin(RalphAdmin):
-    inlines = (DNSServerGroupOrderInline,)
     fields = ('name',)
+    inlines = (DNSServerGroupOrderInline,)
+    list_display = ('name',)

@@ -49,3 +49,6 @@ class IPNetwork(Field):
 
     def get_db_prep_save(self, value, connection, **kwargs):
         return str(value)
+
+    def get_db_prep_value(self, value, connection, **kwargs):
+        return str(value)
