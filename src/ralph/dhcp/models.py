@@ -50,6 +50,27 @@ class DHCPServer(AdminAbsoluteUrlMixin, models.Model):
         return cls.objects.filter(ip=ip).update(last_synchronized=time)
 
 
+class DNSServerGroup(NamedMixin, AdminAbsoluteUrlMixin, models.Model):
+    servers = models.ManyToManyField(
+        'DNSServer',
+        through='DNSServerGroupOrder'
+    )
+
+    class Meta:
+        verbose_name = _('DNS Server Group')
+        verbose_name_plural = _('DNS Server Groups')
+
+
+class DNSServerGroupOrder(models.Model):
+    dns_server_group = models.ForeignKey('DNSServerGroup')
+    dns_server = models.ForeignKey('DNSServer')
+    order = models.PositiveIntegerField(editable=True, db_index=True)
+
+    class Meta:
+        unique_together = (('dns_server_group', 'dns_server'),)
+        ordering = ('order',)
+
+
 class DNSServer(AdminAbsoluteUrlMixin, models.Model):
     ip_address = models.GenericIPAddressField(
         verbose_name=_('IP address'),
@@ -66,4 +87,7 @@ class DNSServer(AdminAbsoluteUrlMixin, models.Model):
         verbose_name_plural = _('DNS Servers')
 
     def __str__(self):
-        return '{}'.format(self.ip_address)
+        extra = ''
+        if self.is_default:
+            extra = ' (default)'
+        return '{}{}'.format(self.ip_address, extra)
