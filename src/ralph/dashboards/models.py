@@ -88,7 +88,7 @@ class AggregateType(Choices):
     )
     aggregate_max = _('Max').extra(aggregate_func=Max)
     aggregate_sum = _('Sum').extra(aggregate_func=Sum)
-    aggregate_sum = _('Sum boolean values').extra(
+    aggregate_sum_bool_values = _('Sum boolean values').extra(
         aggregate_func=Sum, handler=sum_bool_value_handler
     )
     aggregate_ratio = _('Ratio').extra(
