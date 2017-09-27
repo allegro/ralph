@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='graph',
             name='aggregate_type',
-            field=models.PositiveIntegerField(choices=[(1, 'Count'), (2, 'Count with zeros'), (3, 'Max'), (4, 'Sum boolean values'), (5, 'Ratio')]),
+            field=models.PositiveIntegerField(choices=[(1, 'Count'), (2, 'Count with zeros'), (3, 'Max'), (4, 'Sum'), (5, 'Sum boolean values'), (6, 'Ratio')]),
         ),
     ]
