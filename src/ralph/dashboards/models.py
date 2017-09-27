@@ -67,6 +67,19 @@ def zero_handler(aggregate_func, series, aggregate_expression):
     )
 
 
+def sum_bool_value_handler(aggregate_func, series, aggregate_expression):
+    series_field, _ = _unpack_series(series)
+    aggregate_expression = aggregate_expression or series_field
+    return Sum(
+        Case(
+            When(Q(**{aggregate_expression: True}), then=Value(1)),
+            When(Q(**{aggregate_expression: False}), then=Value(0)),
+            default=Value(0),
+            output_field=IntegerField()
+        )
+    )
+
+
 class AggregateType(Choices):
     _ = Choices.Choice
     aggregate_count = _('Count').extra(aggregate_func=Count)
@@ -75,6 +88,9 @@ class AggregateType(Choices):
     )
     aggregate_max = _('Max').extra(aggregate_func=Max)
     aggregate_sum = _('Sum').extra(aggregate_func=Sum)
+    aggregate_sum_bool_values = _('Sum boolean values').extra(
+        aggregate_func=Sum, handler=sum_bool_value_handler
+    )
     aggregate_ratio = _('Ratio').extra(
         aggregate_func=Count, handler=ratio_handler
     )

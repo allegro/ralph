@@ -394,3 +394,24 @@ class LabelGroupingTest(TestCase):
         self.assertEqual(qs.count(), assets_num)
         for item in qs.all():
             self.assertEqual(item['series'], 0)
+
+    def test_count_aggregate_sum_bool_values(self):
+        assets_num = 2
+        a, b = DataCenterAssetFactory.create_batch(assets_num)
+        SCMStatusCheckFactory(
+            base_object=a, check_result=SCMCheckResult.scm_ok.id
+        )
+        SCMStatusCheckFactory(
+            base_object=b, check_result=SCMCheckResult.scm_error.id
+        )
+        graph = GraphFactory(
+            aggregate_type=AggregateType.aggregate_sum_bool_values.id,
+            params=self._get_graph_params({
+                'filters': {},
+                'labels': 'id',
+                'series': 'scmstatuscheck__ok',
+            })
+        )
+        qs = graph.build_queryset()
+        self.assertTrue(qs.get(id=a.id)['series'] == 1)
+        self.assertTrue(qs.get(id=b.id)['series'] == 0)
