@@ -103,7 +103,7 @@ class TestSCMScanAPI(RalphAPITestCase):
             updated_scan.check_result,
             SCMCheckResult.check_failed
         )
-
+        self.assertFalse(updated_scan.ok)
         self.assertEqual(
             resp.data.get('base_object'),
             existing_scan.base_object_id
