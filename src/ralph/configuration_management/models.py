@@ -40,3 +40,8 @@ class SCMStatusCheck(
         null=False,
         verbose_name=_("SCM check result")
     )
+    ok = models.BooleanField(default=False, editable=False)
+
+    def save(self, *args, **kwargs):
+        self.ok = self.check_result == SCMCheckResult.scm_ok.id
+        super().save(*args, **kwargs)
