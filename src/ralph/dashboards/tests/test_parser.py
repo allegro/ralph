@@ -377,3 +377,20 @@ class LabelGroupingTest(TestCase):
 
         self.assertEqual(qs.all()[0]['series'], 1)
         self.assertEqual(qs.all()[1]['series'], 1)
+
+    def test_count_aggregate_with_zeros(self):
+        assets_num = 2
+        DataCenterAssetFactory.create_batch(assets_num)
+        graph = GraphFactory(
+            aggregate_type=AggregateType.aggregate_count.id,
+            params=self._get_graph_params({
+                'aggregate_expression': 'scmstatuscheck',
+                'filters': {},
+                'labels': 'id',
+                'series': 'id',
+            })
+        )
+        qs = graph.build_queryset()
+        self.assertEqual(qs.count(), assets_num)
+        for item in qs.all():
+            self.assertEqual(item['series'], 0)

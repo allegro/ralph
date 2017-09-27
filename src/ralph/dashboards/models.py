@@ -2,6 +2,7 @@ from dj.choices import Choices
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models
 from django.db.models import Case, Count, IntegerField, Max, Q, Sum, Value, When
+from django.db.models.functions import Coalesce
 from django_extensions.db.fields.json import JSONField
 
 from ralph.dashboards.filter_parser import FilterParser
@@ -11,6 +12,19 @@ from ralph.lib.mixins.models import (
     NamedMixin,
     TimeStampMixin
 )
+
+
+def _unpack_series(series):
+    if not isinstance(series, str):
+        raise ValueError('Series should be string')
+    series_field, fn = _to_pair(series, '|')
+    if (series_field != fn) and (fn != 'distinct'):
+        raise ValueError(
+            "Series supports Only `distinct` (you put '{}')".format(fn)  # noqa
+        )
+    if not series_field:
+        raise ValueError("Field `series` can't be empty")
+    return series_field, fn
 
 
 class Dashboard(
@@ -25,7 +39,7 @@ class Dashboard(
     interval = models.PositiveSmallIntegerField(default=60)
 
 
-def ratio_handler(queryset, series):
+def ratio_handler(aggregate_func, series, aggregate_expression):
     if not isinstance(series, list):
         raise ValueError('Ratio aggregation requires series to be list')
     if len(series) != 2:
@@ -44,9 +58,21 @@ def ratio_handler(queryset, series):
     )
 
 
+def zero_handler(aggregate_func, series, aggregate_expression):
+    series_field, _ = _unpack_series(series)
+    return (
+        Coalesce(
+            Count(aggregate_expression or series_field), Value(0),
+            output_field=IntegerField())
+    )
+
+
 class AggregateType(Choices):
     _ = Choices.Choice
     aggregate_count = _('Count').extra(aggregate_func=Count)
+    aggregate_count_with_zeros = _('Count with zeros').extra(
+        aggregate_func=Count, handler=zero_handler
+    )
     aggregate_max = _('Max').extra(aggregate_func=Max)
     aggregate_sum = _('Sum').extra(aggregate_func=Sum)
     aggregate_ratio = _('Ratio').extra(
@@ -165,18 +191,6 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
             return queryset.order_by(order)
         return queryset
 
-    def _unpack_series(self, series):
-        if not isinstance(series, str):
-            raise ValueError('Series should be string')
-        series_field, fn = _to_pair(series, '|')
-        if (series_field != fn) and (fn != 'distinct'):
-            raise ValueError(
-                "Series supports Only `distinct` (you put '{}')".format(fn)  # noqa
-            )
-        if not series_field:
-            raise ValueError("Field `series` can't be empty")
-        return series_field, fn
-
     def get_aggregation(self):
         aggregate_type = AggregateType.from_id(self.aggregate_type)
         aggregate_func = aggregate_type.aggregate_func
@@ -184,10 +198,18 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
         handler = getattr(
             aggregate_type, 'handler', self._default_aggregation_handler
         )
-        return handler(aggregate_func, self.params.get('series', ''))
+        series = self.params.get('series', '')
+        aggregate_expression = self.params.get('aggregate_expression')
+        return handler(
+            aggregate_func=aggregate_func,
+            series=series,
+            aggregate_expression=aggregate_expression,
+        )
 
-    def _default_aggregation_handler(self, aggregate_func, series):
-        series_field, fn_name = self._unpack_series(series)
+    def _default_aggregation_handler(
+        self, aggregate_func, series, aggregate_expression
+    ):
+        series_field, fn_name = _unpack_series(series)
         aggregate_fn_kwargs = {}
         if fn_name == "distinct":
             if self.aggregate_type != AggregateType.aggregate_count.id:
@@ -199,7 +221,10 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
                 )
 
             aggregate_fn_kwargs['distinct'] = True
-        return aggregate_func(series_field, **aggregate_fn_kwargs)
+        return aggregate_func(
+            aggregate_expression or series_field,
+            **aggregate_fn_kwargs
+        )
 
     def build_queryset(self, annotated=True):
         model = self.model.model_class()
