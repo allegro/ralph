@@ -14,6 +14,7 @@ from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
 from ralph.assets.models import AssetLastHostname, Ethernet
+from ralph.dhcp.models import DNSServer
 from ralph.dns.dnsaas import dnsaas_client
 from ralph.lib import network as network_tools
 from ralph.lib.mixins.fields import NullableCharField
@@ -26,7 +27,6 @@ from ralph.lib.mixins.models import (
 )
 from ralph.networks.fields import IPNetwork
 from ralph.networks.models.choices import IPAddressStatus
-
 
 logger = logging.getLogger(__name__)
 

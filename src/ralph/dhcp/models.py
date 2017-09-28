@@ -90,11 +90,6 @@ class DNSServer(AdminAbsoluteUrlMixin, models.Model):
         verbose_name=_('IP address'),
         unique=True,
     )
-    is_default = models.BooleanField(
-        verbose_name=_('is default'),
-        db_index=True,
-        default=False,
-    )
 
     class Meta:
         verbose_name = _('DNS Server')
