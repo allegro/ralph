@@ -59,6 +59,7 @@ FACTORY_MAP = {
     'ralph.deployment.models.PrebootConfiguration': 'ralph.deployment.tests.factories.PrebootConfigurationFactory',  # noqa
     'ralph.dhcp.models.DHCPServer': 'ralph.dhcp.tests.factories.DHCPServerFactory',  # noqa
     'ralph.dhcp.models.DNSServer': 'ralph.dhcp.tests.factories.DNSServerFactory',  # noqa
+    'ralph.dhcp.models.DNSServerGroup': 'ralph.dhcp.tests.factories.DNSServerGroupFactory',  # noqa
     'ralph.domains.models.domains.DNSProvider': 'ralph.domains.tests.factories.DNSProviderFactory',  # noqa
     'ralph.domains.models.domains.Domain': 'ralph.domains.tests.factories.DomainFactory',  # noqa
     'ralph.domains.models.domains.DomainCategory': 'ralph.domains.tests.factories.DomainCategoryFactory',  # noqa
@@ -112,7 +113,7 @@ EXCLUDE_MODELS = [
     'ralph.tests.models.Foo',
     'ralph.tests.models.Manufacturer',
     'ralph.tests.models.Order',
-    'ralph.tests.models.PolymorphicTestModel'
+    'ralph.tests.models.PolymorphicTestModel',
 ]
 
 EXCLUDE_ADD_VIEW = [

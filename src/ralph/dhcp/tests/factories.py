@@ -1,7 +1,7 @@
 import factory
 from factory.django import DjangoModelFactory
 
-from ralph.dhcp.models import DHCPServer, DNSServer
+from ralph.dhcp.models import DHCPServer, DNSServer, DNSServerGroup
 
 
 class DNSServerFactory(DjangoModelFactory):
@@ -16,3 +16,9 @@ class DHCPServerFactory(DjangoModelFactory):
 
     class Meta:
         model = DHCPServer
+
+
+class DNSServerGroupFactory(DjangoModelFactory):
+
+    class Meta:
+        model = DNSServerGroup
