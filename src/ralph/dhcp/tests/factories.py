@@ -19,6 +19,7 @@ class DHCPServerFactory(DjangoModelFactory):
 
 
 class DNSServerGroupFactory(DjangoModelFactory):
+    name = factory.Faker('name')
 
     class Meta:
         model = DNSServerGroup
