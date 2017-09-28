@@ -140,7 +140,7 @@ class NetworkAdmin(RalphMPTTAdmin):
         (_('Basic info'), {
             'fields': [
                 'name', 'address', 'gateway', 'remarks', 'terminators', 'vlan',
-                'racks', 'network_environment', 'dns_servers_group', 'dns_servers', 'kind',
+                'racks', 'network_environment', 'dns_servers_group', 'kind',
                 'service_env', 'dhcp_broadcast', 'reserved_from_beginning',
                 'reserved_from_end',
             ]

@@ -225,7 +225,7 @@ class DHCPNetworksView(
             gateway__isnull=False,
         ).exclude(
             network_environment=False
-        ).prefetch_related('dns_servers')
+        )
         context.update({
             'last_modified': self.last_modified,
             'entries': networks,

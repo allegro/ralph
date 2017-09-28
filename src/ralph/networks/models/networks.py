@@ -317,11 +317,6 @@ class Network(
         'assets.ServiceEnvironment', related_name='networks', null=True,
         default=None, blank=True,
     )
-    dns_servers = models.ManyToManyField(
-        'dhcp.DNSServer',
-        verbose_name=_('DNS servers'),
-        blank=True,
-    )
     dns_servers_group = models.ForeignKey(
         'dhcp.DNSServerGroup',
         null=True,
