@@ -6,7 +6,7 @@ from ralph.dhcp.models import (
     DHCPServer,
     DNSServer,
     DNSServerGroup,
-    DNSServerGroupOrder,
+    DNSServerGroupOrder
 )
 
 
