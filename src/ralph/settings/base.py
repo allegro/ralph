@@ -297,6 +297,9 @@ SENTRY_JS_DSN = os.environ.get('SENTRY_JS_DSN', None)
 SENTRY_JS_CONFIG = json.loads(os.environ.get('SENTRY_JS_CONFIG', '{}'))
 
 BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME = True
+BACKOFFICE_HOSTNAME_FIELD_READONLY = bool_from_env(
+    'BACKOFFICE_HOSTNAME_FIELD_READONLY', True
+)
 
 TAGGIT_CASE_INSENSITIVE = True  # case insensitive tags
 
