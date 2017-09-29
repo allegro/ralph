@@ -96,7 +96,4 @@ class DNSServer(AdminAbsoluteUrlMixin, models.Model):
         verbose_name_plural = _('DNS Servers')
 
     def __str__(self):
-        extra = ''
-        if self.is_default:
-            extra = ' (default)'
-        return '{}{}'.format(self.ip_address, extra)
+        return self.ip_address
