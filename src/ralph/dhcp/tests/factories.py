@@ -1,7 +1,12 @@
 import factory
 from factory.django import DjangoModelFactory
 
-from ralph.dhcp.models import DHCPServer, DNSServer, DNSServerGroup
+from ralph.dhcp.models import (
+    DHCPServer,
+    DNSServer,
+    DNSServerGroup,
+    DNSServerGroupOrder
+)
 
 
 class DNSServerFactory(DjangoModelFactory):
@@ -28,6 +33,7 @@ class DNSServerGroupFactory(DjangoModelFactory):
 class DNSServerGroupOrderFactory(DjangoModelFactory):
     dns_server_group = factory.SubFactory(DNSServerGroupFactory)
     dns_server = factory.SubFactory(DNSServerFactory)
+    order = 0
 
     class Meta:
-        model = DNSServerGroup
+        model = DNSServerGroupOrder
