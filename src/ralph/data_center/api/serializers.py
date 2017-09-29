@@ -24,6 +24,7 @@ from ralph.data_center.models import (
     ServerRoom,
     VIP
 )
+from ralph.security.api import SecurityScanSerializer
 
 
 class ClusterTypeSerializer(RalphAPISerializer):
@@ -120,6 +121,7 @@ class DataCenterAssetSimpleSerializer(RalphAPISerializer):
 class DataCenterAssetSerializer(ComponentSerializerMixin, AssetSerializer):
     rack = SimpleRackSerializer()
     scmstatuscheck = SCMInfoSerializer()
+    securityscan = SecurityScanSerializer()
 
     class Meta(AssetSerializer.Meta):
         model = DataCenterAsset
