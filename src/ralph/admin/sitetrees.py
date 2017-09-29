@@ -149,6 +149,7 @@ sitetrees = [
                 section(_('Network kind'), 'networks', 'networkkind'),
                 section(_('IP Addresses'), 'networks', 'ipaddress'),
                 section(_('DHCP Servers'), 'dhcp', 'DHCPServer'),
+                section(_('DNS Server Groups'), 'dhcp', 'DNSServerGroup'),
                 section(_('DNS Servers'), 'dhcp', 'DNSServer'),
             ]
         ),

@@ -27,7 +27,6 @@ from ralph.lib.mixins.models import (
 from ralph.networks.fields import IPNetwork
 from ralph.networks.models.choices import IPAddressStatus
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -317,9 +316,9 @@ class Network(
         'assets.ServiceEnvironment', related_name='networks', null=True,
         default=None, blank=True,
     )
-    dns_servers = models.ManyToManyField(
-        'dhcp.DNSServer',
-        verbose_name=_('DNS servers'),
+    dns_servers_group = models.ForeignKey(
+        'dhcp.DNSServerGroup',
+        null=True,
         blank=True,
     )
     reserved_from_beginning = models.PositiveIntegerField(

@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
 from ralph.networks.models.networks import IPAddress, NetworkEnvironment
 
 
@@ -50,15 +50,48 @@ class DHCPServer(AdminAbsoluteUrlMixin, models.Model):
         return cls.objects.filter(ip=ip).update(last_synchronized=time)
 
 
+class DNSServerGroup(NamedMixin, AdminAbsoluteUrlMixin, models.Model):
+    servers = models.ManyToManyField(
+        'DNSServer',
+        through='DNSServerGroupOrder'
+    )
+
+    class Meta:
+        verbose_name = _('DNS Server Group')
+        verbose_name_plural = _('DNS Server Groups')
+
+    def __str__(self):
+        servers = DNSServerGroupOrder.objects.select_related(
+            'dns_server'
+        ).filter(
+            dns_server_group=self
+        ).values_list(
+            'dns_server__ip_address', flat=True
+        )
+        return '{} ({})'.format(self.name, ', '.join(servers))
+
+
+class DNSServerGroupOrder(models.Model):
+    dns_server_group = models.ForeignKey(
+        'DNSServerGroup', related_name='server_group_order'
+    )
+    dns_server = models.ForeignKey(
+        'DNSServer', related_name='server_group_order'
+    )
+    order = models.PositiveIntegerField(editable=True, db_index=True)
+
+    class Meta:
+        unique_together = (('dns_server_group', 'dns_server'),)
+        ordering = ('order',)
+
+    def __str__(self):
+        return self.dns_server.ip_address
+
+
 class DNSServer(AdminAbsoluteUrlMixin, models.Model):
     ip_address = models.GenericIPAddressField(
         verbose_name=_('IP address'),
         unique=True,
-    )
-    is_default = models.BooleanField(
-        verbose_name=_('is default'),
-        db_index=True,
-        default=False,
     )
 
     class Meta:
@@ -66,4 +99,4 @@ class DNSServer(AdminAbsoluteUrlMixin, models.Model):
         verbose_name_plural = _('DNS Servers')
 
     def __str__(self):
-        return '{}'.format(self.ip_address)
+        return self.ip_address
