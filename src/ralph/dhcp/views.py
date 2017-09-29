@@ -1,6 +1,6 @@
 import logging
 
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 from django.http import (
     HttpResponse,
     HttpResponseBadRequest,
@@ -15,7 +15,7 @@ from ralph.admin.helpers import get_client_ip
 from ralph.assets.models.components import Ethernet
 from ralph.data_center.models import DataCenter
 from ralph.deployment.models import Deployment
-from ralph.dhcp.models import DHCPEntry, DHCPServer
+from ralph.dhcp.models import DHCPEntry, DHCPServer, DNSServer
 from ralph.networks.models.networks import (
     IPAddress,
     Network,
@@ -225,6 +225,16 @@ class DHCPNetworksView(
             gateway__isnull=False,
         ).exclude(
             network_environment=False
+        ).select_related(
+            'dns_servers_group',
+            'gateway'
+        ).prefetch_related(
+            Prefetch(
+                'dns_servers_group__server_group_order__dns_server',
+                queryset=DNSServer.objects.all().order_by(
+                    'server_group_order__order'
+                )
+            )
         )
         context.update({
             'last_modified': self.last_modified,

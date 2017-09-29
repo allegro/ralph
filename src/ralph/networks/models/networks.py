@@ -393,18 +393,6 @@ class Network(
         # DEPRECATED
         return self.reserved_from_end
 
-    @property
-    def dns_servers_in_order(self):
-        from ralph.dhcp.models import DNSServer
-        servers = None
-        if self.dns_servers_group:
-            servers = DNSServer.objects.filter(
-                server_group_order__dns_server_group=self.dns_servers_group
-            ).order_by(
-                'server_group_order__order'
-            )
-        return servers
-
     class Meta:
         verbose_name = _('network')
         verbose_name_plural = _('networks')

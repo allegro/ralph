@@ -84,6 +84,9 @@ class DNSServerGroupOrder(models.Model):
         unique_together = (('dns_server_group', 'dns_server'),)
         ordering = ('order',)
 
+    def __str__(self):
+        return self.dns_server.ip_address
+
 
 class DNSServer(AdminAbsoluteUrlMixin, models.Model):
     ip_address = models.GenericIPAddressField(

@@ -23,3 +23,11 @@ class DNSServerGroupFactory(DjangoModelFactory):
 
     class Meta:
         model = DNSServerGroup
+
+
+class DNSServerGroupOrderFactory(DjangoModelFactory):
+    dns_server_group = factory.SubFactory(DNSServerGroupFactory)
+    dns_server = factory.SubFactory(DNSServerFactory)
+
+    class Meta:
+        model = DNSServerGroup
