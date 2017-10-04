@@ -40,7 +40,7 @@
           '.ct-series'
         );
         clickable.each(function() {
-          jQuery(this).on('click', function() {
+          jQuery(this).on('click', function(event) {
             redirectOnClick(event.target);
           });
 
