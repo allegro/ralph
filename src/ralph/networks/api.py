@@ -96,7 +96,7 @@ class NetworkViewSet(RalphAPIViewSet):
     queryset = Network.objects.all()
     serializer_class = NetworkSerializer
     select_related = ['network_environment', 'kind']
-    prefetch_related = ['racks', 'dns_servers']
+    prefetch_related = ['racks']
 
 
 class NetworkEnvironmentViewSet(RalphAPIViewSet):
