@@ -320,6 +320,7 @@ class Network(
         'dhcp.DNSServerGroup',
         null=True,
         blank=True,
+        on_delete=models.SET_NULL,
     )
     reserved_from_beginning = models.PositiveIntegerField(
         help_text=_(
