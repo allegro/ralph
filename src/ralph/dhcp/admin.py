@@ -9,6 +9,7 @@ from ralph.dhcp.models import (
     DNSServerGroup,
     DNSServerGroupOrder
 )
+from ralph.lib.table import TableWithUrl
 
 
 @register(DHCPServer)
@@ -37,9 +38,17 @@ class DNSServerGroupOrderInline(RalphTabularInline):
 
 @register(DNSServerGroup)
 class DNSServerGroupAdmin(RalphAdmin):
-    fields = ('name',)
     inlines = (DNSServerGroupOrderInline,)
     list_display = ('name', 'servers_formatted')
+    readonly_fields = ['networks']
+    fieldsets = (
+        (_(''), {
+            'fields': (
+                'name',
+                'networks',
+            )
+        }),
+    )
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related(
@@ -56,3 +65,17 @@ class DNSServerGroupAdmin(RalphAdmin):
             d.dns_server.ip_address for d in obj.server_group_order.all()
         ])
     servers_formatted.short_description = 'DNS Servers'
+
+    def networks(self, obj):
+        networks = obj.networks.all()
+        if networks:
+            result = TableWithUrl(
+                networks,
+                ['name', 'address', 'network_environment'],
+                url_field='name',
+            ).render()
+        else:
+            result = '&ndash;'
+        return result
+    networks.short_description = _('in networks')
+    networks.allow_tags = True
