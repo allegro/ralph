@@ -8,14 +8,14 @@ document.addEventListener('DOMContentLoaded', function(){
         collapse.closest('.control').classList.remove('hide');
         table.querySelectorAll('tr.can-hide').forEach(function(row){
           row.classList.remove('hide');
-        })
+        });
     });
     collapse.addEventListener('click', function(){
         collapse.closest('.control').classList.add('hide');
         expand.closest('.control').classList.remove('hide');
           table.querySelectorAll('tr.can-hide').forEach(function(row){
           row.classList.add('hide');
-        })
+        });
     });
   });
 }, false);
