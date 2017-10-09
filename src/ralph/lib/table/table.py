@@ -62,6 +62,14 @@ class Table(object):
         self.request = request
         self.transpose = transpose
 
+    @property
+    def headers_count(self):
+        return len(self.get_headers())
+
+    @property
+    def rows_count(self):
+        return self.queryset.count()
+
     def get_headers(self):
         """
         Return headers for table.
@@ -145,7 +153,12 @@ class Table(object):
 
     def render(self, request=None):
         content = self.get_table_content()
-        context = {'show_header': not self.transpose}
+        context = {
+            'show_header': not self.transpose,
+            'headers_count': self.headers_count,
+            'rows_count': self.rows_count,
+            'LIMIT': 5
+        }
         if self.transpose:
             context.update({'rows': content})
         else:
