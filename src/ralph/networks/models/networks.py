@@ -321,6 +321,7 @@ class Network(
         null=True,
         blank=True,
         related_name='networks',
+        on_delete=models.PROTECT,
     )
     reserved_from_beginning = models.PositiveIntegerField(
         help_text=_(
