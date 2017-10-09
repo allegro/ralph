@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='network',
             name='dns_servers_group',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, to='dhcp.DNSServerGroup', null=True, blank=True),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='dhcp.DNSServerGroup', null=True, blank=True),
         ),
     ]
