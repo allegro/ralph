@@ -2,18 +2,19 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
+import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('networks', '0012_remove_network_dns_servers'),
+        ('networks', '0013_auto_20171006_0947'),
     ]
 
     operations = [
         migrations.AlterField(
             model_name='network',
             name='dns_servers_group',
-            field=models.ForeignKey(null=True, related_name='networks', blank=True, to='dhcp.DNSServerGroup'),
+            field=models.ForeignKey(to='dhcp.DNSServerGroup', related_name='networks', null=True, blank=True, on_delete=django.db.models.deletion.PROTECT),
         ),
     ]
