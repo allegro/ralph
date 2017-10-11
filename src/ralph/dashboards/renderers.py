@@ -43,10 +43,11 @@ class ChartistGraphRenderer(object):
             options.update(self.options)
         return options
 
-    def _labels2urls(self, content_type, graph_id, labels):
+    def _labels2urls(self, model, graph_id, labels):
+        meta = model._meta
         base_url = reverse(
             "admin:%s_%s_changelist" % (
-                content_type.app_label, content_type.model
+                meta.app_label, meta.model_name
             )
         )
         urls = []
@@ -77,7 +78,7 @@ class ChartistGraphRenderer(object):
     def post_data_hook(self, data):
         try:
             click_urls = self._labels2urls(
-                self.model.model, self.model.id, data['labels']
+                self.model.changelist_model, self.model.id, data['labels']
             )
             data['series'] = self._series_with_urls(
                 data['series'], click_urls

@@ -1,10 +1,7 @@
-from dj.choices.fields import ChoiceField
 from django.contrib import admin
-from django.db.models.fields import BooleanField
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin.helpers import get_field_by_relation_path
 from ralph.dashboards.models import Graph
 from ralph.dashboards.renderers import GRAPH_QUERY_SEP
 
@@ -31,24 +28,5 @@ class ByGraphFilter(admin.SimpleListFilter):
             if graph_item == 'None':
                 graph_item = None
             graph = get_object_or_404(Graph, pk=graph_pk)
-            queryset = graph.build_queryset(annotated=False)
-            field = get_field_by_relation_path(
-                queryset.model,
-                graph.params['labels'].split(self.sep)[0]
-            )
-            if isinstance(field, ChoiceField):
-                choices = field.choice_class()
-                try:
-                    graph_item = [
-                        i[0] for i in choices if i[1] == graph_item
-                    ].pop()
-                except IndexError:
-                    # NOTE(romcheg): Choice not found for the filter value.
-                    #                Leaving it as is.
-                    pass
-            elif isinstance(field, BooleanField):
-                graph_item = field.to_python(graph_item)
-            queryset = queryset.filter(
-                **{graph.params['labels'].replace(self.sep, '__'): graph_item}
-            )
+            queryset = graph.get_queryset_for_filter(queryset, graph_item)
         return queryset
