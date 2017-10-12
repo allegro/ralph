@@ -356,7 +356,7 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
             ).values_list(value_param, flat=True)
             queryset = queryset.filter(**{filter_key: values})
         else:
-            queryset = self.build_queryset(annotated=False)
+            queryset = self.build_queryset(annotated=False, queryset=queryset)
             queryset = queryset.filter(
                 **{self.params['labels'].replace(GRAPH_QUERY_SEP, '__'): value}
             )
