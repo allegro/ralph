@@ -39,7 +39,7 @@ setup_user_env() {
 
     # create local settings file
     if [ ! -f $settings_local_path ]; then
-        echo $ralph_local_settings > $settings_local_path
+        echo "$ralph_local_settings" > $settings_local_path
     fi
 }
 
