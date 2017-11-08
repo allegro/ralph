@@ -145,3 +145,19 @@ class IPAddressAPITests(RalphAPITestCase):
             'Could not delete IPAddress when it is exposed in DHCP',
             response.data
         )
+
+
+class NetworkAPITests(RalphAPITestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.net1 = NetworkFactory(address='127.0.0.0/24')
+        cls.net2 = NetworkFactory(address='128.0.0.0/24')
+
+    def test_get_ip_list_filter_by_mac(self):
+        url = '{}?address={}'.format(
+            reverse('network-list'), self.net1.address
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
