@@ -22,7 +22,7 @@ class TestChecks(TestCase):
 
     def test_transition_templates_should_exist(self):
         errors = check_transition_templates((
-            ('transitions/release_asset.html', 'Standard template'),
+            ('transitions/run_transition.html', 'Standard template'),
         ))
         expected_errors = []
         self.assertEqual(expected_errors, errors)
