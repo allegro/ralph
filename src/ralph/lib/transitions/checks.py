@@ -4,6 +4,9 @@ from django.template.loader import get_template
 
 
 def check_transition_templates(transition_templates):
+    # to prevent AppRegistryNotReady
+    from ralph.lib.transitions.models import Transition
+
     errors = []
     if transition_templates:
         if not isinstance(transition_templates, (list, tuple)):
@@ -30,7 +33,32 @@ def check_transition_templates(transition_templates):
                         'Template {} ({}) doesn\'t exist'.format(
                             template, path
                         ),
-                        hint='Check TEMPLATES settings',
+                        hint='Check TRANSITION_TEMPLATES settings',
                         id='transitions.E002'
                     ))
+    excluded_templates = ['']
+    if transition_templates:
+        try:
+            excluded_templates.extend(
+                {template for template, _ in transition_templates}
+            )
+        except ValueError:
+            pass
+    transitions_with_custom_templates = Transition.objects.exclude(
+        template_name__in=excluded_templates
+    )
+    for transition in transitions_with_custom_templates:
+        errors.append(Error(
+            'Template {} for {} transition is '
+            'defined only in transition'.format(
+                transition.template_name, transition
+            ),
+            hint=(
+                'Change your TRANSITION_TEMPLATES settings by adding'
+                ' ({}, "Your template name") and then '
+                'edit {} transition').format(
+                    transition.template_name, transition
+            ),
+            id='transitions.E004'
+        ))
     return errors

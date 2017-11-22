@@ -13,7 +13,7 @@ from ralph.lib.transitions.models import (
 )
 
 
-TRANSITION_TEMPLATES = getattr(settings, 'TRANSITION_TEMPLATES', None)
+TRANSITION_TEMPLATES = settings.TRANSITION_TEMPLATES
 
 
 def wrap_action_name(action):
