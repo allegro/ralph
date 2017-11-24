@@ -33,3 +33,9 @@ class TransitionAdminTest(ClientMixin, ReloadUrlsMixin, TransitionTestCase):
         self.assertFalse(self.client.session.get('attachments_to_download'))
         self.client.post(transition_url)
         self.assertTrue(self.client.session.get('attachments_to_download'))
+
+    def test_custom_template_for_transition(self):
+        _, transition, _ = self._create_transition(
+            Order, 'custom template test',
+            template_name='test.html'
+        )

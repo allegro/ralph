@@ -1,6 +1,16 @@
 # Transitions
 The transition change state (e.g. status) of object from one to another - that's helps in product lifecycle management. For each object (asset, support, licence) you can define some workflow (set of transitions) and provide special actions for each transition.
 
+## Custom template for transition
+For each transition you can separately specify Django's template in the transition's form, to do this add new item to ``TRANSITION_TEMPLATES`` in your settings file. For instance:
+
+```django
+TRANSITION_TEMPLATES = [
+    ('my_templates/transitions/blue.html', 'Blue version'),
+    ('my_templates/transitions/red.html', 'Red version'),
+]
+```
+
 ## Defining action
 You can easliy add new action by add method to your class and decorating with ``@transition_action``. For exmple:
 

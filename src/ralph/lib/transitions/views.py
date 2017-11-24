@@ -65,6 +65,11 @@ class TransitionViewMixin(NonAtomicView, object):
             return False, e
         return True, None
 
+    def get_template_names(self):
+        template_names = super().get_template_names()
+        template_names.insert(0, self.transition.template_name)
+        return template_names
+
     @property
     def form_fields_from_actions(self):
         fields = {}

@@ -13,6 +13,9 @@ from ralph.lib.transitions.models import (
 )
 
 
+TRANSITION_TEMPLATES = settings.TRANSITION_TEMPLATES
+
+
 def wrap_action_name(action):
     """
     Add additional information to action name (infotip, async icon).
@@ -71,6 +74,14 @@ class TransitionForm(forms.ModelForm):
             choices=actions_choices, widget=forms.CheckboxSelectMultiple()
         )
         self.fields['actions'].required = False
+        self.fields['template_name'] = forms.ChoiceField(
+            choices=(('', _('Default')),),
+            required=False
+        )
+        if TRANSITION_TEMPLATES:
+            self.fields['template_name'].choices += tuple(TRANSITION_TEMPLATES)
+        else:
+            self.fields['template_name'].widget.attrs['disabled'] = True
 
     def clean(self):
         cleaned_data = super().clean()
@@ -119,5 +130,5 @@ class TransitionForm(forms.ModelForm):
         model = Transition
         fields = [
             'name', 'source', 'target', 'run_asynchronously',
-            'async_service_name', 'actions',
+            'async_service_name', 'template_name', 'actions',
         ]

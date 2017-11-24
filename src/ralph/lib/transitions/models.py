@@ -511,6 +511,7 @@ class Transition(models.Model):
     source = JSONField()
     target = models.CharField(max_length=50)
     actions = models.ManyToManyField('Action')
+    template_name = models.CharField(max_length=255, blank=True, default='')
 
     class Meta:
         unique_together = ('name', 'model')
