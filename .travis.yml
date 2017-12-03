@@ -32,8 +32,7 @@ cache:
     - bower_components
 
 python:
-    - "3.4"
-    # - "3.5"  # temporary removed to speedup biuld (python3.4 should be now used on production)
+    - "3.5"
 
 before_install:
     - pip install flake8==3.0.4 isort==4.2.5
