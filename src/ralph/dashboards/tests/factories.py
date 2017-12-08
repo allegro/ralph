@@ -5,6 +5,7 @@ from factory.django import DjangoModelFactory
 
 from ralph.dashboards.models import AggregateType, ChartType, Dashboard, Graph
 from ralph.data_center.models.physical import DataCenterAsset
+from ralph.security.models import Vulnerability
 
 
 class DashboardFactory(DjangoModelFactory):
@@ -17,6 +18,10 @@ class DashboardFactory(DjangoModelFactory):
 
 def data_center_content_type():
     return ContentType.objects.get_for_model(DataCenterAsset)
+
+
+def vulnerability_content_type():
+    return ContentType.objects.get_for_model(Vulnerability)
 
 
 class GraphFactory(DjangoModelFactory):
