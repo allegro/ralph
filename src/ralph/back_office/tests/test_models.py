@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
+from unittest import skip as skip_test
 from unittest.mock import patch
 
 from dj.choices import Country
 from django.contrib.messages.storage.fallback import FallbackStorage
-from django.test import RequestFactory
+from django.test import RequestFactory, SimpleTestCase
 from django.utils import timezone
 
 from ralph.accounts.tests.factories import RegionFactory
@@ -16,7 +17,11 @@ from ralph.assets.tests.factories import (
     DataCenterAssetModelFactory,
     ServiceEnvironmentFactory
 )
-from ralph.back_office.models import BackOfficeAsset, BackOfficeAssetStatus
+from ralph.back_office.models import (
+    _check_assets_owner,
+    BackOfficeAsset,
+    BackOfficeAssetStatus
+)
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
 from ralph.data_center.models import DataCenterAsset
 from ralph.data_center.tests.factories import RackFactory
@@ -416,6 +421,24 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
         with self.assertRaises(TransitionNotAllowedError):
             _check_instances_for_transition([self.bo_asset], transition)
 
+
+    @skip_test('wait for https://github.com/allegro/ralph/pull/3193')
+    def test_return_report_when_requester_is_not_assets_owner(self):
+        _, transition, _ = self._create_transition(
+            model=self.bo_asset,
+            name='test',
+            source=[BackOfficeAssetStatus.new.id],
+            target=BackOfficeAssetStatus.used.id,
+            actions=['must_be_owner_of_asset']
+        )
+        with self.assertRaises(TransitionNotAllowedError):
+            _check_instances_for_transition(
+                instances=[self.bo_asset],
+                transition=transition,
+                requester=self.user_pl
+            )
+
+
     @patch.object(ExternalService, "run")
     def test_a_report_is_generated(self, mock_method):
         GENERATED_FILE_CONTENT = REPORT_TEMPLATE = b'some-content'
@@ -438,3 +461,10 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
         )
         self.assertEqual(attachment.original_filename, correct_filename)
         self.assertEqual(attachment.file.read(), GENERATED_FILE_CONTENT)
+
+
+class CheckerTestCase(SimpleTestCase):
+    def test_requester_must_be_specified(self):
+        errors = _check_assets_owner(instances=[], requester=None)
+        self.assertTrue('__all__' in errors)
+
