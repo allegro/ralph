@@ -112,7 +112,7 @@ def get_user_iso3_country_name(user):
     return iso3_country_name
 
 
-def _check_user_assigned(instances):
+def _check_user_assigned(instances, **kwargs):
     errors = {}
     for instance in instances:
         if not instance.user:
@@ -557,7 +557,7 @@ class BackOfficeAsset(Regionalizable, Asset):
                     empty_label=None
                 ),
                 'exclude_from_history': True
-            }
+            },
         },
         return_attachment=True,
         precondition=_check_user_assigned,

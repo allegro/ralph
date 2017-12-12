@@ -69,7 +69,8 @@ SYNCHRONOUS_JOBS_METRIC_NAME_TMPL = getattr(
 
 
 def _generate_transition_history(
-    instance, transition, user, attachments, history_kwargs, action_names, field
+    instance, transition, requester, attachments,
+    history_kwargs, action_names, field
 ):
     """Return history object (without saving it) based on parameters."""
     field_value = getattr(instance, field, None)
@@ -91,7 +92,7 @@ def _generate_transition_history(
         transition_name=transition.name,
         content_type=get_content_type_for_model(instance._meta.model),
         object_id=instance.pk,
-        logged_user=user,
+        logged_user=requester,
         kwargs=history_kwargs,
         actions=action_names,
         source=source,
@@ -164,13 +165,14 @@ def _check_and_get_transition(obj, transition, field):
 
 
 def _check_instances_for_transition(
-    instances, transition, check_async_job=True
+    instances, transition, requester, check_async_job=True
 ):
     """Check in respect of the instances source status.
 
     Args:
         instances: Objects to checks.
         transition: The transition object.
+        requester: The user which run transition.
 
     Raises:
         TransitionNotAllowedError: An error ocurred when one or more of
@@ -182,7 +184,7 @@ def _check_instances_for_transition(
             errors[instance].append(_('wrong source status'))
 
     for func in transition.get_pure_actions():
-        error = func.precondition(instances)
+        error = func.precondition(instances=instances, requester=requester)
         if error:
             for instance, error_details in error.items():
                 errors[instance].append(error_details)
@@ -269,7 +271,9 @@ def _order_actions_by_requirements(actions, instance):
         yield actions_by_name[action]
 
 
-def run_transition(instances, transition_obj_or_name, field, data={}, **kwargs):
+def run_transition(
+    instances, transition_obj_or_name, field, requester, data={}, **kwargs
+):
     """
     Main function to run transition (async or synchronous).
     """
@@ -280,9 +284,11 @@ def run_transition(instances, transition_obj_or_name, field, data={}, **kwargs):
     if transition.is_async:
         job_ids = []
         for instance in instances:
+            service_name = transition.async_service_name or DEFAULT_ASYNC_TRANSITION_SERVICE_NAME # noqa
             job_id, job = TransitionJob.run(
-                transition.async_service_name or DEFAULT_ASYNC_TRANSITION_SERVICE_NAME,  # noqa
-                instance,
+                service_name=service_name,
+                requester=requester,
+                obj=instance,
                 transition=transition,
                 data=data,
                 **kwargs
@@ -293,7 +299,12 @@ def run_transition(instances, transition_obj_or_name, field, data={}, **kwargs):
         success = False
         try:
             success, attachment = run_field_transition(
-                instances, transition, field, data, **kwargs
+                instances=instances,
+                transition_obj_or_name=transition,
+                field=field,
+                data=data,
+                requester=requester,
+                **kwargs
             )
             return success, attachment
         finally:
@@ -347,7 +358,8 @@ def _save_instance_after_transition(instance, transition, user=None):
 
 
 def _create_instance_history_entry(
-    instance, transition, data, history_kwargs, user=None, attachments=None
+    instance, transition, data, history_kwargs,
+    requester=None, attachments=None
 ):
     funcs = transition.get_pure_actions()
     action_names = [str(getattr(
@@ -360,7 +372,7 @@ def _create_instance_history_entry(
     _generate_transition_history(
         instance=instance,
         transition=transition,
-        user=user,
+        requester=requester,
         attachments=attachments,
         history_kwargs=history,
         action_names=action_names,
@@ -369,23 +381,23 @@ def _create_instance_history_entry(
 
 
 def _post_transition_instance_processing(
-    instance, transition, data, history_kwargs, user=None, attachments=None
+    instance, transition, data, history_kwargs, requester=None, attachments=None
 ):
     # change transition field (ex. status) if not keeping orignial
     if not int(transition.target) == TRANSITION_ORIGINAL_STATUS[0]:
         setattr(instance, transition.model.field_name, int(transition.target))
     _create_instance_history_entry(
         instance, transition, data, history_kwargs,
-        user=user, attachments=attachments
+        requester=requester, attachments=attachments
     )
     _save_instance_after_transition(
-        instance, transition, user
+        instance, transition, requester
     )
 
 
 @transaction.atomic
 def run_field_transition(
-    instances, transition_obj_or_name, field, data={}, **kwargs
+    instances, transition_obj_or_name, field, requester, data={}, **kwargs
 ):
     """
     Execute all actions assigned to the selected transition.
@@ -395,7 +407,9 @@ def run_field_transition(
     transition = _check_and_get_transition(
         first_instance, transition_obj_or_name, field
     )
-    _check_instances_for_transition(instances, transition)
+    _check_instances_for_transition(
+        instances=instances, transition=transition, requester=requester
+    )
     attachments = []
     history_kwargs = defaultdict(dict)
     shared_params = defaultdict(dict)
@@ -414,7 +428,7 @@ def run_field_transition(
             **kwargs
         )
         try:
-            result = func(instances=instances, **defaults)
+            result = func(instances=instances, requester=requester, **defaults)
         except Exception as e:
             logger.exception(e)
             return False, None
@@ -424,7 +438,7 @@ def run_field_transition(
     for instance in instances:
         _post_transition_instance_processing(
             instance, transition, data, history_kwargs=history_kwargs,
-            user=kwargs['request'].user, attachments=attachments,
+            requester=requester, attachments=attachments,
         )
     return True, attachments
 
@@ -617,7 +631,11 @@ class TransitionJob(Job):
     # char field to allow uids, not only ints
     object_id = models.CharField(max_length=200)
     obj = GenericForeignKey('content_type', 'object_id')
-    transition = models.ForeignKey(Transition, on_delete=models.CASCADE)  # ?
+    transition = models.ForeignKey(
+        Transition,
+        on_delete=models.CASCADE,
+        related_name='jobs'
+    )
     # TODO: field?
 
     objects = JobQuerySet.as_manager()
@@ -630,7 +648,7 @@ class TransitionJob(Job):
 
     @classmethod
     def run(
-        cls, service_name, obj, transition, request=None, defaults=None,
+        cls, service_name, obj, transition, requester, defaults=None,
         **kwargs
     ):
         defaults = defaults or {}
@@ -647,7 +665,12 @@ class TransitionJob(Job):
                 # (json needs str as the key of an object)
                 # we need to restore it in `_restore_params`
                 kwargs[p] = {obj.pk: {}}
-        return super().run(service_name, defaults, request=request, **kwargs)
+        return super().run(
+            service_name=service_name,
+            requester=requester,
+            defaults=defaults,
+            **kwargs
+        )
 
     @classmethod
     def _restore_params(cls, obj):

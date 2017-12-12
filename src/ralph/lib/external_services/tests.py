@@ -77,17 +77,18 @@ class JobRunTestCase(TransactionTestCase):
         self.foo = Foo.objects.create(bar='bar')
         self.request_factory = RequestFactory()
         self.request = self.request_factory.get('/')
-        self.request.user = get_user_model().objects.create_user(
+        self.user = get_user_model().objects.create_user(
             username='test1',
             password='password',
         )
+        self.request.user = self.user
 
     def test_job(self):
         prev_bar_count = Bar.objects.count()
         # this job should be executed synchronously since queue for JOB_TEST
         # service is configured with ASYNC=False (just for testing)
         job_id, job = Job.run(
-            'JOB_TEST', request=self.request, foo=self.foo
+            'JOB_TEST', requester=self.user, foo=self.foo
         )
         job.refresh_from_db()
         self.foo.refresh_from_db()

@@ -182,7 +182,11 @@ class TransitionViewMixin(NonAtomicView, APIView):
 
     def _check_instances(self):
         try:
-            _check_instances_for_transition(self.objects, self.transition)
+            _check_instances_for_transition(
+                instances=self.objects,
+                transition=self.transition,
+                requester=self.request.user,
+            )
         except TransitionNotAllowedError as e:
             raise DRFValidationError({
                 api_settings.NON_FIELD_ERRORS_KEY: list(itertools.chain(
@@ -198,11 +202,11 @@ class TransitionViewMixin(NonAtomicView, APIView):
         result = {}
         data = self.add_function_name_to_data(serializer.validated_data)
         transition_result = run_transition(
-            self.objects,
-            self.transition,
-            self.transition.model.field_name,
-            data,
-            request=request
+            instances=self.objects,
+            transition_obj_or_name=self.transition,
+            field=self.transition.model.field_name,
+            data=data,
+            requester=request.user
         )
         status_code = status.HTTP_201_CREATED
         if self.transition.is_async:

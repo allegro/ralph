@@ -317,7 +317,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             field='status',
             transition_obj_or_name=transition,
             data={'change_hostname__country': Country.pl},
-            request=self.request
+            requester=self.request.user
         )
         self.assertEqual(self.bo_asset.hostname, 'POLPC01001')
 
@@ -334,7 +334,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             field='status',
             transition_obj_or_name=transition,
             data={'assign_owner__owner': self.user_pl.id},
-            request=self.request
+            requester=self.request.user
         )
 
     def test_assign_hostname_assigns_hostname_when_its_empty(self):
@@ -358,7 +358,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             field='status',
             transition_obj_or_name=transition,
             data={},
-            request=self.request
+            requester=self.request.user
         )
 
         self.assertNotEquals(self.bo_asset.hostname, hostname)
@@ -385,7 +385,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             field='status',
             transition_obj_or_name=transition,
             data={},
-            request=self.request
+            requester=self.request.user
         )
 
         self.assertEquals(self.bo_asset.hostname, hostname)
@@ -414,7 +414,11 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             actions=['return_report']
         )
         with self.assertRaises(TransitionNotAllowedError):
-            _check_instances_for_transition([self.bo_asset], transition)
+            _check_instances_for_transition(
+                instances=[self.bo_asset],
+                transition=transition,
+                requester=self.user_pl
+            )
 
     @patch.object(ExternalService, "run")
     def test_a_report_is_generated(self, mock_method):
