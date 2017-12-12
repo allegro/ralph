@@ -539,7 +539,7 @@ class BackOfficeAsset(Regionalizable, Asset):
 
     @classmethod
     @transition_action(precondition=_check_assets_owner)
-    def must_be_owner_of_asset(cls, instances, request, **kwargs):
+    def must_be_owner_of_asset(cls, instances, **kwargs):
         """Only a precondition matters"""
         pass
 
