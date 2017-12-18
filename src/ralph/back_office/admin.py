@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django import forms
 from django.conf import settings
+from django.contrib import messages
 from django.db.models.loading import get_model
 from django.utils.translation import ugettext_lazy as _
 
@@ -165,6 +166,14 @@ class BackOfficeAssetAdmin(
             )
         }),
     )
+
+    def save_model(self, request, obj, form, change):
+        hostname_changed = obj.hostname != form.cleaned_data['hostname']
+        super().save_model(request, obj, form, change)
+        if hostname_changed:
+            messages.info(
+                request, _('Hostname changed to {}'.format(obj.hostname))
+            )
 
     def licences(self, obj):
         return ''
