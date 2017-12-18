@@ -444,8 +444,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
         GENERATED_FILE_CONTENT = REPORT_TEMPLATE = b'some-content'
         mock_method.return_value = GENERATED_FILE_CONTENT
         report_template = ReportTemplateFactory(template__data=REPORT_TEMPLATE)
-        request = RequestFactory().get('/')  # only request's user is important
-        request.user = UserFactory()
+        user = UserFactory()
         instances = [
             BackOfficeAssetFactory(
                 user=UserFactory(first_name="James", last_name="Bond")
@@ -453,7 +452,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
         ]
 
         attachment = BackOfficeAsset._generate_report(
-            report_template.name, request, instances, report_template.language)
+            report_template.name, user, instances, report_template.language)
 
         correct_filename = '{}_{}-{}_{}.pdf'.format(
             timezone.now().isoformat()[:10], 'james', 'bond',
