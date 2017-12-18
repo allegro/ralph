@@ -77,12 +77,13 @@ class Order(
 
     @classmethod
     @transition_action(return_attachment=True)
-    def pack(cls, instances, request, **kwargs):
+    def pack(cls, instances, **kwargs):
+        requester = kwargs.get('requester')
         path = os.path.join(tempfile.gettempdir(), 'test.txt')
         with open(path, 'w') as f:
             f.write('test')
         return add_attachment_from_disk(
-            instances, path, request.user, 'pack action'
+            instances, path, requester, 'pack action'
         )
 
     @classmethod
@@ -165,11 +166,10 @@ class AsyncOrder(
         verbose_name='Assign user',
         run_after=['long_running_action']
     )
-    def assing_user(cls, instances, **kwargs):
-        if '_request__user' in kwargs:
-            for instance in instances:
-                instance.username = kwargs['_request__user'].username
-                instance.save()
+    def assing_user(cls, instances, requester, **kwargs):
+        for instance in instances:
+            instance.username = requester.username
+            instance.save()
 
     @classmethod
     @transition_action(

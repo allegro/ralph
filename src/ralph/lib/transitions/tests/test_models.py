@@ -85,7 +85,7 @@ class TransitionsTest(TransitionTestCase):
 
         self.assertEqual(order.status, OrderStatus.new.id)
         run_field_transition(
-            [order], transition, request=self.request, field='status'
+            [order], transition, requester=self.request.user, field='status'
         )
         self.assertEqual(order.status, OrderStatus.to_send.id)
 
@@ -98,7 +98,7 @@ class TransitionsTest(TransitionTestCase):
         )
         order.__class__.go_to_post_office = mocked_action
         run_field_transition(
-            [order], transition, request=self.request, field='status'
+            [order], transition, requester=self.request.user, field='status'
         )
         self.assertTrue(order.go_to_post_office.runned)
 
@@ -117,7 +117,7 @@ class TransitionsTest(TransitionTestCase):
 
         self.assertNotEqual(order.remarks, 'done')
         run_field_transition(
-            [order], transition, request=self.request, field='status'
+            [order], transition, requester=self.request.user, field='status'
         )
         self.assertEqual(order.remarks, 'done')
 
@@ -132,7 +132,7 @@ class TransitionsTest(TransitionTestCase):
         )
         self.assertTrue(
             run_field_transition(
-                [order], transition_name, request=self.request, field='status'
+                [order], transition_name, requester=self.request.user, field='status'
             )
         )
 
@@ -141,7 +141,7 @@ class TransitionsTest(TransitionTestCase):
         order = Order.objects.create()
         with self.assertRaises(Transition.DoesNotExist):
             run_field_transition(
-                [order], transition_name, request=self.request, field='status'
+                [order], transition_name, requester=self.request.user, field='status'
             )
 
     def test_available_transitions(self):
@@ -171,7 +171,7 @@ class TransitionsTest(TransitionTestCase):
         )
 
         result, _ = run_field_transition(
-            [order], transition, request=self.request, field='status'
+            [order], transition, requester=self.request.user, field='status'
         )
         self.assertFalse(result)
 
@@ -189,7 +189,7 @@ class TransitionsTest(TransitionTestCase):
         )
         with self.assertRaises(TransitionNotAllowedError):
             run_field_transition(
-                [order], transition, request=self.request, field='status'
+                [order], transition, requester=self.request.user, field='status'
             )
 
     def test_create_graph_from_actions(self):

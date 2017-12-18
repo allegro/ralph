@@ -60,7 +60,11 @@ class TransitionViewMixin(NonAtomicView, object):
 
     def _objects_are_valid(self):
         try:
-            _check_instances_for_transition(self.objects, self.transition)
+            _check_instances_for_transition(
+                instances=self.objects,
+                transition=self.transition,
+                requester=self.request.user
+            )
         except TransitionNotAllowedError as e:
             return False, e
         return True, None
@@ -176,7 +180,7 @@ class TransitionViewMixin(NonAtomicView, object):
             transition_obj_or_name=self.transition,
             field=self.transition.model.field_name,
             data=form.cleaned_data if form else {},
-            request=self.request
+            requester=self.request.user
         )
         return HttpResponseRedirect(
             self.get_async_transitions_awaiter_url(job_ids)
@@ -188,7 +192,7 @@ class TransitionViewMixin(NonAtomicView, object):
             transition_obj_or_name=self.transition,
             field=self.transition.model.field_name,
             data=form.cleaned_data if form else {},
-            request=self.request
+            requester=self.request.user
         )
         if status:
             messages.success(

@@ -19,10 +19,11 @@ class AsyncTransitionsTest(TransitionTestCaseMixin, TransactionTestCase):
     def setUp(self):
         super().setUp()
         self.request = RequestFactory()
-        self.request.user = get_user_model().objects.create_user(
+        self.user = get_user_model().objects.create_user(
             username='test1',
             password='password',
         )
+        self.request.user = self.user
         self.foo = Foo.objects.create(bar='123')
 
     def test_run_action_during_async_transition(self):
@@ -37,7 +38,7 @@ class AsyncTransitionsTest(TransitionTestCaseMixin, TransactionTestCase):
         job_id = run_transition(
             instances=[async_order],
             transition_obj_or_name=transition,
-            request=self.request,
+            requester=self.user,
             field='status',
             data={'name': 'abc'}
         )[0]
@@ -67,7 +68,7 @@ class AsyncTransitionsTest(TransitionTestCaseMixin, TransactionTestCase):
         job_ids = run_transition(
             instances=async_orders,
             transition_obj_or_name=transition,
-            request=self.request,
+            requester=self.user,
             field='status',
             data={'name': 'def', 'foo': self.foo}
         )
@@ -116,7 +117,7 @@ class AsyncTransitionsTest(TransitionTestCaseMixin, TransactionTestCase):
         job_ids = run_transition(
             instances=async_orders,
             transition_obj_or_name=transition,
-            request=self.request,
+            requester=self.user,
             field='status',
             data={'name': 'def', 'foo': self.foo}
         )
@@ -164,7 +165,7 @@ class AsyncTransitionsTest(TransitionTestCaseMixin, TransactionTestCase):
         job_ids = run_transition(
             instances=[async_order, async_order2],
             transition_obj_or_name=transition,
-            request=self.request,
+            requester=self.user,
             field='status',
             data={'name': 'def', 'foo': self.foo}
         )

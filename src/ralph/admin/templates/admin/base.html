@@ -28,14 +28,14 @@
             </li>
           </ul>
           <section class="top-bar-section">
-            <!-- user cache key: {{ request.user.permissions_hash }} -->
-            {% cache 86400 header_menu opts.app_label opts.model_name request.user.permissions_hash %}
-            {% spaceless %}
-            <!-- cache -->
-              {% sitetree_menu from "ralph_admin" include "trunk" template "admin/menu_admin.html" %}
-            {% endspaceless %}
-            <!-- end cache -->
-            {% endcache %}
+              <!-- user cache key: {{ request.user.permissions_hash }} -->
+              {% cache 86400 header_menu opts.app_label opts.model_name request.user.permissions_hash %}
+              {% spaceless %}
+              <!-- cache -->
+                {% sitetree_menu from "ralph_admin" include "trunk" template "admin/menu_admin.html" %}
+              {% endspaceless %}
+              <!-- end cache -->
+              {% endcache %}
             <ul class="right">
               <li class="has-form">
                 {% contextual_search_form search_url search_fields model_verbose_name %}

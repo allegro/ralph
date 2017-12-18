@@ -240,7 +240,7 @@ def _get_non_mgmt_ethernets(instance):
     ).order_by('mac')
 
 
-def check_if_deployment_is_available(instances):
+def check_if_deployment_is_available(instances, **kwargs):
     """
     Check if deployment is available.
     """
@@ -257,7 +257,7 @@ def check_if_deployment_is_available(instances):
     return errors
 
 
-def check_mac_address(instances):
+def check_mac_address(instances, **kwargs):
     """
     Verify, that each instance has at least one non-management MAC.
     """
@@ -527,7 +527,7 @@ def base_object_network_choices(actions, objects):
     return networks
 
 
-def check_number_of_instance(instances):
+def check_number_of_instance(instances, **kwargs):
     """
     Verify, if number of asset is equal to 1.
 

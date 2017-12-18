@@ -574,7 +574,7 @@ class BackOfficeAsset(Regionalizable, Asset):
                     empty_label=None
                 ),
                 'exclude_from_history': True
-            }
+            },
         },
         return_attachment=True,
         precondition=_check_user_assigned,
