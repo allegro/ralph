@@ -6,9 +6,7 @@
   <div class="large-12 columns">
     <h1>{{ request.user.first_name }} {{ request.user.last_name }}</h1>
 
-    {% if transition_id %}
-      {% include 'ralphuser/partials/accept_assets.html' %}
-    {% endif %}
+    {% include 'ralphuser/partials/accept_assets.html' %}
 
     <h5>{% trans 'Assigned assets' %}:</h5>
     {% table asset_list.get_table_content %}

@@ -1,8 +1,8 @@
 {% load i18n %}
 
-{% if transition_id %}
+{% if acceptance_transition_id %}
   <h5>{% trans 'Assets to accept' %}</h5>
-  {% if transition_exists %}
+  {% if acceptance_transition_exists %}
     {% if assets_to_accept %}
       <form action="" method="POST">{% csrf_token %}
         <ul>
@@ -20,7 +20,7 @@
   {% else %}
     <div class="alert-box radius warning">
       {% blocktrans %}
-        Acceptance mechanism is enabled but a transition having ID {{ transition_id }} doesn't exist. Please add a transition with this ID or run DB migrations.
+        Acceptance mechanism is enabled but a transition having ID {{ acceptance_transition_id }} doesn't exist. Please add a transition with this ID or run DB migrations.
       {% endblocktrans %}
     </div>
   {% endif %}
