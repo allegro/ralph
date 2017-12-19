@@ -167,14 +167,6 @@ class BackOfficeAssetAdmin(
         }),
     )
 
-    def save_model(self, request, obj, form, change):
-        hostname_changed = obj.hostname != form.cleaned_data['hostname']
-        super().save_model(request, obj, form, change)
-        if hostname_changed:
-            messages.info(
-                request, _('Hostname changed to {}'.format(obj.hostname))
-            )
-
     def licences(self, obj):
         return ''
     licences.short_description = 'licences'

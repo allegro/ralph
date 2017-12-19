@@ -246,9 +246,8 @@ class BackOfficeAsset(Regionalizable, Asset):
         if commit:
             self.save()
 
-    def _try_assign_hostname(
-        self, commit=False, country=None, force=False, request=None
-    ):
+    # TODO: add message when hostname was changed
+    def _try_assign_hostname(self, commit=False, country=None, force=False):
         if self.model.category and self.model.category.code:
             template_vars = {
                 'code': self.model.category.code,
