@@ -450,13 +450,13 @@ class BackOfficeAsset(Regionalizable, Asset):
             }
         },
     )
-    def change_hostname(cls, instances, request=None, **kwargs):
+    def change_hostname(cls, instances, **kwargs):
         country_id = kwargs['country']
         country_name = Country.name_from_id(int(country_id)).upper()
         iso3_country_name = iso2_to_iso3(country_name)
         for instance in instances:
             instance._try_assign_hostname(
-                country=iso3_country_name, force=True, request=request
+                country=iso3_country_name, force=True
             )
 
     @classmethod
@@ -653,9 +653,7 @@ class BackOfficeAsset(Regionalizable, Asset):
     @classmethod
     @transition_action()
     def assign_hostname_if_empty_or_country_not_match(
-        cls, instances, request=None, **kwargs
+        cls, instances, **kwargs
     ):
         for instance in instances:
-            instance._try_assign_hostname(
-                commit=False, force=False, request=request
-            )
+            instance._try_assign_hostname(commit=False, force=False)
