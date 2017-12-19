@@ -123,6 +123,17 @@ def _check_assets_owner(instances, **kwargs):
     return errors
 
 
+def _check_assets_user(instances, **kwargs):
+    errors = {}
+    requester = kwargs.get('requester', None)
+    if not requester:
+        return {'__all__': _('requester must be specified')}
+    for instance in instances:
+        if requester and instance.user != requester:
+            errors[instance] = _('requester is not an user of the asset')
+    return errors
+
+
 def _check_user_assigned(instances, **kwargs):
     errors = {}
     for instance in instances:
@@ -542,6 +553,36 @@ class BackOfficeAsset(Regionalizable, Asset):
     def must_be_owner_of_asset(cls, instances, **kwargs):
         """Only a precondition matters"""
         pass
+
+    @classmethod
+    @transition_action(precondition=_check_assets_user)
+    def must_be_user_of_asset(cls, instances, **kwargs):
+        """Only a precondition matters"""
+        pass
+
+    @classmethod
+    @transition_action(
+        form_fields={
+           'accept': {
+                'field': forms.BooleanField(
+                    label=_(
+                        'I have read and fully understand and'
+                        'accept the agreement.'
+                    )
+                )
+            },
+        }
+    )
+    def accept_asset_release_agreement(cls, instances, requester, **kwargs):
+        pass
+
+    @classmethod
+    @transition_action()
+    def assign_requester_as_an_owner(cls, instances, requester, **kwargs):
+        """Assign current user as an owner"""
+        for instance in instances:
+            instance.owner = requester
+            instance.save()
 
     @classmethod
     @transition_action(

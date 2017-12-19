@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from datetime import date
+from urllib.parse import urlencode
 
 import reversion
 from django.conf import settings
@@ -12,7 +13,9 @@ from django.views.generic import View
 
 from ralph.accounts.admin import AssetList, AssignedLicenceList, UserInfoMixin
 from ralph.admin.mixins import RalphBaseTemplateView, RalphTemplateView
-from ralph.back_office.models import BackOfficeAsset
+from ralph.admin.sites import ralph_site
+from ralph.back_office.models import BackOfficeAsset, BackOfficeAssetStatus
+from ralph.lib.transitions.models import Transition
 from ralph.licences.models import BaseObjectLicence
 
 
@@ -124,7 +127,58 @@ class InventoryTagView(View):
         return HttpResponseRedirect(reverse('current_user_info'))
 
 
-class CurrentUserInfoView(UserInfoMixin, RalphBaseTemplateView):
+class _AcceptanceProcessByCurrentUserMixin(object):
+    _config = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG
+
+    @property
+    def transition_id(self):
+        return self._config['TRANSITION_ID']
+
+    @property
+    def transition_exists(self):
+        return Transition.objects.filter(id=self.transition_id).exists()
+
+    def post(self, request, *args, **kwargs):
+        assets_to_accept = self.get_assets_to_accept()
+        admin_instance = ralph_site.get_admin_instance_for_model(
+            BackOfficeAsset
+        )
+        url_name = admin_instance.get_transition_bulk_url_name()
+        if assets_to_accept:
+            url = reverse(url_name, args=(self.transition_id,))
+            query = urlencode([('select', a.id) for a in assets_to_accept])
+            return HttpResponseRedirect('?'.join((url, query)))
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['transition_id'] = self.transition_id
+        context['transition_exists'] = self.transition_exists
+        context['assets_to_accept'] = self.get_assets_to_accept()
+        return context
+
+    def get_assets_to_accept(self):
+        return BackOfficeAsset.objects.filter(
+            status=BackOfficeAssetStatus.in_progress
+        ).filter(user=self.get_user())
+
+
+class _DummyMixin(object):
+    pass
+
+
+AcceptAssetsForCurrentUserMixin = (
+    _AcceptanceProcessByCurrentUserMixin
+    if settings.ENABLE_ACCEPT_ASSETS_FOR_CURRENT_USER
+    else _DummyMixin
+)
+
+
+class CurrentUserInfoView(
+    AcceptAssetsForCurrentUserMixin,
+    UserInfoMixin,
+    RalphBaseTemplateView
+):
     template_name = 'ralphuser/my_equipment.html'
 
     def get_context_data(self, **kwargs):
