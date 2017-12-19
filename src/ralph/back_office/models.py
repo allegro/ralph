@@ -223,7 +223,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             return True
         return False
 
-    def generate_hostname(self, commit=True, template_vars=None, request=None):
+    def generate_hostname(self, commit=True, template_vars=None):
         def render_template(template):
             template = Template(template)
             context = Context(template_vars or {})
@@ -258,7 +258,7 @@ class BackOfficeAsset(Regionalizable, Asset):
                 not self.hostname or
                 self.country_code not in self.hostname
             ):
-                self.generate_hostname(commit, template_vars, request)
+                self.generate_hostname(commit, template_vars)
 
     @classmethod
     def get_autocomplete_queryset(cls):
