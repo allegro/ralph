@@ -195,7 +195,6 @@ class Job(TimeStampMixin):
         """
         Mark job as failed.
         """
-        print(reason)
         self._update_dumped_params()
         logger.info('Job {} has failed. Reason: {}'.format(self, reason))
         self.status = JobStatus.FAILED
