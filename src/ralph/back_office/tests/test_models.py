@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
-from unittest import skip as skip_test
 from unittest.mock import patch
 
 from dj.choices import Country
@@ -425,8 +424,6 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
                 requester=self.user_pl
             )
 
-
-    @skip_test('wait for https://github.com/allegro/ralph/pull/3193')
     def test_return_report_when_requester_is_not_assets_owner(self):
         _, transition, _ = self._create_transition(
             model=self.bo_asset,
