@@ -698,7 +698,7 @@ class DataCenterAsset(
             }
         }
     )
-    def change_rack(cls, instances, request, **kwargs):
+    def change_rack(cls, instances, **kwargs):
         rack = Rack.objects.get(pk=kwargs['rack'])
         for instance in instances:
             instance.rack = rack
@@ -721,7 +721,7 @@ class DataCenterAsset(
             }
         }
     )
-    def convert_to_backoffice_asset(cls, instances, request, **kwargs):
+    def convert_to_backoffice_asset(cls, instances, **kwargs):
         with transaction.atomic():
             for i, instance in enumerate(instances):
                 back_office_asset = BackOfficeAsset()
