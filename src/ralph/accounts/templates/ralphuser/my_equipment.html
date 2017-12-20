@@ -5,12 +5,15 @@
 {% block content %}
   <div class="large-12 columns">
     <h1>{{ request.user.first_name }} {{ request.user.last_name }}</h1>
+
+    {% include 'ralphuser/partials/accept_assets.html' %}
+
     <h5>{% trans 'Assigned assets' %}:</h5>
     {% table asset_list.get_table_content %}
-    <br />
+
     <h5>{% trans 'Assigned licences' %}:</h5>
     {% table licence_list.get_table_content %}
-    <br /><br />
+
     {% for link in my_equipment_links %}
       <a href="{{ link.url }}">{{ link.name }}</a><br />
     {% endfor %}
