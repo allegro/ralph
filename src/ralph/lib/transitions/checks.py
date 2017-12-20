@@ -1,5 +1,5 @@
 from django.core.checks import Error
-from django.db.utils import ProgrammingError
+from django.db.utils import OperationalError
 from django.template.base import TemplateDoesNotExist
 from django.template.loader import get_template
 
@@ -63,6 +63,6 @@ def check_transition_templates(transition_templates):
                 ),
                 id='transitions.E004'
             ))
-    except ProgrammingError:
+    except OperationalError:
         pass
     return errors
