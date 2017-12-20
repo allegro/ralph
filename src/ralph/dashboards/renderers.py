@@ -6,6 +6,8 @@ from django.core.urlresolvers import NoReverseMatch, reverse
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 
+from ralph.dashboards.helpers import encode_params
+
 
 logger = logging.getLogger(__name__)
 GRAPH_QUERY_SEP = '|'
@@ -55,9 +57,10 @@ class ChartistGraphRenderer(object):
             url = '?'.join([
                 base_url,
                 urlencode({
-                    'graph-query': self.graph_query_sep.join([
-                        str(graph_id), label
-                    ])
+                    'graph-query': encode_params({
+                        'pk': graph_id,
+                        'value': label
+                    })
                 }),
             ])
             urls.append(url)

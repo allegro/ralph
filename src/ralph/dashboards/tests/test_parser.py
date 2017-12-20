@@ -12,6 +12,7 @@ from ralph.configuration_management.models import SCMCheckResult
 from ralph.configuration_management.tests.factories import SCMStatusCheckFactory
 from ralph.dashboards.admin_filters import ByGraphFilter
 from ralph.dashboards.filter_parser import FilterParser
+from ralph.dashboards.helpers import encode_params
 from ralph.dashboards.models import AggregateType, Graph
 from ralph.dashboards.tests.factories import GraphFactory
 from ralph.data_center.admin import DataCenterAdmin
@@ -70,8 +71,9 @@ class ParserFiltersTest(SimpleTestCase):
         result = self.parser.filter_and('key', value)
         self.assertEqual(str(result[ARGS][0]), str(expect))
 
+
 @ddt
-class GraphModelTest(SimpleTestCase):
+class GraphModelTest(TestCase):
     @unpack
     @data(
         ({}, 0),
@@ -120,9 +122,13 @@ class GraphModelTest(SimpleTestCase):
         )
 
         for check_result in test_data:
+            encoded_params = encode_params({
+                'pk': graph.pk,
+                'value': check_result.raw
+            })
             graph_filter = ByGraphFilter(
                 None,
-                {'graph-query': '{}|{}'.format(graph.pk, check_result.raw)},
+                {'graph-query': encoded_params},
                 DataCenterAsset,
                 DataCenterAdmin
             )
@@ -130,9 +136,13 @@ class GraphModelTest(SimpleTestCase):
 
             self.assertEqual(len(qs), test_data[check_result])
 
+        encoded_params = encode_params({
+            'pk': graph.pk,
+            'value': None
+        })
         graph_filter = ByGraphFilter(
             None,
-            {'graph-query': '{}|{}'.format(graph.pk, None)},
+            {'graph-query': encoded_params},
             DataCenterAsset,
             DataCenterAdmin
         )
