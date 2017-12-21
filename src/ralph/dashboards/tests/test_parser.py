@@ -124,7 +124,7 @@ class GraphModelTest(TestCase):
         for check_result in test_data:
             encoded_params = encode_params({
                 'pk': graph.pk,
-                'value': check_result.raw
+                'filters': {'scmstatuscheck__check_result': check_result.id}
             })
             graph_filter = ByGraphFilter(
                 None,
@@ -138,7 +138,7 @@ class GraphModelTest(TestCase):
 
         encoded_params = encode_params({
             'pk': graph.pk,
-            'value': None
+            'filters': {'scmstatuscheck__check_result': None}
         })
         graph_filter = ByGraphFilter(
             None,

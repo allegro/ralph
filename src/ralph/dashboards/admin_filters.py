@@ -21,8 +21,8 @@ class ByGraphFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         params = decode_params(self.value())
         graph_pk = params.get('pk')
-        value = params.get('value')
+        filters = params.get('filters')
         if graph_pk:
             graph = get_object_or_404(Graph, pk=graph_pk)
-            queryset = graph.get_queryset_for_filter(queryset, value)
+            queryset = graph.get_queryset_for_filter(queryset, filters)
         return queryset

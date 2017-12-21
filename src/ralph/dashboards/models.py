@@ -1,20 +1,12 @@
 from dj.choices import Choices
-from dj.choices.fields import ChoiceField
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models
 from django.db.models import Case, Count, IntegerField, Max, Q, Sum, Value, When
-from django.db.models.fields import BooleanField
 from django.db.models.functions import Coalesce
 from django_extensions.db.fields.json import JSONField
 
-from ralph.admin.helpers import get_field_by_relation_path
 from ralph.dashboards.filter_parser import FilterParser
-from ralph.dashboards.renderers import (
-    GRAPH_QUERY_SEP,
-    HorizontalBar,
-    PieChart,
-    VerticalBar
-)
+from ralph.dashboards.renderers import HorizontalBar, PieChart, VerticalBar
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     NamedMixin,
@@ -327,37 +319,17 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
             raise RuntimeError('Wrong renderer.')
         return renderer(self).render(context)
 
-    def normalize_changelist_value(self, graph_item):
-        field = get_field_by_relation_path(
-            self.model.model_class(),
-            self.params['labels'].split(GRAPH_QUERY_SEP)[0]
-        )
-        if isinstance(field, ChoiceField):
-            choices = field.choice_class()
-            try:
-                graph_item = [
-                    i[0] for i in choices if i[1] == graph_item
-                ].pop()
-            except IndexError:
-                # NOTE(romcheg): Choice not found for the filter value.
-                #                Leaving it as is.
-                pass
-        elif isinstance(field, BooleanField):
-            graph_item = field.to_python(graph_item)
-        return graph_item
-
-    def get_queryset_for_filter(self, queryset, value):
+    def get_queryset_for_filter(self, queryset, filters):
         filter_key = self.changelist_filter_key
-        value = self.normalize_changelist_value(value)
         if self.custom_changelist_model:
             value_param = self.params['target'].get('value', 'id')
             values = self.build_queryset(annotated=False).filter(
-                **{self.params['labels']: value}
-            ).values_list(value_param, flat=True)
-            queryset = queryset.filter(**{filter_key: values})
+                **filters
+            ).distinct().values_list(value_param, flat=True)
+            queryset = queryset.distinct().filter(**{filter_key: values})
         else:
+            # value = self.normalize_changelist_value(value)
             queryset = self.build_queryset(annotated=False, queryset=queryset)
-            queryset = queryset.filter(
-                **{self.params['labels'].replace(GRAPH_QUERY_SEP, '__'): value}
-            )
+            if filters:
+                queryset = queryset.filter(**filters)
         return queryset
