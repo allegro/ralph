@@ -70,8 +70,9 @@ class ParserFiltersTest(SimpleTestCase):
         result = self.parser.filter_and('key', value)
         self.assertEqual(str(result[ARGS][0]), str(expect))
 
+
 @ddt
-class GraphModelTest(SimpleTestCase):
+class GraphModelTest(TestCase):
     @unpack
     @data(
         ({}, 0),
@@ -94,7 +95,9 @@ class GraphModelTest(SimpleTestCase):
             SCMCheckResult.scm_error: 1
         }
 
-        data_center_assets = DataCenterAssetFullFactory.create_batch(10)
+        data_center_assets = DataCenterAssetFullFactory.create_batch(
+            10, scmstatuscheck=None
+        )
         scm_checks = []
 
         dca_number = 0

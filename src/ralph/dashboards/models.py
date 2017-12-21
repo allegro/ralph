@@ -1,3 +1,5 @@
+from functools import partial
+
 from dj.choices import Choices
 from dj.choices.fields import ChoiceField
 from django.contrib.contenttypes.models import ContentType
@@ -70,19 +72,28 @@ def zero_handler(aggregate_func, series, aggregate_expression):
     series_field, _ = _unpack_series(series)
     return (
         Coalesce(
-            Count(aggregate_expression or series_field), Value(0),
+            aggregate_func(aggregate_expression or series_field), Value(0),
             output_field=IntegerField())
     )
 
 
-def sum_bool_value_handler(aggregate_func, series, aggregate_expression):
+def sum_bool_value_handler(
+    aggregate_func, series, aggregate_expression, mapping=None, default_value=0
+):
+    if mapping is None:
+        mapping = {
+            True: 1,
+            False: 0,
+        }
     series_field, _ = _unpack_series(series)
     aggregate_expression = aggregate_expression or series_field
-    return Sum(
+    return aggregate_func(
         Case(
-            When(Q(**{aggregate_expression: True}), then=Value(1)),
-            When(Q(**{aggregate_expression: False}), then=Value(0)),
-            default=Value(0),
+            *[
+                When(Q(**{aggregate_expression: key}), then=Value(value))
+                for key, value in mapping.items()
+            ],
+            default=Value(default_value),
             output_field=IntegerField()
         )
     )
@@ -96,8 +107,20 @@ class AggregateType(Choices):
     )
     aggregate_max = _('Max').extra(aggregate_func=Max)
     aggregate_sum = _('Sum').extra(aggregate_func=Sum)
+    aggregate_sum_with_zeros = _('Sum with zeros').extra(
+        aggregate_func=Sum, handler=zero_handler
+    )
     aggregate_sum_bool_values = _('Sum boolean values').extra(
         aggregate_func=Sum, handler=sum_bool_value_handler
+    )
+    aggregate_sum_bool_negated_values = _('Sum negated boolean values').extra(
+        aggregate_func=Sum, handler=partial(
+            sum_bool_value_handler,
+            mapping={
+                False: 1,
+                True: 0,
+            },
+        )
     )
     aggregate_ratio = _('Ratio').extra(
         aggregate_func=Count, handler=ratio_handler
@@ -107,7 +130,7 @@ class AggregateType(Choices):
 class ChartType(Choices):
     # NOTE: append new type
     _ = Choices.Choice
-    vertical_bar = _('Verical Bar').extra(renderer=VerticalBar)
+    vertical_bar = _('Vertical Bar').extra(renderer=VerticalBar)
     horizontal_bar = _('Horizontal Bar').extra(renderer=HorizontalBar)
     pie_chart = _('Pie Chart').extra(renderer=PieChart)
 
@@ -355,6 +378,14 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
                 **{self.params['labels']: value}
             ).values_list(value_param, flat=True)
             queryset = queryset.filter(**{filter_key: values})
+            # apply additional filters on changelist
+            # useful when you use specific aggregation (ex. sum boolean values)
+            # and you need to inject it to filters (ex. to filter objects
+            # having some field set to false) when switching model in
+            # changelist
+            queryset = queryset.filter(**self.params['target'].get(
+                'additional_filters', {}
+            ))
         else:
             queryset = self.build_queryset(annotated=False, queryset=queryset)
             queryset = queryset.filter(
