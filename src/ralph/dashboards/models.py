@@ -328,7 +328,6 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
             ).distinct().values_list(value_param, flat=True)
             queryset = queryset.distinct().filter(**{filter_key: values})
         else:
-            # value = self.normalize_changelist_value(value)
             queryset = self.build_queryset(annotated=False, queryset=queryset)
             if filters:
                 queryset = queryset.filter(**filters)

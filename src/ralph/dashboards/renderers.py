@@ -90,10 +90,9 @@ class ChartistGraphRenderer(object):
                         'filters': build_filters(
                             labels=labels,
                             value=normalize_value(
-                                labels=labels,
+                                labels=labels.split(GRAPH_QUERY_SEP)[0],
                                 model_class=self.model.model_class(),
                                 value=value,
-                                separator=GRAPH_QUERY_SEP,
                             )
                         ),
                     })

@@ -17,11 +17,9 @@ def decode_params(value):
     return json.loads(base64.urlsafe_b64decode(value).decode())
 
 
-def normalize_value(model_class, labels, value, separator):
-    field = get_field_by_relation_path(
-        model_class,
-        labels.split(separator)[0]
-    )
+def normalize_value(model_class, label, value):
+    """Convert value to Python's type based on value."""
+    field = get_field_by_relation_path(model_class, label)
     if isinstance(field, ChoiceField):
         choices = field.choice_class()
         try:
