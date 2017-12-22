@@ -206,6 +206,10 @@ class DataCenterAssetFullFactory(DataCenterAssetFactory):
     proc2 = factory.RelatedFactory(ProcessorFactory, 'base_object')
     disk1 = factory.RelatedFactory(DiskFactory, 'base_object')
     disk2 = factory.RelatedFactory(DiskFactory, 'base_object')
+    scmstatuscheck = factory.RelatedFactory(
+        'ralph.configuration_management.tests.factories.SCMStatusCheckFactory',
+        'base_object',
+    )
 
     @factory.post_generation
     def post_tags(self, create, extracted, **kwargs):
