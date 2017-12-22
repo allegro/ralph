@@ -13,7 +13,10 @@ from ralph.configuration_management.tests.factories import SCMStatusCheckFactory
 from ralph.dashboards.admin_filters import ByGraphFilter
 from ralph.dashboards.filter_parser import FilterParser
 from ralph.dashboards.models import AggregateType, Graph
-from ralph.dashboards.tests.factories import GraphFactory
+from ralph.dashboards.tests.factories import (
+    GraphFactory,
+    vulnerability_content_type
+)
 from ralph.data_center.admin import DataCenterAdmin
 from ralph.data_center.models import DataCenterAsset
 from ralph.data_center.tests.factories import (
@@ -182,6 +185,30 @@ class GraphModelTest(TestCase):
         qs = graph.build_queryset()
 
         self.assertTrue(qs.first()['barcode'] > qs.last()['barcode'])
+
+    def test_key_without_filter(self):
+        graph = GraphFactory(
+            name='test_key_without_filter',
+            model=vulnerability_content_type(),
+            aggregate_type=AggregateType.aggregate_count.id,
+            params=self._get_graph_params(
+                {
+                    'aggregate_expression': 'securityscan__base_object',
+                    'labels': 'patch_deadline|year',
+                    'series': 'id|distinct',
+                    'sort': 'year',
+                    'target': {
+                        'filter': 'securityscan__vulnerabilities__id__in',
+                        'model': 'DCHost',
+                        'value': 'id'
+                    }
+                }
+            )
+        )
+        qs = graph.build_queryset()
+        graph.get_queryset_for_filter(
+            queryset=qs, value=datetime.date(year=2017, month=11, day=1)
+        )
 
 
 class LabelGroupingTest(TestCase):

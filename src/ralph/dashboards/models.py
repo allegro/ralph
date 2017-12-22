@@ -371,11 +371,19 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
 
     def get_queryset_for_filter(self, queryset, value):
         filter_key = self.changelist_filter_key
+        _filter = None
+        try:
+            key, _filter = self.params['labels'].split(GRAPH_QUERY_SEP)
+        except:
+            key = self.params['labels'].split(GRAPH_QUERY_SEP)[0]
+        if _filter:
+            key += '__' + _filter
+        print(key, _filter)
         value = self.normalize_changelist_value(value)
         if self.custom_changelist_model:
             value_param = self.params['target'].get('value', 'id')
             values = self.build_queryset(annotated=False).filter(
-                **{self.params['labels']: value}
+                **{key: value}
             ).values_list(value_param, flat=True)
             queryset = queryset.filter(**{filter_key: values})
             # apply additional filters on changelist
