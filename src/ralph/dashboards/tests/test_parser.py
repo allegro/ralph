@@ -96,7 +96,9 @@ class GraphModelTest(TestCase):
             SCMCheckResult.scm_error: 1
         }
 
-        data_center_assets = DataCenterAssetFullFactory.create_batch(10)
+        data_center_assets = DataCenterAssetFullFactory.create_batch(
+            10, scmstatuscheck=None
+        )
         scm_checks = []
 
         dca_number = 0
