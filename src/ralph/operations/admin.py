@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 from collections import Counter
 
-from django.utils.translation import ugettext_lazy as _
 from django.db.models import Prefetch
+from django.utils.translation import ugettext_lazy as _
 
-from ralph.assets.models import BaseObject, ServiceEnvironment
 from ralph.admin import RalphAdmin, RalphMPTTAdmin, register
-from ralph.admin.filters import RelatedAutocompleteFieldListFilter
 from ralph.admin.mixins import RalphAdminForm
 from ralph.admin.views.main import RalphChangeList
+from ralph.assets.models import BaseObject
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer import resources
 from ralph.operations.filters import StatusFilter
@@ -125,7 +124,7 @@ class OperationAdmin(
     search_fields = ['title', 'description', 'ticket_id']
     list_filter = [
         'type', ('status', StatusFilter), 'reporter', 'assignee',
-        'created_date', 'update_date', 'resolved_date','base_objects',
+        'created_date', 'update_date', 'resolved_date', 'base_objects',
         'base_objects__service_env', 'base_objects__configuration_path'
     ]
     list_display = ['title', 'type', 'created_date', 'status', 'reporter',
