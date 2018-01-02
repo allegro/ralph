@@ -32,7 +32,9 @@ class GraphQuerysetForFilterTestCase(TestCase):
         )
 
         dca_qs = DataCenterAsset.objects.all()
-        filtered_qs = graph.get_queryset_for_filter(dca_qs, 'ServiceA')
+        filtered_qs = graph.get_queryset_for_filter(dca_qs, {
+            'service_env__service__name': 'ServiceA',
+        })
 
         self.assertEqual(filtered_qs.count(), 2)
         self.assertEqual(
@@ -68,8 +70,9 @@ class GraphQuerysetForFilterTestCase(TestCase):
         graph.save()
 
         dca_qs = DataCenterAsset.objects.all()
-        filtered_qs = graph.get_queryset_for_filter(dca_qs, 'ServiceA')
-
+        filtered_qs = graph.get_queryset_for_filter(dca_qs, {
+            'service__name': 'ServiceA',
+        })
         self.assertEqual(filtered_qs.count(), 2)
         self.assertEqual(
             list(filtered_qs.values_list('service_env__service__name', flat=True)),
@@ -114,8 +117,9 @@ class GraphQuerysetForFilterTestCase(TestCase):
         )
 
         dca_qs = DataCenterAsset.objects.all()
-        filtered_qs = graph.get_queryset_for_filter(dca_qs, 'ServiceA')
-
+        filtered_qs = graph.get_queryset_for_filter(dca_qs, {
+            'service__name': 'ServiceA'
+        })
         self.assertEqual(filtered_qs.count(), 3)
         self.assertEqual(
             list(filtered_qs.values_list(
