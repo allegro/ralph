@@ -12,6 +12,7 @@ from ralph.configuration_management.models import SCMCheckResult
 from ralph.configuration_management.tests.factories import SCMStatusCheckFactory
 from ralph.dashboards.admin_filters import ByGraphFilter
 from ralph.dashboards.filter_parser import FilterParser
+from ralph.dashboards.helpers import encode_params
 from ralph.dashboards.models import AggregateType, Graph
 from ralph.dashboards.tests.factories import GraphFactory
 from ralph.data_center.admin import DataCenterAdmin
@@ -123,9 +124,13 @@ class GraphModelTest(TestCase):
         )
 
         for check_result in test_data:
+            encoded_params = encode_params({
+                'pk': graph.pk,
+                'filters': {'scmstatuscheck__check_result': check_result.id}
+            })
             graph_filter = ByGraphFilter(
                 None,
-                {'graph-query': '{}|{}'.format(graph.pk, check_result.raw)},
+                {'graph-query': encoded_params},
                 DataCenterAsset,
                 DataCenterAdmin
             )
@@ -133,9 +138,13 @@ class GraphModelTest(TestCase):
 
             self.assertEqual(len(qs), test_data[check_result])
 
+        encoded_params = encode_params({
+            'pk': graph.pk,
+            'filters': {'scmstatuscheck__check_result': None}
+        })
         graph_filter = ByGraphFilter(
             None,
-            {'graph-query': '{}|{}'.format(graph.pk, None)},
+            {'graph-query': encoded_params},
             DataCenterAsset,
             DataCenterAdmin
         )
