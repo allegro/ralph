@@ -3,6 +3,7 @@ import factory
 from factory.django import DjangoModelFactory
 
 from ralph.accounts.tests.factories import UserFactory
+from ralph.data_center.tests.factories import DataCenterAssetFactory
 from ralph.operations.models import (
     Change,
     Failure,
@@ -49,6 +50,16 @@ class OperationFactory(DjangoModelFactory):
 
     class Meta:
         model = Operation
+
+    @factory.post_generation
+    def base_objects(self, create, extracted, **kwargs):
+        if not create:
+            return
+        if not extracted:
+            extracted = [DataCenterAssetFactory() for i in range(2)]
+        if extracted:
+            for obj in extracted:
+                self.base_objects.add(obj)
 
 
 class ChangeFactory(OperationFactory):

@@ -95,9 +95,6 @@ class ServiceEnvironmentAndConfigurationPathMixin(object):
     get_configuration_path.allow_tags = True
     get_configuration_path.short_description = _('configuration path')
 
-    def get_changelist(self, request, **kwargs):
-        return OperationChangeList
-
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         qs = qs.prefetch_related(
