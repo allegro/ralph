@@ -379,8 +379,8 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
         except ValueError:
             _add_incorrect_value_message(request, self.title)
             raise IncorrectLookupParameters()
-
-        return queryset
+        # distinct for m2m
+        return queryset.distinct()
 
     def get_related_url(self):
         return reverse(
