@@ -53,8 +53,8 @@ class ChartistGraphRenderer(object):
     plugins = {'ctBarLabels': {}}
     graph_query_sep = GRAPH_QUERY_SEP
 
-    def __init__(self, model):
-        self.model = model
+    def __init__(self, obj):
+        self.obj = obj
 
     def get_func(self):
         if not self.func:
@@ -81,7 +81,7 @@ class ChartistGraphRenderer(object):
         )
         urls = []
         for value in values:
-            labels = self.model.params['labels']
+            labels = self.obj.params['labels']
             url = '?'.join([
                 base_url,
                 urlencode({
@@ -90,8 +90,8 @@ class ChartistGraphRenderer(object):
                         'filters': build_filters(
                             labels=labels,
                             value=normalize_value(
-                                labels=labels.split(GRAPH_QUERY_SEP)[0],
-                                model_class=self.model.model_class(),
+                                label=labels.split(GRAPH_QUERY_SEP)[0],
+                                model_class=self.obj.model.model_class(),
                                 value=value,
                             )
                         ),
@@ -116,7 +116,7 @@ class ChartistGraphRenderer(object):
     def post_data_hook(self, data):
         try:
             click_urls = self._labels2urls(
-                self.model.changelist_model, self.model.id, data['labels']
+                self.obj.changelist_model, self.obj.id, data['labels']
             )
             data['series'] = self._series_with_urls(
                 data['series'], click_urls
@@ -133,7 +133,7 @@ class ChartistGraphRenderer(object):
         error = None
         data = {}
         try:
-            data = self.model.get_data()
+            data = self.obj.get_data()
             data = self.post_data_hook(data)
         except Exception as e:
             error = str(e)
@@ -141,7 +141,7 @@ class ChartistGraphRenderer(object):
             options = self.get_options(data)
         context.update({
             'error': error,
-            'graph': self.model,
+            'graph': self.obj,
             'options': json.dumps(options),
             'options_raw': options,
             'func': self.func,
