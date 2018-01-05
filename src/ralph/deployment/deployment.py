@@ -268,7 +268,7 @@ def check_mac_address(instances, **kwargs):
     return errors
 
 
-def check_if_network_environment_exists(instances):
+def check_if_network_environment_exists(instances, **kwargs):
     """
     Verify, that each instance has network environment exists.
     """
