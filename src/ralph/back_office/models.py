@@ -77,6 +77,7 @@ class BackOfficeAssetStatus(Choices):
     installed = _("installed")
     free = _("free")
     reserved = _("reserved")
+    sale = _("sale")
 
 
 class OfficeInfrastructure(
