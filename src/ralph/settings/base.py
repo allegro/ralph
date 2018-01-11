@@ -287,6 +287,10 @@ REDIS_CONNECTION = {
     'PORT': os.environ.get('REDIS_PORT', '6379'),
     'DB': int(os.environ.get('REDIS_DB', 0)),
     'PASSWORD': os.environ.get('REDIS_PASSWORD', ''),
+    # timeout for executing commands
+    'TIMEOUT': float(os.environ.get('REDIS_TIMEOUT', 10.0)),
+    # timeout for connecting through socket to redis
+    'CONNECT_TIMEOUT': float(os.environ.get('REDIS_CONNECT_TIMEOUT', 1.0)),
 }
 
 # set to False to turn off cache decorator
