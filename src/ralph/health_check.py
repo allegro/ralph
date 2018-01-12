@@ -2,15 +2,9 @@ import logging
 
 from django.conf import settings
 from django.db import connections
+from django.http import HttpResponse
+from django.views.decorators.http import require_GET
 from redis import StrictRedis
-from rest_framework import renderers
-from rest_framework.decorators import (
-    api_view,
-    permission_classes,
-    renderer_classes
-)
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
 
 logger = logging.getLogger(__name__)
 
@@ -24,19 +18,6 @@ strict_redis = StrictRedis(
     socket_timeout=settings.REDIS_CONNECTION['TIMEOUT'],
     socket_connect_timeout=settings.REDIS_CONNECTION['CONNECT_TIMEOUT'],
 )
-
-
-class PlainTextRenderer(renderers.BaseRenderer):
-    media_type = 'text/plain'
-    format = 'txt'
-    charset = 'utf-8'
-
-    def render(self, data, media_type=None, renderer_context=None):
-        if isinstance(data, str):
-            data = data.encode(self.charset)
-        else:
-            data = str(data)
-        return data
 
 
 def _test_redis_conn():
@@ -67,20 +48,16 @@ def _perform_all_health_checks():
     return messages
 
 
-@api_view(['GET'])
-@permission_classes((AllowAny,))
-@renderer_classes((PlainTextRenderer,))
+@require_GET
 def status_ping(request):
-    return Response('pong')
+    return HttpResponse('pong', content_type='text/plain')
 
 
-@api_view(['GET'])
-@permission_classes((AllowAny,))
-@renderer_classes((PlainTextRenderer,))
+@require_GET
 def status_health(request):
     health_checks_errors = _perform_all_health_checks()
     if not health_checks_errors:
-        return Response('Healthy')
+        return HttpResponse('Healthy', content_type='text/plain')
     else:
         response = 'Not Healthy\n' + "\n".join(health_checks_errors)
-        return Response(response, status=503)
+        return HttpResponse(response, status=503, content_type='text/plain')
