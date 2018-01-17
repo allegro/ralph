@@ -1,3 +1,4 @@
+import calendar
 import json
 import logging
 from urllib.parse import urlencode
@@ -6,9 +7,37 @@ from django.core.urlresolvers import NoReverseMatch, reverse
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 
+from ralph.dashboards.helpers import encode_params, normalize_value
+
 
 logger = logging.getLogger(__name__)
 GRAPH_QUERY_SEP = '|'
+
+
+def build_filters(labels, value):
+    params = labels.split(GRAPH_QUERY_SEP)
+    if len(params) == 1:
+        return {params[0]: value}
+    if len(params) == 2:
+        field, aggr = params
+        if aggr == 'year':
+            return {
+                '{}__gte'.format(field): '{}-01-01'.format(value),
+                '{}__lte'.format(field): '{}-12-31'.format(value),
+            }
+        if aggr == 'month':
+            year, month = value.split('-')
+            days_in_month = calendar.monthrange(int(year), int(month))[1]
+            return {
+                '{}__gte'.format(field): '{}-01'.format(value),
+                '{}__lte'.format(field): '{}-{}'.format(value, days_in_month),
+            }
+        if aggr == 'day':
+            return {
+                '{}__gte'.format(field): '{} 00:00:00'.format(value),
+                '{}__lte'.format(field): '{} 23:59:59'.format(value),
+            }
+    return {}
 
 
 class ChartistGraphRenderer(object):
@@ -24,8 +53,8 @@ class ChartistGraphRenderer(object):
     plugins = {'ctBarLabels': {}}
     graph_query_sep = GRAPH_QUERY_SEP
 
-    def __init__(self, model):
-        self.model = model
+    def __init__(self, obj):
+        self.obj = obj
 
     def get_func(self):
         if not self.func:
@@ -43,7 +72,7 @@ class ChartistGraphRenderer(object):
             options.update(self.options)
         return options
 
-    def _labels2urls(self, model, graph_id, labels):
+    def _labels2urls(self, model, graph_id, values):
         meta = model._meta
         base_url = reverse(
             "admin:%s_%s_changelist" % (
@@ -51,13 +80,22 @@ class ChartistGraphRenderer(object):
             )
         )
         urls = []
-        for label in labels:
+        for value in values:
+            labels = self.obj.params['labels']
             url = '?'.join([
                 base_url,
                 urlencode({
-                    'graph-query': self.graph_query_sep.join([
-                        str(graph_id), label
-                    ])
+                    'graph-query': encode_params({
+                        'pk': graph_id,
+                        'filters': build_filters(
+                            labels=labels,
+                            value=normalize_value(
+                                label=labels.split(GRAPH_QUERY_SEP)[0],
+                                model_class=self.obj.model.model_class(),
+                                value=value,
+                            )
+                        ),
+                    })
                 }),
             ])
             urls.append(url)
@@ -78,7 +116,7 @@ class ChartistGraphRenderer(object):
     def post_data_hook(self, data):
         try:
             click_urls = self._labels2urls(
-                self.model.changelist_model, self.model.id, data['labels']
+                self.obj.changelist_model, self.obj.id, data['labels']
             )
             data['series'] = self._series_with_urls(
                 data['series'], click_urls
@@ -95,7 +133,7 @@ class ChartistGraphRenderer(object):
         error = None
         data = {}
         try:
-            data = self.model.get_data()
+            data = self.obj.get_data()
             data = self.post_data_hook(data)
         except Exception as e:
             error = str(e)
@@ -103,7 +141,7 @@ class ChartistGraphRenderer(object):
             options = self.get_options(data)
         context.update({
             'error': error,
-            'graph': self.model,
+            'graph': self.obj,
             'options': json.dumps(options),
             'options_raw': options,
             'func': self.func,

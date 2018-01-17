@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from dj.choices import Country
 from django.contrib.messages.storage.fallback import FallbackStorage
-from django.test import RequestFactory
+from django.test import RequestFactory, SimpleTestCase
 from django.utils import timezone
 
 from ralph.accounts.tests.factories import RegionFactory
@@ -16,7 +16,11 @@ from ralph.assets.tests.factories import (
     DataCenterAssetModelFactory,
     ServiceEnvironmentFactory
 )
-from ralph.back_office.models import BackOfficeAsset, BackOfficeAssetStatus
+from ralph.back_office.models import (
+    _check_assets_owner,
+    BackOfficeAsset,
+    BackOfficeAssetStatus
+)
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
 from ralph.data_center.models import DataCenterAsset
 from ralph.data_center.tests.factories import RackFactory
@@ -317,7 +321,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             field='status',
             transition_obj_or_name=transition,
             data={'change_hostname__country': Country.pl},
-            request=self.request
+            requester=self.request.user
         )
         self.assertEqual(self.bo_asset.hostname, 'POLPC01001')
 
@@ -334,7 +338,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             field='status',
             transition_obj_or_name=transition,
             data={'assign_owner__owner': self.user_pl.id},
-            request=self.request
+            requester=self.request.user
         )
 
     def test_assign_hostname_assigns_hostname_when_its_empty(self):
@@ -358,7 +362,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             field='status',
             transition_obj_or_name=transition,
             data={},
-            request=self.request
+            requester=self.request.user
         )
 
         self.assertNotEquals(self.bo_asset.hostname, hostname)
@@ -385,7 +389,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             field='status',
             transition_obj_or_name=transition,
             data={},
-            request=self.request
+            requester=self.request.user
         )
 
         self.assertEquals(self.bo_asset.hostname, hostname)
@@ -414,15 +418,34 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             actions=['return_report']
         )
         with self.assertRaises(TransitionNotAllowedError):
-            _check_instances_for_transition([self.bo_asset], transition)
+            _check_instances_for_transition(
+                instances=[self.bo_asset],
+                transition=transition,
+                requester=self.user_pl
+            )
+
+    def test_return_report_when_requester_is_not_assets_owner(self):
+        _, transition, _ = self._create_transition(
+            model=self.bo_asset,
+            name='test',
+            source=[BackOfficeAssetStatus.new.id],
+            target=BackOfficeAssetStatus.used.id,
+            actions=['must_be_owner_of_asset']
+        )
+        with self.assertRaises(TransitionNotAllowedError):
+            _check_instances_for_transition(
+                instances=[self.bo_asset],
+                transition=transition,
+                requester=self.user_pl
+            )
+
 
     @patch.object(ExternalService, "run")
     def test_a_report_is_generated(self, mock_method):
         GENERATED_FILE_CONTENT = REPORT_TEMPLATE = b'some-content'
         mock_method.return_value = GENERATED_FILE_CONTENT
         report_template = ReportTemplateFactory(template__data=REPORT_TEMPLATE)
-        request = RequestFactory().get('/')  # only request's user is important
-        request.user = UserFactory()
+        user = UserFactory()
         instances = [
             BackOfficeAssetFactory(
                 user=UserFactory(first_name="James", last_name="Bond")
@@ -430,7 +453,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
         ]
 
         attachment = BackOfficeAsset._generate_report(
-            report_template.name, request, instances, report_template.language)
+            report_template.name, user, instances, report_template.language)
 
         correct_filename = '{}_{}-{}_{}.pdf'.format(
             timezone.now().isoformat()[:10], 'james', 'bond',
@@ -438,3 +461,10 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
         )
         self.assertEqual(attachment.original_filename, correct_filename)
         self.assertEqual(attachment.file.read(), GENERATED_FILE_CONTENT)
+
+
+class CheckerTestCase(SimpleTestCase):
+    def test_requester_must_be_specified(self):
+        errors = _check_assets_owner(instances=[], requester=None)
+        self.assertTrue('__all__' in errors)
+

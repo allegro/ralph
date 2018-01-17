@@ -287,6 +287,10 @@ REDIS_CONNECTION = {
     'PORT': os.environ.get('REDIS_PORT', '6379'),
     'DB': int(os.environ.get('REDIS_DB', 0)),
     'PASSWORD': os.environ.get('REDIS_PASSWORD', ''),
+    # timeout for executing commands
+    'TIMEOUT': float(os.environ.get('REDIS_TIMEOUT', 10.0)),
+    # timeout for connecting through socket to redis
+    'CONNECT_TIMEOUT': float(os.environ.get('REDIS_CONNECT_TIMEOUT', 1.0)),
 }
 
 # set to False to turn off cache decorator
@@ -369,6 +373,17 @@ INVENTORY_TAG = os.environ.get('INVENTORY_TAG', 'INV')
 INVENTORY_TAG_USER = os.environ.get('INVENTORY_TAG_USER', 'INV_CONF')
 INVENTORY_TAG_MISSING = os.environ.get('INVENTORY_TAG_MISSING', 'INV_MISSING')
 INVENTORY_TAG_APPEND_DATE = bool_from_env('INVENTORY_TAG_APPEND_DATE', True)
+
+ENABLE_ACCEPT_ASSETS_FOR_CURRENT_USER = bool_from_env('ENABLE_ACCEPT_ASSETS_FOR_CURRENT_USER')  # noqa
+ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG = {
+    'TRANSITION_ID': os.environ.get(
+        'ACCEPT_ASSETS_FOR_CURRENT_USER_TRANSITION_ID', None
+    ),
+    # in_progress by default
+    'BACK_OFFICE_ACCEPT_STATUS': os.environ.get(
+        'ACCEPT_ASSETS_FOR_CURRENT_USER_BACK_OFFICE_ACCEPT_STATUS', 2
+    )
+}
 
 MAP_IMPORTED_ID_TO_NEW_ID = False
 

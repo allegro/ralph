@@ -212,9 +212,8 @@ class Job(TimeStampMixin):
 
     @classmethod
     def prepare_params(cls, **kwargs):
-        request = kwargs.pop('request', None)
+        user = kwargs.pop('requester', None)
         result = cls.dump_obj_to_jsonable(kwargs)
-        user = _get_user_from_request(request)
         result['_request__user'] = (
             result.get('_request__user') or
             (cls.dump_obj_to_jsonable(user) if user else None)
@@ -223,16 +222,15 @@ class Job(TimeStampMixin):
         return result
 
     @classmethod
-    def run(cls, service_name, defaults=None, **kwargs):
+    def run(cls, service_name, requester, defaults=None, **kwargs):
         """
         Run Job asynchronously in internal service (with DB and models access).
         """
         service = InternalService(service_name)
-        user = _get_user_from_request(kwargs.get('request'))
         obj = cls._default_manager.create(
             service_name=service_name,
-            username=user.username if user else None,
-            _dumped_params=cls.prepare_params(**kwargs),
+            username=requester.username if requester else None,
+            _dumped_params=cls.prepare_params(requester=requester, **kwargs),
             **(defaults or {})
         )
         # commit transaction to allow worker to fetch it using job id

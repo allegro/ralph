@@ -5,6 +5,7 @@ from sitetree.sitetreeapp import SiteTree  # noqa
 
 from ralph.admin import ralph_site as admin
 from ralph.api import router
+from ralph.health_check import status_health, status_ping
 
 # monkey patch for sitetree until
 # https://github.com/idlesign/django-sitetree/issues/226 will be discussed
@@ -51,6 +52,16 @@ urlpatterns = [
     url(r'^deployment/', include('ralph.deployment.urls')),
     url(r'^', include('ralph.lib.transitions.urls')),
     url(r'^i18n/', include('django.conf.urls.i18n')),
+    url(
+        r'^status/ping?$',
+        status_ping,
+        name='status-ping',
+    ),
+    url(
+        r'^status/health?$',
+        status_health,
+        name='status-health',
+    ),
 ]
 
 if getattr(settings, 'ENABLE_HERMES_INTEGRATION', False):

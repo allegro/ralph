@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+from collections import Counter
+
+from django.db.models import Prefetch
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphMPTTAdmin, register
 from ralph.admin.mixins import RalphAdminForm
 from ralph.admin.views.main import RalphChangeList
+from ralph.assets.models import BaseObject
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer import resources
 from ralph.operations.filters import StatusFilter
@@ -64,12 +68,62 @@ class OperationAdminForm(RalphAdminForm):
             )
 
 
+class ServiceEnvironmentAndConfigurationPathMixin(object):
+    def get_list_display(self, request):
+        list_display = super().get_list_display(request)
+        return list_display + ['get_services', 'get_configuration_path']
+
+    def _get_related_objects(self, obj, field):
+        if not obj.base_objects:
+            return '-'
+        objects = Counter([
+            str(getattr(base_object, field))
+            for base_object in obj.base_objects.all()
+        ])
+        return '<br>'.join([
+            '{}: {}'.format(name, count)
+            for name, count in objects.most_common()
+        ])
+
+    def get_services(self, obj):
+        return self._get_related_objects(obj, 'service_env')
+    get_services.allow_tags = True
+    get_services.short_description = _('services')
+
+    def get_configuration_path(self, obj):
+        return self._get_related_objects(obj=obj, field='configuration_path')
+    get_configuration_path.allow_tags = True
+    get_configuration_path.short_description = _('configuration path')
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs = qs.prefetch_related(
+            Prefetch(
+                'base_objects',
+                queryset=BaseObject.objects.distinct().select_related(
+                    'configuration_path',
+                    'configuration_path__module',
+                    'service_env',
+                    'service_env__service',
+                    'service_env__environment',
+                )
+            )
+        )
+        return qs
+
+
 @register(Operation)
-class OperationAdmin(AttachmentsMixin, RalphAdmin):
+class OperationAdmin(
+    AttachmentsMixin,
+    ServiceEnvironmentAndConfigurationPathMixin,
+    RalphAdmin
+):
     search_fields = ['title', 'description', 'ticket_id']
-    list_filter = ['type', ('status', StatusFilter), 'reporter', 'assignee',
-                   'created_date', 'update_date', 'resolved_date',
-                   'base_objects']
+    list_filter = [
+        'type', ('status', StatusFilter), 'reporter', 'assignee',
+        'created_date', 'update_date', 'resolved_date', 'base_objects',
+        'base_objects__service_env', 'base_objects__configuration_path'
+    ]
     list_display = ['title', 'type', 'created_date', 'status', 'reporter',
                     'get_ticket_url']
     list_select_related = ('reporter', 'type', 'status')

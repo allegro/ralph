@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.dashboards.helpers import decode_params
 from ralph.dashboards.models import Graph
 from ralph.dashboards.renderers import GRAPH_QUERY_SEP
 
@@ -17,16 +18,11 @@ class ByGraphFilter(admin.SimpleListFilter):
             ('', ''),
         )
 
-    def tokenize(self, query_value):
-        return query_value.split(self.sep) if self.sep in query_value else (
-            None, None
-        )
-
     def queryset(self, request, queryset):
-        graph_pk, graph_item = self.tokenize(self.value() or '')
-        if graph_pk and graph_item:
-            if graph_item == 'None':
-                graph_item = None
+        params = decode_params(self.value())
+        graph_pk = params.get('pk')
+        filters = params.get('filters')
+        if graph_pk:
             graph = get_object_or_404(Graph, pk=graph_pk)
-            queryset = graph.get_queryset_for_filter(queryset, graph_item)
+            queryset = graph.get_queryset_for_filter(queryset, filters)
         return queryset

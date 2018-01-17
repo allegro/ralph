@@ -60,9 +60,14 @@ def run_async_transition(job_id):
 def _perform_async_transition(transition_job):
     transition = transition_job.transition
     obj = transition_job.obj
-    _check_instances_for_transition([obj], transition, check_async_job=False)
+    requester = transition_job.user
+    _check_instances_for_transition(
+        instances=[obj],
+        transition=transition,
+        check_async_job=False,
+        requester=requester
+    )
     _check_action_with_instances([obj], transition)
-
     # check if this job isn't already finished
     if not transition_job.is_running:
         logger.warning(
@@ -118,7 +123,12 @@ def _perform_async_transition(transition_job):
             # action in transaction instead
             with transaction.atomic():
                 try:
-                    result = func(instances=[obj], tja=tja, **defaults)
+                    result = func(
+                        instances=[obj],
+                        requester=requester,
+                        tja=tja,
+                        **defaults
+                    )
                 except RescheduleAsyncTransitionActionLater as e:
                     # action is not ready - reschedule this job later and
                     # continue when you left off
@@ -149,6 +159,6 @@ def _perform_async_transition(transition_job):
     _post_transition_instance_processing(
         obj, transition, transition_job.params['data'],
         history_kwargs=transition_job.params['history_kwargs'],
-        user=transition_job.user, attachments=attachments,
+        requester=requester, attachments=attachments,
     )
     transition_job.success()

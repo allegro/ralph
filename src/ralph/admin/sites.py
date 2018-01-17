@@ -76,6 +76,9 @@ class RalphAdminSiteMixin(object):
         )
         return super().index(request, extra_context)
 
+    def get_admin_instance_for_model(self, model_class):
+        return ralph_site._registry.get(model_class, None)
+
 
 class RalphAdminSite(RalphAdminSiteMixin, AdminSite):
     pass
