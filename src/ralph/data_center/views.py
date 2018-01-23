@@ -8,15 +8,18 @@ class RelationsView(RalphDetailView):
     url_name = 'relations'
     template_name = 'data_center/datacenterasset/relations.html'
 
+    def _add_cloud_hosts(self, related_objects):
+        cloud_hosts = list(self.object.cloudhost_set.all())
+
+        if cloud_hosts:
+            related_objects['cloud_hosts'] = cloud_hosts
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         related_objects = {}
 
-        if self.object.cloudhost_set.exists():
-            related_objects['cloud_hosts'] = [
-                i for i in self.object.cloudhost_set.all()
-            ]
+        self._add_cloud_hosts(related_objects)
 
         context['related_objects'] = related_objects
 
