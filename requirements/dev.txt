@@ -1,5 +1,5 @@
 -r test.txt
-git+https://github.com/django-debug-toolbar/django-debug-toolbar.git@0ed1538374d3dc41d51fc562b4e8be6ce8208552
+django-debug-toolbar
 Werkzeug
 pudb
 ipython
