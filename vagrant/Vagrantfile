@@ -4,7 +4,7 @@ unless Vagrant.has_plugin?("vagrant-reload")
 end
 
 Vagrant.configure(2) do |config|
-    vm_user = "ubuntu"
+    vm_user = "vagrant"
     ralph_dir = "/home/#{vm_user}/ralph"
 
     config.vm.box = "ubuntu/xenial64"
