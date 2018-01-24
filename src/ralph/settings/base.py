@@ -121,6 +121,7 @@ WSGI_APPLICATION = 'ralph.wsgi.application'
 
 MYSQL_OPTIONS = {
     'sql_mode': 'TRADITIONAL',
+    'ssl': {'ca': os.environ.get('DATABASE_SSL_CA', '')},
     'charset': 'utf8',
     'init_command': """
     SET default_storage_engine=INNODB;
