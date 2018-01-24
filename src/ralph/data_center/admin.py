@@ -56,6 +56,7 @@ from ralph.data_center.models.virtual import (
     Database,
     VIP
 )
+from ralph.data_center.views import RelationsView
 from ralph.data_importer import resources
 from ralph.deployment.mixins import ActiveDeploymentMessageMixin
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
@@ -330,6 +331,10 @@ class DataCenterAssetSCMInfo(SCMCheckInfo):
     url_name = 'datacenterasset_scm_info'
 
 
+class DataCenterAssetRelationsView(RelationsView):
+    url = 'datacenterasset_relations'
+
+
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(
     SCMStatusCheckInChangeListMixin,
@@ -352,6 +357,7 @@ class DataCenterAssetAdmin(
         DataCenterAssetNetworkView,
         DataCenterAssetSecurityInfo,
         DataCenterAssetSCMInfo,
+        DataCenterAssetRelationsView,
         DataCenterAssetLicence,
         DataCenterAssetSupport,
         DataCenterAssetOperation,

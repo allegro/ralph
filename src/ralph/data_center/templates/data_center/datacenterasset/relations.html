@@ -1,0 +1,42 @@
+{% extends BASE_TEMPLATE %}
+{% load i18n %}
+
+{% block bodyclass %}relations-tab{% endblock%}
+
+{% block view_content %}
+
+
+<h1>{% trans "Related objects" %}</h1>
+    {% if related_objects %}
+      {% for rel_obj_type, objects in related_objects.items %}
+          {% if rel_obj_type == "cloud_hosts" %}
+              <h2>{% trans "Cloud hosts" %}</h2>
+              <table>
+                  <tr>
+                      <th>{% trans "Hostname" %}</th>
+                      <th>{% trans "IP Address" %}</th>
+                      <th>{% trans "Cloud project" %}</th>
+                      <th>{% trans "Cloud provider" %}</th>
+                  </tr>
+                  {% for cloud_host in objects %}
+                      <tr>
+                          <td><a href="{{ cloud_host.get_absolute_url }}">{{ cloud_host.hostname }}</a></td>
+                          <td>
+                              {% for addr in cloud_host.ip_addresses %}
+                                  {{ addr }}<br>
+                              {% endfor %}
+                          </td>
+                          <td><a href="{{ cloud_host.cloudproject.get_absolute_url }}">{{ cloud_host.cloudproject.name }}</a></td>
+                          <td><a href="{{ cloud_host.cloudprovider.get_absolute_url }}">{{ cloud_host.cloudprovider.name }}</a></td>
+                      <tr>
+                  {% endfor %}
+              </table>
+          {% endif %}
+      {% endfor %}
+
+  {% else %}
+    <p>{% trans "No related objects found." %}</p>
+  {% endif %}
+
+
+{% endblock %}
