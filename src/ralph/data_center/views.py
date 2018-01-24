@@ -18,9 +18,7 @@ class RelationsView(RalphDetailView):
         context = super().get_context_data(**kwargs)
 
         related_objects = {}
-
         self._add_cloud_hosts(related_objects)
-
         context['related_objects'] = related_objects
 
         return context
