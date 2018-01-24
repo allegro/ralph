@@ -1,7 +1,12 @@
+import logging
+
 from django.core.checks import Error
-from django.db.utils import OperationalError
+from django.db.utils import DatabaseError
 from django.template.base import TemplateDoesNotExist
 from django.template.loader import get_template
+
+
+logger = logging.getLogger(__name__)
 
 
 def check_transition_templates(transition_templates):
@@ -63,6 +68,6 @@ def check_transition_templates(transition_templates):
                 ),
                 id='transitions.E004'
             ))
-    except OperationalError:
-        pass
+    except DatabaseError as e:
+        logger.error(e)
     return errors
