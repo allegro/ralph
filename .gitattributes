@@ -1,0 +1,4 @@
+* text=auto
+
+# Preserve LF line endings for shell scripts, even on Windows
+*.sh text eol=lf
