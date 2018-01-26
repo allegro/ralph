@@ -1,6 +1,8 @@
 {% extends "admin/base_site.html" %}
 {% load i18n admin_static %}
 
+{% block scripts %}{% endblock %}
+
 {% block extrastyle %}
   {{ block.super }}
   {{ form.media }}
@@ -47,7 +49,7 @@
         <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
           <fieldset>
             <legend>{% trans 'Please login' %}</legend>
-            {{form}}
+              {{ form.as_p }}
             <button class="login right">{% trans 'Log in' %}</button>
           </fieldset>
           <input type="hidden" name="next" value="{{ next }}" />
