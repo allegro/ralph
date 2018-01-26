@@ -28,3 +28,4 @@ sqlparse==0.1.16
 Unidecode==0.04.18
 tablib==0.11.5
 factory-boy
+openpyxl==2.4.0
