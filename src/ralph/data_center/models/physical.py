@@ -737,6 +737,18 @@ class DataCenterAsset(
                 # RunTransitionView.get_success_url()
                 instances[i] = back_office_asset
 
+    @classmethod
+    @transition_action(
+        verbose_name=_('Cleanup security scans'),
+    )
+    def cleanup_security_scans(cls, instances, **kwargs):
+        with transaction.atomic():
+            for instance in instances:
+                try:
+                    instance.securityscan.delete()
+                except DataCenterAsset.securityscan.RelatedObjectDoesNotExist:
+                    pass
+
 
 class Connection(AdminAbsoluteUrlMixin, models.Model):
     outbound = models.ForeignKey(
