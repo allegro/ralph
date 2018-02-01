@@ -121,7 +121,6 @@ WSGI_APPLICATION = 'ralph.wsgi.application'
 
 MYSQL_OPTIONS = {
     'sql_mode': 'TRADITIONAL',
-    'ssl': {'ca': os.environ.get('DATABASE_SSL_CA', '')},
     'charset': 'utf8',
     'init_command': """
     SET default_storage_engine=INNODB;
@@ -129,6 +128,10 @@ MYSQL_OPTIONS = {
     SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
     """
 }
+DATABASE_SSL_CA = os.environ.get('DATABASE_SSL_CA', None)
+if DATABASE_SSL_CA:
+    MYSQL_OPTIONS.update({'ssl': {'ca': DATABASE_SSL_CA}})
+
 DATABASES = {
     'default': {
         'ENGINE': 'transaction_hooks.backends.mysql',
