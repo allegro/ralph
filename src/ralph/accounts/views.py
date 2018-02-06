@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from datetime import date
-from urllib.parse import urlencode
 
 import reversion
 from django.conf import settings
@@ -12,10 +11,14 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.generic import View
 
 from ralph.accounts.admin import AssetList, AssignedLicenceList, UserInfoMixin
+from ralph.accounts.helpers import (
+    acceptance_transition_exists,
+    ACCEPTANCE_TRANSITION_ID,
+    get_acceptance_url,
+    get_assets_to_accept
+)
 from ralph.admin.mixins import RalphBaseTemplateView, RalphTemplateView
-from ralph.admin.sites import ralph_site
 from ralph.back_office.models import BackOfficeAsset
-from ralph.lib.transitions.models import Transition
 from ralph.licences.models import BaseObjectLicence
 
 
@@ -128,45 +131,18 @@ class InventoryTagView(View):
 
 
 class _AcceptanceProcessByCurrentUserMixin(object):
-    _config = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG
-
-    @property
-    def acceptance_transition_id(self):
-        return self._config['TRANSITION_ID']
-
-    @property
-    def back_office_status(self):
-        return self._config['BACK_OFFICE_ACCEPT_STATUS']
-
-    @property
-    def acceptance_transition_exists(self):
-        return Transition.objects.filter(
-            id=self.acceptance_transition_id
-        ).exists()
-
     def post(self, request, *args, **kwargs):
-        assets_to_accept = self.get_assets_to_accept()
-        admin_instance = ralph_site.get_admin_instance_for_model(
-            BackOfficeAsset
-        )
-        url_name = admin_instance.get_transition_bulk_url_name()
-        if assets_to_accept:
-            url = reverse(url_name, args=(self.acceptance_transition_id,))
-            query = urlencode([('select', a.id) for a in assets_to_accept])
-            return HttpResponseRedirect('?'.join((url, query)))
+        acceptance_url = get_acceptance_url(request.user)
+        if acceptance_url:
+            return HttpResponseRedirect(acceptance_url)
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['acceptance_transition_id'] = self.acceptance_transition_id
-        context['acceptance_transition_exists'] = self.acceptance_transition_exists  # noqa: E501
-        context['assets_to_accept'] = self.get_assets_to_accept()
+        context['acceptance_transition_id'] = ACCEPTANCE_TRANSITION_ID
+        context['acceptance_transition_exists'] = acceptance_transition_exists()  # noqa: E501
+        context['assets_to_accept'] = get_assets_to_accept(self.request.user)
         return context
-
-    def get_assets_to_accept(self):
-        return BackOfficeAsset.objects.filter(
-            status=self.back_office_status
-        ).filter(user=self.request.user)
 
 
 class _DummyMixin(object):

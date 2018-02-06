@@ -5,11 +5,13 @@ from itertools import cycle
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
-from django.db.models import Count, Prefetch, Sum
+from django.db.models import Count, Prefetch, Q, Sum
 from django.template import Library
 from django.utils.text import slugify
+from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import BaseObject, Service, ServiceEnvironment
+from ralph.back_office.models import BackOfficeAsset
 from ralph.data_center.models import (
     DataCenter,
     DataCenterAsset,
@@ -18,8 +20,31 @@ from ralph.data_center.models import (
 )
 
 register = Library()
-
 COLORS = ['green', 'blue', 'purple', 'orange', 'red', 'pink']
+
+
+def get_user_equipment_tile_data(user):
+    return {
+        'class': 'my-equipment',
+        'label': _('Your equipment'),
+        'count': BackOfficeAsset.objects.filter(
+            Q(user=user) | Q(owner=user)
+        ).count(),
+        'url': reverse('current_user_info'),
+    }
+
+
+def get_user_equipment_to_accept_tile_data(user):
+    from ralph.accounts.helpers import get_assets_to_accept, get_acceptance_url
+    assets_to_accept_count = get_assets_to_accept(user).count()
+    if not assets_to_accept_count:
+        return None
+    return {
+        'class': 'equipment-to-accept',
+        'label': _('Equipments to accept'),
+        'count': assets_to_accept_count,
+        'url': get_acceptance_url(user),
+    }
 
 
 def get_available_space_in_data_centers(data_centers):
@@ -54,8 +79,13 @@ def get_used_space_in_data_centers(data_centers):
     return Counter(dict(used_by_assets)) + Counter(dict(used_by_accessories))
 
 
-@register.inclusion_tag('admin/templatetags/dc_capacity.html')
-def dc_capacity(data_centers=None, size='big'):
+@register.inclusion_tag(
+    'admin/templatetags/dc_capacity.html', takes_context=True
+)
+def dc_capacity(context, data_centers=None, size='big'):
+    user = context.request.user
+    if not user.has_perm('data_center.view_datacenter'):
+        return {}
     color = cycle(COLORS)
     if not data_centers:
         data_centers = DataCenter.objects.all()
@@ -85,8 +115,11 @@ def dc_capacity(data_centers=None, size='big'):
     return {'capacities': results}
 
 
-@register.inclusion_tag('admin/templatetags/ralph_summary.html')
-def ralph_summary():
+@register.inclusion_tag(
+    'admin/templatetags/ralph_summary.html', takes_context=True
+)
+def ralph_summary(context):
+    user = context.request.user
     models = [
         'data_center.DataCenterAsset',
         'back_office.BackOfficeAsset',
@@ -100,16 +133,21 @@ def ralph_summary():
         app, model = model_name.split('.')
         model = apps.get_model(app, model)
         meta = model._meta
+        if not user.has_perm('{}.view_{}'.format(app, meta.model_name)):
+            continue
         results.append({
             'label': meta.verbose_name_plural,
             'count': model.objects.count(),
-            'class': slugify(meta.verbose_name_plural),
+            'class': slugify(meta.model_name),
             'icon': 'icon',
-            'url_name': 'admin:{}_{}_changelist'.format(
+            'url': reverse('admin:{}_{}_changelist'.format(
                 meta.app_label, meta.model_name
-            )
-
+            ))
         })
+    results.append(get_user_equipment_tile_data(user=user))
+    accept_tile_data = get_user_equipment_to_accept_tile_data(user=user)
+    if accept_tile_data:
+        results.append(accept_tile_data)
     return {'results': results}
 
 

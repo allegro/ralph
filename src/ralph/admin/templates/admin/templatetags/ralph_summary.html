@@ -1,18 +1,15 @@
 {% load i18n %}
 
-{% for result in results %}
-    {% if forloop.counter0|divisibleby:3 %}
-        <div class="categories">
-    {% endif %}
-        <div class="category {{ result.class }}">
-            <div class="wrapper">
-                <div class="name">{{ result.label }}</div>
-                <div class="value">{{ result.count }}</div>
-                <i class="fa icon" aria-hidden="true"></i>
-                <a href="{% url result.url_name %}" class="link">{% trans 'Show' %}</a>
-            </div>
-        </div>
-    {% if forloop.counter|divisibleby:3 %}
-        </div>
-    {% endif %}
-{% endfor %}
+<div class="categories">
+  {% for result in results %}
+    <div class="category {{ result.class }}">
+        <a href="{{ result.url }}">
+          <div class="wrapper">
+              <div class="name">{{ result.label | title }}</div>
+              <div class="value">{{ result.count }}</div>
+              <i class="fa icon" aria-hidden="true"></i>
+          </div>
+        </a>
+    </div>
+  {% endfor %}
+</div>
