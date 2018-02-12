@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='transition',
             name='success_url',
-            field=ralph.lib.mixins.fields.NullableCharField(default=None, null=True, max_length=255),
+            field=ralph.lib.mixins.fields.NullableCharField(null=True, max_length=255, default=None, blank=True),
         ),
     ]
