@@ -1,15 +1,19 @@
-{% for capacity in capacities %}
-    <div class="capacity-info {{ capacity.size }}">
-        <div class="title">
-            <a href="{{ capacity.url }}" target="_blank">{{ capacity.dc }}</a>
-        </div>
-        <div class="c100 p{{ capacity.capacity }} {{ capacity.color }}">
-            <span data-tooltip aria-haspopup="true" class="has-tip" title="{{ capacity.tooltip }}">{{ capacity.capacity }}%
-            </span>
-            <div class="slice">
-                <div class="bar"></div>
-                <div class="fill"></div>
-            </div>
-        </div>
-    </div>
-{% endfor %}
+{% if capacities %}
+  <div class="capacities module row">
+    {% for capacity in capacities %}
+      <div class="capacity-info {{ capacity.size }}">
+          <div class="title">
+              <a href="{{ capacity.url }}" target="_blank">{{ capacity.dc }}</a>
+          </div>
+          <div class="c100 p{{ capacity.capacity }} {{ capacity.color }}">
+              <span data-tooltip aria-haspopup="true" class="has-tip" title="{{ capacity.tooltip }}">{{ capacity.capacity }}%
+              </span>
+              <div class="slice">
+                  <div class="bar"></div>
+                  <div class="fill"></div>
+              </div>
+          </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}

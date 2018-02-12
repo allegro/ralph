@@ -1,5 +1,11 @@
 @import '../colors';
 
+@keyframes pulse {
+    0% { background-color: $mdc-deep-orange-500; }
+    50% { background-color: $mdc-deep-orange-800; }
+    100% { background-color: $mdc-deep-orange-500; }
+}
+
 .dashboard, .dashboard_graphs {
     h1, h2 {
         display: block;
@@ -93,13 +99,15 @@
         }
     }
     .categories {
-        display: table;
-        padding-bottom: 10px;
-        table-layout: fixed;
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
         color: #fff;
-        width: 100%;
         .category {
-            display: table-cell;
+            flex: 33%;
+            max-width: 33%;
+            padding-left: 5px;
+            padding-bottom: 5px;
             opacity: 0.9;
             &.active,
             &:hover {
@@ -108,54 +116,55 @@
             &:last-child .wrapper {
                 margin-right: 0;
             }
-            &.data-center-assets .wrapper {
+            &.datacenterasset .wrapper {
                 background: $mdc-green-500;
                 .icon:before {content: $fa-var-server;}
             }
-            &.back-office-assets .wrapper {
+            &.backofficeasset .wrapper {
                 background: $mdc-purple-500;
                 .icon:before {content: $fa-var-laptop;}
             }
-            &.licences .wrapper {
+            &.licence .wrapper {
                 background: $mdc-blue-500;
                 .icon:before {content: $fa-var-key;}
             }
-            &.supports .wrapper {
+            &.support .wrapper {
                 background: $mdc-red-500;
                 .icon:before {content: $fa-var-heartbeat;}
             }
-            &.domains .wrapper {
+            &.domain .wrapper {
                 background: $mdc-pink-500;
                 .icon:before {content: $fa-var-map;}
             }
-            &.users .wrapper {
+            &.ralphuser .wrapper {
                 background: $mdc-indigo-500;
                 .icon:before {content: $fa-var-users;}
             }
-            .wrapper{
-                margin-right: 10px;
+            &.my-equipment .wrapper {
+                background: $mdc-teal-500;
+                .icon:before {content: $fa-var-cubes;}
+            }
+            &.equipment-to-accept .wrapper {
+                background: $mdc-deep-orange-500;
+                .icon:before {content: $fa-var-cubes;}
+                animation: pulse 2s infinite;
+            }
+            .wrapper {
+                display: block;
                 position: relative;
+                padding: 10px;
+                .name, .value {
+                    color: #fff;
+                }
                 .name {
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
-                    padding: 10px 10px 0 10px;
                     font-size: 25px;
                 }
                 .value {
-                    padding: 0 10px 0 0;
                     text-align: right;
                     font-size: 30px;
-                }
-                .link {
-                    color: #fff;
-                    text-align: center;
-                    padding: 5px;
-                    background: rgba(0, 0, 0, 0.1);
-                    display: block;
-                    &:hover {
-                        background: rgba(0, 0, 0, 0.2);
-                    }
                 }
                 .icon {
                     position: absolute;
