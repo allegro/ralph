@@ -130,5 +130,5 @@ class TransitionForm(forms.ModelForm):
         model = Transition
         fields = [
             'name', 'source', 'target', 'run_asynchronously',
-            'async_service_name', 'template_name', 'actions',
+            'async_service_name', 'template_name', 'success_url', 'actions',
         ]

@@ -37,6 +37,7 @@ from ralph.lib.external_services.models import (
     JobQuerySet
 )
 from ralph.lib.metrics import statsd
+from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 from ralph.lib.transitions.conf import (
     DEFAULT_ASYNC_TRANSITION_SERVICE_NAME,
@@ -526,6 +527,9 @@ class Transition(models.Model):
     target = models.CharField(max_length=50)
     actions = models.ManyToManyField('Action')
     template_name = models.CharField(max_length=255, blank=True, default='')
+    success_url = NullableCharField(
+        max_length=255, blank=True, null=True, default=None
+    )
 
     class Meta:
         unique_together = ('name', 'model')

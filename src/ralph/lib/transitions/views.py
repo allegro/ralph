@@ -1,4 +1,5 @@
 from copy import deepcopy
+from itertools import repeat
 
 from django import forms
 from django.contrib import messages
@@ -42,6 +43,10 @@ def collect_actions(obj, transition):
         for action in actions
     ]
     return actions, any(return_attachment)
+
+
+def build_params_url_for_redirect(ids):
+    return urlencode(list(zip(repeat('select', len(ids)), ids)))
 
 
 class NonAtomicView(object):
@@ -278,19 +283,24 @@ class RunBulkTransitionView(TransitionViewMixin, RalphTemplateView):
     ):
         self.model = model
         self.transition = get_object_or_404(Transition, pk=transition_pk)
-        ids = [int(i) for i in self.request.GET.getlist('select')]
-        self.objects = list(self.model.objects.filter(id__in=ids))
-        # TODO: self.obj is unnecessary - self.model is enough
+        self.ids = [int(i) for i in self.request.GET.getlist('select')]
+        self.objects = list(self.model.objects.filter(id__in=self.ids))
         self.obj = self.objects[0]
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
+        transition_success_url = self.transition.success_url
+        if transition_success_url:
+            transition_success_url += '?' + build_params_url_for_redirect(
+                self.ids
+            )
         transition_back_url = self.request.GET.get('back_url', None)
         if not transition_back_url:
             info = self.model._meta.app_label, self.model._meta.model_name
-            return reverse('admin:{}_{}_changelist'.format(*info))
-
-        return transition_back_url
+            transition_back_url = reverse(
+                'admin:{}_{}_changelist'.format(*info)
+            )
+        return transition_success_url or transition_back_url
 
 
 class RunTransitionView(TransitionViewMixin, RalphTemplateView):
@@ -305,7 +315,7 @@ class RunTransitionView(TransitionViewMixin, RalphTemplateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
-        return self.objects[0].get_absolute_url()
+        return self.transition.success_url or self.objects[0].get_absolute_url()
 
     def get_async_transitions_awaiter_url(self, job_ids):
         return get_admin_url(self.objects[0], 'current_transitions')
