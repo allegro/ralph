@@ -39,3 +39,19 @@ class TransitionAdminTest(ClientMixin, ReloadUrlsMixin, TransitionTestCase):
             Order, 'custom template test',
             template_name='test.html'
         )
+
+    def test_success_url_should_redirect(self):
+        success_url = 'http://test.com/foo/bar/'
+        _, transition, _ = self._create_transition(
+            Order, 'packing', ['pack'], source=[OrderStatus.new.id],
+            target=OrderStatus.to_send.id,
+            success_url=success_url,
+        )
+        order = Order.objects.create()
+        transition_url = reverse(
+            'admin:tests_order_transition',
+            args=(order.pk, transition.pk,)
+        )
+        self.login_as_user()
+        response = self.client.post(transition_url)
+        self.assertEqual(response.url, success_url)
