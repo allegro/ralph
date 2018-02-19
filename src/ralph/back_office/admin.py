@@ -73,6 +73,8 @@ class BackOfficeAssetAdminForm(RalphAdmin.form):
             settings.BACKOFFICE_HOSTNAME_FIELD_READONLY
         ):
             self.fields['hostname'].widget.attrs['readonly'] = True
+            # backward compatibility
+            self.fields['service_env'].required = False
 
 
 @register(BackOfficeAsset)
@@ -125,14 +127,14 @@ class BackOfficeAssetAdmin(
     ]
     raw_id_fields = [
         'model', 'user', 'owner', 'region', 'warehouse',
-        'property_of', 'budget_info', 'office_infrastructure'
+        'property_of', 'budget_info', 'office_infrastructure', 'service_env'
     ]
     resource_class = resources.BackOfficeAssetResource
     bulk_edit_list = [
         'licences', 'status', 'barcode', 'imei', 'hostname', 'model',
         'purchase_order', 'user', 'owner', 'warehouse', 'sn', 'region',
         'property_of', 'remarks', 'invoice_date', 'invoice_no', 'provider',
-        'task_url', 'depreciation_rate', 'price', 'order_no',
+        'task_url', 'service_env', 'depreciation_rate', 'price', 'order_no',
         'depreciation_end_date', 'tags'
     ]
     bulk_edit_no_fillable = ['barcode', 'sn', 'imei', 'hostname']
@@ -149,7 +151,8 @@ class BackOfficeAssetAdmin(
             'fields': (
                 'hostname', 'model', 'barcode', 'sn', 'imei', 'niw', 'status',
                 'warehouse', 'location', 'region', 'loan_end_date', 'remarks',
-                'tags', 'property_of', 'task_url', 'office_infrastructure'
+                'tags', 'property_of', 'task_url', 'office_infrastructure',
+                'service_env'
             )
         }),
         (_('User Info'), {
