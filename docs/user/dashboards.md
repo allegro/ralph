@@ -121,3 +121,16 @@ The filter above limit query to objects which created from one year ago to now. 
 
 <!-- (TODO(mkurek): describe limit, sort) -->
 <!-- (TODO(aadamski): describe aggregate functions) -->
+
+## REST API
+You can also fetch data via REST API. Examples:
+
+```
+# get all graphs
+curl https://<YOUR-RALPH-URL>/api/graph/ | python -m json.tool
+
+# get details of graph
+curl https://<YOUR-RALPH-URL>/api/graph/1/ | python -m json.tool
+```
+
+All endpoints are read only.
