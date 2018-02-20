@@ -749,6 +749,19 @@ class DataCenterAsset(
                 except DataCenterAsset.securityscan.RelatedObjectDoesNotExist:
                     pass
 
+    @classmethod
+    @transition_action(
+        verbose_name=_('Cleanup scm status'),
+    )
+    def cleanup_scm_statuscheck(cls, instances, **kwargs):
+        with transaction.atomic():
+            for instance in instances:
+                try:
+                    instance.scmstatuscheck.delete()
+                except DataCenterAsset.scmstatuscheck.\
+                        RelatedObjectDoesNotExist:
+                    pass
+
 
 class Connection(AdminAbsoluteUrlMixin, models.Model):
     outbound = models.ForeignKey(
