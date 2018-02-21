@@ -26,6 +26,7 @@ from ralph.admin.sites import ralph_site
 from ralph.admin.widgets import AutocompleteWidget
 from ralph.assets.models.assets import Asset, NamedMixin
 from ralph.assets.models.choices import AssetSource
+from ralph.assets.models.components import Ethernet
 from ralph.assets.utils import DNSaaSPublisherMixin, move_parents_models
 from ralph.back_office.models import BackOfficeAsset, Warehouse
 from ralph.data_center.models.choices import (
@@ -50,6 +51,30 @@ VALID_SLOT_NUMBER_FORMAT = re.compile('^([1-9][A,B]?|1[0-6][A,B]?)$')
 ACCESSORY_DATA = [
     'brush', 'patch_panel_fc', 'patch_panel_utp', 'organizer', 'power_socket'
 ]
+
+
+def assign_additional_hostname_choices(actions, objects):
+    """
+    Generate choices with networks common for each object.
+
+    Args:
+        actions: Transition action list
+        objects: Django models objects
+
+    Returns:
+        list of tuples with available network choices
+    """
+    network_environments = []
+    networks = []
+    for obj in objects:
+        network_environments.append(
+            set(obj._get_available_network_environments())
+        )
+    network_environments = set.intersection(*network_environments)
+    for environment in network_environments:
+        for network in environment.network_set.all():
+            networks.append(network)
+    return [(str(net.pk), net) for net in networks]
 
 
 class Gap(object):
@@ -761,6 +786,33 @@ class DataCenterAsset(
                 except DataCenterAsset.scmstatuscheck.\
                         RelatedObjectDoesNotExist:
                     pass
+
+    @classmethod
+    @transition_action(
+        verbose_name=_('Assign additional IP and hostname pair'),
+        form_fields={
+            'network_pk': {
+                'field': forms.ChoiceField(
+                    label=_('Select network')
+                ),
+                'choices': assign_additional_hostname_choices,
+                'exclude_from_history': True,
+            },
+        },
+    )
+    def assign_additional_hostname(cls, instances, network_pk, **kwargs):
+        """
+        Assign new hostname for instances based on selected network.
+        """
+        network = Network.objects.get(pk=network_pk)
+        env = network.network_environment
+        with transaction.atomic():
+            for instance in instances:
+                ethernet = Ethernet.objects.create(base_object=instance)
+                ethernet.ipaddress = network.issue_next_free_ip()
+                ethernet.ipaddress.hostname = env.issue_next_free_hostname()
+                ethernet.ipaddress.save()
+                ethernet.save()
 
 
 class Connection(AdminAbsoluteUrlMixin, models.Model):
