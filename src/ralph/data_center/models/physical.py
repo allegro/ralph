@@ -64,17 +64,14 @@ def assign_additional_hostname_choices(actions, objects):
     Returns:
         list of tuples with available network choices
     """
-    network_environments = []
     networks = []
     for obj in objects:
-        network_environments.append(
-            set(obj._get_available_network_environments())
+        networks.append(
+            set(obj._get_available_networks())
         )
-    network_environments = set.intersection(*network_environments)
-    for environment in network_environments:
-        for network in environment.network_set.all():
-            networks.append(network)
-    return [(str(net.pk), net) for net in networks]
+    networks = set.intersection(*networks)
+    choices = [(str(net.pk), net) for net in networks]
+    return choices
 
 
 class Gap(object):

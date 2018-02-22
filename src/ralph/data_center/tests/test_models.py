@@ -6,7 +6,8 @@ from ralph.accounts.tests.factories import RegionFactory
 from ralph.back_office.models import BackOfficeAsset
 from ralph.back_office.tests.factories import WarehouseFactory
 from ralph.data_center.models.choices import DataCenterAssetStatus, Orientation
-from ralph.data_center.models.physical import DataCenterAsset
+from ralph.data_center.models.physical import DataCenterAsset, \
+    assign_additional_hostname_choices
 from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.data_center.tests.factories import (
     ClusterFactory,
@@ -33,6 +34,7 @@ class DataCenterAssetTest(RalphTestCase):
         self.dc_asset_2 = DataCenterAssetFactory(
             parent=self.dc_asset,
         )
+        self.dc_asset_3 = DataCenterAssetFactory()
 
     def test_convert_to_backoffice_asset(self):
         dc_asset = DataCenterAssetFactory()
@@ -368,7 +370,7 @@ class DataCenterAssetTest(RalphTestCase):
 
     def test_get_autocomplete_queryset(self):
         queryset = DataCenterAsset.get_autocomplete_queryset()
-        self.assertEquals(1, queryset.count())
+        self.assertEquals(2, queryset.count())
 
     # =========================================================================
     # management_ip
@@ -419,6 +421,34 @@ class DataCenterAssetTest(RalphTestCase):
         self.assertEqual(self.dc_asset.management_ip, '10.20.30.40')
         with self.assertRaises(ValidationError):
             self.dc_asset.management_ip = '10.20.30.42'
+
+    def test_should_return_only_common_networks(self):
+        rack100 = RackFactory()
+        rack101 = RackFactory()
+        rack_100_net = NetworkFactory(address='10.0.100.0/24')
+        rack_101_net = NetworkFactory(address='10.0.101.0/24')
+        common_net = NetworkFactory(address='10.0.0.0/24')
+        rack_100_net.racks = [rack100]
+        rack_101_net.racks = [rack101]
+        common_net.racks = [rack100, rack101]
+        self.dc_asset_2.rack = rack100
+        self.dc_asset_3.rack = rack101
+
+        rack_100_result = assign_additional_hostname_choices(
+            None, [self.dc_asset_2]
+        )
+        common_result = assign_additional_hostname_choices(
+            None, [self.dc_asset_2, self.dc_asset_3]
+        )
+        expected_rack100_result = [
+            (str(rack_100_net.pk), rack_100_net),
+            (str(common_net.pk), common_net)
+        ]
+        expected_common_result = [(str(common_net.pk), common_net)]
+        self.assertEqual(rack_100_result, expected_rack100_result)
+        self.assertEqual(len(rack_100_result), 2)
+        self.assertEqual(common_result, expected_common_result)
+        self.assertEqual(len(common_result), 1)
 
 
 @ddt
