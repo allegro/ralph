@@ -41,7 +41,7 @@ def get_user_equipment_to_accept_tile_data(user):
         return None
     return {
         'class': 'equipment-to-accept',
-        'label': _('Equipments to accept'),
+        'label': _('For release'),
         'count': assets_to_accept_count,
         'url': get_acceptance_url(user),
     }

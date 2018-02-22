@@ -104,6 +104,12 @@
         align-items: center;
         color: #fff;
         .category {
+            @media only screen and (orientation: portrait) {
+                & {
+                    flex: 50%;
+                    max-width: 50%;
+                }
+            }
             flex: 33%;
             max-width: 33%;
             padding-left: 5px;
