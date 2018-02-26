@@ -6,8 +6,10 @@ from ralph.accounts.tests.factories import RegionFactory
 from ralph.back_office.models import BackOfficeAsset
 from ralph.back_office.tests.factories import WarehouseFactory
 from ralph.data_center.models.choices import DataCenterAssetStatus, Orientation
-from ralph.data_center.models.physical import DataCenterAsset, \
-    assign_additional_hostname_choices
+from ralph.data_center.models.physical import (
+    assign_additional_hostname_choices,
+    DataCenterAsset
+)
 from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.data_center.tests.factories import (
     ClusterFactory,
