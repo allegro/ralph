@@ -592,7 +592,11 @@ class BackOfficeAsset(Regionalizable, Asset):
             }
         },
         return_attachment=True,
-        run_after=['assign_owner', 'assign_user']
+        run_after=[
+            'assign_owner',
+            'assign_user',
+            'assign_requester_as_an_owner',
+        ]
     )
     def release_report(cls, instances, requester, **kwargs):
         return cls._generate_report(
