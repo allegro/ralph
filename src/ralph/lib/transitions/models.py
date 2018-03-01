@@ -292,6 +292,7 @@ def run_transition(
                 obj=instance,
                 transition=transition,
                 data=data,
+                transition_id=transition.id,
                 **kwargs
             )
             job_ids.append(job_id)
@@ -305,6 +306,7 @@ def run_transition(
                 field=field,
                 data=data,
                 requester=requester,
+                transition_id=transition.id,
                 **kwargs
             )
             return success, attachment

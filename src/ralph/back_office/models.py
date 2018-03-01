@@ -34,6 +34,7 @@ from ralph.lib.mixins.models import (
     NamedMixin,
     TimeStampMixin
 )
+from ralph.lib.transitions.conf import get_report_name_for_transition_id
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
 from ralph.licences.models import BaseObjectLicence, Licence
@@ -526,6 +527,7 @@ class BackOfficeAsset(Regionalizable, Asset):
                 'now': datetime.datetime.now(),
                 'logged_user': obj_to_dict(requester),
                 'affected_user': obj_to_dict(instances[0].user),
+                'owner': obj_to_dict(instances[0].owner),
                 'assets': data_instances,
             }
         )
@@ -572,7 +574,9 @@ class BackOfficeAsset(Regionalizable, Asset):
         pass
 
     @classmethod
-    @transition_action()
+    @transition_action(
+        run_after=['release_report']
+    )
     def assign_requester_as_an_owner(cls, instances, requester, **kwargs):
         """Assign current user as an owner"""
         for instance in instances:
@@ -594,9 +598,10 @@ class BackOfficeAsset(Regionalizable, Asset):
         return_attachment=True,
         run_after=['assign_owner', 'assign_user']
     )
-    def release_report(cls, instances, requester, **kwargs):
+    def release_report(cls, instances, requester, transition_id, **kwargs):
+        report_name = get_report_name_for_transition_id(transition_id)
         return cls._generate_report(
-            instances=instances, name='release', requester=requester,
+            instances=instances, name=report_name, requester=requester,
             language=kwargs['report_language']
         )
 

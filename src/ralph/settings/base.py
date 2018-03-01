@@ -388,6 +388,16 @@ ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG = {
         'ACCEPT_ASSETS_FOR_CURRENT_USER_BACK_OFFICE_ACCEPT_STATUS', 2
     )
 }
+RELEASE_REPORT_CONFIG = {
+    # report with name 'release' is by default
+    'DEFAULT_REPORT': os.environ.get(
+        'RELEASE_REPORT_CONFIG_DEFAULT_REPORT', 'release'
+    ),
+    # map transition id to different report
+    'REPORTS_MAPPER': json.loads(
+        os.environ.get('RELEASE_REPORT_CONFIG_REPORTS_MAPPER', '{}')
+    )
+}
 
 MAP_IMPORTED_ID_TO_NEW_ID = False
 
