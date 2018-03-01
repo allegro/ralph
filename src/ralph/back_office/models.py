@@ -596,11 +596,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             }
         },
         return_attachment=True,
-        run_after=[
-            'assign_owner',
-            'assign_user',
-            'assign_requester_as_an_owner',
-        ]
+        run_after=['assign_owner', 'assign_user']
     )
     def release_report(cls, instances, requester, transition_id, **kwargs):
         report_name = get_report_name_for_transition_id(transition_id)
