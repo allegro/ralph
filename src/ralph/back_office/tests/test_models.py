@@ -3,7 +3,9 @@ from datetime import datetime
 from unittest.mock import patch
 
 from dj.choices import Country
+from django.contrib.auth.models import Permission
 from django.contrib.messages.storage.fallback import FallbackStorage
+from django.core.urlresolvers import reverse
 from django.test import RequestFactory, SimpleTestCase
 from django.utils import timezone
 
@@ -35,6 +37,7 @@ from ralph.licences.tests.factories import LicenceFactory
 from ralph.reports.factories import ReportTemplateFactory
 from ralph.tests import RalphTestCase
 from ralph.tests.factories import UserFactory
+from ralph.tests.mixins import ClientMixin
 
 
 class HostnameGeneratorTests(RalphTestCase):
@@ -439,7 +442,6 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
                 requester=self.user_pl
             )
 
-
     @patch.object(ExternalService, "run")
     def test_a_report_is_generated(self, mock_method):
         GENERATED_FILE_CONTENT = REPORT_TEMPLATE = b'some-content'
@@ -468,3 +470,39 @@ class CheckerTestCase(SimpleTestCase):
         errors = _check_assets_owner(instances=[], requester=None)
         self.assertTrue('__all__' in errors)
 
+
+class BackOfficeAssetFormTest(TransitionTestCase, ClientMixin):
+    def test_bo_admin_form_works_with_limited_permissions(self):
+        passwd = 'ralph'
+
+        asset = BackOfficeAssetFactory()
+        user = UserFactory()
+
+        user.is_superuse = False
+        user.is_staff = False
+        user.set_password(passwd)
+
+        user.save()
+
+        # Grant all permissions to the user
+        permissions = Permission.objects.exclude(
+            codename__in=[
+                'view_backofficeasset_hostname_field',
+                'view_backofficeasset_service_env_field',
+                'change_backofficeasset_hostname_field',
+                'change_backofficeasset_service_env_field',
+            ]
+        ).all()
+
+        for p in permissions:
+            user.user_permissions.add(p)
+
+        self.login_as_user(user=user, password=passwd)
+
+        url = reverse(
+            'admin:back_office_backofficeasset_change',
+            args=(asset.pk,)
+        )
+        resp = self.client.get(url)
+
+        self.assertEqual(resp.status_code, 200)
