@@ -3,8 +3,10 @@ from datetime import datetime
 from unittest.mock import patch
 
 from dj.choices import Country
+from django.contrib.auth.models import Permission
 from django.contrib.messages.storage.fallback import FallbackStorage
-from django.test import RequestFactory, SimpleTestCase
+from django.core.urlresolvers import reverse
+from django.test import override_settings, RequestFactory, SimpleTestCase
 from django.utils import timezone
 
 from ralph.accounts.tests.factories import RegionFactory
@@ -35,6 +37,7 @@ from ralph.licences.tests.factories import LicenceFactory
 from ralph.reports.factories import ReportTemplateFactory
 from ralph.tests import RalphTestCase
 from ralph.tests.factories import UserFactory
+from ralph.tests.mixins import ClientMixin
 
 
 class HostnameGeneratorTests(RalphTestCase):
@@ -439,7 +442,6 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
                 requester=self.user_pl
             )
 
-
     @patch.object(ExternalService, "run")
     def test_a_report_is_generated(self, mock_method):
         GENERATED_FILE_CONTENT = REPORT_TEMPLATE = b'some-content'
@@ -468,3 +470,62 @@ class CheckerTestCase(SimpleTestCase):
         errors = _check_assets_owner(instances=[], requester=None)
         self.assertTrue('__all__' in errors)
 
+
+class BackOfficeAssetFormTest(TransitionTestCase, ClientMixin):
+    def test_bo_admin_form_wo_access_to_service_env_and_hostname(self):
+        passwd = 'ralph'
+
+        asset = BackOfficeAssetFactory()
+        user = UserFactory()
+
+        user.is_superuser = False
+        user.is_staff = True
+        user.set_password(passwd)
+
+        user.save()
+
+        # Grant all permissions to the user
+        permissions = Permission.objects.exclude(
+            codename__in=[
+                'view_backofficeasset_hostname_field',
+                'view_backofficeasset_service_env_field',
+                'change_backofficeasset_hostname_field',
+                'change_backofficeasset_service_env_field',
+            ]
+        ).all()
+
+        user.user_permissions.add(*permissions)
+        user.regions.add(asset.region)
+
+        self.assertTrue(self.login_as_user(user=user, password=passwd))
+
+        url = reverse(
+            'admin:back_office_backofficeasset_change',
+            args=(asset.pk,)
+        )
+        resp = self.client.get(url, follow=True)
+
+        self.assertEqual(resp.status_code, 200)
+
+        self.assertIn('model', resp.context['adminform'].form.fields)
+        self.assertNotIn('hostname', resp.context['adminform'].form.fields)
+        self.assertNotIn('service_env', resp.context['adminform'].form.fields)
+
+    @override_settings(BACKOFFICE_HOSTNAME_FIELD_READONLY=1)
+    def test_bo_admin_form_with_readonly_hostname(self):
+        self.assertTrue(self.login_as_user())
+        asset = BackOfficeAssetFactory()
+
+        url = reverse(
+            'admin:back_office_backofficeasset_change',
+            args=(asset.pk,)
+        )
+        resp = self.client.get(url, follow=True)
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('hostname', resp.context['adminform'].form.fields)
+        self.assertTrue(
+            resp.context['adminform'].form.fields['hostname'].widget.attrs.get(
+                'readonly'
+            )
+        )
