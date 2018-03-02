@@ -6,7 +6,7 @@ from dj.choices import Country
 from django.contrib.auth.models import Permission
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.core.urlresolvers import reverse
-from django.test import RequestFactory, SimpleTestCase
+from django.test import override_settings, RequestFactory, SimpleTestCase
 from django.utils import timezone
 
 from ralph.accounts.tests.factories import RegionFactory
@@ -472,14 +472,14 @@ class CheckerTestCase(SimpleTestCase):
 
 
 class BackOfficeAssetFormTest(TransitionTestCase, ClientMixin):
-    def test_bo_admin_form_works_with_limited_permissions(self):
+    def test_bo_admin_form_wo_access_to_service_env_and_hostname(self):
         passwd = 'ralph'
 
         asset = BackOfficeAssetFactory()
         user = UserFactory()
 
-        user.is_superuse = False
-        user.is_staff = False
+        user.is_superuser = False
+        user.is_staff = True
         user.set_password(passwd)
 
         user.save()
@@ -494,15 +494,38 @@ class BackOfficeAssetFormTest(TransitionTestCase, ClientMixin):
             ]
         ).all()
 
-        for p in permissions:
-            user.user_permissions.add(p)
+        user.user_permissions.add(*permissions)
+        user.regions.add(asset.region)
 
-        self.login_as_user(user=user, password=passwd)
+        self.assertTrue(self.login_as_user(user=user, password=passwd))
 
         url = reverse(
             'admin:back_office_backofficeasset_change',
             args=(asset.pk,)
         )
-        resp = self.client.get(url)
+        resp = self.client.get(url, follow=True)
 
         self.assertEqual(resp.status_code, 200)
+
+        self.assertIn('model', resp.context['adminform'].form.fields)
+        self.assertNotIn('hostname', resp.context['adminform'].form.fields)
+        self.assertNotIn('service_env', resp.context['adminform'].form.fields)
+
+    @override_settings(BACKOFFICE_HOSTNAME_FIELD_READONLY=1)
+    def test_bo_admin_form_with_readonly_hostname(self):
+        self.assertTrue(self.login_as_user())
+        asset = BackOfficeAssetFactory()
+
+        url = reverse(
+            'admin:back_office_backofficeasset_change',
+            args=(asset.pk,)
+        )
+        resp = self.client.get(url, follow=True)
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('hostname', resp.context['adminform'].form.fields)
+        self.assertTrue(
+            resp.context['adminform'].form.fields['hostname'].widget.attrs.get(
+                'readonly'
+            )
+        )

@@ -74,9 +74,10 @@ class BackOfficeAssetAdminForm(RalphAdmin.form):
         ):
             self.fields['hostname'].widget.attrs['readonly'] = True
             # backward compatibility
-            service_env_field = self.fields.get('service_env', None)
-            if service_env_field:
-                service_env_field.required = False
+
+        service_env_field = self.fields.get('service_env', None)
+        if service_env_field:
+            service_env_field.required = False
 
 
 @register(BackOfficeAsset)
