@@ -5,15 +5,7 @@ from django.db.models import Count, Prefetch
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphAdminForm, RalphTabularInline, register
-from ralph.admin.filters import (
-    BaseObjectHostnameFilter,
-    IPFilter,
-    MacAddressFilter,
-    RelatedAutocompleteFieldListFilter,
-    TagsListFilter,
-    TreeRelatedAutocompleteFilterWithDescendants,
-    VulnerabilitesByPatchDeadline
-)
+from ralph.admin.filters import BaseObjectHostnameFilter, TagsListFilter
 from ralph.assets.models import BaseObject
 from ralph.assets.models.components import Ethernet
 from ralph.assets.views import ComponentsAdminView, RalphDetailViewAdmin
@@ -21,6 +13,7 @@ from ralph.configuration_management.views import (
     SCMCheckInfo,
     SCMStatusCheckInChangeListMixin
 )
+from ralph.data_center.admin import generate_list_filter_with_common_fields
 from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.deployment.mixins import ActiveDeploymentMessageMixin
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
@@ -105,17 +98,12 @@ class VirtualServerAdmin(
 ):
     form = VirtualServerForm
     search_fields = ['hostname', 'sn', 'ethernet_set__ipaddress__hostname']
-    list_filter = [
-        BaseObjectHostnameFilter, 'sn', 'service_env', IPFilter,
-        'parent', TagsListFilter, MacAddressFilter,
-        'configuration_path__path',
-        ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
-        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),  # noqa
-        (
-            'securityscan__vulnerabilities', RelatedAutocompleteFieldListFilter
-        ),
-        'securityscan__is_patched',
-    ]
+    list_filter_prefix = [BaseObjectHostnameFilter]
+    list_filter_postfix = ['sn', 'parent', TagsListFilter]
+    list_filter = generate_list_filter_with_common_fields(
+        list_filter_prefix,
+        list_filter_postfix
+    )
     list_display = [
         'hostname', 'type', 'sn', 'service_env', 'configuration_path',
         'get_parent', 'scan_status', 'scm_status_check'
@@ -255,17 +243,14 @@ class CloudHostAdmin(
                     'get_cloudproject', 'cloudflavor_name', 'host_id',
                     'created', 'image_name', 'get_tags', 'scan_status',
                     'scm_status_check']
-    list_filter = [
-        BaseObjectHostnameFilter, 'cloudprovider', 'service_env',
-        'cloudflavor', TagsListFilter, 'hypervisor',
-        'configuration_path__path',
-        ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
-        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),  # noqa
-        (
-            'securityscan__vulnerabilities', RelatedAutocompleteFieldListFilter
-        ),
-        'securityscan__is_patched',
+    list_filter_prefix = [BaseObjectHostnameFilter]
+    list_filter_postfix = [
+        'cloudprovider', 'cloudflavor', TagsListFilter, 'hypervisor'
     ]
+    list_filter = generate_list_filter_with_common_fields(
+        list_filter_prefix,
+        list_filter_postfix
+    )
     list_select_related = [
         'cloudflavor', 'cloudprovider', 'parent__cloudproject',
         'service_env__service', 'service_env__environment'
