@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 
 from ralph.accounts.tests.factories import RegionFactory, UserFactory
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
+from ralph.lib.transitions.tests import TransitionTestCase
 from ralph.licences.models import BaseObjectLicence, Licence, LicenceUser
 from ralph.licences.tests.factories import LicenceFactory
 from ralph.tests import RalphTestCase
+from ralph.tests.mixins import ClientMixin
 
 
 class BaseObjectLicenceCleanTest(RalphTestCase):
@@ -61,3 +64,23 @@ class LicenceTest(RalphTestCase):
                 ),
                 [self.licence_2.pk]
             )
+
+
+class LicenceFormTest(TransitionTestCase, ClientMixin):
+    def test_service_env_not_required(self):
+        self.assertTrue(self.login_as_user())
+        licence = LicenceFactory()
+
+        url = reverse(
+            'admin:licences_licence_change',
+            args=(licence.pk,)
+        )
+        resp = self.client.get(url, follow=True)
+        self.assertEqual(resp.status_code, 200)
+
+        form = resp.context['adminform'].form
+
+        self.assertIn('service_env', form.fields)
+        self.assertFalse(
+            form.fields['service_env'].required
+        )
