@@ -49,6 +49,19 @@ class LicenceUserView(RalphDetailViewAdmin):
     inlines = [LicenceUserInline]
 
 
+class LicenseAdminForm(RalphAdmin.form):
+    """
+    Service_env is not required for Licenses.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # backward compatibility
+        service_env_field = self.fields.get('service_env', None)
+        if service_env_field:
+            service_env_field.required = False
+
+
 @register(Licence)
 class LicenceAdmin(
     CustomFieldValueAdminMixin,
@@ -60,6 +73,7 @@ class LicenceAdmin(
 
     """Licence admin class."""
     actions = ['bulk_edit_action']
+    form = LicenseAdminForm
     change_views = [
         BaseObjectLicenceView,
         LicenceUserView,
@@ -84,13 +98,14 @@ class LicenceAdmin(
         'licence_type', 'software', 'region', 'property_of', 'manufacturer'
     ]
     raw_id_fields = [
-        'software', 'manufacturer', 'budget_info', 'office_infrastructure'
+        'software', 'manufacturer', 'budget_info', 'office_infrastructure',
+        'service_env',
     ]
     bulk_edit_list = [
         'manufacturer', 'licence_type', 'property_of', 'software',
         'number_bought', 'invoice_no', 'invoice_date', 'valid_thru',
-        'order_no', 'price', 'accounting_id', 'provider', 'niw', 'sn',
-        'remarks', 'budget_info', 'region'
+        'order_no', 'price', 'accounting_id', 'provider', 'service_env', 'niw',
+        'sn', 'remarks', 'budget_info', 'region'
     ]
     resource_class = resources.LicenceResource
     _invoice_report_name = 'invoice-licence'
@@ -112,7 +127,7 @@ class LicenceAdmin(
                 'order_no', 'invoice_no', 'price', 'invoice_date',
                 'number_bought', 'used', 'free', 'accounting_id',
                 'budget_info', 'provider', 'office_infrastructure',
-                'property_of'
+                'property_of', 'service_env'
             )
         }),
     )

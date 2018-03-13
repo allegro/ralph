@@ -71,6 +71,38 @@ from ralph.security.views import ScanStatusInChangeListMixin, SecurityInfo
 from ralph.supports.models import BaseObjectsSupport
 
 
+def generate_list_filter_with_common_fields(
+    prefix=None, postfix=None
+):
+    result = []
+    if type(prefix) == list:
+        result.extend(prefix)
+    result.extend(
+        [
+            'service_env',
+            'configuration_path__path',
+            (
+                'configuration_path__module',
+                TreeRelatedAutocompleteFilterWithDescendants
+            ),
+            MacAddressFilter,
+            IPFilter,
+            (
+                'securityscan__vulnerabilities__patch_deadline',
+                VulnerabilitesByPatchDeadline
+            ),
+            (
+                'securityscan__vulnerabilities',
+                filters.RelatedAutocompleteFieldListFilter
+            ),
+            'securityscan__is_patched',
+        ]
+    )
+    if type(postfix) == list:
+        result.extend(postfix)
+    return result
+
+
 class DCHostTypeListFilter(ChoicesListFilter):
     def __init__(self, *args, **kwargs):
         from ralph.data_center.models import Cluster, DataCenterAsset
@@ -393,25 +425,21 @@ class DataCenterAssetAdmin(
         'barcode', 'sn', 'hostname', 'invoice_no', 'order_no',
         'ethernet_set__ipaddress__address', 'ethernet_set__ipaddress__hostname'
     ]
-    list_filter = [
-        'status', 'barcode', 'sn', 'hostname', 'invoice_no', 'invoice_date',
+    list_filter_prefix = ['hostname']
+    list_filter_postfix = [
+        'invoice_no', 'invoice_date', 'status', 'barcode', 'sn',
         'order_no', 'model__name',
-        ('model__category', RelatedAutocompleteFieldListFilter), 'service_env',
-        'configuration_path__path',
-        ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
-        MacAddressFilter,
+        ('model__category', RelatedAutocompleteFieldListFilter),
         'depreciation_end_date', 'force_depreciation', 'remarks',
         'budget_info', 'rack', 'rack__server_room',
         'rack__server_room__data_center', 'position', 'property_of',
-        LiquidatedStatusFilter, IPFilter, TagsListFilter,
-        'fibrechannelcard_set__wwn',
-        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),  # noqa
-        (
-            'securityscan__vulnerabilities',
-            filters.RelatedAutocompleteFieldListFilter
-        ),
-        'securityscan__is_patched',
+        LiquidatedStatusFilter, TagsListFilter,
+        'fibrechannelcard_set__wwn'
     ]
+    list_filter = generate_list_filter_with_common_fields(
+        list_filter_prefix,
+        list_filter_postfix
+    )
     date_hierarchy = 'created'
     list_select_related = [
         'model',
@@ -641,21 +669,13 @@ class DCHostAdmin(
     ]
     # TODO: sn
     # TODO: hostname, DC
-    list_filter = [
-        DCHostHostnameFilter,
-        'service_env',
-        'configuration_path__path',
-        ('configuration_path__module', TreeRelatedAutocompleteFilterWithDescendants),  # noqa
-        ('content_type', DCHostTypeListFilter),
-        MacAddressFilter,
-        IPFilter,
-        ('securityscan__vulnerabilities__patch_deadline', VulnerabilitesByPatchDeadline),  # noqa
-        (
-            'securityscan__vulnerabilities',
-            filters.RelatedAutocompleteFieldListFilter
-        ),
-        'securityscan__is_patched',
-    ]
+    list_filter_prefix = [DCHostHostnameFilter]
+    list_filter_postfix = [('content_type', DCHostTypeListFilter,)]
+    list_filter = generate_list_filter_with_common_fields(
+        list_filter_prefix,
+        list_filter_postfix
+    )
+
     list_select_related = [
         'content_type',
         'configuration_path',
@@ -663,6 +683,7 @@ class DCHostAdmin(
         'service_env__environment',
         'service_env__service',
     ]
+
     resource_class = resources.DCHostResource
 
     def has_add_permission(self, request):
