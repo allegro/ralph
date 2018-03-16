@@ -14,6 +14,8 @@ class GraphSerializerDetail(RalphAPISerializer):
 
     def to_representation(self, instance):
         return {
+            'name': instance.name,
+            'description': instance.description,
             'params': instance.params,
             'data': instance.get_data(),
         }
