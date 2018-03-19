@@ -144,8 +144,6 @@ DATABASES = {
         'ATOMIC_REQUESTS': True,
         'TEST': {
             'NAME': 'test_ralph_ng',
-            'CHARSET': 'utf8',
-            'COLLATION': 'utf8_general_ci',
         }
     }
 }
