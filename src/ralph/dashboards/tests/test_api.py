@@ -19,6 +19,8 @@ class GraphAPITestCase(RalphAPITestCase):
         self.assertEqual(
             response.data,
             {
+                'name': graph.name,
+                'description': graph.description,
                 'data': graph.get_data(),
                 'params': graph.params
             }

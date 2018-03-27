@@ -14,6 +14,11 @@ if TEST_DB_ENGINE == 'psql':
         'PORT': os.environ.get('DATABASE_PORT', 5432),
         'OPTIONS': {},
     })
+elif TEST_DB_ENGINE == 'mysql':
+    DATABASES['default']['TEST'].update({
+        'CHARSET': 'utf8',
+        'COLLATION': 'utf8_general_ci',
+    })
 
 INSTALLED_APPS += (
     'ralph.lib.mixins',
