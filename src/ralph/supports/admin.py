@@ -32,6 +32,19 @@ class BaseObjectSupportView(RalphDetailViewAdmin):
     inlines = [BaseObjectSupportInline]
 
 
+class SupportAdminForm(RalphAdmin.form):
+    """
+    Service_env is not required for Supports.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # backward compatibility
+        service_env_field = self.fields.get('service_env', None)
+        if service_env_field:
+            service_env_field.required = False
+
+
 @register(Support)
 class SupportAdmin(
     AttachmentsMixin,
@@ -44,6 +57,7 @@ class SupportAdmin(
 
     change_views = [BaseObjectSupportView]
     actions = ['bulk_edit_action']
+    form = SupportAdminForm
     search_fields = [
         'name', 'serial_no', 'contract_id', 'description', 'remarks'
     ]
@@ -54,25 +68,28 @@ class SupportAdmin(
     ]
     date_hierarchy = 'created'
     list_display = [
-        'support_type', 'contract_id', 'name', 'serial_no', 'date_from',
-        'date_to', 'created', 'remarks', 'description'
+        'support_type', 'contract_id', 'name', 'serial_no', 'service_env',
+        'date_from', 'date_to', 'created', 'remarks', 'description'
     ]
     bulk_edit_list = [
         'status', 'asset_type', 'contract_id', 'description', 'price',
         'date_from', 'date_to', 'escalation_path', 'contract_terms',
-        'sla_type', 'producer', 'supplier', 'serial_no', 'invoice_no',
-        'invoice_date', 'period_in_months', 'property_of', 'budget_info',
-        'support_type'
+        'sla_type', 'producer', 'supplier', 'serial_no', 'service_env',
+        'invoice_no', 'invoice_date', 'period_in_months', 'property_of',
+        'budget_info', 'support_type'
     ]
-    list_select_related = ['support_type']
+    list_select_related = [
+        'support_type', 'service_env', 'service_env__service',
+        'service_env__environment'
+    ]
     resource_class = resources.SupportResource
-    raw_id_fields = ['budget_info', 'region', 'support_type']
+    raw_id_fields = ['budget_info', 'region', 'support_type', 'service_env']
     fieldsets = (
         (_('Basic info'), {
             'fields': (
                 'support_type', 'name', 'status', 'producer', 'description',
                 'date_from', 'date_to', 'serial_no', 'escalation_path',
-                'region', 'remarks',
+                'region', 'remarks', 'service_env'
             )
         }),
         (_('Contract info'), {

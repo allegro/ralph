@@ -3,8 +3,9 @@ from django.core.urlresolvers import reverse
 from django.test import RequestFactory, TestCase
 
 from ralph.accounts.tests.factories import RegionFactory
+from ralph.assets.tests.factories import ServiceEnvironmentFactory
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
-from ralph.licences.models import BaseObjectLicence
+from ralph.licences.models import BaseObjectLicence, Licence
 from ralph.licences.tests.factories import LicenceFactory
 from ralph.tests.mixins import ClientMixin
 
@@ -19,6 +20,39 @@ class BaseObjectLicenceTest(ClientMixin, TestCase):
         self.licence = LicenceFactory(region=region_pl)
         self.bo_1 = BackOfficeAssetFactory(region=region_pl)
         self.bo_2 = BackOfficeAssetFactory(region=region_de)
+
+    def test_create_new_licence(self):
+        service_env = ServiceEnvironmentFactory()
+        data = {
+            'licence_type': self.licence.licence_type.id,
+            'software': self.licence.software.id,
+            'niw': '111',
+            'region': self.licence.region.id,
+            'price': 100,
+            'number_bought': 3,
+            'service_env': service_env.id,
+            'custom_fields-customfieldvalue-content_type-object_id-TOTAL_FORMS': 3,
+            'custom_fields-customfieldvalue-content_type-object_id-INITIAL_FORMS': 0,
+            'custom_fields-customfieldvalue-content_type-object_id-MIN_NUM_FORMS': 0,
+            'custom_fields-customfieldvalue-content_type-object_id-MAX_NUM_FORMS': 1000,
+        }
+
+        response = self.client.post(
+            reverse('admin:licences_licence_add'),
+            data=data,
+            follow=True
+        )
+        new_licence = Licence.objects.order_by('-created').first()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('errors', response.context_data)
+        self.assertEqual(new_licence.licence_type, self.licence.licence_type)
+        self.assertEqual(new_licence.software, self.licence.software)
+        self.assertEqual(new_licence.niw, '111')
+        self.assertEqual(new_licence.region, self.licence.region)
+        self.assertEqual(new_licence.price, 100)
+        self.assertEqual(new_licence.number_bought, 3)
+        self.assertEqual(new_licence.service_env, service_env)
 
     def test_add_base_object_licence_ok(self):
         data = {

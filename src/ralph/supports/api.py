@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.assets.api.serializers import (
+    ServiceEnvironmentSimpleSerializer,
     StrField,
     TypeFromContentTypeSerializerMixin
 )
@@ -36,17 +37,21 @@ class SupportSerializer(TypeFromContentTypeSerializerMixin, RalphAPISerializer):
     base_objects = serializers.HyperlinkedRelatedField(
         many=True, view_name='baseobject-detail', read_only=True
     )
+    service_env = ServiceEnvironmentSimpleSerializer()
 
     class Meta:
         model = Support
         depth = 1
-        exclude = ('content_type', 'service_env', 'configuration_path')
+        exclude = ('content_type', 'configuration_path')
 
 
 class SupportViewSet(RalphAPIViewSet):
     queryset = Support.objects.all()
     serializer_class = SupportSerializer
-    select_related = ['region', 'budget_info', 'support_type', 'property_of']
+    select_related = [
+        'region', 'budget_info', 'support_type', 'property_of', 'service_env',
+        'service_env__service', 'service_env__environment'
+    ]
     prefetch_related = ['tags', Prefetch(
         'base_objects', queryset=BaseObject.objects.all()
     )]
