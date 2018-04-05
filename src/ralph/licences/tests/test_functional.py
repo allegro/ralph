@@ -42,13 +42,12 @@ class BaseObjectLicenceTest(ClientMixin, TestCase):
             data=data,
             follow=True
         )
-        new_licence = Licence.objects.order_by('-created').first()
+        new_licence = Licence.objects.get(niw='111')
 
         self.assertEqual(response.status_code, 200)
         self.assertNotIn('errors', response.context_data)
         self.assertEqual(new_licence.licence_type, self.licence.licence_type)
         self.assertEqual(new_licence.software, self.licence.software)
-        self.assertEqual(new_licence.niw, '111')
         self.assertEqual(new_licence.region, self.licence.region)
         self.assertEqual(new_licence.price, 100)
         self.assertEqual(new_licence.number_bought, 3)
