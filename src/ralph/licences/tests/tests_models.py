@@ -84,3 +84,21 @@ class LicenceFormTest(TransitionTestCase, ClientMixin):
         self.assertFalse(
             form.fields['service_env'].required
         )
+
+    def test_depreciation_rate_not_required(self):
+        self.assertTrue(self.login_as_user())
+        licence = LicenceFactory()
+
+        url = reverse(
+            'admin:licences_licence_change',
+            args=(licence.pk,)
+        )
+        resp = self.client.get(url, follow=True)
+        self.assertEqual(resp.status_code, 200)
+
+        form = resp.context['adminform'].form
+
+        self.assertIn('depreciation_rate', form.fields)
+        self.assertFalse(
+            form.fields['depreciation_rate'].required
+        )
