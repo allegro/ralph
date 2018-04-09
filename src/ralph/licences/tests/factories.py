@@ -67,6 +67,7 @@ class LicenceFactory(DjangoModelFactory):
     order_no = factory.Sequence(lambda n: 'Order number ' + str(n))
     property_of = factory.SubFactory(AssetHolderFactory)
     office_infrastructure = factory.SubFactory(OfficeInfrastructureFactory)
+    depreciation_rate = '100.00'
 
     class Meta:
         model = Licence

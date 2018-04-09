@@ -194,6 +194,18 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
     price = models.DecimalField(
         max_digits=10, decimal_places=2, default=0, null=True, blank=True,
     )
+    depreciation_rate = models.DecimalField(
+        blank=True,
+        null=True,
+        decimal_places=2,
+        default=settings.DEFAULT_LICENCE_DEPRECIATION_RATE,
+        help_text=_(
+            'This value is in percentage.'
+            ' For example value: "100" means it depreciates during a year.'
+            ' Value: "25" means it depreciates during 4 years, and so on... .'
+        ),
+        max_digits=5,
+    )
     accounting_id = models.CharField(
         max_length=200,
         null=True,
