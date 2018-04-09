@@ -126,10 +126,10 @@ class LicenceAdmin(
         }),
         (_('Financial info'), {
             'fields': (
-                'order_no', 'invoice_no', 'price', 'invoice_date',
-                'number_bought', 'used', 'free', 'accounting_id',
-                'budget_info', 'provider', 'office_infrastructure',
-                'property_of'
+                'order_no', 'invoice_no', 'price', 'depreciation_rate',
+                'invoice_date', 'number_bought', 'used', 'free',
+                'accounting_id', 'budget_info', 'provider',
+                'office_infrastructure', 'property_of'
             )
         }),
     )

@@ -53,6 +53,9 @@ class LicenceAPITests(RalphAPITestCase):
         self.assertEqual(
             response.data['users'][0]['user']['id'], self.user1.id,
         )
+        self.assertEqual(
+            response.data['depreciation_rate'], self.licence1.depreciation_rate
+        )
 
     def test_get_licence_with_service_env(self):
         url = reverse('licence-detail', args=(self.licence4.id,))
