@@ -2,7 +2,10 @@
 from ralph.accounts.api_simple import SimpleRalphUserSerializer
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import ReversionHistoryAPISerializerMixin
-from ralph.assets.api.serializers import BaseObjectSimpleSerializer
+from ralph.assets.api.serializers import (
+    BaseObjectSimpleSerializer,
+    ServiceEnvironmentSimpleSerializer
+)
 from ralph.licences.models import (
     BaseObjectLicence,
     Licence,
@@ -48,11 +51,12 @@ class LicenceSerializer(BaseObjectSimpleSerializer):
     users = LicenceUserSerializer(
         many=True, read_only=True, source='licenceuser_set'
     )
+    service_env = ServiceEnvironmentSimpleSerializer()
 
     class Meta:
         model = Licence
         depth = 1
-        exclude = ('content_type', 'service_env', 'configuration_path')
+        exclude = ('content_type', 'configuration_path')
 
 
 class SoftwareSerializer(RalphAPISerializer):
@@ -85,7 +89,8 @@ class LicenceViewSet(RalphAPIViewSet):
     serializer_class = LicenceSerializer
     select_related = [
         'region', 'manufacturer', 'office_infrastructure', 'licence_type',
-        'software'
+        'software', 'service_env', 'service_env__service',
+        'service_env__environment'
     ]
     prefetch_related = [
         'tags', 'users', 'licenceuser_set__user',

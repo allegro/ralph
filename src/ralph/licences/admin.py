@@ -89,13 +89,14 @@ class LicenceAdmin(
     ]
     date_hierarchy = 'created'
     list_display = [
-        'niw', 'licence_type', 'software', 'manufacturer', 'invoice_date',
-        'invoice_no', 'valid_thru', 'created', 'region', 'property_of',
-        'number_bought', 'used', 'free'
+        'niw', 'licence_type', 'software', 'manufacturer', 'service_env',
+        'invoice_date', 'invoice_no', 'valid_thru', 'created', 'region',
+        'property_of', 'number_bought', 'used', 'free'
     ]
     readonly_fields = ['used', 'free']
     list_select_related = [
-        'licence_type', 'software', 'region', 'property_of', 'manufacturer'
+        'licence_type', 'software', 'region', 'property_of', 'manufacturer',
+        'service_env', 'service_env__service', 'service_env__environment'
     ]
     raw_id_fields = [
         'software', 'manufacturer', 'budget_info', 'office_infrastructure',
@@ -120,6 +121,7 @@ class LicenceAdmin(
             'fields': (
                 'licence_type', 'manufacturer', 'software', 'niw', 'sn',
                 'valid_thru', 'license_details', 'region', 'remarks',
+                'service_env'
             )
         }),
         (_('Financial info'), {
@@ -127,7 +129,7 @@ class LicenceAdmin(
                 'order_no', 'invoice_no', 'price', 'depreciation_rate',
                 'invoice_date', 'number_bought', 'used', 'free',
                 'accounting_id', 'budget_info', 'provider',
-                'office_infrastructure', 'property_of', 'service_env'
+                'office_infrastructure', 'property_of'
             )
         }),
     )

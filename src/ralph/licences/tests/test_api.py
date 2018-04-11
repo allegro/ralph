@@ -4,6 +4,7 @@ from rest_framework import status
 
 from ralph.accounts.tests.factories import RegionFactory
 from ralph.api.tests._base import RalphAPITestCase
+from ralph.assets.tests.factories import ServiceEnvironmentFactory
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
 from ralph.licences.models import BaseObjectLicence, Licence, LicenceUser
 from ralph.licences.tests.factories import LicenceFactory
@@ -21,6 +22,8 @@ class LicenceAPITests(RalphAPITestCase):
         BaseObjectLicence.objects.create(
             licence=self.licence2, base_object=self.base_object
         )
+        self.service_env = ServiceEnvironmentFactory()
+        self.licence4 = LicenceFactory(service_env=self.service_env)
 
     def test_get_licence_list(self):
         url = reverse('licence-list')
@@ -52,6 +55,23 @@ class LicenceAPITests(RalphAPITestCase):
         )
         self.assertEqual(
             response.data['depreciation_rate'], self.licence1.depreciation_rate
+        )
+
+    def test_get_licence_with_service_env(self):
+        url = reverse('licence-detail', args=(self.licence4.id,))
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['service_env']['id'], self.service_env.id
+        )
+        self.assertEqual(
+            response.data['service_env']['service'],
+            self.service_env.service.name
+        )
+        self.assertEqual(
+            response.data['service_env']['environment'],
+            self.service_env.environment.name
         )
 
     def test_get_licence_with_base_object_details(self):

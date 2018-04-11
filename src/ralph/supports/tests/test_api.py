@@ -6,6 +6,7 @@ from rest_framework import status
 
 from ralph.accounts.models import Region
 from ralph.api.tests._base import RalphAPITestCase
+from ralph.assets.tests.factories import ServiceEnvironmentFactory
 from ralph.supports.models import Support, SupportStatus
 from ralph.supports.tests.factories import SupportFactory
 
@@ -13,7 +14,11 @@ from ralph.supports.tests.factories import SupportFactory
 class SupportAPITests(RalphAPITestCase):
     def setUp(self):
         super().setUp()
-        self.support = SupportFactory(name='support1')
+        self.service_env = ServiceEnvironmentFactory()
+        self.support = SupportFactory(
+            name='support1',
+            service_env=self.service_env
+        )
 
     def test_get_supports_list(self):
         url = reverse('support-list')
@@ -32,6 +37,14 @@ class SupportAPITests(RalphAPITestCase):
         self.assertEqual(response.data['status'], 'new')
         self.assertEqual(
             response.data['support_type']['id'], self.support.support_type.id
+        )
+        self.assertEqual(
+            response.data['service_env']['service'],
+            self.service_env.service.name
+        )
+        self.assertEqual(
+            response.data['service_env']['environment'],
+            self.service_env.environment.name
         )
         # TODO: baseobjects
 
