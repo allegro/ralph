@@ -165,22 +165,22 @@ class NetworkEnvironment(
         Returns:
             counter int
         """
+        start = len(self.hostname_template_prefix)
+        stop = -len(self.hostname_template_postfix)
         hostnames = []
         for model_class in self.HOSTNAME_MODELS:
             item = model_class.objects.filter(
-                hostname__startswith=self.hostname_template_prefix,
-                hostname__endswith=self.hostname_template_postfix
+                hostname__iregex='{}[0-9]+{}'.format(
+                    self.hostname_template_prefix,
+                    self.hostname_template_postfix
+                )
             ).order_by('-hostname').first()
             if item and item.hostname:
-                hostnames.append(
-                    item.hostname[
-                        len(self.hostname_template_prefix):
-                        -len(self.hostname_template_postfix)
-                    ]
-                )
-
+                hostnames.append(item.hostname[start:stop])
         counter = 0
         if hostnames:
+            # queryset guarantees that hostnames are valid number
+            # therefore we can skip ValueError
             counter = int(sorted(hostnames, reverse=True)[0])
         return counter
 

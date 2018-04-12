@@ -464,6 +464,21 @@ class NetworkEnvironmentTest(RalphTestCase):
 
         self.assertEqual(network_env.next_free_hostname, ok_next_hostname)
 
+    def test_should_pass_non_integer_counter(self):
+        prefix = 't4'
+        postfix = '.dc.local'
+        non_integer_counter = 'non-integer-counter'
+        ne = NetworkEnvironmentFactory(
+            hostname_template_prefix=prefix,
+            hostname_template_postfix='.dc.local',
+            hostname_template_counter_length=5,
+            use_hostname_counter=True
+        )
+        dc_asset = DataCenterAssetFactory(hostname=''.join([
+            prefix, non_integer_counter, postfix
+        ]))
+        self.assertEqual(ne.current_counter_without_model(), 0)
+
 
 class IPAddressTest(RalphTestCase):
     def setUp(self):
