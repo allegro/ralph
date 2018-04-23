@@ -25,7 +25,7 @@ class Command(BaseCommand):
                     pem_data = open(os.path.join(root, filename)).read()
                     cert = x509.load_pem_x509_certificate(pem_data.encode(), default_backend())
                 except ValueError:
-                    print('cert {}/{} jest niepoprawny'.format(root, filename))
+                    print('{}/{} is not valid'.format(root, filename))
                     continue
 
                 if cert.not_valid_after < datetime.datetime.now():
