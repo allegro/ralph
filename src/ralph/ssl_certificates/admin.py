@@ -5,28 +5,26 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import DateListFilter
 from ralph.attachments.admin import AttachmentsMixin
-from ralph.ssl_certificates.models import (
-    CertificateType,
-    SSLCertificate,
-    SSLCertificateContract
-    )
+from ralph.ssl_certificates.models import SSLCertificate
 
 
 @register(SSLCertificate)
 class SSLCertificateAdmin(AttachmentsMixin, RalphAdmin):
     list_select_related = [
-        'technical_owner', 'business_owner', 'certificate_issued_by',
+        'technical_owner', 'business_owner',
+        'certificate_issued_by'
     ]
 
     list_filter = [
         'certificate', 'certificate_type', 'business_owner',
-        'technical_owner', ('date_from', DateListFilter), ('date_to', DateListFilter),
-        'certificate_issued_by',
+        'technical_owner', ('date_from', DateListFilter),
+        ('date_to', DateListFilter), 'certificate_issued_by',
     ]
 
     list_display = [
         'certificate', 'business_owner',
-        'technical_owner', 'certificate_issued_by', 'date_from', 'date_to'
+        'technical_owner', 'certificate_issued_by',
+        'date_from', 'date_to'
     ]
 
     raw_id_fields = [
@@ -49,4 +47,3 @@ class SSLCertificateAdmin(AttachmentsMixin, RalphAdmin):
         })
     )
     search_fields = ['certificate', ]
-

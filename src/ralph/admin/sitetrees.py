@@ -176,7 +176,10 @@ sitetrees = [
                 section(_('Owners'), 'accounts', 'RalphUser'),
                 section(_('DNS Providers'), 'domains', 'DNSProvider'),
                 section(_('Domain Categories'), 'domains', 'DomainCategory'),
-                section(_('SSL Certificates'), 'ssl_certificates', 'SSLCertificate'),
+                section(_('SSL Certificates'),
+                        'ssl_certificates', 
+                        'SSLCertificate'
+                        ),
             ]
         ),
         ralph_item(
