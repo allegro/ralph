@@ -2,15 +2,17 @@ import datetime
 import fnmatch
 import os
 from pathlib import Path
-import re
 
 from cryptography import x509
+from cryptography.hazmat.backends import default_backend
 from cryptography.x509.extensions import ExtensionNotFound
 from cryptography.x509.oid import ExtensionOID, NameOID
-from cryptography.hazmat.backends import default_backend
 from django.core.management.base import BaseCommand
+
 from ralph.assets.models.assets import AssetHolder
 from ralph.ssl_certificates.models import SSLCertificate
+
+
 class Command(BaseCommand):
 
     help = 'Import data to application from dir'
