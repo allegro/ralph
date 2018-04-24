@@ -7,10 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import BaseObject
 from ralph.assets.models.assets import AssetHolder
-from ralph.lib.mixins.models import (
-    AdminAbsoluteUrlMixin,
-    TimeStampMixin
-)
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 from ralph.lib.permissions import PermByFieldMixin
 
 
@@ -34,7 +31,7 @@ class SSLCertificate(AdminAbsoluteUrlMixin, BaseObject):
 
     certificate_type = models.PositiveIntegerField(
         choices=CertificateType(),
-        default = CertificateType.ov.id,
+        default=CertificateType.ov.id,
     )
 
     business_owner = models.ForeignKey(
