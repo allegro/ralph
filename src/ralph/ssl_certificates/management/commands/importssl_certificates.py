@@ -17,15 +17,21 @@ class Command(BaseCommand):
 
     help = 'Import data to application from dir'
 
+    def add_arguments(self, parser):
+        parser.add_argument('certs_dir', type=str)
+
     def handle(self, *args, **options):
-        for root, dirs, files in os.walk('/Users/maciej.skorczewski/work/sslcerts'):
+        certs_dir = options['certs_dir']
+        for root, dirs, files in os.walk(certs_dir):
             for filename in fnmatch.filter(files, '*.crt'):
                 san = ''
                 cert = None
                 extension = None
                 try:
                     pem_data = open(os.path.join(root, filename)).read()
-                    cert = x509.load_pem_x509_certificate(pem_data.encode(), default_backend())
+                    cert = x509.load_pem_x509_certificate(
+                        pem_data.encode(), default_backend()
+                    )
                 except ValueError:
                     print('{}/{} is not valid'.format(root, filename))
                     continue
@@ -33,19 +39,25 @@ class Command(BaseCommand):
                 if cert.not_valid_after < datetime.datetime.now():
                     continue
                 try:
-                    extension = cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+                    extension = cert.extensions.get_extension_for_oid(
+                        ExtensionOID.SUBJECT_ALTERNATIVE_NAME
+                    )
                 except ExtensionNotFound:
                     pass
 
                 if extension and extension.value:
                     san = extension.value.get_values_for_type(x509.DNSName)
-                issuer = cert.issuer.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)
+                issuer = cert.issuer.get_attributes_for_oid(
+                    NameOID.ORGANIZATION_NAME
+                )
                 domain = Path(filename).stem
                 issuer_name = 'CA ENT'
                 asset_holder = None
                 if issuer and issuer[0].value:
                     issuer_name = issuer[0].value
-                asset_holder, _ = AssetHolder.objects.get_or_create(name=issuer_name)
+                asset_holder, _ = AssetHolder.objects.get_or_create(
+                    name=issuer_name
+                )
                 SSLCertificate.objects.get_or_create(
                     certificate=domain,
                     date_to=cert.not_valid_after,
