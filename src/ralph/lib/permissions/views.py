@@ -3,6 +3,7 @@ import logging
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
+from django.contrib.auth.views import redirect_to_login
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseForbidden
 
@@ -18,6 +19,10 @@ def view_permission_dispatch(func):
     Adding to check the user has permission to dispatch method.
     """
     def wraps(self, request, *args, **kwargs):
+        # If not logged in redirect to login page instead of returning 403
+        # status code.
+        if not request.user.is_authenticated():
+            return redirect_to_login(next=request.get_full_path())
         # first try by model passed in kwargs, then, if user has not this perm
         # try by checking if this perm is assigned directly to user
         # (this happen ex. in transitions - user has perm to run transition at
