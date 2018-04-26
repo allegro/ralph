@@ -28,7 +28,9 @@ class Command(BaseCommand):
                 cert = None
                 extension = None
                 try:
-                    pem_data = open(os.path.join(root, filename)).read()
+                    #pem_data = open(os.path.join(root, filename)).read()
+                    with open(os.path.join(root, filename)) as f:
+                        pem_data = f.read()
                     cert = x509.load_pem_x509_certificate(
                         pem_data.encode(), default_backend()
                     )
@@ -59,9 +61,9 @@ class Command(BaseCommand):
                     name=issuer_name
                 )
                 SSLCertificate.objects.get_or_create(
-                    certificate=domain,
+                    name=domain,
                     date_to=cert.not_valid_after,
                     date_from=cert.not_valid_before,
                     san=san,
-                    certificate_issued_by=asset_holder
+                    issued_by=asset_holder
                 )

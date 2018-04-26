@@ -12,31 +12,31 @@ from ralph.ssl_certificates.models import SSLCertificate
 class SSLCertificateAdmin(AttachmentsMixin, RalphAdmin):
     list_select_related = [
         'technical_owner', 'business_owner',
-        'certificate_issued_by'
+        'issued_by'
     ]
 
     list_filter = [
-        'certificate', 'certificate_type', 'business_owner',
+        'name', 'certificate_type', 'business_owner',
         'technical_owner', ('date_from', DateListFilter),
-        ('date_to', DateListFilter), 'certificate_issued_by',
+        ('date_to', DateListFilter), 'issued_by',
     ]
 
     list_display = [
-        'certificate', 'business_owner',
-        'technical_owner', 'certificate_issued_by',
+        'name', 'business_owner',
+        'technical_owner', 'issued_by',
         'date_from', 'date_to'
     ]
 
     raw_id_fields = [
         'business_owner',
-        'technical_owner', 'certificate_issued_by'
+        'technical_owner', 'issued_by'
     ]
 
     fieldsets = (
         (_('Basic info'), {
             'fields': (
-                'certificate', 'certificate_type',
-                'certificate_issued_by', 'san',
+                'name', 'certificate_type',
+                'issued_by', 'san',
                 'price', 'date_from', 'date_to',
             )
         }),
@@ -46,4 +46,4 @@ class SSLCertificateAdmin(AttachmentsMixin, RalphAdmin):
             )
         })
     )
-    search_fields = ['certificate', ]
+    search_fields = ['name', ]
