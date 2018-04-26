@@ -28,7 +28,6 @@ class Command(BaseCommand):
                 cert = None
                 extension = None
                 try:
-                    #pem_data = open(os.path.join(root, filename)).read()
                     with open(os.path.join(root, filename)) as f:
                         pem_data = f.read()
                     cert = x509.load_pem_x509_certificate(
