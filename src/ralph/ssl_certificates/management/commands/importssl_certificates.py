@@ -1,6 +1,7 @@
 import datetime
 import fnmatch
 import os
+import sys
 from pathlib import Path
 
 from cryptography import x509
@@ -27,14 +28,20 @@ class Command(BaseCommand):
                 san = ''
                 cert = None
                 extension = None
+                pem_data = None
                 try:
                     with open(os.path.join(root, filename)) as f:
                         pem_data = f.read()
+                except IOError:
+                    continue
+                try:
                     cert = x509.load_pem_x509_certificate(
                         pem_data.encode(), default_backend()
                     )
                 except ValueError:
-                    print('{}/{} is not valid'.format(root, filename))
+                    sys.stderr.write(
+                        '{}/{} is not valid\n'.format(root, filename)
+                    )
                     continue
 
                 if cert.not_valid_after < datetime.datetime.now():
