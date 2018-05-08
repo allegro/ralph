@@ -104,8 +104,8 @@ class BackOfficeAssetAdmin(
     ]
     list_display = [
         'status', 'barcode', 'purchase_order', 'model', 'user', 'warehouse',
-        'sn', 'hostname', 'invoice_date', 'invoice_no', 'region',
-        'property_of', 'buyout_date_display'
+        'service_env', 'sn', 'hostname', 'invoice_date', 'invoice_no',
+        'region', 'property_of', 'buyout_date_display'
     ]
     multiadd_summary_fields = list_display
 
@@ -121,12 +121,13 @@ class BackOfficeAssetAdmin(
         'order_no', 'provider', 'budget_info', 'depreciation_rate',
         'depreciation_end_date', 'force_depreciation',
         ('buyout_date', BuyoutDateFilter), LiquidatedStatusFilter,
-        TagsListFilter
+        TagsListFilter, 'service_env'
     ]
     date_hierarchy = 'created'
     list_select_related = [
         'model', 'user', 'warehouse', 'model__manufacturer', 'region',
-        'model__category', 'property_of'
+        'model__category', 'property_of', 'service_env',
+        'service_env__service', 'service_env__environment'
     ]
     raw_id_fields = [
         'model', 'user', 'owner', 'region', 'warehouse',
