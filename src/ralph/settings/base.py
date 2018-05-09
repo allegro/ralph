@@ -294,13 +294,15 @@ REDIS_SENTINEL_ENABLED = bool_from_env('REDIS_SENTINEL_ENABLED', False)
 if REDIS_SENTINEL_ENABLED:
     from redis.sentinel import Sentinel
 
-    # SENTINEL_HOSTS env variable format: host_1:port;host_2:port
-    SENTINEL_HOSTS = os.environ['SENTINEL_HOSTS'].split(';')
+    # REDIS_SENTINEL_HOSTS env variable format: host_1:port;host_2:port
+    REDIS_SENTINEL_HOSTS = os.environ['REDIS_SENTINEL_HOSTS'].split(';')
     REDIS_CLUSTER_NAME = os.environ['REDIS_CLUSTER_NAME']
 
     sentinel = Sentinel(
-        [tuple(s_host.split(':')) for s_host in SENTINEL_HOSTS],
-        socket_timeout=0.2
+        [tuple(s_host.split(':')) for s_host in REDIS_SENTINEL_HOSTS],
+        socket_timeout=float(
+            os.environ.get('REDIS_SENTINEL_SOCKET_TIMEOUT', 0.2)
+        )
     )
     REDIS_MASTER_IP, REDIS_MASTER_PORT = sentinel.discover_master(
         REDIS_CLUSTER_NAME
