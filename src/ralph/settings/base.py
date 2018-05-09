@@ -290,7 +290,7 @@ if API_THROTTLING:
 REDIS_MASTER_IP = None
 REDIS_MASTER_PORT = None
 
-REDIS_SENTINEL_ENABLED = os.environ.get('REDIS_SENTINEL_ENABLED', 'false').lower() == 'true'  # noqa: E501
+REDIS_SENTINEL_ENABLED = bool_from_env('REDIS_SENTINEL_ENABLED', False)
 if REDIS_SENTINEL_ENABLED:
     from redis.sentinel import Sentinel
 
@@ -307,8 +307,8 @@ if REDIS_SENTINEL_ENABLED:
     )
 
 REDIS_CONNECTION = {
-    'HOST': REDIS_MASTER_IP if REDIS_MASTER_IP else os.environ.get('REDIS_HOST', 'localhost'),  # noqa: E501
-    'PORT': REDIS_MASTER_PORT if REDIS_MASTER_PORT else os.environ.get('REDIS_PORT', '6379'),  # noqa: E501
+    'HOST': REDIS_MASTER_IP or os.environ.get('REDIS_HOST', 'localhost'),
+    'PORT': REDIS_MASTER_PORT or os.environ.get('REDIS_PORT', '6379'),
     'DB': int(os.environ.get('REDIS_DB', 0)),
     'PASSWORD': os.environ.get('REDIS_PASSWORD', ''),
     # timeout for executing commands
