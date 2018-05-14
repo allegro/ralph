@@ -36,26 +36,26 @@ class SSLCertificate(AdminAbsoluteUrlMixin, BaseObject):
         related_name='certificates_business_owner',
         blank=True,
         null=True,
-        help_text=_("Business contact person for a certificate")
+        help_text=_('Business contact person for a certificate')
     )
     technical_owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name='certificates_technical_owner',
         blank=True,
         null=True,
-        help_text=_("Technical contact person for a certificate")
+        help_text=_('Technical contact person for a certificate')
     )
     issued_by = models.ForeignKey(
         AssetHolder,
         blank=True,
         null=True,
-        help_text=_("Company which delivered certificate")
+        help_text=_('Company which delivered certificate')
     )
     date_from = models.DateField(null=True, blank=True)
     date_to = models.DateField(null=False, blank=False)
     san = models.TextField(
         blank=True,
-        help_text=_("All Subject Alternative Names"),
+        help_text=_('All Subject Alternative Names'),
     )
     price = models.DecimalField(
         max_digits=10, decimal_places=2, default=0, null=True, blank=True,
