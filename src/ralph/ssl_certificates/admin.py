@@ -12,7 +12,7 @@ from ralph.ssl_certificates.models import SSLCertificate
 class SSLCertificateAdmin(AttachmentsMixin, RalphAdmin):
     list_select_related = [
         'technical_owner', 'business_owner',
-        'issued_by'
+        'issued_by',
     ]
 
     list_filter = [
@@ -24,12 +24,12 @@ class SSLCertificateAdmin(AttachmentsMixin, RalphAdmin):
     list_display = [
         'name', 'business_owner',
         'technical_owner', 'issued_by',
-        'date_from', 'date_to'
+        'date_from', 'date_to',
     ]
 
     raw_id_fields = [
         'business_owner',
-        'technical_owner', 'issued_by'
+        'technical_owner', 'issued_by',
     ]
 
     fieldsets = (
@@ -42,7 +42,7 @@ class SSLCertificateAdmin(AttachmentsMixin, RalphAdmin):
         }),
         (_('Ownership info'), {
             'fields': (
-                'business_owner', 'technical_owner'
+                'business_owner', 'technical_owner',
             )
         })
     )

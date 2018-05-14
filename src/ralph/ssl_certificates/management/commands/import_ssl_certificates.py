@@ -60,7 +60,6 @@ class Command(BaseCommand):
                 )
                 domain = Path(filename).stem
                 issuer_name = 'CA ENT'
-                asset_holder = None
                 if issuer and issuer[0].value:
                     issuer_name = issuer[0].value
                 asset_holder, _ = AssetHolder.objects.get_or_create(

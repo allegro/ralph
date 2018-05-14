@@ -49,6 +49,8 @@ from ralph.lib.custom_fields.models import CustomField
 from ralph.licences.models import Licence
 from ralph.licences.tests.factories import LicenceFactory
 from ralph.networks.tests.factories import IPAddressFactory
+from ralph.ssl_certificates.models import SSLCertificate
+from ralph.ssl_certificates.tests.factories import SSLCertificatesFactory
 from ralph.supports.models import Support
 from ralph.supports.tests.factories import SupportFactory
 from ralph.tests.models import PolymorphicTestModel
@@ -517,6 +519,7 @@ BASE_OBJECTS_FACTORIES = {
     Domain: DomainFactory,
     Licence: LicenceFactory,
     ServiceEnvironment: ServiceEnvironmentFactory,
+    SSLCertificate: SSLCertificatesFactory,
     Support: SupportFactory,
     VIP: VIPFactory,
     VirtualServer: VirtualServerFactory,
