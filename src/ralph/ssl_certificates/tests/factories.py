@@ -5,7 +5,7 @@ import factory
 from factory.django import DjangoModelFactory
 
 from ralph.accounts.tests.factories import UserFactory
-from ralph.assets.tests.factories import AssetHolderFactory
+from ralph.assets.tests.factories import ManufacturerFactory
 from ralph.ssl_certificates.models import CertificateType, SSLCertificate
 
 date_now = datetime.now().date()
@@ -16,7 +16,7 @@ class SSLCertificatesFactory(DjangoModelFactory):
     certificate_type = CertificateType.ov
     business_owner = factory.SubFactory(UserFactory)
     technical_owner = factory.SubFactory(UserFactory)
-    issued_by = factory.SubFactory(AssetHolderFactory)
+    issued_by = factory.SubFactory(ManufacturerFactory)
     date_from = date_now - timedelta(days=15)
     date_to = date_now + timedelta(days=365)
     san = factory.Faker('ssn')
