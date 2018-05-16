@@ -10,7 +10,7 @@ from cryptography.x509.extensions import ExtensionNotFound
 from cryptography.x509.oid import ExtensionOID, NameOID
 from django.core.management.base import BaseCommand
 
-from ralph.assets.models.assets import AssetHolder
+from ralph.assets.models.assets import Manufacturer
 from ralph.ssl_certificates.models import SSLCertificate
 
 
@@ -62,7 +62,7 @@ class Command(BaseCommand):
                 issuer_name = 'CA ENT'
                 if issuer and issuer[0].value:
                     issuer_name = issuer[0].value
-                asset_holder, _ = AssetHolder.objects.get_or_create(
+                manufacturer, _ = Manufacturer.objects.get_or_create(
                     name=issuer_name
                 )
                 SSLCertificate.objects.get_or_create(
@@ -70,5 +70,5 @@ class Command(BaseCommand):
                     date_to=cert.not_valid_after,
                     date_from=cert.not_valid_before,
                     san=san,
-                    issued_by=asset_holder
+                    issued_by=manufacturer
                 )

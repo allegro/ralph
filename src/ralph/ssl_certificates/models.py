@@ -6,7 +6,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import BaseObject
-from ralph.assets.models.assets import AssetHolder
+from ralph.assets.models.assets import Manufacturer
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 
 
@@ -46,10 +46,10 @@ class SSLCertificate(AdminAbsoluteUrlMixin, BaseObject):
         help_text=_('Technical contact person for a certificate')
     )
     issued_by = models.ForeignKey(
-        AssetHolder,
+        Manufacturer,
+        on_delete=models.PROTECT,
         blank=True,
         null=True,
-        help_text=_('Company which delivered certificate')
     )
     date_from = models.DateField(null=True, blank=True)
     date_to = models.DateField(null=False, blank=False)
