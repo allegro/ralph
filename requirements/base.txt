@@ -13,6 +13,7 @@ django-taggit==0.17.1
 django-taggit-serializer==0.1.5
 django-threadlocals==0.8
 django-transaction-hooks==0.2  # it's merged to Django 1.9 - remove this when Django version will be bumped to 1.9
+django-cryptography==0.3
 djangorestframework==3.2.2
 djangorestframework_xml==1.2.0
 drf-nested-routers==0.11.1
