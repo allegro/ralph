@@ -81,6 +81,7 @@ FACTORY_MAP = {
     'ralph.operations.models.OperationStatus': 'ralph.operations.tests.factories.OperationStatusFactory',  # noqa
     'ralph.reports.models.Report': 'ralph.reports.factories.ReportFactory',
     'ralph.reports.models.ReportLanguage': 'ralph.reports.factories.ReportLanguageFactory',  # noqa
+    'ralph.ssl_certificates.models.SSLCertificate': 'ralph.ssl_certificates.tests.factories.SSLCertificatesFactory', # noqa
     'ralph.supports.models.BaseObjectsSupport': 'ralph.supports.tests.factories.BaseObjectsSupportFactory',  # noqa
     'ralph.supports.models.Support': 'ralph.supports.tests.factories.SupportFactory',  # noqa
     'ralph.supports.models.SupportType': 'ralph.supports.tests.factories.SupportTypeFactory',  # noqa

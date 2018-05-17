@@ -239,6 +239,7 @@ class AssetModelSaveSerializer(RalphAPISaveSerializer):
 
 
 class BaseObjectPolymorphicSerializer(
+    TypeFromContentTypeSerializerMixin,
     PolymorphicSerializer,
     RalphAPISerializer
 ):
@@ -246,6 +247,7 @@ class BaseObjectPolymorphicSerializer(
     Serializer for BaseObjects viewset (serialize each model using dedicated
     serializer).
     """
+    __str__ = StrField(show_type=True)
     service_env = ServiceEnvironmentSerializer()
     scmstatuscheck = SCMInfoSerializer()
 

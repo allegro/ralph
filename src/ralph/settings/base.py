@@ -75,6 +75,7 @@ INSTALLED_APPS = (
     'ralph.lib.permissions',
     'ralph.lib.custom_fields',
     'ralph.notifications',
+    'ralph.ssl_certificates',
     'rest_framework',
     'rest_framework.authtoken',
     'taggit',
