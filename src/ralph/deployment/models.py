@@ -10,6 +10,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import Ethernet
 from ralph.lib.external_services.models import JobQuerySet
+from ralph.lib.mixins.fields import NUMPTextField
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
 from ralph.lib.polymorphic.models import Polymorphic, PolymorphicBase
 from ralph.lib.transitions.models import TransitionJob
@@ -95,7 +96,7 @@ class PrebootConfiguration(PrebootItem):
         choices=get_choices_from_group(PrebootItemType.CONFIGURATION),
         default=PrebootItemType.ipxe.id,
     )
-    configuration = models.TextField(
+    configuration = NUMPTextField(
         _('configuration'),
         blank=True,
         help_text=_(CONFIGURATION_HELP_TEXT),

@@ -61,6 +61,31 @@ class NullableCharField(
     pass
 
 
+# NOTE(romcheg): NUMP stands for No Useles Migrations Please.
+#                It is recommended to refrain from checking the other meaning
+#                in UD.
+class NUMPFieldMixIn(object):
+
+    FIELDS_TO_IGNORE = {'help_text', 'verbose_name'}
+
+    def deconstruct(self):
+        name, path, args, kwargs = super(NUMPFieldMixIn, self).deconstruct()
+
+        # NOTE(romcheg): Exclude all fields that should not be concidered when
+        #                generating migrations.
+        kwargs = {
+            f: kwargs[f] for f in kwargs if f not in self.FIELDS_TO_IGNORE
+        }
+
+        return name, path, args, kwargs
+
+
+class NUMPTextField(
+    NUMPFieldMixIn, models.TextField
+):
+    pass
+
+
 class NullableGenericIPAddressField(
     NullableCharFieldMixin,
     models.GenericIPAddressField
