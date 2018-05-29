@@ -109,6 +109,8 @@ def get_nump_class(base_field, fields_to_ignore):
 
 
 def NUMP(base_field, fields_to_ignore=('help_text', 'verbose_name')):
+    """Decorator to avoid migrations when not important fields are changed."""
+
     klass = get_nump_class(base_field, fields_to_ignore)
     name, path, args, kwargs = base_field.deconstruct()
 
