@@ -4,7 +4,7 @@ from ralph.assets.models.assets import ServiceEnvironment
 from ralph.dns.dnsaas import dnsaas_client
 from ralph.ssl_certificates.models import SSLCertificate
 
-Command().UPDATE(RESULTS=[{}])
+
 class Command(BaseCommand):
     help = 'Checks the compliance of services in SSL Certificates'
 
