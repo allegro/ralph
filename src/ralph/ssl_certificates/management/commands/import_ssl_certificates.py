@@ -12,7 +12,7 @@ from cryptography.x509.oid import ExtensionOID, NameOID
 from django.core.management.base import BaseCommand
 
 from ralph.assets.models.assets import Manufacturer
-from ralph.ssl_certificates.models import SSLCertificate, CertificateType
+from ralph.ssl_certificates.models import CertificateType, SSLCertificate
 
 
 def extract_domain_from_filename(filename):
