@@ -27,6 +27,12 @@ class SSLCertificate(AdminAbsoluteUrlMixin, BaseObject):
         help_text=_('Full certificate name'),
         max_length=255
     )
+    domain_ssl = models.CharField(
+        verbose_name=_('domain name'),
+        blank=True,
+        help_text=_('Full domain name'),
+        max_length=255
+    )
     certificate_type = models.PositiveIntegerField(
         choices=CertificateType(),
         default=CertificateType.ov.id,
