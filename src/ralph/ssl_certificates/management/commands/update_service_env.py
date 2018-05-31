@@ -51,4 +51,3 @@ class Command(BaseCommand):
         self.update_from_record(records)
         domains = self.get_domains()
         self.update_from_domains(domains)
-
