@@ -30,6 +30,7 @@ def get_domain_ssl(cert):
         domain_ssl = domain_ssl[2:]
     return domain_ssl
 
+
 def get_ssl_type(issuer_name, san, filename):
     type_ssl = CertificateType.ov.id
     if re.match(r'^(wildcard.+)', filename):
@@ -40,7 +41,8 @@ def get_ssl_type(issuer_name, san, filename):
         type_ssl = CertificateType.internal.id
     return type_ssl
 
-class Command(BaseCommand, ):
+
+class Command(BaseCommand):
     help = 'Import data to application from dir'
 
     def add_arguments(self, parser):
@@ -50,7 +52,9 @@ class Command(BaseCommand, ):
         san = ''
         extension = None
         try:
-            extension = cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+            extension = cert.extensions.get_extension_for_oid(
+                ExtensionOID.SUBJECT_ALTERNATIVE_NAME
+            )
         except ExtensionNotFound:
             pass
         if extension and extension.value:
