@@ -16,8 +16,11 @@ class Command(BaseCommand):
             try:
                 uid = ServiceEnvironment.objects.get(service__uid=service_dns)
             except ServiceEnvironment.DoesNotExist:
-                self.stderr.write('Service with uid {} does not exist'.format(service_dns))
-            SSLCertificate.objects.filter(domain_ssl=domain).update(service_environment=uid)
+                self.stderr.write(
+                    'Service with uid {} does not exist'.format(service_dns)
+                )
+            SSLCertificate.objects.filter(
+                domain_ssl=domain).update(service_environment=uid)
 
     def update_from_domains(self, results):
         for value in results:
@@ -25,10 +28,15 @@ class Command(BaseCommand):
             service_dns = value['service_name']
             name = None
             try:
-                name = ServiceEnvironment.objects.get(service__name=service_dns, environment__name='prod')
+                name = ServiceEnvironment.objects.get(
+                    service__name=service_dns, environment__name='prod'
+                )
             except ServiceEnvironment.DoesNotExist:
-                self.stderr.write('Service with name {} does not exist'.format(service_dns))
-            SSLCertificate.objects.filter(domain_ssl=domain).update(service_environment=name)
+                self.stderr.write(
+                    'Service with name {} does not exist'.format(service_dns)
+                )
+            SSLCertificate.objects.filter(
+                domain_ssl=domain).update(service_environment=name)
 
     def get_records(self):
         url = dnsaas_client.build_url('records')
