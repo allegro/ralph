@@ -67,16 +67,15 @@ class NullableCharField(
 class NUMPFieldMixIn(object):
 
     def __init__(self, fields_to_ignore, *args, **kwargs):
-         super(NUMPFieldMixIn, self).__init__(*args, **kwargs)
-
-         self.fields_to_ignore = fields_to_ignore
+        super(NUMPFieldMixIn, self).__init__(*args, **kwargs)
+        self.fields_to_ignore = fields_to_ignore
 
     def deconstruct(self):
         name, path, args, kwargs = super(NUMPFieldMixIn, self).deconstruct()
 
         if not self.__class__.__mro__.index(NUMPFieldMixIn) > 1:
-            # NOTE(romcheg): Exclude all fields that should not be concidered when
-            #                generating migrations.
+            # NOTE(romcheg): Exclude all fields that should not be concidered
+            #                when generating migrations.
             kwargs = {
                 f: kwargs[f] for f in kwargs if f not in self.fields_to_ignore
             }
@@ -104,7 +103,7 @@ def get_nump_class(base_field, fields_to_ignore):
             (NUMPFieldMixIn, base_class),
             {'base_class': base_class}
         )
-        
+
     return NUMP_FIELD_CACHE[cache_lookup]
 
 
