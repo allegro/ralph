@@ -423,6 +423,7 @@ def run_field_transition(
             action, transition
         ))
         func = getattr(first_instance, action.name)
+        kwargs['attachments'] = attachments
         defaults = _prepare_action_data(
             action,
             data,

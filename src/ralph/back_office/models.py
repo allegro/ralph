@@ -11,6 +11,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
+from django.core.mail import EmailMessage
 from django.db import models, transaction
 from django.forms import ValidationError
 from django.template import Context, Template
@@ -598,12 +599,31 @@ class BackOfficeAsset(Regionalizable, Asset):
         return_attachment=True,
         run_after=['assign_owner', 'assign_user']
     )
-    def release_report(cls, instances, requester, transition_id, **kwargs):
+    def release_report(
+        cls, instances, requester, transition_id, **kwargs
+    ):
         report_name = get_report_name_for_transition_id(transition_id)
         return cls._generate_report(
             instances=instances, name=report_name, requester=requester,
             language=kwargs['report_language']
         )
+
+    @classmethod
+    @transition_action(run_after=['release_report', 'return_report',
+                                  'loan_report'])
+    def send_attachments_to_user(cls, instances, requester, **kwargs):
+        if kwargs.get('attachments'):
+            # TODO(mbleschke): set subject and body containing transition
+            # name
+            email = EmailMessage(
+                subject='test',
+                body='test',
+                from_email=settings.EMAIL_FROM,
+                to=[requester.email]
+            )
+            for attachment in kwargs['attachments']:
+                email.attach_file(attachment.file.path)
+            email.send()
 
     @classmethod
     @transition_action(

@@ -22,7 +22,7 @@ class ExternalService(object):
     def run(self, **kwargs):
         """Run function with params on external service.
 
-        Basically this method call external method with params wich it
+        Basically this method call external method with params which it
         accept. You must now about accepted params by external function
         and provide it.
 
