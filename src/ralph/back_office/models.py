@@ -38,6 +38,7 @@ from ralph.lib.mixins.models import (
 from ralph.lib.transitions.conf import get_report_name_for_transition_id
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
+from ralph.lib.transitions.models import Transition
 from ralph.licences.models import BaseObjectLicence, Licence
 from ralph.reports.models import Report, ReportLanguage
 
@@ -611,13 +612,13 @@ class BackOfficeAsset(Regionalizable, Asset):
     @classmethod
     @transition_action(run_after=['release_report', 'return_report',
                                   'loan_report'])
-    def send_attachments_to_user(cls, instances, requester, **kwargs):
+    def send_attachments_to_user(cls, requester, transition_id, **kwargs):
         if kwargs.get('attachments'):
-            # TODO(mbleschke): set subject and body containing transition
-            # name
+            transition = Transition.objects.get(pk=transition_id)
             email = EmailMessage(
-                subject='test',
-                body='test',
+                subject='Documents for {}'.format(transition.name),
+                body='Please see documents provided in attachments '
+                     'for "{}".'.format(transition.name),
                 from_email=settings.EMAIL_FROM,
                 to=[requester.email]
             )

@@ -5,6 +5,8 @@ from unittest.mock import patch
 from dj.choices import Country
 from django.contrib.auth.models import Permission
 from django.contrib.messages.storage.fallback import FallbackStorage
+from django.core import mail
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.urlresolvers import reverse
 from django.test import override_settings, RequestFactory, SimpleTestCase
 from django.utils import timezone
@@ -18,6 +20,7 @@ from ralph.assets.tests.factories import (
     DataCenterAssetModelFactory,
     ServiceEnvironmentFactory
 )
+from ralph.attachments.models import Attachment
 from ralph.back_office.models import (
     _check_assets_owner,
     BackOfficeAsset,
@@ -397,21 +400,6 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
 
         self.assertEquals(self.bo_asset.hostname, hostname)
 
-    def try_change_status_to_in_progress_during_transition(self):
-        _, transition, _ = self._create_transition(
-            model=self.bo_asset,
-            name='test',
-            source=[BackOfficeAssetStatus.new.id],
-            target=BackOfficeAssetStatus.in_progress.id,
-            actions=['assign_owner']
-        )
-        self.bo_asset.run_status_transition(
-            transition_obj_or_name=transition,
-            data={'assign_owner__owner': self.user_pl.id},
-            request=self.request
-        )
-        self.assertEqual(self.bo_asset.hostname, 'USPC01001')
-
     def test_return_report_when_user_not_assigned(self):
         _, transition, _ = self._create_transition(
             model=self.bo_asset,
@@ -463,6 +451,46 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
         )
         self.assertEqual(attachment.original_filename, correct_filename)
         self.assertEqual(attachment.file.read(), GENERATED_FILE_CONTENT)
+
+    def test_send_attachments_to_user_action_sends_email(self):
+        bo_asset = BackOfficeAssetFactory(model=self.model)
+        _, transition, _ = self._create_transition(
+            model=bo_asset,
+            name='transition name',
+            source=[BackOfficeAssetStatus.new.id],
+            target=BackOfficeAssetStatus.used.id,
+            actions=['return_report']
+        )
+        attachment = Attachment.objects.create(
+            file=SimpleUploadedFile(
+                'test_file.pdf',
+                b'some content',
+                content_type='application/pdf'
+            ),
+            uploaded_by=self.user_pl,
+        )
+
+        bo_asset.send_attachments_to_user(
+            self.user_pl,
+            transition.id,
+            attachments=[attachment]
+        )
+
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_send_attachments_to_user_action_dont_send_email_without_attachments(self):  # noqa: E501
+        bo_asset = BackOfficeAssetFactory(model=self.model)
+        _, transition, _ = self._create_transition(
+            model=self.bo_asset,
+            name='transition name',
+            source=[BackOfficeAssetStatus.new.id],
+            target=BackOfficeAssetStatus.used.id,
+            actions=['return_report']
+        )
+
+        bo_asset.send_attachments_to_user(self.user_pl, transition.id)
+
+        self.assertEqual(len(mail.outbox), 0)
 
 
 class CheckerTestCase(SimpleTestCase):
