@@ -600,9 +600,7 @@ class BackOfficeAsset(Regionalizable, Asset):
         return_attachment=True,
         run_after=['assign_owner', 'assign_user']
     )
-    def release_report(
-        cls, instances, requester, transition_id, **kwargs
-    ):
+    def release_report(cls, instances, requester, transition_id, **kwargs):
         report_name = get_report_name_for_transition_id(transition_id)
         return cls._generate_report(
             instances=instances, name=report_name, requester=requester,
