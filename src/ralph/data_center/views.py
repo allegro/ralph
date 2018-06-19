@@ -14,11 +14,17 @@ class RelationsView(RalphDetailView):
         if cloud_hosts:
             related_objects['cloud_hosts'] = cloud_hosts
 
+    def _add_virtual_hosts(self, related_objects):
+        virtual_hosts = list(self.object.children.all())
+        if virtual_hosts:
+            related_objects['virtual_hosts'] = virtual_hosts
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         related_objects = {}
         self._add_cloud_hosts(related_objects)
+        self._add_virtual_hosts(related_objects)
         context['related_objects'] = related_objects
 
         return context
