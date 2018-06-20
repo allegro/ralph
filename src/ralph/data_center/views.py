@@ -1,4 +1,7 @@
+from django.contrib.contenttypes.models import ContentType
+
 from ralph.admin.views.extra import RalphDetailView
+from ralph.virtual.models import VirtualServer
 
 
 class RelationsView(RalphDetailView):
@@ -15,7 +18,11 @@ class RelationsView(RalphDetailView):
             related_objects['cloud_hosts'] = cloud_hosts
 
     def _add_virtual_hosts(self, related_objects):
-        virtual_hosts = list(self.object.children.all())
+        virtual_server = ContentType.objects.get_for_model(VirtualServer)
+        virtual_hosts = list(
+            self.object.children.filter(content_type=virtual_server)
+        )
+
         if virtual_hosts:
             related_objects['virtual_hosts'] = virtual_hosts
 
