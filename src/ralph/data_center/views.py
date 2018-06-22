@@ -1,6 +1,7 @@
 from django.contrib.contenttypes.models import ContentType
 
 from ralph.admin.views.extra import RalphDetailView
+from ralph.data_center.models import DataCenterAsset
 from ralph.virtual.models import VirtualServer
 
 
@@ -26,12 +27,22 @@ class RelationsView(RalphDetailView):
         if virtual_hosts:
             related_objects['virtual_hosts'] = virtual_hosts
 
+    def _add_physical_hosts(self, related_objects):
+        physical_server = ContentType.objects.get_for_model(DataCenterAsset)
+        physical_hosts = list(
+            self.object.children.filter(content_type=physical_server)
+        )
+
+        if physical_hosts:
+            related_objects['physical_hosts'] = physical_hosts
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         related_objects = {}
         self._add_cloud_hosts(related_objects)
         self._add_virtual_hosts(related_objects)
+        self._add_physical_hosts(related_objects)
         context['related_objects'] = related_objects
 
         return context
