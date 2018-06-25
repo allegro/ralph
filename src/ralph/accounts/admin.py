@@ -136,6 +136,30 @@ class AssetList(Table):
         return ''
     report_failure.title = ''
 
+    def report_buyout(self, item):
+        item_dict = model_to_dict(item)
+        url = settings.MY_EQUIPMENT_BUYOUT_URL
+        if url:
+            placeholders = [
+                k[1] for k in Formatter().parse(url) if k[1] is not None
+            ]
+            item_dict.update({
+                k: getattr_dunder(item, k) for k in placeholders
+            })
+            if self.request and 'username' not in item_dict:
+                item_dict['username'] = self.request.user.username
+
+            def escape_param(p):
+                return quote(str(p).replace('"', '\u2033'))
+            return '<a href="{}" target="_blank">{}</a><br />'.format(
+                url.format(
+                    **{k: escape_param(v) for (k, v) in item_dict.items()}
+                ),
+                _('Report buyout')
+            )
+        return ''
+    report_buyout.title = ''
+
     def confirm_ownership(self, item):
         has_inv_tag = any(
             [n.startswith(settings.INVENTORY_TAG) for n in item.tags.names()]
@@ -212,13 +236,14 @@ class UserInfoMixin(object):
             [
                 'id', 'model__category__name', 'model__manufacturer__name',
                 'model__name', 'sn', 'barcode', 'remarks', 'status',
-                'buyout_date', 'url'
+                'buyout_date', 'report_failure', 'report_buyout', 'url',
             ],
             ['user_licence']
         )
         context['licence_list'] = AssignedLicenceList(
             self.get_licence_queryset(),
-            ['id', 'software__name', 'niw', 'url']
+            ['id', 'manufacturer', 'software__name',
+             'licence_type', 'sn', 'valid_thru', 'url']
         )
         return context
 
