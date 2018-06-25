@@ -2,6 +2,7 @@ import logging
 import os
 
 from dj.choices import Choices
+from django.conf import settings
 from django.db import models
 from django.db.models import F
 from django.db.models.manager import Manager
@@ -87,7 +88,7 @@ All newline characters will be converted to Unix \\n newlines.
 <br>  - ralph_instance (eg. '{ralph_instance}')
 <br>  - service_env (eg. 'Backup systems - prod')
 <br>  - service_uid (eg. 'sc-123')
-""".format(ralph_instance='http://ralph.example.com').strip()  # noqa
+""".format(ralph_instance=settings.RALPH_INSTANCE.rstrip('/')).strip()  # noqa
 
 
 class PrebootConfiguration(PrebootItem):

@@ -73,6 +73,8 @@ class NUMPFieldMixIn(object):
     def deconstruct(self):
         name, path, args, kwargs = super(NUMPFieldMixIn, self).deconstruct()
 
+        # NOTE(romcheg): Perform arguments substitution only for direct
+        #                descendants.
         if not self.__class__.__mro__.index(NUMPFieldMixIn) > 1:
             # NOTE(romcheg): Exclude all fields that should not be concidered
             #                when generating migrations.
@@ -81,8 +83,10 @@ class NUMPFieldMixIn(object):
             }
             path = '{}.{}'.format(NUMP.__module__, NUMP.__name__)
 
-            args = [self.base_class(*args, **kwargs)]
-            kwargs = {'fields_to_ignore': self.fields_to_ignore}
+            nump_args = [self.base_class(*args, **kwargs)]
+            nump_kwargs = {'fields_to_ignore': self.fields_to_ignore}
+
+            return name, path, nump_args, nump_kwargs
 
         return name, path, args, kwargs
 
