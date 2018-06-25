@@ -1,3 +1,5 @@
+import sys
+
 from django.core.management.base import BaseCommand
 
 from ralph.assets.models.assets import ServiceEnvironment
@@ -11,16 +13,18 @@ class Command(BaseCommand):
     def update_from_record(self, results):
         for value in results:
             domain = value['content']
-            service_dns = value['service_uid']
-            uid = None
+            service_dns = value['service_name']
+            name = None
             try:
-                uid = ServiceEnvironment.objects.get(service__uid=service_dns)
+                name = ServiceEnvironment.objects.get(
+                    service__name=service_dns, environment__name='prod'
+                )
             except ServiceEnvironment.DoesNotExist:
                 self.stderr.write(
-                    'Service with uid {} does not exist'.format(service_dns)
+                    'Service with name {} does not exist'.format(service_dns)
                 )
             SSLCertificate.objects.filter(
-                domain_ssl=domain).update(service_environment=uid)
+                domain_ssl=domain).update(service_environment=name)
 
     def update_from_domains(self, results):
         for value in results:
@@ -47,7 +51,8 @@ class Command(BaseCommand):
         return dnsaas_client.get_api_result(url)
 
     def handle(self, *args, **options):
-        records = self.get_records()
-        self.update_from_record(records)
+        sys.setrecursionlimit(1500)
         domains = self.get_domains()
         self.update_from_domains(domains)
+        records = self.get_records()
+        self.update_from_record(records)

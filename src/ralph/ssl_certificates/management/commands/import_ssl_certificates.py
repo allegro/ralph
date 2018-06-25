@@ -2,7 +2,6 @@ import datetime
 import fnmatch
 import os
 import re
-import sys
 from pathlib import Path
 
 from cryptography import x509
@@ -85,8 +84,9 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        self.stderr.write('Dir not found')
         certs_dir = options['certs_dir']
+        if os.path.isdir(certs_dir) is False:
+            self.stderr.write('Dir not found')
         for root, dirs, files in os.walk(certs_dir):
             for filename in fnmatch.filter(files, '*.crt'):
                 cert = None
@@ -101,7 +101,7 @@ class Command(BaseCommand):
                         pem_data.encode(), default_backend()
                     )
                 except ValueError:
-                    sys.stderr.write(
+                    self.stderr.write(
                         '{}/{} is not valid\n'.format(root, filename)
                     )
                     continue
