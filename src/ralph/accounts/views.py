@@ -205,7 +205,7 @@ class CurrentUserInfoView(
         context['licence_list'] = AssignedLicenceList(
             self.get_licence_queryset(),
             [
-                ('niw', _('Inventory Number')),'manufacturer',
+                ('niw', _('Inventory Number')), 'manufacturer',
                 'software__name', 'licence_type', 'sn',
                 'valid_thru', 'url'
             ],
