@@ -5,7 +5,7 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.assets.models import BaseObject
+from ralph.assets.models import BaseObject, ServiceEnvironment
 from ralph.assets.models.assets import Manufacturer
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 
@@ -27,9 +27,21 @@ class SSLCertificate(AdminAbsoluteUrlMixin, BaseObject):
         help_text=_('Full certificate name'),
         max_length=255
     )
+    domain_ssl = models.CharField(
+        verbose_name=_('domain name'),
+        blank=True,
+        help_text=_('Full domain name'),
+        max_length=255
+    )
     certificate_type = models.PositiveIntegerField(
         choices=CertificateType(),
         default=CertificateType.ov.id,
+    )
+    service_environment = models.ForeignKey(
+        ServiceEnvironment,
+        related_name='service_environment',
+        null=True,
+        on_delete=models.PROTECT
     )
     business_owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,

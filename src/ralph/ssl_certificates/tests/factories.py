@@ -5,7 +5,10 @@ import factory
 from factory.django import DjangoModelFactory
 
 from ralph.accounts.tests.factories import UserFactory
-from ralph.assets.tests.factories import ManufacturerFactory
+from ralph.assets.tests.factories import (
+    ManufacturerFactory,
+    ServiceEnvironmentFactory
+)
 from ralph.ssl_certificates.models import CertificateType, SSLCertificate
 
 date_now = datetime.now().date()
@@ -14,6 +17,7 @@ date_now = datetime.now().date()
 class SSLCertificatesFactory(DjangoModelFactory):
     name = factory.Sequence(lambda n: 'www.name{}.com'.format(n))
     certificate_type = CertificateType.ov
+    service_environment = factory.SubFactory(ServiceEnvironmentFactory)
     business_owner = factory.SubFactory(UserFactory)
     technical_owner = factory.SubFactory(UserFactory)
     issued_by = factory.SubFactory(ManufacturerFactory)
