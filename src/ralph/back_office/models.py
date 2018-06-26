@@ -11,6 +11,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
+from django.core.mail import EmailMessage
 from django.db import models, transaction
 from django.forms import ValidationError
 from django.template import Context, Template
@@ -37,6 +38,7 @@ from ralph.lib.mixins.models import (
 from ralph.lib.transitions.conf import get_report_name_for_transition_id
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
+from ralph.lib.transitions.models import Transition
 from ralph.licences.models import BaseObjectLicence, Licence
 from ralph.reports.models import Report, ReportLanguage
 
@@ -604,6 +606,23 @@ class BackOfficeAsset(Regionalizable, Asset):
             instances=instances, name=report_name, requester=requester,
             language=kwargs['report_language']
         )
+
+    @classmethod
+    @transition_action(run_after=['release_report', 'return_report',
+                                  'loan_report'])
+    def send_attachments_to_user(cls, requester, transition_id, **kwargs):
+        if kwargs.get('attachments'):
+            transition = Transition.objects.get(pk=transition_id)
+            email = EmailMessage(
+                subject='Documents for {}'.format(transition.name),
+                body='Please see documents provided in attachments '
+                     'for "{}".'.format(transition.name),
+                from_email=settings.EMAIL_FROM,
+                to=[requester.email]
+            )
+            for attachment in kwargs['attachments']:
+                email.attach_file(attachment.file.path)
+            email.send()
 
     @classmethod
     @transition_action(
