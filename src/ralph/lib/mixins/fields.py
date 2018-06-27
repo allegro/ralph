@@ -61,6 +61,67 @@ class NullableCharField(
     pass
 
 
+# NOTE(romcheg): NUMP stands for No Useles Migrations Please.
+#                It is recommended to refrain from checking the other meaning
+#                in UD.
+class NUMPFieldMixIn(object):
+
+    def __init__(self, fields_to_ignore, *args, **kwargs):
+        super(NUMPFieldMixIn, self).__init__(*args, **kwargs)
+        self.fields_to_ignore = fields_to_ignore
+
+    def deconstruct(self):
+        name, path, args, kwargs = super(NUMPFieldMixIn, self).deconstruct()
+
+        # NOTE(romcheg): Perform arguments substitution only for direct
+        #                descendants.
+        if not self.__class__.__mro__.index(NUMPFieldMixIn) > 1:
+            # NOTE(romcheg): Exclude all fields that should not be concidered
+            #                when generating migrations.
+            kwargs = {
+                f: kwargs[f] for f in kwargs if f not in self.fields_to_ignore
+            }
+            path = '{}.{}'.format(NUMP.__module__, NUMP.__name__)
+
+            nump_args = [self.base_class(*args, **kwargs)]
+            nump_kwargs = {'fields_to_ignore': self.fields_to_ignore}
+
+            return name, path, nump_args, nump_kwargs
+
+        return name, path, args, kwargs
+
+
+NUMP_FIELD_CACHE = {}
+
+
+def get_nump_class(base_field, fields_to_ignore):
+    global NUMP_FIELD_CACHE
+    base_class = base_field.__class__
+
+    cache_lookup = tuple((base_class,) + fields_to_ignore)
+
+    if cache_lookup not in NUMP_FIELD_CACHE:
+        nump_field_name = 'NUMP' + base_class.__name__
+        NUMP_FIELD_CACHE[cache_lookup] = type(
+            nump_field_name,
+            (NUMPFieldMixIn, base_class),
+            {'base_class': base_class}
+        )
+
+    return NUMP_FIELD_CACHE[cache_lookup]
+
+
+def NUMP(base_field, fields_to_ignore=('help_text', 'verbose_name')):
+    """Decorator to avoid migrations when not important fields are changed."""
+
+    klass = get_nump_class(base_field, fields_to_ignore)
+    name, path, args, kwargs = base_field.deconstruct()
+
+    kwargs['fields_to_ignore'] = fields_to_ignore
+
+    return klass(*args, **kwargs)
+
+
 class NullableGenericIPAddressField(
     NullableCharFieldMixin,
     models.GenericIPAddressField
