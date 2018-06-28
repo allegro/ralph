@@ -17,7 +17,6 @@ date_now = datetime.now().date()
 class SSLCertificatesFactory(DjangoModelFactory):
     name = factory.Sequence(lambda n: 'www.name{}.com'.format(n))
     certificate_type = CertificateType.ov
-    service_environment = factory.SubFactory(ServiceEnvironmentFactory)
     business_owner = factory.SubFactory(UserFactory)
     technical_owner = factory.SubFactory(UserFactory)
     issued_by = factory.SubFactory(ManufacturerFactory)
