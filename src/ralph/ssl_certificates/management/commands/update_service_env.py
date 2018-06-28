@@ -7,14 +7,21 @@ from ralph.dns.dnsaas import dnsaas_client
 from ralph.ssl_certificates.models import SSLCertificate
 
 
+def checking_type(value):
+    if value['type'] is 'CAME' or 'PTR':
+        domain = value['content']
+    else:
+        domain = value['name']
+    return domain
+
+
 class Command(BaseCommand):
     help = 'Checks the compliance of services in SSL Certificates'
 
-    def update_from_record(self, results):
-        for value in results:
-            domain = value['content']
+    def update_from_record(self, result):
+        for value in result:
+            domain = checking_type(value)
             service_dns = value['service_name']
-            name = None
             try:
                 name = ServiceEnvironment.objects.get(
                     service__name=service_dns, environment__name='prod'
@@ -23,14 +30,15 @@ class Command(BaseCommand):
                 self.stderr.write(
                     'Service with name {} does not exist'.format(service_dns)
                 )
-            SSLCertificate.objects.filter(
-                domain_ssl=domain).update(service_environment=name)
+            else:
+                SSLCertificate.objects.filter(
+                    domain_ssl=domain).update(
+                    service_env=name)
 
-    def update_from_domains(self, results):
-        for value in results:
+    def update_from_domains(self, result):
+        for value in result:
             domain = value['name']
             service_dns = value['service_name']
-            name = None
             try:
                 name = ServiceEnvironment.objects.get(
                     service__name=service_dns, environment__name='prod'
@@ -39,8 +47,10 @@ class Command(BaseCommand):
                 self.stderr.write(
                     'Service with name {} does not exist'.format(service_dns)
                 )
-            SSLCertificate.objects.filter(
-                domain_ssl=domain).update(service_environment=name)
+            else:
+                SSLCertificate.objects.filter(
+                    domain_ssl=domain).update(
+                    service_env=name)
 
     def get_records(self):
         url = dnsaas_client.build_url('records')

@@ -1,5 +1,7 @@
 import os
 from io import StringIO
+from unittest.mock import patch
+
 from django.core.management import call_command
 from django.test import TestCase
 
@@ -19,7 +21,7 @@ class ImportSSLCertificatesTest(TestCase):
         call_command('import_ssl_certificates', '404', stderr=out)
         self.assertIn('Dir not found\n', out.getvalue())
 
-    def test_wildcard_certificate_domain_ssl_should_by_without_prefix(self):  #noqa
+    def test_wildcard_certificate_domain_ssl_should_by_without_prefix(self):  # noqa
         out = StringIO()
         dir = os.path.join(
             self.base_dir, 'tests', 'samples'
@@ -82,30 +84,20 @@ class ImportSSLCertificatesTest(TestCase):
             out.getvalue()
         )
 
-class UpdateServiceEnvTest(TestCase):
-    def setUp(self):
-        self.dns = DNSAAS_URL
-        self.token = DNSAAS_TOKEN
 
-    def test_command_should_informed_if_service_not_exist(self):
+class UpdateServiceEnvTest(TestCase):
+    @patch('ralph.ssl_certificates.management.commands.update_service_env.dnsaas_client')
+    def test_command_should_informed_if_service_not_exist(self, dnsaas_client):
+        dnsaas_client.get_api_result.return_value = [
+            {
+                "type": "CNAME",
+                "service_name": "Serwis porcelanowy",
+                "name": "tb-bw3.9.local",
+                "content": "hhh.9.local",
+            }
+        ]
         out = StringIO()
-        self.dns = os.environ.get(
-            'DNSAAS_URL', 'https://dnsaas.allegrogroup.com/'
-        )
-        self.token = os.environ.get(
-            'DNSAAS_TOKEN', '59bbbfa312feb2fcd32300f7a47babe7c43a7d36'
-        )
         call_command('update_service_env', stderr=out)
         self.assertIn(
-            'Service with name OLX does not exist\n', out.getvalue()
-        )
-
-    def test_command_should_update_service_env_in_cert(self):
-        out = StringIO()
-        call_command('update_service_env', stderr=out)
-        expected = ServiceEnvironment.objects.get(
-                    service__name='Ceneo', environment__name='prod'
-        )
-        self.assertTrue(
-            SSLCertificate.objects.get(service_environment=expected)
+            'Service with name Serwis porcelanowy does not exist\n', out.getvalue()
         )

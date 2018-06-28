@@ -14,6 +14,8 @@ from ralph.assets.models.assets import Manufacturer
 from ralph.ssl_certificates.models import CertificateType, SSLCertificate
 
 
+DEFAULT_ISSUER_NAME = 'CA ENT'
+
 def extract_domain_from_filename(filename):
     """
     >>> extract_domain_from_filename('wildcard_allegro.pl.crt')
@@ -36,7 +38,7 @@ def get_ssl_type(issuer_name, san, filename):
         type_ssl = CertificateType.wildcard.id
     elif san is not '':
         type_ssl = CertificateType.multisan.id
-    elif issuer_name == 'CA ENT':
+    elif issuer_name == DEFAULT_ISSUER_NAME:
         type_ssl = CertificateType.internal.id
     return type_ssl
 
@@ -65,7 +67,7 @@ class Command(BaseCommand):
             NameOID.ORGANIZATION_NAME
         )
         domain = extract_domain_from_filename(filename)
-        issuer_name = 'CA ENT'
+        issuer_name = DEFAULT_ISSUER_NAME
         if issuer and issuer[0].value:
             issuer_name = issuer[0].value
         domain_ssl = get_domain_ssl(cert)

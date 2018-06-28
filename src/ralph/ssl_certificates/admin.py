@@ -23,7 +23,7 @@ class SSLCertificateAdmin(AttachmentsMixin, RalphAdmin):
     ]
 
     list_display = [
-        'name', 'business_owner',
+        'name', 'domain_ssl', 'business_owner',
         'technical_owner', 'issued_by',
         'date_from', 'date_to',
     ]
@@ -37,7 +37,7 @@ class SSLCertificateAdmin(AttachmentsMixin, RalphAdmin):
     fieldsets = (
         (_('Basic info'), {
             'fields': (
-                'name', 'certificate_type',
+                'name', 'domain_ssl', 'certificate_type',
                 'issued_by', 'san',
                 'price', 'date_from', 'date_to',
             )
@@ -49,4 +49,4 @@ class SSLCertificateAdmin(AttachmentsMixin, RalphAdmin):
             )
         })
     )
-    search_fields = ['name', ]
+    search_fields = ['name',]

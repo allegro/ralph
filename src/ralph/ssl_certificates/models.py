@@ -37,12 +37,6 @@ class SSLCertificate(AdminAbsoluteUrlMixin, BaseObject):
         choices=CertificateType(),
         default=CertificateType.ov.id,
     )
-    service_environment = models.ForeignKey(
-        ServiceEnvironment,
-        related_name='service_environment',
-        null=True,
-        on_delete=models.PROTECT
-    )
     business_owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name='certificates_business_owner',
