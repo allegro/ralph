@@ -16,6 +16,7 @@ from ralph.ssl_certificates.models import CertificateType, SSLCertificate
 
 DEFAULT_ISSUER_NAME = 'CA ENT'
 
+
 def extract_domain_from_filename(filename):
     """
     >>> extract_domain_from_filename('wildcard_allegro.pl.crt')
