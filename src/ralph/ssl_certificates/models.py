@@ -5,7 +5,7 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.assets.models import BaseObject, ServiceEnvironment
+from ralph.assets.models import BaseObject
 from ralph.assets.models.assets import Manufacturer
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 

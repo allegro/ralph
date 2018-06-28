@@ -49,4 +49,4 @@ class SSLCertificateAdmin(AttachmentsMixin, RalphAdmin):
             )
         })
     )
-    search_fields = ['name',]
+    search_fields = ['name', ]
