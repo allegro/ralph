@@ -109,9 +109,9 @@ class AssetList(Table):
         else:
             return []
 
-    def report_failure(self, item):
+    def create_report_link(self, url, url_title, item):
         item_dict = model_to_dict(item)
-        url = settings.MY_EQUIPMENT_REPORT_FAILURE_URL
+        url = url
         if url:
             placeholders = [
                 k[1] for k in Formatter().parse(url) if k[1] is not None
@@ -127,37 +127,25 @@ class AssetList(Table):
                 Escape URL param and replace quotation by unicode inches sign
                 """
                 return quote(str(p).replace('"', '\u2033'))
+
             return '<a href="{}" target="_blank">{}</a><br />'.format(
                 url.format(
                     **{k: escape_param(v) for (k, v) in item_dict.items()}
                 ),
-                _('Report failure')
+                _(url_title)
             )
         return ''
+
+    def report_failure(self, item):
+        url = settings.MY_EQUIPMENT_REPORT_FAILURE_URL
+        url_title = 'Report failure'
+        return self.create_report_link(url, url_title, item)
     report_failure.title = ''
 
     def report_buyout(self, item):
-        item_dict = model_to_dict(item)
         url = settings.MY_EQUIPMENT_BUYOUT_URL
-        if url:
-            placeholders = [
-                k[1] for k in Formatter().parse(url) if k[1] is not None
-            ]
-            item_dict.update({
-                k: getattr_dunder(item, k) for k in placeholders
-            })
-            if self.request and 'username' not in item_dict:
-                item_dict['username'] = self.request.user.username
-
-            def escape_param(p):
-                return quote(str(p).replace('"', '\u2033'))
-            return '<a href="{}" target="_blank">{}</a><br />'.format(
-                url.format(
-                    **{k: escape_param(v) for (k, v) in item_dict.items()}
-                ),
-                _('Report buyout')
-            )
-        return ''
+        url_title = 'Report buyout'
+        return self.create_report_link(url, url_title, item)
     report_buyout.title = ''
 
     def confirm_ownership(self, item):
@@ -236,7 +224,7 @@ class UserInfoMixin(object):
             [
                 'id', 'model__category__name', 'model__manufacturer__name',
                 'model__name', 'sn', 'barcode', 'remarks', 'status',
-                'buyout_date', 'report_failure', 'report_buyout', 'url',
+                'buyout_date', 'url',
             ],
             ['user_licence']
         )

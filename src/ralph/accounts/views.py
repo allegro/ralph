@@ -182,7 +182,7 @@ class CurrentUserInfoView(
         if settings.MY_EQUIPMENT_REPORT_FAILURE_URL:
             asset_fields += ['report_failure']
 
-        if settings.MY_EQUIPMENT_BUYOUT_URL:
+        if settings.MY_EQUIPMENT_BUYOUT_URL and settings.MY_EQUIPMENT_SHOW_BUYOUT_DATE:
             asset_fields += ['report_buyout']
 
         warehouse_stocktaking_enabled = BackOfficeAsset.objects.filter(
