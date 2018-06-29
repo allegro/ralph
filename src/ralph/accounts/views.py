@@ -116,7 +116,7 @@ class InventoryTagView(View):
 
     def post(self, request, *args, **kwargs):
         asset = get_object_or_404(BackOfficeAsset, id=request.POST['asset_id'])
-        if(
+        if (
             asset.user_id != request.user.id or
             not (
                 asset.warehouse.stocktaking_enabled or
@@ -182,7 +182,7 @@ class CurrentUserInfoView(
         if settings.MY_EQUIPMENT_REPORT_FAILURE_URL:
             asset_fields += ['report_failure']
 
-        if settings.MY_EQUIPMENT_BUYOUT_URL and settings.MY_EQUIPMENT_SHOW_BUYOUT_DATE:
+        if settings.MY_EQUIPMENT_BUYOUT_URL and settings.MY_EQUIPMENT_SHOW_BUYOUT_DATE:  # noqa
             asset_fields += ['report_buyout']
 
         warehouse_stocktaking_enabled = BackOfficeAsset.objects.filter(
