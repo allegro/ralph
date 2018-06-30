@@ -128,6 +128,8 @@ SQL_QUERY_LIMIT = 30
 
 @ddt
 class ViewsTest(TestCase):
+    fixtures = ['operation_types', 'operation_statuses']
+
     def setUp(self):
         self.request = RequestFactory().get('/')
         self.request.user = get_user_model().objects.create_superuser(
