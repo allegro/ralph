@@ -53,13 +53,6 @@ class DomainType(Choices):
     technical = _('Technical')
 
 
-# class AdditionalServices(Choices):
-#     _ = Choices.Choice
-#
-#     none = _('None')
-#     masking = _('Masking')
-#     backorder = _('Backorder')
-#     acquisition = _('Acquisition')
 class AdditionalServices(models.Model):
     ADDITIONAL_SERVICES = (
         ('None', 'None'),

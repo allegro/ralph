@@ -128,12 +128,6 @@ sitetrees = [
             perms_mode_all=False,
             children=[
                 section(_('Hardware'), 'back_office', 'backofficeasset'),
-                section(_('Warehouses'), 'back_office', 'warehouse'),
-                section(
-                    _('Office Infrastructures'),
-                    'back_office',
-                    'officeinfrastructure'
-                ),
             ]
         ),
         ralph_item(
@@ -312,6 +306,12 @@ sitetrees = [
                 section(_('Transitions'), 'transitions', 'TransitionModel'),
                 section(_('Report template'), 'reports', 'Report'),
                 section(_('Custom fields'), 'custom_fields', 'CustomField'),
+                section(_('Warehouses'), 'back_office', 'warehouse'),
+                section(
+                    _('Office Infrastructures'),
+                    'back_office',
+                    'officeinfrastructure'
+                )
             ]
         )
     ])
