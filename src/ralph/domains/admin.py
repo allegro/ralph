@@ -12,7 +12,7 @@ from ralph.domains.models.domains import (
     Domain,
     DomainCategory,
     DomainContract,
-    DomainRegistrant
+    DomainRegistrant,
 )
 
 
@@ -31,8 +31,7 @@ class DomainAdmin(AttachmentsMixin, RalphAdmin):
         'name', 'service_env', 'domain_status', 'business_segment',
         'domain_holder', ('domaincontract__expiration_date', DateListFilter),
         'website_type', 'website_url',
-        'dns_provider', 'domain_category', 'domain_type',
-
+        'dns_provider', 'domain_category', 'domain_type', 'additional_services'
     ]
     list_display = [
         'name', 'business_owner',
@@ -46,7 +45,7 @@ class DomainAdmin(AttachmentsMixin, RalphAdmin):
             'fields': (
                 'name', 'remarks', 'domain_status', 'website_type',
                 'website_url', 'domain_category', 'domain_type',
-                'dns_provider',
+                'dns_provider', 'additional_services',
             )
         }),
         (_('Ownership info'), {
@@ -87,8 +86,8 @@ class DomainContractAdmin(AttachmentsMixin, RalphAdmin):
     fieldsets = (
         (_('Basic info'), {
             'fields': (
-                'domain', 'expiration_date', 'registrant'
-
+                'domain', 'expiration_date', 'registrant',
+                'additional_services'
             )
         }),
         (_('Financial info'), {
