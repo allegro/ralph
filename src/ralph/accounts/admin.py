@@ -109,9 +109,20 @@ class AssetList(Table):
         else:
             return []
 
+    def report_failure(self, item):
+        url = settings.MY_EQUIPMENT_REPORT_FAILURE_URL
+        url_title = 'Report failure'
+        return self.create_report_link(url, url_title, item)
+    report_failure.title = ''
+
+    def report_buyout(self, item):
+        url = settings.MY_EQUIPMENT_BUYOUT_URL
+        url_title = 'Report buyout'
+        return self.create_report_link(url, url_title, item)
+    report_buyout.title = ''
+
     def create_report_link(self, url, url_title, item):
         item_dict = model_to_dict(item)
-        url = url
         if url:
             placeholders = [
                 k[1] for k in Formatter().parse(url) if k[1] is not None
@@ -135,18 +146,6 @@ class AssetList(Table):
                 _(url_title)
             )
         return ''
-
-    def report_failure(self, item):
-        url = settings.MY_EQUIPMENT_REPORT_FAILURE_URL
-        url_title = 'Report failure'
-        return self.create_report_link(url, url_title, item)
-    report_failure.title = ''
-
-    def report_buyout(self, item):
-        url = settings.MY_EQUIPMENT_BUYOUT_URL
-        url_title = 'Report buyout'
-        return self.create_report_link(url, url_title, item)
-    report_buyout.title = ''
 
     def confirm_ownership(self, item):
         has_inv_tag = any(
