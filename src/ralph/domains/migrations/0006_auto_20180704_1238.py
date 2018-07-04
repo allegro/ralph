@@ -15,12 +15,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='AdditionalServices',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
             ],
         ),
         migrations.AddField(
             model_name='domain',
             name='additional_services',
-            field=multiselectfield.db.fields.MultiSelectField(max_length=34, null=True, choices=[('None', 'None'), ('Masking', 'Masking'), ('Backorder', 'Backorder'), ('Acquisition', 'Acquisition')], blank=True),
+            field=multiselectfield.db.fields.MultiSelectField(null=True, max_length=29, choices=[('Masking', 'Masking'), ('Backorder', 'Backorder'), ('Acquisition', 'Acquisition')], blank=True),
         ),
     ]
