@@ -55,7 +55,6 @@ class DomainType(Choices):
 
 class AdditionalServices(models.Model):
     ADDITIONAL_SERVICES = (
-        ('None', 'None'),
         ('Masking', 'Masking'),
         ('Backorder', 'Backorder'),
         ('Acquisition', 'Acquisition')
