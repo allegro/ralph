@@ -12,7 +12,7 @@ from ralph.domains.models.domains import (
     Domain,
     DomainCategory,
     DomainContract,
-    DomainRegistrant,
+    DomainRegistrant
 )
 
 
