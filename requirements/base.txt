@@ -29,5 +29,5 @@ Unidecode==0.04.18
 tablib==0.11.5
 factory-boy
 openpyxl==2.4.0
-multiselectfield=0.1.8
+multiselectfield==0.1.8
 
