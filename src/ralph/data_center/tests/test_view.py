@@ -8,8 +8,9 @@ from django.test import TestCase
 from ralph.data_center.models import DataCenterAsset
 from ralph.data_center.tests.factories import (
     ClusterFactory,
-    DataCenterAssetFullFactory,
-    DataCenterAssetFactory)
+    DataCenterAssetFactory,
+    DataCenterAssetFullFactory
+)
 from ralph.data_center.views import RelationsView
 from ralph.security.models import ScanStatus
 from ralph.security.tests.factories import (
@@ -17,11 +18,13 @@ from ralph.security.tests.factories import (
     VulnerabilityFactory
 )
 from ralph.tests.mixins import ClientMixin
-from ralph.virtual.models import VirtualServer, CloudHost
+from ralph.virtual.models import CloudHost, VirtualServer
 from ralph.virtual.tests.factories import (
+    CloudHostFactory,
     CloudHostFullFactory,
-    VirtualServerFullFactory,
-    VirtualServerFactory, CloudHostFactory)
+    VirtualServerFactory,
+    VirtualServerFullFactory
+)
 
 
 def tomorrow():
