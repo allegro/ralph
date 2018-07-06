@@ -29,10 +29,7 @@ from ralph.data_center.tests.factories import (
 )
 from ralph.networks.tests.factories import IPAddressFactory
 
-from ralph.virtual.tests.factories import (
-    VirtualServerFactory,
-    CloudHostFactory
-    )
+from ralph.virtual.tests.factories import CloudHostFactory, VirtualServerFactory
 
 
 class DataCenterAssetAPITests(RalphAPITestCase):

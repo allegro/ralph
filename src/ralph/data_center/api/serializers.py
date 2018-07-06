@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from rest_framework import serializers
 from django.contrib.contenttypes.models import ContentType
+from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer
 from ralph.api.serializers import RalphAPISaveSerializer
