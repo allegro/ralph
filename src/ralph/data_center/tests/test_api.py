@@ -29,6 +29,11 @@ from ralph.data_center.tests.factories import (
 )
 from ralph.networks.tests.factories import IPAddressFactory
 
+from ralph.virtual.tests.factories import (
+    VirtualServerFactory,
+    CloudHostFactory
+    )
+
 
 class DataCenterAssetAPITests(RalphAPITestCase):
     def setUp(self):
@@ -50,6 +55,15 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         )
         self.dc_asset.tags.add('db', 'test')
         self.dc_asset_2 = DataCenterAssetFullFactory()
+        self.cloud_host = CloudHostFactory(
+            hypervisor=self.dc_asset_2
+        )
+        self.virtual_server = VirtualServerFactory(
+            parent=self.dc_asset_2
+        )
+        self.virtual_server_2 = VirtualServerFactory(
+            parent=self.dc_asset_2
+        )
 
     def test_get_data_center_assets_list(self):
         url = reverse('datacenterasset-list')
@@ -85,6 +99,32 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         self.assertEqual(
             response.data['technical_owners'][0]['username'], 'user2'
         )
+
+    def test_get_data_center_asset_details_related_hosts(self):
+        url = reverse('datacenterasset-detail', args=(self.dc_asset_2.id,))
+        response = self.client.get(url, format='json')
+        self.assertEqual(
+            len(response.data['related_hosts']['cloud_hosts']), 1
+        )
+        self.assertEqual(
+            len(response.data['related_hosts']['virtual_hosts']), 2
+        )
+        self.assertEqual(
+            len(response.data['related_hosts']['physical_hosts']), 0
+        )
+        self.assertEqual(
+            response.data['related_hosts']['virtual_hosts'][0]['id'],
+            self.virtual_server.id
+        )
+        self.assertEqual(
+            response.data['related_hosts']['virtual_hosts'][0]['hostname'],
+            self.virtual_server.hostname
+        )
+        self.assertEqual(
+            response.data['related_hosts']['cloud_hosts'][0]['hostname'],
+            self.cloud_host.hostname
+        )
+
 
     def test_create_data_center_asset(self):
         url = reverse('datacenterasset-list')
