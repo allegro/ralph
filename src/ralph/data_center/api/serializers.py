@@ -128,8 +128,8 @@ class DataCenterAssetSerializer(ComponentSerializerMixin, AssetSerializer):
     related_hosts = serializers.SerializerMethodField()
 
     def _get_physical_hosts(self, obj):
-       physical_server = ContentType.objects.get_for_model(DataCenterAsset)
-       return DataCenterAssetSimpleSerializer(
+        physical_server = ContentType.objects.get_for_model(DataCenterAsset)
+        return DataCenterAssetSimpleSerializer(
             obj.children.filter(content_type=physical_server), many=True
         ).data
 
@@ -141,8 +141,10 @@ class DataCenterAssetSerializer(ComponentSerializerMixin, AssetSerializer):
         ).data
 
     def _get_cloud_hosts(self, obj):
-       from ralph.virtual.api import CloudHostSimpleSerializer
-       return CloudHostSimpleSerializer(obj.cloudhost_set.all(), many=True).data
+        from ralph.virtual.api import CloudHostSimpleSerializer
+        return CloudHostSimpleSerializer(
+            obj.cloudhost_set.all(), many=True
+        ).data
 
     def get_related_hosts(self, obj):
         related_hosts = {}
@@ -150,7 +152,7 @@ class DataCenterAssetSerializer(ComponentSerializerMixin, AssetSerializer):
         related_hosts['virtual_hosts'] = self._get_virtual_hosts(obj)
         related_hosts['cloud_hosts'] = self._get_cloud_hosts(obj)
         return related_hosts
-    
+
     class Meta(AssetSerializer.Meta):
         model = DataCenterAsset
         depth = 2
