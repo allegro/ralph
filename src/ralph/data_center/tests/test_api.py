@@ -52,19 +52,10 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         )
         self.dc_asset.tags.add('db', 'test')
         self.dc_asset_2 = DataCenterAssetFullFactory()
-        self.cloud_host = CloudHostFactory(
-            hypervisor=self.dc_asset_2
-        )
-        self.virtual_server = VirtualServerFactory(
-            parent=self.dc_asset_2
-        )
-        self.virtual_server_2 = VirtualServerFactory(
-            parent=self.dc_asset_2
-        )
 
     def test_get_data_center_assets_list(self):
         url = reverse('datacenterasset-list')
-        with self.assertNumQueries(66):
+        with self.assertNumQueries(21):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
@@ -98,7 +89,17 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         )
 
     def test_get_data_center_asset_details_related_hosts(self):
-        url = reverse('datacenterasset-detail', args=(self.dc_asset_2.id,))
+        dc_asset_3 = DataCenterAssetFullFactory()
+        cloud_host = CloudHostFactory(
+            hypervisor=dc_asset_3
+        )
+        virtual_server = VirtualServerFactory(
+            parent=dc_asset_3
+        )
+        virtual_server_2 = VirtualServerFactory(
+            parent=dc_asset_3
+        )
+        url = reverse('datacenterasset-detail', args=(dc_asset_3.id,))
         response = self.client.get(url, format='json')
         self.assertEqual(
             len(response.data['related_hosts']['cloud_hosts']), 1
@@ -111,15 +112,15 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         )
         self.assertEqual(
             response.data['related_hosts']['virtual_hosts'][0]['id'],
-            self.virtual_server.id
+            virtual_server.id
         )
         self.assertEqual(
             response.data['related_hosts']['virtual_hosts'][0]['hostname'],
-            self.virtual_server.hostname
+            virtual_server.hostname
         )
         self.assertEqual(
             response.data['related_hosts']['cloud_hosts'][0]['hostname'],
-            self.cloud_host.hostname
+            cloud_host.hostname
         )
 
 
