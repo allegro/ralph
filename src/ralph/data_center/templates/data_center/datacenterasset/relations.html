@@ -32,7 +32,45 @@
                   {% endfor %}
               </table>
           {% endif %}
-      {% endfor %}
+          {% if rel_obj_type == "virtual_hosts" %}
+              <h2>{% trans "Virtual hosts" %}</h2>
+              <table>
+                  <tr>
+                      <th>{% trans "Hostname" %}</th>
+                      <th>{% trans "IP Address" %}</th>
+                  </tr>
+                  {% for virtual_host in objects %}
+                      <tr>
+                        <td><a href="{{ virtual_host.get_absolute_url }}">{{ virtual_host.hostname }}</a></td>
+                        <td>
+                          {% for addr in virtual_host.ipaddresses %}
+                              {{ addr }}<br>
+                          {% endfor %}
+                        </td>
+                      </tr>
+                  {% endfor %}
+              </table>
+          {% endif %}
+          {% if rel_obj_type == "physical_hosts" %}
+              <h2>{% trans "Physical hosts" %}</h2>
+              <table>
+                  <tr>
+                      <th>{% trans "Hostname" %}</th>
+                      <th>{% trans "IP Address" %}</th>
+                  </tr>
+                  {% for physical_host in objects %}
+                      <tr>
+                        <td><a href="{{ physical_host.get_absolute_url }}">{{ physical_host.hostname }}</a></td>
+                        <td>
+                          {% for addr in physical_host.ipaddresses %}
+                              {{ addr }}<br>
+                          {% endfor %}
+                        </td>
+                      </tr>
+                  {% endfor %}
+              </table>
+          {% endif %}
+       {% endfor %}
 
   {% else %}
     <p>{% trans "No related objects found." %}</p>

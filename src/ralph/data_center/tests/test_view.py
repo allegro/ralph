@@ -1,21 +1,28 @@
 from datetime import datetime, timedelta
 from urllib.parse import urlencode
 
+from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
+from ralph.data_center.models import DataCenterAsset
 from ralph.data_center.tests.factories import (
     ClusterFactory,
+    DataCenterAssetFactory,
     DataCenterAssetFullFactory
 )
+from ralph.data_center.views import RelationsView
 from ralph.security.models import ScanStatus
 from ralph.security.tests.factories import (
     SecurityScanFactory,
     VulnerabilityFactory
 )
 from ralph.tests.mixins import ClientMixin
+from ralph.virtual.models import CloudHost, VirtualServer
 from ralph.virtual.tests.factories import (
+    CloudHostFactory,
     CloudHostFullFactory,
+    VirtualServerFactory,
     VirtualServerFullFactory
 )
 
@@ -267,3 +274,48 @@ class DCHostFilterByPatchDeadline(ClientMixin, TestCase):
             int(response.context_data['object_id']),
             self.asset_with_today_vul.id,
         )
+
+
+class RelationsViewTest(TestCase):
+    def setUp(self):
+        self.view = RelationsView()
+        self.view.object = DataCenterAssetFactory()
+
+    def test_should_add_cloud_hosts_to_dictionary(self):
+        cloud_host = ContentType.objects.get_for_model(CloudHost)
+        self.view.object.cloudhost_set.add(*CloudHostFactory.create_batch(4))
+        related_objects = {}
+        self.view._add_cloud_hosts(related_objects)
+        content_type = {
+            c_t.content_type for c_t in related_objects['cloud_hosts']
+        }
+
+        self.assertEqual(4, len(related_objects['cloud_hosts']))
+        self.assertEqual(1, len(content_type))
+        self.assertEqual(cloud_host, content_type.pop())
+
+    def test_should_add_virtual_hosts_to_dictionary(self):
+        virtual_server = ContentType.objects.get_for_model(VirtualServer)
+        self.view.object.children.add(*VirtualServerFactory.create_batch(4))
+        related_objects = {}
+        self.view._add_virtual_hosts(related_objects)
+        content_type = {
+            c_t.content_type for c_t in related_objects['virtual_hosts']
+        }
+
+        self.assertEqual(4, len(related_objects['virtual_hosts']))
+        self.assertEqual(1, len(content_type))
+        self.assertEqual(virtual_server, content_type.pop())
+
+    def test_should_add_physical_hosts_to_dictionary(self):
+        physical_server = ContentType.objects.get_for_model(DataCenterAsset)
+        self.view.object.children.add(*DataCenterAssetFactory.create_batch(4))
+        related_objects = {}
+        self.view._add_physical_hosts(related_objects)
+        content_type = {
+            c_t.content_type for c_t in related_objects['physical_hosts']
+        }
+
+        self.assertEqual(4, len(related_objects['physical_hosts']))
+        self.assertEqual(1, len(content_type))
+        self.assertEqual(physical_server, content_type.pop())
