@@ -110,8 +110,19 @@ class AssetList(Table):
             return []
 
     def report_failure(self, item):
-        item_dict = model_to_dict(item)
         url = settings.MY_EQUIPMENT_REPORT_FAILURE_URL
+        url_title = 'Report failure'
+        return self.create_report_link(url, url_title, item)
+    report_failure.title = ''
+
+    def report_buyout(self, item):
+        url = settings.MY_EQUIPMENT_BUYOUT_URL
+        url_title = 'Report buyout'
+        return self.create_report_link(url, url_title, item)
+    report_buyout.title = ''
+
+    def create_report_link(self, url, url_title, item):
+        item_dict = model_to_dict(item)
         if url:
             placeholders = [
                 k[1] for k in Formatter().parse(url) if k[1] is not None
@@ -127,14 +138,14 @@ class AssetList(Table):
                 Escape URL param and replace quotation by unicode inches sign
                 """
                 return quote(str(p).replace('"', '\u2033'))
+
             return '<a href="{}" target="_blank">{}</a><br />'.format(
                 url.format(
                     **{k: escape_param(v) for (k, v) in item_dict.items()}
                 ),
-                _('Report failure')
+                _(url_title)
             )
         return ''
-    report_failure.title = ''
 
     def confirm_ownership(self, item):
         has_inv_tag = any(
@@ -212,13 +223,14 @@ class UserInfoMixin(object):
             [
                 'id', 'model__category__name', 'model__manufacturer__name',
                 'model__name', 'sn', 'barcode', 'remarks', 'status',
-                'buyout_date', 'url'
+                'buyout_date', 'url',
             ],
             ['user_licence']
         )
         context['licence_list'] = AssignedLicenceList(
             self.get_licence_queryset(),
-            ['id', 'software__name', 'niw', 'url']
+            ['id', 'manufacturer', 'software__name',
+             'licence_type', 'sn', 'valid_thru', 'url']
         )
         return context
 
