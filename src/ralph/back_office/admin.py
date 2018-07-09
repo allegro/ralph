@@ -99,8 +99,9 @@ class BackOfficeAssetAdmin(
     change_views = [
         BackOfficeAssetLicence,
         BackOfficeAssetSupport,
-        BackOfficeAssetComponents,
-        BackOfficeAssetSoftware,
+        # TODO: uncomment the two tabs below once they are ready for use
+        # BackOfficeAssetComponents,
+        # BackOfficeAssetSoftware,
     ]
     list_display = [
         'status', 'barcode', 'purchase_order', 'model', 'user', 'warehouse',
