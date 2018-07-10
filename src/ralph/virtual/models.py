@@ -5,7 +5,7 @@ from collections import OrderedDict
 from dj.choices import Choices
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import models, transaction
+from django.db import models
 from django.dispatch import receiver
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
@@ -28,7 +28,6 @@ from ralph.lib.mixins.models import (
     PreviousStateMixin,
     TimeStampMixin
 )
-from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
 from ralph.networks.models.networks import IPAddress
 from ralph.signals import post_commit
@@ -268,18 +267,6 @@ class CloudHost(PreviousStateMixin,
             base_object=self, ipaddress__address__in=to_delete
         ).delete()
 
-    @classmethod
-    @transition_action(
-        verbose_name=_('Cleanup security scans'),
-    )
-    def cleanup_security_scans(cls, instances, **kwargs):
-        with transaction.atomic():
-            for instance in instances:
-                try:
-                    instance.securityscan.delete()
-                except CloudHost.securityscan.RelatedObjectDoesNotExist:
-                    pass
-
     @property
     def cloudproject(self):
         """Workaround, because parent resolves to BaseObject in rest api"""
@@ -390,25 +377,12 @@ class VirtualServer(
                 return polymorphic_parent.rack
         return None
 
-    @classmethod
-    @transition_action(
-        verbose_name=_('Cleanup security scans'),
-    )
-    def cleanup_security_scans(cls, instances, **kwargs):
-        with transaction.atomic():
-            for instance in instances:
-                try:
-                    instance.securityscan.delete()
-                except VirtualServer.securityscan.RelatedObjectDoesNotExist:
-                    pass
-
     class Meta:
         verbose_name = _('Virtual server (VM)')
         verbose_name_plural = _('Virtual servers (VM)')
 
     def __str__(self):
         return 'VirtualServer: {} ({})'.format(self.hostname, self.sn)
-
 
 post_commit(publish_host_update, VirtualServer)
 post_commit(publish_host_update, CloudHost)
