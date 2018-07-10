@@ -5,7 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
-from ralph.data_center.models import DataCenterAsset
+from ralph.data_center.models import BaseObjectCluster, Cluster, DataCenterAsset
 from ralph.data_center.tests.factories import (
     ClusterFactory,
     DataCenterAssetFactory,
@@ -319,3 +319,15 @@ class RelationsViewTest(TestCase):
         self.assertEqual(4, len(related_objects['physical_hosts']))
         self.assertEqual(1, len(content_type))
         self.assertEqual(physical_server, content_type.pop())
+
+    def test_should_add_clusters_to_dictionary(self):
+        cluster = ContentType.objects.get_for_model(Cluster)
+        self.view.object.clusters.add(
+            BaseObjectCluster(cluster=ClusterFactory())
+        )
+        related_objects = {}
+        self.view._add_clusters(related_objects)
+        content_type = related_objects['clusters'][0].content_type
+
+        self.assertEqual(1, len(related_objects['clusters']))
+        self.assertEqual(cluster, content_type)
