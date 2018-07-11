@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer
@@ -26,7 +25,6 @@ from ralph.data_center.models import (
     VIP
 )
 from ralph.security.api import SecurityScanSerializer
-from ralph.virtual.models import VirtualServer
 
 
 class ClusterTypeSerializer(RalphAPISerializer):
@@ -128,17 +126,21 @@ class DataCenterAssetSerializer(ComponentSerializerMixin, AssetSerializer):
     related_hosts = serializers.SerializerMethodField()
 
     def _get_physical_hosts(self, obj):
-        physical_server = ContentType.objects.get_for_model(DataCenterAsset)
+        if 'data_center_assets' not in self.context.keys():
+            return []
+        physical_hosts = [ph for ph in self.context['data_center_assets']
+                          if ph.parent and ph.parent.pk == obj.pk]
         return DataCenterAssetSimpleSerializer(
-            obj.children.filter(content_type=physical_server), many=True
+            physical_hosts, many=True
         ).data
 
     def _get_virtual_hosts(self, obj):
+        if 'virtual_servers' not in self.context.keys():
+            return []
         from ralph.virtual.api import VirtualServerSerializer
-        virtual_server = ContentType.objects.get_for_model(VirtualServer)
-        return VirtualServerSerializer(
-            obj.children.filter(content_type=virtual_server), many=True
-        ).data
+        virtual_hosts = [vs for vs in self.context['virtual_servers']
+                         if vs.parent and vs.parent.pk == obj.pk]
+        return VirtualServerSerializer(virtual_hosts, many=True).data
 
     def _get_cloud_hosts(self, obj):
         from ralph.virtual.api import CloudHostSimpleSerializer

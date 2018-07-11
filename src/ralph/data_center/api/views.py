@@ -37,6 +37,7 @@ from ralph.data_center.models import (
     VIP
 )
 from ralph.security.models import SecurityScan
+from ralph.virtual.models import VirtualServer
 
 
 class DataCenterAssetFilterSet(NetworkableObjectFilters):
@@ -52,7 +53,7 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         'service_env', 'service_env__service', 'service_env__environment',
         'rack', 'rack__server_room', 'rack__server_room__data_center',
         'property_of', 'budget_info', 'content_type',
-        'configuration_path__module'
+        'configuration_path__module',
     ]
     prefetch_related = base_object_descendant_prefetch_related + [
         'connections',
@@ -82,6 +83,12 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     ]
     additional_filter_class = DataCenterAssetFilterSet
     exclude_filter_fields = ['configuration_path']
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['virtual_servers'] = VirtualServer.objects.all()
+        context['data_center_assets'] = DataCenterAsset.objects.all()
+        return context
 
 
 class AccessoryViewSet(RalphAPIViewSet):
