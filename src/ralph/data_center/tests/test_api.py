@@ -55,7 +55,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
 
     def test_get_data_center_assets_list(self):
         url = reverse('datacenterasset-list')
-        with self.assertNumQueries(21):
+        with self.assertNumQueries(19):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
@@ -99,6 +99,9 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         virtual_server_2 = VirtualServerFactory(
             parent=dc_asset_3
         )
+        dc_asset_4 = DataCenterAssetFullFactory(
+            parent=dc_asset_3
+        )
         url = reverse('datacenterasset-detail', args=(dc_asset_3.id,))
         response = self.client.get(url, format='json')
         self.assertEqual(
@@ -106,9 +109,6 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         )
         self.assertEqual(
             len(response.data['related_hosts']['virtual_hosts']), 2
-        )
-        self.assertEqual(
-            len(response.data['related_hosts']['physical_hosts']), 0
         )
         self.assertEqual(
             response.data['related_hosts']['virtual_hosts'][0]['id'],
@@ -121,6 +121,13 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         self.assertEqual(
             response.data['related_hosts']['cloud_hosts'][0]['hostname'],
             cloud_host.hostname
+        )
+        self.assertEqual(
+            len(response.data['related_hosts']['physical_hosts']), 1
+        )
+        self.assertEqual(
+            response.data['related_hosts']['physical_hosts'][0]['hostname'],
+            dc_asset_4.hostname
         )
 
 
