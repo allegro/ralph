@@ -9,7 +9,7 @@ class SecurityConfig(RalphAppConfig):
 
     def get_load_modules_when_ready(self):
         """
-        security/transitions.py will be loaded alongside modules reurned by
+        security/transitions.py will be loaded alongside modules returned by
         super().get_load_modules_when_ready() when the app is ready.
         This will add transition actions to appropriate models.
         """
