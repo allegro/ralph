@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db.models import Count, Prefetch
 from django.utils.translation import ugettext_lazy as _
@@ -14,6 +15,7 @@ from ralph.configuration_management.views import (
     SCMStatusCheckInChangeListMixin
 )
 from ralph.data_center.admin import generate_list_filter_with_common_fields
+from ralph.data_center.models.physical import DataCenterAsset
 from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.deployment.mixins import ActiveDeploymentMessageMixin
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
@@ -52,10 +54,24 @@ class VirtualServerTypeForm(RalphAdmin):
 
 
 class VirtualServerForm(RalphAdminForm):
+    BAD_HYPERVISOR_TYPE_MESSAGE = 'Hypervisor must be one of \
+                                   DataCenterAsset or VirtualServer.'
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if 'parent' in self.fields:
             self.fields['parent'].required = True
+
+    def is_valid(self):
+        valid = super().is_valid()
+        virtual_server = ContentType.objects.get_for_model(VirtualServer)
+        dc_asset = ContentType.objects.get_for_model(DataCenterAsset)
+        selected_object = self.cleaned_data['parent']
+        if selected_object.content_type not in (virtual_server, dc_asset):
+            error = self.error_class([self.BAD_HYPERVISOR_TYPE_MESSAGE])
+            self._errors['parent'] = error
+            return False
+        return valid
 
     class Meta:
         labels = {'parent': _('Hypervisor')}
