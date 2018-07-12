@@ -54,8 +54,9 @@ class VirtualServerTypeForm(RalphAdmin):
 
 
 class VirtualServerForm(RalphAdminForm):
-    BAD_HYPERVISOR_TYPE_MESSAGE = 'Hypervisor must be one of \
+    HYPERVISOR_TYPE_ERR_MSG = 'Hypervisor must be one of \
                                    DataCenterAsset or VirtualServer.'
+    HYPERVISOR_IS_SELF_ERR_MSG = 'Hypervisor and host must be different.'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -68,7 +69,11 @@ class VirtualServerForm(RalphAdminForm):
         dc_asset = ContentType.objects.get_for_model(DataCenterAsset)
         selected_object = self.cleaned_data['parent']
         if selected_object.content_type not in (virtual_server, dc_asset):
-            error = self.error_class([self.BAD_HYPERVISOR_TYPE_MESSAGE])
+            error = self.error_class([self.HYPERVISOR_TYPE_ERR_MSG])
+            self._errors['parent'] = error
+            return False
+        if self.instance.pk == selected_object.pk:
+            error = self.error_class([self.HYPERVISOR_IS_SELF_ERR_MSG])
             self._errors['parent'] = error
             return False
         return valid
