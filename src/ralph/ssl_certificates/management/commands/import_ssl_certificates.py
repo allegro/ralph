@@ -52,7 +52,8 @@ class Command(BaseCommand):
 
     def get_data_from_cert(self, cert, filename):
         """
-        get_data_from_certs takes certificate and proceed specific data into proper fields
+        get_data_from_certs takes certificate and proceed
+        specific data into proper fields
         Args:
             cert - certificate
             filename - name of certificate file

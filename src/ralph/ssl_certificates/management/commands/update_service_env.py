@@ -1,5 +1,3 @@
-import sys
-
 import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -34,7 +32,7 @@ class Command(BaseCommand):
                 ('offset', next)
             ])
             response = requests.get(
-                '{}'.format(url),headers={
+                '{}'.format(url), headers={
                     'Authorization': 'Token {}'.format(settings.DNSAAS_TOKEN)
                 })
             results = response.json()['results']
