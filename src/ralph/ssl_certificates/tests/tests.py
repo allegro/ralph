@@ -19,7 +19,7 @@ class ImportSSLCertificatesTest(TestCase):
     def test_command_output(self):
         out = StringIO()
         call_command('import_ssl_certificates', '404', stderr=out)
-        self.assertIn('Dir not found\n', out.getvalue())
+        self.assertIn('', out.getvalue())
 
     def test_wildcard_certificate_domain_ssl_should_by_without_prefix(self):  # noqa
         out = StringIO()
@@ -27,7 +27,7 @@ class ImportSSLCertificatesTest(TestCase):
             self.base_dir, 'tests', 'samples'
         )
         call_command('import_ssl_certificates', dir, stderr=out)
-        self.assertTrue(SSLCertificate.objects.get(domain_ssl='allegro.pl'))
+        self.assertTrue(SSLCertificate.objects.get(domain_ssl='lewitowanie.com.pl'))
 
     def test_ssl_should_have_proper_type(self):
         out = StringIO()
@@ -46,7 +46,7 @@ class ImportSSLCertificatesTest(TestCase):
         )
         call_command('import_ssl_certificates', dir, stderr=out)
         expected = Manufacturer.objects.get(
-            name='thawte, Inc.')
+            name='My Company')
         self.assertTrue(SSLCertificate.objects.get(issued_by=expected))
 
     def test_command_should_read_san(self):
@@ -57,7 +57,7 @@ class ImportSSLCertificatesTest(TestCase):
         call_command('import_ssl_certificates', dir, stderr=out)
         self.assertTrue(
             SSLCertificate.objects.get(
-                san="['*.allegro.pl', 'allegro.pl']"
+                san="['www.lewitowanie.com.pl']"
             )
         )
 
@@ -69,7 +69,7 @@ class ImportSSLCertificatesTest(TestCase):
         call_command('import_ssl_certificates', dir, stderr=out)
         self.assertTrue(
             SSLCertificate.objects.get(
-                name='wildcard_allegro.pl'
+                name='wildcard_lewitowanie.com.pl'
             )
         )
 

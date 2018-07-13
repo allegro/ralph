@@ -34,14 +34,14 @@ def get_domain_ssl(cert):
 
 
 def get_ssl_type(issuer_name, san, filename):
-    type_ssl = CertificateType.ov.id
+    ssl_type = CertificateType.ov.id
     if re.match(r'^(wildcard.+)', filename):
-        type_ssl = CertificateType.wildcard.id
+        ssl_type = CertificateType.wildcard.id
     elif san is not '':
-        type_ssl = CertificateType.multisan.id
+        ssl_type = CertificateType.multisan.id
     elif issuer_name == DEFAULT_ISSUER_NAME:
-        type_ssl = CertificateType.internal.id
-    return type_ssl
+        ssl_type = CertificateType.internal.id
+    return ssl_type
 
 
 class Command(BaseCommand):
@@ -50,7 +50,21 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('certs_dir', type=str)
 
-    def get_san(self, cert):
+    def get_data_from_cert(self, cert, filename):
+        """
+        get_data_from_certs takes certificate and proceed specific data into proper fields
+        Args:
+            cert - certificate
+            filename - name of certificate file
+        Examples:
+            name=(from file name) wildcard_mysite.com,
+            domain_ssl=(main domain name) mysite.com,
+            certificate_type= OV,
+            san=['www.mysite.com'],
+            date_to=(Valid From) July 11, 2018,
+            date_from=(Valid to) March 26, 2021,
+            issued_by=(Issuer name) CA Company:
+        """
         san = ''
         extension = None
         try:
@@ -61,9 +75,6 @@ class Command(BaseCommand):
             pass
         if extension and extension.value:
             san = extension.value.get_values_for_type(x509.DNSName)
-        return san
-
-    def ssl_values(self, cert, san, filename):
         issuer = cert.issuer.get_attributes_for_oid(
             NameOID.ORGANIZATION_NAME
         )
@@ -72,14 +83,14 @@ class Command(BaseCommand):
         if issuer and issuer[0].value:
             issuer_name = issuer[0].value
         domain_ssl = get_domain_ssl(cert)
-        type_ssl = get_ssl_type(issuer_name, san, filename)
+        ssl_type = get_ssl_type(issuer_name, san, filename)
         manufacturer, _ = Manufacturer.objects.get_or_create(
             name=issuer_name
         )
         SSLCertificate.objects.get_or_create(
             name=domain,
             domain_ssl=domain_ssl,
-            certificate_type=type_ssl,
+            certificate_type=ssl_type,
             san=san,
             date_to=cert.not_valid_after,
             date_from=cert.not_valid_before,
@@ -88,8 +99,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         certs_dir = options['certs_dir']
-        if os.path.isdir(certs_dir) is False:
-            self.stderr.write('Dir not found')
+        if not os.path.isdir(certs_dir):
+            return 'Dir not found'
         for root, dirs, files in os.walk(certs_dir):
             for filename in fnmatch.filter(files, '*.crt'):
                 cert = None
@@ -110,5 +121,4 @@ class Command(BaseCommand):
                     continue
                 if cert.not_valid_after < datetime.datetime.now():
                     continue
-                san = self.get_san(cert)
-                self.ssl_values(cert, san, filename)
+                self.get_data_from_cert(cert, filename)
