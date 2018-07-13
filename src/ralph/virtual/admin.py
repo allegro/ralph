@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db.models import Count, Prefetch
 from django.utils.translation import ugettext_lazy as _
@@ -62,21 +63,20 @@ class VirtualServerForm(RalphAdminForm):
         super().__init__(*args, **kwargs)
         if 'parent' in self.fields:
             self.fields['parent'].required = True
+            self.fields['parent'].validators.extend((
+                self.validate_parent_type,
+                self.validate_parent_instance
+            ))
 
-    def is_valid(self):
-        valid = super().is_valid()
+    def validate_parent_type(self, value):
         virtual_server = ContentType.objects.get_for_model(VirtualServer)
         dc_asset = ContentType.objects.get_for_model(DataCenterAsset)
-        selected_object = self.cleaned_data['parent']
-        if selected_object.content_type not in (virtual_server, dc_asset):
-            error = self.error_class([self.HYPERVISOR_TYPE_ERR_MSG])
-            self._errors['parent'] = error
-            return False
-        if self.instance.pk == selected_object.pk:
-            error = self.error_class([self.HYPERVISOR_IS_SELF_ERR_MSG])
-            self._errors['parent'] = error
-            return False
-        return valid
+        if value.content_type not in (virtual_server, dc_asset):
+            raise ValidationError(_(self.HYPERVISOR_TYPE_ERR_MSG))
+
+    def validate_parent_instance(self, value):
+        if self.instance.pk == value.pk:
+            raise ValidationError(_(self.HYPERVISOR_IS_SELF_ERR_MSG))
 
     class Meta:
         labels = {'parent': _('Hypervisor')}
