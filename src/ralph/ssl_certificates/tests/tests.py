@@ -1,12 +1,11 @@
 import os
 from io import StringIO
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 from django.core.management import call_command
 from django.test import TestCase
 
-from ralph.assets.models import Manufacturer, ServiceEnvironment
-from ralph.settings import DNSAAS_TOKEN, DNSAAS_URL
+from ralph.assets.models import Manufacturer
 from ralph.ssl_certificates.models import CertificateType, SSLCertificate
 
 
@@ -86,8 +85,9 @@ class ImportSSLCertificatesTest(TestCase):
 
 
 class UpdateServiceEnvTest(TestCase):
+    @patch('ralph.ssl_certificates.management.commands.update_service_env.requests')
     @patch('ralph.ssl_certificates.management.commands.update_service_env.dnsaas_client')
-    def test_command_should_informed_if_service_not_exist(self, dnsaas_client):
+    def test_command_should_informed_if_service_not_exist(self, dnsaas_client, requests):
         dnsaas_client.get_api_result.return_value = [
             {
                 "type": "CNAME",
@@ -96,6 +96,19 @@ class UpdateServiceEnvTest(TestCase):
                 "content": "hhh.9.local",
             }
         ]
+        requests.get.return_value = {
+            "count": 1,
+            "results": [
+                {
+                    "type": "CNAME",
+                    "service_name": "Serwis porcelanowy",
+                    "name": "tb-bw3.9.local",
+                    "content": "hhh.9.local",
+                }
+            ]
+            }
+        requests.get.return_value = MagicMock(ok=True)
+        requests.get.return_value.json.return_value = requests.get.return_value
         out = StringIO()
         call_command('update_service_env', stderr=out)
         self.assertIn(
