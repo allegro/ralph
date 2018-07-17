@@ -89,8 +89,7 @@ class DomainContractAdmin(AttachmentsMixin, RalphAdmin):
     fieldsets = (
         (_('Basic info'), {
             'fields': (
-                'domain', 'expiration_date', 'registrant',
-                'additional_services'
+                'domain', 'expiration_date', 'registrant'
             )
         }),
         (_('Financial info'), {
