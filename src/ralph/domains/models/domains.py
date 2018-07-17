@@ -4,6 +4,7 @@ from dj.choices import Choices
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.forms import CheckboxSelectMultiple
 from django.utils.translation import ugettext_lazy as _
 from multiselectfield import MultiSelectField
 
@@ -53,14 +54,6 @@ class DomainType(Choices):
     technical = _('Technical')
 
 
-class AdditionalServices(models.Model):
-    ADDITIONAL_SERVICES = (
-        ('Masking', 'Masking'),
-        ('Backorder', 'Backorder'),
-        ('Acquisition', 'Acquisition')
-    )
-
-
 class DomainCategory(
     AdminAbsoluteUrlMixin,
     PermByFieldMixin,
@@ -81,7 +74,19 @@ class DNSProvider(
     pass
 
 
-class Domain(AdminAbsoluteUrlMixin, BaseObject):
+class AdditionalService(
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    TimeStampMixin,
+    models.Model
+):
+
+    def __str__(self):
+        '''return a string representation of the various work types'''
+        return self.name
+
+
+class Domain(AdminAbsoluteUrlMixin, BaseObject, models.Model):
     name = models.CharField(
         verbose_name=_('domain name'),
         help_text=_('Full domain name'),
@@ -136,9 +141,9 @@ class Domain(AdminAbsoluteUrlMixin, BaseObject):
         DNSProvider, blank=True, null=True,
         help_text=_("Provider which keeps domain's DNS")
     )
-    additional_services = MultiSelectField(
-        choices=AdditionalServices.ADDITIONAL_SERVICES,
-        blank=True, null=True,
+    additional_services = models.ManyToManyField(
+        AdditionalService,
+        blank=True,
     )
 
     def __str__(self):
