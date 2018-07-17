@@ -4,9 +4,7 @@ from dj.choices import Choices
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.forms import CheckboxSelectMultiple
 from django.utils.translation import ugettext_lazy as _
-from multiselectfield import MultiSelectField
 
 from ralph.assets.models import BaseObject
 from ralph.assets.models.assets import AssetHolder, BusinessSegment
