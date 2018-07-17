@@ -13,8 +13,8 @@ from ralph.domains.models.domains import (
     Domain,
     DomainCategory,
     DomainContract,
-    DomainRegistrant,
-    )
+    DomainRegistrant
+)
 
 
 class DomainContractInline(RalphTabularInline):
