@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 
 from ralph.admin.sites import ralph_site
@@ -18,44 +19,68 @@ from ralph.virtual.models import VirtualServer
 from ralph.virtual.tests.factories import CloudHostFactory, VirtualServerFactory
 
 
-class MockAdmin:
-    def has_perm(self, perm):
-        return True
-
-
-class MockRequest:
-    pass
-
-
 class TestVirtualServerForm(RalphTestCase):
-    
     def setUp(self):
-        self.request = MockRequest()
-        self.request.user = MockAdmin()
-        self.admin = VirtualServerAdmin(VirtualServer, ralph_site)
+        # self.admin = VirtualServerAdmin(VirtualServer, ralph_site)
+        # self.user = get_user_model().objects.create_superuser(
+        #     username='test_root',)
+        self.user = get_user_model().objects.create_superuser(
+            username='root',
+            password='password',
+            email='email@email.pl'
+        )
+        self.client.login(username='root', password='password')
+        self.virtual_server = VirtualServerFactory()
+        self.url = self.virtual_server.get_absolute_url()
+
+    def _add_management_data(self, data_dict):
+        prefixes = (
+            'custom_fields-customfieldvalue-content_type-object_id-',
+            'clusters-'
+            )
+        postfixes = ('TOTAL_FORMS', 'INITIAL_FORMS')
+
+        for pre in prefixes:
+            for post in postfixes:
+                data_dict.update({
+                    '{}{}'.format(pre, post): 0
+                    })
+        return data_dict
 
     def _get_basic_form_data(self):
-        virtual_server = VirtualServerFactory()
-        return {
+        data = {
             'hostname': 'totally_random_new_hostname',
-            'type': virtual_server.type.pk,
-            'status': virtual_server.status,
-            'service_env': virtual_server.service_env,
+            'type': self.virtual_server.type.pk,
+            'status': self.virtual_server.status,
+            'service_env': self.virtual_server.service_env.pk
         }
+        return self._add_management_data(data)
 
     def test_data_center_asset_parent(self):
         form_data = self._get_basic_form_data()
         form_data['parent'] = DataCenterAssetFactory().pk
-        form = self.admin.get_form(self.request)(data=form_data)
-        form.full_clean()
-        self.assertTrue(form.is_valid())
+        response = self.client.post(self.url, form_data)
+        self.assertEquals(
+            response.status_code,
+            302,
+            (
+                repr(response.context['form'].errors)
+                if response.context and 'form' in response.context else ''
+            )
+        )
 
     def test_cloud_host_parent(self):
         form_data = self._get_basic_form_data()
         form_data['parent'] = CloudHostFactory().pk
-        form = self.admin.get_form(self.request)(data=form_data)
-        form.full_clean()
-        self.assertTrue(form.is_valid())
+        response = self.client.post(self.url, form_data)
+        self.assertEquals(
+            response.status_code,
+            302,
+            (
+                repr(response.context['form'].errors)
+                if response.context and 'form' in response.context else ''
+            )
+        )
 
     def test_invalid_hypervisor_type(self):
         form_data = self._get_basic_form_data()
@@ -64,23 +89,18 @@ class TestVirtualServerForm(RalphTestCase):
             ServiceEnvironmentFactory(),
             VirtualServerFactory(),
             LicenceFactory()
-            ):
+        ):
             form_data['parent'] = obj.pk
-            form = self.admin.get_form(self.request)(data=form_data)
-            form.full_clean()
-            self.assertFalse(form.is_valid())
-            errors = json.loads(form.errors.as_json())
-            self.assertEquals(len(errors.keys()), 1)
+            response = self.client.post(self.url, form_data)
+            self.assertTrue(response.context and response.context['errors'])
+            errors = response.context['form'].errors
+            self.assertEquals(
+                response.status_code,
+                200,
+                repr(errors)
+            )
             self.assertIn('parent', errors.keys())
-            self.assertEquals(errors['parent'][0]['message'], form.HYPERVISOR_TYPE_ERR_MSG)
-
-    def test_validate_parent_type(self):
-        form_data = self._get_basic_form_data()
-        form = self.admin.get_form(self.request)(data=form_data)
-        for obj in (
-            BaseObjectFactory(),
-            ServiceEnvironmentFactory(),
-            VirtualServerFactory(),
-            LicenceFactory()
-            ):
-            self.assertRaises(ValidationError, form._validate_parent_type, value=obj)
+            self.assertEquals(
+                errors['parent'],
+                ["Hypervisor must be one of DataCenterAsset or CloudHost"]
+            )

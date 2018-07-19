@@ -55,8 +55,9 @@ class VirtualServerTypeForm(RalphAdmin):
 
 
 class VirtualServerForm(RalphAdminForm):
-    HYPERVISOR_TYPE_ERR_MSG = 'Hypervisor must be one of \
-                                   DataCenterAsset or CloudHost'
+    HYPERVISOR_TYPE_ERR_MSG = _(
+        'Hypervisor must be one of DataCenterAsset or CloudHost'
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -69,10 +70,12 @@ class VirtualServerForm(RalphAdminForm):
         return value
 
     def _validate_parent_type(self, value):
-        dc_asset = ContentType.objects.get_for_model(DataCenterAsset)
-        cloud_host = ContentType.objects.get_for_model(CloudHost)
-        if value.content_type not in (dc_asset, cloud_host):
-            raise ValidationError(_(self.HYPERVISOR_TYPE_ERR_MSG))
+        allowed_types = ContentType.objects.get_for_models(
+            DataCenterAsset,
+            CloudHost
+        ).values()
+        if value.content_type not in allowed_types:
+            raise ValidationError(self.HYPERVISOR_TYPE_ERR_MSG)
 
     class Meta:
         labels = {'parent': _('Hypervisor')}
