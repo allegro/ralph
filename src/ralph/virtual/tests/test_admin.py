@@ -21,9 +21,6 @@ from ralph.virtual.tests.factories import CloudHostFactory, VirtualServerFactory
 
 class TestVirtualServerForm(RalphTestCase):
     def setUp(self):
-        # self.admin = VirtualServerAdmin(VirtualServer, ralph_site)
-        # self.user = get_user_model().objects.create_superuser(
-        #     username='test_root',)
         self.user = get_user_model().objects.create_superuser(
             username='root',
             password='password',
