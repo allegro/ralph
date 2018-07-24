@@ -5,7 +5,6 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from multiselectfield import MultiSelectField
 
 from ralph.assets.models import BaseObject
 from ralph.assets.models.assets import AssetHolder, BusinessSegment
@@ -51,15 +50,6 @@ class DomainType(Choices):
     business = _('Business')
     business_security = _('Business security')
     technical = _('Technical')
-
-
-class AdditionalServices(models.Model):
-    ADDITIONAL_SERVICES = (
-        ('None', 'None'),
-        ('Masking', 'Masking'),
-        ('Backorder', 'Backorder'),
-        ('Acquisition', 'Acquisition')
-    )
 
 
 class DomainCategory(
@@ -137,10 +127,6 @@ class Domain(AdminAbsoluteUrlMixin, BaseObject):
         DNSProvider, blank=True, null=True,
         help_text=_("Provider which keeps domain's DNS")
     )
-    additional_services = MultiSelectField(
-        choices=AdditionalServices.ADDITIONAL_SERVICES,
-        blank=True, null=True,
-    )
 
     def __str__(self):
         return self.name
@@ -186,3 +172,4 @@ class DomainContract(
             domain_name=self.domain.name,
             expiration_date=self.expiration_date
         )
+        return self.hostname
