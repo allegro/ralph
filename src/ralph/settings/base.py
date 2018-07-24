@@ -47,7 +47,6 @@ INSTALLED_APPS = (
     'django_rq',
     'import_export',
     'mptt',
-    'multiselectfield',
     'reversion',
     'sitetree',
     'ralph.accounts',
