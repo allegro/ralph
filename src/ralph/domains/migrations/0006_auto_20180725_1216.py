@@ -13,22 +13,22 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='AdditionalService',
+            name='DomainProviderAdditionalServices',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
-                ('name', models.CharField(max_length=255, unique=True, verbose_name='name')),
+                ('id', models.AutoField(serialize=False, primary_key=True, auto_created=True, verbose_name='ID')),
+                ('name', models.CharField(unique=True, verbose_name='name', max_length=255)),
                 ('created', models.DateTimeField(auto_now_add=True, verbose_name='date created')),
                 ('modified', models.DateTimeField(auto_now=True, verbose_name='last modified')),
             ],
             options={
-                'abstract': False,
                 'ordering': ['name'],
+                'abstract': False,
             },
             bases=(ralph.lib.mixins.models.AdminAbsoluteUrlMixin, models.Model),
         ),
         migrations.AddField(
             model_name='domain',
             name='additional_services',
-            field=models.ManyToManyField(blank=True, to='domains.AdditionalService'),
+            field=models.ManyToManyField(blank=True, to='domains.DomainProviderAdditionalServices'),
         ),
     ]

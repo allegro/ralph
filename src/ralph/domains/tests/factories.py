@@ -12,7 +12,7 @@ from ralph.domains.models import (
     DomainRegistrant,
     DomainStatus
 )
-from ralph.domains.models.domains import AdditionalService
+from ralph.domains.models.domains import DomainProviderAdditionalServices
 
 
 class DomainFactory(DjangoModelFactory):
@@ -61,5 +61,5 @@ class AdditionalServiceFactory(DjangoModelFactory):
     name = factory.Iterator(['Masking', 'Backorder', 'Acquisition'])
 
     class Meta:
-        model = AdditionalService
+        model = DomainProviderAdditionalServices
         django_get_or_create = ['name']

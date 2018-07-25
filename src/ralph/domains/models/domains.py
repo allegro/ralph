@@ -72,16 +72,13 @@ class DNSProvider(
     pass
 
 
-class AdditionalService(
+class DomainProviderAdditionalServices(
     AdminAbsoluteUrlMixin,
     NamedMixin,
     TimeStampMixin,
     models.Model
 ):
-
-    def __str__(self):
-        '''return a string representation of the various work types'''
-        return self.name
+    pass
 
 
 class Domain(AdminAbsoluteUrlMixin, BaseObject, models.Model):
@@ -140,7 +137,7 @@ class Domain(AdminAbsoluteUrlMixin, BaseObject, models.Model):
         help_text=_("Provider which keeps domain's DNS")
     )
     additional_services = models.ManyToManyField(
-        AdditionalService,
+        DomainProviderAdditionalServices,
         blank=True,
     )
 

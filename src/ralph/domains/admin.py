@@ -8,7 +8,7 @@ from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer.resources import DomainContractResource, DomainResource
 from ralph.domains.forms import DomainForm
 from ralph.domains.models.domains import (
-    AdditionalService,
+    DomainProviderAdditionalServices,
     DNSProvider,
     Domain,
     DomainCategory,
@@ -101,7 +101,7 @@ class DomainContractAdmin(AttachmentsMixin, RalphAdmin):
     search_fields = ['domain__name', ]
 
 
-@register(AdditionalService)
+@register(DomainProviderAdditionalServices)
 class AdditionalServiceAdmin(RalphAdmin):
     pass
 
