@@ -8,11 +8,11 @@ from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer.resources import DomainContractResource, DomainResource
 from ralph.domains.forms import DomainForm
 from ralph.domains.models.domains import (
-    DomainProviderAdditionalServices,
     DNSProvider,
     Domain,
     DomainCategory,
     DomainContract,
+    DomainProviderAdditionalServices,
     DomainRegistrant
 )
 
