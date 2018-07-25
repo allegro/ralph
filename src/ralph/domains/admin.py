@@ -102,7 +102,7 @@ class DomainContractAdmin(AttachmentsMixin, RalphAdmin):
 
 
 @register(DomainProviderAdditionalServices)
-class AdditionalServiceAdmin(RalphAdmin):
+class DomainProviderAdditionalServicesAdmin(RalphAdmin):
     pass
 
 

@@ -57,7 +57,7 @@ class DomainRegistrantFactory(DjangoModelFactory):
         model = DomainRegistrant
         django_get_or_create = ['name']
 
-class AdditionalServiceFactory(DjangoModelFactory):
+class DomainProviderAdditionalServicesFactory(DjangoModelFactory):
     name = factory.Iterator(['Masking', 'Backorder', 'Acquisition'])
 
     class Meta:
