@@ -185,3 +185,4 @@ class DomainContract(
             domain_name=self.domain.name,
             expiration_date=self.expiration_date
         )
+        return self.hostname

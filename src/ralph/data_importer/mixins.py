@@ -20,6 +20,8 @@ class ImportForeignKeyMeta(type):
         Add additional fields to the export_class.fields with *_str
         for display ForeignKey fields.
         """
+        # https://bugs.python.org/issue29270
+        attrs.pop('__classcell__', None)
         new_class = super().__new__(cls, name, bases, attrs)
         # Generate second class only for export which has added
         # additional *_str fields

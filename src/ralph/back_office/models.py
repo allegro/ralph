@@ -11,6 +11,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
+from django.core.mail import EmailMessage
 from django.db import models, transaction
 from django.forms import ValidationError
 from django.template import Context, Template
@@ -37,6 +38,7 @@ from ralph.lib.mixins.models import (
 from ralph.lib.transitions.conf import get_report_name_for_transition_id
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
+from ralph.lib.transitions.models import Transition
 from ralph.licences.models import BaseObjectLicence, Licence
 from ralph.reports.models import Report, ReportLanguage
 
@@ -143,30 +145,26 @@ def _check_user_assigned(instances, **kwargs):
     return errors
 
 
-def autocomplete_if_release_report(actions, objects, field_name='user'):
-    """
-    Returns value of the first item in the list objects of the field_name
-    if release_report is actions.
+def autocomplete_user(actions, objects, field_name='user'):
+    """ Returns default value for user transition field.
+
+    When multiple assets are selected, default user/owner is returned only if
+    all assets have the same user assigned. Otherwise None will be returned.
 
     Args:
         actions: Transition action list
         objects: Django models objects
-        field_name: String of name
+        field_name: String of name for user field
 
     Returns:
-        String value from object
+        String value of user pk
     """
-    try:
-        obj = objects[0]
-    except IndexError:
-        return None
+    users = [getattr(obj, field_name, None) for obj in objects]
 
-    value = getattr(obj, field_name, None)
-    if value:
-        for action in actions:
-            if action.__name__ == 'release_report':
-                return str(value.pk)
-    return None
+    if len(set(users)) == 1 and users[0]:
+        return str(users[0].pk)
+    else:
+        return None
 
 
 class BackOfficeAsset(Regionalizable, Asset):
@@ -285,9 +283,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             'user': {
                 'field': forms.CharField(label=_('User')),
                 'autocomplete_field': 'user',
-                'default_value': partial(
-                    autocomplete_if_release_report, field_name='user'
-                )
+                'default_value': partial(autocomplete_user, field_name='user')
             }
         },
         run_after=['unassign_user']
@@ -303,9 +299,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             'owner': {
                 'field': forms.CharField(label=_('Owner')),
                 'autocomplete_field': 'owner',
-                'default_value': partial(
-                    autocomplete_if_release_report, field_name='owner'
-                )
+                'default_value': partial(autocomplete_user, field_name='owner')
             }
         },
         help_text=_(
@@ -604,6 +598,23 @@ class BackOfficeAsset(Regionalizable, Asset):
             instances=instances, name=report_name, requester=requester,
             language=kwargs['report_language']
         )
+
+    @classmethod
+    @transition_action(run_after=['release_report', 'return_report',
+                                  'loan_report'])
+    def send_attachments_to_user(cls, requester, transition_id, **kwargs):
+        if kwargs.get('attachments'):
+            transition = Transition.objects.get(pk=transition_id)
+            email = EmailMessage(
+                subject='Documents for {}'.format(transition.name),
+                body='Please see documents provided in attachments '
+                     'for "{}".'.format(transition.name),
+                from_email=settings.EMAIL_FROM,
+                to=[requester.email]
+            )
+            for attachment in kwargs['attachments']:
+                email.attach_file(attachment.file.path)
+            email.send()
 
     @classmethod
     @transition_action(
