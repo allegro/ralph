@@ -36,9 +36,6 @@ class MyEquipmentAssetList(AssetList):
                 '&emsp; <i class="fa fa-chevron-right" aria-hidden="true"></i> {} ({})'.format(  # noqa
                     bo_licence.licence.software.name,
                     bo_licence.licence.niw,
-                    bo_licence.licence.manufacturer.name,
-                    bo_licence.licence.licence_type,
-                    bo_licence.licence.valid_thru
                 ) for bo_licence in licences
             ]
             return ['<br />'.join(result)]
