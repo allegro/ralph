@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 
@@ -7,11 +6,13 @@ from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import DateListFilter
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer.resources import DomainContractResource, DomainResource
+from ralph.domains.forms import DomainForm
 from ralph.domains.models.domains import (
     DNSProvider,
     Domain,
     DomainCategory,
     DomainContract,
+    DomainProviderAdditionalServices,
     DomainRegistrant
 )
 
@@ -23,6 +24,7 @@ class DomainContractInline(RalphTabularInline):
 
 @register(Domain)
 class DomainAdmin(AttachmentsMixin, RalphAdmin):
+    form = DomainForm
     resource_class = DomainResource
     list_select_related = [
         'technical_owner', 'business_owner', 'domain_holder',
@@ -31,7 +33,8 @@ class DomainAdmin(AttachmentsMixin, RalphAdmin):
         'name', 'service_env', 'domain_status', 'business_segment',
         'domain_holder', ('domaincontract__expiration_date', DateListFilter),
         'website_type', 'website_url',
-        'dns_provider', 'domain_category', 'domain_type'
+        'dns_provider', 'domain_category', 'domain_type',
+        'additional_services'
     ]
     list_display = [
         'name', 'business_owner',
@@ -45,7 +48,7 @@ class DomainAdmin(AttachmentsMixin, RalphAdmin):
             'fields': (
                 'name', 'remarks', 'domain_status', 'website_type',
                 'website_url', 'domain_category', 'domain_type',
-                'dns_provider',
+                'dns_provider', 'additional_services'
             )
         }),
         (_('Ownership info'), {
@@ -96,6 +99,11 @@ class DomainContractAdmin(AttachmentsMixin, RalphAdmin):
         }),
     )
     search_fields = ['domain__name', ]
+
+
+@register(DomainProviderAdditionalServices)
+class DomainProviderAdditionalServicesAdmin(RalphAdmin):
+    pass
 
 
 @register(DomainRegistrant)
