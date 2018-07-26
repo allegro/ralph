@@ -31,8 +31,7 @@ class DomainAdmin(AttachmentsMixin, RalphAdmin):
         'name', 'service_env', 'domain_status', 'business_segment',
         'domain_holder', ('domaincontract__expiration_date', DateListFilter),
         'website_type', 'website_url',
-        'dns_provider', 'domain_category', 'domain_type',
-
+        'dns_provider', 'domain_category', 'domain_type'
     ]
     list_display = [
         'name', 'business_owner',
@@ -88,7 +87,6 @@ class DomainContractAdmin(AttachmentsMixin, RalphAdmin):
         (_('Basic info'), {
             'fields': (
                 'domain', 'expiration_date', 'registrant'
-
             )
         }),
         (_('Financial info'), {
