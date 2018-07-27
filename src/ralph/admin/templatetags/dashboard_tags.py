@@ -47,6 +47,20 @@ def get_user_equipment_to_accept_tile_data(user):
     }
 
 
+def get_user_equipment_to_accept_loan_tile_data(user):
+    from ralph.accounts.helpers import \
+        get_assets_to_accept_loan, get_loan_acceptance_url
+    assets_to_accept_count = get_assets_to_accept_loan(user).count()
+    if not assets_to_accept_count:
+        return None
+    return {
+        'class': 'equipment-to-accept-loan',
+        'label': _('For loan'),
+        'count': assets_to_accept_count,
+        'url': get_loan_acceptance_url(user),
+    }
+
+
 def get_available_space_in_data_centers(data_centers):
     available = Rack.objects.filter(
         server_room__data_center__in=data_centers,
@@ -148,6 +162,9 @@ def ralph_summary(context):
     accept_tile_data = get_user_equipment_to_accept_tile_data(user=user)
     if accept_tile_data:
         results.append(accept_tile_data)
+    accept_for_loan_tile_data = get_user_equipment_to_accept_loan_tile_data(user=user)  # noqa
+    if accept_for_loan_tile_data:
+        results.append(accept_for_loan_tile_data)
     return {'results': results}
 
 
