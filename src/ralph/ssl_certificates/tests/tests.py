@@ -14,6 +14,9 @@ class ImportSSLCertificatesTest(TestCase):
         self.base_dir = os.path.dirname(
             os.path.dirname(__file__)
         )
+        self.samples_dir = os.path.join(
+            self.base_dir, 'tests', 'samples'
+        )
 
     def test_command_output(self):
         out = StringIO()
@@ -22,38 +25,27 @@ class ImportSSLCertificatesTest(TestCase):
 
     def test_wildcard_certificate_domain_ssl_should_by_without_prefix(self):  # noqa
         out = StringIO()
-        dir = os.path.join(
-            self.base_dir, 'tests', 'samples'
-        )
-        call_command('import_ssl_certificates', dir, stderr=out)
+
+        call_command('import_ssl_certificates', self.samples_dir, stderr=out)
         self.assertTrue(SSLCertificate.objects.get(domain_ssl='lewitowanie.com.pl'))
 
     def test_ssl_should_have_proper_type(self):
         out = StringIO()
-        dir = os.path.join(
-            self.base_dir, 'tests', 'samples'
-        )
-        call_command('import_ssl_certificates', dir, stderr=out)
+        call_command('import_ssl_certificates', self.samples_dir, stderr=out)
         self.assertTrue(SSLCertificate.objects.get(
             certificate_type=CertificateType.wildcard.id
         ))
 
     def test_command_should_read_issuer(self):
         out = StringIO()
-        dir = os.path.join(
-            self.base_dir, 'tests', 'samples'
-        )
-        call_command('import_ssl_certificates', dir, stderr=out)
+        call_command('import_ssl_certificates', self.samples_dir, stderr=out)
         expected = Manufacturer.objects.get(
             name='My Company')
         self.assertTrue(SSLCertificate.objects.get(issued_by=expected))
 
     def test_command_should_read_san(self):
         out = StringIO()
-        dir = os.path.join(
-            self.base_dir, 'tests', 'samples'
-        )
-        call_command('import_ssl_certificates', dir, stderr=out)
+        call_command('import_ssl_certificates', self.samples_dir, stderr=out)
         self.assertTrue(
             SSLCertificate.objects.get(
                 san="['www.lewitowanie.com.pl']"
@@ -62,10 +54,7 @@ class ImportSSLCertificatesTest(TestCase):
 
     def test_certificate_domain_name(self):
         out = StringIO()
-        dir = os.path.join(
-            self.base_dir, 'tests', 'samples'
-        )
-        call_command('import_ssl_certificates', dir, stderr=out)
+        call_command('import_ssl_certificates', self.samples_dir, stderr=out)
         self.assertTrue(
             SSLCertificate.objects.get(
                 name='wildcard_lewitowanie.com.pl'
@@ -74,12 +63,9 @@ class ImportSSLCertificatesTest(TestCase):
 
     def test_command_rise_break_certificate(self):
         out = StringIO()
-        dir = os.path.join(
-            self.base_dir, 'tests', 'samples',
-        )
-        call_command('import_ssl_certificates', dir, stderr=out)
+        call_command('import_ssl_certificates', self.samples_dir, stderr=out)
         self.assertIn(
-            '{}/unproper/fake_ssl.crt is not valid\n'.format(dir),
+            '{}/unproper/fake_ssl.crt is not valid\n'.format(self.samples_dir),
             out.getvalue()
         )
 
@@ -112,5 +98,5 @@ class UpdateServiceEnvTest(TestCase):
         out = StringIO()
         call_command('update_service_env', stderr=out)
         self.assertIn(
-            'Service with name Serwis porcelanowy does not exist\n', out.getvalue()
+            'Service with name Serwis porcelanowy and prod environment does not exist\n', out.getvalue()
         )

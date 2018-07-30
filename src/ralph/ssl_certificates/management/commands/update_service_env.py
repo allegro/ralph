@@ -15,6 +15,14 @@ def checking_type(value):
     return domain
 
 
+def ssl_certificates_object_update(domain, service_env):
+    SSLCertificate.objects.filter(
+        domain_ssl=domain
+    ).update(
+        service_env=service_env
+    )
+
+
 class Command(BaseCommand):
     help = 'Checks the compliance of services in SSL Certificates'
 
@@ -48,12 +56,10 @@ class Command(BaseCommand):
                 )
             except ServiceEnvironment.DoesNotExist:
                 self.stderr.write(
-                    'Service with name {} does not exist'.format(service_dns)
+                    'Service with name {} and prod environment does not exist'.format(service_dns)
                 )
             else:
-                SSLCertificate.objects.filter(
-                    domain_ssl=domain).update(
-                    service_env=service_env)
+                ssl_certificates_object_update(domain, service_env)
 
     def update_from_domains(self, result):
         for value in result:
@@ -65,12 +71,10 @@ class Command(BaseCommand):
                 )
             except ServiceEnvironment.DoesNotExist:
                 self.stderr.write(
-                    'Service with name {} does not exist'.format(service_dns)
+                    'Service with name {} and prod environment does not exist'.format(service_dns)
                 )
             else:
-                SSLCertificate.objects.filter(
-                    domain_ssl=domain).update(
-                    service_env=name)
+                ssl_certificates_object_update(domain, name)
 
     def get_domains(self):
         url = dnsaas_client.build_url('domains')

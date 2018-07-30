@@ -101,7 +101,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         certs_dir = options['certs_dir']
         if not os.path.isdir(certs_dir):
-            return 'Dir not found'
+            self.stdout.write(
+                self.style.ERROR(
+                    'Dir {} not found. Please check certs_dir option.'.format(
+                        certs_dir
+                    )
+                )
+            )
+            return
         for root, dirs, files in os.walk(certs_dir):
             for filename in fnmatch.filter(files, '*.crt'):
                 cert = None
