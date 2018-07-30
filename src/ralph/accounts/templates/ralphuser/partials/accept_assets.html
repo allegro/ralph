@@ -1,12 +1,13 @@
 {% load i18n %}
 
-{% if acceptance_transition_id %}
-  <h5>{% trans 'Assets to accept' %}</h5>
-  {% if acceptance_transition_exists %}
-    {% if assets_to_accept %}
+{% if transition_id %}
+  <h5>{% trans title %}</h5>
+  {% if transition_exists %}
+    {% if assets %}
       <form action="" method="POST">{% csrf_token %}
+        <input type="hidden" name="action" value="{{ action }}" />
         <ul>
-          {% for asset in assets_to_accept %}
+          {% for asset in assets %}
             <li>{{ asset.model }}</li>
           {% endfor %}
         </ul>

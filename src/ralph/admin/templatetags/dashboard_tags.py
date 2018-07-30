@@ -10,6 +10,12 @@ from django.template import Library
 from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.accounts.helpers import (
+    get_assets_to_accept,
+    get_acceptance_url,
+    get_assets_to_accept_loan,
+    get_loan_acceptance_url
+)
 from ralph.assets.models import BaseObject, Service, ServiceEnvironment
 from ralph.back_office.models import BackOfficeAsset
 from ralph.data_center.models import (
@@ -35,7 +41,6 @@ def get_user_equipment_tile_data(user):
 
 
 def get_user_equipment_to_accept_tile_data(user):
-    from ralph.accounts.helpers import get_assets_to_accept, get_acceptance_url
     assets_to_accept_count = get_assets_to_accept(user).count()
     if not assets_to_accept_count:
         return None
@@ -48,8 +53,6 @@ def get_user_equipment_to_accept_tile_data(user):
 
 
 def get_user_equipment_to_accept_loan_tile_data(user):
-    from ralph.accounts.helpers import \
-        get_assets_to_accept_loan, get_loan_acceptance_url
     assets_to_accept_count = get_assets_to_accept_loan(user).count()
     if not assets_to_accept_count:
         return None
