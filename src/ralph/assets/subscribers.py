@@ -6,7 +6,12 @@ import pyhermes
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
-from ralph.assets.models.assets import Environment, Service, ServiceEnvironment
+from ralph.assets.models.assets import (
+    BusinessSegment,
+    Environment,
+    Service,
+    ServiceEnvironment
+)
 from ralph.assets.models.base import BaseObject
 
 logger = logging.getLogger(__name__)
@@ -78,6 +83,16 @@ def _update_service_environments(service, environments):
     return True
 
 
+def _update_area(service, area_name):
+    if (
+        not service.business_segment or
+        service.business_segment.name != area_name
+    ):
+        service.business_segment = BusinessSegment.objects.get_or_create(
+            name=area_name
+        )[0]
+
+
 @pyhermes.subscriber(topic=settings.HERMES_SERVICE_TOPICS['CREATE'])
 @pyhermes.subscriber(topic=settings.HERMES_SERVICE_TOPICS['UPDATE'])
 @pyhermes.subscriber(topic=settings.HERMES_SERVICE_TOPICS['REFRESH'])
@@ -99,7 +114,11 @@ def update_service_handler(service_data):
             ],
             'technicalOwners': [
                 {'username': 'username'}
-            ]
+            ],
+            'area': {
+                'name': 'area name',
+                'profitCenter': 'profit center name',
+            }
         }
     """
     try:
@@ -124,6 +143,8 @@ def update_service_handler(service_data):
             business_owners=service_data['businessOwners'],
             technical_owners=service_data['technicalOwners']
         )
+        if service_data.get('area'):
+            _update_area(service, service_data['area']['name'])
         update_envs = _update_service_environments(
             service=service,
             environments=service_data['environments']

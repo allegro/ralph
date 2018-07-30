@@ -46,7 +46,8 @@ class ServiceSubscribersTestCase(TestCase):
             'isActive': True,
             'environments': ['prod', 'dev'],
             'businessOwners': [{'username': 'business_user1'}],
-            'technicalOwners': [{'username': 'technical_user2'}]
+            'technicalOwners': [{'username': 'technical_user2'}],
+            'area': {'name': 'new area'},
         }
         response = self._make_request(
             data, settings.HERMES_SERVICE_TOPICS['CREATE']
@@ -55,6 +56,7 @@ class ServiceSubscribersTestCase(TestCase):
         service = Service.objects.get(uid='sc-001')
         self.assertTrue(service.active)
         self.assertEqual(service.name, 'TestName')
+        self.assertEqual(service.business_segment.name, 'new area')
         self.assertCountEqual(
             ['prod', 'dev'],
             [env.name for env in service.environments.all()]
@@ -69,7 +71,7 @@ class ServiceSubscribersTestCase(TestCase):
         )
 
     def test_update_service_when_service_exist(self):
-        service = ServiceFactory()
+        service = ServiceFactory(business_segment__name='existing area')
         service.business_owners.add(UserFactory(username='business_user1'))
         service.technical_owners.add(UserFactory(username='technical_user2'))
         ServiceEnvironmentFactory(
@@ -82,7 +84,8 @@ class ServiceSubscribersTestCase(TestCase):
             'isActive': True,
             'environments': ['dev'],
             'businessOwners': [{'username': 'business_user3'}],
-            'technicalOwners': [{'username': 'technical_user3'}]
+            'technicalOwners': [{'username': 'technical_user3'}],
+            'area': {'name': 'new area'},
         }
         response = self._make_request(
             data, settings.HERMES_SERVICE_TOPICS['UPDATE']
@@ -90,6 +93,7 @@ class ServiceSubscribersTestCase(TestCase):
         self.assertEqual(response.status_code, 204)
         service.refresh_from_db()
         self.assertEqual(service.name, 'New name')
+        self.assertEqual(service.business_segment.name, 'new area')
         self.assertCountEqual(
             ['dev'],
             [env.name for env in service.environments.all()]
