@@ -38,7 +38,7 @@ get_assets_to_accept = partial(
     get_assets, status=ACCEPTANCE_BACK_OFFICE_ACCEPT_STATUS
 )
 get_assets_to_accept_loan = partial(
-    get_assets,status=ACCEPTANCE_BACK_OFFICE_ACCEPT_LOAN_STATUS
+    get_assets, status=ACCEPTANCE_BACK_OFFICE_ACCEPT_LOAN_STATUS
 )
 
 

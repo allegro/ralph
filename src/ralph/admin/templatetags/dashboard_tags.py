@@ -11,8 +11,8 @@ from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.helpers import (
-    get_assets_to_accept,
     get_acceptance_url,
+    get_assets_to_accept,
     get_assets_to_accept_loan,
     get_loan_acceptance_url
 )
