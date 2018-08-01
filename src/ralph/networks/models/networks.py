@@ -6,7 +6,9 @@ import struct
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
+from django.db.models import Q, Case, When
 from django.db.models.signals import post_migrate, pre_save
 from django.db.utils import ProgrammingError
 from django.dispatch import receiver
@@ -662,6 +664,46 @@ class IPAddress(
     def __str__(self):
         return self.address
 
+    def _count_hosts_in_dc(self, host_list, dc):
+        from ralph.data_center.models.physical import DataCenterAsset
+        from ralph.virtual.models import VirtualServer
+        vs = ContentType.objects.get_for_model(VirtualServer)
+        dca = ContentType.objects.get_for_model(DataCenterAsset)
+        num = 0
+        for ip in host_list:
+            base = ip.ethernet.base_object
+            if base.content_type == dca:
+                ip_dc = base.asset.datacenterasset.rack.server_room.data_center
+            elif base.content_type == vs:
+                ip_dc = \
+                  base.parent.asset.datacenterasset.rack.server_room.data_center
+            else:
+                ip_dc = dc
+            num += dc == ip_dc
+        return num
+
+    def hostname_is_unique_in_dc(self, hostname, dc):
+        ips_with_hostname = IPAddress.objects.filter(
+            hostname=hostname,
+        ).exclude(pk=self.pk)
+        return self._count_hosts_in_dc(ips_with_hostname, dc) == 0
+
+    def validate_hostname_uniqueness_in_dc(self, hostname):
+        # dc = self.ethernet.base_object.last_descendant.rack.server_room.data_center  # noqa
+        dc = self.network.network_environment.data_center
+        if not self.hostname_is_unique_in_dc(hostname, dc):
+            raise ValidationError(
+                'Hostname "{hostname}" is already exposed in DHCP in {dc}.'
+                .format(
+                    hostname=self.hostname, dc=dc
+                )
+            )
+
+    def _validate_hostname_uniqueness_in_dc(self):
+        if not self.dhcp_expose:
+            return
+        self.validate_hostname_uniqueness_in_dc(self.hostname)
+
     def _validate_expose_in_dhcp_and_mac(self):
         if (
             (not self.ethernet_id or (self.ethernet and not self.ethernet.mac)) and  # noqa
@@ -708,6 +750,7 @@ class IPAddress(
             self._validate_expose_in_dhcp_and_mac,
             self._validate_expose_in_dhcp_and_hostname,
             self._validate_change_when_exposing_in_dhcp,
+            self._validate_hostname_uniqueness_in_dc,
         ]:
             try:
                 validator()

@@ -164,6 +164,8 @@ class SimpleNetworkForm(EthernetLockDeleteForm):
                 raise ValidationError(
                     _('Cannot expose in DHCP without MAC address'),
                 )
+            new_hostname = self.cleaned_data['hostname']
+            self.ip.validate_hostname_uniqueness_in_dc(new_hostname)
         return dhcp_expose
 
     def _validate_mac_address(self):
