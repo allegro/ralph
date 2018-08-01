@@ -761,18 +761,6 @@ class DataCenterAsset(
 
     @classmethod
     @transition_action(
-        verbose_name=_('Cleanup security scans'),
-    )
-    def cleanup_security_scans(cls, instances, **kwargs):
-        with transaction.atomic():
-            for instance in instances:
-                try:
-                    instance.securityscan.delete()
-                except DataCenterAsset.securityscan.RelatedObjectDoesNotExist:
-                    pass
-
-    @classmethod
-    @transition_action(
         verbose_name=_('Cleanup scm status'),
     )
     def cleanup_scm_statuscheck(cls, instances, **kwargs):

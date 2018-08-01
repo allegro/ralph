@@ -70,6 +70,21 @@
                   {% endfor %}
               </table>
           {% endif %}
+          {% if rel_obj_type == "clusters" %}
+              <h2>{% trans "Clusters" %}</h2>
+              <table>
+                  <tr>
+                      <th>{% trans "Name" %}</th>
+                      <th>{% trans "Type" %}</th>
+                  </tr>
+                  {% for cluster in objects %}
+                      <tr>
+                        <td><a href="{{ cluster.get_absolute_url }}">{{ cluster.name }}</a></td>
+                        <td>{{ cluster.type }}</td>
+                      </tr>
+                  {% endfor %}
+              </table>
+          {% endif %}
        {% endfor %}
 
   {% else %}

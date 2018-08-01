@@ -8,5 +8,18 @@ form .row .related-widget-wrapper.row {
         .related-widget-wrapper-link {
             margin: 3px;
         }
+        ul, ul li, ul li label, ul li label input {
+            padding: 0;
+            margin: 0;
+        }
+        ul {
+            list-style: none;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            li {
+                padding: 0.25rem 1rem 0.25rem 0;
+            }
+        }
     }
 }

@@ -36,6 +36,13 @@ class RelationsView(RalphDetailView):
         if physical_hosts:
             related_objects['physical_hosts'] = physical_hosts
 
+    def _add_clusters(self, related_objects):
+        clusters = [base_object.cluster
+                    for base_object in list(self.object.clusters.all())]
+
+        if clusters:
+            related_objects['clusters'] = clusters
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -43,6 +50,7 @@ class RelationsView(RalphDetailView):
         self._add_cloud_hosts(related_objects)
         self._add_virtual_hosts(related_objects)
         self._add_physical_hosts(related_objects)
+        self._add_clusters(related_objects)
         context['related_objects'] = related_objects
 
         return context

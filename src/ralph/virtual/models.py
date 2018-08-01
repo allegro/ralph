@@ -384,6 +384,5 @@ class VirtualServer(
     def __str__(self):
         return 'VirtualServer: {} ({})'.format(self.hostname, self.sn)
 
-
 post_commit(publish_host_update, VirtualServer)
 post_commit(publish_host_update, CloudHost)
