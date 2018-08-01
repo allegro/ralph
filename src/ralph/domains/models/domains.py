@@ -72,7 +72,16 @@ class DNSProvider(
     pass
 
 
-class Domain(AdminAbsoluteUrlMixin, BaseObject):
+class DomainProviderAdditionalServices(
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    TimeStampMixin,
+    models.Model
+):
+    pass
+
+
+class Domain(AdminAbsoluteUrlMixin, BaseObject, models.Model):
     name = models.CharField(
         verbose_name=_('domain name'),
         help_text=_('Full domain name'),
@@ -126,6 +135,10 @@ class Domain(AdminAbsoluteUrlMixin, BaseObject):
     dns_provider = models.ForeignKey(
         DNSProvider, blank=True, null=True,
         help_text=_("Provider which keeps domain's DNS")
+    )
+    additional_services = models.ManyToManyField(
+        DomainProviderAdditionalServices,
+        blank=True,
     )
 
     def __str__(self):

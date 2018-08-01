@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db.models import Count, Prefetch
 from django.utils.translation import ugettext_lazy as _
@@ -14,6 +16,7 @@ from ralph.configuration_management.views import (
     SCMStatusCheckInChangeListMixin
 )
 from ralph.data_center.admin import generate_list_filter_with_common_fields
+from ralph.data_center.models.physical import DataCenterAsset
 from ralph.data_center.models.virtual import BaseObjectCluster
 from ralph.deployment.mixins import ActiveDeploymentMessageMixin
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
@@ -52,10 +55,27 @@ class VirtualServerTypeForm(RalphAdmin):
 
 
 class VirtualServerForm(RalphAdminForm):
+    HYPERVISOR_TYPE_ERR_MSG = _(
+        'Hypervisor must be one of DataCenterAsset or CloudHost'
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if 'parent' in self.fields:
             self.fields['parent'].required = True
+
+    def clean_parent(self):
+        value = self.cleaned_data.get('parent')
+        self._validate_parent_type(value)
+        return value
+
+    def _validate_parent_type(self, value):
+        allowed_types = ContentType.objects.get_for_models(
+            DataCenterAsset,
+            CloudHost
+        ).values()
+        if value.content_type not in allowed_types:
+            raise ValidationError(self.HYPERVISOR_TYPE_ERR_MSG)
 
     class Meta:
         labels = {'parent': _('Hypervisor')}
