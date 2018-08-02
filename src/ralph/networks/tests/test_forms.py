@@ -4,13 +4,13 @@ from django.test import RequestFactory
 from ralph.assets.models.components import Ethernet, EthernetSpeed
 from ralph.data_center.tests.factories import DataCenterFactory
 from ralph.networks.models import IPAddress
-from ralph.networks.tests.factories import IPAddressFactory
+from ralph.networks.tests.factories import (
+    IPAddressFactory,
+    NetworkEnvironmentFactory,
+    NetworkFactory
+)
 from ralph.tests import RalphTestCase
 from ralph.tests.models import PolymorphicTestModel
-from ralph.networks.tests.factories import (
-    NetworkFactory,
-    NetworkEnvironmentFactory
-)
 
 
 class NetworkInlineTestCase(RalphTestCase):
