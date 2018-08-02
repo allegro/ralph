@@ -111,13 +111,13 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         self.assertEqual(
             len(response.data['related_hosts']['virtual_servers']), 2
         )
-        self.assertEqual(
+        self.assertIn(
             response.data['related_hosts']['virtual_servers'][0]['hostname'],
-            virtual_server.hostname
+            (virtual_server.hostname, virtual_server_2.hostname)
         )
-        self.assertEqual(
+        self.assertIn(
             response.data['related_hosts']['virtual_servers'][1]['hostname'],
-            virtual_server_2.hostname
+            (virtual_server.hostname, virtual_server_2.hostname)
         )
         self.assertEqual(
             response.data['related_hosts']['cloud_hosts'][0]['hostname'],
