@@ -11,7 +11,8 @@ from ralph.assets.models import AssetLastHostname
 from ralph.assets.tests.factories import EthernetFactory
 from ralph.data_center.tests.factories import (
     ClusterFactory,
-    DataCenterAssetFactory
+    DataCenterAssetFactory,
+    DataCenterFactory
 )
 from ralph.networks.admin import NetworkAdmin
 from ralph.networks.filters import NetworkClassFilter
@@ -19,7 +20,8 @@ from ralph.networks.models.choices import IPAddressStatus
 from ralph.networks.models.networks import IPAddress, Network
 from ralph.networks.tests.factories import (
     IPAddressFactory,
-    NetworkEnvironmentFactory
+    NetworkEnvironmentFactory,
+    NetworkFactory
 )
 from ralph.tests import RalphTestCase
 from ralph.virtual.tests.factories import VirtualServerFactory
@@ -567,6 +569,110 @@ class IPAddressTest(RalphTestCase):
             msg='Cannot change ethernet when exposing in DHCP'
         ):
             self.ip.clean()
+
+    def test_duplicate_hostname_with_dhcp_expose_should_not_pass(self):
+        name = 'random.hostname.net'
+        network = NetworkFactory(
+            address='192.168.0.0/24',
+            network_environment=NetworkEnvironmentFactory()
+        )
+        ip = IPAddressFactory(
+            hostname=name, address='192.168.0.1',
+            dhcp_expose=True
+        )
+        self.ip.hostname = name
+        self.ip.address = '192.168.0.2'
+        self.ip.dhcp_expose = True
+        with self.assertRaises(
+            ValidationError,
+            msg='Hostname "{hostname}" is already exposed in DHCP in {dc}.'.
+            format(
+                hostname=name,
+                dc=network.network_environment.data_center
+            )
+        ):
+            self.ip.validate_hostname_uniqueness_in_dc(name)
+        with self.assertRaises(
+            ValidationError,
+            msg='Hostname "{hostname}" is already exposed in DHCP in {dc}.'.
+            format(
+                hostname=name,
+                dc=network.network_environment.data_center
+            )
+        ):
+            self.ip.clean()
+
+    def test_duplicate_hostname_in_different_networks_in_same_dc_should_not_pass(self): # noqa
+        name = 'random.hostname.net'
+        network = NetworkFactory(
+            address='192.168.0.0/24',
+            network_environment=NetworkEnvironmentFactory(
+                data_center=DataCenterFactory(
+                    name='DC1'
+                )
+            )
+        )
+        network1 = NetworkFactory(
+            address='1.1.0.0/24',
+            network_environment=NetworkEnvironmentFactory(
+                data_center=DataCenterFactory(
+                    name='DC1'
+                )
+            )
+        )
+        ip = IPAddressFactory(
+            hostname=name, address='192.168.0.1',
+            dhcp_expose=True
+        )
+        self.ip.hostname = name
+        self.ip.address = '1.1.0.2'
+        self.ip.dhcp_expose = True
+        with self.assertRaises(
+            ValidationError,
+            msg='Hostname "{hostname}" is already exposed in DHCP in {dc}.'.
+            format(
+                hostname=name,
+                dc=network.network_environment.data_center
+            )
+        ):
+            self.ip.validate_hostname_uniqueness_in_dc(name)
+        with self.assertRaises(
+            ValidationError,
+            msg='Hostname "{hostname}" is already exposed in DHCP in {dc}.'.
+            format(
+                hostname=name,
+                dc=network1.network_environment.data_center
+            )
+        ):
+            self.ip.clean()
+
+    def test_duplicate_hostnames_in_different_dcs_should_pass(self):
+        name = 'random.hostname.net'
+        network1 = NetworkFactory(
+            address='1.1.0.0/24',
+            network_environment=NetworkEnvironmentFactory(
+                data_center=DataCenterFactory(
+                    name='DC1'
+                )
+            )
+        )
+        network2 = NetworkFactory(
+            address='192.168.0.0/24',
+            network_environment=NetworkEnvironmentFactory(
+                data_center=DataCenterFactory(
+                    name='DC2'
+                )
+            )
+        )
+        ip = IPAddressFactory(
+            hostname=name, address='1.1.0.1',
+            dhcp_expose=True
+        )
+        self.ip.address = '192.168.0.1'
+        self.ip.hostname = name
+        self.ip.dhcp_expose = True
+        self.ip.validate_hostname_uniqueness_in_dc(name)
+        self.ip.clean()
 
 
 class TestNetworkClassFilter(RalphTestCase):

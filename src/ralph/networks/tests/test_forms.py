@@ -2,10 +2,15 @@ from django.contrib.auth import get_user_model
 from django.test import RequestFactory
 
 from ralph.assets.models.components import Ethernet, EthernetSpeed
+from ralph.data_center.tests.factories import DataCenterFactory
 from ralph.networks.models import IPAddress
 from ralph.networks.tests.factories import IPAddressFactory
 from ralph.tests import RalphTestCase
 from ralph.tests.models import PolymorphicTestModel
+from ralph.networks.tests.factories import (
+    NetworkFactory,
+    NetworkEnvironmentFactory
+)
 
 
 class NetworkInlineTestCase(RalphTestCase):
@@ -394,6 +399,54 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
         self.assertEqual(ip.ethernet.mac, '10:10:10:10:10:10')
         self.assertEqual(ip.ethernet.label, 'eth10')
         self.assertEqual(ip.ethernet.base_object.pk, self.obj1.pk)
+
+    def test_dhcp_expose_duplicate_hostname_should_not_pass(self): # noqa
+        network = NetworkFactory(
+            address='192.168.0.0/24',
+            network_environment=NetworkEnvironmentFactory(
+                data_center=DataCenterFactory(
+                    name='DC1'
+                )
+            )
+        )
+        self.ip1.dhcp_expose = True
+        self.ip1.hostname = 'kurczak'
+        self.ip1.address = '192.168.0.12'
+        self.ip1.save()
+        inline_data = {
+            'TOTAL_FORMS': 2,
+            'INITIAL_FORMS': 1,
+            '0-id': self.eth1.id,
+            '0-base_object': self.obj1.id,
+            '0-label': 'eth10',
+
+            '1-base_object': self.obj1.id,
+            '1-hostname': self.ip1.hostname,
+            '1-address': '192.168.0.33',
+            '1-mac': '10:10:10:10:10:10',
+            '1-label': 'eth10',
+            '1-dhcp_expose': 'on',
+        }
+        data = {
+            'hostname': self.ip1.hostname,
+            'address': '192.168.0.21',
+            'id': self.obj1.id,
+            'dhcp_expose': 'on'
+        }
+        data.update(self._prepare_inline_data(inline_data))
+        response = self.client.post(
+            self.obj1.get_absolute_url(),
+            data,
+            follow=True
+        )
+        msg = 'Hostname &quot;{hostname}&quot; is already exposed in DHCP in {dc}'.format( # noqa
+                hostname=self.ip1.hostname,
+                dc=network.network_environment.data_center
+            )
+        self.assertIn('errors', response.context_data)
+        self.assertTrue(
+            any([msg in err for err in response.context_data['errors']])
+        )
 
     def test_dhcp_expose_for_existing_record_should_pass(self):
         inline_data = {
