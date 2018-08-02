@@ -6,9 +6,7 @@ import struct
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
-from django.db.models import Q, Case, When
 from django.db.models.signals import post_migrate, pre_save
 from django.db.utils import ProgrammingError
 from django.dispatch import receiver
@@ -665,21 +663,25 @@ class IPAddress(
         return self.address
 
     def hostname_is_unique_in_dc(self, hostname, dc):
-        ips_with_hostname = IPAddress.objects.filter(
+        from ralph.dhcp.models import DHCPEntry
+        entries_with_hostname = DHCPEntry.objects.filter(
             hostname=hostname,
+            dhcp_expose=True,
             network__network_environment__data_center=dc
-        ).exclude(pk=self.pk)
-        return not ips_with_hostname.exists()
+        )
+        return not entries_with_hostname.exists()
 
     def validate_hostname_uniqueness_in_dc(self, hostname):
-        dc = self.network.network_environment.data_center
-        if not self.hostname_is_unique_in_dc(hostname, dc):
-            raise ValidationError(
-                'Hostname "{hostname}" is already exposed in DHCP in {dc}.'
-                .format(
-                    hostname=self.hostname, dc=dc
+        network = self.get_network()
+        if network and network.network_environment:
+            dc = network.network_environment.data_center
+            if not self.hostname_is_unique_in_dc(hostname, dc):
+                raise ValidationError(
+                    'Hostname "{hostname}" is already exposed in DHCP in {dc}.'
+                    .format(
+                        hostname=self.hostname, dc=dc
+                    )
                 )
-            )
 
     def _validate_hostname_uniqueness_in_dc(self):
         if not self.dhcp_expose:
