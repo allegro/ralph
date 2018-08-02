@@ -664,32 +664,14 @@ class IPAddress(
     def __str__(self):
         return self.address
 
-    def _count_hosts_in_dc(self, host_list, dc):
-        from ralph.data_center.models.physical import DataCenterAsset
-        from ralph.virtual.models import VirtualServer
-        vs = ContentType.objects.get_for_model(VirtualServer)
-        dca = ContentType.objects.get_for_model(DataCenterAsset)
-        num = 0
-        for ip in host_list:
-            base = ip.ethernet.base_object
-            if base.content_type == dca:
-                ip_dc = base.asset.datacenterasset.rack.server_room.data_center
-            elif base.content_type == vs:
-                ip_dc = \
-                  base.parent.asset.datacenterasset.rack.server_room.data_center
-            else:
-                ip_dc = dc
-            num += dc == ip_dc
-        return num
-
     def hostname_is_unique_in_dc(self, hostname, dc):
         ips_with_hostname = IPAddress.objects.filter(
             hostname=hostname,
+            network__network_environment__data_center=dc
         ).exclude(pk=self.pk)
-        return self._count_hosts_in_dc(ips_with_hostname, dc) == 0
+        return not ips_with_hostname.exists()
 
     def validate_hostname_uniqueness_in_dc(self, hostname):
-        # dc = self.ethernet.base_object.last_descendant.rack.server_room.data_center  # noqa
         dc = self.network.network_environment.data_center
         if not self.hostname_is_unique_in_dc(hostname, dc):
             raise ValidationError(
