@@ -55,7 +55,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
 
     def test_get_data_center_assets_list(self):
         url = reverse('datacenterasset-list')
-        with self.assertNumQueries(19):
+        with self.assertNumQueries(17):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
@@ -97,7 +97,8 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             parent=dc_asset_3
         )
         virtual_server_2 = VirtualServerFactory(
-            parent=dc_asset_3
+            parent=dc_asset_3,
+            hostname='random_test_hostname'
         )
         dc_asset_4 = DataCenterAssetFullFactory(
             parent=dc_asset_3
@@ -108,28 +109,27 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             len(response.data['related_hosts']['cloud_hosts']), 1
         )
         self.assertEqual(
-            len(response.data['related_hosts']['virtual_hosts']), 2
+            len(response.data['related_hosts']['virtual_servers']), 2
         )
         self.assertEqual(
-            response.data['related_hosts']['virtual_hosts'][0]['id'],
-            virtual_server.id
-        )
-        self.assertEqual(
-            response.data['related_hosts']['virtual_hosts'][0]['hostname'],
+            response.data['related_hosts']['virtual_servers'][0]['hostname'],
             virtual_server.hostname
+        )
+        self.assertEqual(
+            response.data['related_hosts']['virtual_servers'][1]['hostname'],
+            virtual_server_2.hostname
         )
         self.assertEqual(
             response.data['related_hosts']['cloud_hosts'][0]['hostname'],
             cloud_host.hostname
         )
         self.assertEqual(
-            len(response.data['related_hosts']['physical_hosts']), 1
+            len(response.data['related_hosts']['physical_servers']), 1
         )
         self.assertEqual(
-            response.data['related_hosts']['physical_hosts'][0]['hostname'],
+            response.data['related_hosts']['physical_servers'][0]['hostname'],
             dc_asset_4.hostname
         )
-
 
     def test_create_data_center_asset(self):
         url = reverse('datacenterasset-list')
