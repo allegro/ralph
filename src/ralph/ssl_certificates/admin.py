@@ -19,10 +19,11 @@ class SSLCertificateAdmin(AttachmentsMixin, RalphAdmin):
         'name', 'certificate_type', 'business_owner',
         'technical_owner', ('date_from', DateListFilter),
         ('date_to', DateListFilter), 'issued_by',
+        'service_env',
     ]
 
     list_display = [
-        'name', 'business_owner',
+        'name', 'domain_ssl', 'business_owner',
         'technical_owner', 'issued_by',
         'date_from', 'date_to',
     ]
@@ -30,12 +31,13 @@ class SSLCertificateAdmin(AttachmentsMixin, RalphAdmin):
     raw_id_fields = [
         'business_owner',
         'technical_owner', 'issued_by',
+        'service_env',
     ]
 
     fieldsets = (
         (_('Basic info'), {
             'fields': (
-                'name', 'certificate_type',
+                'name', 'domain_ssl', 'certificate_type',
                 'issued_by', 'san',
                 'price', 'date_from', 'date_to',
             )
@@ -43,6 +45,7 @@ class SSLCertificateAdmin(AttachmentsMixin, RalphAdmin):
         (_('Ownership info'), {
             'fields': (
                 'business_owner', 'technical_owner',
+                'service_env',
             )
         })
     )
