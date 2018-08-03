@@ -400,7 +400,54 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
         self.assertEqual(ip.ethernet.label, 'eth10')
         self.assertEqual(ip.ethernet.base_object.pk, self.obj1.pk)
 
-    def test_dhcp_expose_duplicate_hostname_should_not_pass(self): # noqa
+    def test_dhcp_expose_for_new_record_duplicate_hostname_should_not_pass(self): # noqa
+        network = NetworkFactory(
+            address='127.0.0.0/24',
+            network_environment=NetworkEnvironmentFactory(
+                data_center=DataCenterFactory(
+                    name='DC1'
+                )
+            )
+        )
+        network.save()
+        self.test_dhcp_expose_for_new_record_should_pass()
+        obj2 = PolymorphicTestModel.objects.create(hostname='xyz')
+        inline_data = {
+            'TOTAL_FORMS': 2,
+            'INITIAL_FORMS': 1,
+            '0-id': self.eth1.id,
+            '0-base_object': obj2.id,
+            '0-mac': 'ff:ff:ff:ff:ff:ff',
+            '0-label': 'eth10',
+
+            '1-base_object': obj2.id,
+            '1-hostname': self.ip1.hostname,
+            '1-address': '127.0.0.3',
+            '1-mac': '11:11:11:11:11:11',
+            '1-label': 'eth10',
+            '1-dhcp_expose': 'on',
+        }
+        data = {
+            'hostname': obj2.hostname,
+            'id': obj2.id,
+        }
+        data.update(self._prepare_inline_data(inline_data))
+        response = self.client.post(
+            obj2.get_absolute_url(),
+            data,
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        msg = 'Hostname &quot;{hostname}&quot; is already exposed in DHCP in {dc}'.format( # noqa
+                hostname=self.ip1.hostname,
+                dc=network.network_environment.data_center
+            )
+        self.assertIn('errors', response.context_data)
+        self.assertTrue(
+            any([msg in err for err in response.context_data['errors']])
+        )
+
+    def test_dhcp_expose_for_existing_record_duplicate_hostname_should_not_pass(self): # noqa
         network = NetworkFactory(
             address='192.168.0.0/24',
             network_environment=NetworkEnvironmentFactory(
@@ -409,8 +456,13 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
                 )
             )
         )
-        self.ip1.dhcp_expose = True
-        self.ip1.hostname = 'kurczak'
+        name = 'some_hostname'
+        ip = IPAddressFactory(
+            dhcp_expose=True,
+            hostname=name,
+            address='192.168.0.7'
+        ).save()
+        self.ip1.hostname = name
         self.ip1.address = '192.168.0.12'
         self.ip1.save()
         inline_data = {
@@ -421,17 +473,15 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
             '0-label': 'eth10',
 
             '1-base_object': self.obj1.id,
-            '1-hostname': self.ip1.hostname,
+            '1-hostname': name,
             '1-address': '192.168.0.33',
             '1-mac': '10:10:10:10:10:10',
             '1-label': 'eth10',
             '1-dhcp_expose': 'on',
         }
         data = {
-            'hostname': self.ip1.hostname,
-            'address': '192.168.0.21',
+            'hostname': self.obj1.hostname,
             'id': self.obj1.id,
-            'dhcp_expose': 'on'
         }
         data.update(self._prepare_inline_data(inline_data))
         response = self.client.post(
