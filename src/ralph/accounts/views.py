@@ -12,10 +12,14 @@ from django.views.generic import View
 
 from ralph.accounts.admin import AssetList, AssignedLicenceList, UserInfoMixin
 from ralph.accounts.helpers import (
+    ACCEPTANCE_LOAN_TRANSITION_ID,
     acceptance_transition_exists,
     ACCEPTANCE_TRANSITION_ID,
     get_acceptance_url,
-    get_assets_to_accept
+    get_assets_to_accept,
+    get_assets_to_accept_loan,
+    get_loan_acceptance_url,
+    loan_transition_exists
 )
 from ralph.admin.mixins import RalphBaseTemplateView, RalphTemplateView
 from ralph.back_office.models import BackOfficeAsset
@@ -132,7 +136,11 @@ class InventoryTagView(View):
 
 class _AcceptanceProcessByCurrentUserMixin(object):
     def post(self, request, *args, **kwargs):
-        acceptance_url = get_acceptance_url(request.user)
+        action = request.POST['action']
+        if action == 'accept':
+            acceptance_url = get_acceptance_url(request.user)
+        else:
+            acceptance_url = get_loan_acceptance_url(request.user)
         if acceptance_url:
             return HttpResponseRedirect(acceptance_url)
         return super().get(request, *args, **kwargs)
@@ -142,6 +150,9 @@ class _AcceptanceProcessByCurrentUserMixin(object):
         context['acceptance_transition_id'] = ACCEPTANCE_TRANSITION_ID
         context['acceptance_transition_exists'] = acceptance_transition_exists()  # noqa: E501
         context['assets_to_accept'] = get_assets_to_accept(self.request.user)
+        context['loan_transition_id'] = ACCEPTANCE_LOAN_TRANSITION_ID
+        context['loan_transition_exists'] = loan_transition_exists()
+        context['assets_to_loan'] = get_assets_to_accept_loan(self.request.user)  # noqa: E501
         return context
 
 

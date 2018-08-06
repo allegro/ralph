@@ -6,7 +6,8 @@
   <div class="large-12 columns">
     <h1>{{ request.user.first_name }} {{ request.user.last_name }}</h1>
 
-    {% include 'ralphuser/partials/accept_assets.html' %}
+    {% include 'ralphuser/partials/accept_assets.html' with title="Assets to accept" action="accept" transition_id=acceptance_transition_id transition_exists=acceptance_transition_exists assets=assets_to_accept %}
+    {% include 'ralphuser/partials/accept_assets.html' with title="Assets to loan" action="loan" transition_id=loan_transition_id transition_exists=loan_transition_exists assets=assets_to_loan %}
 
     <h5>{% trans 'Assigned assets' %}:</h5>
     {% table asset_list.get_table_content %}
