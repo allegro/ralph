@@ -409,8 +409,7 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
                 )
             )
         )
-        network.save()
-        self.test_dhcp_expose_for_new_record_should_pass()
+        self.test_dhcp_expose_for_new_record_should_pass()  # generate duplicate
         obj2 = PolymorphicTestModel.objects.create(hostname='xyz')
         inline_data = {
             'TOTAL_FORMS': 2,

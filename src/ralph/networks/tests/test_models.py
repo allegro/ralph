@@ -570,7 +570,7 @@ class IPAddressTest(RalphTestCase):
         ):
             self.ip.clean()
 
-    def test_duplicate_hostname_with_dhcp_expose_should_not_pass(self):
+    def test_duplicate_hostname_with_dhcp_exposition_should_not_pass(self):
         name = 'random.hostname.net'
         network = NetworkFactory(
             address='192.168.0.0/24',

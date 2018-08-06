@@ -662,20 +662,21 @@ class IPAddress(
     def __str__(self):
         return self.address
 
-    def hostname_is_unique_in_dc(self, hostname, dc):
+    def _hostname_is_unique_in_dc(self, hostname, dc):
         from ralph.dhcp.models import DHCPEntry
         entries_with_hostname = DHCPEntry.objects.filter(
             hostname=hostname,
-            dhcp_expose=True,
             network__network_environment__data_center=dc
         )
+        if self.pk:
+            entries_with_hostname = entries_with_hostname.exclude(pk=self.pk)
         return not entries_with_hostname.exists()
 
     def validate_hostname_uniqueness_in_dc(self, hostname):
         network = self.get_network()
         if network and network.network_environment:
             dc = network.network_environment.data_center
-            if not self.hostname_is_unique_in_dc(hostname, dc):
+            if not self._hostname_is_unique_in_dc(hostname, dc):
                 raise ValidationError(
                     'Hostname "{hostname}" is already exposed in DHCP in {dc}.'
                     .format(
