@@ -1,0 +1,3443 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-07-24 14:53+0200\n"
+"PO-Revision-Date: 2018-08-08 09:16+0200\n"
+"Language: cs_CZ\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"X-Generator: Poedit 2.0.4\n"
+
+#: accounts/admin.py:86
+msgid "go to asset"
+msgstr "jít na majetek"
+
+#: accounts/admin.py:88 accounts/admin.py:186 assets/admin.py:141
+#: dashboards/admin.py:104
+msgid "Link"
+msgstr "Odkaz"
+
+#: accounts/admin.py:94
+msgid "Buyout date"
+msgstr "Datum odprodeje"
+
+#: accounts/admin.py:134
+msgid "Report failure"
+msgstr "Nahlásit nezdar"
+
+#: accounts/admin.py:150
+msgid "<div class=\"small-12 columns label alert\">missing</div>"
+msgstr "<div class=\"small-12 columns label alert\">chybí</div>"
+
+#: accounts/admin.py:154
+msgid "<div class=\"small-12 columns label success\">confirmed</div>"
+msgstr "<div class=\"small-12 columns label success\">potvrzeno</div>"
+
+#: accounts/admin.py:164
+msgid "yes"
+msgstr "ano"
+
+#: accounts/admin.py:169
+msgid "no"
+msgstr "ne"
+
+#: accounts/admin.py:172
+msgid "<i>Only asset's user can confirm.</i>"
+msgstr "<i>Může potvrdit pouze vlastník majetku.</i>"
+
+#: accounts/admin.py:173
+msgid "Do you have it?"
+msgstr "Máte to?"
+
+#: accounts/admin.py:184
+msgid "go to licence"
+msgstr "přejít na licenci"
+
+#: accounts/admin.py:229 deployment/admin.py:28 deployment/admin.py:46
+#: deployment/admin.py:66 networks/admin.py:282
+msgid "Additional info"
+msgstr "Další informace"
+
+#: accounts/admin.py:239
+#: admin/templates/admin/templatetags/transition_history.html:7
+msgid "Transition history"
+msgstr "Historie přechodu"
+
+#: accounts/admin.py:265 accounts/templates/ralphuser/user_profile.html:14
+msgid "Personal info"
+msgstr "Osobní údaje"
+
+#: accounts/admin.py:268
+msgid "Permissions"
+msgstr "Oprávnění"
+
+#: accounts/admin.py:274
+msgid "Important dates"
+msgstr "Důležité datumy"
+
+#: accounts/admin.py:277 accounts/templates/ralphuser/user_profile.html:34
+msgid "Profile"
+msgstr "Profil"
+
+#: accounts/admin.py:282 accounts/templates/ralphuser/user_profile.html:54
+msgid "Job info"
+msgstr "Informace o úkolu"
+
+#: accounts/admin.py:316
+msgid "LDAP mapping"
+msgstr "LDAP mapování"
+
+#: accounts/admin.py:326 admin/sitetrees.py:306
+msgid "Users list"
+msgstr "Seznam uživatelů"
+
+#: accounts/apps.py:9
+msgid "Accounts"
+msgstr "Účty"
+
+#: accounts/models.py:33 accounts/models.py:79
+msgid "country"
+msgstr "země"
+
+#: accounts/models.py:84
+msgid "city"
+msgstr "město"
+
+#: accounts/models.py:89
+msgid "company"
+msgstr "společnost"
+
+#: accounts/models.py:94
+msgid "employee id"
+msgstr "osobní číslo"
+
+#: accounts/models.py:99
+msgid "profit center"
+msgstr "ziskové centrum"
+
+#: accounts/models.py:104
+msgid "cost center"
+msgstr "nákladové centrum"
+
+#: accounts/models.py:109
+msgid "department"
+msgstr "oddělení"
+
+#: accounts/models.py:114
+msgid "manager"
+msgstr "nadřízený"
+
+#: accounts/models.py:119
+msgid "location"
+msgstr "umístění"
+
+#: accounts/models.py:124
+msgid "segment"
+msgstr "segment"
+
+#: accounts/templates/ralphuser/inventory_tag_confirmation.html:5
+msgid "Asset possession confirmation"
+msgstr "Potvrzení dispozice majetku"
+
+#: accounts/templates/ralphuser/inventory_tag_confirmation.html:12
+msgid "Are you sure you have following item?"
+msgstr "Opravdu máte následující položku?"
+
+#: accounts/templates/ralphuser/inventory_tag_confirmation.html:14
+msgid "Are you sure you don't have this item?"
+msgstr "Opravdu nemáte následující položku?"
+
+#: accounts/templates/ralphuser/my_equipment.html:8
+#: accounts/templates/ralphuser/user_additional_info.html:7
+msgid "Assigned assets"
+msgstr "Přiřazené majekty"
+
+#: accounts/templates/ralphuser/my_equipment.html:11
+#: accounts/templates/ralphuser/user_additional_info.html:11
+msgid "Assigned licences"
+msgstr "Přiřazené licence"
+
+#: accounts/templates/ralphuser/user_profile.html:5
+#: accounts/templates/ralphuser/user_profile.html:9
+#: admin/templates/admin/partials/userlinks.html:3
+msgid "My profile"
+msgstr "Můj profil"
+
+#: accounts/templates/ralphuser/user_profile.html:18
+msgid "Username"
+msgstr "Uživatelské jméno"
+
+#: accounts/templates/ralphuser/user_profile.html:20
+msgid "Full name"
+msgstr "Celé jméno"
+
+#: accounts/templates/ralphuser/user_profile.html:26
+msgid "API Token"
+msgstr "Token API"
+
+#: accounts/templates/ralphuser/user_profile.html:38 back_office/models.py:435
+msgid "Country"
+msgstr "Země"
+
+#: accounts/templates/ralphuser/user_profile.html:40
+msgid "City"
+msgstr "Město"
+
+#: accounts/templates/ralphuser/user_profile.html:46
+msgid "Gender"
+msgstr "Pohlaví"
+
+#: accounts/templates/ralphuser/user_profile.html:58
+msgid "Company"
+msgstr "Společnost"
+
+#: accounts/templates/ralphuser/user_profile.html:60 admin/sitetrees.py:292
+msgid "Profit center"
+msgstr "Ziskové centrum"
+
+#: accounts/templates/ralphuser/user_profile.html:62
+msgid "Cost center"
+msgstr "Nákladové centrum"
+
+#: accounts/templates/ralphuser/user_profile.html:64
+msgid "Department"
+msgstr "Oddělení"
+
+#: accounts/templates/ralphuser/user_profile.html:70
+msgid "Manager"
+msgstr "Nadřízený"
+
+#: accounts/templates/ralphuser/user_profile.html:72 data_center/admin.py:483
+#: data_center/admin.py:688
+msgid "Location"
+msgstr "Umístění"
+
+#: accounts/templates/ralphuser/user_profile.html:74
+msgid "Segment"
+msgstr "Segment"
+
+#: accounts/templates/ralphuser/user_profile.html:83
+msgid "Preferences"
+msgstr "Předvolby"
+
+#: accounts/templates/ralphuser/user_profile.html:94
+msgid "Change language"
+msgstr "Změnit jazyk"
+
+#: accounts/templates/ralphuser/user_transition_history.html:5
+msgid "User transition history"
+msgstr "Historie přechodu uživatele"
+
+#: accounts/views.py:46 accounts/views.py:134
+msgid "Barcode / Inventory Number"
+msgstr "Čárový kód / inventární číslo"
+
+#: accounts/views.py:48 accounts/views.py:136
+msgid "Serial Number"
+msgstr "Sériové číslo"
+
+#: accounts/views.py:101
+msgid "Successfully tagged asset"
+msgstr "Majetek úspěšně označen"
+
+#: accounts/views.py:165
+msgid "Inventory Number"
+msgstr "Inventární číslo"
+
+#: admin/fields.py:29
+msgid ""
+"Field can't be empty. Please put the item OR items separated by new line or "
+"comma."
+msgstr ""
+"Kolonka nemůže zůstat nevyplněná. Zadejte položku nebo položky oddělované "
+"koncem řádku nebo čárkou."
+
+#: admin/fields.py:39
+msgid "There are duplicates in field."
+msgstr "V kolonce jsou duplicity."
+
+#: admin/fields.py:57
+msgid "Enter a valid number."
+msgstr "Zadejte platné číslo."
+
+#: admin/fields.py:119
+#, python-format
+msgid "Fill at least on of %(v)s in each row"
+msgstr "Je třeba vyplnit alespon na z %(v)s každého rádku"
+
+#: admin/fields.py:146
+msgid "Following items already exist: "
+msgstr "Následující položky už existují: "
+
+#: admin/filters.py:57 admin/filters.py:512 networks/filters.py:32
+#, python-format
+msgid "Incorrect value in \"%(field_name)s\" filter"
+msgstr "Neplatná hodnota ve filtru „%(field_name)s“"
+
+#: admin/filters.py:136 admin/sitetrees.py:266 admin/widgets.py:83
+#: reports/views.py:76
+msgid "All"
+msgstr "Vše"
+
+#: admin/filters.py:156
+msgid "Yes"
+msgstr "Ano"
+
+#: admin/filters.py:157
+msgid "No"
+msgstr "Ne"
+
+#: admin/filters.py:310 admin/filters.py:317 virtual/admin.py:314
+#: virtual/admin.py:432
+msgid "Tags"
+msgstr "Štítky"
+
+#: admin/filters.py:522 admin/filters.py:528
+msgid "IP"
+msgstr "IP adresa"
+
+#: admin/filters.py:552 admin/filters.py:558 deployment/deployment.py:591
+msgid "MAC Address"
+msgstr "MAC adresa"
+
+#: admin/filters.py:584 admin/filters.py:594
+msgid "show liquidated"
+msgstr "zobrazit zlikvidované"
+
+#: admin/filters.py:614 admin/filters.py:629 data_center/admin.py:89
+#: data_center/admin.py:112 data_center/admin.py:672
+#: deployment/deployment.py:402 virtual/admin.py:187 virtual/admin.py:326
+msgid "Hostname"
+msgstr "Název stroje"
+
+#. Translators: Model verbose name and instance
+#. representation, suitable to be an item in a
+#. list.
+#: admin/m2m.py:268
+#, python-format
+msgid "%(class_name)s %(instance)s"
+msgstr "%(class_name)s %(instance)s"
+
+#: admin/m2m.py:275
+msgid "and"
+msgstr "a"
+
+#: admin/m2m.py:278
+#, python-format
+msgid ""
+"Deleting %(class_name)s %(instance)s would require deleting the following "
+"protected related objects: %(related_objects)s"
+msgstr ""
+"Smazání %(class_name)s %(instance)s by vyžadoval smazání následujících "
+"chráněných souvisejících objektů: %(related_objects)s"
+
+#: admin/mixins.py:157
+msgid "Found exactly one result."
+msgstr "Nalezen přesně jeden výsledek."
+
+#: admin/sitetrees.py:66
+msgid "Add {}"
+msgstr "Přidat {}"
+
+#: admin/sitetrees.py:92 data_center/admin.py:540
+msgid "Data Center"
+msgstr "Datacentrum"
+
+#: admin/sitetrees.py:97
+msgid "All hosts"
+msgstr "Všechny stroje"
+
+#: admin/sitetrees.py:99
+msgid "DC Visualization"
+msgstr "Vizualizace datacentra"
+
+#: admin/sitetrees.py:103 admin/sitetrees.py:130
+msgid "Hardware"
+msgstr "Hardware"
+
+#: admin/sitetrees.py:104
+msgid "Virtual Servers"
+msgstr "Virtuální servery"
+
+#: admin/sitetrees.py:105
+msgid "Clusters"
+msgstr "Klastry"
+
+#: admin/sitetrees.py:106 virtual/models.py:198
+msgid "Cloud hosts"
+msgstr "Stroje cloudu"
+
+#: admin/sitetrees.py:107
+msgid "Cloud projects"
+msgstr "Projekty cloudu"
+
+#: admin/sitetrees.py:108
+msgid "Data Centers"
+msgstr "Datacentra"
+
+#: admin/sitetrees.py:109
+msgid "Racks"
+msgstr "Rozvaděče"
+
+#: admin/sitetrees.py:110
+msgid "Rack Accessories"
+msgstr "Příslušenství rozvaděče"
+
+#: admin/sitetrees.py:111
+msgid "Accessories"
+msgstr "Příslušenství"
+
+#: admin/sitetrees.py:112
+msgid "Databases"
+msgstr "Databáze"
+
+#: admin/sitetrees.py:113
+msgid "Disk Shares"
+msgstr "Disková sdílení"
+
+#: admin/sitetrees.py:114
+msgid "Server Rooms"
+msgstr "Serverovny"
+
+#: admin/sitetrees.py:115 data_center/models/virtual.py:53
+msgid "VIPs"
+msgstr "v běhu"
+
+#: admin/sitetrees.py:116
+msgid "Preboots"
+msgstr "Preboot prostředí"
+
+#: admin/sitetrees.py:118
+msgid "Preboot configuration"
+msgstr "Preboot nastavení"
+
+#: admin/sitetrees.py:121
+msgid "Preboot files"
+msgstr "Preboot soubory"
+
+#: admin/sitetrees.py:125
+msgid "Back Office"
+msgstr "Back Office"
+
+#: admin/sitetrees.py:131
+msgid "Warehouses"
+msgstr "Sklady"
+
+#: admin/sitetrees.py:133 back_office/models.py:92
+msgid "Office Infrastructures"
+msgstr "Infrastruktury kanceláří"
+
+#: admin/sitetrees.py:140 admin/sitetrees.py:145
+msgid "Networks"
+msgstr "Sítě"
+
+#: admin/sitetrees.py:147
+msgid "Network environments"
+msgstr "Síťová prostředí"
+
+#: admin/sitetrees.py:149
+msgid "Network kind"
+msgstr "Druh sítě"
+
+#: admin/sitetrees.py:150 virtual/admin.py:210 virtual/admin.py:360
+msgid "IP Addresses"
+msgstr "IP adresy"
+
+#: admin/sitetrees.py:151 dhcp/models.py:44
+msgid "DHCP Servers"
+msgstr "DHCP servery"
+
+#: admin/sitetrees.py:152 dhcp/models.py:66
+msgid "DNS Servers"
+msgstr "DNS servery"
+
+#: admin/sitetrees.py:156
+msgid "Licenses"
+msgstr "Licence"
+
+#: admin/sitetrees.py:161 data_center/admin.py:144 data_center/admin.py:269
+#: virtual/admin.py:82
+msgid "Licences"
+msgstr "Licence"
+
+#: admin/sitetrees.py:162 admin/sitetrees.py:187 admin/sitetrees.py:267
+msgid "Types"
+msgstr "Typy"
+
+#: admin/sitetrees.py:163
+msgid "Software"
+msgstr "Software"
+
+#: admin/sitetrees.py:167 admin/sitetrees.py:172
+msgid "Domains"
+msgstr "Doméhny"
+
+#: admin/sitetrees.py:173
+msgid "Contracts"
+msgstr "Smlouvy"
+
+#: admin/sitetrees.py:174
+msgid "Registrants"
+msgstr "Registrovaní"
+
+#: admin/sitetrees.py:175
+msgid "Owners"
+msgstr "Vlastníci"
+
+#: admin/sitetrees.py:176
+msgid "DNS Providers"
+msgstr "Poskytovatelé DNS"
+
+#: admin/sitetrees.py:177
+msgid "Domain Categories"
+msgstr "Doménové kategorie"
+
+#: admin/sitetrees.py:181 admin/sitetrees.py:186 back_office/admin.py:34
+#: data_center/admin.py:253
+msgid "Supports"
+msgstr "Podpory"
+
+#: admin/sitetrees.py:188
+msgid "Assets supports"
+msgstr "Podpora majetků"
+
+#: admin/sitetrees.py:192 reports/templates/reports/report_detail.html:5
+msgid "Reports"
+msgstr "Výkazy"
+
+#: admin/sitetrees.py:198
+msgid "Category model"
+msgstr "Model kategorie"
+
+#: admin/sitetrees.py:205
+msgid "Category model status"
+msgstr "Stav modelu kategorie"
+
+#: admin/sitetrees.py:212
+msgid "Manufacturer category model"
+msgstr "Model kategorie výrobce"
+
+#: admin/sitetrees.py:220
+msgid "Status model"
+msgstr "Model stavu"
+
+#: admin/sitetrees.py:227 reports/views.py:319
+msgid "Asset - relations"
+msgstr "Majetek – vztahy"
+
+#: admin/sitetrees.py:234 reports/views.py:478
+msgid "Licence - relations"
+msgstr "Licence – vztahy"
+
+#: admin/sitetrees.py:241
+msgid "Assets - supports"
+msgstr "Majetky – podpory"
+
+#: admin/sitetrees.py:248 admin/sitetrees.py:265 reports/views.py:583
+msgid "Failures"
+msgstr "Poruchy"
+
+#: admin/sitetrees.py:257 operations/views.py:63
+msgid "Operations"
+msgstr "Operace"
+
+#: admin/sitetrees.py:262
+msgid "Changes"
+msgstr "Změny"
+
+#: admin/sitetrees.py:263
+msgid "Problems"
+msgstr "Problémy"
+
+#: admin/sitetrees.py:264
+msgid "Incidents"
+msgstr "Incidenty"
+
+#: admin/sitetrees.py:268
+msgid "Statuses"
+msgstr "Stavy"
+
+#: admin/sitetrees.py:272 admin/sitetrees.py:277
+msgid "Dashboards"
+msgstr "Nástěnky"
+
+#: admin/sitetrees.py:278
+msgid "Graphs"
+msgstr "Grafy"
+
+#: admin/sitetrees.py:282
+msgid "Settings"
+msgstr "Nastavení"
+
+#: admin/sitetrees.py:287
+msgid "Asset model"
+msgstr "Model majetku"
+
+#: admin/sitetrees.py:288
+msgid "Asset category"
+msgstr "Kategorie majetku"
+
+#: admin/sitetrees.py:289
+msgid "Manufacturer"
+msgstr "Výrobce"
+
+#: admin/sitetrees.py:290
+msgid "Manufacturer Kind"
+msgstr "Druh výrobce"
+
+#: admin/sitetrees.py:291
+msgid "Business segment"
+msgstr "Segment trhu"
+
+#: admin/sitetrees.py:293
+#: admin/templates/admin/templatetags/my_services.html:12
+msgid "Service"
+msgstr "Služba"
+
+#: admin/sitetrees.py:294
+#: admin/templates/admin/templatetags/my_services.html:13
+msgid "Environment"
+msgstr "Prostředí"
+
+#: admin/sitetrees.py:295 assets/models/assets.py:348
+msgid "Budget info"
+msgstr "Informace o rozpočtu"
+
+#: admin/sitetrees.py:297
+msgid "Service Environment"
+msgstr "Prostředí služby"
+
+#: admin/sitetrees.py:300
+msgid "Configuration modules"
+msgstr "Moduly nastavení"
+
+#: admin/sitetrees.py:303
+msgid "Configuration classes"
+msgstr "Třídy nastavení"
+
+#: admin/sitetrees.py:305
+msgid "Asset holder"
+msgstr "Výplň majetku"
+
+#: admin/sitetrees.py:307
+msgid "Groups list"
+msgstr "Seznam skupin"
+
+#: admin/sitetrees.py:308
+msgid "Regions"
+msgstr "Oblasti"
+
+#: admin/sitetrees.py:309
+#: lib/transitions/templates/transitions/templatetags/available_transitions.html:7
+msgid "Transitions"
+msgstr "Přechody"
+
+#: admin/sitetrees.py:310
+msgid "Report template"
+msgstr "Šablona výkazu"
+
+#: admin/sitetrees.py:311
+msgid "Custom fields"
+msgstr "Vlastní kolonky"
+
+#: admin/templates/admin/actions.html:5
+#: admin/templates/admin/templatetags/transition_history.html:18
+#: lib/transitions/templates/transitions/_transition_jobs_table.html:12
+#: lib/transitions/templates/transitions/current_transitions.html:27
+msgid "Actions"
+msgstr "Akce"
+
+#: admin/templates/admin/actions.html:10
+msgid "Run the selected action"
+msgstr "Spustit vybranou akci"
+
+#: admin/templates/admin/actions.html:11
+msgid "Go"
+msgstr "Přejít"
+
+#: admin/templates/admin/change_form.html:13
+#: admin/templates/admin/multi_add.html:53
+msgid "Add"
+msgstr "Přidat"
+
+#: admin/templates/admin/change_form.html:27
+msgid "History"
+msgstr "Historie"
+
+#: admin/templates/admin/change_form.html:61
+#: admin/templates/admin/change_list.html:73
+#: admin/templates/admin/login.html:26
+msgid "Please correct the error below."
+msgstr "Opravte níže uvedenou chybu."
+
+#: admin/templates/admin/change_form.html:63
+#: admin/templates/admin/change_list.html:75
+#: admin/templates/admin/login.html:26
+msgid "Please correct the errors below."
+msgstr "Opravte níže uvedené chyby."
+
+#: admin/templates/admin/change_list.html:34
+msgid "Back to list"
+msgstr "Zpět na seznam"
+
+#: admin/templates/admin/change_list.html:40
+#, python-format
+msgid ""
+"\n"
+"                  <i class=\"fa fa-plus\" aria-hidden=\"true\"></i> Add "
+"%(name)s\n"
+"                "
+msgstr ""
+"\n"
+"                  <i class=\"fa fa-plus\" aria-hidden=\"true\"></i> Přidat "
+"%(name)s\n"
+"                "
+
+#: admin/templates/admin/change_list.html:47
+msgid "Other actions"
+msgstr "Ostatní akce"
+
+#: admin/templates/admin/change_list.html:56
+#, python-format
+msgid ""
+"\n"
+"                            Recover deleted %(name)s\n"
+"                          "
+msgstr ""
+"\n"
+"                            Obnovit smazané %(name)s\n"
+"                          "
+
+#: admin/templates/admin/change_list_results.html:32
+msgid "Remove from sorting"
+msgstr "Odebrat z třídění"
+
+#: admin/templates/admin/change_list_results.html:63
+msgid "Nothing to display."
+msgstr "Není co zobrazit."
+
+#: admin/templates/admin/change_list_results.html:65
+#, python-format
+msgid ""
+"\n"
+"        You can <a href=\"%(add_url)s\">add first %(name)s</a>.\n"
+"      "
+msgstr ""
+"\n"
+"        Můžete <a href=\"%(add_url)s\">přidat první %(name)s</a>.\n"
+"      "
+
+#: admin/templates/admin/delete_confirmation.html:8
+#, python-format
+msgid ""
+"Deleting the %(object_name)s '%(escaped_object)s' would result in deleting "
+"related objects, but your account doesn't have permission to delete the "
+"following types of objects:"
+msgstr ""
+"Smazání %(object_name)s „%(escaped_object)s“ by vedlo ke smazání "
+"souvisejících objektů, ale váš účet nemá oprávnění mazat následující typy "
+"objektů:"
+
+#: admin/templates/admin/delete_confirmation.html:15
+#, python-format
+msgid ""
+"Deleting the %(object_name)s '%(escaped_object)s' would require deleting the "
+"following protected related objects:"
+msgstr ""
+"Smazání %(object_name)s „%(escaped_object)s“ by vyžadovalo smazání "
+"následujících chráněných souvisejících objektů:"
+
+#: admin/templates/admin/delete_confirmation.html:23
+#, python-format
+msgid ""
+"\n"
+"        Are you sure you want to delete the %(object_name)s "
+"\"%(escaped_object)s\"? All of the following related items will be deleted:\n"
+"      "
+msgstr ""
+"\n"
+"        Opravdu chcete smazat %(object_name)s „%(escaped_object)s“? Všechny "
+"z následujících souvisejících objektů budou smazány:\n"
+"      "
+
+#: admin/templates/admin/delete_confirmation.html:29
+#: admin/templates/admin/delete_selected_confirmation.html:30
+#: assets/admin.py:151 operations/admin.py:88
+msgid "Objects"
+msgstr "Objekty"
+
+#: admin/templates/admin/delete_confirmation.html:36
+#: admin/templates/admin/delete_selected_confirmation.html:41
+msgid "Yes, I'm sure"
+msgstr "Ano, jsem si jistý"
+
+#: admin/templates/admin/delete_confirmation.html:37
+#: admin/templates/admin/delete_selected_confirmation.html:42
+msgid "No, take me back"
+msgstr "Ne, vzít zpět"
+
+#: admin/templates/admin/delete_selected_confirmation.html:7
+#, python-format
+msgid ""
+"Deleting the selected %(objects_name)s would result in deleting related "
+"objects, but your account doesn't have permission to delete the following "
+"types of objects:"
+msgstr ""
+"Smazání označených %(objects_name)s by vedlo ke smazání souvisejících "
+"objektů, ale váš uživatelský účet nemá oprávnění mazat následující typy "
+"objektů:"
+
+#: admin/templates/admin/delete_selected_confirmation.html:14
+#, python-format
+msgid ""
+"Deleting the selected %(objects_name)s would require deleting the following "
+"protected related objects:"
+msgstr ""
+"Smazání označených %(objects_name)s by vedlo ke smazání souvisejících "
+"objektů:"
+
+#: admin/templates/admin/delete_selected_confirmation.html:22
+#, python-format
+msgid ""
+"\n"
+"      Are you sure you want to delete the selected %(objects_name)s? All of "
+"the following objects and their related items will be deleted:\n"
+"      "
+msgstr ""
+"\n"
+"      Opravdu chcete smazat označený %(objects_name)s? Všechny následující "
+"objekty a jejich související položky budou smazány:\n"
+"      "
+
+#: admin/templates/admin/edit_inline/tabular.html:8
+#, python-format
+msgid "Add another %(verbose_name)s"
+msgstr "Přidat další %(verbose_name)s"
+
+#: admin/templates/admin/edit_inline/tabular.html:8
+msgid "Remove"
+msgstr "Odebrat"
+
+#: admin/templates/admin/edit_inline/tabular.html:26
+msgid "Delete?"
+msgstr "Smazat?"
+
+#: admin/templates/admin/edit_inline/tabular.html:67
+msgid "Change"
+msgstr "Změnit"
+
+#: admin/templates/admin/edit_inline/tabular_m2m.html:5
+msgid "Delete assignment?"
+msgstr "Smazat přiřazení?"
+
+#: admin/templates/admin/filters/_filter_base.html:7
+#, python-format
+msgid ""
+"\n"
+"        %(filter_title)s\n"
+"      "
+msgstr ""
+"\n"
+"        %(filter_title)s\n"
+"      "
+
+#: admin/templates/admin/import_export/change_list_import_export.html:8
+msgid "Import"
+msgstr "Import"
+
+#: admin/templates/admin/import_export/change_list_import_export.html:14
+msgid "Export"
+msgstr "Export"
+
+#: admin/templates/admin/includes/object_delete_summary.html:3
+msgid "Summary"
+msgstr "Souhrn"
+
+#: admin/templates/admin/index.html:25
+msgid "My Recent Actions"
+msgstr "Mé nedávné akce"
+
+#: admin/templates/admin/index.html:29
+msgid "None available"
+msgstr "Není k dispozici"
+
+#: admin/templates/admin/index.html:43
+msgid "Unknown content"
+msgstr "Neznámý obsah"
+
+#: admin/templates/admin/login.html:49
+msgid "Please login"
+msgstr "Přihlaste se"
+
+#: admin/templates/admin/login.html:51
+msgid "Log in"
+msgstr "Přihlásit"
+
+#: admin/templates/admin/login.html:57
+msgid "Forgotten your password or username?"
+msgstr "Zapomněli jste své uživatelské jméno nebo heslo?"
+
+#: admin/templates/admin/multi_add.html:5
+msgid "Bulk adding:"
+msgstr "Dávkové přidání:"
+
+#: admin/templates/admin/multi_add.html:12
+msgid "This object will be multiplied"
+msgstr "Tento objekt bude znásoben"
+
+#: admin/templates/admin/multi_add.html:17
+msgid "Please add multiple values separated with comma, new line or pipe"
+msgstr "Přidejte vícero hodnot oddělovaných čárkou, koncem řádku nebo pajpou"
+
+#: admin/templates/admin/multi_add.html:47
+msgid "Cancel"
+msgstr "Storno"
+
+#: admin/templates/admin/object_history.html:12
+#: admin/templates/reversion/object_history.html:14
+msgid "Date/time"
+msgstr "Datum/čas"
+
+#: admin/templates/admin/object_history.html:13
+#: admin/templates/reversion/object_history.html:15 back_office/models.py:268
+#: back_office/models.py:460
+#: lib/transitions/templates/transitions/_transition_jobs_table.html:6
+msgid "User"
+msgstr "Uživatel"
+
+#: admin/templates/admin/object_history.html:14
+#: back_office/templates/backofficeasset/components.html:14
+#: data_center/templates/data_center/datacenterasset/components.html:14
+msgid "Action"
+msgstr "Akce"
+
+#: admin/templates/admin/object_history.html:28
+#: admin/templates/reversion/object_history.html:37
+msgid ""
+"This object doesn't have a change history. It probably wasn't added via this "
+"admin site."
+msgstr ""
+"Tento objekt nemá historii změn. Nejspíš nebyl přidán prostřednictvím této "
+"správní stránky."
+
+#: admin/templates/admin/pagination.html:21
+msgid "Show all"
+msgstr "Zobrazit vše"
+
+#: admin/templates/admin/pagination.html:26
+#: admin/templates/admin/submit_line.html:28 dns/templates/dns/dns_edit.html:36
+msgid "Save"
+msgstr "Uložit"
+
+#: admin/templates/admin/partials/userlinks.html:6
+msgid "My equipment"
+msgstr "Moje vybavení"
+
+#: admin/templates/admin/partials/userlinks.html:10
+msgid "Change password"
+msgstr "Změnit heslo"
+
+#: admin/templates/admin/partials/userlinks.html:14
+msgid "Log out"
+msgstr "Odhlásit"
+
+#: admin/templates/admin/related_widget_wrapper.html:9
+#, python-format
+msgid "Change selected %(model)s"
+msgstr "Změnit označené %(model)s"
+
+#: admin/templates/admin/related_widget_wrapper.html:16
+#, python-format
+msgid "Add another %(model)s"
+msgstr "Přidat další %(model)s"
+
+#: admin/templates/admin/search_form.html:7
+#, python-format
+msgid "Search %(verbose_name)s by"
+msgstr "Hledat %(verbose_name)s podle"
+
+#: admin/templates/admin/submit_line.html:8
+#: attachments/templates/attachments/attachments.html:15
+#: dns/templates/dns/dns_edit.html:40
+msgid "Delete"
+msgstr "Smazat"
+
+#: admin/templates/admin/submit_line.html:18
+msgid "Duplicate"
+msgstr "Zduplikovat"
+
+#: admin/templates/admin/submit_line.html:22
+msgid "Bulk add"
+msgstr "Dávkové přidání"
+
+#: admin/templates/admin/templatetags/my_services.html:9
+msgid "My services"
+msgstr "Moje služby"
+
+#: admin/templates/admin/templatetags/my_services.html:14 assets/admin.py:263
+msgid "Assets count"
+msgstr "Počet položek majetku"
+
+#: admin/templates/admin/templatetags/ralph_summary.html:12
+msgid "Show"
+msgstr "Zobrazit"
+
+#: admin/templates/admin/templatetags/tabs.html:13
+#: admin/templates/admin/templatetags/tabs.html:14 assets/admin.py:78
+#: back_office/admin.py:141 data_center/admin.py:166 data_center/admin.py:430
+#: deployment/admin.py:23 deployment/admin.py:41 deployment/admin.py:61
+#: domains/admin.py:45 domains/admin.py:88
+#: lib/transitions/templates/transitions/current_transitions.html:18
+#: licences/admin.py:104 networks/admin.py:34 networks/admin.py:138
+#: networks/admin.py:277 operations/admin.py:81 supports/admin.py:71
+msgid "Basic info"
+msgstr "Základní informace"
+
+#: admin/templates/admin/templatetags/transition_history.html:13
+#: attachments/templates/attachments/attachments.html:14
+msgid "Date"
+msgstr "Datum"
+
+#: admin/templates/admin/templatetags/transition_history.html:14
+#: lib/transitions/templates/transitions/current_transitions.html:19
+msgid "Author"
+msgstr "Autor"
+
+#: admin/templates/admin/templatetags/transition_history.html:15
+#: lib/transitions/templates/transitions/current_transitions.html:20
+msgid "Transition"
+msgstr "Přechod"
+
+#: admin/templates/admin/templatetags/transition_history.html:16
+msgid "Source"
+msgstr "Zdroj"
+
+#: admin/templates/admin/templatetags/transition_history.html:17
+msgid "Target"
+msgstr "Cíl"
+
+#: admin/templates/admin/templatetags/transition_history.html:19
+#: lib/transitions/templates/transitions/current_transitions.html:26
+msgid "Data"
+msgstr "Data"
+
+#: admin/templates/admin/templatetags/transition_history.html:20
+msgid "Attachment"
+msgstr "Příloha"
+
+#: admin/templates/admin/templatetags/transition_history.html:65
+msgid "Transition history is empty"
+msgstr "Historie přechodů je prázdná"
+
+#: admin/templates/reversion/object_history.html:7
+msgid ""
+"Choose a date from the list below to revert to a previous version of this "
+"object."
+msgstr ""
+"Zvolte z níže uvedeného seznamu datum na verzi ze kterého tento objekt "
+"vrátit."
+
+#: admin/templates/reversion/object_history.html:16
+msgid "Comment"
+msgstr "Komentář"
+
+#: admin/views/multiadd.py:142
+#, python-format
+msgid "Saved %(count)d object(s): %(objects)s"
+msgstr "Uloženo %(count)d object(s): %(objects)s"
+
+#: api/tests/test_fields.py:15 api/tests/test_serializers.py:22
+msgid "foo11"
+msgstr "foo11"
+
+#: api/tests/test_fields.py:16 api/tests/test_serializers.py:23
+msgid "bar22"
+msgstr "bar22"
+
+#: assets/admin.py:60
+msgid "Objects count"
+msgstr "Počet objektů"
+
+#: assets/admin.py:83 networks/admin.py:146
+msgid "Relations"
+msgstr "Vztahy"
+
+#: assets/admin.py:100
+msgid "Children modules"
+msgstr "Podřízené moduly"
+
+#: assets/admin.py:111
+msgid "Children classes"
+msgstr "Podřízené třídy"
+
+#: assets/admin.py:139
+msgid "Go to object"
+msgstr "Přejít na objekt"
+
+#: assets/admin.py:145
+msgid "object"
+msgstr "objekt"
+
+#: assets/admin.py:164 assets/models/assets.py:172 deployment/models.py:95
+#: deployment/models.py:115 operations/models.py:57
+msgid "type"
+msgstr "typ"
+
+#: assets/admin.py:165 networks/models/networks.py:286
+msgid "environment"
+msgstr "prostředí"
+
+#: assets/invoice_report.py:44
+msgid "Invoice report"
+msgstr "Výkaz o faktuře"
+
+#: assets/invoice_report.py:84
+msgid "Selected items have different"
+msgstr "Označené položky mají různý"
+
+#: assets/models/assets.py:149
+msgid "manufacturer kind"
+msgstr "druh výrobce"
+
+#: assets/models/assets.py:181
+msgid "Power consumption"
+msgstr "Spotřeba energie"
+
+#: assets/models/assets.py:185
+msgid "Height of device"
+msgstr "Výška zařízení"
+
+#: assets/models/assets.py:190
+msgid "Cores count"
+msgstr "Počet jader"
+
+#: assets/models/assets.py:194
+msgid "visualization layout of front side"
+msgstr "rozvržení vizualizace přední strany"
+
+#: assets/models/assets.py:200
+msgid "visualization layout of back side"
+msgstr "vizualizace rozvržení zadní strany"
+
+#: assets/models/assets.py:209 assets/models/components.py:83
+msgid "model"
+msgstr "model"
+
+#: assets/models/assets.py:210
+msgid "models"
+msgstr "modely"
+
+#: assets/models/assets.py:258 assets/models/assets.py:424
+msgid ""
+"This value is in percentage. For example value: \"100\" means it depreciates "
+"during a year. Value: \"25\" means it depreciates during 4 years, and so "
+"on... ."
+msgstr ""
+"Tato hodnota je v procentech. Například hodnota: „100“ znamená, že ztratí "
+"hodnotu za rok. Hodnota: „25“ znamená, že ztratí hodnotu za 4 roky, atd…"
+
+#: assets/models/assets.py:266 deployment/deployment.py:256
+msgid "category"
+msgstr "kategorie"
+
+#: assets/models/assets.py:267
+msgid "categories"
+msgstr "kategorie"
+
+#: assets/models/assets.py:349
+msgid "Budgets info"
+msgstr "Informace o rozpočtech"
+
+#: assets/models/assets.py:366 data_center/models/virtual.py:96
+#: networks/models/networks.py:618 virtual/models.py:190 virtual/models.py:328
+msgid "hostname"
+msgstr "název stroje"
+
+#: assets/models/assets.py:372 virtual/models.py:333
+msgid "SN"
+msgstr "sériové číslo"
+
+#: assets/models/assets.py:381
+msgid "barcode"
+msgstr "čárový kód"
+
+#: assets/models/assets.py:388 licences/models.py:178
+msgid "inventory number"
+msgstr "inventární číslo"
+
+#: assets/models/assets.py:393
+msgid "order number"
+msgstr "číslo objednávky"
+
+#: assets/models/assets.py:399 supports/models.py:101
+msgid "invoice number"
+msgstr "číslo faktury"
+
+#: assets/models/assets.py:516
+msgid "SN or BARCODE field is required"
+msgstr "Je třeba sériové číslo nebo čárový kód"
+
+#: assets/models/base.py:88
+msgid "configuration path"
+msgstr "cesta nastavení"
+
+#: assets/models/base.py:90
+msgid "path to configuration for this object, for example path to puppet class"
+msgstr "cesta k nastavení pro tento objekt, například cesta k puppet třídě"
+
+#: assets/models/choices.py:9
+msgid "for contractor"
+msgstr "pro kontraktora"
+
+#: assets/models/choices.py:10
+msgid "sectional"
+msgstr "sekční"
+
+#: assets/models/choices.py:11
+msgid "for dashboards"
+msgstr "pro nástěnky"
+
+#: assets/models/choices.py:12
+msgid "for events"
+msgstr "pro události"
+
+#: assets/models/choices.py:13
+msgid "for tests"
+msgstr "pro testy"
+
+#: assets/models/choices.py:14
+msgid "others"
+msgstr "ostatní"
+
+#: assets/models/choices.py:20
+msgid "shipment"
+msgstr "doprava"
+
+#: assets/models/choices.py:21
+msgid "salvaged"
+msgstr "zachráněno"
+
+#: assets/models/choices.py:27
+msgid "back office"
+msgstr "back office"
+
+#: assets/models/choices.py:28 data_center/models/physical.py:131
+#: data_center/models/physical.py:133 networks/models/networks.py:58
+msgid "data center"
+msgstr "datacentrum"
+
+#: assets/models/choices.py:29
+msgid "part"
+msgstr "část"
+
+#: assets/models/choices.py:30
+msgid "all"
+msgstr "vše"
+
+#: assets/models/choices.py:36
+msgid "N/A"
+msgstr "N/A"
+
+#: assets/models/choices.py:37
+msgid "1 row x 2 columns"
+msgstr "1 řádek x 2 sloupce"
+
+#: assets/models/choices.py:38
+msgid "2 rows x 8 columns"
+msgstr "2 řádky x 8 sloupců"
+
+#: assets/models/choices.py:39
+msgid "2 rows x 16 columns (A/B)"
+msgstr "2 řádky x 16 sloupců"
+
+#: assets/models/choices.py:42
+msgid "4 rows x 2 columns"
+msgstr "4 řádky x 2 sloupce"
+
+#: assets/models/choices.py:43
+msgid "2 rows x 4 columns"
+msgstr "2 řádky x 4 sloupce"
+
+#: assets/models/choices.py:44
+msgid "2 rows x 2 columns"
+msgstr "2 řádky x 2 sloupce"
+
+#: assets/models/choices.py:45
+msgid "1 rows x 14 columns"
+msgstr "1 řádek x 14 sloupců"
+
+#: assets/models/choices.py:46
+msgid "2 rows x 1 columns"
+msgstr "2 řádky x 1 sloupec"
+
+#: assets/models/choices.py:52 assets/models/components.py:227
+msgid "processor"
+msgstr "procesor"
+
+#: assets/models/choices.py:53 assets/models/components.py:188
+#: assets/models/components.py:189
+msgid "memory"
+msgstr "paměť"
+
+#: assets/models/choices.py:54
+msgid "disk drive"
+msgstr "disková jednotka"
+
+#: assets/models/choices.py:55
+msgid "ethernet card"
+msgstr "síťová karta"
+
+#: assets/models/choices.py:56
+msgid "expansion card"
+msgstr "rozšiřující karta"
+
+#: assets/models/choices.py:57 assets/models/components.py:213
+msgid "fibre channel card"
+msgstr "fibre channel karta"
+
+#: assets/models/choices.py:58 data_center/models/components.py:36
+msgid "disk share"
+msgstr "diskové sdílení"
+
+#: assets/models/choices.py:59
+msgid "unknown"
+msgstr "neznámé"
+
+#: assets/models/choices.py:60
+msgid "management"
+msgstr "správa"
+
+#: assets/models/choices.py:61
+msgid "power module"
+msgstr "napájecí modul"
+
+#: assets/models/choices.py:62
+msgid "cooling device"
+msgstr "chladící zařízení"
+
+#: assets/models/choices.py:63
+msgid "media tray"
+msgstr "zásuvka na média"
+
+#: assets/models/choices.py:64
+msgid "chassis"
+msgstr "skříň"
+
+#: assets/models/choices.py:65
+msgid "backup"
+msgstr "záloha"
+
+#: assets/models/choices.py:66
+msgid "software"
+msgstr "software"
+
+#: assets/models/choices.py:67
+msgid "operating system"
+msgstr "operační systém"
+
+#: assets/models/choices.py:73
+msgid "10 Mbps"
+msgstr "10 Mb/s"
+
+#: assets/models/choices.py:74
+msgid "100 Mbps"
+msgstr "100 Mb/s"
+
+#: assets/models/choices.py:75
+msgid "1 Gbps"
+msgstr "1 Gb/s"
+
+#: assets/models/choices.py:76
+msgid "10 Gbps"
+msgstr "10 Gb/s"
+
+#: assets/models/choices.py:77
+msgid "40 Gbps"
+msgstr "40 Gb/s"
+
+#: assets/models/choices.py:78
+msgid "100 Gbps"
+msgstr "100 Gb/s"
+
+#: assets/models/choices.py:81 assets/models/choices.py:95
+msgid "unknown speed"
+msgstr "neznámá rychlost"
+
+#: assets/models/choices.py:87
+msgid "1 Gbit"
+msgstr "1 Gbit"
+
+#: assets/models/choices.py:88
+msgid "2 Gbit"
+msgstr "2 Gbit"
+
+#: assets/models/choices.py:89
+msgid "4 Gbit"
+msgstr "4 Gbit"
+
+#: assets/models/choices.py:90
+msgid "8 Gbit"
+msgstr "8 Gbit"
+
+#: assets/models/choices.py:91
+msgid "16 Gbit"
+msgstr "16 Gbit"
+
+#: assets/models/choices.py:92
+msgid "32 Gbit"
+msgstr "32 Gbit"
+
+#: assets/models/components.py:39 assets/models/components.py:184
+#: assets/models/components.py:222
+msgid "speed (MHz)"
+msgstr "rychlost (MHz)"
+
+#: assets/models/components.py:44
+msgid "number of cores"
+msgstr "počet jader"
+
+#: assets/models/components.py:49 assets/models/components.py:182
+#: data_center/models/components.py:22 data_center/models/components.py:55
+msgid "size (MiB)"
+msgstr "velikost (MiB)"
+
+#: assets/models/components.py:54
+msgid "component type"
+msgstr "typ komponenty"
+
+#: assets/models/components.py:70
+msgid "component model"
+msgstr "model komponenty"
+
+#: assets/models/components.py:71
+msgid "component models"
+msgstr "modely komponent"
+
+#: assets/models/components.py:90
+msgid "model name"
+msgstr "název modelu"
+
+#: assets/models/components.py:99 assets/models/components.py:114
+msgid "label"
+msgstr "štítek"
+
+#: assets/models/components.py:103
+msgid "vendor SN"
+msgstr "sériové číslo výrobce"
+
+#: assets/models/components.py:108
+msgid "generic component"
+msgstr "obecná komponenta"
+
+#: assets/models/components.py:109
+msgid "generic components"
+msgstr "obecné komponenty"
+
+#: assets/models/components.py:117
+msgid "MAC address"
+msgstr "MAC adresa"
+
+#: assets/models/components.py:121 assets/models/components.py:201
+msgid "speed"
+msgstr "rychlost"
+
+#: assets/models/components.py:125 assets/models/components.py:197
+#: assets/models/components.py:246 data_center/models/physical.py:426
+msgid "firmware version"
+msgstr "verze firmware"
+
+#: assets/models/components.py:130
+msgid "ethernet"
+msgstr "ethernet"
+
+#: assets/models/components.py:131
+msgid "ethernets"
+msgstr "ethernety"
+
+#: assets/models/components.py:145
+msgid "MAC cannot be empty if record is exposed in DHCP"
+msgstr "MAC nemůže zůstat nevyplněná pokud je záznam vystaven v DHCP"
+
+#: assets/models/components.py:208
+msgid "WWN"
+msgstr "WWN"
+
+#: assets/models/components.py:214
+msgid "fibre channel cards"
+msgstr "fibre channel karty"
+
+#: assets/models/components.py:228
+msgid "processors"
+msgstr "procesory"
+
+#: assets/models/components.py:237
+msgid "size (GiB)"
+msgstr "velikost (GiB)"
+
+#: assets/models/components.py:239 supports/models.py:96
+msgid "serial number"
+msgstr "sériové číslo"
+
+#: assets/models/components.py:243 data_center/models/physical.py:420
+msgid "slot number"
+msgstr "číslo slotu"
+
+#: assets/models/components.py:251
+msgid "disk"
+msgstr "disk"
+
+#: assets/models/components.py:252
+msgid "disks"
+msgstr "disky"
+
+#: assets/models/configuration.py:31 data_center/models/components.py:18
+#: data_center/models/virtual.py:42 data_center/models/virtual.py:90
+#: lib/mixins/models.py:13 lib/mixins/models.py:24 security/models.py:47
+#: virtual/models.py:45
+msgid "name"
+msgstr "název"
+
+#: assets/models/configuration.py:33
+msgid "module name (ex. directory name in puppet)"
+msgstr "název modulu (např. název složky v puppet)"
+
+#: assets/models/configuration.py:38
+msgid "parent module"
+msgstr "nadřazený modul"
+
+#: assets/models/configuration.py:47
+msgid "team"
+msgstr "tým"
+
+#: assets/models/configuration.py:55
+msgid "configuration module"
+msgstr "modul nastavení"
+
+#: assets/models/configuration.py:74
+msgid "class name"
+msgstr "název třídy"
+
+#: assets/models/configuration.py:76
+msgid "ex. puppet class"
+msgstr "ex. puppet trída"
+
+#: assets/models/configuration.py:80
+msgid "path"
+msgstr "cesta"
+
+#: assets/models/configuration.py:85
+msgid "path is constructed from name of module and name of class"
+msgstr "cesta je tvořena z názvu modulu a názvu třídy"
+
+#: assets/models/configuration.py:95
+msgid "configuration class"
+msgstr "třída nastavení"
+
+#: assets/views.py:18
+msgid "Components"
+msgstr "Komponenty"
+
+#: attachments/templates/attachments/attachments.html:12
+msgid "File"
+msgstr "Soubor"
+
+#: attachments/templates/attachments/attachments.html:13
+msgid "Description"
+msgstr "Popis"
+
+#: back_office/admin.py:41 data_center/admin.py:260
+msgid "Support"
+msgstr "Podpora"
+
+#: back_office/admin.py:51 back_office/admin.py:58 back_office/models.py:310
+msgid "Licence"
+msgstr "Licence"
+
+#: back_office/admin.py:148
+msgid "User Info"
+msgstr "Uživatelské informace"
+
+#: back_office/admin.py:153
+msgid "Financial Info"
+msgstr "Finanční informace"
+
+#: back_office/admin.py:181
+msgid "licences"
+msgstr "licence"
+
+#: back_office/models.py:70 data_center/models/choices.py:9
+#: supports/models.py:27 tests/models.py:24 virtual/models.py:303
+msgid "new"
+msgstr "nové"
+
+#: back_office/models.py:71 operations/migrations/0010_auto_20170410_1031.py:16
+msgid "in progress"
+msgstr "v běhu"
+
+#: back_office/models.py:72
+msgid "waiting for release"
+msgstr "čeká na vydání"
+
+#: back_office/models.py:73 data_center/models/choices.py:10
+#: data_center/models/virtual.py:77 virtual/models.py:304
+msgid "in use"
+msgstr "v používání"
+
+#: back_office/models.py:74
+msgid "loan"
+msgstr "zapůjčené"
+
+#: back_office/models.py:75 data_center/models/choices.py:12
+msgid "damaged"
+msgstr "poškozené"
+
+#: back_office/models.py:76 data_center/models/choices.py:13
+#: virtual/models.py:306
+msgid "liquidated"
+msgstr "zlikvidované"
+
+#: back_office/models.py:77
+msgid "in service"
+msgstr "v servisu"
+
+#: back_office/models.py:78
+msgid "installed"
+msgstr "nainstalováno"
+
+#: back_office/models.py:79 data_center/models/choices.py:11
+msgid "free"
+msgstr "volné"
+
+#: back_office/models.py:80 networks/models/choices.py:8
+msgid "reserved"
+msgstr "zamluvené"
+
+#: back_office/models.py:91
+msgid "Office Infrastructure"
+msgstr "Infrastruktura kanceláře"
+
+#: back_office/models.py:119
+msgid "user not assigned"
+msgstr "uživatel nepřiřazen"
+
+#: back_office/models.py:164 back_office/models.py:353
+msgid "Loan end date"
+msgstr "Datum konce zápůjčky"
+
+#: back_office/models.py:178
+msgid "Back Office Asset"
+msgstr "Majetek back office"
+
+#: back_office/models.py:179
+msgid "Back Office Assets"
+msgstr "Majetky back office"
+
+#: back_office/models.py:202
+#, python-format
+msgid "%(imei)s is not IMEI format"
+msgstr "%(imei)s není v IMEI formátu"
+
+#: back_office/models.py:286 back_office/models.py:464
+msgid "Owner"
+msgstr "Vlastník"
+
+#: back_office/models.py:294
+msgid ""
+"During this transition owner will be assigned as well as new hostname might "
+"be generated for asset (only for particular model categories and only if "
+"owner's country has changed)"
+msgstr ""
+"V průběhu tohoto převodu bude také přiřazen vlastník a může být vytvořen "
+"nový název stroje pro majetek (pouz pro konkrétní kategorie modelu a pouze "
+"pokud se změní země vlastníka)"
+
+#: back_office/models.py:373 data_center/models/physical.py:713
+msgid "Warehouse"
+msgstr "Sklad"
+
+#: back_office/models.py:387
+msgid "Office infrastructure"
+msgstr "Infrastruktura kanceláře"
+
+#: back_office/models.py:403
+msgid "Remarks"
+msgstr "Poznámky"
+
+#: back_office/models.py:417
+msgid "task URL"
+msgstr "URL úkolu"
+
+#: back_office/models.py:525
+msgid "Document autogenerated by {} transition."
+msgstr "Dokument automaticky vytvořen převodem {}."
+
+#: back_office/models.py:533
+msgid "Release report language"
+msgstr "Jazyk výkazu o vydání"
+
+#: back_office/models.py:554
+msgid "Return report language"
+msgstr "Jazyk výkazu o vrácení"
+
+#: back_office/models.py:575
+msgid "Loan report language"
+msgstr "Jazyk výkazu o zápůjčce"
+
+#: back_office/models.py:593
+msgid "Convert to DataCenter Asset"
+msgstr "Převést do majetku datacentra"
+
+#: back_office/models.py:598
+msgid "Rack"
+msgstr "Rozvaděč"
+
+#: back_office/models.py:603
+msgid "Position"
+msgstr "Pozice"
+
+#: back_office/models.py:606
+#: back_office/templates/backofficeasset/components.html:9
+#: data_center/templates/data_center/datacenterasset/components.html:9
+msgid "Model"
+msgstr "Model"
+
+#: back_office/models.py:611 virtual/admin.py:386
+msgid "Service env"
+msgstr "Prostředí služby"
+
+#: back_office/templates/backofficeasset/components.html:8
+#: back_office/templates/backofficeasset/software.html:8
+#: data_center/templates/data_center/datacenterasset/components.html:8
+#: data_center/templates/data_center/datacenterasset/software.html:8
+msgid "Label"
+msgstr "Štítek"
+
+#: back_office/templates/backofficeasset/components.html:10
+#: data_center/templates/data_center/datacenterasset/components.html:10
+msgid "Serial number"
+msgstr "Sériové číslo"
+
+#: back_office/templates/backofficeasset/components.html:11
+#: data_center/templates/data_center/datacenterasset/components.html:11
+msgid "Speed"
+msgstr "Rychlost"
+
+#: back_office/templates/backofficeasset/components.html:12
+#: data_center/templates/data_center/datacenterasset/components.html:12
+msgid "Size"
+msgstr "Velikost"
+
+#: back_office/templates/backofficeasset/components.html:13
+#: dashboards/models.py:49
+#: data_center/templates/data_center/datacenterasset/components.html:13
+msgid "Count"
+msgstr "Počet"
+
+#: back_office/templates/backofficeasset/software.html:9
+#: data_center/templates/data_center/datacenterasset/software.html:9
+msgid "Version"
+msgstr "Verze"
+
+#: configuration_management/models.py:14
+msgid "OK"
+msgstr "OK"
+
+#: configuration_management/models.py:15
+msgid "Check failed"
+msgstr "Kontrola nedopadla dobře"
+
+#: configuration_management/models.py:19
+msgid "Error"
+msgstr "Chyba"
+
+#: configuration_management/models.py:35
+msgid "Last SCM check"
+msgstr "Minulá SCM kontrola"
+
+#: configuration_management/models.py:41
+msgid "SCM check result"
+msgstr "Výsledek SCM kontroly"
+
+#: configuration_management/templates/configuration_management/scminfo/scm_info.html:9
+msgid "SCM status information"
+msgstr "SCM stavové informace"
+
+#: configuration_management/templates/configuration_management/scminfo/scm_info.html:13
+msgid "Last checked"
+msgstr "Minule zkontrolováno"
+
+#: configuration_management/templates/configuration_management/scminfo/scm_info.html:17
+#: configuration_management/views.py:96
+msgid "SCM status"
+msgstr "Stav SCM"
+
+#: configuration_management/templates/configuration_management/scminfo/scm_info.html:21
+msgid "Details"
+msgstr "Podrobnosti"
+
+#: configuration_management/templates/configuration_management/scminfo/scm_info.html:27
+msgid ""
+"The status of the software configuration management for this host is unknown."
+msgstr "Stav správy nastavení software je u tohoto stroje neznámý."
+
+#: dashboards/admin.py:93
+msgid "Graph"
+msgstr "Graf"
+
+#: dashboards/admin.py:101
+msgid "<a href=\"{}\" target=\"_blank\">Dashboard</a>"
+msgstr "<a href=\"{}\" target=\"_blank\">Nástěnka</a>"
+
+#: dashboards/admin_filters.py:12
+msgid "Graph ID"
+msgstr "Identifikátor grafu"
+
+#: dashboards/models.py:50
+msgid "Max"
+msgstr "Max"
+
+#: dashboards/models.py:51
+msgid "Sum"
+msgstr "Celkem"
+
+#: dashboards/models.py:52
+msgid "Ratio"
+msgstr "Poměr"
+
+#: dashboards/models.py:60
+msgid "Verical Bar"
+msgstr "Svislý pruh"
+
+#: dashboards/models.py:61
+msgid "Horizontal Bar"
+msgstr "Vodorovný pruh"
+
+#: dashboards/models.py:62
+msgid "Pie Chart"
+msgstr "Koláčový graf"
+
+#: data_center/admin.py:191 virtual/admin.py:151
+msgid "Base Object"
+msgstr "Základní objekt"
+
+#: data_center/admin.py:203
+msgid "Master Info"
+msgstr "Hlavní informace"
+
+#: data_center/admin.py:221
+msgid "Master info"
+msgstr "Hlavní informace"
+
+#: data_center/admin.py:234 networks/views.py:23
+msgid "Terminators of"
+msgstr "Ukončovače k"
+
+#: data_center/admin.py:437
+msgid "Location Info"
+msgstr "Informace o umístění"
+
+#: data_center/admin.py:443
+msgid "Usage info"
+msgstr "Informace o využívání"
+
+#: data_center/admin.py:449
+msgid "Financial & Order Info"
+msgstr "Finanční a informace o objednávce"
+
+#: data_center/admin.py:478
+msgid "Visualization"
+msgstr "Vizualizace"
+
+#: data_center/admin.py:498
+msgid "Created at"
+msgstr "Vytvořeno"
+
+#: data_center/admin.py:535
+msgid "Server room"
+msgstr "Serverovna"
+
+#: data_center/forms.py:58
+msgid ""
+"Management IP is already assigned to <a target=\"_blank\" href=\"{}\">{}</a>"
+msgstr ""
+"IP adresa správy je už přiřazena k <a target=\"_blank\" href=\"{}\">{}</a>"
+
+#: data_center/forms.py:76
+msgid "Management hostname is already used"
+msgstr "Název stroje pro správu je už použit"
+
+#: data_center/forms.py:82
+msgid ""
+"Management hostname is already assigned to <a target=\"_blank\" href="
+"\"{}\">{}</a>"
+msgstr ""
+"Správní název stroje je už přiřazen <a target=\"_blank\" href=\"{}\">{}</a>"
+
+#: data_center/forms.py:99
+msgid "Management IP could not be empty when management hostname is passed"
+msgstr ""
+"Správní IP adresa nemůže být prázdná když je zadán název stroje pro správu"
+
+#: data_center/models/choices.py:14 virtual/models.py:305
+msgid "to deploy"
+msgstr "k nasazení"
+
+#: data_center/models/choices.py:15
+msgid "cleaned"
+msgstr "vyčištěno"
+
+#: data_center/models/choices.py:16
+msgid "pre liquidated"
+msgstr "předzlikvidováno"
+
+#: data_center/models/choices.py:23
+msgid "front"
+msgstr "zpředu"
+
+#: data_center/models/choices.py:24
+msgid "back"
+msgstr "zezadu"
+
+#: data_center/models/choices.py:25
+msgid "middle"
+msgstr "střed"
+
+#: data_center/models/choices.py:28 data_center/models/choices.py:51
+msgid "left"
+msgstr "zleva"
+
+#: data_center/models/choices.py:29 data_center/models/choices.py:52
+msgid "right"
+msgstr "zprava"
+
+#: data_center/models/choices.py:49
+msgid "top"
+msgstr "nahoře"
+
+#: data_center/models/choices.py:50
+msgid "bottom"
+msgstr "dole"
+
+#: data_center/models/choices.py:58
+msgid "network connection"
+msgstr "síťové připojení"
+
+#: data_center/models/components.py:15
+msgid "share identifier"
+msgstr "identifikátor sdílení"
+
+#: data_center/models/components.py:25
+msgid "size for snapshots (MiB)"
+msgstr "velikost pro zachycené stavy (MiB)"
+
+#: data_center/models/components.py:28
+msgid "Volume serial"
+msgstr "Sériové číslo svazku"
+
+#: data_center/models/components.py:37
+msgid "disk shares"
+msgstr "disková sdílení"
+
+#: data_center/models/components.py:45
+msgid "share"
+msgstr "sdílení"
+
+#: data_center/models/components.py:47
+msgid "asset"
+msgstr "majetek"
+
+#: data_center/models/components.py:51
+msgid "volume"
+msgstr "svazek"
+
+#: data_center/models/components.py:70
+msgid "disk share mount"
+msgstr "připojení diskového sdílení"
+
+#: data_center/models/components.py:71
+msgid "disk share mounts"
+msgstr "připojení diskových sdílení"
+
+#: data_center/models/physical.py:135
+msgid "visualization grid columns number"
+msgstr "počet sloupců vizualizační mřížky"
+
+#: data_center/models/physical.py:143
+msgid "visualization grid rows number"
+msgstr "počet řádků vizualizační mřížky"
+
+#: data_center/models/physical.py:159
+msgid "accessory"
+msgstr "příslušenství"
+
+#: data_center/models/physical.py:160
+msgid "accessories"
+msgstr "příslušenství"
+
+#: data_center/models/physical.py:178
+msgid "rack accessories"
+msgstr "příslušenství rozvaděče"
+
+#: data_center/models/physical.py:195 data_center/models/physical.py:200
+msgid "server room"
+msgstr "serverovna"
+
+#: data_center/models/physical.py:202 deployment/models.py:58
+#: deployment/models.py:139 operations/models.py:63
+msgid "description"
+msgstr "popis"
+
+#: data_center/models/physical.py:211
+msgid "column number on visualization grid"
+msgstr "počet sloupců vizualizační mřížky"
+
+#: data_center/models/physical.py:215
+msgid "row number on visualization grid"
+msgstr "počet řádků vizualizační mřížky"
+
+#: data_center/models/physical.py:222
+msgid ""
+"Uncheck if position is optional for this rack (ex. when rack has warehouse-"
+"kind role"
+msgstr ""
+"Zrušte zaškrtnutí pokud je pozice volitelná pro tento rozvaděč (např. pokud "
+"rozvaděč plní funkci skladu"
+
+#: data_center/models/physical.py:229
+msgid ""
+"Check if RU numbers count from top to bottom with position 1 starting at the "
+"top of the rack. If unchecked position 1 is at the bottom of the rack"
+msgstr ""
+"Zaškrtněte pokud počet jednotek rozvaděče odshora dolů s pozicí 1 začínající "
+"na vrcholu rozvaděče. Odškrtněte pokud pozice 1 je dole v rozvaděči"
+
+#: data_center/models/physical.py:233
+msgid "RU order top to bottom"
+msgstr "RU pořadí odshora dolů"
+
+#: data_center/models/physical.py:407
+msgid "Fill it if asset is blade server"
+msgstr "Vyplňte pokud je majetek blade server"
+
+#: data_center/models/physical.py:414
+msgid ""
+"Slot number should be a number from range 1-16 with an optional postfix 'A' "
+"or 'B' (e.g. '16A')"
+msgstr ""
+"Číslo složu by mělo být číslo z rozsahu 1 až 16 s volitelnou příponou „A“ "
+"nebo „B“ (např. „16A“)"
+
+#: data_center/models/physical.py:432
+msgid "BIOS version"
+msgstr "Verze BIOS/UEFI"
+
+#: data_center/models/physical.py:444
+msgid "source"
+msgstr "zdroj"
+
+#: data_center/models/physical.py:462
+msgid "data center asset"
+msgstr "majetek datacentra"
+
+#: data_center/models/physical.py:463
+msgid "data center assets"
+msgstr "majetky datacentra"
+
+#: data_center/models/physical.py:692
+msgid "Change rack"
+msgstr "Změnit rozvaděč"
+
+#: data_center/models/physical.py:708
+msgid "Convert to BackOffice Asset"
+msgstr "Převést na majetek backoffice"
+
+#: data_center/models/physical.py:718
+msgid "Region"
+msgstr "Oblast"
+
+#: data_center/models/physical.py:744
+msgid "connected to device"
+msgstr "připojeno k zařízení"
+
+#: data_center/models/physical.py:750
+msgid "connected device"
+msgstr "připojené zařízení"
+
+#: data_center/models/physical.py:756
+msgid "connection type"
+msgstr "typ připojení"
+
+#: data_center/models/virtual.py:27
+msgid "database"
+msgstr "databáze"
+
+#: data_center/models/virtual.py:28
+msgid "databases"
+msgstr "databáze"
+
+#: data_center/models/virtual.py:37
+msgid "TCP"
+msgstr "TCP"
+
+#: data_center/models/virtual.py:38
+msgid "UDP"
+msgstr "UDP"
+
+#: data_center/models/virtual.py:44
+msgid "port"
+msgstr "port"
+
+#: data_center/models/virtual.py:46
+msgid "protocol"
+msgstr "protokol"
+
+#: data_center/models/virtual.py:52
+msgid "VIP"
+msgstr "V běhu"
+
+#: data_center/models/virtual.py:68
+msgid ""
+"show master information on cluster page, ex. hostname, model, location etc."
+msgstr ""
+"zobrazit hlavní informace na stránce klastru, např. název stroje, model, "
+"umístění, atd."
+
+#: data_center/models/virtual.py:78
+msgid "for deploy"
+msgstr "pro nasazení"
+
+#: data_center/models/virtual.py:101
+msgid "Assigned base objects"
+msgstr "Přiřazené základní objekty"
+
+#: data_center/models/virtual.py:155
+msgid "At least one of name or hostname is required"
+msgstr "Je třeba alespoň název nebo název stroje"
+
+#: data_center/templates/admin/data_center/dchost/change_list.html:10
+msgid "Nothing to display. Please add some objects like:"
+msgstr "Není co zobrazit. Přidejte nějaké objekty jako:"
+
+#: data_center/templates/admin/data_center/network/change_form.html:9
+#, python-format
+msgid "Add next IP (%(next_free_ip)s)"
+msgstr "Přidat další IP adresu (%(next_free_ip)s)"
+
+#: dc_view/templates/dc_view/server_room_view.html:5
+msgid "Dc View"
+msgstr "Pohled datacentra"
+
+#: dc_view/templates/dc_view/server_room_view.html:31
+msgid "Server rooms"
+msgstr "Serverovny"
+
+#: deployment/deployment.py:49
+msgid "<NEXT FREE>"
+msgstr "<PŘÍŠTÍ VOLNÁ>"
+
+#: deployment/deployment.py:122 deployment/deployment.py:172
+#: lib/mixins/api.py:14 lib/mixins/forms.py:58
+msgid "Other"
+msgstr "Ostatní"
+
+#: deployment/deployment.py:198
+msgid "use first"
+msgstr "použít první"
+
+#: deployment/deployment.py:267
+msgid "Non-management MAC address not found"
+msgstr "Nesprávní MAC adresa nenalezena"
+
+#: deployment/deployment.py:278
+msgid "Network environment not found."
+msgstr "Síťové prostředí nenalezeno."
+
+#: deployment/deployment.py:286
+msgid "Clean hostname"
+msgstr "Vyčistit název stroje"
+
+#: deployment/deployment.py:300
+msgid "Clean DNS entries"
+msgstr "Vyčístit DNS položky"
+
+#: deployment/deployment.py:339
+msgid "Clean IP addresses"
+msgstr "Vyčistit IP adresy"
+
+#: deployment/deployment.py:357
+msgid "Clean DHCP entries"
+msgstr "Vyčistit DHCP položky"
+
+#: deployment/deployment.py:374
+msgid "Remove from DHCP entries"
+msgstr "Odebrat z DHCP položek"
+
+#: deployment/deployment.py:377
+msgid "DHCP Entry"
+msgstr "DHCP položka"
+
+#: deployment/deployment.py:398
+msgid "Assign new hostname"
+msgstr "Přiřadit nový název stroje"
+
+#: deployment/deployment.py:479
+msgid "Assign new IP"
+msgstr "Přiřadit novou IP adresu"
+
+#: deployment/deployment.py:483 deployment/deployment.py:551
+#: deployment/deployment.py:582
+msgid "IP Address"
+msgstr "IP adresa"
+
+#: deployment/deployment.py:541
+msgid "You can choose only one asset"
+msgstr "Můžete zvolit pouze jeden majetek"
+
+#: deployment/deployment.py:547
+msgid "Replace IP"
+msgstr "Nahradit IP adresu"
+
+#: deployment/deployment.py:558 networks/admin.py:303
+msgid "Network"
+msgstr "Síť"
+
+#: deployment/deployment.py:578
+msgid "Assign new IP address and create DHCP entries"
+msgstr "Přiřadit novou IP adresu a vytvořit DHCP položky"
+
+#: deployment/deployment.py:678
+msgid "Wait for DHCP servers"
+msgstr "Čekat na DHCP servery"
+
+#: deployment/deployment.py:705
+msgid "Create DNS entries"
+msgstr "Vytvořit DNS položky"
+
+#: deployment/deployment.py:730
+msgid "Change service-env"
+msgstr "Změnit prostředí služby"
+
+#: deployment/deployment.py:733
+msgid "Service-environment"
+msgstr "Prostředí služby"
+
+#: deployment/deployment.py:750
+msgid "Change configuration_path"
+msgstr "Změnit cestu nastavení"
+
+#: deployment/deployment.py:753
+msgid "Configuration path"
+msgstr "Popis umístění nastavení"
+
+#: deployment/deployment.py:774
+msgid "Apply preboot"
+msgstr "Použít preboot"
+
+#: deployment/deployment.py:778
+msgid "Preboot"
+msgstr "Preboot"
+
+#: deployment/deployment.py:800
+msgid "Wait for ping"
+msgstr "Čekat na ping"
+
+#: deployment/models.py:25
+msgid "kernel"
+msgstr "jádro systému"
+
+#: deployment/models.py:26
+msgid "initrd"
+msgstr "initrd"
+
+#: deployment/models.py:27
+msgid "netboot"
+msgstr "netboot"
+
+#: deployment/models.py:30
+msgid "iPXE"
+msgstr "iPXE"
+
+#: deployment/models.py:31
+msgid "kickstart"
+msgstr "kickstart"
+
+#: deployment/models.py:32
+msgid "preseed"
+msgstr "přednastaveno"
+
+#: deployment/models.py:33
+msgid "script"
+msgstr "skript"
+
+#: deployment/models.py:36
+msgid "other"
+msgstr "ostatní"
+
+#: deployment/models.py:100
+msgid "configuration"
+msgstr "nastavení"
+
+#: deployment/models.py:106 deployment/models.py:107
+msgid "preboot configuration"
+msgstr "nastavení preboot"
+
+#: deployment/models.py:120
+msgid "file"
+msgstr "soubor"
+
+#: deployment/models.py:128
+msgid "preboot file"
+msgstr "preboot soubor"
+
+#: deployment/models.py:129
+msgid "preboot files"
+msgstr "preboot soubory"
+
+#: deployment/models.py:136
+msgid "files"
+msgstr "soubory"
+
+#: deployment/models.py:147
+msgid "preboot"
+msgstr "preboot"
+
+#: deployment/models.py:148
+msgid "preboots"
+msgstr "preboot prostředí"
+
+#: dhcp/admin.py:15
+msgid "{} ({} ago)"
+msgstr "{} (před {})"
+
+#: dhcp/models.py:35 dhcp/models.py:55 networks/admin.py:318
+#: networks/models/networks.py:611 networks/models/networks.py:626
+#: networks/models/networks.py:658
+msgid "IP address"
+msgstr "IP adresa"
+
+#: dhcp/models.py:43
+msgid "DHCP Server"
+msgstr "DHCP server"
+
+#: dhcp/models.py:59
+msgid "is default"
+msgstr "je výchozí"
+
+#: dhcp/models.py:65
+msgid "DNS Server"
+msgstr "DNS server"
+
+#: dns/dnsaas.py:124 dns/dnsaas.py:234
+msgid "Internal Server Error from DNSAAS"
+msgstr "Vnitřní chyba serveru od DNSAAS"
+
+#: dns/dnsaas.py:188
+msgid "Domain not found."
+msgstr "Doména nenalezena."
+
+#: dns/forms.py:10
+msgid "A"
+msgstr "A"
+
+#: dns/forms.py:11
+msgid "TXT"
+msgstr "TXT"
+
+#: dns/forms.py:12
+msgid "CNAME"
+msgstr "CNAME"
+
+#: dns/forms.py:23
+#: security/templates/security/securityinfo/security_info.html:38
+msgid "Name"
+msgstr "Název"
+
+#: dns/forms.py:26
+msgid ""
+"Actual name of a record. Must not end in a '.' and be fully qualified - it "
+"is not relative to the name of the domain!"
+msgstr ""
+"Skutečný název záznamu. Nemůže končit na „.“ (tečku) a je třeba, aby se "
+"jednalo o úplný doménový název – není relativní k názvu domény!"
+
+#: dns/forms.py:32
+msgid "Record type"
+msgstr "Typ záznamu"
+
+#: dns/forms.py:36
+msgid "Content"
+msgstr "Obsah"
+
+#: dns/forms.py:39
+msgid ""
+"The 'right hand side' of a DNS record. For an A record, this is the IP "
+"address"
+msgstr "Pravá strana DNS záznamu. Pro A záznam je toto IP adresa"
+
+#: dns/forms.py:45
+msgid "PTR"
+msgstr "PTR"
+
+#: dns/forms.py:56
+msgid "Only A type record can be PTR"
+msgstr "Pouze záznam typu A může být PTR"
+
+#: dns/templates/dns/dns_edit.html:7
+msgid "DNS edit"
+msgstr "Úprava DNS"
+
+#: dns/templates/dns/dns_edit.html:40
+msgid "Are you sure to delete?"
+msgstr "Opravdu smazat?"
+
+#: dns/templates/dns/dns_edit.html:50
+msgid "Add at least one IP address to fetch DNS records."
+msgstr "Pro získání DNS záznamů zadejte alespoň jednu IP adresu."
+
+#: dns/tests.py:560
+msgid "Your request couldn't be handled, try later."
+msgstr "Váš požadavek nemohl být obsloužen, zkuste to později."
+
+#: dns/views.py:98
+msgid "DNS record has been deleted."
+msgstr "DNS záznam byl smazán."
+
+#: dns/views.py:106
+msgid "DNS record has been updated."
+msgstr "DNS záznam byl aktualizován."
+
+#: dns/views.py:114
+msgid "DNS record has been created."
+msgstr "DNS záznam byl vytvořen."
+
+#: domains/admin.py:52
+msgid "Ownership info"
+msgstr "Informace o vlastnictví"
+
+#: domains/admin.py:94 licences/admin.py:110
+msgid "Financial info"
+msgstr "Finanční informace"
+
+#: domains/models/domains.py:32
+msgid "Active"
+msgstr "Aktivní"
+
+#: domains/models/domains.py:33
+msgid "Pending lapse"
+msgstr "Nevyřízeno"
+
+#: domains/models/domains.py:34
+msgid "Pending transfer away"
+msgstr "Čekající převod pryč"
+
+#: domains/models/domains.py:35
+msgid "Lapsed (inactive)"
+msgstr "Zaniklé (neaktivní)"
+
+#: domains/models/domains.py:36
+msgid "Transfered away"
+msgstr "Přeneseno pryč"
+
+#: domains/models/domains.py:42
+msgid "None"
+msgstr "Žádné"
+
+#: domains/models/domains.py:43
+msgid "Redirect"
+msgstr "Přesměrovat"
+
+#: domains/models/domains.py:44
+msgid "Direct"
+msgstr "Přímo"
+
+#: domains/models/domains.py:50
+msgid "Business"
+msgstr "Podnikání"
+
+#: domains/models/domains.py:51
+msgid "Business security"
+msgstr "Zabezpečení podnikání"
+
+#: domains/models/domains.py:52
+msgid "Technical"
+msgstr "Technické"
+
+#: domains/models/domains.py:77
+msgid "domain name"
+msgstr "doménový název"
+
+#: domains/models/domains.py:78
+msgid "Full domain name"
+msgstr "Úplný doménový název"
+
+#: domains/models/domains.py:88
+msgid "Business segment for a domain"
+msgstr "Obchodní segment pro doménu"
+
+#: domains/models/domains.py:95
+msgid "Business contact person for a domain"
+msgstr "Obchodní kontaktní osoba pro doménu"
+
+#: domains/models/domains.py:102
+msgid "Technical contact person for a domain"
+msgstr "Technická kontaktní osoba pro doménu"
+
+#: domains/models/domains.py:108
+msgid "Company which receives invoice for the domain"
+msgstr "Společnost které chodí faktury za doménu"
+
+#: domains/models/domains.py:117
+msgid "Type of website which domain refers to."
+msgstr "Typ webové stránky na kterou doména odkazuje."
+
+#: domains/models/domains.py:121
+msgid "Website url which website type refers to."
+msgstr "URL adresa webové stránky na kterou typ stránky odkazuje."
+
+#: domains/models/domains.py:128
+msgid "Provider which keeps domain's DNS"
+msgstr "Poskytovatel který uchovává DNS domény"
+
+#: domains/models/domains.py:142
+msgid "Website url should be empty for this website type"
+msgstr "URL adresa by pro tento typ webové stránky měla být prázdná"
+
+#: domains/models/domains.py:151
+msgid "Website url should be filled for this website type"
+msgstr "URL by pro tento typ webové stránky měla být vyplněná"
+
+#: domains/models/domains.py:167
+msgid "Price for domain renewal for given period"
+msgstr "Cena za obnovení domény v daném období"
+
+#: domains/models/domains.py:168
+msgid "Price"
+msgstr "Cena"
+
+#: lib/custom_fields/forms.py:24
+msgid "Clear children values?"
+msgstr "Vyčistit podřízené hodnoty?"
+
+#: lib/custom_fields/forms.py:64
+msgid ""
+"Please correct the duplicate data for custom fields (only one value for "
+"particular custom field is possible)."
+msgstr ""
+"Opravte duplicitní data pro uživatelem určené kolonky (je možná pouze jedna "
+"hodnota pro konkrétní uživatelem určenou kolonku)."
+
+#: lib/custom_fields/models.py:56
+msgid "field name used in API. It's slugged name of the field"
+msgstr "název kolonky použitý v API. Je to slugged název kolonky"
+
+#: lib/custom_fields/models.py:65
+msgid "choices"
+msgstr "volby"
+
+#: lib/custom_fields/models.py:66
+msgid "available choices for `choices list` separated by |"
+msgstr "možné volby pro `choices list` oddělované znakem |"
+
+#: lib/custom_fields/models.py:70
+msgid "for boolean use \"true\" or \"false\""
+msgstr "pro boolean použijte „true“ nebo „false“"
+
+#: lib/custom_fields/models.py:78
+msgid ""
+"When set, this variable will be exposed in API in \"configuration_variables"
+"\" section. You could use this later in configuration management tool like "
+"Puppet or Ansible."
+msgstr ""
+"Pokud je nastaveno, tato proměnná bude exponována v API v sekci "
+"„configuration_variables“. Tu je dále možné použít v nástroji pro správu "
+"nastavení jako Puppet nebo Ansible."
+
+#: lib/custom_fields/models.py:118
+msgid "key"
+msgstr "klíč"
+
+#: lib/custom_fields/models.py:168
+msgid "Custom field of the same type already exists for this object."
+msgstr "Uživatelem určená kolonka stejného typu už pro tento objekt existuje."
+
+#: lib/custom_fields/templates/custom_fields/edit_inline/tabular.html:64
+msgid "summary"
+msgstr "souhrn"
+
+#: lib/custom_fields/templates/custom_fields/edit_inline/tabular.html:68
+msgid "Custom field"
+msgstr "Vlastní kolonka"
+
+#: lib/custom_fields/templates/custom_fields/edit_inline/tabular.html:69
+#: lib/transitions/templates/transitions/run_transition.html:27
+msgid "Value"
+msgstr "Hodnota"
+
+#: lib/custom_fields/templates/custom_fields/edit_inline/tabular.html:70
+msgid "Inherited from"
+msgstr "Převzato z"
+
+#: lib/external_services/models.py:39
+msgid "queued"
+msgstr "zařazeno do fronty"
+
+#: lib/external_services/models.py:40 lib/transitions/models.py:610
+msgid "finished"
+msgstr "dokončeno"
+
+#: lib/external_services/models.py:41 lib/transitions/models.py:611
+msgid "failed"
+msgstr "nezdařilo se"
+
+#: lib/external_services/models.py:42 lib/transitions/models.py:609
+msgid "started"
+msgstr "spuštěno"
+
+#: lib/external_services/models.py:43
+msgid "frozen"
+msgstr "zmrazeno"
+
+#: lib/external_services/models.py:44
+msgid "killed"
+msgstr "vynuceně ukončeno"
+
+#: lib/external_services/models.py:80
+msgid "job status"
+msgstr "stav úkolu"
+
+#: lib/mixins/fields.py:74 operations/admin.py:101 operations/views.py:46
+msgid "ticket ID"
+msgstr "identif. požadavku"
+
+#: lib/mixins/fields.py:75
+msgid "External system ticket identifier"
+msgstr "Identifikátor požadavku v externím systému"
+
+#: lib/mixins/fields.py:220
+#, python-format
+msgid "'%(value)s' is not a valid MAC address."
+msgstr "„%(value)s“ není platná MAC adresa."
+
+#: lib/mixins/models.py:36
+msgid "date created"
+msgstr "datum vytvoření"
+
+#: lib/mixins/models.py:40
+msgid "last modified"
+msgstr "naposledy upraveno"
+
+#: lib/mixins/models.py:54
+msgid "last seen"
+msgstr "naposledy viděno"
+
+#: lib/permissions/api.py:115
+msgid "You cannot update readonly field."
+msgstr "Není možné upravit kolonku, která je pouze pro čtení."
+
+#: lib/permissions/models.py:166
+msgid "Can view {} field"
+msgstr "Může zobrazit {} kolonku"
+
+#: lib/permissions/models.py:172
+msgid "Can change {} field"
+msgstr "Může změnit kolonku {}"
+
+#: lib/transitions/forms.py:108
+msgid "Please provide async service name for asynchronous transition"
+msgstr "Zadejte název asynchronní služby pro asynchronní převody"
+
+#: lib/transitions/forms.py:112
+msgid " (At least one of chosen actions is asynchronous)"
+msgstr "(Přinejmenším jedna ze zvolených akcí je asynchronní)"
+
+#: lib/transitions/models.py:182
+msgid "wrong source status"
+msgstr "chybný stav zdroje"
+
+#: lib/transitions/models.py:499
+msgid ""
+"Run this transition in the background (this could be enforced if you choose "
+"at least one asynchronous action)"
+msgstr ""
+"Spustit tento převod na pozadí (toto by mohlo být vynuceno pokud zvolíte "
+"alespoň jednu asynchronní akci)"
+
+#: lib/transitions/models.py:506
+msgid ""
+"Name of asynchronous (internal) service to run this transition. Fill this "
+"field only if you want to run this transition in the background."
+msgstr ""
+"Název asynchronní (interní) služby pod kterou spustit tento převod. Tuto "
+"kolonku vyplňujte pouze pokud chcete tento převod spustit na pozadí."
+
+#: lib/transitions/models.py:684
+msgid "transition action status"
+msgstr "stav akce převodu"
+
+#: lib/transitions/templates/transitions/_transition_jobs_table.html:5
+msgid "Job"
+msgstr "Úloha"
+
+#: lib/transitions/templates/transitions/_transition_jobs_table.html:8
+#: lib/transitions/templates/transitions/current_transitions.html:22
+msgid "Object"
+msgstr "Objekt"
+
+#: lib/transitions/templates/transitions/_transition_jobs_table.html:10
+#: lib/transitions/templates/transitions/current_transitions.html:24
+msgid "Status"
+msgstr "Stav"
+
+#: lib/transitions/templates/transitions/_transition_jobs_table.html:11
+#: lib/transitions/templates/transitions/current_transitions.html:25
+msgid "Transition actions"
+msgstr "Akce převodu"
+
+#: lib/transitions/templates/transitions/_transition_jobs_table.html:33
+#: lib/transitions/templates/transitions/_transition_jobs_table_body.html:42
+msgid "Are you sure you want to kill transition job?"
+msgstr "Opravdu chcete vynutit ukončení této úlohy převodu?"
+
+#: lib/transitions/templates/transitions/_transition_jobs_table_body.html:7
+msgid "Created date"
+msgstr "Datum vytvoření"
+
+#: lib/transitions/templates/transitions/current_transitions.html:32
+msgid "Current transition"
+msgstr "Stávající převody"
+
+#: lib/transitions/templates/transitions/current_transitions.html:39
+msgid "Nothing to do."
+msgstr "Není co dělat."
+
+#: lib/transitions/templates/transitions/current_transitions.html:45
+msgid "Finished transitions"
+msgstr "Dokončené převody"
+
+#: lib/transitions/templates/transitions/current_transitions.html:52
+msgid "Nothing to display"
+msgstr "Není co zobrazit"
+
+#: lib/transitions/templates/transitions/run_transition.html:5
+#: lib/transitions/templates/transitions/run_transition.html:10
+msgid "Tranisition"
+msgstr "Převody"
+
+#: lib/transitions/templates/transitions/run_transition.html:26
+msgid "Option"
+msgstr "Volba"
+
+#: lib/transitions/templates/transitions/run_transition.html:38
+msgid "Cancel transition"
+msgstr "Zrušit převod"
+
+#: lib/transitions/templates/transitions/run_transition.html:43
+msgid "Run transition"
+msgstr "Zahájit převod"
+
+#: lib/transitions/templates/transitions/templatetags/available_transitions.html:15
+msgid "This transition will be run without any confirmation."
+msgstr "Tento převod bude spuštěn bez požadování potvrzení."
+
+#: lib/transitions/views.py:190
+msgid "Transitions performed successfully"
+msgstr "Převod úspěšně proveden"
+
+#: lib/transitions/views.py:212
+msgid "Some assets are not valid"
+msgstr "Některé majetky nejsou platné"
+
+#: licences/admin.py:24 licences/admin.py:32 supports/admin.py:21
+#: supports/admin.py:29
+msgid "Assignments"
+msgstr "Přiřazení"
+
+#: licences/admin.py:31 supports/admin.py:28
+msgid "assignments"
+msgstr "přiřazení"
+
+#: licences/admin.py:41
+msgid "Assigned to users"
+msgstr "Přiřazeno uživatelům"
+
+#: licences/models.py:68
+msgid "software categories"
+msgstr "kategorie software"
+
+#: licences/models.py:155
+msgid "Should be like 'per processor' or 'per machine' and so on. "
+msgstr "Mělo by být jako „na procesor“ nebo „na stroj“ atd. "
+
+#: licences/models.py:169
+msgid "number of purchased items"
+msgstr "počet zakoupených položek"
+
+#: licences/models.py:172
+msgid "SN / key"
+msgstr "sériové číslo / klíč"
+
+#: licences/models.py:184 supports/models.py:107
+msgid "invoice date"
+msgstr "datum faktury"
+
+#: licences/models.py:202
+msgid "Any value to help your accounting department identify this licence"
+msgstr ""
+"Libovolná hodnota která vašemu účetnímu oddělení pomůže identifikovat tuto "
+"licenci"
+
+#: licences/models.py:208
+msgid "assigned base objects"
+msgstr "přiřazené základní objekty"
+
+#: licences/models.py:222
+msgid "license details"
+msgstr "podrobnosti licence"
+
+#: licences/models.py:301 supports/models.py:176
+msgid "Asset"
+msgstr "Majetek"
+
+#: licences/models.py:328
+msgid "Asset region is in a different region than licence."
+msgstr "Oblast majetku je jiná než ve které se nachází licence."
+
+#: networks/admin.py:40
+msgid "Hostnames"
+msgstr "Názvy strojů"
+
+#: networks/admin.py:81 networks/admin.py:324
+msgid "Linked object"
+msgstr "Propojený objekt"
+
+#: networks/admin.py:134
+msgid "Network added to <a href=\"{}\" _target=\"blank\">{}</a>"
+msgstr "Síť přidána do <a href=\"{}\" _target=\"blank\">{}</a>"
+
+#: networks/admin.py:135
+msgid ""
+"Network reassigned from network <a href=\"{}\" target=\"_blank\">{}</a> to "
+"<a href=\"{}\" target=\"_blank\">{}</a>"
+msgstr ""
+"Síť přeřazena ze sítě <a href=\"{}\" target=\"_blank\">{}</a> to <a href="
+"\"{}\" target=\"_blank\">{}</a>"
+
+#: networks/admin.py:171
+msgid "Network address"
+msgstr "Síťová adresa"
+
+#: networks/admin.py:176
+msgid "Subnetworks count"
+msgstr "Počet podsítí"
+
+#: networks/admin.py:181
+msgid "IPAddress count"
+msgstr "Počet IP adres"
+
+#: networks/admin.py:194
+msgid "Parent networks"
+msgstr "Nadřazené sítě"
+
+#: networks/admin.py:202
+msgid "First free IP"
+msgstr "První volná IP adresa"
+
+#: networks/admin.py:215
+msgid "Subnetworks"
+msgstr "Podsítě"
+
+#: networks/admin.py:236
+msgid "Addresses"
+msgstr "Adresy"
+
+#: networks/admin.py:290
+msgid "IP added to <a href=\"{}\" _target=\"blank\">{}</a>"
+msgstr "IP adresa přidáno do <a href=\"{}\" _target=\"blank\">{}</a>"
+
+#: networks/admin.py:291
+msgid ""
+"IP reassigned from network <a href=\"{}\" target=\"_blank\">{}</a> to <a "
+"href=\"{}\" target=\"_blank\">{}</a>"
+msgstr ""
+"IP přeřazena ze sítě <a href=\"{}\" target=\"_blank\">{}</a> to <a href="
+"\"{}\" target=\"_blank\">{}</a>"
+
+#: networks/filters.py:42
+msgid "IP range"
+msgstr "Rozsah IP adres"
+
+#: networks/filters.py:64
+msgid "Network range"
+msgstr "Síťový rozsah"
+
+#: networks/filters.py:82
+msgid "Private"
+msgstr "Soukromý"
+
+#: networks/filters.py:83
+msgid "Public"
+msgstr "Veřejný"
+
+#: networks/filters.py:98 networks/filters.py:105
+msgid "Contains IP address"
+msgstr "Obsahuje IP adresu"
+
+#: networks/forms.py:120
+#, python-format
+msgid "Address %(ip)s already exist."
+msgstr "Adresa %(ip)s už existuje."
+
+#: networks/forms.py:157
+msgid "Cannot expose in DHCP without IP address"
+msgstr "Bez IP adresy není možné exponovat v DHCP"
+
+#: networks/forms.py:161
+msgid "Cannot expose in DHCP without hostname"
+msgstr "Bez názvu stroje není možné exponovat v DHCP"
+
+#: networks/forms.py:165
+msgid "Cannot expose in DHCP without MAC address"
+msgstr "Bez MAC adresy není možné exponovat v DHCP"
+
+#: networks/forms.py:175
+msgid "At least one of {} is required"
+msgstr "Je třeba alespoň jedno z {}"
+
+#: networks/forms.py:223 networks/models/networks.py:653
+msgid "Expose in DHCP"
+msgstr "Exponovat v DHCP"
+
+#: networks/models/choices.py:7
+msgid "used (fixed address in DHCP)"
+msgstr "použito (pevná adresa v DHCP)"
+
+#: networks/models/choices.py:8
+msgid "Exclude from DHCP"
+msgstr "Vynechat z DHCP"
+
+#: networks/models/networks.py:45 networks/models/networks.py:306
+msgid "network kind"
+msgstr "druh sítě"
+
+#: networks/models/networks.py:46
+msgid "network kinds"
+msgstr "druhy sítí"
+
+#: networks/models/networks.py:62 networks/models/networks.py:567
+msgid "discovery queue"
+msgstr "fronta objevování"
+
+#: networks/models/networks.py:68
+msgid "hostname template counter length"
+msgstr "Délka čítače šablony názvu stroje"
+
+#: networks/models/networks.py:72
+msgid "hostname template prefix"
+msgstr "předpona šablony názvu stroje"
+
+#: networks/models/networks.py:76
+msgid "hostname template postfix"
+msgstr "přípona šablony názvu stroje"
+
+#: networks/models/networks.py:79
+msgid ""
+"This value will be used as a postfix when generating new hostname in this "
+"network environment. For example, when prefix is \"s1\", postfix is \".mydc."
+"net\" and counter length is 4, following  hostnames will be generated: "
+"s10000.mydc.net, s10001.mydc.net, .., s19999.mydc.net."
+msgstr ""
+"Tato hodnota bude použita jako příponu při vytváření nových názvů strojů v "
+"tomto síťovém prostředi. Například, když je předpona „s1“, přípona „.mydc."
+"net“ a délka čítače je 4, budou vytvořeny následující název strojů: s10000."
+"mydc.net, s10001.mydc.net, až s19999.mydc.net."
+
+#: networks/models/networks.py:87
+msgid "domain"
+msgstr "doména"
+
+#: networks/models/networks.py:91
+msgid "Used in DHCP configuration."
+msgstr "Použito v nastavení DHCP."
+
+#: networks/models/networks.py:94 networks/models/networks.py:262
+msgid "remarks"
+msgstr "poznámky"
+
+#: networks/models/networks.py:95 networks/models/networks.py:263
+msgid "Additional information."
+msgstr "Další informace."
+
+#: networks/models/networks.py:252
+msgid "network address"
+msgstr "síťová adresa"
+
+#: networks/models/networks.py:253
+msgid "Presented as string (e.g. 192.168.0.0/24)"
+msgstr "Přítomné jako řetězec (např. 192.168.0.0/24)"
+
+#: networks/models/networks.py:256
+msgid "Network Class"
+msgstr "Třída sítě"
+
+#: networks/models/networks.py:258
+msgid "Gateway address"
+msgstr "Adresa brány"
+
+#: networks/models/networks.py:270
+msgid "network terminators"
+msgstr "ukončovače sítě"
+
+#: networks/models/networks.py:274
+msgid "VLAN number"
+msgstr "číslo VLAN"
+
+#: networks/models/networks.py:281
+msgid "racks"
+msgstr "rozvaděče"
+
+#: networks/models/networks.py:293
+msgid "smallest IP number"
+msgstr "nejnižší počet IP adres"
+
+#: networks/models/networks.py:299
+msgid "largest IP number"
+msgstr "nejvyšší počet IP adres"
+
+#: networks/models/networks.py:312
+msgid "Broadcast in DHCP configuration"
+msgstr "Všesměrové vysílání v nastavení DHCP"
+
+#: networks/models/networks.py:322
+msgid "DNS servers"
+msgstr "DNS servery"
+
+#: networks/models/networks.py:327
+msgid ""
+"Number of addresses to be omitted in DHCP automatic assignmentcounted from "
+"the first IP in range (excluding network address)"
+msgstr ""
+"Počet adres které vynechat z automatického DHCP přidělování počítáno od "
+"první IP v rozsahu (vyjma adresy sítě)"
+
+#: networks/models/networks.py:334
+msgid ""
+"Number of addresses to be omitted in DHCP automatic assignmentcounted from "
+"the last IP in range (excluding broadcast address)"
+msgstr ""
+"Počet adres které vynechat z automatického DHCP přidělování počítáno od "
+"poslední IP v rozsahu (vyjma adresy všeměrového vysílání)"
+
+#: networks/models/networks.py:398
+msgid "network"
+msgstr "síť"
+
+#: networks/models/networks.py:399
+msgid "networks"
+msgstr "sítě"
+
+#: networks/models/networks.py:568
+msgid "discovery queues"
+msgstr "fronty objevování"
+
+#: networks/models/networks.py:612
+msgid "Presented as string."
+msgstr "Přítomno jako řetězec."
+
+#: networks/models/networks.py:627
+msgid "Presented as int."
+msgstr "Přítomno jako celé číslo."
+
+#: networks/models/networks.py:635
+msgid "Is management address"
+msgstr "Je správní adresa"
+
+#: networks/models/networks.py:639
+msgid "Is public"
+msgstr "Je veřejná"
+
+#: networks/models/networks.py:644
+msgid "Is gateway"
+msgstr "Je brána"
+
+#: networks/models/networks.py:659
+msgid "IP addresses"
+msgstr "IP adresy"
+
+#: networks/views.py:60
+msgid "Available networks"
+msgstr "Sítě k dispozici"
+
+#: operations/migrations/0010_auto_20170410_1031.py:15
+msgid "open"
+msgstr "otevřít"
+
+#: operations/migrations/0010_auto_20170410_1031.py:17
+msgid "resolved"
+msgstr "vyřešeno"
+
+#: operations/migrations/0010_auto_20170410_1031.py:18
+msgid "closed"
+msgstr "zavřeno"
+
+#: operations/migrations/0010_auto_20170410_1031.py:19
+msgid "reopened"
+msgstr "opětovně otevřeno"
+
+#: operations/migrations/0010_auto_20170410_1031.py:20
+msgid "todo"
+msgstr "k udělání"
+
+#: operations/migrations/0010_auto_20170410_1031.py:21
+msgid "blocked"
+msgstr "blokováno"
+
+#: operations/models.py:43
+msgid "change"
+msgstr "změna"
+
+#: operations/models.py:46
+msgid "incident"
+msgstr "incident"
+
+#: operations/models.py:49
+msgid "problem"
+msgstr "problém"
+
+#: operations/models.py:52
+msgid "failure"
+msgstr "selhání"
+
+#: operations/models.py:53
+msgid "hardware failure"
+msgstr "selhání hardware"
+
+#: operations/models.py:60
+msgid "title"
+msgstr "nadpis"
+
+#: operations/models.py:67 supports/models.py:88
+msgid "status"
+msgstr "stav"
+
+#: operations/models.py:75
+msgid "assignee"
+msgstr "přiřazeno"
+
+#: operations/models.py:83
+msgid "reporter"
+msgstr "nahlásil"
+
+#: operations/models.py:88
+msgid "ticket id"
+msgstr "identif. požadavku"
+
+#: operations/models.py:90
+msgid "created date"
+msgstr "datum vytvoření"
+
+#: operations/models.py:93
+msgid "updated date"
+msgstr "datum aktualizace"
+
+#: operations/models.py:96
+msgid "resolved date"
+msgstr "datum vyřešení"
+
+#: operations/models.py:99
+msgid "objects"
+msgstr "objekty"
+
+#: operations/views.py:15
+msgid "Operation"
+msgstr "Operace"
+
+#: operations/views.py:29
+msgid "Existing Operations"
+msgstr "Existující operace"
+
+#: operations/views.py:51
+msgid "Add new Operation"
+msgstr "Přidat novou operaci"
+
+#: reports/forms.py:16
+msgid "Please select exactly one default item."
+msgstr "Vyberte právě jednu výchozí položku."
+
+#: reports/models.py:36
+msgid "Only one language can be default."
+msgstr "Pouze jeden z jazyků může být výchozím."
+
+#: reports/templates/reports/report_detail.html:13
+msgid "Last update:"
+msgstr "Poslední aktualizace:"
+
+#: reports/templates/reports/report_detail.html:18
+msgid "Filter"
+msgstr "Filtrovat"
+
+#: reports/templates/reports/report_relations.html:7
+msgid "download report"
+msgstr "stáhnout výkaz"
+
+#: reports/views.py:81
+msgid "Only data center"
+msgstr "Pouze datacentrum"
+
+#: reports/views.py:86
+msgid "Only back office"
+msgstr "Pouze back office"
+
+#: reports/views.py:193
+msgid "Category - model"
+msgstr "Kategorie – model"
+
+#: reports/views.py:194
+msgid "Number of assets in each model category."
+msgstr "Počet položek majetku v každé z kategorií modelu."
+
+#: reports/views.py:216
+msgid "Category - model - status"
+msgstr "Kategorie – model – stav"
+
+#: reports/views.py:217
+msgid "Number of assets in each status in the model category."
+msgstr "Počet majetků v každém stavu v kategorii modelu."
+
+#: reports/views.py:247
+msgid "Manufactured - category - model"
+msgstr "Vyrobeno – kategorie – model"
+
+#: reports/views.py:248
+msgid "Number of assets in each manufacturer."
+msgstr "Počet majetků v každém z výrobců."
+
+#: reports/views.py:284
+msgid "Status - model"
+msgstr "Stav – model"
+
+#: reports/views.py:285
+msgid "Number of assets in each the asset status."
+msgstr "Počet majetků v každém ze stavů majetku."
+
+#: reports/views.py:320
+msgid "Asset list of information about the user, owner, model."
+msgstr "Seznam majetku s informacemi o uživateli, vlastníkovi a modelu."
+
+#: reports/views.py:375
+msgid "Asset - supports"
+msgstr "Majetek – podpory"
+
+#: reports/views.py:376
+msgid "Assets with assigned supports"
+msgstr "Majetky s přiřazenými podporami"
+
+#: reports/views.py:480
+msgid "List of licenses assigned to assets and users."
+msgstr "Seznam licencí přiřazených k majetkům a uživatelům"
+
+#: reports/views.py:584
+msgid "Failure types for each manufacturer."
+msgstr "Typy selhání pro každého z výrobců."
+
+#: security/models.py:24
+msgid "ok"
+msgstr "ok"
+
+#: security/models.py:25
+msgid "fail"
+msgstr "nezdar"
+
+#: security/models.py:26
+msgid "error"
+msgstr "chyba"
+
+#: security/models.py:32
+msgid "low"
+msgstr "nízké"
+
+#: security/models.py:33
+msgid "medium"
+msgstr "střední"
+
+#: security/models.py:34
+msgid "high"
+msgstr "vysoké"
+
+#: security/models.py:56
+msgid "Id of vulnerability from external system"
+msgstr "Identif. zranitelnosti z externího systému"
+
+#: security/models.py:84
+msgid "Rescan url"
+msgstr "URL opětovného skenu"
+
+#: security/templates/security/securityinfo/security_info.html:9
+#: security/views.py:79
+msgid "Security scan"
+msgstr "Sken zabezpečení"
+
+#: security/templates/security/securityinfo/security_info.html:13
+msgid "last scan date"
+msgstr "datum minulého skenu"
+
+#: security/templates/security/securityinfo/security_info.html:17
+msgid "scan status"
+msgstr "stav skenu"
+
+#: security/templates/security/securityinfo/security_info.html:21
+msgid "next scan date"
+msgstr "datum příštího skenu"
+
+#: security/templates/security/securityinfo/security_info.html:25
+msgid "details"
+msgstr "podrobnosti"
+
+#: security/templates/security/securityinfo/security_info.html:29
+msgid "request for a scan"
+msgstr "požádat o sken"
+
+#: security/templates/security/securityinfo/security_info.html:34
+msgid "Vulnerabilities"
+msgstr "Zranitelnosti"
+
+#: security/templates/security/securityinfo/security_info.html:39
+msgid "Risk"
+msgstr "Riziko"
+
+#: security/templates/security/securityinfo/security_info.html:40
+msgid "Patch deadline"
+msgstr "Termín záplaty"
+
+#: security/templates/security/securityinfo/security_info.html:57
+msgid "No vulnerabilities found for this scan"
+msgstr "Při tomto skenu nenalezeny žádné zranitelnosti"
+
+#: security/templates/security/securityinfo/security_info.html:61
+msgid "No scan so far"
+msgstr "Doposud žádné skeny"
+
+#: supports/admin.py:78
+msgid "Contract info"
+msgstr "Informace o smlouvě"
+
+#: supports/admin.py:163
+msgid "support type"
+msgstr "typ podpory"
+
+#: supports/admin.py:169
+msgid "support contract id"
+msgstr "identif. smlouvy o podpoře"
+
+#: supports/admin.py:174
+msgid "support name"
+msgstr "název podpory"
+
+#: supports/admin.py:179
+msgid "support price"
+msgstr "cena podpory"
+
+#: supports/admin.py:184
+msgid "support date from"
+msgstr "datum podpory od"
+
+#: supports/admin.py:189
+msgid "support date to"
+msgstr "datum podpory do"
+
+#: supports/admin.py:198
+msgid "asset hostname"
+msgstr "název stroje majetku"
+
+#: supports/admin.py:204
+msgid "asset service env"
+msgstr "prostředí služby majetku"
+
+#: supports/models.py:73
+msgid "contract ID"
+msgstr "identif. smlouvy"
+
+#: tests/admin.py:36
+msgid "Bars"
+msgstr "Pruhy"
+
+#: tests/models.py:25
+msgid "to_send"
+msgstr "k_odeslani"
+
+#: tests/models.py:26
+msgid "sended"
+msgstr "odesláno"
+
+#: virtual/admin.py:68 virtual/admin.py:200 virtual/admin.py:337
+msgid "Hypervisor"
+msgstr "Hypervizor"
+
+#: virtual/admin.py:170
+msgid "Parent"
+msgstr "Nadřazené"
+
+#: virtual/admin.py:192 virtual/admin.py:331
+msgid "Not set"
+msgstr "Nenastaveno"
+
+#: virtual/admin.py:318 virtual/admin.py:476 virtual/models.py:40
+msgid "Cloud provider"
+msgstr "Poskytovatel cloudu"
+
+#: virtual/admin.py:347
+msgid "Cloud Flavor"
+msgstr "Varianta cloudu"
+
+#: virtual/admin.py:371
+msgid "Cloud Project"
+msgstr "Projekt cloudu"
+
+#: virtual/admin.py:393 virtual/admin.py:436
+msgid "vCPU cores"
+msgstr "jader virt. procesorů"
+
+#: virtual/admin.py:397 virtual/admin.py:440
+msgid "RAM size (MiB)"
+msgstr "Velikost operační paměti (MiB)"
+
+#: virtual/admin.py:401 virtual/admin.py:444
+msgid "Disk size (GiB)"
+msgstr "Velikost disku (GiB)"
+
+#: virtual/admin.py:448 virtual/admin.py:481
+msgid "instances count"
+msgstr "počet instancí"
+
+#: virtual/models.py:41
+msgid "Cloud providers"
+msgstr "Poskytovatelé cloudu"
+
+#: virtual/models.py:143
+msgid "project ID"
+msgstr "identif. projektu"
+
+#: virtual/models.py:185
+msgid "host ID"
+msgstr "identif. stroje"
+
+#: virtual/models.py:197
+msgid "Cloud host"
+msgstr "Hostitel cloudu"
+
+#: virtual/models.py:381
+msgid "Virtual server (VM)"
+msgstr "Virt. server (VM)"
+
+#: virtual/models.py:382
+msgid "Virtual servers (VM)"
+msgstr "Virt. servery (VM)"
