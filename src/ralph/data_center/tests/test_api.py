@@ -29,6 +29,8 @@ from ralph.data_center.tests.factories import (
 )
 from ralph.networks.tests.factories import IPAddressFactory
 
+from ralph.virtual.tests.factories import CloudHostFactory, VirtualServerFactory
+
 
 class DataCenterAssetAPITests(RalphAPITestCase):
     def setUp(self):
@@ -53,7 +55,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
 
     def test_get_data_center_assets_list(self):
         url = reverse('datacenterasset-list')
-        with self.assertNumQueries(15):
+        with self.assertNumQueries(17):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
@@ -84,6 +86,49 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         )
         self.assertEqual(
             response.data['technical_owners'][0]['username'], 'user2'
+        )
+
+    def test_get_data_center_asset_details_related_hosts(self):
+        dc_asset_3 = DataCenterAssetFullFactory()
+        cloud_host = CloudHostFactory(
+            hypervisor=dc_asset_3
+        )
+        virtual_server = VirtualServerFactory(
+            parent=dc_asset_3
+        )
+        virtual_server_2 = VirtualServerFactory(
+            parent=dc_asset_3,
+            hostname='random_test_hostname'
+        )
+        dc_asset_4 = DataCenterAssetFullFactory(
+            parent=dc_asset_3
+        )
+        url = reverse('datacenterasset-detail', args=(dc_asset_3.id,))
+        response = self.client.get(url, format='json')
+        self.assertEqual(
+            len(response.data['related_hosts']['cloud_hosts']), 1
+        )
+        self.assertEqual(
+            len(response.data['related_hosts']['virtual_servers']), 2
+        )
+        self.assertIn(
+            response.data['related_hosts']['virtual_servers'][0]['hostname'],
+            (virtual_server.hostname, virtual_server_2.hostname)
+        )
+        self.assertIn(
+            response.data['related_hosts']['virtual_servers'][1]['hostname'],
+            (virtual_server.hostname, virtual_server_2.hostname)
+        )
+        self.assertEqual(
+            response.data['related_hosts']['cloud_hosts'][0]['hostname'],
+            cloud_host.hostname
+        )
+        self.assertEqual(
+            len(response.data['related_hosts']['physical_servers']), 1
+        )
+        self.assertEqual(
+            response.data['related_hosts']['physical_servers'][0]['hostname'],
+            dc_asset_4.hostname
         )
 
     def test_create_data_center_asset(self):
