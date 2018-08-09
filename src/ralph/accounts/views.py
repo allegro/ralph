@@ -36,6 +36,9 @@ class MyEquipmentAssetList(AssetList):
                 '&emsp; <i class="fa fa-chevron-right" aria-hidden="true"></i> {} ({})'.format(  # noqa
                     bo_licence.licence.software.name,
                     bo_licence.licence.niw,
+                    bo_licence.licence.manufacturer.name,
+                    bo_licence.licence.licence_type,
+                    bo_licence.licence.valid_thru
                 ) for bo_licence in licences
             ]
             return ['<br />'.join(result)]
@@ -113,7 +116,7 @@ class InventoryTagView(View):
 
     def post(self, request, *args, **kwargs):
         asset = get_object_or_404(BackOfficeAsset, id=request.POST['asset_id'])
-        if(
+        if (
             asset.user_id != request.user.id or
             not (
                 asset.warehouse.stocktaking_enabled or
@@ -169,7 +172,8 @@ class CurrentUserInfoView(
         asset_fields = [
             'user', ('barcode', _('Barcode / Inventory Number')),
             'model__category__name', 'model__manufacturer__name',
-            'model__name', ('sn', _('Serial Number')), 'invoice_date', 'status'
+            'model__name', ('sn', _('Serial Number')), 'invoice_date', 'status',
+            'url',
         ]
 
         if settings.MY_EQUIPMENT_SHOW_BUYOUT_DATE:
@@ -177,6 +181,9 @@ class CurrentUserInfoView(
 
         if settings.MY_EQUIPMENT_REPORT_FAILURE_URL:
             asset_fields += ['report_failure']
+
+        if settings.MY_EQUIPMENT_BUYOUT_URL and settings.MY_EQUIPMENT_SHOW_BUYOUT_DATE:  # noqa
+            asset_fields += ['report_buyout']
 
         warehouse_stocktaking_enabled = BackOfficeAsset.objects.filter(
             user=self.request.user, warehouse__stocktaking_enabled=True
@@ -198,11 +205,13 @@ class CurrentUserInfoView(
         context['licence_list'] = AssignedLicenceList(
             self.get_licence_queryset(),
             [
-                ('niw', _('Inventory Number')), 'software__name', 'sn',
-                'invoice_date'
+                ('niw', _('Inventory Number')), 'manufacturer',
+                'software__name', 'licence_type', 'sn',
+                'valid_thru', 'url'
             ],
             request=self.request,
         )
+
         return context
 
     def get_links(self):

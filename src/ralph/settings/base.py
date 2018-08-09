@@ -384,6 +384,7 @@ DEPLOYMENT_MAX_DNS_ENTRIES_TO_CLEAN = 30
 MY_EQUIPMENT_LINKS = json.loads(os.environ.get('MY_EQUIPMENT_LINKS', '[]'))
 MY_EQUIPMENT_REPORT_FAILURE_URL = os.environ.get('MY_EQUIPMENT_REPORT_FAILURE_URL', '')  # noqa
 MY_EQUIPMENT_SHOW_BUYOUT_DATE = bool_from_env('MY_EQUIPMENT_SHOW_BUYOUT_DATE')
+MY_EQUIPMENT_BUYOUT_URL = os.environ.get('MY_EQUIPMENT_BUYOUT_URL', '')
 
 # Sets URL shown to user if they declare that they dp not have specific asset.
 MISSING_ASSET_REPORT_URL = os.environ.get('MISSING_ASSET_REPORT_URL', None)

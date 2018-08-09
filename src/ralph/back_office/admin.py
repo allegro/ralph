@@ -19,10 +19,6 @@ from ralph.back_office.models import (
     OfficeInfrastructure,
     Warehouse
 )
-from ralph.back_office.views import (
-    BackOfficeAssetComponents,
-    BackOfficeAssetSoftware
-)
 from ralph.data_importer import resources
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
@@ -99,8 +95,9 @@ class BackOfficeAssetAdmin(
     change_views = [
         BackOfficeAssetLicence,
         BackOfficeAssetSupport,
-        BackOfficeAssetComponents,
-        BackOfficeAssetSoftware,
+        # TODO: uncomment the two tabs below once they are ready for use
+        # BackOfficeAssetComponents,
+        # BackOfficeAssetSoftware,
     ]
     list_display = [
         'status', 'barcode', 'purchase_order', 'model', 'user', 'warehouse',
