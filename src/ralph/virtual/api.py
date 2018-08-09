@@ -136,6 +136,13 @@ class VirtualServerTypeSerializer(RalphAPISerializer):
         model = VirtualServerType
 
 
+class VirtualServerSimpleSerializer(BaseObjectSerializer):
+    class Meta(BaseObjectSerializer):
+        model = VirtualServer
+        fields = ['hostname', 'url']
+        _skip_tags_field = True
+
+
 # TODO: select related
 class VirtualServerSerializer(ComponentSerializerMixin, BaseObjectSerializer):
     type = VirtualServerTypeSerializer()

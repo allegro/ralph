@@ -410,7 +410,14 @@ ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG = {
     # in_progress by default
     'BACK_OFFICE_ACCEPT_STATUS': os.environ.get(
         'ACCEPT_ASSETS_FOR_CURRENT_USER_BACK_OFFICE_ACCEPT_STATUS', 2
-    )
+    ),
+    'LOAN_TRANSITION_ID': os.environ.get(
+        'LOAN_ASSETS_FOR_CURRENT_USER_TRANSITION_ID', None
+    ),
+    # loan_in_progress by default
+    'BACK_OFFICE_ACCEPT_LOAN_STATUS': os.environ.get(
+        'LOAN_ASSETS_FOR_CURRENT_USER_BACK_OFFICE_ACCEPT_STATUS', 13
+    ),
 }
 RELEASE_REPORT_CONFIG = {
     # report with name 'release' is by default

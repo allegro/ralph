@@ -1,18 +1,19 @@
 #!/bin/bash
-set -e
+set -eux
 
-apt-get update
+export DEBIAN_FRONTEND=noninteractive
+
 
 apt-get install -y --force-yes \
+    build-essential \
     git \
     libldap2-dev \
     libmysqlclient-dev \
     libsasl2-dev \
     mysql-client \
-    python3.4 \
-    python3.4-dev \
-    python3-setuptools \
-    build-essential \
+    python3 \
+    python3-dev \
+    python3-pip \
     wget
-easy_install3 pip
+
 pip3 install --upgrade setuptools

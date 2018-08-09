@@ -662,6 +662,33 @@ class IPAddress(
     def __str__(self):
         return self.address
 
+    def _hostname_is_unique_in_dc(self, hostname, dc):
+        from ralph.dhcp.models import DHCPEntry
+        entries_with_hostname = DHCPEntry.objects.filter(
+            hostname=hostname,
+            network__network_environment__data_center=dc
+        )
+        if self.pk:
+            entries_with_hostname = entries_with_hostname.exclude(pk=self.pk)
+        return not entries_with_hostname.exists()
+
+    def validate_hostname_uniqueness_in_dc(self, hostname):
+        network = self.get_network()
+        if network and network.network_environment:
+            dc = network.network_environment.data_center
+            if not self._hostname_is_unique_in_dc(hostname, dc):
+                raise ValidationError(
+                    'Hostname "{hostname}" is already exposed in DHCP in {dc}.'
+                    .format(
+                        hostname=self.hostname, dc=dc
+                    )
+                )
+
+    def _validate_hostname_uniqueness_in_dc(self):
+        if not self.dhcp_expose:
+            return
+        self.validate_hostname_uniqueness_in_dc(self.hostname)
+
     def _validate_expose_in_dhcp_and_mac(self):
         if (
             (not self.ethernet_id or (self.ethernet and not self.ethernet.mac)) and  # noqa
@@ -708,6 +735,7 @@ class IPAddress(
             self._validate_expose_in_dhcp_and_mac,
             self._validate_expose_in_dhcp_and_hostname,
             self._validate_change_when_exposing_in_dhcp,
+            self._validate_hostname_uniqueness_in_dc,
         ]:
             try:
                 validator()

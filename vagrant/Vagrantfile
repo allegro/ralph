@@ -10,8 +10,20 @@ Vagrant.configure(2) do |config|
     config.vm.box = "ubuntu/xenial64"
     config.vm.hostname = "ralph-dev"
     config.vm.synced_folder "../", ralph_dir, type: "rsync",
-        rsync__exclude: ["../node_modules", "../.git", "../bower_components"],
-        rsync__auto: true
+        rsync__auto: true,
+        rsync__exclude: [
+            ".git",
+            "node_modules",
+            "bower_components",
+            "src/ralph.egg-info",
+            "src/ralph/settings/local.py", 
+            "src/ralph/static/css",
+            "src/ralph/static/vendor",
+            "src/ralph/admin/static/bower_components",
+            "src/ralph/admin/static/elements/elements-min.html",
+            "*__pycache__",
+            "*.pyc"
+            ]
     config.vm.provision :shell, path: "configure_kernel.sh", privileged: true
     config.vm.provision :reload
     config.vm.provision :shell, path: "provision.sh", privileged: false,

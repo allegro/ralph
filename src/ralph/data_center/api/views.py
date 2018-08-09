@@ -52,12 +52,14 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         'service_env', 'service_env__service', 'service_env__environment',
         'rack', 'rack__server_room', 'rack__server_room__data_center',
         'property_of', 'budget_info', 'content_type',
-        'configuration_path__module'
+        'configuration_path__module',
     ]
     prefetch_related = base_object_descendant_prefetch_related + [
         'connections',
         'tags',
         'memory_set',
+        'children',
+        'cloudhost_set',
         Prefetch(
             'ethernet_set',
             queryset=Ethernet.objects.select_related('ipaddress')
