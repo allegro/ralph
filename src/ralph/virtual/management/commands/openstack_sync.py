@@ -133,6 +133,7 @@ class Command(BaseCommand):
         """
         servers = []
         marker = None
+        limit = 1000
         logger.info('Fetching servers list from {}'.format(site['tag']))
         while True:
             try:
@@ -141,11 +142,13 @@ class Command(BaseCommand):
                 )
                 servers_part = nt.servers.list(
                     search_opts={'all_tenants': True},
-                    limit=1000,
+                    limit=limit,
                     marker=marker,
                 )
                 marker = servers_part[-1].id
                 servers.extend(servers_part)
+                if len(servers_part) < limit:
+                    break
             except IndexError:
                 break
 
