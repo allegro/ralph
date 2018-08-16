@@ -18,7 +18,7 @@ def _get_host_data(instance):
         securityscan_pk = securityscan.pk
     except instance.__class__.securityscan.RelatedObjectDoesNotExist:
         securityscan_pk = None
-    if not securityscan_pk:
+    if hasattr(instance, 'securityscan') and not securityscan_pk:
         instance = instance.refresh_from_db()
 
     serializer = DCHostSerializer(instance=instance)
