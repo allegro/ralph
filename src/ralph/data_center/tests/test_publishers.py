@@ -1,7 +1,6 @@
+from ralph.data_center.publishers import _get_host_data
 from ralph.security.tests.factories import SecurityScanFactory
 from ralph.tests import RalphTestCase
-
-from ralph.data_center.publishers import _get_host_data
 from ralph.virtual.tests.factories import VirtualServerFactory
 
 
