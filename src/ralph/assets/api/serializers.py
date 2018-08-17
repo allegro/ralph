@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from rest_framework import fields, serializers
 
@@ -41,7 +40,7 @@ from ralph.configuration_management.api import SCMInfoSerializer
 from ralph.lib.custom_fields.api import WithCustomFieldsSerializerMixin
 from ralph.licences.api_simple import SimpleBaseObjectLicenceSerializer
 from ralph.networks.api_simple import IPAddressSimpleSerializer
-from ralph.security.api import SecurityScanSerializer, VulnerabilitySerializer
+from ralph.security.api import SecurityScanSerializer
 
 
 class TypeFromContentTypeSerializerMixin(RalphAPISerializer):
