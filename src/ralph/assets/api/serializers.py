@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from rest_framework import fields, serializers
 
@@ -40,7 +41,7 @@ from ralph.configuration_management.api import SCMInfoSerializer
 from ralph.lib.custom_fields.api import WithCustomFieldsSerializerMixin
 from ralph.licences.api_simple import SimpleBaseObjectLicenceSerializer
 from ralph.networks.api_simple import IPAddressSimpleSerializer
-from ralph.security.api import SecurityScanSerializer
+from ralph.security.api import SecurityScanSerializer, VulnerabilitySerializer
 
 
 class TypeFromContentTypeSerializerMixin(RalphAPISerializer):
@@ -437,9 +438,18 @@ class ComponentSerializerMixin(NetworkComponentSerializerMixin):
     processors = ProcessorSimpleSerializer(many=True, source='processor_set')
 
 
+class SecurityScanField(serializers.Field):
+
+    def to_representation(self, value):
+        if getattr(value, 'pk'):
+            return SecurityScanSerializer().to_representation(value)
+        else:
+            return None
+
+
 class DCHostSerializer(ComponentSerializerMixin, BaseObjectSerializer):
     hostname = fields.CharField()
-    securityscan = SecurityScanSerializer()
+    securityscan = SecurityScanField()
 
     class Meta:
         model = BaseObject

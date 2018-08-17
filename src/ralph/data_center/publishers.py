@@ -11,16 +11,6 @@ logger = logging.getLogger(__name__)
 
 def _get_host_data(instance):
     from ralph.assets.api.serializers import DCHostSerializer
-
-    # If securityscan has been deleted, refresh instance from db
-    try:
-        securityscan = getattr(instance, 'securityscan')
-        securityscan_pk = securityscan.pk
-    except instance.__class__.securityscan.RelatedObjectDoesNotExist:
-        securityscan_pk = None
-    if hasattr(instance, 'securityscan') and not securityscan_pk:
-        instance = instance.refresh_from_db()
-
     serializer = DCHostSerializer(instance=instance)
     if hasattr(serializer.instance, '_previous_state'):
         data = deepcopy(serializer.data)
