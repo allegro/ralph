@@ -6,7 +6,7 @@ from ralph.virtual.tests.factories import VirtualServerFactory
 
 class PublisherTests(RalphTestCase):
 
-    def test_get_host_data(self):
+    def test_get_host_data_after_deleting_securityscan(self):
         instance = VirtualServerFactory()
         security_scan = SecurityScanFactory(base_object=instance)
         old_hostname = instance.hostname
