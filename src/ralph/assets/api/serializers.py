@@ -440,11 +440,8 @@ class ComponentSerializerMixin(NetworkComponentSerializerMixin):
 class SecurityScanField(serializers.Field):
 
     def to_representation(self, value):
-        if value:
-            if not value.pk:
-                return None
-            else:
-                return SecurityScanSerializer().to_representation(value)
+        if value and value.pk:
+            return SecurityScanSerializer().to_representation(value)
 
 
 class DCHostSerializer(ComponentSerializerMixin, BaseObjectSerializer):
