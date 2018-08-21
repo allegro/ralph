@@ -437,9 +437,16 @@ class ComponentSerializerMixin(NetworkComponentSerializerMixin):
     processors = ProcessorSimpleSerializer(many=True, source='processor_set')
 
 
+class SecurityScanField(serializers.Field):
+
+    def to_representation(self, value):
+        if value and value.pk:
+            return SecurityScanSerializer().to_representation(value)
+
+
 class DCHostSerializer(ComponentSerializerMixin, BaseObjectSerializer):
     hostname = fields.CharField()
-    securityscan = SecurityScanSerializer()
+    securityscan = SecurityScanField()
 
     class Meta:
         model = BaseObject
