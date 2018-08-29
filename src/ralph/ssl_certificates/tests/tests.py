@@ -71,8 +71,8 @@ class ImportSSLCertificatesTest(TestCase):
 
 
 class UpdateServiceEnvTest(TestCase):
-    @patch('ralph.ssl_certificates.management.commands.update_service_env.requests')
-    @patch('ralph.ssl_certificates.management.commands.update_service_env.dnsaas_client')
+    @patch('ralph.ssl_certificates.management.commands.update_dns_service_env_from_dnsaas.requests')
+    @patch('ralph.ssl_certificates.management.commands.update_dns_service_env_from_dnsaas.dnsaas_client')
     def test_command_should_informed_if_service_not_exist(self, dnsaas_client, requests):
         dnsaas_client.get_api_result.return_value = [
             {
@@ -96,7 +96,7 @@ class UpdateServiceEnvTest(TestCase):
         requests.get.return_value = MagicMock(ok=True)
         requests.get.return_value.json.return_value = requests.get.return_value
         out = StringIO()
-        call_command('update_service_env', stderr=out)
+        call_command('update_dns_service_env_from_dnsaas', stderr=out)
         self.assertIn(
             'Service with name Serwis porcelanowy and prod environment does not exist\n', out.getvalue()
         )
