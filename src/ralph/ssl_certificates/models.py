@@ -6,7 +6,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import BaseObject
-from ralph.assets.models.assets import Manufacturer
+from ralph.assets.models.assets import Manufacturer, Service
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 
 
@@ -21,7 +21,7 @@ class CertificateType(Choices):
     internal = _('CA ENT')
 
 
-class SSLCertificate(AdminAbsoluteUrlMixin, BaseObject):
+class SSLCertificate(AdminAbsoluteUrlMixin, BaseObject, ):
     name = models.CharField(
         verbose_name=_('certificate name'),
         help_text=_('Full certificate name'),
@@ -36,20 +36,6 @@ class SSLCertificate(AdminAbsoluteUrlMixin, BaseObject):
     certificate_type = models.PositiveIntegerField(
         choices=CertificateType(),
         default=CertificateType.ov.id,
-    )
-    business_owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        related_name='certificates_business_owner',
-        blank=True,
-        null=True,
-        help_text=_('Business contact person for a certificate')
-    )
-    technical_owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        related_name='certificates_technical_owner',
-        blank=True,
-        null=True,
-        help_text=_('Technical contact person for a certificate')
     )
     issued_by = models.ForeignKey(
         Manufacturer,
@@ -71,3 +57,6 @@ class SSLCertificate(AdminAbsoluteUrlMixin, BaseObject):
         return '{} from {} to {}'.format(
             self.name, self.date_from, self.date_to
         ) or None
+
+class OwnersForServices(Service):
+    pass
