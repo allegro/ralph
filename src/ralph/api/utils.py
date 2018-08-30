@@ -101,7 +101,7 @@ class PolymorphicListSerializer(serializers.ListSerializer):
         iterable = data.all() if isinstance(data, models.Manager) else data
         return [
             self.child_serializers[item.__class__].to_representation(item)
-            for item in iterable
+            for item in iterable if self.child_serializers.get(item.__class__)
         ]
 
 
