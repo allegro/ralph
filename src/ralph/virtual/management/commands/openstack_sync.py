@@ -57,11 +57,16 @@ class EmptyListError(Exception):
         repr(self.value)
 
 
+class Summary(defaultdict):
+    def __getitem__(self, key):
+        return dict.get(self, key, 0)
+
+
 class Command(BaseCommand):
     def __init__(self):
         super().__init__()
         self.DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
-        self.summary = defaultdict(int)
+        self.summary = Summary(int)
         self.openstack_projects = {}
         self.openstack_flavors = {}
         self.openstack_provider_name = DEFAULT_OPENSTACK_PROVIDER_NAME
