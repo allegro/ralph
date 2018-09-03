@@ -66,6 +66,9 @@ FACTORY_MAP = {
     'ralph.domains.models.domains.DomainContract': 'ralph.domains.tests.factories.DomainContractFactory',  # noqa
     'ralph.domains.models.domains.DomainRegistrant': 'ralph.domains.tests.factories.DomainRegistrantFactory',  # noqa
     'ralph.domains.models.domains.DomainProviderAdditionalServices': 'ralph.domains.tests.factories.DomainProviderAdditionalServicesFactory',  # noqa
+    'ralph.trade_marks.models.TradeMarks': 'ralph.trade_marks.tests.factories.TradeMarksFactory', #noqa
+    'ralph.trade_marks.models.TradeMarksLinkedDomains': 'ralph.trade_marks.tests.factories.TradeMarksLinkedDomainsFactory', #noqa
+    'ralph.trade_marks.models.ProviderAdditionalMarking': 'ralph.trade_marks.tests.factories.ProviderAdditionalMarkingFactory', # noqa
     'ralph.licences.models.Licence': 'ralph.licences.tests.factories.LicenceFactory',  # noqa
     'ralph.licences.models.LicenceType': 'ralph.licences.tests.factories.LicenceTypeFactory',  # noqa
     'ralph.licences.models.Software': 'ralph.licences.tests.factories.SoftwareFactory',  # noqa

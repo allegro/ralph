@@ -159,11 +159,12 @@ sitetrees = [
             ]
         ),
         ralph_item(
-            title=_('Domains'),
+            title=_('Intellectual Property'),
             url='#',
             url_as_pattern=False,
             perms_mode_all=False,
             children=[
+                section(_('Trade Marks'), 'trade_marks', 'TradeMarks'),
                 section(_('Domains'), 'domains', 'Domain'),
                 section(_('Contracts'), 'domains', 'DomainContract'),
                 section(_('Registrants'), 'domains', 'DomainRegistrant'),
