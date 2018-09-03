@@ -32,7 +32,7 @@ class TradeMarksFactory(DjangoModelFactory):
 
 
 class TradeMarksLinkedDomainsFactory(DjangoModelFactory):
-    tm_name = factory.SubFactory(IntellectualPropertyFactory)
+    tm_name = factory.SubFactory(TradeMarksFactory)
     domain = factory.SubFactory(DomainFactory)
 
     class Meta:
