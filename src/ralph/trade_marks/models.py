@@ -82,8 +82,7 @@ class TradeMarks(AdminAbsoluteUrlMixin, BaseObject, Regionalizable):
     )
     additional_markings = models.ManyToManyField(
         ProviderAdditionalMarking,
-        blank=False,
-        null=False
+        blank=True,
     )
     tm_holder = models.ForeignKey(
         AssetHolder,
@@ -103,7 +102,9 @@ class TradeMarks(AdminAbsoluteUrlMixin, BaseObject, Regionalizable):
     )
 
     def __str__(self):
-        return '{} ({})'.format(self.name, self.date_to)
+        return '{} ({})'.format(
+            self.name, self.date_to
+        ) or None
 
 
 class TradeMarksLinkedDomains(models.Model):

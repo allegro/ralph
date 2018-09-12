@@ -29,7 +29,7 @@ from ralph.assets.tests.factories import (
     ManufacturerFactory,
     ProfitCenterFactory,
     ServiceEnvironmentFactory,
-    ServiceFactory
+    ServiceFactory,
 )
 from ralph.back_office.models import BackOfficeAsset
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
@@ -54,6 +54,8 @@ from ralph.ssl_certificates.tests.factories import SSLCertificatesFactory
 from ralph.supports.models import Support
 from ralph.supports.tests.factories import SupportFactory
 from ralph.tests.models import PolymorphicTestModel
+from ralph.trade_marks.models import TradeMarks
+from ralph.trade_marks.tests.factories import TradeMarksFactory
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -525,6 +527,7 @@ BASE_OBJECTS_FACTORIES = {
     VirtualServer: VirtualServerFactory,
     Cluster: ClusterFactory,
     ConfigurationClass: ConfigurationClassFactory,
+    TradeMarks: TradeMarksFactory,
 }
 
 
