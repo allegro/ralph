@@ -29,7 +29,7 @@ from ralph.assets.tests.factories import (
     ManufacturerFactory,
     ProfitCenterFactory,
     ServiceEnvironmentFactory,
-    ServiceFactory,
+    ServiceFactory
 )
 from ralph.back_office.models import BackOfficeAsset
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
