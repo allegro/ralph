@@ -88,7 +88,6 @@ class TradeMarks(AdminAbsoluteUrlMixin, BaseObject, Regionalizable):
         AssetHolder,
         verbose_name=_('Trade Mark holder'),
         blank=True,
-        null=True
     )
     tm_status = models.PositiveIntegerField(
         verbose_name=_('Trade Mark status'),
