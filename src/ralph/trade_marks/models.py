@@ -104,7 +104,7 @@ class TradeMarks(AdminAbsoluteUrlMixin, BaseObject, Regionalizable):
     def __str__(self):
         return '{} ({})'.format(
             self.name, self.date_to
-        ) or None
+        )
 
 
 class TradeMarksLinkedDomains(models.Model):
