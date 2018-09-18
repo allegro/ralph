@@ -42,7 +42,7 @@ class TradeMarkStatus(Choices):
     registration_expired = _('Registration expired')
 
 
-class TradeMark(AdminAbsoluteUrlMixin, BaseObject, Regionalizable):
+class TradeMark(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
     name = models.CharField(
         verbose_name=_('Trade Mark name'),
         blank=False,

@@ -164,7 +164,7 @@ sitetrees = [
             url_as_pattern=False,
             perms_mode_all=False,
             children=[
-                section(_('Trade Marks'), 'trade_marks', 'TradeMarks'),
+                section(_('Trade Marks'), 'trade_marks', 'TradeMark'),
                 section(_('Domains'), 'domains', 'Domain'),
                 section(_('Contracts'), 'domains', 'DomainContract'),
                 section(_('Registrants'), 'domains', 'DomainRegistrant'),
