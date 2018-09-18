@@ -18,7 +18,7 @@ class TradeMarkType(Choices):
     _ = Choices.Choice
     word = _('Word')
     figurative = _('Figurative')
-    wf = _('Word - Figurative')
+    word_figurative = _('Word - Figurative')
 
 
 class ProviderAdditionalMarking(
@@ -32,23 +32,28 @@ class ProviderAdditionalMarking(
 
 class TradeMarkStatus(Choices):
     _ = Choices.Choice
-    af = _('Application filed')
-    ar = _('Application refused')
-    aw = _('Application withdrawn')
-    ao = _('Application opposed')
+    application_filed = _('Application filed')
+    application_refused = _('Application refused')
+    application_withdrawn = _('Application withdrawn')
+    application_opposed = _('Application opposed')
     registered = _('Registered')
-    ri = _('Registration invalidated')
-    re = _('Registration expired')
+    registration_invalidated = _('Registration invalidated')
+    registration_expired = _('Registration expired')
 
 
-class TradeMarks(AdminAbsoluteUrlMixin, BaseObject, Regionalizable):
+class TradeMark(AdminAbsoluteUrlMixin, BaseObject, Regionalizable):
+    name = models.CharField(
+        verbose_name=_('Trade Mark name'),
+        blank=False,
+        max_length=255,
+    )
     registrant_number = models.CharField(
         verbose_name=_('Registrant number'),
         blank=False,
         null=False,
         max_length=255
     )
-    tm_type = models.PositiveIntegerField(
+    type = models.PositiveIntegerField(
         verbose_name=_('Trade Mark type'),
         choices=TradeMarkType(),
         default=TradeMarkType.figurative.id
@@ -59,12 +64,7 @@ class TradeMarks(AdminAbsoluteUrlMixin, BaseObject, Regionalizable):
         null=False,
         max_length=255,
     )
-    date_to = models.DateField(null=False, blank=False)
-    name = models.CharField(
-        verbose_name=_('Trade Mark name'),
-        blank=False,
-        max_length=255,
-    )
+    valid_to = models.DateField(null=False, blank=False)
     business_owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name='trademark_business_owner',
@@ -84,17 +84,18 @@ class TradeMarks(AdminAbsoluteUrlMixin, BaseObject, Regionalizable):
         ProviderAdditionalMarking,
         blank=True,
     )
-    tm_holder = models.ForeignKey(
+    holder = models.ForeignKey(
         AssetHolder,
         verbose_name=_('Trade Mark holder'),
         blank=True,
+        null=True
     )
-    tm_status = models.PositiveIntegerField(
+    status = models.PositiveIntegerField(
         verbose_name=_('Trade Mark status'),
         choices=TradeMarkStatus(),
         default=TradeMarkStatus.registered.id
     )
-    domain = models.ManyToManyField(
+    domains = models.ManyToManyField(
         Domain,
         related_name='+',
         through='TradeMarksLinkedDomains',
@@ -102,21 +103,21 @@ class TradeMarks(AdminAbsoluteUrlMixin, BaseObject, Regionalizable):
 
     def __str__(self):
         return '{} ({})'.format(
-            self.name, self.date_to
+            self.name, self.valid_to
         )
 
 
 class TradeMarksLinkedDomains(models.Model):
-    tm_name = models.ForeignKey(TradeMarks)
+    trade_mark = models.ForeignKey(TradeMark)
     domain = models.ForeignKey(
         Domain,
-        related_name='tm_name'
+        related_name='trade_mark'
     )
 
     class Meta:
-        unique_together = ('tm_name', 'domain')
+        unique_together = ('trade_mark', 'domain')
 
     def __str__(self):
         return '{} assigned to {}'.format(
-            self.tm_name, self.domain,
+            self.trade_mark, self.domain,
         )

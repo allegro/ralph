@@ -9,7 +9,7 @@ from ralph.assets.tests.factories import AssetHolderFactory
 from ralph.domains.tests.factories import DomainFactory
 from ralph.trade_marks.models import (
     ProviderAdditionalMarking,
-    TradeMarks,
+    TradeMark,
     TradeMarksLinkedDomains
 )
 
@@ -17,22 +17,21 @@ from ralph.trade_marks.models import (
 date_now = datetime.now().date()
 
 
-class TradeMarksFactory(DjangoModelFactory):
-
-    date_to = date_now + timedelta(days=365)
+class TradeMarkFactory(DjangoModelFactory):
+    valid_to = date_now + timedelta(days=365)
     registrant_number = factory.Sequence(lambda n: 'Registrant number ' + str(n))
     name = factory.Sequence(lambda n: 'Trade Mark name ' + str(n))
     technical_owner = factory.SubFactory(UserFactory)
     business_owner = factory.SubFactory(UserFactory)
     registrant_class = factory.Sequence(lambda n: 'Registrant class ' + str(n))
-    tm_holder = factory.SubFactory(AssetHolderFactory)
+    holder = factory.SubFactory(AssetHolderFactory)
 
     class Meta:
-        model = TradeMarks
+        model = TradeMark
 
 
 class TradeMarksLinkedDomainsFactory(DjangoModelFactory):
-    tm_name = factory.SubFactory(TradeMarksFactory)
+    trade_mark = factory.SubFactory(TradeMarkFactory)
     domain = factory.SubFactory(DomainFactory)
 
     class Meta:

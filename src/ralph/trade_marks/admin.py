@@ -9,7 +9,7 @@ from ralph.attachments.admin import AttachmentsMixin
 from ralph.trade_marks.forms import IntellectualPropertyForm
 from ralph.trade_marks.models import (
     ProviderAdditionalMarking,
-    TradeMarks,
+    TradeMark,
     TradeMarksLinkedDomains
 )
 
@@ -28,32 +28,32 @@ class TradeMarksLinkedView(RalphDetailViewAdmin):
     inlines = [TradeMarksLinkedInline]
 
 
-@register(TradeMarks)
-class IntellectualPropertyAdmin(AttachmentsMixin, RalphAdmin):
+@register(TradeMark)
+class TradeMarkAdmin(AttachmentsMixin, RalphAdmin):
     change_views = [TradeMarksLinkedView]
     form = IntellectualPropertyForm
     list_select_related = [
-        'technical_owner', 'business_owner', 'tm_holder',
+        'technical_owner', 'business_owner', 'holder',
     ]
     list_filter = [
         'registrant_number', 'tm_type',
-        ('date_to', DateListFilter), 'additional_markings',
-        'tm_holder', 'tm_status'
+        ('valid_to', DateListFilter), 'additional_markings',
+        'holder', 'status'
     ]
     list_display = [
-        'id', 'name', 'registrant_number', 'tm_type',
-        'date_to', 'tm_holder', 'tm_status'
+        'id', 'name', 'registrant_number', 'type',
+        'valid_to', 'holder', 'status'
     ]
     raw_id_fields = [
-        'business_owner', 'technical_owner', 'tm_holder'
+        'business_owner', 'technical_owner', 'holder'
     ]
     fieldsets = (
         (_('Basic info'), {
             'fields': (
-                'name', 'registrant_number', 'tm_type',
+                'name', 'registrant_number', 'type',
                 'registrant_class', 'date_to', 'region',
-                'order_number_url', 'additional_markings', 'tm_holder',
-                'tm_status', 'remarks'
+                'order_number_url', 'additional_markings', 'holder',
+                'status', 'remarks'
             )
         }),
         (_('Ownership info'), {
