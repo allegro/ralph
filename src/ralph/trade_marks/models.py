@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-from dj.choices import Choices
+from dj.choices import Choices, Country
 from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
+from ralph.assets.country_utils import iso2_to_iso3
 from ralph.assets.models import AssetHolder, BaseObject
 from ralph.domains.models import Domain
 from ralph.lib.mixins.models import (
@@ -100,6 +101,11 @@ class TradeMark(AdminAbsoluteUrlMixin, BaseObject, Regionalizable):
         related_name='+',
         through='TradeMarksLinkedDomains',
     )
+
+    @property
+    def country_code(self):
+        iso2 = Country.name_from_id(int(self.region.country)).upper()
+        return iso2_to_iso3(iso2)
 
     def __str__(self):
         return '{} ({})'.format(
