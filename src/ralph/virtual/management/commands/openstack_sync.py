@@ -57,15 +57,11 @@ class EmptyListError(Exception):
         repr(self.value)
 
 
-def number_factory(number=0):
-    return int(number)
-
-
 class Command(BaseCommand):
     def __init__(self):
         super().__init__()
         self.DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
-        self.summary = defaultdict(number_factory)
+        self.summary = defaultdict(int)
         self.openstack_projects = {}
         self.openstack_flavors = {}
         self.openstack_provider_name = DEFAULT_OPENSTACK_PROVIDER_NAME
@@ -735,23 +731,30 @@ class Command(BaseCommand):
             revisions.set_comment('openstack_sync::_delete_object')
 
     def _print_summary(self):
-        """Print sync summary"""
+        """
+        Print sync summary
+        Python 3.6 raises KeyError when using .format(**self.summary) for a
+        nonexistent key. A nonexistent key has to be specified explicitly for
+        defaultdict to work as expected.
+        """
         msg = """Openstack projects synced
 
-        New projects:       {new_projects}
-        Modified projects:  {mod_projects}
-        Deleted projects:   {del_projects}
-        Total projects:     {total_projects}
+        New projects:       {summary[new_projects]}
+        Modified projects:  {summary[mod_projects]}
+        Deleted projects:   {summary[del_projects]}
+        Total projects:     {summary[total_projects]}
 
-        New instances:      {new_instances}
-        Modified instances: {mod_instances}
-        Deleted instances:  {del_instances}
-        Total instances:    {total_instances}
+        New instances:      {summary[new_instances]}
+        Modified instances: {summary[mod_instances]}
+        Deleted instances:  {summary[del_instances]}
+        Total instances:    {summary[total_instances]}
 
-        New flavors:        {new_flavors}
-        Modified flavors:   {mod_flavors}
-        Deleted flavors:    {del_flavors}
-        Total flavors:      {total_flavors}""".format(**self.summary)
+        New flavors:        {summary[new_flavors]}
+        Modified flavors:   {summary[mod_flavors]}
+        Deleted flavors:    {summary[del_flavors]}
+        Total flavors:      {summary[total_flavors]}""".format(
+            summary=self.summary
+        )
 
         self.stdout.write(msg)
         logger.info(msg)
