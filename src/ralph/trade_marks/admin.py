@@ -36,7 +36,7 @@ class TradeMarkAdmin(AttachmentsMixin, RalphAdmin):
         'technical_owner', 'business_owner', 'holder',
     ]
     list_filter = [
-        'registrant_number', 'tm_type',
+        'registrant_number', 'type',
         ('valid_to', DateListFilter), 'additional_markings',
         'holder', 'status'
     ]
