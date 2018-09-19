@@ -51,7 +51,7 @@ class TradeMarkAdmin(AttachmentsMixin, RalphAdmin):
         (_('Basic info'), {
             'fields': (
                 'name', 'registrant_number', 'type',
-                'registrant_class', 'date_to', 'region',
+                'registrant_class', 'valid_to', 'region',
                 'order_number_url', 'additional_markings', 'holder',
                 'status', 'remarks'
             )
