@@ -1,12 +1,6 @@
-# Example NGINX config for Ralph working with Dockerized Ralph out of the box
-
 server {
     listen 80;
-    server_name ralph;
-
-    location /docs {
-        alias /opt/ralph/docs/_build/html;
-    }
+    server_name _;
 
     location /static {
        alias /opt/static;
@@ -18,8 +12,7 @@ server {
     }
 
     location / {
-        proxy_pass http://web:8000;
-
+        proxy_pass http://ralph:8000;
         proxy_set_header Host $http_host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

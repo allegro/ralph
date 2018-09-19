@@ -1,0 +1,66 @@
+version: '2.4'
+services:
+    ralph:
+        container_name: ralph_app
+        image: ralph
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                RALPH_ROOT: /opt/ralph
+                STATIC_ROOT: /opt/static
+        environment:
+            DJANGO_SETTINGS_MODULE: ralph.settings.prod
+        env_file:
+            - ./contrib/ralph.env
+        volumes:
+            - media_data:/opt/media
+            - static_data:/opt/static
+        expose:
+            - "8000"
+        links:
+            - db
+            - redis
+        depends_on:
+            - db
+            - redis
+        command: gunicorn -w 4 -b 0.0.0.0:8000 -t 300 ralph.wsgi
+        restart: always
+
+    nginx:
+        image: nginx:1.14
+        container_name: ralph_nginx
+        ports:
+            - "80:80"
+        links:
+            - ralph
+        volumes:
+            - ./contrib/ralph.conf.nginx:/etc/nginx/conf.d/default.conf
+            - media_data:/opt/media
+            - static_data:/opt/static
+        restart: always
+
+    db:
+        image: mysql:5.7
+        container_name: ralph_db
+        environment:
+            MYSQL_DATABASE: ralph_ng
+            MYSQL_ROOT_PASSWORD: ralph_ng
+            MYSQL_USER: ralph_ng
+            MYSQL_PASSWORD: ralph_ng
+        volumes:
+            - db_data:/var/lib/mysql
+        restart: always
+
+    redis:
+        image: redis:4.0
+        container_name: ralph_redis
+        volumes:
+            - redis_data:/data
+        restart: always
+
+volumes:
+    static_data:
+    media_data:
+    db_data:
+    redis_data:

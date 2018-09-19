@@ -3,3 +3,8 @@ docker-compose.yml
 .git
 node_modules
 bower_components
+contrib
+debian
+docs
+packaging
+vagrant

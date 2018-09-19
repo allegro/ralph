@@ -160,13 +160,16 @@ USE_L10N = bool_from_env('USE_L10N', True)
 USE_TZ = False
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
-    os.path.join(BASE_DIR, 'admin', 'static'),
-)
 STATIC_ROOT = os.environ.get(
     'STATIC_ROOT', os.path.join(BASE_DIR, 'var', 'static')
 )
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'admin', 'static'),
+    ('vendor', os.path.join(STATIC_ROOT, 'vendor')),
+    ('css', os.path.join(STATIC_ROOT, 'css')),
+    ('elements', os.path.join(STATIC_ROOT, 'elements')),
+]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.environ.get(

@@ -1,54 +1,44 @@
-FROM ubuntu:bionic
-MAINTAINER PyLabs pylabs@allegro.pl
+FROM node:8.12 as build-static
 
-# set UTF-8 locale
-RUN apt-get clean && apt-get update
-RUN apt-get install locales
-RUN locale-gen en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
+WORKDIR /opt/ralph_static
 
-# set paths
-ENV RALPH_DIR=/opt/ralph
-ENV RALPH_EXEC=ralph
-ENV RALPH_LOGGING_FILE_PATH=/root/logs/runtime.log
-ENV RALPH_STATIC=/root/static
-ENV RALPH_DOCS=$RALPH_DIR/docs
-ENV SCRIPTS_PATH=/root
+COPY package.json gulpfile.js bower.json ./
+COPY src/ralph/static/src/ ./src/ralph/static/src/
+COPY src/ralph/admin/static/ ./src/ralph/admin/static/
+RUN npm install --silent -g bower && \
+    npm install --silent -g gulp && \
+    npm install --silent && \
+    bower --allow-root install && \
+    gulp build
 
-ADD docker/* $SCRIPTS_PATH/
 
-# basic provisioning
-RUN $SCRIPTS_PATH/provision.sh
+FROM python:3.4-stretch
 
-# npm provisioning
-ADD package.json $RALPH_DIR/package.json
-RUN $SCRIPTS_PATH/provision_js.sh
+ARG RALPH_ROOT=/opt/ralph
+ARG STATIC_ROOT=/opt/static
 
-# cleanup
-RUN apt-get clean
+ENV DEBIAN_FRONTEND noninteractive
+ENV PYTHONUNBUFFERED 1
+ENV LANG C.UTF-8
 
-# install basic requirements
-WORKDIR $RALPH_DIR
-ADD requirements $RALPH_DIR/requirements
-ADD Makefile $RALPH_DIR/Makefile
-# don't install ralph now - only requirements
-RUN sed -i '/\-e ./d' $RALPH_DIR/requirements/test.txt
-# temporary - change to `make install-prod` finally
-RUN make install-dev
+WORKDIR ${RALPH_ROOT}
 
-# install JS dependencies
-ADD src/ralph/admin/static $RALPH_DIR/src/ralph/admin/static
-ADD src/ralph/static $RALPH_DIR/src/ralph/static
-ADD gulpfile.js bower.json package.json $RALPH_DIR/
-RUN $SCRIPTS_PATH/init_js.sh
+RUN apt-get update -qq && \
+    apt-get install -y -q build-essential \
+                          libldap2-dev \
+                          libsasl2-dev \
+    && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    apt-get autoclean && \
+    echo -n > /var/lib/apt/extended_states && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /usr/share/man/?? && \
+    rm -rf /usr/share/man/??_*
 
-# install ralph
-ADD . $RALPH_DIR
-RUN pip3 install -e .
-RUN make docs
-
-VOLUME $RALPH_DOCS
-VOLUME $RALPH_STATIC
-CMD $RALPH_EXEC runserver 0.0.0.0:8000
+COPY . .
+COPY --from=build-static /opt/ralph_static/src/ralph/static/ ${STATIC_ROOT}/
+COPY --from=build-static /opt/ralph_static/src/ralph/admin/static/ ${STATIC_ROOT}/
+COPY --from=build-static /opt/ralph_static/bower_components/ ${STATIC_ROOT}/bower_components/
+RUN pip install -e . && \
+    pip install -r requirements/prod.txt

@@ -22,10 +22,31 @@ http://ralph-demo.allegro.tech/
 * login: ralph
 * password: ralph
 
-## Installation
+# Installation
 
 ## Debian package(recommended)
+
 Visit our documentation on [readthedocs.org](http://ralph-ng.readthedocs.org) for more details.
+
+## Docker installation (with [docker-compose](https://docs.docker.com/compose/))
+
+#### Build and run services
+
+    docker-compose up -d
+
+Ralph should be accessible at ``http://127.0.0.1`` or ``http://your.server.ip.addr``
+
+#### First run
+
+    docker-compose exec ralph ralph migrate --noinput
+    docker-compose exec ralph ralph collectstatic --noinput
+    docker-compose exec ralph ralph createsuperuser
+    docker-compose exec ralph ralph sitetree_resync_apps
+
+#### Upgrade DB and static files
+
+    docker-compose exec ralph ralph migrate --noinput
+    docker-compose exec ralph ralph collectstatic --noinput
 
 ## Developer installation
 
