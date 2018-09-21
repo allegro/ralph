@@ -13,7 +13,7 @@ from django.utils import timezone
 
 from ralph.accounts.tests.factories import RegionFactory
 from ralph.assets.country_utils import iso2_to_iso3, iso3_to_iso2
-from ralph.assets.models import AssetLastHostname
+from ralph.assets.models import AssetLastHostname, ObjectModelType
 from ralph.assets.tests.factories import (
     BackOfficeAssetModelFactory,
     CategoryFactory,
@@ -500,18 +500,15 @@ class CheckerTestCase(SimpleTestCase):
 
 
 class BackOfficeAssetFormTest(TransitionTestCase, ClientMixin):
-    def test_bo_admin_form_wo_access_to_service_env_and_hostname(self):
-        passwd = 'ralph'
 
-        asset = BackOfficeAssetFactory()
-        user = UserFactory()
-
-        user.is_superuser = False
-        user.is_staff = True
-        user.set_password(passwd)
-
-        user.save()
-
+    def setUp(self):
+        super().setUp()
+        self.asset = BackOfficeAssetFactory()
+        self.user = UserFactory()
+        self.user.is_superuser = False
+        self.user.is_staff = True
+        self.passwd = 'ralph'
+        self.user.set_password(self.passwd)
         # Grant all permissions to the user
         permissions = Permission.objects.exclude(
             codename__in=[
@@ -522,14 +519,28 @@ class BackOfficeAssetFormTest(TransitionTestCase, ClientMixin):
             ]
         ).all()
 
-        user.user_permissions.add(*permissions)
-        user.regions.add(asset.region)
+        self.user.user_permissions.add(*permissions)
+        self.user.regions.add(self.asset.region)
+        self.user.save()
+        self.login_as_user(user=self.user, password=self.passwd)
+        self.data = {
+            'hostname': self.asset.hostname,
+            'model': self.asset.model.pk,
+            'status': self.asset.status,
+            'warehouse': self.asset.warehouse.pk,
+            'region': self.asset.region.pk,
+            'barcode': self.asset.barcode,
+            'depreciation_rate': 0,
+            'custom_fields-customfieldvalue-content_type-object_id-INITIAL_FORMS': '0',  # noqa: E501
+            'custom_fields-customfieldvalue-content_type-object_id-MAX_NUM_FORMS': '1000',  # noqa: E501
+            'custom_fields-customfieldvalue-content_type-object_id-MIN_NUM_FORMS': '0',  # noqa: E501
+            'custom_fields-customfieldvalue-content_type-object_id-TOTAL_FORMS': '3',  # noqa: E501fhtml
+        }
 
-        self.assertTrue(self.login_as_user(user=user, password=passwd))
-
+    def test_bo_admin_form_wo_access_to_service_env_and_hostname(self):
         url = reverse(
             'admin:back_office_backofficeasset_change',
-            args=(asset.pk,)
+            args=(self.asset.pk,)
         )
         resp = self.client.get(url, follow=True)
 
@@ -557,3 +568,35 @@ class BackOfficeAssetFormTest(TransitionTestCase, ClientMixin):
                 'readonly'
             )
         )
+
+    def test_model_asset_type_back_office_shall_pass(self):
+        back_office_model = DataCenterAssetModelFactory(
+            type=ObjectModelType.from_name('back_office')
+        )
+        self.data.update({
+            'model': back_office_model.pk
+        })
+        response = self.client.post(
+            self.asset.get_absolute_url(), self.data
+        )
+        self.asset.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.asset.model, back_office_model)
+
+    def test_model_asset_type_data_center_asset_shall_not_pass(self):
+        back_office_model = DataCenterAssetModelFactory(
+            type=ObjectModelType.from_name('data_center')
+        )
+        self.data.update({
+            'model': back_office_model.pk
+        })
+        response = self.client.post(
+            self.asset.get_absolute_url(), self.data
+        )
+        self.asset.refresh_from_db()
+        self.assertIn(
+            'Model must be of',
+            response.content.decode('utf-8')
+        )
+        self.assertNotEqual(self.asset.model, back_office_model)
+        self.assertEqual(response.status_code, 200)
