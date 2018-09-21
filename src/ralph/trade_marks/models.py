@@ -28,6 +28,7 @@ class ProviderAdditionalMarking(
     TimeStampMixin,
     models.Model
 ):
+    # This class is needed for additional_marking checkbox field
     pass
 
 
