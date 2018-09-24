@@ -30,7 +30,8 @@ class ProviderAdditionalMarking(
 ):
     """
     This class is needed for additional_marking checkbox field.
-    Additional_marking field is for additional services from trade mark register site.
+    Additional_marking field is for additional services from
+    trade mark register site.
     """
     pass
 
