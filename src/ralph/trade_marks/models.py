@@ -107,16 +107,6 @@ class TradeMark(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
         through='TradeMarksLinkedDomains',
     )
 
-    @property
-    def country_code(self):
-        iso2 = Country.name_from_id(int(self.region.country)).upper()
-        return iso2_to_iso3(iso2)
-
-    def __str__(self):
-        return '{} ({})'.format(
-            self.name, self.valid_to
-        )
-
 
 class TradeMarksLinkedDomains(models.Model):
     trade_mark = models.ForeignKey(TradeMark)
