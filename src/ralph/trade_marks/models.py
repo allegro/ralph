@@ -5,7 +5,6 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
-from ralph.assets.country_utils import iso2_to_iso3
 from ralph.assets.models import AssetHolder, BaseObject
 from ralph.domains.models import Domain
 from ralph.lib.mixins.models import (
