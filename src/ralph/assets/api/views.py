@@ -23,7 +23,6 @@ class BusinessSegmentViewSet(RalphAPIViewSet):
 class ProfitCenterViewSet(RalphAPIViewSet):
     queryset = models.ProfitCenter.objects.all()
     serializer_class = serializers.ProfitCenterSerializer
-    prefetch_related = ['business_segment']
 
 
 class BudgetInfoViewSet(RalphAPIViewSet):
