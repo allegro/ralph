@@ -156,9 +156,9 @@ def update_service_handler(service_data):
         )
         if service_data.get('area'):
             _update_area(service, service_data['area']['name'])
-            if service_data['area'].get('profit_center'):
+            if service_data['area'].get('profitCenter'):
                 _update_profit_center(
-                    service, service_data['area']['profit_center']
+                    service, service_data['area']['profitCenter']
                 )
         update_envs = _update_service_environments(
             service=service,
