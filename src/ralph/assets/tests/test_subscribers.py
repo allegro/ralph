@@ -47,7 +47,7 @@ class ServiceSubscribersTestCase(TestCase):
             'environments': ['prod', 'dev'],
             'businessOwners': [{'username': 'business_user1'}],
             'technicalOwners': [{'username': 'technical_user2'}],
-            'area': {'name': 'new area', 'profit_center': 'test-PC'},
+            'area': {'name': 'new area', 'profitCenter': 'test-PC'},
         }
         response = self._make_request(
             data, settings.HERMES_SERVICE_TOPICS['CREATE']
@@ -89,7 +89,7 @@ class ServiceSubscribersTestCase(TestCase):
             'environments': ['dev'],
             'businessOwners': [{'username': 'business_user3'}],
             'technicalOwners': [{'username': 'technical_user3'}],
-            'area': {'name': 'new area', 'profit_center': 'new-PC'},
+            'area': {'name': 'new area', 'profitCenter': 'new-PC'},
         }
         response = self._make_request(
             data, settings.HERMES_SERVICE_TOPICS['UPDATE']
