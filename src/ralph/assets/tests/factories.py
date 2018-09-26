@@ -221,6 +221,7 @@ class ServiceFactory(DjangoModelFactory):
     name = factory.Iterator(['Backup systems', 'load_balancing', 'databases'])
     uid = factory.Sequence(lambda n: 'sc-{}'.format(n))
     business_segment = factory.SubFactory(BusinessSegmentFactory)
+    profit_center = factory.SubFactory(ProfitCenterFactory)
 
     class Meta:
         model = Service

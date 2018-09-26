@@ -47,7 +47,7 @@ class ServiceSubscribersTestCase(TestCase):
             'environments': ['prod', 'dev'],
             'businessOwners': [{'username': 'business_user1'}],
             'technicalOwners': [{'username': 'technical_user2'}],
-            'area': {'name': 'new area'},
+            'area': {'name': 'new area', 'profit_center': 'test-PC'},
         }
         response = self._make_request(
             data, settings.HERMES_SERVICE_TOPICS['CREATE']
@@ -57,6 +57,7 @@ class ServiceSubscribersTestCase(TestCase):
         self.assertTrue(service.active)
         self.assertEqual(service.name, 'TestName')
         self.assertEqual(service.business_segment.name, 'new area')
+        self.assertEqual(service.profit_center.name, 'test-PC')
         self.assertCountEqual(
             ['prod', 'dev'],
             [env.name for env in service.environments.all()]
@@ -71,7 +72,10 @@ class ServiceSubscribersTestCase(TestCase):
         )
 
     def test_update_service_when_service_exist(self):
-        service = ServiceFactory(business_segment__name='existing area')
+        service = ServiceFactory(
+            business_segment__name='existing area',
+            profit_center__name='existing PC',
+        )
         service.business_owners.add(UserFactory(username='business_user1'))
         service.technical_owners.add(UserFactory(username='technical_user2'))
         ServiceEnvironmentFactory(
@@ -85,7 +89,7 @@ class ServiceSubscribersTestCase(TestCase):
             'environments': ['dev'],
             'businessOwners': [{'username': 'business_user3'}],
             'technicalOwners': [{'username': 'technical_user3'}],
-            'area': {'name': 'new area'},
+            'area': {'name': 'new area', 'profit_center': 'new-PC'},
         }
         response = self._make_request(
             data, settings.HERMES_SERVICE_TOPICS['UPDATE']
@@ -94,6 +98,7 @@ class ServiceSubscribersTestCase(TestCase):
         service.refresh_from_db()
         self.assertEqual(service.name, 'New name')
         self.assertEqual(service.business_segment.name, 'new area')
+        self.assertEqual(service.profit_center.name, 'new-PC')
         self.assertCountEqual(
             ['dev'],
             [env.name for env in service.environments.all()]
