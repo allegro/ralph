@@ -55,6 +55,8 @@ from ralph.ssl_certificates.tests.factories import SSLCertificatesFactory
 from ralph.supports.models import Support
 from ralph.supports.tests.factories import SupportFactory
 from ralph.tests.models import PolymorphicTestModel
+from ralph.trade_marks.models import TradeMark
+from ralph.trade_marks.tests.factories import TradeMarkFactory
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -568,6 +570,7 @@ BASE_OBJECTS_FACTORIES = {
     VirtualServer: VirtualServerFactory,
     Cluster: ClusterFactory,
     ConfigurationClass: ConfigurationClassFactory,
+    TradeMark: TradeMarkFactory,
 }
 
 
