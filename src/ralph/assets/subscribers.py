@@ -9,6 +9,7 @@ from django.contrib.auth import get_user_model
 from ralph.assets.models.assets import (
     BusinessSegment,
     Environment,
+    ProfitCenter,
     Service,
     ServiceEnvironment
 )
@@ -93,6 +94,16 @@ def _update_area(service, area_name):
         )[0]
 
 
+def _update_profit_center(service, profit_center_name):
+    if (
+        not service.profit_center or
+        service.profit_center.name != profit_center_name
+    ):
+        service.profit_center = ProfitCenter.objects.get_or_create(
+            name=profit_center_name
+        )[0]
+
+
 @pyhermes.subscriber(topic=settings.HERMES_SERVICE_TOPICS['CREATE'])
 @pyhermes.subscriber(topic=settings.HERMES_SERVICE_TOPICS['UPDATE'])
 @pyhermes.subscriber(topic=settings.HERMES_SERVICE_TOPICS['REFRESH'])
@@ -145,6 +156,10 @@ def update_service_handler(service_data):
         )
         if service_data.get('area'):
             _update_area(service, service_data['area']['name'])
+            if service_data['area'].get('profit_center'):
+                _update_profit_center(
+                    service, service_data['area']['profit_center']
+                )
         update_envs = _update_service_environments(
             service=service,
             environments=service_data['environments']
