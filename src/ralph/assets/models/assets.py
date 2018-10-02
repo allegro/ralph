@@ -47,7 +47,6 @@ class BusinessSegment(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
 
 
 class ProfitCenter(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
-    business_segment = models.ForeignKey(BusinessSegment)
     description = models.TextField(blank=True)
 
 
@@ -70,6 +69,7 @@ class Service(
     active = models.BooleanField(default=True)
     uid = NullableCharField(max_length=40, unique=True, blank=True, null=True)
     profit_center = models.ForeignKey(ProfitCenter, null=True, blank=True)
+    business_segment = models.ForeignKey(BusinessSegment, null=True, blank=True)
     cost_center = models.CharField(max_length=100, blank=True)
     environments = models.ManyToManyField(
         'Environment', through='ServiceEnvironment'

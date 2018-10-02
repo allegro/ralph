@@ -18,6 +18,7 @@ from ralph.accounts.tests.factories import (
 )
 from ralph.assets.tests.factories import (
     BackOfficeAssetModelFactory,
+    BusinessSegmentFactory,
     CategoryFactory,
     DataCenterAssetModelFactory,
     DataCenterCategoryFactory,
@@ -171,6 +172,7 @@ class Command(BaseCommand):
         )
         for i in range(3):
             ProfitCenterFactory()
+            BusinessSegmentFactory()
 
         for status_id, name in back_office_status:
             for i in range(int(per_page)):

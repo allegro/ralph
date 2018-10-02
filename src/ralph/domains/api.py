@@ -3,11 +3,24 @@ from ralph.accounts.api import RalphUserSimpleSerializer
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.assets.api.serializers import BaseObjectSerializer
 from ralph.domains.models import DNSProvider, Domain, DomainCategory
+from ralph.domains.models.domains import DomainProviderAdditionalServices
+
+
+class DomainProviderAdditionalServicesSerializer(RalphAPISerializer):
+
+    class Meta:
+        model = DomainProviderAdditionalServices
+
+
+class DomainProviderAdditionalServicesViewSet(RalphAPIViewSet):
+    queryset = DomainProviderAdditionalServices.objects.all()
+    serializer_class = DomainProviderAdditionalServicesSerializer
 
 
 class DomainSerializer(BaseObjectSerializer):
     business_owner = RalphUserSimpleSerializer()
     technical_owner = RalphUserSimpleSerializer()
+    additional_services = DomainProviderAdditionalServicesSerializer(many=True)
 
     class Meta(BaseObjectSerializer.Meta):
         model = Domain
@@ -45,6 +58,10 @@ class DomainCategoryViewSet(RalphAPIViewSet):
 
 
 router.register(r'domains', DomainViewSet)
+router.register(
+    r'domain-provider-additional-services',
+    DomainProviderAdditionalServicesViewSet
+)
 router.register(r'dns-provider', DNSProviderViewSet)
 router.register(r'domain-category', DomainCategoryViewSet)
 urlpatterns = []
