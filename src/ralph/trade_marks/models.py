@@ -103,11 +103,11 @@ class TradeMark(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
     domains = models.ManyToManyField(
         Domain,
         related_name='+',
-        through='TradeMarksLinkedDomains',
+        through='TradeMarksLinkedDomain',
     )
 
 
-class TradeMarksLinkedDomains(models.Model):
+class TradeMarksLinkedDomain(models.Model):
     trade_mark = models.ForeignKey(TradeMark)
     domain = models.ForeignKey(
         Domain,
