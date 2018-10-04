@@ -200,10 +200,28 @@ class EnvironmentFactory(DjangoModelFactory):
         django_get_or_create = ['name']
 
 
+class BusinessSegmentFactory(DjangoModelFactory):
+    name = factory.Iterator(['IT', 'Ads', 'Research'])
+
+    class Meta:
+        model = BusinessSegment
+        django_get_or_create = ['name']
+
+
+class ProfitCenterFactory(DjangoModelFactory):
+    name = factory.Iterator(['PC1', 'PC2', 'PC3'])
+
+    class Meta:
+        model = ProfitCenter
+        django_get_or_create = ['name']
+
+
 class ServiceFactory(DjangoModelFactory):
 
     name = factory.Iterator(['Backup systems', 'load_balancing', 'databases'])
     uid = factory.Sequence(lambda n: 'sc-{}'.format(n))
+    business_segment = factory.SubFactory(BusinessSegmentFactory)
+    profit_center = factory.SubFactory(ProfitCenterFactory)
 
     class Meta:
         model = Service
@@ -218,23 +236,6 @@ class ServiceEnvironmentFactory(DjangoModelFactory):
     class Meta:
         model = ServiceEnvironment
         django_get_or_create = ['service', 'environment']
-
-
-class BusinessSegmentFactory(DjangoModelFactory):
-    name = factory.Iterator(['IT', 'Ads', 'Research'])
-
-    class Meta:
-        model = BusinessSegment
-        django_get_or_create = ['name']
-
-
-class ProfitCenterFactory(DjangoModelFactory):
-    name = factory.Iterator(['PC1', 'PC2', 'PC3'])
-    business_segment = factory.SubFactory(BusinessSegmentFactory)
-
-    class Meta:
-        model = ProfitCenter
-        django_get_or_create = ['name']
 
 
 class EthernetFactory(DjangoModelFactory):

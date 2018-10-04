@@ -14,6 +14,7 @@ upload-package:
 install-js:
 	npm install
 	bower install
+	./node_modules/.bin/gulp
 
 js-hint:
 	find src/ralph|grep "\.js$$"|grep -v vendor|xargs ./node_modules/.bin/jshint;

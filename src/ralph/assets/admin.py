@@ -182,25 +182,31 @@ class ServiceBaseObjects(RalphDetailView):
         )
 
 
+@register(ManufacturerKind)
+class ManufacturerKindAdmin(RalphAdmin):
+
+    search_fields = ['name']
+
+
 @register(Service)
 class ServiceAdmin(RalphAdmin):
+    list_display = ['name', 'uid', 'active', 'business_segment']
+    search_fields = ['name', 'uid']
+    list_filter = [
+        'active', 'business_segment', 'profit_center', 'support_team'
+    ]
+    list_select_related = ['business_segment']
+
     fields = (
-        'name', 'uid', 'active', 'profit_center', 'cost_center',
-        'technical_owners', 'business_owners', 'support_team',
+        'name', 'uid', 'active', 'profit_center', 'business_segment',
+        'cost_center', 'technical_owners', 'business_owners', 'support_team',
     )
     inlines = [ServiceEnvironmentInline]
-    search_fields = ['name', 'uid']
     raw_id_fields = [
         'profit_center', 'support_team', 'business_owners', 'technical_owners'
     ]
     resource_class = resources.ServiceResource
     change_views = [ServiceBaseObjects]
-
-
-@register(ManufacturerKind)
-class ManufacturerKindAdmin(RalphAdmin):
-
-    search_fields = ['name']
 
 
 @register(Manufacturer)
@@ -228,6 +234,15 @@ class EnvironmentAdmin(RalphAdmin):
 class BusinessSegmentAdmin(RalphAdmin):
 
     search_fields = ['name']
+    list_display = ['name', 'services_count']
+
+    def get_queryset(self, request):
+        return BusinessSegment.objects.annotate(services_count=Count('service'))
+
+    def services_count(self, instance):
+        return instance.services_count
+    services_count.short_description = _('Services count')
+    services_count.admin_order_field = 'services_count'
 
 
 @register(ProfitCenter)
