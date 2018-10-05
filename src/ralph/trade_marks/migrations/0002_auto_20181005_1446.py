@@ -11,5 +11,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RenameModel('TradeMarksLinkedDomains','TradeMarksLinkedDomain')
+        migrations.AlterModelOptions(
+            name='trademarkslinkeddomains',
+            options={'verbose_name': 'Trade Marks Linked Domain', 'verbose_name_plural': 'Trade Marks Linked Domains'},
+        ),
     ]
