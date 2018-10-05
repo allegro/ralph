@@ -10,7 +10,7 @@ from ralph.trade_marks.forms import IntellectualPropertyForm
 from ralph.trade_marks.models import (
     ProviderAdditionalMarking,
     TradeMark,
-    TradeMarksLinkedDomain
+    TradeMarksLinkedDomains
 )
 
 
@@ -21,7 +21,7 @@ class TradeMarksLinkedView(RalphDetailViewAdmin):
     url_name = 'assigned-to-domain'
 
     class TradeMarksLinkedInline(RalphTabularInline):
-        model = TradeMarksLinkedDomain
+        model = TradeMarksLinkedDomains
         raw_id_fields = ('domain', admin.RelatedFieldListFilter)
         extra = 1
 

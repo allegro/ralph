@@ -11,7 +11,7 @@ from ralph.domains.tests.factories import DomainFactory
 from ralph.trade_marks.models import (
     ProviderAdditionalMarking,
     TradeMark,
-    TradeMarksLinkedDomain
+    TradeMarksLinkedDomains
 )
 
 
@@ -37,7 +37,7 @@ class TradeMarksLinkedDomainsFactory(DjangoModelFactory):
     domain = factory.SubFactory(DomainFactory)
 
     class Meta:
-        model = TradeMarksLinkedDomain
+        model = TradeMarksLinkedDomains
 
 class ProviderAdditionalMarkingFactory(DjangoModelFactory):
     name = factory.Iterator(['Masking', 'Backside', 'Acquisition'])
