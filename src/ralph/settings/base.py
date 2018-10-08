@@ -136,7 +136,7 @@ if DATABASE_SSL_CA:
 
 DATABASES = {
     'default': {
-        'ENGINE': 'transaction_hooks.backends.mysql',
+        'ENGINE': os.environ.get('DATABASE_ENGINE', 'transaction_hooks.backends.mysql'),  # noqa
         'NAME': os.environ.get('DATABASE_NAME', 'ralph_ng'),
         'USER': os.environ.get('DATABASE_USER', 'ralph_ng'),
         'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'ralph_ng') or None,
