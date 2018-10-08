@@ -121,7 +121,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ralph.wsgi.application'
 
-MYSQL_OPTIONS = {
+DEFAULT_DATABASE_OPTIONS = {
     'sql_mode': 'TRADITIONAL',
     'charset': 'utf8',
     'init_command': """
@@ -130,9 +130,15 @@ MYSQL_OPTIONS = {
     SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
     """
 }
+DATABASE_OPTIONS_FROM_ENV = os.environ.get('DATABASE_OPTIONS', None)
+DATABASE_OPTIONS = (
+    json.loads(DATABASE_OPTIONS_FROM_ENV)
+    if DATABASE_OPTIONS_FROM_ENV else DEFAULT_DATABASE_OPTIONS
+)
+
 DATABASE_SSL_CA = os.environ.get('DATABASE_SSL_CA', None)
 if DATABASE_SSL_CA:
-    MYSQL_OPTIONS.update({'ssl': {'ca': DATABASE_SSL_CA}})
+    DATABASE_OPTIONS.update({'ssl': {'ca': DATABASE_SSL_CA}})
 
 DATABASES = {
     'default': {
@@ -142,7 +148,7 @@ DATABASES = {
         'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'ralph_ng') or None,
         'HOST': os.environ.get('DATABASE_HOST', '127.0.0.1'),
         'PORT': os.environ.get('DATABASE_PORT', 3306),
-        'OPTIONS': MYSQL_OPTIONS,
+        'OPTIONS': DATABASE_OPTIONS,
         'ATOMIC_REQUESTS': True,
         'TEST': {
             'NAME': 'test_ralph_ng',
