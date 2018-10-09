@@ -19,6 +19,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
+from ralph.lib.hooks import get_hook
 from ralph.assets.country_utils import iso2_to_iso3
 from ralph.assets.models.assets import (
     Asset,
@@ -606,10 +607,11 @@ class BackOfficeAsset(Regionalizable, Asset):
     def send_attachments_to_user(cls, requester, transition_id, **kwargs):
         if kwargs.get('attachments'):
             transition = Transition.objects.get(pk=transition_id)
+            context_func = get_hook(__name__, 'transition_email_context')
+            context = context_func(transition)
             email = EmailMessage(
-                subject='Documents for {}'.format(transition.name),
-                body='Please see documents provided in attachments '
-                     'for "{}".'.format(transition.name),
+                subject=context.subject,
+                body=context.body,
                 from_email=settings.EMAIL_FROM,
                 to=[requester.email]
             )

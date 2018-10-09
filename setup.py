@@ -32,6 +32,9 @@ setup(
             'test_ralph = ralph.__main__:test',
             'validate_ralph = ralph.cross_validator.__main__:main',
         ],
+        'ralph.back_office.models.transition_email_context': [
+            'default = ralph.back_office.hooks:get_email_context_for_transition'  # noqa
+        ]
     },
     classifiers=[
         'Development Status :: 4 - Beta',

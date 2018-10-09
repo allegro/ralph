@@ -601,3 +601,9 @@ ALLOW_PUSH_GRAPHS_DATA_TO_STATSD = False
 STATSD_GRAPHS_PREFIX = 'ralph.graphs'
 
 TRANSITION_TEMPLATES = None
+
+ENTRY_POINTS_CONFIGURATION = {
+    'ralph.back_office.models.transition_email_context': os.environ.get(
+        'ENTRY_POINTS_BACK_OFFICE_TRANSITION_EMAIL_CONTEXT', 'default'
+    )
+}
