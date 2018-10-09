@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-import pkg_resources
 import textwrap
 
+import pkg_resources
 from django.conf import settings
 from django.core.management.base import BaseCommand
 

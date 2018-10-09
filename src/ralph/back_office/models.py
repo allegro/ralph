@@ -19,7 +19,6 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
-from ralph.lib.hooks import get_hook
 from ralph.assets.country_utils import iso2_to_iso3
 from ralph.assets.models.assets import (
     Asset,
@@ -30,6 +29,7 @@ from ralph.assets.models.assets import (
 from ralph.assets.utils import move_parents_models
 from ralph.attachments.helpers import add_attachment_from_disk
 from ralph.lib.external_services import ExternalService, obj_to_dict
+from ralph.lib.hooks import get_hook
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
