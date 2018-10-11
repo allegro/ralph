@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 import textwrap
-import sys
 
 import pkg_resources
 from django.conf import settings
 from django.core.management.base import BaseCommand
-
-from ralph.lib.hooks import hook_name_to_env_name
 
 
 class Command(BaseCommand):
