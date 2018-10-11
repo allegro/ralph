@@ -607,8 +607,10 @@ class BackOfficeAsset(Regionalizable, Asset):
     def send_attachments_to_user(cls, requester, transition_id, **kwargs):
         if kwargs.get('attachments'):
             transition = Transition.objects.get(pk=transition_id)
-            context_func = get_hook(__name__, 'transition_email_context')
-            context = context_func(transition)
+            context_func = get_hook(
+                'back_office.transition_action.email_context'
+            )
+            context = context_func(transition_name=transition.name)
             email = EmailMessage(
                 subject=context.subject,
                 body=context.body,

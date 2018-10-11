@@ -5,6 +5,8 @@ from collections import ChainMap
 
 from django.contrib.messages import constants as messages
 
+from ralph.settings.hooks import HOOKS_CONFIGURATION
+
 
 def bool_from_env(var, default: bool=False) -> bool:
     """Helper for converting env string into boolean.
@@ -75,6 +77,7 @@ INSTALLED_APPS = (
     'ralph.lib.transitions',
     'ralph.lib.permissions',
     'ralph.lib.custom_fields',
+    'ralph.lib.hooks',
     'ralph.notifications',
     'ralph.ssl_certificates',
     'rest_framework',
@@ -601,9 +604,3 @@ ALLOW_PUSH_GRAPHS_DATA_TO_STATSD = False
 STATSD_GRAPHS_PREFIX = 'ralph.graphs'
 
 TRANSITION_TEMPLATES = None
-
-ENTRY_POINTS_CONFIGURATION = {
-    'ralph.back_office.models.transition_email_context': os.environ.get(
-        'ENTRY_POINTS_BACK_OFFICE_TRANSITION_EMAIL_CONTEXT', 'default'
-    )
-}
