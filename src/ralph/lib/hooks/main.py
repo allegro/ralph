@@ -19,7 +19,7 @@ def get_hook(name: str, variant: Optional[str]=None) -> Callable[..., Any]:
     loaded_func = None
 
     if variant is None:
-        variant = settings.ENTRY_POINTS_CONFIGURATION[name]
+        variant = settings.HOOKS_CONFIGURATION[name]
 
     for entry_point in pkg_resources.iter_entry_points(name):
         if variant == entry_point.name:
