@@ -5,7 +5,7 @@ from collections import ChainMap
 
 from django.contrib.messages import constants as messages
 
-from ralph.settings.hooks import HOOKS_CONFIGURATION
+from ralph.settings.hooks import HOOKS_CONFIGURATION  # noqa: F401
 
 
 def bool_from_env(var, default: bool=False) -> bool:
