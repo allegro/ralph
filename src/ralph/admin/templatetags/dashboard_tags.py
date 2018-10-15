@@ -14,7 +14,9 @@ from ralph.accounts.helpers import (
     get_acceptance_url,
     get_assets_to_accept,
     get_assets_to_accept_loan,
-    get_loan_acceptance_url
+    get_assets_to_accept_return,
+    get_loan_acceptance_url,
+    get_return_acceptance_url
 )
 from ralph.assets.models import BaseObject, Service, ServiceEnvironment
 from ralph.back_office.models import BackOfficeAsset
@@ -61,6 +63,18 @@ def get_user_equipment_to_accept_loan_tile_data(user):
         'label': _('For loan'),
         'count': assets_to_accept_count,
         'url': get_loan_acceptance_url(user),
+    }
+
+
+def get_user_equipment_to_accept_return_tile_data(user):
+    assets_to_accept_count = get_assets_to_accept_return(user).count()
+    if not assets_to_accept_count:
+        return None
+    return {
+        'class': 'equipment-to-accept-return',
+        'label': _('For return'),
+        'count': assets_to_accept_count,
+        'url': get_return_acceptance_url(user),
     }
 
 
@@ -168,6 +182,9 @@ def ralph_summary(context):
     accept_for_loan_tile_data = get_user_equipment_to_accept_loan_tile_data(user=user)  # noqa
     if accept_for_loan_tile_data:
         results.append(accept_for_loan_tile_data)
+    accept_for_return_tile_data = get_user_equipment_to_accept_return_tile_data(user=user)  # noqa
+    if accept_for_return_tile_data:
+        results.append(accept_for_return_tile_data)
     return {'results': results}
 
 

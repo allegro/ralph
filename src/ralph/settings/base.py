@@ -419,6 +419,13 @@ ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG = {
     'BACK_OFFICE_ACCEPT_LOAN_STATUS': os.environ.get(
         'LOAN_ASSETS_FOR_CURRENT_USER_BACK_OFFICE_ACCEPT_STATUS', 13
     ),
+    'RETURN_TRANSITION_ID': os.environ.get(
+        'RETURN_ASSETS_FOR_CURRENT_USER_TRANSITION_ID', None
+    ),
+    # waiting_for_return by default
+    'BACK_OFFICE_ACCEPT_RETURN_STATUS': os.environ.get(
+        'RETURN_ASSESTS_FOR_CURRENT_USER_BACK_OFFICE_ACCEPT_STATUS', 14
+    ),
 }
 RELEASE_REPORT_CONFIG = {
     # report with name 'release' is by default
