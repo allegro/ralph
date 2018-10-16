@@ -74,15 +74,6 @@ class RalphUserChangeForm(
         if field:
             self._simplify_permissions(field.queryset)
 
-    def clean_password(self):
-        """
-        Override django.contrib.auth.forms.UserChangeForm.
-
-        We're not showing password field so we need to skip this method
-        to prevent KeyError.
-        """
-        pass
-
 
 class AssetList(Table):
 
@@ -281,7 +272,7 @@ class RalphUserAdmin(UserAdmin, RalphAdmin):
     readonly_fields = ('api_token_key',)
     fieldsets = (
         (None, {
-            'fields': ('username',)
+            'fields': ('username', 'password', 'api_token_key')
         }),
         (_('Personal info'), {
             'fields': ('first_name', 'last_name', 'email')
