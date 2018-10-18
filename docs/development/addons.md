@@ -147,9 +147,9 @@ setup(
 
 
 ### Available hooks
-| Name                                          | Description                                         |
-| --------------------------------------------- | --------------------------------------------------- |
-| `back_office.transition_action.email_context` | returns subject and body based on transition's name |
+| Name                                          | Description                                         | Parameters                | Return value                                                  |
+| --------------------------------------------- | --------------------------------------------------- | ------------------------- | ------------------------------------------------------------- |
+| `back_office.transition_action.email_context` | returns subject and body based on transition's name | `transition_name: str`    | `EmailContext` (`namedtuple`) with fields ``subject`` ``body``|
 
 ### Configuration
 To change hook please define environment variable named like hook's name but it's upper case and dots are replaced by `_`, for instance, hook with name `back_office.transition_action.email_context` you can configure by export `BACK_OFFICE_TRANSITION_ACTION_EMAIL_CONTEXT` to your environment where value is one of entries point name. See example below.
