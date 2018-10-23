@@ -46,11 +46,11 @@ function dismissAddRelatedObjectPopup(win, newId, newRepr) {
                 elem.value = newId;
             }
         } else if (elemName == 'UL') {
-            // TODO: jezeli brak elementow to nic nie rob
+            // If you don't have element, pass
             var item = elem.querySelector("li")[0].cloneNode(true);
-            var input = item.querySelector("input")
-            input.setAttribute("value", newId)
-            var label = item.querySelector("label")
+            var input = item.querySelector("input");
+            input.setAttribute("value", newId);
+            var label = item.querySelector("label");
             // <input name="abc" /> foo -> <input name="abc" /> bar
             label.innerHTML = label.innerHTML.replace(label.textContent, " " + newRepr);
             elem.appendChild(item);
