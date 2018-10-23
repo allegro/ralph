@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import urllib
+
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
@@ -73,5 +75,7 @@ class AutocompleteSplitWordTest(TestCase):
         ) + '?q=foobar'
         resp = self.client.get(url)
 
-        self.assertEqual(302, resp.status_code)
-        self.assertIn('login/?next=', resp.url)
+        target_params = urllib.parse.urlencode({'next': url}, safe='/')
+        expected_target = reverse('admin:login') + '?{}'.format(target_params)
+
+        self.assertRedirects(resp, expected_target)
