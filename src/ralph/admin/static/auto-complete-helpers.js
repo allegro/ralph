@@ -31,10 +31,10 @@ function dismissAddRelatedObjectPopup(win, newId, newRepr) {
     var name = windowname_to_id(win.name);
     var elem = document.getElementById(name);
     var o;
-    if (elem.nodeName.toUpperCase() === 'AUTO-COMPLETE') {
+    var elemName = elem.nodeName.toUpperCase();
+    if (elemName === 'AUTO-COMPLETE') {
         elem.updateById(newId);
     } else if (elem) {
-        var elemName = elem.nodeName.toUpperCase();
         if (elemName == 'SELECT') {
             o = new Option(newRepr, newId);
             elem.options[elem.options.length] = o;
@@ -45,6 +45,15 @@ function dismissAddRelatedObjectPopup(win, newId, newRepr) {
             } else {
                 elem.value = newId;
             }
+        } else if (elemName == 'UL') {
+            // TODO: jezeli brak elementow to nic nie rob
+            var item = elem.querySelector("li")[0].cloneNode(true);
+            var input = item.querySelector("input")
+            input.setAttribute("value", newId)
+            var label = item.querySelector("label")
+            // <input name="abc" /> foo -> <input name="abc" /> bar
+            label.innerHTML = label.innerHTML.replace(label.textContent, " " + newRepr);
+            elem.appendChild(item);
         }
         // Trigger a change event to update related links if required.
         django.jQuery(elem).trigger('change');
