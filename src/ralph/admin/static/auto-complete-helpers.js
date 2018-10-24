@@ -47,7 +47,7 @@ function dismissAddRelatedObjectPopup(win, newId, newRepr) {
             }
         } else if (elemName == 'UL') {
             // If you don't have element, pass
-            var item = elem.querySelector("li")[0].cloneNode(true);
+            var item = elem.querySelector("li").cloneNode(true);
             var input = item.querySelector("input");
             input.setAttribute("value", newId);
             var label = item.querySelector("label");
