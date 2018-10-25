@@ -3,6 +3,8 @@ import unittest
 from datetime import date
 
 from django.conf import settings
+from django.contrib.auth.hashers import check_password
+from django.contrib.auth.models import Permission
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from rest_framework import status
@@ -228,3 +230,39 @@ class StockTakingTests(TestCase, ClientMixin):
             }, follow=True
         )
         self.assertEquals(response.status_code, 403)
+
+
+class RalphUserAdminTests(TestCase, ClientMixin):
+    def setUp(self):
+        super().setUp()
+        self.admin = factories.UserFactory(is_superuser=True, is_staff=True)
+        self.user = factories.UserFactory(is_staff=True)
+        self.login_as_user(self.user)
+
+    def test_change_permission_is_required_to_change_user_password(self):
+        def make_request():
+            url = reverse(
+                'admin:auth_user_password_change', args=(self.admin.pk,)
+            )
+            return self.client.post(
+                url,
+                {
+                    'password1': new_password,
+                    'password2': new_password
+                }
+            )
+
+        new_password = 'password123'
+        perm = Permission.objects.get(codename='view_ralphuser')
+        self.user.user_permissions.add(perm)
+        response = make_request()
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        perm = Permission.objects.get(codename='change_ralphuser')
+        self.user.user_permissions.add(perm)
+        response = make_request()
+        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
+
+        # Check if password is actually changed
+        self.admin.refresh_from_db()
+        check_password(new_password, self.admin.password)

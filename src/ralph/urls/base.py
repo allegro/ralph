@@ -51,6 +51,7 @@ urlpatterns = [
     url(r'^', include('ralph.admin.autocomplete_urls')),
     url(r'^dhcp/', include('ralph.dhcp.urls')),
     url(r'^deployment/', include('ralph.deployment.urls')),
+    url(r'^virtual/', include('ralph.virtual.urls')),
     url(r'^', include('ralph.lib.transitions.urls')),
     url(r'^i18n/', include('django.conf.urls.i18n')),
     url(

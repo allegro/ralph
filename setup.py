@@ -34,7 +34,10 @@ setup(
         ],
         'back_office.transition_action.email_context': [
             'default = ralph.back_office.helpers:get_email_context_for_transition'  # noqa
-        ]
+        ],
+        'ralph.cloud_sync_processors': [
+            'noop=ralph.virtual.processors.noop:endpoint',
+        ],
     },
     classifiers=[
         'Development Status :: 4 - Beta',

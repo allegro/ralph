@@ -83,6 +83,7 @@ class BackOfficeAssetStatus(Choices):
     reserved = _("reserved")
     sale = _("sale")
     loan_in_progress = _("loan in progress")
+    return_in_progress = _("return in progress")
 
 
 class OfficeInfrastructure(

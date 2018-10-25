@@ -12,6 +12,12 @@
     100% { background-color: $mdc-blue-grey-500; }
 }
 
+@keyframes pulse-return {
+    0% { background-color: $mdc-yellow-700; }
+    50% { background-color: $mdc-yellow-900; }
+    100% { background-color: $mdc-yellow-700; }
+}
+
 .dashboard, .dashboard_graphs {
     h1, h2 {
         display: block;
@@ -165,6 +171,11 @@
                 background: $mdc-blue-grey-500;
                 .icon:before {content: $fa-var-cubes;}
                 animation: pulse-loan 2s infinite;
+            }
+            &.equipment-to-accept-return .wrapper {
+                background-color: $mdc-yellow-900;
+                .icon:before {content: $fa-var-refresh;}
+                animation: pulse-return 2s infinite;
             }
             .wrapper {
                 display: block;

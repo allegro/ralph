@@ -14,6 +14,7 @@ class RalphAppConfig(AppConfig):
         when app is ready.
         """
         super().ready()
+
         package = self.module.__name__
         for module in self.get_load_modules_when_ready():
             try:
