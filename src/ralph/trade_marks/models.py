@@ -116,6 +116,8 @@ class TradeMarksLinkedDomains(models.Model):
 
     class Meta:
         unique_together = ('trade_mark', 'domain')
+        verbose_name = _('Trade Marks Linked Domain')
+        verbose_name_plural = _('Trade Marks Linked Domains')
 
     def __str__(self):
         return '{} assigned to {}'.format(
