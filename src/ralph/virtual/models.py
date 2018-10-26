@@ -10,6 +10,7 @@ from django.dispatch import receiver
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from django_cryptography.fields import encrypt
+from django_extensions.db.fields.json import JSONField
 
 from ralph.admin.helpers import get_value_by_relation_path
 from ralph.assets.models.base import BaseObject
@@ -46,7 +47,7 @@ class CloudProvider(AdminAbsoluteUrlMixin, NamedMixin):
     )
     cloud_sync_driver = models.CharField(max_length=128, null=True, blank=True)
     client_config = encrypt(
-        models.TextField(
+        JSONField(
             blank=True,
             null=True,
             verbose_name='client configuration',

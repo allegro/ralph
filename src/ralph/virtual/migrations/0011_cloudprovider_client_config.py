@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
+import django_extensions.db.fields.json
 import django_cryptography.fields
 
 
@@ -15,6 +16,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='cloudprovider',
             name='client_config',
-            field=django_cryptography.fields.encrypt(models.TextField(blank=True, verbose_name='client configuration', null=True)),
+            field=django_cryptography.fields.encrypt(django_extensions.db.fields.json.JSONField(null=True, default=dict, blank=True, verbose_name='client configuration')),
         ),
     ]
