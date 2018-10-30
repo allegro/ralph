@@ -1,12 +1,13 @@
-# Ralph-NG
+# Ralph
 
-Ralph is full-featured Asset Management, DCIM and CMDB system for data center and back office.
+Ralph is full-featured Asset Management, DCIM and CMDB system for data centers and back offices.
 
 Features:
 
 * keep track of assets purchases and their life cycle
-* generate flexible and accurate cost reports
-* integrate with change management process using JIRA integration
+* flexible flow system for assets life cycle
+* data center and back office support
+* dc visualization built-in
 
 It is an Open Source project provided on Apache v2.0 License.
 
@@ -21,6 +22,16 @@ http://ralph-demo.allegro.tech/
 
 * login: ralph
 * password: ralph
+
+# Screenshots 
+
+![img](https://user-images.githubusercontent.com/552398/47593757-d8b76280-d978-11e8-87c6-d4ba98d26f2a.png)
+
+![img](https://user-images.githubusercontent.com/552398/47593858-49f71580-d979-11e8-891f-d992a8fce6a8.png)
+
+![img](https://user-images.githubusercontent.com/552398/47593924-8a569380-d979-11e8-8bf1-8980a499a3b3.png)
+
+
 
 ## Installation
 
@@ -78,9 +89,3 @@ Visit our documentation on [readthedocs.org](http://ralph-ng.readthedocs.org)
 ## Getting help
 
 Ralph community will answer your questions on a chat: [![Gitter](https://img.shields.io/gitter/room/gitterHQ/gitter.svg)](https://gitter.im/allegro/ralph?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-## Scrum Board
-
-[![Stories in Ready](https://badge.waffle.io/allegro/ralph.png?label=ready&title=Ready)](http://waffle.io/allegro/ralph)
-
-[![Throughput Graph](https://graphs.waffle.io/allegro/ralph/throughput.svg)](https://waffle.io/allegro/ralph/metrics)
