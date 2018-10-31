@@ -22,7 +22,6 @@ class TradeMarksLinkedView(RalphDetailViewAdmin):
 
     class TradeMarksLinkedInline(RalphTabularInline):
         model = TradeMarksLinkedDomains
-        verbose_name_plural = "TradeMarksLinkedDomains"
         raw_id_fields = ('domain', admin.RelatedFieldListFilter)
         extra = 1
 
