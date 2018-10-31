@@ -37,20 +37,6 @@ class SSLCertificate(AdminAbsoluteUrlMixin, BaseObject):
         choices=CertificateType(),
         default=CertificateType.ov.id,
     )
-    business_owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        related_name='certificates_business_owner',
-        blank=True,
-        null=True,
-        help_text=_('Business contact person for a certificate')
-    )
-    technical_owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        related_name='certificates_technical_owner',
-        blank=True,
-        null=True,
-        help_text=_('Technical contact person for a certificate')
-    )
     issued_by = models.ForeignKey(
         Manufacturer,
         on_delete=models.PROTECT,
