@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import urllib
+
+from django.core.urlresolvers import reverse
 from django.test import TestCase
 
 from ralph.accounts.models import RalphUser, Region
@@ -60,3 +63,19 @@ class AutocompleteSplitWordTest(TestCase):
             ['name']
         )
         self.assertEqual(len(result), 0)
+
+    def test_autocomplete_endpoint_required_auth(self):
+        url = reverse(
+            'autocomplete-list',
+            kwargs={
+                'app': 'assets',
+                'field': 'service_env',
+                'model': 'BaseObject'
+            }
+        ) + '?q=foobar'
+        resp = self.client.get(url)
+
+        target_params = urllib.parse.urlencode({'next': url}, safe='/')
+        expected_target = reverse('admin:login') + '?{}'.format(target_params)
+
+        self.assertRedirects(resp, expected_target)

@@ -40,6 +40,11 @@ class CloudProvider(AdminAbsoluteUrlMixin, NamedMixin):
         verbose_name = _('Cloud provider')
         verbose_name_plural = _('Cloud providers')
 
+    cloud_sync_enabled = models.BooleanField(
+        null=False, blank=False, default=False
+    )
+    cloud_sync_driver = models.CharField(max_length=128, null=True, blank=True)
+
 
 class CloudFlavor(AdminAbsoluteUrlMixin, BaseObject):
     name = models.CharField(_('name'), max_length=255)
