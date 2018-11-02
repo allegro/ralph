@@ -489,4 +489,5 @@ class CloudProjectAdmin(CustomFieldValueAdminMixin, RalphAdmin):
 
 @register(CloudProvider)
 class CloudProviderAdmin(RalphAdmin):
-    pass
+    list_display = ['name', 'cloud_sync_enabled', 'cloud_sync_driver']
+    list_filter = ['name', 'cloud_sync_enabled', 'cloud_sync_driver']

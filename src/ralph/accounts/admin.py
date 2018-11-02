@@ -3,8 +3,10 @@ from string import Formatter
 from urllib.parse import quote
 
 from django.conf import settings
+from django.contrib.admin.utils import unquote
 from django.contrib.auth.admin import GroupAdmin, UserAdmin
 from django.contrib.auth.models import Group
+from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.forms.models import model_to_dict
@@ -73,6 +75,15 @@ class RalphUserChangeForm(
         field = self.fields.get('user_permissions', None)
         if field:
             self._simplify_permissions(field.queryset)
+
+    def clean_password(self):
+        """
+        Override django.contrib.auth.forms.UserChangeForm.
+
+        We're not showing password field so we need to skip this method
+        to prevent KeyError.
+        """
+        pass
 
 
 class AssetList(Table):
@@ -272,7 +283,7 @@ class RalphUserAdmin(UserAdmin, RalphAdmin):
     readonly_fields = ('api_token_key',)
     fieldsets = (
         (None, {
-            'fields': ('username', 'password', 'api_token_key')
+            'fields': ('username',)
         }),
         (_('Personal info'), {
             'fields': ('first_name', 'last_name', 'email')
@@ -303,6 +314,18 @@ class RalphUserAdmin(UserAdmin, RalphAdmin):
         return super().get_queryset(*args, **kwargs).select_related(
             'auth_token'
         )
+
+    def user_change_password(self, request, id, form_url=''):
+        # This is backport of django #29686 ticket
+        # https://code.djangoproject.com/ticket/29686
+        # Django does not pass user object to has_change_permission method
+        # And this causes to check only has_view_permission
+        user = self.get_object(request, unquote(id))
+
+        if not self.has_change_permission(request, obj=user):
+            raise PermissionDenied
+
+        return super().user_change_password(request, id, form_url)
 
 
 @register(Group)

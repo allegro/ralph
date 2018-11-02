@@ -86,10 +86,14 @@ FACTORY_MAP = {
     'ralph.supports.models.BaseObjectsSupport': 'ralph.supports.tests.factories.BaseObjectsSupportFactory',  # noqa
     'ralph.supports.models.Support': 'ralph.supports.tests.factories.SupportFactory',  # noqa
     'ralph.supports.models.SupportType': 'ralph.supports.tests.factories.SupportTypeFactory',  # noqa
+    'ralph.trade_marks.models.TradeMark': 'ralph.trade_marks.tests.factories.TradeMarkFactory', #noqa
+    'ralph.trade_marks.models.TradeMarksLinkedDomains': 'ralph.trade_marks.tests.factories.TradeMarksLinkedDomainsFactory', #noqa
+    'ralph.trade_marks.models.ProviderAdditionalMarking': 'ralph.trade_marks.tests.factories.ProviderAdditionalMarkingFactory', # noqa
     'ralph.virtual.models.CloudFlavor': 'ralph.virtual.tests.factories.CloudFlavorFactory',  # noqa
     'ralph.virtual.models.CloudHost': 'ralph.virtual.tests.factories.CloudHostFullFactory',  # noqa
     'ralph.virtual.models.CloudProject': 'ralph.virtual.tests.factories.CloudProjectFactory',  # noqa
     'ralph.virtual.models.CloudProvider': 'ralph.virtual.tests.factories.CloudProviderFactory',  # noqa
+    'ralph.virtual.models.CloudSyncProcessor': 'ralph.virtual.tests.factories.CloudSyncProcessorFactory',  # noqa
     'ralph.virtual.models.VirtualServer': 'ralph.virtual.tests.factories.VirtualServerFullFactory',  # noqa
     'ralph.virtual.models.VirtualServerType': 'ralph.virtual.tests.factories.VirtualServerTypeFactory',  # noqa
     'ralph.security.models.Vulnerability': 'ralph.security.tests.factories.VulnerabilityFactory',  # noqa

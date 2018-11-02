@@ -20,6 +20,7 @@ from ralph.assets.models import (
     ServiceEnvironment
 )
 from ralph.assets.tests.factories import (
+    BusinessSegmentFactory,
     CategoryFactory,
     ConfigurationClassFactory,
     ConfigurationModuleFactory,
@@ -54,6 +55,8 @@ from ralph.ssl_certificates.tests.factories import SSLCertificatesFactory
 from ralph.supports.models import Support
 from ralph.supports.tests.factories import SupportFactory
 from ralph.tests.models import PolymorphicTestModel
+from ralph.trade_marks.models import TradeMark
+from ralph.trade_marks.tests.factories import TradeMarkFactory
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -362,6 +365,48 @@ class ServicesEnvironmentsAPITests(RalphAPITestCase):
         )
 
 
+class ProfitCenterAPITests(RalphAPITestCase):
+    def setUp(self):
+        super().setUp()
+        self.profit_center = ProfitCenterFactory()
+
+    def test_get_profit_center_list(self):
+        url = reverse('profitcenter-list')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(
+            response.data['results'][0]['name'], self.profit_center.name
+        )
+
+    def test_get_profit_center_details(self):
+        url = reverse('profitcenter-detail', args=(self.profit_center.id,))
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], self.profit_center.name)
+
+
+class BusinessSegmentAPITests(RalphAPITestCase):
+    def setUp(self):
+        super().setUp()
+        self.business_segment = BusinessSegmentFactory()
+
+    def test_get_business_segment_list(self):
+        url = reverse('businesssegment-list')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(
+            response.data['results'][0]['name'], self.business_segment.name
+        )
+
+    def test_get_business_segment_details(self):
+        url = reverse('businesssegment-detail', args=(self.business_segment.id,))
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], self.business_segment.name)
+
+
 class ManufacturerAPITests(RalphAPITestCase):
     def setUp(self):
         super().setUp()
@@ -525,6 +570,7 @@ BASE_OBJECTS_FACTORIES = {
     VirtualServer: VirtualServerFactory,
     Cluster: ClusterFactory,
     ConfigurationClass: ConfigurationClassFactory,
+    TradeMark: TradeMarkFactory,
 }
 
 

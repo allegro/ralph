@@ -24,6 +24,8 @@ from ralph.virtual.models import (
 class CloudProviderFactory(DjangoModelFactory):
 
     name = factory.Iterator(['openstack', 'openstack2'])
+    cloud_sync_enabled = False
+    cloud_sync_driver = factory.Iterator(['noop'])
 
     class Meta:
         model = CloudProvider

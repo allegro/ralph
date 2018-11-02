@@ -12,6 +12,8 @@ ACCEPTANCE_TRANSITION_ID = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['TRANS
 ACCEPTANCE_BACK_OFFICE_ACCEPT_STATUS = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['BACK_OFFICE_ACCEPT_STATUS']  # noqa: E509
 ACCEPTANCE_LOAN_TRANSITION_ID = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['LOAN_TRANSITION_ID']  # noqa: E509
 ACCEPTANCE_BACK_OFFICE_ACCEPT_LOAN_STATUS = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['BACK_OFFICE_ACCEPT_LOAN_STATUS']  # noqa: E509
+ACCEPTANCE_RETURN_TRANSITION_ID = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['RETURN_TRANSITION_ID']  # noqa: E509
+ACCEPTANCE_BACK_OFFICE_RETURN_STATUS = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['BACK_OFFICE_ACCEPT_RETURN_STATUS']  # noqa: E509
 
 
 def transition_exists(transition_id):
@@ -40,6 +42,9 @@ get_assets_to_accept = partial(
 get_assets_to_accept_loan = partial(
     get_assets, status=ACCEPTANCE_BACK_OFFICE_ACCEPT_LOAN_STATUS
 )
+get_assets_to_accept_return = partial(
+    get_assets, status=ACCEPTANCE_BACK_OFFICE_RETURN_STATUS
+)
 
 
 def get_acceptance_url(user):
@@ -63,6 +68,19 @@ def get_loan_acceptance_url(user):
     url_name = admin_instance.get_transition_bulk_url_name()
     if assets_to_accept:
         url = reverse(url_name, args=(ACCEPTANCE_LOAN_TRANSITION_ID,))
+        query = urlencode([('select', a.id) for a in assets_to_accept])
+        return '?'.join((url, query))
+    return None
+
+
+def get_return_acceptance_url(user):
+    assets_to_accept = get_assets_to_accept_return(user)
+    admin_instance = ralph_site.get_admin_instance_for_model(
+        BackOfficeAsset
+    )
+    url_name = admin_instance.get_transition_bulk_url_name()
+    if assets_to_accept:
+        url = reverse(url_name, args=(ACCEPTANCE_RETURN_TRANSITION_ID,))
         query = urlencode([('select', a.id) for a in assets_to_accept])
         return '?'.join((url, query))
     return None
