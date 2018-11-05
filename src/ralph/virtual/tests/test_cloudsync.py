@@ -4,7 +4,10 @@ from django.core.urlresolvers import reverse
 
 from ralph.api.tests._base import RalphAPITestCase
 from ralph.virtual import cloudsync
-from ralph.virtual.tests.factories import CloudProviderFactory
+from ralph.virtual.models import CloudHost
+from ralph.virtual.tests.factories import CloudHostFactory, CloudProviderFactory
+from ralph.virtual.tests.os_notifications import \
+    ocata_nova as ocata_notifications
 
 
 class TestCloudSyncRouter(RalphAPITestCase):
@@ -88,3 +91,26 @@ class TestCloudSyncRouter(RalphAPITestCase):
 
         self.assertEqual(501, resp.status_code)
         self.assertEqual(b'Specified processor is not available', resp.content)
+
+
+class TestOcataDriver(RalphAPITestCase):
+    def test_delete_cloud_host(self):
+        cloud_host_uuid = '178b0921-8f85-4257-88b6-2e743b5a975c'
+
+        provider = CloudProviderFactory(
+            cloud_sync_enabled=True,
+            cloud_sync_driver='openstack.ocata'
+        )
+        CloudHostFactory(
+            cloudprovider=provider,
+            host_id=cloud_host_uuid
+        )
+
+        url = reverse('cloud-sync-router', args=(provider.id,))
+        self.client.post(
+            url, ocata_notifications.INSTANCE_DELETE, format='json'
+        )
+
+        self.assertFalse(
+            CloudHost.objects.filter(host_id=cloud_host_uuid).exists()
+        )

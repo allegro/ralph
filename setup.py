@@ -34,6 +34,7 @@ setup(
         ],
         'ralph.cloud_sync_processors': [
             'noop=ralph.virtual.processors.noop:endpoint',
+            'openstack.ocata=ralph.virtual.processors.openstack_ocata:endpoint',
         ],
     },
     classifiers=[

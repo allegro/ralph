@@ -22,7 +22,7 @@ CLOUD_SYNC_DRIVERS = None
 LOCK = threading.Lock()
 
 
-def load_processors():
+def load_drivers():
     global CLOUD_SYNC_DRIVERS
 
     # NOTE(romcheg): Check if processors were loaded prior to locking anything.
@@ -51,7 +51,7 @@ def load_processors():
 @csrf_exempt
 @require_POST
 def cloud_sync_router(request, cloud_provider_id):
-    load_processors()
+    load_drivers()
 
     raw_data = request.read().decode('utf-8')
 
