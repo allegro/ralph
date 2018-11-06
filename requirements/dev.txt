@@ -1,5 +1,5 @@
 -r test.txt
-django-debug-toolbar
+django-debug-toolbar==1.8
 Werkzeug
 pudb
 ipython
