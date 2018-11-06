@@ -32,6 +32,9 @@ setup(
             'test_ralph = ralph.__main__:test',
             'validate_ralph = ralph.cross_validator.__main__:main',
         ],
+        'back_office.transition_action.email_context': [
+            'default = ralph.back_office.helpers:get_email_context_for_transition'  # noqa
+        ],
         'ralph.cloud_sync_processors': [
             'noop=ralph.virtual.processors.noop:endpoint',
         ],

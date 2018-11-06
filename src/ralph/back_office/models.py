@@ -29,6 +29,7 @@ from ralph.assets.models.assets import (
 from ralph.assets.utils import move_parents_models
 from ralph.attachments.helpers import add_attachment_from_disk
 from ralph.lib.external_services import ExternalService, obj_to_dict
+from ralph.lib.hooks import get_hook
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
@@ -607,10 +608,13 @@ class BackOfficeAsset(Regionalizable, Asset):
     def send_attachments_to_user(cls, requester, transition_id, **kwargs):
         if kwargs.get('attachments'):
             transition = Transition.objects.get(pk=transition_id)
+            context_func = get_hook(
+                'back_office.transition_action.email_context'
+            )
+            context = context_func(transition_name=transition.name)
             email = EmailMessage(
-                subject='Documents for {}'.format(transition.name),
-                body='Please see documents provided in attachments '
-                     'for "{}".'.format(transition.name),
+                subject=context.subject,
+                body=context.body,
                 from_email=settings.EMAIL_FROM,
                 to=[requester.email]
             )
