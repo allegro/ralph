@@ -63,6 +63,7 @@ INSTALLED_APPS = (
     'ralph.licences',
     'ralph.domains',
     'ralph.trade_marks',
+    'ralph.sim_cards',
     'ralph.supports',
     'ralph.security',
     'ralph.lib.foundation',
