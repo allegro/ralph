@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from functools import partial
-
 from dj.choices import Choices
 from django.conf import settings
 from django.db import models
@@ -17,10 +15,12 @@ from ralph.lib.mixins.models import (
     TimeStampMixin
 )
 
+
 def upload_dir(filename, instance):
     return get_file_path(
             filename, instance, default_dir="trade_marks"
     )
+
 
 class TradeMarkType(Choices):
     _ = Choices.Choice
@@ -131,7 +131,7 @@ class TradeMark(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
         return mark_safe(
             '<img src="%s" width="150" />' % self.image.url
         )
-    image_tag.short_description = 'Image'
+    image_tag.short_description = _('Image')
     image_tag.allow_tags = True
 
 
