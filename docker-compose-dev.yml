@@ -1,0 +1,24 @@
+db:
+  image: mysql:5.7
+  ports:
+    - "3306:3306"
+  environment:
+    MYSQL_DATABASE: ralph_ng
+    MYSQL_ROOT_PASSWORD: ralph_ng
+    MYSQL_USER: ralph_ng
+    MYSQL_PASSWORD: ralph_ng
+  volumes_from:
+    - data
+  command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+redis:
+  image: redis:3.0
+  restart: always
+  ports:
+    - "6379:6379"
+data:
+  image: mysql:5.7
+  volumes:
+    - /opt/static
+    - /opt/media
+    - /var/lib/mysql
+  command: /bin/true
