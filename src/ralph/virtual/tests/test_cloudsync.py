@@ -15,7 +15,7 @@ class TestCloudSyncRouter(RalphAPITestCase):
     def setUp(self):
         super().setUp()
 
-        cloudsync.load_processors()
+        cloudsync.load_drivers()
 
     def test_event_routed_correctly(self):
         processor_name = 'proucessah'
