@@ -71,7 +71,7 @@ class TradeMark(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
         choices=TradeMarkType(),
         default=TradeMarkType.figurative.id
     )
-    image = models.FileField(
+    image = models.ImageField(
         null=True,
         blank=True,
         upload_to=upload_dir
