@@ -81,3 +81,6 @@ debian/ralph-core*
 
 .idea
 !src/ralph/lib
+
+# mypy
+.mypy_cache/
