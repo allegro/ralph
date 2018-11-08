@@ -22,7 +22,7 @@ netaddr==0.7.18
 python-dateutil==2.4.2
 pytz==2015.4
 redis==2.10.3
-requests==2.9.1
+requests==2.20.0
 rq==0.5.6
 six>=1.9.0
 sqlparse==0.2.3
@@ -32,4 +32,4 @@ factory-boy==2.11.1
 Faker==0.9.0
 openpyxl==2.4.0
 Pillow==5.3.0
-
+typing==3.6.6

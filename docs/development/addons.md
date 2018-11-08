@@ -1,6 +1,6 @@
 # Extending Ralph
 
-Ralph NG is easy to extend, for example providing custom tabs into the Asset review context.
+Ralph NG is easy to extend, for example providing custom tabs into the Asset review context or override some methods.
 
 Note: We encourage the developers to contribute new functions and integrations! Please read [this document](../CONTRIBUTING.md) for more information.
 
@@ -112,6 +112,58 @@ class ExtraView(RalphDetailView):
     label = 'Extra Detail View'
 ```
 
+## Override methods (hooks)
+You can change behaviour some parts of Ralph by overriding exposed methods. It all comes down to add a new entry point in your package (entry in ``setup.py``) and configure by changing settings (by exporting a environment variable) for appropriate entry. For your convience, we create management command for checking current configuration for hooks. You can run it by following command:
+
+```bash
+$ dev_ralph show_hooks_configuration
+
+Hooks:
+    back_office.transition_action.email_context:
+            default (active)
+            foo_method
+            bar_method
+```
+
+Where `foo_method` and `bar_method` are defined in `setup.py` in section `entry_points`:
+
+```python3
+from setuptools import setup, find_packages
+
+setup(
+    name='my_package',
+    ...
+
+    entry_points={
+        'back_office.transition_action.email_context': [
+            'foo_method = my_package.helpers:get_foo_context',
+            'bar_method = my_package.helpers:get_bar_context',
+        ]
+    },
+    ...
+)
+
+```
+
+
+### Available hooks
+| Name                                          | Description                                         | Parameters                | Return value                                                  |
+| --------------------------------------------- | --------------------------------------------------- | ------------------------- | ------------------------------------------------------------- |
+| `back_office.transition_action.email_context` | returns subject and body based on transition's name | `transition_name: str`    | `EmailContext` (`namedtuple`) with fields ``subject`` ``body``|
+
+### Configuration
+To change hook please define environment variable named like hook's name but it's upper case and dots are replaced by `_`, for instance, hook with name `back_office.transition_action.email_context` you can configure by export `BACK_OFFICE_TRANSITION_ACTION_EMAIL_CONTEXT` to your environment where value is one of entries point name. See example below.
+
+```bash
+$ BACK_OFFICE_TRANSITION_ACTION_EMAIL_CONTEXT=foo_method dev_ralph show_hooks_configuration
+
+Hooks:
+    back_office.transition_action.email_context:
+            default
+            foo_method (active)
+            bar_method
+```
+
 
 ## Using advanced search filters
 
@@ -139,7 +191,7 @@ To use `ChoicesFilter` you need to specify one additional param: `choices_list`,
 
 ### Additional filters options:
 
-## Filter title
+#### Filter title
 
 ```python3
 class ServerRoom(models.Model):
@@ -150,7 +202,7 @@ class ServerRoom(models.Model):
 If `_filter_title` is attached to field, filter will display the entered name on list, rather than getting it from the model's field.
 
 
-## Autocomplete
+#### Autocomplete
 
 ```python3
 class ServerRoom(models.Model):
