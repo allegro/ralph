@@ -1,0 +1,39 @@
+<IfModule mod_ssl.c>
+	<VirtualHost _default_:443>
+		ServerName  ralph.example.com
+		ServerAlias ralph
+		ServerAdmin webmaster@localhost
+		ErrorLog ${APACHE_LOG_DIR}/error.log
+		CustomLog ${APACHE_LOG_DIR}/access.log combined
+		SSLEngine on
+		SSLCertificateFile    /etc/ssl/certs/ssl-cert-snakeoil.pem
+		SSLCertificateKeyFile /etc/ssl/private/ssl-cert-snakeoil.key
+
+		## --- RALPH's CONFIGURATION ---
+		SetEnv	DATABASE_PASSWORD ralphsecret
+		SetEnv	DATABASE_HOST 	127.0.0.1
+		SetEnv	DATABASE_USER	ralph
+		SetEnv	DATABASE_NAME	ralph
+		SetEnv	RALPH_DEBUG	True
+		## ---
+
+		Alias /static /opt/ralph/static
+		Alias /media /opt/ralph/media
+		<Directory /opt/ralph/static>
+			Require all granted
+		</Directory>
+
+		<Directory /opt/ralph/ralph-core>
+			<Files wsgi.py>
+				Require all granted
+			</Files>
+		</Directory>
+
+		LogLevel info
+
+		WSGIDaemonProcess ralph-core python-path=/opt/ralph/ralph-core python-home=/opt/ralph/ralph-core
+		WSGIProcessGroup %{GLOBAL}
+		WSGIScriptAlias / /opt/ralph/ralph-core/lib/python3.5/site-packages/ralph/wsgi.py  process-group=ralph-core
+	</VirtualHost>
+</IfModule>
+# vim: syntax=apache ts=4 sw=4 sts=4 sr noet
