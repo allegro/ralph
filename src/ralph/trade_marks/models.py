@@ -120,7 +120,7 @@ class TradeMark(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
     )
 
     def __str__(self):
-        return '{}, {}, {} to {}.'.format(
+        return '{}, {}, {} expires {}.'.format(
             self.name, self.registrant_number,
             self.registrant_class, self.valid_to
         )
