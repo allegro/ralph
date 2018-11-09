@@ -155,7 +155,7 @@ setup(
 To change hook please define environment variable named like hook's name but it's upper case and dots are replaced by `_`, for instance, hook with name `back_office.transition_action.email_context` you can configure by export `BACK_OFFICE_TRANSITION_ACTION_EMAIL_CONTEXT` to your environment where value is one of entries point name. See example below.
 
 ```bash
-$ BACK_OFFICE_TRANSITION_ACTION_EMAIL_CONTEXT=foo_method dev_ralph show_hooks_configuration
+$ HOOKS_BACK_OFFICE_TRANSITION_ACTION_EMAIL_CONTEXT=foo_method dev_ralph show_hooks_configuration
 
 Hooks:
     back_office.transition_action.email_context:
