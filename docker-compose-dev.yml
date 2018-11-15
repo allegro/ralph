@@ -7,18 +7,12 @@ db:
     MYSQL_ROOT_PASSWORD: ralph_ng
     MYSQL_USER: ralph_ng
     MYSQL_PASSWORD: ralph_ng
-  volumes_from:
-    - data
+  volumes:
+    - ./volumes/static:/opt/static
+    - ./volumes/media:/opt/media
+    - ./volumes/mysql:/var/lib/mysql
   command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 redis:
   image: redis:3.0
-  restart: always
   ports:
     - "6379:6379"
-data:
-  image: mysql:5.7
-  volumes:
-    - /opt/static
-    - /opt/media
-    - /var/lib/mysql
-  command: /bin/true
