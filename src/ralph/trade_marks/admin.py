@@ -42,7 +42,7 @@ class TradeMarkAdmin(AttachmentsMixin, RalphAdmin):
     ]
     list_display = [
         'id', 'name', 'registrant_number', 'type',
-        'valid_to', 'holder', 'status'
+        'valid_to', 'holder', 'status', 'image_tag'
     ]
     raw_id_fields = [
         'business_owner', 'technical_owner', 'holder'
@@ -50,7 +50,7 @@ class TradeMarkAdmin(AttachmentsMixin, RalphAdmin):
     fieldsets = (
         (_('Basic info'), {
             'fields': (
-                'name', 'registrant_number', 'type',
+                'name', 'registrant_number', 'type', 'image', 'image_tag',
                 'registrant_class', 'valid_to', 'region',
                 'order_number_url', 'additional_markings', 'holder',
                 'status', 'remarks'
@@ -63,6 +63,7 @@ class TradeMarkAdmin(AttachmentsMixin, RalphAdmin):
         })
     )
     search_fields = ['name', 'id', ]
+    readonly_fields = ['image_tag']
 
 
 @register(ProviderAdditionalMarking)

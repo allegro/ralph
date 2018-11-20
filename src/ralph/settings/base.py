@@ -5,6 +5,8 @@ from collections import ChainMap
 
 from django.contrib.messages import constants as messages
 
+from ralph.settings.hooks import HOOKS_CONFIGURATION  # noqa: F401
+
 
 def bool_from_env(var, default: bool=False) -> bool:
     """Helper for converting env string into boolean.
@@ -75,6 +77,7 @@ INSTALLED_APPS = (
     'ralph.lib.transitions',
     'ralph.lib.permissions',
     'ralph.lib.custom_fields',
+    'ralph.lib.hooks',
     'ralph.notifications',
     'ralph.ssl_certificates',
     'rest_framework',

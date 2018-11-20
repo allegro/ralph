@@ -2,16 +2,24 @@
 from dj.choices import Choices
 from django.conf import settings
 from django.db import models
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import Regionalizable
 from ralph.assets.models import AssetHolder, BaseObject
+from ralph.attachments.helpers import get_file_path
 from ralph.domains.models import Domain
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     NamedMixin,
     TimeStampMixin
 )
+
+
+def upload_dir(filename, instance):
+    return get_file_path(
+            filename, instance, default_dir="trade_marks"
+    )
 
 
 class TradeMarkType(Choices):
@@ -63,6 +71,11 @@ class TradeMark(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
         choices=TradeMarkType(),
         default=TradeMarkType.figurative.id
     )
+    image = models.ImageField(
+        null=True,
+        blank=True,
+        upload_to=upload_dir
+    )
     registrant_class = models.CharField(
         verbose_name=_('Registrant class'),
         blank=False,
@@ -105,6 +118,21 @@ class TradeMark(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
         related_name='+',
         through='TradeMarksLinkedDomains',
     )
+
+    def __str__(self):
+        return '{}, {}, {} expires {}.'.format(
+            self.name, self.registrant_number,
+            self.registrant_class, self.valid_to
+        )
+
+    def image_tag(self):
+        if not self.image:
+            return ""
+        return mark_safe(
+            '<img src="%s" width="150" />' % self.image.url
+        )
+    image_tag.short_description = _('Image')
+    image_tag.allow_tags = True
 
 
 class TradeMarksLinkedDomains(models.Model):
