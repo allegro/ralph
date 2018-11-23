@@ -3,7 +3,7 @@ from factory.django import DjangoModelFactory
 
 from ralph.back_office.models import BackOfficeAssetStatus
 from ralph.back_office.tests.factories import WarehouseFactory
-from ralph.sim_cards.models import CellularCarrier, SIMCard
+from ralph.sim_cards.models import CellularCarrier, SIMCard, SIMCardFeatures
 from ralph.tests.factories import UserFactory
 
 
@@ -12,6 +12,14 @@ class CellularCarrierFactory(DjangoModelFactory):
 
     class Meta:
         model = CellularCarrier
+        django_get_or_create = ['name']
+
+
+class SIMCardFeatureFactory(DjangoModelFactory):
+    name = factory.Iterator(['Feature {}'.format(a) for a in range(50)])
+
+    class Meta:
+        model = SIMCardFeatures
         django_get_or_create = ['name']
 
 

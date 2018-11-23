@@ -2,7 +2,11 @@ from django.core.urlresolvers import reverse
 
 from ralph.back_office.models import BackOfficeAssetStatus
 from ralph.back_office.tests.factories import WarehouseFactory
-from ralph.sim_cards.tests.factories import CellularCarrierFactory
+from ralph.sim_cards.models import SIMCard
+from ralph.sim_cards.tests.factories import (
+    CellularCarrierFactory,
+    SIMCardFeatureFactory
+)
 from ralph.tests.base import RalphTestCase
 from ralph.tests.factories import UserFactory
 from ralph.tests.mixins import ClientMixin
@@ -18,8 +22,10 @@ class TestSIMCardForm(ClientMixin, RalphTestCase):
         warehouse = WarehouseFactory()
 
         user = UserFactory()
-
         owner = UserFactory()
+
+        features = [SIMCardFeatureFactory() for _ in range(2)]
+        expeted_features_id = sorted(f.pk for f in features)
 
         sim_card_data = {
             'status': BackOfficeAssetStatus.new.id,
@@ -33,13 +39,26 @@ class TestSIMCardForm(ClientMixin, RalphTestCase):
             'user': user.pk,
             'owner': owner.pk,
             'carrier': carrier.pk,
-
+            'features': expeted_features_id
         }
 
         url = reverse('admin:sim_cards_simcard_add')
 
         response = self.client.post(url, sim_card_data, follow=True)
         self.assertNotIn('errors', response.context_data)
+
+        sim_card_qs = SIMCard.objects.filter(
+            card_number=sim_card_data['card_number']
+        )
+        self.assertTrue(sim_card_qs.exists())
+
+        created_sim_card = sim_card_qs.first()
+        assigned_features = sorted(
+            f.pk for f in created_sim_card.features.all()
+        )
+
+        self.assertEqual(expeted_features_id, assigned_features)
+
 
     def test_create_incorrect_data(self):
         carrier = CellularCarrierFactory()
