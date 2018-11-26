@@ -1,6 +1,6 @@
 FROM ubuntu:bionic
 
-MAINTAINER PyLabs pylabs@allegro.pl
+MAINTAINER Allegro.pl Sp. z o.o. and Contributors opensource@allegro.pl
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV SHELL=/bin/bash
