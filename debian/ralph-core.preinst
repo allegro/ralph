@@ -1,0 +1,33 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+  install)
+    adduser --system ralphsrv --home /var/local/ralph --group
+    for config_file in \
+      /etc/ralph/ralph.conf \
+      /etc/ralph/conf.d/database.conf \
+      /etc/ralph/conf.d/cache.conf \
+      /etc/ralph/conf.d/redis.conf \
+      /etc/ralph/conf.d/gunicorn.conf
+    do
+      dpkg-divert --package ralph-core --add --rename $config_file
+    done
+    ;;
+
+  upgrade)
+
+    ;;
+
+  abort-upgrade)
+    ;;
+
+  *)
+    echo "preinst called with unknown argument \`$1'" >&2
+    exit 1
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0

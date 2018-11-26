@@ -2,14 +2,24 @@ TEST?=ralph
 
 .PHONY: test flake clean coverage docs coveralls
 
-package: build-package upload-package
+release-new-version: new_version = $(shell ./get_version.sh generate)
+release-new-version:
+	docker build -f docker_ng/Dockerfile-deb -t ralph-deb .
+	docker run -it -v $(shell pwd):/volume ralph-deb:latest release-new-version
+	docker image rm --force ralph-deb:latest
+	git add debian/changelog
+	git commit -m "Updated changelog for $(new_version) version."
+	git tag -m $(new_version) -a $(new_version) -s
 
 build-package:
-	rm -rf ./build 2>/dev/null 1>/dev/null
-	./packaging/build-package.sh
+	docker build -f docker_ng/Dockerfile-deb -t ralph-deb .
+	docker run -it -v $(shell pwd):/volume ralph-deb:latest build-package
+	docker image rm --force ralph-deb:latest
 
-upload-package:
-	./packaging/upload-package.sh
+build-snapshot-package:
+	docker build -f docker_ng/Dockerfile-deb -t ralph-deb .
+	docker run -it -v $(shell pwd):/volume ralph-deb:latest build-snapshot-package
+	docker image rm --force ralph-deb:latest
 
 install-js:
 	npm install
