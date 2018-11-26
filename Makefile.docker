@@ -1,0 +1,6 @@
+build-package:
+	rm -rf ./build 2>/dev/null 1>/dev/null
+	./scripts/build-package.sh
+	mkdir -p /volume/build
+	cp ../*.deb /volume/build
+	cp debian/changelog /volume/debian/changelog

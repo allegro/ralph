@@ -3,6 +3,7 @@
 import os
 import sys
 from setuptools import setup, find_packages
+import subprocess
 
 assert sys.version_info >= (3, 3), 'Python 3.3+ required.'
 
@@ -10,10 +11,19 @@ assert sys.version_info >= (3, 3), 'Python 3.3+ required.'
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+
+def get_version():
+    script = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'get_version.sh'
+    )
+    ver = subprocess.check_output([script], shell=True)
+    return ver.decode().strip()
+
+
 setup(
     name='ralph',
-    version=read('./VERSION').strip(),
-    author='Grupa Allegro Sp. z o.o. and Contributors',
+    version=get_version(),
+    author='Allegro.pl Sp. z o.o. and Contributors',
     author_email='pylabs@allegro.pl',
     description="Advanced Asset Management and DCIM system for data center and back office.",
     long_description='\n'.join([read('README.md'), read('CHANGES')]),

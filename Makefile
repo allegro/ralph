@@ -4,12 +4,23 @@ TEST?=ralph
 
 package: build-package upload-package
 
-build-package:
+build-package-docker:
 	rm -rf ./build 2>/dev/null 1>/dev/null
-	./packaging/build-package.sh
+	./packaging/build-package-ng.sh
+	mkdir -p /volume/build
+	cp ../*.deb /volume/build
+	cp debian/changelog /volume/debian/changelog
+
+build-package:
+	docker build -f docker_ng/Dockerfile-deb -t ralph-deb .
+	docker run -i -v $(shell pwd):/volume ralph-deb:latest
+	docker image rm --force ralph-deb:latest
 
 upload-package:
 	./packaging/upload-package.sh
+
+build-docker:
+	docker build -f docker_ng/Dockerfile-prod -t allegro/ralphng:$(shell ./get_version.sh) ./docker_ng/
 
 install-js:
 	npm install
