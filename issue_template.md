@@ -2,7 +2,7 @@
 ### Steps to reproduce
 
 <!-- Tell us how to reproduce this issue. -->
-<!-- Please provide as much detail as possible (e.g.screenshots)! -->
+<!-- Please provide as much detail as possible (e.g. screenshots)! -->
 <!-- If we cannot recreate it, we will not be able to figure out how to fix it. -->
 
 ### Expected behavior
