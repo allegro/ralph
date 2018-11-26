@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from string import Formatter
-from urllib.parse import quote
+from urllib.parse import quote, urlencode
 
 from django.conf import settings
 from django.contrib.admin.utils import unquote
@@ -120,17 +120,22 @@ class AssetList(Table):
         else:
             return []
 
+    def buyout_button(self, item):
+        get_params = {"inventory_number": item.barcode,
+                      "serial_number": item.sn,
+                      "model": item.model,
+                      "comment": item.buyout_date
+                      }
+        url = "?".join([settings.MY_EQUIPMENT_BUYOUT_UR, urlencode(get_params)])
+        url_title = 'Report buyout'
+        return self.create_report_link(url, url_title, item)
+    buyout_button.title = 'Buyout'
+
     def report_failure(self, item):
         url = settings.MY_EQUIPMENT_REPORT_FAILURE_URL
         url_title = 'Report failure'
         return self.create_report_link(url, url_title, item)
     report_failure.title = ''
-
-    def report_buyout(self, item):
-        url = settings.MY_EQUIPMENT_BUYOUT_URL
-        url_title = 'Report buyout'
-        return self.create_report_link(url, url_title, item)
-    report_buyout.title = ''
 
     def create_report_link(self, url, url_title, item):
         item_dict = model_to_dict(item)
