@@ -1,0 +1,16 @@
+@import "colors";
+@import "foundation/settings";
+
+$primary-color: #1E88E5;
+
+$header-font-weight: 300;
+$paragraph-font-weight: 300;
+
+$topbar-bg-color: $primary-color;
+$topbar-bg: $topbar-bg-color;
+$topbar-link-bg-hover: lighten($topbar-bg-color, 5%);
+$topbar-link-bg-active: darken($topbar-bg-color, 10%);
+$topbar-link-bg-active-hover: darken($topbar-bg-color, 5%);
+$topbar-link-color-hover: #fff;
+$topbar-margin-bottom: 0;
+$topbar-menu-link-color-toggled: rgba(255,255,255,0.6);

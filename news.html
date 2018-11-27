@@ -1,20 +1,17 @@
 ---
 layout: default
+title: News
 ---
 
-<div class="container">
-    <div class="page-header">
-        <h1>What's new?</h1>
+<div class="row">
+    <h1>What's new?</h1>
+    <div class="large-12">
+        <ul>
+            {% for post in site.posts %}
+            <li class='post-item'>
+                {{ post.date|date_to_long_string}} <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a>
+            </li>
+            {% endfor %}
+        </ul>
     </div>
-    <div class="row">
-        <div class="span8">
-            <ul>
-              {% for post in site.posts %}
-                <li class='post-item'>
-                  {{ post.date|date_to_long_string}} <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a>
-                </li>
-              {% endfor %}
-            </ul>
-        </div>
-    </div>
-</div> <!-- /container -->
+</div>

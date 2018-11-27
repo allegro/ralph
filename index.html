@@ -1,50 +1,115 @@
 ---
-layout: default
+layout: hero
 ---
 
-<link href="http://vjs.zencdn.net/4.6/video-js.css" rel="stylesheet">
-<div class="container">
-  <div class="document">
-    <div class="hero-unit">
-      <div class="hero-unit-inset">
-        <h1><img alt="" class="ralph-text-header" src="img/ralph-text-header.png"></h1>
-        <h2>Lightweight Assets Management System <br>for Data Center and Back Office</h2>
-        <ul>
-          <li>keep track of assets purchases and their life cycle</li>
-          <li>flexible flow system for assets life cycle</li>
-          <li>data center and back office support
-          <li>dc visualization built-in</li>
-        </ul>
-        <p>It is an Open Source project provided on Apache v2.0 License.</p>
-      </div>
-    </div>
-    <div class="row">
-    <div class="span4">
-      <h2>Flexible</h2>
-      It doesnt' do deployment. It doesn't do cloud. It manages your precious infrastructure information. Customize it easly using pluggable 'actions' system, assets custom tabs, tags and storing custom objects.
-    </div>
-    <div class="span4">
-      <h2>Easy to use</h2>
-      <p>
-        We've choosen the best features of DCIM, Asset Mgmt and CMDB systems to create one, easy and well integrated system. One interface is easier than 3.
-      </p>
-    </div>
-    <div class="span4">
-      <h2>Open</h2>
-      <p><a href="https://github.com/allegro/ralph">Fork us on github!</a>. It is <a href="http://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0 Licensed software</a> and yes, we accept patches :)</p>
-    </div>
-    </div>
-</div> <!-- container !-->
-<div class="promo-story-1">
-  <div class="container">
-    <div class="row promo-distance">
-      <div class="span12">
-        <h1 class="center"><a href="http://ralph-demo.allegro.tech"> online demo </a> (login: ralph, password: ralph)</h1>
-        <h1 class="center">Download Ralph 3 <a href="http://ralph-ng.readthedocs.org/en/latest/installation/installation/"> here </a></h1>
+<div class="hero">
+  <h2><strong>Lightweight</strong> Assets Management System <br>for Data Center and Back Office</h2>
+  <h3>It is an Open Source project provided on Apache v2.0 License.</h3>
+  <img src="img/home-page.png" alt="" width="75%">
+</div>
+<div class="callouts">
+  <div class="row">
+    <div class="large-12">
+      <h2>Why Use Ralph</h2>
+      <div class="row">
+        <div class="large-4 columns callout">
+          <h3>Flexible</h3>
+          <p>It doesn't do deployment. It doesn't do cloud. It manages your precious infrastructure information.
+            Customize it easly
+            using pluggable 'actions' system, assets custom tabs, tags and storing custom objects.</p>
+        </div>
+        <div class="large-4 columns callout">
+          <h3>Easy to use</h3>
+          <p>We've choosen the best features of DCIM, Asset Mgmt and CMDB systems to create one, easy and well
+            integrated system.
+            One interface is easier than 3.</p>
+        </div>
+        <div class="large-4 columns callout">
+          <h3>Open</h3>
+          <p><a href="{{ site.repo_link }}">Fork us on github!</a> It is Apache 2.0 Licensed software and yes, we accept patches :)</p>
+        </div>
       </div>
     </div>
   </div>
+</div>
 
-<footer class="footer">&copy; Copyright 2011-2017 Allegro Group.</footer>
+<div class="callouts white demo">
+  <div class="row">
+    <h2>Ready to Get Started?</h2>
+    <div class="wizard">
+      <div class="wizard-block">
+        <div class="wizard-step">1</div>
+        <div class="wizard-content">
+          <div class="row">
+            <div class="large-7 columns">
+              <h2>Try out our Demo</h2>
+              <p>Go to demo and login.</p>
+              <a href="{{ site.demo_link }}" class="button success small">Play with Ralph 3!</a>
+            </div>
+            <div class="large-5 columns">
+              <div class="login-box-title">Please login</div>
+              <div class="login-box">
+                <div class="field">
+                  <div class="label">Username:</div>
+                  <div class="input">ralph</div>
+                </div>
+                <div class="field">
+                  <div class="label">Password:</div>
+                  <div class="input">ralph</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="wizard-block">
+        <div class="wizard-step">2</div>
+        <div class="wizard-content">
+          <h2>Read the documentation</h2>
+          <p>Discover Ralph's features like: <a href="https://ralph-ng.readthedocs.io/en/latest/user/api/">REST API</a>, <a href="https://ralph-ng.readthedocs.io/en/latest/user/guide/#workflow-system-transitions">transitions (workflows)</a>, <a href="https://ralph-ng.readthedocs.io/en/latest/user/quickstart/#data-center-visualization">DC visualization</a> and more.</p>
+          <a href="{{ site.documentation_link }}" class="button success small">Go to the documentation!</a>
+        </div>
+      </div>
+      <div class="wizard-block">
+        <div class="wizard-step">3</div>
+        <div class="wizard-content">
+          <h2>Install Ralph</h2>
+          <p>You can install Ralph on your server. We provide DEB package and Docker image for your convience.</p>
+          <a class="button success small" href="{{ site.installation_link }}">Read installation guide</a>
+        </div>
+      </div>
+      <div class="wizard-block">
+        <div class="wizard-step">4</div>
+        <div class="wizard-content">
+          <h2>Support</h2>
+          <p>There are two offical channels allowing you to get in touch with the people involved in Ralph development:</p>
+          <ul>
+            <li><a href="{{ site.gitter_link }}">Gitter IM</a> (recommended)</li>
+            <li><a href="{{ site.issues_link }}">our bug tracker @ GitHub</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-</div> <!-- /container -->
+<div class="callouts contributors white">
+  <div class="row">
+    <div class="large-6 columns">
+      <h2>Core Team</h2>
+      {% for member in site.data.contributors %}
+        {% if site.data.core_team contains member.login %}
+          <a href="{{ member.html_url }}"><img src="{{ member.avatar_url }}" alt="{{ member.login }}" width="48"></a>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <div class="large-6 columns">
+      <h2>Contributors</h2>
+      {% for member in site.data.contributors %}
+        {% if site.data.core_team contains member.login %}{% else %}
+          <a href="{{ member.html_url }}"><img src="{{ member.avatar_url }}" alt="{{ member.login }}" width="48"></a>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>

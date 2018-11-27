@@ -1,0 +1,17 @@
+.hero {
+  background: $primary-color;
+  min-height: 300px;
+  padding-top: 100px;
+  text-align: center;
+  border-bottom: 1px solid #ccc;
+  box-shadow: #ccc 0 0 10px;
+  h2, h3 {
+    font-weight: 200;
+    margin: 0;
+    color: #fff;
+  }
+  h3 {
+    padding-top: 2rem;
+    font-size: 1.75rem;
+  }
+}
