@@ -12,7 +12,7 @@ RUN npm install --silent -g bower && \
     gulp build
 
 
-FROM python:3.4-stretch
+FROM python:3.6-stretch
 
 ARG RALPH_ROOT=/opt/ralph
 ARG STATIC_ROOT=/opt/static
