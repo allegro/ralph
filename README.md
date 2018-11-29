@@ -22,7 +22,17 @@ http://ralph-demo.allegro.tech/
 * login: ralph
 * password: ralph
 
-# Installation
+# Screenshots 
+
+![img](https://user-images.githubusercontent.com/552398/47593757-d8b76280-d978-11e8-87c6-d4ba98d26f2a.png)
+
+![img](https://user-images.githubusercontent.com/552398/47593858-49f71580-d979-11e8-891f-d992a8fce6a8.png)
+
+![img](https://user-images.githubusercontent.com/552398/47593924-8a569380-d979-11e8-8bf1-8980a499a3b3.png)
+
+
+
+## Installation
 
 ## Debian package(recommended)
 
