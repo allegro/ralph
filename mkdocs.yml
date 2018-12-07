@@ -1,6 +1,12 @@
 site_name: Ralph 3
 repo_url: https://github.com/allegro/ralph/
-pages:
+
+extra:
+  social:
+    - type: 'github'
+      link: 'https://github.com/allegro/ralph'
+
+nav:
   - Welcome: index.md
   - Installation guide:
       - Installation: installation/installation.md
@@ -25,7 +31,13 @@ pages:
       - Addons : development/addons.md
       - Packaging: development/packaging.md
       - FAQ: development/faq.md
-theme: readthedocs
+
+theme:
+  name: material
+  palette:
+    primary: 'light blue'
+    accent: 'indigo'
+
 strict: true
 dev_addr: 0.0.0.0:8000
 markdown_extensions:
@@ -33,4 +45,5 @@ markdown_extensions:
         permalink: True
 extra_css:
     - custom.css
-site_dir: docs/_build/html  # sphinx compatible
+site_dir: /tmp/docs/_build/html  # sphinx compatible
+
