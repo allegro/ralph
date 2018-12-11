@@ -1,12 +1,13 @@
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, register
+from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.sim_cards.forms import SIMCardForm
 from ralph.sim_cards.models import CellularCarrier, SIMCard, SIMCardFeatures
 
 
 @register(SIMCard)
-class SIMCardAdmin(RalphAdmin):
+class SIMCardAdmin(TransitionAdminMixin, RalphAdmin):
     # NOTE(Anna Gabler): list_display - list on top page
     #                    raw_id_fields - fancy autocomplete
     #                    list_select_related - join to database (DJANGO)

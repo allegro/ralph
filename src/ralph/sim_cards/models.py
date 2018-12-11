@@ -1,5 +1,9 @@
+from functools import partial
+
 from dj.choices import Choices
+from django import forms
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.validators import (
     MaxLengthValidator,
     MinLengthValidator,
@@ -8,14 +12,15 @@ from django.core.validators import (
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.back_office.models import Warehouse
+from ralph.back_office.models import autocomplete_user, Warehouse
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     NamedMixin,
     TimeStampMixin
 )
+from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
-
+from ralph.lib.transitions.models import TransitionWorkflowBase
 
 PUK_CODE_VALIDATORS = [
     MinLengthValidator(5),
@@ -63,7 +68,8 @@ class SIMCardFeatures(
     pass
 
 
-class SIMCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
+class SIMCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model,
+              metaclass=TransitionWorkflowBase):
     pin1 = models.CharField(
         max_length=8, null=True, blank=True,
         help_text=_('Required numeric characters only.'),
@@ -134,3 +140,68 @@ class SIMCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
 
     def __str__(self):
         return _('SIM Card: {}').format(self.phone_number)
+
+    @classmethod
+    @transition_action(
+        form_fields={
+            'user': {
+                'field': forms.CharField(label=_('User')),
+                'autocomplete_field': 'user',
+            }
+        }
+    )
+    def assign_user(cls, instances, **kwargs):
+        print(instances)
+
+    @classmethod
+    @transition_action(
+        form_fields={
+            'owner': {
+                'field': forms.CharField(label=_('Owner')),
+                'autocomplete_field': 'owner',
+                'default_value': partial(autocomplete_user, field_name='owner')
+            }
+        },
+        help_text=_('text'),
+        run_after=['unassign_owner']
+    )
+    def assign_owner(cls, instances, **kwargs):
+        owner = get_user_model().objects.get(pk=int(kwargs['owner']))
+        for instance in instances:
+            instance.owner = owner
+
+    @classmethod
+    @transition_action(
+        form_fields={
+            'warehouse': {
+                'field': forms.CharField(label=_('Warehouse')),
+                'autocomplete_field': 'warehouse'
+            }
+        }
+    )
+    def assign_warehouse(cls, instances, **kwargs):
+        warehouse = Warehouse.objects.get(pk=int(kwargs['warehouse']))
+        for instance in instances:
+            instance.warehouse = warehouse
+
+    @classmethod
+    @transition_action(
+        run_after=['loan_report', 'return_report']
+    )
+    def unassign_owner(cls, instances, **kwargs):
+        for instance in instances:
+            kwargs['history_kwargs'][instance.pk][
+                'affected_owner'
+            ] = str(instance.owner)
+            instance.owner = None
+
+    @classmethod
+    @transition_action(
+        run_after=['loan_report', 'return_report']
+    )
+    def unassign_user(cls, instances, **kwargs):
+        for instance in instances:
+            kwargs['history_kwargs'][instance.pk][
+                'affected_user'
+            ] = str(instance.user)
+            instance.user = None
