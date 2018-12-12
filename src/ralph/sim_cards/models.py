@@ -15,7 +15,6 @@ from ralph.lib.mixins.models import (
     TimeStampMixin
 )
 from ralph.lib.transitions.fields import TransitionField
-from ralph.lib.transitions.models import TransitionWorkflowBase
 
 
 PUK_CODE_VALIDATORS = [
@@ -56,12 +55,15 @@ class CellularCarrier(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
     pass
 
 
-class SIMCard(
+class SIMCardFeatures(
     AdminAbsoluteUrlMixin,
-    TimeStampMixin,
-    models.Model,
-    metaclass=TransitionWorkflowBase
+    NamedMixin,
+    models.Model
 ):
+    pass
+
+
+class SIMCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
     pin1 = models.CharField(
         max_length=8, null=True, blank=True,
         help_text=_('Required numeric characters only.'),
@@ -124,6 +126,10 @@ class SIMCard(
     quarantine_until = models.DateField(
         null=True, blank=True,
         help_text=_('End of quarantine date.')
+    )
+    features = models.ManyToManyField(
+        SIMCardFeatures,
+        blank=True,
     )
 
     def __str__(self):
