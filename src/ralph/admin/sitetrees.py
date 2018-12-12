@@ -138,6 +138,7 @@ sitetrees = [
             perms_mode_all=False,
             children=[
                 section(_('Hardware'), 'back_office', 'backofficeasset'),
+                section(_('SIM Cards'), 'sim_cards', 'SIMCard'),
             ]
         ),
         ralph_item(
