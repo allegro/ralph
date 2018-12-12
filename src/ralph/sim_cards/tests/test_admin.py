@@ -25,7 +25,7 @@ class TestSIMCardForm(ClientMixin, RalphTestCase):
         owner = UserFactory()
 
         features = [SIMCardFeatureFactory() for _ in range(2)]
-        expeted_features_id = sorted(f.pk for f in features)
+        expected_features_id = sorted(f.pk for f in features)
 
         sim_card_data = {
             'status': BackOfficeAssetStatus.new.id,
@@ -39,7 +39,7 @@ class TestSIMCardForm(ClientMixin, RalphTestCase):
             'user': user.pk,
             'owner': owner.pk,
             'carrier': carrier.pk,
-            'features': expeted_features_id
+            'features': expected_features_id
         }
 
         url = reverse('admin:sim_cards_simcard_add')
@@ -57,7 +57,7 @@ class TestSIMCardForm(ClientMixin, RalphTestCase):
             f.pk for f in created_sim_card.features.all()
         )
 
-        self.assertEqual(expeted_features_id, assigned_features)
+        self.assertEqual(expected_features_id, assigned_features)
 
 
     def test_create_incorrect_data(self):
