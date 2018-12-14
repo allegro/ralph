@@ -100,13 +100,10 @@ class ChoiceFieldWithOtherOption(forms.ChoiceField):
 class AssetFormMixin(forms.ModelForm):
     MODEL_TYPE = None
 
-    def __init__(self, *args, **kwargs):
-        from ralph.assets.models import ObjectModelType
-        self.model_type_err_msg = 'Model must be of "{}" type'.format(
-            ObjectModelType.from_name(self.MODEL_TYPE)
-        )
-        self.model_type_id = ObjectModelType.from_name(self.MODEL_TYPE).id
-        super().__init__(*args, **kwargs)
+    def get_model_type(self):
+        if not self.MODEL_TYPE:
+            raise AttributeError('Model type attribute is missing.')
+        return self.MODEL_TYPE
 
     def clean_model(self):
         value = self.cleaned_data.get('model')
@@ -114,5 +111,8 @@ class AssetFormMixin(forms.ModelForm):
         return value
 
     def _validate_model_type(self, value):
-        if value.type != self.model_type_id:
-            raise ValidationError(self.model_type_err_msg)
+        model_type = self.get_model_type()
+        if value.type != model_type.id:
+            raise ValidationError(
+                'Model must be of "{}" type'.format(model_type)
+            )
