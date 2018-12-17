@@ -12,7 +12,7 @@ override_dh_virtualenv:
 	dh_virtualenv --python /usr/bin/python3.4 --requirements requirements/prod.txt
 
 override_dh_shlibdeps:
-	dh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info
+	dh_shlibdeps --dpkg-shlibdeps-params="--ignore-missing-info -l./debian/ralph-core/opt/ralph/ralph-core/lib/python3.4/site-packages/PIL/.libs"
 
 override_dh_strip:
 	dh_strip --exclude=_cffi_backend
