@@ -126,7 +126,9 @@ class AssetList(Table):
                       "model": item.model,
                       "comment": item.buyout_date
                       }
-        url = "?".join([settings.MY_EQUIPMENT_BUYOUT_URL, urlencode(get_params)])
+        url = "?".join(
+            [settings.MY_EQUIPMENT_BUYOUT_URL, urlencode(get_params)]
+        )
         url_title = 'Report buyout'
         return self.create_report_link(url, url_title, item)
     buyout_ticket.title = 'buyout_ticket'
