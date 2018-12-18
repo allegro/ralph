@@ -4,6 +4,7 @@ __pycache__/
 .DS_Store
 # C extensions
 *.so
+volumes
 
 # Distribution / packaging
 .Python
@@ -18,6 +19,7 @@ lib/
 lib64/
 parts/
 sdist/
+volumes/
 var/
 *.egg-info/
 .installed.cfg

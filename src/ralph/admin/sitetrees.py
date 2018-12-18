@@ -103,8 +103,6 @@ sitetrees = [
                 section(_('Hardware'), 'data_center', 'DataCenterAsset'),
                 section(_('Virtual Servers'), 'virtual', 'VirtualServer'),
                 section(_('Clusters'), 'data_center', 'cluster'),
-                section(_('Cloud hosts'), 'virtual', 'CloudHost'),
-                section(_('Cloud projects'), 'virtual', 'CloudProject'),
                 section(_('Data Centers'), 'data_center', 'DataCenter'),
                 section(_('Racks'), 'data_center', 'Rack'),
                 section(_('Rack Accessories'), 'data_center', 'RackAccessory'),
@@ -122,12 +120,25 @@ sitetrees = [
             ],
         ),
         ralph_item(
+            title=_('Cloud'),
+            url='#',
+            url_as_pattern=False,
+            perms_mode_all=False,
+            children=[
+                section(_('Cloud hosts'), 'virtual', 'CloudHost'),
+                section(_('Cloud projects'), 'virtual', 'CloudProject'),
+                section(_('Cloud flavors'), 'virtual', 'CloudFlavor'),
+                section(_('Cloud providers'), 'virtual', 'CloudProvider'),
+            ],
+        ),
+        ralph_item(
             title=_('Back Office'),
             url='#',
             url_as_pattern=False,
             perms_mode_all=False,
             children=[
                 section(_('Hardware'), 'back_office', 'backofficeasset'),
+                section(_('SIM Cards'), 'sim_cards', 'SIMCard'),
             ]
         ),
         ralph_item(

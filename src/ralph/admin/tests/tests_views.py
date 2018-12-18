@@ -98,6 +98,9 @@ FACTORY_MAP = {
     'ralph.virtual.models.VirtualServerType': 'ralph.virtual.tests.factories.VirtualServerTypeFactory',  # noqa
     'ralph.security.models.Vulnerability': 'ralph.security.tests.factories.VulnerabilityFactory',  # noqa
     'ralph.security.models.SecurityScan': 'ralph.security.tests.factories.SecurityScanFactory',  # noqa
+    'ralph.sim_cards.models.SIMCard': 'ralph.sim_cards.tests.factories.SIMCardFactory',  # noqa
+    'ralph.sim_cards.models.CellularCarrier': 'ralph.sim_cards.tests.factories.CellularCarrierFactory',  # noqa
+    'ralph.sim_cards.models.SIMCardFeatures': 'ralph.sim_cards.tests.factories.SIMCardFeatureFactory',  # noqa'
 }
 
 EXCLUDE_MODELS = [

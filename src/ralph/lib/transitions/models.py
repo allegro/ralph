@@ -168,6 +168,7 @@ def _check_and_get_transition(obj, transition, field):
 def _check_instances_for_transition(
     instances, transition, requester, check_async_job=True
 ):
+
     """Check in respect of the instances source status.
 
     Args:
@@ -766,6 +767,7 @@ def update_transitions_after_migrate(**kwargs):
         )
         logger.warning('Deleting actions: {}'.format(list(to_delete)))
         to_delete.delete()
+
 
 post_migrate.connect(update_transitions_after_migrate)
 
