@@ -54,6 +54,7 @@ install:
     - npm config set python /usr/bin/python2.7
     - npm install
     - make js-hint
+    - make docs
     - gulp
     - make install-dev
     - pip install coveralls
@@ -63,7 +64,7 @@ install:
 script:
     - python contrib/dhcp_agent/test.py
     - ./scripts/test_settings.sh prod test >/dev/null
-    - make coveralls
+    - make coverage
     - ./scripts/check_missing_migrations.sh
 
 after_success:

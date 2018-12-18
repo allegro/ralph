@@ -49,7 +49,7 @@ coverage: clean
 	coverage run $(shell which test_ralph) test $(TEST) --keepdb --settings="ralph.settings.test"
 	coverage report
 
-docs:
+docs: install-docs
 	mkdocs build
 
 run:
@@ -57,8 +57,6 @@ run:
 
 menu:
 	ralph sitetree_resync_apps
-
-coveralls: install-docs docs coverage
 
 translate_messages:
 	ralph makemessages -a
