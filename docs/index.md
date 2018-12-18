@@ -1,9 +1,9 @@
-# Ralph 3
+# Ralph 3 - Asset Management / CMDB
 
 ![](https://user-images.githubusercontent.com/552398/47593757-d8b76280-d978-11e8-87c6-d4ba98d26f2a.png)
 
 
-Ralph NG is a simple yet powerful Asset Management, DCIM and CMDB system for data center and back office.
+Ralph is a simple yet powerful Asset Management, DCIM and CMDB system for data center and back office.
 
 Features:
 
