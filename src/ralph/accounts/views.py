@@ -21,7 +21,6 @@ from ralph.accounts.helpers import (
     get_loan_acceptance_url,
     loan_transition_exists
 )
-from ralph.lib.hooks import get_hook
 from ralph.admin.mixins import RalphBaseTemplateView, RalphTemplateView
 from ralph.back_office.models import BackOfficeAsset
 from ralph.licences.models import BaseObjectLicence
@@ -31,14 +30,7 @@ class UserProfileView(RalphTemplateView):
     template_name = 'ralphuser/user_profile.html'
 
 
-def get_asset_list_class():
-    return AssetList
-
-
-asset_class_from_hook = get_hook("account.views.get_asset_list_class")()
-
-
-class MyEquipmentAssetList(asset_class_from_hook):
+class MyEquipmentAssetList(AssetList):
     def user_licence(self, item):
         licences = BaseObjectLicence.objects.filter(
             base_object=item.id
@@ -189,7 +181,7 @@ class CurrentUserInfoView(
             'user', ('barcode', _('Barcode / Inventory Number')),
             'model__category__name', 'model__manufacturer__name',
             'model__name', ('sn', _('Serial Number')), 'invoice_date', 'status',
-            'url', 'buyout_button'
+            'url'
         ]
 
         if settings.MY_EQUIPMENT_SHOW_BUYOUT_DATE:
@@ -199,7 +191,7 @@ class CurrentUserInfoView(
             asset_fields += ['report_failure']
 
         if settings.MY_EQUIPMENT_BUYOUT_URL and settings.MY_EQUIPMENT_SHOW_BUYOUT_DATE:  # noqa
-            asset_fields += ['report_buyout']
+            asset_fields += ['buyout_ticket']
 
         warehouse_stocktaking_enabled = BackOfficeAsset.objects.filter(
             user=self.request.user, warehouse__stocktaking_enabled=True

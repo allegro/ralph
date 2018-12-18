@@ -120,16 +120,16 @@ class AssetList(Table):
         else:
             return []
 
-    def buyout_button(self, item):
+    def buyout_ticket(self, item):
         get_params = {"inventory_number": item.barcode,
                       "serial_number": item.sn,
                       "model": item.model,
                       "comment": item.buyout_date
                       }
-        url = "?".join([settings.MY_EQUIPMENT_BUYOUT_UR, urlencode(get_params)])
+        url = "?".join([settings.MY_EQUIPMENT_BUYOUT_URL, urlencode(get_params)])
         url_title = 'Report buyout'
         return self.create_report_link(url, url_title, item)
-    buyout_button.title = 'Buyout'
+    buyout_ticket.title = 'buyout_ticket'
 
     def report_failure(self, item):
         url = settings.MY_EQUIPMENT_REPORT_FAILURE_URL
