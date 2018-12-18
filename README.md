@@ -25,12 +25,11 @@ http://ralph-demo.allegro.tech/
 
 # Screenshots 
 
-![img](https://user-images.githubusercontent.com/552398/47593757-d8b76280-d978-11e8-87c6-d4ba98d26f2a.png)
+![img](https://github.com/allegro/ralph/blob/ng/docs/img/welcome-screen-1.png?raw=true)
 
-![img](https://user-images.githubusercontent.com/552398/47593858-49f71580-d979-11e8-891f-d992a8fce6a8.png)
+![img](https://github.com/allegro/ralph/blob/ng/docs/img/welcome-screen-2.png?raw=true)
 
-![img](https://user-images.githubusercontent.com/552398/47593924-8a569380-d979-11e8-8bf1-8980a499a3b3.png)
-
+![img](https://github.com/allegro/ralph/blob/ng/docs/img/welcome-screen-3.png?raw=true)
 
 
 ## Installation
