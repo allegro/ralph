@@ -1,6 +1,12 @@
-site_name: Ralph 3
+site_name: Ralph Asset Management System
 repo_url: https://github.com/allegro/ralph/
-pages:
+
+extra:
+  social:
+    - type: 'github'
+      link: 'https://github.com/allegro/ralph'
+
+nav:
   - Welcome: index.md
   - Installation guide:
       - Installation: installation/installation.md
@@ -16,6 +22,7 @@ pages:
       - Dashboards: user/dashboards.md
       - API: user/api.md
       - ralph-cli: user/ralph-cli.md
+      - DNS: user/dns.md
   - Developer guide:
       - Before you start: CONTRIBUTING.md
       - Architecture: development/overview.md
@@ -24,8 +31,15 @@ pages:
       - Transitions: development/transitions.md
       - Addons : development/addons.md
       - Packaging: development/packaging.md
+      - API: development/api.md
       - FAQ: development/faq.md
-theme: readthedocs
+
+theme:
+  name: material
+  palette:
+    primary: 'light blue'
+    accent: 'indigo'
+
 strict: true
 dev_addr: 0.0.0.0:8000
 markdown_extensions:
@@ -33,4 +47,5 @@ markdown_extensions:
         permalink: True
 extra_css:
     - custom.css
-site_dir: docs/_build/html  # sphinx compatible
+site_dir: /tmp/docs/_build/html  # sphinx compatible
+
