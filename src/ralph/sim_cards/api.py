@@ -1,7 +1,7 @@
+from ralph.accounts.api_simple import SimpleRalphUserSerializer
 from ralph.api import RalphAPIViewSet, router
 from ralph.assets.api.serializers import RalphAPISerializer
-from ralph.sim_cards.models import SIMCard, CellularCarrier, SIMCardFeatures
-from ralph.accounts.api_simple import SimpleRalphUserSerializer
+from ralph.sim_cards.models import CellularCarrier, SIMCard, SIMCardFeatures
 
 
 class CellularCarrierSerializer(RalphAPISerializer):
