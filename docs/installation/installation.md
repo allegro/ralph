@@ -15,11 +15,9 @@ distribution on the AMD64 platform.
 On the other hand, if you are developer, we strongly suggest using our `Vagrant` inside the `vagrant` directory
 with many development *bells and whistles* included.
 
-## Debian/Ubuntu package - buster/bionic and newer - recommended
+## Ubuntu package - bionic and newer - recommended
 
 This is a quick introduction on how to install Ralph on Ubuntu 18.04 Bionic.
-It installs Ralph in a Vagrant environment, but the commands can be adjusted
-and used for installation on any other Ubuntu 18.04 machine.
 
 We introduced some changes in the Ubuntu 18.04 Bionic package:
 
@@ -33,32 +31,10 @@ We introduced some changes in the Ubuntu 18.04 Bionic package:
 The settings are just environment variables that are passed to Ralph and then
 used as Django settings.
 
-### Preparation of Vagrant box
-
-Create and enter a new parent directory for your Vagrant box:
-
-    mkdir ralph_vagrant
-    cd ralph_vagrant
-
-Create Vagrant file in the parent directory:
-
-    cat -> Vagrantfile
-    Vagrant.configure("2") do |config|
-      config.vm.box = "ubuntu/bionic64"
-      config.vm.hostname = "ralph"
-      config.vm.network "forwarded_port", guest: 80, host: 8000
-      config.vm.provider "virtualbox" do |vb|
-        vb.memory = "2048"
-      end
-    end
-    ^D
-
-Start and enter the box:
-
-    vagrant up
-    vagrant ssh
-
 ### Ralph installation
+
+The steps below can be executed on any clean installation Ubuntu 18.04 Bionic.
+You can use [this Vagrant box](./vagrant.md) if you want.
 
     sudo apt-key adv --keyserver  hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
     sudo sh -c "echo 'deb https://dl.bintray.com/vi4m/ralph bionic main' >  /etc/apt/sources.list.d/vi4m_ralph.list"
@@ -122,7 +98,7 @@ superuser:
     sudo ralphctl migrate
     sudo ralphctl createsuperuser
 
-Pouplate the database with some demo data:
+Populate the database with some demo data:
 
     sudo ralphctl demodata
 
@@ -134,8 +110,18 @@ Now just a finishing touch:
     sudo systemctl enable ralph.service
     sudo systemctl start ralph.service
 
-And you are all set. Navigate to your new Ralph installation:
-[http://localhost:8000](http://localhost:8000)
+And you are all set. Navigate to your new Ralph installation - if you used
+Vagrant, follow this link: [http://localhost:8000](http://localhost:8000).
+
+### Troubleshooting
+
+If something goes wrong, you can take a peek at these log files:
+
+    /var/log/ralph/ralph.log
+    /var/log/ralph/gunicorn.error.log
+    /var/log/ralph/gunicorn.access.log
+    /var/log/nginx/ralph-error.log
+    /var/log/nginx/ralph-access.log 
 
 ### Next steps
 
@@ -145,6 +131,9 @@ inspiration for creating the configuration that suits your needs.
 It would porbably be a good idea to have the database located on a different
 host with a password different than the default one and use a load balancer for
 ssl traffic termination (or just to configure nginx to use ssl).
+
+Don't forget to read our quick start:
+[https://ralph-ng.readthedocs.io/en/latest/user/quickstart/]!
 
 ## Debian/Ubuntu package - trusty/jessie
 
