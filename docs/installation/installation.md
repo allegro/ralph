@@ -1,12 +1,107 @@
 # Installation guide
 
-For production, we provide both deb package and docker(compose) image.
-We only support Ubuntu 14.04 Trusty distribution on the AMD64 platform.
+For production, we provide deb packages for Ubuntu 14.04 Trusty and
+Ubuntu 18.04 Bionic on the AMD64 platform.
+
+We recommend using the package for Ubuntu 18.04. The package can be installed
+inside a Docker container, however at the time of this writing there is
+no official image yet and running the package requires some tweaks as there is
+no systemd inside a Docker container (and there shouldn't be).
+
+It is also possible to use our old package version for Ubuntu 14.04 Trusty
+distribution on the AMD64 platform.
 
 On the other hand, if you are developer, we strongly suggest using our `Vagrant` inside the `vagrant` directory
 with many development *bells and whistles* included.
 
-## Debian/Ubuntu package - recommended
+## Debian/Ubuntu package - buster/bionic and newer - recommended
+
+This is a quick introduction on how to install Ralph on Ubuntu 18.04 Bionic.
+It installs Ralph in a Vagrant environment, but the commands can be adjusted
+and used for installation on any other Ubuntu 18.04 machine.
+
+We introduced some changes in the Ubuntu 18.04 Bionic package:
+
+  * Ralph now uses Python 3.6
+  * settings are located in /etc/ralph
+  * database settings are configured via debconf prompts during a fresh
+  installation
+  * ralphctl command has been introduced for Ralph management
+  * Ralph runs as a systemd service
+
+The settings are just environment variables that are passed to Ralph and then
+used as Django settings.
+
+### Preparation of Vagrant box
+
+Create and enter a new parent directory for your Vagrant box:
+
+    mkdir ralph_vagrant
+    cd ralph_vagrant
+
+Create Vagrant file in the parent directory:
+
+    cat -> Vagrantfile
+    Vagrant.configure("2") do |config|
+      config.vm.box = "ubuntu/bionic64"
+      config.vm.hostname = "ralph"
+      config.vm.network "forwarded_port", guest: 80, host: 8000
+      config.vm.provider "virtualbox" do |vb|
+        vb.memory = "2048"
+      end
+    end
+    ^D
+
+Start and enter the box:
+
+    vagrant up
+    vagrant ssh
+
+### Ralph installation
+
+    sudo apt-key adv --keyserver  hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
+    sudo sh -c "echo 'deb https://dl.bintray.com/vi4m/ralph bionic main' >  /etc/apt/sources.list.d/vi4m_ralph.list"
+    sudo apt-get update
+    sudo apt-get install mysql-server nginx ralph-core
+
+When prompted, input Ralph database settings. For testing purposes, chosing the
+default settings will be fine. You can review the settings later in
+`/etc/ralph/conf.d/database.conf`.
+
+### Ralph configuration
+
+Once Ralph is installed, you can configure the database and create a Ralph
+superuser:
+
+    echo "create database ralph_ng" | sudo mysql
+    echo "create user 'ralph_ng'@'localhost' identified by 'ralph_ng'" | sudo mysql
+    echo "grant all privileges on ralph_ng.* to 'ralph_ng'@'localhost'" | sudo mysql
+    sudo ralphctl migrate
+    sudo ralphctl createsuperuser
+
+Pouplate the database with some demo data:
+
+    sudo ralphctl demodata
+
+Now just a finishing touch:
+
+    sudo ralphctl sitetree_resync_apps
+    sudo systemctl enable ralph.service
+    sudo systemctl start ralph.service
+
+And you are all set. Navigate to your new Ralph installation:
+[http://localhost:8000](http://localhost:8000)
+
+### Next steps
+
+Once you familiarize yourself with Ralph, you can use the example above as an
+inspiration for creating the configuration that suits your needs.
+
+It would porbably be a good idea to have the database located on a different
+host with a password different than the default one and use a load balancer for
+ssl traffic termination (or just to configure nginx to use ssl).
+
+## Debian/Ubuntu package - trusty/jessie
 
 Make sure, your installation is clean Ubuntu 14.04, without any other packages installed,
 and `apt-transport-https` installed.
