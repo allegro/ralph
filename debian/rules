@@ -16,3 +16,6 @@ override_dh_shlibdeps:
 
 override_dh_strip:
 	dh_strip --exclude=_cffi_backend --exclude=PIL
+
+override_dh_builddeb:
+	dh_builddeb -- --no-uniform-compression
