@@ -1,3 +1,10 @@
+ralph (20181221.2) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * workaround for bintray (see https://github.com/travis-ci/travis-ci/issues/9656)
+
+ -- PyLabs <pylabs@allegro.pl>  Fri, 21 Dec 2018 12:37:20 +0000
+
 ralph (20181221.1) bionic; urgency=medium
 
   [ Szymon Jasinski ]
