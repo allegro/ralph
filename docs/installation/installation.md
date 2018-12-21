@@ -133,7 +133,7 @@ host with a password different than the default one and use a load balancer for
 ssl traffic termination (or just to configure nginx to use ssl).
 
 Don't forget to read our quick start:
-(https://ralph-ng.readthedocs.io/en/latest/user/quickstart/])[https://ralph-ng.readthedocs.io/en/latest/user/quickstart/]!
+[https://ralph-ng.readthedocs.io/en/latest/user/quickstart/](https://ralph-ng.readthedocs.io/en/latest/user/quickstart/)!
 
 ## Debian/Ubuntu package - trusty/jessie
 
