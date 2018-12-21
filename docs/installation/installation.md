@@ -69,7 +69,49 @@ When prompted, input Ralph database settings. For testing purposes, chosing the
 default settings will be fine. You can review the settings later in
 `/etc/ralph/conf.d/database.conf`.
 
-### Ralph configuration
+### Nginx configuration
+
+Configure nginx by editing /etc/nginx/sites-available/default file and pasting
+the following:
+
+    server {
+
+        listen 80;
+        client_max_body_size 512M;
+
+        proxy_set_header Connection "";
+        proxy_http_version 1.1;
+        proxy_connect_timeout  300;
+        proxy_read_timeout 300;
+
+        access_log /var/log/nginx/ralph-access.log;
+        error_log /var/log/nginx/ralph-error.log;
+
+        location /static {
+            alias /usr/share/ralph/static;
+            access_log        off;
+            log_not_found     off;
+            expires 1M;
+        }
+
+        #location /media {
+        #    alias /var/local/ralph/media;
+        #    add_header Content-disposition "attachment";
+        #}
+
+        location / {
+            proxy_pass http://127.0.0.1:8000;
+            include /etc/nginx/uwsgi_params;
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+    }
+
+After that, restart nginx:
+
+    sudo systemctl restart nginx.service
+
+### Database configuration
 
 Once Ralph is installed, you can configure the database and create a Ralph
 superuser:
@@ -83,6 +125,8 @@ superuser:
 Pouplate the database with some demo data:
 
     sudo ralphctl demodata
+
+### Starting Ralph
 
 Now just a finishing touch:
 
