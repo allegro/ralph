@@ -1,13 +1,13 @@
 # Installation guide
 
 For production, we provide deb packages for Ubuntu 14.04 Trusty and
-Ubuntu 18.04 Bionic on the AMD64 platform.
+Ubuntu 18.04 Bionic on the AMD64 platform. We recommend using the package
+for Ubuntu 18.04.
 
-We recommend using the package for Ubuntu 18.04. The package can be installed
-inside a Docker container, however at the time of this writing there is
-no official image yet and running the package in a container requires some
-tweaks as there is no systemd inside a Docker container
-(and there shouldn't be).
+The package can be installed inside a Docker container, however at the time of
+this writing there is no official image yet and running the package in
+a container requires some tweaks as there is no systemd inside a Docker
+container (and there shouldn't be).
 
 It is also possible to use our old package version for Ubuntu 14.04 Trusty
 distribution on the AMD64 platform.
