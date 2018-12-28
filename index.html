@@ -65,17 +65,17 @@ layout: hero
       <div class="wizard-block">
         <div class="wizard-step">2</div>
         <div class="wizard-content">
-          <h2>Read the documentation</h2>
-          <p>Discover Ralph's features like: <a href="https://ralph-ng.readthedocs.io/en/latest/user/api/">REST API</a>, <a href="https://ralph-ng.readthedocs.io/en/latest/user/guide/#workflow-system-transitions">transitions (workflows)</a>, <a href="https://ralph-ng.readthedocs.io/en/latest/user/quickstart/#data-center-visualization">DC visualization</a> and more.</p>
-          <a href="{{ site.documentation_link }}" class="button success small">Go to the documentation!</a>
+          <h2>Install Ralph</h2>
+          <p>You can install Ralph on your server. We provide DEB package and Docker image for your convience.</p>
+          <a class="button success small" href="{{ site.installation_link }}">Read installation guide</a>
         </div>
       </div>
       <div class="wizard-block">
         <div class="wizard-step">3</div>
         <div class="wizard-content">
-          <h2>Install Ralph</h2>
-          <p>You can install Ralph on your server. We provide DEB package and Docker image for your convience.</p>
-          <a class="button success small" href="{{ site.installation_link }}">Read installation guide</a>
+          <h2>Read the documentation</h2>
+          <p>Discover Ralph's features like: <a href="https://ralph-ng.readthedocs.io/en/latest/user/api/">REST API</a>, <a href="https://ralph-ng.readthedocs.io/en/latest/user/guide/#workflow-system-transitions">transitions (workflows)</a>, <a href="https://ralph-ng.readthedocs.io/en/latest/user/quickstart/#data-center-visualization">DC visualization</a> and more.</p>
+          <a href="{{ site.documentation_link }}" class="button success small">Go to the documentation!</a>
         </div>
       </div>
       <div class="wizard-block">
@@ -97,17 +97,24 @@ layout: hero
   <div class="row">
     <div class="large-6 columns">
       <h2>Core Team</h2>
-      {% for member in site.data.contributors %}
-        {% if site.data.core_team contains member.login %}
-          <a href="{{ member.html_url }}"><img src="{{ member.avatar_url }}" alt="{{ member.login }}" width="48"></a>
-        {% endif %}
-      {% endfor %}
+      <div class="core-team-members">
+        {% for member in site.data.contributors %}
+          {% if site.data.core_team contains member.login %}
+          <div class="member">
+            <a href="{{ member.html_url }}">
+              <img src="{{ member.avatar_url }}" alt="{{ member.login }}">
+              {{ site.data.core_team_with_names[member.login].name }}
+            </a>
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
     </div>
     <div class="large-6 columns">
       <h2>Contributors</h2>
       {% for member in site.data.contributors %}
         {% if site.data.core_team contains member.login %}{% else %}
-          <a href="{{ member.html_url }}"><img src="{{ member.avatar_url }}" alt="{{ member.login }}" width="48"></a>
+          <a href="{{ member.html_url }}"><img src="{{ member.avatar_url }}" alt="{{ member.login }}"></a>
         {% endif %}
       {% endfor %}
     </div>
