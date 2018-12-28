@@ -1,0 +1,184 @@
+---
+---
+
+@import "settings";
+
+$callouts-padding: 5rem;
+.callouts {
+    padding-bottom: $callouts-padding;
+    padding-top: $callouts-padding;
+    li {
+        font-weight: 300;
+    }
+    h2 {
+        text-align: center;
+    }
+    .callout {
+        padding-top: 3rem;
+        h3 {
+        }
+        p {
+            padding-top: 1rem;
+        }
+    }
+}
+.callouts.white {
+    h2, h3 {
+        color: #fff;
+    }
+    p {
+        color: #fff;
+    }
+}
+.callouts.demo {
+    background-color: $mdc-orange-900;
+    text-align: center;
+}
+
+.demo {
+    .login-box-title {
+        background: #1E88E5;
+        font-weight: bold;
+        color: #fff;
+        padding: 5px 10px;
+        text-align: left;
+    }
+    .login-box {
+        background: #f6f6f6;
+        padding: 10px 20px;
+        font-size: .8rem;
+        .field {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+            &:last-child {
+                margin-bottom: 20px;
+            }
+            .label {
+                color: #222;
+                text-align: left;
+                margin: {
+                    left: 3px;
+                    bottom: 2px;
+                }
+                &:before {
+                    font-weight: bold;
+                    color: #F44336;
+                    content: "* ";
+                }
+            }
+            .input {
+                border: 1px solid #ccc;
+                background-color: #fff;
+                text-align: left;
+                padding: 3px;
+            }
+        }
+    }
+}
+
+.wizard {
+    $background: #fff;
+    $vertical-line-color: #fff;
+    $h2-color: $primary-color;
+    position: relative;
+    padding: 2em 0;
+    margin: {
+        top: 2em;
+        bottom: 2em;
+    }
+
+    .wizard-step {
+        position: absolute;
+        background: $background;
+        top: 4px;
+        left: 0;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        box-shadow: 0 0 0 4px darken($background, 10%), inset 0 2px 0 rgba(#000, .08), 0 3px 0 4px rgba(#000, .05) ;
+        color: #222;
+        font-weight: 300;
+        font-size: 1.5rem;
+    }
+
+    &::before {
+        /* this is the vertical line */
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 18px;
+        height: 100%;
+        width: 4px;
+        background: $vertical-line-color;
+    }
+    .wizard-block {
+        position: relative;
+        margin: 2em 0;
+        &:first-child {
+            margin-top: 0;
+        }
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        .wizard-content {
+            position: relative;
+            margin-left: 60px;
+            background: $background;
+            padding: 1em;
+            box-shadow: 2px 3px 2px rgba(#000, .1);
+            text-align: left;
+
+            h2 {
+                text-align: left;
+                color: $h2-color;
+            }
+
+            p {
+                color: #222;
+                margin: 1em 0;
+                line-height: 1.6;
+            }
+
+            &::before {
+                // arrow
+                content: '';
+                position: absolute;
+                top: 14px;
+                right: 100%;
+                height: 0;
+                width: 0;
+                border: 8px solid transparent;
+                border-right: 8px solid $background;
+            }
+        }
+    }
+}
+
+.contributors {
+    background: #656565;
+    img {
+        margin: 3px;
+        border-radius: 50%;
+        width: 48px;
+    }
+    .core-team-members {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        .member {
+            width: 50%;
+        }
+        a {
+            color: #ddd;
+        }
+    }
+}
+
+footer {
+    padding: 3rem;
+    background: #222;
+    color: #ccc;
+}
