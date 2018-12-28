@@ -162,6 +162,18 @@ $callouts-padding: 5rem;
     img {
         margin: 3px;
         border-radius: 50%;
+        width: 48px;
+    }
+    .core-team-members {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        .member {
+            width: 50%;
+        }
+        a {
+            color: #ddd;
+        }
     }
 }
 

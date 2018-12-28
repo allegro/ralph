@@ -9,3 +9,4 @@ dev:
 
 contributors-data:
 	curl https://api.github.com/repos/allegro/ralph/contributors -o _data/contributors.json
+	python3 get_core_team_data.py
