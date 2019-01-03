@@ -4,16 +4,16 @@ TEST?=ralph
 
 release-new-version: new_version = $(shell ./get_version.sh generate)
 release-new-version:
-	docker build -f docker_ng/Dockerfile-deb -t ralph-deb .
-	docker run -it -v $(shell pwd):/volume ralph-deb:latest release-new-version
+	docker build --force-rm -f docker_ng/Dockerfile-deb -t ralph-deb .
+	docker run --rm -it -v $(shell pwd):/volume ralph-deb:latest release-new-version
 	docker image rm --force ralph-deb:latest
 	git add debian/changelog
 	GIT_EDITOR=vim.tiny git commit -m "Updated changelog for $(new_version) version."
 	git tag -m $(new_version) -a $(new_version) -s
 
 build-package:
-	docker build -f docker_ng/Dockerfile-deb -t ralph-deb .
-	docker run -it -v $(shell pwd):/volume ralph-deb:latest build-package
+	docker build --force-rm -f docker_ng/Dockerfile-deb -t ralph-deb .
+	docker run --rm -it -v $(shell pwd):/volume ralph-deb:latest build-package
 	docker image rm --force ralph-deb:latest
 
 build-snapshot-package:
