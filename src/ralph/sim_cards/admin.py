@@ -14,6 +14,7 @@ class SIMCardAdmin(TransitionAdminMixin, RalphAdmin):
     #                    list_filter  - list of filters on simcard list
     #                    fieldsets - configuration of editor layout
     form = SIMCardForm
+    show_transition_history = True
     list_display = ['status', 'card_number', 'phone_number', 'pin1', 'puk1',
                     'user', 'owner', 'warehouse', 'carrier',
                     'quarantine_until']
