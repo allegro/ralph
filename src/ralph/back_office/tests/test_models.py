@@ -21,6 +21,8 @@ from ralph.assets.tests.factories import (
     ServiceEnvironmentFactory
 )
 from ralph.attachments.models import Attachment
+
+from ralph.back_office.helpers import EmailContext
 from ralph.back_office.models import (
     _check_assets_owner,
     BackOfficeAsset,
@@ -452,7 +454,11 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
         self.assertEqual(attachment.original_filename, correct_filename)
         self.assertEqual(attachment.file.read(), GENERATED_FILE_CONTENT)
 
-    def test_send_attachments_to_user_action_sends_email(self):
+    @patch('ralph.back_office.helpers.get_email_context_for_transition')
+    def test_send_attachments_to_user_action_sends_email(self, mockemctx):
+        mockemctx.return_value = EmailContext(from_email="foo@bar.pl",
+                                              subject="sub",
+                                              body="bod")
         bo_asset = BackOfficeAssetFactory(model=self.model)
         _, transition, _ = self._create_transition(
             model=bo_asset,
@@ -477,6 +483,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
         )
 
         self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].from_email, "foo@bar.pl")
 
     def test_send_attachments_to_user_action_dont_send_email_without_attachments(self):  # noqa: E501
         bo_asset = BackOfficeAssetFactory(model=self.model)

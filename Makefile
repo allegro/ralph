@@ -13,7 +13,7 @@ upload-package:
 
 install-js:
 	npm install
-	bower install
+	# bower install
 	./node_modules/.bin/gulp
 
 js-hint:
