@@ -147,11 +147,15 @@ class SIMCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model,
             'user': {
                 'field': forms.CharField(label=_('User')),
                 'autocomplete_field': 'user',
+                'default_value': partial(autocomplete_user, field_name='user')
             }
-        }
+        },
+        run_after=['unassign_user']
     )
     def assign_user(cls, instances, **kwargs):
-        print(instances)
+        user = get_user_model().objects.get(pk=int(kwargs['user']))
+        for instance in instances:
+            instance.user = user
 
     @classmethod
     @transition_action(
@@ -175,7 +179,11 @@ class SIMCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model,
         form_fields={
             'warehouse': {
                 'field': forms.CharField(label=_('Warehouse')),
-                'autocomplete_field': 'warehouse'
+                'autocomplete_field': 'warehouse',
+                'default_value': partial(
+                    autocomplete_user,
+                    field_name='warehouse'
+                )
             }
         }
     )
@@ -205,3 +213,15 @@ class SIMCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model,
                 'affected_user'
             ] = str(instance.user)
             instance.user = None
+
+    @classmethod
+    @transition_action(
+        form_fields={
+            'task_url': {
+                'field': forms.URLField(label=_('task URL')),
+            }
+        }
+    )
+    def assign_task_url(cls, instances, **kwargs):
+        for instance in instances:
+            instance.task_url = kwargs['task_url']
