@@ -2,6 +2,9 @@ TEST?=ralph
 
 .PHONY: test flake clean coverage docs coveralls
 
+# release-new-version is used by ralph mainteiners prior to publishing
+# new version of the package. The command generates the debian changelog 
+# commits it and tags the created commit with the appropriate snapshot version.
 release-new-version: new_version = $(shell ./get_version.sh generate)
 release-new-version:
 	docker build --force-rm -f docker_ng/Dockerfile-deb -t ralph-deb .
@@ -11,11 +14,15 @@ release-new-version:
 	GIT_EDITOR=vim.tiny git commit -m "Updated changelog for $(new_version) version."
 	git tag -m $(new_version) -a $(new_version) -s
 
+# build-package builds a release version of the package using the generated
+# changelog and the tag.
 build-package:
 	docker build --force-rm -f docker_ng/Dockerfile-deb -t ralph-deb .
 	docker run --rm -it -v $(shell pwd):/volume ralph-deb:latest build-package
 	docker image rm --force ralph-deb:latest
 
+# build-snapshot-package renerates a snapshot changelog and uses it to build
+# snapshot version of the package. It is mainly used for testing.
 build-snapshot-package:
 	docker build -f docker_ng/Dockerfile-deb -t ralph-deb .
 	docker run -it -v $(shell pwd):/volume ralph-deb:latest build-snapshot-package
