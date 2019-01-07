@@ -26,7 +26,7 @@ setup(
     author='Allegro.pl Sp. z o.o. and Contributors',
     author_email='opensource@allegro.pl',
     description="Advanced Asset Management and DCIM system for data center and back office.",
-    long_description='\n'.join([read('README.md'), read('CHANGES')]),
+    long_description=read('README.md'),
     url='http://ralph.allegrogroup.com/',
     keywords='',
     platforms=['any'],

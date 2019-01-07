@@ -1,4 +1,4 @@
-include AUTHORS README.rst CHANGES.rst LICENSE
+include AUTHORS README.rst LICENSE
 recursive-include doc *.py *.rst *.txt *.html *.css *.js *.png *.git *.jpg *.conf *.bat *.pdf *.docx Makefile
 recursive-include src/ralph *
 recursive-include requirements/ *
