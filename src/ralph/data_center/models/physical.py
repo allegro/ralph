@@ -28,7 +28,12 @@ from ralph.assets.models.assets import Asset, NamedMixin
 from ralph.assets.models.choices import AssetSource
 from ralph.assets.models.components import Ethernet
 from ralph.assets.utils import DNSaaSPublisherMixin, move_parents_models
-from ralph.back_office.models import BackOfficeAsset, Warehouse
+from ralph.back_office.helpers import status_converter
+from ralph.back_office.models import (
+    BackOfficeAsset,
+    BackOfficeAssetStatus,
+    Warehouse
+)
 from ralph.data_center.models.choices import (
     ConnectionType,
     DataCenterAssetStatus,
@@ -40,6 +45,7 @@ from ralph.data_center.publishers import publish_host_update
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, PreviousStateMixin
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
+from ralph.lib.transitions.models import Transition
 from ralph.networks.models import IPAddress, Network, NetworkEnvironment
 from ralph.signals import post_commit
 
@@ -754,7 +760,16 @@ class DataCenterAsset(
                 back_office_asset.warehouse = Warehouse.objects.get(
                     pk=kwargs['warehouse']
                 )
-                move_parents_models(instance, back_office_asset)
+                target_status = int(
+                    Transition.objects.values_list('target', flat=True).get(pk=kwargs['transition_id'])  # noqa
+                )
+                back_office_asset.status = status_converter(
+                    instance.status, target_status,
+                    DataCenterAssetStatus, BackOfficeAssetStatus
+                )
+                move_parents_models(
+                    instance, back_office_asset, exclude_copy_fields=['status']
+                )
                 # Save new asset to list, required to redirect url.
                 # RunTransitionView.get_success_url()
                 instances[i] = back_office_asset
