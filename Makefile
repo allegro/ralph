@@ -24,8 +24,8 @@ build-package:
 # build-snapshot-package renerates a snapshot changelog and uses it to build
 # snapshot version of the package. It is mainly used for testing.
 build-snapshot-package:
-	docker build -f docker_ng/Dockerfile-deb -t ralph-deb .
-	docker run -it -v $(shell pwd):/volume ralph-deb:latest build-snapshot-package
+	docker build --force-rm -f docker_ng/Dockerfile-deb -t ralph-deb .
+	docker run --rm -it -v $(shell pwd):/volume ralph-deb:latest build-snapshot-package
 	docker image rm --force ralph-deb:latest
 
 install-js:
