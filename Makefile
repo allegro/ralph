@@ -1,4 +1,5 @@
 TEST?=ralph
+TEST_ARGS=
 
 .PHONY: test flake clean coverage docs coveralls
 
@@ -35,7 +36,7 @@ isort:
 	isort --diff --recursive --check-only --quiet src
 
 test: clean
-	test_ralph test $(TEST)
+	test_ralph test $(TEST) $(TEST_ARGS)
 
 flake: isort
 	flake8 src/ralph
