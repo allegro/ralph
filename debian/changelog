@@ -1,3 +1,19 @@
+ralph (20190108.1) bionic; urgency=medium
+
+  [ vi4m Marcin Kliks ]
+  * Beautiful docs layout + transitions (#3350)
+
+  [ sekuranka ]
+  * Add API for SIM cards (#3357)
+
+  [ Szymon Jasinski ]
+  * Documentation for new package (#3359)
+
+  [ Szymon Jasinski and Roman Prykhodchenko]
+  * Improvements to the debian package
+
+ -- root <root@4d28c6f7de1d>  Tue, 08 Jan 2019 12:31:11 +0000
+
 ralph (20181221.2) bionic; urgency=medium
 
   [ Szymon Jasinski ]
