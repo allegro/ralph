@@ -101,18 +101,14 @@ class IPAddressViewSet(RalphAPIViewSet):
 
 class NetworkViewSet(RalphAPIViewSet):
     queryset = Network.objects.all()
+    serializer_class = NetworkSerializer
+    save_serializer_class = NetworkSaveSerializer
     select_related = ['network_environment', 'kind']
     prefetch_related = ['racks']
     extended_filter_fields = {
         # workaround for custom field for address field defined in admin
         'address': ['address'],
     }
-
-    def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return NetworkSerializer
-        else:
-            return NetworkSaveSerializer
 
 
 class NetworkEnvironmentViewSet(RalphAPIViewSet):
