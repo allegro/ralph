@@ -41,7 +41,7 @@ before_install:
     - pip install flake8==3.0.4 isort==4.2.5
     - make flake
     - npm install -g gulp
-    - export RALPH_VERSION=$(cat VERSION)
+    - export RALPH_VERSION=$(./get_version.sh)
     - docker run -d -p "$REDIS_PORT:6379" redis:3.0;
     - export NEW_TAG=$RALPH_VERSION-snapshot-$(date "+%Y%m%d")-$TRAVIS_BUILD_NUMBER
     - if [[ $TEST_DB_ENGINE == mysql ]]; then docker run -d -v $(pwd)/docker/mysql.cnf:/etc/mysql/conf.d/mysql.cnf -p "$DATABASE_PORT:3306" -e "MYSQL_ALLOW_EMPTY_PASSWORD=yes" -e "MYSQL_DATABASE=ralph_ng" -e "MYSQL_ROOT_PASSWORD=root" -e "MYSQL_USER=travis" -e "MYSQL_PASSWORD=travis" mysql:$MYSQL_VERSION; fi

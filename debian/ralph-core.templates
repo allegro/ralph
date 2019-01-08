@@ -1,0 +1,42 @@
+Template: ralphsrv/use_default
+Type: boolean
+Default: false
+Description: Use default database settings:
+ Use default database settings for Ralph.
+
+Template: ralphsrv/database_engine
+Type: select
+Choices: mysql, postgresql
+Default: mysql
+Description: Select database provider:
+ Select database provider for Ralph.
+
+Template: ralphsrv/database_username
+Type: string
+Default: ralph_ng
+Description: Database username:
+ Enter Ralph database username.
+
+Template: ralphsrv/database_password
+Type: password
+Default: ralph_ng
+Description: Database password:
+ Enter Ralph database password.
+
+Template: ralphsrv/database_host
+Type: string
+Default: 127.0.0.1
+Description: Database host:
+ Enter Ralph database hostname.
+
+Template: ralphsrv/database_port
+Type: string
+Default: 3306
+Description: Database port:
+ Enter Ralph database port.
+
+Template: ralphsrv/database_name
+Type: string
+Default: ralph_ng
+Description: Database:
+ Enter the name of Ralph database.
