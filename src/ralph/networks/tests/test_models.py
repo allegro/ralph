@@ -243,6 +243,14 @@ class NetworkTest(RalphTestCase):
             self.assertEqual(net.get_first_free_ip(), first_free)
             patcher.stop()
 
+    def test_min_and_max_ip_are_assigned(self):
+        net = Network.objects.create(
+            name='net', address='1.0.0.0/16'
+        )
+
+        self.assertEqual(net.min_ip, 16777216)  # 1.0.0.0
+        self.assertEqual(net.max_ip, 16842751)  # 1.0.255.255
+
     def test_sub_network_should_assign_automatically(self):
         net = Network.objects.create(
             name='net', address='192.168.5.0/24'
