@@ -1,3 +1,10 @@
+ralph (20190109.1) bionic; urgency=medium
+
+  [ Damian Blejwas ]
+  * Network min and max IP, block update via API
+
+ -- root <root@7403e9417371>  Wed, 09 Jan 2019 14:46:09 +0000
+
 ralph (20190108.1) bionic; urgency=medium
 
   [ vi4m Marcin Kliks ]
