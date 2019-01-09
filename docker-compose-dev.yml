@@ -19,7 +19,7 @@ services:
     ports:
       - "6379:6379"
   inkpy:
-    image: maho/inkpy-jinja:latest
+    image: ar4s/inkpy_jinja:latest
     restart: always
     links:
       - redis:redis
