@@ -11,7 +11,7 @@ release-new-version:
 	docker run --rm -it -v $(shell pwd):/volume ralph-deb:latest release-new-version
 	docker image rm --force ralph-deb:latest
 	git add debian/changelog
-	GIT_EDITOR=vim.tiny git commit -m "Updated changelog for $(new_version) version."
+	git commit -S -m "Updated changelog for $(new_version) version."
 	git tag -m $(new_version) -a $(new_version) -s
 
 # build-package builds a release version of the package using the generated
