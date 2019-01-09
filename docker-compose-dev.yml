@@ -18,3 +18,11 @@ services:
     image: redis:3.0
     ports:
       - "6379:6379"
+  inkpy:
+    image: maho/inkpy-jinja:latest
+    restart: always
+    links:
+      - redis:redis
+    env_file:
+      - ./contrib/ralph.env
+        
