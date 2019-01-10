@@ -48,7 +48,7 @@ to build a snapshot package run:
 make build-snapshot-package
 ```
 
-The built package will be put into the build catalog and will have the name
+The built package will be put into the `build` catalog and will have the name
 that will look like `ralph-core_<DATE>.<PATCH>-<BANCH>-SNAPSHOT_amd64.deb`.
 
 
