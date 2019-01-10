@@ -97,7 +97,7 @@ The process of releasing and publishing a new version is the following:
 6. Verify the version in the latest commit message is correct.
 7. Verify the latest commit is tagged.
 6. Verify signatures for both the latest commit and for its tag.
-7. [Optional] Verify you can build a *release* package.
+7. [Optional] Verify you can build a **release** package.
 7. Push the latest commit along with the tag to the `ng` branch of the upstream
    repository. To do that run `git push upstream ng --follow-tags`.
 8. Log in to the CI used for publishing Ralph packages and run
