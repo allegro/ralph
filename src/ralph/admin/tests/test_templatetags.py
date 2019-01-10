@@ -4,9 +4,9 @@ from django.test import TestCase
 from django.utils.translation import gettext as _
 
 from ..templatetags.dashboard_tags import (
-    get_user_equipment_to_accept_tile_data,
+    get_user_equipment_to_accept_loan_tile_data,
     get_user_equipment_to_accept_return_tile_data,
-    get_user_equipment_to_accept_loan_tile_data)
+    get_user_equipment_to_accept_tile_data)
 
 
 class TestTemplatetags(TestCase):

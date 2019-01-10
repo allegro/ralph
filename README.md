@@ -90,7 +90,7 @@ Visit our documentation on [readthedocs.org](http://ralph-ng.readthedocs.org)
 Ralph community will answer your questions on a chat: [![Gitter](https://img.shields.io/gitter/room/gitterHQ/gitter.svg)](https://gitter.im/allegro/ralph?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 
-# TIPS AND TRICKS
+# Dev Tips & Tricks
 
 ## how to see asset boxes in front dashboard
 
@@ -116,11 +116,11 @@ Ralph community will answer your questions on a chat: [![Gitter](https://img.shi
     ```
 * write following lines into settings/dev.py:
 
-    ```
-        ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['RETURN_TRANSITION_ID'] = 1
-        ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['LOAN_TRANSITION_ID'] = 1
-        ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['TRANSITION_ID'] = 1
-    ```
+```
+ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['RETURN_TRANSITION_ID'] = 1
+ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['LOAN_TRANSITION_ID'] = 1
+ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['TRANSITION_ID'] = 1
+```
 * go to http://localhost:8000/back_office/backofficeasset/add/ and create asset with
  * status: in progress
  * assigned to user: r2
