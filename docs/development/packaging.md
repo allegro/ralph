@@ -1,8 +1,8 @@
 # Deb package for Ubuntu
 
-The way Ralph is made makes changing versions of its dependencies challenging
-so in order to provide a deb package for [Ubuntu] it is necessary to use 
-`dh_virtualenv` which installs all dependencies into a virtualenv and packs
+The way Ralph is made makes changing versions of its dependencies challenging;
+consequently, in order to provide a deb package for [Ubuntu] it is necessary to
+use  `dh_virtualenv` which installs all dependencies into a virtualenv and packs
 the latter into a package. Although this approach is not blessed by either
 [Debian] or Ubuntu maintainers, it provides a healthy compromise between the
 availability of the Ralph package and the effort required to make one.
@@ -33,7 +33,7 @@ compromises:
 
 ## Building packages
 
-Building Ralph package can be done in two modes -- snapshot and release. Those
+Building Ralph package can be done in two modes: snapshot and release. Those
 modes produce packages for testing and for production uses respectively. The
 Makefile available in Ralph provides a target for each of the modes.
 
@@ -49,14 +49,14 @@ make build-snapshot-package
 ```
 
 The built package will be put into the build catalog and will have the name
-that will look like ``.
+that will look like `ralph-core_<DATE>.<PATCH>-<BANCH>-SNAPSHOT_amd64.deb`.
 
 
 ### Building release packages
 
 Release packages are meant to be used on production therefore they should be
 build from the tagged HEAD of the `ng` branch. This, however, is not strictly
-controlled by the toolchain to handle different edge cases.
+controlled by the tool chain to handle different edge cases.
 
 In order to build a release package run:
 
@@ -72,7 +72,7 @@ make build-package
 
 Properly releasing versions is one of the key duties of every Ralph maintainer.
 
-Like the rest of the package management operations releasing and publishing a
+Like the rest of the package management operations, releasing and publishing a
 new version is automated and does not require specific environment to be
 performed.
 

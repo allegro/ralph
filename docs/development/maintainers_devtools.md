@@ -32,11 +32,11 @@ keys to Ubuntu key server at hkp://keyserver.ubuntu.com.
 The following git configuration options has to be set either globally or
 locally:
 
-* **user.name** -- Full name of the maintainer in ASCII letters according to
+* **user.name**: Full name of the maintainer in ASCII letters according to
   the official document. It is possible to use non-ASCII Latin characters but
   some of the tools may misinterpret that.
-* **user.email** -- The email.
-* **user.signingkey** -- The ID of the GnuPG key that will be used for signing
+* **user.email**: The email.
+* **user.signingkey**: The ID of the GnuPG key that will be used for signing
   both commits and the tags.
 
 
