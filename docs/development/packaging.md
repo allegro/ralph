@@ -64,7 +64,7 @@ In order to build a release package run:
 make build-package
 ```
 
- > If a release package is meant to be released, a maintainer should release
+ > If a release package is meant to be published, a maintainer should release
  > a new version prior to building one. The way to do that is described bellow.
 
 
@@ -101,7 +101,7 @@ The process of releasing and publishing a new version is the following:
 7. Push the latest commit along with the tag to the `ng` branch of the upstream
    repository. To do that run `git push upstream ng --follow-tags`.
 8. Log in to the CI used for publishing Ralph packages and run
-   `release-new-version` job.
+   `ralph-release-package` job.
 9. Verify the job succeeded and the Bintray repository contains the
    [built version][2]
 
