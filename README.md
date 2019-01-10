@@ -88,3 +88,44 @@ Visit our documentation on [readthedocs.org](http://ralph-ng.readthedocs.org)
 ## Getting help
 
 Ralph community will answer your questions on a chat: [![Gitter](https://img.shields.io/gitter/room/gitterHQ/gitter.svg)](https://gitter.im/allegro/ralph?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+
+# TIPS AND TRICKS
+
+## how to see asset boxes in front dashboard
+
+* dev_ralph migrate
+* make menu
+* dev_ralph createsuperuser --email='foo@bar.pl' --username=root
+* dev_ralph createsuperuser --email='foo@bar.pl' --username=r2 (or create user in by root in web)
+* dev_ralph runserver
+* http://localhost:8000/transitions/transitionmodel/1/ -> [add another transition]
+ * source: 'in progress'
+ * destination: 'in use'
+ * -> [Save]
+ * run `dev_ralph dbshell` and run following query to check what's id of newly created transition:
+    
+    ```
+    mysql> SELECT * FROM transitions_transition;
+    +----+------+--------+--------+----------+--------------------+--------------------+---------------+-------------+
+    | id | name | source | target | model_id | async_service_name | run_asynchronously | template_name | success_url |
+    +----+------+--------+--------+----------+--------------------+--------------------+---------------+-------------+
+    |  1 | foo  | ["2"]  | 4      |        1 |                    |                  0 |               | NULL        |
+    +----+------+--------+--------+----------+--------------------+--------------------+---------------+-------------+
+    1 row in set (0,00 sec)
+    ```
+* write following lines into settings/dev.py:
+
+    ```
+        ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['RETURN_TRANSITION_ID'] = 1
+        ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['LOAN_TRANSITION_ID'] = 1
+        ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['TRANSITION_ID'] = 1
+    ```
+* go to http://localhost:8000/back_office/backofficeasset/add/ and create asset with
+ * status: in progress
+ * assigned to user: r2
+ * owner: r2
+ * click [save]
+* repeat adding step with statuses 'return in progress' and 'loan in progress'
+* now open incognito mode and login to http://localhost:8000/ as user=r2
+
