@@ -3,7 +3,9 @@
 set -aue
 
 source /etc/ralph/ralph.conf
-source /etc/ralph/conf.d/*
+for f in /etc/ralph/conf.d/*.conf; do
+    source $f
+done
 
 RALPH_BIN="/opt/ralph/ralph-core/bin/ralph"
 RALPH_LOGFILE=${LOG_FILEPATH:-"/var/log/ralph/ralph.log"}
