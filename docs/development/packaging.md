@@ -49,13 +49,13 @@ make build-snapshot-package
 ```
 
 The built package will be put into the `build` catalog and will have the name
-that will look like `ralph-core_<DATE>.<PATCH>-<BANCH>-SNAPSHOT_amd64.deb`.
+that will look like `ralph-core_<DATE>.<PATCH>-<BRANCH>-SNAPSHOT_amd64.deb`.
 
 
 ### Building release packages
 
 Release packages are meant to be used on production therefore they should be
-build from the tagged HEAD of the `ng` branch. This, however, is not strictly
+built from the tagged HEAD of the `ng` branch. This, however, is not strictly
 controlled by the tool chain to handle different edge cases.
 
 In order to build a release package run:
@@ -71,29 +71,26 @@ make build-package
 ## Releasing and publishing new versions
 
 Properly releasing versions is one of the key duties of every Ralph maintainer.
+Therefore, it is necessary for a Ralph maintainers to have their development
+tools properly configured. For the details, see the [Maintainer's development tools][3]
+section.
 
 Like the rest of the package management operations, releasing and publishing a
 new version is automated and does not require specific environment to be
 performed.
-
-However, it is necessary for a Ralph maintainer to have their development tools
-properly configured, in order to release and sign packages.
-
- > Prior to releasing a version make sure the development tools are set up.
- > For the details, see the [Maintainer's development tools][3] section.
 
 The process of releasing and publishing a new version is the following:
 
 1. Switch to `ng` branch and ensure it is clean.
 2. Pull the latest changes from the ng branch of the [upstream repository][1].
 3. Run `make release-new-version`.
-   This will generate a debian changelog based on git commits and will open
+   This will generate a Debian changelog based on git commits and will open
    it in vim-tiny for a final examination.
 4. Edit the changelog as required, save the file and quit the editor.
 5. At this point `gpg` may ask for a password once or twice in order to sign
-   both the commited changelog and the created tag.
-5. Verify the changelod in `debian/changelog` contains the latest changes
-   commited.
+   both the committed changelog and the created tag.
+5. Verify the changelog in `debian/changelog` contains the latest changes
+   committed.
 6. Verify the version in the latest commit message is correct.
 7. Verify the latest commit is tagged.
 6. Verify signatures for both the latest commit and for its tag.
