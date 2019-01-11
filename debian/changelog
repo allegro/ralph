@@ -1,3 +1,17 @@
+ralph (20190111.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * Documentation fix
+
+  [ Roman Prykhodchenko ]
+  * Sign changelog commit
+  * Update packaging documentation
+
+  [ Anton Engelhardt ]
+  * ralphctl fixed sourcing of conf.d/*
+
+ -- Szymon Jasinski <szymon@szymi.com>  Fri, 11 Jan 2019 14:14:23 +0000
+
 ralph (20190109.1) bionic; urgency=medium
 
   [ Damian Blejwas ]
