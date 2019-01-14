@@ -94,8 +94,19 @@ Ralph community will answer your questions on a chat: [![Gitter](https://img.shi
 
 ## how to see asset boxes in front dashboard
 
+By default, when you visit front dashboard, you see no "Hardware loan", "Hardware release" nor "Hardware return" boxes. They should be visible only when you have assigned asset in back office, which is in 'in progress' or 'in use' state. However - when you add such item on empty database, you will ecounter error: 
+
+```
+NoReverseMatch at /
+Reverse for 'back_office_backofficeasset_transition_bulk' with arguments '(None,)' and keyword arguments '{}' not found. 1 pattern(s) tried: ['back_office/backofficeasset/transition/(?P<transition_pk>\\d+)$']
+```
+
+To overcome this problem, you may do following steps:
+
+*(assumptions: empty database, assets will be assigned to user **r2** by user **root**)*
+
 * dev_ralph migrate
-* make menu
+* make menu (if you didn't do it already)
 * dev_ralph createsuperuser --email='foo@bar.pl' --username=root
 * dev_ralph createsuperuser --email='foo@bar.pl' --username=r2 (or create user in by root in web)
 * dev_ralph runserver
