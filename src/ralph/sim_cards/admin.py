@@ -16,6 +16,7 @@ class SIMCardAdmin(RalphAdmin):
     list_display = ['status', 'card_number', 'phone_number', 'pin1', 'puk1',
                     'user', 'owner', 'warehouse', 'carrier',
                     'quarantine_until']
+
     raw_id_fields = ['warehouse', 'owner', 'user', 'carrier']
 
     list_select_related = [
@@ -23,8 +24,8 @@ class SIMCardAdmin(RalphAdmin):
     ]
 
     list_filter = [
-        'status', 'features', 'card_number', 'warehouse', 'user', 'owner',
-        'user__segment', 'user__company', 'user__department',
+        'status', 'features', 'phone_number', 'card_number', 'warehouse',
+        'user', 'owner', 'user__segment', 'user__company', 'user__department',
         'user__employee_id', 'carrier', 'quarantine_until'
     ]
 
@@ -42,6 +43,7 @@ class SIMCardAdmin(RalphAdmin):
             )
         }),
     )
+    search_fields = ('card_number', 'phone_number', 'pin1', 'puk1')
 
 
 @register(SIMCardFeatures)
