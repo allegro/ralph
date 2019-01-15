@@ -17,7 +17,7 @@ django-cryptography==0.3
 djangorestframework==3.2.2
 djangorestframework_xml==1.2.0
 drf-nested-routers==0.11.1
-Markdown<3.0  # headerid extension removed in 3.0 - see #3313 for details
+Markdown>=3.0.1
 mysqlclient==1.3.13
 netaddr==0.7.18
 python-dateutil==2.4.2
