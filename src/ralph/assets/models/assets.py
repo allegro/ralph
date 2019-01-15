@@ -456,7 +456,6 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
     )
     start_usage = models.DateField(blank=True, null=True)
 
-
     def __str__(self):
         return self.hostname or ''
 
