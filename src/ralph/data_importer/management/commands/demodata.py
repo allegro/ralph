@@ -65,7 +65,8 @@ class Command(BaseCommand):
 
     help = "Generating demo data."
     all_apps = [
-        'backoffice', 'datacenter', 'licences', 'supports', 'transitions'
+        'backoffice', 'datacenter', 'licences', 'supports', 'transitions',
+        'sim_cards'
     ]
     object_limit = 30
 
