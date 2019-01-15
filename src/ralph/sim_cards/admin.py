@@ -43,7 +43,7 @@ class SIMCardAdmin(RalphAdmin):
             )
         }),
     )
-    search_fields = ('card_number', 'phone_number', 'pin1', 'puk1')
+    search_fields = ('card_number', 'phone_number', 'pin1', 'puk1', 'carrier')
 
 
 @register(SIMCardFeatures)

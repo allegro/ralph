@@ -210,16 +210,7 @@ class AssignedLicenceList(Table):
 
 
 class AssignedSimcardsList(Table):
-
-    def url(self, item):
-        return '<a href="{}">{}</a>'.format(
-            reverse(
-                'admin:simcards_simcard_change',
-                args=(item.id,)
-            ),
-            _('go to simcard')
-        )
-    url.title = _('Link')
+    pass
 
 
 class UserInfoMixin(object):
