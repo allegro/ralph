@@ -1,4 +1,4 @@
-from ralph.accounts.api_simple import SimpleRalphUserSerializer
+from ralph.accounts.api import RalphUserSimpleSerializer
 from ralph.api import RalphAPIViewSet, router
 from ralph.assets.api.serializers import RalphAPISerializer
 from ralph.sim_cards.models import CellularCarrier, SIMCard, SIMCardFeatures
@@ -19,8 +19,8 @@ class SIMCardFeaturesSerializer(RalphAPISerializer):
 class SIMCardSerializer(RalphAPISerializer):
     carrier = CellularCarrierSerializer()
     features = SIMCardFeaturesSerializer(many=True)
-    user = SimpleRalphUserSerializer()
-    owner = SimpleRalphUserSerializer()
+    user = RalphUserSimpleSerializer()
+    owner = RalphUserSimpleSerializer()
 
     class Meta:
         model = SIMCard
@@ -44,7 +44,8 @@ class SIMCardViewSet(RalphAPIViewSet):
     serializer_class = SIMCardSerializer
     select_related = ['carrier', 'user', 'owner']
     prefetch_related = ['features']
-    filter_fields = ['user__username', 'features__name']
+    filter_fields = ['user__username', 'features__name', 'owner__username',
+                     'carrier__name']
 
 
 router.register(r'sim-card-feature', SIMCardFeatureViewSet)
