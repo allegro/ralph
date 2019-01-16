@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='asset',
             name='start_usage',
-            field=models.DateField(null=True, blank=True),
+            field=models.DateField(null=True, blank=True, help_text='Fill it if date of first usage is different then date of creation'),
         ),
     ]
