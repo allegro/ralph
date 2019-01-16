@@ -9,3 +9,4 @@ flake8==3.0.4
 sphinx
 flake8-debugger==1.4.0
 flake8-print==2.0.2
+httpretty==0.9.6

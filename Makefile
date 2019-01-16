@@ -37,6 +37,9 @@ isort:
 test: clean
 	test_ralph test $(TEST)
 
+fast_test: clean
+	test_ralph test -v2 -k --failfast $(TEST)
+
 flake: isort
 	flake8 src/ralph
 	flake8 src/ralph/settings --ignore=F405 --exclude=*local.py

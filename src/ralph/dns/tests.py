@@ -1,9 +1,16 @@
 # -*- coding: utf-8 -*-
 from unittest.mock import patch
 
+from ralph.data_center.tests.factories import (
+    ClusterFactory,
+    DataCenterAssetFullFactory
+)
+from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.test import override_settings, TestCase, TransactionTestCase
 from django.utils.translation import ugettext_lazy as _
+
+import httpretty
 
 from ralph.assets.tests.factories import (
     ConfigurationClassFactory,
@@ -21,6 +28,8 @@ from ralph.dns.views import (
 from ralph.networks.tests.factories import IPAddressFactory
 from ralph.virtual.models import VirtualServer
 from ralph.virtual.tests.factories import VirtualServerFactory
+from ralph.tests import factories
+from ralph.tests.mixins import ClientMixin
 
 
 class TestGetDnsRecords(TestCase):
@@ -91,7 +100,13 @@ class TestGetDnsRecords(TestCase):
         )
 
 
-class TestDNSView(TestCase):
+class TestDNSView(TestCase, ClientMixin):
+
+    def setUp(self):
+        super().setUp()
+        self.user = factories.UserFactory(is_superuser=True)
+        self.login_as_user(self.user)
+
     @override_settings(ENABLE_DNSAAS_INTEGRATION=False)
     def test_dnsaasintegration_disabled(self):
         with self.assertRaises(DNSaaSIntegrationNotEnabledError):
@@ -101,6 +116,32 @@ class TestDNSView(TestCase):
     def test_dnsaasintegration_enabled(self):
         # should not raise exception
         DNSView()
+
+    @httpretty.activate
+    @override_settings(ENABLE_DNSAAS_INTEGRATION=True)
+    @override_settings(DNSAAS_URL='http://100.200.250.251/')
+    def test_dnsaas_returns_empty_json(self):
+        cluster = ClusterFactory()
+
+        IPAddressFactory(ethernet__base_object=cluster)
+
+        cluster.baseobjectcluster_set.create(
+            is_master=True,
+            base_object=DataCenterAssetFullFactory(
+                rack__name='Rack #1',
+                rack__server_room__name='SR1',
+                rack__server_room__data_center__name='DC1',
+            )
+        )
+        url = reverse('admin:data_center_cluster_dns_edit', args=(cluster.id,))
+        httpretty.register_uri(httpretty.GET,
+                               "http://100.200.250.251/api/v2/records/",
+                               body={})
+        resp = self.client.get(url, follow=True)
+        msgtext = str(list(resp.context['messages'])[0])
+        expected = str(_("Invalid response from DNSaaS:"))
+        assert msgtext.startswith(expected),\
+            "%s not in %s" % (expected, msgtext)
 
 
 class TestGetTXTDataToPublishToDNSaaS(TestCase):
@@ -547,10 +588,11 @@ class TestPublishAutoTXTToDNSaaS(TransactionTestCase):
 
 class TestDNSaaS(TestCase):
     def test_user_get_info_when_dnsaas_user_has_no_perm(self):
+        dns = DNSaaS()
+
         class RequestStub():
             status_code = 202
         request = RequestStub()
-        dns = DNSaaS()
 
         result = dns._response2result(request)
 
