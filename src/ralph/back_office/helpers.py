@@ -39,9 +39,9 @@ def _status_converter(
     """
     if not target_status_id:
         target_status_id = old_status_id
+    source_status = from_status_cls.from_id(target_status_id)
     try:
-        old_status = from_status_cls.from_id(target_status_id)
-        return to_status_cls.from_name(old_status.name).id
+        return to_status_cls.from_name(source_status.name).id
     except ValueError:
         if to_status_cls == DataCenterAssetStatus:
             return settings.CONVERT_TO_DATACENTER_ASSET_DEFAULT_STATUS_ID
