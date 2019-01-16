@@ -17,9 +17,8 @@ def get_email_context_for_transition(transition_name: str) -> EmailContext:
     return EmailContext(**default)
 
 
-def status_converter(
-    old_status_id, target_status_id, from_status_cls=BackOfficeAssetStatus,
-    to_status_cls=DataCenterAssetStatus
+def _status_converter(
+    old_status_id, target_status_id, from_status_cls, to_status_cls
 ):
     """
     Convert BackOfficeAsset (BO) status to DatacenterAsset (DC) status (or the
@@ -38,9 +37,9 @@ def status_converter(
     Returns:
         new_status_id: DC status (int)
     """
+    if not target_status_id:
+        target_status_id = old_status_id
     try:
-        if not target_status_id:
-            target_status_id = old_status_id
         old_status = from_status_cls.from_id(target_status_id)
         return to_status_cls.from_name(old_status.name).id
     except ValueError:
@@ -48,3 +47,21 @@ def status_converter(
             return settings.CONVERT_TO_DATACENTER_ASSET_DEFAULT_STATUS_ID
         elif to_status_cls == BackOfficeAssetStatus:
             return settings.CONVERT_TO_BACKOFFICE_ASSET_DEFAULT_STATUS_ID
+
+
+def bo_asset_to_dc_asset_status_converter(old_status_id, target_status_id):
+    return _status_converter(
+        old_status_id,
+        target_status_id,
+        from_status_cls=BackOfficeAssetStatus,
+        to_status_cls=DataCenterAssetStatus
+    )
+
+
+def dc_asset_to_bo_asset_status_converter(old_status_id, target_status_id):
+    return _status_converter(
+        old_status_id,
+        target_status_id,
+        from_status_cls=DataCenterAssetStatus,
+        to_status_cls=BackOfficeAssetStatus
+    )

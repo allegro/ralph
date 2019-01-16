@@ -28,12 +28,8 @@ from ralph.assets.models.assets import Asset, NamedMixin
 from ralph.assets.models.choices import AssetSource
 from ralph.assets.models.components import Ethernet
 from ralph.assets.utils import DNSaaSPublisherMixin, move_parents_models
-from ralph.back_office.helpers import status_converter
-from ralph.back_office.models import (
-    BackOfficeAsset,
-    BackOfficeAssetStatus,
-    Warehouse
-)
+from ralph.back_office.helpers import dc_asset_to_bo_asset_status_converter
+from ralph.back_office.models import BackOfficeAsset, Warehouse
 from ralph.data_center.models.choices import (
     ConnectionType,
     DataCenterAssetStatus,
@@ -763,9 +759,8 @@ class DataCenterAsset(
                 target_status = int(
                     Transition.objects.values_list('target', flat=True).get(pk=kwargs['transition_id'])  # noqa
                 )
-                back_office_asset.status = status_converter(
-                    instance.status, target_status,
-                    DataCenterAssetStatus, BackOfficeAssetStatus
+                back_office_asset.status = dc_asset_to_bo_asset_status_converter(  # noqa
+                    instance.status, target_status
                 )
                 move_parents_models(
                     instance, back_office_asset, exclude_copy_fields=['status']
