@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from ralph.data_center.tests.factories import (
     ClusterFactory,
     DataCenterAssetFullFactory
 )
-from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.test import override_settings, TestCase, TransactionTestCase
+from django.test.client import RequestFactory
 from django.utils.translation import ugettext_lazy as _
 
 import httpretty
@@ -105,7 +105,6 @@ class TestDNSView(TestCase, ClientMixin):
     def setUp(self):
         super().setUp()
         self.user = factories.UserFactory(is_superuser=True)
-        self.login_as_user(self.user)
 
     @override_settings(ENABLE_DNSAAS_INTEGRATION=False)
     def test_dnsaasintegration_disabled(self):
@@ -133,12 +132,20 @@ class TestDNSView(TestCase, ClientMixin):
                 rack__server_room__data_center__name='DC1',
             )
         )
-        url = reverse('admin:data_center_cluster_dns_edit', args=(cluster.id,))
+
         httpretty.register_uri(httpretty.GET,
                                "http://100.200.250.251/api/v2/records/",
                                body={})
-        resp = self.client.get(url, follow=True)
-        msgtext = str(list(resp.context['messages'])[0])
+        req = RequestFactory().get("/")  # url doesn't matter (I hope)
+        req.user = self.user
+        mesgs = MagicMock()
+        # req._messages = MagicMock()
+        v = DNSView(object=cluster)
+        with patch("ralph.dns.views.messages", mesgs):
+            v.get_forms(req)
+
+        mesgs.error.assert_called()
+        msgtext = mesgs.error.call_args[0][1]
         expected = str(_("Invalid response from DNSaaS:"))
         assert msgtext.startswith(expected),\
             "%s not in %s" % (expected, msgtext)

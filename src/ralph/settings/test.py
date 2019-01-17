@@ -83,8 +83,8 @@ ENABLE_EMAIL_NOTIFICATION = True
 ENABLE_HERMES_INTEGRATION = True
 HERMES['ENABLED'] = ENABLE_HERMES_INTEGRATION
 
-# dns_edit test won't work without it
-ENABLE_DNSAAS_INTEGRATION = True
-INSTALLED_APPS += (
-    'ralph.dns',
-)
+# # dns_edit test won't work without it
+# ENABLE_DNSAAS_INTEGRATION = True
+# INSTALLED_APPS += (
+#     'ralph.dns',
+# )
