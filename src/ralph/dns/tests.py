@@ -1,22 +1,21 @@
 # -*- coding: utf-8 -*-
 from unittest.mock import MagicMock, patch
 
-from ralph.data_center.tests.factories import (
-    ClusterFactory,
-    DataCenterAssetFullFactory
-)
+import httpretty
 from django.db import transaction
 from django.test import override_settings, TestCase, TransactionTestCase
 from django.test.client import RequestFactory
 from django.utils.translation import ugettext_lazy as _
-
-import httpretty
 
 from ralph.assets.tests.factories import (
     ConfigurationClassFactory,
     EthernetFactory
 )
 from ralph.data_center.models import BaseObjectCluster, DataCenterAsset
+from ralph.data_center.tests.factories import (
+    ClusterFactory,
+    DataCenterAssetFullFactory
+)
 from ralph.dns.dnsaas import DNSaaS
 from ralph.dns.forms import DNSRecordForm, RecordType
 from ralph.dns.publishers import _get_txt_data_to_publish_to_dnsaas
@@ -26,10 +25,10 @@ from ralph.dns.views import (
     DNSView
 )
 from ralph.networks.tests.factories import IPAddressFactory
-from ralph.virtual.models import VirtualServer
-from ralph.virtual.tests.factories import VirtualServerFactory
 from ralph.tests import factories
 from ralph.tests.mixins import ClientMixin
+from ralph.virtual.models import VirtualServer
+from ralph.virtual.tests.factories import VirtualServerFactory
 
 
 class TestGetDnsRecords(TestCase):
