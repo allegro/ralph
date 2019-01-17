@@ -49,8 +49,8 @@ class SIMCardAdmin(MulitiAddAdminMixin, RalphAdmin):
         multi_add_fields = [
             {'field': 'card_number', 'allow_duplicates': False},
             {'field': 'phone_number', 'allow_duplicates': False},
-            {'field': 'pin1', 'allow_duplicates': False},
-            {'field': 'puk1', 'allow_duplicates': False},
+            {'field': 'pin1', 'allow_duplicates': True},
+            {'field': 'puk1', 'allow_duplicates': True},
         ]
 
         return multi_add_fields
