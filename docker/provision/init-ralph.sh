@@ -5,14 +5,19 @@ set -eu
 COMMAND="$1"
 VALID_COMMANDS=(init upgrade)
 
-isValidCommand () {
-  VALID_COMMANDS=(init upgrade)
-  match="$1"
-  for i in ${VALID_COMMANDS[@]}; do [[ "$i" == "$match" ]] && return 0 ; done
-  return 1
+
+is_valid_command() {
+    match="$1"
+
+    for i in ${VALID_COMMANDS[@]}; do
+        [[ "$i" == "$match" ]] && return 0
+    done
+
+    return 1
 }
 
-if ! isValidCommand $i ; then exit 1 ; fi
+
+if ! is_valid_command "$COMMAND" ; then
     echo "Usage: ${0} {init|upgrade}"
     exit 1
 fi
