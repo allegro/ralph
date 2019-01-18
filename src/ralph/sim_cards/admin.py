@@ -1,13 +1,14 @@
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, register
+from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.sim_cards.forms import SIMCardForm
 from ralph.sim_cards.models import CellularCarrier, SIMCard, SIMCardFeatures
 
 
 @register(SIMCard)
-class SIMCardAdmin(TransitionAdminMixin, RalphAdmin):
+class SIMCardAdmin(MulitiAddAdminMixin, TransitionAdminMixin, RalphAdmin):
     # NOTE(Anna Gabler): list_display - list on top page
     #                    raw_id_fields - fancy autocomplete
     #                    list_select_related - join to database (DJANGO)
@@ -18,7 +19,7 @@ class SIMCardAdmin(TransitionAdminMixin, RalphAdmin):
     list_display = ['status', 'card_number', 'phone_number', 'pin1', 'puk1',
                     'user', 'owner', 'warehouse', 'carrier',
                     'quarantine_until']
-
+    multiadd_summary_fields = list_display
     raw_id_fields = ['warehouse', 'owner', 'user', 'carrier']
 
     list_select_related = [
@@ -46,6 +47,16 @@ class SIMCardAdmin(TransitionAdminMixin, RalphAdmin):
         }),
     )
     search_fields = ('card_number', 'phone_number', 'pin1', 'puk1', 'carrier')
+
+    def get_multiadd_fields(self, obj=None):
+        multi_add_fields = [
+            {'field': 'card_number', 'allow_duplicates': False},
+            {'field': 'phone_number', 'allow_duplicates': False},
+            {'field': 'pin1', 'allow_duplicates': True},
+            {'field': 'puk1', 'allow_duplicates': True},
+        ]
+
+        return multi_add_fields
 
 
 @register(SIMCardFeatures)
