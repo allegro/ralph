@@ -14,7 +14,6 @@ ENV RALPH_DIR=/opt/ralph
 ENV RALPH_EXEC=ralph
 ENV RALPH_LOGGING_FILE_PATH=/root/logs/runtime.log
 ENV RALPH_STATIC=/root/static
-ENV RALPH_DOCS=$RALPH_DIR/docs
 ENV SCRIPTS_PATH=/root
 
 ADD docker/* $SCRIPTS_PATH/
@@ -47,8 +46,6 @@ RUN $SCRIPTS_PATH/init_js.sh
 # install ralph
 ADD . $RALPH_DIR
 RUN pip3 install -e .
-RUN make docs
 
-VOLUME $RALPH_DOCS
 VOLUME $RALPH_STATIC
 CMD $RALPH_EXEC runserver 0.0.0.0:8000
