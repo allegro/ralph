@@ -121,10 +121,11 @@ class AssetList(Table):
             return []
 
     def buyout_ticket(self, item):
-        get_params = {"inventory_number": item.barcode,
-                      "serial_number": item.sn,
-                      "model": item.model,
-                      "comment": item.buyout_date
+        get_params = {
+            "inventory_number": item.barcode,
+            "serial_number": item.sn,
+            "model": item.model,
+            "comment": item.buyout_date
                       }
         url = "?".join(
             [settings.MY_EQUIPMENT_BUYOUT_URL, urlencode(get_params)]
