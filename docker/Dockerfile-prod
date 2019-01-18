@@ -10,11 +10,6 @@ ENV RALPH_CONF_DIR="/etc/ralph"
 ENV RALPH_LOCAL_DIR="$RALPH_LOCAL_DIR"
 ENV RALPH_IMAGE_TMP_DIR="/tmp"
 
-# Default superuser paramethers
-ENV RALPH_ADMIN_USERNAME=ralph
-ENV RALPH_ADMIN_PASSWORD=ralph
-ENV RALPH_ADMIN_EMAIL=admin@ralph.com
-
 LABEL maintainer="Allegro.pl Sp. z o.o. opensource@allegro.pl"
 LABEL authors="Allegro.pl Sp. z o.o. and Contributors opensource@allegro.pl"
 LABEL description="Advanced Asset Management and DCIM system for data center and back office."
