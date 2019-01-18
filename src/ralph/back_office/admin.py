@@ -25,6 +25,7 @@ from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.mixins.forms import AssetFormMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence, Licence
+from ralph.operations.views import OperationViewReadOnlyForExisiting
 from ralph.supports.models import BaseObjectsSupport
 
 
@@ -58,6 +59,12 @@ class BackOfficeAssetLicence(RalphDetailViewAdmin):
         verbose_name = _('Licence')
 
     inlines = [BackOfficeAssetLicenceInline]
+
+
+class BackOfficeAssetOperation(OperationViewReadOnlyForExisiting):
+    name = 'bc_asset_operations'
+    url_name = 'back_office_asset_operations'
+    inlines = OperationViewReadOnlyForExisiting.admin_class.inlines
 
 
 class BackOfficeAssetAdminForm(AssetFormMixin, RalphAdmin.form):
@@ -98,6 +105,7 @@ class BackOfficeAssetAdmin(
     change_views = [
         BackOfficeAssetLicence,
         BackOfficeAssetSupport,
+        BackOfficeAssetOperation,
         # TODO: uncomment the two tabs below once they are ready for use
         # BackOfficeAssetComponents,
         # BackOfficeAssetSoftware,
