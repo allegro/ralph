@@ -5,12 +5,17 @@ server {
     server_name ralph;
 
     location /static {
-       alias /opt/static;
+        alias /opt/static;
+        expires 1y;
+        access_log off;
+        add_header Pragma public;
+        add_header Cache-Control "public";
     }
 
     location /media {
-       alias /opt/media;
-       add_header Content-disposition "attachment";
+        alias /opt/media;
+        add_header Content-disposition "attachment";
+        access_log off;
     }
 
     location / {

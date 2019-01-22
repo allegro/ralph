@@ -9,9 +9,9 @@ services:
       - ralph_media:/var/local/ralph/media
       - ralph_static:/usr/share/ralph/static
     links:
-      - db:db
-      - redis:redis
-      - nginx:nginx
+      - db
+      - redis
+      - nginx
     environment:
         DATABASE_NAME: ralph_ng
         DATABASE_USER: ralph_ng
