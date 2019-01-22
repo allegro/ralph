@@ -57,6 +57,8 @@ echo 'SWITCH TO THE NEW RALPH REPOSITORY. TO DO THAT ADD THE FOLLOWING'
 echo 'SOURCE TO YOUR APT CONFIGURATION:'
 echo 'deb https://dl.bintray.com/vi4m/ralph bionic main'
 echo ''
+echo '################################################################################'
+echo ''
 
 
 case "$1" in
