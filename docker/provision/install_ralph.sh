@@ -3,7 +3,7 @@
 set -uex
 
 SNAPSHOT=${SNAPSHOT:-"0"}
-KEY_ID=${KEY_ID:-"379CE192D401AB61"}
+KEY_ID=${KEY_ID:-"E2D0F3764B54797F"}
 
 
 move_scripts() {
