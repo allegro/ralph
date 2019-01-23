@@ -1,4 +1,5 @@
 TEST?=ralph
+DOCKER_REPO_NAME?="allegro"
 
 .PHONY: test flake clean coverage docs coveralls
 
@@ -34,8 +35,8 @@ build-docker-image:
 		--no-cache \
         -f docker/Dockerfile-prod \
         --build-arg RALPH_VERSION="$(version)" \
-        -t allegro/ralph:latest \
-        -t "allegro/ralph:$(version)" .
+        -t $(DOCKER_REPO_NAME)/ralph:latest \
+        -t "$(DOCKER_REPO_NAME)/ralph:$(version)" .
 
 install-js:
 	npm install
