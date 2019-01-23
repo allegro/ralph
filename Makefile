@@ -7,7 +7,7 @@ TEST?=ralph
 # commits it and tags the created commit with the appropriate snapshot version.
 release-new-version: new_version = $(shell ./get_version.sh generate)
 release-new-version:
-	docker build --force-rm -f docker_ng/Dockerfile-deb -t ralph-deb .
+	docker build --force-rm -f docker/Dockerfile-deb -t ralph-deb .
 	docker run --rm -it -v $(shell pwd):/volume ralph-deb:latest release-new-version
 	docker image rm --force ralph-deb:latest
 	git add debian/changelog
@@ -17,16 +17,25 @@ release-new-version:
 # build-package builds a release version of the package using the generated
 # changelog and the tag.
 build-package:
-	docker build --force-rm -f docker_ng/Dockerfile-deb -t ralph-deb .
+	docker build --force-rm -f docker/Dockerfile-deb -t ralph-deb .
 	docker run --rm -v $(shell pwd):/volume ralph-deb:latest build-package
 	docker image rm --force ralph-deb:latest
 
 # build-snapshot-package renerates a snapshot changelog and uses it to build
 # snapshot version of the package. It is mainly used for testing.
 build-snapshot-package:
-	docker build --force-rm -f docker_ng/Dockerfile-deb -t ralph-deb .
+	docker build --force-rm -f docker/Dockerfile-deb -t ralph-deb .
 	docker run --rm -v $(shell pwd):/volume ralph-deb:latest build-snapshot-package
 	docker image rm --force ralph-deb:latest
+
+build-docker-image: version = $(shell git describe --abbrev=0)
+build-docker-image:
+	docker build \
+		--no-cache \
+        -f docker/Dockerfile-prod \
+        --build-arg RALPH_VERSION="$(version)" \
+        -t allegro/ralph:latest \
+        -t "allegro/ralph:$(version)" .
 
 install-js:
 	npm install
