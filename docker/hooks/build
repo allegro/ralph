@@ -1,4 +1,7 @@
 #! /bin/bash
 
-git fetch --unshallow --tags
-make build-docker-image
+set -eux
+
+pushd ".."
+DOCKER_REPO_NAME="index.docker.io/allegro" make build-docker-image
+popd
