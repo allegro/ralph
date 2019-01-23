@@ -1,3 +1,23 @@
+ralph (20190123.1) bionic; urgency=medium
+
+  [ Maciej Skorczewski ]
+  * Display operations for back office assets
+
+  [ Anna Gabler ]
+  * Added user email to SIM Card API serializers
+  * Add transitions for SIM cards
+  * Added SIM Card info to My Equipment List
+  * Bulk add SIM cards
+
+  [ Szymon Jasinski ]
+  * Match status if possible when converting asset type
+
+  [ Roman Prykhodchenko ]
+  * Re-do docker image
+  * Display a post-install warning to switch to the new repo
+
+ -- Roman Prykhodchenko <me@romcheg.me>  Wed, 23 Jan 2019 08:29:55 +0000
+
 ralph (20190111.1) bionic; urgency=medium
 
   [ Szymon Jasinski ]
