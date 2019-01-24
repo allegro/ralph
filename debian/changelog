@@ -1,3 +1,11 @@
+ralph (20190124.1) bionic; urgency=medium
+
+  [ Roman Prykhodchenko ]
+  * Fix the link in the repo deprecation message
+  * Adapt image build process for DockerHub
+
+ -- root <root@ee06b33a646f>  Thu, 24 Jan 2019 08:40:36 +0000
+
 ralph (20190123.1) bionic; urgency=medium
 
   [ Maciej Skorczewski ]
