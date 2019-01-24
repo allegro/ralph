@@ -1,3 +1,10 @@
+ralph (20190124.2) bionic; urgency=medium
+
+  [ Roman Prykhodchenko ]
+  * Use new repo in the deprecation message
+
+ -- Roman Prykhodchenko <me@romcheg.me>  Thu, 24 Jan 2019 12:45:24 +0000
+
 ralph (20190124.1) bionic; urgency=medium
 
   [ Roman Prykhodchenko ]
