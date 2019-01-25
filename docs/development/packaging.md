@@ -104,7 +104,7 @@ The process of releasing and publishing a new version is the following:
 
 
 [1]: https://github.com/allegro.ralph
-[2]: https://dl.bintray.com/vi4m/ralph/dists/bionic/main/binary-amd64/
+[2]: https://dl.bintray.com/allegro/debng/dists/bionic/main/binary-amd64/
 [3]: ./maintainers_devtools.md
 [Bintray]: https://bintray.com
 [Ubuntu]: https://ubuntu.com

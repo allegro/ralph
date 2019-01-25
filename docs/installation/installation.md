@@ -37,7 +37,7 @@ The steps below can be executed on any clean installation Ubuntu 18.04 Bionic.
 You can use [this Vagrant box](./vagrant.md) if you want.
 
     sudo apt-key adv --keyserver  hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
-    sudo sh -c "echo 'deb https://dl.bintray.com/vi4m/ralph bionic main' >  /etc/apt/sources.list.d/vi4m_ralph.list"
+    sudo sh -c "echo 'deb https://dl.bintray.com/allegro/debng bionic main' >  /etc/apt/sources.list.d/ralph.list"
     sudo apt-get update
     sudo apt-get install mysql-server nginx ralph-core
 

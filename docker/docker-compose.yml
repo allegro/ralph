@@ -50,7 +50,7 @@ services:
       - "6379"
 
   inkpy:
-    image: ar4s/inkpy_jinja:latest
+    image: allegro/inkpy:latest
     restart: always
     links:
       - redis:redis
