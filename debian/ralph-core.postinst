@@ -15,26 +15,36 @@ fix_ownerships () {
     chown -R ralphsrv:ralphsrv /var/log/ralph /var/local/ralph/media
 }
 
-on_configure () {
-    db_get ralphsrv/use_default
-    if [ "$RET" = "false" ] ; then
-        db_get ralphsrv/database_engine
-        DATABASE_ENGINE=$RET
-        db_get ralphsrv/database_username
-        DATABASE_USER=$RET
-        db_get ralphsrv/database_password
-        DATABASE_PASSWORD=$RET
-        db_get ralphsrv/database_host
-        DATABASE_HOST=$RET
-        db_get ralphsrv/database_port
-        DATABASE_PORT=$RET
-        db_get ralphsrv/database_name
-        DATABASE_NAME=$RET
+db_configuration () {
+    if [ ! -e "/etc/ralph/conf.d/database.conf" ] ; then
 
-        if [ "$DATABASE_ENGINE" = "mysql" ] ; then
-            DATABASE_ENGINE_DRIVER=transaction_hooks.backends.mysql
-        elif [ $DATABASE_ENGINE = "postgresql" ] ; then
-            DATABASE_ENGINE_DRIVER=transaction_hooks.backends.postgresql_psycopg2
+        DATABASE_ENGINE_DRIVER=transaction_hooks.backends.mysql
+
+        db_get ralphsrv/use_default
+        if [ "$RET" = "false" ] ; then
+            db_get ralphsrv/database_engine
+            DATABASE_ENGINE=$RET
+            db_get ralphsrv/database_username
+            DATABASE_USER=$RET
+            db_get ralphsrv/database_password
+            DATABASE_PASSWORD=$RET
+            db_get ralphsrv/database_host
+            DATABASE_HOST=$RET
+            db_get ralphsrv/database_port
+            DATABASE_PORT=$RET
+            db_get ralphsrv/database_name
+            DATABASE_NAME=$RET
+
+            if [ $DATABASE_ENGINE = "postgresql" ] ; then
+                DATABASE_ENGINE_DRIVER=transaction_hooks.backends.postgresql_psycopg2
+            fi
+
+        else
+            DATABASE_HOST=127.0.0.1
+            DATABASE_PORT=3306
+            DATABASE_NAME=ralph_ng
+            DATABASE_USER=ralph_ng
+            DATABASE_PASSWORD=ralph_ng
         fi
 
         cat << EOF > /etc/ralph/conf.d/database.conf
@@ -45,6 +55,7 @@ DATABASE_NAME=${DATABASE_NAME}
 DATABASE_USER=${DATABASE_USER}
 DATABASE_PASSWORD='${DATABASE_PASSWORD}'
 EOF
+
     fi
 }
 
@@ -54,7 +65,7 @@ case "$1" in
     fix_ownerships
       ;;
   configure)
-    on_configure
+    db_configuration
     collect_static
     fix_ownerships
       ;;
