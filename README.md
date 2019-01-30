@@ -88,3 +88,7 @@ Visit our documentation on [readthedocs.org](http://ralph-ng.readthedocs.org)
 ## Getting help
 
 Ralph community will answer your questions on a chat: [![Gitter](https://img.shields.io/gitter/room/gitterHQ/gitter.svg)](https://gitter.im/allegro/ralph?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+## Acknowledgements
+
+Ralph 3 is a from-scratch rewrite of original project created by small team including Łukasz Langa, and Radomir Dopieralski which was further developed by Marcin Kliks's teams. Old codebase is still available, for reference, under branch: [historical]
