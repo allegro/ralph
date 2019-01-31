@@ -1,13 +1,72 @@
 #!/bin/sh
-
 set -e
 
-if [ -z "$2" ]; then
-  : # do install stuff
-else
-  /opt/ralph/ralph-core/bin/ralph migrate
-  /opt/ralph/ralph-core/bin/ralph sitetree_resync_apps
-fi
+. /usr/share/debconf/confmodule
+
+collect_static () {
+    set -a
+    . /etc/ralph/ralph.conf
+    set +a
+    echo "Collecting django static files..."
+    /opt/ralph/ralph-core/bin/ralph collectstatic --noinput > /dev/null
+    echo "Static files collected successfuly."
+}
+fix_ownerships () {
+    chown -R ralphsrv:ralphsrv /var/log/ralph /var/local/ralph/media
+}
+
+on_configure () {
+    db_get ralphsrv/use_default
+    if [ "$RET" = "false" ] ; then
+        db_get ralphsrv/database_engine
+        DATABASE_ENGINE=$RET
+        db_get ralphsrv/database_username
+        DATABASE_USER=$RET
+        db_get ralphsrv/database_password
+        DATABASE_PASSWORD=$RET
+        db_get ralphsrv/database_host
+        DATABASE_HOST=$RET
+        db_get ralphsrv/database_port
+        DATABASE_PORT=$RET
+        db_get ralphsrv/database_name
+        DATABASE_NAME=$RET
+
+        if [ "$DATABASE_ENGINE" = "mysql" ] ; then
+            DATABASE_ENGINE_DRIVER=transaction_hooks.backends.mysql
+        elif [ $DATABASE_ENGINE = "postgresql" ] ; then
+            DATABASE_ENGINE_DRIVER=transaction_hooks.backends.postgresql_psycopg2
+        fi
+
+        cat << EOF > /etc/ralph/conf.d/database.conf
+DATABASE_ENGINE=${DATABASE_ENGINE_DRIVER}
+DATABASE_HOST=${DATABASE_HOST}
+DATABASE_PORT=${DATABASE_PORT}
+DATABASE_NAME=${DATABASE_NAME}
+DATABASE_USER=${DATABASE_USER}
+DATABASE_PASSWORD='${DATABASE_PASSWORD}'
+EOF
+    fi
+}
+
+
+case "$1" in
+  install)
+    fix_ownerships
+      ;;
+  configure)
+    on_configure
+    collect_static
+    fix_ownerships
+      ;;
+
+  abort-upgrade|abort-remove|abort-deconfigure)
+      ;;	
+
+  *)
+    echo "postinst called with unknown argument \`$1'" >&2
+    exit 1
+      ;;
+esac
 
 #DEBHELPER#
 

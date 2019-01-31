@@ -34,6 +34,13 @@ class NetworkSimpleSerializer(RalphAPISerializer):
         )
 
 
+class NetworkSaveSerializer(RalphAPISerializer):
+    class Meta:
+        model = Network
+        depth = 1
+        exclude = ('min_ip', 'max_ip')
+
+
 class NetworkSerializer(RalphAPISerializer):
     class Meta:
         model = Network
@@ -95,6 +102,7 @@ class IPAddressViewSet(RalphAPIViewSet):
 class NetworkViewSet(RalphAPIViewSet):
     queryset = Network.objects.all()
     serializer_class = NetworkSerializer
+    save_serializer_class = NetworkSaveSerializer
     select_related = ['network_environment', 'kind']
     prefetch_related = ['racks']
     extended_filter_fields = {

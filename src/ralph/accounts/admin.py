@@ -22,6 +22,7 @@ from ralph.back_office.models import BackOfficeAsset
 from ralph.lib.table import Table
 from ralph.lib.transitions.models import TransitionsHistory
 from ralph.licences.models import Licence
+from ralph.sim_cards.models import SIMCard
 
 # use string for whole app (app_label) or tuple (app_label, model_name) to
 # exclude particular model
@@ -208,6 +209,10 @@ class AssignedLicenceList(Table):
     url.title = _('Link')
 
 
+class AssignedSimcardsList(Table):
+    pass
+
+
 class UserInfoMixin(object):
     user = None
 
@@ -225,6 +230,11 @@ class UserInfoMixin(object):
         return Licence.objects.filter(
             users=self.get_user()
         ).select_related('software')
+
+    def get_simcard_queryset(self):
+        return SIMCard.objects.filter(
+            user=self.get_user()
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
