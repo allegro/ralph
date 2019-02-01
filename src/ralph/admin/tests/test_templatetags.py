@@ -17,7 +17,7 @@ class TestTemplatetags(TestCase):
         mocked_gata().count.return_value = 1
         mocked_gau.return_value = "boo"
         ret = get_user_equipment_to_accept_tile_data(None)
-        assert ret['label'] == _('Hardware release')
+        assert ret['label'] == _('Hardware pick up')
 
     @patch('ralph.admin.templatetags.dashboard_tags.get_loan_acceptance_url')
     @patch('ralph.admin.templatetags.dashboard_tags.get_assets_to_accept_loan')
@@ -28,7 +28,7 @@ class TestTemplatetags(TestCase):
         assert ret['label'] == _('Hardware loan')
 
     @patch('ralph.admin.templatetags.dashboard_tags.get_return_acceptance_url')
-    @patch('ralph.admin.templatetags.dashboard_tags.get_assets_to_accept_return')
+    @patch('ralph.admin.templatetags.dashboard_tags.get_assets_to_accept_return')  # noqa:
     def test_hardware_return_label(self, mocked_gatar, mocked_grau):
         mocked_gatar().count.return_value = 1
         mocked_grau.return_value = "boo"
