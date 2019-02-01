@@ -23,6 +23,9 @@ services:
     restart: always
     links:
       - redis:redis
-    env_file:
-      - ./contrib/ralph.env
+    environment:
+        REDIS_HOST: redis
+        REDIS_PASSWORD: ""
+        REDIS_PORT: 6379
+        REDIS_DB: 0
         
