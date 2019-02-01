@@ -3,6 +3,7 @@ from datetime import datetime
 from unittest.mock import patch
 
 from dj.choices import Country
+from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.core import mail
@@ -29,12 +30,14 @@ from ralph.back_office.models import (
     BackOfficeAssetStatus
 )
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
-from ralph.data_center.models import DataCenterAsset
+from ralph.data_center.models import DataCenterAsset, DataCenterAssetStatus
 from ralph.data_center.tests.factories import RackFactory
 from ralph.lib.external_services import ExternalService
 from ralph.lib.transitions.models import (
     _check_instances_for_transition,
     run_field_transition,
+    Transition,
+    TransitionModel,
     TransitionNotAllowedError
 )
 from ralph.lib.transitions.tests import TransitionTestCase
@@ -284,6 +287,12 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
 
     def test_convert_to_data_center_asset(self):
         bo_asset = BackOfficeAssetFactory()
+        transition = Transition.objects.create(
+            name='transition',
+            model=TransitionModel.get_for_field(bo_asset, 'status'),
+            source=0,
+            target=0,
+        )
         bo_asset_pk = bo_asset.pk
         hostname = bo_asset.hostname
         rack = RackFactory()
@@ -293,7 +302,8 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             service_env=ServiceEnvironmentFactory().id,
             position=1,
             model=DataCenterAssetModelFactory().id,
-            request=None
+            request=None,
+            transition_id=transition.pk,
         )
         dc_asset = DataCenterAsset.objects.get(pk=bo_asset_pk)
         self.assertEqual(dc_asset.rack.id, rack.id)
@@ -301,6 +311,102 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             BackOfficeAsset.objects.filter(pk=bo_asset_pk).exists()
         )
         self.assertEqual(dc_asset.hostname, hostname)
+
+    def test_convert_to_data_center_asset_preserves_status_name(self):
+        bo_asset = BackOfficeAssetFactory(
+            status=BackOfficeAssetStatus.from_name('damaged')
+        )
+        transition = Transition.objects.create(
+            name='transition',
+            model=TransitionModel.get_for_field(bo_asset, 'status'),
+            source=0,
+            target=0,
+        )
+        bo_asset_pk = bo_asset.pk
+        bo_asset_status_name = BackOfficeAssetStatus.from_id(
+            bo_asset.status
+        ).name
+        rack = RackFactory()
+        BackOfficeAsset.convert_to_data_center_asset(
+            instances=[bo_asset],
+            rack=rack.id,
+            service_env=ServiceEnvironmentFactory().id,
+            position=1,
+            model=DataCenterAssetModelFactory().id,
+            request=None,
+            transition_id=transition.pk,
+        )
+        dc_asset = DataCenterAsset.objects.get(pk=bo_asset_pk)
+        dc_asset_status_name = DataCenterAssetStatus.from_id(
+            dc_asset.status
+        ).name
+        self.assertEqual(bo_asset_status_name, dc_asset_status_name)
+
+    def test_convert_to_data_center_asset_uses_default_from_transition(self):
+        target_status_id = DataCenterAssetStatus.from_name(
+            "new"  # status name common for dc_asset and bo_asset
+        ).id
+        bo_asset = BackOfficeAssetFactory(
+            status=BackOfficeAssetStatus.from_name('damaged')
+        )
+        transition = Transition.objects.create(
+            name='transition',
+            model=TransitionModel.get_for_field(bo_asset, 'status'),
+            source=0,
+            target=target_status_id,
+        )
+        bo_asset_pk = bo_asset.pk
+        target_status_name = BackOfficeAssetStatus.from_id(
+            target_status_id
+        ).name
+        rack = RackFactory()
+        BackOfficeAsset.convert_to_data_center_asset(
+            instances=[bo_asset],
+            rack=rack.id,
+            service_env=ServiceEnvironmentFactory().id,
+            position=1,
+            model=DataCenterAssetModelFactory().id,
+            request=None,
+            transition_id=transition.pk,
+        )
+        dc_asset = DataCenterAsset.objects.get(pk=bo_asset_pk)
+        dc_asset_status_name = DataCenterAssetStatus.from_id(
+            dc_asset.status
+        ).name
+        self.assertEqual(target_status_name, dc_asset_status_name)
+
+    def test_convert_to_data_center_asset_uses_default_from_settings(self):
+        target_status_id = DataCenterAssetStatus.from_id(
+            settings.CONVERT_TO_DATACENTER_ASSET_DEFAULT_STATUS_ID
+        ).id
+        bo_asset = BackOfficeAssetFactory(
+            status=BackOfficeAssetStatus.from_name('damaged')
+        )
+        transition = Transition.objects.create(
+            name='transition',
+            model=TransitionModel.get_for_field(bo_asset, 'status'),
+            source=0,
+            target=target_status_id,
+        )
+        bo_asset_pk = bo_asset.pk
+        target_status_name = BackOfficeAssetStatus.from_id(
+            target_status_id
+        ).name
+        rack = RackFactory()
+        BackOfficeAsset.convert_to_data_center_asset(
+            instances=[bo_asset],
+            rack=rack.id,
+            service_env=ServiceEnvironmentFactory().id,
+            position=1,
+            model=DataCenterAssetModelFactory().id,
+            request=None,
+            transition_id=transition.pk,
+        )
+        dc_asset = DataCenterAsset.objects.get(pk=bo_asset_pk)
+        dc_asset_status_name = DataCenterAssetStatus.from_id(
+            dc_asset.status
+        ).name
+        self.assertEqual(target_status_name, dc_asset_status_name)
 
     def test_assign_many_licences(self):
         asset = BackOfficeAssetFactory()

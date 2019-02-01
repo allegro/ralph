@@ -4,6 +4,7 @@ from rest_framework import status
 
 from ralph.api.tests._base import RalphAPITestCase
 from ralph.assets.tests.factories import EthernetFactory
+from ralph.networks.models import Network
 from ralph.networks.tests.factories import IPAddressFactory, NetworkFactory
 
 
@@ -161,3 +162,25 @@ class NetworkAPITests(RalphAPITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
+
+        network = response.data['results'][0]
+        self.assertIsNotNone(network['min_ip'])
+        self.assertIsNotNone(network['max_ip'])
+
+    def test_create_network_sets_min_and_max_ip_and_ignores_passed_value(self):
+        data = {
+            "name": "test1",
+            "address": "1.0.0.0/16",
+            "min_ip": 222,
+            "max_ip": 111,
+        }
+
+        url = reverse('network-list')
+        response = self.client.post(url, format='json', data=data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        network = Network.objects.get(pk=response.data['id'])
+
+        # min and max ip are automatically assigned
+        self.assertEqual(network.min_ip, 16777216)  # 1.0.0.0
+        self.assertEqual(network.max_ip, 16842751)  # 1.0.255.255
+

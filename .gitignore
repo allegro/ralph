@@ -80,7 +80,7 @@ src/ralph/admin/static/elements/elements-min.html
 # TODO: move to src/ralph/static
 src/ralph/admin/static/elements/elements-min.html
 
-debian/ralph-core*
+debian/ralph-core/*
 
 .idea
 !src/ralph/lib

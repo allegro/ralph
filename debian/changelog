@@ -1,188 +1,100 @@
-ralph (3.0.0-29) UNRELEASED; urgency=medium
+ralph (20190201.1) bionic; urgency=medium
 
-  * Team upload.
-  * ralph pre-release test build
+  [ Roman Prykhodchenko ]
+  * Switch to the new deb repository
+  * Allow to parametrize Gunicorn timeout (#3402)
 
- -- root <vagrant@ralph-dev>  Tue, 06 Oct 2015 09:44:30 +0000
+  [ Szymon Jasinski ]
+  * keep db settings on upgrade (#3399)
 
-ralph (3.0.0-28) UNRELEASED; urgency=medium
+ -- Roman Prykhodchenko <me@romcheg.me>  Fri, 01 Feb 2019 17:04:39 +0000
 
-  * Team upload.
-  * ralph pre-release test build
+ralph (20190124.2) bionic; urgency=medium
 
- -- root <vagrant@ralph-dev>  Tue, 06 Oct 2015 09:29:59 +0000
+  [ Roman Prykhodchenko ]
+  * Use new repo in the deprecation message
 
-ralph (3.0.0-27) UNRELEASED; urgency=medium
+ -- Roman Prykhodchenko <me@romcheg.me>  Thu, 24 Jan 2019 12:45:24 +0000
 
-  * Team upload.
-  * ralph pre-release test build
+ralph (20190124.1) bionic; urgency=medium
 
- -- root <vagrant@ralph-dev>  Wed, 16 Sep 2015 13:32:58 +0000
+  [ Roman Prykhodchenko ]
+  * Fix the link in the repo deprecation message
+  * Adapt image build process for DockerHub
 
-ralph (3.0.0-26) UNRELEASED; urgency=medium
+ -- root <root@ee06b33a646f>  Thu, 24 Jan 2019 08:40:36 +0000
 
-  * Team upload.
-  * ralph pre-release test build
+ralph (20190123.1) bionic; urgency=medium
 
- -- root <root@ralph-dev>  Thu, 29 Jul 2015 15:21:43 +0000
+  [ Maciej Skorczewski ]
+  * Display operations for back office assets
 
+  [ Anna Gabler ]
+  * Added user email to SIM Card API serializers
+  * Add transitions for SIM cards
+  * Added SIM Card info to My Equipment List
+  * Bulk add SIM cards
 
-ralph (3.0.0-23) UNRELEASED; urgency=medium
+  [ Szymon Jasinski ]
+  * Match status if possible when converting asset type
 
-  * Team upload.
-  * ralph pre-release test build
+  [ Roman Prykhodchenko ]
+  * Re-do docker image
+  * Display a post-install warning to switch to the new repo
 
- -- root <root@ralph-dev>  Thu, 23 Jul 2015 15:21:43 +0000
+ -- Roman Prykhodchenko <me@romcheg.me>  Wed, 23 Jan 2019 08:29:55 +0000
 
-ralph (3.0.0-22) UNRELEASED; urgency=medium
+ralph (20190111.1) bionic; urgency=medium
 
-  * Team upload.
-  * ralph pre-release test build
+  [ Szymon Jasinski ]
+  * Documentation fix
 
- -- root <root@ralph-dev>  Thu, 23 Jul 2015 15:19:17 +0000
+  [ Roman Prykhodchenko ]
+  * Sign changelog commit
+  * Update packaging documentation
 
-ralph (3.0.0-21) UNRELEASED; urgency=medium
+  [ Anton Engelhardt ]
+  * ralphctl fixed sourcing of conf.d/*
 
-  * Team upload.
-  * ralph pre-release test build
+ -- Szymon Jasinski <szymon@szymi.com>  Fri, 11 Jan 2019 14:14:23 +0000
 
- -- MAINTAINER <vagrant@ralph-dev>  Thu, 23 Jul 2015 15:18:51 +0000
+ralph (20190109.1) bionic; urgency=medium
 
-ralph (3.0.0-20) UNRELEASED; urgency=medium
+  [ Damian Blejwas ]
+  * Network min and max IP, block update via API
 
-  * Team upload.
-  * ralph pre-release test build
+ -- root <root@7403e9417371>  Wed, 09 Jan 2019 14:46:09 +0000
 
- -- MAINTAINER <vagrant@ralph-dev>  Thu, 02 Jul 2015 16:22:04 +0000
+ralph (20190108.1) bionic; urgency=medium
 
-ralph (3.0.0-19) UNRELEASED; urgency=medium
+  [ vi4m Marcin Kliks ]
+  * Beautiful docs layout + transitions (#3350)
 
-  * Team upload.
-  * ralph pre-release test build
+  [ sekuranka ]
+  * Add API for SIM cards (#3357)
 
- -- MAINTAINER <vagrant@ralph-dev>  Thu, 02 Jul 2015 15:56:43 +0000
+  [ Szymon Jasinski ]
+  * Documentation for new package (#3359)
 
-ralph (3.0.0-18) UNRELEASED; urgency=medium
+  [ Szymon Jasinski and Roman Prykhodchenko]
+  * Improvements to the debian package
 
-  * Team upload.
-  * ralph pre-release test build
+ -- root <root@4d28c6f7de1d>  Tue, 08 Jan 2019 12:31:11 +0000
 
- -- MAINTAINER <vagrant@ralph-dev>  Thu, 02 Jul 2015 15:29:44 +0000
+ralph (20181221.2) bionic; urgency=medium
 
-ralph (3.0.0-17) UNRELEASED; urgency=medium
+  [ Szymon Jasinski ]
+  * workaround for bintray (see https://github.com/travis-ci/travis-ci/issues/9656)
 
-  * Team upload.
-  * ralph pre-release test build
+ -- PyLabs <pylabs@allegro.pl>  Fri, 21 Dec 2018 12:37:20 +0000
 
- -- MAINTAINER <vagrant@ralph-dev>  Thu, 02 Jul 2015 15:22:14 +0000
+ralph (20181221.1) bionic; urgency=medium
 
-ralph (3.0.0-16) UNRELEASED; urgency=medium
+  [ Szymon Jasinski ]
+  * Initial release of new Ralph package
+  * Support for Ubuntu 18.04
+  * Settings in /etc/ralph
+  * Database settings via debconf prompts
+  * ralphctl command for Ralph management
 
-  * Team upload.
-  * ralph pre-release test build
-
- -- MAINTAINER <vagrant@ralph-dev>  Thu, 02 Jul 2015 09:40:52 +0000
-
-ralph (3.0.0-15) UNRELEASED; urgency=medium
-
-  * Team upload.
-  * ralph pre-release test build
-
- -- MAINTAINER <vagrant@ralph-dev>  Thu, 02 Jul 2015 09:10:18 +0000
-
-ralph (3.0.0-14) UNRELEASED; urgency=medium
-
-  * Team upload.
-  * ralph pre-release test build
-
- -- MAINTAINER <vagrant@ralph-dev>  Thu, 02 Jul 2015 09:05:47 +0000
-
-ralph (3.0.0-13) UNRELEASED; urgency=medium
-
-  * Team upload.
-  * ralph pre-release test build
-
- -- MAINTAINER <vagrant@ralph-dev>  Thu, 02 Jul 2015 08:58:37 +0000
-
-ralph (3.0.0-12) UNRELEASED; urgency=medium
-
-  * Team upload.
-  * ralph pre-release test build
-
- -- MAINTAINER <vagrant@ralph-dev>  Mon, 29 Jun 2015 14:24:59 +0000
-
-ralph (3.0.0-11) UNRELEASED; urgency=medium
-
-  * Team upload.
-  * ralph pre-release test build
-
- -- MAINTAINER <vagrant@ralph-dev>  Mon, 29 Jun 2015 14:09:37 +0000
-
-ralph (3.0.0-10) UNRELEASED; urgency=medium
-
-  * Team upload.
-  * ralph pre-release test build
-
- -- MAINTAINER <vagrant@ralph-dev>  Mon, 29 Jun 2015 14:08:27 +0000
-
-ralph (3.0.0-9) UNRELEASED; urgency=medium
-
-  * Team upload.
-  * ralph pre-release test build
-
- -- MAINTAINER <vagrant@ralph-dev>  Mon, 29 Jun 2015 13:56:18 +0000
-
-ralph (3.0.0-8) UNRELEASED; urgency=medium
-
-  * Team upload.
-  * ralph pre-release test build
-
- -- MAINTAINER <vagrant@ralph-dev>  Mon, 29 Jun 2015 12:31:52 +0000
-
-ralph (3.0.0-7) UNRELEASED; urgency=medium
-
-  * Team upload.
-  * ralph pre-release test build
-
- -- MAINTAINER <vagrant@ralph-dev>  Mon, 29 Jun 2015 12:04:09 +0000
-
-ralph (3.0.0-6) UNRELEASED; urgency=medium
-
-  * Team upload.
-  * ralph pre-release test build
-
- -- MAINTAINER <vagrant@ralph-dev>  Mon, 29 Jun 2015 12:02:50 +0000
-
-ralph (3.0.0-5) UNRELEASED; urgency=medium
-
-  * Team upload.
-  * ralph pre-release test build
-
- -- MAINTAINER <vagrant@ralph-dev>  Mon, 29 Jun 2015 12:00:47 +0000
-
-ralph (3.0.0-4) UNRELEASED; urgency=medium
-
-  * Team upload.
-  * ralph pre-release test build
-
- -- MAINTAINER <vagrant@ralph-dev>  Mon, 29 Jun 2015 11:51:43 +0000
-
-ralph (3.0.0-3) UNRELEASED; urgency=medium
-
-  * Team upload.
-  * ralph pre-release test build
-
- -- MAINTAINER <vagrant@ralph-dev>  Mon, 29 Jun 2015 11:40:53 +0000
-
-ralph (3.0.0-2) UNRELEASED; urgency=medium
-
-  * Team upload.
-  * ralph pre-release test build
-
- -- MAINTAINER <vagrant@ralph-dev>  Mon, 29 Jun 2015 11:40:34 +0000
-
-ralph (3.0.0-1) UNRELEASED; urgency=medium
-
-  * Initial release.
-
- -- MAINTAINER <vagrant@ralph-dev>  Mon, 29 Jun 2015 11:39:55 +0000
+ -- PyLabs <pylabs@allegro.pl>  Fri, 21 Dec 2018 10:19:47 +0000

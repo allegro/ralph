@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -aue
+
+source /etc/ralph/ralph.conf
+for f in /etc/ralph/conf.d/*.conf; do
+    source "$f"
+done
+
+RALPH_BIN="/opt/ralph/ralph-core/bin/ralph"
+RALPH_LOGFILE=${LOG_FILEPATH:-"/var/log/ralph/ralph.log"}
+RALPH_USER=${GUNICORN_USER:-"ralphsrv"}
+
+
+if [ -w "${RALPH_LOGFILE}" ]; then
+    $RALPH_BIN "$@"
+else
+    echo "The user does not have write permissions to ralph data."
+    echo "Please log in as ${RALPH_USER} or as a superuser to run ralphctl."
+    exit 1
+fi
+
