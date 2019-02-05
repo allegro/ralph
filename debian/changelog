@@ -1,3 +1,14 @@
+ralph (20190201.1) bionic; urgency=medium
+
+  [ Roman Prykhodchenko ]
+  * Switch to the new deb repository
+  * Allow to parametrize Gunicorn timeout (#3402)
+
+  [ Szymon Jasinski ]
+  * keep db settings on upgrade (#3399)
+
+ -- Roman Prykhodchenko <me@romcheg.me>  Fri, 01 Feb 2019 17:04:39 +0000
+
 ralph (20190124.2) bionic; urgency=medium
 
   [ Roman Prykhodchenko ]
