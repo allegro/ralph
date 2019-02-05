@@ -114,7 +114,7 @@ To overcome this problem, you may do following steps:
  * source: 'in progress'
  * destination: 'in use'
  * -> [Save]
- * run `dev_ralph dbshell` and run following query to check what's id of newly created transition:
+ * run `dev_ralph dbshell` and run following query to check **what is id** of newly created transition:
     
     ```
     mysql> SELECT * FROM transitions_transition;
@@ -128,15 +128,18 @@ To overcome this problem, you may do following steps:
 * write following lines into settings/dev.py:
 
 ```
-ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['RETURN_TRANSITION_ID'] = 1
-ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['LOAN_TRANSITION_ID'] = 1
-ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['TRANSITION_ID'] = 1
+ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['RETURN_TRANSITION_ID'] = <id of transition>
+ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['LOAN_TRANSITION_ID'] = <id of transition>
+ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['TRANSITION_ID'] = <id of transition>
 ```
+
+In this case, id of transition is `1`. 
+
 * go to http://localhost:8000/back_office/backofficeasset/add/ and create asset with
  * status: in progress
  * assigned to user: r2
  * owner: r2
  * click [save]
 * repeat adding step with statuses 'return in progress' and 'loan in progress'
-* now open incognito mode and login to http://localhost:8000/ as user=r2
+* now open incognito mode and login to http://localhost:8000/ as user=r2 and then you will see three asset boxes. 
 
