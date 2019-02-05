@@ -187,50 +187,57 @@ Run your ralph instance with `ralph runserver 0.0.0.0:8000`
 
 Now, point your browser to the http://localhost:8000 and log in. Happy Ralphing!
 
-## Docker installation (experimental)
+## Docker installation
 
-You can find experimental docker-compose configuration in [https://github.com/allegro/ralph/tree/ng/contrib](https://github.com/allegro/ralph/tree/ng/contrib) directory.
-Be aware, it is still a beta.
+You can find an example docker-compose configuration in 
+[https://github.com/allegro/ralph/tree/ng/docker](https://github.com/allegro/ralph/tree/ng/docker)
+directory. Be aware that this is only an example and it is not meant to be used
+in a production environment without some tweaks. For instance, you probably do
+not want to keep your database in an ephemeral entity such as a
+Docker container. 
 
-### Install
+### Install prerequisites
 
 Install docker and [docker-compose](http://docs.docker.com/compose/install/) first.
 
+### Prepare compose configuration
 
-### Create compose configuration
+Before you start, you may want to set three environment variables. They will be
+used when creating your Ralph admin user. The values specified below are
+the defaults. If the variables are not set explicitly, default values
+will be used:
 
-Copy ``docker-compose.yml.tmpl`` outside ralph sources to docker-compose.yml
-and tweak it.
+    RALPH_DEFAULT_SUPERUSER_NAME="ralph"
+    RALPH_DEFAULT_SUPERUSER_PASSWORD="ralph"
+    RALPH_DEFAULT_SUPERUSER_EMAIL=""
 
-### Build
+Initialize your environment by creating your database schema and your
+Ralph admin user. This command needs to be run only once:
 
-Then build ralph:
+    docker-compose run --rm web init
 
-    docker-compose build
-
-
-To initialize database run:
-
-    docker-compose run --rm web /root/init.sh
-
-Notice that this command should be executed only once, at the very beginning.
-
-If you need to populate Ralph with some demonstration data run:
-
-    docker-compose run --rm web ralph demodata
-
-### Run
-
-Run ralph at the end:
+### Run compose configuration
+    
+Start the containers. This will start ralph web app, mysql, redis, nginx
+and inkpy:
 
     docker-compose up -d
 
 Ralph should be accessible at ``http://127.0.0.1`` (or if you are using ``boot2docker`` at ``$(boot2docker ip)``). Documentation is available at ``http://127.0.0.1/docs``.
 
-If you are upgrading ralph image (source code) run:
+### Upgrading Docker containers
 
-    docker-compose run --rm web /root/upgrade.sh
-
+Whenever a new version of Ralph is released, a new version of Docker container
+will also be availabe. To upgrade to the new version, you should run
+the following commands:
+ 
+    docker-compose stop
+    docker-compose pull
+    docker-compose run --rm web upgrade
+    docker-compose up -d
+ 
+This should pull the newest version of all containers and update the database
+schema if required.
 
 # Migration from Ralph 2
 
