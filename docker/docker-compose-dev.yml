@@ -18,3 +18,14 @@ services:
     image: redis:3.0
     ports:
       - "6379:6379"
+  inkpy:
+    image: allegro/inkpy:latest
+    restart: always
+    links:
+      - redis:redis
+    environment:
+        REDIS_HOST: redis
+        REDIS_PASSWORD: ""
+        REDIS_PORT: 6379
+        REDIS_DB: 0
+        
