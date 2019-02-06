@@ -64,11 +64,15 @@ To overcome this problem, you may do following steps:
     ```
 * write following lines into settings/dev.py:
 
+
 ```
-ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['RETURN_TRANSITION_ID'] = 1
-ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['LOAN_TRANSITION_ID'] = 1
-ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['TRANSITION_ID'] = 1
+ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['RETURN_TRANSITION_ID'] = <id of transition>
+ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['LOAN_TRANSITION_ID'] = <id of transition>
+ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['TRANSITION_ID'] = <id of transition>
 ```
+
+In this case, id of transition is `1`. 
+
 * go to http://localhost:8000/back_office/backofficeasset/add/ and create asset with
  * status: in progress
  * assigned to user: r2

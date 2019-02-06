@@ -88,5 +88,3 @@ Visit our documentation on [readthedocs.org](http://ralph-ng.readthedocs.org)
 ## Getting help
 
 Ralph community will answer your questions on a chat: [![Gitter](https://img.shields.io/gitter/room/gitterHQ/gitter.svg)](https://gitter.im/allegro/ralph?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-
