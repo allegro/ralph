@@ -615,7 +615,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             email = EmailMessage(
                 subject=context.subject,
                 body=context.body,
-                from_email=settings.EMAIL_FROM,
+                from_email=context.from_email,
                 to=[requester.email]
             )
             for attachment in kwargs['attachments']:

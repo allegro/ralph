@@ -24,6 +24,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+package-lock.json
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -86,3 +87,10 @@ debian/ralph-core/*
 
 # mypy
 .mypy_cache/
+
+# other
+.python-version
+tags
+*.lock
+.*.swp
+.*.swo

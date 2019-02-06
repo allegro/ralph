@@ -1,4 +1,5 @@
 TEST?=ralph
+TEST_ARGS=
 DOCKER_REPO_NAME?="allegro"
 
 .PHONY: test flake clean coverage docs coveralls
@@ -40,7 +41,6 @@ build-docker-image:
 
 install-js:
 	npm install
-	bower install
 	./node_modules/.bin/gulp
 
 js-hint:
@@ -62,7 +62,7 @@ isort:
 	isort --diff --recursive --check-only --quiet src
 
 test: clean
-	test_ralph test $(TEST)
+	test_ralph test $(TEST) $(TEST_ARGS)
 
 flake: isort
 	flake8 src/ralph
