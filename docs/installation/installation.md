@@ -110,8 +110,8 @@ Now just a finishing touch:
     sudo systemctl enable ralph.service
     sudo systemctl start ralph.service
 
-And you are all set. Navigate to your new Ralph installation - if you used
-Vagrant, follow this link: [http://localhost:8000](http://localhost:8000).
+And you are all set. Navigate to your new Ralph installation. Just follow this
+link: [http://localhost](http://localhost).
 
 ### Troubleshooting
 
