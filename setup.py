@@ -45,6 +45,9 @@ setup(
         'back_office.transition_action.email_context': [
             'default = ralph.back_office.helpers:get_email_context_for_transition'  # noqa
         ],
+        'account.views.get_asset_list_class': [
+            'default = ralph.accounts.views:get_asset_list_class'  # noqa
+        ],
         'ralph.cloud_sync_processors': [
             'noop=ralph.virtual.processors.noop:endpoint',
         ],
