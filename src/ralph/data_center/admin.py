@@ -486,7 +486,7 @@ class DataCenterAssetAdmin(
                 'order_no', 'invoice_date', 'invoice_no', 'task_url', 'price',
                 'depreciation_rate', 'depreciation_end_date',
                 'force_depreciation', 'source', 'provider', 'delivery_date',
-                'budget_info', 'get_created_date',
+                'budget_info', 'start_usage', 'get_created_date',
             )
         }),
     )

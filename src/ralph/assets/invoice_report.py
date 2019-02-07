@@ -179,5 +179,5 @@ class AssetInvoiceReportMixin(InvoiceReportMixin):
     ]
     _invoice_report_item_fields = [
         'model', 'barcode', 'niw', 'sn', 'price', 'property_of', 'created',
-        'model__get_type_display'
+        'model__get_type_display', 'start_usage'
     ]

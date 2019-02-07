@@ -454,6 +454,13 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         null=True,
         blank=True,
     )
+    start_usage = models.DateField(
+        blank=True,
+        null=True,
+        help_text=(
+            'Fill it if date of first usage is different then date of creation'
+        )
+    )
 
     def __str__(self):
         return self.hostname or ''
