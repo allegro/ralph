@@ -1,3 +1,19 @@
+ralph (20190208.1) bionic; urgency=medium
+
+  [ mahomahomaho ]
+  * inkpy in docker-compose (#3369)
+  * from_email in EmailContext (#3367)
+
+  [ Maciej Skorczewski ]
+  * Add model__name to Asset relations data center report (#3368)
+  * Add field "start_usage" in asset model (#3378)
+  * Buyout button in MyEquipmet view (#3346)
+
+  [ Szymon Jasinski ]
+  * documentation fix (#3404)
+
+ -- Szymon Jasinski <szymon@szymi.com>  Fri, 08 Feb 2019 12:57:53 +0000
+
 ralph (20190201.1) bionic; urgency=medium
 
   [ Roman Prykhodchenko ]
