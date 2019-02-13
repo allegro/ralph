@@ -138,7 +138,6 @@ class TestDNSView(TestCase, ClientMixin):
         req = RequestFactory().get("/")  # url doesn't matter (I hope)
         req.user = self.user
         mesgs = MagicMock()
-        # req._messages = MagicMock()
         v = DNSView(object=cluster)
         with patch("ralph.dns.views.messages", mesgs):
             v.get_forms(req)
