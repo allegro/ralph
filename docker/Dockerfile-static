@@ -1,4 +1,4 @@
 FROM nginx
 
 COPY --from=allegro/ralph /usr/share/ralph/static /opt/static
-COPY ralph.conf.nginx /etc/nginx/conf.d/default.conf
+COPY contrib/docker/ralph.conf.nginx /etc/nginx/conf.d/default.conf
