@@ -23,13 +23,11 @@ services:
         REDIS_DB: 0
 
   nginx:
-    image: nginx
+    image: allegro/ralph-static-nginx:latest
     restart: always
     ports:
       - "80:80"
     volumes:
-      - ./ralph.conf.nginx:/etc/nginx/conf.d/default.conf
-      - ralph_static:/opt/static
       - ralph_media:/opt/media
 
   db:
