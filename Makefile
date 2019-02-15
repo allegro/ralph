@@ -34,10 +34,16 @@ build-docker-image: version = $(shell git describe --abbrev=0)
 build-docker-image:
 	docker build \
 		--no-cache \
-        -f docker/Dockerfile-prod \
-        --build-arg RALPH_VERSION="$(version)" \
-        -t $(DOCKER_REPO_NAME)/ralph:latest \
-        -t "$(DOCKER_REPO_NAME)/ralph:$(version)" .
+		-f docker/Dockerfile-prod \
+		--build-arg RALPH_VERSION="$(version)" \
+		-t $(DOCKER_REPO_NAME)/ralph:latest \
+		-t "$(DOCKER_REPO_NAME)/ralph:$(version)" .
+	docker build \
+		--no-cache \
+		-f docker/Dockerfile-static \
+		-t $(DOCKER_REPO_NAME)/ralph-static-nginx:latest \
+		-t "$(DOCKER_REPO_NAME)/ralph-static-nginx:$(version)" .
+
 
 install-js:
 	npm install
