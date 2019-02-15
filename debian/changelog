@@ -1,3 +1,13 @@
+ralph (20190215.1) bionic; urgency=medium
+
+  [ mahomahomaho ]
+  * Better wording of back office front boxes (#3373)
+
+  [ Szymon Jasinski ]
+  * Docker nginx (#3409)
+
+ -- Szymon Jasinski <szymon@szymi.com> Fri, 15 Feb 2019 12:39:00 +0000
+
 ralph (20190208.1) bionic; urgency=medium
 
   [ mahomahomaho ]
