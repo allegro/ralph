@@ -1,14 +1,10 @@
 from ralph.api import RalphAPIViewSet, router
 from ralph.api.serializers import RalphAPISaveSerializer
+from ralph.assets.api.serializers import BaseObjectSerializer
 from ralph.ssl_certificates.models import SSLCertificate
-
-from ralph.assets.api.serializers import (
-    BaseObjectSerializer,
-)
 
 
 class SSLCertificateSerializer(BaseObjectSerializer):
-
     class Meta:
         model = SSLCertificate
         depth = 2
@@ -28,6 +24,7 @@ class SSLCertificateViewSet(RalphAPIViewSet):
     select_related = [
         'service_env__service', 'service_env__environment'
     ]
+
 
 class SaveSSLCertificate(RalphAPISaveSerializer):
 

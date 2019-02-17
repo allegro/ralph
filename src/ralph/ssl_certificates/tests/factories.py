@@ -3,7 +3,6 @@ from datetime import date, datetime, timedelta
 import factory
 from factory.django import DjangoModelFactory
 
-from ralph.accounts.tests.factories import UserFactory
 from ralph.assets.tests.factories import (
     ManufacturerFactory,
     ServiceEnvironmentFactory
