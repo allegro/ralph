@@ -21,6 +21,7 @@ class SSLCertificatesFactory(DjangoModelFactory):
     date_from = date_now - timedelta(days=15)
     date_to = date_now + timedelta(days=365)
     san = factory.Faker('ssn')
+    service_env = factory.SubFactory(ServiceEnvironmentFactory)
 
     class Meta:
         model = SSLCertificate
