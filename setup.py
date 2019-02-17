@@ -3,6 +3,7 @@
 import os
 import sys
 from setuptools import setup, find_packages
+import subprocess
 
 assert sys.version_info >= (3, 3), 'Python 3.3+ required.'
 
@@ -10,13 +11,22 @@ assert sys.version_info >= (3, 3), 'Python 3.3+ required.'
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+
+def get_version():
+    script = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), 'get_version.sh'
+    )
+    ver = subprocess.check_output([script], shell=True)
+    return ver.decode().strip()
+
+
 setup(
     name='ralph',
-    version=read('./VERSION').strip(),
-    author='Grupa Allegro Sp. z o.o. and Contributors',
-    author_email='pylabs@allegro.pl',
+    version=get_version(),
+    author='Allegro.pl Sp. z o.o. and Contributors',
+    author_email='opensource@allegro.pl',
     description="Advanced Asset Management and DCIM system for data center and back office.",
-    long_description='\n'.join([read('README.md'), read('CHANGES')]),
+    long_description=read('README.md'),
     url='http://ralph.allegrogroup.com/',
     keywords='',
     platforms=['any'],
@@ -34,6 +44,9 @@ setup(
         ],
         'back_office.transition_action.email_context': [
             'default = ralph.back_office.helpers:get_email_context_for_transition'  # noqa
+        ],
+        'account.views.get_asset_list_class': [
+            'default = ralph.accounts.views:get_asset_list_class'  # noqa
         ],
         'ralph.cloud_sync_processors': [
             'noop=ralph.virtual.processors.noop:endpoint',

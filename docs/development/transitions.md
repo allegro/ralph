@@ -34,7 +34,7 @@ class Order(models.Model, metaclass=TransitionWorkflowBase):
 
 Now actions are available in admin panel when you can specify your workflow.
 
-![Add transition](img/add_transitions.png)
+![Add transition](../img/add_transitions.png)
 
 ### Extra parameters
 
@@ -61,7 +61,7 @@ ALLOW_COMMENT = True
         )
 ```
 
-![Extra params](img/extra_params.png)
+![Extra params](../img/extra_params.png)
 
 Allowed params for field::
     ``field`` - standard form field, e.g. from ``django.forms``,

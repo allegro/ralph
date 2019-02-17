@@ -4,7 +4,8 @@ from django.core.urlresolvers import reverse
 from django.forms import ValidationError
 from django.test import RequestFactory
 
-from ralph.assets.models import Ethernet
+from ralph.assets.models import Ethernet, ObjectModelType
+from ralph.assets.tests.factories import DataCenterAssetModelFactory
 from ralph.data_center.models import DataCenterAsset
 from ralph.data_center.tests.factories import (
     DataCenterAssetFactory,
@@ -262,4 +263,38 @@ class TestDataCenterAssetForm(RalphTestCase):
         self.dca.management_ip = '10.20.30.40'
         self.dca.management_hostname = 'qwerty.mydc.net'
         response = self.client.get(self.dca.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+
+    def test_model_asset_type_data_center_shall_pass(self):
+        data_center_model = DataCenterAssetModelFactory(
+            type=ObjectModelType.from_name('data_center')
+        )
+        data = self._get_initial_data()
+        data.update({
+            'model': data_center_model.pk
+        })
+        response = self.client.post(
+            self.dca.get_absolute_url(), data
+        )
+        self.dca.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.dca.model, data_center_model)
+
+    def test_model_asset_type_back_office_asset_shall_not_pass(self):
+        back_office_model = DataCenterAssetModelFactory(
+            type=ObjectModelType.from_name('back_office')
+        )
+        data = self._get_initial_data()
+        data.update({
+            'model': back_office_model.pk
+        })
+        response = self.client.post(
+            self.dca.get_absolute_url(), data
+        )
+        self.dca.refresh_from_db()
+        self.assertIn(
+            'Model must be of',
+            response.content.decode('utf-8')
+        )
+        self.assertNotEqual(self.dca.model, back_office_model)
         self.assertEqual(response.status_code, 200)

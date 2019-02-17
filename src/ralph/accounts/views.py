@@ -10,7 +10,12 @@ from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import View
 
-from ralph.accounts.admin import AssetList, AssignedLicenceList, UserInfoMixin
+from ralph.accounts.admin import (
+    AssetList,
+    AssignedLicenceList,
+    AssignedSimcardsList,
+    UserInfoMixin
+)
 from ralph.accounts.helpers import (
     ACCEPTANCE_LOAN_TRANSITION_ID,
     acceptance_transition_exists,
@@ -181,7 +186,7 @@ class CurrentUserInfoView(
             'user', ('barcode', _('Barcode / Inventory Number')),
             'model__category__name', 'model__manufacturer__name',
             'model__name', ('sn', _('Serial Number')), 'invoice_date', 'status',
-            'url',
+            'url'
         ]
 
         if settings.MY_EQUIPMENT_SHOW_BUYOUT_DATE:
@@ -191,7 +196,7 @@ class CurrentUserInfoView(
             asset_fields += ['report_failure']
 
         if settings.MY_EQUIPMENT_BUYOUT_URL and settings.MY_EQUIPMENT_SHOW_BUYOUT_DATE:  # noqa
-            asset_fields += ['report_buyout']
+            asset_fields += ['buyout_ticket']
 
         warehouse_stocktaking_enabled = BackOfficeAsset.objects.filter(
             user=self.request.user, warehouse__stocktaking_enabled=True
@@ -216,6 +221,17 @@ class CurrentUserInfoView(
                 ('niw', _('Inventory Number')), 'manufacturer',
                 'software__name', 'licence_type', 'sn',
                 'valid_thru', 'url'
+            ],
+            request=self.request,
+        )
+
+        context['simcard_list'] = AssignedSimcardsList(
+            self.get_simcard_queryset(),
+            [
+                ('phone_number', _('Phone Number')),
+                ('card_number', _('Card Number')),
+                ('pin1', _('PIN 1'))
+
             ],
             request=self.request,
         )

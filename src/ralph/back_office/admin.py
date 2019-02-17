@@ -13,6 +13,7 @@ from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.admin.widgets import AutocompleteWidget
 from ralph.assets.filters import BuyoutDateFilter
 from ralph.assets.invoice_report import AssetInvoiceReportMixin
+from ralph.assets.models import ObjectModelType
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.back_office.models import (
     BackOfficeAsset,
@@ -21,8 +22,10 @@ from ralph.back_office.models import (
 )
 from ralph.data_importer import resources
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
+from ralph.lib.mixins.forms import AssetFormMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence, Licence
+from ralph.operations.views import OperationViewReadOnlyForExisiting
 from ralph.supports.models import BaseObjectsSupport
 
 
@@ -58,7 +61,14 @@ class BackOfficeAssetLicence(RalphDetailViewAdmin):
     inlines = [BackOfficeAssetLicenceInline]
 
 
-class BackOfficeAssetAdminForm(RalphAdmin.form):
+class BackOfficeAssetOperation(OperationViewReadOnlyForExisiting):
+    name = 'bc_asset_operations'
+    url_name = 'back_office_asset_operations'
+    inlines = OperationViewReadOnlyForExisiting.admin_class.inlines
+
+
+class BackOfficeAssetAdminForm(AssetFormMixin, RalphAdmin.form):
+    MODEL_TYPE = ObjectModelType.back_office
     """
     Service_env is not required for BackOffice assets.
     """
@@ -95,6 +105,7 @@ class BackOfficeAssetAdmin(
     change_views = [
         BackOfficeAssetLicence,
         BackOfficeAssetSupport,
+        BackOfficeAssetOperation,
         # TODO: uncomment the two tabs below once they are ready for use
         # BackOfficeAssetComponents,
         # BackOfficeAssetSoftware,
@@ -165,7 +176,7 @@ class BackOfficeAssetAdmin(
             'fields': (
                 'order_no', 'purchase_order', 'invoice_date', 'invoice_no',
                 'price', 'depreciation_rate', 'depreciation_end_date',
-                'force_depreciation', 'provider', 'budget_info',
+                'force_depreciation', 'provider', 'budget_info', 'start_usage'
             )
         }),
     )

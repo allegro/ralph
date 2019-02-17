@@ -75,12 +75,13 @@ def get_nested_groups():
         for ldap_group_name, ralph_group_name in nested_groups.items():
             ldap_filter = nested_filter.format(ldap_group_name)
             logger.info('Fetching {}'.format(ralph_group_name))
-            users = conn.search_s(
-                settings.AUTH_LDAP_USER_SEARCH_BASE,
-                ldap.SCOPE_SUBTREE,
+            users = _make_paged_query(
+                conn, settings.AUTH_LDAP_USER_SEARCH_BASE, ldap.SCOPE_SUBTREE,
                 '(&(objectClass={}){})'.format(
                     settings.LDAP_SERVER_OBJECT_USER_CLASS, ldap_filter
-                )
+                ),
+                [settings.AUTH_LDAP_USER_USERNAME_ATTR],
+                settings.AUTH_LDAP_QUERY_PAGE_SIZE
             )
             logger.info('{} fetched'.format(ralph_group_name))
             group_users[ralph_group_name] = set([
@@ -94,6 +95,49 @@ def get_nested_groups():
                 # notice group DN here, not Django group name!
                 users_groups[username].add(ldap_group_name)
     return group_users, users_groups
+
+
+def _make_paged_query(
+    conn, search_base, search_scope, ad_query, attr_list, page_size
+):
+    """
+    Makes paged query to LDAP.
+    Default max page size for LDAP is 1000.
+    """
+    result = []
+    page_result_control = SimplePagedResultsControl(
+        size=page_size,
+        cookie=''
+    )
+
+    msgid = conn.search_ext(
+        search_base,
+        search_scope,
+        ad_query,
+        attr_list,
+        serverctrls=[page_result_control],
+    )
+
+    while True:
+        r_type, r_data, r_msgid, serverctrls = conn.result3(msgid)
+        result.extend(r_data)
+
+        if serverctrls:
+            if serverctrls[0].cookie:
+                page_result_control.size = page_size
+                page_result_control.cookie = serverctrls[0].cookie
+
+                msgid = conn.search_ext(
+                    search_base,
+                    search_scope,
+                    ad_query,
+                    attr_list,
+                    serverctrls=[page_result_control],
+                )
+            else:
+                break
+
+    return result
 
 
 class NestedGroups(object):

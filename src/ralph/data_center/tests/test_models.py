@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from ddt import data, ddt, unpack
+from django.conf import settings
 from django.core.exceptions import ValidationError
 
 from ralph.accounts.tests.factories import RegionFactory
-from ralph.back_office.models import BackOfficeAsset
+from ralph.back_office.models import BackOfficeAsset, BackOfficeAssetStatus
 from ralph.back_office.tests.factories import WarehouseFactory
 from ralph.data_center.models.choices import DataCenterAssetStatus, Orientation
 from ralph.data_center.models.physical import (
@@ -18,6 +19,7 @@ from ralph.data_center.tests.factories import (
     DataCenterAssetModelFactory,
     RackFactory
 )
+from ralph.lib.transitions.models import Transition, TransitionModel
 from ralph.networks.models import IPAddress
 from ralph.networks.tests.factories import (
     IPAddressFactory,
@@ -40,19 +42,113 @@ class DataCenterAssetTest(RalphTestCase):
 
     def test_convert_to_backoffice_asset(self):
         dc_asset = DataCenterAssetFactory()
+        transition = Transition.objects.create(
+            name='transition',
+            model=TransitionModel.get_for_field(dc_asset, 'status'),
+            source=0,
+            target=0,
+        )
         dc_asset_pk = dc_asset.pk
         hostname = dc_asset.hostname
         DataCenterAsset.convert_to_backoffice_asset(
             instances=[dc_asset],
             region=RegionFactory().id,
             warehouse=WarehouseFactory().id,
-            request=None
+            request=None,
+            transition_id=transition.pk
         )
         bo_asset = BackOfficeAsset.objects.get(pk=dc_asset_pk)
         self.assertFalse(
             DataCenterAsset.objects.filter(pk=dc_asset_pk).exists()
         )
         self.assertEqual(bo_asset.hostname, hostname)
+
+    def test_convert_to_backoffice_asset_preserves_status_name(self):
+        dc_asset = DataCenterAssetFactory(
+            status=DataCenterAssetStatus.from_name('damaged')
+        )
+        transition = Transition.objects.create(
+            name='transition',
+            model=TransitionModel.get_for_field(dc_asset, 'status'),
+            source=0,
+            target=0,
+        )
+        dc_asset_pk = dc_asset.pk
+        dc_asset_status_name = DataCenterAssetStatus.from_id(
+            dc_asset.status
+        ).name
+        DataCenterAsset.convert_to_backoffice_asset(
+            instances=[dc_asset],
+            region=RegionFactory().id,
+            warehouse=WarehouseFactory().id,
+            request=None,
+            transition_id=transition.pk
+        )
+        bo_asset = BackOfficeAsset.objects.get(pk=dc_asset_pk)
+        bo_asset_status_name = BackOfficeAssetStatus.from_id(
+            bo_asset.status
+        ).name
+        self.assertEqual(dc_asset_status_name, bo_asset_status_name)
+
+    def test_convert_to_backoffice_asset_uses_default_from_transition(self):
+        target_status_id = BackOfficeAssetStatus.from_name(
+            "new"  # status name common for dc_asset and bo_asset
+        ).id
+        dc_asset = DataCenterAssetFactory(
+            status=DataCenterAssetStatus.from_name('damaged')
+        )
+        transition = Transition.objects.create(
+            name='transition',
+            model=TransitionModel.get_for_field(dc_asset, 'status'),
+            source=0,
+            target=target_status_id,
+        )
+        dc_asset_pk = dc_asset.pk
+        target_status_name = DataCenterAssetStatus.from_id(
+            target_status_id
+        ).name
+        DataCenterAsset.convert_to_backoffice_asset(
+            instances=[dc_asset],
+            region=RegionFactory().id,
+            warehouse=WarehouseFactory().id,
+            request=None,
+            transition_id=transition.pk
+        )
+        bo_asset = BackOfficeAsset.objects.get(pk=dc_asset_pk)
+        bo_asset_status_name = BackOfficeAssetStatus.from_id(
+            bo_asset.status
+        ).name
+        self.assertEqual(target_status_name, bo_asset_status_name)
+
+    def test_convert_to_backoffice_asset_uses_default_from_settings(self):
+        target_status_id = BackOfficeAssetStatus.from_id(
+            settings.CONVERT_TO_BACKOFFICE_ASSET_DEFAULT_STATUS_ID
+        ).id
+        dc_asset = DataCenterAssetFactory(
+            status=DataCenterAssetStatus.from_name('pre_liquidated')
+        )
+        transition = Transition.objects.create(
+            name='transition',
+            model=TransitionModel.get_for_field(dc_asset, 'status'),
+            source=0,
+            target=0,
+        )
+        dc_asset_pk = dc_asset.pk
+        target_status_name = DataCenterAssetStatus.from_id(
+            target_status_id
+        ).name
+        DataCenterAsset.convert_to_backoffice_asset(
+            instances=[dc_asset],
+            region=RegionFactory().id,
+            warehouse=WarehouseFactory().id,
+            request=None,
+            transition_id=transition.pk
+        )
+        bo_asset = BackOfficeAsset.objects.get(pk=dc_asset_pk)
+        bo_asset_status_name = BackOfficeAssetStatus.from_id(
+            bo_asset.status
+        ).name
+        self.assertEqual(target_status_name, bo_asset_status_name)
 
     # =========================================================================
     # slot_no

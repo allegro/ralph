@@ -1,19 +1,52 @@
 TEST?=ralph
+TEST_ARGS=
+DOCKER_REPO_NAME?="allegro"
 
 .PHONY: test flake clean coverage docs coveralls
 
-package: build-package upload-package
+# release-new-version is used by ralph mainteiners prior to publishing
+# new version of the package. The command generates the debian changelog 
+# commits it and tags the created commit with the appropriate snapshot version.
+release-new-version: new_version = $(shell ./get_version.sh generate)
+release-new-version:
+	docker build --force-rm -f docker/Dockerfile-deb -t ralph-deb .
+	docker run --rm -it -v $(shell pwd):/volume ralph-deb:latest release-new-version
+	docker image rm --force ralph-deb:latest
+	git add debian/changelog
+	git commit -S -m "Updated changelog for $(new_version) version."
+	git tag -m $(new_version) -a $(new_version) -s
 
+# build-package builds a release version of the package using the generated
+# changelog and the tag.
 build-package:
-	rm -rf ./build 2>/dev/null 1>/dev/null
-	./packaging/build-package.sh
+	docker build --force-rm -f docker/Dockerfile-deb -t ralph-deb .
+	docker run --rm -v $(shell pwd):/volume ralph-deb:latest build-package
+	docker image rm --force ralph-deb:latest
 
-upload-package:
-	./packaging/upload-package.sh
+# build-snapshot-package renerates a snapshot changelog and uses it to build
+# snapshot version of the package. It is mainly used for testing.
+build-snapshot-package:
+	docker build --force-rm -f docker/Dockerfile-deb -t ralph-deb .
+	docker run --rm -v $(shell pwd):/volume ralph-deb:latest build-snapshot-package
+	docker image rm --force ralph-deb:latest
+
+build-docker-image: version = $(shell git describe --abbrev=0)
+build-docker-image:
+	docker build \
+		--no-cache \
+		-f docker/Dockerfile-prod \
+		--build-arg RALPH_VERSION="$(version)" \
+		-t $(DOCKER_REPO_NAME)/ralph:latest \
+		-t "$(DOCKER_REPO_NAME)/ralph:$(version)" .
+	docker build \
+		--no-cache \
+		-f docker/Dockerfile-static \
+		-t $(DOCKER_REPO_NAME)/ralph-static-nginx:latest \
+		-t "$(DOCKER_REPO_NAME)/ralph-static-nginx:$(version)" .
+
 
 install-js:
 	npm install
-	bower install
 	./node_modules/.bin/gulp
 
 js-hint:
@@ -35,7 +68,7 @@ isort:
 	isort --diff --recursive --check-only --quiet src
 
 test: clean
-	test_ralph test $(TEST)
+	test_ralph test $(TEST) $(TEST_ARGS)
 
 flake: isort
 	flake8 src/ralph
@@ -49,7 +82,7 @@ coverage: clean
 	coverage run $(shell which test_ralph) test $(TEST) --keepdb --settings="ralph.settings.test"
 	coverage report
 
-docs:
+docs: install-docs
 	mkdocs build
 
 run:
@@ -57,8 +90,6 @@ run:
 
 menu:
 	ralph sitetree_resync_apps
-
-coveralls: install-docs docs coverage
 
 translate_messages:
 	ralph makemessages -a

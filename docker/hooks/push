@@ -1,0 +1,6 @@
+#! /bin/bash
+
+set -eux
+
+docker push index.docker.io/allegro/ralph
+docker push index.docker.io/allegro/ralph-static-nginx
