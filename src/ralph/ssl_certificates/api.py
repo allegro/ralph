@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-
-
-from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
+from ralph.api import RalphAPIViewSet, router
 from ralph.api.serializers import RalphAPISaveSerializer
 from ralph.ssl_certificates.models import SSLCertificate
 
