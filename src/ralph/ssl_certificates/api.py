@@ -1,5 +1,4 @@
 from ralph.api import RalphAPIViewSet, router
-from ralph.api.serializers import RalphAPISaveSerializer
 from ralph.assets.api.serializers import BaseObjectSerializer
 from ralph.ssl_certificates.models import SSLCertificate
 
