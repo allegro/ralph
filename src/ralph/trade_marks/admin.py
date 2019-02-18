@@ -81,6 +81,7 @@ class TradeMarkAdmin(AttachmentsMixin, RalphAdmin):
 class ProviderAdditionalMarkingAdmin(RalphAdmin):
     pass
 
+
 @register(TradeMarkRegisteringInstitution)
 class TradeMarkRegisteringInstitutionAdmin(RalphAdmin):
 
