@@ -183,7 +183,7 @@ class TradeMarksLinkedDomains(models.Model):
         )
 
 
-class TradeMarksAdditionalCountry(models.Model):
+class TradeMarkAdditionalCountry(models.Model):
     trade_mark = models.ForeignKey(TradeMark)
     country = models.ForeignKey(TradeMarkCountry)
 

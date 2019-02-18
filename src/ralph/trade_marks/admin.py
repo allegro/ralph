@@ -5,17 +5,15 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import DateListFilter
 from ralph.admin.views.extra import RalphDetailViewAdmin
-from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.attachments.admin import AttachmentsMixin
-from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.trade_marks.forms import IntellectualPropertyForm
 from ralph.trade_marks.models import (
     ProviderAdditionalMarking,
     TradeMark,
-    TradeMarksLinkedDomains,
+    TradeMarkAdditionalCountry,
+    TradeMarkCountry,
     TradeMarkRegisteringInstitution,
-    TradeMarksAdditionalCountry,
-    TradeMarkCountry
+    TradeMarksLinkedDomains
 )
 
 
@@ -72,7 +70,7 @@ class TradeMarkAdmin(AttachmentsMixin, RalphAdmin):
     )
 
     class TradeMarksAdditionalCountyInline(RalphTabularInline):
-        model = TradeMarksAdditionalCountry
+        model = TradeMarkAdditionalCountry
         extra = 1
         verbose_name = _('country')
 
