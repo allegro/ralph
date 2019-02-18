@@ -2,6 +2,7 @@
 set -e
 
 ARG=${1:-start}
+EXTRA_ARGS=${@:2}
 
 DB_ENV_VARIABLES=(
     DATABASE_NAME
@@ -50,6 +51,9 @@ case "$ARG" in
         ;;
     upgrade)
         "${RALPH_LOCAL_DIR}/init-ralph.sh" upgrade
+        ;;
+    ralphctl)
+        /usr/bin/ralphctl $EXTRA_ARGS
         ;;
     *)
         echo "Usage: ${0} {start|init|upgrade}"
