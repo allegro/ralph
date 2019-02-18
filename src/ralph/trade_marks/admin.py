@@ -5,13 +5,16 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import DateListFilter
 from ralph.admin.views.extra import RalphDetailViewAdmin
+from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.attachments.admin import AttachmentsMixin
+from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.trade_marks.forms import IntellectualPropertyForm
 from ralph.trade_marks.models import (
     ProviderAdditionalMarking,
     TradeMark,
-    TradeMarksLinkedDomains
-)
+    TradeMarksLinkedDomains,
+    TradeMarkRegisteringInstitution,
+    TradeMarksAdditionalCountry, TradeMarkCountry)
 
 
 class TradeMarksLinkedView(RalphDetailViewAdmin):
@@ -30,8 +33,11 @@ class TradeMarksLinkedView(RalphDetailViewAdmin):
 
 @register(TradeMark)
 class TradeMarkAdmin(AttachmentsMixin, RalphAdmin):
+
     change_views = [TradeMarksLinkedView]
     form = IntellectualPropertyForm
+    search_fields = ['name', 'id', ]
+    readonly_fields = ['image_tag']
     list_select_related = [
         'technical_owner', 'business_owner', 'holder',
     ]
@@ -51,9 +57,9 @@ class TradeMarkAdmin(AttachmentsMixin, RalphAdmin):
         (_('Basic info'), {
             'fields': (
                 'name', 'registrant_number', 'type', 'image', 'image_tag',
-                'registrant_class', 'valid_to', 'region',
-                'order_number_url', 'additional_markings', 'holder',
-                'status', 'remarks'
+                'registrant_class', 'valid_to', 'registering_institution',
+                'order_number_url', 'additional_markings',
+                'holder', 'status', 'remarks'
             )
         }),
         (_('Ownership info'), {
@@ -62,10 +68,25 @@ class TradeMarkAdmin(AttachmentsMixin, RalphAdmin):
             )
         })
     )
-    search_fields = ['name', 'id', ]
-    readonly_fields = ['image_tag']
+
+    class TradeMarksAdditionalCountyInline(RalphTabularInline):
+        model = TradeMarksAdditionalCountry
+        extra = 1
+        verbose_name = _('country')
+
+    inlines = [TradeMarksAdditionalCountyInline]
 
 
 @register(ProviderAdditionalMarking)
 class ProviderAdditionalMarkingAdmin(RalphAdmin):
+    pass
+
+@register(TradeMarkRegisteringInstitution)
+class TradeMarkRegisteringInstitutionAdmin(RalphAdmin):
+
+    search_fields = ['name']
+
+
+@register(TradeMarkCountry)
+class TradeMarkCountryAdmin(RalphAdmin):
     pass
