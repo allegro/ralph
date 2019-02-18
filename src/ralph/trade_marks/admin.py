@@ -14,7 +14,9 @@ from ralph.trade_marks.models import (
     TradeMark,
     TradeMarksLinkedDomains,
     TradeMarkRegisteringInstitution,
-    TradeMarksAdditionalCountry, TradeMarkCountry)
+    TradeMarksAdditionalCountry,
+    TradeMarkCountry
+)
 
 
 class TradeMarksLinkedView(RalphDetailViewAdmin):
