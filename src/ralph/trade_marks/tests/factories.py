@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import factory
 from factory.django import DjangoModelFactory
 
-from ralph.accounts.tests.factories import RegionFactory, UserFactory
+from ralph.accounts.tests.factories import UserFactory
 from ralph.assets.tests.factories import AssetHolderFactory
 
 from ralph.domains.tests.factories import DomainFactory
@@ -26,7 +26,6 @@ class TradeMarkFactory(DjangoModelFactory):
     business_owner = factory.SubFactory(UserFactory)
     registrant_class = factory.Sequence(lambda n: 'Registrant class ' + str(n))
     holder = factory.SubFactory(AssetHolderFactory)
-    region = factory.SubFactory(RegionFactory)
 
     class Meta:
         model = TradeMark

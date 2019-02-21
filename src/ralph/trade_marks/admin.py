@@ -12,7 +12,7 @@ from ralph.trade_marks.models import (
     TradeMark,
     TradeMarkAdditionalCountry,
     TradeMarkCountry,
-    TradeMarkRegisteringInstitution,
+    TradeMarkRegistrarInstitution,
     TradeMarksLinkedDomains
 )
 
@@ -82,7 +82,7 @@ class ProviderAdditionalMarkingAdmin(RalphAdmin):
     pass
 
 
-@register(TradeMarkRegisteringInstitution)
+@register(TradeMarkRegistrarInstitution)
 class TradeMarkRegisteringInstitutionAdmin(RalphAdmin):
 
     search_fields = ['name']

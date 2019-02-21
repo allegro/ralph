@@ -53,7 +53,7 @@ class TradeMarkStatus(Choices):
     registration_expired = _('Registration expired')
 
 
-class TradeMarkRegisteringInstitution(
+class TradeMarkRegistrarInstitution(
     AdminAbsoluteUrlMixin,
     NamedMixin.NonUnique,
     TimeStampMixin,
@@ -142,9 +142,8 @@ class TradeMark(AdminAbsoluteUrlMixin, BaseObject):
         related_name='+',
         through='TradeMarksLinkedDomains',
     )
-    registering_institution = models.ForeignKey(
-        TradeMarkRegisteringInstitution,
-        verbose_name=_('Registering Institution'),
+    registrar_institution = models.ForeignKey(
+        TradeMarkRegistrarInstitution,
         null=True,
     )
 
