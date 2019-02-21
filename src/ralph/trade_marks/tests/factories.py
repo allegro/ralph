@@ -39,11 +39,12 @@ class TradeMarkRegistrarInstitutionFactory(DjangoModelFactory):
 
 
 class TradeMarkCountryFactory(DjangoModelFactory):
-    Trade_mark_country = factory.SelfAttribute(Country.id)
+    country = factory.Faker(
+        'random_element', elements=[x[0] for x in TradeMarkCountry.country]
+    )
 
     class Meta:
         model = TradeMarkCountry
-        django_get_or_create = ['country']
 
 
 class TradeMarksLinkedDomainsFactory(DjangoModelFactory):
