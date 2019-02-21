@@ -12,8 +12,8 @@ from ralph.trade_marks.models import (
     ProviderAdditionalMarking,
     TradeMark,
     TradeMarkAdditionalCountry,
-    TradeMarksLinkedDomains
-    )
+    TradeMarksLinkedDomains,
+    TradeMarkCountry)
 
 
 date_now = datetime.now().date()
@@ -30,6 +30,16 @@ class TradeMarkFactory(DjangoModelFactory):
 
     class Meta:
         model = TradeMark
+
+
+class TradeMarkCountryFactory(DjangoModelFactory):
+    country = factory.Iterator(['pl', 'de', 'ua'])
+
+    class Meta:
+        model = TradeMarkCountry
+        django_get_or_create = ['country']
+
+
 
 
 class TradeMarksLinkedDomainsFactory(DjangoModelFactory):
@@ -50,6 +60,7 @@ class ProviderAdditionalMarkingFactory(DjangoModelFactory):
 
 class TradeMarkAdditionalCountryFactory(DjangoModelFactory):
     trade_mark = factory.SubFactory(TradeMarkFactory)
+    country = factory.SubFactory(TradeMarkCountryFactory)
 
     class Meta:
         model = TradeMarkAdditionalCountry
