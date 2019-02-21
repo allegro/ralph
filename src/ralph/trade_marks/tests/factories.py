@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta
 
 import factory
+from dj.choices import Country
 from factory.django import DjangoModelFactory
 
 from ralph.accounts.tests.factories import UserFactory
@@ -33,14 +34,16 @@ class TradeMarkFactory(DjangoModelFactory):
         model = TradeMark
 
 
+class TradeMarkRegistrarInstitutionFactory(DjangoModelFactory):
+    name = factory.Iterator(['WNIP', 'WIP', 'PUP'])
+
+
 class TradeMarkCountryFactory(DjangoModelFactory):
-    country = factory.Iterator(['pl', 'de', 'ua'])
+    Trade_mark_country = factory.SelfAttribute(Country.id)
 
     class Meta:
         model = TradeMarkCountry
         django_get_or_create = ['country']
-
-
 
 
 class TradeMarksLinkedDomainsFactory(DjangoModelFactory):

@@ -57,7 +57,7 @@ class TradeMarkAdmin(AttachmentsMixin, RalphAdmin):
         (_('Basic info'), {
             'fields': (
                 'name', 'registrant_number', 'type', 'image', 'image_tag',
-                'registrant_class', 'valid_to', 'registering_institution',
+                'registrant_class', 'valid_to', 'registrar_institution',
                 'order_number_url', 'additional_markings',
                 'holder', 'status', 'remarks'
             )
@@ -83,7 +83,7 @@ class ProviderAdditionalMarkingAdmin(RalphAdmin):
 
 
 @register(TradeMarkRegistrarInstitution)
-class TradeMarkRegisteringInstitutionAdmin(RalphAdmin):
+class TradeMarkRegistrarInstitutionAdmin(RalphAdmin):
 
     search_fields = ['name']
 
