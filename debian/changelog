@@ -1,3 +1,13 @@
+ralph (20190221.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * Fix docker static build (#3410)
+
+  [ vi4m Marcin Kliks ]
+  * SSL Certificates API (#3413)
+
+ -- Mracin Kliks <marcin.kliks@icloud.com>  Thu, 21 Feb 2019 14:19:39 +0000
+
 ralph (20190215.1) bionic; urgency=medium
 
   [ mahomahomaho ]
