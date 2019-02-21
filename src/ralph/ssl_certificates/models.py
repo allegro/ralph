@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from dj.choices import Choices
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
