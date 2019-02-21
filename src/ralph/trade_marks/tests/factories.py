@@ -11,8 +11,8 @@ from ralph.domains.tests.factories import DomainFactory
 from ralph.trade_marks.models import (
     ProviderAdditionalMarking,
     TradeMark,
-    TradeMarksLinkedDomains
-)
+    TradeMarksLinkedDomains,
+    TradeMarkAdditionalCountry)
 
 
 date_now = datetime.now().date()
@@ -38,9 +38,17 @@ class TradeMarksLinkedDomainsFactory(DjangoModelFactory):
     class Meta:
         model = TradeMarksLinkedDomains
 
+
 class ProviderAdditionalMarkingFactory(DjangoModelFactory):
     name = factory.Iterator(['Masking', 'Backside', 'Acquisition'])
 
     class Meta:
         model = ProviderAdditionalMarking
         django_get_or_create = ['name']
+
+
+class TradeMarkAdditionalCountryFactory(TradeMarkAdditionalCountry):
+    trade_mark = factory.SubFactory(TradeMarkFactory)
+
+    class Meta:
+        model = TradeMarkAdditionalCountry
