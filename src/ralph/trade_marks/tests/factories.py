@@ -11,8 +11,9 @@ from ralph.domains.tests.factories import DomainFactory
 from ralph.trade_marks.models import (
     ProviderAdditionalMarking,
     TradeMark,
-    TradeMarksLinkedDomains,
-    TradeMarkAdditionalCountry)
+    TradeMarkAdditionalCountry,
+    TradeMarksLinkedDomains
+    )
 
 
 date_now = datetime.now().date()
