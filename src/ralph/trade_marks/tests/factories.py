@@ -48,7 +48,7 @@ class ProviderAdditionalMarkingFactory(DjangoModelFactory):
         django_get_or_create = ['name']
 
 
-class TradeMarkAdditionalCountryFactory(TradeMarkAdditionalCountry):
+class TradeMarkAdditionalCountryFactory(DjangoModelFactory):
     trade_mark = factory.SubFactory(TradeMarkFactory)
 
     class Meta:
