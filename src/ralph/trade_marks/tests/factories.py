@@ -41,7 +41,7 @@ class TradeMarkRegistrarInstitutionFactory(DjangoModelFactory):
 class TradeMarkCountryFactory(DjangoModelFactory):
     country = factory.Faker(
         'random_element',
-        elements=[x[0] for x in TradeMarkCountry.country.choices.Choice]
+        elements=[x[0] for x in Country.choices.Choice]
     )
 
     class Meta:
