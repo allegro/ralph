@@ -14,8 +14,8 @@ from ralph.trade_marks.models import (
     TradeMark,
     TradeMarkAdditionalCountry,
     TradeMarkCountry,
-    TradeMarksLinkedDomains
-    )
+    TradeMarksLinkedDomains,
+    TradeMarkRegistrarInstitution)
 
 
 date_now = datetime.now().date()
@@ -37,12 +37,12 @@ class TradeMarkFactory(DjangoModelFactory):
 class TradeMarkRegistrarInstitutionFactory(DjangoModelFactory):
     name = factory.Iterator(['WNIP', 'WIP', 'PUP'])
 
+    class Meta:
+        model = TradeMarkRegistrarInstitution
+
 
 class TradeMarkCountryFactory(DjangoModelFactory):
-    country = factory.Faker(
-        'random_element',
-        elements=[x[0] for x in Country()]
-    )
+    country = factory.Iterator([x[0] for x in Country()])
 
     class Meta:
         model = TradeMarkCountry
