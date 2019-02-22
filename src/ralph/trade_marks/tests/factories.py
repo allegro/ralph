@@ -40,6 +40,7 @@ class TradeMarkRegistrarInstitutionFactory(DjangoModelFactory):
 
     class Meta:
         model = TradeMarkRegistrarInstitution
+        django_get_or_create = ['name']
 
 
 class TradeMarkCountryFactory(DjangoModelFactory):
