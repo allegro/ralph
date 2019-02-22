@@ -14,8 +14,9 @@ from ralph.trade_marks.models import (
     TradeMark,
     TradeMarkAdditionalCountry,
     TradeMarkCountry,
-    TradeMarksLinkedDomains,
-    TradeMarkRegistrarInstitution)
+    TradeMarkRegistrarInstitution,
+    TradeMarksLinkedDomains
+    )
 
 
 date_now = datetime.now().date()
