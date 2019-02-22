@@ -2,8 +2,6 @@
 from datetime import datetime, timedelta
 
 import factory
-import factory.fuzzy
-
 from dj.choices import Country
 from factory.django import DjangoModelFactory
 
@@ -17,7 +15,8 @@ from ralph.trade_marks.models import (
     TradeMarkAdditionalCountry,
     TradeMarkCountry,
     TradeMarksLinkedDomains
-)
+    )
+
 
 date_now = datetime.now().date()
 
@@ -39,11 +38,11 @@ class TradeMarkRegistrarInstitutionFactory(DjangoModelFactory):
     name = factory.Iterator(['WNIP', 'WIP', 'PUP'])
 
 
-COUNTRIES = [x[0] for x in Country.COUNTRIES]
-
-
 class TradeMarkCountryFactory(DjangoModelFactory):
-    country = factory.fuzzy.FuzzyChoice(COUNTRIES)
+    country = factory.Faker(
+        'random_element',
+        elements=[x[0] for x in Country()]
+    )
 
     class Meta:
         model = TradeMarkCountry
