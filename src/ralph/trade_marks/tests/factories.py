@@ -2,9 +2,10 @@
 from datetime import datetime, timedelta
 
 import factory
+import factory.fuzzy
+
 from dj.choices import Country
 from factory.django import DjangoModelFactory
-import factory.fuzzy
 
 from ralph.accounts.tests.factories import UserFactory
 from ralph.assets.tests.factories import AssetHolderFactory
