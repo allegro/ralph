@@ -69,12 +69,12 @@ class TradeMarkAdmin(AttachmentsMixin, RalphAdmin):
         })
     )
 
-    class TradeMarksAdditionalCountyInline(RalphTabularInline):
+    class TradeMarksAdditionalCountryInline(RalphTabularInline):
         model = TradeMarkAdditionalCountry
         extra = 1
         verbose_name = _('country')
 
-    inlines = [TradeMarksAdditionalCountyInline]
+    inlines = [TradeMarksAdditionalCountryInline]
 
 
 @register(ProviderAdditionalMarking)
