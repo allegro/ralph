@@ -24,3 +24,10 @@ Then you could add configuration classes (`http://<YOUR_RALPH_URL>/assets/config
 Finally, you could attach configuration to your host (`Data Center Asset`, `Virtual Server` etc.) using `configuration path` field. This could be used for administrators information only, but you could use this to automate you configuration management tool as well! Simply fetch `configuration_path` for host from Ralph's API and apply it in your tool.
 
 You could use custom fields to set some variables passed to your configuration management tool. To show custom field under `configuration_variables` field in REST API, select `use as configuration variable` in its settings. See [Custom fields](/user/custom_fields) section for more infromation.
+
+
+## Start Usage
+
+`Start usage` field is used in `Data Center Asset` model, `Back Office Asset` model and  `Licences` model. Field was add for a financial reason. You can fill it when you started using your asset after or before date from `Invoice Date` field. 
+
+With this field you can properly account depreciation amount.
