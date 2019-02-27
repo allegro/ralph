@@ -12,9 +12,6 @@ container (and there shouldn't be).
 It is also possible to use our old package version for Ubuntu 14.04 Trusty
 distribution on the AMD64 platform.
 
-On the other hand, if you are developer, we strongly suggest using our `Vagrant` inside the `vagrant` directory
-with many development *bells and whistles* included.
-
 ## Ubuntu package - bionic and newer - recommended
 
 This is a quick introduction on how to install Ralph on Ubuntu 18.04 Bionic.
@@ -34,7 +31,6 @@ used as Django settings.
 ### Ralph installation
 
 The steps below can be executed on any clean installation Ubuntu 18.04 Bionic.
-You can use [this Vagrant box](./vagrant.md) if you want.
 
     sudo apt-key adv --keyserver  hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
     sudo sh -c "echo 'deb https://dl.bintray.com/allegro/debng bionic main' >  /etc/apt/sources.list.d/ralph.list"

@@ -61,11 +61,6 @@ src/ralph/settings/*local.py
 src/ralph/cross_validator/settings_local.py
 src/ralph/urls/*local.py
 
-# Vagrant
-vagrant/.vagrant
-vagrant/Vagrantfile.local
-vagrant/provision.local.sh
-
 # mkdocs
 site/
 

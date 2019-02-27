@@ -32,56 +32,6 @@ http://ralph-demo.allegro.tech/
 ![img](https://github.com/allegro/ralph/blob/ng/docs/img/welcome-screen-3.png?raw=true)
 
 
-## Installation
-
-## Debian package(recommended)
-Visit our documentation on [readthedocs.org](http://ralph-ng.readthedocs.org) for more details.
-
-## Developer installation
-
-It's recommended to use Vagrant for development. Install Vagrant first (https://www.vagrantup.com/). To set-up Ralph environment run:
-
-    cd vagrant
-    vagrant up
-
-Then ssh to virtual system:
-
-    vagrant ssh
-
-Virtualenv is activated for you automatically.
-
-
-## Manual installation
-
-Make sure you created virtualenv in which you will install ralph.
-If you want to install it in production, after cloning ralph repository, and activating virtualenv just make:
-
-    make install
-    ralph migrate
-    make menu
-
-Or if you want to run in debug mode for detailed error messages and debug toolbar:
-
-    make install-dev
-    dev_ralph migrate
-    make menu
-
-will install it for you as well.
-
-## Running
-
-Make sure virtualenv is activated. To start server in debug mode:
-
-    make run
-
-or if you don't want the debug output
-
-    ralph runserver_plus 0.0.0.0:8000
-
-
-Ralph is available at `127.0.0.1:8000`.
-
-
 ## Documentation
 Visit our documentation on [readthedocs.org](http://ralph-ng.readthedocs.org)
 
