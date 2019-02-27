@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
+import httpretty
 from django.db import transaction
 from django.test import override_settings, TestCase, TransactionTestCase
+from django.test.client import RequestFactory
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.tests.factories import (
@@ -10,6 +12,10 @@ from ralph.assets.tests.factories import (
     EthernetFactory
 )
 from ralph.data_center.models import BaseObjectCluster, DataCenterAsset
+from ralph.data_center.tests.factories import (
+    ClusterFactory,
+    DataCenterAssetFullFactory
+)
 from ralph.dns.dnsaas import DNSaaS
 from ralph.dns.forms import DNSRecordForm, RecordType
 from ralph.dns.publishers import _get_txt_data_to_publish_to_dnsaas
@@ -19,6 +25,8 @@ from ralph.dns.views import (
     DNSView
 )
 from ralph.networks.tests.factories import IPAddressFactory
+from ralph.tests import factories
+from ralph.tests.mixins import ClientMixin
 from ralph.virtual.models import VirtualServer
 from ralph.virtual.tests.factories import VirtualServerFactory
 
@@ -91,7 +99,12 @@ class TestGetDnsRecords(TestCase):
         )
 
 
-class TestDNSView(TestCase):
+class TestDNSView(TestCase, ClientMixin):
+
+    def setUp(self):
+        super().setUp()
+        self.user = factories.UserFactory(is_superuser=True)
+
     @override_settings(ENABLE_DNSAAS_INTEGRATION=False)
     def test_dnsaasintegration_disabled(self):
         with self.assertRaises(DNSaaSIntegrationNotEnabledError):
@@ -101,6 +114,39 @@ class TestDNSView(TestCase):
     def test_dnsaasintegration_enabled(self):
         # should not raise exception
         DNSView()
+
+    @httpretty.activate
+    @override_settings(ENABLE_DNSAAS_INTEGRATION=True)
+    @override_settings(DNSAAS_URL='http://100.200.250.251/')
+    def test_dnsaas_returns_empty_json(self):
+        cluster = ClusterFactory()
+
+        IPAddressFactory(ethernet__base_object=cluster)
+
+        cluster.baseobjectcluster_set.create(
+            is_master=True,
+            base_object=DataCenterAssetFullFactory(
+                rack__name='Rack #1',
+                rack__server_room__name='SR1',
+                rack__server_room__data_center__name='DC1',
+            )
+        )
+
+        httpretty.register_uri(httpretty.GET,
+                               "http://100.200.250.251/api/v2/records/",
+                               body={})
+        req = RequestFactory().get("/")  # url doesn't matter (I hope)
+        req.user = self.user
+        mesgs = MagicMock()
+        v = DNSView(object=cluster)
+        with patch("ralph.dns.views.messages", mesgs):
+            v.get_forms(req)
+
+        mesgs.error.assert_called()
+        msgtext = mesgs.error.call_args[0][1]
+        expected = str(_("Invalid response from DNSaaS:"))
+        assert msgtext.startswith(expected),\
+            "%s not in %s" % (expected, msgtext)
 
 
 class TestGetTXTDataToPublishToDNSaaS(TestCase):
@@ -547,10 +593,11 @@ class TestPublishAutoTXTToDNSaaS(TransactionTestCase):
 
 class TestDNSaaS(TestCase):
     def test_user_get_info_when_dnsaas_user_has_no_perm(self):
+        dns = DNSaaS()
+
         class RequestStub():
             status_code = 202
         request = RequestStub()
-        dns = DNSaaS()
 
         result = dns._response2result(request)
 
