@@ -1,3 +1,4 @@
+dist: xenial
 language: python
 # problem with node-sass in new image (https://github.com/allegro/ralph/issues/3195)
 group: deprecated-2017Q4
