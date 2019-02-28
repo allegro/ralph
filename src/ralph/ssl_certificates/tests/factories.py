@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
 from datetime import date, datetime, timedelta
 
 import factory
 from factory.django import DjangoModelFactory
 
-from ralph.accounts.tests.factories import UserFactory
 from ralph.assets.tests.factories import (
     ManufacturerFactory,
     ServiceEnvironmentFactory
@@ -21,6 +19,7 @@ class SSLCertificatesFactory(DjangoModelFactory):
     date_from = date_now - timedelta(days=15)
     date_to = date_now + timedelta(days=365)
     san = factory.Faker('ssn')
+    service_env = factory.SubFactory(ServiceEnvironmentFactory)
 
     class Meta:
         model = SSLCertificate

@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
+from simplejson import JSONDecodeError
 
 from ralph.admin.views.extra import RalphDetailView
 from ralph.dns.dnsaas import DNSaaS
@@ -50,7 +51,7 @@ class DNSView(RalphDetailView):
         self.dnsaas = DNSaaS()
         return super().__init__(*args, **kwargs)
 
-    def get_forms(self):
+    def get_forms(self, request):
         forms = []
         ipaddresses = self.object.ipaddresses.all().values_list(
             'address', flat=True
@@ -60,9 +61,13 @@ class DNSView(RalphDetailView):
             # identify the records do not have any IP address
             return forms
 
-        initial = self.dnsaas.get_dns_records(ipaddresses)
-        for item in initial:
-            forms.append(DNSRecordForm(item))
+        try:
+            initial = self.dnsaas.get_dns_records(ipaddresses)
+            for item in initial:
+                forms.append(DNSRecordForm(item))
+        except JSONDecodeError as e:
+            messages.error(request, _("Invalid response from DNSaaS: %s") % e)
+            initial = []
 
         if initial and initial[0]['type'] == RecordType.a.id:
             # from API "A" record is always first
@@ -75,7 +80,7 @@ class DNSView(RalphDetailView):
 
     def get(self, request, *args, **kwargs):
         if 'forms' not in kwargs:
-            kwargs['forms'] = self.get_forms()
+            kwargs['forms'] = self.get_forms(request)
         return super().get(request, *kwargs, **kwargs)
 
     def post(self, request, *args, **kwargs):

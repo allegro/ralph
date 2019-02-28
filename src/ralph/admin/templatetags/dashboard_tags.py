@@ -48,7 +48,7 @@ def get_user_equipment_to_accept_tile_data(user):
         return None
     return {
         'class': 'equipment-to-accept',
-        'label': _('For release'),
+        'label': _('Hardware pick up'),
         'count': assets_to_accept_count,
         'url': get_acceptance_url(user),
     }
@@ -60,7 +60,7 @@ def get_user_equipment_to_accept_loan_tile_data(user):
         return None
     return {
         'class': 'equipment-to-accept-loan',
-        'label': _('For loan'),
+        'label': _('Hardware loan'),
         'count': assets_to_accept_count,
         'url': get_loan_acceptance_url(user),
     }
@@ -72,7 +72,7 @@ def get_user_equipment_to_accept_return_tile_data(user):
         return None
     return {
         'class': 'equipment-to-accept-return',
-        'label': _('For return'),
+        'label': _('Hardware return'),
         'count': assets_to_accept_count,
         'url': get_return_acceptance_url(user),
     }

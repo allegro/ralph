@@ -19,23 +19,6 @@ This is how you fix a bug or add a feature in few quick steps:
 
 Introduce yourself at our Gitter Chat https://gitter.im/allegro/ralph, where current Ralph-related issues and concerns are aired, shared and solved.
 
-## Development environment
-
-Make your software compatible with Ralph development requirements.
-
-1. First, install `git` and `Vagrant` applications.
-2. Then, `git clone https://github.com/allegro/ralph`. The "ng" branch is used by Ralph 3.0, the newest version of the software, currently under development. We do not work anymore on old 2.x branch from develop branch.
-4. Inside "vagrant" directory you will find Vagrantfile for setting up development environment. Just type `vagrant up` to boot up complete development environment.
-5. Now log in the virtual box environment with `vagrant ssh`.
-6. Virtualenv is activated automatically - shell script sits in ~/bin/activate.
-7. Run `make menu`.
-8. Run ralph instance with `make run`, login to the localhost:8000 using `ralph`:`ralph` creditentials.
-
-Then, you are all set ! In case of problems with setting everything up, refer to the `https://github.com/allegro/ralph/tree/ng/vagrant`
-
-If you want to extend Ralph by your own Django app, place your config inside
-`vagrant/Vagrantfile.local` (ex. synced folders). You could also attach custom
-provisioning script in `vagrant/provision.local.sh`.
 
 ## Bug tracker & sprints
 

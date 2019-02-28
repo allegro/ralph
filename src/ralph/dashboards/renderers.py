@@ -183,7 +183,9 @@ class PieChart(ChartistGraphRenderer):
     }
 
     def get_options(self, data):
-        self.options['total'] = sum(s['value'] for s in data['series'])
+        series = data.get('series')
+        if series:
+            self.options['total'] = sum(s['value'] for s in series)
         return super().get_options(data)
 
     def include_values_in_labels(self, data):
