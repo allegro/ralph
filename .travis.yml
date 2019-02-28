@@ -14,6 +14,7 @@ env:
         - DJANGO_VERSION=1.8.18 TEST_DB_ENGINE=mysql MYSQL_VERSION=5.6
         - DJANGO_VERSION=1.8.18 TEST_DB_ENGINE=mysql MYSQL_VERSION=5.5
         - DJANGO_VERSION=1.8.18 TEST_DB_ENGINE=psql
+        - DJANGO_VERSION=1.8.18 TEST_DB_ENGINE=mariadb MYSQL_VERSION=10.3 # The Version of Debian Buster
         # Django 1.9 build will not pass until #2132 will be merged
         # - DJANGO_VERSION=1.9 TEST_DB_ENGINE=sqlite
         # - DJANGO_VERSION=1.9 TEST_DB_ENGINE=mysql
@@ -46,6 +47,7 @@ before_install:
     - docker run -d -p "$REDIS_PORT:6379" redis:3.0;
     - export NEW_TAG=$RALPH_VERSION-snapshot-$(date "+%Y%m%d")-$TRAVIS_BUILD_NUMBER
     - if [[ $TEST_DB_ENGINE == mysql ]]; then docker run -d -p "$DATABASE_PORT:3306" -e "MYSQL_ALLOW_EMPTY_PASSWORD=yes" -e "MYSQL_DATABASE=ralph_ng" -e "MYSQL_ROOT_PASSWORD=root" -e "MYSQL_USER=travis" -e "MYSQL_PASSWORD=travis" mysql:$MYSQL_VERSION mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci; fi
+    - if [[ $TEST_DB_ENGINE == mariadb ]]; then docker run -d -p "$DATABASE_PORT:3306" -e "MYSQL_ALLOW_EMPTY_PASSWORD=yes" -e "MYSQL_DATABASE=ralph_ng" -e "MYSQL_ROOT_PASSWORD=root" -e "MYSQL_USER=travis" -e "MYSQL_PASSWORD=travis" mariadb:$MYSQL_VERSION mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci; fi
     - if [[ $TEST_DB_ENGINE == psql ]]; then
         docker run -d -p "$DATABASE_PORT:5432" -e "POSTGRES_USER=travis" -e "POSTGRES_PASSWORD=travis" -e "POSTGRES_DB=ralph_ng" postgres:9.4;
         pip install psycopg2;
