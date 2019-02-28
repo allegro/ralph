@@ -36,6 +36,7 @@ cache:
 python:
     - "3.4"
     - "3.6"
+    - "3.7"
 
 before_install:
     - pip install flake8==3.0.4 isort==4.2.5
