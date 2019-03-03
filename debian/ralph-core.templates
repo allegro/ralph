@@ -6,7 +6,7 @@ Description: Use default database settings:
 
 Template: ralphsrv/database_engine
 Type: select
-Choices: mysql, postgresql
+Choices: mysql, postgresql, mariadb
 Default: mysql
 Description: Select database provider:
  Select database provider for Ralph.
