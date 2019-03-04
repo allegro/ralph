@@ -118,7 +118,7 @@ class NetworkAdmin(RalphMPTTAdmin):
     ]
     list_filter = [
         'network_environment', 'kind', 'dhcp_broadcast', 'racks',
-        'terminators', 'service_env',
+        'terminators', 'service_env', 'vlan',
         ('parent', RelatedAutocompleteFieldListFilter),
         ('min_ip', NetworkRangeFilter), ('address', NetworkClassFilter),
         ('max_ip', ContainsIPAddressFilter)
