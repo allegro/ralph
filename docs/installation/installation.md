@@ -88,8 +88,9 @@ After that, restart nginx:
 Once Ralph is installed, you can create Ralph database and a database user:
 
     sudo mysql
-    mysql> create user 'ralph_ng'@'127.0.0.1' identified by 'ralph_ng'
-    mysql> grant all privileges on ralph_ng.* to 'ralph_ng'@'127.0.0.1'
+    mysql> create user 'ralph_ng'@'127.0.0.1' identified by 'ralph_ng';
+    mysql> grant all privileges on ralph_ng.* to 'ralph_ng'@'127.0.0.1';
+    mysql> create database ralph_ng;
 
 Create the database schema, create Ralph superuser and populate the database
 with some data:
