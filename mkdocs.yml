@@ -25,6 +25,7 @@ nav:
       - DNS: user/dns.md
   - Developer guide:
       - Before you start: CONTRIBUTING.md
+      - Development environment: development/development_environment.md
       - Architecture: development/overview.md
       - RalphAdmin: development/admin.md
       - Custom fields: development/custom_fields.md
