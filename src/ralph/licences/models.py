@@ -246,6 +246,13 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
         null=True,
         on_delete=models.PROTECT,
     )
+    start_usage = models.DateField(
+        blank=True,
+        null=True,
+        help_text=(
+            'Fill it if date of first usage is different then date of creation'
+        )
+    )
 
     polymorphic_objects = PolymorphicQuerySet.as_manager()
     objects_used_free = LicencesUsedFreeManager()
