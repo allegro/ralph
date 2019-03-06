@@ -1,3 +1,27 @@
+ralph (20190306.1) bionic; urgency=medium
+
+  [ Arkadiusz Adamski ]
+  * Fix ``KeyError`` exception - dashboards
+
+  [ Roman Prykhodchenko ]
+  * Remove Vagrant support
+  * Remove obsolete packging code
+  * Fix labels for static container (Closes: #3428)
+
+  [ mahomahomaho ]
+  * Handle empty/incorrect payload from dnsaas (#3381)
+
+  [ Russell Clare ]
+  * Update installation.md
+
+  [ Maciej Skorczewski ]
+  * Add start_usage in licences model (#3406)
+
+  [ ahaupt ]
+  * Make network vlan searchable (#3426)
+
+ -- Roman Prykhodchenko <me@romcheg.me>  Wed, 06 Mar 2019 10:21:34 +0000
+
 ralph (20190221.1) bionic; urgency=medium
 
   [ Szymon Jasinski ]
