@@ -41,6 +41,7 @@ build-docker-image:
 	docker build \
 		--no-cache \
 		-f docker/Dockerfile-static \
+		--build-arg RALPH_VERSION="$(version)" \
 		-t $(DOCKER_REPO_NAME)/ralph-static-nginx:latest \
 		-t "$(DOCKER_REPO_NAME)/ralph-static-nginx:$(version)" .
 
