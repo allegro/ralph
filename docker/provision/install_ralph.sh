@@ -31,13 +31,16 @@ install_release() {
 
 
 install_snapshot() {
-    echo "Snapshot builds are not implemented yet"
+    local deb_file=$(ls -t ${RALPH_IMAGE_TMP_DIR}/*${RALPH_VERSION}*.deb | head -1)
+    apt-get update
+    apt-get -y install "${deb_file}"
 }
 
 
 cleanup() {
     rm -rf /var/lib/apt/lists/*
     rm -f "${RALPH_IMAGE_TMP_DIR}/ralph.list"
+    rm -f "${RALPH_IMAGE_TMP_DIR}/*.deb"
     rm -- "$0"
 }
 
