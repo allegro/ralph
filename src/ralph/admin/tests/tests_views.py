@@ -87,8 +87,10 @@ FACTORY_MAP = {
     'ralph.supports.models.Support': 'ralph.supports.tests.factories.SupportFactory',  # noqa
     'ralph.supports.models.SupportType': 'ralph.supports.tests.factories.SupportTypeFactory',  # noqa
     'ralph.trade_marks.models.TradeMark': 'ralph.trade_marks.tests.factories.TradeMarkFactory', #noqa
-    'ralph.trade_marks.models.TradeMarksLinkedDomains': 'ralph.trade_marks.tests.factories.TradeMarksLinkedDomainsFactory', #noqa
-    'ralph.trade_marks.models.ProviderAdditionalMarking': 'ralph.trade_marks.tests.factories.ProviderAdditionalMarkingFactory', # noqa
+    'ralph.trade_marks.models.TradeMarksLinkedDomains': 'ralph.trade_marks.tests.factories.TradeMarksLinkedDomainsFactory',  # noqa
+    'ralph.trade_marks.models.ProviderAdditionalMarking': 'ralph.trade_marks.tests.factories.ProviderAdditionalMarkingFactory',  # noqa
+    'ralph.trade_marks.models.TradeMarkCountry': 'ralph.trade_marks.tests.factories.TradeMarkCountryFactory',  # noqa
+    'ralph.trade_marks.models.TradeMarkRegistrarInstitution': 'ralph.trade_marks.tests.factories.TradeMarkRegistrarInstitutionFactory',  # noqa
     'ralph.virtual.models.CloudFlavor': 'ralph.virtual.tests.factories.CloudFlavorFactory',  # noqa
     'ralph.virtual.models.CloudHost': 'ralph.virtual.tests.factories.CloudHostFullFactory',  # noqa
     'ralph.virtual.models.CloudProject': 'ralph.virtual.tests.factories.CloudProjectFactory',  # noqa

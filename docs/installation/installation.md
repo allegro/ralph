@@ -32,7 +32,7 @@ used as Django settings.
 
 The steps below can be executed on any clean installation Ubuntu 18.04 Bionic.
 
-    sudo apt-key adv --keyserver  hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
+    sudo apt-key adv --keyserver  hkp://keyserver.ubuntu.com:80 --recv-keys E2D0F3764B54797F
     sudo sh -c "echo 'deb https://dl.bintray.com/allegro/debng bionic main' >  /etc/apt/sources.list.d/ralph.list"
     sudo apt-get update
     sudo apt-get install mysql-server nginx ralph-core
@@ -88,8 +88,9 @@ After that, restart nginx:
 Once Ralph is installed, you can create Ralph database and a database user:
 
     sudo mysql
-    mysql> create user 'ralph_ng'@'127.0.0.1' identified by 'ralph_ng'
-    mysql> grant all privileges on ralph_ng.* to 'ralph_ng'@'127.0.0.1'
+    mysql> create user 'ralph_ng'@'127.0.0.1' identified by 'ralph_ng';
+    mysql> grant all privileges on ralph_ng.* to 'ralph_ng'@'127.0.0.1';
+    mysql> create database ralph_ng;
 
 Create the database schema, create Ralph superuser and populate the database
 with some data:

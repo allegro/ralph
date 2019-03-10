@@ -111,14 +111,14 @@ class NetworkRalphChangeList(RalphChangeList):
 class NetworkAdmin(RalphMPTTAdmin):
     ordering = ['min_ip', '-max_ip']
     change_form_template = 'admin/data_center/network/change_form.html'
-    search_fields = ['name', 'address', 'remarks']
+    search_fields = ['name', 'address', 'remarks', 'vlan']
     list_display = [
         'name', 'address', 'kind', 'vlan', 'network_environment',
         'subnetworks_count', 'ipaddresses_count'
     ]
     list_filter = [
         'network_environment', 'kind', 'dhcp_broadcast', 'racks',
-        'terminators', 'service_env',
+        'terminators', 'service_env', 'vlan',
         ('parent', RelatedAutocompleteFieldListFilter),
         ('min_ip', NetworkRangeFilter), ('address', NetworkClassFilter),
         ('max_ip', ContainsIPAddressFilter)

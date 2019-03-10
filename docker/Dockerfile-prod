@@ -5,6 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Ralph configuration and paths
 ARG RALPH_LOCAL_DIR="/var/local/ralph"
 ARG RALPH_VERSION=""
+ARG SNAPSHOT="0"
 ENV PATH=/opt/ralph/ralph-core/bin/:$PATH
 ENV RALPH_CONF_DIR="/etc/ralph"
 ENV RALPH_LOCAL_DIR="$RALPH_LOCAL_DIR"
@@ -33,6 +34,7 @@ COPY contrib/common/apt/ralph.list \
      docker/provision/start-ralph.sh \
      docker/provision/wait-for-it.sh \
      docker/provision/install_ralph.sh \
+     build/*$RALPH_VERSION*.deb \
      docker/provision/init-ralph.sh $RALPH_IMAGE_TMP_DIR/
 
 RUN "$RALPH_IMAGE_TMP_DIR/install_ralph.sh"

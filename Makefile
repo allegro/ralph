@@ -41,6 +41,21 @@ build-docker-image:
 	docker build \
 		--no-cache \
 		-f docker/Dockerfile-static \
+		--build-arg RALPH_VERSION="$(version)" \
+		-t $(DOCKER_REPO_NAME)/ralph-static-nginx:latest \
+		-t "$(DOCKER_REPO_NAME)/ralph-static-nginx:$(version)" .
+
+build-snapshot-docker-image: version = $(shell ./get_version.sh show)
+build-snapshot-docker-image: build-snapshot-package
+	docker build \
+		-f docker/Dockerfile-prod \
+		--build-arg RALPH_VERSION="$(version)" \
+		--build-arg SNAPSHOT="1" \
+		-t $(DOCKER_REPO_NAME)/ralph:latest \
+		-t "$(DOCKER_REPO_NAME)/ralph:$(version)" .
+	docker build \
+		-f docker/Dockerfile-static \
+		--build-arg RALPH_VERSION="$(version)" \
 		-t $(DOCKER_REPO_NAME)/ralph-static-nginx:latest \
 		-t "$(DOCKER_REPO_NAME)/ralph-static-nginx:$(version)" .
 
