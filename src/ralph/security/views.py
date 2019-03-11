@@ -40,10 +40,8 @@ def _linkify(to_linkify, url):
     return "<a href=\"{}\">{}</a>".format(url, to_linkify)
 
 
-class ScanStatusInChangeListMixin(object):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.list_select_related += ['securityscan', ]
+class ScanStatusMixin(object):
+    field_name = _('Security scan')
 
     def _to_span(self, css, text):
         return'<span class="{}">{}</span>'.format(css, text)
@@ -76,7 +74,20 @@ class ScanStatusInChangeListMixin(object):
                         "cant reverse url for: {}, {}".format(obj, url_name)
                     )
         return mark_safe(html)
-    scan_status.short_description = _('Security scan')
+
+
+class ScanStatusInChangeListMixin(ScanStatusMixin):
+    def __init__(self, *args, **kwargs):
+        self.scan_status.__func__.short_description = self.field_name
+
+        super().__init__(*args, **kwargs)
+        self.list_select_related += ['securityscan', ]
+
+
+class ScanStatusInTableMixin(ScanStatusMixin):
+    def __init__(self, *args, **kwargs):
+        self.scan_status.__func__.title = self.field_name
+        super().__init__(*args, **kwargs)
 
 
 @register(Vulnerability)

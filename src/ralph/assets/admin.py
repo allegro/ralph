@@ -35,6 +35,7 @@ from ralph.assets.models.configuration import (
 from ralph.data_importer import resources
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.table import Table, TableWithUrl
+from ralph.security.views import ScanStatusInTableMixin
 
 
 @register(ConfigurationClass)
@@ -132,7 +133,7 @@ class ServiceEnvironmentInline(RalphTabularInline):
     fields = ('environment',)
 
 
-class BaseObjectsList(Table):
+class BaseObjectsList(ScanStatusInTableMixin, Table):
     def url(self, item):
         return '<a href="{}">{}</a>'.format(
             item.get_absolute_url(),
@@ -154,7 +155,9 @@ class ServiceBaseObjects(RalphDetailView):
     def get_service_base_objects_queryset(self):
         return BaseObject.polymorphic_objects.filter(
             service_env__service=self.object
-        ).select_related('service_env__environment', 'content_type')
+        ).select_related(
+            'service_env__environment', 'content_type', 'securityscan'
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -162,7 +165,8 @@ class ServiceBaseObjects(RalphDetailView):
             self.get_service_base_objects_queryset(),
             [
                 'id', ('content_type', _('type')),
-                ('service_env__environment', _('environment')), '_str', 'url',
+                ('service_env__environment', _('environment')), '_str',
+                'scan_status', 'url',
             ]
         )
         return context
