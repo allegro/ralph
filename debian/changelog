@@ -1,3 +1,13 @@
+ralph (20190312.1) bionic; urgency=medium
+
+  [ Roman Prykhodchenko ]
+  * Display security scan status in base object lists
+
+  [ Maciej Skorczewski ]
+  * Deleted _ from TradeMarkCountry class
+
+ -- Roman Prykhodchenko <me@romcheg.me>  Tue, 12 Mar 2019 10:26:47 +0000
+
 ralph (20190308.1) bionic; urgency=medium
 
   [ Roman Prykhodchenko ]
