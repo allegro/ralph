@@ -67,7 +67,7 @@ class TradeMarkCountry(
     models.Model
 ):
     country = models.PositiveIntegerField(
-        verbose_name=_('trade_mark_country'),
+        verbose_name=_('trade mark country'),
         choices=Country(),
         default=Country.pl.id,
         null=True,
