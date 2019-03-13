@@ -1,4 +1,3 @@
-# flake8: noqa: E405
 from ralph.settings import *  # noqa
 
 
@@ -8,12 +7,12 @@ def only_true(request):
 
 DEBUG = True
 
-INSTALLED_APPS = INSTALLED_APPS + (  # type: ignore
+INSTALLED_APPS = INSTALLED_APPS + (
     'debug_toolbar',
     'django_extensions',
 )
 
-MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + (  # type: ignore
+MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + (
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
@@ -41,10 +40,10 @@ TEMPLATES = [
     },
 ]
 
-LOGGING['handlers']['console']['level'] = 'DEBUG'  # type: ignore
-for logger in LOGGING['loggers']:  # type: ignore
-    LOGGING['loggers'][logger]['level'] = 'DEBUG'  # type: ignore
-    LOGGING['loggers'][logger]['handlers'].append('console')  # type: ignore
+LOGGING['handlers']['console']['level'] = 'DEBUG'
+for logger in LOGGING['loggers']:
+    LOGGING['loggers'][logger]['level'] = 'DEBUG'
+    LOGGING['loggers'][logger]['handlers'].append('console')
 
 if bool_from_env('RALPH_PROFILING'):
     SILKY_PYTHON_PROFILER = True
