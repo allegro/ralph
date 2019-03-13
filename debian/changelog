@@ -1,3 +1,10 @@
+ralph (20190313.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * Revert "RAS-1296 - handle empty/incorrect payload from dnsaas (#3381)"
+
+ -- Roman Prykhodchenko <me@romcheg.me>  Wed, 13 Mar 2019 09:15:31 +0000
+
 ralph (20190312.1) bionic; urgency=medium
 
   [ Roman Prykhodchenko ]
