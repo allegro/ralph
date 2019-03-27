@@ -106,7 +106,7 @@ class LicenceAdmin(
         'manufacturer', 'licence_type', 'property_of', 'software',
         'number_bought', 'invoice_no', 'invoice_date', 'valid_thru',
         'order_no', 'price', 'accounting_id', 'provider', 'service_env', 'niw',
-        'sn', 'remarks', 'budget_info', 'region'
+        'sn', 'remarks', 'budget_info', 'region', 'start_usage'
     ]
     resource_class = resources.LicenceResource
     _invoice_report_name = 'invoice-licence'
