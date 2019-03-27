@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-from dj.choices import Choices
+from dj.choices import Choices, Country
 from django.conf import settings
 from django.db import models
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.accounts.models import Regionalizable
 from ralph.assets.models import AssetHolder, BaseObject
 from ralph.attachments.helpers import get_file_path
 from ralph.domains.models import Domain
@@ -18,7 +17,7 @@ from ralph.lib.mixins.models import (
 
 def upload_dir(filename, instance):
     return get_file_path(
-            filename, instance, default_dir="trade_marks"
+        filename, instance, default_dir="trade_marks"
     )
 
 
@@ -54,7 +53,32 @@ class TradeMarkStatus(Choices):
     registration_expired = _('Registration expired')
 
 
-class TradeMark(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
+class TradeMarkRegistrarInstitution(
+    AdminAbsoluteUrlMixin,
+    NamedMixin.NonUnique,
+    TimeStampMixin,
+    models.Model
+):
+    pass
+
+
+class TradeMarkCountry(
+    AdminAbsoluteUrlMixin,
+    models.Model
+):
+    country = models.PositiveIntegerField(
+        verbose_name=_('trade mark country'),
+        choices=Country(),
+        default=Country.pl.id,
+        null=True,
+        blank=True
+    )
+
+    def __str__(self):
+        return Country.desc_from_id(self.country)
+
+
+class TradeMark(AdminAbsoluteUrlMixin, BaseObject):
     name = models.CharField(
         verbose_name=_('Trade Mark name'),
         blank=False,
@@ -118,6 +142,10 @@ class TradeMark(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
         related_name='+',
         through='TradeMarksLinkedDomains',
     )
+    registrar_institution = models.ForeignKey(
+        TradeMarkRegistrarInstitution,
+        null=True,
+    )
 
     def __str__(self):
         return '{}, {}, {} expires {}.'.format(
@@ -131,6 +159,7 @@ class TradeMark(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
         return mark_safe(
             '<img src="%s" width="150" />' % self.image.url
         )
+
     image_tag.short_description = _('Image')
     image_tag.allow_tags = True
 
@@ -151,3 +180,13 @@ class TradeMarksLinkedDomains(models.Model):
         return '{} assigned to {}'.format(
             self.trade_mark, self.domain,
         )
+
+
+class TradeMarkAdditionalCountry(models.Model):
+    trade_mark = models.ForeignKey(TradeMark)
+    country = models.ForeignKey(TradeMarkCountry)
+
+    class Meta:
+        verbose_name = _('Trade Mark Additional Country')
+        verbose_name_plural = _('Trade Mark Additional Countries')
+        unique_together = ('country', 'trade_mark')

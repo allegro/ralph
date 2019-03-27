@@ -1,1 +1,0 @@
-* * * * * /home/RALPH_VM_USER/dhcp_agent.py --key=RALPH_API_KEY --host=192.168.200.1:8000 --dc=DC1 --sections=entries --sections=networks --proto=http -c /etc/dhcp/dhcp_entries.conf -n /etc/dhcp/dhcp_networks.conf -l /tmp/dhcp_agent.log -r

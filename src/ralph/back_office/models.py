@@ -615,7 +615,7 @@ class BackOfficeAsset(Regionalizable, Asset):
             email = EmailMessage(
                 subject=context.subject,
                 body=context.body,
-                from_email=settings.EMAIL_FROM,
+                from_email=context.from_email,
                 to=[requester.email]
             )
             for attachment in kwargs['attachments']:
@@ -692,6 +692,7 @@ class BackOfficeAsset(Regionalizable, Asset):
     )
     def convert_to_data_center_asset(cls, instances, **kwargs):
         from ralph.data_center.models.physical import DataCenterAsset, Rack  # noqa
+        from ralph.back_office.helpers import bo_asset_to_dc_asset_status_converter  # noqa
         with transaction.atomic():
             for i, instance in enumerate(instances):
                 data_center_asset = DataCenterAsset()
@@ -703,10 +704,16 @@ class BackOfficeAsset(Regionalizable, Asset):
                 data_center_asset.model = AssetModel.objects.get(
                     pk=kwargs['model']
                 )
+                target_status = int(
+                    Transition.objects.values_list('target', flat=True).get(pk=kwargs['transition_id'])  # noqa
+                )
+                data_center_asset.status = bo_asset_to_dc_asset_status_converter(  # noqa
+                    instance.status, target_status
+                )
                 move_parents_models(
                     instance, data_center_asset,
                     exclude_copy_fields=[
-                        'rack', 'model', 'service_env'
+                        'rack', 'model', 'service_env', 'status'
                     ]
                 )
                 data_center_asset.save()

@@ -87,8 +87,10 @@ FACTORY_MAP = {
     'ralph.supports.models.Support': 'ralph.supports.tests.factories.SupportFactory',  # noqa
     'ralph.supports.models.SupportType': 'ralph.supports.tests.factories.SupportTypeFactory',  # noqa
     'ralph.trade_marks.models.TradeMark': 'ralph.trade_marks.tests.factories.TradeMarkFactory', #noqa
-    'ralph.trade_marks.models.TradeMarksLinkedDomains': 'ralph.trade_marks.tests.factories.TradeMarksLinkedDomainsFactory', #noqa
-    'ralph.trade_marks.models.ProviderAdditionalMarking': 'ralph.trade_marks.tests.factories.ProviderAdditionalMarkingFactory', # noqa
+    'ralph.trade_marks.models.TradeMarksLinkedDomains': 'ralph.trade_marks.tests.factories.TradeMarksLinkedDomainsFactory',  # noqa
+    'ralph.trade_marks.models.ProviderAdditionalMarking': 'ralph.trade_marks.tests.factories.ProviderAdditionalMarkingFactory',  # noqa
+    'ralph.trade_marks.models.TradeMarkCountry': 'ralph.trade_marks.tests.factories.TradeMarkCountryFactory',  # noqa
+    'ralph.trade_marks.models.TradeMarkRegistrarInstitution': 'ralph.trade_marks.tests.factories.TradeMarkRegistrarInstitutionFactory',  # noqa
     'ralph.virtual.models.CloudFlavor': 'ralph.virtual.tests.factories.CloudFlavorFactory',  # noqa
     'ralph.virtual.models.CloudHost': 'ralph.virtual.tests.factories.CloudHostFullFactory',  # noqa
     'ralph.virtual.models.CloudProject': 'ralph.virtual.tests.factories.CloudProjectFactory',  # noqa
@@ -98,6 +100,9 @@ FACTORY_MAP = {
     'ralph.virtual.models.VirtualServerType': 'ralph.virtual.tests.factories.VirtualServerTypeFactory',  # noqa
     'ralph.security.models.Vulnerability': 'ralph.security.tests.factories.VulnerabilityFactory',  # noqa
     'ralph.security.models.SecurityScan': 'ralph.security.tests.factories.SecurityScanFactory',  # noqa
+    'ralph.sim_cards.models.SIMCard': 'ralph.sim_cards.tests.factories.SIMCardFactory',  # noqa
+    'ralph.sim_cards.models.CellularCarrier': 'ralph.sim_cards.tests.factories.CellularCarrierFactory',  # noqa
+    'ralph.sim_cards.models.SIMCardFeatures': 'ralph.sim_cards.tests.factories.SIMCardFeatureFactory',  # noqa'
 }
 
 EXCLUDE_MODELS = [

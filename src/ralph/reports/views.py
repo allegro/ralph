@@ -322,7 +322,8 @@ class AssetRelationsReport(BaseRelationsReport):
     extra_headers = ['tags']
     dc_headers = [
         'id', 'niw', 'barcode', 'sn', 'model__category__name',
-        'model__manufacturer__name', 'status', 'service_env__service__name',
+        'model__manufacturer__name', 'model__name',
+        'status', 'service_env__service__name',
         'invoice_date', 'invoice_no', 'hostname', 'rack'
     ]
     dc_select_related = [

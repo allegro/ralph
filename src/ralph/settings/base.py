@@ -63,6 +63,7 @@ INSTALLED_APPS = (
     'ralph.licences',
     'ralph.domains',
     'ralph.trade_marks',
+    'ralph.sim_cards',
     'ralph.supports',
     'ralph.security',
     'ralph.lib.foundation',
@@ -617,3 +618,6 @@ ALLOW_PUSH_GRAPHS_DATA_TO_STATSD = False
 STATSD_GRAPHS_PREFIX = 'ralph.graphs'
 
 TRANSITION_TEMPLATES = None
+
+CONVERT_TO_DATACENTER_ASSET_DEFAULT_STATUS_ID = 1
+CONVERT_TO_BACKOFFICE_ASSET_DEFAULT_STATUS_ID = 1

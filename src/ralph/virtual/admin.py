@@ -25,6 +25,7 @@ from ralph.licences.models import BaseObjectLicence
 from ralph.networks.forms import SimpleNetworkForm
 from ralph.networks.views import NetworkView
 from ralph.security.views import ScanStatusInChangeListMixin, SecurityInfo
+from ralph.virtual.forms import CloudProviderForm
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -489,5 +490,6 @@ class CloudProjectAdmin(CustomFieldValueAdminMixin, RalphAdmin):
 
 @register(CloudProvider)
 class CloudProviderAdmin(RalphAdmin):
+    form = CloudProviderForm
     list_display = ['name', 'cloud_sync_enabled', 'cloud_sync_driver']
     list_filter = ['name', 'cloud_sync_enabled', 'cloud_sync_driver']

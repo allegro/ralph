@@ -1,0 +1,11 @@
+FROM nginx
+
+ARG RALPH_VERSION=""
+
+LABEL maintainer="Allegro.pl Sp. z o.o. opensource@allegro.pl"
+LABEL authors="Allegro.pl Sp. z o.o. and Contributors opensource@allegro.pl"
+LABEL description="Static files for Ralph DCIM served by Nginx HTTP server."
+LABEL version="$RALPH_VERSION"
+
+COPY --from=allegro/ralph:latest /usr/share/ralph/static /opt/static
+COPY contrib/docker/ralph.conf.nginx /etc/nginx/conf.d/default.conf

@@ -1,0 +1,7 @@
+#! /bin/bash
+
+set -eux
+
+pushd ".."
+DOCKER_REPO_NAME="index.docker.io/allegro" make build-docker-image
+popd

@@ -1,0 +1,43 @@
+FROM ubuntu:bionic
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Ralph configuration and paths
+ARG RALPH_LOCAL_DIR="/var/local/ralph"
+ARG RALPH_VERSION=""
+ARG SNAPSHOT="0"
+ENV PATH=/opt/ralph/ralph-core/bin/:$PATH
+ENV RALPH_CONF_DIR="/etc/ralph"
+ENV RALPH_LOCAL_DIR="$RALPH_LOCAL_DIR"
+ENV RALPH_IMAGE_TMP_DIR="/tmp"
+
+LABEL maintainer="Allegro.pl Sp. z o.o. opensource@allegro.pl"
+LABEL authors="Allegro.pl Sp. z o.o. and Contributors opensource@allegro.pl"
+LABEL description="Advanced Asset Management and DCIM system for data center and back office."
+LABEL version="$RALPH_VERSION"
+
+
+RUN apt-get clean && \
+    apt-get update && \
+    apt-get -y install apt-transport-https ca-certificates gnupg2 locales && \
+    rm -rf /var/lib/apt/lists/*
+
+# set UTF-8 locale
+RUN locale-gen en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+
+COPY contrib/common/apt/ralph.list \
+     docker/provision/docker-entrypoint.sh \
+     docker/provision/createsuperuser.py \
+     docker/provision/start-ralph.sh \
+     docker/provision/wait-for-it.sh \
+     docker/provision/install_ralph.sh \
+     build/*$RALPH_VERSION*.deb \
+     docker/provision/init-ralph.sh $RALPH_IMAGE_TMP_DIR/
+
+RUN "$RALPH_IMAGE_TMP_DIR/install_ralph.sh"
+
+ENTRYPOINT ["/var/local/ralph/docker-entrypoint.sh"]
+CMD ["start"]

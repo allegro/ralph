@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django import forms
+from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -94,3 +95,24 @@ class ChoiceFieldWithOtherOption(forms.ChoiceField):
 
     def to_python(self, value):
         return value
+
+
+class AssetFormMixin(forms.ModelForm):
+    MODEL_TYPE = None
+
+    def get_model_type(self):
+        if not self.MODEL_TYPE:
+            raise AttributeError('Model type attribute is missing.')
+        return self.MODEL_TYPE
+
+    def clean_model(self):
+        value = self.cleaned_data.get('model')
+        self._validate_model_type(value)
+        return value
+
+    def _validate_model_type(self, value):
+        model_type = self.get_model_type()
+        if value.type != model_type.id:
+            raise ValidationError(
+                'Model must be of "{}" type'.format(model_type)
+            )
