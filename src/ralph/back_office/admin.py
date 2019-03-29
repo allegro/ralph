@@ -147,7 +147,7 @@ class BackOfficeAssetAdmin(
         'purchase_order', 'user', 'owner', 'warehouse', 'sn', 'region',
         'property_of', 'remarks', 'invoice_date', 'invoice_no', 'provider',
         'task_url', 'service_env', 'depreciation_rate', 'price', 'order_no',
-        'depreciation_end_date', 'tags'
+        'depreciation_end_date', 'tags', 'start_usage'
     ]
     bulk_edit_no_fillable = ['barcode', 'sn', 'imei', 'hostname']
     _invoice_report_name = 'invoice-back-office-asset'

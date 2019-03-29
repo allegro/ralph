@@ -169,11 +169,14 @@ class InvoiceReportMixin(object):
                 val = val()
             elif isinstance(val, datetime.datetime):
                 val = val.strftime(self._invoice_report_datetime_format)
-            result[f] = str(val or self._invoice_report_empty_value)
+            result[f] = str(val) if val else self._invoice_report_empty_value
+
         return result
 
 
 class AssetInvoiceReportMixin(InvoiceReportMixin):
+    _invoice_report_empty_value = None
+
     _invoice_report_select_related = [
         'model', 'model__manufacturer', 'property_of'
     ]
