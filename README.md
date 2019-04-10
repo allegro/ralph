@@ -33,7 +33,7 @@ http://ralph-demo.allegro.tech/
 
 
 ## Documentation
-Visit our documentation on [readthedocs.org](http://ralph-ng.readthedocs.org)
+Visit our documentation on [readthedocs.org](https://ralph-ng.readthedocs.org)
 
 ## Getting help
 
