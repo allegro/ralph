@@ -8,9 +8,8 @@ from ralph.ssl_certificates.models import SSLCertificate
 
 
 def checking_type(value):
-    domain = ''
     if value['type'] in {'MX', 'TXT'}:
-        pass
+        domain = ''
     elif value['type'] in {'CNAME', 'PTR'}:
         domain = value['content']
     else:
