@@ -1,3 +1,34 @@
+ralph (20190410.2) bionic; urgency=medium
+
+  [ Roman Prykhodchenko ]
+  * Fix the documentation link in the README
+
+ -- Roman Prykhodchenko <me@romcheg.me>  Wed, 10 Apr 2019 12:50:17 +0000
+
+ralph (20190410.1) bionic; urgency=medium
+
+  [ Maciej Skorczewski ]
+  * RAS-1433 | Fix bug in invoice report and add start usage in bulk edit (#3440)
+
+ -- Damian Blewas <damian.blejwas@gmail.com>  Wed, 10 Apr 2019 09:15:50 +0000
+
+ralph (20190313.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * Revert "RAS-1296 - handle empty/incorrect payload from dnsaas (#3381)"
+
+ -- Roman Prykhodchenko <me@romcheg.me>  Wed, 13 Mar 2019 09:15:31 +0000
+
+ralph (20190312.1) bionic; urgency=medium
+
+  [ Roman Prykhodchenko ]
+  * Display security scan status in base object lists
+
+  [ Maciej Skorczewski ]
+  * Deleted _ from TradeMarkCountry class
+
+ -- Roman Prykhodchenko <me@romcheg.me>  Tue, 12 Mar 2019 10:26:47 +0000
+
 ralph (20190308.1) bionic; urgency=medium
 
   [ Roman Prykhodchenko ]
