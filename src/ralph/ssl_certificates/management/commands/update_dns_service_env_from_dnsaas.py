@@ -8,6 +8,9 @@ from ralph.ssl_certificates.models import SSLCertificate
 
 
 def checking_type(value):
+    """
+    if record type is conected with mail records, then return empty string
+    """
     if value['type'] in {'MX', 'TXT'}:
         domain = ''
     elif value['type'] in {'CNAME', 'PTR'}:
