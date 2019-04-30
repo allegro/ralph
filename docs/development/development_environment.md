@@ -124,6 +124,8 @@ It is now possible to run Ralph in development mode:
 ```bash
 $ python setup.py develop
 $ dev_ralph migrate
+$ dev_ralph createsuperuser
+$ make menu
 $ dev_ralph runserver_plus 0.0.0.0:8000
 ```
 
