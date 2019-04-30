@@ -38,26 +38,26 @@ To set up Ralph follow the following steps:
 1. Obtain source code of Ralph.
 1. Change current working directory within your terminal session to where the
 source code is.
-1. Create a virtual environment by running  
+1. Create a virtual environment by running
         ```
         $ mkvirtualenv -p "$(which python3)" ralph
-        ```  
-The environment will be activated upon creation.  
-1. Install required python packages  
+        ```
+The environment will be activated upon creation.
+1. Install required python packages
         ```
         $ pip install -r requirements/dev.txt
-        ```  
+        ```
 Please note, it may be necessary to install appropriate shared libraries and
 build tools in order for some python packages to be built.
-1. Install JS requirements and build static files  
+1. Install JS requirements and build static files
         ```
         $ npm install
-        ```  
+        ```
 1. Build static files. Depending on your platform ```gulp``` executable
-may be found in either node_modules/.bin/ or node_modules/bin/ catalogues:  
+may be found in either node_modules/.bin/ or node_modules/bin/ catalogues:
         ```
         $ ./node_modules/.bin/gulp || ./node_modules/bin/gulp
-        ```   
+        ```
 Please note, it is necessary to perform this step every
 time static files are changed.
 
@@ -95,7 +95,7 @@ DATABASES = {
         'USER': os.environ.get('DATABASE_USER', 'ralph_ng'),
         'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'ralph_ng') or None,
         'HOST': os.environ.get('DATABASE_HOST', '127.0.0.1'),
-        'PORT': os.environ.get('DATABASE_PORT', 5432),
+        'PORT': os.environ.get('DATABASE_PORT', 3306),
         'ATOMIC_REQUESTS': True,
         'TEST': {
             'NAME': 'test_ralph_ng',
@@ -103,7 +103,7 @@ DATABASES = {
             'USER': os.environ.get('DATABASE_USER', 'ralph_ng'),
             'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'ralph_ng') or None,
             'HOST': os.environ.get('DATABASE_HOST', '127.0.0.1'),
-            'PORT': os.environ.get('DATABASE_PORT', 5432),
+            'PORT': os.environ.get('DATABASE_PORT', 3306),
         }
     }
 }
@@ -122,6 +122,8 @@ $ export DJANGO_SETTINGS_MODULE="ralph.settings.local"
 It is now possible to run Ralph in development mode:
 
 ```bash
+$ python setup.py develop
+$ dev_ralph migrate
 $ dev_ralph runserver_plus 0.0.0.0:8000
 ```
 
