@@ -1,3 +1,16 @@
+ralph (20190508.1) bionic; urgency=medium
+
+  [ Marek Bleschke ]
+  * Show configuration path for cloud hosts. (#3445)
+
+  [  Marcin Kliks (vi4m) ]
+  * Documentation: Add ralph forum link
+
+  [ Yixing Yan (yanyx) ]
+  * Fix the development env setup steps (#3447)
+
+ -- Roman Prykhodchenko <me@romcheg.me>  Wed, 08 May 2019 11:56:05 +0000
+
 ralph (20190410.2) bionic; urgency=medium
 
   [ Roman Prykhodchenko ]
