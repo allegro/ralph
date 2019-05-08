@@ -8,9 +8,8 @@ from ralph.ssl_certificates.models import SSLCertificate
 
 
 def checking_type(value):
-    """
-    if record type is conected with mail records, then return empty string
-    """
+    # if record type is conected with mail records, then return empty string.
+    # When we get empty string, management command did not change service env.
     if value['type'] in {'MX', 'TXT'}:
         domain = ''
     elif value['type'] in {'CNAME', 'PTR'}:
