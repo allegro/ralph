@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from string import Formatter
-from urllib.parse import quote, urlencode
+from urllib.parse import urlencode, quote_plus
 
 from django.conf import settings
 from django.contrib.admin.utils import unquote
@@ -41,6 +41,11 @@ PERMISSIONS_EXCLUDE = [
     ('transitions', 'transitionshistory'),
     ('transitions', 'transitionmodel'),
 ]
+
+
+def quotation_to_inches(text):
+    """Replace quotation by unicode inches sign."""
+    return text.replace('"', '\u2033')
 
 
 class EditPermissionsFormMixin(object):
@@ -125,9 +130,9 @@ class AssetList(Table):
         get_params = {
             "inventory_number": item.barcode,
             "serial_number": item.sn,
-            "model": item.model,
+            "model": quotation_to_inches(str(item.model)),
             "comment": item.buyout_date
-                      }
+        }
         url = "?".join(
             [settings.MY_EQUIPMENT_BUYOUT_URL, urlencode(get_params)]
         )
@@ -157,7 +162,7 @@ class AssetList(Table):
                 """
                 Escape URL param and replace quotation by unicode inches sign
                 """
-                return quote(str(p).replace('"', '\u2033'))
+                return quote_plus(quotation_to_inches(str(p)))
 
             return '<a href="{}" target="_blank">{}</a><br />'.format(
                 url.format(
