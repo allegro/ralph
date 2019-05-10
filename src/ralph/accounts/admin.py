@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from string import Formatter
-from urllib.parse import urlencode, quote_plus
+from urllib.parse import quote_plus, urlencode
 
 from django.conf import settings
 from django.contrib.admin.utils import unquote
