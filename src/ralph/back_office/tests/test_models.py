@@ -136,11 +136,16 @@ class HostnameGeneratorTests(RalphTestCase):
         self.assertEqual(iso3_to_iso2('POL'), 'PL')
 
     def test_validate_imei(self):
-        bo_asset_failed = BackOfficeAssetFactory(imei='failed')
-        bo_asset = BackOfficeAssetFactory(imei='990000862471854')
+        bo_asset_failed = BackOfficeAssetFactory(imei='failed', imei2='failed')
+        bo_asset = BackOfficeAssetFactory(
+            imei='990000862471854', imei2='990000862471854'
+        )
 
-        self.assertFalse(bo_asset_failed.validate_imei())
-        self.assertTrue(bo_asset.validate_imei())
+        self.assertFalse(bo_asset_failed.validate_imei(bo_asset_failed.imei))
+        self.assertTrue(bo_asset.validate_imei(bo_asset.imei))
+
+        self.assertFalse(bo_asset_failed.validate_imei(bo_asset_failed.imei2))
+        self.assertTrue(bo_asset.validate_imei(bo_asset.imei2))
 
 
 class TestBackOfficeAsset(RalphTestCase):

@@ -197,7 +197,8 @@ class Command(BaseCommand):
                         ),
                         name='Phone'
                     ),
-                    imei=get_imei(15)
+                    imei=get_imei(15),
+                    imei2=get_imei(15)
                 )
 
     def generate_users_and_groups(self):
