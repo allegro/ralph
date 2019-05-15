@@ -1,3 +1,16 @@
+ralph (20190515.1) bionic; urgency=medium
+
+  [ Maciej Skorczewski ]
+  * Eliminate MX and TXT records from checking_type function
+
+  [ Marek Bleschke ]
+  * Replace quotation to inches unicode sign in model name for buyout link
+
+  [ Damian Blejwas ]
+  * Add IMEI2 field
+
+ -- Roman Prykhodchenko <me@romcheg.me>  Wed, 15 May 2019 09:52:10 +0000
+
 ralph (20190508.1) bionic; urgency=medium
 
   [ Marek Bleschke ]
