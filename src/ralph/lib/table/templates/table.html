@@ -15,7 +15,7 @@
     <tr class="{% if forloop.counter > LIMIT %}hide can-hide{% endif %}">
       {% for item in items %}
         <td{{ item.html_attributes }}>
-          {{ item.value|safe }}
+          {{ item.value|safe|linebreaks }}
         </td>
       {% endfor %}
     </tr>

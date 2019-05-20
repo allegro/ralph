@@ -94,16 +94,6 @@ class RalphUserChangeForm(
 
 class AssetList(Table):
 
-    def url(self, item):
-        return '<a href="{}">{}</a>'.format(
-            reverse(
-                'admin:back_office_backofficeasset_change',
-                args=(item.id,)
-            ),
-            _('go to asset')
-        )
-    url.title = _('Link')
-
     def buyout_date(self, item):
         if item.model.category.show_buyout_date:
             return item.buyout_date
@@ -210,16 +200,7 @@ class AssetList(Table):
 
 
 class AssignedLicenceList(Table):
-
-    def url(self, item):
-        return '<a href="{}">{}</a>'.format(
-            reverse(
-                'admin:licences_licence_change',
-                args=(item.id,)
-            ),
-            _('go to licence')
-        )
-    url.title = _('Link')
+    pass
 
 
 class AssignedSimcardsList(Table):
@@ -257,14 +238,14 @@ class UserInfoMixin(object):
             [
                 'id', 'model__category__name', 'model__manufacturer__name',
                 'model__name', 'sn', 'barcode', 'remarks', 'status',
-                'buyout_date', 'url',
+                'buyout_date',
             ],
             ['user_licence']
         )
         context['licence_list'] = AssignedLicenceList(
             self.get_licence_queryset(),
             ['id', 'manufacturer', 'software__name',
-             'licence_type', 'sn', 'valid_thru', 'url']
+             'licence_type', 'sn', 'valid_thru']
         )
         return context
 
