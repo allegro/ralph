@@ -52,7 +52,7 @@ if os.environ.get('USE_REDIS_CACHE'):
         },
     }
     if REDIS_SENTINEL_ENABLED:
-        CACHES['default']['BACKEND'] = 'ralph.lib.cache.DjangoConnectionPoolCache'
+        CACHES['default']['BACKEND'] = 'ralph.lib.cache.DjangoConnectionPoolCache'  # noqa
     else:
         CACHES['default']['BACKEND'] = 'redis_cache.RedisCache'
         CACHES['default']['LOCATION'] = json.loads(

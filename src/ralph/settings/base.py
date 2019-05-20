@@ -357,7 +357,7 @@ else:
     REDIS_MASTER_IP = None
     REDIS_MASTER_PORT = None
     REDIS_CONNECTION = {
-            'HOST': REDIS_MASTER_IP or os.environ.get('REDIS_HOST', 'localhost'),
+            'HOST': REDIS_MASTER_IP or os.environ.get('REDIS_HOST', 'localhost'),  # noqa
             'PORT': REDIS_MASTER_PORT or os.environ.get('REDIS_PORT', '6379'),
             'DB': int(os.environ.get('REDIS_DB', 0)),
             'PASSWORD': os.environ.get('REDIS_PASSWORD', ''),
