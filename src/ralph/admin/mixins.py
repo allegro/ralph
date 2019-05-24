@@ -402,7 +402,8 @@ class RalphAdminImportExportMixin(ImportExportModelAdmin):
         for name, field in resource.fields.items():
             if (
                 isinstance(field.widget, ForeignKeyWidget) and
-                not getattr(field, '_exclude_in_select_related', False)
+                not getattr(field, '_exclude_in_select_related', False) and
+                not isinstance(getattr(queryset.model, name, None), property)
             ):
                 fk_fields.append(field.attribute)
         if fk_fields:

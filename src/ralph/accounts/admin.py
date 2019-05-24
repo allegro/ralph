@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from string import Formatter
-from urllib.parse import quote, urlencode
+from urllib.parse import quote_plus, urlencode
 
 from django.conf import settings
 from django.contrib.admin.utils import unquote
@@ -41,6 +41,11 @@ PERMISSIONS_EXCLUDE = [
     ('transitions', 'transitionshistory'),
     ('transitions', 'transitionmodel'),
 ]
+
+
+def quotation_to_inches(text):
+    """Replace quotation by unicode inches sign."""
+    return text.replace('"', '\u2033')
 
 
 class EditPermissionsFormMixin(object):
@@ -89,16 +94,6 @@ class RalphUserChangeForm(
 
 class AssetList(Table):
 
-    def url(self, item):
-        return '<a href="{}">{}</a>'.format(
-            reverse(
-                'admin:back_office_backofficeasset_change',
-                args=(item.id,)
-            ),
-            _('go to asset')
-        )
-    url.title = _('Link')
-
     def buyout_date(self, item):
         if item.model.category.show_buyout_date:
             return item.buyout_date
@@ -125,9 +120,9 @@ class AssetList(Table):
         get_params = {
             "inventory_number": item.barcode,
             "serial_number": item.sn,
-            "model": item.model,
+            "model": quotation_to_inches(str(item.model)),
             "comment": item.buyout_date
-                      }
+        }
         url = "?".join(
             [settings.MY_EQUIPMENT_BUYOUT_URL, urlencode(get_params)]
         )
@@ -157,7 +152,7 @@ class AssetList(Table):
                 """
                 Escape URL param and replace quotation by unicode inches sign
                 """
-                return quote(str(p).replace('"', '\u2033'))
+                return quote_plus(quotation_to_inches(str(p)))
 
             return '<a href="{}" target="_blank">{}</a><br />'.format(
                 url.format(
@@ -205,16 +200,7 @@ class AssetList(Table):
 
 
 class AssignedLicenceList(Table):
-
-    def url(self, item):
-        return '<a href="{}">{}</a>'.format(
-            reverse(
-                'admin:licences_licence_change',
-                args=(item.id,)
-            ),
-            _('go to licence')
-        )
-    url.title = _('Link')
+    pass
 
 
 class AssignedSimcardsList(Table):
@@ -252,14 +238,14 @@ class UserInfoMixin(object):
             [
                 'id', 'model__category__name', 'model__manufacturer__name',
                 'model__name', 'sn', 'barcode', 'remarks', 'status',
-                'buyout_date', 'url',
+                'buyout_date',
             ],
             ['user_licence']
         )
         context['licence_list'] = AssignedLicenceList(
             self.get_licence_queryset(),
             ['id', 'manufacturer', 'software__name',
-             'licence_type', 'sn', 'valid_thru', 'url']
+             'licence_type', 'sn', 'valid_thru']
         )
         return context
 

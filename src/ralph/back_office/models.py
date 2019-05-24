@@ -192,7 +192,12 @@ class BackOfficeAsset(Regionalizable, Asset):
         choices=BackOfficeAssetStatus(),
     )
     imei = NullableCharField(
-        max_length=18, null=True, blank=True, unique=True
+        max_length=18, null=True, blank=True, unique=True,
+        verbose_name=_('IMEI')
+    )
+    imei2 = NullableCharField(
+        max_length=18, null=True, blank=True, unique=True,
+        verbose_name=_('IMEI 2')
     )
     office_infrastructure = models.ForeignKey(
         OfficeInfrastructure, null=True, blank=True
@@ -215,15 +220,18 @@ class BackOfficeAsset(Regionalizable, Asset):
     def __repr__(self):
         return '<BackOfficeAsset: {}>'.format(self.id)
 
-    def validate_imei(self):
-        return IMEI_SINCE_2003.match(self.imei) or \
-            IMEI_UNTIL_2003.match(self.imei)
+    def validate_imei(self, imei):
+        return IMEI_SINCE_2003.match(imei) or IMEI_UNTIL_2003.match(imei)
 
     def clean(self):
         super().clean()
-        if self.imei and not self.validate_imei():
+        if self.imei and not self.validate_imei(self.imei):
             raise ValidationError({
                 'imei': _('%(imei)s is not IMEI format') % {'imei': self.imei}
+            })
+        if self.imei2 and not self.validate_imei(self.imei2):
+            raise ValidationError({
+                'imei2': _('%(imei)s is not IMEI format') % {'imei': self.imei2}  # noqa
             })
 
     def is_liquidated(self, date=None):
@@ -512,6 +520,7 @@ class BackOfficeAsset(Regionalizable, Asset):
                 'sn': obj.sn,
                 'model': str(obj.model),
                 'imei': obj.imei,
+                'imei2': obj.imei2,
                 'barcode': obj.barcode,
             }
             for obj in instances

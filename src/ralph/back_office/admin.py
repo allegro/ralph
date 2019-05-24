@@ -120,7 +120,7 @@ class BackOfficeAssetAdmin(
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
 
     list_filter = [
-        'barcode', 'status', 'imei', 'sn', 'model', 'purchase_order',
+        'barcode', 'status', 'imei', 'imei2', 'sn', 'model', 'purchase_order',
         'hostname', 'required_support', 'region', 'warehouse', 'task_url',
         'model__category', 'loan_end_date', 'niw', 'model__manufacturer',
         'model__manufacturer__manufacturer_kind', 'location', 'remarks',
@@ -143,13 +143,13 @@ class BackOfficeAssetAdmin(
     ]
     resource_class = resources.BackOfficeAssetResource
     bulk_edit_list = [
-        'licences', 'status', 'barcode', 'imei', 'hostname', 'model',
+        'licences', 'status', 'barcode', 'imei', 'imei2', 'hostname', 'model',
         'purchase_order', 'user', 'owner', 'warehouse', 'sn', 'region',
         'property_of', 'remarks', 'invoice_date', 'invoice_no', 'provider',
         'task_url', 'service_env', 'depreciation_rate', 'price', 'order_no',
         'depreciation_end_date', 'tags', 'start_usage'
     ]
-    bulk_edit_no_fillable = ['barcode', 'sn', 'imei', 'hostname']
+    bulk_edit_no_fillable = ['barcode', 'sn', 'imei', 'imei2', 'hostname']
     _invoice_report_name = 'invoice-back-office-asset'
     _invoice_report_item_fields = (
         AssetInvoiceReportMixin._invoice_report_item_fields + ['owner']
@@ -161,10 +161,10 @@ class BackOfficeAssetAdmin(
     fieldsets = (
         (_('Basic info'), {
             'fields': (
-                'hostname', 'model', 'barcode', 'sn', 'imei', 'niw', 'status',
-                'warehouse', 'location', 'region', 'loan_end_date', 'remarks',
-                'tags', 'property_of', 'task_url', 'office_infrastructure',
-                'service_env'
+                'hostname', 'model', 'barcode', 'sn', 'imei', 'imei2', 'niw',
+                'status', 'warehouse', 'location', 'region', 'loan_end_date',
+                'remarks', 'tags', 'property_of', 'task_url', 'service_env',
+                'office_infrastructure'
             )
         }),
         (_('User Info'), {
@@ -266,6 +266,9 @@ class BackOfficeAssetAdmin(
         if obj and obj.model.category.imei_required:
             multi_add_fields.append(
                 {'field': 'imei', 'allow_duplicates': False}
+            )
+            multi_add_fields.append(
+                {'field': 'imei2', 'allow_duplicates': False}
             )
         return multi_add_fields
 

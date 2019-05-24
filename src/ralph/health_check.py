@@ -4,20 +4,14 @@ from django.conf import settings
 from django.db import connections
 from django.http import HttpResponse
 from django.views.decorators.http import require_GET
-from redis import StrictRedis
+
+from ralph.lib.redis import get_redis_connection
 
 logger = logging.getLogger(__name__)
 
 # StrictRedis will maintain connection (pool) and re-establish them
 # if disconnected (ex. socket was closed).
-strict_redis = StrictRedis(
-    host=settings.REDIS_CONNECTION['HOST'],
-    port=settings.REDIS_CONNECTION['PORT'],
-    db=settings.REDIS_CONNECTION['DB'],
-    password=settings.REDIS_CONNECTION['PASSWORD'],
-    socket_timeout=settings.REDIS_CONNECTION['TIMEOUT'],
-    socket_connect_timeout=settings.REDIS_CONNECTION['CONNECT_TIMEOUT'],
-)
+strict_redis = get_redis_connection(settings.REDIS_CONNECTION)
 
 
 def _test_redis_conn():

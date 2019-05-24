@@ -18,4 +18,4 @@ else
 fi
 
 echo ${VERSION}
-gbp dch --ignore-branch --spawn-editor=release --new-version "${VERSION}" ${VERSION_PARAMS}
+gbp dch --ignore-branch --git-author --spawn-editor=release --new-version "${VERSION}" ${VERSION_PARAMS}

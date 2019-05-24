@@ -16,13 +16,18 @@ REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'] = (
 
 if os.environ.get('STORE_SESSIONS_IN_REDIS'):
     SESSION_ENGINE = 'redis_sessions.session'
-    SESSION_REDIS_HOST = REDIS_CONNECTION['HOST']
-    SESSION_REDIS_PORT = REDIS_CONNECTION['PORT']
+    if REDIS_SENTINEL_ENABLED:
+        SESSION_REDIS_SENTINEL_LIST = REDIS_SENTINEL_HOSTS
+        SESSION_REDIS_SENTINEL_MASTER_ALIAS = REDIS_CLUSTER_NAME
+    else:
+        SESSION_REDIS_HOST = REDIS_CONNECTION['HOST']
+        SESSION_REDIS_PORT = REDIS_CONNECTION['PORT']
     SESSION_REDIS_DB = REDIS_CONNECTION['DB']
     SESSION_REDIS_PASSWORD = REDIS_CONNECTION['PASSWORD']
     SESSION_REDIS_PREFIX = 'session'
 
 if os.environ.get('USE_REDIS_CACHE'):
+
     DEFAULT_CACHE_OPTIONS = {
         'DB': os.environ.get('REDIS_CACHE_DB', REDIS_CONNECTION['DB']),
         'PASSWORD': os.environ.get(
@@ -37,22 +42,27 @@ if os.environ.get('USE_REDIS_CACHE'):
         ),
         'PICKLE_VERSION': -1,
     }
+
     CACHES = {
         'default': {
-            'BACKEND': os.environ.get(
-                'REDIS_CACHE_BACKEND', 'redis_cache.RedisCache'
-            ),
-            'LOCATION': json.loads(
-                os.environ.get('REDIS_CACHE_LOCATION', '"{}:{}"'.format(
-                    REDIS_CONNECTION['HOST'], REDIS_CONNECTION['PORT']
-                ))
-            ),
             'OPTIONS': (
                 json.loads(os.environ.get('REDIS_CACHE_OPTIONS', "{}")) or
                 DEFAULT_CACHE_OPTIONS
             ),
         },
     }
+    if REDIS_SENTINEL_ENABLED:
+        CACHES['default']['BACKEND'] = 'ralph.lib.cache.DjangoConnectionPoolCache'  # noqa
+    else:
+        CACHES['default']['BACKEND'] = 'redis_cache.RedisCache'
+        CACHES['default']['LOCATION'] = json.loads(
+            os.environ.get(
+                'REDIS_CACHE_LOCATION', '"{}:{}"'.format(
+                    REDIS_CONNECTION['HOST'], REDIS_CONNECTION['PORT']
+                )
+            )
+        )
+
     if bool_from_env('RALPH_DISABLE_CACHE_FRAGMENTS', False):
         CACHES['template_fragments'] = {
             'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
