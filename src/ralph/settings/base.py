@@ -23,6 +23,21 @@ def bool_from_env(var, default: bool=False) -> bool:
     else:
         return str_to_bool(os_var)
 
+
+def get_sentinels(sentinels_string):
+    """ Helper for converting sentinel hosts string into list of tuples.
+
+    sentinel_string must be a string in the following format:
+    <sentinel_ip>:<sentinel_port>;<sentinel_ip>:<sentinel_port>
+
+    Returns a list of sentinel host and port tuples
+    """
+    if sentinels_string:
+        sentinels = sentinels_string.split(';')
+        result = [tuple(sentinel.split(':')) for sentinel in sentinels]
+        return result
+
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'CHANGE_ME')
@@ -299,37 +314,61 @@ if API_THROTTLING:
         }
     })
 
-REDIS_MASTER_IP = None
-REDIS_MASTER_PORT = None
-
+REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', 'ralph_ng')
 REDIS_SENTINEL_ENABLED = bool_from_env('REDIS_SENTINEL_ENABLED', False)
+REDIS_SOCKET_TIMEOUT = float(os.environ.get('REDIS_SOCKET_TIMEOUT', 1.0))
+REDIS_CONNECT_TIMEOUT = float(os.environ.get('REDIS_CONNECT_TIMEOUT', 1.0))
+REDIS_COMMAND_TIMEOUT = float(os.environ.get('REDIS_COMMAND_TIMEOUT', 10.0)),
+
 if REDIS_SENTINEL_ENABLED:
     from redis.sentinel import Sentinel
 
-    # REDIS_SENTINEL_HOSTS env variable format: host_1:port;host_2:port
-    REDIS_SENTINEL_HOSTS = os.environ['REDIS_SENTINEL_HOSTS'].split(';')
-    REDIS_CLUSTER_NAME = os.environ['REDIS_CLUSTER_NAME']
+    REDIS_SENTINEL_HOSTS = get_sentinels(os.environ.get('REDIS_SENTINEL_HOSTS', None))  # noqa
+    REDIS_CLUSTER_NAME = os.environ.get('REDIS_CLUSTER_NAME', 'ralph_ng')
+    REDIS_SENTINEL_SOCKET_TIMEOUT = float(os.environ.get('REDIS_SENTINEL_SOCKET_TIMEOUT', 1.0))  # noqa
 
     sentinel = Sentinel(
-        [tuple(s_host.split(':')) for s_host in REDIS_SENTINEL_HOSTS],
-        socket_timeout=float(
-            os.environ.get('REDIS_SENTINEL_SOCKET_TIMEOUT', 0.2)
-        )
+        REDIS_SENTINEL_HOSTS,
+        socket_timeout=REDIS_SENTINEL_SOCKET_TIMEOUT,
+        password=REDIS_PASSWORD
     )
-    REDIS_MASTER_IP, REDIS_MASTER_PORT = sentinel.discover_master(
-        REDIS_CLUSTER_NAME
-    )
+    REDIS_MASTER = sentinel.master_for(REDIS_CLUSTER_NAME)
 
-REDIS_CONNECTION = {
-    'HOST': REDIS_MASTER_IP or os.environ.get('REDIS_HOST', 'localhost'),
-    'PORT': REDIS_MASTER_PORT or os.environ.get('REDIS_PORT', '6379'),
-    'DB': int(os.environ.get('REDIS_DB', 0)),
-    'PASSWORD': os.environ.get('REDIS_PASSWORD', ''),
-    # timeout for executing commands
-    'TIMEOUT': float(os.environ.get('REDIS_TIMEOUT', 10.0)),
-    # timeout for connecting through socket to redis
-    'CONNECT_TIMEOUT': float(os.environ.get('REDIS_CONNECT_TIMEOUT', 1.0)),
-}
+    REDIS_CONNECTION = {
+        'SENTINELS': REDIS_SENTINEL_HOSTS,
+        'DB': int(os.environ.get('REDIS_DB', 0)),
+        'PASSWORD': REDIS_PASSWORD,
+        'TIMEOUT': REDIS_COMMAND_TIMEOUT,
+        'CONNECT_TIMEOUT': REDIS_CONNECT_TIMEOUT,
+    }
+    RQ_QUEUES = {
+        'default': {
+            'SENTINELS': REDIS_SENTINEL_HOSTS,
+            'MASTER_NAME': REDIS_CLUSTER_NAME,
+            'DB': int(os.environ.get('REDIS_DB', 0)),
+            'PASSWORD': REDIS_PASSWORD,
+            'CONNECTION_KWARGS': {
+                'socket_connect_timeout': REDIS_CONNECT_TIMEOUT,
+                'retry_on_timeout': True
+            },
+        },
+    }
+else:
+    REDIS_MASTER_IP = None
+    REDIS_MASTER_PORT = None
+    REDIS_CONNECTION = {
+            'HOST': REDIS_MASTER_IP or os.environ.get('REDIS_HOST', 'localhost'),  # noqa
+            'PORT': REDIS_MASTER_PORT or os.environ.get('REDIS_PORT', '6379'),
+            'DB': int(os.environ.get('REDIS_DB', 0)),
+            'PASSWORD': os.environ.get('REDIS_PASSWORD', ''),
+            'TIMEOUT': REDIS_COMMAND_TIMEOUT,
+            'CONNECT_TIMEOUT': REDIS_CONNECT_TIMEOUT,
+        }
+    RQ_QUEUES = {
+        'default': dict(
+            **REDIS_CONNECTION
+        )
+    }
 
 # set to False to turn off cache decorator
 USE_CACHE = bool_from_env('USE_CACHE', True)
@@ -345,11 +384,6 @@ BACKOFFICE_HOSTNAME_FIELD_READONLY = bool_from_env(
 
 TAGGIT_CASE_INSENSITIVE = True  # case insensitive tags
 
-RQ_QUEUES = {
-    'default': dict(
-        **REDIS_CONNECTION
-    )
-}
 RALPH_QUEUES = {
     'ralph_ext_pdf': {},
     'ralph_async_transitions': {
