@@ -1,9 +1,22 @@
+ralph (20190524.2) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * fix #3449
+
+  [ Szymon Jasinski ]
+  * Upgrade Redis and Sentinel related packages and configuration (#3452)
+
+  [ Roman Prykhodchenko ]
+  * Use git author for Debian changelog
+
+ -- Damian Blejwas <damian.blejwas@allegro.pl>  Fri, 24 May 2019 12:50:25 +0000
+
 ralph (20190524.1) bionic; urgency=medium
 
   [ Damian Blejwas ]
   * Fix naming of IMEI fields
 
-  [ Szymon Jasiński ]
+  [ Szymon Jasinski ]
   * Fix user equipment view (#3454)
 
  -- Marek Bleschke <marek.bleschke@allegro.pl>  Fri, 24 May 2019 08:54:58 +0000
