@@ -1,3 +1,13 @@
+ralph (20190524.1) bionic; urgency=medium
+
+  [ Damian Blejwas ]
+  * Fix naming of IMEI fields
+
+  [ Szymon Jasiński ]
+  * Fix user equipment view (#3454)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Fri, 24 May 2019 08:54:58 +0000
+
 ralph (20190515.1) bionic; urgency=medium
 
   [ Maciej Skorczewski ]
