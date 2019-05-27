@@ -318,7 +318,7 @@ REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', 'ralph_ng')
 REDIS_SENTINEL_ENABLED = bool_from_env('REDIS_SENTINEL_ENABLED', False)
 REDIS_SOCKET_TIMEOUT = float(os.environ.get('REDIS_SOCKET_TIMEOUT', 1.0))
 REDIS_CONNECT_TIMEOUT = float(os.environ.get('REDIS_CONNECT_TIMEOUT', 1.0))
-REDIS_COMMAND_TIMEOUT = float(os.environ.get('REDIS_COMMAND_TIMEOUT', 10.0)),
+REDIS_COMMAND_TIMEOUT = float(os.environ.get('REDIS_COMMAND_TIMEOUT', 10.0))
 
 if REDIS_SENTINEL_ENABLED:
     from redis.sentinel import Sentinel
