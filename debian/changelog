@@ -1,3 +1,10 @@
+ralph (20190527.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * fix redis settings (#3458)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Mon, 27 May 2019 15:10:53 +0000
+
 ralph (20190524.2) bionic; urgency=medium
 
   [ Szymon Jasinski ]
