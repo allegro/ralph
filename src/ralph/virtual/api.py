@@ -3,7 +3,6 @@ from django.db import transaction
 from django.db.models import Prefetch
 from rest_framework import relations, serializers
 
-from ralph.admin.filters import TagsListFilter
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import RalphAPISaveSerializer
 from ralph.assets.api.filters import NetworkableObjectFilters
