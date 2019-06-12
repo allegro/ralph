@@ -427,7 +427,7 @@ class CloudHostAdmin(
 class CloudFlavorAdmin(RalphAdmin):
     list_display = ['name', 'flavor_id', 'cores', 'memory', 'disk', 'get_tags',
                     'instances_count']
-    search_fields = ['name']
+    search_fields = ['name', 'flavor_id']
     readonly_fields = ['name', 'cloudprovider', 'flavor_id', 'cores',
                        'memory', 'disk', 'instances_count']
     list_filter = ['cloudprovider', TagsListFilter]
