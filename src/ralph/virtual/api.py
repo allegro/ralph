@@ -22,7 +22,7 @@ from ralph.data_center.api.serializers import DataCenterAssetSimpleSerializer
 from ralph.data_center.models import DCHost
 from ralph.security.api import SecurityScanSerializer
 from ralph.security.models import SecurityScan
-from ralph.virtual.admin import VirtualServerAdmin
+from ralph.virtual.admin import CloudFlavorAdmin, VirtualServerAdmin
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -172,6 +172,7 @@ class CloudFlavorViewSet(RalphAPIViewSet):
     serializer_class = CloudFlavorSerializer
     save_serializer_class = SaveCloudFlavorSerializer
     prefetch_related = ['tags', 'virtualcomponent_set__model']
+    list_filter = CloudFlavorAdmin.list_filter + ['flavor_id']
 
 
 class CloudProviderViewSet(RalphAPIViewSet):
