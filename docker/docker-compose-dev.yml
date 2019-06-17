@@ -1,7 +1,7 @@
 version: "3"
 services:
   db:
-    image: mysql:5.6
+    image: mysql:5.7
     ports:
       - "3306:3306"
     environment:
@@ -28,4 +28,4 @@ services:
         REDIS_PASSWORD: ""
         REDIS_PORT: 6379
         REDIS_DB: 0
-        
+
