@@ -1,3 +1,16 @@
+ralph (20190617.1) bionic; urgency=medium
+
+  [ Yixing Yan ]
+  * Update mysql image version
+
+  [ Szymon Jasinski ]
+  * Use proper line break filter
+
+  [ Roman Prykhodchenko ]
+  * Searching and filtering cloud flavors by flavor_id
+
+ -- Roman Prykhodchenko <me@romcheg.me>  Mon, 17 Jun 2019 10:58:44 +0000
+
 ralph (20190527.1) bionic; urgency=medium
 
   [ Szymon Jasinski ]
