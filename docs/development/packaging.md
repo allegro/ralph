@@ -11,6 +11,58 @@ The package is built and published to [Bintray] by the Ralph core maintainers.
 This document describes what is necessary to know and to have for a maintainer
 to be able to build, test and publish the package.
 
+## Releasing and publishing new versions
+
+Properly releasing versions is one of the key duties of every Ralph maintainer.
+Therefore, it is necessary for a Ralph maintainers to have their development
+tools properly configured. For the details, see the [Maintainer's development tools][3]
+section.
+
+Like the rest of the package management operations, releasing and publishing a
+new version is automated and does not require specific environment to be
+performed.
+
+The process of releasing and publishing a new version is the following:
+
+1. Switch to `ng` branch and ensure it is clean:
+    ```
+    git checkout ng
+    git status
+    ```
+2. Pull the latest changes from the ng branch of the [upstream repository][1]:
+    ```
+    git pull upstream ng
+    ```
+3. Generate a Debian changelog and edit it as required:
+   ```
+   make release-new-version
+   ```
+4. Enter your `gpg` key password, if asked, to sign the commit and the tag.
+5. Verify the changelog in `debian/changelog` contains the latest changes
+   committed:
+   ```
+   head debian/changelog
+   ```
+6. Verify the version in the latest commit message is correct and the commit
+   is tagged:
+   ```
+   git log
+   ```
+7. Verify signatures for both the latest commit and for its tag:
+   ```
+   git verify-commit HEAD
+   git verify-tag <LATEST_TAG>
+   ```
+8. Push the latest commit along with the tag to the `ng` branch of the upstream
+   repository:
+   ```
+   git push upstream ng --follow-tags
+   ```
+9. Log in to the CI used for publishing Ralph packages and run
+   `ralph-release-package` job:
+10. Verify the job succeeded and the Bintray repository contains the
+   [built version][2].
+
 
 ## The ecosystem
 
@@ -66,41 +118,6 @@ make build-package
 
  > If a release package is meant to be published, a maintainer should release
  > a new version prior to building one. The way to do that is described bellow.
-
-
-## Releasing and publishing new versions
-
-Properly releasing versions is one of the key duties of every Ralph maintainer.
-Therefore, it is necessary for a Ralph maintainers to have their development
-tools properly configured. For the details, see the [Maintainer's development tools][3]
-section.
-
-Like the rest of the package management operations, releasing and publishing a
-new version is automated and does not require specific environment to be
-performed.
-
-The process of releasing and publishing a new version is the following:
-
-1. Switch to `ng` branch and ensure it is clean.
-2. Pull the latest changes from the ng branch of the [upstream repository][1].
-3. Run `make release-new-version`.
-   This will generate a Debian changelog based on git commits and will open
-   it in vim-tiny for a final examination.
-4. Edit the changelog as required, save the file and quit the editor.
-5. At this point `gpg` may ask for a password once or twice in order to sign
-   both the committed changelog and the created tag.
-5. Verify the changelog in `debian/changelog` contains the latest changes
-   committed.
-6. Verify the version in the latest commit message is correct.
-7. Verify the latest commit is tagged.
-6. Verify signatures for both the latest commit and for its tag.
-7. [Optional] Verify you can build a **release** package.
-7. Push the latest commit along with the tag to the `ng` branch of the upstream
-   repository. To do that run `git push upstream ng --follow-tags`.
-8. Log in to the CI used for publishing Ralph packages and run
-   `ralph-release-package` job.
-9. Verify the job succeeded and the Bintray repository contains the
-   [built version][2]
 
 
 [1]: https://github.com/allegro.ralph
