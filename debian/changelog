@@ -1,3 +1,10 @@
+ralph (20190624.1) bionic; urgency=medium
+
+  [ Tomasz Ziarko ]
+  * Add cloud images support
+
+ -- Roman Prykhodchenko <roman.prykhodchenko@allegro.pl>  Mon, 24 Jun 2019 12:45:45 +0000
+
 ralph (20190618.1) bionic; urgency=medium
 
   * Simplify package building documentation
