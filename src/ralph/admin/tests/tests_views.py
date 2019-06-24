@@ -93,6 +93,7 @@ FACTORY_MAP = {
     'ralph.trade_marks.models.TradeMarkRegistrarInstitution': 'ralph.trade_marks.tests.factories.TradeMarkRegistrarInstitutionFactory',  # noqa
     'ralph.virtual.models.CloudFlavor': 'ralph.virtual.tests.factories.CloudFlavorFactory',  # noqa
     'ralph.virtual.models.CloudHost': 'ralph.virtual.tests.factories.CloudHostFullFactory',  # noqa
+    'ralph.virtual.models.CloudImage': 'ralph.virtual.tests.factories.CloudImageFactory',  # noqa
     'ralph.virtual.models.CloudProject': 'ralph.virtual.tests.factories.CloudProjectFactory',  # noqa
     'ralph.virtual.models.CloudProvider': 'ralph.virtual.tests.factories.CloudProviderFactory',  # noqa
     'ralph.virtual.models.CloudSyncProcessor': 'ralph.virtual.tests.factories.CloudSyncProcessorFactory',  # noqa

@@ -45,6 +45,7 @@ from ralph.licences.tests.factories import (
 )
 from ralph.reports.models import Report, ReportLanguage, ReportTemplate
 from ralph.supports.tests.factories import BaseObjectsSupportFactory
+from ralph.virtual.tests.factories import CloudImageFactory
 
 
 def get_imei(n):
@@ -66,7 +67,7 @@ class Command(BaseCommand):
     help = "Generating demo data."
     all_apps = [
         'backoffice', 'datacenter', 'licences', 'supports', 'transitions',
-        'sim_cards'
+        'sim_cards', 'cloudimages'
     ]
     object_limit = 30
 
@@ -434,6 +435,11 @@ class Command(BaseCommand):
                 back_office_asset.user = self.get_user()
                 back_office_asset.save()
 
+    def generate_cloud_images(self):
+        self.stdout.write('Generating Cloud Images')
+        for i in range(self.object_limit):
+            CloudImageFactory()
+
     def handle(self, *args, **options):
         apps = options.get('apps').split(',')
         if 'all' in apps:
@@ -456,6 +462,8 @@ class Command(BaseCommand):
             self.generate_licence()
         if 'transitions' in apps:
             self.generate_transitions()
+        if 'cloudimages' in apps:
+            self.generate_cloud_images()
 
         # Create super user
         root = UserFactory(username='ralph', is_superuser=True, is_staff=True)
