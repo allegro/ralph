@@ -129,6 +129,7 @@ sitetrees = [
                 section(_('Cloud projects'), 'virtual', 'CloudProject'),
                 section(_('Cloud flavors'), 'virtual', 'CloudFlavor'),
                 section(_('Cloud providers'), 'virtual', 'CloudProvider'),
+                section(_('Cloud images'), 'virtual', 'CloudImage'),
             ],
         ),
         ralph_item(
