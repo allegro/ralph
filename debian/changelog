@@ -1,3 +1,10 @@
+ralph (20190625.1) bionic; urgency=medium
+
+  [ Tomasz Ziarko ]
+  * Cloud images - support duplicated names
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Tue, 25 Jun 2019 12:18:11 +0000
+
 ralph (20190624.1) bionic; urgency=medium
 
   [ Tomasz Ziarko ]
