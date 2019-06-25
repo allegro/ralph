@@ -164,16 +164,13 @@ class CloudProject(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
         return 'Cloud Project: {}'.format(self.name)
 
 
-class CloudImage(AdminAbsoluteUrlMixin, NamedMixin):
-    class Meta:
-        verbose_name = _('Cloud image')
-        verbose_name_plural = _('Cloud images')
-
+class CloudImage(AdminAbsoluteUrlMixin, models.Model):
     image_id = models.CharField(
         verbose_name=_('image ID'),
         unique=True,
         max_length=100
     )
+    name = models.CharField(max_length=200, unique=False)
 
     def __str__(self):
         return 'Cloud Image: {}'.format(self.name)

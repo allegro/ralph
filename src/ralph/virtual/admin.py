@@ -514,7 +514,7 @@ class CloudProviderAdmin(RalphAdmin):
 @register(CloudImage)
 class CloudImageAdmin(RalphAdmin):
     list_display = ['name', 'image_id']
-    list_filter = ['name', 'image_id']
+    list_filter = ['name']
 
     fieldsets = (
         ('Cloud Image', {
