@@ -1,3 +1,10 @@
+ralph (20190627.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * Custom handler404 (#3469)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Thu, 27 Jun 2019 07:24:09 +0000
+
 ralph (20190625.1) bionic; urgency=medium
 
   [ Tomasz Ziarko ]
