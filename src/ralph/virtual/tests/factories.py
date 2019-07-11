@@ -14,11 +14,21 @@ from ralph.data_center.tests.factories import DataCenterAssetFactory
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
+    CloudImage,
     CloudProject,
     CloudProvider,
     VirtualServer,
-    VirtualServerType
-)
+    VirtualServerType)
+
+
+class CloudImageFactory(DjangoModelFactory):
+
+    name = factory.Sequence(lambda n: 'image-{0}'.format(n))
+    image_id = factory.Sequence(lambda n: 'img-uuid-{0}'.format(n))
+
+    class Meta:
+        model = CloudImage
+        django_get_or_create = ['name', 'image_id']
 
 
 class CloudProviderFactory(DjangoModelFactory):

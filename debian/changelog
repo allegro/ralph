@@ -1,3 +1,50 @@
+ralph (20190627.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * Custom handler404 (#3469)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Thu, 27 Jun 2019 07:24:09 +0000
+
+ralph (20190625.1) bionic; urgency=medium
+
+  [ Tomasz Ziarko ]
+  * Cloud images - support duplicated names
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Tue, 25 Jun 2019 12:18:11 +0000
+
+ralph (20190624.1) bionic; urgency=medium
+
+  [ Tomasz Ziarko ]
+  * Add cloud images support
+
+ -- Roman Prykhodchenko <roman.prykhodchenko@allegro.pl>  Mon, 24 Jun 2019 12:45:45 +0000
+
+ralph (20190618.1) bionic; urgency=medium
+
+  * Simplify package building documentation
+
+ -- Roman Prykhodchenko <roman.prykhodchenko@allegro.pl>  Tue, 18 Jun 2019 11:13:47 +0000
+
+ralph (20190617.1) bionic; urgency=medium
+
+  [ Yixing Yan ]
+  * Update mysql image version
+
+  [ Szymon Jasinski ]
+  * Use proper line break filter
+
+  [ Roman Prykhodchenko ]
+  * Searching and filtering cloud flavors by flavor_id
+
+ -- Roman Prykhodchenko <me@romcheg.me>  Mon, 17 Jun 2019 10:58:44 +0000
+
+ralph (20190527.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * fix redis settings (#3458)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Mon, 27 May 2019 15:10:53 +0000
+
 ralph (20190524.2) bionic; urgency=medium
 
   [ Szymon Jasinski ]

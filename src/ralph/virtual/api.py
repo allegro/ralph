@@ -26,6 +26,7 @@ from ralph.virtual.admin import VirtualServerAdmin
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
+    CloudImage,
     CloudProject,
     CloudProvider,
     VirtualServer,
@@ -126,6 +127,11 @@ class CloudProjectSerializer(BaseObjectSerializer):
         exclude = ['content_type', 'parent']
 
 
+class CloudImageSerializer(RalphAPISerializer):
+    class Meta:
+        model = CloudImage
+
+
 class CloudProviderSerializer(RalphAPISerializer):
     class Meta:
         model = CloudProvider
@@ -172,11 +178,18 @@ class CloudFlavorViewSet(RalphAPIViewSet):
     serializer_class = CloudFlavorSerializer
     save_serializer_class = SaveCloudFlavorSerializer
     prefetch_related = ['tags', 'virtualcomponent_set__model']
+    filter_fields = ['flavor_id']
 
 
 class CloudProviderViewSet(RalphAPIViewSet):
     queryset = CloudProvider.objects.all()
     serializer_class = CloudProviderSerializer
+
+
+class CloudImageViewSet(RalphAPIViewSet):
+    queryset = CloudImage.objects.all()
+    serializer_class = CloudImageSerializer
+    filter_fields = ['image_id']
 
 
 class CloudHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
@@ -265,6 +278,7 @@ router.register(r'cloud-flavors', CloudFlavorViewSet)
 router.register(r'cloud-hosts', CloudHostViewSet)
 router.register(r'cloud-projects', CloudProjectViewSet)
 router.register(r'cloud-providers', CloudProviderViewSet)
+router.register(r'cloud-images', CloudImageViewSet)
 router.register(r'virtual-servers', VirtualServerViewSet)
 router.register(r'virtual-server-types', VirtualServerTypeViewSet)
 urlpatterns = []

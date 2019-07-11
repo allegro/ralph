@@ -29,11 +29,11 @@ from ralph.virtual.forms import CloudProviderForm
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
+    CloudImage,
     CloudProject,
     CloudProvider,
     VirtualServer,
-    VirtualServerType
-)
+    VirtualServerType)
 
 if settings.ENABLE_DNSAAS_INTEGRATION:
     from ralph.dns.views import DNSView
@@ -427,7 +427,7 @@ class CloudHostAdmin(
 class CloudFlavorAdmin(RalphAdmin):
     list_display = ['name', 'flavor_id', 'cores', 'memory', 'disk', 'get_tags',
                     'instances_count']
-    search_fields = ['name']
+    search_fields = ['name', 'flavor_id']
     readonly_fields = ['name', 'cloudprovider', 'flavor_id', 'cores',
                        'memory', 'disk', 'instances_count']
     list_filter = ['cloudprovider', TagsListFilter]
@@ -509,3 +509,15 @@ class CloudProviderAdmin(RalphAdmin):
     form = CloudProviderForm
     list_display = ['name', 'cloud_sync_enabled', 'cloud_sync_driver']
     list_filter = ['name', 'cloud_sync_enabled', 'cloud_sync_driver']
+
+
+@register(CloudImage)
+class CloudImageAdmin(RalphAdmin):
+    list_display = ['name', 'image_id']
+    list_filter = ['name']
+
+    fieldsets = (
+        ('Cloud Image', {
+            'fields': ['name', 'image_id']
+        }),
+    )

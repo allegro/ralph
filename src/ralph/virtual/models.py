@@ -164,6 +164,18 @@ class CloudProject(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
         return 'Cloud Project: {}'.format(self.name)
 
 
+class CloudImage(AdminAbsoluteUrlMixin, models.Model):
+    image_id = models.CharField(
+        verbose_name=_('image ID'),
+        unique=True,
+        max_length=100
+    )
+    name = models.CharField(max_length=200, unique=False)
+
+    def __str__(self):
+        return 'Cloud Image: {}'.format(self.name)
+
+
 @receiver(models.signals.post_save, sender=CloudProject)
 def update_service_env_on_cloudproject_save(sender, instance, **kwargs):
     """Update CloudHost service_env while updating CloudProject"""
@@ -397,6 +409,7 @@ class VirtualServer(
 
     def __str__(self):
         return 'VirtualServer: {} ({})'.format(self.hostname, self.sn)
+
 
 post_commit(publish_host_update, VirtualServer)
 post_commit(publish_host_update, CloudHost)
