@@ -84,8 +84,9 @@ class LicenceAdmin(
     list_filter = [
         'niw', 'sn', 'remarks', 'software', 'property_of',
         'licence_type', 'service_env', 'valid_thru', 'order_no', 'invoice_no',
-        'invoice_date', 'budget_info', 'manufacturer', 'manufacturer__manufacturer_kind',
-        'region', 'office_infrastructure', TagsListFilter
+        'invoice_date', 'budget_info', 'manufacturer',
+        'manufacturer__manufacturer_kind', 'region',
+        'office_infrastructure', TagsListFilter
     ]
     date_hierarchy = 'created'
     list_display = [
