@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
-from ralph.admin.filters import DateListFilter
+from ralph.admin.filters import (
+    DateListFilter,
+    RelatedAutocompleteFieldListFilter,
+)
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.trade_marks.forms import IntellectualPropertyForm
@@ -13,7 +17,8 @@ from ralph.trade_marks.models import (
     TradeMarkAdditionalCountry,
     TradeMarkCountry,
     TradeMarkRegistrarInstitution,
-    TradeMarksLinkedDomains
+    TradeMarksLinkedDomains,
+    TradeMarkType,
 )
 
 
@@ -31,6 +36,14 @@ class TradeMarksLinkedView(RalphDetailViewAdmin):
     inlines = [TradeMarksLinkedInline]
 
 
+class RegionFilter(RelatedAutocompleteFieldListFilter):
+    parameter_name = 'trademarkadditionalcountry__country'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.title = 'region'
+
+
 @register(TradeMark)
 class TradeMarkAdmin(AttachmentsMixin, RalphAdmin):
 
@@ -44,11 +57,12 @@ class TradeMarkAdmin(AttachmentsMixin, RalphAdmin):
     list_filter = [
         'registrant_number', 'type',
         ('valid_to', DateListFilter), 'additional_markings',
-        'holder', 'status'
+        'holder', 'status',
+        ('trademarkadditionalcountry__country', RegionFilter)
     ]
     list_display = [
-        'id', 'name', 'registrant_number', 'type',
-        'valid_to', 'holder', 'status', 'image_tag'
+        'registrant_number', 'region', 'name', 'registrant_class',
+        'valid_to', 'status', 'holder', 'representation',
     ]
     raw_id_fields = [
         'business_owner', 'technical_owner', 'holder'
@@ -68,6 +82,30 @@ class TradeMarkAdmin(AttachmentsMixin, RalphAdmin):
             )
         })
     )
+
+    def region(self, obj):
+        return ', '.join(
+            tm_country.country.name for tm_country in
+            obj.trademarkadditionalcountry_set.all()
+        )
+
+    def representation(self, obj):
+        if obj.image:
+            return self.image_tag(obj)
+        else:
+            return TradeMarkType.desc_from_id(obj.type)
+
+    representation.allow_tags = True
+
+    def image_tag(self, obj):
+        if not obj.image:
+            return ""
+        return mark_safe(
+            '<img src="%s" width="150" />' % obj.image.url
+        )
+
+    image_tag.short_description = _('Image')
+    image_tag.allow_tags = True
 
     class TradeMarksAdditionalCountryInline(RalphTabularInline):
         model = TradeMarkAdditionalCountry

@@ -75,6 +75,10 @@ class TradeMarkCountry(
     )
 
     def __str__(self):
+        return self.name
+
+    @property
+    def name(self):
         return Country.desc_from_id(self.country)
 
 
@@ -152,16 +156,6 @@ class TradeMark(AdminAbsoluteUrlMixin, BaseObject):
             self.name, self.registrant_number,
             self.registrant_class, self.valid_to
         )
-
-    def image_tag(self):
-        if not self.image:
-            return ""
-        return mark_safe(
-            '<img src="%s" width="150" />' % self.image.url
-        )
-
-    image_tag.short_description = _('Image')
-    image_tag.allow_tags = True
 
 
 class TradeMarksLinkedDomains(models.Model):
