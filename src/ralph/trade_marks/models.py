@@ -110,6 +110,7 @@ class TradeMark(AdminAbsoluteUrlMixin, BaseObject):
         null=False,
         max_length=255,
     )
+    valid_from = models.DateField(null=True, blank=True)
     valid_to = models.DateField(null=False, blank=False)
     business_owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
