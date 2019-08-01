@@ -5,9 +5,9 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import (
-    DateListFilter,
-    RelatedAutocompleteFieldListFilter,
     custom_title_filter,
+    DateListFilter,
+    RelatedAutocompleteFieldListFilter
 )
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.attachments.admin import AttachmentsMixin
@@ -19,7 +19,7 @@ from ralph.trade_marks.models import (
     TradeMarkCountry,
     TradeMarkRegistrarInstitution,
     TradeMarksLinkedDomains,
-    TradeMarkType,
+    TradeMarkType
 )
 
 

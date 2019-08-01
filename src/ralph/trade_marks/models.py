@@ -2,7 +2,6 @@
 from dj.choices import Choices, Country
 from django.conf import settings
 from django.db import models
-from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import AssetHolder, BaseObject
