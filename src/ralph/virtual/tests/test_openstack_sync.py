@@ -153,6 +153,22 @@ class TestOpenstackSync(RalphTestCase):
             host_id='host_id1',
         )
 
+    def test_cleanup_doesnt_remove_cloud_projects_with_children(self):
+        project = CloudProjectFactory(project_id='im_not_here')
+        host = CloudHostFactory(
+            host_id='host_id123',
+            parent=project,
+            cloudflavor=self.cloud_flavor[1]
+        )
+        self.cmd._get_ralph_data()
+
+        self.cmd._cleanup()
+
+        try:
+            CloudProject.objects.get(project_id='im_not_here')
+        except ObjectDoesNotExist:
+            self.fail('Project "im_not_here" was deleted.')
+
     def test_delete_cloud_instance_cleanup_ip(self):
         ips_count = IPAddress.objects.count()
         self.cmd._cleanup_servers({}, self.cloud_project.project_id)
