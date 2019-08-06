@@ -709,8 +709,17 @@ class Command(BaseCommand):
             cloud_project = CloudProject.objects.get(project_id=project_id)
             children_count = cloud_project.children.count()
             if children_count == 0:
-                self._delete_object(CloudProject.objects.get(
-                    project_id=project_id))
+                self._delete_object(cloud_project)
+                logger.debug(
+                    'Deleted Cloud Project (name: {}, id: {})'.format(
+                        cloud_project.name,
+                        cloud_project.id,
+                    ),
+                    extra={
+                        'cloud_project_name': cloud_project.name,
+                        'cloud_project_id': cloud_project.id
+                    }
+                )
                 self.summary['del_projects'] += 1
             else:
                 logger.warning(
@@ -719,7 +728,11 @@ class Command(BaseCommand):
                         cloud_project.name,
                         cloud_project.id,
                         children_count
-                    )
+                    ),
+                    extra={
+                        'cloud_project_name': cloud_project.name,
+                        'cloud_project_id': cloud_project.id
+                    }
                 )
 
         for del_flavor in (
