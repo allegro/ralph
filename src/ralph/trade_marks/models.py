@@ -2,7 +2,6 @@
 from dj.choices import Choices, Country
 from django.conf import settings
 from django.db import models
-from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import AssetHolder, BaseObject
@@ -75,6 +74,10 @@ class TradeMarkCountry(
     )
 
     def __str__(self):
+        return self.name
+
+    @property
+    def name(self):
         return Country.desc_from_id(self.country)
 
 
@@ -106,6 +109,7 @@ class TradeMark(AdminAbsoluteUrlMixin, BaseObject):
         null=False,
         max_length=255,
     )
+    valid_from = models.DateField(null=True, blank=True)
     valid_to = models.DateField(null=False, blank=False)
     business_owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -152,16 +156,6 @@ class TradeMark(AdminAbsoluteUrlMixin, BaseObject):
             self.name, self.registrant_number,
             self.registrant_class, self.valid_to
         )
-
-    def image_tag(self):
-        if not self.image:
-            return ""
-        return mark_safe(
-            '<img src="%s" width="150" />' % self.image.url
-        )
-
-    image_tag.short_description = _('Image')
-    image_tag.allow_tags = True
 
 
 class TradeMarksLinkedDomains(models.Model):

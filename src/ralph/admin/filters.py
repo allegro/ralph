@@ -60,11 +60,11 @@ def _add_incorrect_value_message(request, label):
     )
 
 
-def custom_title_filter(title):
+def custom_title_filter(title, base_class=FieldListFilter):
 
-    class CustomTitledFilter(FieldListFilter):
+    class CustomTitledFilter(base_class):
         def __new__(cls, *args, **kwargs):
-            filter_instance = FieldListFilter.create(*args, **kwargs)
+            filter_instance = base_class.create(*args, **kwargs)
             filter_instance.title = title
             return filter_instance
 
