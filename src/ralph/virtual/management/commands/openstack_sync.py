@@ -706,8 +706,32 @@ class Command(BaseCommand):
         for project_id in (set(self.ralph_projects.keys()) - set(
             self.openstack_projects.keys())
         ):
-            self._delete_object(CloudProject.objects.get(
-                project_id=project_id))
+            cloud_project = CloudProject.objects.get(project_id=project_id)
+            children_count = cloud_project.children.count()
+            logger_extras = {
+                'cloud_project_name': cloud_project.name,
+                'cloud_project_id': cloud_project.id
+            }
+            if children_count == 0:
+                self._delete_object(cloud_project)
+                logger.debug(
+                    'Deleted Cloud Project (name: {}, id: {})'.format(
+                        cloud_project.name,
+                        cloud_project.id,
+                    ),
+                    extra=logger_extras
+                )
+                self.summary['del_projects'] += 1
+            else:
+                logger.error(
+                    'Cloud project name: {} id: {} cant\'t be deleted '
+                    'because it has {} children'.format(
+                        cloud_project.name,
+                        cloud_project.id,
+                        children_count
+                    ),
+                    extra=logger_extras
+                )
 
         for del_flavor in (
                 set(self.ralph_flavors) - set(self.openstack_flavors)):
@@ -760,36 +784,41 @@ class Command(BaseCommand):
         logger.info(msg)
 
     def handle(self, *args, **options):
-        match_ironic = options.get('match_ironic_physical_hosts')
+        try:
+            logger.info('Openstack sync started...')
+            match_ironic = options.get('match_ironic_physical_hosts')
 
-        if not nova_client_exists:
-            logger.error("novaclient module is not installed")
-            raise ImportError("No module named novaclient")
-        if not keystone_client_exists:
-            logger.error("keystoneclient module is not installed")
-            raise ImportError("No module named keystoneclient")
-        if match_ironic and not ironic_client_exists:
-            logger.error("ironicclient module is not installed")
-            raise ImportError("No module named ironicclient")
-        if not hasattr(settings, 'OPENSTACK_INSTANCES'):
-            logger.error('Nothing to sync')
-            return
-        self.openstack_provider_name = options['provider']
-        self.ironic_serial_number_param = options[
-            'node_serial_number_parameter'
-        ]
-        self.ralph_serial_number_param = options[
-            'asset_serial_number_parameter'
-        ]
-        self.stdout.write("syncing...")
+            if not nova_client_exists:
+                logger.error("novaclient module is not installed")
+                raise ImportError("No module named novaclient")
+            if not keystone_client_exists:
+                logger.error("keystoneclient module is not installed")
+                raise ImportError("No module named keystoneclient")
+            if match_ironic and not ironic_client_exists:
+                logger.error("ironicclient module is not installed")
+                raise ImportError("No module named ironicclient")
+            if not hasattr(settings, 'OPENSTACK_INSTANCES'):
+                logger.error('Nothing to sync')
+                return
+            self.openstack_provider_name = options['provider']
+            self.ironic_serial_number_param = options[
+                'node_serial_number_parameter'
+            ]
+            self.ralph_serial_number_param = options[
+                'asset_serial_number_parameter'
+            ]
 
-        self._get_cloud_provider()
-        self._process_openstack_instances()
-        self._get_ralph_data()
-        self._update_ralph()
+            self._get_cloud_provider()
+            self._process_openstack_instances()
+            self._get_ralph_data()
+            self._update_ralph()
 
-        if match_ironic:
-            self._match_physical_and_cloud_hosts()
+            if match_ironic:
+                self._match_physical_and_cloud_hosts()
 
-        self._cleanup()
-        self._print_summary()
+            self._cleanup()
+            self._print_summary()
+        except Exception as err:
+            logger.exception(
+                'Openstack sync failed with error: {}'.format(err)
+            )
