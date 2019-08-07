@@ -1,3 +1,24 @@
+ralph (20190807.1) bionic; urgency=medium
+
+  [ vi4m Marcin Kliks ]
+  * Update LICENSE
+
+  [ Roman Prykhodchenko ]
+  * Update LICENSE
+  * Update LICENSE
+  * Create a trademark notice
+
+  [ Maciej Skorczewski ]
+  * RAS-1505 - Add service env do filters in licences admin (#3474)
+
+  [ Marek Bleschke ]
+  * prevent deleting cloud projects with children (#3478)
+
+  [ Damian Blejwas ]
+  * Trademarks list and filters changes (#3477)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Wed, 07 Aug 2019 05:59:16 +0000
+
 ralph (20190627.1) bionic; urgency=medium
 
   [ Szymon Jasinski ]
