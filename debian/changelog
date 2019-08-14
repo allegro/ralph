@@ -1,3 +1,9 @@
+ralph (20190814.1) bionic; urgency=medium
+
+  * change trade mark's "valid to" field to optional (#3480)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Wed, 14 Aug 2019 06:12:39 +0000
+
 ralph (20190807.1) bionic; urgency=medium
 
   [ vi4m Marcin Kliks ]
