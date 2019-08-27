@@ -452,9 +452,15 @@ ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG = {
     'TRANSITION_ID': os.environ.get(
         'ACCEPT_ASSETS_FOR_CURRENT_USER_TRANSITION_ID', None
     ),
+    'TRANSITION_SIM_ID': os.environ.get(
+        'ACCEPT_SIMCARD_FOR_CURRENT_USER_CONFIG', None
+    ),
     # in_progress by default
     'BACK_OFFICE_ACCEPT_STATUS': os.environ.get(
         'ACCEPT_ASSETS_FOR_CURRENT_USER_BACK_OFFICE_ACCEPT_STATUS', 2
+    ),
+    'SIMCARD_ACCEPT_STATUS': os.environ.get(
+        'SIMCARD_FOR_CURRENT_USER_BACK_OFFICE_ACCEPT_STATUS', 2
     ),
     'LOAN_TRANSITION_ID': os.environ.get(
         'LOAN_ASSETS_FOR_CURRENT_USER_TRANSITION_ID', None
