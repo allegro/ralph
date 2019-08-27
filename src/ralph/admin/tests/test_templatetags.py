@@ -6,7 +6,8 @@ from django.utils.translation import gettext as _
 from ..templatetags.dashboard_tags import (
     get_user_equipment_to_accept_loan_tile_data,
     get_user_equipment_to_accept_return_tile_data,
-    get_user_equipment_to_accept_tile_data)
+    get_user_equipment_to_accept_tile_data,
+    get_user_simcard_to_accept_tile_data)
 
 
 class TestTemplatetags(TestCase):
@@ -34,3 +35,11 @@ class TestTemplatetags(TestCase):
         mocked_grau.return_value = "boo"
         ret = get_user_equipment_to_accept_return_tile_data(None)
         assert ret['label'] == _('Hardware return')
+
+    @patch('ralph.admin.templatetags.dashboard_tags.get_simcard_acceptance_url')
+    @patch('ralph.admin.templatetags.dashboard_tags.get_simcards_to_accept')
+    def test_simcard_release_label(self, mocked_gata, mocked_gau):
+        mocked_gata().count.return_value = 1
+        mocked_gau.return_value = "boo"
+        ret = get_user_simcard_to_accept_tile_data(None)
+        self.assertEqual(ret['label'], _('SIM Card to pick up'))
