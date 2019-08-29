@@ -193,9 +193,9 @@ def ralph_summary(context):
     accept_tile_data = get_user_equipment_to_accept_tile_data(user=user)
     if accept_tile_data:
         results.append(accept_tile_data)
-    accept_tile_data = get_user_simcard_to_accept_tile_data(user=user)
-    if accept_tile_data:
-        results.append(accept_tile_data)
+    accept_for_simcard_tile_data = get_user_simcard_to_accept_tile_data(user=user)  # noqa
+    if accept_for_simcard_tile_data:
+        results.append(accept_for_simcard_tile_data)
     accept_for_loan_tile_data = get_user_equipment_to_accept_loan_tile_data(user=user)  # noqa
     if accept_for_loan_tile_data:
         results.append(accept_for_loan_tile_data)

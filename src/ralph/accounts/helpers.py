@@ -28,7 +28,7 @@ def transition_exists(transition_id):
 acceptance_transition_exists = partial(
     transition_exists, ACCEPTANCE_TRANSITION_ID
 )
-acceptance_transition_exists = partial(
+acceptance_sim_transition_exists = partial(
     transition_exists, ACCEPTANCE_SIM_TRANSITION_ID
 )
 loan_transition_exists = partial(
