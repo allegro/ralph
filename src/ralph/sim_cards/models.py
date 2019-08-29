@@ -1,6 +1,3 @@
-import datetime
-import os
-import tempfile
 from functools import partial
 
 from dj.choices import Choices
@@ -13,12 +10,13 @@ from django.core.validators import (
     RegexValidator
 )
 from django.db import models
-from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.attachments.helpers import add_attachment_from_disk
-from ralph.back_office.models import autocomplete_user, Warehouse, BackOfficeAsset
-from ralph.lib.external_services import ExternalService, obj_to_dict
+from ralph.back_office.models import (
+    autocomplete_user,
+    BackOfficeAsset,
+    Warehouse
+)
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     NamedMixin,
@@ -28,7 +26,7 @@ from ralph.lib.transitions.conf import get_report_name_for_transition_id
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
 from ralph.lib.transitions.models import TransitionWorkflowBase
-from ralph.reports.models import Report, ReportLanguage
+from ralph.reports.models import ReportLanguage
 
 PUK_CODE_VALIDATORS = [
     MinLengthValidator(5),
@@ -180,7 +178,6 @@ class SIMCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model,
     )
     def accept_asset_release_agreement(cls, instances, requester, **kwargs):
         pass
-
 
     @classmethod
     @transition_action(
