@@ -116,3 +116,9 @@ translate_messages:
 
 compile_messages:
 	ralph compilemessages
+
+rpm:
+	rpmbuild -bb rhel/ralph.spec \
+		--define="_topdir ${PWD}/rhel/ralph-core" \
+		--define="_ralphsrc ${PWD}" \
+		--define="_version $(shell ./get_version.sh | tr -cd [:digit:].)"

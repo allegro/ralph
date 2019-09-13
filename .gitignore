@@ -76,6 +76,8 @@ src/ralph/admin/static/elements/elements-min.html
 src/ralph/admin/static/elements/elements-min.html
 
 debian/ralph-core/*
+rhel/ralph-core/*
+!rhel/ralph.spec
 
 .idea
 !src/ralph/lib
