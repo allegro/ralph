@@ -1,3 +1,10 @@
+ralph (20191001.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Changes about electronic give out for SIMCards. (#3481)
+
+ -- Roman Prykhodchenko <roman.prykhodchenko@allegro.pl>  Tue, 01 Oct 2019 11:51:59 +0000
+
 ralph (20190814.1) bionic; urgency=medium
 
   * change trade mark's "valid to" field to optional (#3480)
