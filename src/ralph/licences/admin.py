@@ -139,7 +139,6 @@ class LicenceAdmin(
     _export_queryset_manager = 'objects_used_free_with_related'
 
 
-
 @register(LicenceType)
 class LicenceTypeAdmin(RalphAdmin):
 
