@@ -11,7 +11,7 @@ env:
         - REDIS_PORT=6379
         - DATABASE_PORT=5433
     matrix:
-        - DJANGO_VERSION=1.8.18 TEST_DB_ENGINE=mysql MYSQL_VERSION=5.6
+        - DJANGO_VERSION=1.8.18 TEST_DB_ENGINE=mysql MYSQL_VERSION=5.6.45
         - DJANGO_VERSION=1.8.18 TEST_DB_ENGINE=mysql MYSQL_VERSION=5.5
         - DJANGO_VERSION=1.8.18 TEST_DB_ENGINE=psql
         # Django 1.9 build will not pass until #2132 will be merged
