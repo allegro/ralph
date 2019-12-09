@@ -3,6 +3,7 @@ import six
 
 from dj.choices import Choices
 from django import forms
+from django.contrib.auth.models import Group
 from django.contrib.contenttypes import generic
 
 from django.contrib.contenttypes.models import ContentType
@@ -22,20 +23,34 @@ logger = logging.getLogger(__name__)
 
 CUSTOM_FIELD_VALUE_MAX_LENGTH = 1000
 
+
+def _create_form_field(base_form):
+    class wrapper(base_form):
+        def __init__(self, *args, **kwargs):
+            self.disabled = kwargs.pop('disabled', False)
+            super().__init__(*args, **kwargs)
+
+        def widget_attrs(self, widget):
+            attrs = super().widget_attrs(widget)
+            attrs['disabled'] = self.disabled
+
+    return wrapper
+
+
 STRING_CHOICE = Choices.Choice('string').extra(
-    form_field=forms.CharField,
+    form_field=_create_form_field(forms.CharField),
 )
 INTEGER_CHOICE = Choices.Choice('integer').extra(
-    form_field=forms.IntegerField,
+    form_field=_create_form_field(forms.IntegerField),
 )
 DATE_CHOICE = Choices.Choice('date').extra(
-    form_field=forms.DateField,
+    form_field=_create_form_field(forms.DateField),
 )
 URL_CHOICE = Choices.Choice('url').extra(
-    form_field=forms.URLField,
+    form_field=_create_form_field(forms.URLField),
 )
 CHOICE_CHOICE = Choices.Choice('choice list').extra(
-    form_field=forms.ChoiceField,
+    form_field=_create_form_field(forms.ChoiceField),
 )
 
 
@@ -72,6 +87,14 @@ class CustomField(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
         blank=True,
         default='',
     )
+    managing_group = models.ForeignKey(
+        Group, blank=True, null=True,
+        help_text=_(
+            "When set, only members of the specified group will be "
+            "allowed to set, change or unset values of this custom field "
+            "for objects."
+        )
+    )
     use_as_configuration_variable = models.BooleanField(
         default=False,
         help_text=_(
@@ -96,10 +119,11 @@ class CustomField(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
             return self.choices.split('|')
         return []
 
-    def get_form_field(self):
+    def get_form_field(self, **extra_params):
         params = {
             'initial': self.default_value,
         }
+        params.update(extra_params)
         field_type = CustomFieldTypes.from_id(self.type)
         if issubclass(field_type.form_field, forms.ChoiceField):
             choices = self._get_choices()

@@ -1,9 +1,41 @@
 from django import forms
 from django.contrib.contenttypes.forms import BaseGenericInlineFormSet
 from django.contrib.contenttypes.models import ContentType
+from django.forms.forms import BoundField
+from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ugettext
 
+
+class DisablableBoundField(BoundField):
+    def as_widget(self, widget=None, attrs=None, only_initial=False):
+        """
+        Renders the field by rendering the passed widget, adding any HTML
+        attributes passed as attrs.  If no widget is specified, then the
+        field's default widget will be used.
+        """
+        if not widget:
+            widget = self.field.widget
+
+        if self.field.localize:
+            widget.is_localized = True
+
+        attrs = attrs or {}
+        import pdb; pdb.set_trace()
+        if self.field.disabled:
+            attrs['disabled'] = True
+        auto_id = self.auto_id
+        if auto_id and 'id' not in attrs and 'id' not in widget.attrs:
+            if not only_initial:
+                attrs['id'] = auto_id
+            else:
+                attrs['id'] = self.html_initial_id
+
+        if not only_initial:
+            name = self.html_name
+        else:
+            name = self.html_initial_name
+        return force_text(widget.render(name, self.value(), attrs=attrs))
 
 class CustomFieldValueForm(forms.ModelForm):
     class Meta:
@@ -16,7 +48,27 @@ class CustomFieldValueForm(forms.ModelForm):
     def _replace_value_field(self):
         # replace custom field value field with proper one (ex. select)
         if self.instance and self.instance.custom_field_id:
-            self.fields['value'] = self.instance.custom_field.get_form_field()
+            self.fields['value'] = self.instance.custom_field.get_form_field(disabled=True)
+
+    def _clean_fields(self):
+        for name, field in self.fields.items():
+            if field.disabled:
+                value = self.initial.get(name, field.initial)
+
+        super()._clean_fields()
+
+    def __getitem__(self, name):
+        "Returns a BoundField with the given name."
+        try:
+            import pdb; pdb.set_trace()
+            field = self.fields[name]
+        except KeyError:
+            raise KeyError(
+                "Key %r not found in '%s'" % (
+                name, self.__class__.__name__))
+        if name not in self._bound_fields_cache:
+            self._bound_fields_cache[name] = DisablableBoundField(self, field, name)
+        return self._bound_fields_cache[name]
 
 
 class CustomFieldValueWithClearChildrenForm(CustomFieldValueForm):

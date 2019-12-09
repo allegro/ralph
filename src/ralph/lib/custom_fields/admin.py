@@ -24,7 +24,7 @@ class CustomFieldAdmin(RalphAdmin):
     list_filter = ['type']
     fields = [
         'name', 'attribute_name', 'type', 'choices', 'default_value',
-        'use_as_configuration_variable'
+        'managing_group', 'use_as_configuration_variable'
     ]
     readonly_fields = ['attribute_name']
 
