@@ -29,7 +29,9 @@ ReadOnlyWidget = forms.TextInput(attrs={'readonly': 'readonly'})
 logger = logging.getLogger(__name__)
 
 
-class AdminDateWidget(forms.DateInput):
+class DatepickerWidgetMixin:
+    css_class = 'datepicker'
+
     @property
     def media(self):
         js = map(lambda x: os.path.join(*x), [
@@ -41,8 +43,16 @@ class AdminDateWidget(forms.DateInput):
         ])
 
     def render(self, name, value, attrs=None):
-        attrs['class'] = 'datepicker'
-        return super(AdminDateWidget, self).render(name, value, attrs=attrs)
+        attrs['class'] = self.css_class
+        return super().render(name, value, attrs=attrs)
+
+
+class AdminDateWidget(DatepickerWidgetMixin, forms.DateInput):
+    css_class = 'datepicker'
+
+
+class AdminDateTimeWidget(DatepickerWidgetMixin, forms.DateTimeInput):
+    css_class = 'datepicker-with-time'
 
 
 class PermissionsSelectWidget(forms.Widget):

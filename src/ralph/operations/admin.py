@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 from collections import Counter
 
-from django.db.models import Prefetch
+from django.db.models import Prefetch, DateTimeField
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphMPTTAdmin, register
 from ralph.admin.mixins import RalphAdminForm
 from ralph.admin.views.main import RalphChangeList
+from ralph.admin.widgets import AdminDateTimeWidget
 from ralph.assets.models import BaseObject
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer import resources
@@ -179,3 +181,18 @@ class FailureAdmin(OperationAdmin):
     list_filter = OperationAdmin.list_filter + [
         'base_objects__asset__model__manufacturer'
     ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Allow to edit datetime fields for case when new entries are
+        # created manually.
+        self.formfield_overrides[DateTimeField] = {
+            'widget': AdminDateTimeWidget
+        }
+
+    def get_changeform_initial_data(self, request):
+        initial_data = super().get_changeform_initial_data(request)
+        initial_data['created_date'] = timezone.now().strftime(
+            '%Y-%m-%d %H:%M:%S'
+        )
+        return initial_data
