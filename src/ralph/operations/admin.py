@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import Counter
 
-from django.db.models import Prefetch, DateTimeField
+from django.db.models import DateTimeField, Prefetch
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
