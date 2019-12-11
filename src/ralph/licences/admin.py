@@ -112,9 +112,10 @@ class LicenceAdmin(
     resource_class = resources.LicenceResource
     _invoice_report_name = 'invoice-licence'
     _invoice_report_select_related = ['software', 'manufacturer']
+    _invoice_report_empty_value = None
     _invoice_report_item_fields = [
         'software', 'manufacturer', 'software__get_asset_type_display', 'niw',
-        'sn', 'price', 'created', 'number_bought'
+        'sn', 'price', 'created', 'number_bought', 'start_usage'
     ]
 
     fieldsets = (
