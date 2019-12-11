@@ -38,6 +38,7 @@ python:
     - "3.6"
 
 before_install:
+    - nvm use 11.15.0
     - pip install flake8==3.0.4 isort==4.2.5
     - make flake
     - npm install -g gulp
