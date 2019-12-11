@@ -3,6 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.test import RequestFactory, TestCase
 
+from ralph.accounts.tests.factories import GroupFactory
 from ..models import CustomField, CustomFieldTypes, CustomFieldValue
 from .models import ModelA, ModelB, SomeModel
 
@@ -242,3 +243,55 @@ class CustomFieldValueAdminMaxinTestCase(TestCase):
         response = self.client.post(self.a1.get_absolute_url(), data)
         self.assertEqual(response.status_code, 302)
         self.assertNotIn(self.cfv1, list(self.sm1.custom_fields.all()))
+
+    def test_custom_field_not_in_form_for_nonmatching_managing_group(self):
+        self.custom_field_str.managing_group = GroupFactory()
+        self.custom_field_str.save()
+
+        response = self.client.get(self.sm1.get_absolute_url())
+
+        self.assertEqual(1, len(response.context_data['custom_fields_all']))
+        self.assertEqual(
+            'sample_value',
+            response.context_data['custom_fields_all'][0]['value']
+        )
+
+        filled_in_custom_field_forms = [
+            form
+            for form in response.context_data['inline_admin_formsets'][0].formset.forms
+            if form.fields['id'].initial is not None
+        ]
+
+        self.assertEqual(0, len(filled_in_custom_field_forms))
+
+
+    def test_custom_field_in_form_for_matching_managing_group(self):
+        group = GroupFactory()
+
+        self.user.groups.add(group)
+        self.custom_field_str.managing_group = group
+
+        self.user.save()
+        self.custom_field_str.save()
+
+        response = self.client.get(self.sm1.get_absolute_url())
+
+        self.assertEqual(1, len(response.context_data['custom_fields_all']))
+        self.assertEqual(
+            'sample_value',
+            response.context_data['custom_fields_all'][0]['value']
+        )
+
+        filled_in_custom_field_forms = [
+            form
+            for form in response.context_data['inline_admin_formsets'][0].formset.forms
+            if form.fields['id'].initial is not None
+        ]
+
+        self.assertEqual(1, len(filled_in_custom_field_forms))
+        form = filled_in_custom_field_forms[0]
+
+        self.assertEqual(
+            self.cfv1.id,
+            form.fields['id'].initial
+        )

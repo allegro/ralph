@@ -3,6 +3,7 @@ import six
 
 from dj.choices import Choices
 from django import forms
+from django.contrib.auth.models import Group
 from django.contrib.contenttypes import generic
 
 from django.contrib.contenttypes.models import ContentType
@@ -71,6 +72,14 @@ class CustomField(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
         null=True,
         blank=True,
         default='',
+    )
+    managing_group = models.ForeignKey(
+        Group, blank=True, null=True,
+        help_text=_(
+            "When set, only members of the specified group will be "
+            "allowed to set, change or unset values of this custom field "
+            "for objects."
+        )
     )
     use_as_configuration_variable = models.BooleanField(
         default=False,

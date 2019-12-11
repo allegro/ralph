@@ -24,7 +24,7 @@ class CustomFieldAdmin(RalphAdmin):
     list_filter = ['type']
     fields = [
         'name', 'attribute_name', 'type', 'choices', 'default_value',
-        'use_as_configuration_variable'
+        'managing_group', 'use_as_configuration_variable'
     ]
     readonly_fields = ['attribute_name']
 
@@ -135,3 +135,42 @@ class CustomFieldValueAdminMixin(object):
         return super().changeform_view(
             request, object_id, form_url, extra_context
         )
+
+    def _create_formsets(self, request, obj, change):
+        """
+        Helper function to generate formsets for add/change_view
+
+        99% of this function contains unaltered code from Django. The only
+        alternation is that it passes request objects to custom field form sets
+        in order to make it impossible to edit restricted custom fields.
+
+        """
+        formsets = []
+        inline_instances = []
+        prefixes = {}
+        get_formsets_args = [request]
+        if change:
+            get_formsets_args.append(obj)
+        for FormSet, inline in self.get_formsets_with_inlines(*get_formsets_args):  # noqa: E501
+            prefix = FormSet.get_default_prefix()
+            prefixes[prefix] = prefixes.get(prefix, 0) + 1
+            if prefixes[prefix] != 1 or not prefix:
+                prefix = "%s-%s" % (prefix, prefixes[prefix])
+            formset_params = {
+                'instance': obj,
+                'prefix': prefix,
+                'queryset': inline.get_queryset(request),
+            }
+
+            if issubclass(FormSet, CustomFieldValueFormSet):
+                formset_params['request'] = request
+
+            if request.method == 'POST':
+                formset_params.update({
+                    'data': request.POST,
+                    'files': request.FILES,
+                    'save_as_new': '_saveasnew' in request.POST
+                })
+            formsets.append(FormSet(**formset_params))
+            inline_instances.append(inline)
+        return formsets, inline_instances
