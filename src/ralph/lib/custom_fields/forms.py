@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.contenttypes.forms import BaseGenericInlineFormSet
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ugettext
@@ -10,14 +11,37 @@ class CustomFieldValueForm(forms.ModelForm):
     class Meta:
         fields = ['custom_field', 'value']
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, request=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.request = request
         self._replace_value_field()
 
     def _replace_value_field(self):
         # replace custom field value field with proper one (ex. select)
         if self.instance and self.instance.custom_field_id:
             self.fields['value'] = self.instance.custom_field.get_form_field()
+
+    def clean(self):
+        clean_data = super().clean()
+        custom_field = clean_data.get('custom_field')
+
+        if custom_field:
+            if (
+                custom_field.managing_group is not None and
+                custom_field.managing_group not in self.request.user.groups.all()  # noqa: E501
+            ):
+                self.add_error(
+                    'custom_field',
+                    ValidationError(
+                        _(
+                            'Only users from {} group can set '
+                            'this custom field.'
+                        ).format(custom_field.managing_group.name),
+                        code='invalid'
+                    )
+                )
+
+        return clean_data
 
 
 class CustomFieldValueWithClearChildrenForm(CustomFieldValueForm):
@@ -42,15 +66,16 @@ class CustomFieldValueWithClearChildrenForm(CustomFieldValueForm):
 class CustomFieldValueFormSet(BaseGenericInlineFormSet):
 
     def __init__(self, request=None, queryset=None, *args, **kwargs):
+        self.request = request
         queryset = queryset.filter(
             Q(custom_field__managing_group__isnull=True) |
-            Q(custom_field__managing_group__in=request.user.groups.all())
+            Q(custom_field__managing_group__in=self.request.user.groups.all())
         )
 
         super().__init__(queryset=queryset, *args, **kwargs)
 
     def _construct_form(self, i, **kwargs):
-        form = super()._construct_form(i, **kwargs)
+        form = super()._construct_form(i, request=self.request, **kwargs)
         # fix for https://code.djangoproject.com/ticket/12028, together with
         # model's `_get_unique_checks`, which removes 'content_type' and
         # 'object_id' fields from excluded list for unique validation
