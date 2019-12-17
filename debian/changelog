@@ -1,3 +1,21 @@
+ralph (20191217.1) bionic; urgency=medium
+
+  [ Marek Bleschke ]
+  * Pin mkdocs-material package version and change mysql version in travis (#3492)
+  * Allow manually specify dates for failure operations (#3494)
+
+  [ Szymon Jasinski ]
+  * Fix licence invoice report (#3486)
+  * Travis set node version (#3496)
+
+  [ Roman Prykhodchenko ]
+  * Restricted custom fields
+  * Do not allow changing restricted custom fields
+  * Deprecate python-3.4 support
+  * Temporarily revert "Changes about electronic give out for SIMCards. (#3481)"
+
+ -- Roman Prykhodchenko <roman.prykhodchenko@allegro.pl>  Tue, 17 Dec 2019 09:49:00 +0000
+
 ralph (20191001.1) bionic; urgency=medium
 
   [ lukaszkarykowski ]
