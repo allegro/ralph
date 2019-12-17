@@ -44,7 +44,7 @@ gulp.task('scss', function() {
 gulp.task('css', function() { 
     var vendorFiles = [
         'bower_components/normalize.css/normalize.css',
-        'bower_components/foundation-datepicker/stylesheets/foundation-datepicker.css',
+        'bower_components/foundation-datepicker/css/foundation-datepicker.css',
         'bower_components/angular-loading-bar/build/loading-bar.min.css',
     ];
     return gulp.src(vendorFiles) 
