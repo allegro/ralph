@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.contenttypes.forms import BaseGenericInlineFormSet
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ugettext
 
@@ -39,6 +40,15 @@ class CustomFieldValueWithClearChildrenForm(CustomFieldValueForm):
 
 
 class CustomFieldValueFormSet(BaseGenericInlineFormSet):
+
+    def __init__(self, request=None, queryset=None, *args, **kwargs):
+        queryset = queryset.filter(
+            Q(custom_field__managing_group__isnull=True) |
+            Q(custom_field__managing_group__in=request.user.groups.all())
+        )
+
+        super().__init__(queryset=queryset, *args, **kwargs)
+
     def _construct_form(self, i, **kwargs):
         form = super()._construct_form(i, **kwargs)
         # fix for https://code.djangoproject.com/ticket/12028, together with

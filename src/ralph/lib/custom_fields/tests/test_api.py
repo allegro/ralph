@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.core.urlresolvers import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from ralph.accounts.models import RalphUser
+from ralph.accounts.tests.factories import GroupFactory
+from ralph.tests.factories import UserFactory
 from ..models import CustomField, CustomFieldTypes, CustomFieldValue
 from ..signals import api_post_create, api_post_update
 from .models import ModelA, ModelB, SomeModel
@@ -204,6 +208,112 @@ class CustomFieldsAPITests(APITestCase):
         self.assertEqual(cfv.object, self.sm1)
         self.assertEqual(cfv.custom_field, self.custom_field_choices)
         self.assertEqual(cfv.value, 'qwerty')
+
+    def test_add_new_customfield_value_with_unmatching_managing_group_should_fail(self):  # noqa" E501
+
+        self.custom_field_str.managing_group = GroupFactory()
+        self.custom_field_str.save()
+
+        some_object = SomeModel.objects.create(name='DEADBEEF')
+
+        url = reverse(self.list_view_name, args=(some_object.id,))
+        data = {
+            'value': 'qwerty',
+            'custom_field': self.custom_field_str.id,
+        }
+
+        response = self.client.post(url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_add_new_customfield_value_with_matching_managing_group_should_succeed(self):  # noqa" E501
+        group = GroupFactory()
+        self.user.groups.add(group)
+        self.custom_field_str.managing_group = group
+
+        self.custom_field_str.save()
+        self.user.save()
+
+        some_object = SomeModel.objects.create(name='DEADBEEF')
+
+        url = reverse(self.list_view_name, args=(some_object.id,))
+        data = {
+            'value': 'qwerty',
+            'custom_field': self.custom_field_str.id,
+        }
+
+        response = self.client.post(url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_update_customfield_value_with_unmatching_managing_group_should_fail(self):  # noqa: E501
+        self.custom_field_str.managing_group = GroupFactory()
+        self.custom_field_str.save()
+
+        url = reverse(
+            self.detail_view_name,
+            kwargs={'pk': self.cfv1.pk, 'object_pk': self.cfv1.object_id}
+        )
+        data = {
+            'value': 'NEW-VALUE',
+            'custom_field': self.custom_field_str.id,
+        }
+        response = self.client.put(url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_customfield_value_with_matching_managing_group_should_pass(self):  # noqa: E501
+        group = GroupFactory()
+        self.user.groups.add(group)
+        self.custom_field_str.managing_group = group
+
+        self.custom_field_str.save()
+        self.user.save()
+
+        url = reverse(
+            self.detail_view_name,
+            kwargs={'pk': self.cfv1.pk, 'object_pk': self.cfv1.object_id}
+        )
+        data = {
+            'value': 'NEW-VALUE',
+            'custom_field': self.custom_field_str.id,
+        }
+        response = self.client.put(url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.cfv1.refresh_from_db()
+        self.assertEqual(self.cfv1.object, self.sm1)
+        self.assertEqual(self.cfv1.custom_field, self.custom_field_str)
+        self.assertEqual(self.cfv1.value, 'NEW-VALUE')
+
+
+    def test_delete_custom_field_value_with_unmatching_managing_group_should_fail(self):  # noqa: E501
+        self.custom_field_str.managing_group = GroupFactory()
+        self.custom_field_str.save()
+
+        url = reverse(
+            self.detail_view_name,
+            kwargs={'pk': self.cfv1.pk, 'object_pk': self.cfv1.object_id}
+        )
+        response = self.client.delete(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(
+            CustomFieldValue.objects.filter(pk=self.cfv1.pk).count(), 1
+        )
+
+    def test_delete_custom_field_value_with_matching_managing_group_should_pass(self):  # noqa: E501
+        group = GroupFactory()
+        self.user.groups.add(group)
+        self.custom_field_str.managing_group = group
+
+        self.custom_field_str.save()
+        self.user.save()
+
+        url = reverse(
+            self.detail_view_name,
+            kwargs={'pk': self.cfv1.pk, 'object_pk': self.cfv1.object_id}
+        )
+        response = self.client.delete(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(
+            CustomFieldValue.objects.filter(pk=self.cfv1.pk).count(), 0
+        )
 
     def test_add_new_customfield_value_should_send_api_post_create_signal(self):  # noqa: E501
         self._sig_called_with_instance = None

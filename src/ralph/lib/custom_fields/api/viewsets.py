@@ -1,5 +1,7 @@
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework.status import HTTP_403_FORBIDDEN
 
 from ..models import CustomFieldValue
 from .serializers import (
@@ -42,6 +44,12 @@ class ObjectCustomFieldsViewSet(viewsets.ModelViewSet):
         }
         return info
 
+    def _user_can_manage_customfield(self, user, custom_field):
+        return (
+            custom_field.managing_group is None or
+            user.groups.filter(pk=custom_field.managing_group.pk).exists()
+        )
+
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
         return queryset.filter(**self._get_related_model_info())
@@ -51,3 +59,40 @@ class ObjectCustomFieldsViewSet(viewsets.ModelViewSet):
         if kwargs.get('data') is not None:
             kwargs['data'].update(self._get_related_model_info())
         return super().get_serializer(*args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        """
+        Enforce user to be in a required group for restricted custom fields.
+
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        custom_field = serializer.validated_data['custom_field']
+        if self._user_can_manage_customfield(request.user, custom_field):
+            return super().create(request, *args, **kwargs)
+        else:
+            return Response(status=HTTP_403_FORBIDDEN)
+
+    def update(self, request, *args, **kwargs):
+        """
+        Enforce user to be in a required group for restricted custom fields.
+
+        """
+        custom_field = self.get_object().custom_field
+        if self._user_can_manage_customfield(request.user, custom_field):
+            return super().update(request, *args, **kwargs)
+        else:
+            return Response(status=HTTP_403_FORBIDDEN)
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Enforce user to be in a required group for restricted custom fields.
+
+        """
+        custom_field = self.get_object().custom_field
+
+        if self._user_can_manage_customfield(request.user, custom_field):
+            return super().destroy(request, *args, **kwargs)
+        else:
+            return Response(status=HTTP_403_FORBIDDEN)
