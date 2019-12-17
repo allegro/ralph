@@ -34,7 +34,6 @@ cache:
     - bower_components
 
 python:
-    - "3.4"
     - "3.6"
 
 before_install:
