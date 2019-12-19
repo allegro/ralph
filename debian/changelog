@@ -1,3 +1,10 @@
+ralph (20191219.1) bionic; urgency=medium
+
+  [ Kamil Wargula ]
+  * Fix CVE-2019-16865 - bump Pillow version
+
+ -- Roman Prykhodchenko <roman.prykhodchenko@allegro.pl>  Thu, 19 Dec 2019 10:11:39 +0000
+
 ralph (20191217.2) bionic; urgency=medium
 
   [ Marek Bleschke ]
