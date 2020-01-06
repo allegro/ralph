@@ -182,7 +182,7 @@ cat ~/.profile
 
 Run your ralph instance with `ralph runserver 0.0.0.0:8000`
 
-Now, point your browser to the http://localhost:8000 and log in. Happy Ralphing!
+Now, point your browser to the http://localhost and log in. Happy Ralphing!
 
 ## Docker installation (experimental)
 
