@@ -64,3 +64,5 @@ class AccessCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
         blank=False,
         help_text=_('Access card status')
     )
+    def __str__(self):
+        return _('Access Card: {}').format(self.visible_number)
