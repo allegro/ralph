@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
                 ('created', models.DateTimeField(verbose_name='date created', auto_now_add=True)),
                 ('modified', models.DateTimeField(verbose_name='last modified', auto_now=True)),
-                ('visible_number', models.CharField(max_length=256, help_text='Number visible on the access card')),
+                ('visual_number', models.CharField(max_length=256, help_text='Number visible on the access card')),
                 ('system_number', models.CharField(max_length=256, help_text='Internal number in the access system')),
                 ('issue_date', models.DateField(blank=True, null=True, help_text='Date of issue to the User')),
                 ('notes', models.TextField(blank=True, null=True, help_text='Optional notes')),

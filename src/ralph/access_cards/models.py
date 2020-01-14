@@ -21,7 +21,7 @@ class AccessCardStatus(Choices):
 
 
 class AccessCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
-    visible_number = models.CharField(
+    visual_number = models.CharField(
         max_length=256,
         null=False,
         blank=False,
@@ -65,4 +65,4 @@ class AccessCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
         help_text=_('Access card status')
     )
     def __str__(self):
-        return _('Access Card: {}').format(self.visible_number)
+        return _('Access Card: {}').format(self.visual_number)
