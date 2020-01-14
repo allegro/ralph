@@ -138,6 +138,7 @@ sitetrees = [
             url_as_pattern=False,
             perms_mode_all=False,
             children=[
+                section(_('Access Cards'), 'access_cards', 'AccessCard'),
                 section(_('Hardware'), 'back_office', 'backofficeasset'),
                 section(_('SIM Cards'), 'sim_cards', 'SIMCard'),
             ]
