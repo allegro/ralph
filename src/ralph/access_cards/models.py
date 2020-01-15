@@ -51,15 +51,17 @@ class AccessCard(
         RalphUser,
         null=True,
         blank=True,
-        related_name='used_access_cards',
-        help_text=_('User of the card')
+        related_name='+',
+        help_text=_('User of the card'),
+        on_delete=models.SET_NULL
     )
     owner = models.ForeignKey(
         RalphUser,
         null=True,
         blank=True,
-        related_name='owned_access_cards',
-        help_text=_('Owner of the card')
+        related_name='+',
+        help_text=('Owner of the card'),
+        on_delete=models.SET_NULL
     )
     status = ChoiceField(
         choices=AccessCardStatus,
