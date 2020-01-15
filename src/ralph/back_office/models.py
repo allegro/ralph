@@ -9,7 +9,6 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
-from django.core.mail import EmailMessage
 from django.db import models, transaction
 from django.forms import ValidationError
 from django.template import Context, Template
@@ -24,6 +23,7 @@ from ralph.assets.models.assets import (
     ServiceEnvironment
 )
 from ralph.assets.utils import move_parents_models
+from ralph.back_office.helpers import send_transition_attachments_to_user
 from ralph.lib.hooks import get_hook
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
@@ -579,21 +579,15 @@ class BackOfficeAsset(Regionalizable, Asset):
     @transition_action(run_after=['release_report', 'return_report',
                                   'loan_report'])
     def send_attachments_to_user(cls, requester, transition_id, **kwargs):
-        if kwargs.get('attachments'):
-            transition = Transition.objects.get(pk=transition_id)
-            context_func = get_hook(
-                'back_office.transition_action.email_context'
-            )
-            context = context_func(transition_name=transition.name)
-            email = EmailMessage(
-                subject=context.subject,
-                body=context.body,
-                from_email=context.from_email,
-                to=[requester.email]
-            )
-            for attachment in kwargs['attachments']:
-                email.attach_file(attachment.file.path)
-            email.send()
+        context_func = get_hook(
+            'back_office.transition_action.email_context'
+        )
+        send_transition_attachments_to_user(
+            requester=requester,
+            transition_id=transition_id,
+            context_func=context_func,
+            **kwargs
+        )
 
     @classmethod
     @transition_action(
