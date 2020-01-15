@@ -12,6 +12,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('accounts', '0006_remove_ralphuser_gender'),
     ]
 
     operations = [
@@ -27,6 +28,7 @@ class Migration(migrations.Migration):
                 ('notes', models.TextField(blank=True, null=True, help_text='Optional notes')),
                 ('status', dj.choices.fields.ChoiceField(default=1, choices=ralph.access_cards.models.AccessCardStatus, help_text='Access card status')),
                 ('owner', models.ForeignKey(blank=True, null=True, help_text='Owner of the card', related_name='owned_access_cards', to=settings.AUTH_USER_MODEL)),
+                ('region', models.ForeignKey(to='accounts.Region')),
                 ('user', models.ForeignKey(blank=True, null=True, help_text='User of the card', related_name='used_access_cards', to=settings.AUTH_USER_MODEL)),
             ],
             options={

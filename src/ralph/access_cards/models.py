@@ -3,7 +3,7 @@ from dj.choices.fields import ChoiceField
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.accounts.models import RalphUser
+from ralph.accounts.models import RalphUser, Regionalizable
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 
 
@@ -20,7 +20,9 @@ class AccessCardStatus(Choices):
     liquidated = _('liquidated')
 
 
-class AccessCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
+class AccessCard(
+    AdminAbsoluteUrlMixin, TimeStampMixin, Regionalizable, models.Model
+):
     visual_number = models.CharField(
         max_length=255,
         null=False,
