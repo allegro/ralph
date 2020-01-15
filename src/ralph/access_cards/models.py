@@ -22,15 +22,17 @@ class AccessCardStatus(Choices):
 
 class AccessCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
     visual_number = models.CharField(
-        max_length=256,
+        max_length=255,
         null=False,
         blank=False,
+        unique=True,
         help_text=_('Number visible on the access card')
     )
     system_number = models.CharField(
-        max_length=256,
+        max_length=255,
         null=False,
         blank=False,
+        unique=True,
         help_text=_('Internal number in the access system')
     )
     issue_date = models.DateField(

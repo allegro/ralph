@@ -2,8 +2,8 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import ralph.lib.mixins.models
 import dj.choices.fields
+import ralph.lib.mixins.models
 from django.conf import settings
 import ralph.access_cards.models
 
@@ -21,8 +21,8 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
                 ('created', models.DateTimeField(verbose_name='date created', auto_now_add=True)),
                 ('modified', models.DateTimeField(verbose_name='last modified', auto_now=True)),
-                ('visual_number', models.CharField(max_length=256, help_text='Number visible on the access card')),
-                ('system_number', models.CharField(max_length=256, help_text='Internal number in the access system')),
+                ('visual_number', models.CharField(max_length=255, unique=True, help_text='Number visible on the access card')),
+                ('system_number', models.CharField(max_length=255, unique=True, help_text='Internal number in the access system')),
                 ('issue_date', models.DateField(blank=True, null=True, help_text='Date of issue to the User')),
                 ('notes', models.TextField(blank=True, null=True, help_text='Optional notes')),
                 ('status', dj.choices.fields.ChoiceField(default=1, choices=ralph.access_cards.models.AccessCardStatus, help_text='Access card status')),

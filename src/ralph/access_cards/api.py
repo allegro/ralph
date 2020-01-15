@@ -9,7 +9,7 @@ class AccessCardSerializer(RalphAPISerializer):
 
     class Meta:
         model = AccessCard
-        fields = ['pk', 'status', 'user', 'owner', 'created', 'modified',
+        fields = ['id', 'status', 'user', 'owner', 'created', 'modified',
                   'visual_number', 'system_number', 'issue_date', 'notes']
 
 class AccessCardViewSet(RalphAPIViewSet):
