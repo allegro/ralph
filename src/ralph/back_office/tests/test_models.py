@@ -43,6 +43,7 @@ from ralph.lib.transitions.models import (
 from ralph.lib.transitions.tests import TransitionTestCase
 from ralph.licences.tests.factories import LicenceFactory
 from ralph.reports.factories import ReportTemplateFactory
+from ralph.reports.helpers import generate_report
 from ralph.tests import RalphTestCase
 from ralph.tests.factories import UserFactory
 from ralph.tests.mixins import ClientMixin
@@ -554,9 +555,10 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
                 user=UserFactory(first_name="James", last_name="Bond")
             )
         ]
-
-        attachment = BackOfficeAsset._generate_report(
-            report_template.name, user, instances, report_template.language)
+        context = BackOfficeAsset._get_report_context(instances)
+        attachment = generate_report(
+            report_template.name, user, instances, report_template.language,
+            context=context)
 
         correct_filename = '{}_{}-{}_{}.pdf'.format(
             timezone.now().isoformat()[:10], 'james', 'bond',

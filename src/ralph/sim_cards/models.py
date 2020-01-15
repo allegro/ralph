@@ -13,14 +13,18 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.back_office.models import autocomplete_user, Warehouse
+
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     NamedMixin,
     TimeStampMixin
 )
+from ralph.lib.transitions.conf import get_report_name_for_transition_id
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
 from ralph.lib.transitions.models import TransitionWorkflowBase
+from ralph.reports.helpers import generate_report
+from ralph.reports.models import ReportLanguage
 
 PUK_CODE_VALIDATORS = [
     MinLengthValidator(5),
@@ -156,6 +160,69 @@ class SIMCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model,
         user = get_user_model().objects.get(pk=int(kwargs['user']))
         for instance in instances:
             instance.user = user
+
+    @classmethod
+    @transition_action(
+        form_fields={
+            'accept': {
+                'field': forms.BooleanField(
+                    label=_(
+                        'I have read and fully understand and '
+                        'accept the agreement.'
+                    )
+                )
+            },
+        }
+    )
+    def accept_asset_release_agreement(cls, instances, requester, **kwargs):
+        pass
+
+    @classmethod
+    @transition_action(
+        form_fields={
+            'report_language': {
+                'field': forms.ModelChoiceField(
+                    label=_('Release report language'),
+                    queryset=ReportLanguage.objects.all().order_by('-default'),
+                    empty_label=None
+                ),
+                'exclude_from_history': True
+            }
+        },
+        return_attachment=True,
+        run_after=['assign_owner', 'assign_user']
+    )
+    def release_report(cls, instances, requester, transition_id, **kwargs):
+        report_name = get_report_name_for_transition_id(transition_id)
+        return generate_report(
+            instances=instances, name=report_name, requester=requester,
+            language=kwargs['report_language'],
+            context=cls._get_report_context(instances)
+        )
+
+    @classmethod
+    def _get_report_context(cls, instances):
+        context = [
+            {
+                'card_number': obj.card_number,
+                'carrier': obj.carrier.name,
+                'pin1': obj.pin1,
+                'puk1': obj.puk1,
+                'phone_number': obj.phone_number,
+            }
+            for obj in instances
+        ]
+        return context
+
+    @classmethod
+    @transition_action(
+        run_after=['release_report']
+    )
+    def assign_requester_as_an_owner(cls, instances, requester, **kwargs):
+        """Assign current user as an owner"""
+        for instance in instances:
+            instance.owner = requester
+            instance.save()
 
     @classmethod
     @transition_action(
