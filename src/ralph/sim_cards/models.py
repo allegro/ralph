@@ -11,7 +11,6 @@ from django.core.validators import (
 )
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from ralph.back_office.helpers import send_transition_attachments_to_user
 
 from ralph.back_office.models import autocomplete_user, Warehouse
 from ralph.lib.hooks import get_hook
@@ -25,6 +24,7 @@ from ralph.lib.transitions.conf import get_report_name_for_transition_id
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
 from ralph.lib.transitions.models import TransitionWorkflowBase
+from ralph.lib.transitions.utils import send_transition_attachments_to_user
 from ralph.reports.helpers import generate_report
 from ralph.reports.models import ReportLanguage
 

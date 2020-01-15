@@ -1,11 +1,9 @@
 from collections import namedtuple
 
 from django.conf import settings
-from django.core.mail import EmailMessage
 
 from ralph.back_office.models import BackOfficeAssetStatus
 from ralph.data_center.models import DataCenterAssetStatus
-from ralph.lib.transitions.models import Transition
 
 EmailContext = namedtuple('EmailContext', 'from_email subject body')
 
@@ -18,23 +16,6 @@ def get_email_context_for_transition(transition_name: str) -> EmailContext:
         'body': 'Please see documents provided in attachments for "{}".'.format(transition_name)  # noqa
     }
     return EmailContext(**default)
-
-
-def send_transition_attachments_to_user(
-    requester, transition_id, context_func, **kwargs
-):
-    if kwargs.get('attachments'):
-        transition = Transition.objects.get(pk=transition_id)
-        context = context_func(transition_name=transition.name)
-        email = EmailMessage(
-            subject=context.subject,
-            body=context.body,
-            from_email=context.from_email,
-            to=[requester.email]
-        )
-        for attachment in kwargs['attachments']:
-            email.attach_file(attachment.file.path)
-        email.send()
 
 
 def _status_converter(

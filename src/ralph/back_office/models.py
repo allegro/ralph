@@ -23,7 +23,6 @@ from ralph.assets.models.assets import (
     ServiceEnvironment
 )
 from ralph.assets.utils import move_parents_models
-from ralph.back_office.helpers import send_transition_attachments_to_user
 from ralph.lib.hooks import get_hook
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
@@ -35,6 +34,7 @@ from ralph.lib.transitions.conf import get_report_name_for_transition_id
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
 from ralph.lib.transitions.models import Transition
+from ralph.lib.transitions.utils import send_transition_attachments_to_user
 from ralph.licences.models import BaseObjectLicence, Licence
 from ralph.reports.helpers import generate_report
 from ralph.reports.models import ReportLanguage
