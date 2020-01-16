@@ -594,7 +594,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             transition.id,
             attachments=[attachment]
         )
-
+        mockemctx.assert_called_once_with(transition_name='transition name')
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].from_email, "foo@bar.pl")
 
