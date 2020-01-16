@@ -14,6 +14,7 @@ from ralph.tests.models import Foo
 
 FACTORY_MAP = {
     'django.contrib.auth.models.Group': 'ralph.accounts.tests.factories.GroupFactory',  # noqa
+    'ralph.access_cards.models.AccessCard': 'ralph.access_cards.tests.factories.AccessCardFactory', # noqa
     'ralph.accounts.models.RalphUser': 'ralph.accounts.tests.factories.UserFactory',  # noqa
     'ralph.accounts.models.Region': 'ralph.accounts.tests.factories.RegionFactory',  # noqa
     'ralph.accounts.models.Team': 'ralph.accounts.tests.factories.TeamFactory',

@@ -66,6 +66,7 @@ INSTALLED_APPS = (
     'mptt',
     'reversion',
     'sitetree',
+    'ralph.access_cards',
     'ralph.accounts',
     'ralph.assets',
     'ralph.attachments',
