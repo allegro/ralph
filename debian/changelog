@@ -1,3 +1,9 @@
+ralph (20200116.1) bionic; urgency=medium
+
+  * Add send_attachment to user transition action to SIM cards
+
+ -- Roman Prykhodchenko <roman.prykhodchenko@allegro.pl>  Thu, 16 Jan 2020 09:36:33 +0000
+
 ralph (20200115.1) bionic; urgency=medium
 
   [ vi4m Marcin Kliks ]
