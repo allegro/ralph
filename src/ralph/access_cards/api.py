@@ -16,7 +16,7 @@ class AccessCardSerializer(RalphAPISerializer):
 
 
 class AccessCardViewSet(RalphAPIViewSet):
-    queryset = AccessCard.objects.all()
+    queryset = AccessCard.objects.order_by('id').all()
     select_related = ['user', 'owner', 'region']
     serializer_class = AccessCardSerializer
 

@@ -75,11 +75,11 @@ class AccessCardTestCase(RalphAPITestCase):
         self.assertEqual(status.HTTP_200_OK, response.status_code)
 
         self.assertAccessCardHasCertainFieldsAndValues(
-            access_card2, response.data['results'][0]
+            access_card1, response.data['results'][0]
         )
 
         self.assertAccessCardHasCertainFieldsAndValues(
-            access_card1, response.data['results'][1]
+            access_card2, response.data['results'][1]
         )
 
     def test_class_access_card_test_case(self):
