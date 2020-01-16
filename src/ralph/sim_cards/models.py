@@ -12,7 +12,7 @@ from django.core.validators import (
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.attachments.helpers import send_transition_attachments_to_user
+from ralph.attachments.utils import send_transition_attachments_to_user
 from ralph.back_office.models import autocomplete_user, Warehouse
 from ralph.lib.hooks import get_hook
 from ralph.lib.mixins.models import (

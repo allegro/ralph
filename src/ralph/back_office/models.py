@@ -23,7 +23,7 @@ from ralph.assets.models.assets import (
     ServiceEnvironment
 )
 from ralph.assets.utils import move_parents_models
-from ralph.attachments.helpers import send_transition_attachments_to_user
+from ralph.attachments.utils import send_transition_attachments_to_user
 from ralph.lib.hooks import get_hook
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
