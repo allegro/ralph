@@ -1,7 +1,7 @@
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.access_cards.models import AccessCard
-from ralph.admin import RalphAdmin, register
+from ralph.access_cards.models import AccessCard, AccessZone
+from ralph.admin import RalphAdmin, RalphMPTTAdmin, register
 
 
 @register(AccessCard)
@@ -12,7 +12,8 @@ class AccessCardAdmin(RalphAdmin):
     raw_id_fields = ['user', 'owner', 'region']
     list_filter = ['status', 'issue_date', 'visual_number',
                    'system_number', 'user', 'owner', 'user__segment',
-                   'user__company', 'user__department', 'user__employee_id']
+                   'user__company', 'user__department', 'user__employee_id',
+                   'access_zones']
     search_fields = ['visual_number', 'system_number', 'user__first_name',
                      'user__last_name', 'user__username']
 
@@ -29,5 +30,27 @@ class AccessCardAdmin(RalphAdmin):
             {
                 'fields': ('user', 'owner')
             }
-        )
+        ),
+        (
+            _('Access Zones'),
+            {
+                'fields': ('access_zones',)
+            }
+        ),
+
+    )
+
+
+@register(AccessZone)
+class AccessZoneAdmin(RalphMPTTAdmin):
+    list_display = ['name', 'parent', 'description']
+    search_fields = ['name', 'description']
+
+    fieldsets = (
+        (
+            _('Access Zone'),
+            {
+                'fields': ('parent', 'name', 'description')
+            }
+        ),
     )

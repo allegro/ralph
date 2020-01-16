@@ -2,6 +2,8 @@ from dj.choices import Choice, Choices
 from dj.choices.fields import ChoiceField
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from mptt.fields import TreeForeignKey, TreeManyToManyField
+from mptt.models import MPTTModel
 
 from ralph.accounts.models import RalphUser, Regionalizable
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
@@ -18,6 +20,30 @@ class AccessCardStatus(Choices):
     free = _('free')
     return_in_progress = _('return in progres')
     liquidated = _('liquidated')
+
+
+class AccessZone(AdminAbsoluteUrlMixin, MPTTModel, models.Model):
+    name = models.CharField(_('name'), max_length=255)
+
+    class Meta:
+        ordering = ['name']
+        unique_together = ['name', 'parent']
+
+    def __str__(self):
+        return self.name
+
+    description = models.TextField(
+        null=True,
+        blank=True,
+        help_text=_('Optional description')
+    )
+    parent = TreeForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        related_name='children',
+        db_index=True
+    )
 
 
 class AccessCard(
@@ -69,6 +95,11 @@ class AccessCard(
         null=False,
         blank=False,
         help_text=_('Access card status')
+    )
+    access_zones = TreeManyToManyField(
+        AccessZone,
+        blank=True,
+        related_name='access_cards'
     )
 
     def __str__(self):
