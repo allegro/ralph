@@ -12,8 +12,9 @@ from django.core.validators import (
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.attachments.utils import send_transition_attachments_to_user
 from ralph.back_office.models import autocomplete_user, Warehouse
-
+from ralph.lib.hooks import get_hook
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     NamedMixin,
@@ -240,6 +241,21 @@ class SIMCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model,
         owner = get_user_model().objects.get(pk=int(kwargs['owner']))
         for instance in instances:
             instance.owner = owner
+
+    @classmethod
+    @transition_action(run_after=['release_report'])
+    def send_attachments_to_user(
+        cls, requester, transition_id, **kwargs
+    ):
+        context_func = get_hook(
+            'back_office.transition_action.email_context'
+        )
+        send_transition_attachments_to_user(
+            requester=requester,
+            transition_id=transition_id,
+            context_func=context_func,
+            **kwargs
+        )
 
     @classmethod
     @transition_action(

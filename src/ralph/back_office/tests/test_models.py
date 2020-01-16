@@ -12,6 +12,7 @@ from django.core.urlresolvers import reverse
 from django.test import override_settings, RequestFactory, SimpleTestCase
 from django.utils import timezone
 
+import ralph.back_office.models
 from ralph.accounts.tests.factories import RegionFactory
 from ralph.assets.country_utils import iso2_to_iso3, iso3_to_iso2
 from ralph.assets.models import AssetLastHostname, ObjectModelType
@@ -567,11 +568,13 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
         self.assertEqual(attachment.original_filename, correct_filename)
         self.assertEqual(attachment.file.read(), GENERATED_FILE_CONTENT)
 
-    @patch('ralph.back_office.helpers.get_email_context_for_transition')
-    def test_send_attachments_to_user_action_sends_email(self, mockemctx):
-        mockemctx.return_value = EmailContext(from_email="foo@bar.pl",
-                                              subject="sub",
-                                              body="bod")
+    @patch.object(ralph.back_office.models, 'get_hook')
+    def test_send_attachments_to_user_action_sends_email(self, mock_get_hook):
+        mock_get_hook.return_value = lambda transition_name: EmailContext(
+            from_email="foo@bar.pl",
+            subject="sub",
+            body="bod"
+        )
         bo_asset = BackOfficeAssetFactory(model=self.model)
         _, transition, _ = self._create_transition(
             model=bo_asset,
@@ -595,6 +598,9 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             attachments=[attachment]
         )
 
+        mock_get_hook.assert_called_once_with(
+            'back_office.transition_action.email_context'
+        )
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].from_email, "foo@bar.pl")
 
