@@ -3,7 +3,10 @@ from datetime import datetime
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from ralph.access_cards.tests.factories import AccessCardFactory
+from ralph.access_cards.tests.factories import (
+    AccessCardFactory,
+    AccessZoneFactory
+)
 from ralph.accounts.tests.factories import RegionFactory
 from ralph.api.tests._base import RalphAPITestCase
 from ralph.tests.factories import UserFactory
@@ -39,6 +42,16 @@ class AccessCardTestCase(RalphAPITestCase):
             response_data['region']['id'],
             access_card.region.id
         )
+        access_zone_ids = [
+            access_zone['id']
+            for access_zone in response_data['access_zones']
+        ]
+        access_zone_ids.sort()
+
+        self.assertEqual(
+            access_zone_ids,
+            list(access_card.access_zones.values_list('id', flat=True))
+        )
 
     def test_detail_access_card_returns_expected_fields(self):
         access_card = AccessCardFactory(
@@ -47,6 +60,8 @@ class AccessCardTestCase(RalphAPITestCase):
             owner=UserFactory(),
             notes='test'
         )
+        access_card.access_zones.add(AccessZoneFactory())
+        access_card.save()
 
         url = reverse('accesscard-detail', args=(access_card.id,))
         response = self.client.get(url)
