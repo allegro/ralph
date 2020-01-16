@@ -73,3 +73,9 @@ class AccessCard(
 
     def __str__(self):
         return _('Access Card: {}').format(self.visual_number)
+
+    @classmethod
+    def get_autocomplete_queryset(cls):
+        return cls._default_manager.exclude(
+            status=AccessCardStatus.liquidated.id
+        )

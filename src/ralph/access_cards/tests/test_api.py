@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 
 from ralph.access_cards.tests.factories import AccessCardFactory
+from ralph.accounts.tests.factories import RegionFactory
 from ralph.api.tests._base import RalphAPITestCase
 from ralph.tests.factories import UserFactory
 
@@ -42,6 +43,10 @@ class AccessCardTestCase(RalphAPITestCase):
             response_data['owner']['username'],
             access_card.owner.username
         )
+        self.assertEqual(
+            response_data['region']['id'],
+            access_card.region.id
+        )
 
     def test_detail_access_card_returns_expected_fields(self):
         access_card = AccessCardFactory(
@@ -58,7 +63,6 @@ class AccessCardTestCase(RalphAPITestCase):
         self.assertAccessCardHasCertainFieldsAndValues(
             access_card, response.data
         )
-
 
     def test_list_access_card_returns_expected_fields(self):
         access_card1 = AccessCardFactory(
@@ -87,12 +91,15 @@ class AccessCardTestCase(RalphAPITestCase):
         )
 
     def test_class_access_card_test_case(self):
+        region = RegionFactory()
+
         access_card = {
-            'status':"in use",
-            'visual_number':'654321',
-            'system_number':'F9876DSGV',
-            'notes':'test note',
-            'issue_date':'2020-01-02'
+            'status': "in use",
+            'visual_number': '654321',
+            'system_number': 'F9876DSGV',
+            'notes': 'test note',
+            'issue_date': '2020-01-02',
+            'region': region.id
         }
         url = reverse('accesscard-list')
         response = self.client.post(url, data=access_card)
@@ -100,4 +107,3 @@ class AccessCardTestCase(RalphAPITestCase):
 
         for field in access_card:
             self.assertEqual(response.data[field], access_card[field])
-
