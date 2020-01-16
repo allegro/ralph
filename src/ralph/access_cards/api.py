@@ -34,6 +34,10 @@ class AccessCardViewSet(RalphAPIViewSet):
     select_related = ['user', 'owner', 'region']
     serializer_class = AccessCardSerializer
     prefetch_related = ['access_zones']
+    extended_filter_fields = {
+        'access_zones__name': ['access_zones__name__icontains'],
+        'access_zones__id': ['access_zones__id']
+    }
 
 
 class AccessZoneViewSet(RalphAPIViewSet):

@@ -97,6 +97,37 @@ class AccessCardTestCase(RalphAPITestCase):
             access_card2, response.data['results'][1]
         )
 
+    def test_filter_access_card_by_access_zone_name(self):
+        zones = [AccessZoneFactory() for _ in range(2)]
+        cards = [
+            AccessCardFactory(
+                issue_date=datetime.now(),
+                user=UserFactory(),
+                owner=UserFactory()
+            )
+            for _ in range(10)
+        ]
+
+        cards[0].access_zones.add(zones[0])
+        cards[0].save()
+
+        for card in cards[1:]:
+            card.access_zones.add(zones[1])
+            card.save()
+
+        url = reverse('accesscard-list') + '?access_zones__name={}'.format(
+            zones[0].name
+        )
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+
+        self.assertEqual(1, response.data['count'])
+        self.assertAccessCardHasCertainFieldsAndValues(
+            cards[0],
+            response.data['results'][0]
+        )
+
     def test_class_access_card_test_case(self):
         region = RegionFactory()
 
