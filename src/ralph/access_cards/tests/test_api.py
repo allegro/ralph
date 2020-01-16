@@ -26,14 +26,6 @@ class AccessCardTestCase(RalphAPITestCase):
             response_data['issue_date'],
             access_card.issue_date.strftime('%Y-%m-%d')
         )
-        self.assertEqual(
-            response_data['created'],
-            access_card.created.isoformat()
-        )
-        self.assertEqual(
-            response_data['modified'],
-            access_card.modified.isoformat()
-        )
         self.assertEqual(response_data['notes'], access_card.notes)
         self.assertEqual(
             response_data['user']['username'],
