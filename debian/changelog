@@ -1,3 +1,11 @@
+ralph (20200117.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Introduce Access Card management (#3506)
+  * Add access zones for access cards (#3507)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Fri, 17 Jan 2020 10:36:53 +0000
+
 ralph (20200116.1) bionic; urgency=medium
 
   * Add send_attachment to user transition action to SIM cards
