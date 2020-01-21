@@ -234,7 +234,7 @@ class SIMCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model,
                 'default_value': partial(autocomplete_user, field_name='owner')
             }
         },
-        help_text=_('text'),
+        help_text=_('assign owner'),
         run_after=['unassign_owner']
     )
     def assign_owner(cls, instances, **kwargs):

@@ -155,7 +155,7 @@ class AccessCard(
                 'default_value': partial(autocomplete_user, field_name='owner')
             }
         },
-        help_text=_('text'),
+        help_text=_('assign owner'),
     )
     def assign_owner(cls, instances, **kwargs):
         owner = get_user_model().objects.get(pk=int(kwargs['owner']))
