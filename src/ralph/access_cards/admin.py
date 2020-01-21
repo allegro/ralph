@@ -2,10 +2,11 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.access_cards.models import AccessCard, AccessZone
 from ralph.admin import RalphAdmin, RalphMPTTAdmin, register
+from ralph.lib.transitions.admin import TransitionAdminMixin
 
 
 @register(AccessCard)
-class AccessCardAdmin(RalphAdmin):
+class AccessCardAdmin(TransitionAdminMixin, RalphAdmin):
     list_display = ['status', 'visual_number', 'system_number', 'user',
                     'owner']
     list_select_related = ['user', 'owner']
