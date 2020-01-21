@@ -1,3 +1,10 @@
+ralph (20200121.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Added transitions to Access Card Module (#3508)
+
+ -- Roman Prykhodchenko <roman.prykhodchenko@allegro.pl>  Tue, 21 Jan 2020 14:12:24 +0000
+
 ralph (20200117.1) bionic; urgency=medium
 
   [ lukaszkarykowski ]
