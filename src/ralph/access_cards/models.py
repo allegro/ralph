@@ -1,7 +1,6 @@
 from functools import partial
 
-from dj.choices import Choice, Choices
-from dj.choices.fields import ChoiceField
+from dj.choices import Choices
 from django import forms
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -13,11 +12,12 @@ from ralph.accounts.models import RalphUser, Regionalizable
 from ralph.back_office.models import autocomplete_user
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 from ralph.lib.transitions.decorators import transition_action
+from ralph.lib.transitions.fields import TransitionField
 from ralph.lib.transitions.models import TransitionWorkflowBaseWithPermissions
 
 
 class AccessCardStatus(Choices):
-    _ = Choice
+    _ = Choices.Choice
 
     new = _('new')
     in_progress = _('in progress')
@@ -100,8 +100,8 @@ class AccessCard(
         help_text=('Owner of the card'),
         on_delete=models.SET_NULL
     )
-    status = ChoiceField(
-        choices=AccessCardStatus,
+    status = TransitionField(
+        choices=AccessCardStatus(),
         default=AccessCardStatus.new.id,
         null=False,
         blank=False,
@@ -123,6 +123,15 @@ class AccessCard(
         )
 
     @classmethod
+    @transition_action()
+    def unassign_user(cls, instances, **kwargs):
+        for instance in instances:
+            kwargs['history_kwargs'][instance.pk][
+                'affected_user'
+            ] = str(instance.user)
+            instance.user = None
+
+    @classmethod
     @transition_action(
         form_fields={
             'user': {
@@ -131,7 +140,6 @@ class AccessCard(
                 'default_value': partial(autocomplete_user, field_name='user')
             }
         },
-        run_after=['unassign_user']
     )
     def assign_user(cls, instances, **kwargs):
         user = get_user_model().objects.get(pk=int(kwargs['user']))
@@ -140,21 +148,25 @@ class AccessCard(
 
     @classmethod
     @transition_action(
-        run_after=['release_report']
+        form_fields={
+            'owner': {
+                'field': forms.CharField(label=_('Owner')),
+                'autocomplete_field': 'owner',
+                'default_value': partial(autocomplete_user, field_name='owner')
+            }
+        },
+        help_text=_('text'),
     )
-    def assign_requester_as_an_owner(cls, instances, requester, **kwargs):
-        """Assign current user as an owner"""
+    def assign_owner(cls, instances, **kwargs):
+        owner = get_user_model().objects.get(pk=int(kwargs['owner']))
         for instance in instances:
-            instance.owner = requester
-            instance.save()
+            instance.owner = owner
 
     @classmethod
-    @transition_action(
-        run_after=['loan_report', 'return_report']
-    )
-    def unassign_user(cls, instances, **kwargs):
+    @transition_action()
+    def unassign_owner(cls, instances, **kwargs):
         for instance in instances:
             kwargs['history_kwargs'][instance.pk][
-                'affected_user'
-            ] = str(instance.user)
-            instance.user = None
+                'affected_owner'
+            ] = str(instance.owner)
+            instance.owner = None
