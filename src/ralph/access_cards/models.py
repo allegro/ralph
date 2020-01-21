@@ -1,12 +1,19 @@
+from functools import partial
+
 from dj.choices import Choice, Choices
 from dj.choices.fields import ChoiceField
+from django import forms
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from mptt.fields import TreeForeignKey, TreeManyToManyField
 from mptt.models import MPTTModel
 
 from ralph.accounts.models import RalphUser, Regionalizable
+from ralph.back_office.models import autocomplete_user
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
+from ralph.lib.transitions.decorators import transition_action
+from ralph.lib.transitions.models import TransitionWorkflowBaseWithPermissions
 
 
 class AccessCardStatus(Choices):
@@ -47,7 +54,11 @@ class AccessZone(AdminAbsoluteUrlMixin, MPTTModel, models.Model):
 
 
 class AccessCard(
-    AdminAbsoluteUrlMixin, TimeStampMixin, Regionalizable, models.Model
+    AdminAbsoluteUrlMixin,
+    TimeStampMixin,
+    Regionalizable,
+    models.Model,
+    metaclass=TransitionWorkflowBaseWithPermissions
 ):
     visual_number = models.CharField(
         max_length=255,
@@ -110,3 +121,40 @@ class AccessCard(
         return cls._default_manager.exclude(
             status=AccessCardStatus.liquidated.id
         )
+
+    @classmethod
+    @transition_action(
+        form_fields={
+            'user': {
+                'field': forms.CharField(label=_('User')),
+                'autocomplete_field': 'user',
+                'default_value': partial(autocomplete_user, field_name='user')
+            }
+        },
+        run_after=['unassign_user']
+    )
+    def assign_user(cls, instances, **kwargs):
+        user = get_user_model().objects.get(pk=int(kwargs['user']))
+        for instance in instances:
+            instance.user = user
+
+    @classmethod
+    @transition_action(
+        run_after=['release_report']
+    )
+    def assign_requester_as_an_owner(cls, instances, requester, **kwargs):
+        """Assign current user as an owner"""
+        for instance in instances:
+            instance.owner = requester
+            instance.save()
+
+    @classmethod
+    @transition_action(
+        run_after=['loan_report', 'return_report']
+    )
+    def unassign_user(cls, instances, **kwargs):
+        for instance in instances:
+            kwargs['history_kwargs'][instance.pk][
+                'affected_user'
+            ] = str(instance.user)
+            instance.user = None

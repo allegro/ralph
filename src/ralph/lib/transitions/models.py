@@ -39,6 +39,7 @@ from ralph.lib.external_services.models import (
 from ralph.lib.metrics import statsd
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
+from ralph.lib.permissions.models import PermissionsBase
 from ralph.lib.transitions.conf import (
     DEFAULT_ASYNC_TRANSITION_SERVICE_NAME,
     TRANSITION_ATTR_TAG,
@@ -488,6 +489,13 @@ class TransitionWorkflowBase(ModelBase):
                     curry(get_available_transitions_for_field, field=field)
                 )
         return new_class
+
+
+class TransitionWorkflowBaseWithPermissions(
+    PermissionsBase,
+    TransitionWorkflowBase
+):
+    pass
 
 
 class TransitionModel(AdminAbsoluteUrlMixin, models.Model):
