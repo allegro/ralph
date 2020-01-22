@@ -7,6 +7,7 @@ from ralph.lib.transitions.admin import TransitionAdminMixin
 
 @register(AccessCard)
 class AccessCardAdmin(TransitionAdminMixin, RalphAdmin):
+    show_transition_history = True
     list_display = ['status', 'visual_number', 'system_number', 'user',
                     'owner']
     list_select_related = ['user', 'owner']
