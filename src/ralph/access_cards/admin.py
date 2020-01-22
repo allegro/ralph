@@ -6,6 +6,7 @@ from ralph.admin import RalphAdmin, RalphMPTTAdmin, register
 
 @register(AccessCard)
 class AccessCardAdmin(RalphAdmin):
+    show_transition_history = True
     list_display = ['status', 'visual_number', 'system_number', 'user',
                     'owner']
     list_select_related = ['user', 'owner']
