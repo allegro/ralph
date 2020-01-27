@@ -67,10 +67,13 @@ class CustomFieldValueFormSet(BaseGenericInlineFormSet):
 
     def __init__(self, request=None, queryset=None, *args, **kwargs):
         self.request = request
-        queryset = queryset.filter(
-            Q(custom_field__managing_group__isnull=True) |
-            Q(custom_field__managing_group__in=self.request.user.groups.all())
-        )
+
+        query_filter = Q(custom_field__managing_group__isnull=True)
+        if getattr(self.request, 'user', None):
+            query_filter = query_filter | Q(
+                custom_field__managing_group__in=self.request.user.groups.all()
+            )
+        queryset = queryset.filter(query_filter)
 
         super().__init__(queryset=queryset, *args, **kwargs)
 
