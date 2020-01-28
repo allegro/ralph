@@ -62,7 +62,7 @@ def get_user_simcard_to_accept_tile_data(user):
         return None
     return {
         'class': 'equipment-to-accept',
-        'label': _('SIM Card to pick up'),
+        'label': _('SIM Card pick up'),
         'count': simcard_to_accept_count,
         'url': get_simcard_acceptance_url(user),
     }
