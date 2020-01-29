@@ -1,3 +1,17 @@
+ralph (20200129.1) bionic; urgency=medium
+
+  [ Lukasz Karykowski ]
+  * Added history to Access Card Module
+
+  [ lukaszkarykowski ]
+  * Changed name of the label for electronic Sim Cards release (#3512)
+
+  [ Szymon Jasinski ]
+  * Fix custom field query filter (#3511)
+  * Dockerfile-deb libmysql version (#3513)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Wed, 29 Jan 2020 14:00:18 +0000
+
 ralph (20200121.1) bionic; urgency=medium
 
   [ lukaszkarykowski ]
