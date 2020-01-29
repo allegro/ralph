@@ -67,10 +67,21 @@ class CustomFieldValueFormSet(BaseGenericInlineFormSet):
 
     def __init__(self, request=None, queryset=None, *args, **kwargs):
         self.request = request
-        queryset = queryset.filter(
-            Q(custom_field__managing_group__isnull=True) |
-            Q(custom_field__managing_group__in=self.request.user.groups.all())
-        )
+
+        # (sjasinski) Custom fields requiring permissions will be displayed
+        # in places where we have access to information about logged in user
+        # (which we extract from request). If we don't have this
+        # information (for example, in VersionAdmin), such fields
+        # will not be displayed at all. They will have to be edited manually
+        # in standard RalphAdmin form. This is because in some places
+        # there is no easy way to inject request object to FormSets without
+        # some horrible hacking or manual rewrite of some very long methods.
+        query_filter = Q(custom_field__managing_group__isnull=True)
+        if getattr(self.request, 'user', None):
+            query_filter = query_filter | Q(
+                custom_field__managing_group__in=self.request.user.groups.all()
+            )
+        queryset = queryset.filter(query_filter)
 
         super().__init__(queryset=queryset, *args, **kwargs)
 
