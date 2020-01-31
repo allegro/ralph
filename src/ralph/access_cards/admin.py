@@ -15,7 +15,7 @@ class AccessCardAdmin(TransitionAdminMixin, RalphAdmin):
     list_filter = ['status', 'issue_date', 'visual_number',
                    'system_number', 'user', 'owner', 'user__segment',
                    'user__company', 'user__department', 'user__employee_id',
-                   'access_zones']
+                   'access_zones', 'notes']
     search_fields = ['visual_number', 'system_number', 'user__first_name',
                      'user__last_name', 'user__username']
 
