@@ -170,6 +170,7 @@ class AccessCard(
                 'affected_owner'
             ] = str(instance.owner)
             instance.owner = None
+
     @classmethod
     @transition_action()
     def clear_access_zones(cls, instances, requester, **kwargs):
