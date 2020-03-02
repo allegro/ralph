@@ -176,9 +176,3 @@ class AccessCard(
     def clear_access_zones(cls, instances, requester, **kwargs):
         for instance in instances:
             instance.access_zones.clear()
-
-    @classmethod
-    @transition_action()
-    def clear_notes(cls, instances, requester, **kwargs):
-        for instance in instances:
-            instance.notes = None

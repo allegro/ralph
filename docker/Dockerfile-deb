@@ -15,8 +15,10 @@ ENV RALPH_DIR=/opt/ralph
 
 RUN apt-get update && \
     apt-get -y install build-essential debhelper devscripts equivs dh-virtualenv \
-    git libmysqlclient-dev python3 python3-dev libffi-dev nodejs npm git-buildpackage \
-    vim-tiny && \
+    # Newer version of mysqlclient-dev fails to install.
+    # Fixed version should be removed once this problem is fixed in Ubuntu.
+    libmysqlclient-dev=5.7.21-1ubuntu1 libmysqlclient20=5.7.21-1ubuntu1 \
+    python3 python3-dev libffi-dev nodejs npm git-buildpackage vim-tiny git && \
     rm -rf /var/lib/apt/lists/* && \
     git config --global user.name "$GIT_USER_NAME" && \
     git config --global user.email "$GIT_USER_EMAIL"

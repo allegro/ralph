@@ -42,4 +42,4 @@ class TestTemplatetags(TestCase):
         mocked_gata().count.return_value = 1
         mocked_gau.return_value = "boo"
         ret = get_user_simcard_to_accept_tile_data(None)
-        self.assertEqual(ret['label'], _('SIM Card to pick up'))
+        self.assertEqual(ret['label'], _('SIM Card pick up'))
