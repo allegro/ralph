@@ -25,6 +25,8 @@ class SIMCardAdmin(MulitiAddAdminMixin, TransitionAdminMixin, RalphAdmin):
     list_select_related = [
         'user', 'warehouse', 'owner', 'carrier'
     ]
+    search_fields = ['card_number', 'phone_number', 'user__first_name',
+                     'user__last_name', 'user__username']
 
     list_filter = [
         'status', 'features', 'phone_number', 'card_number', 'warehouse',
@@ -46,7 +48,6 @@ class SIMCardAdmin(MulitiAddAdminMixin, TransitionAdminMixin, RalphAdmin):
             )
         }),
     )
-    search_fields = ('card_number', 'phone_number', 'pin1', 'puk1', 'carrier')
 
     def get_multiadd_fields(self, obj=None):
         multi_add_fields = [
