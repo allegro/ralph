@@ -9,7 +9,7 @@ from ralph.lib.transitions.admin import TransitionAdminMixin
 class AccessCardAdmin(TransitionAdminMixin, RalphAdmin):
     show_transition_history = True
     list_display = ['status', 'visual_number', 'system_number', 'user',
-                    'owner']
+                    'owner', 'get_employee_id']
     list_select_related = ['user', 'owner']
     raw_id_fields = ['user', 'owner', 'region']
     list_filter = ['status', 'issue_date', 'visual_number',
@@ -18,6 +18,7 @@ class AccessCardAdmin(TransitionAdminMixin, RalphAdmin):
                    'access_zones', 'notes']
     search_fields = ['visual_number', 'system_number', 'user__first_name',
                      'user__last_name', 'user__username']
+    readonly_fields = ['get_employee_id']
 
     fieldsets = (
         (
@@ -30,7 +31,7 @@ class AccessCardAdmin(TransitionAdminMixin, RalphAdmin):
         (
             _('User Info'),
             {
-                'fields': ('user', 'owner')
+                'fields': ('user', 'owner', 'get_employee_id')
             }
         ),
         (
@@ -41,6 +42,14 @@ class AccessCardAdmin(TransitionAdminMixin, RalphAdmin):
         ),
 
     )
+
+    def get_employee_id(self, obj):
+        if obj.user is not None:
+            return obj.user.employee_id
+        else:
+            return '-'
+
+    get_employee_id.short_description = _('Employee ID')
 
 
 @register(AccessZone)
