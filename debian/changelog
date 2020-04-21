@@ -1,3 +1,16 @@
+ralph (20200421.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Added new transition to Access Cards and new filter to search. (#3514)
+
+  [ Lukasz Karykowski ]
+  * Added Employee ID to the card view.
+
+  [ Roman Prykhodchenko ]
+  * Update Pillow to 6.2.2
+
+ -- Roman Prykhodchenko <roman.prykhodchenko@allegro.pl>  Tue, 21 Apr 2020 13:21:55 +0000
+
 ralph (20200129.1) bionic; urgency=medium
 
   [ Lukasz Karykowski ]
