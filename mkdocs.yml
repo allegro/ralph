@@ -3,8 +3,8 @@ repo_url: https://github.com/allegro/ralph/
 
 extra:
   social:
-    - type: 'github'
-      link: 'https://github.com/allegro/ralph'
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/allegro/ralph
 
 nav:
   - Welcome: index.md
