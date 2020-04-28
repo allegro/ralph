@@ -1,3 +1,10 @@
+ralph (20200428.1) bionic; urgency=medium
+
+  * Update documentation build to mkdocs 1.1 and mkdocs-material 5
+  * Restrict deletion of used cloud flavors and providers
+
+ -- Roman Prykhodchenko <roman.prykhodchenko@allegro.pl>  Tue, 28 Apr 2020 11:48:55 +0000
+
 ralph (20200421.1) bionic; urgency=medium
 
   [ lukaszkarykowski ]
