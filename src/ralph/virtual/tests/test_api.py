@@ -310,7 +310,7 @@ class OpenstackModelsTestCase(RalphAPITestCase):
         # then
         self.assertEqual(resp.status_code, status.HTTP_409_CONFLICT)
         self.assertIn(
-            'Cloud flavor is in use and hence is not delible.',
+            'Cloud flavor is in use and hence is not deletable.',
             resp.data['detail']
         )
         self.assertTrue(
@@ -364,7 +364,7 @@ class OpenstackModelsTestCase(RalphAPITestCase):
         # then
         self.assertEqual(resp.status_code, status.HTTP_409_CONFLICT)
         self.assertIn(
-            'Cloud provider is in use and hence is not delible.',
+            'Cloud provider is in use and hence is not deletable.',
             resp.data['detail']
         )
         self.assertTrue(
