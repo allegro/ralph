@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from django.db import transaction
 from django.db.models import Prefetch
-from rest_framework import relations, serializers
+from django.utils.translation import ugettext_lazy as _
+from rest_framework import relations, serializers, status
+from rest_framework.response import Response
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import RalphAPISaveSerializer
@@ -20,6 +22,7 @@ from ralph.assets.models import Ethernet
 from ralph.configuration_management.api import SCMInfoSerializer
 from ralph.data_center.api.serializers import DataCenterAssetSimpleSerializer
 from ralph.data_center.models import DCHost
+from ralph.lib.api.exceptions import Conflict
 from ralph.security.api import SecurityScanSerializer
 from ralph.security.models import SecurityScan
 from ralph.virtual.admin import VirtualServerAdmin
@@ -180,10 +183,47 @@ class CloudFlavorViewSet(RalphAPIViewSet):
     prefetch_related = ['tags', 'virtualcomponent_set__model']
     filter_fields = ['flavor_id']
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        force_delete = request.data.get('force', False)
+
+        if instance.cloudhost_set.count() != 0 and not force_delete:
+            raise Conflict(
+                _(
+                    "Cloud flavor is in use and hence is not deletable. "
+                    "Use {\"force\": true} to force deletion."
+                )
+            )
+
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class CloudProviderViewSet(RalphAPIViewSet):
     queryset = CloudProvider.objects.all()
     serializer_class = CloudProviderSerializer
+
+    def _require_force_delete(self, cloud_provider):
+        return (
+            cloud_provider.cloudflavor_set.count() != 0 or
+            cloud_provider.cloudhost_set.count() != 0 or
+            cloud_provider.cloudproject_set.count() != 0
+        )
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        force_delete = request.data.get('force', False)
+
+        if self._require_force_delete(instance) and not force_delete:
+            raise Conflict(
+                _(
+                    "Cloud provider is in use and hence is not deletable. "
+                    "Use {\"force\": true} to force deletion."
+                )
+            )
+
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CloudImageViewSet(RalphAPIViewSet):

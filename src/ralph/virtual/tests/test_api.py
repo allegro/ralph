@@ -298,6 +298,114 @@ class OpenstackModelsTestCase(RalphAPITestCase):
         provider = CloudProvider.objects.get(name=args['name'])
         self.assertEqual(provider.name, args['name'])
 
+    def test_delete_cloud_flavor_returns_409_if_is_used_by_cloud_hosts(self):
+        # given
+        cloud_flavor = CloudFlavorFactory()
+        CloudHostFactory(cloudflavor=cloud_flavor)
+
+        # when
+        url = reverse('cloudflavor-detail', args=(cloud_flavor.pk,))
+        resp = self.client.delete(url)
+
+        # then
+        self.assertEqual(resp.status_code, status.HTTP_409_CONFLICT)
+        self.assertIn(
+            'Cloud flavor is in use and hence is not deletable.',
+            resp.data['detail']
+        )
+        self.assertTrue(
+            CloudFlavor.objects.filter(pk=cloud_flavor.pk).exists()
+        )
+
+    def test_unused_cloud_flavor_can_be_deleted(self):
+        # given
+        cloud_flavor = CloudFlavorFactory()
+
+        # when
+        url = reverse('cloudflavor-detail', args=(cloud_flavor.pk,))
+        resp = self.client.delete(url)
+
+        # then
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertRaises(
+            CloudFlavor.DoesNotExist,
+            cloud_flavor.refresh_from_db
+        )
+
+    def test_used_cloud_flavor_can_be_deleted_with_force(self):
+        # given
+        cloud_flavor = CloudFlavorFactory()
+        CloudHostFactory(cloudflavor=cloud_flavor)
+
+        # when
+        url = reverse('cloudflavor-detail', args=(cloud_flavor.pk,))
+        data = {'force': True}
+        resp = self.client.delete(url, data=data)
+
+        # then
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertRaises(
+            CloudFlavor.DoesNotExist,
+            cloud_flavor.refresh_from_db
+        )
+
+    @data(CloudFlavorFactory, CloudHostFactory, CloudProjectFactory)
+    def test_delete_cloud_provider_returns_409_if_has_child_objects(
+        self, child_type
+    ):
+        # given
+        cloud_provider = CloudProviderFactory(name="test-cloud-provider")
+        child_type(cloudprovider=cloud_provider)
+
+        # when
+        url = reverse('cloudprovider-detail', args=(cloud_provider.pk,))
+        resp = self.client.delete(url)
+
+        # then
+        self.assertEqual(resp.status_code, status.HTTP_409_CONFLICT)
+        self.assertIn(
+            'Cloud provider is in use and hence is not deletable.',
+            resp.data['detail']
+        )
+        self.assertTrue(
+            CloudProvider.objects.filter(pk=cloud_provider.pk).exists()
+        )
+
+    def test_empty_cloud_provider_can_be_deleted(self):
+        # given
+        cloud_provider = CloudProviderFactory(name="test-cloud-provider")
+
+        # when
+        url = reverse('cloudprovider-detail', args=(cloud_provider.pk,))
+        resp = self.client.delete(url)
+
+        # then
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertRaises(
+            CloudProvider.DoesNotExist,
+            cloud_provider.refresh_from_db
+        )
+
+    @data(CloudFlavorFactory, CloudHostFactory, CloudProjectFactory)
+    def test_non_empty_cloud_provider_can_be_deleted_with_force(
+        self, child_type
+    ):
+        # given
+        cloud_provider = CloudProviderFactory(name="test-cloud-provider")
+        child_type(cloudprovider=cloud_provider)
+
+        # when
+        url = reverse('cloudprovider-detail', args=(cloud_provider.pk,))
+        data = {'force': True}
+        resp = self.client.delete(url, data=data)
+
+        # then
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertRaises(
+            CloudProvider.DoesNotExist,
+            cloud_provider.refresh_from_db
+        )
+
     def test_inheritance_of_service_env_on_change_in_a_cloud_project(self):
         url = reverse('cloudproject-detail', args=(self.cloud_project.id,))
         args = {
