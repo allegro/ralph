@@ -190,7 +190,7 @@ class CloudFlavorViewSet(RalphAPIViewSet):
         if instance.cloudhost_set.count() != 0 and not force_delete:
             raise Conflict(
                 _(
-                    "Cloud flavor is in use and hence is not delible. "
+                    "Cloud flavor is in use and hence is not deletable. "
                     "Use {\"force\": true} to force deletion."
                 )
             )
@@ -217,7 +217,7 @@ class CloudProviderViewSet(RalphAPIViewSet):
         if self._require_force_delete(instance) and not force_delete:
             raise Conflict(
                 _(
-                    "Cloud provider is in use and hence is not delible. "
+                    "Cloud provider is in use and hence is not deletable. "
                     "Use {\"force\": true} to force deletion."
                 )
             )
