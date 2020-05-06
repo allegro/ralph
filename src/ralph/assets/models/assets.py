@@ -17,6 +17,7 @@ from ralph.assets.models.choices import (
     ModelVisualizationLayout,
     ObjectModelType
 )
+from ralph.assets.validators import NoWhiteSpaceValidator
 from ralph.lib.custom_fields.models import (
     CustomFieldMeta,
     WithCustomFieldsMixin
@@ -363,7 +364,8 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         default=None,
         max_length=255,
         null=True,
-        verbose_name=_('hostname'),  # TODO: unique
+        verbose_name=_('hostname'),  # TODO: unique,
+        validators=[NoWhiteSpaceValidator()]
     )
     sn = NullableCharField(
         blank=True,

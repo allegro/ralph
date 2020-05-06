@@ -3,6 +3,8 @@ from dj.choices import Choices
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.assets.validators import NoWhiteSpaceValidator
+
 
 class RecordType(Choices):
     _ = Choices.Choice
@@ -22,6 +24,7 @@ class DNSRecordForm(forms.Form):
     name = forms.CharField(
         label=_('Name'),
         max_length=255,
+        validators=[NoWhiteSpaceValidator()],
         help_text=_(
             'Actual name of a record. Must not end in a \'.\' and be'
             ' fully qualified - it is not relative to the name of the'

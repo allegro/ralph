@@ -73,3 +73,11 @@ class EthernetTest(RalphTestCase):
             msg='Cannot change MAC when exposing in DHCP'
         ):
             self.ip1.ethernet.clean()
+
+
+class IPAddressTest(RalphTestCase):
+    def test_cannot_save_ip_address_if_hostname_contains_whitespaces(self):
+        addr = IPAddressFactory()
+        addr.hostname = "hello world"
+        # import pdb; pdb.set_trace()
+        self.assertRaises(ValidationError, addr.save)
