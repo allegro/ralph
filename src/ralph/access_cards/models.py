@@ -25,9 +25,9 @@ class AccessCardStatus(Choices):
     damaged = _('damaged')
     used = _('in use')
     free = _('free')
-    reserved = _("reserved")
     return_in_progress = _('return in progress')
     liquidated = _('liquidated')
+    reserved = _("reserved")
 
 
 class AccessZone(AdminAbsoluteUrlMixin, MPTTModel, models.Model):
