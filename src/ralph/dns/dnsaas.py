@@ -59,9 +59,7 @@ class DNSaaS:
         Returns:
             list of records
         """
-        logger.info('Calling DNSaaS: {}'.format(url))
-        response = self.session.get(url)
-        json_data = response.json()
+        status_code, json_data = self._get(url)
         api_results = json_data.get('results', [])
         if json_data.get('next', None):
             _api_results = self.get_api_result(json_data['next'])
@@ -118,13 +116,10 @@ class DNSaaS:
             ),
             'owner': settings.DNSAAS_OWNER
         }
-        response = self.session.patch(url, json=data)
-        if response.status_code == 500:
-            return {
-                'non_field_errors': [_('Internal Server Error from DNSAAS')]
-            }
-        elif response.status_code != 200:
-            return response.json()
+
+        status_code, response_data = self._patch(url, data)
+        if status_code != 200:
+            return response_data
 
     @cache(skip_first=True)
     def get_domain(self, domain_name):
@@ -164,7 +159,7 @@ class DNSaaS:
                     "Your request couldn't be handled, try later."
                 ]
             }
-        elif response.status_code != 201:
+        elif response.status_code != 201 and response.status_code != 204:
             return response.json()
 
     def create_dns_record(self, record, service=None):
@@ -214,7 +209,26 @@ class DNSaaS:
         Returns:
             tuple (response status code, dict data)
         """
+        logger.info("Sending POST request to DNSaaS to {}".format(url))
         response = self.session.post(url, json=data)
+        return response.status_code, self._response2result(response)
+
+    def _delete(self, url):
+        logger.info("Sending DELETE request to DNSaaS to {}".format(url))
+        response = self.session.delete(url)
+
+        return response.status_code, self._response2result(response)
+
+    def _get(self, url):
+        logger.info("Sending GET request to DNSaaS to {}".format(url))
+        response = self.session.get(url)
+
+        return response.status_code, self._response2result(response)
+
+    def _patch(self, url, data):
+        logger.info("Sending PATCH request to DNSaaS to {}".format(url))
+
+        response = self.session.patch(url, json=data)
         return response.status_code, self._response2result(response)
 
     def delete_dns_record(self, record_id):
@@ -228,13 +242,9 @@ class DNSaaS:
             Validation error from API or None if delete correct
         """
         url = self.build_url('records', id=record_id)
-        response = self.session.delete(url)
-        if response.status_code == 500:
-            return {
-                'non_field_errors': [_('Internal Server Error from DNSAAS')]
-            }
-        elif response.status_code != 204:
-            return response.json()
+        _, data = self._delete(url)
+
+        return data
 
     def send_ipaddress_data(self, ip_record_data):
         """
