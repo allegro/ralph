@@ -1,3 +1,11 @@
+ralph (20200513.1) bionic; urgency=medium
+
+  * Unify all queries to DNSaaS
+  * Use DNSaaS client to send requests in update_dns_service_env_from_dnsaas
+  * Use specific user-agent in dnsaas client
+
+ -- Roman Prykhodchenko <roman.prykhodchenko@allegro.pl>  Wed, 13 May 2020 14:59:24 +0000
+
 ralph (20200428.1) bionic; urgency=medium
 
   * Update documentation build to mkdocs 1.1 and mkdocs-material 5
