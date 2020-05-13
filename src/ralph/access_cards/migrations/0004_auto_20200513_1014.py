@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='accesscard',
             name='status',
-            field=ralph.lib.transitions.fields.TransitionField(default=1, choices=[(1, 'new'), (2, 'in progress'), (3, 'lost'), (4, 'damaged'), (5, 'in use'), (6, 'free'), (7, 'reserved'), (8, 'return in progress'), (9, 'liquidated')], help_text='Access card status'),
+            field=ralph.lib.transitions.fields.TransitionField(default=1, choices=[(1, 'new'), (2, 'in progress'), (3, 'lost'), (4, 'damaged'), (5, 'in use'), (6, 'free'), (7, 'return in progress'), (8, 'liquidated'), (9, 'reserved')], help_text='Access card status'),
         ),
     ]
