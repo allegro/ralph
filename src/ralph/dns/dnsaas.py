@@ -18,7 +18,8 @@ class DNSaaS:
         self.session = requests.Session()
         _headers = {
             'Authorization': 'Token {}'.format(settings.DNSAAS_TOKEN),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'User-agent': 'Ralph/DNSaaS/Client'
         }
         if headers is not None:
             _headers.update(headers)
