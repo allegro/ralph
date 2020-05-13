@@ -1,5 +1,3 @@
-import requests
-from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from ralph.assets.models.assets import ServiceEnvironment
@@ -32,23 +30,9 @@ class Command(BaseCommand):
 
     def get_records(self):
         url = dnsaas_client.build_url('records')
-        response = requests.get(
-            '{}'.format(url), headers={
-                'Authorization': 'Token {}'.format(settings.DNSAAS_TOKEN)
-            })
-        limit = response.json()['count']
-        record_limit = range(0, limit, 50)
-        for next in record_limit:
-            url = dnsaas_client.build_url('records', get_params=[
-                ('limit', 50),
-                ('offset', next)
-            ])
-            response = requests.get(
-                '{}'.format(url), headers={
-                    'Authorization': 'Token {}'.format(settings.DNSAAS_TOKEN)
-                })
-            results = response.json()['results']
-            self.update_from_record(results)
+        self.update_from_record(
+            dnsaas_client.get_api_result(url)
+        )
 
     def update_from_record(self, result):
         for value in result:
