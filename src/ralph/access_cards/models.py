@@ -25,8 +25,9 @@ class AccessCardStatus(Choices):
     damaged = _('damaged')
     used = _('in use')
     free = _('free')
-    return_in_progress = _('return in progres')
+    return_in_progress = _('return in progress')
     liquidated = _('liquidated')
+    reserved = _("reserved")
 
 
 class AccessZone(AdminAbsoluteUrlMixin, MPTTModel, models.Model):
@@ -176,3 +177,17 @@ class AccessCard(
     def clear_access_zones(cls, instances, requester, **kwargs):
         for instance in instances:
             instance.access_zones.clear()
+
+    @classmethod
+    @transition_action(
+        form_fields={
+            'notes': {
+                'field': forms.CharField(label=_('notes')),
+            }
+        }
+    )
+    def add_notes(cls, instances, **kwargs):
+        for instance in instances:
+            instance.notes = '{}\n{}'.format(
+                instance.notes, kwargs['notes']
+            )
