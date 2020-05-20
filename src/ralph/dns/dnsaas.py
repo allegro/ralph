@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import logging
 from urllib.parse import urlencode, urljoin
 
@@ -199,6 +200,37 @@ class DNSaaS:
             data['service_uid'] = service.uid
         return self._post(url, data)[1]
 
+    def _send_request_to_dnsaas(self, request_method, url, json_data=None):
+        try:
+            response = self.session.request(
+                method=request_method,
+                url=url,
+                json=json_data,
+                timeout=float(settings.DNSAAS_TIMEOUT)
+            )
+            logger.info(
+                "Sent {} request to DNSaaS to {}".format(
+                    request_method, url
+                ),
+                extra={
+                    'request_data': json.dumps(json_data),
+                    'response_status': response.status_code,
+                    'response_content': response.text
+                }
+            )
+
+            return response
+        except Exception:
+            logger.exception(
+                "Sending {} request to DNSaaS to {} failed.".format(
+                    request_method, url
+                ),
+                extra={
+                    'request_data': json.dumps(json_data)
+                }
+            )
+            raise
+
     def _post(self, url, data):
         """
         Send post data to URL.
@@ -210,26 +242,21 @@ class DNSaaS:
         Returns:
             tuple (response status code, dict data)
         """
-        logger.info("Sending POST request to DNSaaS to {}".format(url))
-        response = self.session.post(url, json=data)
+        response = self._send_request_to_dnsaas('POST', url, json_data=data)
         return response.status_code, self._response2result(response)
 
     def _delete(self, url):
-        logger.info("Sending DELETE request to DNSaaS to {}".format(url))
-        response = self.session.delete(url)
+        response = self._send_request_to_dnsaas('DELETE', url)
 
         return response.status_code, self._response2result(response)
 
     def _get(self, url):
-        logger.info("Sending GET request to DNSaaS to {}".format(url))
-        response = self.session.get(url)
+        response = self._send_request_to_dnsaas('GET', url)
 
         return response.status_code, self._response2result(response)
 
     def _patch(self, url, data):
-        logger.info("Sending PATCH request to DNSaaS to {}".format(url))
-
-        response = self.session.patch(url, json=data)
+        response = self._send_request_to_dnsaas('PATCH', url, json_data=data)
         return response.status_code, self._response2result(response)
 
     def delete_dns_record(self, record_id):
