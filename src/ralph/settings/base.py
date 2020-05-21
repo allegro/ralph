@@ -512,6 +512,7 @@ DHCP_ENTRY_FORBID_CHANGE = bool_from_env('DHCP_ENTRY_FORBID_CHANGE', True)
 ENABLE_DNSAAS_INTEGRATION = bool_from_env('ENABLE_DNSAAS_INTEGRATION')
 DNSAAS_URL = os.environ.get('DNSAAS_URL', '')
 DNSAAS_TOKEN = os.environ.get('DNSAAS_TOKEN', '')
+DNSAAS_TIMEOUT = os.environ.get('DNSAAS_TIMEOUT', 10)
 DNSAAS_AUTO_PTR_ALWAYS = os.environ.get('DNSAAS_AUTO_PTR_ALWAYS', 2)
 DNSAAS_AUTO_PTR_NEVER = os.environ.get('DNSAAS_AUTO_PTR_NEVER', 1)
 # user in dnsaas which can do changes, like update TXT records etc.
