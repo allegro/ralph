@@ -33,7 +33,7 @@ class DomainStatus(Choices):
     pending_lapse = _('Pending lapse')
     pending_transfer = _('Pending transfer away')
     lapsed = _('Lapsed (inactive)')
-    transfered_away = _('Transfered away')
+    transferred_away = _('Transferred away')
 
 
 class WebsiteType(Choices):
