@@ -1,3 +1,13 @@
+ralph (20200521.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Added new transition, and new status for Access Cards. (#3531)
+
+  [ Roman Prykhodchenko ]
+  * Log request data and response content in DNSaaS client
+
+ -- Roman Prykhodchenko <roman.prykhodchenko@allegro.pl>  Thu, 21 May 2020 11:20:54 +0000
+
 ralph (20200513.1) bionic; urgency=medium
 
   * Unify all queries to DNSaaS
