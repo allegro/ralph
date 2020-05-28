@@ -5,7 +5,7 @@ DOCKER_REPO_NAME?="allegro"
 .PHONY: test flake clean coverage docs coveralls
 
 # release-new-version is used by ralph mainteiners prior to publishing
-# new version of the package. The command generates the debian changelog 
+# new version of the package. The command generates the debian changelog
 # commits it and tags the created commit with the appropriate snapshot version.
 release-new-version: new_version = $(shell ./get_version.sh generate)
 release-new-version:
@@ -61,7 +61,6 @@ build-snapshot-docker-image: build-snapshot-package
 	docker build \
 		-f docker/Dockerfile-static \
 		--build-arg RALPH_VERSION="$(version)" \
-		-t $(DOCKER_REPO_NAME)/ralph-static-nginx:latest \
 		-t "$(DOCKER_REPO_NAME)/ralph-static-nginx:$(version)" .
 
 
