@@ -116,6 +116,7 @@ class ServiceEnvironment(
 
     class Meta:
         unique_together = ('service', 'environment')
+        ordering = ('service__name', 'environment__name')
 
     @property
     def service_name(self):
