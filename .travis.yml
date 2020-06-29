@@ -74,7 +74,7 @@ after_success:
 before_deploy:
     - sudo add-apt-repository -y ppa:spotify-jyrki/dh-virtualenv
     - sudo apt-get update
-    - sudo apt-get install -y devscripts python-virtualenv git equivs dh-virtualenv https://github.com/allegro/ralph/pull/3544libmysqlclient-dev python3-dev libffi-dev nodejs
+    - sudo apt-get install -y devscripts python-virtualenv git equivs dh-virtualenv libmysqlclient-dev python3-dev libffi-dev nodejs
     - make build-package
 
 deploy:
