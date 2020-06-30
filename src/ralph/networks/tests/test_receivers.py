@@ -24,7 +24,14 @@ class IPAddressReceiversTestCase(RalphTestCase):
         )
 
     @patch('ralph.networks.receivers.DNSaaS')
+    def test_should_not_send_event_to_dnsaas_when_nothing_is_changed(self, dnsaas_mock):
+        update_dns_record(self.dc_asset_ip, False)
+        dnsaas_mock.assert_not_called()
+        dnsaas_mock().send_ipaddress_data.assert_not_called()
+
+    @patch('ralph.networks.receivers.DNSaaS')
     def test_should_not_send_event_to_dnsaas_when_cloud_host(self, dnsaas_mock):
+        self.dc_asset_ip.hostname = 'myhost.mydc.net'
         update_dns_record(self.cloud_ip, False)
         dnsaas_mock.assert_not_called()
         dnsaas_mock().send_ipaddress_data.assert_not_called()

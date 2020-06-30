@@ -39,17 +39,15 @@ def update_dns_record(instance, created, *args, **kwargs):
     if not _should_send_dnsaas_request(instance):
         return
     keys = ['address', 'hostname']
-    data_to_send = {
-        'old': {
-            key: instance._previous_state[key] for key in keys
-        },
-        'new': {
-            key: instance.__dict__[key] for key in keys
-        },
-        'service_uid': _get_connected_service_uid(instance)
-    }
-    data_to_send['action'] = 'add' if created else 'update'
-    if data_to_send['old']['hostname'] is not None:
+    old = {key: instance._previous_state[key] for key in keys}
+    new = {key: instance.__dict__[key] for key in keys}
+    if old != new and old['hostname'] is not None:
+        data_to_send = {
+            'old': old,
+            'new': new,
+            'service_uid': _get_connected_service_uid(instance),
+            'action': 'add' if created else 'update'
+        }
         DNSaaS().send_ipaddress_data(data_to_send)
 
 
