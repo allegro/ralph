@@ -1,3 +1,18 @@
+ralph (20200630.1) bionic; urgency=medium
+
+  [ Roman Prykhodchenko ]
+  * Order service environments alphabetically
+  * Ass missing migrations
+  * Do not tag snapshot image as latest
+
+  [ choiks-db ]
+  * Create django.po
+
+  [ Szymon Jasinski ]
+  * DNS check for changes (#3544)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Tue, 30 Jun 2020 08:34:21 +0000
+
 ralph (20200521.1) bionic; urgency=medium
 
   [ lukaszkarykowski ]
