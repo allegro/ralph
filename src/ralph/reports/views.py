@@ -333,12 +333,13 @@ class AssetRelationsReport(BaseRelationsReport):
     ]
     bo_headers = [
         'id', 'niw', 'barcode', 'sn', 'model__category__name',
-        'model__manufacturer__name', 'model__name', 'user__username',
-        'user__first_name', 'user__last_name', 'owner__username',
-        'owner__first_name', 'owner__last_name', 'owner__company',
-        'owner__segment', 'status', 'office_infrastructure__name',
-        'property_of', 'warehouse__name', 'invoice_date', 'invoice_no',
-        'region__name', 'hostname', 'depreciation_rate', 'buyout_date',
+        'model__manufacturer__name', 'model__name', 'price', 'remarks',
+        'service_env', 'user__username', 'user__first_name',
+        'user__last_name', 'owner__username', 'owner__first_name',
+        'owner__last_name', 'owner__company', 'owner__segment', 'status',
+        'office_infrastructure__name', 'property_of', 'warehouse__name',
+        'invoice_date', 'invoice_no', 'region__name', 'hostname',
+        'depreciation_rate', 'buyout_date',
     ]
     bo_select_related = [
         'model', 'model__category', 'office_infrastructure', 'warehouse',
