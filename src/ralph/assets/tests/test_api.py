@@ -947,7 +947,7 @@ class DCHostAPITests(RalphAPITestCase):
 
     def test_get_dc_hosts_list(self):
         url = reverse('dchost-list')
-        with self.assertNumQueries(12):
+        with self.assertNumQueries(16):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 3)

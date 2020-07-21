@@ -170,6 +170,7 @@ class DataCenterAssetAdminTest(TransactionTestCase):
             'ethernet': [],
             'hostname': 'my-host.mydc.net',
             'id': self.dca.id,
+            'model': str(self.dca.model),
             'ipaddresses': [],
             'object_type': 'datacenterasset',
             'parent': None,

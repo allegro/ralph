@@ -447,12 +447,21 @@ class SecurityScanField(serializers.Field):
 class DCHostSerializer(ComponentSerializerMixin, BaseObjectSerializer):
     hostname = fields.CharField()
     securityscan = SecurityScanField()
+    model = serializers.SerializerMethodField()
 
     class Meta:
         model = BaseObject
         fields = [
-            'id', 'url', 'ethernet', 'ipaddresses', 'custom_fields',
+            'id', 'model', 'url', 'ethernet', 'ipaddresses', 'custom_fields',
             '__str__', 'tags', 'service_env', 'configuration_path', 'hostname',
             'created', 'modified', 'remarks', 'parent', 'object_type',
             'configuration_variables', 'securityscan',
         ]
+
+    def get_model(self, obj):
+        try:
+            return str(obj.model)
+        except AttributeError:
+            return None
+
+
