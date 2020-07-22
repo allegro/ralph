@@ -458,19 +458,12 @@ class DCHostSerializer(ComponentSerializerMixin, BaseObjectSerializer):
         ]
 
 
-class DCHostPhysicalSerializer(ComponentSerializerMixin, BaseObjectSerializer):
-    hostname = fields.CharField()
-    securityscan = SecurityScanField()
+class DCHostPhysicalSerializer(DCHostSerializer):
     model = serializers.SerializerMethodField()
 
     class Meta:
         model = BaseObject
-        fields = [
-            'id', 'model', 'url', 'ethernet', 'ipaddresses', 'custom_fields',
-            '__str__', 'tags', 'service_env', 'configuration_path', 'hostname',
-            'created', 'modified', 'remarks', 'parent', 'object_type',
-            'configuration_variables', 'securityscan',
-        ]
+        fields = DCHostSerializer.Meta.fields + ['model']
 
     def get_model(self, obj):
         try:
