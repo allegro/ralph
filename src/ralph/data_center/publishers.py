@@ -10,8 +10,15 @@ logger = logging.getLogger(__name__)
 
 
 def _get_host_data(instance):
-    from ralph.assets.api.serializers import DCHostSerializer
-    serializer = DCHostSerializer(instance=instance)
+    from ralph.assets.api.serializers import (
+        DCHostSerializer,
+        DCHostPhysicalSerializer
+    )
+    from ralph.data_center.models import DataCenterAsset
+    if isinstance(instance, DataCenterAsset):
+        serializer = DCHostPhysicalSerializer(instance=instance)
+    else:
+        serializer = DCHostSerializer(instance=instance)
     if hasattr(serializer.instance, '_previous_state'):
         data = deepcopy(serializer.data)
         data['_previous_state'] = {

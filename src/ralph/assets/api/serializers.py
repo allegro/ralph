@@ -456,3 +456,17 @@ class DCHostSerializer(ComponentSerializerMixin, BaseObjectSerializer):
             'created', 'modified', 'remarks', 'parent', 'object_type',
             'configuration_variables', 'securityscan',
         ]
+
+
+class DCHostPhysicalSerializer(DCHostSerializer):
+    model = serializers.SerializerMethodField()
+
+    class Meta:
+        model = BaseObject
+        fields = DCHostSerializer.Meta.fields + ['model']
+
+    def get_model(self, obj):
+        try:
+            return str(obj.model)
+        except AttributeError:
+            return None
