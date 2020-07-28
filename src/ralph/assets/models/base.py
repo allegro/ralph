@@ -71,7 +71,7 @@ class BaseObject(
     )
     remarks = models.TextField(blank=True)
     service_env = models.ForeignKey(
-        'ServiceEnvironment', null=True, on_delete=models.PROTECT
+        'ServiceEnvironment', null=True, blank=True, on_delete=models.PROTECT
     )
 
     @property
