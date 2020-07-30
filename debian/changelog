@@ -1,3 +1,17 @@
+ralph (20200730.1) bionic; urgency=medium
+
+  [ Aleksander Wieckowski ]
+  * Add physical asset model to DCHost serializer
+
+  [ Aleksander Wieckowski ]
+  * Add price, service_env and remarks fields in asset report (#3547)
+
+  [ Aleksander Wieckowski ]
+  * Change DCHostPhysicalSerializer class to inherit form DCHostSerializer
+  * Service env field no longer required in backoffice bulk edit
+
+ -- Aleksander Wieckowski <aleksander.wieckowski@allegro.pl>  Thu, 30 Jul 2020 09:32:05 +0000
+
 ralph (20200630.1) bionic; urgency=medium
 
   [ Roman Prykhodchenko ]
