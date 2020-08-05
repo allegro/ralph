@@ -1,10 +1,11 @@
 from dj.choices import Choices
+from django.conf import settings
+from django.db import models
+from django.utils.translation import ugettext_lazy as _
 
-from ralph.accounts.models import Regionalizable, RalphUser
+from ralph.accounts.models import RalphUser, Regionalizable
 from ralph.back_office.models import Warehouse
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
-from django.db import models
-from django.conf import settings
 from ralph.lib.transitions.fields import TransitionField
 from ralph.lib.transitions.models import TransitionWorkflowBaseWithPermissions
 
@@ -21,6 +22,7 @@ class AccessoriesStatus(Choices):
     return_in_progress = _('return in progress')
     liquidated = _('liquidated')
     reserved = _("reserved")
+
 
 class Accessories(
     AdminAbsoluteUrlMixin,
@@ -51,7 +53,7 @@ class Accessories(
         unique=True,
         help_text=_('Name of accessories')
     )
-    produckt_number = models.CharField(
+    product_number = models.CharField(
         max_length=255,
         null=False,
         blank=False,
@@ -63,7 +65,7 @@ class Accessories(
         null=True,
         blank=True,
         related_name='+',
-        help_text=_('User of the accesories'),
+        help_text=_('User of the accessories'),
         on_delete=models.SET_NULL
     )
     owner = models.ForeignKey(
@@ -71,7 +73,7 @@ class Accessories(
         null=True,
         blank=True,
         related_name='+',
-        help_text=('Owner of the accesories'),
+        help_text=_('Owner of the accessories'),
         on_delete=models.SET_NULL
     )
     status = TransitionField(
@@ -79,13 +81,13 @@ class Accessories(
         default=AccessoriesStatus.new.id,
         null=False,
         blank=False,
-        help_text=_('Accesories status')
-    )
-    warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT)
-    owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, blank=True,
-        related_name='assets_as_owner',
+        help_text=_('Accessories status')
     )
     number_bought = models.IntegerField(
         verbose_name=_('number of purchased items'),
     )
+    warehouse = models.ForeignKey(
+        Warehouse,
+        on_delete=models.PROTECT
+    )
+
