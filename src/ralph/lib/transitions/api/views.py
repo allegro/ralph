@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 
 from ralph.api import RalphReadOnlyAPIViewSet
 from ralph.api.fields import ModelMultipleChoiceField
+from ralph.api.viewsets import RalphAPIViewSetMixin
 from ralph.lib.mixins.api import ChoiceFieldWithOtherOptionField
 from ralph.lib.mixins.forms import ChoiceFieldWithOtherOption
 from ralph.lib.transitions.api.serializers import (
@@ -60,7 +61,7 @@ FIELD_MAP = {
 }
 
 
-class TransitionJobViewSet(RalphReadOnlyAPIViewSet):
+class TransitionJobViewSet(RalphReadOnlyAPIViewSet, RalphAPIViewSetMixin):
     queryset = TransitionJob.objects.all()
     serializer_class = TransitionJobSerializer
 
