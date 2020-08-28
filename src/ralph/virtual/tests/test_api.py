@@ -140,6 +140,18 @@ class OpenstackModelsTestCase(RalphAPITestCase):
             response.data['technical_owners'][0]['username'], 'user2'
         )
 
+    def test_filter_cloudhost_by_service_uid(self):
+        cloud_host = CloudHostFactory()
+        url = (
+            reverse('cloudhost-list') +
+            '?service_env__service__uid={}'.format(cloud_host.service_env.service.uid)
+        )
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['count'], 1
+        )
+
     def test_get_cloudproject_detail(self):
         url = reverse('cloudproject-detail', args=(self.cloud_project.id,))
         response = self.client.get(url, format='json')
