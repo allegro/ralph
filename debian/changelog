@@ -1,3 +1,9 @@
+ralph (20200828.1) bionic; urgency=medium
+
+  * Cloud host filtering (#3555)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Fri, 28 Aug 2020 05:27:59 +0000
+
 ralph (20200730.1) bionic; urgency=medium
 
   [ Aleksander Wieckowski ]
