@@ -1,3 +1,9 @@
+ralph (20200903.1) bionic; urgency=medium
+
+  * use keystone session for novaclient when in openstack config (#3557)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Thu, 03 Sep 2020 05:28:24 +0000
+
 ralph (20200828.1) bionic; urgency=medium
 
   * Cloud host filtering (#3555)
