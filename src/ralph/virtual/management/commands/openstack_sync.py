@@ -94,27 +94,26 @@ class Command(BaseCommand):
 
     @staticmethod
     def _get_novaclient_connection(site):
-        nt = novac.Client(
-            site['version'],
-            site['username'],
-            site['password'],
-            site['tenant_name'],
-            site['auth_url']
-        )
+        if (
+            site.get('keystone_auth_url') and
+            site.get('keystone_version', '').startswith('3')
+        ):
+            session = Command._get_keystone_session(site)
+            nt = novac.Client(site['version'], session=session)
+        else:
+            nt = novac.Client(
+                site['version'],
+                site['username'],
+                site['password'],
+                site['tenant_name'],
+                site['auth_url']
+            )
         return nt
 
     @staticmethod
     def _get_keystone_client(site):
         if site.get('keystone_version', '').startswith('3'):
-            auth = ks_v3_identity.Password(
-                auth_url=site.get('keystone_auth_url', site['auth_url']),
-                username=site['username'],
-                password=site['password'],
-                user_domain_name=site.get('user_domain_name', 'default'),
-                project_name=site['tenant_name'],
-                project_domain_name=site.get('project_domain_name', 'default'),
-            )
-            session = ks_session.Session(auth=auth)
+            session = Command._get_keystone_session(site)
             client = ks_v3_client.Client(session=session, version=(3,))
         else:
             client = ks_v2_client.Client(
@@ -124,6 +123,18 @@ class Command(BaseCommand):
                 auth_url=site['auth_url'],
             )
         return client
+
+    @staticmethod
+    def _get_keystone_session(site):
+        auth = ks_v3_identity.Password(
+            auth_url=site.get('keystone_auth_url', site['auth_url']),
+            username=site['username'],
+            password=site['password'],
+            user_domain_name=site.get('user_domain_name', 'default'),
+            project_name=site['tenant_name'],
+            project_domain_name=site.get('project_domain_name', 'default'),
+        )
+        return ks_session.Session(auth=auth)
 
     @staticmethod
     def _get_servers_list(nt, site):
