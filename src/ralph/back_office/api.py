@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from ralph.accounts.api_simple import SimpleRalphUserSerializer
+from ralph.accounts.api_simple import ExtendedSimpleRalphUserSerializer
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.assets.api.serializers import AssetSerializer
 from ralph.assets.api.views import base_object_descendant_prefetch_related
@@ -39,8 +39,8 @@ class BackOfficeAssetSimpleSerializer(AssetSerializer):
 
 
 class BackOfficeAssetSerializer(AssetSerializer):
-    user = SimpleRalphUserSerializer()
-    owner = SimpleRalphUserSerializer()
+    user = ExtendedSimpleRalphUserSerializer()
+    owner = ExtendedSimpleRalphUserSerializer()
 
     class Meta(AssetSerializer.Meta):
         model = BackOfficeAsset
