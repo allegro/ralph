@@ -7,6 +7,7 @@ from django.db import models
 from django.db.models import Prefetch, Sum
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
+from djmoney.models.fields import MoneyField
 
 from ralph.accounts.models import Regionalizable
 from ralph.admin.helpers import getattr_dunder
@@ -191,8 +192,8 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
         help_text="Leave blank if this licence is perpetual",
     )
     order_no = models.CharField(max_length=50, null=True, blank=True)
-    price = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0, null=True, blank=True,
+    price = MoneyField(
+        max_digits=10, decimal_places=2, null=True, default=0, default_currency='XXX'
     )
     depreciation_rate = models.DecimalField(
         blank=True,

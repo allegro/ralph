@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
+from djmoney.forms import MoneyField, MoneyWidget
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import TagsListFilter
@@ -49,7 +51,18 @@ class LicenceUserView(RalphDetailViewAdmin):
     inlines = [LicenceUserInline]
 
 
+class LicenceMoneyWidget(MoneyWidget):
+    def format_output(self, rendered_widgets):
+        return mark_safe(
+            '<div class="row">'
+            f'<div class="small-10 columns">{rendered_widgets[0]}</div>'
+            f'<div class="small-2 columns end">{rendered_widgets[1]}</div>'
+            '</div>'
+        )
+
+
 class LicenseAdminForm(RalphAdmin.form):
+    price = MoneyField(widget=LicenceMoneyWidget)
     """
     Service_env is not required for Licenses.
     """
