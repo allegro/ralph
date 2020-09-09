@@ -614,7 +614,7 @@ class BaseObjectsSupportRichResource(RalphModelResource):
 
     def dehydrate_price_per_object(self, bo_support):
         support = bo_support.support
-        price = support.price or Decimal('0.00')
+        price = support.price.amount or Decimal('0.00')
         return str(
             round(price / bo_support.objects_count, 2)
             if bo_support.objects_count > 0 else Decimal('0.00')

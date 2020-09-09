@@ -221,7 +221,8 @@ class TestReportAssetAndLicence(RalphTestCase):
         )
         result = [
             [
-                'niw', 'software', 'number_bought', 'price', 'invoice_date',
+                'niw', 'software', 'number_bought',
+                'price__amount', 'price__currency', 'invoice_date',
                 'invoice_no', 'region', 'id', 'asset__barcode', 'asset__niw',
                 'asset__backofficeasset__user__username',
                 'asset__backofficeasset__user__first_name',
@@ -233,19 +234,24 @@ class TestReportAssetAndLicence(RalphTestCase):
                 'user__first_name', 'user__last_name', 'single_cost'
             ],
             [
-                'N/A', 'Project Info', '1', '0.00',
+                'N/A', 'Project Info', '1',
+                str(self.licence.price.amount),
+                str(self.licence.price.currency),
                 str(self.licence.invoice_date), str(self.licence.invoice_no),
                 'US', '', '', '', '', '', '', '', '', '', '', '', '', '', ''
             ],
             [
-                'N/A', 'Project Info', '1', '0.00',
+                'N/A', 'Project Info', '1',
+                str(self.licence.price.amount),
+                str(self.licence.price.currency),
                 str(self.licence.invoice_date), str(self.licence.invoice_no),
                 'US', str(self.dc_1.id), self.dc_1.asset.barcode,
                 'None', 'None', 'None', 'None', 'None', 'None', 'None', 'None',
-                '', '', '', ''
+                '', '', '', str(self.licence.price.amount)
             ]
         ]
-
+        import pdb
+        pdb.set_trace()
         self.assertEqual(report_result, result)
 
 

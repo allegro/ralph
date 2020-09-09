@@ -25,7 +25,7 @@ class InvoiceReportMixin(object):
 
     _invoice_report_select_related = []
     _invoice_report_common_fields = ['invoice_no', 'invoice_date', 'provider']
-    _price_field = 'price'
+    _price_field = 'price.amount'
     _invoice_report_name = 'invoice'
     _invoice_report_item_fields = []
     _invoice_report_empty_value = '-'
@@ -181,6 +181,6 @@ class AssetInvoiceReportMixin(InvoiceReportMixin):
         'model', 'model__manufacturer', 'property_of'
     ]
     _invoice_report_item_fields = [
-        'model', 'barcode', 'niw', 'sn', 'price', 'property_of', 'created',
+        'model', 'barcode', 'niw', 'sn', 'price.value', 'property_of', 'created',
         'model__get_type_display', 'start_usage'
     ]
