@@ -250,8 +250,6 @@ class TestReportAssetAndLicence(RalphTestCase):
                 '', '', '', str(self.licence.price.amount)
             ]
         ]
-        import pdb
-        pdb.set_trace()
         self.assertEqual(report_result, result)
 
 
