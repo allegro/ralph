@@ -235,19 +235,19 @@ class TestReportAssetAndLicence(RalphTestCase):
             ],
             [
                 'N/A', 'Project Info', '1',
-                str(self.licence.price.amount),
+                '{0:.2f}'.format(self.licence.price.amount),
                 str(self.licence.price.currency),
                 str(self.licence.invoice_date), str(self.licence.invoice_no),
                 'US', '', '', '', '', '', '', '', '', '', '', '', '', '', ''
             ],
             [
                 'N/A', 'Project Info', '1',
-                str(self.licence.price.amount),
+                '{0:.2f}'.format(self.licence.price.amount),
                 str(self.licence.price.currency),
                 str(self.licence.invoice_date), str(self.licence.invoice_no),
                 'US', str(self.dc_1.id), self.dc_1.asset.barcode,
                 'None', 'None', 'None', 'None', 'None', 'None', 'None', 'None',
-                '', '', '', str(self.licence.price.amount)
+                '', '', '', '{0:.2f}'.format(self.licence.price.amount)
             ]
         ]
         self.assertEqual(report_result, result)
