@@ -6,7 +6,7 @@ from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import DateListFilter
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer.resources import DomainContractResource, DomainResource
-from ralph.domains.forms import DomainForm
+from ralph.domains.forms import DomainContractForm, DomainForm
 from ralph.domains.models.domains import (
     DNSProvider,
     Domain,
@@ -78,6 +78,7 @@ class DomainAdmin(AttachmentsMixin, RalphAdmin):
 
 @register(DomainContract)
 class DomainContractAdmin(AttachmentsMixin, RalphAdmin):
+    form = DomainContractForm
     resource_class = DomainContractResource
     list_select_related = ['domain', 'domain__service_env']
     list_filter = [

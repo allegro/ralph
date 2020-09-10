@@ -3,6 +3,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
+from djmoney.models.fields import MoneyField
 from taggit.managers import TaggableManager as TaggableManagerOriginal
 
 from ralph.lib.mixins.fields import TaggitTagField
@@ -114,6 +115,16 @@ class PreviousStateMixin(models.Model):
         self._previous_state = {
             k: v for k, v in self.__dict__.items() if k in fields
         }
+
+    class Meta:
+        abstract = True
+
+
+class PriceMixin(models.Model):
+    price = MoneyField(
+        max_digits=15, decimal_places=2, null=True, default=0,
+        default_currency='XXX'
+    )
 
     class Meta:
         abstract = True

@@ -333,7 +333,8 @@ class AssetRelationsReport(BaseRelationsReport):
     ]
     bo_headers = [
         'id', 'niw', 'barcode', 'sn', 'model__category__name',
-        'model__manufacturer__name', 'model__name', 'price', 'remarks',
+        'model__manufacturer__name', 'model__name',
+        'price__amount', 'price__currency', 'remarks',
         'service_env', 'user__username', 'user__first_name',
         'user__last_name', 'owner__username', 'owner__first_name',
         'owner__last_name', 'owner__company', 'owner__segment', 'status',
@@ -388,7 +389,8 @@ class AssetSupportsReport(BaseRelationsReport):
         'baseobject__asset__invoice_date', 'baseobject__asset__invoice_no',
         'baseobject__asset__property_of', 'support__name',
         'support__contract_id', 'support__date_to',
-        'support__date_from', 'support__invoice_date', 'support__price'
+        'support__date_from', 'support__invoice_date',
+        'support__price__amount', 'support__price__currency'
     ]
     dc_select_related = [
         'baseobject__asset__datacenterasset',
@@ -398,7 +400,8 @@ class AssetSupportsReport(BaseRelationsReport):
         'baseobject__asset__invoice_date', 'baseobject__asset__invoice_no',
         'baseobject__asset__property_of', 'support__name',
         'support__contract_id', 'support__date_to',
-        'support__date_from', 'support__invoice_date', 'support__price'
+        'support__date_from', 'support__invoice_date',
+        'support__price__amount', 'support__price__currency'
     ]
     bo_select_related = [
         'baseobject__asset__backofficeasset',

@@ -278,7 +278,7 @@ class TestAssetsSupportsReport(RalphTestCase):
         asset_supports = AssetSupportsReport()
         report_result = list(asset_supports.prepare(DataCenterAsset))
         price_per_object = (
-            self.support.price / self.support.baseobjectssupport_set.count()
+            self.support.price.amount / self.support.baseobjectssupport_set.count()
         )
         result = [
             [
@@ -291,7 +291,8 @@ class TestAssetsSupportsReport(RalphTestCase):
                 'baseobject__asset__property_of', 'support__name',
                 'support__contract_id', 'support__date_to',
                 'support__date_from', 'support__invoice_date',
-                'support__price', 'supprt_price_per_object', 'attachments',
+                'support__price__amount', 'support__price__currency',
+                'supprt_price_per_object', 'attachments',
             ],
             [
                 str(self.dc_1.id), self.dc_1.barcode, self.dc_1.sn,
@@ -300,7 +301,8 @@ class TestAssetsSupportsReport(RalphTestCase):
                 self.dc_1.property_of.name, self.support.name,
                 self.support.contract_id, str(self.support.date_to),
                 str(self.support.date_from), str(self.support.invoice_date),
-                '{0:.2f}'.format(self.support.price),
+                '{0:.2f}'.format(self.support.price.amount),
+                str(self.support.price.currency),
                 '{0:.2f}'.format(price_per_object),
                 'http://127.0.0.1:8000' + reverse('serve_attachment', kwargs={
                     'id': self.attachment.id,
@@ -314,7 +316,8 @@ class TestAssetsSupportsReport(RalphTestCase):
                 self.dc_2.property_of.name, self.support.name,
                 self.support.contract_id, str(self.support.date_to),
                 str(self.support.date_from), str(self.support.invoice_date),
-                '{0:.2f}'.format(self.support.price),
+                '{0:.2f}'.format(self.support.price.amount),
+                str(self.support.price.currency),
                 '{0:.2f}'.format(price_per_object),
                 'http://127.0.0.1:8000' + reverse('serve_attachment', kwargs={
                     'id': self.attachment.id,

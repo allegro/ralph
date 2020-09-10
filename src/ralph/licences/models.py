@@ -7,7 +7,6 @@ from django.db import models
 from django.db.models import Prefetch, Sum
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
-from djmoney.models.fields import MoneyField
 
 from ralph.accounts.models import Regionalizable
 from ralph.admin.helpers import getattr_dunder
@@ -15,7 +14,7 @@ from ralph.assets.models.assets import AssetHolder, BudgetInfo, Manufacturer
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
 from ralph.lib.mixins.fields import BaseObjectForeignKey
-from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin, PriceMixin
 from ralph.lib.permissions import PermByFieldMixin
 from ralph.lib.polymorphic.models import PolymorphicQuerySet
 
@@ -138,7 +137,7 @@ class LicencesUsedFreeRelatedObjectsManager(
     pass
 
 
-class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
+class Licence(Regionalizable, AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
 
     """A set of licences for a single software with a single expiration date"""
     _allow_in_dashboard = True
@@ -192,9 +191,7 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, BaseObject):
         help_text="Leave blank if this licence is perpetual",
     )
     order_no = models.CharField(max_length=50, null=True, blank=True)
-    price = MoneyField(
-        max_digits=10, decimal_places=2, null=True, default=0, default_currency='XXX'
-    )
+
     depreciation_rate = models.DecimalField(
         blank=True,
         null=True,

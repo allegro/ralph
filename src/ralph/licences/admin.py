@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
-from djmoney.forms import MoneyField, MoneyWidget
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import TagsListFilter
@@ -11,6 +9,7 @@ from ralph.assets.invoice_report import InvoiceReportMixin
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer import resources
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
+from ralph.lib.mixins.forms import PriceFormMixin
 from ralph.licences.models import (
     BaseObjectLicence,
     Licence,
@@ -51,18 +50,7 @@ class LicenceUserView(RalphDetailViewAdmin):
     inlines = [LicenceUserInline]
 
 
-class LicenceMoneyWidget(MoneyWidget):
-    def format_output(self, rendered_widgets):
-        return mark_safe(
-            '<div class="row">'
-            f'<div class="small-10 columns">{rendered_widgets[0]}</div>'
-            f'<div class="small-2 columns end">{rendered_widgets[1]}</div>'
-            '</div>'
-        )
-
-
-class LicenseAdminForm(RalphAdmin.form):
-    price = MoneyField(widget=LicenceMoneyWidget)
+class LicenseAdminForm(PriceFormMixin, RalphAdmin.form):
     """
     Service_env is not required for Licenses.
     """
