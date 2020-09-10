@@ -18,4 +18,6 @@ class DomainForm(RalphAdminForm):
 class DomainContractForm(PriceFormMixin, RalphAdminForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['price'].help_text = _("Price for domain renewal for given period")
+        self.fields['price'].help_text = _(
+            "Price for domain renewal for given period"
+        )

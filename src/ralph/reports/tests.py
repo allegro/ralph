@@ -278,7 +278,8 @@ class TestAssetsSupportsReport(RalphTestCase):
         asset_supports = AssetSupportsReport()
         report_result = list(asset_supports.prepare(DataCenterAsset))
         price_per_object = (
-            self.support.price.amount / self.support.baseobjectssupport_set.count()
+            self.support.price.amount
+            / self.support.baseobjectssupport_set.count()
         )
         result = [
             [

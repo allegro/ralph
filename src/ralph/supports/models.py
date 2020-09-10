@@ -12,7 +12,11 @@ from ralph.assets.models.assets import AssetHolder, BudgetInfo
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
 from ralph.lib.mixins.fields import BaseObjectForeignKey
-from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin, PriceMixin
+from ralph.lib.mixins.models import (
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    PriceMixin
+)
 from ralph.lib.polymorphic.models import PolymorphicQuerySet
 
 
