@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
+from djmoney.money import Money
 
 from ralph.admin.helpers import get_value_by_relation_path
 from ralph.helpers import generate_pdf_response
@@ -25,7 +26,7 @@ class InvoiceReportMixin(object):
 
     _invoice_report_select_related = []
     _invoice_report_common_fields = ['invoice_no', 'invoice_date', 'provider']
-    _price_field = 'price.amount'
+    _price_field = 'price'
     _invoice_report_name = 'invoice'
     _invoice_report_item_fields = []
     _invoice_report_empty_value = '-'
@@ -120,9 +121,11 @@ class InvoiceReportMixin(object):
                 ),
             },
             'items': list(map(self._parse_item, queryset)),
-            'sum_price': queryset.aggregate(
-                Sum(self._price_field)
-            ).get('{}__sum'.format(self._price_field))
+            'sum_price': str(
+                queryset.aggregate(
+                    Sum(self._price_field)
+                ).get('{}__sum'.format(self._price_field))
+            )
         }
         logger.info('Invoice report data: {}'.format(data))
         return data
@@ -169,6 +172,11 @@ class InvoiceReportMixin(object):
                 val = val()
             elif isinstance(val, datetime.datetime):
                 val = val.strftime(self._invoice_report_datetime_format)
+            elif isinstance(val, Money):
+                val_currency = '{}_currency'.format(self._price_field)
+                result[val_currency] = str(val.currency) \
+                    if val.currency else self._invoice_report_empty_value
+                val = val.amount
             result[f] = str(val) if val else self._invoice_report_empty_value
 
         return result
@@ -181,6 +189,6 @@ class AssetInvoiceReportMixin(InvoiceReportMixin):
         'model', 'model__manufacturer', 'property_of'
     ]
     _invoice_report_item_fields = [
-        'model', 'barcode', 'niw', 'sn', 'price.value', 'property_of', 'created',
+        'model', 'barcode', 'niw', 'sn', 'price', 'property_of', 'created',
         'model__get_type_display', 'start_usage'
     ]
