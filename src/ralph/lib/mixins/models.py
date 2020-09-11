@@ -7,6 +7,7 @@ from djmoney.models.fields import MoneyField
 from taggit.managers import TaggableManager as TaggableManagerOriginal
 
 from ralph.lib.mixins.fields import TaggitTagField
+from ralph.settings import DEFAULT_CURRENCY_CODE
 
 
 class NamedMixin(models.Model):
@@ -123,7 +124,7 @@ class PreviousStateMixin(models.Model):
 class PriceMixin(models.Model):
     price = MoneyField(
         max_digits=15, decimal_places=2, null=True, default=0,
-        default_currency='XXX'
+        default_currency=DEFAULT_CURRENCY_CODE
     )
 
     class Meta:
