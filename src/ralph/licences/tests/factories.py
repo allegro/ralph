@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 import random
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 
 import factory
 from djmoney.money import Money
 from factory.django import DjangoModelFactory
-from factory.fuzzy import FuzzyDecimal, FuzzyText
+from factory.fuzzy import FuzzyText
 from faker.providers import BaseProvider
 from moneyed import PLN
 
