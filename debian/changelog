@@ -1,3 +1,13 @@
+ralph (20200911.1) bionic; urgency=medium
+
+  [ Aleksander Wieckowski ]
+  * Extend back office assets API by user / owner department and user/ owner company
+
+  [ Szymon Jasinski ]
+  * money field for licence price (#3559)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Fri, 11 Sep 2020 12:57:24 +0000
+
 ralph (20200903.1) bionic; urgency=medium
 
   * use keystone session for novaclient when in openstack config (#3557)
