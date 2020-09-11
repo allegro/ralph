@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from django import forms
 from django.core.exceptions import ValidationError
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
+from djmoney.forms import MoneyField, MoneyWidget
 
 
 class RequestFormMixin(object):
@@ -116,3 +118,19 @@ class AssetFormMixin(forms.ModelForm):
             raise ValidationError(
                 'Model must be of "{}" type'.format(model_type)
             )
+
+
+class PriceMoneyWidget(MoneyWidget):
+    def format_output(self, rendered_widgets):
+        return mark_safe(
+            '<div class="row">'
+            f'<div class="small-10 columns">{rendered_widgets[0]}</div>'
+            f'<div class="small-2 columns end">{rendered_widgets[1]}</div>'
+            '</div>'
+        )
+
+
+class PriceFormMixin(forms.ModelForm):
+    price = MoneyField(
+        required=False, widget=PriceMoneyWidget
+    )

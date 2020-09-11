@@ -6,11 +6,11 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.admin.mixins import RalphAdminForm
 from ralph.assets.models import ObjectModelType
 from ralph.data_center.models.physical import DataCenterAsset
-from ralph.lib.mixins.forms import AssetFormMixin
+from ralph.lib.mixins.forms import AssetFormMixin, PriceFormMixin
 from ralph.networks.models import IPAddress
 
 
-class DataCenterAssetForm(AssetFormMixin, RalphAdminForm):
+class DataCenterAssetForm(PriceFormMixin, AssetFormMixin, RalphAdminForm):
     MODEL_TYPE = ObjectModelType.data_center
     management_ip = forms.IPAddressField(required=False)
     management_hostname = forms.CharField(required=False)

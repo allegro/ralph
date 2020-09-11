@@ -4,6 +4,7 @@ import os
 from collections import ChainMap
 
 from django.contrib.messages import constants as messages
+from moneyed import CURRENCIES
 
 from ralph.settings.hooks import HOOKS_CONFIGURATION  # noqa: F401
 
@@ -101,6 +102,7 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'taggit',
     'taggit_serializer',
+    'djmoney',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -663,3 +665,11 @@ TRANSITION_TEMPLATES = None
 
 CONVERT_TO_DATACENTER_ASSET_DEFAULT_STATUS_ID = 1
 CONVERT_TO_BACKOFFICE_ASSET_DEFAULT_STATUS_ID = 1
+
+# Currency choices for django-money
+DEFAULT_CURRENCY_CODE = 'XXX'
+CURRENCY_CHOICES = [
+    (c.code, c.code) for i, c in CURRENCIES.items()
+    if c.code != DEFAULT_CURRENCY_CODE
+]
+CURRENCY_CHOICES.append(('XXX', '---'))
