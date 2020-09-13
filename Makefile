@@ -98,7 +98,7 @@ clean:
 	find . -name '*.py[cod]' -exec rm -rf {} \;
 
 coverage: clean
-	coverage run $(shell which test_ralph) test $(TEST) --keepdb --settings="ralph.settings.test"
+	coverage run $(shell which test_ralph) test $(TEST) -v 2 --keepdb --settings="ralph.settings.test"
 	coverage report
 
 docs: install-docs
