@@ -1,5 +1,7 @@
 from dj.choices import Choices
 from django.db import models
+from django.db.models import Sum
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import RalphUser, Regionalizable
@@ -89,3 +91,28 @@ class Accessories(
         Warehouse,
         on_delete=models.PROTECT
     )
+
+    @cached_property
+    def used(self):
+        if not self.pk:
+            return 0
+        try:
+            # try use fields from objects_used_free manager
+            return (self.user_count or 0) + (self.baseobject_count or 0)
+        except AttributeError:
+            base_objects_qs = self.base_objects.through.objects.filter(
+                Accessories=self
+            )
+            users_qs = self.users.through.objects.filter(Accessories=self)
+
+            def get_sum(qs):
+                return qs.aggregate(sum=Sum('quantity'))['sum'] or 0
+            return sum(map(get_sum, [base_objects_qs, users_qs]))
+    used._permission_field = 'number_bought'
+
+    @cached_property
+    def free(self):
+        if not self.pk:
+            return 0
+        return self.number_bought - self.used
+    free._permission_field = 'number_bought'
