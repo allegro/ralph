@@ -25,7 +25,9 @@ class InvoiceReportMixin(object):
     actions = ['invoice_report']
 
     _invoice_report_select_related = []
-    _invoice_report_common_fields = ['invoice_no', 'invoice_date', 'provider']
+    _invoice_report_common_fields = [
+        'invoice_no', 'invoice_date', 'provider', 'price_currency'
+    ]
     _price_field = 'price'
     _invoice_report_name = 'invoice'
     _invoice_report_item_fields = []
