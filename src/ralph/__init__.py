@@ -1,3 +1,4 @@
+from django.core import serializers
 from django.db.models.options import Options
 
 __version__ = '3.0.0'
@@ -12,3 +13,5 @@ Options._old__init__ = Options.__init__
 Options.__init__ = lambda self, meta, app_label=None: monkey_options_init(
     self, meta, app_label
 )
+
+serializers.register_serializer("json", "ralph.lib.serializers")
