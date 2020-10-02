@@ -12,7 +12,7 @@ on:
 jobs:
   code_style:
     name: Code style
-    runs-on: ubuntu-18.04  
+    runs-on: ubuntu-20.04  
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2
@@ -37,7 +37,7 @@ jobs:
 
   missing_migrations:
     name: Missing migrations
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         db-engine: ["psql", "mysql"]
@@ -116,7 +116,7 @@ jobs:
 
   settings_test:
     name: Settings tests
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     steps:
       - name: Checkout source code
@@ -157,7 +157,7 @@ jobs:
 
   python_tests:
     name: Python tests
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         python-version: [3.6]
