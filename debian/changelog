@@ -1,3 +1,9 @@
+ralph (20201006.2) bionic; urgency=medium
+
+  * Revert "Allow user input on package build (#3560)" (#3567)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Tue, 06 Oct 2020 09:20:45 +0000
+
 ralph (20201006.1) bionic; urgency=medium
 
   [ lukaszkarykowski ]
