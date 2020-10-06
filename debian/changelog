@@ -1,3 +1,13 @@
+ralph (20201006.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Added Filters. (#3553)
+
+  [ Roman Prykhodchenko ]
+  * Allow user input on package build (#3560) (Closes: #3556)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Tue, 06 Oct 2020 07:00:34 +0000
+
 ralph (20200918.1) bionic; urgency=medium
 
   [ Szymon Jasinski ]
