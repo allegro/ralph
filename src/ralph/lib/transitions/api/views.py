@@ -19,7 +19,8 @@ from ralph.lib.transitions.api.serializers import (
     TransitionActionSerializer,
     TransitionJobSerializer,
     TransitionModelSerializer,
-    TransitionSerializer
+    TransitionSerializer,
+    TransitionsHistorySerializer
 )
 from ralph.lib.transitions.exceptions import TransitionNotAllowedError
 from ralph.lib.transitions.models import (
@@ -29,7 +30,8 @@ from ralph.lib.transitions.models import (
     run_transition,
     Transition,
     TransitionJob,
-    TransitionModel
+    TransitionModel,
+    TransitionsHistory
 )
 from ralph.lib.transitions.views import collect_actions, NonAtomicView
 
@@ -64,6 +66,11 @@ class TransitionJobViewSet(RalphReadOnlyAPIViewSet):
     queryset = TransitionJob.objects.all()
     serializer_class = TransitionJobSerializer
     filter_fields = ['object_id']
+
+
+class TransitionsHistoryViewSet(RalphReadOnlyAPIViewSet):
+    queryset = TransitionsHistory.objects.all()
+    serializer_class = TransitionsHistorySerializer
 
 
 class TransitionModelViewSet(RalphReadOnlyAPIViewSet):
