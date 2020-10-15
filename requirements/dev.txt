@@ -1,6 +1,6 @@
 -r test.txt
 django-debug-toolbar==1.8
-Werkzeug
+werkzeug==0.16.1
 pudb
 ipython
 ipdb==0.10.2
