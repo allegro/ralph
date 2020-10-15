@@ -35,7 +35,7 @@ In this tutorial we will go through:
 Let's add a new Blade System which will act as a "Load balancer" system.
 We want to have it visualized on the dc view, and assign some supports and licenses to it. To do this go to the `Data Center -> Hardware -> Add data center asset` menu.
 
-![add-asset](/img/quickstart-add-asset.png "Add asset")
+![add-asset](/docs/img/quickstart-add-asset.png "Add asset")
 
 There are only 3 fields required to add a new server:
 
@@ -50,7 +50,7 @@ but we need to set-up them first.
 `Model` field helps you organize many same-model devices. You can enter 'Model' field and start typing to search model from existing database models. But don't worry, if the list is empty. Adding model is easy without leaving the form. Just click on the `+` button inside the model field.
 In the new window, just name this model, for example: "PowerEdge R620". Choose category from the "three-like" menu. Don't forget to set model type to "data center" - to use it in the data center module. You can add back office models as well - just switching `type` field.
 
-![quickstart-model](/img/quickstart-model.png "Model view")
+![quickstart-model](/docs/img/quickstart-model.png "Model view")
 
 ### Adding the service
 
@@ -87,7 +87,7 @@ Optional fields:
 
 After adding new Service, add some environments below: `prod, test, dev`
 
-![quickstart-add-service](/img/quickstart-add-service.png "Add service")
+![quickstart-add-service](/docs/img/quickstart-add-service.png "Add service")
 
 And that's it. This is one-time setup, so you can use user service-env all around the system.
 
@@ -125,7 +125,7 @@ In this tutorial you will learn how to manage graphical representation of your d
 
 Let's go to the "Data Center visualization" menu item, and find your data center. You should see a new rack visible on the map.
 
-![quickstart-dcview](/img/quickstart-dcview.png "Data center view")
+![quickstart-dcview](/docs/img/quickstart-dcview.png "Data center view")
 
 Click on 'Edit' function and try to
 
@@ -144,7 +144,7 @@ You can quickly add multiple new racks from dc visualization.
 To do it, enter "Edit mode" and click on the view using "plus cursor" to add multiple racks.
 You can edit each of them in separation, but remember to click "Save" button when you're done.
 
-![quickstart-multiple-racks](/img/quickstart-multiple-racks.png "Multiple racks at once view")
+![quickstart-multiple-racks](/docs/img/quickstart-multiple-racks.png "Multiple racks at once view")
 
 ### Accesing the DC inspector
 
@@ -186,7 +186,7 @@ Let's take the first route. Let's assume, we've bought 10-users license for micr
 
 Click on the Add license to add one. You have to choose:
 
-![quickstart-add-licence](/img/quickstart-add-license.png "Quickstart add license")
+![quickstart-add-licence](/docs/img/quickstart-add-license.png "Quickstart add license")
 
 * license type (per user, per core etc)
 * software (e.g "Microsoft Office 2015") - click + to add new. In the next window, when you want to use this license everywhere (dc + back office) so choose "All"
@@ -205,14 +205,14 @@ If you marked your software as - both back office and data center enabled - you 
 
 If you type "10" licenses, you will use up all available licenses ("0 free").
 
-![quickstart-assign-licence](/img/quickstart-assign-license.png "Quickstart assign license")
+![quickstart-assign-licence](/docs/img/quickstart-assign-license.png "Quickstart assign license")
 
 
 ### Licenses reports
 
 You can analyze in the details usage of licenses, by using one of our reports.
 
-![quickstart-licenses-reports](/img/quickstart-licences-reports.png "Quickstart licenses reports")
+![quickstart-licenses-reports](/docs/img/quickstart-licences-reports.png "Quickstart licenses reports")
 
 
 ## Vendor supports
@@ -225,7 +225,7 @@ Notable differences from the Licenses module:
 * support can be only added to the Asset, not user(it's obvious, right? ;-))
 * supports have additional 'Status' field to distinguish expired supports from active.
 
-![quickstart-supports](/img/quickstart-supports.png "Quickstart licenses reports")
+![quickstart-supports](/docs/img/quickstart-supports.png "Quickstart licenses reports")
 
 As always, you can add as many attachments(for example pdf scans of support contracts), as you want.
 
@@ -240,7 +240,7 @@ To start stock-taking process:
 * Check box in region admin panel (enables stock-taking for all assets belonging to users assigned to given region)
 
 Now users will have option to check assigned items information in `My equipment` view:
-![quickstart-stock-taking](/img/stock-taking.png "Quickstart stock-taking")
+![quickstart-stock-taking](/docs/img/stock-taking.png "Quickstart stock-taking")
 
 Once user confirms that they have specific asset inventory tags are added to asset record in database and are recorded in hardware history. Tags are configurable using settings file and warehouse admin. Self-stock-taking process does not conflict with regular stock-taking. When you are done you can simply un-check the boxes in admin panels.
 

@@ -26,7 +26,7 @@ Possible options:
 
 Example:
 
-![custom-field-definition](/img/custom-field-add.png "Example of custom field definition")
+![custom-field-definition](/docs/img/custom-field-add.png "Example of custom field definition")
 
 
 ## Attaching custom fields to objects
@@ -36,11 +36,11 @@ You could attach custom fields to any object type (if it was enabled by develope
 Ralph's custom fields works pretty much the same as any other fields here. First type (part of) the name of the custom field into the `Key` field.
 
 
-![custom-field-autocomplete](/img/custom-field-autocomplete.png "Custom fields autocompletion")
+![custom-field-autocomplete](/docs/img/custom-field-autocomplete.png "Custom fields autocompletion")
 
 Then select custom field of your choice in the autocomplete list. Notice that (for some types) value field might change it's type, for example to select list. Type or select desirable value and save the changes!
 
-![custom-field-select-value](/img/custom-field-select-value.png "Custom fields - value selection")
+![custom-field-select-value](/docs/img/custom-field-select-value.png "Custom fields - value selection")
 
 > For any object, there could be at most one value for each custom field attached to it (in other words, you cannot have the same custom field attached to single object multiple times).
 
