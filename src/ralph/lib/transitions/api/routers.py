@@ -8,6 +8,7 @@ from ralph.lib.transitions.api.views import (
     TransitionByIdView,
     TransitionJobViewSet,
     TransitionModelViewSet,
+    TransitionsHistoryViewSet,
     TransitionView,
     TransitionViewSet
 )
@@ -16,6 +17,8 @@ router.register(r'transitions', TransitionViewSet)
 router.register(r'transitions-action', TransitionActionViewSet)
 router.register(r'transitions-model', TransitionModelViewSet)
 router.register(r'transitions-job', TransitionJobViewSet)
+router.register(r'transitions-history', TransitionsHistoryViewSet)
+
 router.register(
     r'(?P<app_label>\w+)/(?P<model>\w+)/(?P<obj_pk>\w+)/transitions',
     AvailableTransitionViewSet,
