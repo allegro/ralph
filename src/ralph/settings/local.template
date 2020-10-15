@@ -1,0 +1,24 @@
+from ralph.settings.dev import *  # noqa
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'transaction_hooks.backends.mysql',
+        'NAME': os.environ.get('DATABASE_NAME', 'ralph_ng'),
+        'USER': os.environ.get('DATABASE_USER', 'ralph_ng'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'ralph_ng') or None,
+        'HOST': os.environ.get('DATABASE_HOST', '127.0.0.1'),
+        'PORT': os.environ.get('DATABASE_PORT', 3306),
+        'ATOMIC_REQUESTS': True,
+        'TEST': {
+            'NAME': 'test_ralph_ng',
+            'ENGINE': 'transaction_hooks.backends.postgresql_psycopg2',
+            'USER': os.environ.get('DATABASE_USER', 'ralph_ng'),
+            'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'ralph_ng') or None,
+            'HOST': os.environ.get('DATABASE_HOST', '127.0.0.1'),
+            'PORT': os.environ.get('DATABASE_PORT', 3306),
+        }
+    }
+}
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+ENABLE_EMAIL_NOTIFICATION = True
