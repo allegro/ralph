@@ -60,7 +60,7 @@ class NetworkView(RalphDetailViewAdmin):
     available_networks.short_description = _('Available networks')
     available_networks.allow_tags = True
     fieldsets = (
-        (_(''), {
+        (None, {
             'fields': (
                 'available_networks',
             )
