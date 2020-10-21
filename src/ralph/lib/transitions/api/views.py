@@ -63,7 +63,7 @@ FIELD_MAP = {
 class TransitionJobViewSet(RalphReadOnlyAPIViewSet):
     queryset = TransitionJob.objects.all()
     serializer_class = TransitionJobSerializer
-    filter_fields = ['object_id', 'barcode']
+    filter_fields = ['object_id']
 
 
 class TransitionModelViewSet(RalphReadOnlyAPIViewSet):
