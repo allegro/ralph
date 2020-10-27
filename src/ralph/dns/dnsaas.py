@@ -4,18 +4,25 @@ import logging
 from urllib.parse import urlencode, urljoin
 
 import requests
+from dj.choices import Choices
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.dns.forms import RecordType
-from ralph.helpers import cache
 
 logger = logging.getLogger(__name__)
+
+class RecordType(Choices):
+    _ = Choices.Choice
+
+    a = _('A')
+    txt = _('TXT')
+    cname = _('CNAME')
 
 
 class DNSaaS:
 
     def __init__(self, headers=None):
+        # TODO(pbromber): Oauth comes here
         self.session = requests.Session()
         _headers = {
             'Authorization': 'Token {}'.format(settings.DNSAAS_TOKEN),
@@ -26,7 +33,7 @@ class DNSaaS:
             _headers.update(headers)
         self.session.headers.update(_headers)
 
-    def build_url(self, resource_name, id=None, version='v2', get_params=None):
+    def build_url(self, resource_name, id=None, get_params=None):
         """
         Return Url for DNSAAS endpoint
 
@@ -42,16 +49,19 @@ class DNSaaS:
         """
         result_url = urljoin(
             settings.DNSAAS_URL,
-            'api/{}/{}/'.format(version, resource_name)
+            'api/{}/'.format(resource_name)
         )
         if id:
             result_url = "{}{}/".format(result_url, str(id))
         if get_params:
             result_url = "{}?{}".format(result_url, urlencode(get_params))
-
         return result_url
 
-    def get_api_result(self, url):
+    def _add_query_params(self, url, query_params):
+        result_url = "{}?{}".format(url, urlencode(query_params))
+        return result_url
+
+    def get_api_result(self, url, query_params=None, page=0):
         """
         Returns 'results' from DNSAAS API.
 
@@ -61,10 +71,14 @@ class DNSaaS:
         Returns:
             list of records
         """
-        status_code, json_data = self._get(url)
-        api_results = json_data.get('results', [])
-        if json_data.get('next', None):
-            _api_results = self.get_api_result(json_data['next'])
+        if query_params:
+            get_url = "{}?{}".format(url, urlencode(query_params))
+        status_code, json_data = self._get(get_url)
+        api_results = json_data.get('content', [])
+        if not json_data.get('last', None):
+            page = page + 1
+            next_url = self._add_query_params(url, ('page', page))
+            _api_results = self.get_api_result(next_url, page=page)
             api_results.extend(_api_results)
         return api_results
 
@@ -75,12 +89,9 @@ class DNSaaS:
             return []
         ipaddresses = [('ip', i) for i in ipaddresses]
         url = self.build_url(
-            'records',
-            get_params=[
-                ('limit', 100),
-                ('offset', 0)
-            ] + ipaddresses
+            'records'
         )
+        url = self._add_query_params(url, [('size', 100), ] + ipaddresses)
         api_results = self.get_api_result(url)
         ptrs = set([i['content'] for i in api_results if i['type'] == 'PTR'])
 
@@ -111,39 +122,11 @@ class DNSaaS:
             'name': record['name'],
             'type': RecordType.raw_from_id(int(record['type'])),
             'content': record['content'],
-            'auto_ptr': (
-                settings.DNSAAS_AUTO_PTR_ALWAYS if record['ptr'] and
-                record['type'] == str(RecordType.a.id)
-                else settings.DNSAAS_AUTO_PTR_NEVER
-            ),
-            'owner': settings.DNSAAS_OWNER
         }
 
         status_code, response_data = self._patch(url, data)
-        if status_code != 200:
+        if status_code != 202:
             return response_data
-
-    @cache(skip_first=True)
-    def get_domain(self, domain_name):
-        """
-        Return domain ID base on record name.
-
-        Args:
-            domain_name: Domain name
-
-        Return:
-            Domain ID from API or None if not exists
-        """
-        parts = domain_name.split('.')
-        while parts:
-            domain_name = '.'.join(parts)
-            url = self.build_url('domains', get_params=[('name', domain_name)])
-            result = self.get_api_result(url)
-            if result:
-                return result[0]['id']
-
-            parts = parts[1:]
-        return None
 
     def _response2result(self, response):
         if response.status_code == 500:
@@ -176,28 +159,19 @@ class DNSaaS:
         """
 
         url = self.build_url('records')
-        domain_name = record['name'].split('.', 1)
-        domain = self.get_domain(domain_name[-1])
-        if not domain:
-            logger.error(
-                'Domain not found for record {}'.format(record)
-            )
-            return {'name': [_('Domain not found.')]}
 
         data = {
             'name': record['name'],
             'type': RecordType.raw_from_id(int(record['type'])),
             'content': record['content'],
-            'auto_ptr': (
-                settings.DNSAAS_AUTO_PTR_ALWAYS if record['ptr'] and
-                record['type'] == RecordType.a.id
-                else settings.DNSAAS_AUTO_PTR_NEVER
-            ),
-            'domain': domain,
-            'owner': settings.DNSAAS_OWNER
         }
         if service:
             data['service_uid'] = service.uid
+        else:
+            logger.error(
+                'Service not found'
+            )
+            return {'name': [_('Service not found.')]}
         return self._post(url, data)[1]
 
     def _send_request_to_dnsaas(self, request_method, url, json_data=None):
