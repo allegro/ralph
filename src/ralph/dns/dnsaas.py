@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
-from urllib.parse import urlencode, urljoin, parse_qsl
+from urllib.parse import urlencode, urljoin, parse_qs, urlsplit
+from datetime import datetime, timedelta
 
 import requests
 from dj.choices import Choices
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
+from oauthlib.oauth2 import BackendApplicationClient
+from oauthlib.oauth2.rfc6749.errors import CustomOAuth2Error
+from requests_oauthlib import OAuth2Session
 from typing import Optional, List, Tuple
 
 logger = logging.getLogger(__name__)
@@ -25,19 +29,54 @@ class RecordType(Choices):
 class DNSaaS:
 
     def __init__(self, headers: dict = None):
-        # TODO: ograć tu oautha
         self.session = requests.Session()
         _headers = {
-            'Authorization': 'Token {}'.format(settings.DNSAAS_TOKEN),
             'Content-Type': 'application/json',
-            'User-agent': 'Ralph/DNSaaS/Client'
+            'User-agent': 'Ralph/DNSaaS/Client',
+            'Authorization': 'Bearer {}'.format(self._get_oauth_token())
         }
         if headers is not None:
             _headers.update(headers)
         self.session.headers.update(_headers)
 
+    def _get_oauth_token(self):
+        client_id = settings.OAUTH_CLIENT_ID
+        secret = settings.OAUTH_SECRET
+        token_url = settings.OAUTH_TOKEN_URL
+        client = BackendApplicationClient(client_id=client_id)
+        oauth = OAuth2Session(client=client)
+        try:
+            token = oauth.fetch_token(
+                token_url=token_url, client_id=client_id, client_secret=secret
+            )
+        except CustomOAuth2Error as e:
+            logger.error(str(e))
+
+        expire_in = token.get("expires_in")
+        self.token_expiration = datetime.now() + timedelta(0, expire_in - 60)
+        return token.get('access_token')
+
+    def _update_oauth_token(self):
+        token = self._get_oauth_token()
+        auth = {"Authorization": "Bearer {}".format(token)}
+        self.session.headers.update(auth)
+
+    def _verify_oauth_token_validity(self):
+        if datetime.now() >= self.token_expiration:
+            self._update_oauth_token()
+
+    def renew_token_when_unauthorized(self, func):
+        def wrapper(*args, **kwargs):
+            status_code, data = func(*args, **kwargs)
+            if status_code == 401:
+                self._update_oauth_token()
+                status_code, data = func(*args, **kwargs)
+            return status_code, data
+        return wrapper
+
     @staticmethod
-    def build_url(resource_name: str, id: int = None, get_params: QueryParams = None) -> str:
+    def build_url(resource_name: str, id: int = None,
+                  get_params: QueryParams = None) -> str:
         """
         Return Url for DNSAAS endpoint
 
@@ -62,17 +101,11 @@ class DNSaaS:
 
     @staticmethod
     def _set_page_qp(url: str, page: int):
-        url_qp = url.split('?')
-        url = url_qp[0]
-        qp = []
-        if len(url_qp) == 2:
-            qp = parse_qsl(url_qp[1])
-            for index, query_param in enumerate(qp):
-                if query_param[0] == 'page':
-                    qp.pop(index)
-        qp.extend([('page', str(page)), ])
-
-        result_url = "{}?{}".format(url, urlencode(qp))
+        _url = urlsplit(url)
+        qp = parse_qs(_url.query)
+        qp['page'] = page
+        query = urlencode(qp, doseq=True)
+        result_url = _url._replace(query=query).geturl()
         return result_url
 
     def get_api_result(self, url: str, page: int = 0) -> List[dict]:
@@ -104,9 +137,7 @@ class DNSaaS:
         ipaddresses = [('ip', i) for i in ipaddresses]
         url = self.build_url(
             'records',
-            get_params=[
-                           ('size', '100'),
-                       ] + ipaddresses
+            get_params=[('size', '100'), ] + ipaddresses
         )
         api_results = self.get_api_result(url)
         ptrs = set([i['content'] for i in api_results if i['type'] == 'PTR'])
@@ -212,6 +243,7 @@ class DNSaaS:
             )
             raise
 
+    @renew_token_when_unauthorized
     def _post(self, url: str, data: dict) -> [int, Optional[dict]]:
         """
         Send post data to URL.
@@ -223,20 +255,27 @@ class DNSaaS:
         Returns:
             tuple (response status code, dict data)
         """
+        self._verify_oauth_token_validity()
         response = self._send_request_to_dnsaas('POST', url, json_data=data)
         return response.status_code, self._response2result(response)
 
+    @renew_token_when_unauthorized
     def _delete(self, url: str) -> [int, Optional[dict]]:
+        self._verify_oauth_token_validity()
         response = self._send_request_to_dnsaas('DELETE', url)
 
         return response.status_code, self._response2result(response)
 
+    @renew_token_when_unauthorized
     def _get(self, url: str) -> [int, Optional[dict]]:
+        self._verify_oauth_token_validity()
         response = self._send_request_to_dnsaas('GET', url)
 
         return response.status_code, self._response2result(response)
 
+    @renew_token_when_unauthorized
     def _patch(self, url: str, data: dict) -> [int, Optional[dict]]:
+        self._verify_oauth_token_validity()
         response = self._send_request_to_dnsaas('PATCH', url, json_data=data)
         return response.status_code, self._response2result(response)
 
