@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
+from functools import wraps
 from urllib.parse import urlencode, urljoin, parse_qs, urlsplit
 from datetime import datetime, timedelta
 
@@ -24,6 +25,18 @@ class RecordType(Choices):
     a = _('A')
     txt = _('TXT')
     cname = _('CNAME')
+
+
+def renew_token_when_unauthorized(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        self._verify_oauth_token_validity()
+        status_code, data = func(*args, **kwargs)
+        if status_code == 401:
+            self._update_oauth_token()
+            status_code, data = func(*args, **kwargs)
+        return status_code, data
+    return wrapper
 
 
 class DNSaaS:
@@ -52,27 +65,17 @@ class DNSaaS:
         except CustomOAuth2Error as e:
             logger.error(str(e))
 
-        expire_in = token.get("expires_in")
+        expire_in = token.get('expires_in')
         self.token_expiration = datetime.now() + timedelta(0, expire_in - 60)
         return token.get('access_token')
 
     def _update_oauth_token(self):
         token = self._get_oauth_token()
-        auth = {"Authorization": "Bearer {}".format(token)}
-        self.session.headers.update(auth)
+        self.session.headers['Authorization'] = 'Bearer {}'.format(token)
 
     def _verify_oauth_token_validity(self):
         if datetime.now() >= self.token_expiration:
             self._update_oauth_token()
-
-    def renew_token_when_unauthorized(self, func):
-        def wrapper(*args, **kwargs):
-            status_code, data = func(*args, **kwargs)
-            if status_code == 401:
-                self._update_oauth_token()
-                status_code, data = func(*args, **kwargs)
-            return status_code, data
-        return wrapper
 
     @staticmethod
     def build_url(resource_name: str, id: int = None,
@@ -94,9 +97,9 @@ class DNSaaS:
             'api/{}/'.format(resource_name)
         )
         if id:
-            result_url = "{}{}/".format(result_url, str(id))
+            result_url = '{}{}/'.format(result_url, str(id))
         if get_params:
-            result_url = "{}?{}".format(result_url, urlencode(get_params))
+            result_url = '{}?{}'.format(result_url, urlencode(get_params))
         return result_url
 
     @staticmethod
@@ -207,9 +210,9 @@ class DNSaaS:
             data['service_uid'] = service.uid
         else:
             logger.error(
-                'Service not found'
+                'Service is required for record {}'.format(data)
             )
-            return {'name': [_('Service not found.')]}
+            return {'name': [_('Service is required for record {}'.format(data))]}
         return self._post(url, data)[1]
 
     def _send_request_to_dnsaas(self, request_method: str, url: str, json_data: dict = None) -> requests.Response:
@@ -221,7 +224,7 @@ class DNSaaS:
                 timeout=float(settings.DNSAAS_TIMEOUT)
             )
             logger.info(
-                "Sent {} request to DNSaaS to {}".format(
+                'Sent {} request to DNSaaS to {}'.format(
                     request_method, url
                 ),
                 extra={
@@ -234,7 +237,7 @@ class DNSaaS:
             return response
         except Exception:
             logger.exception(
-                "Sending {} request to DNSaaS to {} failed.".format(
+                'Sending {} request to DNSaaS to {} failed.'.format(
                     request_method, url
                 ),
                 extra={
@@ -255,27 +258,23 @@ class DNSaaS:
         Returns:
             tuple (response status code, dict data)
         """
-        self._verify_oauth_token_validity()
         response = self._send_request_to_dnsaas('POST', url, json_data=data)
         return response.status_code, self._response2result(response)
 
     @renew_token_when_unauthorized
     def _delete(self, url: str) -> [int, Optional[dict]]:
-        self._verify_oauth_token_validity()
         response = self._send_request_to_dnsaas('DELETE', url)
 
         return response.status_code, self._response2result(response)
 
     @renew_token_when_unauthorized
     def _get(self, url: str) -> [int, Optional[dict]]:
-        self._verify_oauth_token_validity()
         response = self._send_request_to_dnsaas('GET', url)
 
         return response.status_code, self._response2result(response)
 
     @renew_token_when_unauthorized
     def _patch(self, url: str, data: dict) -> [int, Optional[dict]]:
-        self._verify_oauth_token_validity()
         response = self._send_request_to_dnsaas('PATCH', url, json_data=data)
         return response.status_code, self._response2result(response)
 
