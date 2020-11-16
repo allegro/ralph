@@ -1,3 +1,25 @@
+ralph (20201116.1) bionic; urgency=medium
+
+  [ Kamil Wargula ]
+  * Update `Ralph development environment` docs (#3575)
+
+  [ lukaszkarykowski ]
+  * Added TransitionsHistory to API (#3571)
+
+  [ Szymon Jasinski ]
+  * downgrade werkzeug (#3574)
+
+  [ haribhatt34 ]
+  * fix broken links to images in docs (#3577)
+
+  [ Roman Prykhodchenko ]
+  * Run tests with GitHub Workflows (#3562)
+
+  [ lukaszkarykowski ]
+  * Added Filter Fields by objects ID to Transitions History Serializer (#3583)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Mon, 16 Nov 2020 06:02:59 +0000
+
 ralph (20201006.2) bionic; urgency=medium
 
   * Revert "Allow user input on package build (#3560)" (#3567)
