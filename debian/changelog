@@ -1,3 +1,10 @@
+ralph (20201117.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Added attachment to the exclude on TransitionsHistorySerializer (#3584)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Tue, 17 Nov 2020 08:16:58 +0000
+
 ralph (20201116.1) bionic; urgency=medium
 
   [ Kamil Wargula ]
