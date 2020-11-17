@@ -12,7 +12,7 @@ on:
 jobs:
   code_style:
     name: Code style
-    runs-on: ubuntu-20.04  
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2
@@ -73,16 +73,18 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-          
+
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2
 
       - name: Unshallow local copy
         run: git fetch --prune --unshallow
-      
+
       - name: Install system packages
-        run: sudo apt-get -y --no-install-recommends install libldap2-dev libsasl2-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get -y --no-install-recommends install libldap2-dev libsasl2-dev
         env:
           DEBIAN_FRONDEND: NONINTERACTIVE
 
@@ -93,7 +95,7 @@ jobs:
 
       - name: Install Ralph
         run: pip3 install "${GITHUB_WORKSPACE}"
-      
+
       - name: Cache pip dependencies
         uses: actions/cache@v2
         with:
@@ -121,12 +123,14 @@ jobs:
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2
-      
+
       - name: Unshallow local copy
         run: git fetch --prune --unshallow
-      
+
       - name: Install system packages
-        run: sudo apt-get -y --no-install-recommends install libldap2-dev libsasl2-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get -y --no-install-recommends install libldap2-dev libsasl2-dev
         env:
           DEBIAN_FRONDEND: NONINTERACTIVE
 
@@ -137,7 +141,7 @@ jobs:
 
       - name: Install Ralph
         run: pip3 install "${GITHUB_WORKSPACE}"
-      
+
       - name: Cache pip dependencies
         uses: actions/cache@v2
         with:
@@ -151,7 +155,7 @@ jobs:
         run: |
           pip3 install -r "${GITHUB_WORKSPACE}/requirements/test.txt"
           pip3 install -r "${GITHUB_WORKSPACE}/requirements/openstack.txt"
-      
+
       - name: Test Ralph's settings
         run:  ./scripts/test_settings.sh prod test >/dev/null
 
@@ -209,12 +213,14 @@ jobs:
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2
-      
+
       - name: Unshallow local copy
         run: git fetch --prune --unshallow
-      
+
       - name: Install system packages
-        run: sudo apt-get -y --no-install-recommends install libldap2-dev libsasl2-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get -y --no-install-recommends install libldap2-dev libsasl2-dev
         env:
           DEBIAN_FRONDEND: NONINTERACTIVE
 
@@ -225,7 +231,7 @@ jobs:
 
       - name: Install Ralph
         run: pip3 install "${GITHUB_WORKSPACE}"
-      
+
       - name: Cache pip dependencies
         uses: actions/cache@v2
         with:
@@ -239,7 +245,7 @@ jobs:
         run: |
           pip3 install -r "${GITHUB_WORKSPACE}/requirements/test.txt"
           pip3 install -r "${GITHUB_WORKSPACE}/requirements/openstack.txt"
-      
+
       - name: Install PostgreSQL driver
         if: ${{ matrix.db-engine == 'psql' }}
         run: pip3 install psycopg2-binary
