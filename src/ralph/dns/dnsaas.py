@@ -309,6 +309,3 @@ class DNSaaS:
                     status_code, str(response_data), ip_record_data
                 )
             )
-
-
-dnsaas_client = DNSaaS()
