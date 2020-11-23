@@ -28,7 +28,7 @@ def _get_txt_data_to_publish_to_dnsaas(obj):
     auto_publish_result=False,
 )
 def publish_data_to_dnsaaas(obj):
-    if settings.ENABLE_DNSAAS_INTEGRATION and settings.DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME:
+    if settings.DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME:
         logger.info('Publishing DNS TXT records update for {}'.format(obj))
         publish(
             settings.DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME,
