@@ -9,7 +9,7 @@ from ralph.lib.transitions.admin import TransitionAdminMixin
 class AccessCardAdmin(TransitionAdminMixin, RalphAdmin):
     show_transition_history = True
     list_display = ['status', 'visual_number', 'system_number', 'user',
-                    'owner', 'get_employee_id']
+                    'owner', 'get_employee_id', 'get_employee_company']
     list_select_related = ['user', 'owner']
     raw_id_fields = ['user', 'owner', 'region']
     list_filter = ['status', 'issue_date', 'visual_number',
@@ -18,7 +18,7 @@ class AccessCardAdmin(TransitionAdminMixin, RalphAdmin):
                    'access_zones', 'notes']
     search_fields = ['visual_number', 'system_number', 'user__first_name',
                      'user__last_name', 'user__username']
-    readonly_fields = ['get_employee_id']
+    readonly_fields = ['get_employee_id', 'get_employee_company']
 
     fieldsets = (
         (
@@ -31,7 +31,8 @@ class AccessCardAdmin(TransitionAdminMixin, RalphAdmin):
         (
             _('User Info'),
             {
-                'fields': ('user', 'owner', 'get_employee_id')
+                'fields': ('user', 'owner', 'get_employee_id',
+                           'get_employee_company')
             }
         ),
         (
@@ -50,6 +51,14 @@ class AccessCardAdmin(TransitionAdminMixin, RalphAdmin):
             return '-'
 
     get_employee_id.short_description = _('Employee ID')
+
+    def get_employee_company(self, obj):
+        if obj.user is not None:
+            return obj.user.company
+        else:
+            return '-'
+
+    get_employee_company.short_description = _('Employee Company')
 
 
 @register(AccessZone)
