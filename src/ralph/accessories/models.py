@@ -2,12 +2,11 @@ import reversion
 from dj.choices import Choices
 from django.conf import settings
 from django.db import models
-from django.db.models import Prefetch, Sum
+from django.db.models import Sum
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import RalphUser, Regionalizable
-from ralph.assets.models import BaseObject
 from ralph.back_office.models import Warehouse
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 from ralph.lib.polymorphic.models import PolymorphicQuerySet
@@ -18,7 +17,7 @@ from ralph.lib.transitions.models import TransitionWorkflowBaseWithPermissions
 _SELECT_USED_ACCESSORIES_QUERY = """
     SELECT COALESCE(SUM({assignment_table}.{quantity_column}), 0)
     FROM {assignment_table}
-    WHERE {assignment_table}.{accessories_id_column} = {accessories_table}.{id_column}
+    WHERE {assignment_table}.{accessories_id_column} = {accessories_table}.{id_column} # noqa
 """
 
 
@@ -130,31 +129,6 @@ class Accessories(
         on_delete=models.PROTECT
     )
 
-    @cached_property
-    def used(self):
-        if not self.pk:
-            return 0
-        try:
-            # try use fields from objects_used_free manager
-            return (self.user_count or 0)
-        except AttributeError:
-            base_objects_qs = self.base_objects.through.objects.filter(
-                accessories=self
-            )
-            users_qs = self.users.through.objects.filter(accessories=self)
-
-            def get_sum(qs):
-                return qs.aggregate(sum=Sum('quantity'))['sum'] or 0
-            return sum(map(get_sum, [base_objects_qs, users_qs]))
-    used._permission_field = 'number_bought'
-
-    @cached_property
-    def free(self):
-        if not self.pk:
-            return 0
-        return self.number_bought - self.used
-    free._permission_field = 'number_bought'
-
     polymorphic_objects = PolymorphicQuerySet.as_manager()
     objects_used_free = AccessoriesUsedFreeManager()
     objects_used_free_with_related = AccessoriesUsedFreeRelatedObjectsManager()
@@ -174,6 +148,27 @@ class Accessories(
             self.accessories_name,
             self.product_number,
         )
+
+    @cached_property
+    def used(self):
+        if not self.pk:
+            return 0
+        try:
+            return (self.user_count or 0)
+        except AttributeError:
+            users_qs = self.users.through.objects.filter(accessories=self)
+
+            def get_sum(qs):
+                return qs.aggregate(sum=Sum('quantity'))['sum'] or 0
+            return sum(map(get_sum, [0, users_qs]))
+    used._permission_field = 'number_bought'
+
+    @cached_property
+    def free(self):
+        if not self.pk:
+            return 0
+        return self.number_bought - self.used
+    free._permission_field = 'number_bought'
 
 
 @reversion.register()
