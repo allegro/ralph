@@ -49,9 +49,10 @@ class _BaseTestDeploymentActionsTestCase(object):
         # self.assertIsNone(self.instance.hostname)
 
     @override_settings(ENABLE_DNSAAS_INTEGRATION=True)
+    @mock.patch('ralph.deployment.deployment.DNSaaS._get_oauth_token')
     @mock.patch('ralph.deployment.deployment.DNSaaS.get_dns_records')
     @mock.patch('ralph.deployment.deployment.DNSaaS.delete_dns_record')
-    def test_clean_dns(self, delete_dns_record_mock, get_dns_records_mock):
+    def test_clean_dns(self, delete_dns_record_mock, get_dns_records_mock, _get_oauth_token_mock):
         IPAddressFactory(address='10.20.30.41')
         IPAddressFactory(
             ethernet__base_object=self.instance, is_management=True
@@ -64,6 +65,7 @@ class _BaseTestDeploymentActionsTestCase(object):
         )
         delete_dns_record_mock.return_value = False
         get_dns_records_mock.return_value = [self._dns_record] * 3
+        _get_oauth_token_mock.return_value = 'token'
         history = {self.instance.pk: {}}
         self.instance.__class__.clean_dns(
             [self.instance], history_kwargs=history
@@ -73,11 +75,13 @@ class _BaseTestDeploymentActionsTestCase(object):
         delete_dns_record_mock.assert_called_with(10)
 
     @override_settings(ENABLE_DNSAAS_INTEGRATION=True)
+    @mock.patch('ralph.deployment.deployment.DNSaaS._get_oauth_token')
     @mock.patch('ralph.deployment.deployment.DNSaaS.delete_dns_record')
-    def test_clean_dns_with_no_ips(self, delete_dns_record_mock):
+    def test_clean_dns_with_no_ips(self, delete_dns_record_mock, _get_oauth_token_mock):
         IPAddressFactory(
             ethernet__base_object=self.instance, is_management=True
         )
+        _get_oauth_token_mock.return_value = 'token'
         history = {self.instance.pk: {}}
         self.instance.__class__.clean_dns(
             [self.instance], history_kwargs=history
@@ -85,8 +89,9 @@ class _BaseTestDeploymentActionsTestCase(object):
         self.assertEqual(delete_dns_record_mock.call_count, 0)
 
     @override_settings(ENABLE_DNSAAS_INTEGRATION=True)
+    @mock.patch('ralph.deployment.deployment.DNSaaS._get_oauth_token')
     @mock.patch('ralph.deployment.deployment.DNSaaS.get_dns_records')
-    def test_clean_dns_with_too_much_ips(self, get_dns_records_mock):
+    def test_clean_dns_with_too_much_ips(self, get_dns_records_mock, _get_oauth_token_mock):
         IPAddressFactory(
             ethernet__base_object=self.instance,
             ethernet__mac=None,
@@ -94,6 +99,7 @@ class _BaseTestDeploymentActionsTestCase(object):
             address='10.20.30.40',
         )
         history = {self.instance.pk: {}}
+        _get_oauth_token_mock.return_value = 'token'
         get_dns_records_mock.return_value = [self._dns_record] * 50
         history = {self.instance.pk: {}}
         with self.assertRaises(Exception) as e:
@@ -229,10 +235,10 @@ class _BaseTestDeploymentActionsTestCase(object):
 
     @override_settings(ENABLE_DNSAAS_INTEGRATION=True)
     @override_settings(DNSAAS_URL='https://dnsaas.mydc.net')
+    @mock.patch('ralph.deployment.deployment.DNSaaS._get_oauth_token')
     @mock.patch('ralph.dns.dnsaas.DNSaaS._post')
-    @mock.patch('ralph.dns.dnsaas.DNSaaS.get_domain')
-    def test_create_dns_records(self, get_domain, _post):
-        get_domain.return_value = 1
+    def test_create_dns_records(self, _post, _get_oauth_token_mock):
+        _get_oauth_token_mock.return_value = 'token'
         history = {self.instance.pk: {'ip': '10.20.30.40'}}
         self.instance.hostname = 's12345.mydc.net'
         self.instance.__class__.create_dns_entries(
@@ -240,14 +246,11 @@ class _BaseTestDeploymentActionsTestCase(object):
             history_kwargs=history
         )
         _post.assert_called_once_with(
-            'https://dnsaas.mydc.net/api/v2/records/',
+            'https://dnsaas.mydc.net/api/records/',
             {
                 'type': 'A',
-                'auto_ptr': settings.DNSAAS_AUTO_PTR_ALWAYS,
-                'domain': 1,
                 'name': 's12345.mydc.net',
                 'content': '10.20.30.40',
-                'owner': 'ralph',
                 'service_uid': self.instance.service.uid
             }
         )
