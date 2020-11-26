@@ -63,4 +63,4 @@ class TransitionsHistorySerializer(RalphAPISerializer):
 
     class Meta:
         model = TransitionsHistory
-        exclude = ('content_type',)
+        exclude = ('content_type', 'attachments',)

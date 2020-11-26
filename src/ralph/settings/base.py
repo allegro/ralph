@@ -509,9 +509,10 @@ DEFAULT_NETWORK_MARGIN = int(os.environ.get('DEFAULT_NETWORK_MARGIN', 10))
 # 'expose in DHCP' is selected
 DHCP_ENTRY_FORBID_CHANGE = bool_from_env('DHCP_ENTRY_FORBID_CHANGE', True)
 
-# enable integration with DNSaaS, for details see
+# disable integration with DNSaaS as it's no longer supported
 # https://github.com/allegro/django-powerdns-dnssec
-ENABLE_DNSAAS_INTEGRATION = bool_from_env('ENABLE_DNSAAS_INTEGRATION')
+# This settings will be deleted in future release.
+ENABLE_DNSAAS_INTEGRATION = False
 DNSAAS_URL = os.environ.get('DNSAAS_URL', '')
 DNSAAS_TOKEN = os.environ.get('DNSAAS_TOKEN', '')
 DNSAAS_TIMEOUT = os.environ.get('DNSAAS_TIMEOUT', 10)
@@ -520,9 +521,7 @@ DNSAAS_AUTO_PTR_NEVER = os.environ.get('DNSAAS_AUTO_PTR_NEVER', 1)
 # user in dnsaas which can do changes, like update TXT records etc.
 DNSAAS_OWNER = os.environ.get('DNSAAS_OWNER', 'ralph')
 # pyhermes topic where messages about auto txt records are announced
-DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME = os.environ.get(
-    'DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME', None
-)
+DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME = None
 # define names of values send to DNSAAS for:
 # DataCenterAsset, Cluster, VirtualServer
 DNSAAS_AUTO_TXT_RECORD_PURPOSE_MAP = {
@@ -543,11 +542,6 @@ DNSAAS_AUTO_TXT_RECORD_PURPOSE_MAP = {
     # 'location': None
     # then this value won't be set at all
 }
-
-if ENABLE_DNSAAS_INTEGRATION:
-    INSTALLED_APPS += (
-        'ralph.dns',
-    )
 DNSAAS_AUTO_UPDATE_HOST_DNS = bool_from_env('DNSAAS_AUTO_UPDATE_HOST_DNS')
 
 DOMAIN_DATA_UPDATE_TOPIC = os.environ.get(
