@@ -14,6 +14,7 @@ from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
 from ralph.assets.models import AssetLastHostname, Ethernet
+from ralph.assets.validators import NoWhiteSpaceValidator
 from ralph.dns.dnsaas import dnsaas_client
 from ralph.lib import network as network_tools
 from ralph.lib.mixins.fields import NullableCharField
@@ -621,6 +622,7 @@ class IPAddress(
         null=True,
         blank=True,
         default=None,
+        validators=[NoWhiteSpaceValidator()]
         # TODO: unique
     )
     number = models.DecimalField(
@@ -745,6 +747,8 @@ class IPAddress(
             raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
+        self.full_clean()
+
         if settings.CHECK_IP_HOSTNAME_ON_SAVE:
             if not self.address and self.hostname:
                 self.address = network_tools.hostname(

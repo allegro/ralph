@@ -495,6 +495,7 @@ class DataCenterAsset(
         return '<DataCenterAsset: {}>'.format(self.id)
 
     def save(self, *args, **kwargs):
+        self.full_clean()
         super().save(*args, **kwargs)
         if self.pk:
             # When changing rack we search and save all descendants
