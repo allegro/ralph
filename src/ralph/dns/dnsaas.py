@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
-from functools import wraps
-from urllib.parse import urlencode, urljoin, parse_qs, urlsplit
 from datetime import datetime, timedelta
+from functools import wraps
+from typing import List, Optional, Tuple, Union
+from urllib.parse import parse_qs, urlencode, urljoin,  urlsplit
 
 import requests
 from dj.choices import Choices
@@ -12,7 +13,6 @@ from django.utils.translation import ugettext_lazy as _
 from oauthlib.oauth2 import BackendApplicationClient
 from oauthlib.oauth2.rfc6749.errors import CustomOAuth2Error
 from requests_oauthlib import OAuth2Session
-from typing import Optional, List, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -179,7 +179,7 @@ class DNSaaS:
             return response_data
 
     @staticmethod
-    def _response2result(response: requests.Response) -> Optional[dict]:
+    def _response2result(response: requests.Response) -> Union[dict, list]:
         if response.status_code == 500:
             return {
                 'non_field_errors': ['Internal Server Error from DNSAAS']
@@ -212,10 +212,13 @@ class DNSaaS:
             logger.error(
                 'Service is required for record {}'.format(data)
             )
-            return {'name': [_('Service is required for record {}'.format(data))]}
+            return {'name': [
+                _('Service is required for record {}'.format(data))
+            ]}
         return self._post(url, data)[1]
 
-    def _send_request_to_dnsaas(self, request_method: str, url: str, json_data: dict = None) -> requests.Response:
+    def _send_request_to_dnsaas(self, request_method: str, url: str,
+                                json_data: dict = None) -> requests.Response:
         try:
             response = self.session.request(
                 method=request_method,

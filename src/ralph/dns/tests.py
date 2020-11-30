@@ -3,7 +3,6 @@ from unittest.mock import patch
 
 from django.db import transaction
 from django.test import override_settings, TestCase, TransactionTestCase
-from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.tests.factories import (
     ConfigurationClassFactory,
