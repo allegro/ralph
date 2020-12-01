@@ -1,3 +1,16 @@
+ralph (20201201.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Added User Company on List and on access_card view. (#3585)
+
+  [ Szymon Jasinski ]
+  * openstack ironic sync - fix matching with hypervisors (#3588)
+
+  [ Marek Bleschke ]
+  * disable support for deprecated DNSaaS (#3586)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Tue, 01 Dec 2020 12:07:14 +0000
+
 ralph (20201117.1) bionic; urgency=medium
 
   [ lukaszkarykowski ]
