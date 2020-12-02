@@ -1,3 +1,9 @@
+ralph (20201202.1) bionic; urgency=medium
+
+  * fix building Ralph's debian package (#3590)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Wed, 02 Dec 2020 14:18:48 +0000
+
 ralph (20201201.1) bionic; urgency=medium
 
   [ lukaszkarykowski ]
