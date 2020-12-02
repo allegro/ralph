@@ -13,6 +13,14 @@ ENV TERM=xterm
 ENV EDITOR=nano
 ENV RALPH_DIR=/opt/ralph
 
+# The way we've pinned versions in requirement.txt files isn't compatible with chnages
+# in pip's dependency resolver (pip 20.2: https://pip.pypa.io/en/latest/user_guide/#changes-to-the-pip-dependency-resolver-in-20-3-2020).
+# Until it's fixed on our side we need to fix to specific pip version.
+# To do this we need newer version of dh-virtualenv (upgrade-pip-to option added in version 1.2).
+RUN apt-get update && \
+    apt-get -y install software-properties-common && \
+    add-apt-repository ppa:jyrki-pulliainen/dh-virtualenv
+
 RUN apt-get update && \
     apt-get -y install build-essential debhelper devscripts equivs dh-virtualenv \
     # Newer version of mysqlclient-dev fails to install.
