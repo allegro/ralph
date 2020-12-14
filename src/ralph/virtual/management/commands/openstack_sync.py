@@ -479,8 +479,9 @@ class Command(BaseCommand):
                         asset.id
                     )
                 )
-                host.hypervisor = asset
-                host.save()
+                if host.hypervisor != asset:
+                    host.hypervisor = asset
+                    host.save()
 
     @lru_cache()
     def _get_flavors(self):

@@ -20,6 +20,7 @@ from ralph.virtual.models import (
 from ralph.virtual.tests.factories import (
     CloudFlavorFactory,
     CloudHostFactory,
+    CloudHostFullFactory,
     CloudProjectFactory,
     CloudProviderFactory
 )
@@ -259,6 +260,41 @@ class TestOpenstackSync(RalphTestCase):
         real_serials.sort()
 
         self.assertEqual(expected_serials, real_serials)
+
+    def test_match_cloud_hosts_ignore_already_matched(self):
+        unassigned_hypervisor = DataCenterAsset.objects.create(
+            hostname='hypervisor',
+            model=DataCenterAssetModelFactory(),
+            sn='hypervisor-SN'
+        )
+
+        with_hypervisor = CloudHostFullFactory(host_id='with hypervisor')
+        with_hypervisor_modified = with_hypervisor.modified
+        with_hypervisor_node = FakeIronicNode(
+            serial_number=with_hypervisor.hypervisor.sn,
+            instance_uuid=with_hypervisor.host_id
+        )
+
+        without_hypervisor = CloudHostFactory(host_id='no hypervisor')
+        without_hypervisor_modified = without_hypervisor.modified
+        without_hypervisor_node = FakeIronicNode(
+            serial_number=unassigned_hypervisor.sn,
+            instance_uuid=without_hypervisor.host_id
+        )
+
+        nodes = [
+            with_hypervisor_node,
+            without_hypervisor_node
+        ]
+
+        self.cmd._match_nodes_to_hosts(nodes)
+        without_hypervisor.refresh_from_db()
+        with_hypervisor.refresh_from_db()
+
+        # should not be modified by the command
+        self.assertTrue(with_hypervisor_modified == with_hypervisor.modified)
+        # should be modified by the command
+        self.assertTrue(without_hypervisor_modified < without_hypervisor.modified)
 
     def test_match_cloud_hosts_host_not_found(self):
         host = CloudHostFactory(host_id='foo')
