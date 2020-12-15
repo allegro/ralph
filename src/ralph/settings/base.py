@@ -667,3 +667,7 @@ CURRENCY_CHOICES = [
     if c.code != DEFAULT_CURRENCY_CODE
 ]
 CURRENCY_CHOICES.append(('XXX', '---'))
+
+OAUTH_CLIENT_ID = ""
+OAUTH_SECRET = ""
+OAUTH_TOKEN_URL = "https://localhost/"
