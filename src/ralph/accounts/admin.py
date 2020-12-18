@@ -278,7 +278,7 @@ class UserTransitionHistoryView(RalphDetailView):
 
 @register(RalphUser)
 class RalphUserAdmin(UserAdmin, RalphAdmin):
-
+    change_form_template = 'ralphuser/change_user_form.html'
     form = RalphUserChangeForm
     change_views = [
         UserInfoView,

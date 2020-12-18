@@ -1,0 +1,23 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls ralph_tags admin_static admin_modify foundation_form foundation_alert sitetree transitions_tags %}
+
+{% block object-tools %}
+  {% if change %}
+    {% if not is_popup %}
+      <ul class="object-tools button-group radius">
+        <li>
+          <a href="{% add_preserved_filters auth_user_password_change %}" class="passwordlink small button small right">{% trans "Change password" %}</a>
+        </li>
+        {% block object-tools-items %}
+          <li>
+            {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
+            <a href="{% add_preserved_filters history_url %}" class="historylink small button small right">
+              {% trans "History" %}
+            </a>
+          </li>
+        {% endblock %}
+      </ul>
+    {% endif %}
+  {% endif %}
+
+{% endblock %}
