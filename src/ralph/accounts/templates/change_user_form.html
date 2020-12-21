@@ -6,7 +6,7 @@
     {% if not is_popup %}
       <ul class="object-tools button-group radius">
         <li>
-          <a href="{% add_preserved_filters auth_user_password_change %}" class="passwordlink small button small right">{% trans "Change password" %}</a>
+          <a href="{% url 'admin:auth_user_password_change' original.pk %}" class="passwordlink small button small right">{% trans "Change password" %}</a>
         </li>
         {% block object-tools-items %}
           <li>
