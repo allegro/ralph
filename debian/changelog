@@ -1,3 +1,10 @@
+ralph (20201228.2) bionic; urgency=medium
+
+  [ Przemyslaw Bromber ]
+  * fixed renew_token_when_unauthorized() decorator (#3596)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Mon, 28 Dec 2020 13:12:30 +0000
+
 ralph (20201228.1) bionic; urgency=medium
 
   [ Marek Bleschke ]
