@@ -31,10 +31,10 @@ def renew_token_when_unauthorized(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         self._verify_oauth_token_validity()
-        status_code, data = func(*args, **kwargs)
+        status_code, data = func(self, *args, **kwargs)
         if status_code == 401:
             self._update_oauth_token()
-            status_code, data = func(*args, **kwargs)
+            status_code, data = func(self, *args, **kwargs)
         return status_code, data
     return wrapper
 
