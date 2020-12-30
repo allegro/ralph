@@ -181,10 +181,12 @@ class DNSaaS:
     @staticmethod
     def _response2result(response: requests.Response) -> Union[dict, list]:
         if response.status_code == 500:
+            logger.error('Internal Server Error from DNSAAS: {}'
+                         .format(response.content))
             return {
                 'non_field_errors': ['Internal Server Error from DNSAAS']
             }
-        elif response.status_code != 201 and response.status_code != 204:
+        elif response.status_code not in (202, 204):
             return response.json()
 
     def create_dns_record(self, record: dict, service=None) -> Optional[dict]:
