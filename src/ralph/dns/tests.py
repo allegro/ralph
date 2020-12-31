@@ -550,7 +550,7 @@ class TestPublishAutoTXTToDNSaaS(TransactionTestCase):
 
 class TestDNSForm(TestCase):
     def test_unknown_field_goes_to_non_field_errors(self):
-        errors = {'unknown_field': ['value']}
+        errors = {'errors': [{'reason': 'unknown', 'comment': 'value'}]}
         form = DNSRecordForm({})
         add_errors(form, errors)
         self.assertIn('value', form.non_field_errors())
