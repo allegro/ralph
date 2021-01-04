@@ -1,3 +1,13 @@
+ralph (20210104.1) bionic; urgency=medium
+
+  [ Przemyslaw Bromber ]
+  * better responses handling in dns module (#3597)
+
+  [ Marek Bleschke ]
+  * fix issue with showing proper form error for DNS tab (#3598)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Mon, 04 Jan 2021 13:12:46 +0000
+
 ralph (20201228.2) bionic; urgency=medium
 
   [ Przemyslaw Bromber ]
