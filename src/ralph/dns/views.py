@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+from enum import Enum
 
 from django.conf import settings
 from django.contrib import messages
@@ -17,24 +18,29 @@ class DNSaaSIntegrationNotEnabledError(Exception):
     pass
 
 
+class DnsaasErrorReasonToFieldNameEnum(Enum):
+    NAME = 'name'
+    TYPE = 'type'
+    CONTENT = 'content'
+    _DEFAULT = None
+
+
 def add_errors(form, errors):
     """
     Set `errors` on `form`.
 
     form: Django form, form.Form
-    errors: (ordered)dict {key: ["error", ..], ..}
+    errors: list of errors from DNSAAS
     """
-    form_fields = {
-        pair[0] for pair in form.fields.items()
-    }
-    for field_name, field_errors in errors.items():
-        for field_error in field_errors:
-            if (
-                field_name == 'non_field_errors' or
-                field_name not in form_fields
-            ):
-                field_name = None
-            form.add_error(field_name, field_error)
+    for error in errors.get('errors', []):
+        reason = error.get('reason', '_DEFAULT')
+        try:
+            field_name = DnsaasErrorReasonToFieldNameEnum[reason].value
+        except KeyError:
+            field_name = DnsaasErrorReasonToFieldNameEnum._DEFAULT.value
+
+        field_error = error.get('comment', 'Unknown error')
+        form.add_error(field_name, field_error)
 
 
 class DNSView(RalphDetailView):
