@@ -214,9 +214,10 @@ class DNSaaS:
             logger.error(
                 'Service is required for record {}'.format(data)
             )
-            return {'name': [
-                _('Service is required for record {}'.format(data))
-            ]}
+            return {'errors': [{
+                'value': 'name',
+                'comment': _('Service is required for record {}'.format(data))
+            }]}
         return self._post(url, data)[1]
 
     def _send_request_to_dnsaas(self, request_method: str, url: str,
