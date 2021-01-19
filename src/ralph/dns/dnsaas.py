@@ -326,7 +326,7 @@ class DNSaaS:
             JSON response from API
         """
         logger.info('Send update data: {}'.format(ip_record_data))
-        url = self.build_url('ip_record')
+        url = self.build_url('ip-record')
         status_code, response_data = self._post(url, ip_record_data)
         if status_code >= 400:
             logger.error(
