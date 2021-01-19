@@ -1,3 +1,10 @@
+ralph (20210119.1) bionic; urgency=medium
+
+  * fix form error message format (#3600)
+  * change dns api url for ip records (#3601)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Tue, 19 Jan 2021 08:11:03 +0000
+
 ralph (20210104.1) bionic; urgency=medium
 
   [ Przemyslaw Bromber ]
