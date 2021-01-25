@@ -1,5 +1,6 @@
 import reversion
 from dj.choices import Choices
+from django import forms
 from django.conf import settings
 from django.db import models
 from django.db.models import Sum
@@ -10,6 +11,7 @@ from ralph.accounts.models import RalphUser, Regionalizable
 from ralph.back_office.models import Warehouse
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 from ralph.lib.polymorphic.models import PolymorphicQuerySet
+from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
 from ralph.lib.transitions.models import TransitionWorkflowBaseWithPermissions
 
@@ -169,6 +171,20 @@ class Accessories(
             return 0
         return self.number_bought - self.used
     free._permission_field = 'number_bought'
+
+
+@classmethod
+@transition_action(
+    form_fields={
+        'restock': {
+            'field': forms.IntegerField(label=_('restock'),)
+        }
+    },
+)
+def restock(cls, instances, **kwargs):
+    restock = int(kwargs['restock'])
+    for instance in instances:
+        instance.number_bought += restock
 
 
 @reversion.register()
