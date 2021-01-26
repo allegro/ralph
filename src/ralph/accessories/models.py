@@ -124,7 +124,7 @@ class Accessories(
         help_text=_('Accessories status')
     )
     number_bought = models.IntegerField(
-        verbose_name=_('number of purchased items'),
+        verbose_name=_('number of purchased items')
     )
     warehouse = models.ForeignKey(
         Warehouse,
@@ -172,19 +172,18 @@ class Accessories(
         return self.number_bought - self.used
     free._permission_field = 'number_bought'
 
-
-@classmethod
-@transition_action(
-    form_fields={
-        'restock': {
-            'field': forms.IntegerField(label=_('restock'),)
-        }
-    },
-)
-def restock(cls, instances, **kwargs):
-    restock = int(kwargs['restock'])
-    for instance in instances:
-        instance.number_bought += restock
+    @classmethod
+    @transition_action(
+        form_fields={
+            'restock': {
+                'field': forms.IntegerField(label=_('restock'),)
+            }
+        },
+    )
+    def restock(cls, instances, **kwargs):
+        restock = int(kwargs['restock'])
+        for instance in instances:
+            instance.number_bought += restock
 
 
 @reversion.register()
