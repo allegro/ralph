@@ -115,10 +115,11 @@ class PolymorphicQuerySet(models.QuerySet):
                 try:
                     for obj in model_query:
                         result_mapping[obj.pk].append(obj)
-                # NOTE(pszulc): We try to catch error that randomly occurs
-                # OperationalError(1052, "Column 'created' in field list is ambiguous")
+                # NOTE(pszulc): We try to catch OperationalError that randomly
+                # occurs (1052, "Column 'created' in field list is ambiguous")
                 except OperationalError as e:
-                    raise WrappedOperationalError(query=model_query.query, model=self) from e
+                    raise WrappedOperationalError(
+                        query=model_query.query, model=self) from e
         # yield objects in original order
         for pk in pks_order:
             # yield all objects with particular PK
