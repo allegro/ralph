@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
 import json
 import os
 from collections import ChainMap
@@ -41,6 +42,7 @@ def get_sentinels(sentinels_string):
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+START_TIMESTAMP = datetime.now()
 SECRET_KEY = os.environ.get('SECRET_KEY', 'CHANGE_ME')
 LOG_FILEPATH = os.environ.get('LOG_FILEPATH', '/tmp/ralph.log')
 
@@ -116,6 +118,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'threadlocals.middleware.ThreadLocalMiddleware',
+    'ralph.lib.error_handling.middleware.OperationalErrorHandlerMiddleware'
 )
 
 ROOT_URLCONF = 'ralph.urls'
