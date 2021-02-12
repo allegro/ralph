@@ -24,17 +24,13 @@ class AccessoriesUserView(RalphDetailViewAdmin):
 class AccessoriesAdmin(TransitionAdminMixin, RalphAdmin):
     show_transition_history = True
     list_display = ['status', 'manufacturer', 'accessories_name',
-                    'user', 'product_number', 'number_bought']
-    readonly_fields = ['used', 'free']
-    list_select_related = ['user', 'owner']
-    raw_id_fields = ['user', 'owner', 'region']
+                    'product_number', 'number_bought']
+    list_select_related = ['owner']
+    raw_id_fields = ['owner', 'region']
     list_filter = ['status', 'manufacturer', 'accessories_name',
-                   'product_number', 'user', 'owner', 'user__segment',
-                   'user__company', 'user__department']
+                   'product_number', 'owner']
     change_views = [AccessoriesUserView, ]
-    search_fields = ['manufacturer', 'accessories_name',
-                     'user__first_name', 'user__last_name', 'user__username',
-                     'product_number']
+    search_fields = ['manufacturer', 'accessories_name', 'product_number']
 
     fieldsets = (
         (
@@ -43,13 +39,13 @@ class AccessoriesAdmin(TransitionAdminMixin, RalphAdmin):
                 'fields': ('manufacturer', 'accessories_name',
                            'accessories_type', 'product_number',
                            'region', 'warehouse', 'number_bought',
-                           'free', 'used',)
+                           )
             }
         ),
         (
             _('User Info'),
             {
-                'fields': ('user', 'owner', )
+                'fields': ('owner', )
             }
         ),
     )
