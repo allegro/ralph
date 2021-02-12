@@ -1,6 +1,8 @@
 import logging
 import traceback
-from MySQLdb.connections import OperationalError
+
+from django.db import OperationalError
+
 from ralph.lib.error_handling.exceptions import WrappedOperationalError
 
 

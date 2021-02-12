@@ -16,8 +16,8 @@ from collections import defaultdict
 from itertools import groupby
 
 from django.contrib.contenttypes.models import ContentType
-from django.db import models
-from MySQLdb.connections import OperationalError
+from django.db import models, OperationalError
+
 from ralph.lib.error_handling.exceptions import WrappedOperationalError
 
 
