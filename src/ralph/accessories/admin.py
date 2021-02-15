@@ -25,8 +25,8 @@ class AccessoriesAdmin(TransitionAdminMixin, RalphAdmin):
     show_transition_history = True
     list_display = ['status', 'manufacturer', 'accessories_name',
                     'product_number', 'number_bought']
-    list_select_related = ['owner']
-    raw_id_fields = ['owner', 'region']
+    list_select_related = ['owner', 'manufacturer']
+    raw_id_fields = ['owner', 'region', 'manufacturer']
     list_filter = ['status', 'manufacturer', 'accessories_name',
                    'product_number', 'owner']
     change_views = [AccessoriesUserView, ]
