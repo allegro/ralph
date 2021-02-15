@@ -7,7 +7,6 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import RalphUser, Regionalizable
-from ralph.assets.models.assets import Manufacturer
 from ralph.back_office.models import Warehouse
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 from ralph.lib.transitions.decorators import transition_action
@@ -36,11 +35,12 @@ class Accessories(
     models.Model,
     metaclass=TransitionWorkflowBaseWithPermissions
 ):
-    manufacturer = models.ForeignKey(
-        Manufacturer,
-        on_delete=models.PROTECT,
-        blank=True,
-        null=True,
+    manufacturer = models.CharField(
+        max_length=255,
+        null=False,
+        blank=False,
+        unique=True,
+        help_text=_('Manufacturer of accessories')
     )
     accessories_type = models.CharField(
         max_length=255,
