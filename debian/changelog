@@ -1,3 +1,10 @@
+ralph (20210219.1) bionic; urgency=medium
+
+  [ Paweł Szulc ]
+  * Log operational error (#3605)
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Fri, 19 Feb 2021 11:36:12 +0000
+
 ralph (20210119.1) bionic; urgency=medium
 
   * fix form error message format (#3600)
