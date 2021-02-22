@@ -2,18 +2,18 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import django.db.models.deletion
 import ralph.lib.mixins.models
 from django.conf import settings
+import django.db.models.deletion
 import ralph.lib.transitions.fields
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
+        ('accounts', '0006_remove_ralphuser_gender'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('back_office', '0011_auto_20190517_1115'),
-        ('accounts', '0006_remove_ralphuser_gender'),
     ]
 
     operations = [
@@ -31,8 +31,6 @@ class Migration(migrations.Migration):
                 ('number_bought', models.IntegerField(verbose_name='number of purchased items')),
                 ('owner', models.ForeignKey(blank=True, null=True, help_text='Owner of the accessories', related_name='+', on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
                 ('region', models.ForeignKey(to='accounts.Region')),
-                ('user', models.ForeignKey(blank=True, null=True, help_text='User of the accessories', related_name='+', on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
-                ('warehouse', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='back_office.Warehouse')),
             ],
             options={
                 'ordering': ('-modified', '-created'),
@@ -46,11 +44,21 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
                 ('quantity', models.PositiveIntegerField(default=1)),
                 ('accessories', models.ForeignKey(to='accessories.Accessories')),
-                ('user', models.ForeignKey(related_name='accessories', to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(related_name='user', to=settings.AUTH_USER_MODEL)),
             ],
+        ),
+        migrations.AddField(
+            model_name='accessories',
+            name='user',
+            field=models.ManyToManyField(related_name='_accessories_user_+', to=settings.AUTH_USER_MODEL, through='accessories.AccessoriesUser'),
+        ),
+        migrations.AddField(
+            model_name='accessories',
+            name='warehouse',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='back_office.Warehouse'),
         ),
         migrations.AlterUniqueTogether(
             name='accessoriesuser',
-            unique_together={('accessories', 'user')},
+            unique_together=set([('accessories', 'user')]),
         ),
     ]
