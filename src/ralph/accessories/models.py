@@ -14,7 +14,7 @@ from ralph.lib.transitions.fields import TransitionField
 from ralph.lib.transitions.models import TransitionWorkflowBaseWithPermissions
 
 
-class AccessoriesStatus(Choices):
+class AccessoryStatus(Choices):
     _ = Choices.Choice
 
     new = _('new')
@@ -28,7 +28,7 @@ class AccessoriesStatus(Choices):
     reserved = _("reserved")
 
 
-class Accessories(
+class Accessory(
     AdminAbsoluteUrlMixin,
     TimeStampMixin,
     Regionalizable,
@@ -39,22 +39,22 @@ class Accessories(
         max_length=255,
         null=False,
         blank=False,
-        unique=True,
-        help_text=_('Manufacturer of accessories')
+        unique=False,
+        help_text=_('Accessory manufacturer')
     )
-    accessories_type = models.CharField(
+    accessory_type = models.CharField(
+        max_length=255,
+        null=False,
+        blank=False,
+        unique=False,
+        help_text=_('Accessory type')
+    )
+    accessory_name = models.CharField(
         max_length=255,
         null=False,
         blank=False,
         unique=True,
-        help_text=_('Type of accessories')
-    )
-    accessories_name = models.CharField(
-        max_length=255,
-        null=False,
-        blank=False,
-        unique=True,
-        help_text=_('Name of accessories')
+        help_text=_('Accessory name')
     )
     product_number = models.CharField(
         max_length=255,
@@ -65,7 +65,7 @@ class Accessories(
     )
     user = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
-        through='AccessoriesUser',
+        through='AccessoryUser',
         related_name='+'
     )
     owner = models.ForeignKey(
@@ -73,15 +73,15 @@ class Accessories(
         null=True,
         blank=True,
         related_name='+',
-        help_text=_('Owner of the accessories'),
+        help_text=_('Accessory owner'),
         on_delete=models.SET_NULL
     )
     status = TransitionField(
-        choices=AccessoriesStatus(),
-        default=AccessoriesStatus.new.id,
+        choices=AccessoryStatus(),
+        default=AccessoryStatus.new.id,
         null=False,
         blank=False,
-        help_text=_('Accessories status')
+        help_text=_('Accessory status')
     )
     number_bought = models.IntegerField(
         verbose_name=_('number of purchased items')
@@ -118,15 +118,15 @@ class Accessories(
     )
     def release_accessories(cls, instances, **kwargs):
         user = get_user_model().objects.get(pk=int(kwargs['user']))
-        AccessoriesUser.objects.create(
+        AccessoryUser.objects.create(
             user=user, quantity=kwargs['quantity'],
-            accessories_id=instances[0].id
+            accessory_id=instances[0].id
         )
 
 
 @reversion.register()
-class AccessoriesUser(models.Model):
-    accessories = models.ForeignKey(Accessories)
+class AccessoryUser(models.Model):
+    accessory = models.ForeignKey(Accessory)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name='user'
@@ -134,9 +134,9 @@ class AccessoriesUser(models.Model):
     quantity = models.PositiveIntegerField(default=1)
 
     class Meta:
-        unique_together = ('accessories', 'user')
+        unique_together = ('accessory', 'user')
 
     def __str__(self):
         return '{} of {} assigned to {}'.format(
-            self.quantity, self.accessories, self.user,
+            self.quantity, self.accessory, self.user,
         )

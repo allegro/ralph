@@ -141,7 +141,7 @@ sitetrees = [
                 section(_('Access Cards'), 'access_cards', 'AccessCard'),
                 section(_('Hardware'), 'back_office', 'backofficeasset'),
                 section(_('SIM Cards'), 'sim_cards', 'SIMCard'),
-                section(_('Accessories'), 'accessories', 'Accessories'),
+                section(_('Accessory'), 'accessories', 'Accessory'),
             ]
         ),
         ralph_item(
