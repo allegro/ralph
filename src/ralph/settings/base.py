@@ -71,6 +71,7 @@ INSTALLED_APPS = (
     'sitetree',
     'ralph.access_cards',
     'ralph.accounts',
+    'ralph.accessories',
     'ralph.assets',
     'ralph.attachments',
     'ralph.back_office',
