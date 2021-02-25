@@ -81,7 +81,10 @@ class RalphAdminSiteMixin(object):
 
 
 class RalphAdminSite(RalphAdminSiteMixin, AdminSite):
-    pass
+    def each_context(self, request):
+        context = super(RalphAdminSite, self).each_context(request)
+        context['tag_manager_tag_id'] = settings.TAG_MANAGER_TAG_ID
+        return context
 
 
 ralph_site = RalphAdminSite()
