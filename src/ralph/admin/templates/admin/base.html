@@ -26,7 +26,7 @@
   <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}"{% block body_extra_attrs %}{% endblock %}>
   {% if tag_manager_tag_id %}
   <!-- Google Tag Manager (noscript) -->
-  <noscript><iframe src={{"https://www.googletagmanager.com/ns.html?id="|add:tag_manager_tag_id}}
+  <noscript><iframe src="{{"https://www.googletagmanager.com/ns.html?id="|add:tag_manager_tag_id}}"
   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
   {% endif %}
