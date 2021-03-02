@@ -165,7 +165,7 @@ def handle_update_vip_event(data):
     except ServiceEnvironment.DoesNotExist:
         msg = (
             'ServiceEnvironment for service UID "{}" and environment "{}" '
-            'does not exist. Ignoring received create event.'
+            'does not exist. Ignoring received update event.'
         )
         logger.error(msg.format(data['service']['uid'], data['environment']))
         return
@@ -174,7 +174,6 @@ def handle_update_vip_event(data):
         vip.service_env = service_env
         vip.save()
         logger.debug('VIP {} changed service/env to {}.'.format(vip.name, service_env))
-        return
     
     logger.debug('VIP {} update processed successfuly.'.format(vip.name))
 
