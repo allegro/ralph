@@ -3,6 +3,7 @@ import logging
 
 import pyhermes
 from django.core.exceptions import ValidationError
+from django.db import transaction
 
 from ralph.assets.models.assets import ServiceEnvironment
 from ralph.data_center.models import Cluster, ClusterType, VIP, VIPProtocol
@@ -123,15 +124,6 @@ def handle_create_vip_event(data):
     topic='updateVipEvent',
 )
 def handle_update_vip_event(data):
-    # TODO(xor-xor): Since update event doesn't contain any changes yet, it
-    # will be ignored for now. Remember to remove logger.info/return below when
-    # this will get changed.
-    logger.info(
-        "Ignoring received update VIP event, since handling logic is not "
-        "implemented yet."
-    )
-    return
-
     errors = validate_vip_event_data(data)
     if errors:
         msg = (
@@ -141,18 +133,50 @@ def handle_update_vip_event(data):
         logger.error(msg.format('; '.join(errors)))
         return
 
-    ip,  = IPAddress.objects.get_or_create(address=data['ip'])
+    ip, ip_created = IPAddress.objects.get_or_create(address=data['ip'])
     protocol = VIPProtocol.from_name(data['protocol'].upper())
-    vip = get_vip(ip.address, data['port'], protocol.name)
+    vip = get_vip(ip, data['port'], protocol)
     if vip is None:
-        msg = (
-            "VIP designated by IP address {}, port {} and protocol {} "
-            "doesn't exist. Ignoring received update event."
+        # VIP not found, should create new one.
+        return handle_create_vip_event(data)
+    
+    # update cluster.
+    cluster_type, _ = ClusterType.objects.get_or_create(
+        name=data['load_balancer_type']
+    )
+    cluster, _ = Cluster.objects.get_or_create(
+        name=data['load_balancer'],
+        type=cluster_type,
+    )
+
+    if ip.ethernet.base_object != cluster:
+        with transaction.atomic():
+            for migrated_vip in VIP.objects.select_for_update().filter(ip=ip):
+                migrated_vip.ip.ethernet.base_object = cluster
+                migrated_vip.ip.ethernet.save()
+                logger.debug('VIP {} with IP {} changed cluster to {}.', migrated_vip.name, ip, cluster.name)
+    
+    # update service/environment if changed.
+    try:
+        service_env = ServiceEnvironment.objects.get(
+            service__uid=data['service']['uid'],
+            environment__name=data['environment'],
         )
-        logger.warning(msg.format(ip.address, data['port'], protocol.name))
+    except ServiceEnvironment.DoesNotExist:
+        msg = (
+            'ServiceEnvironment for service UID "{}" and environment "{}" '
+            'does not exist. Ignoring received create event.'
+        )
+        logger.error(msg.format(data['service']['uid'], data['environment']))
         return
-    # TODO(xor-xor): when update event will contain changes (currently it
-    # doesn't), add update logic here.
+    
+    if vip.service_env != service_env:
+        vip.service_env = service_env
+        vip.save()
+        logger.debug('VIP {} changed service/env to {}.'.format(vip.name, service_env))
+        return
+    
+    logger.debug('VIP {} update processed successfuly.'.format(vip.name))
 
 
 @pyhermes.subscriber(

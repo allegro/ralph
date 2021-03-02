@@ -5,13 +5,18 @@ from copy import deepcopy
 from django.test import TestCase
 
 from ralph.assets.tests.factories import ServiceEnvironmentFactory
-from ralph.data_center.models import VIP, VIPProtocol
+from ralph.data_center.models import Cluster, VIP, VIPProtocol
 from ralph.data_center.subscribers import (
     handle_create_vip_event,
+    handle_update_vip_event,
     handle_delete_vip_event,
     validate_vip_event_data
 )
-from ralph.data_center.tests.factories import VIPFactory
+from ralph.data_center.tests.factories import (
+    ClusterFactory,
+    EthernetFactory,
+    VIPFactory
+)
 from ralph.networks.models.networks import Ethernet, IPAddress
 from ralph.networks.tests.factories import IPAddressFactory
 
@@ -141,6 +146,53 @@ class HandleCreateVIPEventTestCase(TestCase):
         self.assertEqual(VIP.objects.count(), 0)
         handle_create_vip_event(self.data)
         self.assertEqual(VIP.objects.count(), 0)
+
+
+class HandleUpdateVIPEventTestCase(TestCase):
+
+    def setUp(self):
+        self.data = deepcopy(EVENT_DATA)
+
+    def test_update_change_service_env(self):
+        vip = VIPFactory()
+        self.data['ip'] = vip.ip.address
+        self.data['port'] = vip.port
+        self.data['protocol'] = VIPProtocol.from_id(vip.protocol).name
+        service_env = ServiceEnvironmentFactory()
+        self.data['service']['uid'] = service_env.service.uid
+        self.data['environment'] = service_env.environment.name
+
+        vips = VIP.objects.all()
+        self.assertEqual(vips.count(), 1)
+        handle_update_vip_event(self.data)
+        vips = VIP.objects.all()
+        self.assertEqual(vips.count(), 1)
+        self.assertEqual(vips[0].service_env, service_env)
+
+    def test_update_change_cluster(self):
+        cluster_old = ClusterFactory(name='f5-1-fake-old')
+        ethernet = EthernetFactory(base_object=cluster_old)
+        vip = VIPFactory(ip=IPAddressFactory(ethernet=ethernet))
+        self.data['load_balancer'] = 'f5-1-fake-new'
+        self.data['ip'] = vip.ip.address
+        self.data['port'] = vip.port
+        self.data['protocol'] = VIPProtocol.from_id(vip.protocol).name
+
+        self.assertEqual(VIP.objects.count(), 1)
+        self.assertEqual(Cluster.objects.count(), 1)
+        self.assertEqual(Ethernet.objects.count(), 1)
+        
+        handle_update_vip_event(self.data)
+        
+        vips = VIP.objects.all()
+        self.assertEqual(vips.count(), 1)
+        self.assertEqual(Cluster.objects.count(), 2)
+        self.assertEqual(Ethernet.objects.count(), 1)
+        self.assertEqual(vips[0].ip.ethernet, ethernet)
+        self.assertEqual(
+            Ethernet.objects.get(id=ethernet.id).base_object.last_descendant.name,
+            self.data['load_balancer']
+        )
 
 
 class HandleDeleteVIPEventTestCase(TestCase):
