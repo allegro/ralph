@@ -119,7 +119,8 @@ class PolymorphicQuerySet(models.QuerySet):
                 # occurs (1052, "Column 'created' in field list is ambiguous")
                 except OperationalError as e:
                     raise WrappedOperationalError(
-                        query=model_query.query, model=self) from e
+                        query=model_query.query, model=self, error_str=str(e)) \
+                        from e
         # yield objects in original order
         for pk in pks_order:
             # yield all objects with particular PK
