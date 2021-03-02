@@ -133,7 +133,7 @@ def handle_update_vip_event(data):
         logger.error(msg.format('; '.join(errors)))
         return
 
-    ip, ip_created = IPAddress.objects.get_or_create(address=data['ip'])
+    ip, _ = IPAddress.objects.get_or_create(address=data['ip'])
     protocol = VIPProtocol.from_name(data['protocol'].upper())
     vip = get_vip(ip, data['port'], protocol)
     if vip is None:
