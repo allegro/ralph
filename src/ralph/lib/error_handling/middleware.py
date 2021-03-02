@@ -20,6 +20,7 @@ class OperationalErrorHandlerMiddleware:
                              request.build_absolute_uri(), request.user,
                              exception, settings.START_TIMESTAMP,
                              exc_info=True, stack_info=True)
+                raise exception
             elif isinstance(exception, WrappedOperationalError):
                 inner_exc = exception.__context__
                 logger.error("WrappedOperationalError occured. URI: %s, "
@@ -33,4 +34,5 @@ class OperationalErrorHandlerMiddleware:
                              traceback.format_tb(inner_exc.__traceback__),
                              settings.START_TIMESTAMP,
                              exc_info=True, stack_info=True)
+                raise inner_exc
         return None
