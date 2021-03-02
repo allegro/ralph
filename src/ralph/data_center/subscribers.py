@@ -139,7 +139,7 @@ def handle_update_vip_event(data):
     if vip is None:
         # VIP not found, should create new one.
         return handle_create_vip_event(data)
-    
+
     # update cluster.
     cluster_type, _ = ClusterType.objects.get_or_create(
         name=data['load_balancer_type']
@@ -154,8 +154,11 @@ def handle_update_vip_event(data):
             for migrated_vip in VIP.objects.select_for_update().filter(ip=ip):
                 migrated_vip.ip.ethernet.base_object = cluster
                 migrated_vip.ip.ethernet.save()
-                logger.debug('VIP {} with IP {} changed cluster to {}.', migrated_vip.name, ip, cluster.name)
-    
+                logger.debug(
+                    'VIP {} with IP {} changed cluster to {}.',
+                    migrated_vip.name, ip, cluster.name
+                )
+
     # update service/environment if changed.
     try:
         service_env = ServiceEnvironment.objects.get(
@@ -169,12 +172,14 @@ def handle_update_vip_event(data):
         )
         logger.error(msg.format(data['service']['uid'], data['environment']))
         return
-    
+
     if vip.service_env != service_env:
         vip.service_env = service_env
         vip.save()
-        logger.debug('VIP {} changed service/env to {}.'.format(vip.name, service_env))
-    
+        logger.debug(
+            'VIP {} changed service/env to {}.'.format(vip.name, service_env)
+        )
+
     logger.debug('VIP {} update processed successfuly.'.format(vip.name))
 
 
