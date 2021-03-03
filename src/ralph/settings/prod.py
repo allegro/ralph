@@ -86,6 +86,3 @@ if bool_from_env('COLLECT_METRICS'):
         STATSD_GRAPHS_PREFIX = os.environ.get(
             'STATSD_GRAPHS_PREFIX', 'ralph.graphs'
         )
-
-if os.environ.get('TAG_MANAGER_TAG_ID'):
-    TAG_MANAGER_TAG_ID = os.environ.get('TAG_MANAGER_TAG_ID')
