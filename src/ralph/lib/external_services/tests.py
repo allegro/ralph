@@ -4,6 +4,7 @@ import json
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.test import RequestFactory, TestCase, TransactionTestCase
+from djmoney.money import Money
 
 from ralph.lib.external_services.models import Job, JobStatus
 from ralph.tests.models import Bar, Foo
@@ -17,7 +18,7 @@ def test_job_func(job_id):
     Bar.objects.create(
         name=job.params['_request__user'].username,
         date='2016-03-30',
-        price=100,
+        price=Money(100, 'XXX')
     )
     job.success()
 
@@ -25,7 +26,9 @@ def test_job_func(job_id):
 class JobDumpParamsTestCase(TestCase):
     def setUp(self):
         self.foo = Foo.objects.create(bar='abc')
-        self.bar = Bar.objects.create(name='bar', date='2016-03-03', price=10)
+        self.bar = Bar.objects.create(
+            name='bar', date='2016-03-03', price=Money(10, 'XXX')
+        )
         self.foo_content_type_id = ContentType.objects.get_for_model(self.foo).pk  # noqa
         self.bar_content_type_id = ContentType.objects.get_for_model(self.bar).pk  # noqa
 

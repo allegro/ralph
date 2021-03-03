@@ -1,0 +1,269 @@
+---
+name: CI
+
+# NOTE(romcheg): Controls when the action will run. Triggers the workflow on
+#                push or pull request events but only for the ng branch
+on:
+  push:
+    branches: [ ng ]
+  pull_request:
+    branches: [ ng ]
+
+jobs:
+  code_style:
+    name: Code style
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+      - name: Downgrade pip
+        run: pip3 install pip==19.3.1
+      - name: Cache pip dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('base.txt', 'dev.txt', 'docs.txt', 'hermes.txt', 'openstack.txt', 'prod.txt', 'prod_ldap.txt', '', 'test.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            ${{ runner.os }}-
+      - name: Install Ralph's python dependencies
+        run: pip3 install -r "${GITHUB_WORKSPACE}/requirements/code_style.txt"
+
+      - name: Run flake8
+        run: make flake
+
+  missing_migrations:
+    name: Missing migrations
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        db-engine: ["psql", "mysql"]
+    env:
+        TEST_DB_ENGINE: ${{ matrix.db-engine }}
+    services:
+      postgres:
+        image: postgres:9.4.26
+        env:
+          POSTGRES_USER: ralph_ng
+          POSTGRES_PASSWORD: ralph_ng
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      # NOTE(romcheg): Running mysql image of a more recent version will cause user
+      #                ralph_ng to not being able to create a test database.
+      mysql:
+        image: mysql:5.6.45
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_USER: ralph_ng
+          MYSQL_PASSWORD: ralph_ng
+          MYSQL_DATABASE: ralph_ng
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping --silent"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+
+      - name: Unshallow local copy
+        run: git fetch --prune --unshallow
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get -y --no-install-recommends install libldap2-dev libsasl2-dev
+        env:
+          DEBIAN_FRONDEND: NONINTERACTIVE
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+
+      - name: Downgrade pip
+        run: pip3 install pip==19.3.1
+
+      - name: Install Ralph
+        run: pip3 install "${GITHUB_WORKSPACE}"
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('base.txt', 'code_style.txt', 'dev.txt', 'docs.txt', 'hermes.txt', 'openstack.txt', 'prod.txt', 'prod_ldap.txt', '', 'test.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            ${{ runner.os }}-
+
+      - name: Install Ralph's python dependencies
+        run: pip3 install -r "${GITHUB_WORKSPACE}/requirements/test.txt"
+
+      - name: Install PostgreSQL driver
+        if: ${{ matrix.db-engine == 'psql' }}
+        run: pip3 install psycopg2-binary
+
+      # Runs a set of commands using the runners shell
+      - name: Check missings migrations
+        run: "${GITHUB_WORKSPACE}/scripts/check_missing_migrations.sh"
+
+  settings_test:
+    name: Settings tests
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+
+      - name: Unshallow local copy
+        run: git fetch --prune --unshallow
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get -y --no-install-recommends install libldap2-dev libsasl2-dev
+        env:
+          DEBIAN_FRONDEND: NONINTERACTIVE
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+
+      - name: Downgrade pip
+        run: pip3 install pip==19.3.1
+
+      - name: Install Ralph
+        run: pip3 install "${GITHUB_WORKSPACE}"
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('base.txt', 'code_style.txt', 'dev.txt', 'docs.txt', 'hermes.txt', 'openstack.txt', 'prod.txt', 'prod_ldap.txt', '', 'test.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            ${{ runner.os }}-
+
+      - name: Install Ralph's python dependencies
+        run: |
+          pip3 install -r "${GITHUB_WORKSPACE}/requirements/test.txt"
+          pip3 install -r "${GITHUB_WORKSPACE}/requirements/openstack.txt"
+
+      - name: Test Ralph's settings
+        run:  ./scripts/test_settings.sh prod test >/dev/null
+
+  python_tests:
+    name: Python tests
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: [3.6]
+        db-engine: ["psql", "mysql"]
+    env:
+      TEST_DB_ENGINE: ${{ matrix.db-engine }}
+      DATABASE_USER: ralph_ng
+      DATABASE_PASSWORD: ralph_ng
+
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+
+      postgres:
+        image: postgres:9.4.26
+        env:
+          POSTGRES_USER: ralph_ng
+          POSTGRES_PASSWORD: ralph_ng
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      # NOTE(romcheg): See the note regarging the mysql service above.
+      mysql:
+        image: mysql:5.6.45
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_USER: ralph_ng
+          MYSQL_PASSWORD: ralph_ng
+          MYSQL_DATABASE: ralph_ng
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping --silent"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+
+      - name: Unshallow local copy
+        run: git fetch --prune --unshallow
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get -y --no-install-recommends install libldap2-dev libsasl2-dev
+        env:
+          DEBIAN_FRONDEND: NONINTERACTIVE
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Downgrade pip
+        run: pip3 install pip==19.3.1
+
+      - name: Install Ralph
+        run: pip3 install "${GITHUB_WORKSPACE}"
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('base.txt', 'code_style.txt', 'dev.txt', 'docs.txt', 'hermes.txt', 'openstack.txt', 'prod.txt', 'prod_ldap.txt', '', 'test.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            ${{ runner.os }}-
+
+      - name: Install Ralph's python dependencies
+        run: |
+          pip3 install -r "${GITHUB_WORKSPACE}/requirements/test.txt"
+          pip3 install -r "${GITHUB_WORKSPACE}/requirements/openstack.txt"
+
+      - name: Install PostgreSQL driver
+        if: ${{ matrix.db-engine == 'psql' }}
+        run: pip3 install psycopg2-binary
+
+      - name: Test ralph_dchp_agent using python-${{ matrix.python-version }}
+        run: python contrib/dhcp_agent/test.py
+
+      - name: Test Ralph with coverage using python-${{ matrix.python-version }}
+        run: make coverage
+...

@@ -25,6 +25,7 @@ from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     NamedMixin,
+    PriceMixin,
     TimeStampMixin
 )
 from ralph.lib.permissions import PermByFieldMixin
@@ -353,7 +354,7 @@ class BudgetInfo(
         return self.name
 
 
-class Asset(AdminAbsoluteUrlMixin, BaseObject):
+class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
     model = models.ForeignKey(
         AssetModel, related_name='assets', on_delete=models.PROTECT
     )
@@ -404,13 +405,6 @@ class Asset(AdminAbsoluteUrlMixin, BaseObject):
         null=True,
     )
     invoice_date = models.DateField(blank=True, null=True)
-    price = models.DecimalField(
-        blank=True,
-        decimal_places=2,
-        default=0,
-        max_digits=10,
-        null=True,
-    )
     # to discuss: foreign key?
     provider = models.CharField(
         blank=True,

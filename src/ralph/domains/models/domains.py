@@ -11,6 +11,7 @@ from ralph.assets.models.assets import AssetHolder, BusinessSegment
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     NamedMixin,
+    PriceMixin,
     TimeStampMixin
 )
 from ralph.lib.permissions import PermByFieldMixin
@@ -170,19 +171,15 @@ class DomainContract(
     AdminAbsoluteUrlMixin,
     PermByFieldMixin,
     TimeStampMixin,
+    PriceMixin,
     models.Model,
 ):
     domain = models.ForeignKey(Domain)
     expiration_date = models.DateField(null=True, blank=True)
     registrant = models.ForeignKey('DomainRegistrant', null=True, blank=True)
-    price = models.DecimalField(
-        null=True, blank=True, decimal_places=2, max_digits=15,
-        help_text=_("Price for domain renewal for given period"),
-        verbose_name=_("Price"))
 
     def __str__(self):
         return "{domain_name} - {expiration_date}".format(
             domain_name=self.domain.name,
             expiration_date=self.expiration_date
         )
-        return self.hostname

@@ -2,6 +2,7 @@
 from importlib import import_module
 
 from django.apps import AppConfig
+from django.core import serializers
 
 
 class RalphAppConfig(AppConfig):
@@ -14,6 +15,8 @@ class RalphAppConfig(AppConfig):
         when app is ready.
         """
         super().ready()
+
+        serializers.register_serializer("json", "ralph.lib.serializers")
 
         package = self.module.__name__
         for module in self.get_load_modules_when_ready():

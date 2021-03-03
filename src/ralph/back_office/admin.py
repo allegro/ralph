@@ -22,7 +22,7 @@ from ralph.back_office.models import (
 )
 from ralph.data_importer import resources
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
-from ralph.lib.mixins.forms import AssetFormMixin
+from ralph.lib.mixins.forms import AssetFormMixin, PriceFormMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence, Licence
 from ralph.operations.views import OperationViewReadOnlyForExisiting
@@ -67,7 +67,7 @@ class BackOfficeAssetOperation(OperationViewReadOnlyForExisiting):
     inlines = OperationViewReadOnlyForExisiting.admin_class.inlines
 
 
-class BackOfficeAssetAdminForm(AssetFormMixin, RalphAdmin.form):
+class BackOfficeAssetAdminForm(PriceFormMixin, AssetFormMixin, RalphAdmin.form):
     MODEL_TYPE = ObjectModelType.back_office
     """
     Service_env is not required for BackOffice assets.

@@ -44,7 +44,8 @@ class DNSRecordForm(forms.Form):
     ptr = forms.BooleanField(
         label=_('PTR'),
         initial=False,
-        required=False
+        required=False,
+        widget=forms.CheckboxInput(attrs={'disabled': True})
     )
 
     def clean(self):

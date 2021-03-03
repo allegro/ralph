@@ -7,7 +7,8 @@ from ralph.lib.transitions.models import (
     Action,
     Transition,
     TransitionJob,
-    TransitionModel
+    TransitionModel,
+    TransitionsHistory
 )
 
 
@@ -56,3 +57,10 @@ class TransitionJobSerializer(RalphAPISerializer):
     class Meta:
         model = TransitionJob
         exclude = ('content_type',)
+
+
+class TransitionsHistorySerializer(RalphAPISerializer):
+
+    class Meta:
+        model = TransitionsHistory
+        exclude = ('content_type', 'attachments',)

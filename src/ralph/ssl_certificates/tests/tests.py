@@ -72,8 +72,10 @@ class ImportSSLCertificatesTest(TestCase):
 
 class UpdateServiceEnvTest(TestCase):
     @patch('ralph.dns.dnsaas.requests')
-    @patch('ralph.ssl_certificates.management.commands.update_dns_service_env_from_dnsaas.dnsaas_client')
-    def test_command_should_informed_if_service_not_exist(self, dnsaas_client, requests):
+    @patch('ralph.ssl_certificates.management.commands.update_dns_service_env_from_dnsaas.DNSaaS')
+    def test_command_should_informed_if_service_not_exist(self, dnsaas_client_class, requests):
+        dnsaas_client = MagicMock()
+        dnsaas_client_class.side_effect = lambda: dnsaas_client
         dnsaas_client.get_api_result.return_value = [
             {
                 "type": "CNAME",

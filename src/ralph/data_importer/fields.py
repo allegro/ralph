@@ -1,6 +1,9 @@
 import logging
 
+from djmoney.money import Money
 from import_export import fields
+
+from ralph.settings import DEFAULT_CURRENCY_CODE
 
 logger = logging.getLogger(__name__)
 
@@ -82,3 +85,12 @@ class ThroughField(fields.Field):
                         '{}__in'.format(self.through_to_field_name): to_remove
                     }
                 ).delete()
+
+
+class PriceField(fields.Field):
+    def save(self, obj, data):
+        price = Money(
+            data['price'],
+            data.get('price_currency', DEFAULT_CURRENCY_CODE)
+        )
+        setattr(obj, 'price', price)

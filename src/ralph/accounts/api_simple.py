@@ -10,3 +10,12 @@ class SimpleRalphUserSerializer(RalphAPISerializer):
         fields = ('id', 'url', 'username', 'first_name', 'last_name')
         read_only_fields = fields
         depth = 1
+
+
+class ExtendedSimpleRalphUserSerializer(SimpleRalphUserSerializer):
+    class Meta:
+        model = get_user_model()
+        fields = SimpleRalphUserSerializer.Meta.fields + (
+            'department',
+            'company'
+        )

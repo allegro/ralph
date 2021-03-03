@@ -390,11 +390,11 @@ msgid "Racks"
 msgstr "Rozvaděče"
 
 #: admin/sitetrees.py:110
-msgid "Rack Accessories"
+msgid "Rack accessories"
 msgstr "Příslušenství rozvaděče"
 
 #: admin/sitetrees.py:111
-msgid "Accessories"
+msgid "accessories"
 msgstr "Příslušenství"
 
 #: admin/sitetrees.py:112

@@ -385,11 +385,11 @@ msgid "Racks"
 msgstr ""
 
 #: admin/sitetrees.py:110
-msgid "Rack Accessories"
+msgid "Rack accessories"
 msgstr ""
 
 #: admin/sitetrees.py:111
-msgid "Accessories"
+msgid "accessories"
 msgstr ""
 
 #: admin/sitetrees.py:112

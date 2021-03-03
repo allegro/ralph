@@ -387,11 +387,11 @@ msgid "Racks"
 msgstr "랙"
 
 #: admin/sitetrees.py:110
-msgid "Rack Accessories"
+msgid "Rack accessories"
 msgstr "랙 부대용품"
 
 #: admin/sitetrees.py:111
-msgid "Accessories"
+msgid "accessories"
 msgstr "부대용품"
 
 #: admin/sitetrees.py:112

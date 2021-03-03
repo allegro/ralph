@@ -1,3 +1,138 @@
+ralph (20210219.1) bionic; urgency=medium
+
+  [ Paweł Szulc ]
+  * Log operational error (#3605)
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Fri, 19 Feb 2021 11:36:12 +0000
+
+ralph (20210119.1) bionic; urgency=medium
+
+  * fix form error message format (#3600)
+  * change dns api url for ip records (#3601)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Tue, 19 Jan 2021 08:11:03 +0000
+
+ralph (20210104.1) bionic; urgency=medium
+
+  [ Przemyslaw Bromber ]
+  * better responses handling in dns module (#3597)
+
+  [ Marek Bleschke ]
+  * fix issue with showing proper form error for DNS tab (#3598)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Mon, 04 Jan 2021 13:12:46 +0000
+
+ralph (20201228.2) bionic; urgency=medium
+
+  [ Przemyslaw Bromber ]
+  * fixed renew_token_when_unauthorized() decorator (#3596)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Mon, 28 Dec 2020 13:12:30 +0000
+
+ralph (20201228.1) bionic; urgency=medium
+
+  [ Marek Bleschke ]
+  * fix github actions by downgrading pip (#3592)
+
+  [ Przemyslaw Bromber ]
+  * Dns module replace (#3589)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Mon, 28 Dec 2020 07:39:05 +0000
+
+ralph (20201202.1) bionic; urgency=medium
+
+  * fix building Ralph's debian package (#3590)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Wed, 02 Dec 2020 14:18:48 +0000
+
+ralph (20201201.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Added User Company on List and on access_card view. (#3585)
+
+  [ Szymon Jasinski ]
+  * openstack ironic sync - fix matching with hypervisors (#3588)
+
+  [ Marek Bleschke ]
+  * disable support for deprecated DNSaaS (#3586)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Tue, 01 Dec 2020 12:07:14 +0000
+
+ralph (20201117.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Added attachment to the exclude on TransitionsHistorySerializer (#3584)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Tue, 17 Nov 2020 08:16:58 +0000
+
+ralph (20201116.1) bionic; urgency=medium
+
+  [ Kamil Wargula ]
+  * Update `Ralph development environment` docs (#3575)
+
+  [ lukaszkarykowski ]
+  * Added TransitionsHistory to API (#3571)
+
+  [ Szymon Jasinski ]
+  * downgrade werkzeug (#3574)
+
+  [ haribhatt34 ]
+  * fix broken links to images in docs (#3577)
+
+  [ Roman Prykhodchenko ]
+  * Run tests with GitHub Workflows (#3562)
+
+  [ lukaszkarykowski ]
+  * Added Filter Fields by objects ID to Transitions History Serializer (#3583)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Mon, 16 Nov 2020 06:02:59 +0000
+
+ralph (20201006.2) bionic; urgency=medium
+
+  * Revert "Allow user input on package build (#3560)" (#3567)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Tue, 06 Oct 2020 09:20:45 +0000
+
+ralph (20201006.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Added Filters. (#3553)
+
+  [ Roman Prykhodchenko ]
+  * Allow user input on package build (#3560) (Closes: #3556)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Tue, 06 Oct 2020 07:00:34 +0000
+
+ralph (20200918.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * add invoice report currency verification (#3563)
+  * Get django-reversion to work with django-money (#3564)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Fri, 18 Sep 2020 06:51:16 +0000
+
+ralph (20200911.1) bionic; urgency=medium
+
+  [ Aleksander Wieckowski ]
+  * Extend back office assets API by user / owner department and user/ owner company
+
+  [ Szymon Jasinski ]
+  * money field for licence price (#3559)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Fri, 11 Sep 2020 12:57:24 +0000
+
+ralph (20200903.1) bionic; urgency=medium
+
+  * use keystone session for novaclient when in openstack config (#3557)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Thu, 03 Sep 2020 05:28:24 +0000
+
+ralph (20200828.1) bionic; urgency=medium
+
+  * Cloud host filtering (#3555)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Fri, 28 Aug 2020 05:27:59 +0000
+
 ralph (20200730.1) bionic; urgency=medium
 
   [ Aleksander Wieckowski ]

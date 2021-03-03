@@ -19,6 +19,7 @@ properly configured, if required:
 1.  virtualenvwrapper
 1.  NodeJS
 1.  npm
+1.  mysql-client system library (on macOS install via `brew install mysql`)
 1.  Docker 1.13.0 or later
 1.  docker-compose
 
@@ -82,35 +83,7 @@ created and granted permissions to that DB as well.
 
 ## Configuration and running
 
-Create a file called ```local.py``` in ```src/ralph/settings/``` and place the
-following content inside:
-
-```python
-from ralph.settings.dev import *  # noqa
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'transaction_hooks.backends.mysql',
-        'NAME': os.environ.get('DATABASE_NAME', 'ralph_ng'),
-        'USER': os.environ.get('DATABASE_USER', 'ralph_ng'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'ralph_ng') or None,
-        'HOST': os.environ.get('DATABASE_HOST', '127.0.0.1'),
-        'PORT': os.environ.get('DATABASE_PORT', 3306),
-        'ATOMIC_REQUESTS': True,
-        'TEST': {
-            'NAME': 'test_ralph_ng',
-            'ENGINE': 'transaction_hooks.backends.postgresql_psycopg2',
-            'USER': os.environ.get('DATABASE_USER', 'ralph_ng'),
-            'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'ralph_ng') or None,
-            'HOST': os.environ.get('DATABASE_HOST', '127.0.0.1'),
-            'PORT': os.environ.get('DATABASE_PORT', 3306),
-        }
-    }
-}
-
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-ENABLE_EMAIL_NOTIFICATION = True
-```
+Copy settings template file from ```src/ralph/settings/local.template``` to ```src/ralph/settings/local.py```
 
 Next point ```DJANGO_SETTINGS_MODULE``` environment variable to that
 configuration module:
@@ -126,12 +99,13 @@ $ python setup.py develop
 $ dev_ralph migrate
 $ dev_ralph createsuperuser
 $ make menu
-$ dev_ralph runserver_plus 0.0.0.0:8000
+$ make run
 ```
 
-At this point Ralph should be available under http://127.0.0.1:8000. As soon as
-the script detects any changes in the source code the server will be restarted
-automatically.
+At this point Ralph should be available under http://127.0.0.1:8000.
+Log in with username and password passed in `dev_ralph createsuperuser` step.
+
+As soon as the script detects any changes in the source code the server will be restarted automatically.
 
 
 [1]: ./maintainers_devtools.md
