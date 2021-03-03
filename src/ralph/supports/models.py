@@ -12,7 +12,11 @@ from ralph.assets.models.assets import AssetHolder, BudgetInfo
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import ObjectModelType
 from ralph.lib.mixins.fields import BaseObjectForeignKey
-from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
+from ralph.lib.mixins.models import (
+    AdminAbsoluteUrlMixin,
+    NamedMixin,
+    PriceMixin
+)
 from ralph.lib.polymorphic.models import PolymorphicQuerySet
 
 
@@ -61,6 +65,7 @@ class Support(
     Regionalizable,
     AdminAbsoluteUrlMixin,
     NamedMixin.NonUnique,
+    PriceMixin,
     BaseObject,
     AutocompleteTooltipMixin
 ):
@@ -75,9 +80,6 @@ class Support(
         blank=False
     )
     description = models.CharField(max_length=100, blank=True)
-    price = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0, null=True, blank=True,
-    )
     date_from = models.DateField(null=True, blank=True)
     date_to = models.DateField(null=False, blank=False)
     escalation_path = models.CharField(max_length=200, blank=True)

@@ -8,7 +8,7 @@ from django.db import models
 from ralph.assets.models.base import BaseObject
 from ralph.attachments.helpers import add_attachment_from_disk
 from ralph.lib.mixins.fields import BaseObjectForeignKey
-from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, PriceMixin
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.exceptions import (
     FreezeAsyncTransition,
@@ -55,11 +55,10 @@ class Car2(models.Model):
     manufacturer = models.ForeignKey(Manufacturer)
 
 
-class Bar(models.Model):
+class Bar(PriceMixin, models.Model):
     name = models.CharField(max_length=255)
     created = models.DateTimeField(auto_now_add=True)
     date = models.DateField(blank=True, null=True)
-    price = models.DecimalField(max_digits=5, decimal_places=2)
     count = models.IntegerField(default=0)
     foos = models.ManyToManyField(Foo, related_name='bars', blank=True)
 

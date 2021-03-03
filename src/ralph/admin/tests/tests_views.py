@@ -110,6 +110,7 @@ FACTORY_MAP = {
 
 EXCLUDE_MODELS = [
     'django.contrib.contenttypes.models.ContentType',
+    'ralph.accessories.models.Accessory',  # TODO: Add in the future
     'ralph.assets.models.assets.Asset',
     'ralph.assets.models.base.BaseObject',  # TODO: Add in the future
     'ralph.assets.models.components.GenericComponent',

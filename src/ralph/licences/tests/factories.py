@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
-from datetime import date, datetime, timedelta
+import random
+from datetime import datetime, timedelta
 
 import factory
+from djmoney.money import Money
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyText
+from faker.providers import BaseProvider
+from moneyed import PLN
 
 from ralph.accounts.tests.factories import RegionFactory, UserFactory
 from ralph.assets.tests.factories import (
@@ -51,6 +55,14 @@ class SoftwareFactory(DjangoModelFactory):
         django_get_or_create = ['name']
 
 
+class MoneyProvider(BaseProvider):
+    def money(self):
+        return Money(round(random.uniform(0, 1000), 2), PLN)
+
+
+factory.Faker.add_provider(MoneyProvider)
+
+
 class LicenceFactory(DjangoModelFactory):
 
     licence_type = factory.SubFactory(LicenceTypeFactory)
@@ -68,6 +80,7 @@ class LicenceFactory(DjangoModelFactory):
     property_of = factory.SubFactory(AssetHolderFactory)
     office_infrastructure = factory.SubFactory(OfficeInfrastructureFactory)
     depreciation_rate = '100.00'
+    price = factory.Faker('money')
 
     class Meta:
         model = Licence

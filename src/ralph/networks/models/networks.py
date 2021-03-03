@@ -14,7 +14,7 @@ from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
 from ralph.assets.models import AssetLastHostname, Ethernet
-from ralph.dns.dnsaas import dnsaas_client
+from ralph.dns.dnsaas import DNSaaS
 from ralph.lib import network as network_tools
 from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import (
@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 def is_in_dnsaas(ip):
     if not settings.ENABLE_DNSAAS_INTEGRATION:
         return False
+    dnsaas_client = DNSaaS()
     url = dnsaas_client.build_url(
         'records', get_params=[('ip', ip), ('type', 'A')]
     )

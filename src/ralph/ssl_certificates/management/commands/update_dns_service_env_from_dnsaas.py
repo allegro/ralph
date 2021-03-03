@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
 from ralph.assets.models.assets import ServiceEnvironment
-from ralph.dns.dnsaas import dnsaas_client
+from ralph.dns.dnsaas import DNSaaS
 from ralph.ssl_certificates.models import SSLCertificate
 
 
@@ -28,7 +28,7 @@ def ssl_certificates_object_update(domain, service_env):
 class Command(BaseCommand):
     help = 'Checks the compliance of services in SSL Certificates'
 
-    def get_records(self):
+    def get_records(self, dnsaas_client):
         url = dnsaas_client.build_url('records')
         self.update_from_record(
             dnsaas_client.get_api_result(url)
@@ -70,11 +70,12 @@ class Command(BaseCommand):
             else:
                 ssl_certificates_object_update(domain, name)
 
-    def get_domains(self):
+    def get_domains(self, dnsaas_client):
         url = dnsaas_client.build_url('domains')
         return dnsaas_client.get_api_result(url)
 
     def handle(self, *args, **options):
-        domains = self.get_domains()
+        dnsaas_client = DNSaaS()
+        domains = self.get_domains(dnsaas_client)
         self.update_from_domains(domains)
-        self.get_records()
+        self.get_records(dnsaas_client)

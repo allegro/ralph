@@ -1,0 +1,41 @@
+{% extends "admin/import_export/base.html" %}
+{% load i18n %}
+{% load admin_urls %}
+{% load import_export_tags %}
+
+{% block breadcrumbs_last %}/
+{% trans "Export" %}
+{% endblock %}
+
+{% block content %}
+<h1>{% trans "Export" %}</h1>
+
+<div data-alert class="alert-box info radius">
+  {% trans "To avoid wrong calculations in the report, make sure all exported items' prices are expressed in the same currency." %}
+  <a href=#" class="close">&times;</a>
+</div>
+
+<form action="" method="POST">
+  {% csrf_token %}
+
+    <fieldset class="module aligned">
+      {% for field in form %}
+        <div class="form-row">
+          {{ field.errors }}
+
+          {{ field.label_tag }}
+
+          {{ field }}
+
+          {% if field.field.help_text %}
+          <p class="help">{{ field.field.help_text|safe }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </fieldset>
+
+    <div class="submit-row">
+      <input type="submit" class="default" value="{% trans "Submit" %}">
+    </div>
+</form>
+{% endblock %}

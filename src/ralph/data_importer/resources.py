@@ -13,7 +13,7 @@ from ralph.back_office.models import (
     Warehouse
 )
 from ralph.data_center.models import hosts, physical
-from ralph.data_importer.fields import ThroughField
+from ralph.data_importer.fields import PriceField, ThroughField
 from ralph.data_importer.mixins import (
     ImportForeignKeyMeta,
     ImportForeignKeyMixin
@@ -26,6 +26,8 @@ from ralph.data_importer.widgets import (
     ImportedForeignKeyWidget,
     IPManagementWidget,
     ManyToManyThroughWidget,
+    PriceAmountWidget,
+    PriceCurrencyWidget,
     UserManyToManyWidget,
     UserWidget
 )
@@ -58,6 +60,13 @@ class RalphModelResource(
     metaclass=RalphResourceMeta
 ):
     pass
+
+
+class ResourceWithPrice(resources.ModelResource):
+    price = PriceField(attribute='price', widget=PriceAmountWidget())
+    price_currency = fields.Field(
+        attribute="price", readonly=True, widget=PriceCurrencyWidget()
+    )
 
 
 class AssetModelResource(RalphModelResource):
@@ -104,7 +113,7 @@ class CategoryResource(RalphModelResource):
         model = assets.Category
 
 
-class BackOfficeAssetResource(RalphModelResource):
+class BackOfficeAssetResource(ResourceWithPrice, RalphModelResource):
     parent = fields.Field(
         column_name='parent',
         attribute='parent',
@@ -157,9 +166,6 @@ class BackOfficeAssetResource(RalphModelResource):
             'tags',
         )
         exclude = ('content_type', 'asset_ptr', 'baseobject_ptr',)
-
-    def dehydrate_price(self, bo_asset):
-        return str(bo_asset.price)
 
     def dehydrate_depreciation_rate(self, bo_asset):
         return str(bo_asset.depreciation_rate)
@@ -256,7 +262,7 @@ class IPAddressResource(RalphModelResource):
         return False
 
 
-class DataCenterAssetResource(RalphModelResource):
+class DataCenterAssetResource(ResourceWithPrice, RalphModelResource):
     parent = fields.Field(
         column_name='parent',
         attribute='parent',
@@ -314,9 +320,6 @@ class DataCenterAssetResource(RalphModelResource):
         )
         exclude = ('content_type', 'asset_ptr', 'baseobject_ptr', 'connections')
 
-    def dehydrate_price(self, dc_asset):
-        return str(dc_asset.price)
-
     def dehydrate_depreciation_rate(self, dc_asset):
         return str(dc_asset.depreciation_rate)
 
@@ -355,7 +358,7 @@ class ConnectionResource(RalphModelResource):
         model = physical.Connection
 
 
-class LicenceResource(RalphModelResource):
+class LicenceResource(ResourceWithPrice, RalphModelResource):
     manufacturer = fields.Field(
         column_name='manufacturer',
         attribute='manufacturer',
@@ -410,9 +413,6 @@ class LicenceResource(RalphModelResource):
     def get_queryset(self):
         return Licence.objects_used_free_with_related.all()
 
-    def dehydrate_price(self, licence):
-        return str(licence.price)
-
 
 class SupportTypeResource(RalphModelResource):
 
@@ -420,7 +420,7 @@ class SupportTypeResource(RalphModelResource):
         model = SupportType
 
 
-class SupportResource(RalphModelResource):
+class SupportResource(ResourceWithPrice, RalphModelResource):
     support_type = fields.Field(
         column_name='support_type',
         attribute='support_type',
@@ -469,9 +469,6 @@ class SupportResource(RalphModelResource):
 
     def dehydrate_assigned_objects_count(self, support):
         return support.assigned_objects_count
-
-    def dehydrate_price(self, support):
-        return str(support.price)
 
 
 class ProfitCenterResource(RalphModelResource):
@@ -614,7 +611,7 @@ class BaseObjectsSupportRichResource(RalphModelResource):
 
     def dehydrate_price_per_object(self, bo_support):
         support = bo_support.support
-        price = support.price or Decimal('0.00')
+        price = getattr(support.price, 'amount', Decimal('0.00'))
         return str(
             round(price / bo_support.objects_count, 2)
             if bo_support.objects_count > 0 else Decimal('0.00')
@@ -666,7 +663,7 @@ class BudgetInfoResource(RalphModelResource):
         model = assets.BudgetInfo
 
 
-class DomainContractResource(RalphModelResource):
+class DomainContractResource(ResourceWithPrice, RalphModelResource):
     domain = fields.Field(
         column_name='domain',
         attribute='domain',

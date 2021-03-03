@@ -4,7 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import BaseObject
 from ralph.assets.models.assets import Manufacturer
-from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, PriceMixin
 
 
 class CertificateType(Choices):
@@ -18,7 +18,7 @@ class CertificateType(Choices):
     internal = _('CA ENT')
 
 
-class SSLCertificate(AdminAbsoluteUrlMixin, BaseObject):
+class SSLCertificate(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
     name = models.CharField(
         verbose_name=_('certificate name'),
         help_text=_('Full certificate name'),
@@ -45,9 +45,6 @@ class SSLCertificate(AdminAbsoluteUrlMixin, BaseObject):
     san = models.TextField(
         blank=True,
         help_text=_('All Subject Alternative Names'),
-    )
-    price = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0, null=True, blank=True,
     )
 
     def __str__(self):

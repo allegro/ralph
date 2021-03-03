@@ -268,3 +268,13 @@ class BaseObjectServiceNamesM2MWidget(widgets.ManyToManyWidget):
             bo.service.name if bo.service else '-'
             for bo in value.all()
         ])
+
+
+class PriceAmountWidget(widgets.Widget):
+    def render(self, value):
+        return '{0:.2f}'.format(value.amount)
+
+
+class PriceCurrencyWidget(widgets.Widget):
+    def render(self, value):
+        return str(value.currency)

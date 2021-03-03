@@ -1,11 +1,12 @@
 -e .
 -r prod_ldap.txt
 -r docs.txt
+-r code_style.txt
 coverage
 coveralls
 ddt
 django-plainpasswordhasher
-flake8==3.0.4
 sphinx
 flake8-debugger==1.4.0
 flake8-print==2.0.2
+mock==4.0.2

@@ -255,6 +255,12 @@ class CloudHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         ),
     ]
 
+    filter_fields = [
+        'service_env__service__uid',
+        'service_env__service__name',
+        'service_env__service__id',
+    ]
+
 
 class CloudProjectViewSet(RalphAPIViewSet):
     queryset = CloudProject.objects.all()

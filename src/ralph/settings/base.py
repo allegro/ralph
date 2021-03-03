@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
 import json
 import os
 from collections import ChainMap
 
 from django.contrib.messages import constants as messages
+from moneyed import CURRENCIES
 
 from ralph.settings.hooks import HOOKS_CONFIGURATION  # noqa: F401
 
@@ -40,6 +42,7 @@ def get_sentinels(sentinels_string):
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+START_TIMESTAMP = datetime.now()
 SECRET_KEY = os.environ.get('SECRET_KEY', 'CHANGE_ME')
 LOG_FILEPATH = os.environ.get('LOG_FILEPATH', '/tmp/ralph.log')
 
@@ -68,6 +71,7 @@ INSTALLED_APPS = (
     'sitetree',
     'ralph.access_cards',
     'ralph.accounts',
+    'ralph.accessories',
     'ralph.assets',
     'ralph.attachments',
     'ralph.back_office',
@@ -101,6 +105,7 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'taggit',
     'taggit_serializer',
+    'djmoney',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -114,6 +119,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'threadlocals.middleware.ThreadLocalMiddleware',
+    'ralph.lib.error_handling.middleware.OperationalErrorHandlerMiddleware'
 )
 
 ROOT_URLCONF = 'ralph.urls'
@@ -507,9 +513,10 @@ DEFAULT_NETWORK_MARGIN = int(os.environ.get('DEFAULT_NETWORK_MARGIN', 10))
 # 'expose in DHCP' is selected
 DHCP_ENTRY_FORBID_CHANGE = bool_from_env('DHCP_ENTRY_FORBID_CHANGE', True)
 
-# enable integration with DNSaaS, for details see
+# disable integration with DNSaaS as it's no longer supported
 # https://github.com/allegro/django-powerdns-dnssec
-ENABLE_DNSAAS_INTEGRATION = bool_from_env('ENABLE_DNSAAS_INTEGRATION')
+# This settings will be deleted in future release.
+ENABLE_DNSAAS_INTEGRATION = False
 DNSAAS_URL = os.environ.get('DNSAAS_URL', '')
 DNSAAS_TOKEN = os.environ.get('DNSAAS_TOKEN', '')
 DNSAAS_TIMEOUT = os.environ.get('DNSAAS_TIMEOUT', 10)
@@ -518,9 +525,7 @@ DNSAAS_AUTO_PTR_NEVER = os.environ.get('DNSAAS_AUTO_PTR_NEVER', 1)
 # user in dnsaas which can do changes, like update TXT records etc.
 DNSAAS_OWNER = os.environ.get('DNSAAS_OWNER', 'ralph')
 # pyhermes topic where messages about auto txt records are announced
-DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME = os.environ.get(
-    'DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME', None
-)
+DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME = None
 # define names of values send to DNSAAS for:
 # DataCenterAsset, Cluster, VirtualServer
 DNSAAS_AUTO_TXT_RECORD_PURPOSE_MAP = {
@@ -541,11 +546,6 @@ DNSAAS_AUTO_TXT_RECORD_PURPOSE_MAP = {
     # 'location': None
     # then this value won't be set at all
 }
-
-if ENABLE_DNSAAS_INTEGRATION:
-    INSTALLED_APPS += (
-        'ralph.dns',
-    )
 DNSAAS_AUTO_UPDATE_HOST_DNS = bool_from_env('DNSAAS_AUTO_UPDATE_HOST_DNS')
 
 DOMAIN_DATA_UPDATE_TOPIC = os.environ.get(
@@ -663,5 +663,17 @@ TRANSITION_TEMPLATES = None
 
 CONVERT_TO_DATACENTER_ASSET_DEFAULT_STATUS_ID = 1
 CONVERT_TO_BACKOFFICE_ASSET_DEFAULT_STATUS_ID = 1
+
+# Currency choices for django-money
+DEFAULT_CURRENCY_CODE = 'XXX'
+CURRENCY_CHOICES = [
+    (c.code, c.code) for i, c in CURRENCIES.items()
+    if c.code != DEFAULT_CURRENCY_CODE
+]
+CURRENCY_CHOICES.append(('XXX', '---'))
+
+OAUTH_CLIENT_ID = ""
+OAUTH_SECRET = ""
+OAUTH_TOKEN_URL = "https://localhost/"
 
 GOOGLE_TAG_MANAGER_TAG_ID = os.environ.get('GOOGLE_TAG_MANAGER_TAG_ID', None)

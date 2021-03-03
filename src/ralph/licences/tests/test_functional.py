@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.core.urlresolvers import reverse
-from django.test import RequestFactory, TestCase
+from django.test import TestCase
+from moneyed import PLN
 
 from ralph.accounts.tests.factories import RegionFactory
 from ralph.assets.tests.factories import ServiceEnvironmentFactory
@@ -28,7 +29,8 @@ class BaseObjectLicenceTest(ClientMixin, TestCase):
             'software': self.licence.software.id,
             'niw': '111',
             'region': self.licence.region.id,
-            'price': 100,
+            'price_0': 100,
+            'price_1': 'PLN',
             'number_bought': 3,
             'service_env': service_env.id,
             'custom_fields-customfieldvalue-content_type-object_id-TOTAL_FORMS': 3,
@@ -49,7 +51,8 @@ class BaseObjectLicenceTest(ClientMixin, TestCase):
         self.assertEqual(new_licence.licence_type, self.licence.licence_type)
         self.assertEqual(new_licence.software, self.licence.software)
         self.assertEqual(new_licence.region, self.licence.region)
-        self.assertEqual(new_licence.price, 100)
+        self.assertEqual(new_licence.price.amount, 100)
+        self.assertEqual(new_licence.price.currency, PLN)
         self.assertEqual(new_licence.number_bought, 3)
         self.assertEqual(new_licence.service_env, service_env)
 

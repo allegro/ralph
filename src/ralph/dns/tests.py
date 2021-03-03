@@ -3,7 +3,6 @@ from unittest.mock import patch
 
 from django.db import transaction
 from django.test import override_settings, TestCase, TransactionTestCase
-from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.tests.factories import (
     ConfigurationClassFactory,
@@ -25,7 +24,9 @@ from ralph.virtual.tests.factories import VirtualServerFactory
 
 class TestGetDnsRecords(TestCase):
 
-    def setUp(self):
+    @patch.object(DNSaaS, '_get_oauth_token')
+    def setUp(self, mocked):
+        mocked.return_value = 'token'
         self.dnsaas = DNSaaS()
 
     @patch.object(DNSaaS, 'get_api_result')
@@ -57,28 +58,28 @@ class TestGetDnsRecords(TestCase):
     def test_build_url(self):
         self.assertEqual(
             self.dnsaas.build_url('domains'),
-            'http://dnsaas.com/api/v2/domains/'
+            'http://dnsaas.com/api/domains/'
         )
 
     @override_settings(DNSAAS_URL='http://dnsaas.com/')
     def test_build_url_with_version(self):
         self.assertEqual(
-            self.dnsaas.build_url('domains', version='v1'),
-            'http://dnsaas.com/api/v1/domains/'
+            self.dnsaas.build_url('domains'),
+            'http://dnsaas.com/api/domains/'
         )
 
     @override_settings(DNSAAS_URL='http://dnsaas.com/')
     def test_build_url_with_id(self):
         self.assertEqual(
             self.dnsaas.build_url('domains', id=1),
-            'http://dnsaas.com/api/v2/domains/1/'
+            'http://dnsaas.com/api/domains/1/'
         )
 
     @override_settings(DNSAAS_URL='http://dnsaas.com/')
     def test_build_url_with_get_params(self):
         self.assertEqual(
             self.dnsaas.build_url('domains', get_params=[('name', 'ralph')]),
-            'http://dnsaas.com/api/v2/domains/?name=ralph'
+            'http://dnsaas.com/api/domains/?name=ralph'
         )
 
     @override_settings(DNSAAS_URL='http://dnsaas.com/')
@@ -87,7 +88,7 @@ class TestGetDnsRecords(TestCase):
             self.dnsaas.build_url(
                 'domains', id=1, get_params=[('name', 'ralph')]
             ),
-            'http://dnsaas.com/api/v2/domains/1/?name=ralph'
+            'http://dnsaas.com/api/domains/1/?name=ralph'
         )
 
 
@@ -98,8 +99,10 @@ class TestDNSView(TestCase):
             DNSView()
 
     @override_settings(ENABLE_DNSAAS_INTEGRATION=True)
-    def test_dnsaasintegration_enabled(self):
+    @patch('ralph.dns.views.DNSaaS._get_oauth_token')
+    def test_dnsaasintegration_enabled(self, _get_oauth_token_mock):
         # should not raise exception
+        _get_oauth_token_mock.return_value = 'token'
         DNSView()
 
 
@@ -545,26 +548,9 @@ class TestPublishAutoTXTToDNSaaS(TransactionTestCase):
         ])
 
 
-class TestDNSaaS(TestCase):
-    def test_user_get_info_when_dnsaas_user_has_no_perm(self):
-        class RequestStub():
-            status_code = 202
-        request = RequestStub()
-        dns = DNSaaS()
-
-        result = dns._response2result(request)
-
-        self.assertEqual(
-            result,
-            {'non_field_errors': [
-                _("Your request couldn't be handled, try later.")
-            ]},
-        )
-
-
 class TestDNSForm(TestCase):
     def test_unknown_field_goes_to_non_field_errors(self):
-        errors = {'unknown_field': ['value']}
+        errors = {'errors': [{'reason': 'unknown', 'comment': 'value'}]}
         form = DNSRecordForm({})
         add_errors(form, errors)
         self.assertIn('value', form.non_field_errors())
