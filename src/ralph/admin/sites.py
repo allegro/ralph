@@ -83,7 +83,8 @@ class RalphAdminSiteMixin(object):
 class RalphAdminSite(RalphAdminSiteMixin, AdminSite):
     def each_context(self, request):
         context = super(RalphAdminSite, self).each_context(request)
-        context['google_tag_manager_tag_id'] = settings.GOOGLE_TAG_MANAGER_TAG_ID
+        context['google_tag_manager_tag_id'] = \
+            settings.GOOGLE_TAG_MANAGER_TAG_ID
         return context
 
 
