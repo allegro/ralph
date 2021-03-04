@@ -20,15 +20,19 @@ class OperationalErrorHandlerMiddleware:
                              request.build_absolute_uri(), request.user,
                              exception, settings.START_TIMESTAMP,
                              exc_info=True, stack_info=True)
+                raise exception
             elif isinstance(exception, WrappedOperationalError):
                 inner_exc = exception.__context__
                 logger.error("WrappedOperationalError occured. URI: %s, "
                              "user: %s, SQL query: %s, "
-                             "model object: %s, inner exception traceback: %s, "
+                             "model object: %s, original_error: %s, "
+                             "inner exception traceback: %s, "
                              "django running since: %s",
                              request.build_absolute_uri(), request.user,
-                             exception.query, exception.model.__dict__,
+                             str(exception.query), exception.model.__dict__,
+                             exception.original_error_str,
                              traceback.format_tb(inner_exc.__traceback__),
                              settings.START_TIMESTAMP,
                              exc_info=True, stack_info=True)
+                raise inner_exc
         return None

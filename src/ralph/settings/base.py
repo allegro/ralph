@@ -271,6 +271,11 @@ LOGGING = {
             'level': os.environ.get('LOGGING_RALPH_LEVEL', 'WARNING'),
             'propagate': True,
         },
+        'ralph.lib.error_handling.middleware': {
+            'handlers': ['file'],
+            'level': os.environ.get('LOGGING_RALPH_LEVEL', 'WARNING'),
+            'propagate': False,
+        },
         'rq.worker': {
             'level': os.environ.get('LOGGING_RQ_LEVEL', 'WARNING'),
             'handlers': ['file'],
