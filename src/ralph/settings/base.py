@@ -680,3 +680,5 @@ CURRENCY_CHOICES.append(('XXX', '---'))
 OAUTH_CLIENT_ID = ""
 OAUTH_SECRET = ""
 OAUTH_TOKEN_URL = "https://localhost/"
+
+GOOGLE_TAG_MANAGER_TAG_ID = os.environ.get('GOOGLE_TAG_MANAGER_TAG_ID', None)
