@@ -52,7 +52,7 @@ def _safe_load_status(status_name):
 
     if created:
         logger.warning(
-            'Received an operation with a new status {}.'.format(status_name)
+            'Received an operation with a new status %s.', status_name
         )
 
     return status
@@ -76,7 +76,7 @@ def record_operation(title, status_name, description, operation_name, ticket_id,
     if operation_type is None:
         logger.warning(
             'Not recording operation with the '
-            'unknown type: {}.'.format(operation_name)
+            'unknown type: %s.', operation_name
         )
         return
 

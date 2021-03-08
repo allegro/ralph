@@ -214,5 +214,5 @@ class Deployment(AdminAbsoluteUrlMixin, TransitionJob):
             deployment.unfreeze()
         else:
             logger.warning(
-                'Deployment {} was already unfrozen'.format(deployment)
+                'Deployment %s was already unfrozen', deployment
             )

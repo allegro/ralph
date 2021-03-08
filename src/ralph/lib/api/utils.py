@@ -78,7 +78,7 @@ class RalphApiMetadata(SimpleMetadata):
                         model
                     )
                 except NoReverseMatch:
-                    logger.warning('Reverse for {} not found'.format(model))
+                    logger.warning('Reverse for %s not found', model)
         elif isinstance(field, ManyRelatedField):
             # for ManyRelatedField just return url to resource
             try:
@@ -89,7 +89,7 @@ class RalphApiMetadata(SimpleMetadata):
                 try:
                     field_info['url'] = get_list_view_url_for_model(model)
                 except NoReverseMatch:
-                    logger.warning('Reverse for {} not found'.format(model))
+                    logger.warning('Reverse for %s not found', model)
         # otherwise act as usual
         elif not field_info.get('read_only') and hasattr(field, 'choices'):
             field_info['choices'] = [

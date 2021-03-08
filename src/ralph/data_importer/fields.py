@@ -63,9 +63,9 @@ class ThroughField(fields.Field):
 
             to_add_list = []
             for i in to_add:
-                logger.info('Adding {} to {}/{} assignments'.format(
-                    i.pk, self.through_model, obj.pk
-                ))
+                logger.info('Adding %s to %s/%s assignments',
+                            i.pk, self.through_model, obj.pk
+                            )
                 to_add_list.append(self.through_model(
                     **{
                         self.through_from_field_name: obj,
@@ -76,9 +76,10 @@ class ThroughField(fields.Field):
             if to_add_list:
                 self.through_model.objects.bulk_create(to_add_list)
             if to_remove:
-                logger.warning('Removing assignments from {}/{}: {}'.format(
+                logger.warning(
+                    'Removing assignments from %s/%s: %s',
                     self.through_model, obj.pk, [i.pk for i in to_remove]
-                ))
+                )
                 self.through_model.objects.filter(
                     **{
                         self.through_from_field_name: obj,

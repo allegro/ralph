@@ -258,10 +258,11 @@ class CloudHost(PreviousStateMixin,
                     new_ip.base_object = self
                     new_ip.save()
                 else:
-                    logger.warning((
+                    logger.warning(
                         'Cannot assign IP %s to %s - it is already in use by '
-                        'another asset'
-                    ) % (ip, self.hostname))
+                        'another asset',
+                        ip, self.hostname
+                    )
             except ObjectDoesNotExist:
                 logger.info('Creating new IP {} for {}'.format(ip, self))
                 new_ip = IPAddress(
@@ -288,7 +289,7 @@ class CloudHost(PreviousStateMixin,
 
         to_delete = set(self.ip_addresses) - set(value)
         for ip in to_delete:
-            logger.warning('Deleting {} from {}'.format(ip, self))
+            logger.warning('Deleting %s from %s', ip, self)
         Ethernet.objects.filter(
             base_object=self, ipaddress__address__in=to_delete
         ).delete()

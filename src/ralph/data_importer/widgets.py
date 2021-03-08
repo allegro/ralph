@@ -29,15 +29,13 @@ def get_imported_obj(model, old_pk):
     ).first()
     if not imported_obj:
         msg = (
-            "Record with pk {pk} not found for model {model} "
-            "of '{content_type}'"
+            "Record with pk %s not found for model %s of '%s'"
         )
         logger.warning(
-            msg.format(
-                pk=str(old_pk),
-                model=model._meta.model_name,
-                content_type=content_type,
-            )
+            msg,
+            str(old_pk),
+            model._meta.model_name,
+            content_type
         )
     return content_type, imported_obj
 
@@ -53,8 +51,8 @@ class UserWidget(widgets.ForeignKeyWidget):
                 username=value,
             )
             if created:
-                logger.warning(
-                    'User not found: {} create a new.'.format(value),
+                logger.info(
+                    'User not found: %s create a new.', value
                 )
         return result
 

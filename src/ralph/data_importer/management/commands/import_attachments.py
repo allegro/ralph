@@ -65,7 +65,7 @@ class Command(BaseCommand):
                     )
                 except ImportedObjectDoesNotExist:
                     logger.warning(
-                        'Missing imported object for {}'.format(line)
+                        'Missing imported object for %s', line
                     )
                     continue
 
@@ -145,7 +145,7 @@ class Command(BaseCommand):
                         )
                     except ImportedObjectDoesNotExist:
                         logger.warning(
-                            'Missing imported object for {}'.format(line)
+                            'Missing imported object for %s', line
                         )
                         continue
 

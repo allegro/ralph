@@ -254,9 +254,8 @@ class WithCustomFieldsMixin(models.Model, metaclass=CustomFieldMeta):
                 ).values_list('pk', flat=True),
             )
             logger.warning(
-                'Deleting {} CFVs for descendants of {} ({} by {})'.format(
-                    custom_fields_values_to_delete.count(), self,
-                    model, field_path
-                )
+                'Deleting %s CFVs for descendants of %s (%s by %s)',
+                custom_fields_values_to_delete.count(), self,
+                model, field_path
             )
             custom_fields_values_to_delete.delete()

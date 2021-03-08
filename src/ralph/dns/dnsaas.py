@@ -181,8 +181,8 @@ class DNSaaS:
     @staticmethod
     def _response2result(response: requests.Response) -> Union[dict, list]:
         if response.status_code == 500:
-            logger.error('Internal Server Error from DNSAAS: {}'
-                         .format(response.content))
+            logger.error('Internal Server Error from DNSAAS: %s',
+                         response.content)
             return {
                 'non_field_errors': ['Internal Server Error from DNSAAS']
             }
@@ -212,7 +212,7 @@ class DNSaaS:
             data['service_uid'] = service.uid
         else:
             logger.error(
-                'Service is required for record {}'.format(data)
+                'Service is required for record %s', data
             )
             return {'errors': [{
                 'value': 'name',
@@ -330,7 +330,6 @@ class DNSaaS:
         status_code, response_data = self._post(url, ip_record_data)
         if status_code >= 400:
             logger.error(
-                'DNSaaS returned {} data: {}, send_data: {}'.format(
-                    status_code, str(response_data), ip_record_data
-                )
+                'DNSaaS returned %s data: %s, send_data: %s',
+                status_code, str(response_data), ip_record_data
             )
