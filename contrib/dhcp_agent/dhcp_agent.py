@@ -357,9 +357,8 @@ class DHCPConfigManager(object):
         except HTTPError as e:
             if e.code != 304:
                 self.logger.error(
-                    'Server returned {} status code with message "{}"'.format(
-                        e.code, e.fp.read().decode()
-                    )
+                    'Server returned %s status code with message "%s"',
+                    e.code, e.fp.read().decode()
                 )
             else:
                 self.logger.info(
@@ -397,9 +396,8 @@ class DHCPConfigManager(object):
         except HTTPError as e:
             self.logger.error(
                 'Could not send confirmation to Ralph. '
-                'Server returned {} status code with message: {}'.format(
-                    e.code, e.fp.read().decode()
-                ),
+                'Server returned %s status code with message: %s',
+                e.code, e.fp.read().decode()
             )
             return False
         self.logger.info('Confirmation sent to {}.'.format(self.host))
@@ -427,8 +425,8 @@ class DHCPConfigManager(object):
             return True
         except IOError as e:
             self.logger.error(
-                'Could not write new DHCP configuration. Error '
-                'message: {}'.format(e),
+                'Could not write new DHCP configuration. Error message: %s',
+                e
             )
             return False
 
@@ -453,7 +451,7 @@ class DHCPConfigManager(object):
             )
         else:
             self.logger.error(
-                'Failed to restart service {}.'.format(self.dhcp_service_name)
+                'Failed to restart service %s.', self.dhcp_service_name
             )
         return restart_successful
 

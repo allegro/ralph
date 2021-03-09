@@ -65,10 +65,10 @@ def handle_create_vip_event(data):
     errors = validate_vip_event_data(data)
     if errors:
         msg = (
-            'Error(s) detected in event data: {}. Ignoring received create '
+            'Error(s) detected in event data: %s. Ignoring received create '
             'event.'
         )
-        logger.error(msg.format('; '.join(errors)))
+        logger.error(msg, '; '.join(errors))
         return
 
     # Check if VIP already exists.
@@ -77,10 +77,10 @@ def handle_create_vip_event(data):
     vip = get_vip(ip, data['port'], protocol)
     if vip:
         msg = (
-            'VIP designated by IP address {}, port {} and protocol {} '
+            'VIP designated by IP address %s, port %s and protocol %s '
             'already exists. Ignoring received event.'
         )
-        logger.warning(msg.format(ip.address, data['port'], protocol.name))
+        logger.warning(msg, ip.address, data['port'], protocol.name)
         return
 
     # Create it.
@@ -102,10 +102,10 @@ def handle_create_vip_event(data):
         )
     except ServiceEnvironment.DoesNotExist:
         msg = (
-            'ServiceEnvironment for service UID "{}" and environment "{}" '
+            'ServiceEnvironment for service UID "%s" and environment "%s" '
             'does not exist. Ignoring received create event.'
         )
-        logger.error(msg.format(data['service']['uid'], data['environment']))
+        logger.error(msg, data['service']['uid'], data['environment'])
         return
     vip = VIP(
         name=data['name'],
@@ -116,7 +116,7 @@ def handle_create_vip_event(data):
         service_env=service_env,
     )
     vip.save()
-    logger.debug('VIP {} created successfully.'.format(vip.name))
+    logger.debug('VIP %s created successfully.', vip.name)
 
 
 @pyhermes.subscriber(
@@ -135,10 +135,10 @@ def handle_update_vip_event(data):
     errors = validate_vip_event_data(data)
     if errors:
         msg = (
-            'Error(s) detected in event data: {}. Ignoring received update '
+            'Error(s) detected in event data: %s. Ignoring received update '
             'event.'
         )
-        logger.error(msg.format('; '.join(errors)))
+        logger.error(msg, '; '.join(errors))
         return
 
     ip,  = IPAddress.objects.get_or_create(address=data['ip'])
@@ -146,10 +146,10 @@ def handle_update_vip_event(data):
     vip = get_vip(ip.address, data['port'], protocol.name)
     if vip is None:
         msg = (
-            "VIP designated by IP address {}, port {} and protocol {} "
+            "VIP designated by IP address %s, port %s and protocol %s "
             "doesn't exist. Ignoring received update event."
         )
-        logger.warning(msg.format(ip.address, data['port'], protocol.name))
+        logger.warning(msg, ip.address, data['port'], protocol.name)
         return
     # TODO(xor-xor): when update event will contain changes (currently it
     # doesn't), add update logic here.
@@ -162,31 +162,31 @@ def handle_delete_vip_event(data):
     errors = validate_vip_event_data(data)
     if errors:
         msg = (
-            'Error(s) detected in event data: {}. Ignoring received delete '
+            'Error(s) detected in event data: %s. Ignoring received delete '
             'event.'
         )
-        logger.error(msg.format('; '.join(errors)))
+        logger.error(msg, '; '.join(errors))
         return
 
     try:
         ip = IPAddress.objects.get(address=data['ip'])
     except IPAddress.DoesNotExist:
         msg = (
-            "IP address {} doesn't exist. Ignoring received delete VIP event."
+            "IP address %s doesn't exist. Ignoring received delete VIP event."
         )
-        logger.error(msg.format(data['ip']))
+        logger.error(msg, data['ip'])
         return
     protocol = VIPProtocol.from_name(data['protocol'].upper())
     vip = get_vip(ip, data['port'], protocol)
     if vip is None:
         msg = (
-            "VIP designated by IP address {}, port {} and protocol {} "
+            "VIP designated by IP address %s, port %s and protocol %s "
             "doesn't exist. Ignoring received delete event."
         )
-        logger.warning(msg.format(ip.address, data['port'], protocol.name))
+        logger.warning(msg, ip.address, data['port'], protocol.name)
         return
     vip.delete()
-    logger.info('VIP {} deleted successfully.'.format(vip.name))
+    logger.info('VIP %s deleted successfully.', vip.name)
 
     # Delete IP address associated with it (along with its Ethernet), but only
     # when this IP is not used anymore by other VIP(s).
@@ -198,13 +198,13 @@ def handle_delete_vip_event(data):
         ip.delete()
         if eth_deleted:
             msg = (
-                'IP address {} has been deleted (along with Ethernet '
+                'IP address %s has been deleted (along with Ethernet '
                 'associated with it) since it is no longer being used by any '
                 'VIP.'
             )
         else:
             msg = (
-                'IP address {} has been deleted since it is no longer being '
+                'IP address %s has been deleted since it is no longer being '
                 'used by any VIP.'
             )
-        logger.info(msg.format(ip.address))
+        logger.info(msg, ip.address)

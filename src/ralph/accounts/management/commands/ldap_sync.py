@@ -253,9 +253,8 @@ class Command(BaseCommand):
         ]
         for option in options:
             if not hasattr(settings, option):
-                logger.error((
-                    'LDAP::check_settings_existence\tSetting {} is not provided'
-                ).format(option))
+                logger.error('LDAP::check_settings_existence\tSetting %s is '
+                             'not provided', option)
                 sys.exit(1)
 
     def handle(self, *args, **kwargs):
@@ -269,7 +268,7 @@ class Command(BaseCommand):
             logger.error('ldap module not installed')
             raise ImportError('No module named ldap')
         synced = self.populate_users()
-        logger.info('LDAP users synced: {}'.format(synced))
+        logger.info('LDAP users synced: %s', synced)
 
     def populate_users(self):
         """Load users from ldap and populate them. Returns number of users."""

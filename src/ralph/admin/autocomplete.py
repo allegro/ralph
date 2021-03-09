@@ -72,9 +72,8 @@ class AutocompleteTooltipMixin(object):
                 model_field = get_field_by_relation_path(self, field)
             except FieldDoesNotExist:
                 logger.warning(
-                    'Autocomplete tooltip field {} not found for {}'.format(
-                        field, self._meta.model_name,
-                    )
+                    'Autocomplete tooltip field %s not found for %s',
+                    field, self._meta.model_name
                 )
                 continue
             value = get_value_by_relation_path(self, field)

@@ -81,16 +81,14 @@ class SCMStatusCheckInChangeListMixin(object):
             url_name = _url_name_for_change_view(type(obj), 'scm_info')
 
             if not url_name:
-                logger.error("No scm info view for obj of type: {}".format(
-                    type(obj))
-                )
+                logger.error("No scm info view for obj of type: %s", type(obj))
             else:
                 try:
                     url = get_admin_url(obj, url_name)
                     html = _linkify(html, url)
                 except NoReverseMatch:
                     logger.error(
-                        "cant reverse url for: {}, {}".format(obj, url_name)
+                        "cant reverse url for: %s, %s", obj, url_name
                     )
         return mark_safe(html)
     scm_status_check.short_description = _('SCM status')
