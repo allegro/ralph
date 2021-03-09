@@ -51,7 +51,7 @@ class UserWidget(widgets.ForeignKeyWidget):
                 username=value,
             )
             if created:
-                logger.info(
+                logger.warning(
                     'User not found: %s create a new.', value
                 )
         return result
