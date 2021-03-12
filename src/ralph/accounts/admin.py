@@ -127,7 +127,10 @@ class AssetList(Table):
             [settings.MY_EQUIPMENT_BUYOUT_URL, urlencode(get_params)]
         )
         url_title = 'Report buyout'
-        return self.create_report_link(url, url_title, item)
+        if not item.model.category.show_buyout_date:
+            return ''
+        else:
+            return self.create_report_link(url, url_title, item)
     buyout_ticket.title = 'buyout_ticket'
 
     def report_failure(self, item):
