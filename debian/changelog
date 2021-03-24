@@ -1,3 +1,10 @@
+ralph (20210324.1) bionic; urgency=medium
+
+  [ Aleksander Wieckowski ]
+  * Add backoffice status - to find
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Wed, 24 Mar 2021 07:08:02 +0000
+
 ralph (20210309.1) bionic; urgency=medium
 
   [ lukaszkarykowski ]
