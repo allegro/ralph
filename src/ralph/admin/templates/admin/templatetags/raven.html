@@ -1,8 +1,0 @@
-{% load staticfiles %}
-
-{% if sentry_enabled and sentry_dsn %}
-    <script type="text/javascript" src="{% static 'vendor/js/raven.min.js' %}"></script>
-    <script type="text/javascript">
-        Raven.config('{{ sentry_dsn }}', {{ sentry_js_config|safe }}).install();
-    </script>
-{% endif %}
