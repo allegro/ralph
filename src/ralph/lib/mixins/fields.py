@@ -7,11 +7,11 @@ from django.contrib.admin.widgets import AdminTextInputWidget
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models.loading import get_model
+from django.forms import ValidationError
 from django.forms.utils import flatatt
 from django.utils import six
 from django.utils.html import format_html, smart_urlquote
 from django.utils.translation import ugettext_lazy as _
-from rest_framework.exceptions import ValidationError
 from taggit.forms import TagField
 
 
