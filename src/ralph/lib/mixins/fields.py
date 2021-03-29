@@ -5,9 +5,9 @@ from django import forms
 from django.conf import settings
 from django.contrib.admin.widgets import AdminTextInputWidget
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.loading import get_model
-from django.forms import ValidationError
 from django.forms.utils import flatatt
 from django.utils import six
 from django.utils.html import format_html, smart_urlquote
