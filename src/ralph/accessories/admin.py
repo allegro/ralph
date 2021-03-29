@@ -37,7 +37,7 @@ class AccessoryAdmin(TransitionAdminMixin, RalphAdmin):
             _('Accessory Info'),
             {
                 'fields': ('manufacturer', 'accessory_name',
-                           'accessory_type', 'product_number',
+                           'category', 'product_number',
                            'region', 'warehouse', 'number_bought',
                            )
             }
