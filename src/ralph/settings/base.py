@@ -312,7 +312,8 @@ REST_FRAMEWORK = {
     'DEFAULT_METADATA_CLASS': 'ralph.lib.api.utils.RalphApiMetadata',
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.AcceptHeaderVersioning',  # noqa
     'DEFAULT_VERSION': 'v1',
-    'ALLOWED_VERSIONS': ('v1',)
+    'ALLOWED_VERSIONS': ('v1',),
+    'EXCEPTION_HANDLER': 'ralph.lib.api.exception_handler.validation_error_exception_handler',  # noqa
 }
 
 API_THROTTLING = bool_from_env('API_THROTTLING', default=False)
