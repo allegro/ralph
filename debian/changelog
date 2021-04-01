@@ -1,3 +1,11 @@
+ralph (20210401.1) bionic; urgency=medium
+
+  [ Pawel Szulc ]
+  * Fix import to prevent 500 on MAC validation (#3615)
+  * Remove Sentry logging for JS (#3614)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Thu, 01 Apr 2021 11:28:25 +0000
+
 ralph (20210324.1) bionic; urgency=medium
 
   [ Aleksander Wieckowski ]
