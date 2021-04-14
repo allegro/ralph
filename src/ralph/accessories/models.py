@@ -8,7 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from mptt.fields import TreeForeignKey
 
 from ralph.accounts.models import RalphUser, Regionalizable
-from ralph.assets.models import Manufacturer, Category
+from ralph.assets.models import Category, Manufacturer
 from ralph.back_office.models import Warehouse
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 from ralph.lib.transitions.decorators import transition_action
