@@ -112,10 +112,7 @@ class Accessory(
     )
     def release_accessories(cls, instances, **kwargs):
         user = get_user_model().objects.get(pk=int(kwargs['user']))
-        accessory_user = AccessoryUser.objects.filter(
-            user=user,
-            accessory=instances[0]
-        )
+        accessory_user = AccessoryUser.objects.filter(user=user, accessory=instances[0]) # noqa
         if len(accessory_user) > 0:
             user_accessory = accessory_user[0]
             user_accessory.quantity += kwargs['quantity']
