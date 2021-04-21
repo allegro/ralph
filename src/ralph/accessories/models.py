@@ -7,8 +7,10 @@ from django.db import models
 from django.db.models import Sum
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
+from mptt.fields import TreeForeignKey
 
 from ralph.accounts.models import RalphUser, Regionalizable
+from ralph.assets.models import Category, Manufacturer
 from ralph.back_office.models import Warehouse
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 from ralph.lib.polymorphic.models import PolymorphicQuerySet
@@ -71,19 +73,11 @@ class Accessory(
     models.Model,
     metaclass=TransitionWorkflowBaseWithPermissions
 ):
-    manufacturer = models.CharField(
-        max_length=255,
-        null=False,
-        blank=False,
-        unique=False,
-        help_text=_('Accessory manufacturer')
+    manufacturer = models.ForeignKey(
+        Manufacturer, on_delete=models.PROTECT, blank=True, null=True
     )
-    accessory_type = models.CharField(
-        max_length=255,
-        null=False,
-        blank=False,
-        unique=False,
-        help_text=_('Accessory type')
+    category = TreeForeignKey(
+        Category, null=True, related_name='+'
     )
     accessory_name = models.CharField(
         max_length=255,
@@ -154,10 +148,16 @@ class Accessory(
     )
     def release_accessories(cls, instances, **kwargs):
         user = get_user_model().objects.get(pk=int(kwargs['user']))
-        AccessoryUser.objects.create(
-            user=user, quantity=kwargs['quantity'],
-            accessory_id=instances[0].id
-        )
+        accessory_user = AccessoryUser.objects.filter(user=user, accessory=instances[0]) # noqa
+        if len(accessory_user) > 0:
+            user_accessory = accessory_user[0]
+            user_accessory.quantity += kwargs['quantity']
+            AccessoryUser.save(user_accessory, force_update=True)
+        else:
+            AccessoryUser.objects.create(
+                user=user, quantity=kwargs['quantity'],
+                accessory_id=instances[0].id
+            )
 
     polymorphic_objects = PolymorphicQuerySet.as_manager()
     objects_used_free = AccessoryUsedFreeManager()
