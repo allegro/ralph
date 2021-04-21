@@ -2,6 +2,7 @@
 from datetime import datetime
 from unittest.mock import patch
 
+from dateutil.relativedelta import relativedelta
 from dj.choices import Country
 from django.conf import settings
 from django.contrib.auth.models import Permission
@@ -258,6 +259,15 @@ class TestBackOfficeAsset(RalphTestCase):
         self.assertEqual(
             self.bo_asset_4.buyout_date,
             datetime(2015, 1, 11).date()
+        )
+
+    def test_changing_buyout_date(self):
+        self.bo_asset_3.buyout_date += relativedelta(months=3)
+        self.bo_asset_3.save()
+        self.bo_asset_3.refresh_from_db()
+        self.assertEqual(
+            self.bo_asset_3.buyout_date,
+            datetime(2018, 5, 11).date()
         )
 
     def test_get_depreciation_rate(self):
