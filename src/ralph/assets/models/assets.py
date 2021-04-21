@@ -464,7 +464,8 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         """
         Get buyout date.
 
-        Calculate buyout date invoice_date + depreciation_rate months + custom buyout date delay
+        Calculate buyout date:
+         invoice_date + depreciation_rate months + custom buyout date delay
 
         Returns:
             Deprecation date
@@ -472,9 +473,9 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         if self.depreciation_end_date:
             return self.depreciation_end_date
         elif self.invoice_date:
-            return self.invoice_date + relativedelta(
-                months=self.get_depreciation_months() + 1 + settings.ASSET_BUYOUT_DELAY_MONTHS
-            )
+            months = self.get_depreciation_months() + 1 + \
+                     settings.ASSET_BUYOUT_DELAY_MONTHS
+            return self.invoice_date + relativedelta(months=months)
         else:
             return None
 
