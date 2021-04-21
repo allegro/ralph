@@ -4,14 +4,50 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import Sum
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import RalphUser, Regionalizable
 from ralph.back_office.models import Warehouse
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
+from ralph.lib.polymorphic.models import PolymorphicQuerySet
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
 from ralph.lib.transitions.models import TransitionWorkflowBaseWithPermissions
+
+_SELECT_USED_ACCESSORY_QUERY = """
+    SELECT COALESCE(SUM({assignment_table}.{quantity_column}), 0)
+    FROM {assignment_table}
+    WHERE {assignment_table}.{accessories_id_column} = {accessories_table}.{id_column} # noqa
+"""
+
+
+class AccessoryUsedFreeManager(models.Manager):
+    def get_queryset(self):
+        id_column = Accessory.baseobject_ptr.field.column
+
+        user_quantity_field = Accessory.users.through._meta.get_field('quantity') # noqa
+        user_accessories_field = Accessory.users.through._meta.get_field('accessories') # noqa
+        user_count_query = _SELECT_USED_ACCESSORY_QUERY.format(
+            assignment_table=Accessory.users.through._meta.db_table,
+            quantity_column=user_quantity_field.db_column or user_quantity_field.column,  # noqa
+            accessories_id_column=user_accessory_field.db_column or user_accessory_field,  # noqa
+            accessories_table=Accessory._meta.db_table,
+            id_column=id_column,
+        )
+
+        return super().get_queryset().extra(
+            select={
+                'user_count': user_count_query,
+            }
+        )
+
+
+class AccessoryUsedFreeRelatedObjectsManager(
+    AccessoryUsedFreeManager
+):
+    pass
 
 
 class AccessoryStatus(Choices):
@@ -122,6 +158,47 @@ class Accessory(
             user=user, quantity=kwargs['quantity'],
             accessory_id=instances[0].id
         )
+
+    polymorphic_objects = PolymorphicQuerySet.as_manager()
+    objects_used_free = AccessoryUsedFreeManager()
+    objects_used_free_with_related = AccessoryUsedFreeRelatedObjectsManager()
+
+    def __str__(self):
+        return "{} x {} - ({})".format(
+            self.number_bought,
+            self.accessories_name,
+            self.product_number,
+        )
+
+    @cached_property
+    def autocomplete_str(self):
+        return "{} ({} free) x {} - ({})".format(
+            self.number_bought,
+            self.free,
+            self.accessories_name,
+            self.product_number,
+        )
+
+    @cached_property
+    def used(self):
+        if not self.pk:
+            return 0
+        try:
+            return (self.user_count or 0)
+        except AttributeError:
+            users_qs = self.users.through.objects.filter(accessories=self)
+
+            def get_sum(qs):
+                return qs.aggregate(sum=Sum('quantity'))['sum'] or 0
+            return sum(map(get_sum, [0, users_qs]))
+    used._permission_field = 'number_bought'
+
+    @cached_property
+    def free(self):
+        if not self.pk:
+            return 0
+        return self.number_bought - self.used
+    free._permission_field = 'number_bought'
 
 
 @reversion.register()
