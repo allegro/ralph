@@ -1,3 +1,13 @@
+ralph (20210421.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Added a condition for the buyout ticket link.  (#3612)
+
+  [ Szymon Jasinski ]
+  * Allow buyout date change (#3619)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Wed, 21 Apr 2021 14:40:54 +0000
+
 ralph (20210401.1) bionic; urgency=medium
 
   [ Pawel Szulc ]
