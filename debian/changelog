@@ -1,3 +1,10 @@
+ralph (20210422.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * fix buyout ticket (#3620)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Thu, 22 Apr 2021 06:57:55 +0000
+
 ralph (20210421.1) bionic; urgency=medium
 
   [ lukaszkarykowski ]
