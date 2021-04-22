@@ -131,6 +131,7 @@ class AssetList(Table):
             )
             url_title = 'Report buyout'
             return self.create_report_link(url, url_title, item)
+    buyout_ticket.title = 'buyout_ticket'
 
     def report_failure(self, item):
         url = settings.MY_EQUIPMENT_REPORT_FAILURE_URL
