@@ -21,7 +21,7 @@ from ralph.lib.transitions.models import TransitionWorkflowBaseWithPermissions
 _SELECT_USED_ACCESSORY_QUERY = """
     SELECT COALESCE(SUM({assignment_table}.{quantity_column}), 0)
     FROM {assignment_table}
-    WHERE {assignment_table}.{accessories_id_column} = {accessories_table}.{id_column} # noqa
+    WHERE {assignment_table}.{accessory_id_column} = {accessory_table}.{id_column} # noqa
 """
 
 
@@ -30,12 +30,12 @@ class AccessoryUsedFreeManager(models.Manager):
         id_column = Accessory.baseobject_ptr.field.column
 
         user_quantity_field = Accessory.users.through._meta.get_field('quantity') # noqa
-        user_accessories_field = Accessory.users.through._meta.get_field('accessories') # noqa
+        user_accessory_field = Accessory.users.through._meta.get_field('accessory') # noqa
         user_count_query = _SELECT_USED_ACCESSORY_QUERY.format(
             assignment_table=Accessory.users.through._meta.db_table,
             quantity_column=user_quantity_field.db_column or user_quantity_field.column,  # noqa
-            accessories_id_column=user_accessory_field.db_column or user_accessory_field,  # noqa
-            accessories_table=Accessory._meta.db_table,
+            accessory_id_column=user_accessory_field.db_column or user_accessory_field,  # noqa
+            accessory_table=Accessory._meta.db_table,
             id_column=id_column,
         )
 
@@ -166,7 +166,7 @@ class Accessory(
     def __str__(self):
         return "{} x {} - ({})".format(
             self.number_bought,
-            self.accessories_name,
+            self.accessory_name,
             self.product_number,
         )
 
@@ -175,7 +175,7 @@ class Accessory(
         return "{} ({} free) x {} - ({})".format(
             self.number_bought,
             self.free,
-            self.accessories_name,
+            self.accessory_name,
             self.product_number,
         )
 
@@ -186,11 +186,11 @@ class Accessory(
         try:
             return (self.user_count or 0)
         except AttributeError:
-            users_qs = self.users.through.objects.filter(accessories=self)
+            users_qs = self.user.through.objects.filter(accessory=self)
 
             def get_sum(qs):
                 return qs.aggregate(sum=Sum('quantity'))['sum'] or 0
-            return sum(map(get_sum, [0, users_qs]))
+            return sum(map(get_sum, [users_qs]))
     used._permission_field = 'number_bought'
 
     @cached_property
