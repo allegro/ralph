@@ -1,3 +1,10 @@
+ralph (20210423.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * get buyout related setting from environment (#3622)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Fri, 23 Apr 2021 20:01:15 +0000
+
 ralph (20210422.1) bionic; urgency=medium
 
   [ Szymon Jasinski ]
