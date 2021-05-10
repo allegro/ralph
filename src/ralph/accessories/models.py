@@ -112,12 +112,14 @@ class Accessory(
     )
     def release_accessories(cls, instances, **kwargs):
         user = get_user_model().objects.get(pk=int(kwargs['user']))
+        quantity = kwargs['quantity']
         accessory_user, created = AccessoryUser.objects.get_or_create(
             user=user,
             accessory=instances[0],
+            defaults={'quantity': quantity}
         )
-        if created:
-            accessory_user.quantity += kwargs['quantity']
+        if not created:
+            accessory_user.quantity += quantity
             accessory_user.save()
 
 
