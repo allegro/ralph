@@ -23,9 +23,15 @@ class Migration(migrations.Migration):
             name='category',
             field=mptt.fields.TreeForeignKey(null=True, related_name='+', to='assets.Category'),
         ),
-        migrations.AlterField(
+        migrations.RemoveField(
+            model_name='accessory',
+            name='manufacturer'
+        ),
+        migrations.AddField(
             model_name='accessory',
             name='manufacturer',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='assets.Manufacturer'),
+            field=models.ForeignKey(blank=True, null=True,
+                                    on_delete=django.db.models.deletion.PROTECT,
+                                    to='assets.Manufacturer'),
         ),
     ]
