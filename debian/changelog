@@ -1,3 +1,10 @@
+ralph (20210510.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Changed manufacturer and accessory_type - to be picked from table. (#3617)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Mon, 10 May 2021 14:08:32 +0000
+
 ralph (20210507.1) bionic; urgency=medium
 
   [ lukaszkarykowski ]
