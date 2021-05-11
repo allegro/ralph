@@ -148,16 +148,15 @@ class Accessory(
     )
     def release_accessories(cls, instances, **kwargs):
         user = get_user_model().objects.get(pk=int(kwargs['user']))
-        accessory_user = AccessoryUser.objects.filter(user=user, accessory=instances[0]) # noqa
-        if len(accessory_user) > 0:
-            user_accessory = accessory_user[0]
-            user_accessory.quantity += kwargs['quantity']
-            AccessoryUser.save(user_accessory, force_update=True)
-        else:
-            AccessoryUser.objects.create(
-                user=user, quantity=kwargs['quantity'],
-                accessory_id=instances[0].id
-            )
+        quantity = kwargs['quantity']
+        accessory_user, created = AccessoryUser.objects.get_or_create(
+            user=user,
+            accessory=instances[0],
+            defaults={'quantity': quantity}
+        )
+        if not created:
+            accessory_user.quantity += quantity
+            accessory_user.save()
 
     polymorphic_objects = PolymorphicQuerySet.as_manager()
     objects_used_free = AccessoryUsedFreeManager()
