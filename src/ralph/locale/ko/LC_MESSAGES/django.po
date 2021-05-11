@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-07-24 14:53+0200\n"
+"POT-Creation-Date: 2021-04-21 10:58+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,677 +17,999 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: accounts/admin.py:86
-msgid "go to asset"
-msgstr "자산으로 이동"
+#: src/ralph/access_cards/admin.py:25
+msgid "Access Card Info"
+msgstr ""
 
-#: accounts/admin.py:88 accounts/admin.py:186 assets/admin.py:141
-#: dashboards/admin.py:104
-msgid "Link"
-msgstr "링크"
+#: src/ralph/access_cards/admin.py:32 src/ralph/accessories/admin.py:46
+#: src/ralph/back_office/admin.py:170 src/ralph/sim_cards/admin.py:45
+msgid "User Info"
+msgstr "사용자 정보"
 
-#: accounts/admin.py:94
+#: src/ralph/access_cards/admin.py:39 src/ralph/admin/sitetrees.py:321
+#, fuzzy
+#| msgid "accessories"
+msgid "Access Zones"
+msgstr "부대용품"
+
+#: src/ralph/access_cards/admin.py:53
+#, fuzzy
+#| msgid "employee id"
+msgid "Employee ID"
+msgstr "사번"
+
+#: src/ralph/access_cards/admin.py:61
+#, fuzzy
+#| msgid "Company"
+msgid "Employee Company"
+msgstr "회사"
+
+#: src/ralph/access_cards/admin.py:71
+#, fuzzy
+#| msgid "accessories"
+msgid "Access Zone"
+msgstr "부대용품"
+
+#: src/ralph/access_cards/models.py:22 src/ralph/accessories/models.py:20
+#: src/ralph/back_office/models.py:69 src/ralph/data_center/models/choices.py:9
+#: src/ralph/sim_cards/models.py:51 src/ralph/supports/models.py:31
+#: src/ralph/tests/models.py:24 src/ralph/virtual/models.py:330
+msgid "new"
+msgstr "신규"
+
+#: src/ralph/access_cards/models.py:23 src/ralph/accessories/models.py:21
+#: src/ralph/back_office/models.py:70
+#: src/ralph/operations/migrations/0010_auto_20170410_1031.py:16
+#: src/ralph/sim_cards/models.py:52
+msgid "in progress"
+msgstr "처리중"
+
+#: src/ralph/access_cards/models.py:24 src/ralph/accessories/models.py:22
+msgid "lost"
+msgstr ""
+
+#: src/ralph/access_cards/models.py:25 src/ralph/accessories/models.py:23
+#: src/ralph/back_office/models.py:74
+#: src/ralph/data_center/models/choices.py:12 src/ralph/sim_cards/models.py:55
+msgid "damaged"
+msgstr "손상된"
+
+#: src/ralph/access_cards/models.py:26 src/ralph/accessories/models.py:24
+#: src/ralph/back_office/models.py:72
+#: src/ralph/data_center/models/choices.py:10
+#: src/ralph/data_center/models/virtual.py:77 src/ralph/sim_cards/models.py:54
+#: src/ralph/virtual/models.py:331
+msgid "in use"
+msgstr "사용중"
+
+#: src/ralph/access_cards/models.py:27 src/ralph/accessories/models.py:25
+#: src/ralph/back_office/models.py:78
+#: src/ralph/data_center/models/choices.py:11 src/ralph/sim_cards/models.py:57
+msgid "free"
+msgstr "무료"
+
+#: src/ralph/access_cards/models.py:28 src/ralph/accessories/models.py:26
+#: src/ralph/back_office/models.py:82 src/ralph/sim_cards/models.py:60
+#, fuzzy
+#| msgid "in progress"
+msgid "return in progress"
+msgstr "처리중"
+
+#: src/ralph/access_cards/models.py:29 src/ralph/accessories/models.py:27
+#: src/ralph/back_office/models.py:75
+#: src/ralph/data_center/models/choices.py:13 src/ralph/sim_cards/models.py:56
+#: src/ralph/virtual/models.py:333
+msgid "liquidated"
+msgstr "처리된"
+
+#: src/ralph/access_cards/models.py:30 src/ralph/accessories/models.py:28
+#: src/ralph/back_office/models.py:79 src/ralph/networks/models/choices.py:8
+#: src/ralph/sim_cards/models.py:58
+msgid "reserved"
+msgstr "예약된"
+
+#: src/ralph/access_cards/models.py:34
+#: src/ralph/assets/models/configuration.py:31
+#: src/ralph/data_center/models/components.py:18
+#: src/ralph/data_center/models/virtual.py:42
+#: src/ralph/data_center/models/virtual.py:90 src/ralph/lib/mixins/models.py:15
+#: src/ralph/lib/mixins/models.py:26 src/ralph/security/models.py:47
+#: src/ralph/virtual/models.py:59
+msgid "name"
+msgstr "이름"
+
+#: src/ralph/access_cards/models.py:46
+#, fuzzy
+#| msgid "description"
+msgid "Optional description"
+msgstr "설명"
+
+#: src/ralph/access_cards/models.py:69
+msgid "Number visible on the access card"
+msgstr ""
+
+#: src/ralph/access_cards/models.py:76
+msgid "Internal number in the access system"
+msgstr ""
+
+#: src/ralph/access_cards/models.py:81
+msgid "Date of issue to the User"
+msgstr ""
+
+#: src/ralph/access_cards/models.py:86
+#, fuzzy
+#| msgid "Additional info"
+msgid "Optional notes"
+msgstr "추가 정보"
+
+#: src/ralph/access_cards/models.py:93
+#, fuzzy
+#| msgid "ethernet card"
+msgid "User of the card"
+msgstr "이더넷 카드"
+
+#: src/ralph/access_cards/models.py:109
+#, fuzzy
+#| msgid "scan status"
+msgid "Access card status"
+msgstr "스캔 상태"
+
+#: src/ralph/access_cards/models.py:118
+msgid "Access Card: {}"
+msgstr ""
+
+#: src/ralph/access_cards/models.py:139 src/ralph/accessories/models.py:111
+#: src/ralph/admin/templates/admin/object_history.html:13
+#: src/ralph/admin/templates/reversion/object_history.html:15
+#: src/ralph/back_office/models.py:291 src/ralph/back_office/models.py:480
+#: src/ralph/lib/transitions/templates/transitions/_transition_jobs_table.html:6
+#: src/ralph/sim_cards/models.py:153
+msgid "User"
+msgstr "사용자"
+
+#: src/ralph/access_cards/models.py:154 src/ralph/back_office/models.py:307
+#: src/ralph/back_office/models.py:484 src/ralph/sim_cards/models.py:232
+msgid "Owner"
+msgstr "오너"
+
+#: src/ralph/access_cards/models.py:159 src/ralph/sim_cards/models.py:237
+#, fuzzy
+#| msgid "assignee"
+msgid "assign owner"
+msgstr "담당자"
+
+#: src/ralph/access_cards/models.py:185
+msgid "notes"
+msgstr ""
+
+#: src/ralph/accessories/admin.py:12 src/ralph/licences/admin.py:42
+msgid "Assigned to users"
+msgstr "사용자에 할당"
+
+#: src/ralph/accessories/admin.py:37
+#, fuzzy
+#| msgid "accessory"
+msgid "Accessory Info"
+msgstr "부속품"
+
+#: src/ralph/accessories/models.py:43
+#, fuzzy
+#| msgid "Manufacturer"
+msgid "Accessory manufacturer"
+msgstr "제조업체"
+
+#: src/ralph/accessories/models.py:50
+#, fuzzy
+#| msgid "accessory"
+msgid "Accessory type"
+msgstr "부속품"
+
+#: src/ralph/accessories/models.py:57
+#, fuzzy
+#| msgid "accessory"
+msgid "Accessory name"
+msgstr "부속품"
+
+#: src/ralph/accessories/models.py:64
+#, fuzzy
+#| msgid "number of cores"
+msgid "Number of accessories"
+msgstr "코어수량"
+
+#: src/ralph/accessories/models.py:76
+#, fuzzy
+#| msgid "accessory"
+msgid "Accessory owner"
+msgstr "부속품"
+
+#: src/ralph/accessories/models.py:84
+#, fuzzy
+#| msgid "accessory"
+msgid "Accessory status"
+msgstr "부속품"
+
+#: src/ralph/accessories/models.py:87 src/ralph/licences/models.py:173
+msgid "number of purchased items"
+msgstr "구매 항목 수"
+
+#: src/ralph/accessories/models.py:98
+msgid "restock"
+msgstr ""
+
+#: src/ralph/accessories/models.py:115
+msgid "Quantity"
+msgstr ""
+
+#: src/ralph/accounts/admin.py:101
 msgid "Buyout date"
 msgstr "매입 날자"
 
-#: accounts/admin.py:134
-msgid "Report failure"
-msgstr "리포트 실패"
-
-#: accounts/admin.py:150
+#: src/ralph/accounts/admin.py:176
 msgid "<div class=\"small-12 columns label alert\">missing</div>"
 msgstr "<div class=\"small-12 columns label alert\">누락</div>"
 
-#: accounts/admin.py:154
+#: src/ralph/accounts/admin.py:180
 msgid "<div class=\"small-12 columns label success\">confirmed</div>"
 msgstr "<div class=\"small-12 columns label success\">확인됨</div>"
 
-#: accounts/admin.py:164
+#: src/ralph/accounts/admin.py:190
 msgid "yes"
 msgstr "예"
 
-#: accounts/admin.py:169
+#: src/ralph/accounts/admin.py:195
 msgid "no"
 msgstr "아니오"
 
-#: accounts/admin.py:172
+#: src/ralph/accounts/admin.py:198
 msgid "<i>Only asset's user can confirm.</i>"
 msgstr "<i>자산의 사용자만 확인할 수 있습니다.</i>"
 
-#: accounts/admin.py:173
+#: src/ralph/accounts/admin.py:199
 msgid "Do you have it?"
 msgstr "가지고 있습니까?"
 
-#: accounts/admin.py:184
-msgid "go to licence"
-msgstr "라이선스로 이동"
-
-#: accounts/admin.py:229 deployment/admin.py:28 deployment/admin.py:46
-#: deployment/admin.py:66 networks/admin.py:282
+#: src/ralph/accounts/admin.py:256 src/ralph/deployment/admin.py:28
+#: src/ralph/deployment/admin.py:46 src/ralph/deployment/admin.py:66
+#: src/ralph/networks/admin.py:284
 msgid "Additional info"
 msgstr "추가 정보"
 
-#: accounts/admin.py:239
-#: admin/templates/admin/templatetags/transition_history.html:7
+#: src/ralph/accounts/admin.py:266
+#: src/ralph/admin/templates/admin/templatetags/transition_history.html:7
 msgid "Transition history"
 msgstr "전환 이력"
 
-#: accounts/admin.py:265 accounts/templates/ralphuser/user_profile.html:14
+#: src/ralph/accounts/admin.py:292
+#: src/ralph/accounts/templates/ralphuser/user_profile.html:14
 msgid "Personal info"
 msgstr "개인 정보"
 
-#: accounts/admin.py:268
+#: src/ralph/accounts/admin.py:295
 msgid "Permissions"
 msgstr "권한"
 
-#: accounts/admin.py:274
+#: src/ralph/accounts/admin.py:301
 msgid "Important dates"
 msgstr "중요 날짜"
 
-#: accounts/admin.py:277 accounts/templates/ralphuser/user_profile.html:34
+#: src/ralph/accounts/admin.py:304
+#: src/ralph/accounts/templates/ralphuser/user_profile.html:34
 msgid "Profile"
 msgstr "프로필"
 
-#: accounts/admin.py:282 accounts/templates/ralphuser/user_profile.html:54
+#: src/ralph/accounts/admin.py:309
+#: src/ralph/accounts/templates/ralphuser/user_profile.html:48
 msgid "Job info"
 msgstr "직장 정보"
 
-#: accounts/admin.py:316
+#: src/ralph/accounts/admin.py:355
 msgid "LDAP mapping"
 msgstr "LDAP 매핑"
 
-#: accounts/admin.py:326 admin/sitetrees.py:306
+#: src/ralph/accounts/admin.py:365 src/ralph/admin/sitetrees.py:318
 msgid "Users list"
 msgstr "사용자 목록"
 
-#: accounts/apps.py:9
+#: src/ralph/accounts/apps.py:9
 msgid "Accounts"
 msgstr "계정"
 
-#: accounts/models.py:33 accounts/models.py:79
+#: src/ralph/accounts/models.py:33 src/ralph/accounts/models.py:74
+#: src/ralph/trade_marks/admin.py:118
 msgid "country"
 msgstr "국가"
 
-#: accounts/models.py:84
+#: src/ralph/accounts/models.py:79
 msgid "city"
 msgstr "도시"
 
-#: accounts/models.py:89
+#: src/ralph/accounts/models.py:84
 msgid "company"
 msgstr "회사"
 
-#: accounts/models.py:94
+#: src/ralph/accounts/models.py:89
 msgid "employee id"
 msgstr "사번"
 
-#: accounts/models.py:99
+#: src/ralph/accounts/models.py:94
 msgid "profit center"
 msgstr "프라핏 센터"
 
-#: accounts/models.py:104
+#: src/ralph/accounts/models.py:99
 msgid "cost center"
 msgstr "코스트 센터"
 
-#: accounts/models.py:109
+#: src/ralph/accounts/models.py:104
 msgid "department"
 msgstr "부서"
 
-#: accounts/models.py:114
+#: src/ralph/accounts/models.py:109
 msgid "manager"
 msgstr "관리자"
 
-#: accounts/models.py:119
+#: src/ralph/accounts/models.py:114
 msgid "location"
 msgstr "위치"
 
-#: accounts/models.py:124
+#: src/ralph/accounts/models.py:119
 msgid "segment"
 msgstr "영역"
 
-#: accounts/templates/ralphuser/inventory_tag_confirmation.html:5
+#: src/ralph/accounts/templates/ralphuser/inventory_tag_confirmation.html:5
 msgid "Asset possession confirmation"
 msgstr "자산 소유 확인"
 
-#: accounts/templates/ralphuser/inventory_tag_confirmation.html:12
+#: src/ralph/accounts/templates/ralphuser/inventory_tag_confirmation.html:12
 msgid "Are you sure you have following item?"
 msgstr "다음 품목이 있으십니까?"
 
-#: accounts/templates/ralphuser/inventory_tag_confirmation.html:14
+#: src/ralph/accounts/templates/ralphuser/inventory_tag_confirmation.html:14
 msgid "Are you sure you don't have this item?"
 msgstr "이 품목이 없으십니까?"
 
-#: accounts/templates/ralphuser/my_equipment.html:8
-#: accounts/templates/ralphuser/user_additional_info.html:7
+#: src/ralph/accounts/templates/ralphuser/my_equipment.html:12
+#: src/ralph/accounts/templates/ralphuser/user_additional_info.html:7
 msgid "Assigned assets"
 msgstr "할당된 자산"
 
-#: accounts/templates/ralphuser/my_equipment.html:11
-#: accounts/templates/ralphuser/user_additional_info.html:11
+#: src/ralph/accounts/templates/ralphuser/my_equipment.html:15
+#, fuzzy
+#| msgid "Assigned to users"
+msgid "Assigned SIM cards"
+msgstr "사용자에 할당"
+
+#: src/ralph/accounts/templates/ralphuser/my_equipment.html:18
+#: src/ralph/accounts/templates/ralphuser/user_additional_info.html:10
 msgid "Assigned licences"
 msgstr "할당된 라이선스"
 
-#: accounts/templates/ralphuser/user_profile.html:5
-#: accounts/templates/ralphuser/user_profile.html:9
-#: admin/templates/admin/partials/userlinks.html:3
+#: src/ralph/accounts/templates/ralphuser/partials/accept_assets.html:18
+#, fuzzy
+#| msgid "Nothing to do."
+msgid "Nothing to accept."
+msgstr "할일이 없음"
+
+#: src/ralph/accounts/templates/ralphuser/partials/accept_assets.html:23
+#, python-format
+msgid ""
+"\n"
+"        Acceptance mechanism is enabled but a transition having ID "
+"%(acceptance_transition_id)s doesn't exist. Please add a transition with "
+"this ID or run DB migrations.\n"
+"      "
+msgstr ""
+
+#: src/ralph/accounts/templates/ralphuser/user_profile.html:5
+#: src/ralph/accounts/templates/ralphuser/user_profile.html:9
+#: src/ralph/admin/templates/admin/partials/userlinks.html:3
 msgid "My profile"
 msgstr "내 프로필"
 
-#: accounts/templates/ralphuser/user_profile.html:18
+#: src/ralph/accounts/templates/ralphuser/user_profile.html:18
 msgid "Username"
 msgstr "사용자명"
 
-#: accounts/templates/ralphuser/user_profile.html:20
+#: src/ralph/accounts/templates/ralphuser/user_profile.html:20
 msgid "Full name"
 msgstr "전체 이름"
 
-#: accounts/templates/ralphuser/user_profile.html:26
+#: src/ralph/accounts/templates/ralphuser/user_profile.html:26
 msgid "API Token"
 msgstr "API 토큰"
 
-#: accounts/templates/ralphuser/user_profile.html:38 back_office/models.py:435
+#: src/ralph/accounts/templates/ralphuser/user_profile.html:38
+#: src/ralph/back_office/models.py:455
 msgid "Country"
 msgstr "국가"
 
-#: accounts/templates/ralphuser/user_profile.html:40
+#: src/ralph/accounts/templates/ralphuser/user_profile.html:40
 msgid "City"
 msgstr "도시"
 
-#: accounts/templates/ralphuser/user_profile.html:46
-msgid "Gender"
-msgstr "성별"
-
-#: accounts/templates/ralphuser/user_profile.html:58
+#: src/ralph/accounts/templates/ralphuser/user_profile.html:52
 msgid "Company"
 msgstr "회사"
 
-#: accounts/templates/ralphuser/user_profile.html:60 admin/sitetrees.py:292
+#: src/ralph/accounts/templates/ralphuser/user_profile.html:54
+#: src/ralph/admin/sitetrees.py:304
 msgid "Profit center"
 msgstr "프라핏 센터"
 
-#: accounts/templates/ralphuser/user_profile.html:62
+#: src/ralph/accounts/templates/ralphuser/user_profile.html:56
 msgid "Cost center"
 msgstr "코스트 센터"
 
-#: accounts/templates/ralphuser/user_profile.html:64
+#: src/ralph/accounts/templates/ralphuser/user_profile.html:58
 msgid "Department"
 msgstr "부서"
 
-#: accounts/templates/ralphuser/user_profile.html:70
+#: src/ralph/accounts/templates/ralphuser/user_profile.html:64
 msgid "Manager"
 msgstr "관리자"
 
-#: accounts/templates/ralphuser/user_profile.html:72 data_center/admin.py:483
-#: data_center/admin.py:688
+#: src/ralph/accounts/templates/ralphuser/user_profile.html:66
+#: src/ralph/data_center/admin.py:518 src/ralph/data_center/admin.py:716
 msgid "Location"
 msgstr "위치"
 
-#: accounts/templates/ralphuser/user_profile.html:74
+#: src/ralph/accounts/templates/ralphuser/user_profile.html:68
 msgid "Segment"
 msgstr "영역"
 
-#: accounts/templates/ralphuser/user_profile.html:83
+#: src/ralph/accounts/templates/ralphuser/user_profile.html:77
 msgid "Preferences"
 msgstr "선호도"
 
-#: accounts/templates/ralphuser/user_profile.html:94
+#: src/ralph/accounts/templates/ralphuser/user_profile.html:88
 msgid "Change language"
 msgstr "언어 변경"
 
-#: accounts/templates/ralphuser/user_transition_history.html:5
+#: src/ralph/accounts/templates/ralphuser/user_transition_history.html:5
 msgid "User transition history"
 msgstr "사용자 전화 이력"
 
-#: accounts/views.py:46 accounts/views.py:134
+#: src/ralph/accounts/views.py:61 src/ralph/accounts/views.py:186
 msgid "Barcode / Inventory Number"
 msgstr "바코드 / 인벤토리 번호"
 
-#: accounts/views.py:48 accounts/views.py:136
+#: src/ralph/accounts/views.py:63 src/ralph/accounts/views.py:188
 msgid "Serial Number"
 msgstr "시리얼 번호"
 
-#: accounts/views.py:101
+#: src/ralph/accounts/views.py:116
 msgid "Successfully tagged asset"
 msgstr "자산 태그 성공"
 
-#: accounts/views.py:165
+#: src/ralph/accounts/views.py:220
 msgid "Inventory Number"
 msgstr "인벤토리 번호"
 
-#: admin/fields.py:29
+#: src/ralph/accounts/views.py:230
+#, fuzzy
+#| msgid "order number"
+msgid "Phone Number"
+msgstr "주문 번호"
+
+#: src/ralph/accounts/views.py:231
+#, fuzzy
+#| msgid "order number"
+msgid "Card Number"
+msgstr "주문 번호"
+
+#: src/ralph/accounts/views.py:232
+msgid "PIN 1"
+msgstr ""
+
+#: src/ralph/admin/fields.py:29
 msgid ""
 "Field can't be empty. Please put the item OR items separated by new line or "
 "comma."
-msgstr "입력값은 비워 둘 수 없습니다. OR 품목을 새줄 또는 쉼표로 구분하여"
-"입력하십시오."
+msgstr ""
+"입력값은 비워 둘 수 없습니다. OR 품목을 새줄 또는 쉼표로 구분하여입력하십시"
+"오."
 
-#: admin/fields.py:39
+#: src/ralph/admin/fields.py:39
 msgid "There are duplicates in field."
 msgstr "입력값에 중복이 있습니다."
 
-#: admin/fields.py:57
+#: src/ralph/admin/fields.py:57
 msgid "Enter a valid number."
 msgstr "유효한 숫자를 입력하세요"
 
-#: admin/fields.py:119
+#: src/ralph/admin/fields.py:119
 #, python-format
 msgid "Fill at least on of %(v)s in each row"
 msgstr "각 행에 적어도 %(v)s 에 채워주세요"
 
-#: admin/fields.py:146
+#: src/ralph/admin/fields.py:146
 msgid "Following items already exist: "
 msgstr "다음 품목은 이미 존재합니다: "
 
-#: admin/filters.py:57 admin/filters.py:512 networks/filters.py:32
+#: src/ralph/admin/filters.py:57 src/ralph/admin/filters.py:512
+#: src/ralph/networks/filters.py:32
 #, python-format
 msgid "Incorrect value in \"%(field_name)s\" filter"
 msgstr "\"%(field_name)s\" 필터에 맞지 않는 값입니다"
 
-#: admin/filters.py:136 admin/sitetrees.py:266 admin/widgets.py:83
-#: reports/views.py:76
+#: src/ralph/admin/filters.py:136 src/ralph/admin/sitetrees.py:278
+#: src/ralph/admin/widgets.py:93 src/ralph/reports/views.py:76
 msgid "All"
 msgstr "모두"
 
-#: admin/filters.py:156
+#: src/ralph/admin/filters.py:156
 msgid "Yes"
 msgstr "예"
 
-#: admin/filters.py:157
+#: src/ralph/admin/filters.py:157
 msgid "No"
 msgstr "아니오"
 
-#: admin/filters.py:310 admin/filters.py:317 virtual/admin.py:314
-#: virtual/admin.py:432
+#: src/ralph/admin/filters.py:310 src/ralph/admin/filters.py:317
+#: src/ralph/virtual/admin.py:322 src/ralph/virtual/admin.py:454
 msgid "Tags"
 msgstr "태그"
 
-#: admin/filters.py:522 admin/filters.py:528
+#: src/ralph/admin/filters.py:522 src/ralph/admin/filters.py:528
 msgid "IP"
 msgstr "IP"
 
-#: admin/filters.py:552 admin/filters.py:558 deployment/deployment.py:591
+#: src/ralph/admin/filters.py:552 src/ralph/admin/filters.py:558
+#: src/ralph/deployment/deployment.py:589
 msgid "MAC Address"
 msgstr "MAC 주소"
 
-#: admin/filters.py:584 admin/filters.py:594
+#: src/ralph/admin/filters.py:584 src/ralph/admin/filters.py:594
 msgid "show liquidated"
 msgstr "처리항목 보기"
 
-#: admin/filters.py:614 admin/filters.py:629 data_center/admin.py:89
-#: data_center/admin.py:112 data_center/admin.py:672
-#: deployment/deployment.py:402 virtual/admin.py:187 virtual/admin.py:326
+#: src/ralph/admin/filters.py:614 src/ralph/admin/filters.py:629
+#: src/ralph/data_center/admin.py:122 src/ralph/data_center/admin.py:145
+#: src/ralph/data_center/admin.py:700
+#: src/ralph/data_center/templates/data_center/datacenterasset/relations.html:16
+#: src/ralph/data_center/templates/data_center/datacenterasset/relations.html:39
+#: src/ralph/data_center/templates/data_center/datacenterasset/relations.html:58
+#: src/ralph/deployment/deployment.py:400 src/ralph/virtual/admin.py:196
+#: src/ralph/virtual/admin.py:334
 msgid "Hostname"
 msgstr "호스트이름"
 
 #. Translators: Model verbose name and instance
 #. representation, suitable to be an item in a
 #. list.
-#: admin/m2m.py:268
+#: src/ralph/admin/m2m.py:268
 #, python-format
 msgid "%(class_name)s %(instance)s"
 msgstr "%(class_name)s %(instance)s"
 
-#: admin/m2m.py:275
+#: src/ralph/admin/m2m.py:275
 msgid "and"
 msgstr "와/과"
 
-#: admin/m2m.py:278
+#: src/ralph/admin/m2m.py:278
 #, python-format
 msgid ""
 "Deleting %(class_name)s %(instance)s would require deleting the following "
 "protected related objects: %(related_objects)s"
-msgstr "%(class_name)s %(instance)s를 삭제하려면 다음의 보호된 관련개체를"
-"삭제해야 합니다: %(related_objects)s"
+msgstr ""
+"%(class_name)s %(instance)s를 삭제하려면 다음의 보호된 관련개체를삭제해야 합"
+"니다: %(related_objects)s"
 
-#: admin/mixins.py:157
+#: src/ralph/admin/mixins.py:157
 msgid "Found exactly one result."
 msgstr "하나의 결과값을 찾았습니다."
 
-#: admin/sitetrees.py:66
+#: src/ralph/admin/sitetrees.py:66
 msgid "Add {}"
 msgstr "추가 {}"
 
-#: admin/sitetrees.py:92 data_center/admin.py:540
+#: src/ralph/admin/sitetrees.py:92 src/ralph/data_center/admin.py:575
 msgid "Data Center"
 msgstr "데이터 센터"
 
-#: admin/sitetrees.py:97
+#: src/ralph/admin/sitetrees.py:97
 msgid "All hosts"
 msgstr "모든 호스트"
 
-#: admin/sitetrees.py:99
+#: src/ralph/admin/sitetrees.py:99
 msgid "DC Visualization"
 msgstr "DC 가상화"
 
-#: admin/sitetrees.py:103 admin/sitetrees.py:130
+#: src/ralph/admin/sitetrees.py:103 src/ralph/admin/sitetrees.py:142
 msgid "Hardware"
 msgstr "하드웨어"
 
-#: admin/sitetrees.py:104
+#: src/ralph/admin/sitetrees.py:104
 msgid "Virtual Servers"
 msgstr "가상 서버"
 
-#: admin/sitetrees.py:105
+#: src/ralph/admin/sitetrees.py:105
+#: src/ralph/data_center/templates/data_center/datacenterasset/relations.html:74
 msgid "Clusters"
 msgstr "클러스터"
 
-#: admin/sitetrees.py:106 virtual/models.py:198
-msgid "Cloud hosts"
-msgstr "클라우드 호스트"
-
-#: admin/sitetrees.py:107
-msgid "Cloud projects"
-msgstr "클라우드 프로젝트"
-
-#: admin/sitetrees.py:108
+#: src/ralph/admin/sitetrees.py:106
 msgid "Data Centers"
 msgstr "데이터 센터"
 
-#: admin/sitetrees.py:109
+#: src/ralph/admin/sitetrees.py:107
 msgid "Racks"
 msgstr "랙"
 
-#: admin/sitetrees.py:110
+#: src/ralph/admin/sitetrees.py:108
 msgid "Rack accessories"
 msgstr "랙 부대용품"
 
-#: admin/sitetrees.py:111
+#: src/ralph/admin/sitetrees.py:109
+#: src/ralph/data_center/models/physical.py:184
 msgid "accessories"
 msgstr "부대용품"
 
-#: admin/sitetrees.py:112
+#: src/ralph/admin/sitetrees.py:110
 msgid "Databases"
 msgstr "데이터베이스"
 
-#: admin/sitetrees.py:113
+#: src/ralph/admin/sitetrees.py:111
 msgid "Disk Shares"
 msgstr "디스크 공유"
 
-#: admin/sitetrees.py:114
+#: src/ralph/admin/sitetrees.py:112
 msgid "Server Rooms"
 msgstr "서버 룸"
 
-#: admin/sitetrees.py:115 data_center/models/virtual.py:53
+#: src/ralph/admin/sitetrees.py:113 src/ralph/data_center/models/virtual.py:53
 msgid "VIPs"
 msgstr "VIPs"
 
-#: admin/sitetrees.py:116
+#: src/ralph/admin/sitetrees.py:114
 msgid "Preboots"
 msgstr "Preboots"
 
-#: admin/sitetrees.py:118
+#: src/ralph/admin/sitetrees.py:116
 msgid "Preboot configuration"
 msgstr "Preboots 구성"
 
-#: admin/sitetrees.py:121
+#: src/ralph/admin/sitetrees.py:119
 msgid "Preboot files"
 msgstr "Preboots 파일"
 
-#: admin/sitetrees.py:125
+#: src/ralph/admin/sitetrees.py:123
+#, fuzzy
+#| msgid "Cloud host"
+msgid "Cloud"
+msgstr "클라우드 호스트"
+
+#: src/ralph/admin/sitetrees.py:128
+#: src/ralph/data_center/templates/data_center/datacenterasset/relations.html:13
+#: src/ralph/virtual/models.py:224
+msgid "Cloud hosts"
+msgstr "클라우드 호스트"
+
+#: src/ralph/admin/sitetrees.py:129
+msgid "Cloud projects"
+msgstr "클라우드 프로젝트"
+
+#: src/ralph/admin/sitetrees.py:130
+#, fuzzy
+#| msgid "Cloud host"
+msgid "Cloud flavors"
+msgstr "클라우드 호스트"
+
+#: src/ralph/admin/sitetrees.py:131 src/ralph/virtual/models.py:43
+msgid "Cloud providers"
+msgstr "클라우드 제공자"
+
+#: src/ralph/admin/sitetrees.py:132
+#, fuzzy
+#| msgid "Cloud providers"
+msgid "Cloud images"
+msgstr "클라우드 제공자"
+
+#: src/ralph/admin/sitetrees.py:136
 msgid "Back Office"
 msgstr "백 오피스"
 
-#: admin/sitetrees.py:131
-msgid "Warehouses"
-msgstr "웨어하우스"
+#: src/ralph/admin/sitetrees.py:141
+#, fuzzy
+#| msgid "accessories"
+msgid "Access Cards"
+msgstr "부대용품"
 
-#: admin/sitetrees.py:133 back_office/models.py:92
-msgid "Office Infrastructures"
-msgstr "오피스 인프라스트럭처"
+#: src/ralph/admin/sitetrees.py:143
+msgid "SIM Cards"
+msgstr ""
 
-#: admin/sitetrees.py:140 admin/sitetrees.py:145
+#: src/ralph/admin/sitetrees.py:144
+#, fuzzy
+#| msgid "accessory"
+msgid "Accessory"
+msgstr "부속품"
+
+#: src/ralph/admin/sitetrees.py:148 src/ralph/admin/sitetrees.py:153
 msgid "Networks"
 msgstr "네트워크"
 
-#: admin/sitetrees.py:147
+#: src/ralph/admin/sitetrees.py:155
 msgid "Network environments"
 msgstr "네트워크 환경"
 
-#: admin/sitetrees.py:149
+#: src/ralph/admin/sitetrees.py:157
 msgid "Network kind"
 msgstr "네트워크 종류"
 
-#: admin/sitetrees.py:150 virtual/admin.py:210 virtual/admin.py:360
+#: src/ralph/admin/sitetrees.py:158 src/ralph/virtual/admin.py:219
+#: src/ralph/virtual/admin.py:368
 msgid "IP Addresses"
 msgstr "IP 주소"
 
-#: admin/sitetrees.py:151 dhcp/models.py:44
+#: src/ralph/admin/sitetrees.py:159 src/ralph/dhcp/models.py:44
 msgid "DHCP Servers"
 msgstr "DHCP 서버"
 
-#: admin/sitetrees.py:152 dhcp/models.py:66
+#: src/ralph/admin/sitetrees.py:160 src/ralph/dhcp/models.py:61
+#, fuzzy
+#| msgid "DNS Servers"
+msgid "DNS Server Groups"
+msgstr "DNS 서버"
+
+#: src/ralph/admin/sitetrees.py:161 src/ralph/dhcp/models.py:99
 msgid "DNS Servers"
 msgstr "DNS 서버"
 
-#: admin/sitetrees.py:156
+#: src/ralph/admin/sitetrees.py:165
 msgid "Licenses"
 msgstr "라이선스"
 
-#: admin/sitetrees.py:161 data_center/admin.py:144 data_center/admin.py:269
-#: virtual/admin.py:82
+#: src/ralph/admin/sitetrees.py:170 src/ralph/data_center/admin.py:177
+#: src/ralph/data_center/admin.py:302 src/ralph/virtual/admin.py:96
 msgid "Licences"
 msgstr "라이선스"
 
-#: admin/sitetrees.py:162 admin/sitetrees.py:187 admin/sitetrees.py:267
+#: src/ralph/admin/sitetrees.py:171 src/ralph/admin/sitetrees.py:199
+#: src/ralph/admin/sitetrees.py:279
 msgid "Types"
 msgstr "타입"
 
-#: admin/sitetrees.py:163
+#: src/ralph/admin/sitetrees.py:172
 msgid "Software"
 msgstr "소프트웨어"
 
-#: admin/sitetrees.py:167 admin/sitetrees.py:172
+#: src/ralph/admin/sitetrees.py:176
+msgid "Intellectual Property"
+msgstr ""
+
+#: src/ralph/admin/sitetrees.py:181
+#, fuzzy
+#| msgid "remarks"
+msgid "Trade Marks"
+msgstr "리마크"
+
+#: src/ralph/admin/sitetrees.py:182
 msgid "Domains"
 msgstr "도메인"
 
-#: admin/sitetrees.py:173
+#: src/ralph/admin/sitetrees.py:183
 msgid "Contracts"
 msgstr "계약"
 
-#: admin/sitetrees.py:174
+#: src/ralph/admin/sitetrees.py:184
 msgid "Registrants"
 msgstr "등록자"
 
-#: admin/sitetrees.py:175
+#: src/ralph/admin/sitetrees.py:185
 msgid "Owners"
 msgstr "소유자"
 
-#: admin/sitetrees.py:176
+#: src/ralph/admin/sitetrees.py:186
 msgid "DNS Providers"
 msgstr "DNS 제공자"
 
-#: admin/sitetrees.py:177
+#: src/ralph/admin/sitetrees.py:187
 msgid "Domain Categories"
 msgstr "도메인 카테고리"
 
-#: admin/sitetrees.py:181 admin/sitetrees.py:186 back_office/admin.py:34
-#: data_center/admin.py:253
+#: src/ralph/admin/sitetrees.py:188
+msgid "SSL Certificates"
+msgstr ""
+
+#: src/ralph/admin/sitetrees.py:193 src/ralph/admin/sitetrees.py:198
+#: src/ralph/back_office/admin.py:35 src/ralph/data_center/admin.py:286
 msgid "Supports"
 msgstr "지원"
 
-#: admin/sitetrees.py:188
+#: src/ralph/admin/sitetrees.py:200
 msgid "Assets supports"
 msgstr "자원 지원"
 
-#: admin/sitetrees.py:192 reports/templates/reports/report_detail.html:5
+#: src/ralph/admin/sitetrees.py:204
+#: src/ralph/reports/templates/reports/report_detail.html:5
 msgid "Reports"
 msgstr "리포트"
 
-#: admin/sitetrees.py:198
+#: src/ralph/admin/sitetrees.py:210
 msgid "Category model"
 msgstr "카테고리 모델"
 
-#: admin/sitetrees.py:205
+#: src/ralph/admin/sitetrees.py:217
 msgid "Category model status"
 msgstr "카테고리 모델 상태"
 
-#: admin/sitetrees.py:212
+#: src/ralph/admin/sitetrees.py:224
 msgid "Manufacturer category model"
 msgstr "제조업체 카테고리 모델"
 
-#: admin/sitetrees.py:220
+#: src/ralph/admin/sitetrees.py:232
 msgid "Status model"
 msgstr "상태 모델"
 
-#: admin/sitetrees.py:227 reports/views.py:319
+#: src/ralph/admin/sitetrees.py:239 src/ralph/reports/views.py:319
 msgid "Asset - relations"
 msgstr "자산 - 관계"
 
-#: admin/sitetrees.py:234 reports/views.py:478
+#: src/ralph/admin/sitetrees.py:246 src/ralph/reports/views.py:483
 msgid "Licence - relations"
 msgstr "라이선스 - 관계"
 
-#: admin/sitetrees.py:241
+#: src/ralph/admin/sitetrees.py:253
 msgid "Assets - supports"
 msgstr "자산 - 지원"
 
-#: admin/sitetrees.py:248 admin/sitetrees.py:265 reports/views.py:583
+#: src/ralph/admin/sitetrees.py:260 src/ralph/admin/sitetrees.py:277
+#: src/ralph/reports/views.py:588
 msgid "Failures"
 msgstr "고장"
 
-#: admin/sitetrees.py:257 operations/views.py:63
+#: src/ralph/admin/sitetrees.py:269 src/ralph/operations/views.py:63
 msgid "Operations"
 msgstr "운영"
 
-#: admin/sitetrees.py:262
+#: src/ralph/admin/sitetrees.py:274
 msgid "Changes"
 msgstr "변경"
 
-#: admin/sitetrees.py:263
+#: src/ralph/admin/sitetrees.py:275
 msgid "Problems"
 msgstr "문제"
 
-#: admin/sitetrees.py:264
+#: src/ralph/admin/sitetrees.py:276
 msgid "Incidents"
 msgstr "인시던트"
 
-#: admin/sitetrees.py:268
+#: src/ralph/admin/sitetrees.py:280
 msgid "Statuses"
 msgstr "상태"
 
-#: admin/sitetrees.py:272 admin/sitetrees.py:277
+#: src/ralph/admin/sitetrees.py:284 src/ralph/admin/sitetrees.py:289
 msgid "Dashboards"
 msgstr "대시보드"
 
-#: admin/sitetrees.py:278
+#: src/ralph/admin/sitetrees.py:290
 msgid "Graphs"
 msgstr "그래프"
 
-#: admin/sitetrees.py:282
+#: src/ralph/admin/sitetrees.py:294
 msgid "Settings"
 msgstr "설정"
 
-#: admin/sitetrees.py:287
+#: src/ralph/admin/sitetrees.py:299
 msgid "Asset model"
 msgstr "자산 모델"
 
-#: admin/sitetrees.py:288
+#: src/ralph/admin/sitetrees.py:300
 msgid "Asset category"
 msgstr "자산 카테고리"
 
-#: admin/sitetrees.py:289
+#: src/ralph/admin/sitetrees.py:301
 msgid "Manufacturer"
 msgstr "제조업체"
 
-#: admin/sitetrees.py:290
+#: src/ralph/admin/sitetrees.py:302
 msgid "Manufacturer Kind"
 msgstr "제조업체 종류"
 
-#: admin/sitetrees.py:291
+#: src/ralph/admin/sitetrees.py:303
 msgid "Business segment"
 msgstr "비즈니스 영역"
 
-#: admin/sitetrees.py:293
-#: admin/templates/admin/templatetags/my_services.html:12
+#: src/ralph/admin/sitetrees.py:305
+#: src/ralph/admin/templates/admin/templatetags/my_services.html:12
 msgid "Service"
 msgstr "서비스"
 
-#: admin/sitetrees.py:294
-#: admin/templates/admin/templatetags/my_services.html:13
+#: src/ralph/admin/sitetrees.py:306
+#: src/ralph/admin/templates/admin/templatetags/my_services.html:13
 msgid "Environment"
 msgstr "환경"
 
-#: admin/sitetrees.py:295 assets/models/assets.py:348
+#: src/ralph/admin/sitetrees.py:307 src/ralph/assets/models/assets.py:350
 msgid "Budget info"
 msgstr "예산 정보"
 
-#: admin/sitetrees.py:297
+#: src/ralph/admin/sitetrees.py:309
 msgid "Service Environment"
 msgstr "서비스 환경"
 
-#: admin/sitetrees.py:300
+#: src/ralph/admin/sitetrees.py:312
 msgid "Configuration modules"
 msgstr "구성 모듈"
 
-#: admin/sitetrees.py:303
+#: src/ralph/admin/sitetrees.py:315
 msgid "Configuration classes"
 msgstr "구성 클래스"
 
-#: admin/sitetrees.py:305
+#: src/ralph/admin/sitetrees.py:317
 msgid "Asset holder"
 msgstr "자산 홀더"
 
-#: admin/sitetrees.py:307
+#: src/ralph/admin/sitetrees.py:319
 msgid "Groups list"
 msgstr "그룹 목록"
 
-#: admin/sitetrees.py:308
+#: src/ralph/admin/sitetrees.py:320
 msgid "Regions"
 msgstr "리전"
 
-#: admin/sitetrees.py:309
-#: lib/transitions/templates/transitions/templatetags/available_transitions.html:7
+#: src/ralph/admin/sitetrees.py:322
+#: src/ralph/lib/transitions/templates/transitions/templatetags/available_transitions.html:7
 msgid "Transitions"
 msgstr "전환"
 
-#: admin/sitetrees.py:310
+#: src/ralph/admin/sitetrees.py:323
 msgid "Report template"
 msgstr "리포트 템플릿"
 
-#: admin/sitetrees.py:311
+#: src/ralph/admin/sitetrees.py:324
 msgid "Custom fields"
 msgstr "사용자 지정 필드"
 
-#: admin/templates/admin/actions.html:5
-#: admin/templates/admin/templatetags/transition_history.html:18
-#: lib/transitions/templates/transitions/_transition_jobs_table.html:12
-#: lib/transitions/templates/transitions/current_transitions.html:27
+#: src/ralph/admin/sitetrees.py:325
+msgid "Warehouses"
+msgstr "웨어하우스"
+
+#: src/ralph/admin/sitetrees.py:327 src/ralph/back_office/models.py:95
+msgid "Office Infrastructures"
+msgstr "오피스 인프라스트럭처"
+
+#: src/ralph/admin/templates/admin/actions.html:5
+#: src/ralph/admin/templates/admin/templatetags/transition_history.html:18
+#: src/ralph/lib/transitions/templates/transitions/_transition_jobs_table.html:12
+#: src/ralph/lib/transitions/templates/transitions/current_transitions.html:27
 msgid "Actions"
 msgstr "활동"
 
-#: admin/templates/admin/actions.html:10
+#: src/ralph/admin/templates/admin/actions.html:10
 msgid "Run the selected action"
 msgstr "선택한 활동을 실행"
 
-#: admin/templates/admin/actions.html:11
+#: src/ralph/admin/templates/admin/actions.html:11
 msgid "Go"
 msgstr "실행"
 
-#: admin/templates/admin/change_form.html:13
-#: admin/templates/admin/multi_add.html:53
+#: src/ralph/admin/templates/admin/change_form.html:13
+#: src/ralph/admin/templates/admin/multi_add.html:53
 msgid "Add"
 msgstr "추가"
 
-#: admin/templates/admin/change_form.html:27
+#: src/ralph/admin/templates/admin/change_form.html:27
 msgid "History"
 msgstr "이력"
 
-#: admin/templates/admin/change_form.html:61
-#: admin/templates/admin/change_list.html:73
-#: admin/templates/admin/login.html:26
+#: src/ralph/admin/templates/admin/change_form.html:61
+#: src/ralph/admin/templates/admin/change_list.html:73
+#: src/ralph/admin/templates/admin/login.html:28
 msgid "Please correct the error below."
 msgstr "아래 에러를 수정하십시오."
 
-#: admin/templates/admin/change_form.html:63
-#: admin/templates/admin/change_list.html:75
-#: admin/templates/admin/login.html:26
+#: src/ralph/admin/templates/admin/change_form.html:63
+#: src/ralph/admin/templates/admin/change_list.html:75
+#: src/ralph/admin/templates/admin/login.html:28
 msgid "Please correct the errors below."
 msgstr "아래 에러를 수정하십시오."
 
-#: admin/templates/admin/change_list.html:34
+#: src/ralph/admin/templates/admin/change_list.html:34
 msgid "Back to list"
 msgstr "목록으로 이동"
 
-#: admin/templates/admin/change_list.html:40
+#: src/ralph/admin/templates/admin/change_list.html:40
 #, python-format
 msgid ""
 "\n"
@@ -697,14 +1019,14 @@ msgid ""
 msgstr ""
 "\n"
 "                  <i class=\"fa fa-plus\" aria-hidden=\"true\"></i> "
-"%(name)s\n 추가"
-"                "
+"%(name)s\n"
+" 추가                "
 
-#: admin/templates/admin/change_list.html:47
+#: src/ralph/admin/templates/admin/change_list.html:47
 msgid "Other actions"
 msgstr "다른 활동"
 
-#: admin/templates/admin/change_list.html:56
+#: src/ralph/admin/templates/admin/change_list.html:56
 #, python-format
 msgid ""
 "\n"
@@ -715,15 +1037,15 @@ msgstr ""
 "                            삭제된 %(name)s 복구\n"
 "                          "
 
-#: admin/templates/admin/change_list_results.html:32
+#: src/ralph/admin/templates/admin/change_list_results.html:32
 msgid "Remove from sorting"
 msgstr "정렬에서 제거"
 
-#: admin/templates/admin/change_list_results.html:63
+#: src/ralph/admin/templates/admin/change_list_results.html:63
 msgid "Nothing to display."
 msgstr "표시할 항목이 없음"
 
-#: admin/templates/admin/change_list_results.html:65
+#: src/ralph/admin/templates/admin/change_list_results.html:65
 #, python-format
 msgid ""
 "\n"
@@ -731,29 +1053,30 @@ msgid ""
 "      "
 msgstr ""
 "\n"
-"        당신은 <a href=\"%(add_url)s\">첫번째 %(name)s 항목을</a>"
-" 추가할 수 있습니다.\n      "
+"        당신은 <a href=\"%(add_url)s\">첫번째 %(name)s 항목을</a> 추가할 수 "
+"있습니다.\n"
+"      "
 
-#: admin/templates/admin/delete_confirmation.html:8
+#: src/ralph/admin/templates/admin/delete_confirmation.html:8
 #, python-format
 msgid ""
 "Deleting the %(object_name)s '%(escaped_object)s' would result in deleting "
 "related objects, but your account doesn't have permission to delete the "
 "following types of objects:"
 msgstr ""
-"%(object_name)s '%(escaped_object)s'를 삭제하려면 관련 개체가 삭제되지만, "
-"계정에는 다음과 같은 유형의 개체를 삭제할 수 있는 권한이 없습니다:"
+"%(object_name)s '%(escaped_object)s'를 삭제하려면 관련 개체가 삭제되지만, 계"
+"정에는 다음과 같은 유형의 개체를 삭제할 수 있는 권한이 없습니다:"
 
-#: admin/templates/admin/delete_confirmation.html:15
+#: src/ralph/admin/templates/admin/delete_confirmation.html:15
 #, python-format
 msgid ""
 "Deleting the %(object_name)s '%(escaped_object)s' would require deleting the "
 "following protected related objects:"
 msgstr ""
-"%(object_name)s '%(escaped_object)s'를 삭제하려면"
-" 다음과 같은 보호된 개체를 삭제해야 합니다:"
+"%(object_name)s '%(escaped_object)s'를 삭제하려면 다음과 같은 보호된 개체를 "
+"삭제해야 합니다:"
 
-#: admin/templates/admin/delete_confirmation.html:23
+#: src/ralph/admin/templates/admin/delete_confirmation.html:23
 #, python-format
 msgid ""
 "\n"
@@ -762,46 +1085,46 @@ msgid ""
 "      "
 msgstr ""
 "\n"
-"        %(object_name)s \"%(escaped_object)s\"을(를) 삭제하시겠습니까?"
-"다음과 같은 관련 항목이 삭제됩니다:\n"
+"        %(object_name)s \"%(escaped_object)s\"을(를) 삭제하시겠습니까?다음과 "
+"같은 관련 항목이 삭제됩니다:\n"
 "      "
 
-#: admin/templates/admin/delete_confirmation.html:29
-#: admin/templates/admin/delete_selected_confirmation.html:30
-#: assets/admin.py:151 operations/admin.py:88
+#: src/ralph/admin/templates/admin/delete_confirmation.html:29
+#: src/ralph/admin/templates/admin/delete_selected_confirmation.html:30
+#: src/ralph/assets/admin.py:152 src/ralph/operations/admin.py:144
 msgid "Objects"
 msgstr "개체"
 
-#: admin/templates/admin/delete_confirmation.html:36
-#: admin/templates/admin/delete_selected_confirmation.html:41
+#: src/ralph/admin/templates/admin/delete_confirmation.html:36
+#: src/ralph/admin/templates/admin/delete_selected_confirmation.html:41
 msgid "Yes, I'm sure"
 msgstr "예. 확실합니다."
 
-#: admin/templates/admin/delete_confirmation.html:37
-#: admin/templates/admin/delete_selected_confirmation.html:42
+#: src/ralph/admin/templates/admin/delete_confirmation.html:37
+#: src/ralph/admin/templates/admin/delete_selected_confirmation.html:42
 msgid "No, take me back"
 msgstr "아니오. 뒤로 돌아갑니다."
 
-#: admin/templates/admin/delete_selected_confirmation.html:7
+#: src/ralph/admin/templates/admin/delete_selected_confirmation.html:7
 #, python-format
 msgid ""
 "Deleting the selected %(objects_name)s would result in deleting related "
 "objects, but your account doesn't have permission to delete the following "
 "types of objects:"
 msgstr ""
-"선택한 %(objects_name)s을(를) 삭제하면 관련 개체가 삭제되지만,"
-"계정에 다음 유형의 개체를 삭제할 권한이 없습니다:"
+"선택한 %(objects_name)s을(를) 삭제하면 관련 개체가 삭제되지만,계정에 다음 유"
+"형의 개체를 삭제할 권한이 없습니다:"
 
-#: admin/templates/admin/delete_selected_confirmation.html:14
+#: src/ralph/admin/templates/admin/delete_selected_confirmation.html:14
 #, python-format
 msgid ""
 "Deleting the selected %(objects_name)s would require deleting the following "
 "protected related objects:"
 msgstr ""
-"선택한  %(objects_name)s을(를) 삭제하려면"
-" 다음과 같은 보호된 관련 개체를 삭제해야 합니다:"
+"선택한  %(objects_name)s을(를) 삭제하려면 다음과 같은 보호된 관련 개체를 삭제"
+"해야 합니다:"
 
-#: admin/templates/admin/delete_selected_confirmation.html:22
+#: src/ralph/admin/templates/admin/delete_selected_confirmation.html:22
 #, python-format
 msgid ""
 "\n"
@@ -810,32 +1133,32 @@ msgid ""
 "      "
 msgstr ""
 "\n"
-"      선택한 %(objects_name)s을(를) 삭제하시겠습니까? "
-"다음 개체 및 관련 항목이 모두 삭제됩니다:\n"
+"      선택한 %(objects_name)s을(를) 삭제하시겠습니까? 다음 개체 및 관련 항목"
+"이 모두 삭제됩니다:\n"
 "      "
 
-#: admin/templates/admin/edit_inline/tabular.html:8
+#: src/ralph/admin/templates/admin/edit_inline/tabular.html:8
 #, python-format
 msgid "Add another %(verbose_name)s"
 msgstr "다른 %(verbose_name)s 추가"
 
-#: admin/templates/admin/edit_inline/tabular.html:8
+#: src/ralph/admin/templates/admin/edit_inline/tabular.html:8
 msgid "Remove"
 msgstr "제거"
 
-#: admin/templates/admin/edit_inline/tabular.html:26
+#: src/ralph/admin/templates/admin/edit_inline/tabular.html:26
 msgid "Delete?"
 msgstr "삭제?"
 
-#: admin/templates/admin/edit_inline/tabular.html:67
+#: src/ralph/admin/templates/admin/edit_inline/tabular.html:67
 msgid "Change"
 msgstr "변경"
 
-#: admin/templates/admin/edit_inline/tabular_m2m.html:5
+#: src/ralph/admin/templates/admin/edit_inline/tabular_m2m.html:5
 msgid "Delete assignment?"
 msgstr "할당을 삭제하시겠습니까?"
 
-#: admin/templates/admin/filters/_filter_base.html:7
+#: src/ralph/admin/templates/admin/filters/_filter_base.html:7
 #, python-format
 msgid ""
 "\n"
@@ -843,2583 +1166,2991 @@ msgid ""
 "      "
 msgstr ""
 
-#: admin/templates/admin/import_export/change_list_import_export.html:8
+#: src/ralph/admin/templates/admin/import_export/change_list_import_export.html:8
 msgid "Import"
 msgstr "임포트"
 
-#: admin/templates/admin/import_export/change_list_import_export.html:14
+#: src/ralph/admin/templates/admin/import_export/change_list_import_export.html:14
+#: src/ralph/admin/templates/admin/import_export/export.html:7
+#: src/ralph/admin/templates/admin/import_export/export.html:11
 msgid "Export"
 msgstr "익스포트"
 
-#: admin/templates/admin/includes/object_delete_summary.html:3
+#: src/ralph/admin/templates/admin/import_export/export.html:14
+msgid ""
+"To avoid wrong calculations in the report, make sure all exported items' "
+"prices are expressed in the same currency."
+msgstr ""
+
+#: src/ralph/admin/templates/admin/import_export/export.html:38
+msgid "Submit"
+msgstr ""
+
+#: src/ralph/admin/templates/admin/includes/object_delete_summary.html:3
 msgid "Summary"
 msgstr "요약"
 
-#: admin/templates/admin/index.html:25
+#: src/ralph/admin/templates/admin/index.html:19
 msgid "My Recent Actions"
 msgstr "나의 최근 활동"
 
-#: admin/templates/admin/index.html:29
+#: src/ralph/admin/templates/admin/index.html:23
 msgid "None available"
 msgstr "사용할 수 없음"
 
-#: admin/templates/admin/index.html:43
+#: src/ralph/admin/templates/admin/index.html:37
 msgid "Unknown content"
 msgstr "알 수 없는 컨텐츠"
 
-#: admin/templates/admin/login.html:49
+#: src/ralph/admin/templates/admin/login.html:51
 msgid "Please login"
 msgstr "로그인 하십시오"
 
-#: admin/templates/admin/login.html:51
+#: src/ralph/admin/templates/admin/login.html:53
 msgid "Log in"
 msgstr "로그인"
 
-#: admin/templates/admin/login.html:57
+#: src/ralph/admin/templates/admin/login.html:59
 msgid "Forgotten your password or username?"
 msgstr "사용자 이름이나 비밀번호를 잊으셨나요?"
 
-#: admin/templates/admin/multi_add.html:5
+#: src/ralph/admin/templates/admin/multi_add.html:5
 msgid "Bulk adding:"
 msgstr "대량 추가:"
 
-#: admin/templates/admin/multi_add.html:12
+#: src/ralph/admin/templates/admin/multi_add.html:12
 msgid "This object will be multiplied"
 msgstr "이 개체는 증가할 것 입니다"
 
-#: admin/templates/admin/multi_add.html:17
+#: src/ralph/admin/templates/admin/multi_add.html:17
 msgid "Please add multiple values separated with comma, new line or pipe"
 msgstr "쉽표, 새줄 또는 파이프로 구분된 값을 여러 개 추가하십시오"
 
-#: admin/templates/admin/multi_add.html:47
+#: src/ralph/admin/templates/admin/multi_add.html:47
 msgid "Cancel"
 msgstr "취소"
 
-#: admin/templates/admin/object_history.html:12
-#: admin/templates/reversion/object_history.html:14
+#: src/ralph/admin/templates/admin/object_history.html:12
+#: src/ralph/admin/templates/reversion/object_history.html:14
 msgid "Date/time"
 msgstr "날짜/시간"
 
-#: admin/templates/admin/object_history.html:13
-#: admin/templates/reversion/object_history.html:15 back_office/models.py:268
-#: back_office/models.py:460
-#: lib/transitions/templates/transitions/_transition_jobs_table.html:6
-msgid "User"
-msgstr "사용자"
-
-#: admin/templates/admin/object_history.html:14
-#: back_office/templates/backofficeasset/components.html:14
-#: data_center/templates/data_center/datacenterasset/components.html:14
+#: src/ralph/admin/templates/admin/object_history.html:14
+#: src/ralph/back_office/templates/backofficeasset/components.html:14
+#: src/ralph/data_center/templates/data_center/datacenterasset/components.html:14
 msgid "Action"
 msgstr "활동"
 
-#: admin/templates/admin/object_history.html:28
-#: admin/templates/reversion/object_history.html:37
+#: src/ralph/admin/templates/admin/object_history.html:28
+#: src/ralph/admin/templates/reversion/object_history.html:37
 msgid ""
 "This object doesn't have a change history. It probably wasn't added via this "
 "admin site."
 msgstr ""
-"이 개체에는 변경 이력이 없습니다. 이 관리 사이트를 통해서 추가되지 않았을 것 입니다."
+"이 개체에는 변경 이력이 없습니다. 이 관리 사이트를 통해서 추가되지 않았을 것 "
+"입니다."
 
-#: admin/templates/admin/pagination.html:21
+#: src/ralph/admin/templates/admin/pagination.html:21
 msgid "Show all"
 msgstr "모두 보기"
 
-#: admin/templates/admin/pagination.html:26
-#: admin/templates/admin/submit_line.html:28 dns/templates/dns/dns_edit.html:36
+#: src/ralph/admin/templates/admin/pagination.html:26
+#: src/ralph/admin/templates/admin/submit_line.html:28
+#: src/ralph/dns/templates/dns/dns_edit.html:36
 msgid "Save"
 msgstr "저장"
 
-#: admin/templates/admin/partials/userlinks.html:6
+#: src/ralph/admin/templates/admin/partials/userlinks.html:6
+#: src/ralph/admin/templatetags/dashboard_tags.py:39
 msgid "My equipment"
 msgstr "나의 장비"
 
-#: admin/templates/admin/partials/userlinks.html:10
+#: src/ralph/admin/templates/admin/partials/userlinks.html:10
 msgid "Change password"
 msgstr "비밀번호 변경"
 
-#: admin/templates/admin/partials/userlinks.html:14
+#: src/ralph/admin/templates/admin/partials/userlinks.html:14
 msgid "Log out"
 msgstr "로그 아웃"
 
-#: admin/templates/admin/related_widget_wrapper.html:9
+#: src/ralph/admin/templates/admin/related_widget_wrapper.html:9
 #, python-format
 msgid "Change selected %(model)s"
 msgstr "선택한 %(model)s 변경"
 
-#: admin/templates/admin/related_widget_wrapper.html:16
+#: src/ralph/admin/templates/admin/related_widget_wrapper.html:16
 #, python-format
 msgid "Add another %(model)s"
 msgstr "다른 %(model)s 추가"
 
-#: admin/templates/admin/search_form.html:7
+#: src/ralph/admin/templates/admin/search_form.html:7
 #, python-format
 msgid "Search %(verbose_name)s by"
 msgstr "%(verbose_name)s로 검색"
 
-#: admin/templates/admin/submit_line.html:8
-#: attachments/templates/attachments/attachments.html:15
-#: dns/templates/dns/dns_edit.html:40
+#: src/ralph/admin/templates/admin/submit_line.html:8
+#: src/ralph/attachments/templates/attachments/attachments.html:15
+#: src/ralph/dns/templates/dns/dns_edit.html:40
 msgid "Delete"
 msgstr "삭제"
 
-#: admin/templates/admin/submit_line.html:18
+#: src/ralph/admin/templates/admin/submit_line.html:18
 msgid "Duplicate"
 msgstr "중복"
 
-#: admin/templates/admin/submit_line.html:22
+#: src/ralph/admin/templates/admin/submit_line.html:22
 msgid "Bulk add"
 msgstr "대량 추가"
 
-#: admin/templates/admin/templatetags/my_services.html:9
+#: src/ralph/admin/templates/admin/templatetags/my_services.html:9
 msgid "My services"
 msgstr "나의 서비스"
 
-#: admin/templates/admin/templatetags/my_services.html:14 assets/admin.py:263
+#: src/ralph/admin/templates/admin/templatetags/my_services.html:14
+#: src/ralph/assets/admin.py:282
 msgid "Assets count"
 msgstr "자산 수량"
 
-#: admin/templates/admin/templatetags/ralph_summary.html:12
-msgid "Show"
-msgstr "보기"
-
-#: admin/templates/admin/templatetags/tabs.html:13
-#: admin/templates/admin/templatetags/tabs.html:14 assets/admin.py:78
-#: back_office/admin.py:141 data_center/admin.py:166 data_center/admin.py:430
-#: deployment/admin.py:23 deployment/admin.py:41 deployment/admin.py:61
-#: domains/admin.py:45 domains/admin.py:88
-#: lib/transitions/templates/transitions/current_transitions.html:18
-#: licences/admin.py:104 networks/admin.py:34 networks/admin.py:138
-#: networks/admin.py:277 operations/admin.py:81 supports/admin.py:71
+#: src/ralph/admin/templates/admin/templatetags/tabs.html:13
+#: src/ralph/admin/templates/admin/templatetags/tabs.html:14
+#: src/ralph/assets/admin.py:79 src/ralph/back_office/admin.py:162
+#: src/ralph/data_center/admin.py:199 src/ralph/data_center/admin.py:465
+#: src/ralph/deployment/admin.py:23 src/ralph/deployment/admin.py:41
+#: src/ralph/deployment/admin.py:61 src/ralph/domains/admin.py:47
+#: src/ralph/domains/admin.py:91
+#: src/ralph/lib/transitions/templates/transitions/current_transitions.html:18
+#: src/ralph/licences/admin.py:123 src/ralph/networks/admin.py:34
+#: src/ralph/networks/admin.py:140 src/ralph/networks/admin.py:279
+#: src/ralph/operations/admin.py:137 src/ralph/ssl_certificates/admin.py:34
+#: src/ralph/supports/admin.py:89 src/ralph/trade_marks/admin.py:71
 msgid "Basic info"
 msgstr "기본 정보"
 
-#: admin/templates/admin/templatetags/transition_history.html:13
-#: attachments/templates/attachments/attachments.html:14
+#: src/ralph/admin/templates/admin/templatetags/transition_history.html:13
+#: src/ralph/attachments/templates/attachments/attachments.html:14
 msgid "Date"
 msgstr "날짜"
 
-#: admin/templates/admin/templatetags/transition_history.html:14
-#: lib/transitions/templates/transitions/current_transitions.html:19
+#: src/ralph/admin/templates/admin/templatetags/transition_history.html:14
+#: src/ralph/lib/transitions/templates/transitions/current_transitions.html:19
 msgid "Author"
 msgstr "입안자"
 
-#: admin/templates/admin/templatetags/transition_history.html:15
-#: lib/transitions/templates/transitions/current_transitions.html:20
+#: src/ralph/admin/templates/admin/templatetags/transition_history.html:15
+#: src/ralph/lib/transitions/templates/transitions/current_transitions.html:20
 msgid "Transition"
 msgstr "전환"
 
-#: admin/templates/admin/templatetags/transition_history.html:16
+#: src/ralph/admin/templates/admin/templatetags/transition_history.html:16
 msgid "Source"
 msgstr "소스"
 
-#: admin/templates/admin/templatetags/transition_history.html:17
+#: src/ralph/admin/templates/admin/templatetags/transition_history.html:17
 msgid "Target"
 msgstr "타겟"
 
-#: admin/templates/admin/templatetags/transition_history.html:19
-#: lib/transitions/templates/transitions/current_transitions.html:26
+#: src/ralph/admin/templates/admin/templatetags/transition_history.html:19
+#: src/ralph/lib/transitions/templates/transitions/current_transitions.html:26
 msgid "Data"
 msgstr "데이터"
 
-#: admin/templates/admin/templatetags/transition_history.html:20
+#: src/ralph/admin/templates/admin/templatetags/transition_history.html:20
 msgid "Attachment"
 msgstr "첨부"
 
-#: admin/templates/admin/templatetags/transition_history.html:65
+#: src/ralph/admin/templates/admin/templatetags/transition_history.html:65
 msgid "Transition history is empty"
 msgstr "전환 이력이 비어있습니다"
 
-#: admin/templates/reversion/object_history.html:7
+#: src/ralph/admin/templates/reversion/object_history.html:7
 msgid ""
 "Choose a date from the list below to revert to a previous version of this "
 "object."
-msgstr ""
-"이 개체의 이전 버전으로 되돌리려면 아래 목록에서 날짜를 선택하십시오."
+msgstr "이 개체의 이전 버전으로 되돌리려면 아래 목록에서 날짜를 선택하십시오."
 
-#: admin/templates/reversion/object_history.html:16
+#: src/ralph/admin/templates/reversion/object_history.html:16
 msgid "Comment"
 msgstr "코멘트"
 
-#: admin/views/multiadd.py:142
+#: src/ralph/admin/templatetags/dashboard_tags.py:53
+#: src/ralph/admin/tests/test_templatetags.py:21
+#, fuzzy
+#| msgid "Hardware"
+msgid "Hardware pick up"
+msgstr "하드웨어"
+
+#: src/ralph/admin/templatetags/dashboard_tags.py:65
+#: src/ralph/admin/tests/test_templatetags.py:45
+msgid "SIM Card pick up"
+msgstr ""
+
+#: src/ralph/admin/templatetags/dashboard_tags.py:77
+#: src/ralph/admin/tests/test_templatetags.py:29
+#, fuzzy
+#| msgid "Hardware"
+msgid "Hardware loan"
+msgstr "하드웨어"
+
+#: src/ralph/admin/templatetags/dashboard_tags.py:89
+#: src/ralph/admin/tests/test_templatetags.py:37
+#, fuzzy
+#| msgid "Hardware"
+msgid "Hardware return"
+msgstr "하드웨어"
+
+#: src/ralph/admin/views/multiadd.py:142
 #, python-format
 msgid "Saved %(count)d object(s): %(objects)s"
 msgstr "%(count)d object(s): %(objects)s 저장"
 
-#: api/tests/test_fields.py:15 api/tests/test_serializers.py:22
+#: src/ralph/api/tests/test_fields.py:15
+#: src/ralph/api/tests/test_serializers.py:22
 msgid "foo11"
 msgstr "foo11"
 
-#: api/tests/test_fields.py:16 api/tests/test_serializers.py:23
+#: src/ralph/api/tests/test_fields.py:16
+#: src/ralph/api/tests/test_serializers.py:23
 msgid "bar22"
 msgstr "bar22"
 
-#: assets/admin.py:60
+#: src/ralph/assets/admin.py:61
 msgid "Objects count"
 msgstr "개체 수량"
 
-#: assets/admin.py:83 networks/admin.py:146
+#: src/ralph/assets/admin.py:84 src/ralph/networks/admin.py:148
 msgid "Relations"
 msgstr "관계"
 
-#: assets/admin.py:100
+#: src/ralph/assets/admin.py:101
 msgid "Children modules"
 msgstr "하위 모듈"
 
-#: assets/admin.py:111
+#: src/ralph/assets/admin.py:112
 msgid "Children classes"
 msgstr "상위 클래스"
 
-#: assets/admin.py:139
+#: src/ralph/assets/admin.py:140
 msgid "Go to object"
 msgstr "개체로 이동"
 
-#: assets/admin.py:145
+#: src/ralph/assets/admin.py:142 src/ralph/dashboards/admin.py:116
+msgid "Link"
+msgstr "링크"
+
+#: src/ralph/assets/admin.py:146
 msgid "object"
 msgstr "개체"
 
-#: assets/admin.py:164 assets/models/assets.py:172 deployment/models.py:95
-#: deployment/models.py:115 operations/models.py:57
+#: src/ralph/assets/admin.py:167 src/ralph/assets/models/assets.py:174
+#: src/ralph/deployment/models.py:96 src/ralph/deployment/models.py:118
+#: src/ralph/operations/models.py:57
 msgid "type"
 msgstr "타입"
 
-#: assets/admin.py:165 networks/models/networks.py:286
+#: src/ralph/assets/admin.py:168 src/ralph/networks/models/networks.py:286
 msgid "environment"
 msgstr "환경"
 
-#: assets/invoice_report.py:44
+#: src/ralph/assets/admin.py:248
+#, fuzzy
+#| msgid "Cores count"
+msgid "Services count"
+msgstr "코어 수량"
+
+#: src/ralph/assets/invoice_report.py:47
 msgid "Invoice report"
 msgstr "인보이스 리포트"
 
-#: assets/invoice_report.py:84
+#: src/ralph/assets/invoice_report.py:87
 msgid "Selected items have different"
 msgstr "선택한 항목이 다름"
 
-#: assets/models/assets.py:149
+#: src/ralph/assets/models/assets.py:151
 msgid "manufacturer kind"
 msgstr "제조업체 종류"
 
-#: assets/models/assets.py:181
+#: src/ralph/assets/models/assets.py:183
 msgid "Power consumption"
 msgstr "전력 소비량"
 
-#: assets/models/assets.py:185
+#: src/ralph/assets/models/assets.py:187
 msgid "Height of device"
 msgstr "장치의 높이"
 
-#: assets/models/assets.py:190
+#: src/ralph/assets/models/assets.py:192
 msgid "Cores count"
 msgstr "코어 수량"
 
-#: assets/models/assets.py:194
+#: src/ralph/assets/models/assets.py:196
 msgid "visualization layout of front side"
 msgstr "전면의 시각화 레이아웃"
 
-#: assets/models/assets.py:200
+#: src/ralph/assets/models/assets.py:202
 msgid "visualization layout of back side"
 msgstr "뒷면의 시각화 레이아웃"
 
-#: assets/models/assets.py:209 assets/models/components.py:83
+#: src/ralph/assets/models/assets.py:211
+#: src/ralph/assets/models/components.py:83
 msgid "model"
 msgstr "모델"
 
-#: assets/models/assets.py:210
+#: src/ralph/assets/models/assets.py:212
 msgid "models"
 msgstr "모델"
 
-#: assets/models/assets.py:258 assets/models/assets.py:424
+#: src/ralph/assets/models/assets.py:260 src/ralph/assets/models/assets.py:419
+#: src/ralph/licences/models.py:205
 msgid ""
 "This value is in percentage. For example value: \"100\" means it depreciates "
 "during a year. Value: \"25\" means it depreciates during 4 years, and so "
 "on... ."
 msgstr ""
-"이 값은 백분율입니다. 예를 들어 값: \"100\" 은 1년 동안 감가상각된다는 것을 의미합니다."
-" 값: \"25\"는 4년동안 감가상각된다는 것을 의미합니다. 그리고... ."
+"이 값은 백분율입니다. 예를 들어 값: \"100\" 은 1년 동안 감가상각된다는 것을 "
+"의미합니다. 값: \"25\"는 4년동안 감가상각된다는 것을 의미합니다. 그리고... ."
 
-#: assets/models/assets.py:266 deployment/deployment.py:256
+#: src/ralph/assets/models/assets.py:268 src/ralph/deployment/deployment.py:256
 msgid "category"
 msgstr "카테고리"
 
-#: assets/models/assets.py:267
+#: src/ralph/assets/models/assets.py:269
 msgid "categories"
 msgstr "카테고리"
 
-#: assets/models/assets.py:349
+#: src/ralph/assets/models/assets.py:351
 msgid "Budgets info"
 msgstr "예산 정보"
 
-#: assets/models/assets.py:366 data_center/models/virtual.py:96
-#: networks/models/networks.py:618 virtual/models.py:190 virtual/models.py:328
+#: src/ralph/assets/models/assets.py:368
+#: src/ralph/data_center/models/virtual.py:96
+#: src/ralph/networks/models/networks.py:620 src/ralph/virtual/models.py:216
+#: src/ralph/virtual/models.py:355
 msgid "hostname"
 msgstr "호스트 이름"
 
-#: assets/models/assets.py:372 virtual/models.py:333
+#: src/ralph/assets/models/assets.py:374 src/ralph/virtual/models.py:360
 msgid "SN"
 msgstr "시리얼 번호"
 
-#: assets/models/assets.py:381
+#: src/ralph/assets/models/assets.py:383
 msgid "barcode"
 msgstr "바코드"
 
-#: assets/models/assets.py:388 licences/models.py:178
+#: src/ralph/assets/models/assets.py:390 src/ralph/licences/models.py:182
 msgid "inventory number"
 msgstr "인벤토리 번호"
 
-#: assets/models/assets.py:393
+#: src/ralph/assets/models/assets.py:395
 msgid "order number"
 msgstr "주문 번호"
 
-#: assets/models/assets.py:399 supports/models.py:101
+#: src/ralph/assets/models/assets.py:401 src/ralph/supports/models.py:103
 msgid "invoice number"
 msgstr "인보이스 번호"
 
-#: assets/models/assets.py:516
+#: src/ralph/assets/models/assets.py:518
 msgid "SN or BARCODE field is required"
 msgstr "시리얼 번호 또는 바코드 필드가 필요합니다"
 
-#: assets/models/base.py:88
+#: src/ralph/assets/models/base.py:88 src/ralph/operations/admin.py:98
 msgid "configuration path"
 msgstr "구성 경로"
 
-#: assets/models/base.py:90
+#: src/ralph/assets/models/base.py:90
 msgid "path to configuration for this object, for example path to puppet class"
 msgstr "이 개체에 대한 구성 경로(예: puppet 클래스에 대한 경로)"
 
-#: assets/models/choices.py:9
+#: src/ralph/assets/models/choices.py:9
 msgid "for contractor"
 msgstr "계약업체용"
 
-#: assets/models/choices.py:10
+#: src/ralph/assets/models/choices.py:10
 msgid "sectional"
 msgstr "섹션"
 
-#: assets/models/choices.py:11
+#: src/ralph/assets/models/choices.py:11
 msgid "for dashboards"
 msgstr "대시보드용"
 
-#: assets/models/choices.py:12
+#: src/ralph/assets/models/choices.py:12
 msgid "for events"
 msgstr "이벤트용"
 
-#: assets/models/choices.py:13
+#: src/ralph/assets/models/choices.py:13
 msgid "for tests"
 msgstr "테스트용"
 
-#: assets/models/choices.py:14
+#: src/ralph/assets/models/choices.py:14
 msgid "others"
 msgstr "그밖의"
 
-#: assets/models/choices.py:20
+#: src/ralph/assets/models/choices.py:20
 msgid "shipment"
 msgstr "배달"
 
-#: assets/models/choices.py:21
+#: src/ralph/assets/models/choices.py:21
 msgid "salvaged"
 msgstr "구조(인양)"
 
-#: assets/models/choices.py:27
+#: src/ralph/assets/models/choices.py:27
 msgid "back office"
 msgstr "고객을 직접응대하지 않는 부서"
 
-#: assets/models/choices.py:28 data_center/models/physical.py:131
-#: data_center/models/physical.py:133 networks/models/networks.py:58
+#: src/ralph/assets/models/choices.py:28
+#: src/ralph/data_center/models/physical.py:155
+#: src/ralph/data_center/models/physical.py:157
+#: src/ralph/networks/models/networks.py:58
 msgid "data center"
 msgstr "데이터 센터"
 
-#: assets/models/choices.py:29
+#: src/ralph/assets/models/choices.py:29
 msgid "part"
 msgstr "부품"
 
-#: assets/models/choices.py:30
+#: src/ralph/assets/models/choices.py:30
 msgid "all"
 msgstr "모든"
 
-#: assets/models/choices.py:36
+#: src/ralph/assets/models/choices.py:36
 msgid "N/A"
 msgstr "N/A"
 
-#: assets/models/choices.py:37
+#: src/ralph/assets/models/choices.py:37
 msgid "1 row x 2 columns"
 msgstr "1줄 x 2컬럼"
 
-#: assets/models/choices.py:38
+#: src/ralph/assets/models/choices.py:38
 msgid "2 rows x 8 columns"
 msgstr "2줄 x 8컬럼"
 
-#: assets/models/choices.py:39
+#: src/ralph/assets/models/choices.py:39
 msgid "2 rows x 16 columns (A/B)"
 msgstr "2줄 x 16컬럼 (A/B)"
 
-#: assets/models/choices.py:42
+#: src/ralph/assets/models/choices.py:42
 msgid "4 rows x 2 columns"
 msgstr "4줄 x 2컬럼"
 
-#: assets/models/choices.py:43
+#: src/ralph/assets/models/choices.py:43
 msgid "2 rows x 4 columns"
 msgstr "2줄 x 4컬럼"
 
-#: assets/models/choices.py:44
+#: src/ralph/assets/models/choices.py:44
 msgid "2 rows x 2 columns"
 msgstr "2줄 x 2컬럼"
 
-#: assets/models/choices.py:45
+#: src/ralph/assets/models/choices.py:45
 msgid "1 rows x 14 columns"
 msgstr "1줄 x 14컬럼"
 
-#: assets/models/choices.py:46
+#: src/ralph/assets/models/choices.py:46
 msgid "2 rows x 1 columns"
 msgstr "2줄 x 1컬럼"
 
-#: assets/models/choices.py:52 assets/models/components.py:227
+#: src/ralph/assets/models/choices.py:52
+#: src/ralph/assets/models/components.py:227
 msgid "processor"
 msgstr "프로세서"
 
-#: assets/models/choices.py:53 assets/models/components.py:188
-#: assets/models/components.py:189
+#: src/ralph/assets/models/choices.py:53
+#: src/ralph/assets/models/components.py:188
+#: src/ralph/assets/models/components.py:189
 msgid "memory"
 msgstr "메모리"
 
-#: assets/models/choices.py:54
+#: src/ralph/assets/models/choices.py:54
 msgid "disk drive"
 msgstr "디스크 드라이브"
 
-#: assets/models/choices.py:55
+#: src/ralph/assets/models/choices.py:55
 msgid "ethernet card"
 msgstr "이더넷 카드"
 
-#: assets/models/choices.py:56
+#: src/ralph/assets/models/choices.py:56
 msgid "expansion card"
 msgstr "확장 카드"
 
-#: assets/models/choices.py:57 assets/models/components.py:213
+#: src/ralph/assets/models/choices.py:57
+#: src/ralph/assets/models/components.py:213
 msgid "fibre channel card"
 msgstr "FC카드"
 
-#: assets/models/choices.py:58 data_center/models/components.py:36
+#: src/ralph/assets/models/choices.py:58
+#: src/ralph/data_center/models/components.py:36
 msgid "disk share"
 msgstr "디스크 쉐어"
 
-#: assets/models/choices.py:59
+#: src/ralph/assets/models/choices.py:59
 msgid "unknown"
 msgstr "unknown"
 
-#: assets/models/choices.py:60
+#: src/ralph/assets/models/choices.py:60
 msgid "management"
 msgstr "관리"
 
-#: assets/models/choices.py:61
+#: src/ralph/assets/models/choices.py:61
 msgid "power module"
 msgstr "파워모듈"
 
-#: assets/models/choices.py:62
+#: src/ralph/assets/models/choices.py:62
 msgid "cooling device"
 msgstr "쿨링 장비"
 
-#: assets/models/choices.py:63
+#: src/ralph/assets/models/choices.py:63
 msgid "media tray"
 msgstr "미디어 트레이"
 
-#: assets/models/choices.py:64
+#: src/ralph/assets/models/choices.py:64
 msgid "chassis"
 msgstr "섀시"
 
-#: assets/models/choices.py:65
+#: src/ralph/assets/models/choices.py:65
 msgid "backup"
 msgstr "백업"
 
-#: assets/models/choices.py:66
+#: src/ralph/assets/models/choices.py:66
 msgid "software"
 msgstr "소프트웨어"
 
-#: assets/models/choices.py:67
+#: src/ralph/assets/models/choices.py:67
 msgid "operating system"
 msgstr "오퍼레이팅 시스템"
 
-#: assets/models/choices.py:73
+#: src/ralph/assets/models/choices.py:73
 msgid "10 Mbps"
 msgstr "10 Mbps"
 
-#: assets/models/choices.py:74
+#: src/ralph/assets/models/choices.py:74
 msgid "100 Mbps"
 msgstr "100 Mbps"
 
-#: assets/models/choices.py:75
+#: src/ralph/assets/models/choices.py:75
 msgid "1 Gbps"
 msgstr "1 Gbps"
 
-#: assets/models/choices.py:76
+#: src/ralph/assets/models/choices.py:76
 msgid "10 Gbps"
 msgstr "10 Gbps"
 
-#: assets/models/choices.py:77
+#: src/ralph/assets/models/choices.py:77
 msgid "40 Gbps"
 msgstr "40 Gbps"
 
-#: assets/models/choices.py:78
+#: src/ralph/assets/models/choices.py:78
 msgid "100 Gbps"
 msgstr "100 Gbps"
 
-#: assets/models/choices.py:81 assets/models/choices.py:95
+#: src/ralph/assets/models/choices.py:81 src/ralph/assets/models/choices.py:95
 msgid "unknown speed"
 msgstr "unknown 속도"
 
-#: assets/models/choices.py:87
+#: src/ralph/assets/models/choices.py:87
 msgid "1 Gbit"
 msgstr "1 Gbit"
 
-#: assets/models/choices.py:88
+#: src/ralph/assets/models/choices.py:88
 msgid "2 Gbit"
 msgstr "2 Gbit"
 
-#: assets/models/choices.py:89
+#: src/ralph/assets/models/choices.py:89
 msgid "4 Gbit"
 msgstr "4 Gbit"
 
-#: assets/models/choices.py:90
+#: src/ralph/assets/models/choices.py:90
 msgid "8 Gbit"
 msgstr "8 Gbit"
 
-#: assets/models/choices.py:91
+#: src/ralph/assets/models/choices.py:91
 msgid "16 Gbit"
 msgstr "16 Gbit"
 
-#: assets/models/choices.py:92
+#: src/ralph/assets/models/choices.py:92
 msgid "32 Gbit"
 msgstr "32 Gbit"
 
-#: assets/models/components.py:39 assets/models/components.py:184
-#: assets/models/components.py:222
+#: src/ralph/assets/models/components.py:39
+#: src/ralph/assets/models/components.py:184
+#: src/ralph/assets/models/components.py:222
 msgid "speed (MHz)"
 msgstr "속도 (MHz)"
 
-#: assets/models/components.py:44
+#: src/ralph/assets/models/components.py:44
 msgid "number of cores"
 msgstr "코어수량"
 
-#: assets/models/components.py:49 assets/models/components.py:182
-#: data_center/models/components.py:22 data_center/models/components.py:55
+#: src/ralph/assets/models/components.py:49
+#: src/ralph/assets/models/components.py:182
+#: src/ralph/data_center/models/components.py:22
+#: src/ralph/data_center/models/components.py:55
 msgid "size (MiB)"
 msgstr "사이즈 (MiB)"
 
-#: assets/models/components.py:54
+#: src/ralph/assets/models/components.py:54
 msgid "component type"
 msgstr "컴포넌트 타입"
 
-#: assets/models/components.py:70
+#: src/ralph/assets/models/components.py:70
 msgid "component model"
 msgstr "컴포넌트 모델"
 
-#: assets/models/components.py:71
+#: src/ralph/assets/models/components.py:71
 msgid "component models"
 msgstr "컴포넌트 모델"
 
-#: assets/models/components.py:90
+#: src/ralph/assets/models/components.py:90
 msgid "model name"
 msgstr "모델명"
 
-#: assets/models/components.py:99 assets/models/components.py:114
+#: src/ralph/assets/models/components.py:99
+#: src/ralph/assets/models/components.py:114
 msgid "label"
 msgstr "라벨"
 
-#: assets/models/components.py:103
+#: src/ralph/assets/models/components.py:103
 msgid "vendor SN"
 msgstr "벤더 SN"
 
-#: assets/models/components.py:108
+#: src/ralph/assets/models/components.py:108
 msgid "generic component"
 msgstr ""
 
-#: assets/models/components.py:109
+#: src/ralph/assets/models/components.py:109
 msgid "generic components"
 msgstr "일반 컴포넌트"
 
-#: assets/models/components.py:117
+#: src/ralph/assets/models/components.py:117
 msgid "MAC address"
 msgstr "MAC주소"
 
-#: assets/models/components.py:121 assets/models/components.py:201
+#: src/ralph/assets/models/components.py:121
+#: src/ralph/assets/models/components.py:201
 msgid "speed"
 msgstr "속도"
 
-#: assets/models/components.py:125 assets/models/components.py:197
-#: assets/models/components.py:246 data_center/models/physical.py:426
+#: src/ralph/assets/models/components.py:125
+#: src/ralph/assets/models/components.py:197
+#: src/ralph/assets/models/components.py:246
+#: src/ralph/data_center/models/physical.py:450
 msgid "firmware version"
 msgstr "펌웨어 버전"
 
-#: assets/models/components.py:130
+#: src/ralph/assets/models/components.py:130
 msgid "ethernet"
 msgstr "이더넷"
 
-#: assets/models/components.py:131
+#: src/ralph/assets/models/components.py:131
 msgid "ethernets"
 msgstr "이더넷"
 
-#: assets/models/components.py:145
+#: src/ralph/assets/models/components.py:145
 msgid "MAC cannot be empty if record is exposed in DHCP"
 msgstr "DHCP에서 레코드가 노출된 경우 MAC값이 있어야 합니다.  "
 
-#: assets/models/components.py:208
+#: src/ralph/assets/models/components.py:208
 msgid "WWN"
 msgstr "WWN"
 
-#: assets/models/components.py:214
+#: src/ralph/assets/models/components.py:214
 msgid "fibre channel cards"
 msgstr "FC카드"
 
-#: assets/models/components.py:228
+#: src/ralph/assets/models/components.py:228
 msgid "processors"
 msgstr "프로세서"
 
-#: assets/models/components.py:237
+#: src/ralph/assets/models/components.py:237
 msgid "size (GiB)"
 msgstr "용량 (GiB)"
 
-#: assets/models/components.py:239 supports/models.py:96
+#: src/ralph/assets/models/components.py:239 src/ralph/supports/models.py:98
 msgid "serial number"
 msgstr "시리얼 넘버"
 
-#: assets/models/components.py:243 data_center/models/physical.py:420
+#: src/ralph/assets/models/components.py:243
+#: src/ralph/data_center/models/physical.py:444
 msgid "slot number"
 msgstr "슬럿 넘버"
 
-#: assets/models/components.py:251
+#: src/ralph/assets/models/components.py:251
 msgid "disk"
 msgstr "디스크"
 
-#: assets/models/components.py:252
+#: src/ralph/assets/models/components.py:252
 msgid "disks"
 msgstr "디스크"
 
-#: assets/models/configuration.py:31 data_center/models/components.py:18
-#: data_center/models/virtual.py:42 data_center/models/virtual.py:90
-#: lib/mixins/models.py:13 lib/mixins/models.py:24 security/models.py:47
-#: virtual/models.py:45
-msgid "name"
-msgstr "이름"
-
-#: assets/models/configuration.py:33
+#: src/ralph/assets/models/configuration.py:33
 msgid "module name (ex. directory name in puppet)"
 msgstr "모듈명 (예. puppet의 디렉토리명"
 
-#: assets/models/configuration.py:38
+#: src/ralph/assets/models/configuration.py:38
 msgid "parent module"
 msgstr "상위 모듈"
 
-#: assets/models/configuration.py:47
+#: src/ralph/assets/models/configuration.py:47
 msgid "team"
 msgstr "팀"
 
-#: assets/models/configuration.py:55
+#: src/ralph/assets/models/configuration.py:55
 msgid "configuration module"
 msgstr "구성 모듈"
 
-#: assets/models/configuration.py:74
+#: src/ralph/assets/models/configuration.py:74
 msgid "class name"
 msgstr "클래스명"
 
-#: assets/models/configuration.py:76
+#: src/ralph/assets/models/configuration.py:76
 msgid "ex. puppet class"
 msgstr "예. puppet 클래스"
 
-#: assets/models/configuration.py:80
+#: src/ralph/assets/models/configuration.py:80
 msgid "path"
 msgstr "경로"
 
-#: assets/models/configuration.py:85
+#: src/ralph/assets/models/configuration.py:85
 msgid "path is constructed from name of module and name of class"
 msgstr "경로는 모듈명 혹은 클래스명으로 구성됨"
 
-#: assets/models/configuration.py:95
+#: src/ralph/assets/models/configuration.py:95
 msgid "configuration class"
 msgstr "구성 클래스,"
 
-#: assets/views.py:18
+#: src/ralph/assets/views.py:18
 msgid "Components"
 msgstr "구성요소"
 
-#: attachments/templates/attachments/attachments.html:12
+#: src/ralph/attachments/templates/attachments/attachments.html:12
 msgid "File"
 msgstr "파일"
 
-#: attachments/templates/attachments/attachments.html:13
+#: src/ralph/attachments/templates/attachments/attachments.html:13
 msgid "Description"
 msgstr "설명"
 
-#: back_office/admin.py:41 data_center/admin.py:260
+#: src/ralph/back_office/admin.py:42 src/ralph/data_center/admin.py:293
 msgid "Support"
 msgstr "지원"
 
-#: back_office/admin.py:51 back_office/admin.py:58 back_office/models.py:310
+#: src/ralph/back_office/admin.py:52 src/ralph/back_office/admin.py:59
+#: src/ralph/back_office/models.py:329
 msgid "Licence"
 msgstr "라이선스"
 
-#: back_office/admin.py:148
-msgid "User Info"
-msgstr "사용자 정보"
-
-#: back_office/admin.py:153
+#: src/ralph/back_office/admin.py:175
 msgid "Financial Info"
 msgstr "금융 정보"
 
-#: back_office/admin.py:181
+#: src/ralph/back_office/admin.py:192
+#, fuzzy
+#| msgid "Buyout date"
+msgid "buyout date"
+msgstr "매입 날자"
+
+#: src/ralph/back_office/admin.py:210
 msgid "licences"
 msgstr "라이선스"
 
-#: back_office/models.py:70 data_center/models/choices.py:9
-#: supports/models.py:27 tests/models.py:24 virtual/models.py:303
-msgid "new"
-msgstr "신규"
-
-#: back_office/models.py:71 operations/migrations/0010_auto_20170410_1031.py:16
-msgid "in progress"
-msgstr "처리중"
-
-#: back_office/models.py:72
+#: src/ralph/back_office/models.py:71 src/ralph/sim_cards/models.py:53
 msgid "waiting for release"
 msgstr "릴리즈 대기중"
 
-#: back_office/models.py:73 data_center/models/choices.py:10
-#: data_center/models/virtual.py:77 virtual/models.py:304
-msgid "in use"
-msgstr "사용중"
-
-#: back_office/models.py:74
+#: src/ralph/back_office/models.py:73
 msgid "loan"
 msgstr "대여"
 
-#: back_office/models.py:75 data_center/models/choices.py:12
-msgid "damaged"
-msgstr "손상된"
-
-#: back_office/models.py:76 data_center/models/choices.py:13
-#: virtual/models.py:306
-msgid "liquidated"
-msgstr "처리된"
-
-#: back_office/models.py:77
+#: src/ralph/back_office/models.py:76
 msgid "in service"
 msgstr "서비스 중"
 
-#: back_office/models.py:78
+#: src/ralph/back_office/models.py:77
 msgid "installed"
 msgstr "설치됨"
 
-#: back_office/models.py:79 data_center/models/choices.py:11
-msgid "free"
-msgstr "무료"
+#: src/ralph/back_office/models.py:80
+msgid "sale"
+msgstr ""
 
-#: back_office/models.py:80 networks/models/choices.py:8
-msgid "reserved"
-msgstr "예약된"
+#: src/ralph/back_office/models.py:81 src/ralph/sim_cards/models.py:59
+#, fuzzy
+#| msgid "in progress"
+msgid "loan in progress"
+msgstr "처리중"
 
-#: back_office/models.py:91
+#: src/ralph/back_office/models.py:83
+msgid "to find"
+msgstr ""
+
+#: src/ralph/back_office/models.py:94
 msgid "Office Infrastructure"
 msgstr "오피스 기반시설"
 
-#: back_office/models.py:119
+#: src/ralph/back_office/models.py:122 src/ralph/back_office/models.py:133
+msgid "requester must be specified"
+msgstr ""
+
+#: src/ralph/back_office/models.py:125
+msgid "requester is not an owner of the asset"
+msgstr ""
+
+#: src/ralph/back_office/models.py:136
+msgid "requester is not an user of the asset"
+msgstr ""
+
+#: src/ralph/back_office/models.py:144
 msgid "user not assigned"
 msgstr "사용자 미할당"
 
-#: back_office/models.py:164 back_office/models.py:353
+#: src/ralph/back_office/models.py:185 src/ralph/back_office/models.py:373
 msgid "Loan end date"
 msgstr "대출 종료일"
 
-#: back_office/models.py:178
+#: src/ralph/back_office/models.py:193
+msgid "IMEI"
+msgstr ""
+
+#: src/ralph/back_office/models.py:197
+msgid "IMEI 2"
+msgstr ""
+
+#: src/ralph/back_office/models.py:204
 msgid "Back Office Asset"
 msgstr "백오피스 자산"
 
-#: back_office/models.py:179
+#: src/ralph/back_office/models.py:205
 msgid "Back Office Assets"
 msgstr "백오피스 자산"
 
-#: back_office/models.py:202
+#: src/ralph/back_office/models.py:227 src/ralph/back_office/models.py:231
 #, python-format
 msgid "%(imei)s is not IMEI format"
 msgstr "%(imei)s는 IMEI포맷이 아닙니다."
 
-#: back_office/models.py:286 back_office/models.py:464
-msgid "Owner"
-msgstr "오너"
-
-#: back_office/models.py:294
+#: src/ralph/back_office/models.py:313
 msgid ""
 "During this transition owner will be assigned as well as new hostname might "
 "be generated for asset (only for particular model categories and only if "
 "owner's country has changed)"
 msgstr ""
-"전환기간 동안 자산 (특정 모델 범주이고 오너의 국가가 변경된 케이스에 한함)"
-"에 새 호스트 이름과 함께 소유자가 할당될 수 있습니다."
+"전환기간 동안 자산 (특정 모델 범주이고 오너의 국가가 변경된 케이스에 한함)에 "
+"새 호스트 이름과 함께 소유자가 할당될 수 있습니다."
 
-#: back_office/models.py:373 data_center/models/physical.py:713
+#: src/ralph/back_office/models.py:393
+#: src/ralph/data_center/models/physical.py:737
+#: src/ralph/sim_cards/models.py:264
 msgid "Warehouse"
 msgstr "웨어하우스"
 
-#: back_office/models.py:387
+#: src/ralph/back_office/models.py:407
 msgid "Office infrastructure"
 msgstr "오피스 기반시설"
 
-#: back_office/models.py:403
+#: src/ralph/back_office/models.py:423
 msgid "Remarks"
 msgstr "적요"
 
-#: back_office/models.py:417
+#: src/ralph/back_office/models.py:437 src/ralph/sim_cards/models.py:304
 msgid "task URL"
 msgstr "테스크 URL"
 
-#: back_office/models.py:525
-msgid "Document autogenerated by {} transition."
-msgstr "{} 전환에 의해 자동 생성된 문서"
+#: src/ralph/back_office/models.py:535 src/ralph/sim_cards/models.py:171
+msgid "I have read and fully understand and accept the agreement."
+msgstr ""
 
-#: back_office/models.py:533
+#: src/ralph/back_office/models.py:560 src/ralph/sim_cards/models.py:186
 msgid "Release report language"
 msgstr "릴리즈 레포트 언어"
 
-#: back_office/models.py:554
+#: src/ralph/back_office/models.py:597
 msgid "Return report language"
 msgstr "리턴 레포트 언어"
 
-#: back_office/models.py:575
+#: src/ralph/back_office/models.py:619
 msgid "Loan report language"
 msgstr "Loan 레포트 언어"
 
-#: back_office/models.py:593
+#: src/ralph/back_office/models.py:638
 msgid "Convert to DataCenter Asset"
 msgstr "데이터센터 자산으로 변환"
 
-#: back_office/models.py:598
+#: src/ralph/back_office/models.py:643
 msgid "Rack"
 msgstr "랙"
 
-#: back_office/models.py:603
+#: src/ralph/back_office/models.py:648
 msgid "Position"
 msgstr "위치"
 
-#: back_office/models.py:606
-#: back_office/templates/backofficeasset/components.html:9
-#: data_center/templates/data_center/datacenterasset/components.html:9
+#: src/ralph/back_office/models.py:651
+#: src/ralph/back_office/templates/backofficeasset/components.html:9
+#: src/ralph/data_center/templates/data_center/datacenterasset/components.html:9
 msgid "Model"
 msgstr "모델"
 
-#: back_office/models.py:611 virtual/admin.py:386
+#: src/ralph/back_office/models.py:656 src/ralph/virtual/admin.py:394
 msgid "Service env"
 msgstr "서비스 env"
 
-#: back_office/templates/backofficeasset/components.html:8
-#: back_office/templates/backofficeasset/software.html:8
-#: data_center/templates/data_center/datacenterasset/components.html:8
-#: data_center/templates/data_center/datacenterasset/software.html:8
+#: src/ralph/back_office/templates/backofficeasset/components.html:8
+#: src/ralph/back_office/templates/backofficeasset/software.html:8
+#: src/ralph/data_center/templates/data_center/datacenterasset/components.html:8
+#: src/ralph/data_center/templates/data_center/datacenterasset/software.html:8
 msgid "Label"
 msgstr "라벨"
 
-#: back_office/templates/backofficeasset/components.html:10
-#: data_center/templates/data_center/datacenterasset/components.html:10
+#: src/ralph/back_office/templates/backofficeasset/components.html:10
+#: src/ralph/data_center/templates/data_center/datacenterasset/components.html:10
 msgid "Serial number"
 msgstr "시리얼 넘버"
 
-#: back_office/templates/backofficeasset/components.html:11
-#: data_center/templates/data_center/datacenterasset/components.html:11
+#: src/ralph/back_office/templates/backofficeasset/components.html:11
+#: src/ralph/data_center/templates/data_center/datacenterasset/components.html:11
 msgid "Speed"
 msgstr "속도"
 
-#: back_office/templates/backofficeasset/components.html:12
-#: data_center/templates/data_center/datacenterasset/components.html:12
+#: src/ralph/back_office/templates/backofficeasset/components.html:12
+#: src/ralph/data_center/templates/data_center/datacenterasset/components.html:12
 msgid "Size"
 msgstr "사이즈"
 
-#: back_office/templates/backofficeasset/components.html:13
-#: dashboards/models.py:49
-#: data_center/templates/data_center/datacenterasset/components.html:13
+#: src/ralph/back_office/templates/backofficeasset/components.html:13
+#: src/ralph/dashboards/models.py:96
+#: src/ralph/data_center/templates/data_center/datacenterasset/components.html:13
 msgid "Count"
 msgstr "수량"
 
-#: back_office/templates/backofficeasset/software.html:9
-#: data_center/templates/data_center/datacenterasset/software.html:9
+#: src/ralph/back_office/templates/backofficeasset/software.html:9
+#: src/ralph/data_center/templates/data_center/datacenterasset/software.html:9
 msgid "Version"
 msgstr "버전"
 
-#: configuration_management/models.py:14
+#: src/ralph/configuration_management/models.py:14
 msgid "OK"
 msgstr "OK"
 
-#: configuration_management/models.py:15
+#: src/ralph/configuration_management/models.py:15
 msgid "Check failed"
 msgstr "확인 실패"
 
-#: configuration_management/models.py:19
+#: src/ralph/configuration_management/models.py:19
 msgid "Error"
 msgstr "에러"
 
-#: configuration_management/models.py:35
+#: src/ralph/configuration_management/models.py:35
 msgid "Last SCM check"
 msgstr "마지막 SCM 확인"
 
-#: configuration_management/models.py:41
+#: src/ralph/configuration_management/models.py:41
 msgid "SCM check result"
 msgstr "SCM 체크 결과"
 
-#: configuration_management/templates/configuration_management/scminfo/scm_info.html:9
+#: src/ralph/configuration_management/templates/configuration_management/scminfo/scm_info.html:9
 msgid "SCM status information"
 msgstr "SCM 상태 정보"
 
-#: configuration_management/templates/configuration_management/scminfo/scm_info.html:13
+#: src/ralph/configuration_management/templates/configuration_management/scminfo/scm_info.html:13
 msgid "Last checked"
 msgstr "마지막 확인"
 
-#: configuration_management/templates/configuration_management/scminfo/scm_info.html:17
-#: configuration_management/views.py:96
+#: src/ralph/configuration_management/templates/configuration_management/scminfo/scm_info.html:17
+#: src/ralph/configuration_management/views.py:94
 msgid "SCM status"
 msgstr "SCM 상태"
 
-#: configuration_management/templates/configuration_management/scminfo/scm_info.html:21
+#: src/ralph/configuration_management/templates/configuration_management/scminfo/scm_info.html:21
 msgid "Details"
 msgstr "디테일"
 
-#: configuration_management/templates/configuration_management/scminfo/scm_info.html:27
+#: src/ralph/configuration_management/templates/configuration_management/scminfo/scm_info.html:27
 msgid ""
 "The status of the software configuration management for this host is unknown."
-msgstr ""
-"호스트의 소프트웨어 구성관리 상태 값이 unknown입니다."
+msgstr "호스트의 소프트웨어 구성관리 상태 값이 unknown입니다."
 
-#: dashboards/admin.py:93
+#: src/ralph/dashboards/admin.py:105
 msgid "Graph"
 msgstr "그래프"
 
-#: dashboards/admin.py:101
+#: src/ralph/dashboards/admin.py:113
 msgid "<a href=\"{}\" target=\"_blank\">Dashboard</a>"
 msgstr "<a href=\"{}\" target=\"_blank\">대시보드</a>"
 
-#: dashboards/admin_filters.py:12
+#: src/ralph/dashboards/admin_filters.py:11
 msgid "Graph ID"
 msgstr "그래프 ID"
 
-#: dashboards/models.py:50
+#: src/ralph/dashboards/models.py:97
+msgid "Count with zeros"
+msgstr ""
+
+#: src/ralph/dashboards/models.py:100
 msgid "Max"
 msgstr "최대"
 
-#: dashboards/models.py:51
+#: src/ralph/dashboards/models.py:101
 msgid "Sum"
 msgstr "합계"
 
-#: dashboards/models.py:52
+#: src/ralph/dashboards/models.py:102
+msgid "Sum with zeros"
+msgstr ""
+
+#: src/ralph/dashboards/models.py:105
+msgid "Sum boolean values"
+msgstr ""
+
+#: src/ralph/dashboards/models.py:108
+msgid "Sum negated boolean values"
+msgstr ""
+
+#: src/ralph/dashboards/models.py:117
 msgid "Ratio"
 msgstr "비율"
 
-#: dashboards/models.py:60
-msgid "Verical Bar"
+#: src/ralph/dashboards/models.py:125
+#, fuzzy
+#| msgid "Verical Bar"
+msgid "Vertical Bar"
 msgstr "수직선"
 
-#: dashboards/models.py:61
+#: src/ralph/dashboards/models.py:126
 msgid "Horizontal Bar"
 msgstr "수평선"
 
-#: dashboards/models.py:62
+#: src/ralph/dashboards/models.py:127
 msgid "Pie Chart"
 msgstr "파이 도표"
 
-#: data_center/admin.py:191 virtual/admin.py:151
+#: src/ralph/data_center/admin.py:224 src/ralph/virtual/admin.py:160
 msgid "Base Object"
 msgstr "기본 객체"
 
-#: data_center/admin.py:203
+#: src/ralph/data_center/admin.py:236
 msgid "Master Info"
 msgstr "마스터 정보"
 
-#: data_center/admin.py:221
+#: src/ralph/data_center/admin.py:254
 msgid "Master info"
 msgstr "마스터 정보"
 
-#: data_center/admin.py:234 networks/views.py:23
+#: src/ralph/data_center/admin.py:267 src/ralph/networks/views.py:23
 msgid "Terminators of"
 msgstr "차단"
 
-#: data_center/admin.py:437
+#: src/ralph/data_center/admin.py:472
 msgid "Location Info"
 msgstr "위치 정보"
 
-#: data_center/admin.py:443
+#: src/ralph/data_center/admin.py:478
 msgid "Usage info"
 msgstr "사용 정보"
 
-#: data_center/admin.py:449
+#: src/ralph/data_center/admin.py:484
 msgid "Financial & Order Info"
 msgstr "재무 & 주문 정보"
 
-#: data_center/admin.py:478
+#: src/ralph/data_center/admin.py:513
 msgid "Visualization"
 msgstr "시각화"
 
-#: data_center/admin.py:498
+#: src/ralph/data_center/admin.py:533
 msgid "Created at"
 msgstr "생성된"
 
-#: data_center/admin.py:535
+#: src/ralph/data_center/admin.py:570
 msgid "Server room"
 msgstr "서버실"
 
-#: data_center/forms.py:58
+#: src/ralph/data_center/forms.py:61
 msgid ""
 "Management IP is already assigned to <a target=\"_blank\" href=\"{}\">{}</a>"
 msgstr ""
 "관리 IP는 이미 <a target=\"_blank\" href=\"{}\">{}</a>\" 에 할당되었습니다."
 
-#: data_center/forms.py:76
+#: src/ralph/data_center/forms.py:79
 msgid "Management hostname is already used"
 msgstr "관리 호스트명은 이미 사용중입니다"
 
-#: data_center/forms.py:82
+#: src/ralph/data_center/forms.py:85
 msgid ""
 "Management hostname is already assigned to <a target=\"_blank\" href="
 "\"{}\">{}</a>"
-msgstr "관리 호스츠명은 이미 <a target=\"_blank\" href="
-"\"{}\">{}</a>에 할당되었습니다"
+msgstr ""
+"관리 호스츠명은 이미 <a target=\"_blank\" href=\"{}\">{}</a>에 할당되었습니다"
 
-#: data_center/forms.py:99
+#: src/ralph/data_center/forms.py:102
 msgid "Management IP could not be empty when management hostname is passed"
 msgstr "관리 호스트명이 전달될 때 관리 IP값이 있어야 합니다."
 
-#: data_center/models/choices.py:14 virtual/models.py:305
+#: src/ralph/data_center/models/choices.py:14 src/ralph/virtual/models.py:332
 msgid "to deploy"
 msgstr "배포할"
 
-#: data_center/models/choices.py:15
+#: src/ralph/data_center/models/choices.py:15
 msgid "cleaned"
 msgstr "제거된"
 
-#: data_center/models/choices.py:16
+#: src/ralph/data_center/models/choices.py:16
 msgid "pre liquidated"
 msgstr "선처리"
 
-#: data_center/models/choices.py:23
+#: src/ralph/data_center/models/choices.py:23
 msgid "front"
 msgstr "프론트"
 
-#: data_center/models/choices.py:24
+#: src/ralph/data_center/models/choices.py:24
 msgid "back"
 msgstr "백"
 
-#: data_center/models/choices.py:25
+#: src/ralph/data_center/models/choices.py:25
 msgid "middle"
 msgstr "중간"
 
-#: data_center/models/choices.py:28 data_center/models/choices.py:51
+#: src/ralph/data_center/models/choices.py:28
+#: src/ralph/data_center/models/choices.py:51
 msgid "left"
 msgstr "좌측"
 
-#: data_center/models/choices.py:29 data_center/models/choices.py:52
+#: src/ralph/data_center/models/choices.py:29
+#: src/ralph/data_center/models/choices.py:52
 msgid "right"
 msgstr "우측"
 
-#: data_center/models/choices.py:49
+#: src/ralph/data_center/models/choices.py:49
 msgid "top"
 msgstr "상단"
 
-#: data_center/models/choices.py:50
+#: src/ralph/data_center/models/choices.py:50
 msgid "bottom"
 msgstr "하단"
 
-#: data_center/models/choices.py:58
+#: src/ralph/data_center/models/choices.py:58
 msgid "network connection"
 msgstr "네트워크 연결"
 
-#: data_center/models/components.py:15
+#: src/ralph/data_center/models/components.py:15
 msgid "share identifier"
 msgstr "식별자 공유"
 
-#: data_center/models/components.py:25
+#: src/ralph/data_center/models/components.py:25
 msgid "size for snapshots (MiB)"
 msgstr "스냅샷 사이즈 (MiB)"
 
-#: data_center/models/components.py:28
+#: src/ralph/data_center/models/components.py:28
 msgid "Volume serial"
 msgstr "볼륨 시리얼"
 
-#: data_center/models/components.py:37
+#: src/ralph/data_center/models/components.py:37
 msgid "disk shares"
 msgstr "디스크 공유"
 
-#: data_center/models/components.py:45
+#: src/ralph/data_center/models/components.py:45
 msgid "share"
 msgstr "공유"
 
-#: data_center/models/components.py:47
+#: src/ralph/data_center/models/components.py:47
 msgid "asset"
 msgstr "자산"
 
-#: data_center/models/components.py:51
+#: src/ralph/data_center/models/components.py:51
 msgid "volume"
 msgstr "볼륨"
 
-#: data_center/models/components.py:70
+#: src/ralph/data_center/models/components.py:70
 msgid "disk share mount"
 msgstr "디스크 공유 마운트"
 
-#: data_center/models/components.py:71
+#: src/ralph/data_center/models/components.py:71
 msgid "disk share mounts"
 msgstr "디스크 공유 마운트"
 
-#: data_center/models/physical.py:135
+#: src/ralph/data_center/models/physical.py:159
 msgid "visualization grid columns number"
 msgstr "시각화 그리드 컬럼 번호"
 
-#: data_center/models/physical.py:143
+#: src/ralph/data_center/models/physical.py:167
 msgid "visualization grid rows number"
 msgstr "시각화 그리드 열 번호"
 
-#: data_center/models/physical.py:159
+#: src/ralph/data_center/models/physical.py:183
 msgid "accessory"
 msgstr "부속품"
 
-#: data_center/models/physical.py:160
-msgid "accessories"
-msgstr "부속품"
-
-#: data_center/models/physical.py:178
+#: src/ralph/data_center/models/physical.py:202
 msgid "rack accessories"
 msgstr "랙 부속품"
 
-#: data_center/models/physical.py:195 data_center/models/physical.py:200
+#: src/ralph/data_center/models/physical.py:219
+#: src/ralph/data_center/models/physical.py:224
 msgid "server room"
 msgstr "서버실"
 
-#: data_center/models/physical.py:202 deployment/models.py:58
-#: deployment/models.py:139 operations/models.py:63
+#: src/ralph/data_center/models/physical.py:226
+#: src/ralph/deployment/models.py:59 src/ralph/deployment/models.py:142
+#: src/ralph/operations/models.py:63
 msgid "description"
 msgstr "설명"
 
-#: data_center/models/physical.py:211
+#: src/ralph/data_center/models/physical.py:235
 msgid "column number on visualization grid"
 msgstr "시각화 그리드의 컬럼 번호"
 
-#: data_center/models/physical.py:215
+#: src/ralph/data_center/models/physical.py:239
 msgid "row number on visualization grid"
 msgstr "시각화 그리드의 열 번호"
 
-#: data_center/models/physical.py:222
+#: src/ralph/data_center/models/physical.py:246
 msgid ""
 "Uncheck if position is optional for this rack (ex. when rack has warehouse-"
 "kind role"
 msgstr ""
-"이 랙의 위치는 선택사항인지 확인하지 않음"
-"(예. 랙이 웨어하우스와 같은 역할을 수행하는 경우)"
+"이 랙의 위치는 선택사항인지 확인하지 않음(예. 랙이 웨어하우스와 같은 역할을 "
+"수행하는 경우)"
 
-#: data_center/models/physical.py:229
+#: src/ralph/data_center/models/physical.py:253
 msgid ""
 "Check if RU numbers count from top to bottom with position 1 starting at the "
 "top of the rack. If unchecked position 1 is at the bottom of the rack"
 msgstr ""
-"위치 1이 랙 최상단이고 RU번호가 랙 위에서 아래로 계산되는지 확인한다."
-"위치 1이 랙 하단에 위치하면 확인하지 않는다"
+"위치 1이 랙 최상단이고 RU번호가 랙 위에서 아래로 계산되는지 확인한다.위치 1"
+"이 랙 하단에 위치하면 확인하지 않는다"
 
-#: data_center/models/physical.py:233
+#: src/ralph/data_center/models/physical.py:257
 msgid "RU order top to bottom"
 msgstr "RU 오름차순 정렬 "
 
-#: data_center/models/physical.py:407
+#: src/ralph/data_center/models/physical.py:431
 msgid "Fill it if asset is blade server"
 msgstr "자산이 블레이드 서버인 경우, 내용을 기입하세요."
 
-#: data_center/models/physical.py:414
+#: src/ralph/data_center/models/physical.py:438
 msgid ""
 "Slot number should be a number from range 1-16 with an optional postfix 'A' "
 "or 'B' (e.g. '16A')"
 msgstr ""
-"슬롯 번호는 1~16사이의 숫자여야 하고, 다음 자리엔 'A'"
-" 혹은 'B'가 와야 한다. (예. '16A')"
+"슬롯 번호는 1~16사이의 숫자여야 하고, 다음 자리엔 'A' 혹은 'B'가 와야 한다. "
+"(예. '16A')"
 
-#: data_center/models/physical.py:432
+#: src/ralph/data_center/models/physical.py:456
 msgid "BIOS version"
 msgstr "BIOS 버전"
 
-#: data_center/models/physical.py:444
+#: src/ralph/data_center/models/physical.py:468
 msgid "source"
 msgstr "소스"
 
-#: data_center/models/physical.py:462
+#: src/ralph/data_center/models/physical.py:486
 msgid "data center asset"
 msgstr "데이터 센터 자산"
 
-#: data_center/models/physical.py:463
+#: src/ralph/data_center/models/physical.py:487
 msgid "data center assets"
 msgstr "데이터 센터 자산"
 
-#: data_center/models/physical.py:692
+#: src/ralph/data_center/models/physical.py:716
 msgid "Change rack"
 msgstr "랙 변경"
 
-#: data_center/models/physical.py:708
+#: src/ralph/data_center/models/physical.py:732
 msgid "Convert to BackOffice Asset"
 msgstr "백오피스 자산으로 변환"
 
-#: data_center/models/physical.py:718
+#: src/ralph/data_center/models/physical.py:742
 msgid "Region"
 msgstr "지역"
 
-#: data_center/models/physical.py:744
+#: src/ralph/data_center/models/physical.py:774
+#, fuzzy
+#| msgid "scan status"
+msgid "Cleanup scm status"
+msgstr "스캔 상태"
+
+#: src/ralph/data_center/models/physical.py:787
+msgid "Assign additional IP and hostname pair"
+msgstr ""
+
+#: src/ralph/data_center/models/physical.py:791
+#, fuzzy
+#| msgid "Parent networks"
+msgid "Select network"
+msgstr "부모 네트워크"
+
+#: src/ralph/data_center/models/physical.py:816
 msgid "connected to device"
 msgstr "디바이스로 연결"
 
-#: data_center/models/physical.py:750
+#: src/ralph/data_center/models/physical.py:822
 msgid "connected device"
 msgstr "연결된 디바이스"
 
-#: data_center/models/physical.py:756
+#: src/ralph/data_center/models/physical.py:828
 msgid "connection type"
 msgstr "연결 타입"
 
-#: data_center/models/virtual.py:27
+#: src/ralph/data_center/models/virtual.py:27
 msgid "database"
 msgstr "데이터베이스"
 
-#: data_center/models/virtual.py:28
+#: src/ralph/data_center/models/virtual.py:28
 msgid "databases"
 msgstr "데이터베이스"
 
-#: data_center/models/virtual.py:37
+#: src/ralph/data_center/models/virtual.py:37
 msgid "TCP"
 msgstr "TCP(Transmission Control Protocol)"
 
-#: data_center/models/virtual.py:38
+#: src/ralph/data_center/models/virtual.py:38
 msgid "UDP"
 msgstr "UDP(User Datagram Protocol)"
 
-#: data_center/models/virtual.py:44
+#: src/ralph/data_center/models/virtual.py:44
 msgid "port"
 msgstr "포트"
 
-#: data_center/models/virtual.py:46
+#: src/ralph/data_center/models/virtual.py:46
 msgid "protocol"
 msgstr "프로토콜"
 
-#: data_center/models/virtual.py:52
+#: src/ralph/data_center/models/virtual.py:52
 msgid "VIP"
 msgstr "VIP"
 
-#: data_center/models/virtual.py:68
+#: src/ralph/data_center/models/virtual.py:68
 msgid ""
 "show master information on cluster page, ex. hostname, model, location etc."
-msgstr ""
-"클러스터 페이지에 마스터 정보 표시 (예. 호스트명,모델,위치 등) "
+msgstr "클러스터 페이지에 마스터 정보 표시 (예. 호스트명,모델,위치 등) "
 
-#: data_center/models/virtual.py:78
+#: src/ralph/data_center/models/virtual.py:78
 msgid "for deploy"
 msgstr "배포용"
 
-#: data_center/models/virtual.py:101
+#: src/ralph/data_center/models/virtual.py:101
 msgid "Assigned base objects"
 msgstr "기본 할당된 오브젝트 "
 
-#: data_center/models/virtual.py:155
+#: src/ralph/data_center/models/virtual.py:155
 msgid "At least one of name or hostname is required"
 msgstr "하나의 이름 또는 호스트명이 필요합니다."
 
-#: data_center/templates/admin/data_center/dchost/change_list.html:10
+#: src/ralph/data_center/templates/admin/data_center/dchost/change_list.html:10
 msgid "Nothing to display. Please add some objects like:"
 msgstr "배포대상이 없습니다. 다음과 같은 오브젝트를 추가합시오:"
 
-#: data_center/templates/admin/data_center/network/change_form.html:9
+#: src/ralph/data_center/templates/admin/data_center/network/change_form.html:9
 #, python-format
 msgid "Add next IP (%(next_free_ip)s)"
 msgstr "(%(next_free_ip)s) IP추가"
 
-#: dc_view/templates/dc_view/server_room_view.html:5
-msgid "Dc View"
-msgstr "DC뷰"
+#: src/ralph/data_center/templates/data_center/datacenterasset/relations.html:9
+#, fuzzy
+#| msgid "Linked object"
+msgid "Related objects"
+msgstr "연결된 개체"
 
-#: dc_view/templates/dc_view/server_room_view.html:31
-msgid "Server rooms"
-msgstr "서버실"
-
-#: deployment/deployment.py:49
-msgid "<NEXT FREE>"
-msgstr "<다음 무료>"
-
-#: deployment/deployment.py:122 deployment/deployment.py:172
-#: lib/mixins/api.py:14 lib/mixins/forms.py:58
-msgid "Other"
-msgstr "기타"
-
-#: deployment/deployment.py:198
-msgid "use first"
-msgstr "우선 사용"
-
-#: deployment/deployment.py:267
-msgid "Non-management MAC address not found"
-msgstr "관리되지 않은 MAC주소를 찾을 수 없습니다."
-
-#: deployment/deployment.py:278
-msgid "Network environment not found."
-msgstr "네트워크 환경을 찾을 수 없습니다."
-
-#: deployment/deployment.py:286
-msgid "Clean hostname"
-msgstr "호스트명 정리"
-
-#: deployment/deployment.py:300
-msgid "Clean DNS entries"
-msgstr "DNS항목 정리"
-
-#: deployment/deployment.py:339
-msgid "Clean IP addresses"
-msgstr "IP주소 정리"
-
-#: deployment/deployment.py:357
-msgid "Clean DHCP entries"
-msgstr "DHCP항목 정리"
-
-#: deployment/deployment.py:374
-msgid "Remove from DHCP entries"
-msgstr "DHCP항목 제거"
-
-#: deployment/deployment.py:377
-msgid "DHCP Entry"
-msgstr "DHCP항목"
-
-#: deployment/deployment.py:398
-msgid "Assign new hostname"
-msgstr "새 호스트명 할당"
-
-#: deployment/deployment.py:479
-msgid "Assign new IP"
-msgstr "새 IP할당"
-
-#: deployment/deployment.py:483 deployment/deployment.py:551
-#: deployment/deployment.py:582
+#: src/ralph/data_center/templates/data_center/datacenterasset/relations.html:17
+#: src/ralph/data_center/templates/data_center/datacenterasset/relations.html:40
+#: src/ralph/data_center/templates/data_center/datacenterasset/relations.html:59
+#: src/ralph/deployment/deployment.py:481
+#: src/ralph/deployment/deployment.py:549
+#: src/ralph/deployment/deployment.py:580
 msgid "IP Address"
 msgstr "IP주소"
 
-#: deployment/deployment.py:541
-msgid "You can choose only one asset"
-msgstr "한 개의 자산만 선택할 수 있습니다."
+#: src/ralph/data_center/templates/data_center/datacenterasset/relations.html:18
+#, fuzzy
+#| msgid "Cloud projects"
+msgid "Cloud project"
+msgstr "클라우드 프로젝트"
 
-#: deployment/deployment.py:547
-msgid "Replace IP"
-msgstr "IP교체"
+#: src/ralph/data_center/templates/data_center/datacenterasset/relations.html:19
+#: src/ralph/virtual/admin.py:326 src/ralph/virtual/admin.py:498
+#: src/ralph/virtual/models.py:42
+msgid "Cloud provider"
+msgstr "클라우드 제공자"
 
-#: deployment/deployment.py:558 networks/admin.py:303
-msgid "Network"
-msgstr "네트워크"
+#: src/ralph/data_center/templates/data_center/datacenterasset/relations.html:36
+#, fuzzy
+#| msgid "Virtual Servers"
+msgid "Virtual hosts"
+msgstr "가상 서버"
 
-#: deployment/deployment.py:578
-msgid "Assign new IP address and create DHCP entries"
-msgstr "새 IP주소를 할당하고 DHCP항목을 생성하세요."
+#: src/ralph/data_center/templates/data_center/datacenterasset/relations.html:55
+#, fuzzy
+#| msgid "All hosts"
+msgid "Physical hosts"
+msgstr "모든 호스트"
 
-#: deployment/deployment.py:678
-msgid "Wait for DHCP servers"
-msgstr "DHCP서버를 기다리고 있습니다."
-
-#: deployment/deployment.py:705
-msgid "Create DNS entries"
-msgstr "DHCP항목 생성"
-
-#: deployment/deployment.py:730
-msgid "Change service-env"
-msgstr "서비스 환경 변경"
-
-#: deployment/deployment.py:733
-msgid "Service-environment"
-msgstr "서비스 환경"
-
-#: deployment/deployment.py:750
-msgid "Change configuration_path"
-msgstr "구성경로 변경"
-
-#: deployment/deployment.py:753
-msgid "Configuration path"
-msgstr "구성경로"
-
-#: deployment/deployment.py:774
-msgid "Apply preboot"
-msgstr "프리부트 적용"
-
-#: deployment/deployment.py:778
-msgid "Preboot"
-msgstr "프리부트"
-
-#: deployment/deployment.py:800
-msgid "Wait for ping"
-msgstr "Ping 대기중"
-
-#: deployment/models.py:25
-msgid "kernel"
-msgstr "커널"
-
-#: deployment/models.py:26
-msgid "initrd"
-msgstr "initrd(초기 램디스크)"
-
-#: deployment/models.py:27
-msgid "netboot"
-msgstr "넷부트"
-
-#: deployment/models.py:30
-msgid "iPXE"
-msgstr "iPXE"
-
-#: deployment/models.py:31
-msgid "kickstart"
-msgstr "kickstart"
-
-#: deployment/models.py:32
-msgid "preseed"
-msgstr "preseed"
-
-#: deployment/models.py:33
-msgid "script"
-msgstr "스크립트"
-
-#: deployment/models.py:36
-msgid "other"
-msgstr "기타"
-
-#: deployment/models.py:100
-msgid "configuration"
-msgstr "구성"
-
-#: deployment/models.py:106 deployment/models.py:107
-msgid "preboot configuration"
-msgstr "프리부트 구성"
-
-#: deployment/models.py:120
-msgid "file"
-msgstr "파일"
-
-#: deployment/models.py:128
-msgid "preboot file"
-msgstr "프리부트 파일"
-
-#: deployment/models.py:129
-msgid "preboot files"
-msgstr "프리부트 파일"
-
-#: deployment/models.py:136
-msgid "files"
-msgstr "파일"
-
-#: deployment/models.py:147
-msgid "preboot"
-msgstr "프리부트"
-
-#: deployment/models.py:148
-msgid "preboots"
-msgstr "프리부트"
-
-#: dhcp/admin.py:15
-msgid "{} ({} ago)"
-msgstr "{} ({} ago)"
-
-#: dhcp/models.py:35 dhcp/models.py:55 networks/admin.py:318
-#: networks/models/networks.py:611 networks/models/networks.py:626
-#: networks/models/networks.py:658
-msgid "IP address"
-msgstr "IP주소"
-
-#: dhcp/models.py:43
-msgid "DHCP Server"
-msgstr "DHCP 서버"
-
-#: dhcp/models.py:59
-msgid "is default"
-msgstr "디폴트 값 입니다."
-
-#: dhcp/models.py:65
-msgid "DNS Server"
-msgstr "DNS 서버"
-
-#: dns/dnsaas.py:124 dns/dnsaas.py:234
-msgid "Internal Server Error from DNSAAS"
-msgstr "DNSAAS의 내부 서버 오류"
-
-#: dns/dnsaas.py:188
-msgid "Domain not found."
-msgstr "도메인을 찾을 수 없습니다."
-
-#: dns/forms.py:10
-msgid "A"
-msgstr "A"
-
-#: dns/forms.py:11
-msgid "TXT"
-msgstr "TXT"
-
-#: dns/forms.py:12
-msgid "CNAME"
-msgstr "CNAME"
-
-#: dns/forms.py:23
-#: security/templates/security/securityinfo/security_info.html:38
+#: src/ralph/data_center/templates/data_center/datacenterasset/relations.html:77
+#: src/ralph/dns/forms.py:23
+#: src/ralph/security/templates/security/securityinfo/security_info.html:38
 msgid "Name"
 msgstr "이름"
 
-#: dns/forms.py:26
+#: src/ralph/data_center/templates/data_center/datacenterasset/relations.html:78
+#, fuzzy
+#| msgid "Types"
+msgid "Type"
+msgstr "타입"
+
+#: src/ralph/data_center/templates/data_center/datacenterasset/relations.html:91
+msgid "No related objects found."
+msgstr ""
+
+#: src/ralph/dc_view/templates/dc_view/server_room_view.html:5
+msgid "Dc View"
+msgstr "DC뷰"
+
+#: src/ralph/dc_view/templates/dc_view/server_room_view.html:31
+msgid "Server rooms"
+msgstr "서버실"
+
+#: src/ralph/deployment/deployment.py:49
+msgid "<NEXT FREE>"
+msgstr "<다음 무료>"
+
+#: src/ralph/deployment/deployment.py:122
+#: src/ralph/deployment/deployment.py:172 src/ralph/lib/mixins/api.py:14
+#: src/ralph/lib/mixins/forms.py:61
+msgid "Other"
+msgstr "기타"
+
+#: src/ralph/deployment/deployment.py:198
+msgid "use first"
+msgstr "우선 사용"
+
+#: src/ralph/deployment/deployment.py:267
+msgid "Non-management MAC address not found"
+msgstr "관리되지 않은 MAC주소를 찾을 수 없습니다."
+
+#: src/ralph/deployment/deployment.py:278
+msgid "Network environment not found."
+msgstr "네트워크 환경을 찾을 수 없습니다."
+
+#: src/ralph/deployment/deployment.py:286
+msgid "Clean hostname"
+msgstr "호스트명 정리"
+
+#: src/ralph/deployment/deployment.py:298
+msgid "Clean DNS entries"
+msgstr "DNS항목 정리"
+
+#: src/ralph/deployment/deployment.py:337
+msgid "Clean IP addresses"
+msgstr "IP주소 정리"
+
+#: src/ralph/deployment/deployment.py:355
+msgid "Clean DHCP entries"
+msgstr "DHCP항목 정리"
+
+#: src/ralph/deployment/deployment.py:372
+msgid "Remove from DHCP entries"
+msgstr "DHCP항목 제거"
+
+#: src/ralph/deployment/deployment.py:375
+msgid "DHCP Entry"
+msgstr "DHCP항목"
+
+#: src/ralph/deployment/deployment.py:396
+msgid "Assign new hostname"
+msgstr "새 호스트명 할당"
+
+#: src/ralph/deployment/deployment.py:477
+msgid "Assign new IP"
+msgstr "새 IP할당"
+
+#: src/ralph/deployment/deployment.py:539
+msgid "You can choose only one asset"
+msgstr "한 개의 자산만 선택할 수 있습니다."
+
+#: src/ralph/deployment/deployment.py:545
+msgid "Replace IP"
+msgstr "IP교체"
+
+#: src/ralph/deployment/deployment.py:556 src/ralph/networks/admin.py:305
+msgid "Network"
+msgstr "네트워크"
+
+#: src/ralph/deployment/deployment.py:576
+msgid "Assign new IP address and create DHCP entries"
+msgstr "새 IP주소를 할당하고 DHCP항목을 생성하세요."
+
+#: src/ralph/deployment/deployment.py:676
+msgid "Wait for DHCP servers"
+msgstr "DHCP서버를 기다리고 있습니다."
+
+#: src/ralph/deployment/deployment.py:703
+msgid "Create DNS entries"
+msgstr "DHCP항목 생성"
+
+#: src/ralph/deployment/deployment.py:728
+msgid "Change service-env"
+msgstr "서비스 환경 변경"
+
+#: src/ralph/deployment/deployment.py:731
+msgid "Service-environment"
+msgstr "서비스 환경"
+
+#: src/ralph/deployment/deployment.py:748
+msgid "Change configuration_path"
+msgstr "구성경로 변경"
+
+#: src/ralph/deployment/deployment.py:751 src/ralph/virtual/admin.py:409
+msgid "Configuration path"
+msgstr "구성경로"
+
+#: src/ralph/deployment/deployment.py:772
+msgid "Apply preboot"
+msgstr "프리부트 적용"
+
+#: src/ralph/deployment/deployment.py:776
+msgid "Preboot"
+msgstr "프리부트"
+
+#: src/ralph/deployment/deployment.py:798
+msgid "Wait for ping"
+msgstr "Ping 대기중"
+
+#: src/ralph/deployment/models.py:26
+msgid "kernel"
+msgstr "커널"
+
+#: src/ralph/deployment/models.py:27
+msgid "initrd"
+msgstr "initrd(초기 램디스크)"
+
+#: src/ralph/deployment/models.py:28
+msgid "netboot"
+msgstr "넷부트"
+
+#: src/ralph/deployment/models.py:31
+msgid "iPXE"
+msgstr "iPXE"
+
+#: src/ralph/deployment/models.py:32
+msgid "kickstart"
+msgstr "kickstart"
+
+#: src/ralph/deployment/models.py:33
+msgid "preseed"
+msgstr "preseed"
+
+#: src/ralph/deployment/models.py:34
+msgid "script"
+msgstr "스크립트"
+
+#: src/ralph/deployment/models.py:37
+msgid "other"
+msgstr "기타"
+
+#: src/ralph/deployment/models.py:102
+msgid "configuration"
+msgstr "구성"
+
+#: src/ralph/deployment/models.py:109 src/ralph/deployment/models.py:110
+msgid "preboot configuration"
+msgstr "프리부트 구성"
+
+#: src/ralph/deployment/models.py:123
+msgid "file"
+msgstr "파일"
+
+#: src/ralph/deployment/models.py:131
+msgid "preboot file"
+msgstr "프리부트 파일"
+
+#: src/ralph/deployment/models.py:132
+msgid "preboot files"
+msgstr "프리부트 파일"
+
+#: src/ralph/deployment/models.py:139
+msgid "files"
+msgstr "파일"
+
+#: src/ralph/deployment/models.py:150
+msgid "preboot"
+msgstr "프리부트"
+
+#: src/ralph/deployment/models.py:151
+msgid "preboots"
+msgstr "프리부트"
+
+#: src/ralph/dhcp/admin.py:22
+msgid "{} ({} ago)"
+msgstr "{} ({} ago)"
+
+#: src/ralph/dhcp/admin.py:80
+#, fuzzy
+#| msgid "networks"
+msgid "in networks"
+msgstr "네트워크"
+
+#: src/ralph/dhcp/models.py:35 src/ralph/dhcp/models.py:93
+#: src/ralph/networks/admin.py:320 src/ralph/networks/models/networks.py:613
+#: src/ralph/networks/models/networks.py:628
+#: src/ralph/networks/models/networks.py:660
+msgid "IP address"
+msgstr "IP주소"
+
+#: src/ralph/dhcp/models.py:43
+msgid "DHCP Server"
+msgstr "DHCP 서버"
+
+#: src/ralph/dhcp/models.py:60
+#, fuzzy
+#| msgid "DNS Server"
+msgid "DNS Server Group"
+msgstr "DNS 서버"
+
+#: src/ralph/dhcp/models.py:98
+msgid "DNS Server"
+msgstr "DNS 서버"
+
+#: src/ralph/dns/dnsaas.py:25 src/ralph/dns/forms.py:10
+msgid "A"
+msgstr "A"
+
+#: src/ralph/dns/dnsaas.py:26 src/ralph/dns/forms.py:11
+msgid "TXT"
+msgstr "TXT"
+
+#: src/ralph/dns/dnsaas.py:27 src/ralph/dns/forms.py:12
+msgid "CNAME"
+msgstr "CNAME"
+
+#: src/ralph/dns/dnsaas.py:219
+msgid "Service is required for record {}"
+msgstr ""
+
+#: src/ralph/dns/forms.py:26
 msgid ""
 "Actual name of a record. Must not end in a '.' and be fully qualified - it "
 "is not relative to the name of the domain!"
 msgstr ""
-"실제 레코드명은 '.'로 끝나면 안되고, 완전한 자격을 갖추어야 합니다. -"
-"도메인명과 관련이 없습니다."
+"실제 레코드명은 '.'로 끝나면 안되고, 완전한 자격을 갖추어야 합니다. -도메인명"
+"과 관련이 없습니다."
 
-#: dns/forms.py:32
+#: src/ralph/dns/forms.py:32
 msgid "Record type"
 msgstr "레코드 타입"
 
-#: dns/forms.py:36
+#: src/ralph/dns/forms.py:36
 msgid "Content"
 msgstr "콘텐츠"
 
-#: dns/forms.py:39
+#: src/ralph/dns/forms.py:39
 msgid ""
 "The 'right hand side' of a DNS record. For an A record, this is the IP "
 "address"
-msgstr ""
-"DNS레코드의 우측이 A레코드인 경우, 이 레코드는 IP주소입니다."
+msgstr "DNS레코드의 우측이 A레코드인 경우, 이 레코드는 IP주소입니다."
 
-#: dns/forms.py:45
+#: src/ralph/dns/forms.py:45
 msgid "PTR"
 msgstr "PTR"
 
-#: dns/forms.py:56
+#: src/ralph/dns/forms.py:57
 msgid "Only A type record can be PTR"
 msgstr "A타입 레코드만 PTR이 될 수 있습니다."
 
-#: dns/templates/dns/dns_edit.html:7
+#: src/ralph/dns/templates/dns/dns_edit.html:7
 msgid "DNS edit"
 msgstr "DNS편집"
 
-#: dns/templates/dns/dns_edit.html:40
+#: src/ralph/dns/templates/dns/dns_edit.html:40
 msgid "Are you sure to delete?"
 msgstr "삭제하시겠습니까?"
 
-#: dns/templates/dns/dns_edit.html:50
+#: src/ralph/dns/templates/dns/dns_edit.html:50
 msgid "Add at least one IP address to fetch DNS records."
 msgstr "DNS레코드를 가져오려면 IP주소를 하나 이상 추가해주세요."
 
-#: dns/tests.py:560
-msgid "Your request couldn't be handled, try later."
-msgstr "요청이 처리되지 않았습니다. 나중에 다시 시도해주세요."
-
-#: dns/views.py:98
+#: src/ralph/dns/views.py:104
 msgid "DNS record has been deleted."
 msgstr "DNS 레코드가 삭제되었습니다."
 
-#: dns/views.py:106
+#: src/ralph/dns/views.py:112
 msgid "DNS record has been updated."
 msgstr "DNS 레코드가 업데이트되었습니다."
 
-#: dns/views.py:114
+#: src/ralph/dns/views.py:120
 msgid "DNS record has been created."
 msgstr "DNS 레코드가 생성되었습니다"
 
-#: domains/admin.py:52
+#: src/ralph/domains/admin.py:54 src/ralph/ssl_certificates/admin.py:41
+#: src/ralph/trade_marks/admin.py:79
 msgid "Ownership info"
 msgstr "오너쉽 정보"
 
-#: domains/admin.py:94 licences/admin.py:110
+#: src/ralph/domains/admin.py:96 src/ralph/licences/admin.py:130
 msgid "Financial info"
 msgstr "재무 정보"
 
-#: domains/models/domains.py:32
-msgid "Active"
-msgstr "활성"
-
-#: domains/models/domains.py:33
-msgid "Pending lapse"
-msgstr "소멸 대기"
-
-#: domains/models/domains.py:34
-msgid "Pending transfer away"
-msgstr "전송 대기"
-
-#: domains/models/domains.py:35
-msgid "Lapsed (inactive)"
-msgstr "소멸 (비활성화)"
-
-#: domains/models/domains.py:36
-msgid "Transfered away"
-msgstr "전송"
-
-#: domains/models/domains.py:42
-msgid "None"
-msgstr "없음"
-
-#: domains/models/domains.py:43
-msgid "Redirect"
-msgstr "간접처리"
-
-#: domains/models/domains.py:44
-msgid "Direct"
-msgstr "직접처리"
-
-#: domains/models/domains.py:50
-msgid "Business"
-msgstr "비지니스"
-
-#: domains/models/domains.py:51
-msgid "Business security"
-msgstr "비지니스 보안"
-
-#: domains/models/domains.py:52
-msgid "Technical"
-msgstr "기술적"
-
-#: domains/models/domains.py:77
-msgid "domain name"
-msgstr "도메인명"
-
-#: domains/models/domains.py:78
-msgid "Full domain name"
-msgstr "전체 도메인명"
-
-#: domains/models/domains.py:88
-msgid "Business segment for a domain"
-msgstr "도메인 비지니스 세그먼트 "
-
-#: domains/models/domains.py:95
-msgid "Business contact person for a domain"
-msgstr "도메인 비지니스 담당자"
-
-#: domains/models/domains.py:102
-msgid "Technical contact person for a domain"
-msgstr "도메인 기술 담당자"
-
-#: domains/models/domains.py:108
-msgid "Company which receives invoice for the domain"
-msgstr "도메인에 대해 청구서를 받는 회사"
-
-#: domains/models/domains.py:117
-msgid "Type of website which domain refers to."
-msgstr "도메인이 참조하는 웹사이트 타입"
-
-#: domains/models/domains.py:121
-msgid "Website url which website type refers to."
-msgstr "웹사이트 타입이 참조하는 웹사이트 URL"
-
-#: domains/models/domains.py:128
-msgid "Provider which keeps domain's DNS"
-msgstr "도메인 DNS 공급자"
-
-#: domains/models/domains.py:142
-msgid "Website url should be empty for this website type"
-msgstr "웹사이트 URL은 이 웹사이트 타입에 대해 비어있어야합니다."
-
-#: domains/models/domains.py:151
-msgid "Website url should be filled for this website type"
-msgstr "이 웹사이트 타입에 대해 웹사이트 URL을 입력해야합니다."
-
-#: domains/models/domains.py:167
+#: src/ralph/domains/forms.py:22
 msgid "Price for domain renewal for given period"
 msgstr "특정 기간동안 도메인 리뉴얼 가격"
 
-#: domains/models/domains.py:168
-msgid "Price"
-msgstr "가격"
+#: src/ralph/domains/models/domains.py:33
+msgid "Active"
+msgstr "활성"
 
-#: lib/custom_fields/forms.py:24
+#: src/ralph/domains/models/domains.py:34
+msgid "Pending lapse"
+msgstr "소멸 대기"
+
+#: src/ralph/domains/models/domains.py:35
+msgid "Pending transfer away"
+msgstr "전송 대기"
+
+#: src/ralph/domains/models/domains.py:36
+msgid "Lapsed (inactive)"
+msgstr "소멸 (비활성화)"
+
+#: src/ralph/domains/models/domains.py:37
+msgid "Transfered away"
+msgstr "전송"
+
+#: src/ralph/domains/models/domains.py:43
+msgid "None"
+msgstr "없음"
+
+#: src/ralph/domains/models/domains.py:44
+msgid "Redirect"
+msgstr "간접처리"
+
+#: src/ralph/domains/models/domains.py:45
+msgid "Direct"
+msgstr "직접처리"
+
+#: src/ralph/domains/models/domains.py:51
+msgid "Business"
+msgstr "비지니스"
+
+#: src/ralph/domains/models/domains.py:52
+msgid "Business security"
+msgstr "비지니스 보안"
+
+#: src/ralph/domains/models/domains.py:53
+msgid "Technical"
+msgstr "기술적"
+
+#: src/ralph/domains/models/domains.py:87
+#: src/ralph/ssl_certificates/models.py:28
+msgid "domain name"
+msgstr "도메인명"
+
+#: src/ralph/domains/models/domains.py:88
+#: src/ralph/ssl_certificates/models.py:30
+msgid "Full domain name"
+msgstr "전체 도메인명"
+
+#: src/ralph/domains/models/domains.py:98
+msgid "Business segment for a domain"
+msgstr "도메인 비지니스 세그먼트 "
+
+#: src/ralph/domains/models/domains.py:105
+msgid "Business contact person for a domain"
+msgstr "도메인 비지니스 담당자"
+
+#: src/ralph/domains/models/domains.py:112
+msgid "Technical contact person for a domain"
+msgstr "도메인 기술 담당자"
+
+#: src/ralph/domains/models/domains.py:118
+msgid "Company which receives invoice for the domain"
+msgstr "도메인에 대해 청구서를 받는 회사"
+
+#: src/ralph/domains/models/domains.py:127
+msgid "Type of website which domain refers to."
+msgstr "도메인이 참조하는 웹사이트 타입"
+
+#: src/ralph/domains/models/domains.py:131
+msgid "Website url which website type refers to."
+msgstr "웹사이트 타입이 참조하는 웹사이트 URL"
+
+#: src/ralph/domains/models/domains.py:138
+msgid "Provider which keeps domain's DNS"
+msgstr "도메인 DNS 공급자"
+
+#: src/ralph/domains/models/domains.py:156
+msgid "Website url should be empty for this website type"
+msgstr "웹사이트 URL은 이 웹사이트 타입에 대해 비어있어야합니다."
+
+#: src/ralph/domains/models/domains.py:165
+msgid "Website url should be filled for this website type"
+msgstr "이 웹사이트 타입에 대해 웹사이트 URL을 입력해야합니다."
+
+#: src/ralph/lib/api/exceptions.py:9
+msgid "State of the resource is in conflict with the request."
+msgstr ""
+
+#: src/ralph/lib/custom_fields/forms.py:37
+msgid "Only users from {} group can set this custom field."
+msgstr ""
+
+#: src/ralph/lib/custom_fields/forms.py:49
 msgid "Clear children values?"
 msgstr "하위항목 값 정리?"
 
-#: lib/custom_fields/forms.py:64
+#: src/ralph/lib/custom_fields/forms.py:110
 msgid ""
 "Please correct the duplicate data for custom fields (only one value for "
 "particular custom field is possible)."
-msgstr "사용자 지정 필드의 중복 데이터를 수정하세요."
-" (특정 사용자 지정 필드 값은 하나만 사용)"
+msgstr ""
+"사용자 지정 필드의 중복 데이터를 수정하세요. (특정 사용자 지정 필드 값은 하나"
+"만 사용)"
 
-
-#: lib/custom_fields/models.py:56
+#: src/ralph/lib/custom_fields/models.py:57
 msgid "field name used in API. It's slugged name of the field"
 msgstr "API에 사용되는 필드 이름. 필드 이름은 중요함."
 
-#: lib/custom_fields/models.py:65
+#: src/ralph/lib/custom_fields/models.py:66
 msgid "choices"
 msgstr "선택"
 
-#: lib/custom_fields/models.py:66
+#: src/ralph/lib/custom_fields/models.py:67
 msgid "available choices for `choices list` separated by |"
 msgstr "|로 구분된 '목록'에서 선택 가능"
 
-#: lib/custom_fields/models.py:70
+#: src/ralph/lib/custom_fields/models.py:71
 msgid "for boolean use \"true\" or \"false\""
 msgstr "불린 값은 \"true\" 또는 \"false\""
 
-#: lib/custom_fields/models.py:78
+#: src/ralph/lib/custom_fields/models.py:79
+msgid ""
+"When set, only members of the specified group will be allowed to set, change "
+"or unset values of this custom field for objects."
+msgstr ""
+
+#: src/ralph/lib/custom_fields/models.py:87
 msgid ""
 "When set, this variable will be exposed in API in \"configuration_variables"
 "\" section. You could use this later in configuration management tool like "
 "Puppet or Ansible."
-msgstr "이 변수를 설정하면 \"configuration_variables\" 섹션의 API에서 이"
-" 변수가 노출된다. 나중에 Puppet 또는 Ansible과 같은 구성 관리 도구에서"
-" 이것을 사용할 수 있다."
+msgstr ""
+"이 변수를 설정하면 \"configuration_variables\" 섹션의 API에서 이 변수가 노출"
+"된다. 나중에 Puppet 또는 Ansible과 같은 구성 관리 도구에서 이것을 사용할 수 "
+"있다."
 
-#: lib/custom_fields/models.py:118
+#: src/ralph/lib/custom_fields/models.py:127
 msgid "key"
 msgstr "키"
 
-#: lib/custom_fields/models.py:168
+#: src/ralph/lib/custom_fields/models.py:177
 msgid "Custom field of the same type already exists for this object."
 msgstr "이 개체에 대해 동일한 유형의 사용자 지정 필드가 이미 있음"
 
-#: lib/custom_fields/templates/custom_fields/edit_inline/tabular.html:64
+#: src/ralph/lib/custom_fields/templates/custom_fields/edit_inline/tabular.html:64
 msgid "summary"
 msgstr "요약"
 
-#: lib/custom_fields/templates/custom_fields/edit_inline/tabular.html:68
+#: src/ralph/lib/custom_fields/templates/custom_fields/edit_inline/tabular.html:68
 msgid "Custom field"
 msgstr "사용자 정의 필드"
 
-#: lib/custom_fields/templates/custom_fields/edit_inline/tabular.html:69
-#: lib/transitions/templates/transitions/run_transition.html:27
+#: src/ralph/lib/custom_fields/templates/custom_fields/edit_inline/tabular.html:69
+#: src/ralph/lib/transitions/templates/transitions/run_transition.html:27
 msgid "Value"
 msgstr "값"
 
-#: lib/custom_fields/templates/custom_fields/edit_inline/tabular.html:70
+#: src/ralph/lib/custom_fields/templates/custom_fields/edit_inline/tabular.html:70
 msgid "Inherited from"
 msgstr "에서 상속됨"
 
-#: lib/external_services/models.py:39
+#: src/ralph/lib/error_pages/views.py:8
+msgid "Not Found"
+msgstr ""
+
+#: src/ralph/lib/error_pages/views.py:9
+msgid "The requested resource was not found on this server."
+msgstr ""
+
+#: src/ralph/lib/external_services/models.py:39
 msgid "queued"
 msgstr "대기"
 
-#: lib/external_services/models.py:40 lib/transitions/models.py:610
+#: src/ralph/lib/external_services/models.py:40
+#: src/ralph/lib/transitions/models.py:640
 msgid "finished"
 msgstr "종료"
 
-#: lib/external_services/models.py:41 lib/transitions/models.py:611
+#: src/ralph/lib/external_services/models.py:41
+#: src/ralph/lib/transitions/models.py:641
 msgid "failed"
 msgstr "실패"
 
-#: lib/external_services/models.py:42 lib/transitions/models.py:609
+#: src/ralph/lib/external_services/models.py:42
+#: src/ralph/lib/transitions/models.py:639
 msgid "started"
 msgstr "시작됨"
 
-#: lib/external_services/models.py:43
+#: src/ralph/lib/external_services/models.py:43
 msgid "frozen"
 msgstr "멈춤"
 
-#: lib/external_services/models.py:44
+#: src/ralph/lib/external_services/models.py:44
 msgid "killed"
 msgstr "삭제됨"
 
-#: lib/external_services/models.py:80
+#: src/ralph/lib/external_services/models.py:80
 msgid "job status"
 msgstr "작업 상태"
 
-#: lib/mixins/fields.py:74 operations/admin.py:101 operations/views.py:46
+#: src/ralph/lib/mixins/fields.py:135 src/ralph/operations/admin.py:157
+#: src/ralph/operations/views.py:46
 msgid "ticket ID"
 msgstr "티켓 ID"
 
-#: lib/mixins/fields.py:75
+#: src/ralph/lib/mixins/fields.py:136
 msgid "External system ticket identifier"
 msgstr "외부 시스템 티켓 식별자"
 
-#: lib/mixins/fields.py:220
+#: src/ralph/lib/mixins/fields.py:281
 #, python-format
 msgid "'%(value)s' is not a valid MAC address."
 msgstr "'%(value)s'은 유효한 MAC 주소가 아닙니다."
 
-#: lib/mixins/models.py:36
+#: src/ralph/lib/mixins/models.py:38
 msgid "date created"
 msgstr "생성 날자"
 
-#: lib/mixins/models.py:40
+#: src/ralph/lib/mixins/models.py:42
 msgid "last modified"
 msgstr "최근 수정일"
 
-#: lib/mixins/models.py:54
+#: src/ralph/lib/mixins/models.py:56
 msgid "last seen"
 msgstr "최근 조회"
 
-#: lib/permissions/api.py:115
+#: src/ralph/lib/permissions/api.py:115
 msgid "You cannot update readonly field."
 msgstr "읽기전용 필드는 업데이트할 수 없습니다."
 
-#: lib/permissions/models.py:166
+#: src/ralph/lib/permissions/models.py:166
 msgid "Can view {} field"
 msgstr "{} 필드를 볼 수 있음"
 
-#: lib/permissions/models.py:172
+#: src/ralph/lib/permissions/models.py:172
 msgid "Can change {} field"
 msgstr "{} 필드를 수정할 수 없음"
 
-#: lib/transitions/forms.py:108
+#: src/ralph/lib/transitions/forms.py:78
+#, fuzzy
+#| msgid "is default"
+msgid "Default"
+msgstr "디폴트 값 입니다."
+
+#: src/ralph/lib/transitions/forms.py:119
 msgid "Please provide async service name for asynchronous transition"
 msgstr "비동기 전화을 위한 비동기 서비스 이름을 알려주세요"
 
-#: lib/transitions/forms.py:112
+#: src/ralph/lib/transitions/forms.py:123
 msgid " (At least one of chosen actions is asynchronous)"
 msgstr " (선택한 작업 중 하나 이상이 비동기식)"
 
-#: lib/transitions/models.py:182
+#: src/ralph/lib/transitions/models.py:187
 msgid "wrong source status"
 msgstr "잘못된 소스 상태"
 
-#: lib/transitions/models.py:499
+#: src/ralph/lib/transitions/models.py:525
 msgid ""
 "Run this transition in the background (this could be enforced if you choose "
 "at least one asynchronous action)"
-msgstr "백그라운드에서 이 전환 작업을 실행 (비동기 작업을 하나 이상 선택하는 "
-"경우 적용 가능)"
+msgstr ""
+"백그라운드에서 이 전환 작업을 실행 (비동기 작업을 하나 이상 선택하는 경우 적"
+"용 가능)"
 
-#: lib/transitions/models.py:506
+#: src/ralph/lib/transitions/models.py:532
 msgid ""
 "Name of asynchronous (internal) service to run this transition. Fill this "
 "field only if you want to run this transition in the background."
 msgstr ""
-"이 전환을 실행할 비동기(내부) 서버스의 이름. 이 전환을 백그라운드에서"
-" 실행하려는 경우에만 이 필드를 입력하세요."
+"이 전환을 실행할 비동기(내부) 서버스의 이름. 이 전환을 백그라운드에서 실행하"
+"려는 경우에만 이 필드를 입력하세요."
 
-#: lib/transitions/models.py:684
+#: src/ralph/lib/transitions/models.py:723
 msgid "transition action status"
 msgstr "전환 실행 상태"
 
-#: lib/transitions/templates/transitions/_transition_jobs_table.html:5
+#: src/ralph/lib/transitions/templates/transitions/_transition_jobs_table.html:5
 msgid "Job"
 msgstr "작업"
 
-#: lib/transitions/templates/transitions/_transition_jobs_table.html:8
-#: lib/transitions/templates/transitions/current_transitions.html:22
+#: src/ralph/lib/transitions/templates/transitions/_transition_jobs_table.html:8
+#: src/ralph/lib/transitions/templates/transitions/current_transitions.html:22
 msgid "Object"
 msgstr "개체"
 
-#: lib/transitions/templates/transitions/_transition_jobs_table.html:10
-#: lib/transitions/templates/transitions/current_transitions.html:24
+#: src/ralph/lib/transitions/templates/transitions/_transition_jobs_table.html:10
+#: src/ralph/lib/transitions/templates/transitions/current_transitions.html:24
 msgid "Status"
 msgstr "상태"
 
-#: lib/transitions/templates/transitions/_transition_jobs_table.html:11
-#: lib/transitions/templates/transitions/current_transitions.html:25
+#: src/ralph/lib/transitions/templates/transitions/_transition_jobs_table.html:11
+#: src/ralph/lib/transitions/templates/transitions/current_transitions.html:25
 msgid "Transition actions"
 msgstr "전환 활동"
 
-#: lib/transitions/templates/transitions/_transition_jobs_table.html:33
-#: lib/transitions/templates/transitions/_transition_jobs_table_body.html:42
+#: src/ralph/lib/transitions/templates/transitions/_transition_jobs_table.html:33
+#: src/ralph/lib/transitions/templates/transitions/_transition_jobs_table_body.html:42
 msgid "Are you sure you want to kill transition job?"
 msgstr "전환 작업을 삭제하길 원합니까?"
 
-#: lib/transitions/templates/transitions/_transition_jobs_table_body.html:7
+#: src/ralph/lib/transitions/templates/transitions/_transition_jobs_table_body.html:7
 msgid "Created date"
 msgstr "생성일"
 
-#: lib/transitions/templates/transitions/current_transitions.html:32
+#: src/ralph/lib/transitions/templates/transitions/current_transitions.html:32
 msgid "Current transition"
 msgstr "현재 전환"
 
-#: lib/transitions/templates/transitions/current_transitions.html:39
+#: src/ralph/lib/transitions/templates/transitions/current_transitions.html:39
 msgid "Nothing to do."
 msgstr "할일이 없음"
 
-#: lib/transitions/templates/transitions/current_transitions.html:45
+#: src/ralph/lib/transitions/templates/transitions/current_transitions.html:45
 msgid "Finished transitions"
 msgstr "전환 종료"
 
-#: lib/transitions/templates/transitions/current_transitions.html:52
+#: src/ralph/lib/transitions/templates/transitions/current_transitions.html:52
 msgid "Nothing to display"
 msgstr "표시할 내용 없음"
 
-#: lib/transitions/templates/transitions/run_transition.html:5
-#: lib/transitions/templates/transitions/run_transition.html:10
+#: src/ralph/lib/transitions/templates/transitions/run_transition.html:5
+#: src/ralph/lib/transitions/templates/transitions/run_transition.html:10
 msgid "Tranisition"
 msgstr "전환"
 
-#: lib/transitions/templates/transitions/run_transition.html:26
+#: src/ralph/lib/transitions/templates/transitions/run_transition.html:26
 msgid "Option"
 msgstr "선택사항"
 
-#: lib/transitions/templates/transitions/run_transition.html:38
+#: src/ralph/lib/transitions/templates/transitions/run_transition.html:38
 msgid "Cancel transition"
 msgstr "전화 취소"
 
-#: lib/transitions/templates/transitions/run_transition.html:43
+#: src/ralph/lib/transitions/templates/transitions/run_transition.html:43
 msgid "Run transition"
 msgstr "전환 실행"
 
-#: lib/transitions/templates/transitions/templatetags/available_transitions.html:15
+#: src/ralph/lib/transitions/templates/transitions/templatetags/available_transitions.html:15
 msgid "This transition will be run without any confirmation."
 msgstr "이 전환은 어떠한 확인 없이 실행됩니다."
 
-#: lib/transitions/views.py:190
+#: src/ralph/lib/transitions/views.py:204
 msgid "Transitions performed successfully"
 msgstr "전환이 성공적으로 수행됨"
 
-#: lib/transitions/views.py:212
+#: src/ralph/lib/transitions/views.py:226
 msgid "Some assets are not valid"
 msgstr "일부 자산은 유효하지 않음"
 
-#: licences/admin.py:24 licences/admin.py:32 supports/admin.py:21
-#: supports/admin.py:29
+#: src/ralph/licences/admin.py:25 src/ralph/licences/admin.py:33
+#: src/ralph/supports/admin.py:22 src/ralph/supports/admin.py:30
 msgid "Assignments"
 msgstr "할당"
 
-#: licences/admin.py:31 supports/admin.py:28
+#: src/ralph/licences/admin.py:32 src/ralph/supports/admin.py:29
 msgid "assignments"
 msgstr "할당"
 
-#: licences/admin.py:41
-msgid "Assigned to users"
-msgstr "사용자에 할당"
-
-#: licences/models.py:68
+#: src/ralph/licences/models.py:72
 msgid "software categories"
 msgstr "소프트웨어 카테고리"
 
-#: licences/models.py:155
+#: src/ralph/licences/models.py:159
 msgid "Should be like 'per processor' or 'per machine' and so on. "
 msgstr "'per processor' 또는 'per machine' 등과 같아야 함. "
 
-#: licences/models.py:169
-msgid "number of purchased items"
-msgstr "구매 항목 수"
-
-#: licences/models.py:172
+#: src/ralph/licences/models.py:176
 msgid "SN / key"
 msgstr "시리얼번호 / 키"
 
-#: licences/models.py:184 supports/models.py:107
+#: src/ralph/licences/models.py:188 src/ralph/supports/models.py:109
 msgid "invoice date"
 msgstr "청구서 일자"
 
-#: licences/models.py:202
+#: src/ralph/licences/models.py:216
 msgid "Any value to help your accounting department identify this licence"
 msgstr "회계 부서에서 이 라이선스를 식별하는데 도움이 되는 모든 값"
 
-#: licences/models.py:208
+#: src/ralph/licences/models.py:222
 msgid "assigned base objects"
 msgstr "할당된 기본 개체"
 
-#: licences/models.py:222
+#: src/ralph/licences/models.py:236
 msgid "license details"
 msgstr "라이선스 상세"
 
-#: licences/models.py:301 supports/models.py:176
+#: src/ralph/licences/models.py:322 src/ralph/supports/models.py:178
 msgid "Asset"
 msgstr "자산"
 
-#: licences/models.py:328
+#: src/ralph/licences/models.py:349
 msgid "Asset region is in a different region than licence."
 msgstr "자산 리전이 라이선스와 다른 리전에 있음"
 
-#: networks/admin.py:40
+#: src/ralph/networks/admin.py:40
 msgid "Hostnames"
 msgstr "호스트이름"
 
-#: networks/admin.py:81 networks/admin.py:324
+#: src/ralph/networks/admin.py:81 src/ralph/networks/admin.py:326
 msgid "Linked object"
 msgstr "연결된 개체"
 
-#: networks/admin.py:134
+#: src/ralph/networks/admin.py:136
 msgid "Network added to <a href=\"{}\" _target=\"blank\">{}</a>"
 msgstr "<a href=\"{}\" _target=\"blank\">{}</a> 네트워크에 추가됨"
 
-#: networks/admin.py:135
+#: src/ralph/networks/admin.py:137
 msgid ""
 "Network reassigned from network <a href=\"{}\" target=\"_blank\">{}</a> to "
 "<a href=\"{}\" target=\"_blank\">{}</a>"
-msgstr "<a href=\"{}\" target=\"_blank\">{}</a> 에서 "
-"<a href=\"{}\" target=\"_blank\">{}</a> 로 네트워크가 다시 할당됨"
+msgstr ""
+"<a href=\"{}\" target=\"_blank\">{}</a> 에서 <a href=\"{}\" target=\"_blank"
+"\">{}</a> 로 네트워크가 다시 할당됨"
 
-#: networks/admin.py:171
+#: src/ralph/networks/admin.py:173
 msgid "Network address"
 msgstr "네크워크 주소"
 
-#: networks/admin.py:176
+#: src/ralph/networks/admin.py:178
 msgid "Subnetworks count"
 msgstr "서브네트워크 수"
 
-#: networks/admin.py:181
+#: src/ralph/networks/admin.py:183
 msgid "IPAddress count"
 msgstr "IP 주소 수"
 
-#: networks/admin.py:194
+#: src/ralph/networks/admin.py:196
 msgid "Parent networks"
 msgstr "부모 네트워크"
 
-#: networks/admin.py:202
+#: src/ralph/networks/admin.py:204
 msgid "First free IP"
 msgstr "최초 프리 IP"
 
-#: networks/admin.py:215
+#: src/ralph/networks/admin.py:217
 msgid "Subnetworks"
 msgstr "서브네트워크"
 
-#: networks/admin.py:236
+#: src/ralph/networks/admin.py:238
 msgid "Addresses"
 msgstr "주소"
 
-#: networks/admin.py:290
+#: src/ralph/networks/admin.py:292
 msgid "IP added to <a href=\"{}\" _target=\"blank\">{}</a>"
 msgstr "<a href=\"{}\" _target=\"blank\">{}</a>에 IP가 추가됨"
 
-#: networks/admin.py:291
+#: src/ralph/networks/admin.py:293
 msgid ""
 "IP reassigned from network <a href=\"{}\" target=\"_blank\">{}</a> to <a "
 "href=\"{}\" target=\"_blank\">{}</a>"
-msgstr "<a href=\"{}\" target=\"_blank\">{}</a> 에서 <a "
-"href=\"{}\" target=\"_blank\">{}</a> 네트워크로 IP가 재할당됨"
+msgstr ""
+"<a href=\"{}\" target=\"_blank\">{}</a> 에서 <a href=\"{}\" target=\"_blank"
+"\">{}</a> 네트워크로 IP가 재할당됨"
 
-#: networks/filters.py:42
+#: src/ralph/networks/filters.py:42
 msgid "IP range"
 msgstr "IP 범위"
 
-#: networks/filters.py:64
+#: src/ralph/networks/filters.py:64
 msgid "Network range"
 msgstr "네트워크 범위"
 
-#: networks/filters.py:82
+#: src/ralph/networks/filters.py:82
 msgid "Private"
 msgstr "사설"
 
-#: networks/filters.py:83
+#: src/ralph/networks/filters.py:83
 msgid "Public"
 msgstr "공용"
 
-#: networks/filters.py:98 networks/filters.py:105
+#: src/ralph/networks/filters.py:98 src/ralph/networks/filters.py:105
 msgid "Contains IP address"
 msgstr "IP 주소 포함"
 
-#: networks/forms.py:120
+#: src/ralph/networks/forms.py:120
 #, python-format
 msgid "Address %(ip)s already exist."
 msgstr "%(ip)s 가 이미 존재하"
 
-#: networks/forms.py:157
+#: src/ralph/networks/forms.py:166
 msgid "Cannot expose in DHCP without IP address"
 msgstr ""
 
-#: networks/forms.py:161
+#: src/ralph/networks/forms.py:170
 msgid "Cannot expose in DHCP without hostname"
 msgstr ""
 
-#: networks/forms.py:165
+#: src/ralph/networks/forms.py:174
 msgid "Cannot expose in DHCP without MAC address"
 msgstr ""
 
-#: networks/forms.py:175
+#: src/ralph/networks/forms.py:185
 msgid "At least one of {} is required"
 msgstr "적어도 하나의 {} 가 필요함"
 
-#: networks/forms.py:223 networks/models/networks.py:653
+#: src/ralph/networks/forms.py:233 src/ralph/networks/models/networks.py:655
 msgid "Expose in DHCP"
 msgstr ""
 
-#: networks/models/choices.py:7
+#: src/ralph/networks/models/choices.py:7
 msgid "used (fixed address in DHCP)"
 msgstr "사용됨 (DHCP에서 고정 주소)"
 
-#: networks/models/choices.py:8
+#: src/ralph/networks/models/choices.py:8
 msgid "Exclude from DHCP"
 msgstr "DHCP에서 제외"
 
-#: networks/models/networks.py:45 networks/models/networks.py:306
+#: src/ralph/networks/models/networks.py:45
+#: src/ralph/networks/models/networks.py:306
 msgid "network kind"
 msgstr "네트워크 종류"
 
-#: networks/models/networks.py:46
+#: src/ralph/networks/models/networks.py:46
 msgid "network kinds"
 msgstr "네트워크 종류"
 
-#: networks/models/networks.py:62 networks/models/networks.py:567
+#: src/ralph/networks/models/networks.py:62
+#: src/ralph/networks/models/networks.py:569
 msgid "discovery queue"
 msgstr "검색 대기열"
 
-#: networks/models/networks.py:68
+#: src/ralph/networks/models/networks.py:68
 msgid "hostname template counter length"
 msgstr "호스트 이름 템플릿 카운터 길이"
 
-#: networks/models/networks.py:72
+#: src/ralph/networks/models/networks.py:72
 msgid "hostname template prefix"
 msgstr "호스트 이름 템플릿 접두사"
 
-#: networks/models/networks.py:76
+#: src/ralph/networks/models/networks.py:76
 msgid "hostname template postfix"
 msgstr "호스트 이름 템플릿 접미사"
 
-#: networks/models/networks.py:79
+#: src/ralph/networks/models/networks.py:79
 msgid ""
 "This value will be used as a postfix when generating new hostname in this "
 "network environment. For example, when prefix is \"s1\", postfix is \".mydc."
 "net\" and counter length is 4, following  hostnames will be generated: "
 "s10000.mydc.net, s10001.mydc.net, .., s19999.mydc.net."
-msgstr "이 네트워크 환경에서 이 값은 호스트 이름을 생성할 때 사후 적용됩니다."
-" 예를 들어, 접두사가 \"host\", 접미사가 \".mydomain.com\", 카운더 길이가 4이면"
-" 다음과 같이 호스트 이름이 생성됩니다: host0001.mydomain.com, host0002.mydomain.com, ...,"
-"host9999.mydomain.com."
+msgstr ""
+"이 네트워크 환경에서 이 값은 호스트 이름을 생성할 때 사후 적용됩니다. 예를 들"
+"어, 접두사가 \"host\", 접미사가 \".mydomain.com\", 카운더 길이가 4이면 다음"
+"과 같이 호스트 이름이 생성됩니다: host0001.mydomain.com, host0002.mydomain."
+"com, ...,host9999.mydomain.com."
 
-#: networks/models/networks.py:87
+#: src/ralph/networks/models/networks.py:87
 msgid "domain"
 msgstr "도메인"
 
-#: networks/models/networks.py:91
+#: src/ralph/networks/models/networks.py:91
 msgid "Used in DHCP configuration."
 msgstr "DHCP 구성에서 사용됨"
 
-#: networks/models/networks.py:94 networks/models/networks.py:262
+#: src/ralph/networks/models/networks.py:94
+#: src/ralph/networks/models/networks.py:262
 msgid "remarks"
 msgstr "리마크"
 
-#: networks/models/networks.py:95 networks/models/networks.py:263
+#: src/ralph/networks/models/networks.py:95
+#: src/ralph/networks/models/networks.py:263
 msgid "Additional information."
 msgstr "추가 정보"
 
-#: networks/models/networks.py:252
+#: src/ralph/networks/models/networks.py:252
 msgid "network address"
 msgstr "네트워크 주소"
 
-#: networks/models/networks.py:253
+#: src/ralph/networks/models/networks.py:253
 msgid "Presented as string (e.g. 192.168.0.0/24)"
 msgstr "문자로 표시됨 (e.g. 192.168.0.0/24)"
 
-#: networks/models/networks.py:256
+#: src/ralph/networks/models/networks.py:256
 msgid "Network Class"
 msgstr "네트워크 클래스"
 
-#: networks/models/networks.py:258
+#: src/ralph/networks/models/networks.py:258
 msgid "Gateway address"
 msgstr "게이트웨이 주소"
 
-#: networks/models/networks.py:270
+#: src/ralph/networks/models/networks.py:270
 msgid "network terminators"
 msgstr "네트워크 터미네이터"
 
-#: networks/models/networks.py:274
+#: src/ralph/networks/models/networks.py:274
 msgid "VLAN number"
 msgstr "VLAN 번호"
 
-#: networks/models/networks.py:281
+#: src/ralph/networks/models/networks.py:281
 msgid "racks"
 msgstr "랙"
 
-#: networks/models/networks.py:293
+#: src/ralph/networks/models/networks.py:293
 msgid "smallest IP number"
 msgstr "최소 IP 수"
 
-#: networks/models/networks.py:299
+#: src/ralph/networks/models/networks.py:299
 msgid "largest IP number"
 msgstr "최대 IP 수"
 
-#: networks/models/networks.py:312
+#: src/ralph/networks/models/networks.py:312
 msgid "Broadcast in DHCP configuration"
 msgstr "DHCP 환경에서 브로드캐스트"
 
-#: networks/models/networks.py:322
-msgid "DNS servers"
-msgstr "DNS 서버"
-
-#: networks/models/networks.py:327
+#: src/ralph/networks/models/networks.py:329
 msgid ""
 "Number of addresses to be omitted in DHCP automatic assignmentcounted from "
 "the first IP in range (excluding network address)"
 msgstr ""
-"범위의 첫 IP에서 카운트된 DHCP 자동 할당에서 생략할 주소 수"
-" (네트워크 주소 제외)"
+"범위의 첫 IP에서 카운트된 DHCP 자동 할당에서 생략할 주소 수 (네트워크 주소 제"
+"외)"
 
-#: networks/models/networks.py:334
+#: src/ralph/networks/models/networks.py:336
 msgid ""
 "Number of addresses to be omitted in DHCP automatic assignmentcounted from "
 "the last IP in range (excluding broadcast address)"
 msgstr ""
-"범위의 끝 IP에서 카운트된 DHCP 자동 할당에서 생략할 주소 수"
-" (네트워크 주소 제외)"
+"범위의 끝 IP에서 카운트된 DHCP 자동 할당에서 생략할 주소 수 (네트워크 주소 제"
+"외)"
 
-#: networks/models/networks.py:398
+#: src/ralph/networks/models/networks.py:400
 msgid "network"
 msgstr "네트워크"
 
-#: networks/models/networks.py:399
+#: src/ralph/networks/models/networks.py:401
 msgid "networks"
 msgstr "네트워크"
 
-#: networks/models/networks.py:568
+#: src/ralph/networks/models/networks.py:570
 msgid "discovery queues"
 msgstr "검색 대기열"
 
-#: networks/models/networks.py:612
+#: src/ralph/networks/models/networks.py:614
 msgid "Presented as string."
 msgstr "문자로 표시됨"
 
-#: networks/models/networks.py:627
+#: src/ralph/networks/models/networks.py:629
 msgid "Presented as int."
 msgstr "정수로 표시됨"
 
-#: networks/models/networks.py:635
+#: src/ralph/networks/models/networks.py:637
 msgid "Is management address"
 msgstr "관리 주소임"
 
-#: networks/models/networks.py:639
+#: src/ralph/networks/models/networks.py:641
 msgid "Is public"
 msgstr "공용임"
 
-#: networks/models/networks.py:644
+#: src/ralph/networks/models/networks.py:646
 msgid "Is gateway"
 msgstr "게이트웨이임"
 
-#: networks/models/networks.py:659
+#: src/ralph/networks/models/networks.py:661
 msgid "IP addresses"
 msgstr "IP 주소"
 
-#: networks/views.py:60
+#: src/ralph/networks/views.py:60
 msgid "Available networks"
 msgstr "가능한 네트워크"
 
-#: operations/migrations/0010_auto_20170410_1031.py:15
+#: src/ralph/operations/admin.py:93
+#, fuzzy
+#| msgid "My services"
+msgid "services"
+msgstr "나의 서비스"
+
+#: src/ralph/operations/migrations/0010_auto_20170410_1031.py:15
 msgid "open"
 msgstr "오픈"
 
-#: operations/migrations/0010_auto_20170410_1031.py:17
+#: src/ralph/operations/migrations/0010_auto_20170410_1031.py:17
 msgid "resolved"
 msgstr "해결됨"
 
-#: operations/migrations/0010_auto_20170410_1031.py:18
+#: src/ralph/operations/migrations/0010_auto_20170410_1031.py:18
 msgid "closed"
 msgstr "닫힘"
 
-#: operations/migrations/0010_auto_20170410_1031.py:19
+#: src/ralph/operations/migrations/0010_auto_20170410_1031.py:19
 msgid "reopened"
 msgstr "재오픈"
 
-#: operations/migrations/0010_auto_20170410_1031.py:20
+#: src/ralph/operations/migrations/0010_auto_20170410_1031.py:20
 msgid "todo"
 msgstr "할일"
 
-#: operations/migrations/0010_auto_20170410_1031.py:21
+#: src/ralph/operations/migrations/0010_auto_20170410_1031.py:21
 msgid "blocked"
 msgstr "블록됨"
 
-#: operations/models.py:43
+#: src/ralph/operations/models.py:43
 msgid "change"
 msgstr "변경"
 
-#: operations/models.py:46
+#: src/ralph/operations/models.py:46
 msgid "incident"
 msgstr "인시던트"
 
-#: operations/models.py:49
+#: src/ralph/operations/models.py:49
 msgid "problem"
 msgstr "문제"
 
-#: operations/models.py:52
+#: src/ralph/operations/models.py:52
 msgid "failure"
 msgstr "실패"
 
-#: operations/models.py:53
+#: src/ralph/operations/models.py:53
 msgid "hardware failure"
 msgstr "하드웨어 실패"
 
-#: operations/models.py:60
+#: src/ralph/operations/models.py:60
 msgid "title"
 msgstr "제목"
 
-#: operations/models.py:67 supports/models.py:88
+#: src/ralph/operations/models.py:67 src/ralph/supports/models.py:90
 msgid "status"
 msgstr "상태"
 
-#: operations/models.py:75
+#: src/ralph/operations/models.py:75
 msgid "assignee"
 msgstr "담당자"
 
-#: operations/models.py:83
+#: src/ralph/operations/models.py:83
 msgid "reporter"
 msgstr "보고자"
 
-#: operations/models.py:88
+#: src/ralph/operations/models.py:88
 msgid "ticket id"
 msgstr "티켓 ID"
 
-#: operations/models.py:90
+#: src/ralph/operations/models.py:90
 msgid "created date"
 msgstr "생성일"
 
-#: operations/models.py:93
+#: src/ralph/operations/models.py:93
 msgid "updated date"
 msgstr "수정일"
 
-#: operations/models.py:96
+#: src/ralph/operations/models.py:96
 msgid "resolved date"
 msgstr "해결일"
 
-#: operations/models.py:99
+#: src/ralph/operations/models.py:99
 msgid "objects"
 msgstr "개체"
 
-#: operations/views.py:15
+#: src/ralph/operations/views.py:15
 msgid "Operation"
 msgstr "작업"
 
-#: operations/views.py:29
+#: src/ralph/operations/views.py:29
 msgid "Existing Operations"
 msgstr "기존 작업"
 
-#: operations/views.py:51
+#: src/ralph/operations/views.py:51
 msgid "Add new Operation"
 msgstr "신규 작업 추가"
 
-#: reports/forms.py:16
+#: src/ralph/reports/forms.py:16
 msgid "Please select exactly one default item."
 msgstr "기본 항목 하나만 선택하십시오."
 
-#: reports/models.py:36
+#: src/ralph/reports/helpers.py:46
+msgid "Document autogenerated by {} transition."
+msgstr "{} 전환에 의해 자동 생성된 문서"
+
+#: src/ralph/reports/models.py:36
 msgid "Only one language can be default."
 msgstr "하나의 기본 언어를 선택하세요."
 
-#: reports/templates/reports/report_detail.html:13
+#: src/ralph/reports/templates/reports/report_detail.html:13
 msgid "Last update:"
 msgstr "마지막 수정:"
 
-#: reports/templates/reports/report_detail.html:18
+#: src/ralph/reports/templates/reports/report_detail.html:18
 msgid "Filter"
 msgstr "필더"
 
-#: reports/templates/reports/report_relations.html:7
+#: src/ralph/reports/templates/reports/report_relations.html:7
 msgid "download report"
 msgstr "보고서 다운로드"
 
-#: reports/views.py:81
+#: src/ralph/reports/views.py:81
 msgid "Only data center"
 msgstr "데이터 센터 만"
 
-#: reports/views.py:86
+#: src/ralph/reports/views.py:86
 msgid "Only back office"
 msgstr "백 오피스 만"
 
-#: reports/views.py:193
+#: src/ralph/reports/views.py:193
 msgid "Category - model"
 msgstr "카테고리 - 모델"
 
-#: reports/views.py:194
+#: src/ralph/reports/views.py:194
 msgid "Number of assets in each model category."
 msgstr "모델 카테고리 별 자산 수"
 
-#: reports/views.py:216
+#: src/ralph/reports/views.py:216
 msgid "Category - model - status"
 msgstr "카테고리 - 모델 - 상태"
 
-#: reports/views.py:217
+#: src/ralph/reports/views.py:217
 msgid "Number of assets in each status in the model category."
 msgstr "모델 카테고리, 상태 별 자산 수."
 
-#: reports/views.py:247
+#: src/ralph/reports/views.py:247
 msgid "Manufactured - category - model"
 msgstr "제조업체 - 카테고리 - 모델"
 
-#: reports/views.py:248
+#: src/ralph/reports/views.py:248
 msgid "Number of assets in each manufacturer."
 msgstr "제조업체 별 자산 수"
 
-#: reports/views.py:284
+#: src/ralph/reports/views.py:284
 msgid "Status - model"
 msgstr "상태 - 모델"
 
-#: reports/views.py:285
+#: src/ralph/reports/views.py:285
 msgid "Number of assets in each the asset status."
 msgstr "자산 상태 별 자산 수."
 
-#: reports/views.py:320
+#: src/ralph/reports/views.py:320
 msgid "Asset list of information about the user, owner, model."
 msgstr "사용자, 소유자, 모델에 대한 자산 목록"
 
-#: reports/views.py:375
+#: src/ralph/reports/views.py:378
 msgid "Asset - supports"
 msgstr "자산 - 지원"
 
-#: reports/views.py:376
+#: src/ralph/reports/views.py:379
 msgid "Assets with assigned supports"
 msgstr "자산 별 할당 된 지원"
 
-#: reports/views.py:480
+#: src/ralph/reports/views.py:485
 msgid "List of licenses assigned to assets and users."
 msgstr "사용자와 할당된 라이선스 목록"
 
-#: reports/views.py:584
+#: src/ralph/reports/views.py:589
 msgid "Failure types for each manufacturer."
 msgstr "제조업체 별 실패 유형"
 
-#: security/models.py:24
+#: src/ralph/security/models.py:24
 msgid "ok"
 msgstr "ok"
 
-#: security/models.py:25
+#: src/ralph/security/models.py:25
 msgid "fail"
 msgstr "실패"
 
-#: security/models.py:26
+#: src/ralph/security/models.py:26
 msgid "error"
 msgstr "에러"
 
-#: security/models.py:32
+#: src/ralph/security/models.py:32
 msgid "low"
 msgstr "낮음"
 
-#: security/models.py:33
+#: src/ralph/security/models.py:33
 msgid "medium"
 msgstr "중간"
 
-#: security/models.py:34
+#: src/ralph/security/models.py:34
 msgid "high"
 msgstr "높음"
 
-#: security/models.py:56
+#: src/ralph/security/models.py:52
+#, fuzzy
+#| msgid "model name"
+msgid "display name"
+msgstr "모델명"
+
+#: src/ralph/security/models.py:61
 msgid "Id of vulnerability from external system"
 msgstr "외부 시스템의 취약성 ID"
 
-#: security/models.py:84
+#: src/ralph/security/models.py:89
 msgid "Rescan url"
 msgstr "재스캔 URL"
 
-#: security/templates/security/securityinfo/security_info.html:9
-#: security/views.py:79
+#: src/ralph/security/templates/security/securityinfo/security_info.html:9
+#: src/ralph/security/views.py:44
 msgid "Security scan"
 msgstr "보안 스캔"
 
-#: security/templates/security/securityinfo/security_info.html:13
+#: src/ralph/security/templates/security/securityinfo/security_info.html:13
 msgid "last scan date"
 msgstr "마지막 스캔 일자"
 
-#: security/templates/security/securityinfo/security_info.html:17
+#: src/ralph/security/templates/security/securityinfo/security_info.html:17
 msgid "scan status"
 msgstr "스캔 상태"
 
-#: security/templates/security/securityinfo/security_info.html:21
+#: src/ralph/security/templates/security/securityinfo/security_info.html:21
 msgid "next scan date"
 msgstr "다음 스캔 일자"
 
-#: security/templates/security/securityinfo/security_info.html:25
+#: src/ralph/security/templates/security/securityinfo/security_info.html:25
 msgid "details"
 msgstr "상세"
 
-#: security/templates/security/securityinfo/security_info.html:29
+#: src/ralph/security/templates/security/securityinfo/security_info.html:29
 msgid "request for a scan"
 msgstr "스캔 요청"
 
-#: security/templates/security/securityinfo/security_info.html:34
+#: src/ralph/security/templates/security/securityinfo/security_info.html:34
 msgid "Vulnerabilities"
 msgstr "취약점"
 
-#: security/templates/security/securityinfo/security_info.html:39
+#: src/ralph/security/templates/security/securityinfo/security_info.html:39
 msgid "Risk"
 msgstr "리스크"
 
-#: security/templates/security/securityinfo/security_info.html:40
+#: src/ralph/security/templates/security/securityinfo/security_info.html:40
 msgid "Patch deadline"
 msgstr "패치 마감일"
 
-#: security/templates/security/securityinfo/security_info.html:57
+#: src/ralph/security/templates/security/securityinfo/security_info.html:57
 msgid "No vulnerabilities found for this scan"
 msgstr "취약점을 찾을 수 없음"
 
-#: security/templates/security/securityinfo/security_info.html:61
+#: src/ralph/security/templates/security/securityinfo/security_info.html:61
 msgid "No scan so far"
 msgstr "스캔하지 않음"
 
-#: supports/admin.py:78
+#: src/ralph/security/transitions.py:18
+#, fuzzy
+#| msgid "Security scan"
+msgid "Cleanup security scans"
+msgstr "보안 스캔"
+
+#: src/ralph/sim_cards/admin.py:38
+#, fuzzy
+#| msgid "Master Info"
+msgid "SIM Card Info"
+msgstr "마스터 정보"
+
+#: src/ralph/sim_cards/models.py:34 src/ralph/sim_cards/models.py:43
+#: src/ralph/sim_cards/models.py:80 src/ralph/sim_cards/models.py:84
+#: src/ralph/sim_cards/models.py:89 src/ralph/sim_cards/models.py:94
+#: src/ralph/sim_cards/models.py:106
+msgid "Required numeric characters only."
+msgstr ""
+
+#: src/ralph/sim_cards/models.py:61
+msgid "in quarantine"
+msgstr ""
+
+#: src/ralph/sim_cards/models.py:111
+msgid "ex. +2920181234"
+msgstr ""
+
+#: src/ralph/sim_cards/models.py:139
+msgid "End of quarantine date."
+msgstr ""
+
+#: src/ralph/sim_cards/models.py:147
+msgid "SIM Card: {}"
+msgstr ""
+
+#: src/ralph/ssl_certificates/models.py:13
+msgid "EV"
+msgstr ""
+
+#: src/ralph/ssl_certificates/models.py:14
+msgid "OV"
+msgstr ""
+
+#: src/ralph/ssl_certificates/models.py:15
+msgid "DV"
+msgstr ""
+
+#: src/ralph/ssl_certificates/models.py:16
+msgid "Wildcard"
+msgstr ""
+
+#: src/ralph/ssl_certificates/models.py:17
+msgid "Multisan"
+msgstr ""
+
+#: src/ralph/ssl_certificates/models.py:18
+msgid "CA ENT"
+msgstr ""
+
+#: src/ralph/ssl_certificates/models.py:23
+msgid "certificate name"
+msgstr ""
+
+#: src/ralph/ssl_certificates/models.py:24
+#, fuzzy
+#| msgid "Full name"
+msgid "Full certificate name"
+msgstr "전체 이름"
+
+#: src/ralph/ssl_certificates/models.py:47
+msgid "All Subject Alternative Names"
+msgstr ""
+
+#: src/ralph/supports/admin.py:96
 msgid "Contract info"
 msgstr "담당자 정보"
 
-#: supports/admin.py:163
+#: src/ralph/supports/admin.py:181
 msgid "support type"
 msgstr "지원 유형"
 
-#: supports/admin.py:169
+#: src/ralph/supports/admin.py:187
 msgid "support contract id"
 msgstr "지원 계약 ID"
 
-#: supports/admin.py:174
+#: src/ralph/supports/admin.py:192
 msgid "support name"
 msgstr "지원 이름"
 
-#: supports/admin.py:179
+#: src/ralph/supports/admin.py:197
 msgid "support price"
 msgstr "지원 가격"
 
-#: supports/admin.py:184
+#: src/ralph/supports/admin.py:202
 msgid "support date from"
 msgstr "지원 시작일"
 
-#: supports/admin.py:189
+#: src/ralph/supports/admin.py:207
 msgid "support date to"
 msgstr "지원 종료일"
 
-#: supports/admin.py:198
+#: src/ralph/supports/admin.py:216
 msgid "asset hostname"
 msgstr "자산 호스트이름"
 
-#: supports/admin.py:204
+#: src/ralph/supports/admin.py:222
 msgid "asset service env"
 msgstr "자산 서비스 환경"
 
-#: supports/models.py:73
+#: src/ralph/supports/models.py:78
 msgid "contract ID"
 msgstr "계약 ID"
 
-#: tests/admin.py:36
+#: src/ralph/tests/admin.py:36
 msgid "Bars"
 msgstr "Bars"
 
-#: tests/models.py:25
+#: src/ralph/tests/models.py:25
 msgid "to_send"
 msgstr "to_send"
 
-#: tests/models.py:26
+#: src/ralph/tests/models.py:26
 msgid "sended"
 msgstr "sended"
 
-#: virtual/admin.py:68 virtual/admin.py:200 virtual/admin.py:337
+#: src/ralph/trade_marks/admin.py:29
+#, fuzzy
+#| msgid "Assigned to users"
+msgid "Assigned to domain"
+msgstr "사용자에 할당"
+
+#: src/ralph/trade_marks/admin.py:107
+#, fuzzy
+#| msgid "damaged"
+msgid "Image"
+msgstr "손상된"
+
+#: src/ralph/trade_marks/models.py:25
+msgid "Word"
+msgstr ""
+
+#: src/ralph/trade_marks/models.py:26
+#, fuzzy
+#| msgid "configuration"
+msgid "Figurative"
+msgstr "구성"
+
+#: src/ralph/trade_marks/models.py:27
+msgid "Word - Figurative"
+msgstr ""
+
+#: src/ralph/trade_marks/models.py:46
+msgid "Application filed"
+msgstr ""
+
+#: src/ralph/trade_marks/models.py:47
+msgid "Application refused"
+msgstr ""
+
+#: src/ralph/trade_marks/models.py:48
+msgid "Application withdrawn"
+msgstr ""
+
+#: src/ralph/trade_marks/models.py:49
+msgid "Application opposed"
+msgstr ""
+
+#: src/ralph/trade_marks/models.py:50
+#, fuzzy
+#| msgid "Registrants"
+msgid "Registered"
+msgstr "등록자"
+
+#: src/ralph/trade_marks/models.py:51
+msgid "Registration invalidated"
+msgstr ""
+
+#: src/ralph/trade_marks/models.py:52
+msgid "Registration expired"
+msgstr ""
+
+#: src/ralph/trade_marks/models.py:69
+msgid "trade mark country"
+msgstr ""
+
+#: src/ralph/trade_marks/models.py:86
+msgid "Trade Mark name"
+msgstr ""
+
+#: src/ralph/trade_marks/models.py:91
+#, fuzzy
+#| msgid "Registrants"
+msgid "Registrant number"
+msgstr "등록자"
+
+#: src/ralph/trade_marks/models.py:97
+msgid "Trade Mark type"
+msgstr ""
+
+#: src/ralph/trade_marks/models.py:107
+#, fuzzy
+#| msgid "Registrants"
+msgid "Registrant class"
+msgstr "등록자"
+
+#: src/ralph/trade_marks/models.py:135
+msgid "Trade Mark holder"
+msgstr ""
+
+#: src/ralph/trade_marks/models.py:140
+msgid "Trade Mark status"
+msgstr ""
+
+#: src/ralph/trade_marks/models.py:170
+msgid "Trade Marks Linked Domain"
+msgstr ""
+
+#: src/ralph/trade_marks/models.py:171
+msgid "Trade Marks Linked Domains"
+msgstr ""
+
+#: src/ralph/trade_marks/models.py:184
+msgid "Trade Mark Additional Country"
+msgstr ""
+
+#: src/ralph/trade_marks/models.py:185
+msgid "Trade Mark Additional Countries"
+msgstr ""
+
+#: src/ralph/virtual/admin.py:60
+msgid "Hypervisor must be one of DataCenterAsset or CloudHost"
+msgstr ""
+
+#: src/ralph/virtual/admin.py:82 src/ralph/virtual/admin.py:209
+#: src/ralph/virtual/admin.py:345
 msgid "Hypervisor"
 msgstr "하이퍼바이저"
 
-#: virtual/admin.py:170
+#: src/ralph/virtual/admin.py:179
 msgid "Parent"
 msgstr "부모"
 
-#: virtual/admin.py:192 virtual/admin.py:331
+#: src/ralph/virtual/admin.py:201 src/ralph/virtual/admin.py:339
 msgid "Not set"
 msgstr "설정되지 않음"
 
-#: virtual/admin.py:318 virtual/admin.py:476 virtual/models.py:40
-msgid "Cloud provider"
-msgstr "클라우드 제공자"
-
-#: virtual/admin.py:347
+#: src/ralph/virtual/admin.py:355
 msgid "Cloud Flavor"
 msgstr ""
 
-#: virtual/admin.py:371
+#: src/ralph/virtual/admin.py:379
 msgid "Cloud Project"
 msgstr "클라우드 프로젝트"
 
-#: virtual/admin.py:393 virtual/admin.py:436
+#: src/ralph/virtual/admin.py:415 src/ralph/virtual/admin.py:458
 msgid "vCPU cores"
 msgstr "vCPU 코어"
 
-#: virtual/admin.py:397 virtual/admin.py:440
+#: src/ralph/virtual/admin.py:419 src/ralph/virtual/admin.py:462
 msgid "RAM size (MiB)"
 msgstr "RAM 크기 (MiB)"
 
-#: virtual/admin.py:401 virtual/admin.py:444
+#: src/ralph/virtual/admin.py:423 src/ralph/virtual/admin.py:466
 msgid "Disk size (GiB)"
 msgstr "디스크 크기 (GiB)"
 
-#: virtual/admin.py:448 virtual/admin.py:481
+#: src/ralph/virtual/admin.py:470 src/ralph/virtual/admin.py:503
 msgid "instances count"
 msgstr "인스터늣 수량"
 
-#: virtual/models.py:41
-msgid "Cloud providers"
-msgstr "클라우드 제공자"
+#: src/ralph/virtual/api.py:193
+msgid ""
+"Cloud flavor is in use and hence is not deletable. Use {\"force\": true} to "
+"force deletion."
+msgstr ""
 
-#: virtual/models.py:143
+#: src/ralph/virtual/api.py:220
+msgid ""
+"Cloud provider is in use and hence is not deletable. Use {\"force\": true} "
+"to force deletion."
+msgstr ""
+
+#: src/ralph/virtual/forms.py:28
+msgid "Client configuration must be a valid JSON text."
+msgstr ""
+
+#: src/ralph/virtual/models.py:157
 msgid "project ID"
 msgstr "프로젝트 ID"
 
-#: virtual/models.py:185
+#: src/ralph/virtual/models.py:169
+msgid "image ID"
+msgstr ""
+
+#: src/ralph/virtual/models.py:211
 msgid "host ID"
 msgstr "호스트 ID"
 
-#: virtual/models.py:197
+#: src/ralph/virtual/models.py:223
 msgid "Cloud host"
 msgstr "클라우드 호스트"
 
-#: virtual/models.py:381
+#: src/ralph/virtual/models.py:408
 msgid "Virtual server (VM)"
 msgstr "가상 서버 (VM)"
 
-#: virtual/models.py:382
+#: src/ralph/virtual/models.py:409
 msgid "Virtual servers (VM)"
 msgstr "가상 서버 (VM)"
+
+#~ msgid "go to asset"
+#~ msgstr "자산으로 이동"
+
+#~ msgid "Report failure"
+#~ msgstr "리포트 실패"
+
+#~ msgid "go to licence"
+#~ msgstr "라이선스로 이동"
+
+#~ msgid "Gender"
+#~ msgstr "성별"
+
+#~ msgid "Show"
+#~ msgstr "보기"
+
+#~ msgid "Internal Server Error from DNSAAS"
+#~ msgstr "DNSAAS의 내부 서버 오류"
+
+#~ msgid "Domain not found."
+#~ msgstr "도메인을 찾을 수 없습니다."
+
+#~ msgid "Your request couldn't be handled, try later."
+#~ msgstr "요청이 처리되지 않았습니다. 나중에 다시 시도해주세요."
+
+#~ msgid "Price"
+#~ msgstr "가격"
+
+#~ msgid "DNS servers"
+#~ msgstr "DNS 서버"

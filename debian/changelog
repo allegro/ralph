@@ -1,3 +1,48 @@
+ralph (20210510.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Changed manufacturer and accessory_type - to be picked from table. (#3617)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Mon, 10 May 2021 14:08:32 +0000
+
+ralph (20210507.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Label name change (#3618)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Fri, 07 May 2021 08:10:32 +0000
+
+ralph (20210426.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * asset buyout delay months (#3625)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Mon, 26 Apr 2021 08:42:56 +0000
+
+ralph (20210423.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * get buyout related setting from environment (#3622)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Fri, 23 Apr 2021 20:01:15 +0000
+
+ralph (20210422.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * fix buyout ticket (#3620)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Thu, 22 Apr 2021 06:57:55 +0000
+
+ralph (20210421.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Added a condition for the buyout ticket link.  (#3612)
+
+  [ Szymon Jasinski ]
+  * Allow buyout date change (#3619)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Wed, 21 Apr 2021 14:40:54 +0000
+
 ralph (20210401.1) bionic; urgency=medium
 
   [ Pawel Szulc ]
