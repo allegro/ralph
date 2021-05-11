@@ -19,3 +19,12 @@ class ExtendedSimpleRalphUserSerializer(SimpleRalphUserSerializer):
             'department',
             'company'
         )
+
+
+class ExtendedRalphUserSerializer(ExtendedSimpleRalphUserSerializer):
+    class Meta:
+        model = get_user_model()
+        fields = ExtendedSimpleRalphUserSerializer.Meta.fields + (
+            'manager',
+            'email'
+        )
