@@ -1,3 +1,10 @@
+ralph (20210512.1) bionic; urgency=medium
+
+  [ Aleksander Wieckowski ]
+  * Add fields to LicenceUserSerializer
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Wed, 12 May 2021 15:51:54 +0000
+
 ralph (20210510.1) bionic; urgency=medium
 
   [ lukaszkarykowski ]
