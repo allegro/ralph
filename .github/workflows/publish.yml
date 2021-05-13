@@ -18,7 +18,7 @@ jobs:
       - name: Build
         run: make build-package
       - name: Install packagecloud CLI
-        run: gem install package_cloud
+        run: sudo gem install package_cloud
       - name: Publish
         env:
           PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
