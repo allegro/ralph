@@ -3,7 +3,6 @@
 set -uex
 
 SNAPSHOT=${SNAPSHOT:-"0"}
-KEY_ID=${KEY_ID:-"E2D0F3764B54797F"}
 
 
 move_scripts() {
@@ -22,7 +21,7 @@ move_scripts() {
 
 
 install_release() {
-    apt-key adv --keyserver "hkp://keyserver.ubuntu.com:80" --recv-keys "${KEY_ID}"
+    curl -sL https://packagecloud.io/allegro/ralph/gpgkey | apt-key add -
     mv "${RALPH_IMAGE_TMP_DIR}/ralph.list" /etc/apt/sources.list.d/ralph.list
 
     apt-get update
