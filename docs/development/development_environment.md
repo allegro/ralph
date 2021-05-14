@@ -14,11 +14,11 @@
 Make sure your host has the following requirements installed and
 properly configured, if required:
 
-1.  Python 3.5 or later
+1.  Python 3.6 (Ralph is tested to run on this version)
 1.  pip
 1.  virtualenvwrapper
-1.  NodeJS
-1.  npm
+1.  NodeJS (versions v8.10.0 - v11.7.0 are known to work)
+1.  npm (versions 3.5.2 - 6.5.0 are known to work)
 1.  mysql-client system library (on macOS install via `brew install mysql`)
 1.  Docker 1.13.0 or later
 1.  docker-compose

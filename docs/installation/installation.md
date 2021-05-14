@@ -1,16 +1,10 @@
 # Installation guide
 
-For production, we provide deb packages for Ubuntu 14.04 Trusty and
-Ubuntu 18.04 Bionic on the AMD64 platform. We recommend using the package
-for Ubuntu 18.04.
+For production, we provide deb packages for Ubuntu 18.04 Bionic
+on the AMD64 platform.
 
-The package can be installed inside a Docker container, however at the time of
-this writing there is no official image yet and running the package in
-a container requires some tweaks as there is no systemd inside a Docker
-container (and there shouldn't be).
-
-It is also possible to use our old package version for Ubuntu 14.04 Trusty
-distribution on the AMD64 platform.
+The package can be installed inside a Docker container using allegro/ralph and
+allegro/ralph-static-nginx images.
 
 ## Ubuntu package - bionic and newer - recommended
 
@@ -32,8 +26,8 @@ used as Django settings.
 
 The steps below can be executed on any clean installation Ubuntu 18.04 Bionic.
 
-    sudo apt-key adv --keyserver  hkp://keyserver.ubuntu.com:80 --recv-keys E2D0F3764B54797F
-    sudo sh -c "echo 'deb https://dl.bintray.com/allegro/debng bionic main' >  /etc/apt/sources.list.d/ralph.list"
+    curl -sL https://packagecloud.io/allegro/ralph/gpgkey | sudo apt-key add -
+    sudo sh -c "echo 'deb https://packagecloud.io/allegro/ralph/ubuntu/ bionic main' >  /etc/apt/sources.list.d/ralph.list"
     sudo apt-get update
     sudo apt-get install mysql-server nginx ralph-core
 
@@ -118,7 +112,7 @@ If something goes wrong, you can take a peek at these log files:
     /var/log/ralph/gunicorn.error.log
     /var/log/ralph/gunicorn.access.log
     /var/log/nginx/ralph-error.log
-    /var/log/nginx/ralph-access.log 
+    /var/log/nginx/ralph-access.log
 
 ### Next steps
 
@@ -131,26 +125,6 @@ ssl traffic termination (or just to configure nginx to use ssl).
 
 Don't forget to read our quick start:
 [https://ralph-ng.readthedocs.io/en/latest/user/quickstart/](https://ralph-ng.readthedocs.io/en/latest/user/quickstart/)!
-
-## Debian/Ubuntu package - trusty/jessie
-
-Make sure, your installation is clean Ubuntu 14.04, without any other packages installed,
-and `apt-transport-https` installed.
-
-    sudo apt-get update && sudo apt-get install apt-transport-https
-
-Now, add our official ralph repository:
-
-    sudo apt-key adv --keyserver  hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
-    sudo sh -c "echo 'deb https://dl.bintray.com/vi4m/ralph wheezy main' >  /etc/apt/sources.list.d/vi4m_ralph.list"
-
-Then, just install ralph the traditional way:
-
-    sudo apt-get update
-    sudo apt-get install ralph-core redis-server mysql-server
-
-Note: Main www instance of Ralph requires redis and mysql server installed. If you want to install only ralph agent somewhere, just install `ralph-core` and point it to the particular mysql and redis instance somewhere on your network.
-
 
 ### Configuration
 
