@@ -1,3 +1,115 @@
+ralph (20210517.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * Documentation update (#3633)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Mon, 17 May 2021 08:27:16 +0000
+
+ralph (20210513.2) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * push packages to packagecloud - add missing sudo (#3631)
+  * docker build from packagecloud (#3632)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Thu, 13 May 2021 13:22:50 +0000
+
+ralph (20210513.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * push packages to packagecloud (#3629)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Thu, 13 May 2021 12:08:17 +0000
+
+ralph (20210512.1) bionic; urgency=medium
+
+  [ Aleksander Wieckowski ]
+  * Add fields to LicenceUserSerializer
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Wed, 12 May 2021 15:51:54 +0000
+
+ralph (20210510.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Changed manufacturer and accessory_type - to be picked from table. (#3617)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Mon, 10 May 2021 14:08:32 +0000
+
+ralph (20210507.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Label name change (#3618)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Fri, 07 May 2021 08:10:32 +0000
+
+ralph (20210426.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * asset buyout delay months (#3625)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Mon, 26 Apr 2021 08:42:56 +0000
+
+ralph (20210423.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * get buyout related setting from environment (#3622)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Fri, 23 Apr 2021 20:01:15 +0000
+
+ralph (20210422.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * fix buyout ticket (#3620)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Thu, 22 Apr 2021 06:57:55 +0000
+
+ralph (20210421.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Added a condition for the buyout ticket link.  (#3612)
+
+  [ Szymon Jasinski ]
+  * Allow buyout date change (#3619)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Wed, 21 Apr 2021 14:40:54 +0000
+
+ralph (20210401.1) bionic; urgency=medium
+
+  [ Pawel Szulc ]
+  * Fix import to prevent 500 on MAC validation (#3615)
+  * Remove Sentry logging for JS (#3614)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Thu, 01 Apr 2021 11:28:25 +0000
+
+ralph (20210324.1) bionic; urgency=medium
+
+  [ Aleksander Wieckowski ]
+  * Add backoffice status - to find
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Wed, 24 Mar 2021 07:08:02 +0000
+
+ralph (20210309.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Introducing Backoffice Accessories managment. (#3548)
+
+  [ Aleksander Wieckowski ]
+  * Add Google Tag Manager tag
+  * Fix tag url
+
+  [ Pawel Szulc ]
+  * Add explicit logger
+  * Reraise original error
+
+  [ Aleksander Wieckowski ]
+  * Fix unequivocal variable names
+  * Fix flake8
+
+  [ Pawel Szulc ]
+  * Use arguments in logger.error and logger.warning instead of direct string formatting
+  * info back to warning
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Tue, 09 Mar 2021 13:14:59 +0000
+
 ralph (20210219.1) bionic; urgency=medium
 
   [ Paweł Szulc ]

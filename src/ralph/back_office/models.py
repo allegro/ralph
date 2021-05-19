@@ -80,6 +80,7 @@ class BackOfficeAssetStatus(Choices):
     sale = _("sale")
     loan_in_progress = _("loan in progress")
     return_in_progress = _("return in progress")
+    to_find = _("to find")
 
 
 class OfficeInfrastructure(
@@ -247,10 +248,9 @@ class BackOfficeAsset(Regionalizable, Asset):
             context = Context(template_vars or {})
             return template.render(context)
 
-        logger.warning(
-            'Generating new hostname for {} using {} old hostname {}'.format(
-                self, template_vars, self.hostname
-            )
+        logger.info(
+            'Generating new hostname for %s using %s old hostname %s',
+            self, template_vars, self.hostname
         )
         prefix = render_template(
             ASSET_HOSTNAME_TEMPLATE.get('prefix', ''),

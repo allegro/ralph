@@ -307,15 +307,15 @@ class Command(BaseCommand):
                         new_server
                     )
                 except KeyError:
-                    logger.warning('Project {} not found for server {}'.format(
-                        project_id, host_id,
-                    ))
+                    logger.warning(
+                        'Project %s not found for server %s',
+                        project_id, host_id
+                    )
 
                 if flavor_id not in self.openstack_flavors:
-                    logger.warning((
-                        'Flavor {} (found in host {}) not in flavors list.'
-                        ' Fetching it'
-                    ).format(flavor_id, host_id))
+                    logger.warning(
+                        'Flavor %s (found in host %s) not in flavors list.'
+                        ' Fetching it', flavor_id, host_id)
                     _add_flavor(nt.flavors.get(flavor_id).__dict__)
 
     def _get_cloud_provider(self):
@@ -395,9 +395,8 @@ class Command(BaseCommand):
             obj = DataCenterAsset.objects.get(hostname=host_name)
             return obj
         except (MultipleObjectsReturned, ObjectDoesNotExist):
-            logger.warning('Hypervisor {} not found for {}'.format(
-                host_name, server_id,
-            ))
+            logger.warning('Hypervisor %s not found for %s',
+                           host_name, server_id)
             return None
 
     def _match_physical_and_cloud_hosts(self):
@@ -429,7 +428,7 @@ class Command(BaseCommand):
         """Match iornic nodes to hosts."""
 
         not_found_message_tpl = (
-            '{} with the host id or serial number {} was not found. Check if '
+            '%s with the host id or serial number %s was not found. Check if '
             'Ralph is synchronized with OpenStack or add it manually.'
         )
 
@@ -443,41 +442,36 @@ class Command(BaseCommand):
                 )
             except DataCenterAsset.DoesNotExist:
                 logger.warning(
-                    not_found_message_tpl.format(
-                        'DC asset',
-                        node_sn
-                    )
+                    not_found_message_tpl,
+                    'DC asset',
+                    node_sn
                 )
             except CloudHost.DoesNotExist:
                 logger.warning(
-                    not_found_message_tpl.format(
-                        'Cloud host',
-                        node.instance_uuid
-                    )
+                    not_found_message_tpl,
+                    'Cloud host',
+                    node.instance_uuid
                 )
             except DataCenterAsset.MultipleObjectsReturned:
                 logger.error(
-                    'Multiple DC assets were found for the serial number {}. '
-                    'Please match Cloud host {} manually.'.format(
-                        node_sn,
-                        host.id
-                    )
+                    'Multiple DC assets were found for the serial number %s. '
+                    'Please match Cloud host %s manually.',
+                    node_sn,
+                    host.id
                 )
             except KeyError:
                 logger.warning(
-                    'Could not get serial number of the Ironic node {} using '
-                    '{} extra parameter. Please check the configuration '
+                    'Could not get serial number of the Ironic node %s using '
+                    '%s extra parameter. Please check the configuration '
                     'of the node and submit a proper extra parameter or match '
-                    'the node manually.'.format(
-                        node.uuid, self.ironic_serial_number_param
-                    )
+                    'the node manually.',
+                    node.uuid, self.ironic_serial_number_param
                 )
             else:
                 logger.info(
-                    'Cloud host {} matched DC asset {}.'.format(
-                        host.id,
-                        asset.id
-                    )
+                    'Cloud host %s matched DC asset %s.',
+                    host.id,
+                    asset.id
                 )
                 if host.hypervisor != asset:
                     host.hypervisor = asset
@@ -493,14 +487,14 @@ class Command(BaseCommand):
             flavor = self._get_flavors()[openstack_server['flavor_id']]
         except KeyError:
             logger.warning(
-                'Flavor {} not found for host {}'.format(
-                    openstack_server['flavor_id'], openstack_server
-                )
+                'Flavor %s not found for host %s',
+                openstack_server['flavor_id'], openstack_server
             )
             return
-        logger.info('Creating new server {} ({})'.format(
+        logger.info(
+            'Creating new server %s (%s)',
             server_id, openstack_server['hostname']
-        ))
+        )
         new_server = CloudHost(
             hostname=openstack_server['hostname'],
             cloudflavor=flavor,
@@ -533,9 +527,8 @@ class Command(BaseCommand):
             flavor = self._get_flavors()[openstack_server['flavor_id']]
         except KeyError:
             logger.warning(
-                'Flavor {} not found for host {}'.format(
-                    openstack_server['flavor_id'], openstack_server
-                )
+                'Flavor %s not found for host %s',
+                openstack_server['flavor_id'], openstack_server
             )
             return
 
@@ -615,9 +608,10 @@ class Command(BaseCommand):
                 ) - servers.keys()
             ):
                 host = CloudHost.objects.get(host_id=server_id)
-                logger.warning('Removing CloudHost {} ({})'.format(
+                logger.warning(
+                    'Removing CloudHost %s (%s)',
                     server_id, host.hostname
-                ))
+                )
                 self._delete_object(host)
                 self.summary['del_instances'] += 1
         except KeyError:
@@ -651,9 +645,8 @@ class Command(BaseCommand):
                     self._save_object(project, 'Add project %s' % project.name)
             except IntegrityError:
                 logger.warning(
-                    'Duplicated project ID ({}) for project {}'.format(
-                        project.project_id, project.name
-                    )
+                    'Duplicated project ID (%s) for project %s',
+                    project.project_id, project.name
                 )
                 project = CloudProject.objects.get(
                     project_id=project_id
@@ -736,12 +729,11 @@ class Command(BaseCommand):
                 self.summary['del_projects'] += 1
             else:
                 logger.error(
-                    'Cloud project name: {} id: {} cant\'t be deleted '
-                    'because it has {} children'.format(
-                        cloud_project.name,
-                        cloud_project.id,
-                        children_count
-                    ),
+                    'Cloud project name: %s id: %s cant\'t be deleted '
+                    'because it has %s children',
+                    cloud_project.name,
+                    cloud_project.id,
+                    children_count,
                     extra=logger_extras
                 )
 
@@ -761,7 +753,7 @@ class Command(BaseCommand):
     @staticmethod
     def _delete_object(obj):
         """Save an object and delete revision"""
-        logger.warning('Deleting {} (id: {})'.format(obj, obj.id))
+        logger.warning('Deleting %s (id: %s)', obj, obj.id)
         with transaction.atomic(), revisions.create_revision():
             obj.delete()
             revisions.set_comment('openstack_sync::_delete_object')

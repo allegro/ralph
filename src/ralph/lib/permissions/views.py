@@ -93,10 +93,11 @@ def update_extra_view_permissions(sender, **kwargs):
     permission_ids = set(old_permission) - set(current_permission)
     if permission_ids:
         logger.warning(
-            'Removing unused permissions: {}'.format(", ".join(
+            'Removing unused permissions: %s',
+            ", ".join(
                 Permission.objects.filter(id__in=permission_ids).values_list(
                     'codename', flat=True
                 )
-            ))
+            )
         )
         Permission.objects.filter(id__in=permission_ids).delete()

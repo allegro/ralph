@@ -71,7 +71,7 @@ def _perform_async_transition(transition_job):
     # check if this job isn't already finished
     if not transition_job.is_running:
         logger.warning(
-            'Runnig previously ended transition job: {}'.format(transition_job)
+            'Running previously ended transition job: %s', transition_job
         )
         return
     # make sure that none of previous actions has failed

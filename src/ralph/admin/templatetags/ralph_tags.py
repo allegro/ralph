@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from django.conf import settings
 from django.contrib.admin.templatetags.admin_modify import submit_row
 from django.contrib.admin.views.main import SEARCH_VAR
 from django.template import Library
@@ -12,10 +11,6 @@ from ralph.admin.helpers import (
 from ralph.lib.transitions.models import TransitionsHistory
 
 register = Library()
-
-SENTRY_ENABLED = getattr(settings, 'SENTRY_ENABLED')
-SENTRY_JS_DSN = getattr(settings, 'SENTRY_JS_DSN')
-SENTRY_JS_CONFIG = getattr(settings, 'SENTRY_JS_CONFIG')
 
 
 @register.inclusion_tag(
@@ -115,13 +110,4 @@ def transition_history(obj):
     return {
         'transitions_history': history,
         'transition_history_in_fieldset': True
-    }
-
-
-@register.inclusion_tag('admin/templatetags/raven.html')
-def raven_js():
-    return {
-        'sentry_enabled': SENTRY_ENABLED,
-        'sentry_dsn': SENTRY_JS_DSN,
-        'sentry_js_config': SENTRY_JS_CONFIG
     }

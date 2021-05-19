@@ -25,6 +25,7 @@ class AccessoryAdmin(TransitionAdminMixin, RalphAdmin):
     show_transition_history = True
     list_display = ['status', 'manufacturer', 'accessory_name',
                     'product_number', 'number_bought']
+    readonly_fields = ['used', 'free']
     list_select_related = ['owner']
     raw_id_fields = ['owner', 'region']
     list_filter = ['status', 'manufacturer', 'accessory_name',
@@ -37,9 +38,9 @@ class AccessoryAdmin(TransitionAdminMixin, RalphAdmin):
             _('Accessory Info'),
             {
                 'fields': ('manufacturer', 'accessory_name',
-                           'accessory_type', 'product_number',
+                           'category', 'product_number',
                            'region', 'warehouse', 'number_bought',
-                           )
+                           'used', 'free',)
             }
         ),
         (

@@ -201,9 +201,8 @@ def _check_instances_for_transition(
                 status__in=JOB_NOT_ENDED_STATUSES
             ).exists():
                 logger.warning(
-                    'Another async transition is already running for {}'.format(
-                        instance,
-                    )
+                    'Another async transition is already running for %s',
+                    instance
                 )
                 errors[instance].append(
                     'Another async transition for this object is already started'  # noqa
@@ -773,7 +772,7 @@ def update_transitions_after_migrate(**kwargs):
         to_delete = Action.objects.filter(content_type=content_type).exclude(
             id__in=action_ids
         )
-        logger.warning('Deleting actions: {}'.format(list(to_delete)))
+        logger.warning('Deleting actions: %s', list(to_delete))
         to_delete.delete()
 
 

@@ -367,7 +367,7 @@ class NetworkableBaseObject(models.Model):
         """
         if self.network_environment:
             return self.network_environment.next_free_hostname
-        logger.warning('Network-environment not provided for {}'.format(self))
+        logger.warning('Network-environment not provided for %s', self)
         return ''
 
     def issue_next_free_hostname(self):
@@ -377,7 +377,7 @@ class NetworkableBaseObject(models.Model):
         """
         if self.network_environment:
             return self.network_environment.issue_next_free_hostname()
-        logger.warning('Network-environment not provided for {}'.format(self))
+        logger.warning('Network-environment not provided for %s', self)
         return ''
 
     def _get_available_network_environments(self):

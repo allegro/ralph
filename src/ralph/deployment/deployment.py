@@ -290,9 +290,7 @@ def clean_hostname(cls, instances, **kwargs):
     Clear hostname for each instance
     """
     for instance in instances:
-        logger.warning('Clearing {} hostname ({})'.format(
-            instance, instance.hostname
-        ))
+        logger.warning('Clearing %s hostname (%s)', instance, instance.hostname)
         instance.hostname = None  # TODO: hostname nullable?
 
 
@@ -314,9 +312,10 @@ def clean_dns(cls, instances, **kwargs):
             is_management=True
         ).values_list('address', flat=True))
         if not ips:
-            logger.info('No IPs for {} - skipping cleaning DNS entries'.format(
+            logger.info(
+                'No IPs for %s - skipping cleaning DNS entries',
                 instance
-            ))
+            )
             continue
         records = dnsaas.get_dns_records(ips)
         if len(records) > settings.DEPLOYMENT_MAX_DNS_ENTRIES_TO_CLEAN:
@@ -327,9 +326,8 @@ def clean_dns(cls, instances, **kwargs):
             )
         for record in records:
             logger.warning(
-                'Deleting {pk} ({type} / {name} / {content}) DNS record'.format(
-                    **record
-                )
+                'Deleting %s (%s / %s / %s) DNS record',
+                record['pk'], record['type'], record['name'], record['content']
             )
             if dnsaas.delete_dns_record(record['pk']):
                 raise Exception()  # TODO
@@ -345,11 +343,11 @@ def clean_ipaddresses(cls, instances, **kwargs):
     """
     for instance in instances:
         for ip in instance.ipaddresses.exclude(is_management=True):
-            logger.warning('Deleting {} IP address'.format(ip))
+            logger.warning('Deleting %s IP address', ip)
             eth = ip.ethernet
             ip.delete()
             if not any([eth.mac, eth.label]):
-                logger.warning('Deleting {} ({}) ethernet'.format(eth, eth.id))
+                logger.warning('Deleting %s (%s) ethernet', eth, eth.id)
                 eth.delete()
 
 
@@ -366,7 +364,7 @@ def clean_dhcp(cls, instances, **kwargs):
         for dhcp_entry in DHCPEntry.objects.filter(
             ethernet__base_object=instance, dhcp_expose=True
         ):
-            logger.warning('Removing {} DHCP entry'.format(dhcp_entry))
+            logger.warning('Removing %s DHCP entry', dhcp_entry)
             dhcp_entry.delete()
 
 
@@ -388,7 +386,7 @@ def remove_from_dhcp_entries(cls, instances, ipaddress, **kwargs):
     entry = '{} ({}) / {}'.format(
         ip.address, ip.hostname, ip.ethernet.mac if ip.ethernet else None
     )
-    logger.warning('Removing entry from DHCP: {}'.format(entry))
+    logger.warning('Removing entry from DHCP: %s', entry)
     kwargs['history_kwargs'][instances[0].pk]['DHCP entry'] = entry
     ip.dhcp_expose = False
     ip.save()

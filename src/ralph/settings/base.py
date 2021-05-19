@@ -271,6 +271,11 @@ LOGGING = {
             'level': os.environ.get('LOGGING_RALPH_LEVEL', 'WARNING'),
             'propagate': True,
         },
+        'ralph.lib.error_handling.middleware': {
+            'handlers': ['file'],
+            'level': os.environ.get('LOGGING_RALPH_LEVEL', 'WARNING'),
+            'propagate': False,
+        },
         'rq.worker': {
             'level': os.environ.get('LOGGING_RQ_LEVEL', 'WARNING'),
             'handlers': ['file'],
@@ -307,7 +312,8 @@ REST_FRAMEWORK = {
     'DEFAULT_METADATA_CLASS': 'ralph.lib.api.utils.RalphApiMetadata',
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.AcceptHeaderVersioning',  # noqa
     'DEFAULT_VERSION': 'v1',
-    'ALLOWED_VERSIONS': ('v1',)
+    'ALLOWED_VERSIONS': ('v1',),
+    'EXCEPTION_HANDLER': 'ralph.lib.api.exception_handler.validation_error_exception_handler',  # noqa
 }
 
 API_THROTTLING = bool_from_env('API_THROTTLING', default=False)
@@ -381,8 +387,6 @@ else:
 USE_CACHE = bool_from_env('USE_CACHE', True)
 
 SENTRY_ENABLED = bool_from_env('SENTRY_ENABLED')
-SENTRY_JS_DSN = os.environ.get('SENTRY_JS_DSN', None)
-SENTRY_JS_CONFIG = json.loads(os.environ.get('SENTRY_JS_CONFIG', '{}'))
 
 BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME = True
 BACKOFFICE_HOSTNAME_FIELD_READONLY = bool_from_env(
@@ -675,3 +679,7 @@ CURRENCY_CHOICES.append(('XXX', '---'))
 OAUTH_CLIENT_ID = ""
 OAUTH_SECRET = ""
 OAUTH_TOKEN_URL = "https://localhost/"
+
+GOOGLE_TAG_MANAGER_TAG_ID = os.environ.get('GOOGLE_TAG_MANAGER_TAG_ID', None)
+
+ASSET_BUYOUT_DELAY_MONTHS = int(os.environ.get('ASSET_BUYOUT_DELAY_MONTHS', 0))

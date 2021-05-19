@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from ralph.accounts.api_simple import SimpleRalphUserSerializer
+from ralph.accounts.api_simple import ExtendedRalphUserSerializer
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import ReversionHistoryAPISerializerMixin
 from ralph.assets.api.serializers import (
@@ -24,7 +24,7 @@ class LicenceTypeSerializer(RalphAPISerializer):
 
 
 class LicenceUserSerializer(RalphAPISerializer):
-    user = SimpleRalphUserSerializer()
+    user = ExtendedRalphUserSerializer()
 
     class Meta:
         model = LicenceUser

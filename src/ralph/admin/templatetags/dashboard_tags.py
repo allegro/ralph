@@ -36,7 +36,7 @@ COLORS = ['green', 'blue', 'purple', 'orange', 'red', 'pink']
 def get_user_equipment_tile_data(user):
     return {
         'class': 'my-equipment',
-        'label': _('Your equipment'),
+        'label': _('My equipment'),
         'count': BackOfficeAsset.objects.filter(
             Q(user=user) | Q(owner=user)
         ).count(),
