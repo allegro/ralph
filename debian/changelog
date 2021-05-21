@@ -1,3 +1,10 @@
+ralph (20210521.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Calculate free used accessory (#3621)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Fri, 21 May 2021 09:41:58 +0000
+
 ralph (20210517.1) bionic; urgency=medium
 
   [ Szymon Jasinski ]
