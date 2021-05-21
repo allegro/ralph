@@ -96,7 +96,7 @@ def handle_create_vip_event(data):
         eth = Ethernet.objects.create(base_object=cluster)
         ip.ethernet = eth
         ip.save()
-    else if ip.dhcp_expose:
+    elif ip.dhcp_expose:
         logger.error(
             'Trying to create VIP with IP %s, port %s and protocol %s '
             'failed because IP is exposed in dhcp',
@@ -127,22 +127,22 @@ def handle_create_vip_event(data):
     logger.debug('VIP %s created successfully.', vip.name)
 
 
-def migrate_vip_to_cluster(vip, cluster):
+def migrate_vip_to_cluster(vip, cluster, protocol):
     msg = (
         'Trying to update VIP with IP {}, port {} and protocol {}'
-        'failed: %s'.format(vip.ip.address, vip.port, vip.protocol.name)
+        'failed: %s'.format(vip.ip.address, vip.port, protocol.name)
     )
     ethernet = vip.ip.ethernet
-    if !ethernet:
+    if not ethernet:
         logger.error(msg, 'no `Ethernet` object found')
         return
     if ethernet.base_object != vip.parent:
         logger.error(msg, '`Ethernet` base_object differs from `VIP` parent')
         return
-    if !isinstance(ethernet.base_object, Cluster):
+    if not isinstance(ethernet.base_object, Cluster):
         logger.error(msg, '`Ethernet` base_object is not `Cluster` instance')
         return
-    if !isinstance(vip.parent, Cluster):
+    if not isinstance(vip.parent, Cluster):
         logger.error(msg, '`VIP` parent is not `Cluster` instance')
         return
 
@@ -152,7 +152,7 @@ def migrate_vip_to_cluster(vip, cluster):
     vip.save()
     logger.debug(
         'VIP %s with IP %s, port %s and protocol %s changed cluster to %s.',
-        vip.name, vip.ip.address, vip.port, vip.protocol.name,, cluster.name
+        vip.name, vip.ip.address, vip.port, protocol.name, cluster.name
     )
 
 
@@ -193,10 +193,13 @@ def handle_update_vip_event(data):
         type=cluster_type,
     )
 
-    if vip.parent != cluster or (ip.ethernet and ip.ethernet.base_object != cluster):
+    if (
+        vip.parent != cluster or
+        (ip.ethernet and ip.ethernet.base_object != cluster)
+    ):
         with transaction.atomic():
             for migrated_vip in VIP.objects.select_for_update().filter(ip=ip):
-                migrate_vip_to_cluster(migrated_vip, cluster)
+                migrate_vip_to_cluster(migrated_vip, cluster, protocol)
 
     # update service/environment if changed.
     try:
