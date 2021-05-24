@@ -171,7 +171,10 @@ class HandleUpdateVIPEventTestCase(TestCase):
     def test_update_change_cluster(self):
         cluster_old = ClusterFactory(name='f5-1-fake-old')
         ethernet = EthernetFactory(base_object=cluster_old)
-        vip = VIPFactory(ip=IPAddressFactory(ethernet=ethernet))
+        vip = VIPFactory(
+            ip=IPAddressFactory(ethernet=ethernet),
+            parent=cluster_old,
+        )
         self.data['load_balancer'] = 'f5-1-fake-new'
         self.data['ip'] = vip.ip.address
         self.data['port'] = vip.port
