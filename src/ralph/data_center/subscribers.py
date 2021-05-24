@@ -2,6 +2,7 @@
 import logging
 
 import pyhermes
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
@@ -132,6 +133,7 @@ def migrate_vip_to_cluster(vip, cluster, protocol):
         'Trying to update VIP with IP {}, port {} and protocol {}'
         'failed: %s'.format(vip.ip.address, vip.port, protocol.name)
     )
+    cluster_content_type = ContentType.objects.get_for_model(Cluster)
     ethernet = vip.ip.ethernet
     if not ethernet:
         logger.error(msg, 'no `Ethernet` object found')
@@ -139,10 +141,10 @@ def migrate_vip_to_cluster(vip, cluster, protocol):
     if ethernet.base_object != vip.parent:
         logger.error(msg, '`Ethernet` base_object differs from `VIP` parent')
         return
-    if not isinstance(ethernet.base_object, Cluster):
+    if ethernet.base_object.content_type != cluster_content_type:
         logger.error(msg, '`Ethernet` base_object is not `Cluster` instance')
         return
-    if not isinstance(vip.parent, Cluster):
+    if vip.parent.content_type != cluster_content_type:
         logger.error(msg, '`VIP` parent is not `Cluster` instance')
         return
 
