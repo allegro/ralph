@@ -19,7 +19,11 @@ jobs:
         run: make build-package
       - name: Install packagecloud CLI
         run: sudo gem install package_cloud
-      - name: Publish
+      - name: Publish deb
         env:
           PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
         run: package_cloud push allegro/ralph/ubuntu/bionic build/*.deb
+      - name: Publish docker
+        env:
+          DOCKER_BUILD_TRIGGER_URL: ${{ secrets.DOCKER_BUILD_TRIGGER_URL }}
+        run: curl -X POST $DOCKER_BUILD_TRIGGER_URL
