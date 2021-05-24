@@ -2,7 +2,9 @@
 import logging
 
 import pyhermes
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.db import transaction
 
 from ralph.assets.models.assets import ServiceEnvironment
 from ralph.data_center.models import Cluster, ClusterType, VIP, VIPProtocol
@@ -95,6 +97,13 @@ def handle_create_vip_event(data):
         eth = Ethernet.objects.create(base_object=cluster)
         ip.ethernet = eth
         ip.save()
+    elif ip.dhcp_expose:
+        logger.error(
+            'Trying to create VIP with IP %s, port %s and protocol %s '
+            'failed because IP is exposed in dhcp',
+            ip.address, data['port'], protocol.name
+        )
+        return
     try:
         service_env = ServiceEnvironment.objects.get(
             service__uid=data['service']['uid'],
@@ -119,19 +128,40 @@ def handle_create_vip_event(data):
     logger.debug('VIP %s created successfully.', vip.name)
 
 
+def migrate_vip_to_cluster(vip, cluster, protocol):
+    msg = (
+        'Trying to update VIP with IP {}, port {} and protocol {}'
+        'failed: %s'.format(vip.ip.address, vip.port, protocol.name)
+    )
+    cluster_content_type = ContentType.objects.get_for_model(Cluster)
+    ethernet = vip.ip.ethernet
+    if not ethernet:
+        logger.error(msg, 'no `Ethernet` object found')
+        return
+    if ethernet.base_object != vip.parent:
+        logger.error(msg, '`Ethernet` base_object differs from `VIP` parent')
+        return
+    if ethernet.base_object.content_type != cluster_content_type:
+        logger.error(msg, '`Ethernet` base_object is not `Cluster` instance')
+        return
+    if vip.parent.content_type != cluster_content_type:
+        logger.error(msg, '`VIP` parent is not `Cluster` instance')
+        return
+
+    ethernet.base_object = cluster
+    ethernet.save()
+    vip.parent = cluster
+    vip.save()
+    logger.debug(
+        'VIP %s with IP %s, port %s and protocol %s changed cluster to %s.',
+        vip.name, vip.ip.address, vip.port, protocol.name, cluster.name
+    )
+
+
 @pyhermes.subscriber(
     topic='updateVipEvent',
 )
 def handle_update_vip_event(data):
-    # TODO(xor-xor): Since update event doesn't contain any changes yet, it
-    # will be ignored for now. Remember to remove logger.info/return below when
-    # this will get changed.
-    logger.info(
-        "Ignoring received update VIP event, since handling logic is not "
-        "implemented yet."
-    )
-    return
-
     errors = validate_vip_event_data(data)
     if errors:
         msg = (
@@ -141,18 +171,60 @@ def handle_update_vip_event(data):
         logger.error(msg, '; '.join(errors))
         return
 
-    ip,  = IPAddress.objects.get_or_create(address=data['ip'])
+    ip, _ = IPAddress.objects.get_or_create(address=data['ip'])
     protocol = VIPProtocol.from_name(data['protocol'].upper())
-    vip = get_vip(ip.address, data['port'], protocol.name)
-    if vip is None:
-        msg = (
-            "VIP designated by IP address %s, port %s and protocol %s "
-            "doesn't exist. Ignoring received update event."
+    if ip.dhcp_expose:
+        logger.error(
+            'Trying to update VIP with IP %s, port %s and protocol %s '
+            'failed because IP is exposed in dhcp',
+            ip.address, data['port'], protocol.name
         )
-        logger.warning(msg, ip.address, data['port'], protocol.name)
         return
-    # TODO(xor-xor): when update event will contain changes (currently it
-    # doesn't), add update logic here.
+
+    vip = get_vip(ip, data['port'], protocol)
+    if vip is None:
+        # VIP not found, should create new one.
+        return handle_create_vip_event(data)
+
+    # update cluster.
+    cluster_type, _ = ClusterType.objects.get_or_create(
+        name=data['load_balancer_type']
+    )
+    cluster, _ = Cluster.objects.get_or_create(
+        name=data['load_balancer'],
+        type=cluster_type,
+    )
+
+    if (
+        vip.parent != cluster or
+        (ip.ethernet and ip.ethernet.base_object != cluster)
+    ):
+        with transaction.atomic():
+            for migrated_vip in VIP.objects.select_for_update().filter(ip=ip):
+                migrate_vip_to_cluster(migrated_vip, cluster, protocol)
+
+    # update service/environment if changed.
+    try:
+        service_env = ServiceEnvironment.objects.get(
+            service__uid=data['service']['uid'],
+            environment__name=data['environment'],
+        )
+    except ServiceEnvironment.DoesNotExist:
+        msg = (
+            'ServiceEnvironment for service UID "%s" and environment "%s" '
+            'does not exist. Ignoring received update event.'
+        )
+        logger.error(msg, data['service']['uid'], data['environment'])
+        return
+
+    if vip.service_env != service_env:
+        vip.service_env = service_env
+        vip.save()
+        logger.debug(
+            'VIP %s changed service/env to %s.', vip.name, service_env
+        )
+
+    logger.debug('VIP %s update processed successfuly.', vip.name)
 
 
 @pyhermes.subscriber(
