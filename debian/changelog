@@ -1,3 +1,10 @@
+ralph (20210525.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * fix vip update event (#3636)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Tue, 25 May 2021 10:00:03 +0000
+
 ralph (20210524.2) bionic; urgency=medium
 
   [ Szymon Jasinski ]
