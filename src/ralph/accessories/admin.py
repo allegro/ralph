@@ -24,14 +24,14 @@ class AccessoryUserView(RalphDetailViewAdmin):
 class AccessoryAdmin(TransitionAdminMixin, RalphAdmin):
     show_transition_history = True
     list_display = ['status', 'manufacturer', 'accessory_name',
-                    'product_number', 'number_bought']
+                    'product_number', 'number_bought', 'free']
     readonly_fields = ['used', 'free']
     list_select_related = ['owner']
     raw_id_fields = ['owner', 'region']
     list_filter = ['status', 'manufacturer', 'accessory_name',
-                   'product_number', 'owner']
+                   'product_number', 'warehouse']
     change_views = [AccessoryUserView, ]
-    search_fields = ['manufacturer', 'accessory_name', 'product_number']
+    search_fields = ['accessory_name', 'product_number']
 
     fieldsets = (
         (
