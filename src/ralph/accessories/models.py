@@ -83,7 +83,6 @@ class Accessory(
         max_length=255,
         null=False,
         blank=False,
-        unique=True,
         help_text=_('Accessory name')
     )
     product_number = models.CharField(
@@ -120,6 +119,7 @@ class Accessory(
         Warehouse,
         on_delete=models.PROTECT
     )
+    objects = models.Manager()
 
     @classmethod
     @transition_action(
