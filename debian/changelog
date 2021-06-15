@@ -1,3 +1,10 @@
+ralph (20210615.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Fixed search list, changed filters, added new column to list_display. (#3639)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Tue, 15 Jun 2021 13:59:33 +0000
+
 ralph (20210525.1) bionic; urgency=medium
 
   [ Szymon Jasinski ]
