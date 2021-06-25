@@ -56,7 +56,11 @@ from ralph.supports.models import Support
 from ralph.supports.tests.factories import SupportFactory
 from ralph.tests.models import PolymorphicTestModel
 from ralph.trade_marks.models import Design, Patent, TradeMark
-from ralph.trade_marks.tests.factories import DesignFactory, PatentFactory, TradeMarkFactory
+from ralph.trade_marks.tests.factories import (
+    DesignFactory,
+    PatentFactory,
+    TradeMarkFactory
+)
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
