@@ -81,7 +81,7 @@ class TradeMarkCountry(
         return Country.desc_from_id(self.country)
 
 
-class IntellectualPropertyBase(AdminAbsoluteUrlMixin, BaseObject):
+class IntellectualPropertyBase:
     name = models.CharField(
         blank=False,
         max_length=255,
@@ -155,7 +155,7 @@ class IntellectualPropertyBase(AdminAbsoluteUrlMixin, BaseObject):
         abstract = True
 
 
-class TradeMark(IntellectualPropertyBase):
+class TradeMark(IntellectualPropertyBase, AdminAbsoluteUrlMixin, BaseObject):
     domains = models.ManyToManyField(
         Domain,
         related_name='+',
@@ -191,7 +191,7 @@ class TradeMarkAdditionalCountry(models.Model):
         unique_together = ('country', 'trade_mark')
 
 
-class Patent(IntellectualPropertyBase):
+class Patent(IntellectualPropertyBase, AdminAbsoluteUrlMixin, BaseObject):
     domains = models.ManyToManyField(
         Domain,
         related_name='+',
@@ -227,7 +227,7 @@ class PatentAdditionalCountry(models.Model):
         unique_together = ('country', 'patent')
 
 
-class Design(IntellectualPropertyBase):
+class Design(IntellectualPropertyBase, AdminAbsoluteUrlMixin, BaseObject):
     domains = models.ManyToManyField(
         Domain,
         related_name='+',

@@ -29,14 +29,14 @@ from ralph.trade_marks.models import (
 )
 
 
-class IntellectualPropertyLinkedDomainVeiwBase(RalphDetailViewAdmin):
+class IntellectualPropertyLinkedDomainViewBase(RalphDetailViewAdmin):
     icon = 'table'
     name = 'table'
     label = _('Assigned to domain')
     url_name = 'assigned-to-domain'
 
 
-class TradeMarksLinkedDomainsView(IntellectualPropertyLinkedDomainVeiwBase):
+class TradeMarksLinkedDomainsView(IntellectualPropertyLinkedDomainViewBase):
 
     class Inline(RalphTabularInline):
         model = TradeMarksLinkedDomains
@@ -46,7 +46,7 @@ class TradeMarksLinkedDomainsView(IntellectualPropertyLinkedDomainVeiwBase):
     inlines = [Inline]
 
 
-class DesignLinkedDomainsView(IntellectualPropertyLinkedDomainVeiwBase):
+class DesignLinkedDomainsView(IntellectualPropertyLinkedDomainViewBase):
 
     class Inline(RalphTabularInline):
         model = DesignsLinkedDomains
@@ -56,7 +56,7 @@ class DesignLinkedDomainsView(IntellectualPropertyLinkedDomainVeiwBase):
     inlines = [Inline]
 
 
-class PatentLinkedDomainsView(IntellectualPropertyLinkedDomainVeiwBase):
+class PatentLinkedDomainsView(IntellectualPropertyLinkedDomainViewBase):
 
     class Inline(RalphTabularInline):
         model = PatentsLinkedDomains
