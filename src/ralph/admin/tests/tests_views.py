@@ -105,7 +105,10 @@ FACTORY_MAP = {
     'ralph.security.models.SecurityScan': 'ralph.security.tests.factories.SecurityScanFactory',  # noqa
     'ralph.sim_cards.models.SIMCard': 'ralph.sim_cards.tests.factories.SIMCardFactory',  # noqa
     'ralph.sim_cards.models.CellularCarrier': 'ralph.sim_cards.tests.factories.CellularCarrierFactory',  # noqa
-    'ralph.sim_cards.models.SIMCardFeatures': 'ralph.sim_cards.tests.factories.SIMCardFeatureFactory',  # noqa'
+    'ralph.sim_cards.models.SIMCardFeatures': 'ralph.sim_cards.tests.factories.SIMCardFeatureFactory',  # noqa
+    'ralph.trade_marks.models.Design': 'ralph.trade_marks.tests.factories.DesignFactory',  # noqa
+    'ralph.trade_marks.models.Patent': 'ralph.trade_marks.tests.factories.PatentFactory'  # noqa
+
 }
 
 EXCLUDE_MODELS = [
