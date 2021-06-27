@@ -81,7 +81,7 @@ class TradeMarkCountry(
         return Country.desc_from_id(self.country)
 
 
-class IntellectualPropertyBase:
+class IntellectualPropertyBase(models.Model):
     name = models.CharField(
         blank=False,
         max_length=255,
