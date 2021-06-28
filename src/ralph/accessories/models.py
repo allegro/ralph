@@ -137,6 +137,19 @@ class Accessory(
     @classmethod
     @transition_action(
         form_fields={
+            'accessory_send': {
+                'field': forms.IntegerField(label=_('accessory_send'),)
+            }
+        },
+    )
+    def accessory_send(cls, instances, **kwargs):
+        accessory_send = int(kwargs['accessory_send'])
+        for instance in instances:
+            instance.number_bought -= accessory_send
+
+    @classmethod
+    @transition_action(
+        form_fields={
             'user': {
                 'field': forms.CharField(label=_('User')),
                 'autocomplete_field': 'user',
