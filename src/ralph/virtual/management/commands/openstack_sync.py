@@ -711,7 +711,12 @@ class Command(BaseCommand):
         for project_id in (set(self.ralph_projects.keys()) - set(
             self.openstack_projects.keys())
         ):
-            cloud_project = CloudProject.objects.get(project_id=project_id)
+            cloud_project = CloudProject.objects.get(
+                project_id=project_id,
+                cloudprovider=self.cloud_provider
+            )
+            if not cloud_project:
+                continue
             children_count = cloud_project.children.count()
             logger_extras = {
                 'cloud_project_name': cloud_project.name,
