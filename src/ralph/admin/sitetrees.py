@@ -179,6 +179,8 @@ sitetrees = [
             perms_mode_all=False,
             children=[
                 section(_('Trade Marks'), 'trade_marks', 'TradeMark'),
+                section(_('Designs'), 'trade_marks', 'Design'),
+                section(_('Patents'), 'trade_marks', 'Patent'),
                 section(_('Domains'), 'domains', 'Domain'),
                 section(_('Contracts'), 'domains', 'DomainContract'),
                 section(_('Registrants'), 'domains', 'DomainRegistrant'),

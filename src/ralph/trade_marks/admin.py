@@ -11,8 +11,14 @@ from ralph.admin.filters import (
 )
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.attachments.admin import AttachmentsMixin
-from ralph.trade_marks.forms import IntellectualPropertyForm
+from ralph.trade_marks.forms import DesignForm, PatentForm, TradeMarkForm
 from ralph.trade_marks.models import (
+    Design,
+    DesignAdditionalCountry,
+    DesignsLinkedDomains,
+    Patent,
+    PatentAdditionalCountry,
+    PatentsLinkedDomains,
     ProviderAdditionalMarking,
     TradeMark,
     TradeMarkAdditionalCountry,
@@ -23,25 +29,45 @@ from ralph.trade_marks.models import (
 )
 
 
-class TradeMarksLinkedView(RalphDetailViewAdmin):
+class IntellectualPropertyLinkedDomainViewBase(RalphDetailViewAdmin):
     icon = 'table'
     name = 'table'
     label = _('Assigned to domain')
     url_name = 'assigned-to-domain'
 
-    class TradeMarksLinkedInline(RalphTabularInline):
+
+class TradeMarksLinkedDomainsView(IntellectualPropertyLinkedDomainViewBase):
+
+    class Inline(RalphTabularInline):
         model = TradeMarksLinkedDomains
         raw_id_fields = ('domain', admin.RelatedFieldListFilter)
         extra = 1
 
-    inlines = [TradeMarksLinkedInline]
+    inlines = [Inline]
 
 
-@register(TradeMark)
-class TradeMarkAdmin(AttachmentsMixin, RalphAdmin):
+class DesignLinkedDomainsView(IntellectualPropertyLinkedDomainViewBase):
 
-    change_views = [TradeMarksLinkedView]
-    form = IntellectualPropertyForm
+    class Inline(RalphTabularInline):
+        model = DesignsLinkedDomains
+        raw_id_fields = ('domain', admin.RelatedFieldListFilter)
+        extra = 1
+
+    inlines = [Inline]
+
+
+class PatentLinkedDomainsView(IntellectualPropertyLinkedDomainViewBase):
+
+    class Inline(RalphTabularInline):
+        model = PatentsLinkedDomains
+        raw_id_fields = ('domain', admin.RelatedFieldListFilter)
+        extra = 1
+
+    inlines = [Inline]
+
+
+class IntellectualPropertyAdminBase(AttachmentsMixin, RalphAdmin):
+
     search_fields = ['name', 'id', ]
     readonly_fields = ['image_tag']
     list_select_related = [
@@ -55,10 +81,6 @@ class TradeMarkAdmin(AttachmentsMixin, RalphAdmin):
         'additional_markings',
         'holder',
         'status',
-        (
-            'trademarkadditionalcountry__country',
-            custom_title_filter('Region', RelatedAutocompleteFieldListFilter)
-        )
     ]
     list_display = [
         'registrant_number', 'region', 'name', 'registrant_class',
@@ -83,12 +105,6 @@ class TradeMarkAdmin(AttachmentsMixin, RalphAdmin):
         })
     )
 
-    def region(self, obj):
-        return ', '.join(
-            tm_country.country.name for tm_country in
-            obj.trademarkadditionalcountry_set.all()
-        )
-
     def representation(self, obj):
         if obj.image:
             return self.image_tag(obj)
@@ -107,17 +123,118 @@ class TradeMarkAdmin(AttachmentsMixin, RalphAdmin):
     image_tag.short_description = _('Image')
     image_tag.allow_tags = True
 
+
+@register(TradeMark)
+class TradeMarkAdmin(IntellectualPropertyAdminBase):
+
+    change_views = [TradeMarksLinkedDomainsView]
+    form = TradeMarkForm
+    list_filter = [
+        'registrant_number',
+        'type',
+        ('valid_from', DateListFilter),
+        ('valid_to', DateListFilter),
+        'additional_markings',
+        'holder',
+        'status',
+        (
+            'trademarkadditionalcountry__country',
+            custom_title_filter('Region', RelatedAutocompleteFieldListFilter)
+        )
+    ]
+
+    def region(self, obj):
+        return ', '.join(
+            tm_country.country.name for tm_country in
+            obj.trademarkadditionalcountry_set.all()
+        )
+
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related(
             'trademarkadditionalcountry_set__country'
         )
 
-    class TradeMarksAdditionalCountryInline(RalphTabularInline):
+    class AdditionalCountryInline(RalphTabularInline):
         model = TradeMarkAdditionalCountry
         extra = 1
         verbose_name = _('country')
 
-    inlines = [TradeMarksAdditionalCountryInline]
+    inlines = [AdditionalCountryInline]
+
+
+@register(Design)
+class DesignAdmin(IntellectualPropertyAdminBase):
+
+    change_views = [DesignLinkedDomainsView]
+    form = DesignForm
+    list_filter = [
+        'registrant_number',
+        'type',
+        ('valid_from', DateListFilter),
+        ('valid_to', DateListFilter),
+        'additional_markings',
+        'holder',
+        'status',
+        (
+            'designadditionalcountry__country',
+            custom_title_filter('Region', RelatedAutocompleteFieldListFilter)
+        )
+    ]
+
+    def region(self, obj):
+        return ', '.join(
+            tm_country.country.name for tm_country in
+            obj.designadditionalcountry_set.all()
+        )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related(
+            'designadditionalcountry_set__country'
+        )
+
+    class AdditionalCountryInline(RalphTabularInline):
+        model = DesignAdditionalCountry
+        extra = 1
+        verbose_name = _('country')
+
+    inlines = [AdditionalCountryInline]
+
+
+@register(Patent)
+class PatentAdmin(IntellectualPropertyAdminBase):
+    change_views = [PatentLinkedDomainsView]
+    form = PatentForm
+    list_filter = [
+        'registrant_number',
+        'type',
+        ('valid_from', DateListFilter),
+        ('valid_to', DateListFilter),
+        'additional_markings',
+        'holder',
+        'status',
+        (
+            'patentadditionalcountry__country',
+            custom_title_filter('Region', RelatedAutocompleteFieldListFilter)
+        )
+    ]
+
+    def region(self, obj):
+        return ', '.join(
+            tm_country.country.name for tm_country in
+            obj.patentadditionalcountry_set.all()
+        )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related(
+            'patentadditionalcountry_set__country'
+        )
+
+    class AdditionalCountryInline(RalphTabularInline):
+        model = PatentAdditionalCountry
+        extra = 1
+        verbose_name = _('country')
+
+    inlines = [AdditionalCountryInline]
 
 
 @register(ProviderAdditionalMarking)
