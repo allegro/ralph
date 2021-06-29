@@ -1,3 +1,13 @@
+ralph (20210629.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * New transition (#3644)
+
+  [ Szymon Jasinski ]
+  * intellectual property: designs and patents (#3647)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Tue, 29 Jun 2021 08:12:49 +0000
+
 ralph (20210615.1) bionic; urgency=medium
 
   [ lukaszkarykowski ]
