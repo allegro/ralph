@@ -14,6 +14,14 @@ from ralph.lib.mixins.models import (
 )
 
 
+def verbose_names(**kwargs):
+    def wrap(cls):
+        for field, value in kwargs.items():
+            setattr(cls._meta.get_field(field), 'verbose_name', value)
+        return cls
+    return wrap
+
+
 def upload_dir(filename, instance):
     return get_file_path(
         filename, instance, default_dir="trade_marks"
@@ -86,14 +94,12 @@ class IntellectualPropertyBase(models.Model):
         blank=False,
         max_length=255,
     )
-    registrant_number = models.CharField(
-        verbose_name=_('Registrant number'),
+    number = models.CharField(
         blank=False,
         null=False,
         max_length=255
     )
     type = models.PositiveIntegerField(
-        verbose_name=_('Trade Mark type'),
         choices=TradeMarkType(),
         default=TradeMarkType.figurative.id
     )
@@ -102,8 +108,7 @@ class IntellectualPropertyBase(models.Model):
         blank=True,
         upload_to=upload_dir
     )
-    registrant_class = models.CharField(
-        verbose_name=_('Registrant class'),
+    classes = models.CharField(
         blank=False,
         null=False,
         max_length=255,
@@ -131,12 +136,10 @@ class IntellectualPropertyBase(models.Model):
     )
     holder = models.ForeignKey(
         AssetHolder,
-        verbose_name=_('Trade Mark holder'),
         blank=True,
         null=True
     )
     status = models.PositiveIntegerField(
-        verbose_name=_('Trade Mark status'),
         choices=TradeMarkStatus(),
         default=TradeMarkStatus.registered.id
     )
@@ -144,17 +147,24 @@ class IntellectualPropertyBase(models.Model):
         TradeMarkRegistrarInstitution,
         null=True,
     )
+    database_link = models.URLField(
+        max_length=255, blank=True, null=True,
+    )
 
     def __str__(self):
         return '{}, {}, {} expires {}.'.format(
-            self.name, self.registrant_number,
-            self.registrant_class, self.valid_to
+            self.name, self.number,
+            self.classes, self.valid_to
         )
 
     class Meta:
         abstract = True
 
 
+@verbose_names(
+    name=_('Trade Mark Name'), number=_('Trade Mark number'), status=_('Trade Mark status'),
+    holder=_('Trade Mark holder'), type=_('Trade Mark type'), image=_('Representation')
+)
 class TradeMark(IntellectualPropertyBase, AdminAbsoluteUrlMixin, BaseObject):
     domains = models.ManyToManyField(
         Domain,
@@ -191,6 +201,10 @@ class TradeMarkAdditionalCountry(models.Model):
         unique_together = ('country', 'trade_mark')
 
 
+@verbose_names(
+    name=_('Patent Name'), number=_('Patent number'), status=_('Patent status'),
+    holder=_('Patent holder'), type=_('Patent type'), image=_('Representation')
+)
 class Patent(IntellectualPropertyBase, AdminAbsoluteUrlMixin, BaseObject):
     domains = models.ManyToManyField(
         Domain,
@@ -227,6 +241,10 @@ class PatentAdditionalCountry(models.Model):
         unique_together = ('country', 'patent')
 
 
+@verbose_names(
+    name=_('Design Name'), number=_('Design number'), status=_('Design status'),
+    holder=_('Design holder'), type=_('Design type'), image=_('Representation')
+)
 class Design(IntellectualPropertyBase, AdminAbsoluteUrlMixin, BaseObject):
     domains = models.ManyToManyField(
         Domain,

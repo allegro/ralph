@@ -74,7 +74,7 @@ class IntellectualPropertyAdminBase(AttachmentsMixin, RalphAdmin):
         'technical_owner', 'business_owner', 'holder',
     ]
     list_filter = [
-        'registrant_number',
+        'number',
         'type',
         ('valid_from', DateListFilter),
         ('valid_to', DateListFilter),
@@ -83,8 +83,8 @@ class IntellectualPropertyAdminBase(AttachmentsMixin, RalphAdmin):
         'status',
     ]
     list_display = [
-        'registrant_number', 'region', 'name', 'registrant_class',
-        'valid_from', 'valid_to', 'status', 'holder', 'representation',
+        'number', 'region', 'name', 'classes',
+        'valid_from', 'valid_to', 'status', 'holder', 'representation', 'get_database_link'
     ]
     raw_id_fields = [
         'business_owner', 'technical_owner', 'holder'
@@ -92,8 +92,8 @@ class IntellectualPropertyAdminBase(AttachmentsMixin, RalphAdmin):
     fieldsets = (
         (_('Basic info'), {
             'fields': (
-                'name', 'registrant_number', 'type', 'image', 'image_tag',
-                'registrant_class', 'valid_from', 'valid_to',
+                'name', 'database_link', 'number', 'type', 'image', 'image_tag',
+                'classes', 'valid_from', 'valid_to',
                 'registrar_institution', 'order_number_url',
                 'additional_markings', 'holder', 'status', 'remarks'
             )
@@ -105,23 +105,30 @@ class IntellectualPropertyAdminBase(AttachmentsMixin, RalphAdmin):
         })
     )
 
+    def get_database_link(self, obj):
+        if obj.database_link:
+            return mark_safe(
+                '<a target="_blank" href="{}">link</a>'.format(obj.database_link)
+            )
+        else:
+            return '-'
+
+    get_database_link.short_description = _('Database link')
+
     def representation(self, obj):
         if obj.image:
             return self.image_tag(obj)
         else:
             return TradeMarkType.desc_from_id(obj.type)
 
-    representation.allow_tags = True
-
     def image_tag(self, obj):
         if not obj.image:
             return ""
         return mark_safe(
-            '<img src="%s" width="150" />' % obj.image.url
+            '<img src="{}" width="150" />'.format(obj.image.url)
         )
 
     image_tag.short_description = _('Image')
-    image_tag.allow_tags = True
 
 
 @register(TradeMark)
@@ -130,7 +137,7 @@ class TradeMarkAdmin(IntellectualPropertyAdminBase):
     change_views = [TradeMarksLinkedDomainsView]
     form = TradeMarkForm
     list_filter = [
-        'registrant_number',
+        'number',
         'type',
         ('valid_from', DateListFilter),
         ('valid_to', DateListFilter),
@@ -168,7 +175,7 @@ class DesignAdmin(IntellectualPropertyAdminBase):
     change_views = [DesignLinkedDomainsView]
     form = DesignForm
     list_filter = [
-        'registrant_number',
+        'number',
         'type',
         ('valid_from', DateListFilter),
         ('valid_to', DateListFilter),
@@ -205,7 +212,7 @@ class PatentAdmin(IntellectualPropertyAdminBase):
     change_views = [PatentLinkedDomainsView]
     form = PatentForm
     list_filter = [
-        'registrant_number',
+        'number',
         'type',
         ('valid_from', DateListFilter),
         ('valid_to', DateListFilter),
