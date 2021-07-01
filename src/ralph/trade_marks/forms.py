@@ -1,5 +1,4 @@
 from django.forms import CheckboxSelectMultiple
-from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.mixins import RalphAdminForm
 from ralph.trade_marks.models import Design, Patent, TradeMark

@@ -162,8 +162,9 @@ class IntellectualPropertyBase(models.Model):
 
 
 @verbose_names(
-    name=_('Trade Mark Name'), number=_('Trade Mark number'), status=_('Trade Mark status'),
-    holder=_('Trade Mark holder'), type=_('Trade Mark type'), image=_('Representation')
+    name=_('Trade Mark Name'), number=_('Trade Mark number'),
+    status=_('Trade Mark status'), holder=_('Trade Mark holder'),
+    type=_('Trade Mark type'), image=_('Representation')
 )
 class TradeMark(IntellectualPropertyBase, AdminAbsoluteUrlMixin, BaseObject):
     domains = models.ManyToManyField(

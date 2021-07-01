@@ -84,7 +84,8 @@ class IntellectualPropertyAdminBase(AttachmentsMixin, RalphAdmin):
     ]
     list_display = [
         'number', 'region', 'name', 'classes',
-        'valid_from', 'valid_to', 'status', 'holder', 'representation', 'get_database_link'
+        'valid_from', 'valid_to', 'status', 'holder', 'representation',
+        'get_database_link'
     ]
     raw_id_fields = [
         'business_owner', 'technical_owner', 'holder'
@@ -108,7 +109,9 @@ class IntellectualPropertyAdminBase(AttachmentsMixin, RalphAdmin):
     def get_database_link(self, obj):
         if obj.database_link:
             return mark_safe(
-                '<a target="_blank" href="{}">link</a>'.format(obj.database_link)
+                '<a target="_blank" href="{}">link</a>'.format(
+                    obj.database_link
+                )
             )
         else:
             return '-'
