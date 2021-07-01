@@ -170,6 +170,20 @@ class TestOpenstackSync(RalphTestCase):
         except ObjectDoesNotExist:
             self.fail('Project "im_not_here" was deleted.')
 
+    def test_cleanup_doesnt_remove_cloud_projects_with_different_provider(self):
+        CloudProjectFactory(
+            project_id='im_not_here',
+            cloudprovider=CloudProviderFactory()
+        )
+        self.cmd._get_ralph_data()
+
+        self.cmd._cleanup()
+
+        try:
+            CloudProject.objects.get(project_id='im_not_here')
+        except ObjectDoesNotExist:
+            self.fail('Project "im_not_here" was deleted.')
+
     def test_delete_cloud_instance_cleanup_ip(self):
         ips_count = IPAddress.objects.count()
         self.cmd._cleanup_servers({}, self.cloud_project.project_id)
