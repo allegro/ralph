@@ -24,8 +24,7 @@ from ralph.trade_marks.models import (
     TradeMarkAdditionalCountry,
     TradeMarkCountry,
     TradeMarkRegistrarInstitution,
-    TradeMarksLinkedDomains,
-    TradeMarkType
+    TradeMarksLinkedDomains
 )
 
 
@@ -75,7 +74,6 @@ class IntellectualPropertyAdminBase(AttachmentsMixin, RalphAdmin):
     ]
     list_filter = [
         'number',
-        'type',
         ('valid_from', DateListFilter),
         ('valid_to', DateListFilter),
         'additional_markings',
@@ -93,7 +91,7 @@ class IntellectualPropertyAdminBase(AttachmentsMixin, RalphAdmin):
     fieldsets = (
         (_('Basic info'), {
             'fields': (
-                'name', 'database_link', 'number', 'type', 'image', 'image_tag',
+                'name', 'database_link', 'number', 'image', 'image_tag',
                 'classes', 'valid_from', 'valid_to',
                 'registrar_institution', 'order_number_url',
                 'additional_markings', 'holder', 'status', 'remarks'
@@ -122,7 +120,7 @@ class IntellectualPropertyAdminBase(AttachmentsMixin, RalphAdmin):
         if obj.image:
             return self.image_tag(obj)
         else:
-            return TradeMarkType.desc_from_id(obj.type)
+            return '-'
 
     def image_tag(self, obj):
         if not obj.image:
@@ -153,6 +151,22 @@ class TradeMarkAdmin(IntellectualPropertyAdminBase):
         )
     ]
 
+    fieldsets = (
+        (_('Basic info'), {
+            'fields': (
+                'name', 'database_link', 'number', 'type', 'image', 'image_tag',
+                'classes', 'valid_from', 'valid_to',
+                'registrar_institution', 'order_number_url',
+                'additional_markings', 'holder', 'status', 'remarks'
+            )
+        }),
+        (_('Ownership info'), {
+            'fields': (
+                'business_owner', 'technical_owner'
+            )
+        })
+    )
+
     def region(self, obj):
         return ', '.join(
             tm_country.country.name for tm_country in
@@ -179,7 +193,6 @@ class DesignAdmin(IntellectualPropertyAdminBase):
     form = DesignForm
     list_filter = [
         'number',
-        'type',
         ('valid_from', DateListFilter),
         ('valid_to', DateListFilter),
         'additional_markings',
@@ -216,7 +229,6 @@ class PatentAdmin(IntellectualPropertyAdminBase):
     form = PatentForm
     list_filter = [
         'number',
-        'type',
         ('valid_from', DateListFilter),
         ('valid_to', DateListFilter),
         'additional_markings',

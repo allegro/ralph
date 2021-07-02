@@ -99,10 +99,6 @@ class IntellectualPropertyBase(models.Model):
         null=False,
         max_length=255
     )
-    type = models.PositiveIntegerField(
-        choices=TradeMarkType(),
-        default=TradeMarkType.figurative.id
-    )
     image = models.ImageField(
         null=True,
         blank=True,
@@ -164,9 +160,14 @@ class IntellectualPropertyBase(models.Model):
 @verbose_names(
     name=_('Trade Mark Name'), number=_('Trade Mark number'),
     status=_('Trade Mark status'), holder=_('Trade Mark holder'),
-    type=_('Trade Mark type'), image=_('Representation')
+    image=_('Representation')
 )
 class TradeMark(IntellectualPropertyBase, AdminAbsoluteUrlMixin, BaseObject):
+    type = models.PositiveIntegerField(
+        verbose_name=_('Trade Mark type'),
+        choices=TradeMarkType(),
+        default=TradeMarkType.figurative.id
+    )
     domains = models.ManyToManyField(
         Domain,
         related_name='+',
@@ -204,7 +205,7 @@ class TradeMarkAdditionalCountry(models.Model):
 
 @verbose_names(
     name=_('Patent Name'), number=_('Patent number'), status=_('Patent status'),
-    holder=_('Patent holder'), type=_('Patent type'), image=_('Representation')
+    holder=_('Patent holder'), image=_('Representation')
 )
 class Patent(IntellectualPropertyBase, AdminAbsoluteUrlMixin, BaseObject):
     domains = models.ManyToManyField(
@@ -244,7 +245,7 @@ class PatentAdditionalCountry(models.Model):
 
 @verbose_names(
     name=_('Design Name'), number=_('Design number'), status=_('Design status'),
-    holder=_('Design holder'), type=_('Design type'), image=_('Representation')
+    holder=_('Design holder'), image=_('Representation')
 )
 class Design(IntellectualPropertyBase, AdminAbsoluteUrlMixin, BaseObject):
     domains = models.ManyToManyField(

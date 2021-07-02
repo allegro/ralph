@@ -11,6 +11,29 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RemoveField(
+            model_name='design',
+            name='type',
+        ),
+        migrations.RemoveField(
+            model_name='patent',
+            name='type',
+        ),
+        migrations.AddField(
+            model_name='design',
+            name='database_link',
+            field=models.URLField(max_length=255, blank=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='patent',
+            name='database_link',
+            field=models.URLField(max_length=255, blank=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='trademark',
+            name='database_link',
+            field=models.URLField(max_length=255, blank=True, null=True),
+        ),
         migrations.AlterField(
             model_name='design',
             name='classes',
@@ -40,5 +63,10 @@ class Migration(migrations.Migration):
             model_name='trademark',
             name='number',
             field=models.CharField(max_length=255),
+        ),
+        migrations.AlterField(
+            model_name='trademark',
+            name='type',
+            field=models.PositiveIntegerField(verbose_name='Trade Mark type', default=2, choices=[(1, 'Word'), (2, 'Figurative'), (3, 'Word - Figurative')]),
         ),
     ]
