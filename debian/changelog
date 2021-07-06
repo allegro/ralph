@@ -1,3 +1,11 @@
+ralph (20210706.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * openstack sync - remove projects from processed provider only (#3648)
+  * Intellectual property labels (#3649)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Tue, 06 Jul 2021 09:53:08 +0000
+
 ralph (20210629.1) bionic; urgency=medium
 
   [ lukaszkarykowski ]
