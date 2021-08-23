@@ -18,7 +18,7 @@ class SIMCardAdmin(MulitiAddAdminMixin, TransitionAdminMixin, RalphAdmin):
     show_transition_history = True
     list_display = ['status', 'card_number', 'phone_number', 'pin1', 'puk1',
                     'user', 'owner', 'warehouse', 'carrier',
-                    'quarantine_until']
+                    'quarantine_until', 'property_of']
     multiadd_summary_fields = list_display
     raw_id_fields = ['warehouse', 'owner', 'user', 'carrier']
 
@@ -31,14 +31,14 @@ class SIMCardAdmin(MulitiAddAdminMixin, TransitionAdminMixin, RalphAdmin):
     list_filter = [
         'status', 'features', 'phone_number', 'card_number', 'warehouse',
         'user', 'owner', 'user__segment', 'user__company', 'user__department',
-        'user__employee_id', 'carrier', 'quarantine_until'
+        'user__employee_id', 'carrier', 'quarantine_until', 'property_of'
     ]
 
     fieldsets = (
         (_('SIM Card Info'), {
             'fields': (
                 'status', 'card_number', 'phone_number', 'pin1', 'puk1',
-                'pin2', 'puk2', 'carrier', 'remarks', 'features'
+                'pin2', 'puk2', 'carrier', 'remarks', 'features', 'property_of'
 
             )
         }),
