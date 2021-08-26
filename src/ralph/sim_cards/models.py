@@ -1,6 +1,6 @@
 from functools import partial
 
-from dj.choices import Choices, Country
+from dj.choices import Choices
 from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
