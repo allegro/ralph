@@ -12,6 +12,7 @@ from django.core.validators import (
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.assets.models import AssetHolder
 from ralph.attachments.utils import send_transition_attachments_to_user
 from ralph.back_office.models import autocomplete_user, Warehouse
 from ralph.lib.hooks import get_hook
@@ -140,6 +141,12 @@ class SIMCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model,
     )
     features = models.ManyToManyField(
         SIMCardFeatures,
+        blank=True,
+    )
+    property_of = models.ForeignKey(
+        AssetHolder,
+        on_delete=models.PROTECT,
+        null=True,
         blank=True,
     )
 
