@@ -25,29 +25,7 @@ jobs:
         env:
           PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
         run: package_cloud push allegro/ralph/ubuntu/bionic build/*.deb
-      - name: Build docker prod
-        run: |
-          docker build -f docker/Dockerfile-prod \
-            --build-arg RALPH_VERSION=${GITHUB_REF#refs/*/} \
-            -t allegro/ralph:${GITHUB_REF#refs/*/} \
-            -t allegro/ralph:latest \
-            .
-      - name: Build docker static
-        run: |
-          docker build -f docker/Dockerfile-static \
-            --build-arg RALPH_VERSION=${GITHUB_REF#refs/*/} \
-            -t allegro/ralph-static-nginx:${GITHUB_REF#refs/*/} \
-            -t allegro/ralph-static-nginx:latest \
-            .
-      - name: Docker login
-        run: echo ${{ secrets.DOCKER_HUB_PASS }} | docker login --username allegro --password-stdin
-      - name: Publish docker prod
-        run: |
-          docker push allegro/ralph:${GITHUB_REF#refs/*/}
-          docker push allegro/ralph:latest
-      - name: Publish docker static
-        run: |
-          docker push allegro/ralph-static-nginx:${GITHUB_REF#refs/*/}
-          docker push allegro/ralph:latest
-      - name: Docker logout
-        run: docker logout
+      - name: Publish docker
+        env:
+          DOCKER_PASS: ${{ secrets.DOCKER_HUB_PASS }}
+        run: make publish-docker-image
