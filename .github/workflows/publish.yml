@@ -27,6 +27,6 @@ jobs:
         run: package_cloud push allegro/ralph/ubuntu/bionic build/*.deb
       - name: Publish docker
         run: |
-          docker login --username ${{ secrets.DOCKER_HUB_USERNAME}} --password ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker login --username ${{ secrets.DOCKER_HUB_USERNAME }} --password ${{ secrets.DOCKER_HUB_PASSWORD }}
           make publish-docker-image
           docker logout
