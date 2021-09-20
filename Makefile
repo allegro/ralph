@@ -4,6 +4,10 @@ DOCKER_REPO_NAME?="allegro"
 
 .PHONY: test flake clean coverage docs coveralls
 
+# verify tag for new version
+verify-clean-tag:
+	scripts/verify_clean_tag.sh
+
 # release-new-version is used by ralph mainteiners prior to publishing
 # new version of the package. The command generates the debian changelog
 # commits it and tags the created commit with the appropriate snapshot version.
