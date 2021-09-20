@@ -26,6 +26,7 @@ jobs:
           PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
         run: package_cloud push allegro/ralph/ubuntu/bionic build/*.deb
       - name: Publish docker
-        env:
-          DOCKER_PASS: ${{ secrets.DOCKER_HUB_PASS }}
-        run: make publish-docker-image
+        run: |
+          docker login --username ${{ secrets.DOCKER_HUB_USERNAME}} --password ${{ secrets.DOCKER_HUB_PASSWORD }}
+          make publish-docker-image
+          docker logout

@@ -1,7 +1,6 @@
 TEST?=ralph
 TEST_ARGS=
 DOCKER_REPO_NAME?="allegro"
-DOCKER_PASS=
 
 .PHONY: test flake clean coverage docs coveralls
 
@@ -70,12 +69,10 @@ build-snapshot-docker-image: build-snapshot-package
 
 publish-docker-image: version = $(shell git describe --abbrev=0)
 publish-docker-image: build-docker-image
-	echo $(DOCKER_PASS) | docker login --username $(DOCKER_REPO_NAME) --password-stdin
 	docker push $(DOCKER_REPO_NAME)/ralph:$(version)
 	docker push $(DOCKER_REPO_NAME)/ralph:latest
 	docker push $(DOCKER_REPO_NAME)/ralph-static-nginx:$(version)
 	docker push $(DOCKER_REPO_NAME)/ralph-static-nginx:latest
-	docker logout
 
 install-js:
 	npm install
