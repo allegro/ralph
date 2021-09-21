@@ -1,3 +1,10 @@
+ralph (20210921.2) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * verify github ref (#3661)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Tue, 21 Sep 2021 08:03:37 +0000
+
 ralph (20210921.1) bionic; urgency=medium
 
   [ Szymon Jasinski ]
