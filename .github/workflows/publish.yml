@@ -15,8 +15,13 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Verify clean tag
-        run: make verify-clean-tag
+      - name: Verify github ref
+        run: |
+          TAG=$(echo "$GITHUB_REF" | grep -E -o '^refs\/tags\/[0-9]{8}\.[0-9]+$' || true)
+          if [[ -z "$TAG" ]]; then
+              >&2 echo "The \$GITHUB_REF does not point to a properly named tag."
+              exit 1
+          fi
       - name: Build
         run: make build-package
       - name: Install packagecloud CLI
