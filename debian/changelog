@@ -1,3 +1,10 @@
+ralph (20210921.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * publish docker images the new way (#3660)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Tue, 21 Sep 2021 05:55:01 +0000
+
 ralph (20210908.1) bionic; urgency=medium
 
   [ lukaszkarykowski ]
