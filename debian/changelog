@@ -1,3 +1,10 @@
+ralph (20210921.3) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * use proper Ralph version (#3662)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Tue, 21 Sep 2021 11:40:23 +0000
+
 ralph (20210921.2) bionic; urgency=medium
 
   [ Szymon Jasinski ]
