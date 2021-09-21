@@ -33,5 +33,6 @@ jobs:
       - name: Publish docker
         run: |
           docker login --username ${{ secrets.DOCKER_HUB_USERNAME }} --password ${{ secrets.DOCKER_HUB_PASSWORD }}
+          export RALPH_VERSION=${GITHUB_REF#refs/*/}
           make publish-docker-image
           docker logout

@@ -1,6 +1,7 @@
 TEST?=ralph
 TEST_ARGS=
 DOCKER_REPO_NAME?="allegro"
+RALPH_VERSION?=$(shell git describe --abbrev=0)
 
 .PHONY: test flake clean coverage docs coveralls
 
@@ -35,20 +36,19 @@ build-snapshot-package:
 	docker run --rm -v $(shell pwd):/volume ralph-deb:latest build-snapshot-package
 	docker image rm --force ralph-deb:latest
 
-build-docker-image: version = $(shell git describe --abbrev=0)
 build-docker-image:
 	docker build \
 		--no-cache \
 		-f docker/Dockerfile-prod \
-		--build-arg RALPH_VERSION="$(version)" \
+		--build-arg RALPH_VERSION="$(RALPH_VERSION)" \
 		-t $(DOCKER_REPO_NAME)/ralph:latest \
-		-t "$(DOCKER_REPO_NAME)/ralph:$(version)" .
+		-t "$(DOCKER_REPO_NAME)/ralph:$(RALPH_VERSION)" .
 	docker build \
 		--no-cache \
 		-f docker/Dockerfile-static \
-		--build-arg RALPH_VERSION="$(version)" \
+		--build-arg RALPH_VERSION="$(RALPH_VERSION)" \
 		-t $(DOCKER_REPO_NAME)/ralph-static-nginx:latest \
-		-t "$(DOCKER_REPO_NAME)/ralph-static-nginx:$(version)" .
+		-t "$(DOCKER_REPO_NAME)/ralph-static-nginx:$(RALPH_VERSION)" .
 
 build-snapshot-docker-image: version = $(shell ./get_version.sh show)
 build-snapshot-docker-image: build-snapshot-package
@@ -63,11 +63,10 @@ build-snapshot-docker-image: build-snapshot-package
 		--build-arg RALPH_VERSION="$(version)" \
 		-t "$(DOCKER_REPO_NAME)/ralph-static-nginx:$(version)" .
 
-publish-docker-image: version = $(shell git describe --abbrev=0)
 publish-docker-image: build-docker-image
-	docker push $(DOCKER_REPO_NAME)/ralph:$(version)
+	docker push $(DOCKER_REPO_NAME)/ralph:$(RALPH_VERSION)
 	docker push $(DOCKER_REPO_NAME)/ralph:latest
-	docker push $(DOCKER_REPO_NAME)/ralph-static-nginx:$(version)
+	docker push $(DOCKER_REPO_NAME)/ralph-static-nginx:$(RALPH_VERSION)
 	docker push $(DOCKER_REPO_NAME)/ralph-static-nginx:latest
 
 install-js:
