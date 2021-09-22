@@ -31,8 +31,17 @@ jobs:
           PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
         run: package_cloud push allegro/ralph/ubuntu/bionic build/*.deb
       - name: Publish docker
+        env:
+          WAIT_FOR_PACKAGECLOUD_DELAY: 10
+          RETRY_COUNT: 3
         run: |
           docker login --username ${{ secrets.DOCKER_HUB_USERNAME }} --password ${{ secrets.DOCKER_HUB_PASSWORD }}
           export RALPH_VERSION=${GITHUB_REF#refs/*/}
-          make publish-docker-image
+          until [ "$RETRY_COUNT" -le 0 ]
+            do
+              sleep $WAIT_FOR_PACKAGECLOUD_DELAY
+              make publish-docker-image && break
+              RETRY_COUNT=$((RETRY_COUNT-1))
+              echo "==== Publish docker failed. Remaining retries: $RETRY_COUNT ===="
+            done
           docker logout
