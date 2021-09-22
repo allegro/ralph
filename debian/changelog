@@ -1,3 +1,10 @@
+ralph (20210922.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * wait for deb in packagecloud before docker build (#3663)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Wed, 22 Sep 2021 10:39:54 +0000
+
 ralph (20210921.3) bionic; urgency=medium
 
   [ Szymon Jasinski ]
