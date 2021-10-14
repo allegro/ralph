@@ -182,7 +182,7 @@ Then build ralph:
 
 To initialize database run:
 
-    docker-compose run --rm web /root/init.sh
+    docker-compose run --rm web init
 
 Notice that this command should be executed only once, at the very beginning.
 
