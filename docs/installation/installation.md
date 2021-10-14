@@ -200,7 +200,7 @@ Ralph should be accessible at ``http://127.0.0.1`` (or if you are using ``boot2d
 
 If you are upgrading ralph image (source code) run:
 
-    docker-compose run --rm web /root/upgrade.sh
+    docker-compose run --rm web upgrade
 
 
 # Migration from Ralph 2
