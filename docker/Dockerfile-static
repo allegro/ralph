@@ -9,3 +9,6 @@ LABEL version="$RALPH_VERSION"
 
 COPY --from=allegro/ralph:latest /usr/share/ralph/static /opt/static
 COPY contrib/docker/ralph.conf.nginx /etc/nginx/conf.d/default.conf
+COPY contrib/docker/ralph.entrypoint.nginx /entrypoint.sh
+RUN sed -i 's/\r//' /entrypoint.sh && chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]

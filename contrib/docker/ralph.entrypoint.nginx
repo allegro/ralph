@@ -1,0 +1,16 @@
+#!/bin/bash
+set -e
+
+export RALPH_URL="web:8000"
+
+function ralph_ready(){
+  curl -s "${RALPH_URL}"
+}
+
+>&2 echo "Checking Ralph (at ${RALPH_URL})..."
+until ralph_ready; do
+  >&2 echo "Ralph is unavailable - waiting 1 sec for ${RALPH_URL}"
+  sleep 1
+done
+>&2 echo "Ralph is up - continuing with nginx..."
+sh /docker-entrypoint.sh nginx -g 'daemon off;'
