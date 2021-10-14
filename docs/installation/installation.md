@@ -160,7 +160,7 @@ Now, point your browser to the http://localhost and log in. Happy Ralphing!
 
 ## Docker installation (experimental)
 
-You can find experimental docker-compose configuration in [https://github.com/allegro/ralph/tree/ng/contrib](https://github.com/allegro/ralph/tree/ng/contrib) directory.
+You can find experimental docker-compose configuration in [https://github.com/allegro/ralph/tree/ng/docker](https://github.com/allegro/ralph/tree/ng/docker) directory.
 Be aware, it is still a beta.
 
 ### Install
@@ -170,7 +170,7 @@ Install docker and [docker-compose](http://docs.docker.com/compose/install/) fir
 
 ### Create compose configuration
 
-Copy ``docker-compose.yml.tmpl`` outside ralph sources to docker-compose.yml
+Copy ``docker-compose.yml`` outside ralph sources to docker-compose.yml
 and tweak it.
 
 ### Build
