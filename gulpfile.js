@@ -27,9 +27,9 @@ var sass_config = {
     ]
 }
 
-gulp.task('bower', function() { 
+gulp.task('bower', function() {
     return bower()
-         .pipe(gulp.dest(config.bowerDir)) 
+        .pipe(gulp.dest(config.bowerDir))
 });
 
 gulp.task('scss', function() {
@@ -41,19 +41,19 @@ gulp.task('scss', function() {
         .pipe(gulp.dest(config.staticRoot + 'css/'))
 });
 
-gulp.task('css', function() { 
+gulp.task('css', function() {
     var vendorFiles = [
         'bower_components/normalize.css/normalize.css',
         'bower_components/foundation-datepicker/css/foundation-datepicker.css',
         'bower_components/angular-loading-bar/build/loading-bar.min.css',
     ];
-    return gulp.src(vendorFiles) 
-        .pipe(gulp.dest(config.vendorRoot + 'css/')); 
+    return gulp.src(vendorFiles)
+        .pipe(gulp.dest(config.vendorRoot + 'css/'));
 });
 
-gulp.task('fonts', function() { 
-    return gulp.src('bower_components/fontawesome/fonts/*.*') 
-        .pipe(gulp.dest(config.vendorRoot + 'fonts/')); 
+gulp.task('fonts', function() {
+    return gulp.src('bower_components/fontawesome/fonts/*.*')
+        .pipe(gulp.dest(config.vendorRoot + 'fonts/'));
 });
 
 gulp.task('js', function(){
