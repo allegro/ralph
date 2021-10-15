@@ -23,7 +23,7 @@ Markdown<3.0  # headerid extension removed in 3.0 - see #3313 for details
 mysqlclient==1.3.13
 netaddr==0.7.18
 python-dateutil==2.4.2
-pytz==2015.4
+pytz==2015.7
 redis==3.2.1
 requests==2.20.0
 requests-oauthlib==1.3.0
