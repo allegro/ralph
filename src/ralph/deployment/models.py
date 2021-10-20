@@ -32,6 +32,8 @@ class PrebootItemType(Choices):
     kickstart = _('kickstart')
     preseed = _('preseed')
     script = _('script')
+    meta_data = _('meta-data')
+    user_data = _('user-data')
 
     OTHER = Choices.Group(100)
     other = _('other')
@@ -84,6 +86,8 @@ All newline characters will be converted to Unix \\n newlines.
 <br>  - netboot (eg. '{ralph_instance}/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/netboot')
 <br>  - kickstart (eg. '{ralph_instance}/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/kickstart')
 <br>  - preseed (eg. '{ralph_instance}/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/preseed')
+<br>  - meta_data (eg. '{ralph_instance}/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/meta-data')
+<br>  - user_data (eg. '{ralph_instance}/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/user-data')
 <br>  - script (eg. '{ralph_instance}/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/script')
 <br>  - ralph_instance (eg. '{ralph_instance}')
 <br>  - service_env (eg. 'Backup systems - prod')

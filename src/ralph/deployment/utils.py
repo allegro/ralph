@@ -58,6 +58,26 @@ def _render_configuration(configuration, deployment, disable_reverse=False):
                 }
             ),
         ),
+        'meta_data': urljoin(
+            ralph_instance,
+            url(
+                'deployment_config',
+                kwargs={
+                    'deployment_id': deployment.id,
+                    'config_type': 'meta-data',
+                }
+            ),
+        ),
+        'user_data': urljoin(
+            ralph_instance,
+            url(
+                'deployment_config',
+                kwargs={
+                    'deployment_id': deployment.id,
+                    'config_type': 'user-data',
+                }
+            ),
+        ),
         'initrd': urljoin(
             ralph_instance,
             url(
