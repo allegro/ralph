@@ -39,8 +39,8 @@ class PrebootConfigurationForm(RalphAdminFormMixin, forms.ModelForm):
         configuration_type = self.cleaned_data.get('type')
         configuration = self.cleaned_data.get('configuration')
         if configuration_type in (
-            PrebootItemType.kickstart.id, PrebootItemType.preseed.id, PrebootItemType.user_data.id,
-            PrebootItemType.meta_data.id
+            PrebootItemType.kickstart.id, PrebootItemType.preseed.id,
+            PrebootItemType.user_data.id, PrebootItemType.meta_data.id
         ):
             if 'done_url' not in configuration:
                 raise forms.ValidationError(

@@ -70,7 +70,8 @@ def config(request, deployment_id, config_type):
 
     Args:
         deployment_id (string): deployment's UUID
-        config_type (choices): kickstart|preseed|script|meta-data|user-data - type of config
+        config_type (choices): kickstart|preseed|script|meta-data|user-data
+            - type of config
 
     Returns:
         HttpResponse: rendered config
