@@ -7,7 +7,15 @@ TODO
 ## Preboot configuration
 
 `Preboot configuration` allows you define custom files being executed during
-`Deployment`. Such as `kickstart`, `meta-data`, `user-data`, `iPXE` or `preseed`.
+`Deployment`. You can define several types of files which can be passed as
+kernel parameters during deployment (they will be served by Ralph via http
+protocol):
+
+ - `kickstart` for RedHat style deployments
+ - `preseed` for Debian style deployments
+ - `meta-data` and `user-data` for Ubuntu casper deployments (starting from
+Ubuntu 20.04)
+ - `iPXE` configuration for iPXE boot
 
 To define such `preboot configuration` you need to:
 - visit `Preboot configuration` (/deployment/prebootconfiguration/) page
@@ -16,7 +24,7 @@ To define such `preboot configuration` you need to:
 
     - Name (This is the name, by which you could reference this `preboot
       configuration` in future)
-    - Type (one of these options: 'kickstart`, `iPXE`)
+    - Type (one of the file types listed above, for example 'kickstart` or `iPXE`)
     - Configuration
     - Description
 
