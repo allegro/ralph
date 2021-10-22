@@ -748,6 +748,8 @@ def update_transitions_after_migrate(**kwargs):
     """
     Create or update transition for models which detetected
     TRANSITION_ATTR_TAG in any field in model.
+    To force transition update if no database related model fields change,
+    use `ralph.lib.transitions.migration.TransitionActionMigration`
     """
     sender_models = list(kwargs['sender'].get_models())
     action_ids = set()

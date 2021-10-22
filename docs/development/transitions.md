@@ -1,5 +1,5 @@
 # Transitions
-The transition change state (e.g. status) of object from one to another - that's helps in product lifecycle management. For each object (asset, support, licence) you can define some workflow (set of transitions) and provide special actions for each transition.
+The transition change state (e.g. status) of object from one to another - that helps in product lifecycle management. For each object (asset, support, licence) you can define some workflow (set of transitions) and provide special actions for each transition.
 
 ## Custom template for transition
 For each transition you can separately specify Django's template in the transition's form, to do this add new item to ``TRANSITION_TEMPLATES`` in your settings file. For instance:

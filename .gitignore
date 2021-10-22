@@ -89,3 +89,4 @@ tags
 *.lock
 .*.swp
 .*.swo
+.envrc
