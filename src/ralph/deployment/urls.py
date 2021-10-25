@@ -16,7 +16,8 @@ urlpatterns = [
     url(
         r'^(?P<deployment_id>[-\w]+)/'
         r'('
-        r'?P<config_type>kickstart|'
+        r'?P<config_type>'
+        r'kickstart|'
         r'preseed|'
         r'meta-data|'
         r'user-data|'
