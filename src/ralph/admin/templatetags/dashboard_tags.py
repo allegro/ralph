@@ -81,6 +81,7 @@ def get_user_access_card_to_accept_tile_data(user):
         'url': get_access_card_acceptance_url(user),
     }
 
+
 def get_user_equipment_to_accept_loan_tile_data(user):
     assets_to_accept_count = get_assets_to_accept_loan(user).count()
     if not assets_to_accept_count:
