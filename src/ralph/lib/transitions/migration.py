@@ -3,7 +3,8 @@ from django.db.migrations.operations.base import Operation
 
 class TransitionActionMigration(Operation):
     """
-    Force transition creation or update.
+    Force transition related `Action` objects creation or update.
+    This is an empty migration used only to trigger `post_migrate` signal.
     """
     def state_forwards(self, app_label, state):
         pass
