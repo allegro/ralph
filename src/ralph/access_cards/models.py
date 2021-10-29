@@ -9,11 +9,16 @@ from mptt.fields import TreeForeignKey, TreeManyToManyField
 from mptt.models import MPTTModel
 
 from ralph.accounts.models import RalphUser, Regionalizable
+from ralph.attachments.utils import send_transition_attachments_to_user
 from ralph.back_office.models import autocomplete_user
+from ralph.lib.hooks import get_hook
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
+from ralph.lib.transitions.conf import get_report_name_for_transition_id
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
 from ralph.lib.transitions.models import TransitionWorkflowBaseWithPermissions
+from ralph.reports.helpers import generate_report
+from ralph.reports.models import ReportLanguage
 
 
 class AccessCardStatus(Choices):
@@ -191,3 +196,77 @@ class AccessCard(
             instance.notes = '{}\n{}'.format(
                 instance.notes, kwargs['notes']
             )
+
+    @classmethod
+    @transition_action(
+        run_after=['release_report']
+    )
+    def assign_requester_as_an_owner(cls, instances, requester, **kwargs):
+        """Assign current user as an owner"""
+        for instance in instances:
+            instance.owner = requester
+            instance.save()
+
+    @classmethod
+    @transition_action(
+        form_fields={
+            'accept': {
+                'field': forms.BooleanField(
+                    label=_(
+                        'I have read and fully understand and '
+                        'accept the agreement.'
+                    )
+                )
+            },
+        }
+    )
+    def accept_asset_release_agreement(cls, instances, requester, **kwargs):
+        pass
+
+    @classmethod
+    @transition_action(
+        form_fields={
+            'report_language': {
+                'field': forms.ModelChoiceField(
+                    label=_('Release report language'),
+                    queryset=ReportLanguage.objects.all().order_by('-default'),
+                    empty_label=None
+                ),
+                'exclude_from_history': True
+            }
+        },
+        return_attachment=True,
+        run_after=['assign_owner', 'assign_user']
+    )
+    def release_report(cls, instances, requester, transition_id, **kwargs):
+        report_name = get_report_name_for_transition_id(transition_id)
+        return generate_report(
+            instances=instances, name=report_name, requester=requester,
+            language=kwargs['report_language'],
+            context=cls._get_report_context(instances)
+        )
+
+    @classmethod
+    @transition_action(run_after=['release_report'])
+    def send_attachments_to_user(
+        cls, requester, transition_id, **kwargs
+    ):
+        context_func = get_hook(
+            'back_office.transition_action.email_context'
+        )
+        send_transition_attachments_to_user(
+            requester=requester,
+            transition_id=transition_id,
+            context_func=context_func,
+            **kwargs
+        )
+
+    @classmethod
+    def _get_report_context(cls, instances):
+        context = [
+            {
+                'visual_number': obj.visual_number,
+            }
+            for obj in instances
+        ]
+        return context

@@ -12,6 +12,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.helpers import (
     get_acceptance_url,
+    get_access_card_acceptance_url,
+    get_access_cards_to_accept,
     get_assets_to_accept,
     get_assets_to_accept_loan,
     get_assets_to_accept_return,
@@ -65,6 +67,18 @@ def get_user_simcard_to_accept_tile_data(user):
         'label': _('SIM Card pick up'),
         'count': simcard_to_accept_count,
         'url': get_simcard_acceptance_url(user),
+    }
+
+
+def get_user_access_card_to_accept_tile_data(user):
+    access_card_to_accept_count = get_access_cards_to_accept(user).count()
+    if not access_card_to_accept_count:
+        return None
+    return {
+        'class': 'equipment-to-accept',
+        'label': _('Access Card pick up'),
+        'count': access_card_to_accept_count,
+        'url': get_access_card_acceptance_url(user),
     }
 
 
@@ -196,6 +210,9 @@ def ralph_summary(context):
     accept_for_simcard_tile_data = get_user_simcard_to_accept_tile_data(user=user)  # noqa
     if accept_for_simcard_tile_data:
         results.append(accept_for_simcard_tile_data)
+    accept_for_access_card_tile_data = get_user_access_card_to_accept_tile_data(user=user)  # noqa
+    if accept_for_access_card_tile_data:
+        results.append(accept_for_access_card_tile_data)
     accept_for_loan_tile_data = get_user_equipment_to_accept_loan_tile_data(user=user)  # noqa
     if accept_for_loan_tile_data:
         results.append(accept_for_loan_tile_data)
