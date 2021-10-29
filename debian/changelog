@@ -1,3 +1,15 @@
+ralph (20211029.1) bionic; urgency=medium
+
+  [ vi4m Marcin Kliks ]
+  * Fix documentation links (#3659)
+  * Codespaces support
+  * Revert "Codespaces support" (#3670)
+
+  [ Szymon Jasinski ]
+  * access card acceptance transition (#3672)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Fri, 29 Oct 2021 07:03:22 +0000
+
 ralph (20210922.1) bionic; urgency=medium
 
   [ Szymon Jasinski ]
