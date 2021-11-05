@@ -669,6 +669,11 @@ class DataCenterAsset(
                         'slot_no': message
                     })
 
+    def _validate_hostname(self):
+        if self.hostname != self.hostname.strip():
+            msg = 'Hostname cannot contain trailing whitespaces'
+            raise ValidationError({'hostname': [msg]})
+
     def clean(self):
         # TODO: this should be default logic of clean method;
         # we could register somehow validators (or take each func with
@@ -679,7 +684,8 @@ class DataCenterAsset(
             self._validate_orientation,
             self._validate_position,
             self._validate_position_in_rack,
-            self._validate_slot_no
+            self._validate_slot_no,
+            self._validate_hostname
         ]:
             try:
                 validator()
