@@ -1,3 +1,14 @@
+ralph (20211108.1) bionic; urgency=medium
+
+  [ Pawel Szulc ]
+  * Dont allow trailing whitespaces in hostname
+  * Auto strip hostname on save
+
+  [ Szymon Jasinski ]
+  * prepare Ralph for casper deployment in Ubuntu (#3671)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Mon, 08 Nov 2021 13:07:36 +0000
+
 ralph (20211029.1) bionic; urgency=medium
 
   [ vi4m Marcin Kliks ]
