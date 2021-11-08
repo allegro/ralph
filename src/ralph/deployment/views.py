@@ -65,12 +65,17 @@ def ipxe(request, deployment_id=None):
     return HttpResponse(configuration, content_type='text/plain')
 
 
+def deployment_base(*_args, **_kwargs):
+    return HttpResponse(content_type='text/plain')
+
+
 def config(request, deployment_id, config_type):
     """View returns rendered config configuration.
 
     Args:
         deployment_id (string): deployment's UUID
-        config_type (choices): kickstart|preseed|script - type of config
+        config_type (choices): kickstart|preseed|script|meta-data|user-data
+            - type of config
 
     Returns:
         HttpResponse: rendered config
@@ -79,7 +84,7 @@ def config(request, deployment_id, config_type):
         Http404: if deployment with specified UUID doesn't exist
     """
     preboot = _get_preboot(deployment_id)
-    configuration = preboot.get_configuration(config_type)
+    configuration = preboot.get_configuration(config_type.replace("-", "_"))
     if configuration is None:
         logger.warning(
             '%s for deployment %s doesn\'t exist',
