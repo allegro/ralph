@@ -65,6 +65,10 @@ def ipxe(request, deployment_id=None):
     return HttpResponse(configuration, content_type='text/plain')
 
 
+def deployment_base(*_args, **_kwargs):
+    return HttpResponse(content_type='text/plain')
+
+
 def config(request, deployment_id, config_type):
     """View returns rendered config configuration.
 

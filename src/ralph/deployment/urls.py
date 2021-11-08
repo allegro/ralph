@@ -1,6 +1,12 @@
 from django.conf.urls import url
 
-from ralph.deployment.views import config, done_ping, files, ipxe
+from ralph.deployment.views import (
+    config,
+    deployment_base,
+    done_ping,
+    files,
+    ipxe
+)
 
 urlpatterns = [
     url(
@@ -35,5 +41,10 @@ urlpatterns = [
         r'^(?P<deployment_id>[-\w]+)/mark_as_done$',
         done_ping,
         name='deployment_done'
-    )
+    ),
+    url(
+        r'^(?P<deployment_id>[-\w]+)/$',
+        deployment_base,
+        name='deployment_base'
+    ),
 ]

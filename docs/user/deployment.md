@@ -48,6 +48,7 @@ It's possible to include variables from Ralph. These are:
     - script (eg. 'http://127.0.0.1:8000/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/script')
     - meta_data (eg. 'http://127.0.0.1:8000//deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/meta-data')
     - user_data (eg. 'http://127.0.0.1:8000/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/user-data')
+    - deployment_base (eg. 'http://127.0.0.1:8000/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/')
     - ralph_instance (eg. 'http://127.0.0.1:8000')
     - service_env (eg. 'Backup systems - prod')
     - service_uid (eg. 'sc-123')

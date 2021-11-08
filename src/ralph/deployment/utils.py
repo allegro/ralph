@@ -28,6 +28,15 @@ def _render_configuration(configuration, deployment, disable_reverse=False):
         ),
         'ralph_instance': ralph_instance,
         'deployment_id': deployment.id,
+        'deployment_base': urljoin(
+            ralph_instance,
+            url(
+                'deployment_base',
+                kwargs={
+                    'deployment_id': deployment.id
+                }
+            )
+        ),
         'kickstart': urljoin(
             ralph_instance,
             url(
