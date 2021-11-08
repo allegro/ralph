@@ -669,6 +669,12 @@ class DataCenterAsset(
                         'slot_no': message
                     })
 
+    def _clean_hostname(self):
+        try:
+            self.hostname = self.hostname.strip()
+        except AttributeError:
+            pass
+
     def clean(self):
         # TODO: this should be default logic of clean method;
         # we could register somehow validators (or take each func with
@@ -679,7 +685,7 @@ class DataCenterAsset(
             self._validate_orientation,
             self._validate_position,
             self._validate_position_in_rack,
-            self._validate_slot_no
+            self._validate_slot_no,
         ]:
             try:
                 validator()
@@ -687,6 +693,8 @@ class DataCenterAsset(
                 e.update_error_dict(errors)
         if errors:
             raise ValidationError(errors)
+
+        self._clean_hostname()
 
     def get_related_assets(self):
         """Returns the children of a blade chassis"""
