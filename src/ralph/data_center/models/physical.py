@@ -669,10 +669,11 @@ class DataCenterAsset(
                         'slot_no': message
                     })
 
-    def _validate_hostname(self):
-        if self.hostname != self.hostname.strip():
-            msg = 'Hostname cannot contain trailing whitespaces'
-            raise ValidationError({'hostname': [msg]})
+    def _clean_hostname(self):
+        try:
+            self.hostname = self.hostname.strip()
+        except AttributeError:
+            pass
 
     def clean(self):
         # TODO: this should be default logic of clean method;
@@ -685,7 +686,6 @@ class DataCenterAsset(
             self._validate_position,
             self._validate_position_in_rack,
             self._validate_slot_no,
-            self._validate_hostname
         ]:
             try:
                 validator()
@@ -693,6 +693,8 @@ class DataCenterAsset(
                 e.update_error_dict(errors)
         if errors:
             raise ValidationError(errors)
+
+        self._clean_hostname()
 
     def get_related_assets(self):
         """Returns the children of a blade chassis"""
