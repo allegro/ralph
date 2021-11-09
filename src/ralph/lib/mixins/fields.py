@@ -67,6 +67,7 @@ class NullableCharFieldWithAutoStrip(
     def clean(self, value, model_instance):
         return super().clean(value.strip(), model_instance)
 
+
 # NOTE(romcheg): NUMP stands for No Useles Migrations Please.
 #                It is recommended to refrain from checking the other meaning
 #                in UD.
