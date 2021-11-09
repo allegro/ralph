@@ -36,7 +36,8 @@ class TestEmailReports(RalphTestCase):
 
         expected_headers = "dc,server_room,rack,rack_orientation," \
                            "orientation,position,model,hostname," \
-                           "management_ip,ip,barcode,sn"
+                           "management_ip,ip,barcode,sn,service," \
+                           "environment,configuration_path"
         expected_line_data = [
             self.rack.server_room.data_center.name,
             self.rack.server_room.name,
@@ -49,7 +50,10 @@ class TestEmailReports(RalphTestCase):
             self.management.address,
             self.ip.address,
             self.asset.barcode,
-            self.asset.sn
+            self.asset.sn,
+            self.asset.service_env.service.name,
+            self.asset.service_env.environment.name,
+            self.asset.configuration_path.path
         ]
         expected_line = ','.join(expected_line_data)
         self.assertEqual(expected_headers, lines[0])

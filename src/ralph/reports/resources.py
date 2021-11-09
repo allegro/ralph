@@ -71,6 +71,15 @@ class DataCenterAssetTextResource(ModelResource):
     ip = ReadonlyField(
         attribute='ip'
     )
+    service = ReadonlyField(
+        attribute='service_env__service'
+    )
+    environment = ReadonlyField(
+        attribute='service_env__environment'
+    )
+    configuration_path = ReadonlyField(
+        attribute='configuration_path'
+    )
 
     class Meta:
         model = DataCenterAsset
