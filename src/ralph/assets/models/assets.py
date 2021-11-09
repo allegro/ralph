@@ -22,8 +22,10 @@ from ralph.lib.custom_fields.models import (
     WithCustomFieldsMixin
 )
 from ralph.lib.field_validation.validators import HostnameValidator
-from ralph.lib.mixins.fields import NullableCharField
-from ralph.lib.mixins.fields import NullableCharFieldWithAutoStrip
+from ralph.lib.mixins.fields import (
+    NullableCharField,
+    NullableCharFieldWithAutoStrip,
+)
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     NamedMixin,
