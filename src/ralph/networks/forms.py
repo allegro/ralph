@@ -7,6 +7,8 @@ from django.forms.models import BaseInlineFormSet
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.components import Ethernet
+from ralph.lib.field_validation.form_fields import CharFormFieldWithAutoStrip
+from ralph.lib.field_validation.validators import HostnameValidator
 from ralph.networks.models import IPAddress
 
 DHCP_EXPOSE_LOCKED_FIELDS = ['hostname', 'address', 'mac', 'dhcp_expose']
@@ -97,7 +99,8 @@ class SimpleNetworkForm(EthernetLockDeleteForm):
         transition changing `dhcp_expose` field (to False) - then row could be
         modified/deleted.
     """
-    hostname = forms.CharField(label='Hostname', required=False)
+    hostname = CharFormFieldWithAutoStrip(label='Hostname', required=False, validators=[
+        HostnameValidator()])
     address = forms.IPAddressField(label='IP address', required=False)
 
     ip_fields = ['hostname', 'address']

@@ -16,7 +16,9 @@ from mptt.models import MPTTModel, TreeForeignKey
 from ralph.assets.models import AssetLastHostname, Ethernet
 from ralph.dns.dnsaas import DNSaaS
 from ralph.lib import network as network_tools
+from ralph.lib.field_validation.validators import HostnameValidator
 from ralph.lib.mixins.fields import NullableCharField
+from ralph.lib.mixins.fields import NullableCharFieldWithAutoStrip
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     LastSeenMixin,
@@ -616,12 +618,13 @@ class IPAddress(
         blank=False,
         null=False,
     )
-    hostname = NullableCharField(
+    hostname = NullableCharFieldWithAutoStrip(
         verbose_name=_('hostname'),
         max_length=255,
         null=True,
         blank=True,
         default=None,
+        validators=[HostnameValidator()]
         # TODO: unique
     )
     number = models.DecimalField(
