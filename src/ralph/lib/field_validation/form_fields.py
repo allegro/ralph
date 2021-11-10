@@ -7,4 +7,3 @@ class CharFormFieldWithAutoStrip(forms.CharField):
             return super().to_python(value.strip())
         except AttributeError:
             return super().to_python(value)
-

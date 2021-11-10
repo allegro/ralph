@@ -99,8 +99,8 @@ class SimpleNetworkForm(EthernetLockDeleteForm):
         transition changing `dhcp_expose` field (to False) - then row could be
         modified/deleted.
     """
-    hostname = CharFormFieldWithAutoStrip(label='Hostname', required=False, validators=[
-        HostnameValidator()])
+    hostname = CharFormFieldWithAutoStrip(label='Hostname', required=False,
+                                          validators=[HostnameValidator()])
     address = forms.IPAddressField(label='IP address', required=False)
 
     ip_fields = ['hostname', 'address']
