@@ -19,7 +19,7 @@ from ralph.lib import network as network_tools
 from ralph.lib.field_validation.validators import HostnameValidator
 from ralph.lib.mixins.fields import (
     NullableCharField,
-    NullableCharFieldWithAutoStrip,
+    NullableCharFieldWithAutoStrip
 )
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
