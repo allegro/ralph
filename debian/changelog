@@ -1,3 +1,10 @@
+ralph (20211112.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * Data Center Asset email report (#3674)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Fri, 12 Nov 2021 12:49:37 +0000
+
 ralph (20211108.1) bionic; urgency=medium
 
   [ Pawel Szulc ]
