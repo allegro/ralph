@@ -64,12 +64,12 @@ class TestEmailReports(RalphTestCase):
         self.assertEqual(expected_line, lines[1])
 
     def test_queries_number(self):
-        for i in range(0, 10):
+        for _ in range(0, 10):
             rack = RackFactory()
-            for j in range(1, 6):
+            for position in range(1, 6):
                 model = DataCenterAssetModelFactory(has_parent=True)
                 asset = DataCenterAssetFactory(
-                    rack=rack, position=j, model=model
+                    rack=rack, position=position, model=model
                 )
                 ethernets = EthernetFactory.create_batch(
                     2, base_object=asset
