@@ -10,7 +10,6 @@ from ralph.data_center.models import (
     Orientation,
     RackOrientation
 )
-from ralph.networks.models import IPAddress
 
 
 class ChoiceWidget(Widget):
@@ -71,6 +70,9 @@ class DataCenterAssetTextResource(ModelResource):
     ip = ReadonlyField(
         attribute='ip'
     )
+    service_uid = ReadonlyField(
+        attribute='service_env__service__uid'
+    )
     service = ReadonlyField(
         attribute='service_env__service'
     )
@@ -81,27 +83,30 @@ class DataCenterAssetTextResource(ModelResource):
         attribute='configuration_path'
     )
 
+    def get_queryset(self):
+        return DataCenterAsset.objects.all().select_related(
+            'service_env__service',
+            'service_env__environment',
+            'rack__server_room__data_center',
+            'model',
+            'configuration_path',
+        )
+
     class Meta:
         model = DataCenterAsset
-        select_related = ('rack__server_room__data_center',)
-        prefetch_related = ('ethernet_set__ipaddress',)
         fields = DATA_CENTER_ASSET_FIELDS
         export_order = DATA_CENTER_ASSET_FIELDS
 
     def _get_ip(self, dc_asset, is_management=True):
-        if dc_asset:
-            # find first management_ip here
-            # notice that dc_asset.management_ip property could not be used
-            # here, because it will omit prefetch_related cache
-            for eth in dc_asset.ethernet_set.all():
-                try:
-                    if (
-                            eth.ipaddress and
-                            eth.ipaddress.is_management == is_management
-                    ):
-                        return eth.ipaddress
-                except IPAddress.DoesNotExist:
-                    pass
+        # Due to multiple model inheritance, `prefetch_related` for
+        # `ethernet_set` on DataCenterAsset does not work. For that reason,
+        # a separate query will be issued here to fetch related `ethernet_set`.
+        # To minimise the number of queries to the possible extent,
+        # `select_related` for `ipaddress` field is used here.
+        ethernet = dc_asset.ethernet_set.select_related('ipaddress').filter(
+            ipaddress__is_management=is_management
+        ).first()
+        return getattr(ethernet, 'ipaddress', None)
 
     def dehydrate_management_ip(self, dc_asset):
         return str(self._get_ip(dc_asset))

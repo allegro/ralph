@@ -1,6 +1,9 @@
 from random import randint
 
-from ralph.assets.tests.factories import EthernetFactory
+from ralph.assets.tests.factories import (
+    DataCenterAssetModelFactory,
+    EthernetFactory
+)
 from ralph.data_center.models import Orientation, RackOrientation
 from ralph.data_center.tests.factories import (
     DataCenterAssetFactory,
@@ -36,7 +39,7 @@ class TestEmailReports(RalphTestCase):
 
         expected_headers = "dc,server_room,rack,rack_orientation," \
                            "orientation,position,model,hostname," \
-                           "management_ip,ip,barcode,sn,service," \
+                           "management_ip,ip,barcode,sn,service_uid,service," \
                            "environment,configuration_path"
         expected_line_data = [
             self.rack.server_room.data_center.name,
@@ -51,6 +54,7 @@ class TestEmailReports(RalphTestCase):
             self.ip.address,
             self.asset.barcode,
             self.asset.sn,
+            self.asset.service_env.service.uid,
             self.asset.service_env.service.name,
             self.asset.service_env.environment.name,
             self.asset.configuration_path.path
@@ -58,3 +62,25 @@ class TestEmailReports(RalphTestCase):
         expected_line = ','.join(expected_line_data)
         self.assertEqual(expected_headers, lines[0])
         self.assertEqual(expected_line, lines[1])
+
+    def test_queries_number(self):
+        for i in range(0, 10):
+            rack = RackFactory()
+            for j in range(1, 6):
+                model = DataCenterAssetModelFactory(has_parent=True)
+                asset = DataCenterAssetFactory(
+                    rack=rack, position=j, model=model
+                )
+                ethernets = EthernetFactory.create_batch(
+                    2, base_object=asset
+                )
+                IPAddressFactory(
+                    base_object=asset, is_management=False,
+                    ethernet=ethernets[0]
+                )
+                IPAddressFactory(
+                    base_object=asset, is_management=True,
+                    ethernet=ethernets[1]
+                )
+        with self.assertNumQueries(103):
+            DataCenterAssetTextResource().export()
