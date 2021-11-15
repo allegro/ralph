@@ -468,8 +468,8 @@ class SupportResource(ResourceWithPrice, RalphModelResource):
         return Support.objects_with_related.all()
 
     def dehydrate_assigned_objects_count(self, support):
-        # this somehow ignores readonly flag, throwing AttributeError during import
-        # but we need it only for export
+        # this somehow ignores readonly flag, throwing AttributeError during
+        # import, but we need it only for export
         try:
             return support.assigned_objects_count
         except AttributeError:
