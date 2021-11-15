@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 from django.db import migrations, models
 import ralph.lib.mixins.fields
-import ralph.lib.field_validation.validators
 
 
 class Migration(migrations.Migration):
@@ -16,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='ipaddress',
             name='hostname',
-            field=ralph.lib.mixins.fields.NullableCharFieldWithAutoStrip(verbose_name='hostname', max_length=255, blank=True, null=True, default=None, validators=[ralph.lib.field_validation.validators.HostnameValidator()]),
+            field=ralph.lib.mixins.fields.NullableCharFieldWithAutoStrip(verbose_name='hostname', max_length=255, blank=True, null=True, default=None),
         ),
     ]
