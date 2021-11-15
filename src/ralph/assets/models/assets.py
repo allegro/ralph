@@ -21,7 +21,6 @@ from ralph.lib.custom_fields.models import (
     CustomFieldMeta,
     WithCustomFieldsMixin
 )
-from ralph.lib.field_validation.validators import HostnameValidator
 from ralph.lib.mixins.fields import (
     NullableCharField,
     NullableCharFieldWithAutoStrip
@@ -370,7 +369,6 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         max_length=255,
         null=True,
         verbose_name=_('hostname'),  # TODO: unique
-        validators=[HostnameValidator()]
     )
     sn = NullableCharField(
         blank=True,
