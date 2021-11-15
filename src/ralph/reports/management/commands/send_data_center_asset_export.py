@@ -1,3 +1,4 @@
+import logging
 import mimetypes
 
 from django.core.exceptions import ValidationError
@@ -6,6 +7,9 @@ from django.core.management import BaseCommand, CommandError
 from django.core.validators import EmailValidator
 
 from ralph.reports.resources import DataCenterAssetTextResource
+
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -35,20 +39,28 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        self._validate_options(options)
-        output_format = options.get('output_format')
-        recipient_email = options.get('recipient_email')
-        sender_email = options.get('sender_email')
-        dataset = DataCenterAssetTextResource().export()
-        attachment_content = getattr(dataset, output_format[1:])
-        attachment_mimetype = mimetypes.types_map[output_format]
-        attachment_filename = "report" + output_format
-        subject = "Ralph Data Center Asset Export"
-        body = "Attached to this message is a dump of Ralph Data Center Assets"
-        send_email_with_attachment(
-            sender_email, recipient_email, subject, body, attachment_content,
-            attachment_filename, attachment_mimetype
-        )
+        try:
+            self._validate_options(options)
+            output_format = options.get('output_format')
+            recipient_email = options.get('recipient_email')
+            sender_email = options.get('sender_email')
+            dataset = DataCenterAssetTextResource().export()
+            attachment_content = getattr(dataset, output_format[1:])
+            attachment_mimetype = mimetypes.types_map[output_format]
+            attachment_filename = "report" + output_format
+            subject = "Ralph Data Center Asset Export"
+            body = "Attached to this message is a dump " \
+                   "of Ralph Data Center Assets"
+            send_email_with_attachment(
+                sender_email, recipient_email, subject, body,
+                attachment_content, attachment_filename, attachment_mimetype
+            )
+        except Exception:
+            logger.error(
+                "A problem with Data Center Asset Email Report occurred. "
+                "Email report has not been sent."
+            )
+            raise
 
     def _validate_options(self, options):
         if options.get("output_format", None) not in self.SUPPORTED_FORMATS:
