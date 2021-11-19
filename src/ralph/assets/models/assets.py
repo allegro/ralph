@@ -21,7 +21,10 @@ from ralph.lib.custom_fields.models import (
     CustomFieldMeta,
     WithCustomFieldsMixin
 )
-from ralph.lib.mixins.fields import NullableCharField
+from ralph.lib.mixins.fields import (
+    NullableCharField,
+    NullableCharFieldWithAutoStrip
+)
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     NamedMixin,
@@ -360,7 +363,7 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
     )
     # TODO: unify hostname for DCA, VirtualServer, Cluster and CloudHost
     # (use another model?)
-    hostname = NullableCharField(
+    hostname = NullableCharFieldWithAutoStrip(
         blank=True,
         default=None,
         max_length=255,
