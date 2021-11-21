@@ -1,5 +1,7 @@
+import ipaddress
 import os
 
+from ddt import data, ddt, unpack
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core import management
@@ -14,13 +16,16 @@ from ralph.assets.models.assets import (
 )
 from ralph.assets.models.choices import ObjectModelType
 from ralph.back_office.models import BackOfficeAsset, Warehouse
-from ralph.data_center.models import DataCenterAsset
+from ralph.data_center.models import DataCenterAsset, DataCenterAssetStatus
 from ralph.data_center.models.physical import DataCenter, Rack, ServerRoom
 from ralph.data_center.tests.factories import DataCenterFactory
 from ralph.data_importer.management.commands import importer
 from ralph.data_importer.models import ImportedObjects
 from ralph.data_importer.resources import AssetModelResource
-from ralph.networks.models import IPAddress
+from ralph.dhcp.models import DNSServerGroup
+from ralph.lib.transitions.conf import DEFAULT_ASYNC_TRANSITION_SERVICE_NAME
+from ralph.lib.transitions.models import Transition, TransitionModel
+from ralph.networks.models import IPAddress, Network
 
 
 class DataImporterTestCase(TestCase):
@@ -389,3 +394,190 @@ class IPManagementTestCase(TestCase):
         self.assertTrue(
             DataCenterAsset.objects.get(hostname='EMC1-3')
         )
+
+
+@ddt
+class TestDataCenterAssetTransitionsCommand(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        management.call_command('create_data_center_asset_transitions')
+
+    def test_transitions_generated(self):
+        transitions = Transition.objects.all()
+        self.assertEqual(3, transitions.count())
+
+    @unpack
+    @data(
+        (
+            'Deploy',
+            [
+                DataCenterAssetStatus.new.id,
+                DataCenterAssetStatus.used.id,
+                DataCenterAssetStatus.free.id,
+                DataCenterAssetStatus.damaged.id,
+                DataCenterAssetStatus.liquidated.id,
+                DataCenterAssetStatus.to_deploy.id
+            ],
+            [
+                'assign_configuration_path',
+                'assign_new_hostname',
+                'assign_service_env',
+                'clean_dhcp',
+                'clean_hostname',
+                'clean_ipaddresses',
+                'cleanup_security_scans',
+                'create_dhcp_entries',
+                'create_dns_entries',
+                'deploy',
+                'wait_for_dhcp_servers',
+                'wait_for_ping'
+            ],
+            DEFAULT_ASYNC_TRANSITION_SERVICE_NAME,
+            0
+        ),
+        (
+            'Change config path',
+            [
+                DataCenterAssetStatus.new.id,
+                DataCenterAssetStatus.used.id,
+                DataCenterAssetStatus.free.id,
+                DataCenterAssetStatus.damaged.id,
+                DataCenterAssetStatus.liquidated.id,
+                DataCenterAssetStatus.to_deploy.id
+            ],
+            [
+                'assign_configuration_path'
+            ],
+            None,
+            0
+        ),
+        (
+            'Reinstall',
+            [
+                DataCenterAssetStatus.new.id,
+                DataCenterAssetStatus.used.id,
+                DataCenterAssetStatus.free.id,
+                DataCenterAssetStatus.damaged.id,
+                DataCenterAssetStatus.liquidated.id,
+                DataCenterAssetStatus.to_deploy.id
+            ],
+            [
+                'deploy',
+                'wait_for_ping'
+            ],
+            DEFAULT_ASYNC_TRANSITION_SERVICE_NAME,
+            0
+        ),
+    )
+    def test_transition_of_each_type_generated(
+        self, name, source, actions, async_service_name, target
+    ):
+        content_type = ContentType.objects.get_for_model(DataCenterAsset)
+
+        try:
+            transition = Transition.objects.get(
+                model=TransitionModel.objects.get(
+                    content_type=content_type
+                ),
+                name=name,
+                source=source,
+                async_service_name=async_service_name,
+                target=target
+            )
+        except Transition.DoesNotExist as e:
+            self.fail(e)
+
+        self.assertCountEqual(
+            actions,
+            [action.name for action in transition.actions.all()]
+        )
+
+
+class TestCreateNetworkCommand(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        management.call_command('create_network')
+
+    def test_network_generated(self):
+        networks = Network.objects.all()
+        self.assertEqual(1, networks.count())
+
+    def test_network_addressing_generated(self):
+        try:
+            network = Network.objects.get(name='10.0.0.0/24')
+        except Network.DoesNotExist:
+            self.fail("Expected network not created.")
+
+        expected_gateway = '10.0.0.1'
+        expected_dns = ['10.0.0.11', '10.0.0.12']
+        expected_dc = 'dc1'
+
+        self.assertEqual(ipaddress.ip_network('10.0.0.0/24'), network.address)
+        self.assertEqual(expected_gateway, str(network.gateway))
+        self.assertEqual(expected_dc, network.data_center.name)
+        self.assertCountEqual(
+            expected_dns,
+            [
+                str(server.ip_address)
+                for server in
+                network.dns_servers_group.servers.all()
+            ]
+        )
+
+    def test_dns_group_generated(self):
+        self.assertEqual(1, DNSServerGroup.objects.all().count())
+
+    def test_dc_generated(self):
+        self.assertEqual(1, DataCenter.objects.all().count())
+
+
+@ddt
+class TestInitialDataCommand(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        management.call_command('initial_data')
+
+    def test_networks_generated(self):
+        networks = Network.objects.all()
+        self.assertEqual(4, networks.count())
+
+    @unpack
+    @data(
+        ('10.0.0.0/16', '10.0.0.1', '10.0.0.11', '10.0.0.12'),
+        ('10.0.0.0/24', '10.0.0.1', '10.0.0.11', '10.0.0.12'),
+        ('10.0.1.0/24', '10.0.1.1', '10.0.0.11', '10.0.0.12'),
+        ('10.0.2.0/24', '10.0.2.1', '10.0.0.11', '10.0.0.12'),
+    )
+    def test_subnets_generated(
+        self, network_address, gateway_address, dns1_address, dns2_address
+    ):
+        try:
+            network = Network.objects.get(name=network_address)
+        except Network.DoesNotExist:
+            self.fail(
+                "Expected subnet {} not created.".format(network_address)
+            )
+
+        expected_dns = [dns1_address, dns2_address]
+
+        self.assertEqual(
+            ipaddress.ip_network(network_address), network.address
+        )
+        self.assertEqual(gateway_address, str(network.gateway))
+        self.assertCountEqual(
+            expected_dns,
+            [
+                str(server.ip_address)
+                for server in
+                network.dns_servers_group.servers.all()
+            ]
+        )
+
+    def test_user_created(self):
+        try:
+            user_model = get_user_model()
+            user_model.objects.get(username='admin')
+        except user_model.DoesNotExist:
+            self.fail(
+                "Admin user not created."
+            )
