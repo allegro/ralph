@@ -397,10 +397,10 @@ class IPManagementTestCase(TestCase):
 
 
 @ddt
-class TestDataCenterAssetTransitionsCommand(TestCase):
+class TestCreateTransitionsCommand(TestCase):
     @classmethod
     def setUpTestData(cls):
-        management.call_command('create_data_center_asset_transitions')
+        management.call_command('create_transitions')
 
     def test_transitions_generated(self):
         transitions = Transition.objects.all()
