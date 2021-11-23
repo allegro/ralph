@@ -13,6 +13,7 @@ from django.db import IntegrityError, transaction
 
 from ralph.data_center.models.physical import DataCenterAsset
 from ralph.lib import network
+from ralph.lib.openstack.client import RalphIronicClient, RalphOpenstackClient
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -22,39 +23,7 @@ from ralph.virtual.models import (
 
 logger = logging.getLogger(__name__)
 
-try:
-    from keystoneclient.v2_0 import client as ks_v2_client
-    from keystoneclient.v3 import client as ks_v3_client
-    from keystoneauth1 import session as ks_session
-    from keystoneauth1.identity import v3 as ks_v3_identity
-    keystone_client_exists = True
-except ImportError:
-    keystone_client_exists = False
-
-try:
-    from novaclient import client as novac
-    from novaclient.exceptions import NotFound
-    nova_client_exists = True
-except ImportError:
-    nova_client_exists = False
-
-
-try:
-    from ironicclient.client import get_client as get_ironic_client
-    ironic_client_exists = True
-except ImportError:
-    ironic_client_exists = False
-
-
 DEFAULT_OPENSTACK_PROVIDER_NAME = settings.DEFAULT_OPENSTACK_PROVIDER_NAME
-
-
-class EmptyListError(Exception):
-    def __init___(self, value):
-        self.value = value
-
-    def __str__(self):
-        repr(self.value)
 
 
 class Command(BaseCommand):
@@ -84,7 +53,6 @@ class Command(BaseCommand):
             default='serial_number',
             help="Extra parameter used to store node serial numbers in Ironic"
         )
-
         parser.add_argument(
             '--asset-serial-number-parameter',
             type=str,
@@ -92,144 +60,21 @@ class Command(BaseCommand):
             help="Parameter used to store asset serial numbers in Ralph"
         )
 
-    @staticmethod
-    def _get_novaclient_connection(site):
-        if (
-            site.get('keystone_auth_url') and
-            site.get('keystone_version', '').startswith('3')
-        ):
-            session = Command._get_keystone_session(site)
-            nt = novac.Client(site['version'], session=session)
-        else:
-            nt = novac.Client(
-                site['version'],
-                site['username'],
-                site['password'],
-                site['tenant_name'],
-                site['auth_url']
-            )
-        return nt
-
-    @staticmethod
-    def _get_keystone_client(site):
-        if site.get('keystone_version', '').startswith('3'):
-            session = Command._get_keystone_session(site)
-            client = ks_v3_client.Client(session=session, version=(3,))
-        else:
-            client = ks_v2_client.Client(
-                username=site['username'],
-                password=site['password'],
-                tenant_name=site['tenant_name'],
-                auth_url=site['auth_url'],
-            )
-        return client
-
-    @staticmethod
-    def _get_keystone_session(site):
-        auth = ks_v3_identity.Password(
-            auth_url=site.get('keystone_auth_url', site['auth_url']),
-            username=site['username'],
-            password=site['password'],
-            user_domain_name=site.get('user_domain_name', 'default'),
-            project_name=site['tenant_name'],
-            project_domain_name=site.get('project_domain_name', 'default'),
-        )
-        return ks_session.Session(auth=auth)
-
-    @staticmethod
-    def _get_servers_list(nt, site):
-        """
-        Returns list of servers for a project.
-        :parm site: novaclient connection
-        """
-        servers = []
-        marker = None
-        limit = 1000
-        logger.info('Fetching servers list from {}'.format(site['tag']))
-        while True:
-            try:
-                logger.debug(
-                    'Fetching servers with marker {}'.format(marker)
-                )
-                servers_part = nt.servers.list(
-                    search_opts={'all_tenants': True},
-                    limit=limit,
-                    marker=marker,
-                )
-                marker = servers_part[-1].id
-                servers.extend(servers_part)
-                if len(servers_part) < limit:
-                    break
-            except IndexError:
-                break
-
-        servers = list(map(lambda server: server.__dict__, servers))
-        if len(servers) == 0:
-            raise EmptyListError(
-                'Got an empty list of instances from {}'.format(
-                    site['auth_url']
-                )
-            )
-        logger.info('Fetched {} servers from {}'.format(
-            len(servers), site['tag']
-        ))
-        return servers
-
-    @lru_cache()
-    def _get_images(self, nt):
-        logger.info('Fetching images')
-        return {img.id: img.__dict__ for img in nt.images.list()}
-
-    def _get_image_name(self, nt, image_id):
-        try:
-            return self._get_images(nt)[image_id]['name']
-        except KeyError:
-            try:
-                return nt.images.get(image_id).name
-            except NotFound:
-                return ''
-
-    @staticmethod
-    def _get_flavors_list(nt, site):
-        """
-        Return list of flavours
-        :parm nt: novaclient connection
-        :return: dict
-        """
-        logger.info('Fetching flavors list from {}'.format(site['tag']))
-        flavors = []
-        for is_public in (True, False):
-            flavors.extend(list(map(
-                lambda fl: fl.__dict__, nt.flavors.list(is_public=is_public)
-            )))
-        if len(flavors) == 0:
-            raise EmptyListError(
-                'Got an empty list of flavors from {}'.format(site['auth_url'])
-            )
-        return flavors
-
-    def _get_keystone_projects(self, keystone_client):
-        if keystone_client.version == 'v3':
-            projects_resource = keystone_client.projects
-        else:
-            projects_resource = keystone_client.tenants
-        yield from projects_resource.list()
-
-    def _update_projects(self, site):
+    def _update_projects(self, client):
         """
         Returns a map tenant_id->tenant_name
         :rtype: dict
         """
-        keystone_client = self._get_keystone_client(site)
-
-        for project in self._get_keystone_projects(keystone_client):
+        for project in client.get_keystone_projects():
             if project.id not in self.openstack_projects:
                 self.openstack_projects[project.id] = {
                     'name': project.name,
                     'servers': {},
                     'tags': []
                 }
-            self.openstack_projects[project.id]['tags'].append(site['tag'])
+            self.openstack_projects[project.id]['tags'].append(
+                client.site['tag']
+            )
 
     def _get_instances_from_settings(self):
         """
@@ -240,15 +85,14 @@ class Command(BaseCommand):
             if os_instance.get(
                 'provider', DEFAULT_OPENSTACK_PROVIDER_NAME
             ) == self.openstack_provider_name:
-                yield os_instance
+                yield RalphOpenstackClient(os_instance)
 
     def _process_openstack_instances(self):
-        for site in self._get_instances_from_settings():
+        for client in self._get_instances_from_settings():
             logger.info('Processing {} ({})'.format(
-                site['auth_url'], site['tag']
+                client.site['auth_url'], client.site['tag']
             ))
-            nt = self._get_novaclient_connection(site)
-            self._update_projects(site)
+            self._update_projects(client)
 
             def _add_flavor(flavor):
                 flavor_id = flavor['id']
@@ -257,25 +101,26 @@ class Command(BaseCommand):
                     'cores': flavor['vcpus'],
                     'memory': flavor['ram'],
                     'disk': flavor['disk'] * 1024,
-                    'tag': site['tag'],
+                    'tag': client.site['tag'],
                 }
                 self.openstack_flavors[flavor_id] = new_flavor
 
-            for flavor in self._get_flavors_list(nt, site):
+            for flavor in client.get_flavors_list():
                 _add_flavor(flavor)
 
-            for server in self._get_servers_list(nt, site):
+            search_opts = {'all_tenants': True}
+            for server in client.get_servers_list(search_opts=search_opts):
                 project_id = server['tenant_id']
                 host_id = server['id']
-                image_name = self._get_image_name(
-                    nt, server['image']['id']
+                image_name = client.get_image_name(
+                     server['image']['id']
                 ) if server['image'] else None
                 flavor_id = server['flavor']['id']
                 new_server = {
                     'hostname': None,
                     'id': server['id'],
                     'flavor_id': flavor_id,
-                    'tag': site['tag'],
+                    'tag': client.site['tag'],
                     'ips': {},
                     'created': server['created'],
                     'hypervisor': server['OS-EXT-SRV-ATTR:hypervisor_hostname'],
@@ -283,8 +128,8 @@ class Command(BaseCommand):
                 }
                 for zone in server['addresses']:
                     if (
-                        'network_regex' in site and
-                        not re.match(site['network_regex'], zone)
+                        'network_regex' in client.site and
+                        not re.match(client.site['network_regex'], zone)
                     ):
                         continue
                     for ip in server['addresses'][zone]:
@@ -316,7 +161,7 @@ class Command(BaseCommand):
                     logger.warning(
                         'Flavor %s (found in host %s) not in flavors list.'
                         ' Fetching it', flavor_id, host_id)
-                    _add_flavor(nt.flavors.get(flavor_id).__dict__)
+                    _add_flavor(client.nova_client.flavors.get(flavor_id).__dict__)
 
     def _get_cloud_provider(self):
         """Get or create cloud provider object"""
@@ -409,20 +254,8 @@ class Command(BaseCommand):
             ):
                 continue
 
-            ironic_client = get_ironic_client(
-                api_version=os_conf.get('ironic-api-version', '1'),
-                os_username=os_conf['username'],
-                os_password=os_conf['password'],
-                os_tenant_name=os_conf['tenant_name'],
-                os_auth_url=os_conf['auth_url']
-            )
-
-            nodes = ironic_client.node.list(
-                associated=True,
-                fields=['extra', 'instance_uuid']
-            )
-
-            self._match_nodes_to_hosts(nodes)
+            client = RalphIronicClient(os_conf=os_conf)
+            self._match_nodes_to_hosts(client.get_nodes_list())
 
     def _match_nodes_to_hosts(self, nodes):
         """Match iornic nodes to hosts."""
@@ -705,7 +538,7 @@ class Command(BaseCommand):
 
     def _cleanup(self):
         """
-        Remove all projects and flavors that doesn't exist in openstack from
+        Remove all projects and flavors that don't exist in openstack from
         ralph
         """
         for project_id in (set(self.ralph_projects.keys()) - set(
@@ -796,16 +629,6 @@ class Command(BaseCommand):
         try:
             logger.info('Openstack sync started...')
             match_ironic = options.get('match_ironic_physical_hosts')
-
-            if not nova_client_exists:
-                logger.error("novaclient module is not installed")
-                raise ImportError("No module named novaclient")
-            if not keystone_client_exists:
-                logger.error("keystoneclient module is not installed")
-                raise ImportError("No module named keystoneclient")
-            if match_ironic and not ironic_client_exists:
-                logger.error("ironicclient module is not installed")
-                raise ImportError("No module named ironicclient")
             if not hasattr(settings, 'OPENSTACK_INSTANCES'):
                 logger.error('Nothing to sync')
                 return

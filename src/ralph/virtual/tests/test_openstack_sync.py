@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 
+import mock.mock
 from django.core.exceptions import ObjectDoesNotExist
 from django.test.utils import override_settings
 
@@ -221,9 +222,17 @@ class TestOpenstackSync(RalphTestCase):
             'provider': 'my-own-openstack'
         },
     ])
-    def test_non_default_provider(self):
+    @mock.patch(
+        "ralph.virtual.management.commands.openstack_sync.RalphOpenstackClient._get_nova_client_connection"  # noqa: E501
+    )
+    @mock.patch(
+        "ralph.virtual.management.commands.openstack_sync.RalphOpenstackClient._get_keystone_client"  # noqa: E501
+    )
+    def test_non_default_provider(self, get_kc, get_nc):
+        get_nc.return_value = mock.Mock()
+        get_kc.return_value = mock.Mock()
         tenants = [
-            os['tenant_name'] for os in self.cmd._get_instances_from_settings()
+            os.site['tenant_name'] for os in self.cmd._get_instances_from_settings()
         ]
         self.assertCountEqual(tenants, ['admin', 'admin2'])
         self.cmd.openstack_provider_name = 'my-own-openstack'
@@ -232,7 +241,7 @@ class TestOpenstackSync(RalphTestCase):
             CloudProvider.objects.filter(name='my-own-openstack').exists()
         )
         tenants = [
-            os['tenant_name'] for os in self.cmd._get_instances_from_settings()
+            os.site['tenant_name'] for os in self.cmd._get_instances_from_settings()
         ]
         self.assertCountEqual(tenants, ['admin3'])
 
