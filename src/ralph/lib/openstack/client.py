@@ -1,8 +1,6 @@
 import logging
 from functools import lru_cache
 
-from ralph import settings
-
 try:
     from keystoneclient.v2_0 import client as ks_v2_client
     from keystoneclient.v3 import client as ks_v3_client

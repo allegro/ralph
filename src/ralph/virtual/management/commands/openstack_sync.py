@@ -161,7 +161,9 @@ class Command(BaseCommand):
                     logger.warning(
                         'Flavor %s (found in host %s) not in flavors list.'
                         ' Fetching it', flavor_id, host_id)
-                    _add_flavor(client.nova_client.flavors.get(flavor_id).__dict__)
+                    _add_flavor(
+                        client.nova_client.flavors.get(flavor_id).__dict__
+                    )
 
     def _get_cloud_provider(self):
         """Get or create cloud provider object"""
