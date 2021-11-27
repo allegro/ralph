@@ -3,5 +3,6 @@ django-debug-toolbar==1.8
 werkzeug==0.16.1
 pudb
 ipython
-ipdb==0.10.2
+ipdb
+#ipdb==0.10.2
 django-silk
