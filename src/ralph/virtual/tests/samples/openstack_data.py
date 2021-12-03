@@ -12,7 +12,19 @@ OPENSTACK_DATA = {
                 'ips': ['10.1.0.1', '10.2.0.1'],
                 'created': '2015-09-10T06:48:00Z',
                 'image': 'Ubuntu 14.04',
-            }
+                'status': 'ACTIVE',
+            },
+            'deleted': {
+                'hostname': 'deleted',
+                'hypervisor': 'hypervisor_os1.dcn.net',
+                'flavor_id': 'flavor_id1',
+                'tag': 'tag3',
+                'ips': [],
+                'created': '2015-09-16T06:48:00Z',
+                'modified': '2015-10-16T06:48:03Z',
+                'image': 'Ubuntu 14.04',
+                'status': 'DELETED',
+            },
         }
     },
     'project_os_id2': {
@@ -27,6 +39,7 @@ OPENSTACK_DATA = {
                 'ips': ['10.3.0.1', '10.4.0.1'],
                 'created': '2015-09-11T06:48:00Z',
                 'image': 'Ubuntu 14.04',
+                'status': 'ACTIVE',
             },
             'host_os_3': {
                 'hostname': 'host_os_3',
@@ -37,6 +50,7 @@ OPENSTACK_DATA = {
                 'created': '2015-09-12T06:48:00Z',
                 'modified': '2015-10-12T06:48:03Z',
                 'image': 'Ubuntu 15.04',
+                'status': 'ACTIVE',
             }
         }
     },
@@ -51,12 +65,13 @@ OPENSTACK_DATA = {
                 'created': '2015-09-13T06:48:00Z',
                 'modified': '2015-10-13T06:48:03Z',
                 'image': 'CoreOS',
+                'status': 'ACTIVE',
             }
         }
     }
 }
 
-OPENSTACK_FLAVOR = {
+OPENSTACK_FLAVORS = {
     'flavor_os_id1': {
         'name': 'm1-c2-d6',
         'cores': 2,
@@ -80,7 +95,7 @@ OPENSTACK_FLAVOR = {
     }
 }
 
-TEST_HOSTS = {
+OPENSTACK_INSTANCES = {
     'host_os_id1': {
         'hostname': 'host_test_1',
         'hypervisor': 'hypervisor_os1.dcn.net',
@@ -90,6 +105,7 @@ TEST_HOSTS = {
         'created': '2015-09-14T06:48:00Z',
         'modified': '2015-10-14T06:48:03Z',
         'image': 'Ubuntu 14.04',
+        'status': 'ACTIVE',
     },
     'host_os_id2': {
         'hostname': 'host_test_2',
@@ -100,6 +116,7 @@ TEST_HOSTS = {
         'created': '2015-09-15T06:48:00Z',
         'modified': '2015-10-15T06:48:03Z',
         'image': 'Fedora',
+        'status': 'ACTIVE',
     },
     'host_id1': {
         'hostname': 'host_mod_1',
@@ -110,5 +127,17 @@ TEST_HOSTS = {
         'created': '2015-09-16T06:48:00Z',
         'modified': '2015-10-16T06:48:03Z',
         'image': 'Ubuntu 14.04',
+        'status': 'ACTIVE',
+    },
+    'deleted': {
+        'hostname': 'deleted',
+        'hypervisor': 'hypervisor_os1.dcn.net',
+        'flavor_id': 'flavor_id1',
+        'tag': 'tag3',
+        'ips': [],
+        'created': '2015-09-16T06:48:00Z',
+        'modified': '2015-10-16T06:48:03Z',
+        'image': 'Ubuntu 14.04',
+        'status': 'DELETED',
     },
 }
