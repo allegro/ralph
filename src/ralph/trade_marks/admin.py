@@ -4,6 +4,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin.filters import ChoicesListFilter
 from ralph.admin.filters import (
     custom_title_filter,
     DateListFilter,
@@ -23,6 +24,7 @@ from ralph.trade_marks.models import (
     TradeMark,
     TradeMarkAdditionalCountry,
     TradeMarkCountry,
+    TradeMarkKind,
     TradeMarkRegistrarInstitution,
     TradeMarksLinkedDomains
 )
@@ -135,11 +137,22 @@ class IntellectualPropertyAdminBase(AttachmentsMixin, RalphAdmin):
 @register(TradeMark)
 class TradeMarkAdmin(IntellectualPropertyAdminBase):
 
+    class TypeFilter(ChoicesListFilter):
+        title = 'Trade Mark type'
+        parameter_name = 'type'
+        _choices_list = [(t.id, t.verbose_type) for t in TradeMarkKind.objects.all()]
+
+        def queryset(self, request, queryset):
+            if self.value():
+                return queryset.filter(type__id=self.value())
+            else:
+                return queryset
+
     change_views = [TradeMarksLinkedDomainsView]
     form = TradeMarkForm
     list_filter = [
         'number',
-        'type',
+        ('type', TypeFilter),
         ('valid_from', DateListFilter),
         ('valid_to', DateListFilter),
         'additional_markings',
