@@ -10,25 +10,21 @@ def populate_trademark_kinds(apps, schema_editor):
     TradeMarkKind(
         id=1,
         type='Word',
-        verbose_type='Word'
     ).save()
 
     TradeMarkKind(
         id=2,
         type='Figurative',
-        verbose_type='Figurative'
     ).save()
 
     TradeMarkKind(
         id=3,
         type='Word - Figurative',
-        verbose_type='Word - Figurative'
     ).save()
 
     TradeMarkKind(
         id=4,
         type='3D',
-        verbose_type='3D'
     ).save()
 
 

@@ -17,7 +17,6 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(primary_key=True, serialize=False)),
                 ('type', models.CharField(max_length=255)),
-                ('verbose_type', models.CharField(max_length=255)),
             ],
             bases=(ralph.lib.mixins.models.AdminAbsoluteUrlMixin, models.Model),
         ),

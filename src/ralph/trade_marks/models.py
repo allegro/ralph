@@ -153,10 +153,9 @@ class IntellectualPropertyBase(models.Model):
 class TradeMarkKind(AdminAbsoluteUrlMixin, models.Model):
     id = models.AutoField(primary_key=True)
     type = models.CharField(max_length=255)
-    verbose_type = models.CharField(max_length=255)
 
     def __str__(self):
-        return self.verbose_type
+        return self.type
 
 
 @verbose_names(

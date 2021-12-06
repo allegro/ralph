@@ -140,7 +140,7 @@ class TradeMarkAdmin(IntellectualPropertyAdminBase):
     class TypeFilter(ChoicesListFilter):
         title = 'Trade Mark type'
         parameter_name = 'type'
-        _choices_list = [(t.id, t.verbose_type) for t in TradeMarkKind.objects.all()]
+        _choices_list = [(t.id, t.type) for t in TradeMarkKind.objects.all()]
 
         def queryset(self, request, queryset):
             if self.value():
