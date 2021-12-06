@@ -71,7 +71,7 @@ class RalphClient:
         return {
             'name': project.name,
             'servers': {},
-            'tags': project.tags.names(),
+            'tags': list(project.tags.names()),
         }
 
     def get_ralph_projects(self):
