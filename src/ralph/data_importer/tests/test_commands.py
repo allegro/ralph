@@ -676,3 +676,24 @@ class TestInitialDataCommand(TestCase):
             ConfigurationClass.objects.get(path='configuration_module/default')
         except ConfigurationClass.DoesNotExist:
             self.fail("Default configuration path not created.")
+
+    def test_asset_models_created(self):
+        self.assertEqual(6, AssetModel.objects.count())
+        for name in ["A", "B", "C"]:
+            try:
+                AssetModel.objects.get(name="Model {}".format(name))
+            except AssetModel.DoesNotExist:
+                self.fail(
+                    'Asset model with name "Model {}" does not exist.'.format(
+                        name
+                    )
+                )
+        for name in ["A", "B", "C"]:
+            try:
+                AssetModel.objects.get(name="Blade server model {}".format(name))
+            except AssetModel.DoesNotExist:
+                self.fail(
+                    'Asset model with name "Blade server model {}" does not exist.'.format(
+                        name
+                    )
+                )

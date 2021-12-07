@@ -134,7 +134,7 @@ class Command(BaseCommand):
 
         for name in ["A", "B", "C"]:
             ServerModelCommand.create_model(
-                model_name="Model {}".format(name)
+                    model_name="Model {}".format(name)
             )
             ServerModelCommand.create_model(
                 model_name="Blade server model {}".format(name),
