@@ -561,6 +561,7 @@ class TestCreateServerModelCommand(TestCase):
         self.assertEqual(DEFAULT_MODEL_MANUFACTURER, model.manufacturer.name)
 
 
+@ddt
 class TestCreatePrebootCommand(TestCase):
     @classmethod
     def setUpTestData(cls):
