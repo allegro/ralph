@@ -1,12 +1,12 @@
 from django.core.management import BaseCommand
 from django.db import transaction
 
-from ralph.assets.models import AssetModel, Category, Manufacturer, ObjectModelType
 from ralph.data_importer.management.commands.create_network import get_or_create
-from ralph.deployment.models import Preboot, PrebootConfiguration, PrebootItemType
-
-DEFAULT_MODEL_NAME = 'Model A'
-DEFAULT_MODEL_MANUFACTURER = 'Generic manufacturer'
+from ralph.deployment.models import (
+    Preboot,
+    PrebootConfiguration,
+    PrebootItemType
+)
 
 
 class Command(BaseCommand):

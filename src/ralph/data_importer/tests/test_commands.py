@@ -11,8 +11,10 @@ from ralph.accounts.models import Region
 from ralph.assets.models import ConfigurationClass
 from ralph.assets.models.assets import (
     AssetModel,
-    Category, Environment,
-    Manufacturer, Service,
+    Category,
+    Environment,
+    Manufacturer,
+    Service,
     ServiceEnvironment
 )
 from ralph.assets.models.choices import ObjectModelType
@@ -21,12 +23,18 @@ from ralph.data_center.models import DataCenterAsset, DataCenterAssetStatus
 from ralph.data_center.models.physical import DataCenter, Rack, ServerRoom
 from ralph.data_center.tests.factories import DataCenterFactory
 from ralph.data_importer.management.commands import importer
-from ralph.data_importer.management.commands.create_preboot_configuration import DEFAULT_MODEL_NAME
-from ralph.data_importer.management.commands.create_server_model import DEFAULT_MODEL_CATEGORY, \
-    DEFAULT_MODEL_MANUFACTURER
+from ralph.data_importer.management.commands.create_server_model import (
+    DEFAULT_MODEL_CATEGORY,
+    DEFAULT_MODEL_MANUFACTURER,
+    DEFAULT_MODEL_NAME
+)
 from ralph.data_importer.models import ImportedObjects
 from ralph.data_importer.resources import AssetModelResource
-from ralph.deployment.models import Preboot, PrebootConfiguration, PrebootItemType
+from ralph.deployment.models import (
+    Preboot,
+    PrebootConfiguration,
+    PrebootItemType
+)
 from ralph.dhcp.models import DNSServerGroup
 from ralph.lib.transitions.conf import DEFAULT_ASYNC_TRANSITION_SERVICE_NAME
 from ralph.lib.transitions.models import Transition, TransitionModel

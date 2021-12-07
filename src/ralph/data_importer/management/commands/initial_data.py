@@ -8,9 +8,9 @@ from ralph.accounts.tests.factories import RegionFactory
 from ralph.assets.models import ConfigurationClass, ConfigurationModule
 from ralph.data_importer.management.commands.create_network import \
     Command as NetworkCommand
+from ralph.data_importer.management.commands.create_network import get_or_create
 from ralph.data_importer.management.commands.create_server_model import \
     Command as ServerModelCommand
-from ralph.data_importer.management.commands.create_network import get_or_create
 from ralph.data_importer.management.commands.create_transitions import \
     Command as TransitionsCommand
 

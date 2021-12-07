@@ -1,6 +1,11 @@
 from django.core.management import BaseCommand
 
-from ralph.assets.models import AssetModel, Category, Manufacturer, ObjectModelType
+from ralph.assets.models import (
+    AssetModel,
+    Category,
+    Manufacturer,
+    ObjectModelType
+)
 from ralph.data_importer.management.commands.create_network import get_or_create
 
 
