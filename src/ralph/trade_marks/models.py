@@ -28,13 +28,6 @@ def upload_dir(filename, instance):
     )
 
 
-class TradeMarkType(Choices):
-    _ = Choices.Choice
-    word = _('Word')
-    figurative = _('Figurative')
-    word_figurative = _('Word - Figurative')
-
-
 class ProviderAdditionalMarking(
     AdminAbsoluteUrlMixin,
     NamedMixin,
@@ -157,16 +150,26 @@ class IntellectualPropertyBase(models.Model):
         abstract = True
 
 
+class TradeMarkKind(AdminAbsoluteUrlMixin, models.Model):
+    id = models.AutoField(primary_key=True)
+    type = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.type
+
+
 @verbose_names(
     name=_('Trade Mark Name'), number=_('Trade Mark number'),
     status=_('Trade Mark status'), holder=_('Trade Mark holder'),
     image=_('Representation')
 )
 class TradeMark(IntellectualPropertyBase, AdminAbsoluteUrlMixin, BaseObject):
-    type = models.PositiveIntegerField(
+    type = models.ForeignKey(
+        TradeMarkKind,
         verbose_name=_('Trade Mark type'),
-        choices=TradeMarkType(),
-        default=TradeMarkType.figurative.id
+        related_name='trademarks',
+        on_delete=models.DO_NOTHING,
+        default=2,
     )
     domains = models.ManyToManyField(
         Domain,

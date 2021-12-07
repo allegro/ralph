@@ -1,0 +1,20 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from django.db import migrations, models
+import django.db.models.deletion
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('trade_marks', '0012_populate_trademark_kinds'),
+    ]
+
+    operations = [
+        migrations.AlterField(
+            model_name='trademark',
+            name='type',
+            field=models.ForeignKey(verbose_name='Trade Mark type', related_name='trademarks', on_delete=django.db.models.deletion.DO_NOTHING, to='trade_marks.TradeMarkKind'),
+        ),
+    ]
