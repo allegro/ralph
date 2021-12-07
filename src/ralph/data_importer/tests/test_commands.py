@@ -8,10 +8,11 @@ from django.core import management
 from django.test import TestCase
 
 from ralph.accounts.models import Region
+from ralph.assets.models import ConfigurationClass
 from ralph.assets.models.assets import (
     AssetModel,
-    Environment,
-    Service,
+    Category, Environment,
+    Manufacturer, Service,
     ServiceEnvironment
 )
 from ralph.assets.models.choices import ObjectModelType
@@ -20,8 +21,12 @@ from ralph.data_center.models import DataCenterAsset, DataCenterAssetStatus
 from ralph.data_center.models.physical import DataCenter, Rack, ServerRoom
 from ralph.data_center.tests.factories import DataCenterFactory
 from ralph.data_importer.management.commands import importer
+from ralph.data_importer.management.commands.create_preboot_configuration import DEFAULT_MODEL_NAME
+from ralph.data_importer.management.commands.create_server_model import DEFAULT_MODEL_CATEGORY, \
+    DEFAULT_MODEL_MANUFACTURER
 from ralph.data_importer.models import ImportedObjects
 from ralph.data_importer.resources import AssetModelResource
+from ralph.deployment.models import Preboot, PrebootConfiguration, PrebootItemType
 from ralph.dhcp.models import DNSServerGroup
 from ralph.lib.transitions.conf import DEFAULT_ASYNC_TRANSITION_SERVICE_NAME
 from ralph.lib.transitions.models import Transition, TransitionModel
@@ -496,7 +501,7 @@ class TestCreateTransitionsCommand(TestCase):
 class TestCreateNetworkCommand(TestCase):
     @classmethod
     def setUpTestData(cls):
-        management.call_command('create_network')
+        management.call_command('create_network', create_rack=True)
 
     def test_network_generated(self):
         networks = Network.objects.all()
@@ -525,10 +530,85 @@ class TestCreateNetworkCommand(TestCase):
         )
 
     def test_dns_group_generated(self):
-        self.assertEqual(1, DNSServerGroup.objects.all().count())
+        self.assertEqual(1, DNSServerGroup.objects.count())
 
     def test_dc_generated(self):
-        self.assertEqual(1, DataCenter.objects.all().count())
+        self.assertEqual(1, DataCenter.objects.count())
+
+    def test_racks_created(self):
+        racks = Rack.objects.all()
+        rack = racks[0]
+        self.assertEqual(1, racks.count())
+        self.assertTrue(rack.name.find("10.0.0.0/24"))
+        self.assertEqual("server room", rack.server_room.name)
+
+
+class TestCreateServerModelCommand(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        management.call_command(
+            'create_server_model', model_is_blade_server=True
+        )
+
+    def test_server_model_generated(self):
+        models = AssetModel.objects.all()
+        model = models[0]
+        self.assertEqual(1, models.count())
+        self.assertEqual(1, Category.objects.count())
+        self.assertEqual(1, Manufacturer.objects.count())
+        self.assertEqual(DEFAULT_MODEL_NAME, model.name)
+        self.assertEqual(DEFAULT_MODEL_CATEGORY, model.category.name)
+        self.assertEqual(DEFAULT_MODEL_MANUFACTURER, model.manufacturer.name)
+
+
+class TestCreatePrebootCommand(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        base_dir = os.path.dirname(
+            os.path.dirname(__file__)
+        )
+        samples_dir = os.path.join(
+            base_dir, 'tests', 'samples'
+        )
+        management.call_command(
+            'create_preboot_configuration',
+            kickstart_file=os.path.join(samples_dir, 'kickstart_file'),
+            ipxe_file=os.path.join(samples_dir, 'ipxe_file')
+        )
+
+    def test_preboot_details(self):
+        preboot = Preboot.objects.first()
+        kickstart = PrebootConfiguration.objects.filter(
+            type=PrebootItemType.kickstart.id
+        ).first()
+        ipxe = PrebootConfiguration.objects.filter(
+            type=PrebootItemType.ipxe.id
+        ).first()
+        self.assertIn(kickstart, preboot.items.all())
+        self.assertIn(ipxe, preboot.items.all())
+        self.assertEqual("Preboot", preboot.name)
+        self.assertEqual(
+            "Automatically generated preboot.",
+            preboot.description
+        )
+
+    @unpack
+    @data(
+        (PrebootItemType.kickstart.id, "lang en_US\n"),
+        (PrebootItemType.ipxe.id, "#!ipxe\n")
+    )
+    def test_preboot_items_configuration(self, item_type, item_configuration):
+        item = PrebootConfiguration.objects.filter(type=item_type).first()
+        self.assertIn(item_configuration, item.configuration)
+
+    @unpack
+    @data(
+        (PrebootItemType.kickstart.id, "Preboot kickstart"),
+        (PrebootItemType.ipxe.id, "Preboot ipxe")
+    )
+    def test_preboot_items_names(self, item_type, item_name):
+        item = PrebootConfiguration.objects.filter(type=item_type).first()
+        self.assertEqual(item_name, item.name)
 
 
 @ddt
@@ -581,3 +661,9 @@ class TestInitialDataCommand(TestCase):
             self.fail(
                 "Admin user not created."
             )
+
+    def test_configuration_path_created(self):
+        try:
+            ConfigurationClass.objects.get(path='configuration_module/default')
+        except ConfigurationClass.DoesNotExist:
+            self.fail("Default configuration path not created.")

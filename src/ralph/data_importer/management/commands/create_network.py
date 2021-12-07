@@ -3,7 +3,7 @@ import ipaddress
 from django.core.management import BaseCommand, CommandError
 from django.db import transaction
 
-from ralph.data_center.models import DataCenter
+from ralph.data_center.models import DataCenter, Rack, ServerRoom
 from ralph.dhcp.models import DNSServer, DNSServerGroup, DNSServerGroupOrder
 from ralph.networks.models import IPAddress, Network, NetworkEnvironment
 
@@ -49,16 +49,36 @@ class Command(BaseCommand):
             dest='gateway',
             help='Default gateway.'
         )
+        parser.add_argument(
+            '--server-room-name',
+            default="server room",
+            dest='server_room_name',
+            help='Server room name.'
+        )
+        parser.add_argument(
+            '--create-rack',
+            action='store_true',
+            help='Create rack for which the subnet will be used.'
+        )
 
     @classmethod
     @transaction.atomic
     def create_network(
-        cls, network, dns1_address, dns2_address, gateway_address, dc_name
+        cls, network, dns1_address, dns2_address, gateway_address, dc_name,
+        server_room_name, create_rack=False
     ):
-        dc = get_or_create(DataCenter, name=dc_name)
+        data_center = get_or_create(DataCenter, name=dc_name)
         network_environment = get_or_create(
-            NetworkEnvironment, name='prod', data_center=dc
+            NetworkEnvironment, name='prod', data_center=data_center
         )
+        server_room = get_or_create(
+            ServerRoom, data_center=data_center, name=server_room_name
+        )
+        rack = None
+        if create_rack:
+            rack = Rack.objects.create(
+                server_room=server_room, name="Rack {}".format(network)
+            )
         get_or_create(IPAddress, address=str(dns1_address))
         get_or_create(IPAddress, address=str(dns2_address))
         dns1 = get_or_create(DNSServer, ip_address=str(dns1_address))
@@ -76,17 +96,21 @@ class Command(BaseCommand):
         gateway_address = get_or_create(
             IPAddress, address=str(gateway_address)
         )
-        get_or_create(
+        network = get_or_create(
             Network,
             name=str(network),
             address=str(network),
             gateway=gateway_address,
             network_environment=network_environment,
-            dns_servers_group=dns_server_group,
+            dns_servers_group=dns_server_group
         )
+        if rack:
+            network.racks.add(rack)
 
     def handle(self, *args, **options):
         dc_name = options.get('dc_name')
+        create_rack = options.get('create_rack')
+        server_room_name = options.get('server_room_name')
         try:
             dns1_address = ipaddress.ip_address(options.get('dns1'))
             dns2_address = ipaddress.ip_address(options.get('dns2'))
@@ -108,7 +132,9 @@ class Command(BaseCommand):
             dns1_address=dns1_address,
             dns2_address=dns2_address,
             gateway_address=gateway_address,
-            dc_name=dc_name
+            dc_name=dc_name,
+            server_room_name=server_room_name,
+            create_rack=create_rack,
         )
 
 

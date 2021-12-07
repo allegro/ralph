@@ -1,0 +1,76 @@
+from django.core.management import BaseCommand
+from django.db import transaction
+
+from ralph.assets.models import AssetModel, Category, Manufacturer, ObjectModelType
+from ralph.data_importer.management.commands.create_network import get_or_create
+from ralph.deployment.models import Preboot, PrebootConfiguration, PrebootItemType
+
+DEFAULT_MODEL_NAME = 'Model A'
+DEFAULT_MODEL_MANUFACTURER = 'Generic manufacturer'
+
+
+class Command(BaseCommand):
+    """
+    Generate a production ready preboot configuration.
+    """
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '-k', '--kickstart-file',
+            default=None,
+            dest='kickstart_file',
+            help='Path to a file with kickstart content.'
+        )
+        parser.add_argument(
+            '-i', '--ipxe-file',
+            default=None,
+            dest='ipxe_file',
+            help='Path to a file with ipxe content.'
+        )
+        parser.add_argument(
+            '-d', '--description',
+            default="Automatically generated preboot.",
+            dest='description',
+            help='Preboot description.'
+        )
+        parser.add_argument(
+            '-n', '--preboot-configuration-name',
+            default="Preboot",
+            dest='name',
+            help='Preboot configuration name.'
+        )
+
+    @classmethod
+    def create_preboot_configuration(
+        cls, kickstart_file, ipxe_file, name, description
+    ):
+        kickstart_file = get_or_create(
+            PrebootConfiguration, name="{} kickstart".format(name),
+            type=PrebootItemType.kickstart.id, configuration=kickstart_file
+        )
+        ipxe_file = get_or_create(
+            PrebootConfiguration, name="{} ipxe".format(name),
+            type=PrebootItemType.ipxe.id, configuration=ipxe_file
+        )
+        preboot = Preboot.objects.create(name=name, description=description)
+        preboot.items.add(ipxe_file)
+        preboot.items.add(kickstart_file)
+
+    @transaction.atomic
+    def handle(self, *args, **options):
+        kickstart_file = options.get('kickstart_file')
+        ipxe_file = options.get('ipxe_file')
+        description = options.get('description')
+        if kickstart_file:
+            with open(kickstart_file, 'r') as file:
+                kickstart_file_data = file.read()
+        else:
+            kickstart_file_data = ""
+        if ipxe_file:
+            with open(ipxe_file, 'r') as file:
+                ipxe_file_data = file.read()
+        else:
+            ipxe_file_data = ""
+        name = options.get('name')
+        self.create_preboot_configuration(
+            kickstart_file_data, ipxe_file_data, name, description
+        )
