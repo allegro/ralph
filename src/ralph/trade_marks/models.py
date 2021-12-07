@@ -169,7 +169,7 @@ class TradeMark(IntellectualPropertyBase, AdminAbsoluteUrlMixin, BaseObject):
         verbose_name=_('Trade Mark type'),
         related_name='trademarks',
         on_delete=models.DO_NOTHING,
-        default=1,
+        default=2,
     )
     domains = models.ManyToManyField(
         Domain,

@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='trademark',
             name='type',
-            field=models.ForeignKey(verbose_name='Trade Mark type', default=1, related_name='trademarks', on_delete=django.db.models.deletion.DO_NOTHING, to='trade_marks.TradeMarkKind'),
+            field=models.ForeignKey(verbose_name='Trade Mark type', default=2, related_name='trademarks', on_delete=django.db.models.deletion.DO_NOTHING, to='trade_marks.TradeMarkKind'),
         ),
     ]
