@@ -132,6 +132,7 @@ EXCLUDE_MODELS = [
     'ralph.tests.models.Manufacturer',
     'ralph.tests.models.Order',
     'ralph.tests.models.PolymorphicTestModel',
+    'ralph.trade_marks.models.TradeMarkKind',
 ]
 
 EXCLUDE_ADD_VIEW = [
