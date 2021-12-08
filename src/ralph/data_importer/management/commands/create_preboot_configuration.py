@@ -51,7 +51,9 @@ class Command(BaseCommand):
             PrebootConfiguration, name="{} ipxe".format(preboot_name),
             type=PrebootItemType.ipxe.id, configuration=ipxe_file
         )
-        preboot = Preboot.objects.create(name=preboot_name, description=description)
+        preboot = Preboot.objects.create(
+            name=preboot_name, description=description
+        )
         preboot.items.add(ipxe_file)
         preboot.items.add(kickstart_file)
 
