@@ -35,23 +35,23 @@ class Command(BaseCommand):
         parser.add_argument(
             '-n', '--preboot-configuration-name',
             default="Preboot",
-            dest='name',
+            dest='preboot_name',
             help='Preboot configuration name.'
         )
 
     @classmethod
     def create_preboot_configuration(
-        cls, kickstart_file, ipxe_file, name, description
+        cls, kickstart_file, ipxe_file, preboot_name, description
     ):
         kickstart_file = get_or_create(
-            PrebootConfiguration, name="{} kickstart".format(name),
+            PrebootConfiguration, name="{} kickstart".format(preboot_name),
             type=PrebootItemType.kickstart.id, configuration=kickstart_file
         )
         ipxe_file = get_or_create(
-            PrebootConfiguration, name="{} ipxe".format(name),
+            PrebootConfiguration, name="{} ipxe".format(preboot_name),
             type=PrebootItemType.ipxe.id, configuration=ipxe_file
         )
-        preboot = Preboot.objects.create(name=name, description=description)
+        preboot = Preboot.objects.create(name=preboot_name, description=description)
         preboot.items.add(ipxe_file)
         preboot.items.add(kickstart_file)
 
@@ -70,7 +70,7 @@ class Command(BaseCommand):
                 ipxe_file_data = file.read()
         else:
             ipxe_file_data = ""
-        name = options.get('name')
+        preboot_name = options.get('preboot_name')
         self.create_preboot_configuration(
-            kickstart_file_data, ipxe_file_data, name, description
+            kickstart_file_data, ipxe_file_data, preboot_name, description
         )
