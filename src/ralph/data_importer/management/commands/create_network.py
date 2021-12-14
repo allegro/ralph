@@ -12,6 +12,37 @@ class Command(BaseCommand):
     """
     Generate a single, production ready network
     """
+
+    def handle(self, *args, **options):
+        dc_name = options.get('dc_name')
+        create_rack = options.get('create_rack')
+        server_room_name = options.get('server_room_name')
+        try:
+            dns1_address = ipaddress.ip_address(options.get('dns1'))
+            dns2_address = ipaddress.ip_address(options.get('dns2'))
+            network_address = ipaddress.ip_address(
+                options.get('network_address')
+            )
+            network = ipaddress.ip_network(
+                '{}/{}'.format(
+                    str(network_address),
+                    options.get('network_mask')
+                )
+            )
+            gateway_address = ipaddress.ip_address(options.get('gateway'))
+        except ValueError as e:
+            raise CommandError(e)
+
+        self.create_network(
+            network=network,
+            dns1_address=dns1_address,
+            dns2_address=dns2_address,
+            gateway_address=gateway_address,
+            dc_name=dc_name,
+            server_room_name=server_room_name,
+            create_rack=create_rack,
+        )
+
     def add_arguments(self, parser):
         parser.add_argument(
             '-d', '--dc-name',
@@ -67,37 +98,36 @@ class Command(BaseCommand):
         cls, network, dns1_address, dns2_address, gateway_address, dc_name,
         server_room_name, create_rack=False
     ):
-        data_center = get_or_create(DataCenter, name=dc_name)
-        network_environment = get_or_create(
-            NetworkEnvironment, name='prod', data_center=data_center
+        data_center, _ = DataCenter.objects.get_or_create(name=dc_name)
+        network_environment, _ = NetworkEnvironment.objects.get_or_create(
+            name='prod', data_center=data_center
         )
-        server_room = get_or_create(
-            ServerRoom, data_center=data_center, name=server_room_name
+        server_room, _ = ServerRoom.objects.get_or_create(
+            data_center=data_center, name=server_room_name
         )
         rack = None
         if create_rack:
             rack = Rack.objects.create(
                 server_room=server_room, name="Rack {}".format(network)
             )
-        get_or_create(IPAddress, address=str(dns1_address))
-        get_or_create(IPAddress, address=str(dns2_address))
-        dns1 = get_or_create(DNSServer, ip_address=str(dns1_address))
-        dns2 = get_or_create(DNSServer, ip_address=str(dns2_address))
-        dns_server_group = get_or_create(
-            DNSServerGroup, name='{}-dns-group'.format(dc_name),
+        IPAddress.objects.get_or_create(address=str(dns1_address))
+        IPAddress.objects.get_or_create(address=str(dns2_address))
+        dns1, _ = DNSServer.objects.get_or_create(ip_address=str(dns1_address))
+        dns2, _ = DNSServer.objects.get_or_create(ip_address=str(dns2_address))
+        dns_server_group, _ = DNSServerGroup.objects.get_or_create(
+            name='{}-dns-group'.format(dc_name)
         )
         dns_order = 10
         for dns in [dns1, dns2]:
-            get_or_create(
-                DNSServerGroupOrder, dns_server=dns,
-                dns_server_group=dns_server_group, order=dns_order
+            DNSServerGroupOrder.objects.get_or_create(
+                dns_server=dns, dns_server_group=dns_server_group,
+                order=dns_order
             )
             dns_order += 10
-        gateway_address = get_or_create(
-            IPAddress, address=str(gateway_address)
+        gateway_address, _ = IPAddress.objects.get_or_create(
+            address=str(gateway_address)
         )
-        network = get_or_create(
-            Network,
+        network, _ = Network.objects.get_or_create(
             name=str(network),
             address=str(network),
             gateway=gateway_address,
@@ -106,38 +136,3 @@ class Command(BaseCommand):
         )
         if rack:
             network.racks.add(rack)
-
-    def handle(self, *args, **options):
-        dc_name = options.get('dc_name')
-        create_rack = options.get('create_rack')
-        server_room_name = options.get('server_room_name')
-        try:
-            dns1_address = ipaddress.ip_address(options.get('dns1'))
-            dns2_address = ipaddress.ip_address(options.get('dns2'))
-            network_address = ipaddress.ip_address(
-                options.get('network_address')
-            )
-            network = ipaddress.ip_network(
-                '{}/{}'.format(
-                    str(network_address),
-                    options.get('network_mask')
-                )
-            )
-            gateway_address = ipaddress.ip_address(options.get('gateway'))
-        except ValueError as e:
-            raise CommandError(e)
-
-        self.create_network(
-            network=network,
-            dns1_address=dns1_address,
-            dns2_address=dns2_address,
-            gateway_address=gateway_address,
-            dc_name=dc_name,
-            server_room_name=server_room_name,
-            create_rack=create_rack,
-        )
-
-
-def get_or_create(model, **kwargs):
-    obj, _ = model.objects.get_or_create(**kwargs)
-    return obj

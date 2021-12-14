@@ -6,7 +6,6 @@ from ralph.assets.models import (
     Manufacturer,
     ObjectModelType
 )
-from ralph.data_importer.management.commands.create_network import get_or_create
 
 
 DEFAULT_MODEL_CATEGORY = 'generic server category'
@@ -18,6 +17,15 @@ class Command(BaseCommand):
     """
     Generate a single, production ready server model
     """
+    def handle(self, *args, **options):
+        model_name = options.get('model_name')
+        model_category = options.get('model_category')
+        model_manufacturer = options.get('model_manufacturer')
+        is_blade = options.get('model_is_blade_server')
+        self.create_model(
+            model_name, model_category, model_manufacturer, is_blade
+        )
+
     def add_arguments(self, parser):
         parser.add_argument(
             '-c', '--model-category',
@@ -50,23 +58,14 @@ class Command(BaseCommand):
         model_manufacturer=DEFAULT_MODEL_MANUFACTURER,
         is_blade=False
     ):
-        category = get_or_create(
-            Category, name=model_category, allow_deployment=True
+        category, _ = Category.objects.get_or_create(
+            name=model_category, allow_deployment=True
         )
-        manufacturer = get_or_create(
-            Manufacturer, name=model_manufacturer
+        manufacturer, _ = Manufacturer.objects.get_or_create(
+            name=model_manufacturer
         )
-        get_or_create(
-            AssetModel, name=model_name, category=category,
+        AssetModel.objects.get_or_create(
+            name=model_name, category=category,
             type=ObjectModelType.data_center.id,
             manufacturer=manufacturer, has_parent=is_blade
-        )
-
-    def handle(self, *args, **options):
-        model_name = options.get('model_name')
-        model_category = options.get('model_category')
-        model_manufacturer = options.get('model_manufacturer')
-        is_blade = options.get('model_is_blade_server')
-        self.create_model(
-            model_name, model_category, model_manufacturer, is_blade
         )
