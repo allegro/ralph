@@ -1,6 +1,7 @@
 from django.contrib.admin.views.main import ORDER_VAR, SEARCH_VAR
 from django.core.urlresolvers import reverse
 from django.db.models import Count, F, Prefetch
+from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, register
@@ -64,13 +65,14 @@ class DiscoveryQueueAdmin(RalphAdmin):
 def ip_address_base_object_link(obj):
     if not obj.base_object:
         return '&ndash;'
-    return '<a href="{}" target="_blank">{}</a>'.format(
+    link = '<a href="{}" target="_blank">{}</a>'.format(
         reverse('admin:view_on_site', args=(
             obj.base_object.content_type_id,
             obj.base_object.id
         )),
-        obj.base_object._str_with_type,
+        escape(obj.base_object._str_with_type),
     )
+    return link
 
 
 class LinkedObjectTable(TableWithUrl):

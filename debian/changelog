@@ -1,3 +1,34 @@
+ralph (20211220.1) bionic; urgency=medium
+
+  * Fix XSS vulnerability in IP Addresses when linked object contained html tags
+  * trademark type now read from database
+  * Tidy up imports
+  * Remove superfluous field verbose_type
+  * Fix error when checking for missing migrations
+  * Exclude TradeMarkKind from view test
+  * Exclude TradeMark from view test
+  * Add default trade mark kind
+  * Change default trade mark kind to figurative
+  * VIP error logs should now correctly aggregate
+  * Fix line length
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Mon, 20 Dec 2021 10:30:45 +0000
+
+ralph (20211123.1) bionic; urgency=medium
+
+  * Add hostname validation for hostname, management hostname and network->hostname
+  * Add migrations including hostname validators
+  * Add missing newline
+  * Fix isort
+  * Fix exception when hostname missing
+  * Fix a test
+  * Fix flake8
+  * Remove hostname validation
+  * Fix error causing problems on Support import
+  * Fix flake8
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Tue, 23 Nov 2021 13:14:38 +0000
+
 ralph (20211117.1) bionic; urgency=medium
 
   [ Szymon Jasinski ]

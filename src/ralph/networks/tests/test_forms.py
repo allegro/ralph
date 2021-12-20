@@ -455,7 +455,7 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
                 )
             )
         )
-        name = 'some_hostname'
+        name = 'some.hostname'
         ip = IPAddressFactory(
             dhcp_expose=True,
             hostname=name,

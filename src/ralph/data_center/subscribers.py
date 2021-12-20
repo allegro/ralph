@@ -130,22 +130,24 @@ def handle_create_vip_event(data):
 
 def migrate_vip_to_cluster(vip, cluster, protocol):
     msg = (
-        'Trying to update VIP with IP {}, port {} and protocol {}'
-        'failed: %s'.format(vip.ip.address, vip.port, protocol.name)
+        'Trying to update VIP with IP %s, port %s and protocol %s'
+        'failed: %s', (vip.ip.address, vip.port, protocol.name)
     )
     cluster_content_type = ContentType.objects.get_for_model(Cluster)
     ethernet = vip.ip.ethernet
     if not ethernet:
-        logger.error(msg, 'no `Ethernet` object found')
+        logger.error(msg[0], *msg[1], 'no `Ethernet` object found')
         return
     if ethernet.base_object != vip.parent:
-        logger.error(msg, '`Ethernet` base_object differs from `VIP` parent')
+        logger.error(msg[0], *msg[1],
+                     '`Ethernet` base_object differs from `VIP` parent')
         return
     if ethernet.base_object.content_type != cluster_content_type:
-        logger.error(msg, '`Ethernet` base_object is not `Cluster` instance')
+        logger.error(msg[0], *msg[1],
+                     '`Ethernet` base_object is not `Cluster` instance')
         return
     if vip.parent.content_type != cluster_content_type:
-        logger.error(msg, '`VIP` parent is not `Cluster` instance')
+        logger.error(msg[0], *msg[1], '`VIP` parent is not `Cluster` instance')
         return
 
     ethernet.base_object = cluster
@@ -224,7 +226,7 @@ def handle_update_vip_event(data):
             'VIP %s changed service/env to %s.', vip.name, service_env
         )
 
-    logger.debug('VIP %s update processed successfuly.', vip.name)
+    logger.debug('VIP %s update processed successfully.', vip.name)
 
 
 @pyhermes.subscriber(
