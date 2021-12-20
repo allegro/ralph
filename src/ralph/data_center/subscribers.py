@@ -139,10 +139,12 @@ def migrate_vip_to_cluster(vip, cluster, protocol):
         logger.error(msg[0], *msg[1], 'no `Ethernet` object found')
         return
     if ethernet.base_object != vip.parent:
-        logger.error(msg[0], *msg[1], '`Ethernet` base_object differs from `VIP` parent')
+        logger.error(msg[0], *msg[1],
+                     '`Ethernet` base_object differs from `VIP` parent')
         return
     if ethernet.base_object.content_type != cluster_content_type:
-        logger.error(msg[0], *msg[1], '`Ethernet` base_object is not `Cluster` instance')
+        logger.error(msg[0], *msg[1],
+                     '`Ethernet` base_object is not `Cluster` instance')
         return
     if vip.parent.content_type != cluster_content_type:
         logger.error(msg[0], *msg[1], '`VIP` parent is not `Cluster` instance')
