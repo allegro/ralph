@@ -1,12 +1,11 @@
 import logging
 import re
+from functools import lru_cache
 
 from django.conf import settings
 
 from ralph.lib import network
 from ralph.settings import DEFAULT_OPENSTACK_PROVIDER_NAME
-
-from functools import lru_cache
 
 try:
     from keystoneclient.v2_0 import client as ks_v2_client
