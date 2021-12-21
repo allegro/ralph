@@ -22,11 +22,11 @@ For example, we provide built-in transition called "change-rack" which will be o
 #### How to run transition
 
 * Single Asset - Go to Asset View page, and run menu on top of the page:
-![](./img/transition-example.png)
+![](img/transition-example.png)
 
 * Multiple Assets - Go to Assets List page (e.g. Data Center -> Hardware), select multiple assets, and choose action.
 
-![](./img/transition-multiple.png)
+![](img/transition-multiple.png)
 
 #### Transition form
 
@@ -35,7 +35,7 @@ Some actions require additional information from the user. For example: deployme
 
 Option / value will be presented to the user as required fields.
 
-![](./img/transition-form.png)
+![](img/transition-form.png)
 
 After running action, the status will change to "in use".
 
@@ -47,7 +47,7 @@ Keep in mind, that transition are bound to the specific, defined model, such as 
 
 First, go to "Settings -> Transitions" to view all assets types with transitions. Choose one, and see the Transitions definitions.
 
-![](./img/transition-list.png)
+![](img/transition-list.png)
 
 
 ## PDF outprints

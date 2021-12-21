@@ -15,11 +15,11 @@ Display graphs with quantity assets in each data centers.
 ### First dashboard
 First of all we must create new dasboard object in Ralph by clicking in menu``Dashboards > Dashboards`` next click ``Add new dashboard`` to add new one.
 
-![add-dashboard](./img/dashboard-create-dasboard.png "Add dashboard")
+![add-dashboard](img/dashboard-create-dasboard.png "Add dashboard")
 
 
 Next steps is create graph and configure it.
-![add-first-graph](./img/dashboard-create-graph-dc.png "Add first-graph")
+![add-first-graph](img/dashboard-create-graph-dc.png "Add first-graph")
 
 The important field of form above is ``Params`` - this field accepted configuration of graph in JSON format. Keys ``labels``, ``series``, ``filters`` are required.
 Below short description of these fields:
@@ -32,10 +32,10 @@ Below short description of these fields:
   - ``target`` - contains keys: ``model``, ``filter``, ``value``; this options changes default view for clickable graph.
 
 OK, after save go our new dashboard object. Now we can see item (``DC Capacity``) in ``Graphs`` fields - select them. After save go to ``Dashboards > Dashboards`` in list view click ``Link``.
-![link-to-dashboard](./img/dashboard-link.png "Link")
+![link-to-dashboard](img/dashboard-link.png "Link")
 
 Final result:
-![link-dashboard-final](./img/dashboard-final-dc.png "Final dashboard")
+![link-dashboard-final](img/dashboard-final-dc.png "Final dashboard")
 
 ## Aggregating options
 
