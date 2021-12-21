@@ -22,6 +22,7 @@ nav:
       - Dashboards: user/dashboards.md
       - API: user/api.md
       - ralph-cli: user/ralph-cli.md
+      - Cloud sync: user/cloudsync.md
   - Developer guide:
       - Before you start: CONTRIBUTING.md
       - Development environment: development/development_environment.md

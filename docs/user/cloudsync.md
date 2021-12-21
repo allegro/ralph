@@ -16,7 +16,7 @@ streams. Once that is done, one Cloud Provider object should be created and
 configured properly in Ralph. To do that click Cloud providers from the Cloud
 menu in Ralph.
 
-![ralph-add-cloud-provider](./img/ralph-add-cloud-provider.png "Add cloud provider")
+![ralph-add-cloud-provider](img/ralph-add-cloud-provider.png "Add cloud provider")
 
 The configuration options available are:
 
