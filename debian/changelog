@@ -1,3 +1,14 @@
+ralph (20211222.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * initial data commands (#3680)
+  * refactor openstack client (#3682)
+
+  [ Pawel Szulc ]
+  * Documentation links should now work correctly locally and hosted
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Wed, 22 Dec 2021 10:11:58 +0000
+
 ralph (20211220.1) bionic; urgency=medium
 
   * Fix XSS vulnerability in IP Addresses when linked object contained html tags
