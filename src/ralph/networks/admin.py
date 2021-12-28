@@ -192,7 +192,7 @@ class NetworkAdmin(RalphMPTTAdmin):
         nodes_link = []
         for node in nodes:
             nodes_link.append('<a href="{}" target="blank">{}</a>'.format(
-                node.get_absolute_url(), node
+                node.get_absolute_url(), escape(node)
             ))
         return ' <br /> '.join(nodes_link)
     show_parent_networks.short_description = _('Parent networks')
@@ -301,7 +301,7 @@ class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
         nodes_link = []
         for node in nodes:
             nodes_link.append('<a href="{}" target="blank">{}</a>'.format(
-                node.get_absolute_url(), node
+                node.get_absolute_url(), escape(node)
             ))
         return ' > '.join(nodes_link)
     get_network_path.short_description = _('Network')
@@ -317,7 +317,7 @@ class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
 
     def ip_address(self, obj):
         return '<a href="{}">{}</a>'.format(
-            obj.get_absolute_url(), obj.address
+            obj.get_absolute_url(), escape(obj.address)
         )
     ip_address.short_description = _('IP address')
     ip_address.admin_order_field = 'number'
