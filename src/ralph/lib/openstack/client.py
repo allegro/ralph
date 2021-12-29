@@ -66,7 +66,11 @@ class RalphIronicClient:
 
 
 class RalphOpenstackClient:
-
+    """
+    This is a single OpenStack instance client. It handles keystone
+    authentication. It has methods methods to fetch OpenStack data useful from
+    Ralph's perspective from openstack compute and openstack keystone.
+    """
     def __init__(self, site):
         if not nova_client_exists:
             logger.error("novaclient module is not installed")
@@ -204,6 +208,13 @@ class RalphOpenstackClient:
 
 
 class RalphOpenStackInfrastructureClient:
+    """
+    This is an OpenStack client designed to connect with multiple (or all)
+    OpenStack instances that may exist in your local infrastructure.
+    It instantiates a separate RalphOpenStackClient instance to communicate
+    with each OpenStack instance. It has methods to extract
+    and accumulate data from all instances in one place.
+    """
     def __init__(self, openstack_provider_name):
         super().__init__()
         self.DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
@@ -225,17 +236,14 @@ class RalphOpenStackInfrastructureClient:
         return clients
 
     @classmethod
-    def _add_flavor(cls, client, flavor, openstack_flavors):
-        flavor_id = flavor['id']
-        new_flavor = {
+    def _get_flavor_data(cls, client, flavor):
+        return {
             'name': flavor['name'],
             'cores': flavor['vcpus'],
             'memory': flavor['ram'],
             'disk': flavor['disk'] * 1024,
             'tag': client.site['tag'],
         }
-        openstack_flavors[flavor_id] = new_flavor
-        return openstack_flavors
 
     def get_openstack_flavors(self):
         openstack_flavors = {}
@@ -244,8 +252,8 @@ class RalphOpenStackInfrastructureClient:
                 client.site['auth_url'], client.site['tag']
             ))
             for flavor in client.get_flavors_list():
-                openstack_flavors = self._add_flavor(
-                    client, flavor, openstack_flavors
+                openstack_flavors[flavor['id']] = self._get_flavor_data(
+                    client, flavor
                 )
         return openstack_flavors
 
@@ -343,9 +351,8 @@ class RalphOpenStackInfrastructureClient:
                         'Flavor %s (found in host %s) not in flavors list.'
                         ' Fetching it', flavor_id, host_id)
                     flavor = client.nova_client.flavors.get(flavor_id).__dict__
-                    openstack_flavors = self._add_flavor(
+                    openstack_flavors[flavor['id']] = self._get_flavor_data(
                         client,
                         flavor,
-                        openstack_flavors
                     )
         return openstack_projects, openstack_flavors
