@@ -1,0 +1,14 @@
+apiVersion: v2
+name: ralph
+description: Full-featured Asset Management, DCIM and CMDB system for data centers and back offices.
+type: application
+version: 0.1.0
+appVersion: "20211222.1"
+icon: https://avatars.githubusercontent.com/u/562236
+dependencies:
+- name: mysql
+  repository: https://charts.bitnami.com/bitnami
+  version: 8.8.17
+- name: redis
+  repository: https://charts.bitnami.com/bitnami
+  version: 15.6.9

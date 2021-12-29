@@ -1,0 +1,46 @@
+{{- if .Values.inkpy.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ralph.fullname" . }}-inkpy
+  labels:
+    {{- include "ralph.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "ralph.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "ralph.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ralph.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "allegro/inkpy:latest"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: REDIS_HOST
+            value: {{ include "ralph.fullname" . }}-redis-master
+          - name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "ralph.fullname" . }}-redis
+                key: redis-password
+          - name: REDIS_PORT
+            value: "{{ .Values.redis.port }}"
+          - name: REDIS_DB
+            value: "{{ .Values.redis.db }}"
+{{- end }}

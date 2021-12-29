@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.name }}
+  labels:
+    {{- include "ralph.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 80
+      protocol: TCP
+      name: http
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP
+      name: web
+  selector:
+    {{- include "ralph.selectorLabels" . | nindent 4 }}

@@ -1,0 +1,129 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ralph.fullname" . }}
+  labels:
+    {{- include "ralph.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "ralph.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "ralph.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ralph.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: DATABASE_NAME
+            value: "{{ .Values.mysql.auth.database }}"
+          - name: DATABASE_USER
+            value: "{{ .Values.mysql.auth.username }}"
+          - name: DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "ralph.fullname" . }}-mysql
+                key: mysql-password
+          - name: DATABASE_HOST
+            value: {{ include "ralph.fullname" . }}-mysql
+          - name: REDIS_HOST
+            value: {{ include "ralph.fullname" . }}-redis-master
+          - name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "ralph.fullname" . }}-redis
+                key: redis-password
+          - name: REDIS_PORT
+            value: "{{ .Values.redis.port }}"
+          - name: REDIS_DB
+            value: "{{ .Values.redis.db }}"
+          {{- if .Values.debug }}
+          - name: LOGGING_DJANGO_REQUEST_LEVEL
+            value: 'DEBUG'
+          - name: LOGGING_RALPH_LEVEL
+            value: 'DEBUG'
+          - name: LOGGING_RQ_LEVEL
+            value: 'DEBUG'
+          - name: RALPH_DEBUG
+            value: '1'
+          - name: GUNICORN_LOGLEVEL
+            value: 'DEBUG'
+          {{- end }}
+          ports:
+            - name: web
+              containerPort: 8000
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: ralph-media-data
+              mountPath: /var/local/ralph/media
+            - name: ralph-static-data
+              mountPath: /usr/share/ralph/static
+          {{- if .Values.useCustomProdPy.enabled }}
+            - name: {{ .Values.useCustomProdPy.configmapName }}
+              mountPath: /opt/ralph/ralph-core/lib/python3.6/site-packages/ralph/settings/prod.py
+              subPath: prod.py
+          {{- end }}
+        - name: {{ .Chart.Name }}-static-nginx
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "allegro/ralph-static-nginx:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            - name: ralph-media-data
+              mountPath: /opt/media
+          {{- if .Values.useCustomNginxConf.enabled }}
+            - name: {{ .Values.useCustomNginxConf.configmapName }}
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+          {{- end }}
+      volumes:
+        - name: ralph-media-data
+          persistentVolumeClaim:
+            claimName: {{ template "ralph.fullname" . }}-media
+        - name: ralph-static-data
+          persistentVolumeClaim:
+            claimName: {{ template "ralph.fullname" . }}-static
+      {{- if .Values.useCustomProdPy.enabled }}
+        - name: {{ .Values.useCustomProdPy.configmapName }}
+          configMap:
+            name: {{ .Values.useCustomProdPy.configmapName }}
+      {{- end }}
+      {{- if .Values.useCustomNginxConf.enabled }}
+        - name: {{ .Values.useCustomNginxConf.configmapName }}
+          configMap:
+            name: {{ .Values.useCustomNginxConf.configmapName }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
