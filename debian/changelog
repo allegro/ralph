@@ -1,3 +1,10 @@
+ralph (20220111.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * Openstack sync changed since parameter 2 (#3697)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Tue, 11 Jan 2022 15:55:39 +0000
+
 ralph (20211222.1) bionic; urgency=medium
 
   [ Szymon Jasinski ]
