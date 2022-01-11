@@ -68,7 +68,7 @@ class RalphIronicClient:
 class RalphOpenstackClient:
     """
     This is a single OpenStack instance client. It handles keystone
-    authentication. It has methods methods to fetch OpenStack data useful from
+    authentication. It has methods to fetch OpenStack data useful from
     Ralph's perspective from openstack compute and openstack keystone.
     """
     def __init__(self, site):
