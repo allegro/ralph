@@ -1,3 +1,9 @@
+ralph (20220207.1) bionic; urgency=medium
+
+  * Prevent xss in network related to ip address and in related subnetwork table
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Mon, 07 Feb 2022 12:02:26 +0000
+
 ralph (20220111.1) bionic; urgency=medium
 
   [ Szymon Jasinski ]
