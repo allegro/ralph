@@ -12,6 +12,7 @@ move_scripts() {
         start-ralph.sh \
         wait-for-it.sh \
         init-ralph.sh \
+        demo-ralph.sh \
     "
 
     for f in $files_to_move; do
