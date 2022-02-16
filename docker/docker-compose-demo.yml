@@ -1,0 +1,5 @@
+version: '3'
+services:
+  nginx:
+    volumes:
+      - /etc/nginx/conf.d:/etc/nginx/conf.d

@@ -90,3 +90,4 @@ tags
 .*.swp
 .*.swo
 .envrc
+.direnv/
