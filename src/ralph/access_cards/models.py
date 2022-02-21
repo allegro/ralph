@@ -141,6 +141,7 @@ class AccessCard(
                 'default_value': partial(autocomplete_user, field_name='user')
             }
         },
+        run_after=['unassign_user']
     )
     def assign_user(cls, instances, **kwargs):
         user = get_user_model().objects.get(pk=int(kwargs['user']))
