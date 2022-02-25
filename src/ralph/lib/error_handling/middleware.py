@@ -17,9 +17,11 @@ class OperationalErrorHandlerMiddleware:
             if isinstance(exception, OperationalError):
                 logger.error("OperationalError occured. URI: %s, "
                              "user: %s, exception: %s, "
-                             "django running since: %s",
+                             "django running since: %s, "
+                             "request id: %s",
                              request.build_absolute_uri(), request.user,
                              exception, settings.START_TIMESTAMP,
+                             request_id,
                              exc_info=True, stack_info=True,
                              extra={'request_id': request_id}
                              )
@@ -30,12 +32,13 @@ class OperationalErrorHandlerMiddleware:
                              "user: %s, SQL query: %s, "
                              "model object: %s, original_error: %s, "
                              "inner exception traceback: %s, "
-                             "django running since: %s",
+                             "django running since: %s, "
+                             "request id: %s",
                              request.build_absolute_uri(), request.user,
                              str(exception.query), exception.model.__dict__,
                              exception.original_error_str,
                              traceback.format_tb(inner_exc.__traceback__),
-                             settings.START_TIMESTAMP,
+                             settings.START_TIMESTAMP, request_id,
                              exc_info=True, stack_info=True,
                              extra={'request_id': request_id}
                              )
