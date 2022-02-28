@@ -1,3 +1,16 @@
+ralph (20220228.1) bionic; urgency=medium
+
+  [ Szymon Jasiński ]
+  * ralph demo resources (#3709)
+
+  [ ✪ vi4m Marcin Kliks ]
+  * Switching to Discourse (#3708)
+
+  [ Szymon Jasiński ]
+  * trace request id if operational error occurs (#3713)
+
+ -- Szymon Jasiński <szymon.jasinski@allegro.pl>  Mon, 28 Feb 2022 14:11:40 +0000
+
 ralph (20220207.1) bionic; urgency=medium
 
   * Prevent xss in network related to ip address and in related subnetwork table
