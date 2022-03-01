@@ -22,14 +22,16 @@ from ralph.lib.error_handling.exceptions import WrappedOperationalError
 
 
 class PolymorphicQuerySet(models.QuerySet):
-    _polymorphic_select_related = {}
-    _polymorphic_prefetch_related = {}
-    _annotate_args = []
-    _annotate_kwargs = {}
-    _extra_args = []
-    _extra_kwargs = {}
-    _polymorphic_filter_args = []
-    _polymorphic_filter_kwargs = {}
+    def __init__(self, *args, **kwargs):
+        self._polymorphic_select_related = {}
+        self._polymorphic_prefetch_related = {}
+        self._annotate_args = []
+        self._annotate_kwargs = {}
+        self._extra_args = []
+        self._extra_kwargs = {}
+        self._polymorphic_filter_args = []
+        self._polymorphic_filter_kwargs = {}
+        super().__init__(*args, **kwargs)
 
     def iterator(self):
         """
