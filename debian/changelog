@@ -1,3 +1,9 @@
+ralph (20220301.1) bionic; urgency=medium
+
+  * Fix extra arguments persisting between requests causing OperationalError
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Tue, 01 Mar 2022 09:03:53 +0000
+
 ralph (20220228.1) bionic; urgency=medium
 
   [ Szymon Jasiński ]
