@@ -117,7 +117,7 @@ class BackOfficeAssetAdmin(
     ]
     multiadd_summary_fields = list_display
 
-    search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
+    search_fields = ['=barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
 
     list_filter = [
         'barcode', 'status', 'imei', 'imei2', 'sn', 'model', 'purchase_order',
