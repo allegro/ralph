@@ -20,7 +20,6 @@ server {
 
     location /password_change/ {
         return 301 /;
-        }
     }
 
     location / {
