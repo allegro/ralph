@@ -79,7 +79,10 @@ class UpdateServiceEnvTest(TestCase):
         dnsaas_client.get_api_result.return_value = [
             {
                 "type": "CNAME",
-                "service_name": "Serwis porcelanowy",
+                "service": {
+                    "id": 1234,
+                    "name": "Serwis porcelanowy",
+                },
                 "name": "tb-bw3.9.local",
                 "content": "hhh.9.local",
             }
@@ -89,7 +92,10 @@ class UpdateServiceEnvTest(TestCase):
             "results": [
                 {
                     "type": "CNAME",
-                    "service_name": "Serwis porcelanowy",
+                    "service": {
+                        "id": 1234,
+                        "name": "Serwis porcelanowy",
+                    },
                     "name": "tb-bw3.9.local",
                     "content": "hhh.9.local",
                 }
