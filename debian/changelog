@@ -1,3 +1,14 @@
+ralph (20220405.1) bionic; urgency=medium
+
+  [ Szymon Jasiński ]
+  * fix ralph demo nginx config (#3719)
+
+  [ Pawel Szulc ]
+  * Don't query obsolete /api/domains endpoint
+  * Update test
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Tue, 05 Apr 2022 11:35:53 +0000
+
 ralph (20220301.1) bionic; urgency=medium
 
   * Fix extra arguments persisting between requests causing OperationalError
