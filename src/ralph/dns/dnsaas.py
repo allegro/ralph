@@ -53,7 +53,7 @@ class DNSaaS:
         self.session.headers.update(_headers)
 
     def _get_oauth_token(self):
-        client_id = settings.OAUTH_CLIENT_ID
+        self.token_expiration = datetime.now() + timedelta(0, 1000)
         secret = settings.OAUTH_SECRET
         token_url = settings.OAUTH_TOKEN_URL
         client = BackendApplicationClient(client_id=client_id)
@@ -111,7 +111,7 @@ class DNSaaS:
         result_url = _url._replace(query=query).geturl()
         return result_url
 
-    def get_api_result(self, url: str, page: int = 0) -> List[dict]:
+    def get_api_result(self, url: str) -> List[dict]:
         """
         Returns 'results' from DNSAAS API.
 
@@ -121,16 +121,21 @@ class DNSaaS:
 
         Returns:
             list of records
-
         """
-        status_code, json_data = self._get(url)
-        api_results = json_data.get('content', [])
-        if not json_data.get('last', None):
+        page = 0
+        api_results, last_page = self._get_api_result(url)
+        while not last_page:
             page = page + 1
             next_url = self._set_page_qp(url, page)
-            _api_results = self.get_api_result(next_url, page=page)
+            _api_results, last_page = self._get_api_result(next_url)
             api_results.extend(_api_results)
         return api_results
+
+    def _get_api_result(self, url: str) -> Tuple[List[dict], bool]:
+        status_code, json_data = self._get(url)
+        api_results = json_data.get('content', [])
+        last_page = bool(json_data.get('last', False))
+        return api_results, last_page
 
     def get_dns_records(self, ipaddresses: List[str]) -> List[dict]:
         """Gets DNS Records for `ipaddresses` by API call"""
