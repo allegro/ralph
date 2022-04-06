@@ -53,6 +53,7 @@ class DNSaaS:
         self.session.headers.update(_headers)
 
     def _get_oauth_token(self):
+        client_id = settings.OAUTH_CLIENT_ID
         secret = settings.OAUTH_SECRET
         token_url = settings.OAUTH_TOKEN_URL
         client = BackendApplicationClient(client_id=client_id)
