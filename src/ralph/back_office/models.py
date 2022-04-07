@@ -81,6 +81,7 @@ class BackOfficeAssetStatus(Choices):
     loan_in_progress = _("loan in progress")
     return_in_progress = _("return in progress")
     to_find = _("to find")
+    sent = _("sent")
 
 
 class OfficeInfrastructure(
