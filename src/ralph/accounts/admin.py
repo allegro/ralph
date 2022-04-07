@@ -117,7 +117,12 @@ class AssetList(Table):
             return []
 
     def buyout_ticket(self, item):
-        if not item.model.category.show_buyout_date:
+        if (
+            not item.model.category.show_buyout_date
+            and item.custom_fields_as_dict.Purpose == 'Test'
+            or item.custom_fields_as_dict.Purpose == 'Team'
+            or item.custom_fields_as_dict.Purpose == 'Veryfication'
+        ):
             return ''
         else:
             get_params = {
