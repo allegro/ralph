@@ -1,3 +1,11 @@
+ralph (20220411.1) bionic; urgency=medium
+
+  * Fix recursion error when querying dnsaas API
+  * Remove typo
+  * Remove typo
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Mon, 11 Apr 2022 09:52:03 +0000
+
 ralph (20220405.1) bionic; urgency=medium
 
   [ Szymon Jasiński ]
