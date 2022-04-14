@@ -1,3 +1,9 @@
+ralph (20220414.1) bionic; urgency=medium
+
+  * Fix failure when service missing
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Thu, 14 Apr 2022 09:15:43 +0000
+
 ralph (20220411.1) bionic; urgency=medium
 
   * Fix recursion error when querying dnsaas API
