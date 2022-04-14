@@ -37,7 +37,10 @@ class Command(BaseCommand):
     def update_from_record(self, result):
         for value in result:
             domain = checking_type(value)
-            service_dns = value['service']['name']
+            try:
+                service_dns = value['service']['name']
+            except TypeError:
+                continue
             try:
                 service_env = ServiceEnvironment.objects.get(
                     service__name=service_dns, environment__name='prod'
