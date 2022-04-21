@@ -117,25 +117,41 @@ class AssetList(Table):
             return []
 
     def buyout_ticket(self, item):
-        if (
-            not item.model.category.show_buyout_date
-            or item.custom_fields_as_dict.Purpose == 'Test'
-            or item.custom_fields_as_dict.Purpose == 'Team'
-            or item.custom_fields_as_dict.Purpose == 'Verification'
-        ):
-            return ''
+        if not item.custom_fields_as_dict.Purpose:
+            if not item.model.category.show_buyout_date:
+                return ''
+            else:
+                get_params = {
+                    "inventory_number": item.barcode,
+                    "serial_number": item.sn,
+                    "model": quotation_to_inches(str(item.model)),
+                    "comment": item.buyout_date
+                }
+                url = "?".join(
+                    [settings.MY_EQUIPMENT_BUYOUT_URL, urlencode(get_params)]
+                )
+                url_title = 'Report buyout'
+                return self.create_report_link(url, url_title, item)
         else:
-            get_params = {
-                "inventory_number": item.barcode,
-                "serial_number": item.sn,
-                "model": quotation_to_inches(str(item.model)),
-                "comment": item.buyout_date
-            }
-            url = "?".join(
-                [settings.MY_EQUIPMENT_BUYOUT_URL, urlencode(get_params)]
-            )
-            url_title = 'Report buyout'
-            return self.create_report_link(url, url_title, item)
+            if (
+                not item.model.category.show_buyout_date
+                or item.custom_fields_as_dict.Purpose == 'Test'
+                or item.custom_fields_as_dict.Purpose == 'Team'
+                or item.custom_fields_as_dict.Purpose == 'Verification'
+            ):
+                return ''
+            else:
+                get_params = {
+                    "inventory_number": item.barcode,
+                    "serial_number": item.sn,
+                    "model": quotation_to_inches(str(item.model)),
+                    "comment": item.buyout_date
+                }
+                url = "?".join(
+                    [settings.MY_EQUIPMENT_BUYOUT_URL, urlencode(get_params)]
+                )
+                url_title = 'Report buyout'
+                return self.create_report_link(url, url_title, item)
     buyout_ticket.title = 'buyout_ticket'
 
     def report_failure(self, item):
