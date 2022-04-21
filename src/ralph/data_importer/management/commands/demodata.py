@@ -166,7 +166,7 @@ class Command(BaseCommand):
     def generate_back_office(self):
         self.stdout.write('Generating Back Office assets')
         back_office_status = BackOfficeAssetStatus()
-        per_page = 4
+        per_page = 2
         parent_category = CategoryFactory(
             name='BACK OFFICE',
             imei_required=False
