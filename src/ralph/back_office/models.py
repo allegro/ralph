@@ -74,7 +74,7 @@ class BackOfficeAssetStatus(Choices):
     damaged = _("damaged")
     liquidated = _("liquidated")
     in_service = _("in service")
-    sent = _("sent")
+    installed = _("sent")
     free = _("free")
     reserved = _("reserved")
     sale = _("sale")
