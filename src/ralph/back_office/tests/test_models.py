@@ -472,6 +472,34 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             requester=self.request.user
         )
 
+    @override_settings(BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME=False)
+    def test_assign_hostname_doesnt_assign_hostname_when_its_empty(self):
+        hostname = ''
+        self.bo_asset = BackOfficeAssetFactory(
+            model=self.model,
+            hostname=hostname,
+            region=self.region_us,
+        )
+        _, transition, _ = self._create_transition(
+            model=self.bo_asset,
+            name='assign_hostname_if_empty_or_country_not_match',
+            source=[BackOfficeAssetStatus.new.id],
+            target=BackOfficeAssetStatus.used.id,
+            actions=['assign_hostname_if_empty_or_country_not_match']
+        )
+        self.assertEquals(self.bo_asset.hostname, hostname)
+
+        run_field_transition(
+            [self.bo_asset],
+            field='status',
+            transition_obj_or_name=transition,
+            data={},
+            requester=self.request.user
+        )
+
+        self.assertEqual(self.bo_asset.hostname, hostname)
+
+    @override_settings(BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME=True)
     def test_assign_hostname_assigns_hostname_when_its_empty(self):
         hostname = ''
         self.bo_asset = BackOfficeAssetFactory(
@@ -686,7 +714,7 @@ class BackOfficeAssetFormTest(TransitionTestCase, ClientMixin):
         self.assertNotIn('hostname', resp.context['adminform'].form.fields)
         self.assertNotIn('service_env', resp.context['adminform'].form.fields)
 
-    @override_settings(BACKOFFICE_HOSTNAME_FIELD_READONLY=1)
+    @override_settings(BACKOFFICE_HOSTNAME_FIELD_READONLY=True)
     def test_bo_admin_form_with_readonly_hostname(self):
         self.assertTrue(self.login_as_user())
         asset = BackOfficeAssetFactory()
