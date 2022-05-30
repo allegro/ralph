@@ -146,10 +146,10 @@ class AutocompleteWidget(forms.TextInput):
 
     def __init__(self, field, admin_site, attrs=None, using=None, **kwargs):
         self.field = field
-        self.rel = self.field.rel
+        self.rel = field.remote_field
         self.multi = kwargs.get('multi', False)
         self.request = kwargs.get('request', None)
-        self.rel_to = kwargs.get('rel_to') or field.rel.to
+        self.rel_to = kwargs.get('rel_to') or field.remote_field.model
         self.admin_site = admin_site
         self.db = using
         super().__init__(attrs)

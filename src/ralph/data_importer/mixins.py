@@ -21,12 +21,24 @@ class ImportForeignKeyMeta(type):
         for display ForeignKey fields.
         """
         # https://bugs.python.org/issue29270
-        attrs.pop('__classcell__', None)
-        new_class = super().__new__(cls, name, bases, attrs)
+        # https://bugs.python.org/issue41629
+        # https://stackoverflow.com/questions/41343263/provide-classcell-example-for-python-3-6-metaclass
+        # https://github.com/django/django/pull/7653/files
+        #attrs.pop('__classcell__', None)
+        super_new = super(ImportForeignKeyMeta, cls).__new__
+        classcell = attrs.pop('__classcell__', None)
+        module = attrs.pop('__module__')
+        new_attrs = {'__module__': module}
+
+        if classcell is not None:
+            new_attrs['__classcell__'] = classcell
+
+        print('cls, name, bases, attrs', cls, name, bases, new_attrs)
+        new_class = super_new(cls, name, bases, new_attrs)
         # Generate second class only for export which has added
         # additional *_str fields
-        export_class = super().__new__(
-            cls, '{}Exporter'.format(name), bases, attrs
+        export_class = super_new(
+            cls, '{}Exporter'.format(name), bases, new_attrs
         )
         update_fields = []
         for name, field in new_class.fields.items():
@@ -73,6 +85,11 @@ class ImportForeignKeyMeta(type):
         export_class.fields = OrderedDict(update_fields)
         new_class.export_class = export_class
         return new_class
+
+
+    #def __repr__(self):
+    #    return str(self.__class__)
+
 
 
 class ImportForeignKeyMixin(object):

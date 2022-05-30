@@ -8,7 +8,7 @@ from django.urls import NoReverseMatch
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin.mixins import RalphAdmin, RalphTabularInline, register
 from ralph.admin.helpers import get_admin_url
 from ralph.admin.sites import ralph_site
 from ralph.admin.views.extra import RalphDetailView

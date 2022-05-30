@@ -4,7 +4,7 @@ from ralph.admin import RalphTabularInline
 from ralph.admin.m2m import RalphTabularM2MInline
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.assets.models.components import Ethernet
-from ralph.lib.table import TableWithUrl
+from ralph.lib.table.table import TableWithUrl
 from ralph.networks.forms import NetworkForm, NetworkInlineFormset
 from ralph.networks.models import Network
 

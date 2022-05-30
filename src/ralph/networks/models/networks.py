@@ -58,7 +58,8 @@ class NetworkEnvironment(
 ):
     data_center = models.ForeignKey(
         'data_center.DataCenter',
-        verbose_name=_('data center')
+        verbose_name=_('data center'),
+        on_delete=models.CASCADE,
     )
     queue = models.ForeignKey(
         'DiscoveryQueue',
@@ -250,6 +251,7 @@ class Network(
         related_name='children',
         db_index=True,
         editable=False,
+        on_delete=models.CASCADE,
     )
     address = IPNetwork(
         verbose_name=_('network address'),
@@ -319,6 +321,7 @@ class Network(
     service_env = models.ForeignKey(
         'assets.ServiceEnvironment', related_name='networks', null=True,
         default=None, blank=True,
+        on_delete=models.CASCADE,
     )
     dns_servers_group = models.ForeignKey(
         'dhcp.DNSServerGroup',

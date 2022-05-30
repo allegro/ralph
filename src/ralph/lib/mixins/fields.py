@@ -217,6 +217,9 @@ class BaseObjectForeignKey(models.ForeignKey):
     def __init__(self, *args, **kwargs):
         kwargs['limit_choices_to'] = self.limit_choices
         self.limit_models = kwargs.pop('limit_models', [])
+        if 'on_delete' not in kwargs:
+            # default for on_delete in older django
+            kwargs['on_delete'] = models.CASCADE
         super().__init__(*args, **kwargs)
 
     def limit_choices(self):

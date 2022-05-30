@@ -2,7 +2,7 @@
 from django import forms
 from django.conf import settings
 from django.utils.html import strip_tags
-from django.utils.text import mark_safe
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.lib.transitions.models import (

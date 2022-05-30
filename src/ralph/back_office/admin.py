@@ -4,7 +4,7 @@ from django.conf import settings
 from django.apps import apps
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin.mixins import RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import LiquidatedStatusFilter, TagsListFilter
 from ralph.admin.mixins import BulkEditChangeListMixin
 from ralph.admin.sites import ralph_site

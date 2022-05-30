@@ -14,13 +14,13 @@ class ImportedObjects(TimeStampMixin, models.Model):
 
     """Django models for imported objects."""
 
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_pk = models.IntegerField(db_index=True)
     old_object_pk = models.CharField(max_length=255, db_index=True)
     old_ci_uid = models.CharField(
         max_length=255, db_index=True, null=True, blank=True
     )
-    object = fiels.GenericForeignKey('content_type', 'object_pk')
+    object = fields.GenericForeignKey('content_type', 'object_pk')
 
     def __str__(self):
         return "{} - {}".format(
