@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from urllib.parse import urlencode
 
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.test import TestCase
 
 from ralph.data_center.models import BaseObjectCluster, Cluster, DataCenterAsset

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import urllib
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.test import TestCase
 
 from ralph.accounts.models import RalphUser, Region

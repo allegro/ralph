@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from itertools import repeat
+from functools import partial
 
 from django.conf.urls import url
 from django.contrib.admin import TabularInline
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import HttpResponseRedirect
-from django.utils.functional import curry
 from django.utils.http import urlencode
 
 from ralph.admin import RalphAdmin, register
@@ -145,7 +145,7 @@ class TransitionAdminMixin(object):
             )
 
         return (
-            curry(transition_action_redirect, transition=transition),
+            partial(transition_action_redirect, transition=transition),
             name,
             '{} transition'.format(name.capitalize()),
         )

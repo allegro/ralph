@@ -1,6 +1,7 @@
 import sys
+import os
 
-from ralph.settings import *  # noqa
+from ralph.settings.base import *
 
 # for dhcp agent test
 sys.path.append(os.path.join(BASE_DIR, '..', '..', 'contrib', 'dhcp_agent'))
@@ -10,7 +11,7 @@ DEBUG = False
 TEST_DB_ENGINE = os.environ.get('TEST_DB_ENGINE', 'mysql')
 if TEST_DB_ENGINE == 'psql':
     DATABASES['default'].update({
-        'ENGINE': 'transaction_hooks.backends.postgresql_psycopg2',
+        'ENGINE': 'django.db.backends.postgresql',
         'PORT': os.environ.get('DATABASE_PORT', 5432),
         'OPTIONS': {},
     })

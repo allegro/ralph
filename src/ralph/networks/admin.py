@@ -1,5 +1,5 @@
 from django.contrib.admin.views.main import ORDER_VAR, SEARCH_VAR
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db.models import Count, F, Prefetch
 from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _

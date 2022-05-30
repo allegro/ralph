@@ -19,7 +19,7 @@ from ralph.lib.mixins.models import (
     NamedMixin,
     PriceMixin
 )
-from ralph.lib.permissions import PermByFieldMixin
+from ralph.lib.permissions.models import PermByFieldMixin
 from ralph.lib.polymorphic.models import PolymorphicQuerySet
 
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
 
-from django.core.urlresolvers import NoReverseMatch
+from django.urls import NoReverseMatch
 from rest_framework import routers
 from rest_framework.response import Response
 from rest_framework.reverse import reverse

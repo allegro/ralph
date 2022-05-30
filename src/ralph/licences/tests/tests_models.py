@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from ralph.accounts.tests.factories import RegionFactory, UserFactory
 from ralph.back_office.tests.factories import BackOfficeAssetFactory

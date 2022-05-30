@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.test import RequestFactory, TestCase
 from rest_framework.status import HTTP_200_OK
 

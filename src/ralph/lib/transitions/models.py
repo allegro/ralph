@@ -3,6 +3,7 @@
 import inspect
 import logging
 from collections import defaultdict
+from functools import partial
 
 import reversion
 from dj.choices import Choices
@@ -21,7 +22,6 @@ from django.db.models.signals import (
     pre_save
 )
 from django.dispatch import receiver
-from django.utils.functional import curry
 from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields.json import JSONField
@@ -485,7 +485,7 @@ class TransitionWorkflowBase(ModelBase):
             for field in fields:
                 new_class.add_to_class(
                     'get_available_transitions_for_{}'.format(field),
-                    curry(get_available_transitions_for_field, field=field)
+                    partial(get_available_transitions_for_field, field=field)
                 )
         return new_class
 
@@ -498,7 +498,7 @@ class TransitionWorkflowBaseWithPermissions(
 
 
 class TransitionModel(AdminAbsoluteUrlMixin, models.Model):
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     field_name = models.CharField(max_length=50)
 
     class Meta:
@@ -518,7 +518,7 @@ class TransitionModel(AdminAbsoluteUrlMixin, models.Model):
 
 class Transition(models.Model):
     name = models.CharField(max_length=50)
-    model = models.ForeignKey(TransitionModel)
+    model = models.ForeignKey(TransitionModel, on_delete=models.CASCADE)
     run_asynchronously = models.BooleanField(
         default=False,
         help_text=_(
@@ -616,12 +616,12 @@ class Action(models.Model):
 
 class TransitionsHistory(TimeStampMixin):
 
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     transition_name = models.CharField(max_length=255)
     source = models.CharField(max_length=50, blank=True, null=True)
     target = models.CharField(max_length=50, blank=True, null=True)
     object_id = models.IntegerField(db_index=True)
-    logged_user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    logged_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     attachments = models.ManyToManyField(Attachment)
     kwargs = JSONField()
     actions = JSONField()

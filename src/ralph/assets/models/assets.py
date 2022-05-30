@@ -31,7 +31,7 @@ from ralph.lib.mixins.models import (
     PriceMixin,
     TimeStampMixin
 )
-from ralph.lib.permissions import PermByFieldMixin
+from ralph.lib.permissions.models import PermByFieldMixin
 from ralph.lib.permissions.models import PermissionsBase
 
 logger = logging.getLogger(__name__)

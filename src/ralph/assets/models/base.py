@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -11,7 +11,7 @@ from ralph.lib.custom_fields.models import (
     WithCustomFieldsMixin
 )
 from ralph.lib.mixins.models import TaggableMixin, TimeStampMixin
-from ralph.lib.permissions import PermByFieldMixin
+from ralph.lib.permissions.models import PermByFieldMixin
 from ralph.lib.permissions.models import PermissionsBase
 from ralph.lib.polymorphic.models import (
     Polymorphic,

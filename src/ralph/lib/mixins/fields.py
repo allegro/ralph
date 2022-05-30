@@ -7,9 +7,8 @@ from django.contrib.admin.widgets import AdminTextInputWidget
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.loading import get_model
+from django.apps import apps
 from django.forms.utils import flatatt
-from django.utils import six
 from django.utils.html import format_html, smart_urlquote
 from django.utils.translation import ugettext_lazy as _
 from taggit.forms import TagField
@@ -227,7 +226,7 @@ class BaseObjectForeignKey(models.ForeignKey):
         """
         if self.limit_models:
             content_types = ContentType.objects.get_for_models(
-                *[get_model(*i.split('.')) for i in self.limit_models]
+                *[apps.get_model(*i.split('.')) for i in self.limit_models]
             )
             return {'content_type__in': content_types.values()}
 
@@ -237,12 +236,12 @@ class BaseObjectForeignKey(models.ForeignKey):
         """
         Returns Model class list from limit_models.
         """
-        return [get_model(model) for model in self.limit_models]
+        return [apps.get_model(model) for model in self.limit_models]
 
 
 class TagWidget(forms.TextInput):
     def render(self, name, value, attrs=None):
-        if value is not None and not isinstance(value, six.string_types):
+        if value is not None and not isinstance(value, basestring):
             value = ', '.join(sorted([
                 (t if ',' not in t else '"%s"' % t) for t in value
             ]))

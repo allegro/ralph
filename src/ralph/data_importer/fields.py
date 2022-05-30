@@ -3,7 +3,7 @@ import logging
 from djmoney.money import Money
 from import_export import fields
 
-from ralph.settings import DEFAULT_CURRENCY_CODE
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +92,6 @@ class PriceField(fields.Field):
     def save(self, obj, data):
         price = Money(
             data['price'],
-            data.get('price_currency', DEFAULT_CURRENCY_CODE)
+            data.get('price_currency', settings.DEFAULT_CURRENCY_CODE)
         )
         setattr(obj, 'price', price)

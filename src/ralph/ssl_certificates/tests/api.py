@@ -1,4 +1,4 @@
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from rest_framework import status
 
 from ralph.api.tests._base import RalphAPITestCase

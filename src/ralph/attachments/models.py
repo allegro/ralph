@@ -3,7 +3,7 @@ import os
 import string
 
 from django.conf import settings
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes import fields
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import ContentFile
 from django.db import models, transaction
@@ -115,7 +115,7 @@ class Attachment(TimeStampMixin, models.Model):
         default='application/octet-stream',
     )
     description = models.TextField(blank=True)
-    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL)
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     objects = AttachmentManager()
 
@@ -166,10 +166,10 @@ class AttachmentItem(models.Model):
     This model is bridge between attachment and content type - with this
     model we can add one attachment and link with many content types.
     """
-    attachment = models.ForeignKey(Attachment, related_name='items')
-    content_type = models.ForeignKey(ContentType)
+    attachment = models.ForeignKey(Attachment, related_name='items', on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    content_object = fields.GenericForeignKey('content_type', 'object_id')
 
     objects = AttachmentItemManager()
 

@@ -3,7 +3,7 @@
 import reversion
 from dj.choices import Choices
 from django.contrib.auth import get_user_model
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from rest_framework.test import APIClient, APIRequestFactory
 
 from ralph.accounts.tests.factories import RegionFactory

@@ -1,4 +1,4 @@
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from ralph.back_office.models import BackOfficeAssetStatus
 from ralph.back_office.tests.factories import WarehouseFactory

@@ -10,7 +10,7 @@ from django.contrib.admin import SimpleListFilter
 from django.contrib.admin.filters import FieldListFilter
 from django.contrib.admin.options import IncorrectLookupParameters
 from django.contrib.admin.utils import get_model_from_relation
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import models
 from django.db.models import Q
 from django.forms.utils import flatatt
@@ -20,7 +20,6 @@ from django.utils.html import conditional_escape, mark_safe
 from django.utils.translation import ugettext_lazy as _
 from mptt.fields import TreeForeignKey
 from mptt.settings import DEFAULT_LEVEL_INDICATOR
-from taggit.managers import TaggableManager
 
 from ralph.admin.autocomplete import AUTOCOMPLETE_EMPTY_VALUE, get_results
 from ralph.admin.helpers import get_field_by_relation_path
@@ -642,6 +641,7 @@ def register_custom_filters():
 
     This function is called in AppConfig.ready() (ralph.admin.apps).
     """
+    from taggit.managers import TaggableManager
     field_filter_mapper = [
         (lambda f: bool(f.choices), ChoicesListFilter),
         (lambda f: isinstance(f, (

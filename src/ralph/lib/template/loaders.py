@@ -3,7 +3,7 @@ import io
 from os.path import abspath, dirname, join
 
 from django.apps import apps
-from django.template import TemplateDoesNotExist
+from django.template.exceptions import TemplateDoesNotExist
 from django.template.loaders.base import Loader as BaseLoader
 
 

@@ -3,7 +3,7 @@ from urllib.parse import urlencode
 
 from django.contrib.admin.utils import get_fields_from_path
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db.models.constants import LOOKUP_SEP
 from django.db.models.expressions import Func
 

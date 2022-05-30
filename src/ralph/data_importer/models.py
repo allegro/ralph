@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes import fields
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
@@ -20,7 +20,7 @@ class ImportedObjects(TimeStampMixin, models.Model):
     old_ci_uid = models.CharField(
         max_length=255, db_index=True, null=True, blank=True
     )
-    object = generic.GenericForeignKey('content_type', 'object_pk')
+    object = fiels.GenericForeignKey('content_type', 'object_pk')
 
     def __str__(self):
         return "{} - {}".format(
