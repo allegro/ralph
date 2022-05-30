@@ -5,7 +5,6 @@ from functools import reduce
 from django.contrib.contenttypes.fields import (
     create_generic_related_manager,
     GenericRelation,
-    ReverseGenericRelatedObjectsDescriptor
 )
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models
@@ -148,9 +147,15 @@ class CustomFieldValueQuerySet(models.QuerySet):
         )
 
 
-class ReverseGenericRelatedObjectsWithInheritanceDescriptor(
-    ReverseGenericRelatedObjectsDescriptor
-):
+class ReverseGenericRelatedObjectsWithInheritanceDescriptor():
+
+    def __init__(self, field, for_concrete_model=True):
+        """
+        ported from ReverseGenericRelatedObjectsDescriptor
+        """
+        self.field = field
+        self.for_concrete_model = for_concrete_model
+
     def __get__(self, instance, instance_type=None):
         """
         Overwrite of ReverseGenericRelatedObjectsDescriptor's __get__
