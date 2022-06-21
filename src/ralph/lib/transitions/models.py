@@ -440,6 +440,11 @@ def run_field_transition(
 
         if isinstance(result, Attachment):
             attachments.append(result)
+        elif isinstance(result, list):
+            for item in result:
+                if isinstance(item, Attachment):
+                    attachments.append(item)
+
     for instance in instances:
         _post_transition_instance_processing(
             instance, transition, data, history_kwargs=history_kwargs,
