@@ -23,7 +23,7 @@ def generate_report(name, requester, instances, language, context):
     attachments = []
     items_per_attachment = 10
     service_pdf = ExternalService('PDF')
-    
+
     for n in range(0, len(context), items_per_attachment):
         result = service_pdf.run(
             template=template_content,
