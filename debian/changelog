@@ -1,3 +1,16 @@
+ralph (20220701.1) bionic; urgency=medium
+
+  [ Szymon Jasiński ]
+  * fix vip update event handling (#3734)
+
+  [ Olga Matyla ]
+  * Fix report generation (#3733)
+
+  [ Szymon Jasiński ]
+  * disallow ralph user modification in ralph demo (#3735)
+
+ -- Olga Matyla <olga.matyla@allegro.pl>  Fri, 01 Jul 2022 11:32:55 +0000
+
 ralph (20220414.1) bionic; urgency=medium
 
   * Fix failure when service missing
