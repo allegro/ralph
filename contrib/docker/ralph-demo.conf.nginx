@@ -22,6 +22,14 @@ server {
         return 301 /;
     }
 
+    location /accounts/ralphuser/1/ {
+        return 301 /;
+    }
+
+    location /api/users/1/ {
+        return 301 /;
+    }
+
     location / {
         proxy_pass http://web:8000;
 
