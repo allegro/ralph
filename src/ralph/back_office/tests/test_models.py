@@ -575,8 +575,9 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             timezone.now().isoformat()[:10], 'james', 'bond',
             report_template.report.name,
         )
-        self.assertEqual(attachment.original_filename, correct_filename)
-        self.assertEqual(attachment.file.read(), GENERATED_FILE_CONTENT)
+        self.assertEqual(len(attachment), 1)
+        self.assertEqual(attachment[0].original_filename, correct_filename)
+        self.assertEqual(attachment[0].file.read(), GENERATED_FILE_CONTENT)
 
     @patch.object(ralph.back_office.models, 'get_hook')
     def test_send_attachments_to_user_action_sends_email(self, mock_get_hook):
