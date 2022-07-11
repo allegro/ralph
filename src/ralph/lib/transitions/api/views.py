@@ -70,7 +70,7 @@ class TransitionJobViewSet(RalphReadOnlyAPIViewSet):
 class TransitionsHistoryViewSet(RalphReadOnlyAPIViewSet):
     queryset = TransitionsHistory.objects.all()
     serializer_class = TransitionsHistorySerializer
-    filter_fields = ['created', 'modified', 'transition_name', 'source', 'target', 'object_id']
+    filter_fields = ['object_id']
 
 
 class TransitionModelViewSet(RalphReadOnlyAPIViewSet):
