@@ -1,3 +1,12 @@
+ralph (20220718.1) bionic; urgency=medium
+
+  * Add additional transitions history filter fields
+  * Revert "Add additional transitions history filter fields"
+  * Add additional transitions history filter fields
+  * Add import ssl certificates from many repositories
+
+ -- awieckowski <aleksander.wieckowski@allegro.pl>  Mon, 18 Jul 2022 12:33:29 +0000
+
 ralph (20220701.1) bionic; urgency=medium
 
   [ Szymon Jasiński ]
