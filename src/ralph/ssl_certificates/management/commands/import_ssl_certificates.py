@@ -27,9 +27,12 @@ def extract_domain_from_filename(filename):
 
 def get_domain_ssl(cert):
     domain_subject = cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
-    domain_ssl = domain_subject[0].value
-    if domain_ssl.startswith('*.'):
-        domain_ssl = domain_ssl[2:]
+    try:
+        domain_ssl = domain_subject[0].value
+        if domain_ssl.startswith('*.'):
+            domain_ssl = domain_ssl[2:]
+    except IndexError:
+        domain_ssl = ''
     return domain_ssl
 
 
@@ -49,8 +52,9 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('certs_dir', type=str)
+        parser.add_argument('repository_name', nargs='?', default='', type=str)
 
-    def get_data_from_cert(self, cert, filename):
+    def get_data_from_cert(self, cert, filename, repository_name):
         """
         get_data_from_certs takes certificate and proceed
         specific data into proper fields
@@ -95,11 +99,13 @@ class Command(BaseCommand):
             san=san,
             date_to=cert.not_valid_after,
             date_from=cert.not_valid_before,
-            issued_by=manufacturer
+            issued_by=manufacturer,
+            certificate_repository=repository_name
         )
 
     def handle(self, *args, **options):
         certs_dir = options['certs_dir']
+        repository_name = options['repository_name']
         if not os.path.isdir(certs_dir):
             self.stdout.write(
                 self.style.ERROR(
@@ -129,4 +135,4 @@ class Command(BaseCommand):
                     continue
                 if cert.not_valid_after < datetime.datetime.now():
                     continue
-                self.get_data_from_cert(cert, filename)
+                self.get_data_from_cert(cert, filename, repository_name)
