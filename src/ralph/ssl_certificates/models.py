@@ -34,6 +34,12 @@ class SSLCertificate(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         choices=CertificateType(),
         default=CertificateType.ov.id,
     )
+    certificate_repository = models.CharField(
+        verbose_name=_('certificate repository'),
+        blank=True,
+        help_text=_('Certificate source repository'),
+        max_length=255
+    )
     issued_by = models.ForeignKey(
         Manufacturer,
         on_delete=models.PROTECT,

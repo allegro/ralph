@@ -18,12 +18,12 @@ class SSLCertificateAdmin(AttachmentsMixin, RalphAdmin):
         'name', 'certificate_type',
         ('date_from', DateListFilter),
         ('date_to', DateListFilter), 'issued_by',
-        'service_env',
+        'service_env', 'certificate_repository'
     ]
 
     list_display = [
         'name', 'domain_ssl', 'issued_by',
-        'date_from', 'date_to',
+        'date_from', 'date_to', 'certificate_repository'
     ]
 
     raw_id_fields = [
@@ -34,8 +34,8 @@ class SSLCertificateAdmin(AttachmentsMixin, RalphAdmin):
         (_('Basic info'), {
             'fields': (
                 'name', 'domain_ssl', 'certificate_type',
-                'issued_by', 'san',
-                'price', 'date_from', 'date_to',
+                'issued_by', 'san', 'price', 'date_from', 'date_to',
+                'certificate_repository'
             )
         }),
         (_('Ownership info'), {
