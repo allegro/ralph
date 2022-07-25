@@ -695,5 +695,6 @@ class BackOfficeAsset(Regionalizable, Asset):
     def assign_hostname_if_empty_or_country_not_match(
         cls, instances, **kwargs
     ):
-        for instance in instances:
-            instance._try_assign_hostname(commit=False, force=False)
+        if settings.BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME:
+            for instance in instances:
+                instance._try_assign_hostname(commit=False, force=False)
