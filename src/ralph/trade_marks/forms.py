@@ -1,7 +1,7 @@
 from django.forms import CheckboxSelectMultiple
 
 from ralph.admin.mixins import RalphAdminForm
-from ralph.trade_marks.models import Design, Patent, TradeMark
+from ralph.trade_marks.models import Design, Patent, TradeMark, UtilityModel
 
 
 class IntellectualPropertyForm(RalphAdminForm):
@@ -25,3 +25,8 @@ class DesignForm(IntellectualPropertyForm):
 class PatentForm(IntellectualPropertyForm):
     class Meta(IntellectualPropertyForm.Meta):
         model = Patent
+
+
+class UtilityModelForm(IntellectualPropertyForm):
+    class Meta(IntellectualPropertyForm.Meta):
+        model = UtilityModel

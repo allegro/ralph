@@ -12,7 +12,7 @@ from ralph.admin.filters import (
 )
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.attachments.admin import AttachmentsMixin
-from ralph.trade_marks.forms import DesignForm, PatentForm, TradeMarkForm
+from ralph.trade_marks.forms import DesignForm, PatentForm, TradeMarkForm, UtilityModelForm
 from ralph.trade_marks.models import (
     Design,
     DesignAdditionalCountry,
@@ -26,7 +26,10 @@ from ralph.trade_marks.models import (
     TradeMarkCountry,
     TradeMarkKind,
     TradeMarkRegistrarInstitution,
-    TradeMarksLinkedDomains
+    TradeMarksLinkedDomains,
+    UtilityModel,
+    UtilityModelAdditionalCountry,
+    UtilityModelLinkedDomains
 )
 
 
@@ -61,6 +64,16 @@ class PatentLinkedDomainsView(IntellectualPropertyLinkedDomainViewBase):
 
     class Inline(RalphTabularInline):
         model = PatentsLinkedDomains
+        raw_id_fields = ('domain', admin.RelatedFieldListFilter)
+        extra = 1
+
+    inlines = [Inline]
+
+
+class UtilityModelLinkedDomainsView(IntellectualPropertyLinkedDomainViewBase):
+
+    class Inline(RalphTabularInline):
+        model = UtilityModelLinkedDomains
         raw_id_fields = ('domain', admin.RelatedFieldListFilter)
         extra = 1
 
@@ -292,3 +305,39 @@ class TradeMarkRegistrarInstitutionAdmin(RalphAdmin):
 @register(TradeMarkCountry)
 class TradeMarkCountryAdmin(RalphAdmin):
     pass
+
+
+@register(UtilityModel)
+class UtilityModelAdmin(IntellectualPropertyAdminBase):
+    change_views = [UtilityModelLinkedDomainsView]
+    form = UtilityModelForm
+    list_filter = [
+        'number',
+        ('valid_from', DateListFilter),
+        ('valid_to', DateListFilter),
+        'additional_markings',
+        'holder',
+        'status',
+        (
+            'utilitymodeladditionalcountry__country',
+            custom_title_filter('Region', RelatedAutocompleteFieldListFilter)
+        )
+    ]
+
+    def region(self, obj):
+        return ', '.join(
+            tm_country.country.name for tm_country in
+            obj.utilitymodeladditionalcountry_set.all()
+        )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related(
+            'utilitymodeladditionalcountry_set__country'
+        )
+
+    class AdditionalCountryInline(RalphTabularInline):
+        model = UtilityModelAdditionalCountry
+        extra = 1
+        verbose_name = _('country')
+
+    inlines = [AdditionalCountryInline]

@@ -17,7 +17,9 @@ from ralph.trade_marks.models import (
     TradeMarkAdditionalCountry,
     TradeMarkCountry,
     TradeMarkRegistrarInstitution,
-    TradeMarksLinkedDomains
+    TradeMarksLinkedDomains,
+    UtilityModel,
+    UtilityModelLinkedDomains
 )
 
 
@@ -100,3 +102,24 @@ class TradeMarkAdditionalCountryFactory(DjangoModelFactory):
 
     class Meta:
         model = TradeMarkAdditionalCountry
+
+
+class UtilityModelFactory(DjangoModelFactory):
+    valid_to = date_now + timedelta(days=365)
+    number = factory.Sequence(lambda n: 'Registrant number ' + str(n))
+    name = factory.Sequence(lambda n: 'Trade Mark name ' + str(n))
+    technical_owner = factory.SubFactory(UserFactory)
+    business_owner = factory.SubFactory(UserFactory)
+    classes = factory.Sequence(lambda n: 'Registrant class ' + str(n))
+    holder = factory.SubFactory(AssetHolderFactory)
+
+    class Meta:
+        model = UtilityModel
+
+
+class UtilityModelLinkedDomainsFactory(DjangoModelFactory):
+    utility_model = factory.SubFactory(UtilityModelFactory)
+    domain = factory.SubFactory(DomainFactory)
+
+    class Meta:
+        model = UtilityModelLinkedDomains

@@ -90,6 +90,8 @@ FACTORY_MAP = {
     'ralph.supports.models.SupportType': 'ralph.supports.tests.factories.SupportTypeFactory',  # noqa
     'ralph.trade_marks.models.TradeMark': 'ralph.trade_marks.tests.factories.TradeMarkFactory', #noqa
     'ralph.trade_marks.models.TradeMarksLinkedDomains': 'ralph.trade_marks.tests.factories.TradeMarksLinkedDomainsFactory',  # noqa
+    'ralph.trade_marks.models.UtilityModel': 'ralph.trade_marks.tests.factories.UtilityModelFactory',# noqa
+    'ralph.trade_marks.models.UtilityModelLinkedDomains': 'ralph.trade_marks.tests.factories.UtilityModelLinkedDomainsFactory',# noqa
     'ralph.trade_marks.models.ProviderAdditionalMarking': 'ralph.trade_marks.tests.factories.ProviderAdditionalMarkingFactory',  # noqa
     'ralph.trade_marks.models.TradeMarkCountry': 'ralph.trade_marks.tests.factories.TradeMarkCountryFactory',  # noqa
     'ralph.trade_marks.models.TradeMarkRegistrarInstitution': 'ralph.trade_marks.tests.factories.TradeMarkRegistrarInstitutionFactory',  # noqa
