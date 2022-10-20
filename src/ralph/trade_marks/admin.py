@@ -12,7 +12,12 @@ from ralph.admin.filters import (
 )
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.attachments.admin import AttachmentsMixin
-from ralph.trade_marks.forms import DesignForm, PatentForm, TradeMarkForm, UtilityModelForm
+from ralph.trade_marks.forms import (
+    DesignForm,
+    PatentForm,
+    TradeMarkForm,
+    UtilityModelForm
+)
 from ralph.trade_marks.models import (
     Design,
     DesignAdditionalCountry,
