@@ -1,3 +1,24 @@
+ralph (20221027.1) bionic; urgency=medium
+
+  [ Aleksander Więckowski ]
+  * Add Utility Model (#3741)
+
+ -- awieckowski <aleksander.wieckowski@allegro.pl>  Thu, 27 Oct 2022 09:24:25 +0000
+
+ralph (20221027.1) bionic; urgency=medium
+
+  [ Aleksander Więckowski ]
+  * Add Utility Model (#3741)
+
+ -- awieckowski <aleksander.wieckowski@allegro.pl>  Thu, 27 Oct 2022 09:21:50 +0000
+
+ralph (20221027.1) bionic; urgency=medium
+
+  [ Aleksander Więckowski ]
+  * Add Utility Model (#3741)
+
+ -- root <root@8bc7e8d888ea>  Thu, 27 Oct 2022 09:16:53 +0000
+
 ralph (20220725.1) bionic; urgency=medium
 
   * Allow editing hostname by default
