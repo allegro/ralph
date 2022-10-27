@@ -284,3 +284,40 @@ class DesignAdditionalCountry(models.Model):
         verbose_name = _('Design Additional Country')
         verbose_name_plural = _('Design Additional Countries')
         unique_together = ('country', 'design')
+
+
+@verbose_names(
+    name=_('Utility Model Name'), number=_('Utility Model number'),
+    status=_('Utility Model status'), holder=_('Utility Model holder'),
+    image=_('Representation'), classes=_('IPC Classification')
+)
+class UtilityModel(IntellectualPropertyBase, AdminAbsoluteUrlMixin, BaseObject):
+    pass
+
+
+class UtilityModelAdditionalCountry(models.Model):
+    utility_model = models.ForeignKey(UtilityModel)
+    country = models.ForeignKey(TradeMarkCountry)
+
+    class Meta:
+        verbose_name = _('Utility Model Additional Country')
+        verbose_name_plural = _('Utility Model Additional Countries')
+        unique_together = ('country', 'utility_model')
+
+
+class UtilityModelLinkedDomains(models.Model):
+    utility_model = models.ForeignKey(UtilityModel)
+    domain = models.ForeignKey(
+        Domain,
+        related_name='utility_model'
+    )
+
+    class Meta:
+        unique_together = ('utility_model', 'domain')
+        verbose_name = _('Utility Model Linked Domain')
+        verbose_name_plural = _('Utility Model Linked Domains')
+
+    def __str__(self):
+        return '{} assigned to {}'.format(
+            self.utility_model, self.domain,
+        )
