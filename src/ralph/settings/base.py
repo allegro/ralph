@@ -691,7 +691,6 @@ OAUTH_TOKEN_URL = "https://localhost/"
 
 GOOGLE_TAG_MANAGER_TAG_ID = os.environ.get('GOOGLE_TAG_MANAGER_TAG_ID', None)
 
-ASSET_BUYOUT_CATEGORY_TO_MONTHS = json.loads(os.environ.get('ASSET_BUYOUT_CATEGORY_TO_MONTHS', '{}'))
-
-# TODO(pszulc) not used, remove
-ASSET_BUYOUT_DELAY_MONTHS = int(os.environ.get('ASSET_BUYOUT_DELAY_MONTHS', 0))
+ASSET_BUYOUT_CATEGORY_TO_MONTHS = json.loads(os.environ.get(
+    'ASSET_BUYOUT_CATEGORY_TO_MONTHS', '{}')
+)

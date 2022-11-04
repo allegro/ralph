@@ -480,7 +480,7 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
             return None
 
         category = self.model.category  # type: Category
-        months = settings.ASSET_BUYOUT_CATEGORY_TO_MONTHS.get(category, None)
+        months = settings.ASSET_BUYOUT_CATEGORY_TO_MONTHS.get(category.pk, None)
         if self.invoice_date and months:
             return self.invoice_date + relativedelta(months=months)
         else:
