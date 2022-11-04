@@ -166,7 +166,7 @@ class TestBackOfficeAsset(RalphTestCase):
 
     def setUp(self):
         with override_settings(
-            ASSET_BUYOUT_CATEGORY_TO_MONTHS={self.category.pk: 48}
+            ASSET_BUYOUT_CATEGORY_TO_MONTHS={str(self.category.pk): 48}
         ):
             super().setUp()
             AssetLastHostname.objects.create(prefix='POLPC', counter=1000)
