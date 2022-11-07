@@ -165,47 +165,50 @@ class TestBackOfficeAsset(RalphTestCase):
         )
 
     def setUp(self):
-        super().setUp()
-        AssetLastHostname.objects.create(prefix='POLPC', counter=1000)
-        self.bo_asset = BackOfficeAssetFactory(
-            model=self.model,
-            hostname='abc',
-            region=self.region_pl,
-        )
-        self.bo_asset_2 = BackOfficeAssetFactory(
-            model=self.model,
-            hostname='abc2',
-            region=self.region_pl,
-            status=BackOfficeAssetStatus.liquidated.id,
-            invoice_date=None
-        )
-        self.bo_asset_3 = BackOfficeAssetFactory(
-            model=self.model,
-            hostname='abc3',
-            region=self.region_pl,
-            status=BackOfficeAssetStatus.liquidated.id,
-            invoice_date=datetime(2016, 1, 11).date(),
-            depreciation_rate=50
-        )
-        self.bo_asset_4 = BackOfficeAssetFactory(
-            model=self.model,
-            hostname='abc3',
-            region=self.region_pl,
-            status=BackOfficeAssetStatus.liquidated.id,
-            invoice_date=datetime(2016, 1, 11).date(),
-            depreciation_end_date=datetime(2015, 1, 11).date(),
-            depreciation_rate=50
-        )
-        self.category_parent = CategoryFactory(
-            code='Mob1', default_depreciation_rate=30
-        )
-        self.category_2 = CategoryFactory(
-            code='Mob2', default_depreciation_rate=25
-        )
-        self.category_3 = CategoryFactory(
-            code='Mob3', parent=self.category_parent,
-            default_depreciation_rate=0
-        )
+        with override_settings(
+            ASSET_BUYOUT_CATEGORY_TO_MONTHS={str(self.category.pk): 48}
+        ):
+            super().setUp()
+            AssetLastHostname.objects.create(prefix='POLPC', counter=1000)
+            self.bo_asset = BackOfficeAssetFactory(
+                model=self.model,
+                hostname='abc',
+                region=self.region_pl,
+            )
+            self.bo_asset_2 = BackOfficeAssetFactory(
+                model=self.model,
+                hostname='abc2',
+                region=self.region_pl,
+                status=BackOfficeAssetStatus.liquidated.id,
+                invoice_date=None
+            )
+            self.bo_asset_3 = BackOfficeAssetFactory(
+                model=self.model,
+                hostname='abc3',
+                region=self.region_pl,
+                status=BackOfficeAssetStatus.liquidated.id,
+                invoice_date=datetime(2016, 1, 11).date(),
+                depreciation_rate=50
+            )
+            self.bo_asset_4 = BackOfficeAssetFactory(
+                model=self.model,
+                hostname='abc3',
+                region=self.region_pl,
+                status=BackOfficeAssetStatus.liquidated.id,
+                invoice_date=datetime(2016, 1, 11).date(),
+                depreciation_end_date=datetime(2015, 1, 11).date(),
+                depreciation_rate=50
+            )
+            self.category_parent = CategoryFactory(
+                code='Mob1', default_depreciation_rate=30
+            )
+            self.category_2 = CategoryFactory(
+                code='Mob2', default_depreciation_rate=25
+            )
+            self.category_3 = CategoryFactory(
+                code='Mob3', parent=self.category_parent,
+                default_depreciation_rate=0
+            )
 
     def test_try_assign_hostname(self):
         self.bo_asset._try_assign_hostname(commit=True)
@@ -247,7 +250,7 @@ class TestBackOfficeAsset(RalphTestCase):
     def test_buyout_date(self):
         self.assertEqual(
             self.bo_asset_3.buyout_date,
-            datetime(2018, 2, 11).date()
+            datetime(2020, 1, 11).date()
         )
 
         self.assertEqual(
@@ -255,19 +258,20 @@ class TestBackOfficeAsset(RalphTestCase):
             None
         )
 
-    def test_butout_date_with_depreciation_end_date(self):
+    def test_buyout_date_doesnt_use_depreciation_end_date(self):
         self.assertEqual(
             self.bo_asset_4.buyout_date,
-            datetime(2015, 1, 11).date()
+            datetime(2020, 1, 11).date()
         )
 
     def test_changing_buyout_date(self):
-        self.bo_asset_3.buyout_date += relativedelta(months=3)
+        new_date = datetime(2020, 5, 11).date()
+        self.bo_asset_3.buyout_date = new_date
         self.bo_asset_3.save()
         self.bo_asset_3.refresh_from_db()
         self.assertEqual(
             self.bo_asset_3.buyout_date,
-            datetime(2018, 5, 11).date()
+            new_date
         )
 
     def test_get_depreciation_rate(self):

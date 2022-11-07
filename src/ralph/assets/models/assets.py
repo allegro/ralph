@@ -348,7 +348,6 @@ class BudgetInfo(
     TimeStampMixin,
     models.Model
 ):
-
     class Meta:
         verbose_name = _('Budget info')
         verbose_name_plural = _('Budgets info')
@@ -468,16 +467,23 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         Get buyout date.
 
         Calculate buyout date:
-         invoice_date + depreciation_rate months + custom buyout date delay
+         invoice_date + buyout months offset by category
 
         Returns:
-            Deprecation date
+            Buyout date
         """
-        if self.depreciation_end_date:
-            return self.depreciation_end_date
-        elif self.invoice_date:
-            months = self.get_depreciation_months() + 1 + \
-                     settings.ASSET_BUYOUT_DELAY_MONTHS
+        if (
+            not self.model
+            or not self.model.category
+            or not self.model.category.show_buyout_date
+        ):
+            return None
+
+        category = self.model.category  # type: Category
+        months = settings.ASSET_BUYOUT_CATEGORY_TO_MONTHS.get(
+            str(category.pk), None
+        )
+        if self.invoice_date and months:
             return self.invoice_date + relativedelta(months=months)
         else:
             return None
