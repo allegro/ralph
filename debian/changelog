@@ -1,3 +1,12 @@
+ralph (20221107.1) bionic; urgency=medium
+
+  * Modify buyout date calculation
+  * Fix calculating buyout date. Modify tests
+  * Handle string dictionary keys since config is loaded from JSON
+  * Category pk to string
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Mon, 07 Nov 2022 13:50:28 +0000
+
 ralph (20221027.1) bionic; urgency=medium
 
   [ Aleksander Więckowski ]
