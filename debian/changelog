@@ -1,3 +1,20 @@
+ralph (20221108.1) bionic; urgency=medium
+
+  [ lukasz.karykowski ]
+  * ITS-368993 | Added new status to backoffice assets.
+  * ITS-368993 | removed new status, and renamed, old unused.
+  * ITS-368993 | removed new status, and renamed, old unused.
+  * ITS-368993 | removed new status, and renamed, old unused.
+  * ITS-368993 | Renamed, old unused.
+  * ITS-368993 | added migrations
+  * ITS-368993 | added new status
+  * ITS-368993 | changed test.
+  * ITS-368993 | changed test.
+  * ITS-368993 | changed test.
+  * ITS-403788 | added new status
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Tue, 08 Nov 2022 11:03:52 +0000
+
 ralph (20221107.1) bionic; urgency=medium
 
   * Modify buyout date calculation
