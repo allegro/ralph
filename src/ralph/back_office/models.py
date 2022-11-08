@@ -82,6 +82,7 @@ class BackOfficeAssetStatus(Choices):
     return_in_progress = _("return in progress")
     to_find = _("to find")
     sent = _("sent")
+    buyout = _("buyout")
 
 
 class OfficeInfrastructure(
