@@ -1,4 +1,4 @@
-from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin.mixins import RalphAdmin, RalphTabularInline, register
 from ralph.reports.forms import ReportTemplateFormset
 from ralph.reports.models import Report, ReportLanguage, ReportTemplate
 

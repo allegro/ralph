@@ -1,7 +1,8 @@
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accessories.models import Accessory, AccessoryUser
-from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin.mixins import RalphAdmin, RalphTabularInline
+from ralph.admin.decorators import register
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 

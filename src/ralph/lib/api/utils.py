@@ -1,7 +1,7 @@
 import logging
 from collections import OrderedDict
 
-from django.core.urlresolvers import NoReverseMatch
+from django.urls import NoReverseMatch
 from django.utils.encoding import force_text
 from rest_framework.metadata import SimpleMetadata
 from rest_framework.relations import ManyRelatedField, RelatedField

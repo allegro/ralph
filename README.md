@@ -1,5 +1,7 @@
 # Ralph
 
+This is a next gen fork of Ralph,
+keeping in line with current django LTS (3.2) and  recent python (3.10)
 Ralph is full-featured Asset Management, DCIM and CMDB system for data centers and back offices.
 
 Features:

@@ -2,7 +2,7 @@
 from collections import defaultdict
 
 from django.conf import settings
-from django.conf.urls import url
+from django.conf.urls import re_path
 from django.contrib.admin.sites import AdminSite
 
 
@@ -35,7 +35,7 @@ class RalphAdminSiteMixin(object):
         )
         for model, model_admin in self._registry.items():
             for view in self._get_views(model_admin):
-                urlpatterns.insert(0, url(
+                urlpatterns.insert(0, re_path(
                     view.get_url_pattern(model),
                     view.as_view(),
                     {

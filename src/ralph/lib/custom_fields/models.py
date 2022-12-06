@@ -4,12 +4,12 @@ import six
 from dj.choices import Choices
 from django import forms
 from django.contrib.auth.models import Group
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes import fields
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.fields.related import add_lazy_relation
+from django.db.models.fields.related import lazy_related_operation
 from django.utils.text import capfirst, slugify
 from django.utils.translation import ugettext_lazy as _
 
@@ -79,7 +79,8 @@ class CustomField(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
             "When set, only members of the specified group will be "
             "allowed to set, change or unset values of this custom field "
             "for objects."
-        )
+        ),
+        on_delete=models.CASCADE,
     )
     use_as_configuration_variable = models.BooleanField(
         default=False,
@@ -130,9 +131,9 @@ class CustomFieldValue(TimeStampMixin, models.Model):
     # is by-design simple, so it, for example, doesn't allow to filter by range
     # of integers or other Django filters like gte, lte.
     value = models.CharField(max_length=CUSTOM_FIELD_VALUE_MAX_LENGTH)
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField(db_index=True)
-    object = generic.GenericForeignKey('content_type', 'object_id')
+    object = fields.GenericForeignKey('content_type', 'object_id')
 
     objects = models.Manager()
     # generic relation has to use specific manager (queryset)
@@ -196,9 +197,9 @@ class CustomFieldMeta(models.base.ModelBase):
         # `add_custom_field_inheritance` - it will be called lazy, only when
         # model will be loaded
         for field_path, model in new_cls.custom_fields_inheritance.items():
-            add_lazy_relation(
-                new_cls, field_path, model, add_custom_field_inheritance
-            )
+            def lazyfn(local, related, field):
+                return add_custom_field_inheritance(field_path, model, local)
+            lazy_related_operation(lazyfn, new_cls, model, field_path)
         return new_cls
 
 

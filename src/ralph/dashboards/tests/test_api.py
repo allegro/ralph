@@ -1,4 +1,4 @@
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from ralph.api.tests._base import RalphAPITestCase
 from ralph.dashboards.models import AggregateType

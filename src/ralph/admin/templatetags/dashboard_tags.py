@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-from collections import Counter, Iterable
+from collections.abc import Counter, Iterable
 from itertools import cycle
 
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db.models import Count, Prefetch, Q, Sum
 from django.template import Library
 from django.utils.text import slugify
@@ -243,7 +243,6 @@ def my_services(user):
 
 @register.inclusion_tag('admin/templatetags/objects_summary.html')
 def get_objects_summary(service_env, content_type_id, objects):
-    from django.core.urlresolvers import reverse
     content_type = ContentType.objects.get_for_id(content_type_id)
     opts = content_type.model_class()._meta
     url = reverse(

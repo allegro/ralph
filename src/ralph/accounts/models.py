@@ -13,7 +13,7 @@ from rest_framework.authtoken.models import Token
 
 from ralph.admin.autocomplete import AutocompleteTooltipMixin
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
-from ralph.lib.permissions import (
+from ralph.lib.permissions.models import (
     PermByFieldMixin,
     PermissionsForObjectMixin,
     user_permission
@@ -50,7 +50,7 @@ def object_has_region(user):
 
 
 class Regionalizable(PermissionsForObjectMixin):
-    region = models.ForeignKey(Region, blank=False, null=False)
+    region = models.ForeignKey(Region, blank=False, null=False, on_delete=models.CASCADE)
 
     class Meta:
         abstract = True
@@ -121,7 +121,7 @@ class RalphUser(
         blank=True,
     )
     regions = models.ManyToManyField(Region, related_name='users', blank=True)
-    team = models.ForeignKey(Team, null=True, blank=True)
+    team = models.ForeignKey(Team, null=True, blank=True, on_delete=models.CASCADE)
 
     autocomplete_tooltip_fields = [
         'employee_id',

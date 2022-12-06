@@ -1,6 +1,6 @@
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, register
+from ralph.admin.mixins import RalphAdmin, register
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.sim_cards.forms import SIMCardForm

@@ -2,7 +2,7 @@ import logging
 
 from django.core.checks import Error
 from django.db.utils import DatabaseError
-from django.template.base import TemplateDoesNotExist
+from django.template.exceptions import TemplateDoesNotExist
 from django.template.loader import get_template
 
 

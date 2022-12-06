@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db.models import Count
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin.mixins import RalphAdmin, RalphTabularInline, register
 from ralph.admin.filters import TagsListFilter
 from ralph.admin.helpers import generate_html_link
 from ralph.admin.mixins import BulkEditChangeListMixin

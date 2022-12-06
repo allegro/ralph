@@ -5,7 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import BaseObject
 from ralph.lib.mixins.models import TimeStampMixin
-from ralph.lib.permissions import PermByFieldMixin
+from ralph.lib.permissions.models import PermByFieldMixin
 
 
 class SCMCheckResult(Choices):

@@ -57,7 +57,7 @@ class CloudProvider(AdminAbsoluteUrlMixin, NamedMixin):
 
 class CloudFlavor(AdminAbsoluteUrlMixin, BaseObject):
     name = models.CharField(_('name'), max_length=255)
-    cloudprovider = models.ForeignKey(CloudProvider)
+    cloudprovider = models.ForeignKey(CloudProvider, on_delete=models.CASCADE)
     cloudprovider._autocomplete = False
 
     flavor_id = models.CharField(unique=True, max_length=100)
@@ -147,7 +147,7 @@ class CloudFlavor(AdminAbsoluteUrlMixin, BaseObject):
 
 
 class CloudProject(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
-    cloudprovider = models.ForeignKey(CloudProvider)
+    cloudprovider = models.ForeignKey(CloudProvider, on_delete=models.CASCADE)
     cloudprovider._autocomplete = False
     custom_fields_inheritance = OrderedDict([
         ('service_env', 'assets.ServiceEnvironment'),
@@ -203,8 +203,8 @@ class CloudHost(PreviousStateMixin,
             pass
         super(CloudHost, self).save(*args, **kwargs)
 
-    cloudflavor = models.ForeignKey(CloudFlavor, verbose_name='Instance Type')
-    cloudprovider = models.ForeignKey(CloudProvider)
+    cloudflavor = models.ForeignKey(CloudFlavor, verbose_name='Instance Type', on_delete=models.CASCADE)
+    cloudprovider = models.ForeignKey(CloudProvider, on_delete=models.CASCADE)
     cloudprovider._autocomplete = False
 
     host_id = models.CharField(
@@ -216,7 +216,7 @@ class CloudHost(PreviousStateMixin,
         verbose_name=_('hostname'),
         max_length=255
     )
-    hypervisor = models.ForeignKey(DataCenterAsset, blank=True, null=True)
+    hypervisor = models.ForeignKey(DataCenterAsset, blank=True, null=True, on_delete=models.CASCADE)
     image_name = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
@@ -346,7 +346,7 @@ class VirtualServer(
         default=VirtualServerStatus.new.id,
         choices=VirtualServerStatus(),
     )
-    type = models.ForeignKey(VirtualServerType, related_name='virtual_servers')
+    type = models.ForeignKey(VirtualServerType, related_name='virtual_servers', on_delete=models.CASCADE)
     hostname = NullableCharField(
         blank=True,
         default=None,
@@ -364,7 +364,7 @@ class VirtualServer(
         unique=True,
     )
     # TODO: remove this field
-    cluster = models.ForeignKey(Cluster, blank=True, null=True)
+    cluster = models.ForeignKey(Cluster, blank=True, null=True, on_delete=models.CASCADE)
 
     previous_dc_host_update_fields = ['hostname']
     _allow_in_dashboard = True

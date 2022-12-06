@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.admin import SimpleListFilter
 from django.contrib.admin.views.main import ChangeList, ORDER_VAR
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db.models import Prefetch, Q
 from django.utils.translation import ugettext_lazy as _
 
@@ -60,7 +60,7 @@ from ralph.data_center.views import RelationsView
 from ralph.data_importer import resources
 from ralph.deployment.mixins import ActiveDeploymentMessageMixin
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
-from ralph.lib.table import Table
+from ralph.lib.table.table import Table
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
 from ralph.networks.forms import SimpleNetworkWithManagementIPForm

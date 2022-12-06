@@ -7,7 +7,7 @@ from itertools import chain
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.core.validators import (
     MaxValueValidator,
     MinValueValidator,
@@ -152,7 +152,7 @@ class ServerRoomManager(models.Manager):
 class ServerRoom(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
     _allow_in_dashboard = True
 
-    data_center = models.ForeignKey(DataCenter, verbose_name=_("data center"))
+    data_center = models.ForeignKey(DataCenter, verbose_name=_("data center"), on_delete=models.CASCADE)
     data_center._autocomplete = False
     data_center._filter_title = _('data center')
     visualization_cols_num = models.PositiveIntegerField(
@@ -185,8 +185,8 @@ class Accessory(AdminAbsoluteUrlMixin, NamedMixin):
 
 
 class RackAccessory(AdminAbsoluteUrlMixin, models.Model):
-    accessory = models.ForeignKey(Accessory)
-    rack = models.ForeignKey('Rack')
+    accessory = models.ForeignKey(Accessory, on_delete=models.CASCADE)
+    rack = models.ForeignKey('Rack', on_delete=models.CASCADE)
     orientation = models.PositiveIntegerField(
         choices=Orientation(),
         default=Orientation.front.id,
@@ -219,6 +219,7 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
         ServerRoom, verbose_name=_('server room'),
         null=True,
         blank=False,
+        on_delete=models.CASCADE,
     )
     server_room._autocomplete = False
     server_room._filter_title = _('server room')

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import models
 
 from ..models import WithCustomFieldsMixin

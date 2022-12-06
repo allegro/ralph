@@ -10,7 +10,6 @@ from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 from djmoney.utils import get_currency_field_name
 
-from ralph.settings import DEFAULT_CURRENCY_CODE
 
 Serializer = JSONSerializer
 
@@ -31,6 +30,7 @@ def Deserializer(stream_or_string, **options):  # noqa
 
     from django.core.serializers.python import \
         Deserializer as PythonDeserializer, _get_model
+    from django.conf import settings
 
     ignore = options.pop("ignorenonexistent", False)
 
@@ -60,7 +60,7 @@ def Deserializer(stream_or_string, **options):  # noqa
                         currency = \
                             obj["fields"][get_currency_field_name(field_name)]
                     except KeyError:
-                        currency = DEFAULT_CURRENCY_CODE
+                        currency = settings.DEFAULT_CURRENCY_CODE
                     money_fields[field_name] = Money(field_value, currency)
                 else:
                     fields[field_name] = field_value

@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from ddt import data, ddt, unpack
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import connections
 from django.test import RequestFactory, TestCase
 from django.test.utils import CaptureQueriesContext

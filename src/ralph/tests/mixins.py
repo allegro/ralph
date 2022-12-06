@@ -3,7 +3,7 @@ import sys
 from imp import reload
 
 from django.conf import settings
-from django.core.urlresolvers import clear_url_caches
+from django.urls import clear_url_caches
 from django.utils.importlib import import_module
 
 from ralph.tests.factories import UserFactory

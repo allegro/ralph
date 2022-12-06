@@ -7,21 +7,21 @@ from copy import copy
 from django import forms
 from django.conf import settings
 from django.contrib import admin, messages
-from django.contrib.admin.templatetags.admin_static import static
 from django.contrib.admin.views.main import ORDER_VAR
 from django.contrib.auth import get_permission_codename
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.core import checks
 from django.core.exceptions import FieldDoesNotExist
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import models
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
+from django.templatetags.static import static
 from django.views.generic import TemplateView
 from import_export.admin import ImportExportModelAdmin
 from import_export.widgets import ForeignKeyWidget
 from mptt.admin import MPTTAdminForm, MPTTModelAdmin
-from reversion import VersionAdmin
+from reversion.admin import VersionAdmin
 
 from ralph.admin import widgets
 from ralph.admin.autocomplete import AjaxAutocompleteMixin

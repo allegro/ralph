@@ -108,13 +108,15 @@ class IntellectualPropertyBase(models.Model):
         settings.AUTH_USER_MODEL,
         related_name='%(class)s_business_owner',
         blank=False,
-        null=False
+        null=False,
+        on_delete=models.CASCADE,
     )
     technical_owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name='%(class)s_technical_owner',
         blank=False,
-        null=False
+        null=False,
+        on_delete=models.CASCADE,
     )
     order_number_url = models.URLField(
         max_length=255, blank=True, null=True,
@@ -126,7 +128,8 @@ class IntellectualPropertyBase(models.Model):
     holder = models.ForeignKey(
         AssetHolder,
         blank=True,
-        null=True
+        null=True,
+        on_delete=models.CASCADE,
     )
     status = models.PositiveIntegerField(
         choices=TradeMarkStatus(),
@@ -135,6 +138,7 @@ class IntellectualPropertyBase(models.Model):
     registrar_institution = models.ForeignKey(
         TradeMarkRegistrarInstitution,
         null=True,
+        on_delete=models.CASCADE,
     )
     database_link = models.URLField(
         max_length=255, blank=True, null=True,
@@ -179,10 +183,11 @@ class TradeMark(IntellectualPropertyBase, AdminAbsoluteUrlMixin, BaseObject):
 
 
 class TradeMarksLinkedDomains(models.Model):
-    trade_mark = models.ForeignKey(TradeMark)
+    trade_mark = models.ForeignKey(TradeMark, on_delete=models.CASCADE)
     domain = models.ForeignKey(
         Domain,
-        related_name='trade_mark'
+        related_name='trade_mark',
+        on_delete=models.CASCADE,
     )
 
     class Meta:
@@ -197,8 +202,8 @@ class TradeMarksLinkedDomains(models.Model):
 
 
 class TradeMarkAdditionalCountry(models.Model):
-    trade_mark = models.ForeignKey(TradeMark)
-    country = models.ForeignKey(TradeMarkCountry)
+    trade_mark = models.ForeignKey(TradeMark, on_delete=models.CASCADE)
+    country = models.ForeignKey(TradeMarkCountry, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = _('Trade Mark Additional Country')
@@ -219,10 +224,11 @@ class Patent(IntellectualPropertyBase, AdminAbsoluteUrlMixin, BaseObject):
 
 
 class PatentsLinkedDomains(models.Model):
-    patent = models.ForeignKey(Patent)
+    patent = models.ForeignKey(Patent, on_delete=models.CASCADE)
     domain = models.ForeignKey(
         Domain,
-        related_name='patent'
+        related_name='patent',
+        on_delete=models.CASCADE,
     )
 
     class Meta:
@@ -237,8 +243,8 @@ class PatentsLinkedDomains(models.Model):
 
 
 class PatentAdditionalCountry(models.Model):
-    patent = models.ForeignKey(Patent)
-    country = models.ForeignKey(TradeMarkCountry)
+    patent = models.ForeignKey(Patent, on_delete=models.CASCADE)
+    country = models.ForeignKey(TradeMarkCountry, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = _('Patent Additional Country')
@@ -259,10 +265,11 @@ class Design(IntellectualPropertyBase, AdminAbsoluteUrlMixin, BaseObject):
 
 
 class DesignsLinkedDomains(models.Model):
-    design = models.ForeignKey(Design)
+    design = models.ForeignKey(Design, on_delete=models.CASCADE)
     domain = models.ForeignKey(
         Domain,
-        related_name='design'
+        related_name='design',
+        on_delete=models.CASCADE,
     )
 
     class Meta:
@@ -277,8 +284,8 @@ class DesignsLinkedDomains(models.Model):
 
 
 class DesignAdditionalCountry(models.Model):
-    design = models.ForeignKey(Design)
-    country = models.ForeignKey(TradeMarkCountry)
+    design = models.ForeignKey(Design, on_delete=models.CASCADE)
+    country = models.ForeignKey(TradeMarkCountry, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = _('Design Additional Country')

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, register
+from ralph.admin.mixins import RalphAdmin, register
 from ralph.admin.m2m import RalphTabularM2MInline
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin

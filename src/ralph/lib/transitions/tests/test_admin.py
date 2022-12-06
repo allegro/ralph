@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from ralph.lib.transitions.tests import TransitionTestCase
 from ralph.tests.mixins import ClientMixin, ReloadUrlsMixin

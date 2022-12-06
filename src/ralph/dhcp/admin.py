@@ -2,14 +2,14 @@ from django.db.models import Prefetch
 from django.template.defaultfilters import date, timesince_filter
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin.mixins import RalphAdmin, RalphTabularInline, register
 from ralph.dhcp.models import (
     DHCPServer,
     DNSServer,
     DNSServerGroup,
     DNSServerGroupOrder
 )
-from ralph.lib.table import TableWithUrl
+from ralph.lib.table.table import TableWithUrl
 
 
 @register(DHCPServer)

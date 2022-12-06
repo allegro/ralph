@@ -2,11 +2,11 @@
 from ddt import data, ddt, unpack
 from django.contrib.admin.options import IS_POPUP_VAR
 from django.contrib.admin.views.main import SEARCH_VAR
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.test import RequestFactory, TestCase
 from django.views.generic import View
 
-from ralph.admin import RalphAdmin
+from ralph.admin.mixins import RalphAdmin
 from ralph.admin.decorators import register_extra_view
 from ralph.admin.sites import ralph_site
 from ralph.admin.views.extra import RalphDetailView, RalphListView

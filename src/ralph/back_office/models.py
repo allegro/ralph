@@ -176,10 +176,12 @@ class BackOfficeAsset(Regionalizable, Asset):
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True,
         related_name='assets_as_owner',
+        on_delete=models.CASCADE,
     )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True,
         related_name='assets_as_user',
+        on_delete=models.CASCADE,
     )
     location = models.CharField(max_length=128, null=True, blank=True)
     purchase_order = models.CharField(max_length=50, null=True, blank=True)
@@ -199,7 +201,8 @@ class BackOfficeAsset(Regionalizable, Asset):
         verbose_name=_('IMEI 2')
     )
     office_infrastructure = models.ForeignKey(
-        OfficeInfrastructure, null=True, blank=True
+        OfficeInfrastructure, null=True, blank=True,
+        on_delete=models.CASCADE,
     )
 
     class Meta:

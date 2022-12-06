@@ -77,7 +77,8 @@ class Accessory(
         Manufacturer, on_delete=models.PROTECT, blank=True, null=True
     )
     category = TreeForeignKey(
-        Category, null=True, related_name='+'
+        Category, null=True, related_name='+',
+        on_delete=models.CASCADE,
     )
     accessory_name = models.CharField(
         max_length=255,
@@ -215,10 +216,11 @@ class Accessory(
 
 @reversion.register()
 class AccessoryUser(models.Model):
-    accessory = models.ForeignKey(Accessory)
+    accessory = models.ForeignKey(Accessory, on_delete=models.CASCADE)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        related_name='user'
+        related_name='user',
+        on_delete=models.CASCADE,
     )
     quantity = models.PositiveIntegerField(default=1)
 
