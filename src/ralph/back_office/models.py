@@ -87,7 +87,6 @@ class BackOfficeAssetStatus(Choices):
     in_use_test = _("in use test")
 
 
-
 class OfficeInfrastructure(
     AdminAbsoluteUrlMixin,
     NamedMixin,

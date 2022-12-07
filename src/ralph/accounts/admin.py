@@ -95,7 +95,10 @@ class RalphUserChangeForm(
 class AssetList(Table):
 
     def buyout_date(self, item):
-        if item.status in [BackOfficeAssetStatus.in_use_team.id, BackOfficeAssetStatus.in_use_test.id]:
+        if item.status in [
+            BackOfficeAssetStatus.in_use_team.id,
+            BackOfficeAssetStatus.in_use_test.id
+        ]:
             return ''
         if item.model.category.show_buyout_date:
             return item.buyout_date
@@ -121,7 +124,10 @@ class AssetList(Table):
     def buyout_ticket(self, item):
         if not item.model.category.show_buyout_date:
             return ''
-        if item.status in [BackOfficeAssetStatus.in_use_team.id, BackOfficeAssetStatus.in_use_test.id]:
+        if item.status in [
+            BackOfficeAssetStatus.in_use_team.id,
+            BackOfficeAssetStatus.in_use_test.id
+        ]:
             return ''
         else:
             get_params = {
