@@ -18,7 +18,7 @@ from ralph.admin import RalphAdmin, register
 from ralph.admin.helpers import getattr_dunder
 from ralph.admin.mixins import RalphAdminFormMixin
 from ralph.admin.views.extra import RalphDetailView
-from ralph.back_office.models import BackOfficeAsset
+from ralph.back_office.models import BackOfficeAsset, BackOfficeAssetStatus
 from ralph.lib.table import Table
 from ralph.lib.transitions.models import TransitionsHistory
 from ralph.licences.models import Licence
@@ -95,6 +95,8 @@ class RalphUserChangeForm(
 class AssetList(Table):
 
     def buyout_date(self, item):
+        if item.status in [BackOfficeAssetStatus.in_use_team.id, BackOfficeAssetStatus.in_use_test.id]:
+            return ''
         if item.model.category.show_buyout_date:
             return item.buyout_date
         return '&mdash;'
@@ -118,6 +120,8 @@ class AssetList(Table):
 
     def buyout_ticket(self, item):
         if not item.model.category.show_buyout_date:
+            return ''
+        if item.status in [BackOfficeAssetStatus.in_use_team.id, BackOfficeAssetStatus.in_use_test.id]:
             return ''
         else:
             get_params = {
