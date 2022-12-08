@@ -83,6 +83,8 @@ class BackOfficeAssetStatus(Choices):
     to_find = _("to find")
     sent = _("sent")
     buyout = _("buyout")
+    in_use_team = _("in use team")
+    in_use_test = _("in use test")
 
 
 class OfficeInfrastructure(
