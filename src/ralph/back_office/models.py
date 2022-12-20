@@ -82,7 +82,7 @@ class BackOfficeAssetStatus(Choices):
     return_in_progress = _("return in progress")
     to_find = _("to find")
     sent = _("sent")
-    buyout = _("buyout")
+    to_buyout = _("to buyout")
     in_use_team = _("in use team")
     in_use_test = _("in use test")
 
