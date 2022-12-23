@@ -405,7 +405,6 @@ class LicenceResource(ResourceWithPrice, RalphModelResource):
         through_from_field_name='licence',
         through_to_field_name='base_object'
     )
-
     service_uid = fields.Field(
         column_name='service_uid',
         attribute='service_env',

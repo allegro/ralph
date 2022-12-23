@@ -232,6 +232,14 @@ class AssetServiceEnvWidget(widgets.ForeignKeyWidget):
             value = None
         return value
 
+    def render(self, value):
+        if value is None:
+            return ""
+        return "{}|{}".format(
+            value.service.name,
+            value.environment.name
+        )
+
 
 class AssetServiceUidWidget(widgets.ForeignKeyWidget):
 
