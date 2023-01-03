@@ -241,6 +241,30 @@ class AssetServiceEnvWidget(widgets.ForeignKeyWidget):
         )
 
 
+class AssetServiceUidWidget(widgets.ForeignKeyWidget):
+
+    def clean(self, value):
+        if not value:
+            return None
+        try:
+            if value.isdigit():
+                value = ServiceEnvironment.objects.get(pk=value)
+            else:
+                service, enviroment = value.split("|")
+                value = ServiceEnvironment.objects.get(
+                    service__name=service,
+                    environment__name=enviroment
+                )
+        except (ValueError, ServiceEnvironment.DoesNotExist):
+            value = None
+        return value
+
+    def render(self, value):
+        if value is None:
+            return ""
+        return value.service.uid
+
+
 class IPManagementWidget(widgets.ManyToManyWidget):
     """
     Widget for IPManagement field during DataCenterAsset import.

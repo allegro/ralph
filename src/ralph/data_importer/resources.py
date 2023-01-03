@@ -20,6 +20,7 @@ from ralph.data_importer.mixins import (
 )
 from ralph.data_importer.widgets import (
     AssetServiceEnvWidget,
+    AssetServiceUidWidget,
     BaseObjectManyToManyWidget,
     BaseObjectServiceNamesM2MWidget,
     BaseObjectWidget,
@@ -404,6 +405,11 @@ class LicenceResource(ResourceWithPrice, RalphModelResource):
         through_from_field_name='licence',
         through_to_field_name='base_object'
     )
+    service_uid = fields.Field(
+        column_name='service_uid',
+        attribute='service_env',
+        widget=AssetServiceUidWidget(assets.ServiceEnvironment),
+    )
 
     class Meta:
         model = Licence
@@ -412,6 +418,8 @@ class LicenceResource(ResourceWithPrice, RalphModelResource):
 
     def get_queryset(self):
         return Licence.objects_used_free_with_related.all()
+
+    service_uid._skip_str_field = True
 
 
 class SupportTypeResource(RalphModelResource):
