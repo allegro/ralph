@@ -1,3 +1,14 @@
+ralph (20230103.1) bionic; urgency=medium
+
+  [ lukasz.karykowski ]
+  * ITS-409837 | changed name of status in backoffice from "buyout" to "to buyout"
+
+  [ Olga Matyla ]
+  * Add service_uid for licences export
+  * Cleanup
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Tue, 03 Jan 2023 14:25:19 +0000
+
 ralph (20221208.1) bionic; urgency=medium
 
   * Add new statuses for assets (#3744)
