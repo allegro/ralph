@@ -88,6 +88,7 @@ class BackOfficeAssetStatus(Choices):
     in_progress_team = _("in_progress team")
     in_progress_test = _("in progress test")
 
+
 class OfficeInfrastructure(
     AdminAbsoluteUrlMixin,
     NamedMixin,
