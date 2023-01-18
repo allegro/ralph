@@ -1,3 +1,11 @@
+ralph (20230118.1) bionic; urgency=medium
+
+  [ lukasz.karykowski ]
+  * ITS-413740 | added 2 new statuses for new transitions ([NEW] Prepare to accept - asset team and [NEW] Prepare to accept - asset test )
+  * ITS-413740 | added 1 blank line
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Wed, 18 Jan 2023 11:35:43 +0000
+
 ralph (20230103.1) bionic; urgency=medium
 
   [ lukasz.karykowski ]
