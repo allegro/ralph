@@ -85,9 +85,9 @@ class BackOfficeAssetStatus(Choices):
     to_buyout = _("to buyout")
     in_use_team = _("in use team")
     in_use_test = _("in use test")
-    in_progress_team = _("in_progress team")
+    in_progress_team = _("in progress team")
     in_progress_test = _("in progress test")
-
+    quarantine = _("quarantine")
 
 class OfficeInfrastructure(
     AdminAbsoluteUrlMixin,
