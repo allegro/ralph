@@ -25,6 +25,7 @@ ACCEPTANCE_BACK_OFFICE_TEAM_ACCEPT_ID = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_
 ACCEPTANCE_BACK_OFFICE_TEST_ACCEPT_STATUS = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['BACK_OFFICE_TEST_ACCEPT_STATUS']  # noqa: E509
 ACCEPTANCE_BACK_OFFICE_TEST_ACCEPT_ID = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['BACK_OFFICE_TEST_ACCEPT_ID']  # noqa: E509
 
+
 def transition_exists(transition_id):
     return Transition.objects.filter(
         id=transition_id
@@ -49,6 +50,7 @@ acceptance_team_asset_transition_exists = partial(
 acceptance_test_asset_transition_exists = partial(
     transition_exists, ACCEPTANCE_BACK_OFFICE_TEST_ACCEPT_ID
 )
+
 
 def get_assets(user, status):
     return BackOfficeAsset.objects.filter(
