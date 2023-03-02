@@ -209,7 +209,7 @@ class BackOfficeAsset(Regionalizable, Asset):
         null=True,
         blank=True,
         default=None,
-        verbose_name=_('Last status change'),
+        verbose_name=_('Last status change')
     )
 
     class Meta:
