@@ -162,9 +162,9 @@ class BackOfficeAssetAdmin(
         (_('Basic info'), {
             'fields': (
                 'hostname', 'model', 'barcode', 'sn', 'imei', 'imei2', 'niw',
-                'status', 'warehouse', 'location', 'region', 'loan_end_date',
-                'remarks', 'tags', 'property_of', 'task_url', 'service_env',
-                'office_infrastructure'
+                'status', 'Last status change', 'warehouse', 'location',
+                'region', 'loan_end_date', 'remarks', 'tags', 'property_of',
+                'task_url', 'service_env', 'office_infrastructure'
             )
         }),
         (_('User Info'), {
