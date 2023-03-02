@@ -20,6 +20,8 @@ ACCEPTANCE_RETURN_TRANSITION_ID = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG
 ACCEPTANCE_BACK_OFFICE_RETURN_STATUS = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['BACK_OFFICE_ACCEPT_RETURN_STATUS']  # noqa: E509
 ACCEPTANCE_ACCESS_CARD_TRANSITION_ID = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['TRANSITION_ACCESS_CARD_ID']  # noqa: E509
 ACCEPTANCE_ACCESS_CARD_ACCEPT_STATUS = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['ACCESS_CARD_ACCEPT_ACCEPT_STATUS']  # noqa: E509
+ACCEPTANCE_BACK_OFFICE_TEAM_ACCEPT_STATUS = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['BACK_OFFICE_TEAM_ACCEPT_STATUS']  # noqa: E509
+ACCEPTANCE_BACK_OFFICE_TEST_ACCEPT_STATUS = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['BACK_OFFICE_TEST_ACCEPT_STATUS']  # noqa: E509
 
 
 def transition_exists(transition_id):
@@ -64,7 +66,6 @@ def get_access_cards(user, status):
 get_assets_to_accept = partial(
     get_assets, status=ACCEPTANCE_BACK_OFFICE_ACCEPT_STATUS
 )
-
 get_simcards_to_accept = partial(
     get_simcards, status=ACCEPTANCE_SIMCARD_ACCEPT_STATUS
 )
@@ -76,6 +77,12 @@ get_assets_to_accept_return = partial(
 )
 get_access_cards_to_accept = partial(
     get_access_cards, status=ACCEPTANCE_ACCESS_CARD_ACCEPT_STATUS
+)
+get_team_assets_to_accept = partial(
+    get_assets, status=ACCEPTANCE_BACK_OFFICE_TEAM_ACCEPT_STATUS
+)
+get_test_assets_to_accept = partial(
+    get_assets, status=ACCEPTANCE_BACK_OFFICE_TEST_ACCEPT_STATUS
 )
 
 

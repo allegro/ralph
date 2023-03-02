@@ -20,7 +20,9 @@ from ralph.accounts.helpers import (
     get_loan_acceptance_url,
     get_return_acceptance_url,
     get_simcard_acceptance_url,
-    get_simcards_to_accept
+    get_simcards_to_accept,
+    get_team_assets_to_accept,
+    get_test_assets_to_accept
 )
 from ralph.assets.models import BaseObject, Service, ServiceEnvironment
 from ralph.back_office.models import BackOfficeAsset
@@ -103,6 +105,30 @@ def get_user_equipment_to_accept_return_tile_data(user):
         'label': _('Hardware return'),
         'count': assets_to_accept_count,
         'url': get_return_acceptance_url(user),
+    }
+
+
+def get_user_team_equipment_to_accept_tile_data(user):
+    assets_to_accept_count = get_team_assets_to_accept(user).count()
+    if not assets_to_accept_count:
+        return None
+    return {
+        'class': 'team-equipment-to-accept',
+        'label': _('Team hardware pick up'),
+        'count': assets_to_accept_count,
+        'url': get_acceptance_url(user),
+    }
+
+
+def get_user_test_equipment_to_accept_tile_data(user):
+    assets_to_accept_count = get_test_assets_to_accept(user).count()
+    if not assets_to_accept_count:
+        return None
+    return {
+        'class': 'test-equipment-to-accept',
+        'label': _('Test hardware pick up'),
+        'count': assets_to_accept_count,
+        'url': get_acceptance_url(user),
     }
 
 
@@ -219,6 +245,13 @@ def ralph_summary(context):
     accept_for_return_tile_data = get_user_equipment_to_accept_return_tile_data(user=user)  # noqa
     if accept_for_return_tile_data:
         results.append(accept_for_return_tile_data)
+    accept_for_team_asset_tile_data = get_user_team_equipment_to_accept_tile_data(user=user)  # noqa
+    if accept_for_team_asset_tile_data:
+        results.append(accept_for_team_asset_tile_data)
+    accept_for_test_asset_tile_data = get_user_test_equipment_to_accept_tile_data(user=user)  # noqa
+    if accept_for_test_asset_tile_data:
+        results.append(accept_for_test_asset_tile_data)
+
     return {'results': results}
 
 
