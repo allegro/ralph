@@ -22,7 +22,9 @@ from ralph.accounts.helpers import (
     get_simcard_acceptance_url,
     get_simcards_to_accept,
     get_team_assets_to_accept,
-    get_test_assets_to_accept
+    get_team_asset_acceptance_url,
+    get_test_assets_to_accept,
+    get_test_asset_acceptance_url
 )
 from ralph.assets.models import BaseObject, Service, ServiceEnvironment
 from ralph.back_office.models import BackOfficeAsset
@@ -116,7 +118,7 @@ def get_user_team_equipment_to_accept_tile_data(user):
         'class': 'team-equipment-to-accept',
         'label': _('Team hardware pick up'),
         'count': assets_to_accept_count,
-        'url': get_acceptance_url(user),
+        'url': get_team_asset_acceptance_url(user),
     }
 
 
@@ -128,7 +130,7 @@ def get_user_test_equipment_to_accept_tile_data(user):
         'class': 'test-equipment-to-accept',
         'label': _('Test hardware pick up'),
         'count': assets_to_accept_count,
-        'url': get_acceptance_url(user),
+        'url': get_test_asset_acceptance_url(user),
     }
 
 
