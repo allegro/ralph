@@ -1,6 +1,7 @@
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, register
+from ralph.admin.mixins import BulkEditChangeListMixin, RalphAdminMixin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.sim_cards.forms import SIMCardForm
@@ -8,13 +9,20 @@ from ralph.sim_cards.models import CellularCarrier, SIMCard, SIMCardFeatures
 
 
 @register(SIMCard)
-class SIMCardAdmin(MulitiAddAdminMixin, TransitionAdminMixin, RalphAdmin):
+class SIMCardAdmin(
+    MulitiAddAdminMixin,
+    TransitionAdminMixin,
+    RalphAdmin,
+    BulkEditChangeListMixin,
+    RalphAdminMixin
+):
     # NOTE(Anna Gabler): list_display - list on top page
     #                    raw_id_fields - fancy autocomplete
     #                    list_select_related - join to database (DJANGO)
     #                    list_filter  - list of filters on simcard list
     #                    fieldsets - configuration of editor layout
     form = SIMCardForm
+    actions = ['bulk_edit_action']
     show_transition_history = True
     list_display = ['status', 'card_number', 'phone_number', 'pin1', 'puk1',
                     'user', 'owner', 'warehouse', 'carrier',
@@ -27,6 +35,8 @@ class SIMCardAdmin(MulitiAddAdminMixin, TransitionAdminMixin, RalphAdmin):
     ]
     search_fields = ['card_number', 'phone_number', 'user__first_name',
                      'user__last_name', 'user__username']
+
+    bulk_edit_list = ['status', 'warehouse']
 
     list_filter = [
         'status', 'features', 'phone_number', 'card_number', 'warehouse',
