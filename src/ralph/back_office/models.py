@@ -711,7 +711,6 @@ class BackOfficeAsset(Regionalizable, Asset):
             for instance in instances:
                 instance._try_assign_hostname(commit=False, force=False)
 
-
     @classmethod
     @transition_action()
     def last_status(cls, instances, **kwargs):
