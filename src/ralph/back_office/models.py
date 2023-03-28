@@ -206,6 +206,12 @@ class BackOfficeAsset(Regionalizable, Asset):
     office_infrastructure = models.ForeignKey(
         OfficeInfrastructure, null=True, blank=True
     )
+    last_status_change = models.DateField(
+        null=True,
+        blank=True,
+        default=None,
+        verbose_name=_('Last status change')
+    )
 
     class Meta:
         verbose_name = _('Back Office Asset')
@@ -705,3 +711,15 @@ class BackOfficeAsset(Regionalizable, Asset):
         if settings.BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME:
             for instance in instances:
                 instance._try_assign_hostname(commit=False, force=False)
+
+    @classmethod
+    @transition_action()
+    def last_status(cls, instances, **kwargs):
+        for instance in instances:
+            instance.last_status_change = datetime.date.today()
+
+    @classmethod
+    @transition_action()
+    def hardware_replacement(cls, instances, **kwargs):
+        for instance in instances:
+            instance.loan_end_date = datetime.date.today() + datetime.timedelta(days=10)  # noqa
