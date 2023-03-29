@@ -124,10 +124,7 @@ class AssetList(Table):
     def buyout_ticket(self, item):
         if not item.model.category.show_buyout_date:
             return ''
-        if item.status in [
-            BackOfficeAssetStatus.in_use_team.id,
-            BackOfficeAssetStatus.in_use_test.id
-        ]:
+        if item.status is not BackOfficeAssetStatus.used.id:
             return ''
         else:
             get_params = {

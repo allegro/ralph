@@ -1,3 +1,5 @@
+import datetime
+
 from functools import partial
 
 from dj.choices import Choices
@@ -315,3 +317,40 @@ class SIMCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model,
     def assign_task_url(cls, instances, **kwargs):
         for instance in instances:
             instance.task_url = kwargs['task_url']
+
+    @classmethod
+    @transition_action()
+    def quarantine_date(cls, instances, **kwargs):
+        for instance in instances:
+            instance.quarantine_until = datetime.date.today() + datetime.timedelta(days=30)  # noqa
+
+    @classmethod
+    @transition_action(
+        form_fields={
+            'pin1': {
+                'field': forms.CharField(label=_('pin1')),
+            },
+            'puk1': {
+                'field': forms.CharField(label=_('puk1')),
+            }
+        }
+    )
+    def change_pin_and_puk(cls, instances, **kwargs):
+        for instance in instances:
+            instance.pin1 = kwargs['pin1']
+            instance.puk1 = kwargs['puk1']
+
+    @classmethod
+    @transition_action(
+        form_fields={
+            'card number': {
+                'field': forms.CharField(label=_('card number')),
+            }
+        }
+    )
+    def card_number_to_notes(cls, instances, **kwargs):
+        for instance in instances:
+            instance.remarks = '{}\n{}'.format(
+                instance.remarks, instance.card_number
+            )
+            instance.card_number = kwargs['card number']
