@@ -1,3 +1,18 @@
+ralph (20230330.1) bionic; urgency=medium
+
+  [ lukasz.karykowski ]
+  * ITS-417932 | added new status for backoffice assets.
+  * ITS-417932 | added new status for backoffice assets.
+  * ITS-421350 | Changed condition of showing buyout link
+  * ITS-423764 | Added Bulk Edit for sim_cards, added new actions to sim_cards transitions.
+  * HAL-2320 | Added new Field to backoffice assets and two new action transitions.
+  * HAL-2320 | Added new Field to backoffice assets and two new action transitions.
+
+  [ Marcin Pyrka ]
+  * HAL-2382 | Rename migrations
+
+ -- Marcin Pyrka <marcin.pyrka@allegro.pl>  Thu, 30 Mar 2023 09:09:41 +0000
+
 ralph (20230118.1) bionic; urgency=medium
 
   [ lukasz.karykowski ]
