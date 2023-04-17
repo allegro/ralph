@@ -88,7 +88,7 @@ class BackOfficeAssetStatus(Choices):
     in_progress_team = _("in progress team")
     in_progress_test = _("in progress test")
     quarantine = _("quarantine")
-
+    refurbished = _("refurbished")
 
 class OfficeInfrastructure(
     AdminAbsoluteUrlMixin,
