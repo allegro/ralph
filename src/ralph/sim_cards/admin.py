@@ -36,7 +36,7 @@ class SIMCardAdmin(
     search_fields = ['card_number', 'phone_number', 'user__first_name',
                      'user__last_name', 'user__username']
 
-    bulk_edit_list = ['status', 'warehouse']
+    bulk_edit_list = ['status', 'warehouse', 'user', 'owner']
 
     list_filter = [
         'status', 'features', 'phone_number', 'card_number', 'warehouse',
