@@ -8,7 +8,7 @@ import ralph.lib.transitions.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('back_office', '0019_backofficeasset_last_status_change'),
+        ('back_office', '0020_auto_20230419_1223'),
     ]
 
     operations = [
