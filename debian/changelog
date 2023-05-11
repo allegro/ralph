@@ -1,3 +1,29 @@
+ralph (20230511.1) bionic; urgency=medium
+
+  [ lukasz.karykowski ]
+  * ITS-424572 | Added new status to backoffice assets.
+  * ITS-424572 | Added blank line.
+  * ITS-428445 | Added edition by user and owner in sim cards bulk edit, and updated date in all last_status_change in backoffice assets.
+  * ITS-428445 | changed amount of days in quarantine_date action.
+
+  [ awieckowski ]
+  * rename migrations
+
+ -- awieckowski <aleksander.wieckowski@allegro.pl>  Thu, 11 May 2023 11:06:29 +0000
+
+ralph (20230511.1) bionic; urgency=medium
+
+  [ lukasz.karykowski ]
+  * ITS-424572 | Added new status to backoffice assets.
+  * ITS-424572 | Added blank line.
+  * ITS-428445 | Added edition by user and owner in sim cards bulk edit, and updated date in all last_status_change in backoffice assets.
+  * ITS-428445 | changed amount of days in quarantine_date action.
+
+  [ awieckowski ]
+  * rename migrations
+
+ -- awieckowski <aleksander.wieckowski@allegro.pl>  Thu, 11 May 2023 11:00:05 +0000
+
 ralph (20230330.1) bionic; urgency=medium
 
   [ root ]
