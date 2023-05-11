@@ -322,7 +322,7 @@ class SIMCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model,
     @transition_action()
     def quarantine_date(cls, instances, **kwargs):
         for instance in instances:
-            instance.quarantine_until = datetime.date.today() + datetime.timedelta(days=30)  # noqa
+            instance.quarantine_until = datetime.date.today() + datetime.timedelta(days=90)  # noqa
 
     @classmethod
     @transition_action(
