@@ -354,3 +354,30 @@ class SIMCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model,
                 instance.remarks, instance.card_number
             )
             instance.card_number = kwargs['card number']
+
+    @classmethod
+    @transition_action(
+        form_fields={
+            'user': {
+                'field': forms.CharField(label=_('User')),
+                'autocomplete_field': 'user',
+            },
+            'owner': {
+                'field': forms.CharField(label=_('Owner')),
+                'autocomplete_field': 'owner',
+                'condition': lambda obj, actions: bool(obj.owner),
+            }
+        }
+    )
+    def change_user_and_owner(cls, instances, **kwargs):
+        UserModel = get_user_model()  # noqa
+        user_id = kwargs.get('user', None)
+        user = UserModel.objects.get(id=user_id)
+        owner_id = kwargs.get('owner', None)
+        for instance in instances:
+            instance.user = user
+            if not owner_id:
+                instance.owner = user
+            else:
+                instance.owner = UserModel.objects.get(id=owner_id)
+            instance.location = user.location
