@@ -1,3 +1,16 @@
+ralph (20230524.1) bionic; urgency=medium
+
+  [ lukasz.karykowski ]
+  * HAL-2220 | new system to accept released assets to status in use team and test.
+  * HAL-2220 | new system to accept released assets to status in use team and test.
+  * HAL-2220 | added missing code to helpers.
+  * HAL-2220 | Code Style repair.
+  * HAL-2220 | Errors repair.
+  * HAL-2220 | import sorting repair.
+  * ITS-432085 | added features to bulk edit and added new transition action in sim cards.
+
+ -- Olga Matyla <olga.matyla@allegro.pl>  Wed, 24 May 2023 09:17:48 +0000
+
 ralph (20230511.1) bionic; urgency=medium
 
   [ lukasz.karykowski ]
