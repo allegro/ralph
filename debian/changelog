@@ -1,3 +1,9 @@
+ralph (20230531.1) bionic; urgency=medium
+
+  * Fix accept asset test and team (#3773)
+
+ -- Olga Matyla <olga.matyla@allegro.pl>  Wed, 31 May 2023 11:42:00 +0000
+
 ralph (20230524.1) bionic; urgency=medium
 
   [ lukasz.karykowski ]
