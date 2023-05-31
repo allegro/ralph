@@ -116,7 +116,7 @@ def get_user_team_equipment_to_accept_tile_data(user):
     if not assets_to_accept_count:
         return None
     return {
-        'class': 'team-equipment-to-accept',
+        'class': 'equipment-to-accept',
         'label': _('Team hardware pick up'),
         'count': assets_to_accept_count,
         'url': get_team_asset_acceptance_url(user),
@@ -128,7 +128,7 @@ def get_user_test_equipment_to_accept_tile_data(user):
     if not assets_to_accept_count:
         return None
     return {
-        'class': 'test-equipment-to-accept',
+        'class': 'equipment-to-accept',
         'label': _('Test hardware pick up'),
         'count': assets_to_accept_count,
         'url': get_test_asset_acceptance_url(user),
