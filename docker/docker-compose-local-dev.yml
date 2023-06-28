@@ -2,17 +2,17 @@ version: '3'
 services:
   web:
     platform: linux/amd64
-    image: allegro/ralph:latest
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile-local-dev
     restart: always
     ports:
-      - "8000"
+      - "8000:8000"
     volumes:
-      - ralph_media:/var/local/ralph/media
-      - ralph_static:/usr/share/ralph/static
+      - ../.:/var/local/ralph
     links:
       - db
       - redis
-      - nginx
     environment:
         DATABASE_NAME: ralph_ng
         DATABASE_USER: ralph_ng
@@ -22,15 +22,6 @@ services:
         REDIS_PASSWORD: ""
         REDIS_PORT: 6379
         REDIS_DB: 0
-
-  nginx:
-    platform: linux/amd64
-    image: allegro/ralph-static-nginx:latest
-    restart: always
-    ports:
-      - "80:80"
-    volumes:
-      - ralph_media:/opt/media
 
   db:
     platform: linux/amd64
@@ -65,5 +56,3 @@ services:
 
 volumes:
   ralph_dbdata:
-  ralph_media:
-  ralph_static:
