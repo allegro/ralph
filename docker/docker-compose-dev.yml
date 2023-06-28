@@ -1,6 +1,7 @@
 version: "3"
 services:
   db:
+    platform: linux/amd64
     image: mysql:5.7
     ports:
       - "3306:3306"
@@ -15,10 +16,12 @@ services:
       - ./volumes/mysql:/var/lib/mysql
     command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
   redis:
+    platform: linux/amd64
     image: redis:3.0
     ports:
       - "6379:6379"
   inkpy:
+    platform: linux/amd64
     image: allegro/inkpy:latest
     restart: always
     links:
