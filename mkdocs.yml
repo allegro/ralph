@@ -26,6 +26,7 @@ nav:
   - Developer guide:
       - Before you start: CONTRIBUTING.md
       - Development environment: development/development_environment.md
+      - Docker Development environment [experimental]: development/docker_development_environment.md
       - Architecture: development/overview.md
       - RalphAdmin: development/admin.md
       - Custom fields: development/custom_fields.md
