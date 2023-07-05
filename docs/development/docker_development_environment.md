@@ -37,3 +37,5 @@ If you run local dev environment for the first time, or you have removed **docke
 
 
 All required services should be started and your local ralph instance should be accessible on http://localhost:80
+
+You can login as ralph/ralph
