@@ -54,5 +54,14 @@ services:
         REDIS_PORT: 6379
         REDIS_DB: 0
 
+  nginx:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile-local-dev-static
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ../src/ralph:/opt/media
 volumes:
   ralph_dbdata:

@@ -31,4 +31,9 @@ Properly created environment should show all packages required by Ralph:
 To run local Ralph from source code using docker-compose issue this command:
 ```docker-compose -f docker/docker-compose-local-dev.yml up```
 
-All required services should be started and your local ralph instance should be accessible on http://localhost:8000
+If you run local dev environment for the first time, or you have removed **docker_ralph_dbdata** volume, issue this command after **web** service finishes starting:
+
+```docker exec docker-web-1 /opt/local/init-local-dev-ralph.sh```
+
+
+All required services should be started and your local ralph instance should be accessible on http://localhost:80
