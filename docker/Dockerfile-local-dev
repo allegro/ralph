@@ -43,9 +43,11 @@ RUN mkdir -p $RALPH_LOCAL_DIR
 COPY docker/provision/docker-local-dev-entrypoint.sh /opt/local/docker-local-dev-entrypoint.sh
 COPY docker/provision/createsuperuser.py /opt/local/createsuperuser.py
 COPY docker/provision/init-local-dev-ralph.sh opt/local/init-local-dev-ralph.sh
+COPY docker/provision/rebuild-local-dev-statics.sh opt/local/rebuild-local-dev-statics.sh
 RUN chmod a+x /opt/local/docker-local-dev-entrypoint.sh
 RUN chmod a+x /opt/local/createsuperuser.py
 RUN chmod a+x /opt/local/init-local-dev-ralph.sh
+RUN chmod a+x /opt/local/rebuild-local-dev-statics.sh
 
 WORKDIR $RALPH_LOCAL_DIR
 ENTRYPOINT /opt/local/docker-local-dev-entrypoint.sh

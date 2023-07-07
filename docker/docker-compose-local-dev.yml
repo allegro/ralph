@@ -5,7 +5,7 @@ services:
     build:
       context: ../
       dockerfile: docker/Dockerfile-local-dev
-    restart: always
+    restart: unless-stopped
     ports:
       - "8000:8000"
     volumes:
@@ -34,18 +34,17 @@ services:
     volumes:
       - ralph_dbdata:/var/lib/mysql
     command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    restart: unless-stopped
 
   redis:
-    platform: linux/amd64
-    image: redis:3.0
-    restart: always
+    image: redis:7.0.11
     ports:
       - "6379"
+    restart: unless-stopped
 
   inkpy:
     platform: linux/amd64
     image: allegro/inkpy:latest
-    restart: always
     links:
       - redis:redis
     environment:
@@ -53,15 +52,17 @@ services:
         REDIS_PASSWORD: ""
         REDIS_PORT: 6379
         REDIS_DB: 0
+    restart: unless-stopped
 
   nginx:
     build:
       context: ../
       dockerfile: docker/Dockerfile-local-dev-static
-    restart: always
     ports:
       - "80:80"
     volumes:
       - ../src/ralph:/opt/media
+      - ../src/ralph/static:/opt/static
+    restart: unless-stopped
 volumes:
   ralph_dbdata:
