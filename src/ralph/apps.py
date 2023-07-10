@@ -4,6 +4,8 @@ from importlib import import_module
 from django.apps import AppConfig
 from django.core import serializers
 
+from ralph.lib.metrics import patch_cursor
+
 
 class RalphAppConfig(AppConfig):
     def get_load_modules_when_ready(self):
@@ -24,3 +26,5 @@ class RalphAppConfig(AppConfig):
                 import_module('{}.{}'.format(package, module))
             except ImportError:
                 pass
+
+        patch_cursor()

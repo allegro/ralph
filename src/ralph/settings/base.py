@@ -119,7 +119,8 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'threadlocals.middleware.ThreadLocalMiddleware',
-    'ralph.lib.error_handling.middleware.OperationalErrorHandlerMiddleware'
+    'ralph.lib.error_handling.middleware.OperationalErrorHandlerMiddleware',
+    'ralph.lib.metrics.middlewares.RequestMetricsMiddleware'
 )
 
 ROOT_URLCONF = 'ralph.urls'
