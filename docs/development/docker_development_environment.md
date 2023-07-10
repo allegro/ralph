@@ -1,4 +1,4 @@
-# Ralph development environment
+~~# Ralph Docker development environment
 
 ## Requirements
 
@@ -31,4 +31,23 @@ Properly created environment should show all packages required by Ralph:
 To run local Ralph from source code using docker-compose issue this command:
 ```docker-compose -f docker/docker-compose-local-dev.yml up```
 
-All required services should be started and your local ralph instance should be accessible on http://localhost:8000
+If you run local dev environment for the first time, or you have removed **docker_ralph_dbdata** volume, issue this command after **web** service finishes starting:
+
+```docker exec docker-web-1 /opt/local/init-local-dev-ralph.sh```
+
+⚠️ Above command may take a while to complete when run for the first time or after clearing **docker_ralph_dbdata** volume.
+
+All required services should be started and your local ralph instance should be accessible on http://localhost:80
+
+You can log in as ralph/ralph
+
+
+### Rebuilding static resources
+
+Run command
+```docker exec docker-web-1 /opt/local/rebuild-local-dev-statics.sh```
+to rebuild static files and download new vendor components.
+
+## Known Issues
+
+Creation of static files (```./node_modules/.bin/gulp``` command, which is invoked on web container start and by ```/opt/local/rebuild-local-dev-statics.sh``` command) may fail or hang when using Dockers Rosetta for x86/amd64 emulation on Apple Silicon.
