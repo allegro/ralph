@@ -30,6 +30,22 @@ ALL_URLS_METRIC_NAME_TMPL = getattr(
 )
 UNKNOWN_URL_NAME = 'unknown'
 
+REQUESTS_METRICS_ENABLED = getattr(
+    settings,
+    'ENABLE_REQUESTS_AND_QUERIES_METRICS',
+    True
+)
+LARGE_NUMBER_OF_QUERIES_THRESHOLD = getattr(
+    settings,
+    'LARGE_NUMBER_OF_QUERIES_THRESHOLD',
+    25
+)
+LONG_QUERIES_THRESHOLD_MS = getattr(
+    settings,
+    'LONG_QUERIES_THRESHOLD_MS',
+    250
+)
+
 logger = logging.getLogger(__name__)
 
 queries_data = threading.local()
@@ -88,6 +104,10 @@ def patch_cursor() -> None:
     CursorWrapper.executemany = new_executemany
 
 
+def get_per_query_stat(query_stats):
+    return "\n".join(str(stat) for stat in query_stats)
+
+
 class RequestMetricsMiddleware(object):
     """
     Middleware reporting request metrics (such as processing time) to statsd
@@ -114,6 +134,8 @@ class RequestMetricsMiddleware(object):
         get_queries_log().clear()
 
     def _collect_metrics(self, request, response):
+        if not REQUESTS_METRICS_ENABLED:
+            return
         if not request.resolver_match:
             return
 
@@ -201,16 +223,16 @@ class RequestMetricsMiddleware(object):
             }
         )
 
-        if queries_count > 10:
-            logger.warning("A lot of queries ({}) in {}: {}"
-                           .format(queries_count, view_name, "\n".join(str(stat) for stat in query_stats)),
-                           extra={**metadata}
-                           )
-        elif queries_time > 100:
-            logger.warning("Long queries (total of {} ms) in {}: {}"
-                           .format(queries_time, view_name, "\n".join(str(stat) for stat in query_stats)),
-                           extra={**metadata}
-                           )
+        if queries_count > LARGE_NUMBER_OF_QUERIES_THRESHOLD:
+            logger.warning("A lot of queries ({}) in {}: {}".format(
+                queries_count, view_name, get_per_query_stat(query_stats)),
+                extra={**metadata}
+            )
+        elif queries_time > LONG_QUERIES_THRESHOLD_MS:
+            logger.warning("Long queries (total of {} ms) in {}: {}".format(
+                queries_time, view_name, get_per_query_stat(query_stats)),
+                extra={**metadata}
+            )
 
     def process_response(self, request, response):
         try:
