@@ -5,7 +5,6 @@ import time
 from collections import deque
 from resource import getrusage, RUSAGE_SELF
 
-import dataclasses
 from django.conf import settings
 from django.db.backends.utils import CursorWrapper
 
@@ -53,10 +52,13 @@ old_execute = CursorWrapper.execute
 old_executemany = CursorWrapper.executemany
 
 
-@dataclasses.dataclass
 class QueryLogEntry:
     sql: str
     duration: float
+
+    def __init__(self, sql: str, duration: float):
+        self.sql = sql,
+        self.duration = duration
 
     def __str__(self):
         return "'{}' took {} ms".format(self.sql, self.duration * 1000)
