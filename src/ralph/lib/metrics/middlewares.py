@@ -75,7 +75,7 @@ def add_query_log(duration: float, sql: str) -> None:
 
 
 @functools.wraps(old_execute)
-def new_execute(self, sql, params):  # type: ignore
+def new_execute(self, sql, params=None):  # type: ignore
     """
     Wraps original cursor execute method and adds thread safe timing to it.
     """
