@@ -119,7 +119,8 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'threadlocals.middleware.ThreadLocalMiddleware',
-    'ralph.lib.error_handling.middleware.OperationalErrorHandlerMiddleware'
+    'ralph.lib.error_handling.middleware.OperationalErrorHandlerMiddleware',
+    'ralph.lib.metrics.middlewares.RequestMetricsMiddleware'
 )
 
 ROOT_URLCONF = 'ralph.urls'
@@ -683,6 +684,10 @@ RALPH_HOST_URL = os.environ.get('RALPH_HOST_URL', None)
 COLLECT_METRICS = False
 ALLOW_PUSH_GRAPHS_DATA_TO_STATSD = False
 STATSD_GRAPHS_PREFIX = 'ralph.graphs'
+
+ENABLE_REQUESTS_AND_QUERIES_METRICS = True
+LARGE_NUMBER_OF_QUERIES_THRESHOLD = 25
+LONG_QUERIES_THRESHOLD_MS = 250
 
 TRANSITION_TEMPLATES = None
 
