@@ -1,3 +1,22 @@
+ralph (20230829.1) bionic; urgency=medium
+
+  [ lukasz.karykowski ]
+  * ITS-437975 | added new status to backoffice assets
+
+  [ Julian Szulc ]
+  * Adding support for static files (both app and debug toolbar). Adding fast init script and documemntation
+  * Default login and password in documentation
+  * Fixing local static build
+  * Log queries stats, log long and a lot of queries
+  * Code cleanup and config
+  * No dataclasses in python 3.6
+  * Default params argument value
+
+  [ lukasz.karykowski ]
+  * ITS-445851 | added hyperlink to username in backoffice assets
+
+ -- Pawel Szulc <pawel.szulc@allegro.com>  Tue, 29 Aug 2023 08:56:49 +0000
+
 ralph (20230628.1) bionic; urgency=medium
 
   [ root ]
