@@ -125,6 +125,7 @@ class Gap(object):
                 handle_missing(str(slot_no))
         return items
 
+
 class DataCenterType(Choices):
     _ = Choices.Choice
 
@@ -135,6 +136,7 @@ class DataCenterType(Choices):
     warehouse = _("warehouse")
     retail = _("retail")
     office = _("office")
+
 
 class DataCenter(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
     _allow_in_dashboard = True
@@ -162,7 +164,6 @@ class DataCenter(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
     shortcut = models.CharField(
         verbose_name=_("shortcut"), max_length=256, blank=True, null=True
     )
-
 
     @property
     def rack_set(self):
